@@ -31,7 +31,7 @@ namespace sdpa {
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
 	typedef std::list<worker_job_pair_t> cancellation_list_t;
 
-	typedef std::map<sdpa::worker_id_t, unsigned int> map_degs_t;
+	typedef std::map<sdpa::worker_id_t, int> map_degs_t;
 
 	class MasterInfo
 	{

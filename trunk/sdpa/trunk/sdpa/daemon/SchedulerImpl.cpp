@@ -578,70 +578,22 @@ void SchedulerImpl::check_post_request()
 	}
 }
 
-/* obsolete?
 void SchedulerImpl::feed_workers()
 {
-	// for any worker take a job from its pending queue, a
-	// std::list<std::string> listAvailWorkers;
-	// ptr_worker_man_->getListAvailWorkers(listAvailWorkers);
+  sdpa::worker_id_list_t workerList;
+  ptr_worker_man_->getWorkerListNotFull(workerList);
 
-	// start here with the last served worker
-	// BOOST_FOREACH(sdpa::worker_id_t worker_id, listAvailWorkers)
-
-	// as long as there are still jobs into the central queue
-	// and there are still workers not fully loaded do feed workers
-	// i.e take jobs from the pending queues (or from the common queue )
-	// and send them
-
-	// attention: some jobs may be rejected i.e. an error message of type SDPA_EJOBREJECTED
-	// is triggered with the reason = job_id -> handle this message -> re-schedule the
-	// job: don't forget to update the job status -> reverse state or create a new job
-	// with the same id after deleting the original one
-
-	//SDPA_LOG_INFO("Try to feed the workers ...");
-    try {
-
-    	sdpa::worker_id_t worker_id = ptr_worker_man_->getLeastLoadedWorker();
-    	Worker::ptr_t pWorker(findWorker(worker_id));
-
-		if(ptr_comm_handler_)
-		{
-			ptr_comm_handler_->serve_job(worker_id);
-		}
-		else
-		{
-			SDPA_LOG_WARN("Invalid communication handler");
-		}
-
+  if (ptr_comm_handler_)
+  {
+    BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
+    {
+      ptr_comm_handler_->serve_job(worker_id);
     }
-    catch(const NoWorkerFoundException& ) {
-      SDPA_LOG_WARN("No worker found!");
-    }
-    catch(const AllWorkersFullException&) {
-	SDPA_LOG_DEBUG("All workers are full!");
-    }
-    catch (std::exception const& ex) {
-    	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");
-    }
-}
-*/
-
-void SchedulerImpl::feed_workers()
-{
-	sdpa::worker_id_list_t workerList;
-	ptr_worker_man_->getWorkerListNotFull(workerList);
-
-	BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
-	{
-		if(ptr_comm_handler_)
-		{
-			ptr_comm_handler_->serve_job(worker_id);
-		}
-		else
-		{
-			SDPA_LOG_WARN("Invalid communication handler");
-		}
-    }
+  }
+  else
+  {
+    MLOG(FATAL, "STRANGE: Communication is handler while it is not supposed to be!");
+  }
 }
 
 void SchedulerImpl::run()
