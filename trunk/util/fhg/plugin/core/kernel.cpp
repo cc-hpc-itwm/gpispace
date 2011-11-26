@@ -1,4 +1,5 @@
-#include <unistd.h>
+#include <unistd.h> // getuid, alarm, setsid, fork
+#include <sys/types.h> // uid_t
 #include <sys/time.h>
 #include <dlfcn.h>
 #include <cstring>
@@ -458,6 +459,20 @@ namespace fhg
       struct timeval tv_start;
       struct timeval tv_diff;
       struct timeval tv_end;
+
+      const bool daemonize
+        (boost::lexical_cast<bool>(get("kernel.daemonize", "0")));
+      if (daemonize)
+      {
+        if (0 == fork())
+        {
+          setsid();
+        }
+        else
+        {
+          _exit (0);
+        }
+      }
 
       while (!m_stop_requested)
       {
