@@ -66,8 +66,14 @@ echo "done." >&2
 
 build_rev=$( cd "$src" && git describe --tags 2>/dev/null )
 if [ $? != 0 ]; then
-    echo "W: could not get version information from git, trying svn..."
+    echo "W: could not get version information from git, trying svn..." >&2
     build_rev="$( cd "$src" && svn info | grep '^Revision:' | cut -d' ' -f 2 )"
+    if [ -z "$build_rev" ] ; then
+	get_cmake_cache_entry PROJECT_REVISION build_rev
+	if [ -n "$build_rev" ] ; then
+	    echo "W: using old revision ($build_rev), this might not be what you want..." >&2
+	fi
+    fi
 fi
 
 function print_settings ()
