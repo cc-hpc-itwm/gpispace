@@ -88,6 +88,10 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:L:M:" opt; do
 	    master=$OPTARG
 	    ;;
 	i)
+	    if [ $OPTARG -le 0 ] ; then
+		echo "identity must be greater than 0!" >&2
+		exit 2
+	    fi
 	    identity=$OPTARG
 	    ;;
 	b)
@@ -129,21 +133,23 @@ if [ -z "$master" ] ; then
     exit 1
 fi
 
+if [ x"$identity" == x"0" ] ; then
 # quick hack to easily start multiple instances
-if [ -n "$count" ] ; then
-    if [ $count -eq 0 ] ; then
-	count=$(grep ^processor /proc/cpuinfo | wc -l)
+    if [ -n "$count" ] ; then
+	if [ $count -eq 0 ] ; then
+	    count=$(grep ^processor /proc/cpuinfo | wc -l)
+	fi
+	ec=0
+	for i in $(seq 1 $count) ; do
+	    $0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D &
+	    ec=$(( ec + $? ))
+	done
+	for i in $(jobs -p) ; do
+	    wait $i
+	    ec=$(( ec + $? ))
+	done
+	exit $ec
     fi
-    ec=0
-    for i in $(seq 1 $count) ; do
-	$0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D -f &
-	ec=$(( ec + $? ))
-    done
-    for i in $(jobs -p) ; do
-	wait $i
-	ec=$(( ec + $? ))
-    done
-    exit $ec
 fi
 
 name="${name_prefix}-${identity}"
@@ -160,14 +166,14 @@ fi
 still_running=$(ps -C fhgkernel -o pid=)
 for p in $still_running ; do
     if grep -q -e "plugin.drts.name=$name" /proc/$p/cmdline ; then
-	if [ "$force" == "true" ] ; then
+	if [ "$force" = "true" ] ; then
 	    log "W: $name is still running, terminating it"
 	    kill -TERM "$p"
 	    sleep 3
 	    kill -KILL "$p" &>/dev/null
 	else
 	    log "E: $name still running, cannot start"
-	    exit 1
+	    exit 2
 	fi
     fi
 done

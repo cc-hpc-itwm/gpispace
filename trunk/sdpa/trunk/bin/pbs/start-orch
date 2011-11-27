@@ -3,7 +3,7 @@
 test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
 debug=false
-bind_addr="`hostname`"
+bind_addr='0'
 name="orchestrator"
 bkp_dir="${SDPA_SCRATCH_DIR}/state"
 

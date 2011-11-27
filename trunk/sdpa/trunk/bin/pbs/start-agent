@@ -115,13 +115,13 @@ function agent_status ()
 
 pids=$(agent_status $name)
 if [ $? -eq 0 ] ; then
-    if [ $force == true ] ; then
+    if [ x"$force" = x"true" ] ; then
 	kill -TERM $pids
 	sleep 1.5
 	kill -KILL $pids &>/dev/null
     else
 	echo "E: agent $name still running with pid(s): $pids" >&2
-	exit 1
+	exit 2
     fi
 fi
 
