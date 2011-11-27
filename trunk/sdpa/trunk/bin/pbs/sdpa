@@ -805,14 +805,32 @@ function dump_config ()
 
 function initialize ()
 {
+    local hostfile="$1"; shift
     local node_file=$(get "sdpa.node_file" "$SDPA_NODEFILE")
-    if [ -z "$PBS_NODEFILE" ] ; then
-	log "E: PBS_NODEFILE is not set, please export it before and run init again"
+
+    if [ -z "$hostfile" ] ; then
+	hostfile="$PBS_NODEFILE"
+    fi
+
+    if [ -z "$hostfile" ] ; then
+	log "E: usage: init [hostfile] or export PBS_NODEFILE"
 	return 1
     fi
 
-    if ! cp "$PBS_NODEFILE" "$node_file" ; then
-	log "E: could not copy nodefile from $PBS_NODEFILE to $node_file"
+    if [ ! -r "$hostfile" ] ; then
+	log "E: cannot read hostfile: $hostfile"
+	return 1
+    fi
+
+    if ! grep -q -e "^$(hostname)$" "${hostfile}" ; then
+	if ! grep -q -e "^$(hostname -s)$" "${hostfile}" ; then
+	    log "E: could not find current host '$(hostname)' in hostfile: $hostfile"
+	    return 1
+	fi
+    fi
+
+    if ! cp "$hostfile" "$node_file" ; then
+	log "E: could not copy nodefile from '$hostfile' to '$node_file'"
 	return 1
     fi
 
@@ -1730,7 +1748,7 @@ function on_valid_host ()
 		return 1
 	    fi
 	fi
-	if grep -q -e "$host" "$state_dir/nodefile" ; then
+	if grep -q -e "^$host" "$state_dir/nodefile" ; then
 	    return 0
 	else
 	    log "E: your hostname ($host) does not match any in $state_dir/nodefile"
