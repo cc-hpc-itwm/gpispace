@@ -6,6 +6,8 @@
 
 #include <boost/thread.hpp>
 
+#include <fhg/util/thread/queue.hpp>
+
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/core/plugin_kernel_mediator.hpp>
 
@@ -149,13 +151,16 @@ namespace fhg
       void remove_pending_tasks (std::string const & owner);
       void notify_plugin_load (std::string const & name);
 
+      void task_handler ();
+
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
       typedef boost::shared_ptr<PluginKernelMediator> mediator_ptr;
       typedef std::map<std::string, mediator_ptr> plugin_map_t;
-      typedef std::list<task_info_t> task_queue_t;
+      typedef fhg::thread::queue<task_info_t, std::list> task_queue_t;
+      typedef std::list<task_info_t> task_list_t;
       typedef std::map<std::string, std::string> config_t;
 
       int unload_plugin (plugin_map_t::iterator it);
@@ -174,11 +179,13 @@ namespace fhg
       plugin_map_t m_plugins;
       plugin_map_t m_incomplete_plugins;
 
+      task_list_t m_pending_tasks;
       task_queue_t m_task_queue;
-      task_queue_t m_pending_tasks;
       config_t m_config;
 
       fhg::plugin::Storage *m_storage;
+
+      boost::thread m_task_handler;
     };
   }
 }

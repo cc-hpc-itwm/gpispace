@@ -192,27 +192,22 @@ namespace fhg
       return rc;
     }
 
+    static bool is_owner_of_task ( const std::string & p
+                                 , const task_info_t & info
+                                 )
+    {
+      return p == info.owner;
+    }
+
     void kernel_t::remove_pending_tasks(std::string const &owner)
     {
       lock_type lock_pending (m_mtx_pending_tasks);
-      lock_type lock_task_q (m_mtx_task_queue);
+      task_queue_t::lock_type lock_task_q (m_task_queue.get_mutex());
 
-      for ( task_queue_t::iterator it = m_task_queue.begin()
-          ; it != m_task_queue.end()
-          ; // done explicitly
-          )
-      {
-        if (it->owner == owner)
-        {
-          it = m_task_queue.erase(it);
-        }
-        else
-        {
-          ++it;
-        }
-      }
+      m_task_queue.remove_if
+        (boost::bind (&is_owner_of_task, owner, _1));
 
-      for ( task_queue_t::iterator it = m_pending_tasks.begin()
+      for ( task_list_t::iterator it = m_pending_tasks.begin()
           ; it != m_pending_tasks.end()
           ; // done explicitly
           )
@@ -460,6 +455,8 @@ namespace fhg
       struct timeval tv_diff;
       struct timeval tv_end;
 
+      m_task_handler = boost::thread (&kernel_t::task_handler, this);
+
       const bool daemonize
         (boost::lexical_cast<bool>(get("kernel.daemonize", "0")));
       if (daemonize)
@@ -481,39 +478,20 @@ namespace fhg
         { /* decrement tick count of pending tasks and move them */
           lock_type lock_pending (m_mtx_pending_tasks);
           lock_type lock_task_q (m_mtx_task_queue);
-          for ( task_queue_t::iterator it = m_pending_tasks.begin()
+          for ( task_list_t::iterator it = m_pending_tasks.begin()
               ; it != m_pending_tasks.end()
               ;
               )
           {
             if (0 == it->ticks)
             {
-              m_task_queue.push_back (*it);
+              m_task_queue.put (*it);
               it = m_pending_tasks.erase (it);
             }
             else
             {
               --it->ticks;
               ++it;
-            }
-          }
-        }
-
-        { // run due tasks
-          lock_type lock_task_q (m_mtx_task_queue);
-          while (! m_task_queue.empty())
-          {
-            task_info_t task = m_task_queue.front();
-            m_task_queue.pop_front();
-
-            try
-            {
-              LOG(TRACE, "executing task " << task.owner << "::" << task.name);
-              task.execute();
-            }
-            catch (std::exception const & ex)
-            {
-              MLOG(WARN, "task " << task.owner << "::" << task.name << " failed: " << ex.what());
             }
           }
         }
@@ -525,6 +503,9 @@ namespace fhg
           usleep (m_tick_time - tv_diff.tv_usec);
         }
       }
+
+      m_task_handler.interrupt();
+      m_task_handler.join();
 
       return 0;
     }
@@ -557,6 +538,23 @@ namespace fhg
       }
       m_config[key] = val;
       return old;
+    }
+
+    void kernel_t::task_handler ()
+    {
+      while (!m_stop_requested)
+      {
+        task_info_t task = m_task_queue.get();
+        try
+        {
+          LOG(TRACE, "executing task " << task.owner << "::" << task.name);
+          task.execute();
+        }
+        catch (std::exception const & ex)
+        {
+          MLOG(WARN, "task " << task.owner << "::" << task.name << " failed: " << ex.what());
+        }
+      }
     }
   }
 }
