@@ -1072,7 +1072,7 @@ function start_agent ()
     err=$(rexec "$node" "$SDPA_HOME/bin/start-agent" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
-	echo "+ $name" >&2
+	echo "$name" >&2
 	return 0
     elif [ $ec -eq 2 ] ; then
 	return 0
@@ -1447,14 +1447,16 @@ function start_drts_on_node ()
 	master="nre-$node"
     fi
 
-    err=$(rexec "$node" "$SDPA_HOME/bin/start-drts" -m "$master" -c "$per_node" $@ </dev/null >/dev/null 2>&1 &)
-    if [ $? -ne 0 ] ; then
+    err=$(rexec "$node" "$SDPA_HOME/bin/start-drts" -D -m "$master" -c "$per_node" $@ 2>&1)
+    ec=$?
+    if [ $ec -eq 0 ] ; then
+	return 0
+    elif [ $ec -eq 1 ] ; then
 	log "E: pc did not startup on node $node: $err" >&2
 	return 1
+    elif [ $ec -eq 2 ] ; then
+	return 0
     else
-	if [ -n "$err" ] ; then
-	    echo $err
-	fi
 	return 0
     fi
 }
@@ -1553,16 +1555,9 @@ function start ()
     local p
     local rc=0
     for p in $parts ; do
-#
-#	status_$p $@ >/dev/null 2>&1
-#	if [ $? -eq 0 ] ; then
-#	    log "$p still running"
-#	    continue
-#	fi
 	if ! start_$p $@ ; then
 	    log "Start of $p failed!"
 	    rc=$(( rc + 1 ))
-#	    break
 	fi
     done
     return $rc

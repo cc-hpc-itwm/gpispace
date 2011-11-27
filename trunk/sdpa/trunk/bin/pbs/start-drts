@@ -142,13 +142,19 @@ if [ x"$identity" == x"0" ] ; then
 	ec=0
 	for i in $(seq 1 $count) ; do
 	    $0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D &
-	    ec=$(( ec + $? ))
 	done
 	for i in $(jobs -p) ; do
 	    wait $i
-	    ec=$(( ec + $? ))
+	    err=$?
+	    if [ $err -eq 1 ] ; then
+		ec=$(( ec + 1 ))
+	    fi
 	done
-	exit $ec
+	if [ $ec -ne 0 ] ; then
+	    exit 1
+	else
+	    exit 0
+	fi
     fi
 fi
 
@@ -172,7 +178,7 @@ for p in $still_running ; do
 	    sleep 3
 	    kill -KILL "$p" &>/dev/null
 	else
-	    log "E: $name still running, cannot start"
+	    log "E: $name still running, not starting again"
 	    exit 2
 	fi
     fi
@@ -186,11 +192,6 @@ if [ x"$lazy" = x"true" ] ; then
     cfg="$cfg -s kernel.load.lazy=1"
 else
     cfg="$cfg -s kernel.load.lazy=0"
-fi
-
-if [ $daemonize ] ; then
-    #cfg="$cfg -s kernel.daemonize=1"
-    :
 fi
 
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
@@ -239,4 +240,8 @@ cmd="${bin} $cfg $plugin_load_flags"
 
 export FHGLOG_to_file="$logfile"
 log "Running $cmd on node $hostname" >/dev/null 2>&1
-exec $cmd >"$logfile.out" 2>"$logfile.err" </dev/null
+if [ x"$daemonize" = x"true" ] ; then
+    $cmd >"$logfile.out" 2>"$logfile.err" </dev/null &
+else
+    $cmd
+fi

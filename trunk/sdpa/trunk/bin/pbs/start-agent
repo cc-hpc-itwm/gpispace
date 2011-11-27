@@ -120,7 +120,7 @@ if [ $? -eq 0 ] ; then
 	sleep 1.5
 	kill -KILL $pids &>/dev/null
     else
-	echo "E: agent $name still running with pid(s): $pids" >&2
+	echo "W: agent $name still running with pid(s): $pids" >&2
 	exit 2
     fi
 fi
@@ -139,12 +139,12 @@ cmd="${bin} $opts"
 
 log "Running $name on $(hostname -s) with master $master"
 
-if $debug ; then
+if [ x"$debug" = x"true" ] ; then
     log "running within gdb..."
     gdb -ex run --args ${cmd}
 else
-    if $daemonize ; then
-	FHGLOG_to_console=stderr FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" exec ${cmd} </dev/null >/dev/null 2>&1 &
+    if [ x"$daemonize" = x"true" ] ; then
+	FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" ${cmd} </dev/null >/dev/null 2>&1 &
     else
 	FHGLOG_to_console=stderr FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" exec ${cmd}
     fi
