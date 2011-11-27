@@ -1777,7 +1777,7 @@ function selftest ()
 {
     log "I: performing self-test"
 
-    local xml="$SDPA_HOME/share/sdpa/examples/selftest/selftest.xml"
+    local xml="$SDPA_HOME/libexec/apps/selftest/selftest.xml"
     if ! test -r "$xml" ; then
 	log "E: cannot read $xml"
 	return 1
@@ -1795,16 +1795,16 @@ function selftest ()
 	return 3
     fi
 
+    local pnetput=$(which pnetput)
+    if ! test -x "$pnetput" ; then
+	log "E: cannot execute pnetput"
+	return 3
+    fi
+
     local pnetget=$(which pnetget)
     if ! test -x "$pnetget" ; then
 	log "E: cannot execute pnetget"
 	return 3
-    fi
-
-    if ! restart ; then
-	stop
-	log "E: restart failed"
-	return 4
     fi
 
     local job_desc=$(mktemp)
@@ -1812,10 +1812,27 @@ function selftest ()
     trap -- "rm -f $job_desc" EXIT
 
     log "I: building job description..."
-    if ! $pnetc "$xml" > "$job_desc" ; then
-	log "E: could not generate job description"
+    local challenge=$(date +%s | md5sum | awk '{print $1}')
+    if [ $? -ne 0 ] ; then
+	challenge="dummy"
+    fi
+
+    local expected_response="sdpa.response.$challenge"
+
+    if ! cat "$xml" | $pnetc | $pnetput -p challenge=\"$challenge\" > "$job_desc" ; then
+	log "E: could not generate job description and place tokens"
 	return 5
     fi
+
+    log "I: (re-)starting SDPA..."
+
+    if ! restart ; then
+	stop
+	log "E: restart failed"
+	return 4
+    fi
+
+    log "I: computing response for challenge: $challenge"
 
     log "I: submitting job..."
     local job_id=$(sdpac submit "$job_desc")
@@ -1857,9 +1874,20 @@ function selftest ()
 	    stop
 	    return 7
 	fi
-	local tokens=$(pnetget -i "$job_desc")
-	log "I: result tokens:"
-	log $(pnetget < "$job_desc" --type=output)
+	local response=$(pnetget < "$job_desc" --type=output response | sed -e 's/^"//g' -e 's/"$//g')
+	if [ x"$response" != x"$expected_response" ] ; then
+	    log "E: response: '$response' does not match expected response: '$expected_response'"
+	else
+	    log "I: got correct response"
+	fi
+
+	if [ -z "$USER" ] ; then
+	    greeting="You-Know-Who"
+	else
+	    greeting="$USER"
+	fi
+
+	log "I: Congratulations $greeting, your SDPA installation is working!"
     else
 	log "E: self test job could not be executed!"
 	return 8
