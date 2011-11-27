@@ -1,7 +1,7 @@
 #ifndef FHG_UTIL_THREAD_QUEUE_HPP
 #define FHG_UTIL_THREAD_QUEUE_HPP
 
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
 namespace fhg
@@ -16,11 +16,11 @@ namespace fhg
              >
     class queue
     {
-      typedef boost::mutex              mutex;
-      typedef boost::unique_lock<mutex> lock_type;
-      typedef boost::condition_variable condition;
-
     public:
+      typedef boost::recursive_mutex            mutex;
+      typedef boost::unique_lock<mutex>     lock_type;
+      typedef boost::condition_variable_any condition;
+
       typedef T value_type;
       typedef Container<T, Allocator> container_type;
       typedef typename container_type::size_type size_type;
@@ -62,12 +62,39 @@ namespace fhg
         return cnt;
       }
 
+      template <typename Pred>
+      size_t remove_if (Pred pred)
+      {
+        lock_type lock(m_mtx);
+        size_t cnt (0);
+        for ( typename container_type::iterator it (m_container.begin())
+            ; it != m_container.end()
+            ;
+            )
+        {
+          if (pred(*it))
+          {
+            it = m_container.erase(it);
+            ++cnt;
+          }
+          else
+          {
+            ++it;
+          }
+        }
+
+        return cnt;
+      }
+
       void clear ()
       {
         lock_type lock(m_mtx);
         while (not m_container.empty())
           m_container.pop_front();
       }
+
+      // expose mutex
+      mutex & get_mutex () { return m_mtx; }
     private:
       mutable mutex m_mtx;
       mutable condition m_cond;
