@@ -79,6 +79,13 @@ public:
     start_timer("helloworld.say");
     say (std::cout);
     stop_timer("helloworld.say");
+
+    fhg_kernel()->schedule( "say"
+                          , boost::bind( &HelloWorldImpl::do_it
+                                       , this
+                                       )
+                          , 1
+                          );
   }
 
   void say (std::ostream &os) const
