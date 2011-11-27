@@ -3,7 +3,7 @@
  *
  *       Filename:  commands.hpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  03/05/2010 04:05:14 PM
@@ -35,23 +35,32 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
   struct command_t
   {
 	typedef command_t<C,D> this_type;
+        typedef std::string name_type;
 	typedef boost::function<void (this_type const &)> handler_type;
 
-	command_t()
+        command_t ()
+        {}
+
+        explicit
+        command_t(name_type const & n)
+          : name(n)
 	{}
 
-	command_t(C c, D d)
-	  : cmd(c)
+        command_t(name_type const & n, C c, D d)
+          : name(n)
+	  , cmd(c)
 	  , dat(d)
 	{}
 
 	template <typename H>
-	command_t(C c, D d, H h)
-	  : cmd(c)
+	command_t(name_type const & n, C c, D d, H h)
+          : name(n)
+          , cmd(c)
 	  , dat(d)
 	  , handler(h)
 	{}
 
+        name_type name;
 	C cmd;
 	D dat;
 
@@ -65,15 +74,15 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
   };
 
   template <typename D, typename H>
-  inline command_t<CMD_ID, D> make_cmd(D d, H h)
+  inline command_t<CMD_ID, D> make_cmd(std::string const &n, D d, H h)
   {
-	return command_t<CMD_ID,D>(GENERIC, d, h);
+        return command_t<CMD_ID,D>(n, GENERIC, d, h);
   }
 
   template <typename C, typename D, typename H>
-  inline command_t<C,D> make_cmd(C c, D d, H h)
+  inline command_t<C,D> make_cmd(std::string const &n, C c, D d, H h)
   {
-	return command_t<C,D>(c,d, h);
+        return command_t<C,D>(n, c,d, h);
   }
 
   template <typename Stream, typename C, typename D>

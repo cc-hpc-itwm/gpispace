@@ -660,7 +660,12 @@ namespace we { namespace mgmt {
           }
           catch (std::exception const& ex)
           {
-            LOG(WARN, "error during manager command handling: " << ex.what());
+            LOG( WARN
+               , "error during manager command handling: command: "
+               << cmd.name
+               << " failed: "
+               << ex.what()
+               );
           }
         }
         DLOG(TRACE, "manager thread stopped...");
@@ -710,7 +715,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_failed, this, _1)));
+          cmd_q_.put(make_cmd("activity_failed", id, boost::bind(&this_type::activity_failed, this, _1)));
         }
         else
         {
@@ -723,7 +728,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_cancelled, this, _1)));
+          cmd_q_.put(make_cmd("activity_cancelled", id, boost::bind(&this_type::activity_cancelled, this, _1)));
         }
         else
         {
@@ -736,7 +741,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put (make_cmd(id, boost::bind(&this_type::cancel_activity, this, _1)));
+          cmd_q_.put (make_cmd("cancel_activity", id, boost::bind(&this_type::cancel_activity, this, _1)));
         }
         else
         {
@@ -749,7 +754,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_activity, this, _1)));
+          cmd_q_.put (make_cmd("suspend_activity", id, boost::bind(&this_type::suspend_activity, this, _1)));
         }
         else
         {
@@ -762,7 +767,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_activity, this, _1)));
+          cmd_q_.put (make_cmd("resume_activity", id, boost::bind(&this_type::resume_activity, this, _1)));
         }
         else
         {
