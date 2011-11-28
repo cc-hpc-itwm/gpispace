@@ -1361,7 +1361,7 @@ function start_drts ()
 
     if [ -z "$node" ] ; then
 	echo "process container (all nodes)" >&2
-	node_loop start_drts_on_node "$master" "0" $force $@
+	node_loop start_drts_on_node "$master" "" $force $@
 	ec=$?
 	if [ -n "$err" ] ; then
 	    echo $err
