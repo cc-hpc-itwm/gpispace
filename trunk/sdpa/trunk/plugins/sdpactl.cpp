@@ -10,7 +10,7 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
-typedef int (*ChildFunction)(void);
+typedef int (*ChildFunction)(void*);
 
 namespace helper
 {
@@ -22,7 +22,7 @@ namespace helper
     }
   }
 
-  static int do_start ()
+  static int do_start (void* time_to_sleep)
   {
     int ec = 0;
     ec += system("sdpa start gpi");
@@ -30,29 +30,32 @@ namespace helper
     ec += system("sdpa start agg");
     ec += system("sdpa start nre");
     ec += system("sdpa start drts");
+    if (time_to_sleep)
+    {
+      sleep(*(int*)(time_to_sleep));
+    }
     return ec;
   }
 
-  static int do_stop ()
+  static int do_stop (void*)
   {
     int ec = 0;
     ec += system("sdpa stop drts");
     ec += system("sdpa stop nre");
     ec += system("sdpa stop agg");
     ec += system("sdpa stop orch");
-    sleep(3);
     return ec;
   }
 
-  static int do_restart ()
+  static int do_restart (void* p)
   {
     int ec = 0;
-    ec += do_stop ();
-    ec += do_start ();
+    ec += do_stop (p);
+    ec += do_start (p);
     return ec;
   }
 
-  static int run_in_child (ChildFunction fun)
+  static int run_in_child (ChildFunction fun, void* arg)
   {
     pid_t child = fork ();
     if (child == 0)
@@ -60,7 +63,7 @@ namespace helper
       close_fds ();
       int ec = 0;
 
-      ec += fun();
+      ec += fun(arg);
 
       _exit (ec);
 
@@ -100,6 +103,9 @@ class ControlImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
+    m_time_to_sleep_after_startup =
+      fhg_kernel()->get<int>("time_to_sleep", "5");
+
     FHG_PLUGIN_STARTED();
   }
 
@@ -110,18 +116,26 @@ public:
 
   int start ()
   {
-    return helper::run_in_child (&helper::do_start);
+    return helper::run_in_child ( &helper::do_start
+                                , &m_time_to_sleep_after_startup
+                                );
   }
 
   int restart ()
   {
-    return helper::run_in_child (&helper::do_restart);
+    return helper::run_in_child ( &helper::do_restart
+                                , &m_time_to_sleep_after_startup
+                                );
   }
 
   int stop ()
   {
-    return helper::run_in_child (&helper::do_stop);
+    return helper::run_in_child ( &helper::do_stop
+                                , 0
+                                );
   }
+private:
+  int m_time_to_sleep_after_startup;
 };
 
 EXPORT_FHG_PLUGIN( sdpactl
