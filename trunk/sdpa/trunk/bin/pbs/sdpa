@@ -1297,10 +1297,14 @@ function stop_nre_on_node ()
     local node=$1 ; shift
     local err
     local ec
-    err=$(rexec "$node" "$SDPA_HOME/bin/stop-agent" -n "nre-$node")
+    err=$(rexec "$node" "$SDPA_HOME/bin/stop-agent" -n "nre-$node" 2>&1)
     ec=$?
-    if [ $ec -ne 0 ] ; then
-	log "W: stop-nre on node $node failed: $ec: $err"
+    if [ $ec -eq 0 ] ; then
+	return 0
+    elif [ $ec -eq 2 ] ; then
+	return 0 # not running
+    else
+	log "E: stop-nre on node $node failed: $ec: $err"
     fi
     return $ec
 }
