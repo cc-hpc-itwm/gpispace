@@ -5,6 +5,8 @@ test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 name=
 long=false
 short=false
+identity=
+name_prefix="drts-$(hostname -s)"
 
 function usage ()
 {
@@ -12,19 +14,24 @@ function usage ()
 usage: $(basename "$0") [options]
 
     -h: print this help
+    -i ident (=$identiy): identity
     -n name (*): name of the drts to check
                  if empty a list of all currently
-                 running drts will be printed
+                 running drts will be printed, takes
+                 precedence over ident
     -l: print the whole command of the drts
     -s: just print the pids
 EOF
 }
 
-while getopts ":hn:ls" opt; do
+while getopts ":hi:n:ls" opt; do
     case $opt in
 	h)
 	    usage
 	    exit 0
+	    ;;
+	i)
+	    identity=$OPTARG
 	    ;;
 	n)
 	    name=$OPTARG
@@ -57,6 +64,12 @@ function status ()
 	return 0
     fi
 }
+
+if [ -z "$name" ] ; then
+    if [ -n "$identity" ] ; then
+	name="${name_prefix}-${identity}"
+    fi
+fi
 
 pids=$(status $name)
 if [ -n "$pids" ] ; then

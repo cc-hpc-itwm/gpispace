@@ -1178,33 +1178,32 @@ function node_loop ()
     fi
 
     local body="$1" ; shift
-    local node_max=$( uniq $SDPA_NODEFILE | wc -l )
 
-    nodes=$(echo $( seq 1 $node_max ))
+    nodes=$(uniq "$SDPA_NODEFILE")
 
     local rc=0
     local bunch_size=16
     local count=0
     local procs=
-    local node_num
+    local node=
     local p
-    for node_num in $nodes; do
-	if test $node_num -lt 1 -o $node_num -gt $node_max ; then
-	    echo "E: invalid node number: $node_num" >&2
-	    rc=$(( rc + 1 ))
-	    continue
-	fi
+    echo -n "   " >&2
+    for node in $nodes; do
 	count=$(( count + 1 ))
-	local node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
 
-	debug "    -- executing $body $@ on $node_name" >&2
+	debug " ++++ executing $body $@ on $node" >&2
 
-	$body $node_name $@ &
+	echo -n " $node" >&2
+
+	$body $node $@ &
+
 	procs="$procs $!"
 	if [ $count -ge $bunch_size ] ; then
 	    for p in $procs ; do
 		wait $p
 		rc=$(( rc + $? ))
+		echo
+		echo -n "   " >&2
 	    done
 	    procs=
 	    count=0
@@ -1213,6 +1212,7 @@ function node_loop ()
     for p in $procs ; do
 	wait $p
 	rc=$(( rc + $? ))
+	echo >&2
     done
     return $rc
 }
@@ -1264,7 +1264,7 @@ function status_nre ()
 
     with_mediator=$(get "topology.with-mediator" "true")
     if [ x"$with_mediator" == x"true" ] ; then
-	err=$(node_loop status_nre_on_node $@ 2>&1)
+	node_loop status_nre_on_node $@
 	ec=$?
     else
 	ec=23
@@ -1349,7 +1349,7 @@ function start_drts ()
 
     if [ -z "$node" ] ; then
 	echo "process container (all nodes)" >&2
-	err=$(node_loop start_drts_on_node "$master" "0" $force 2>&1)
+	node_loop start_drts_on_node "$master" "0" $force $@
 	ec=$?
 	if [ -n "$err" ] ; then
 	    echo $err
@@ -1361,15 +1361,13 @@ function start_drts ()
     else
 	if [ -z "$ident" ] ; then
 	    echo "process container $node" >&2
-	    start_drts_on_node "$node" "$master" "$count" $force &
-	    wait $(jobs -p)
+	    start_drts_on_node "$node" "$master" "$count" $force $@
 	    ec=$?
 	    return $ec
 	else
 	    count=1
 	    echo "process container $node-$ident with master $master" >&2
-	    start_drts_on_node "$node" "$master" "$count" -i "$ident" $force 2>&1 &
-	    wait $(jobs -p)
+	    start_drts_on_node "$node" "$master" "$count" -i "$ident" $force $@
 	    ec=$?
 	    return $ec
 	fi
@@ -1404,7 +1402,7 @@ function stop_drts ()
 
     if [ -z "$node" ] ; then
 	echo "process container (all nodes)" >&2
-	err=$(node_loop stop_drts_on_node 2>&1)
+	node_loop stop_drts_on_node $@
 	ec=$?
 	if [ $ec -ne 0 ] ; then
 	    echo $err
@@ -1413,14 +1411,12 @@ function stop_drts ()
     else
 	if [ -z "$ident" ] ; then
 	    echo "process container $node" >&2
-	    stop_drts_on_node "$node" &
-	    wait $(jobs -p)
+	    stop_drts_on_node "$node" $@
 	    ec=$?
 	    return $ec
 	else
 	    echo "process container $node-$ident" >&2
-	    stop_drts_on_node "$node" -i "$ident" 2>&1 &
-	    wait $(jobs -p)
+	    stop_drts_on_node "$node" -i "$ident" $@
 	    ec=$?
 	    return $ec
 	fi
@@ -1429,13 +1425,55 @@ function stop_drts ()
 
 function status_drts ()
 {
-    local err
-    local ec
-    err=$(node_loop status_drts_on_node $@ 2>&1)
-    if [ $? -ne 0 ] ; then
-	return 1
+    local node=
+    local ident=
+
+    argv="$@"
+    OPTIND=1
+    while getopts ":hN:i:" opt $argv; do
+	case $opt in
+	    h)
+		echo "usage: drts: [-h] [-N node [-i identity]" >&2
+		return 0
+		;;
+	    N)
+		node=$OPTARG
+		shift 2
+		;;
+	    i)
+		ident=$OPTARG
+		shift 2
+		;;
+	    \?)
+		;;
+	esac
+    done
+
+    if [ -z "$node" ] ; then
+	echo "process container (all nodes)" >&2
+	node_loop status_drts_on_node $@
+	ec=$?
+	if [ $ec -ne 0 ] ; then
+	    echo $err
+	    return $ec
+	fi
     else
-	return 0
+	if [ -z "$ident" ] ; then
+	    echo -n "process container $node" >&2
+	    status_drts_on_node "$node" $@
+	    ec=$?
+	    if [ $ec -eq 0 ] ; then
+		echo "ok" >&2
+	    else
+		echo "dead" >&2
+	    fi
+	    return $ec
+	else
+	    echo "process container $node-$ident" >&2
+	    status_drts_on_node "$node" -i "$ident" $@
+	    ec=$?
+	    return $ec
+	fi
     fi
 }
 
@@ -1475,7 +1513,7 @@ function stop_drts_on_node ()
     local node=$1 ; shift
     local err
     local ec
-    err=$(rexec "$node" "$SDPA_HOME/bin/stop-drts $@")
+    err=$(rexec "$node" "$SDPA_HOME/bin/stop-drts" $@)
     ec=$?
     if [ $ec -ne 0 ] ; then
 	log "W: stop-drts on node $node failed: $ec: $err"
@@ -1485,11 +1523,15 @@ function stop_drts_on_node ()
 
 function status_drts_on_node ()
 {
-    local node="$1"; shift
-    local name="$1"; shift
-    local pids
-    pids=$(rexec $node "$SDPA_HOME/bin/status-drts" -s -n "$name")
-    return $?
+    local node=$1 ; shift
+    local err
+    local ec
+    err=$(rexec "$node" "$SDPA_HOME/bin/status-drts $@" 2>&1)
+    ec=$?
+    if [ $ec -ne 0 ] ; then
+	log "W: status-drts on node $node failed: $ec: $err"
+    fi
+    return $ec
 }
 
 function start_gui ()
@@ -1663,7 +1705,8 @@ function status ()
 	    err=$(status_$p $@)
 	    ec=$?
 	    if [ $ec -eq 0 ] ; then
-		log "$p is alive"
+		:
+#		log "$p is alive"
 	    elif [ $ec -eq 23 ] ; then
 		log "$p is deactivated"
 	    else
