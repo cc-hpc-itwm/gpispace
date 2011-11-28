@@ -41,15 +41,15 @@ function agent_status ()
     fi
 }
 
-if [ -z "$name" ] ; then
-    echo -n "I: terminating all agents: " >&2
-else
-    echo -n "I: terminating agent $name: "
-fi
+#if [ -z "$name" ] ; then
+#    echo -n "I: terminating all agents: " >&2
+#else
+#    echo -n "I: terminating agent $name: "
+#fi
 
 pids=$(agent_status $name)
-echo $pids
 if [ -n "$pids" ] ; then
+#    echo $pids
     kill -TERM $pids
     sleep 2
     kill -KILL $pids &>/dev/null
@@ -58,4 +58,6 @@ if [ -n "$pids" ] ; then
     else
 	exit 0
     fi
+else
+    exit 2
 fi

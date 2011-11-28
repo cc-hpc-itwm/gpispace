@@ -1089,13 +1089,22 @@ function stop_agent ()
     local name="$1" ; shift
 
     # name format: name[-node[-id]]
-    local node="$(echo $name | cut -d- -f 2)"
+    local node=$(echo $name | cut -d- -f 2)
     if [ "$node" == "$name" ] ; then
 	node=localhost # maybe we should use the master node?
     fi
     local cmd="rexec $node $SDPA_HOME/bin/stop-agent -n $name"
     debug $cmd
-    $cmd </dev/null >/dev/null 2>&1
+    err=$($cmd 2>&1)
+    ec=$?
+    if [ $ec -eq 0 ] ; then
+	return 0
+    elif [ $ec -eq 2 ] ; then
+	return 0 # not found
+    else
+	echo $err >&2
+	return $ec
+    fi
 }
 
 function status_agent ()
@@ -1163,7 +1172,6 @@ function start_agg ()
 
 function stop_agg ()
 {
-    echo "aggregator"
     if ! stop_agent "aggregator" ; then
 	echo "E: could not stop aggregator" >&2
 	return 1
@@ -1463,15 +1471,20 @@ function status_drts ()
 	    status_drts_on_node "$node" $@
 	    ec=$?
 	    if [ $ec -eq 0 ] ; then
-		echo "ok" >&2
+		echo " ok" >&2
 	    else
-		echo "dead" >&2
+		echo " dead" >&2
 	    fi
 	    return $ec
 	else
 	    echo "process container $node-$ident" >&2
 	    status_drts_on_node "$node" -i "$ident" $@
 	    ec=$?
+	    if [ $ec -eq 0 ] ; then
+		echo " ok" >&2
+	    else
+		echo " dead" >&2
+	    fi
 	    return $ec
 	fi
     fi
