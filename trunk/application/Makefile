@@ -1,5 +1,4 @@
 SUBDIRS += parsu
-SUBDIRS += suowmg
 SUBDIRS += asian/pnet
 SUBDIRS += example/pi
 SUBDIRS += ufbmig
