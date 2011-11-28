@@ -158,14 +158,16 @@ public:
 private:
   int setup_my_gpi_state ()
   {
+    api->garbage_collect();
+
     gpi_info = api->collect_info();
 
     // register segment
     m_shm_id = api->register_segment ( m_segment_name
                                      , m_shm_size
-                                     // , gpi::pc::type::segment::F_EXCLUSIVE
-                                     // | gpi::pc::type::segment::F_FORCE_UNLINK
-                                     , gpi::pc::type::segment::F_FORCE_UNLINK
+                                     , gpi::pc::type::segment::F_EXCLUSIVE
+                                     | gpi::pc::type::segment::F_FORCE_UNLINK
+                                     // , gpi::pc::type::segment::F_FORCE_UNLINK
                                      );
     m_scr_hdl = api->alloc ( 1 // GPI
                            , m_scr_size
@@ -178,8 +180,6 @@ private:
                            , gpi::pc::type::handle::F_EXCLUSIVE
                            );
     m_shm_ptr = api->ptr(m_shm_hdl);
-
-    api->garbage_collect();
 
     return 0;
   }
