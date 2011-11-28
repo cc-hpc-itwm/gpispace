@@ -1178,12 +1178,9 @@ function node_loop ()
     fi
 
     local body="$1" ; shift
-    local nodes="$1" ; shift
     local node_max=$( uniq $SDPA_NODEFILE | wc -l )
 
-    if [ -z "$nodes" ] ; then
-	nodes=$( echo $( seq 1 $node_max ) )
-    fi
+    nodes=$(echo $( seq 1 $node_max ))
 
     local rc=0
     local bunch_size=16
@@ -1200,7 +1197,8 @@ function node_loop ()
 	count=$(( count + 1 ))
 	local node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
 
-	echo "    -- executing $body $@ on $node_name" >&2
+	debug "    -- executing $body $@ on $node_name" >&2
+
 	$body $node_name $@ &
 	procs="$procs $!"
 	if [ $count -ge $bunch_size ] ; then
@@ -1225,7 +1223,7 @@ function kill_pc ()
 	echo "you have to specify a signal to send!" >&2
 	return 1
     fi
-    node_loop send_signal_to_pc "" $@
+    node_loop send_signal_to_pc $@
 }
 
 function send_signal_to_pc ()
@@ -1313,14 +1311,20 @@ function start_drts ()
     local master=aggregator
     local ident=
     local count=
+    local force=
 
     argv="$@"
     OPTIND=1
-    while getopts ":hN:i:c:m:" opt $argv; do
+    while getopts ":hfN:i:c:m:" opt $argv; do
 	case $opt in
 	    h)
-		echo "usage: drts: [-h] [-N node [-i identity|-c count] [-m master]]" >&2
+		echo "usage: drts: [-h] [-f] [-N node [-i identity|-c count] [-m master]]" >&2
+		echo "    -h: print this help" >&2
+		echo "    -f: force" >&2
 		return 0
+		;;
+	    f)
+		force="-f"
 		;;
 	    N)
 		node=$OPTARG
@@ -1345,8 +1349,11 @@ function start_drts ()
 
     if [ -z "$node" ] ; then
 	echo "process container (all nodes)" >&2
-	err=$(node_loop start_drts_on_node 2>&1)
+	err=$(node_loop start_drts_on_node "$master" "0" $force 2>&1)
 	ec=$?
+	if [ -n "$err" ] ; then
+	    echo $err
+	fi
 	if [ $ec -ne 0 ] ; then
 	    echo $err
 	    return $ec
@@ -1354,14 +1361,14 @@ function start_drts ()
     else
 	if [ -z "$ident" ] ; then
 	    echo "process container $node" >&2
-	    start_drts_on_node "$node" "$master" "$count" &
+	    start_drts_on_node "$node" "$master" "$count" $force &
 	    wait $(jobs -p)
 	    ec=$?
 	    return $ec
 	else
 	    count=1
 	    echo "process container $node-$ident with master $master" >&2
-	    start_drts_on_node "$node" "$master" "$count" -i "$ident" 2>&1 &
+	    start_drts_on_node "$node" "$master" "$count" -i "$ident" $force 2>&1 &
 	    wait $(jobs -p)
 	    ec=$?
 	    return $ec
