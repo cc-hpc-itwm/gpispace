@@ -322,8 +322,8 @@ public:
 
     if (m_control_sdpa && sdpa_ctl)
     {
-      MLOG(INFO, "restarting SDPA...");
-      sdpa_ctl->restart();
+      MLOG(INFO, "(re)starting SDPA...");
+      sdpa_ctl->start();
     }
 
     update_progress(50);
