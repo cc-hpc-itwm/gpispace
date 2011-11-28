@@ -139,9 +139,21 @@ if [ x"$identity" == x"0" ] ; then
 	if [ $count -eq 0 ] ; then
 	    count=$(grep ^processor /proc/cpuinfo | wc -l)
 	fi
+	opts=
+	opts="$opts -m $master"
+	opts="$opts -k $kvs_url"
+	opts="$opts -b $backlog"
+	opts="$opts -S $gpi_socket"
+	opts="$opts -g $gui"
+	opts="$opts -l lib_path"
+
+	if [ x"$force" = x"true" ] ; then
+	    opts="$opts -f"
+	fi
+
 	ec=0
 	for i in $(seq 1 $count) ; do
-	    $0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D &
+	    $0 -i $i $opts -D &
 	done
 	for i in $(jobs -p) ; do
 	    wait $i
