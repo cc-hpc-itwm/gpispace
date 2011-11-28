@@ -101,12 +101,14 @@ function rexec ()
     debug $cmd
     err=$($cmd 2>&1)
     rc=$?
-    if [ $rc -ne 0 ] ; then
-	echo $err >&2
+    if [ $rc -eq 0 ] ; then
+	return 0
+    elif [ $rc -eq 255 ] ; then
+	echo "ssh could not connect to $node: $err: $rc" >&2
 	return $rc
     else
 	echo $err
-	return 0
+	return $rc
     fi
 }
 
