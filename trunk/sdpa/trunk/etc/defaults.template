@@ -42,6 +42,9 @@ DEFAULT_TMP_DIR="/var/tmp"
 # number of workers to be started per node
 DEFAULT_WORKER_PER_NODE="1"
 
+# start a separate agent on each node to control the workers
+DEFAULT_WITH_MEDIATOR="false"
+
 # directory were logfiles shall be created
 DEFAULT_LOG_DIRECTORY="${DEFAULT_SCRATCH_DIR}/log"
 
