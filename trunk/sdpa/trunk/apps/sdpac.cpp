@@ -377,9 +377,13 @@ int main (int argc, char **argv) {
   }
   catch (std::exception const &)
   {
-    std::cerr << "could not parse config file: " << cfg.get("config") << std::endl;
-    std::cerr << "try generating one with '" << argv[0] << " --make-config'"  << std::endl;
-    return 1;
+    std::cerr << "W: could not parse config file: "
+	      << cfg.get("config")
+	      << std::endl;
+    
+    std::cerr << "W: try generating one with '"
+	      << argv[0] << " --make-config'"
+	      << std::endl;
   }
   cfg.notify();
 
