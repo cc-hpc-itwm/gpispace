@@ -8,7 +8,7 @@
 ###
 cat "~/.sdpa/state/sdpa.env" >/dev/null 2>&1
 
-test -r "~/.sdpa/state/sdpa.env" && source "~/.sdpa/state/sdpa.env"
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
 name=
 

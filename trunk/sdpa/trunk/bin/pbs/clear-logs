@@ -1,8 +1,9 @@
 #!/bin/bash
 
 CLEAR_LOGS_REQUIRE_FORCE=true
+cat ~/.sdpa/state/sdpa.env >/dev/null 2>&1
 
-test -r ~/.init-screen.env && source ~/.init-screen.env
+test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
 
 dry_run=false
 use_force=false

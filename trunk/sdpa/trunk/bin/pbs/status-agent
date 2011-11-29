@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ### avoid strange behaviour with temporary inconsistency
 ### on Panasas Filesystems:
 ###
