@@ -1,0 +1,86 @@
+#!/bin/bash
+################################################################################
+#                                                                              #
+#                          SDPA system defaults                                #
+#                                                                              #
+# contact:                                                                     #
+#                                                                              #
+#    {alexander.petry,mirko.rahn}@itwm.fraunhofer.de                           #
+#                                                                              #
+# for any questions.                                                           #
+#                                                                              #
+#                                                                              #
+# This  is a template  file, rename  this file  to "sdpa.system.defaults"  to  #
+# be effective.                                                                #
+#                                                                              #
+# Paths that are searched for this file are (in order):                        #
+#                                                                              #
+#    /etc/sdpa/defaults                                                        #
+#    /usr/local/etc/sdpa/sdpa/defaults                                         #
+#    $SDPA_HOME/etc/sdpa/defaults                                              #
+#    ~/.sdpa/defaults                                                          #
+#                                                                              #
+################################################################################
+
+
+#
+# cluster related
+#
+
+# if needed, runs gui and logserver
+DEFAULT_CLUSTER_HEAD=""
+
+#
+# SDPA
+#
+
+DEFAULT_STATEFUL_EXECUTION="false"
+
+# directory for log files and SDPA states
+DEFAULT_SCRATCH_DIR="$HOME/.sdpa/scratch"
+
+# directory to contain the sockets for the GPI
+DEFAULT_TMP_DIR="/var/tmp"
+
+# number of workers to be started per node
+DEFAULT_WORKER_PER_NODE="1"
+
+# directory were logfiles shall be created
+DEFAULT_LOG_DIRECTORY="${DEFAULT_SCRATCH_DIR}/log"
+
+# unique ports for each concurrent user
+DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
+DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
+
+# if empty, DEFAULT_CLUSTER_HEAD:{LOG,GUI}_PORT is used
+DEFAULT_LOG_URL=""
+DEFAULT_GUI_URL=""
+
+#
+# GPI
+#
+DEFAULT_GPI_ENABLED="false"
+
+# memory to be used by GPI (each node)
+DEFAULT_GPI_MEMSIZE="5G"
+
+# memory for each worker
+DEFAULT_GPI_SHMSIZE="1G"
+
+# communication buffer size
+DEFAULT_GPI_COMSIZE="16M"
+
+# api to be used by default
+#
+#    values: gpi.api.real   - if on more than 1 node
+#            gpi.api.fake   - if on a single node
+DEFAULT_GPI_API="gpi.api.real"
+
+#
+# plugins
+#
+DEFAULT_KERNEL_LOAD_LAZY="true"
+DEFAULT_PLUGIN_GPI_STARTMODE="nowait"
+
+# number of jobs to be queued on a single worker
+DEFAULT_PLUGIN_DRTS_BACKLOG="1"
