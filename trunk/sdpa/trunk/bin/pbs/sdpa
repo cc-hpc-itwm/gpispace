@@ -28,6 +28,7 @@ DEFAULT_STATEFUL_EXECUTION="false"
 DEFAULT_SCRATCH_DIR="$HOME/.sdpa/scratch"
 DEFAULT_TMP_DIR="/var/tmp"
 DEFAULT_WORKER_PER_NODE="1"
+DEFAULT_WITH_MEDIATOR="false"
 
 DEFAULT_LOG_DIRECTORY="${DEFAULT_SCRATCH_DIR}/log"
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
@@ -503,9 +504,8 @@ this location.
         def_gui_server_url="$(guess_head_node):${DEFAULT_GUI_PORT:?}"
     fi
 
-    local url=$(get "log.server.url" "${def_log_server_url}")
     local key="sdpa.gui"
-    local val=$(get "$key" "${def_gui_server}")
+    local val=$(get "$key" "${def_gui_server_url}")
     local prompt="location of the monitor gui (host:port) [$val]:"
     get_user_input "$prompt" val "$doc"
     put "$key" "$val"
@@ -568,7 +568,7 @@ zero. In case of a zero, I will start as many workers as there are processors.
 '
     echo "$doc"
 
-    local p_with_mediator=$(get "topology.with-mediator" "${DEFAULT_TOPOLOGY_MEDIATOR:?}")
+    local p_with_mediator=$(get "topology.with-mediator" "${DEFAULT_WITH_MEDIATOR:?}")
     if [ x"$p_with_mediator" = x"true" ] ; then
         y_n_p "Do you want to use a per-node mediator? [Y/n] "
     else
