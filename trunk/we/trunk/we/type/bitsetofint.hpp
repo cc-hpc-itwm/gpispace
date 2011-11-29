@@ -127,6 +127,41 @@ namespace bitsetofint
     return oss.str();
   }
 
+  inline type from_hex (const std::string & s)
+  {
+    type::container_type container;
+
+    std::string::const_iterator pos (s.begin());
+    const std::string::const_iterator& end (s.end());
+
+    if (std::distance (pos, end) >= 2)
+      {
+	if (*pos == '0' && *(pos+1) == 'x')
+	  {
+	    pos += 2;
+
+	    while (std::distance (pos, end) >= 8)
+	      {
+		uint64_t value (0);
+
+		std::istringstream iss (std::string (pos, pos + 8));
+
+		iss.flags (std::ios::hex);
+		iss.width (8);
+		iss.fill ('0');
+
+		iss >> value;
+
+		container.push_back (value);
+
+		pos += 8;
+	      }
+	  }
+      }
+
+    return type (container);
+  }
+
   inline std::size_t hash_value (const type & t)
   {
     boost::hash<type::container_type> h;
