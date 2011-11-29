@@ -133,7 +133,7 @@ main (int argc, char ** argv)
     if (!stream)
       {
         throw std::runtime_error
-          ("could not open file " + input + " for writing");
+          ("could not open file " + output + " for writing");
       }
 
     we::util::text_codec::encode (stream, act);
