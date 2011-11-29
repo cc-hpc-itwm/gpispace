@@ -10,13 +10,6 @@ config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 debug_enabled=false
 
-set +x
-set +e
-
-if [ -z "$SDPA_HOME" ] ; then
-    export SDPA_HOME=$(dirname $(dirname $(which "$0")))
-fi
-
 ##############################################
 #                                            #
 #      Default configuration section         #
@@ -76,6 +69,13 @@ for system_default in "/etc/sdpa/defaults"               \
         source "$system_default"
     fi
 done
+
+#
+# if SDPA_HOME is still empty, try to guess it
+#
+if [ -z "$SDPA_HOME" ] ; then
+    export SDPA_HOME=$(dirname $(dirname $(which "$0")))
+fi
 
 ##############################################
 #                                            #
