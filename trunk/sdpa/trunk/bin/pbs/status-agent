@@ -1,6 +1,15 @@
 #!/bin/bash
 
-test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+### avoid strange behaviour with temporary inconsistency
+### on Panasas Filesystems:
+###
+###     the test -r was sucessful but the source didn't
+###     source anything
+###
+###
+cat "~/.sdpa/state/sdpa.env" >/dev/null 2>&1
+
+test -r "~/.sdpa/state/sdpa.env" && source "~/.sdpa/state/sdpa.env"
 
 name=
 long=false
