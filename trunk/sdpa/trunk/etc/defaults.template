@@ -22,17 +22,14 @@
 #                                                                              #
 ################################################################################
 
-
 #
-# cluster related
+# were is SDPA installed to.
+# if empty , it is automatically guessed
 #
+SDPA_HOME=""
 
 # if needed, runs gui and logserver
 DEFAULT_CLUSTER_HEAD=""
-
-#
-# SDPA
-#
 
 DEFAULT_STATEFUL_EXECUTION="false"
 
