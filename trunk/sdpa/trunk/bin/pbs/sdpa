@@ -791,7 +791,7 @@ function setup_client ()
 function setup ()
 {
     cat <<EOF
-$(sdpac --version)
+$(sdpac --version 2>/dev/null)
 
 Initiating the  setup routine of  SDPA. In case  of errors or  questions, please
 contact 'Alexander Petry <petry@itwm.fhg.de>'.
