@@ -611,66 +611,56 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 template <typename TPtrWorker, typename TReqSet>
 int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set )
 {
-  int matchingDeg = 0;
+	int matchingDeg = 0;
 
-  // for all job requirements
-  for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
-  {
-    if( pWorker->hasCapability(it->value()) )
-    {
-      // increase the number of matchings
-      matchingDeg++;
-    }
-    else if ( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
-    {
-      return -1;
-    }
-    else
-    {
-      // requirement was not mandatory and worker doesn't have it
-      // don't count it
-    }
-  }
+	// for all job requirements
+	for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
+	{
+		if( pWorker->hasCapability(it->value()) )
+		{
+			// increase the number of matchings
+			matchingDeg++;
+		}
+		else // if the worker doesn't have the capability
+			if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree 0
+			{
+				LOG(ERROR, "The worker "<<pWorker->name()<<" doesn't have the capability required ("<<it->value()<<")!");
+				return 0;
+			}
+	}
 
-  return matchingDeg;
+	return matchingDeg;
 }
 
-// function could as well be const...
-Worker::ptr_t
-WorkerManager::getBestMatchingWorker(const requirement_list_t& listJobReq)
-  throw (NoWorkerFoundException)
+Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException)
 {
-  lock_type lock(mtx_);
-  if( worker_map_.empty() )
-    throw NoWorkerFoundException();
+	lock_type lock(mtx_);
+	if( worker_map_.empty() )
+		throw NoWorkerFoundException();
 
-  sdpa::map_degs_t mapDegs;
+	sdpa::map_degs_t mapDegs;
 
-  int maxMatchingDeg = 0;
+	int maxMatchingDeg = 0;
 
-  // the worker id of the worker that fulfills most of the requirements
-  // a matching degree 0 means that either at least a mandatory requirement
-  // is not fulfilled or the worker does not have at all that capability
-  worker_id_t bestMatchingWorkerId;
+	// the worker id of the worker that fulfills most of the requirements
+	// a matching degree 0 means that either at least a mandatory requirement
+	// is not fulfilled or the worker does not have at all that capability
+	worker_id_t bestMatchingWorkerId;
 
-  BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
-  {
-    int matchingDeg = matchRequirements( pair.second, listJobReq );
-    if( matchingDeg > maxMatchingDeg )
-    {
-      maxMatchingDeg = matchingDeg;
-      bestMatchingWorkerId = pair.first;
-    }
-  }
+	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
+	{
+		int matchingDeg = matchRequirements( pair.second, listJobReq );
+		if( matchingDeg > maxMatchingDeg )
+		{
+			maxMatchingDeg = matchingDeg;
+			bestMatchingWorkerId = pair.first;
+		}
+	}
 
-  if(maxMatchingDeg == 0)
-  {
-    throw NoWorkerFoundException();
-  }
-  else
-  {
-    return worker_map_.find(bestMatchingWorkerId)->second;
-  }
+	if(maxMatchingDeg == 0)
+		throw NoWorkerFoundException();
+
+	return worker_map_[bestMatchingWorkerId];
 }
 
 void WorkerManager::cancelWorkerJobs(sdpa::daemon::Scheduler* ptrSched)
