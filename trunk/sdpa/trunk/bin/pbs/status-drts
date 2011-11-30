@@ -7,9 +7,9 @@
 ###     source anything
 ###
 ###
-cat "~/.sdpa/state/sdpa.env" >/dev/null 2>&1
+cat ~/.sdpa/state/sdpa.env >/dev/null 2>&1
 
-test -r "~/.sdpa/state/sdpa.env" && source "~/.sdpa/state/sdpa.env"
+test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
 
 name=
 long=false
