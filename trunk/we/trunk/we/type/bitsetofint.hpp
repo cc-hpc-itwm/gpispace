@@ -119,7 +119,7 @@ namespace bitsetofint
         )
       {
         oss.flags (std::ios::hex);
-        oss.width (8);
+        oss.width (16);
         oss.fill ('0');
         oss << *it;
       }
