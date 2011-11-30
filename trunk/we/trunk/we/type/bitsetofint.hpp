@@ -111,7 +111,7 @@ namespace bitsetofint
   {
     std::ostringstream oss;
 
-    oss << "0x";
+    oss << "0x/";
 
     for ( type::container_type::const_iterator it (t.container.begin())
         ; it != t.container.end()
@@ -121,7 +121,7 @@ namespace bitsetofint
         oss.flags (std::ios::hex);
         oss.width (16);
         oss.fill ('0');
-        oss << *it;
+        oss << *it << '/';
       }
 
     return oss.str();
@@ -134,27 +134,27 @@ namespace bitsetofint
     std::string::const_iterator pos (s.begin());
     const std::string::const_iterator& end (s.end());
 
-    if (std::distance (pos, end) >= 2)
+    if (std::distance (pos, end) >= 3)
       {
-	if (*pos == '0' && *(pos+1) == 'x')
+	if (*pos == '0' && *(pos+1) == 'x' && *(pos+2) == '/')
 	  {
-	    pos += 2;
+	    pos += 3;
 
-	    while (std::distance (pos, end) >= 8)
+	    while (std::distance (pos, end) >= 17)
 	      {
 		uint64_t value (0);
 
 		std::istringstream iss (std::string (pos, pos + 8));
 
 		iss.flags (std::ios::hex);
-		iss.width (8);
+		iss.width (16);
 		iss.fill ('0');
 
 		iss >> value;
 
 		container.push_back (value);
 
-		pos += 8;
+		pos += 17;
 	      }
 	  }
       }
