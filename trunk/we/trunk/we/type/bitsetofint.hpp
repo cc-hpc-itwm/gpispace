@@ -144,7 +144,7 @@ namespace bitsetofint
 	      {
 		uint64_t value (0);
 
-		std::istringstream iss (std::string (pos, pos + 8));
+		std::istringstream iss (std::string (pos, pos + 16));
 
 		iss.flags (std::ios::hex);
 		iss.width (16);
