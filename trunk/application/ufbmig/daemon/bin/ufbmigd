@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /
+
 # cleanup for startup via gpid.exe...
 if [ x"$HOME" == x"/" ] ; then
    echo "I guess, I am running under gpid.exe..." >&2
@@ -7,6 +9,24 @@ if [ x"$HOME" == x"/" ] ; then
    unset HOME
    export HOME=$(echo ~)
 fi
+
+exec </dev/null
+exec >$HOME/.ufbmig.out.log
+exec 2>$HOME/.ufbmig.err.log
+
+source "$HOME/.bashrc"
+
+export SDPA_HOME=/p/herc/itwm/hpc/soft/sdpa/ap/sles10
+source "${SDPA_HOME}/etc/sdpa/sdpa.env" || {
+	echo "could not load SDPA environment" >&2
+	exit 1
+}
+
+# this should probably go to the defaults file
+export LD_LIBRARY_PATH=/p/herc/itwm/hpc/soft/boost/1.47/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/p/herc/itwm/hpc/soft/hwloc/1.3/lib:$LD_LIBRARY_PATH
+
+env > $HOME/.ufbmig.env
 
 node_file=
 force=false
@@ -87,6 +107,22 @@ while getopts ":hf:o:n:p:vF" opt; do
     esac
 done
 
+sdpa=$(which sdpa)
+if [ $? -ne 0 ] ; then
+    echo "could not locate 'sdpa' executable!" >&2
+    exit 1
+fi
+
+export SDPA_PERFORM_UNATTENDED_SETUP=1
+if [ ! -e "$HOME/.sdpa/configs/sdpa.rc" ] ; then
+    echo "I: sdpa config does not exist, performing automated SDPA setup" >&2
+
+    ${sdpa} setup </dev/null || {
+	echo "E: I was unable to setup the SDPA environment for you." >&2
+	exit ${EX_UNAVAILABLE:?}
+    }
+fi
+
 if [ -z "$node_file" ] ; then
     aux="$HOME/.sdpa/data/aux"
     if [ -z "$aux" ] ; then
@@ -107,9 +143,11 @@ fi
 
 echo "using nodefile: $node_file" >&2
 
-export PBS_NODEFILE="$node_file"
+sdpa init "$node_file" </dev/null || {
+    echo "could not initialize SDPA!" >&2
+    exit 1
+}
 
-sdpa init
 source $HOME/.sdpa/state/sdpa.env
 
 log "starting kvs..."
@@ -126,11 +164,14 @@ if [ x"$gpi_api_used" = x"gpi.api.real" ] ; then
 fi
 
 log "starting ufbmigd..."
-state_dir="$SDPA_SCRATCH_DIR/state/ufbmigd"
+scratch_dir=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.scratch_dir)
+if [ -z "$scratch_dir" ] ; then
+    scratch_dir="$HOME/.sdpa/scratch"
+fi
+state_dir="$scratch_dir/state/ufbmigd"
 mkdir -p "$state_dir"
-prefix=${SDPA_HOME}
-#FHGLOG_level=MIN FHGLOG_to_console=stderr valgrind --tool=memcheck --leak-check=full --show-reachable=yes --malloc-fill=0x0 --free-fill=0xa $prefix/bin/fhgkernel \
-FHGLOG_level=MIN FHGLOG_to_console=stderr $prefix/bin/fhgkernel \
+#FHGLOG_level=MIN FHGLOG_to_console=stderr valgrind --tool=memcheck --leak-check=full --show-reachable=yes --malloc-fill=0x0 --free-fill=0xa $SDPA_HOME/bin/fhgkernel \
+FHGLOG_to_console=stderr "$SDPA_HOME/bin/fhgkernel" \
     --state "$state_dir/store/" \
     -s kernel.load.lazy=0 \
     -s plugin.net.name="${name}" \
@@ -147,14 +188,14 @@ FHGLOG_level=MIN FHGLOG_to_console=stderr $prefix/bin/fhgkernel \
     -s plugin.ufbmig_back.control_sdpa="${control_sdpa}" \
     -s plugin.ufbmig_back.chunk_size=16777216 \
     -s plugin.gpi.socket="$gpi_socket" \
-    $prefix/libexec/plugins/kvs.so \
-    $prefix/libexec/plugins/net.so \
-    $prefix/libexec/plugins/gpi.so \
-    $prefix/libexec/plugins/sdpac.so \
-    $prefix/libexec/plugins/sdpactl.so \
-    $prefix/libexec/plugins/progress.so \
-    $prefix/libexec/plugins/ufbmig_back.so \
-    $prefix/libexec/plugins/ufbmig_front.so \
-    $@ >$SDPA_LOG_DIR/ufbmigd.log 2>&1 &
+    "${SDPA_LIBEXEC}/plugins/kvs.so" \
+    "${SDPA_LIBEXEC}/plugins/net.so" \
+    "${SDPA_LIBEXEC}/plugins/gpi.so" \
+    "${SDPA_LIBEXEC}/plugins/sdpac.so" \
+    "${SDPA_LIBEXEC}/plugins/sdpactl.so" \
+    "${SDPA_LIBEXEC}/plugins/progress.so" \
+    "${SDPA_LIBEXEC}/plugins/ufbmig_back.so" \
+    "${SDPA_LIBEXEC}/plugins/ufbmig_front.so" \
+    $@ </dev/null >"$SDPA_LOG_DIR/ufbmigd.log" 2>&1 &
 disown -a
 sleep 5
