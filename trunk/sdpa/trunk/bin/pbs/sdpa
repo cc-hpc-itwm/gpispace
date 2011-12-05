@@ -878,7 +878,12 @@ function generate_environment ()
         return 1
     fi
 
-    echo export KVS_URL="$(hostname -s):${DEFAULT_KVS_PORT:?}"
+    kvs_port=$(get "plugin.kvs.port")
+    if [ -z "$kvs_port" ] ; then
+	log "E: could not get kvs port from config!"
+	return 1
+    fi
+    echo export KVS_URL="$(hostname -s):${kvs_port:?}"
 
     # read variables from config and write them to an environment file
     #     replacing init-screen.env in principle
