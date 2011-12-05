@@ -14,8 +14,9 @@ debug=false
 bind_addr='0'
 name="orchestrator"
 bkp_dir="${SDPA_SCRATCH_DIR}/state"
+kvs_url="$KVS_URL"
 
-while getopts ":hgn:l:d:" opt; do
+while getopts ":hgn:l:d:k:" opt; do
   case $opt in
 	g)
 	  debug=true
@@ -29,12 +30,16 @@ while getopts ":hgn:l:d:" opt; do
 	b)
 	  bkp_dir=$OPTARG
 	;;
+      k)
+	  kvs_url=$OPTARG
+	  ;;
 	h)
 	  echo "usage: $0 [-h] [-g] [-l interface] [-n name] [-b backup-dir]" >&2
 	  echo "    -h : print this help" >&2
 	  echo "    -l : address to listen on (default: $bind_addr)" >&2
 	  echo "    -n : name (default: $name)" >&2
           echo "    -b : path to the backup directory (${bkp_dir})" >&2
+	  echo "    -k : kvs url" >&2
 	  echo "    -g : run within gdb" >&2
 	  exit 0
 	;;
@@ -46,7 +51,7 @@ done
 
 log "Running $name at $bind_addr"
 
-argv="-u $bind_addr -n ${name} -k ${KVS_URL}"
+argv="-u $bind_addr -n ${name} -k ${kvs_url}"
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
     argv="$argv -d ${bkp_dir}"
