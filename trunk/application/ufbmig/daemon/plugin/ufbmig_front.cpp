@@ -774,6 +774,11 @@ private:
       }
     }
 
+    if (request->state() == transfer::CANCELED)
+    {
+      MLOG(WARN, "data transfer to GUI has been cancelled");
+    }
+
     m_backend->close (fd);
     return ec;
   }
