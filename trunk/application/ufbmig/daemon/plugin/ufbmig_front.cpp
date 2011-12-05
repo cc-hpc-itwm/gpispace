@@ -539,6 +539,8 @@ private:
     {
       int ec = errno;
       MLOG(ERROR, "terminating, since there were " << fail_counter << " failures while receiving messages from the GUI: " << strerror(ec));
+      m_backend->stop();
+
       fhg_kernel()->terminate();
     }
   }

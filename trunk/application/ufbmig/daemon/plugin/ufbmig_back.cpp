@@ -522,6 +522,19 @@ public:
     return 0;
   }
 
+  int stop ()
+  {
+    if (m_control_sdpa && sdpa_ctl)
+    {
+      MLOG(INFO, "stopping SDPA...");
+      return sdpa_ctl->stop();
+    }
+    else
+    {
+      return 0;
+    }
+  }
+
   int open (std::string const & name)
   {
     gpi::pc::type::handle_t handle = 0;

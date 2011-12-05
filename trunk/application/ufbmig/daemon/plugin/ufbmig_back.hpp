@@ -18,6 +18,7 @@ namespace ufbmig
     virtual int finalize() = 0;
     virtual int cancel() = 0;
     virtual void registerFrontend(Frontend*) = 0;
+    virtual int stop () = 0;
 
     // TODO move to stream interface
     virtual int open (std::string const &) = 0; // current paths: meta, output
