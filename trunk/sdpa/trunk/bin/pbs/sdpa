@@ -10,6 +10,18 @@ config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 debug_enabled=false
 
+function log ()
+{
+    echo "$@" >&2
+}
+
+function debug ()
+{
+    if [ x"$debug_enabled" == x"true" ] ; then
+        log $@
+    fi
+}
+
 ##############################################
 #                                            #
 #      Default configuration section         #
@@ -33,6 +45,7 @@ DEFAULT_WITH_MEDIATOR="false"
 DEFAULT_LOG_DIRECTORY="${DEFAULT_SCRATCH_DIR}/log"
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
+DEFAULT_KVS_PORT=2439
 DEFAULT_LOG_URL=""
 DEFAULT_GUI_URL=""
 
@@ -66,7 +79,7 @@ for system_default in "/etc/sdpa/defaults"               \
                       "${SDPA_HOME}/etc/sdpa/defaults"   \
                       ~/.sdpa/defaults                   ; do
     if [ -r "$system_default" ] ; then
-        echo "reading system default from: '$system_default'" >&2
+        debug "reading system default from: '$system_default'" >&2
         source "$system_default"
     fi
 done
@@ -76,6 +89,7 @@ done
 #
 if [ -z "$SDPA_HOME" ] ; then
     export SDPA_HOME=$(dirname $(dirname $(which "$0")))
+    prepend_to_path PATH "$SDPA_HOME/bin"
 fi
 
 ##############################################
@@ -125,18 +139,6 @@ function log_helper ()
 }
 
 do_log="eval log_helper \"\$FUNCNAME\" \"\$LINENO\""
-
-function log ()
-{
-    echo "$@" >&2
-}
-
-function debug ()
-{
-    if [ x"$debug_enabled" == x"true" ] ; then
-        echo $@ >&2
-    fi
-}
 
 function get ()
 {
@@ -323,6 +325,7 @@ function setup_kvs ()
     local kvs_store="$kvs_data_dir/kvs.dat"
 
     put "kvs.store" "$kvs_store"
+    put "plugin.kvs.port" $(get "plugin.kvs.port" "${DEFAULT_KVS_PORT:?}")
 
     log "I: kvs configured to store data in $kvs_store"
 
@@ -847,6 +850,7 @@ done
 
 put "config.version" "$CONFIG_VERSION"
 put "config.modified" "$(date)"
+put "config.revision" "$(sdpac --dumpversion 2>/dev/null)"
 
 cp "$real_config_file" "${real_config_file}.bak"
 mv "$temp_config_file" "$real_config_file"
@@ -874,7 +878,7 @@ function generate_environment ()
         return 1
     fi
 
-    echo export KVS_URL="$(hostname -s):2439"
+    echo export KVS_URL="$(hostname -s):${DEFAULT_KVS_PORT:?}"
 
     # read variables from config and write them to an environment file
     #     replacing init-screen.env in principle
@@ -1247,8 +1251,14 @@ function start_kvs ()
         log "E: kvs must be started on the master node"
         exit 1
     fi
-    if ! start_proc "fhgkvsd" "fhgkvsd" "-C -b 0 -p 2439"; then
-        echo "E: could not start kvs, giving up!" >&2
+    kvs_port=$(get "plugin.kvs.port")
+    if [ -z "$kvs_port" ] ; then
+	log "E: could not get kvs port from config!"
+	return 1
+    fi
+
+    if ! start_proc "fhgkvsd" "fhgkvsd" "-C -b 0 -p ${kvs_port}"; then
+        log "E: could not start kvs, giving up!"
         return 1
     else
         sleep 1
