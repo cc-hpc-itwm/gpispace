@@ -187,13 +187,29 @@ function guess_head_node ()
     fi
 }
 
+function isatty()
+{
+    local f="$1" ; shift
+    f=$(readlink -f "$f")
+    if [ -e "$f" ] ; then
+	tty -s < "$f" >/dev/null 2>&1
+	return $?
+    else
+	return 1
+    fi
+}
+
 function is_unattended ()
 {
     if [ -n "$SDPA_PERFORM_UNATTENDED_SETUP" ] ; then
         return 0
-    else
-        return 1
     fi
+
+    if ! isatty /dev/stdin ; then
+	return 0
+    fi
+
+    return 1
 }
 
 #
@@ -1227,6 +1243,10 @@ function status_agent ()
 
 function start_kvs ()
 {
+    if ! on_master_node ; then
+        log "E: kvs must be started on the master node"
+        exit 1
+    fi
     if ! start_proc "fhgkvsd" "fhgkvsd" "-C -b 0 -p 2439"; then
         echo "E: could not start kvs, giving up!" >&2
         return 1
@@ -1247,6 +1267,10 @@ function stop_kvs ()
 
 function start_orch ()
 {
+    if ! on_master_node ; then
+        log "E: Orchestrator must be started on the master node"
+        exit 1
+    fi
     if ! start_proc "orchestrator" "start-orch" ; then
         echo "E: could not start orchestrator, giving up!" >&2
         return 1
@@ -1690,6 +1714,10 @@ function start_gui ()
 
 function start_gpi ()
 {
+    if ! on_master_node ; then
+        log "E: GPI must be started on the master node"
+        exit 1
+    fi
     local gpi_enabled=$(get "gpi.enabled" "true")
     if [ x"$gpi_enabled" == x"true" ] ; then
         if ! start_proc "gpi-space" "start-gpi" "-f" ; then
@@ -1950,17 +1978,19 @@ function on_valid_host ()
     if test -r "$state_dir/nodefile" ; then
         if [ -n "$PBS_NODEFILE" ] ; then
             if ! diff -q "$PBS_NODEFILE" "$state_dir/nodefile" >/dev/null ; then
-                log "E: $PBS_NODEFILE and $state_dir/nodefile differ"
+                log "W: $PBS_NODEFILE and $state_dir/nodefile differ"
                 return 1
             fi
         fi
         if grep -q -e "^$host" "$state_dir/nodefile" ; then
             return 0
         else
-            log "E: your hostname ($host) does not match any in $state_dir/nodefile"
+            log "W: your hostname ($host) does not match any in $state_dir/nodefile"
+	    return 1
         fi
     else
         log "E: no nodefile present"
+	return 2
     fi
     return 1
 }
@@ -2156,9 +2186,9 @@ if [ "$1" = "gui" ] ; then
 fi
 
 if ! on_valid_host ; then
-    log "E: you are executing 'sdpa' on an invalid host"
-    log "E: please run 'sdpa init' on the master node first!"
-    exit 1
+    log "W: you are executing 'sdpa' on an invalid host!"
+    log "W: this might not be what you want"
+    log "I: please run 'sdpa init' on the master node first!"
 fi
 
 if ! configure ; then
@@ -2168,10 +2198,6 @@ fi
 
 case "$1" in
     start)
-        if ! on_master_node ; then
-            log "E: not on master node"
-            exit 1
-        fi
         shift
         start $@
         ;;
