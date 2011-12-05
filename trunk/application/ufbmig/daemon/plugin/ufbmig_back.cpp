@@ -314,11 +314,15 @@ public:
 
   int initialize(std::string const &xml)
   {
+    update_progress(0);
+
     if (state::UNINITIALIZED != m_state)
     {
       MLOG(ERROR, "state mismatch: cannot initialize again in state: " << m_state);
       return -EINVAL;
     }
+
+    update_progress(25);
 
     if (m_control_sdpa && sdpa_ctl)
     {
@@ -326,7 +330,7 @@ public:
       sdpa_ctl->start();
     }
 
-    update_progress(50);
+    update_progress(75);
 
     MLOG(INFO, "submitting INITIALIZE workflow");
 
