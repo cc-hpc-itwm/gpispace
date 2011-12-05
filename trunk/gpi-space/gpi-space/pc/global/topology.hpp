@@ -164,6 +164,7 @@ namespace gpi
         fhg::com::message_t m_incoming_msg;
 
         result_list_t m_current_results;
+        bool m_established;
       };
 
       inline

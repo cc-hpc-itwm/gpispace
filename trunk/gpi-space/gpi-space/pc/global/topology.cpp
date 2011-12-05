@@ -116,6 +116,7 @@ namespace gpi
       topology_t::topology_t()
         : m_shutting_down (false)
         , m_rank ((gpi::rank_t)-1)
+        , m_established (false)
       {
       }
 
@@ -163,8 +164,15 @@ namespace gpi
           LOG(WARN, "topology still running, please stop it first!");
           return;
         }
+
+        if (m_established)
+        {
+          LOG(WARN, "topology seems to be established already!");
+        }
+
         m_shutting_down = false;
         m_rank = rank;
+        m_established = false;
 
         m_peer.reset
           (new fhg::com::peer_t( detail::rank_to_name (m_rank)
@@ -349,6 +357,8 @@ namespace gpi
             }
           }
         }
+
+        m_established = true;
 
         LOG(INFO, "topology established");
       }
@@ -554,11 +564,14 @@ namespace gpi
                                     , boost::system::error_code const &ec
                                     )
       {
-        LOG(WARN, "error on connection to child node " << rank);
-        LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
-        del_child (rank);
-        //        gpi::signal::handler().raise(15);
-        _exit(15);
+        if (m_established)
+        {
+          LOG(WARN, "error on connection to child node " << rank);
+          LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
+          del_child (rank);
+          //        gpi::signal::handler().raise(15);
+          _exit(15);
+        }
       }
     }
   }
