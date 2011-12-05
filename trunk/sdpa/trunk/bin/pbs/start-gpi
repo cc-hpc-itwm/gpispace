@@ -114,9 +114,11 @@ if [ $do_copy = "true" ] ; then
 	fi
     fi
     if [ -w "$gpi_bin_path" ] ; then
+	mv -f "${gpi_bin_path}/${gpi_bin}~"
 	cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
+	chmod ug=rx,o= "${gpi_bin_path}/${gpi_bin}"
     else
-	log "$gpi_bin_path does not exist, or i am not allowed to write to it!"
+	log "privileged path $gpi_bin_path does not exist, or i am not allowed to write to it!"
     fi
 fi
 
