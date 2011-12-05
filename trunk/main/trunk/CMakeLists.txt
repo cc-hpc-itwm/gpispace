@@ -5,9 +5,9 @@ include (./version.cmake)
 
 set(PROJECT_REVISION     CACHE STRING "Source code revision")
 set(PROJECT_BUILD    "0" CACHE STRING "Build number")
-set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture" CACHE STRING "Project description")
+set(PROJECT_DESCRIPTION "Seismic Development and Processing Architecture" CACHE STRING "Project description")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
-set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM" CACHE STRING "Copyright")
+set(PROJECT_COPYRIGHT   "Copyright 2011 Fraunhofer ITWM" CACHE STRING "Copyright")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
