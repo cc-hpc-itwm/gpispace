@@ -528,7 +528,7 @@ private:
 
   int send_logoutput(std::string const &msg)
   {
-    return send_to_gui(create_pspro_message(server::command::LOGOUTPUT, msg.c_str(), msg.size()));
+    return send_to_gui(create_pspro_message(server::command::LOGOUTPUT, msg.c_str(), msg.size()+1));
   }
 
   int send_abort_accepted()
