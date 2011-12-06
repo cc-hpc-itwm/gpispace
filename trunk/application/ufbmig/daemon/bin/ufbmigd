@@ -164,17 +164,21 @@ if [ x"$gpi_api_used" = x"gpi.api.real" ] ; then
 	control_sdpa=1
 fi
 
+logd_port=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.logd.port -v 3456)
+
 log "starting ufbmigd..."
 scratch_dir=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.scratch_dir)
 if [ -z "$scratch_dir" ] ; then
     scratch_dir="$HOME/.sdpa/scratch"
 fi
+
 state_dir="$scratch_dir/state/ufbmigd"
 mkdir -p "$state_dir"
 #FHGLOG_level=MIN FHGLOG_to_console=stderr valgrind --tool=memcheck --leak-check=full --show-reachable=yes --malloc-fill=0x0 --free-fill=0xa $SDPA_HOME/bin/fhgkernel \
 FHGLOG_to_console=stderr "$SDPA_HOME/bin/fhgkernel" \
     --state "$state_dir/store/" \
     -s kernel.load.lazy=0 \
+    -s plugin.logd.port="${logd_port}" \
     -s plugin.net.name="${name}" \
     -s plugin.sdpac.orchestrator="${orchestrator}" \
     -s plugin.ufbmig_front.timeout_default=${timeout} \
@@ -189,6 +193,7 @@ FHGLOG_to_console=stderr "$SDPA_HOME/bin/fhgkernel" \
     -s plugin.ufbmig_back.control_sdpa="${control_sdpa}" \
     -s plugin.ufbmig_back.chunk_size=16777216 \
     -s plugin.gpi.socket="$gpi_socket" \
+    "${SDPA_LIBEXEC}/plugins/logd.so" \
     "${SDPA_LIBEXEC}/plugins/kvs.so" \
     "${SDPA_LIBEXEC}/plugins/net.so" \
     "${SDPA_LIBEXEC}/plugins/gpi.so" \
