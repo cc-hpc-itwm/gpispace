@@ -36,7 +36,7 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   INSTALL
 )
 
-fhg_add_plugin(ufbmig_front ufbmig_front.cpp
+fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/observable.cpp
   EXPORTS UFBMIG_FRONT
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
                  ${HWLOC_SHARED_LIBRARY}
