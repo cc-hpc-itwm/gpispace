@@ -46,6 +46,7 @@ DEFAULT_LOG_DIRECTORY="${DEFAULT_SCRATCH_DIR}/log"
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 DEFAULT_KVS_PORT=2439
+DEFAULT_LOGD_PORT=3456
 DEFAULT_LOG_URL=""
 DEFAULT_GUI_URL=""
 
@@ -476,6 +477,7 @@ to. It should be on the same host that you run the GUI on.
     put "log.server.url" "$url"
     put "log.server.level" "$lvl"
     put "sdpa.log_dir" "$log_dir"
+    put "plugin.logd.port" "${DEFAULT_LOGD_PORT:?}"
 }
 
 function setup_temp ()
@@ -559,7 +561,7 @@ EOF
     fi
 
     log "-: setting up the DRTS"
-    put "kernel.plugins" "gui,kvs,progress,wfe,gpi,gpi-compat,drts"
+    put "kernel.plugins" "logc,gui,kvs,progress,wfe,gpi,gpi-compat,drts"
     put "kernel.lazy" $(get "kernel.lazy" "${DEFAULT_KERNEL_LOAD_LAZY:?}")
 
     log "-: configuring plugins"
