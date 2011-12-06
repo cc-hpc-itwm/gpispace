@@ -111,3 +111,26 @@ fhg_add_plugin(progress progress.cpp
   PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
 )
+
+fhg_add_plugin(logd logd.cpp
+  EXPORTS Logd
+  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+		 ${Boost_THREAD_SHARED_LIBRARY}
+		 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
+  COMPONENT plugins
+)
+
+fhg_add_plugin(logc logc.cpp
+  EXPORTS Logc
+  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+		 ${Boost_THREAD_SHARED_LIBRARY}
+		 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADERS logc.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
+  COMPONENT plugins
+)
