@@ -23,6 +23,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 
+#include "observable.hpp"
+#include "observer.hpp"
+
 static const std::string SERVER_APP_NAME("Interactive Migration");
 static const std::string SERVER_APP_VERS("1.0.0");
 
@@ -127,6 +130,7 @@ namespace transfer
 
 class UfBMigFrontImpl : FHG_PLUGIN
                       , public ufbmig::Frontend
+                      , public observe::Observer
 {
 public:
   UfBMigFrontImpl ()
@@ -215,11 +219,21 @@ public:
 
     send_waiting_for_initialize();
 
+    // try to start to observe log events
+
+    if (observe::Observable* o = fhg_kernel()->acquire<observe::Observable>("logd"))
+    {
+      MLOG(INFO, "ufbmig_front starts to observe: logd plugin");
+      start_to_observe(o);
+    }
+
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
+    stop_to_observe();
+
     //m_server->stop(); // FIXME: deadlock!
     m_stop_requested = true;
 
@@ -230,6 +244,43 @@ public:
     m_message_thread.join ();
 
     FHG_PLUGIN_STOPPED();
+  }
+
+  FHG_ON_PLUGIN_LOADED(plugin)
+  {
+    if (plugin == "logd")
+    {
+      if (observe::Observable* o = fhg_kernel()->acquire<observe::Observable>("logd"))
+      {
+        MLOG(INFO, "ufbmig_front starts to observe: logd plugin");
+        start_to_observe(o);
+      }
+    }
+  }
+
+  void notify(const observe::Observable *, boost::any const &evt)
+  {
+    try
+    {
+      fhg::log::LogEvent const & e (boost::any_cast<fhg::log::LogEvent>(evt));
+      int ec = send_logoutput(e.message());
+      if (ec < 0)
+      {
+        MLOG( WARN
+            , "could not send log message '"
+            << e.message()
+            << "' to GUI: "
+            << strerror(-ec)
+            );
+      }
+    }
+    catch (boost::bad_any_cast const &ex)
+    {
+    }
+    catch (std::exception const & ex)
+    {
+      MLOG(ERROR, "could not send event: " << ex.what());
+    }
   }
 
   int initialize(std::string const &s)
