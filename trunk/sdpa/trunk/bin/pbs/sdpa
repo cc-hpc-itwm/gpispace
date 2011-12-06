@@ -22,6 +22,19 @@ function debug ()
     fi
 }
 
+function prepend_to_path ()
+{
+    local var="$1"; shift
+    local val=$(eval echo \$${var})
+    for v ; do
+        val=$(echo "$val" | sed "s,:$v:,:,g")
+        val=$(echo "$val" | sed -e "s,^$v:,,g")
+        val=$(echo "$val" | sed -e "s,:$v\$,,g")
+        val="$v:$val"
+    done
+    eval "$var=$val"
+}
+
 ##############################################
 #                                            #
 #      Default configuration section         #
@@ -359,19 +372,6 @@ function y_n_p ()
             return 2
             ;;
     esac
-}
-
-function prepend_to_path ()
-{
-    local var="$1"; shift
-    local val=$(eval echo \$${var})
-    for v ; do
-        val=$(echo "$val" | sed "s,:$v:,:,g")
-        val=$(echo "$val" | sed -e "s,^$v:,,g")
-        val=$(echo "$val" | sed -e "s,:$v\$,,g")
-        val="$v:$val"
-    done
-    eval "$var=$val"
 }
 
 function append_to_path ()
