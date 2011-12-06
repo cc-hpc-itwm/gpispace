@@ -22,10 +22,8 @@ source "${SDPA_HOME}/etc/sdpa/sdpa.env" || {
 	exit 1
 }
 
-# this should probably go to the defaults file
-export LD_LIBRARY_PATH=/p/herc/itwm/hpc/soft/boost/1.47/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/p/herc/itwm/hpc/soft/hwloc/1.3/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/p/herc/itwm/hpc/soft/qt/4.7.1/lib:$LD_LIBRARY_PATH
+# this is the place where one should modify LD_LIBRARY_PATH and PATH and so on...
+test -r "${SDPA_HOME}/etc/sdpa/defaults" && source "${SDPA_HOME}/etc/sdpa/defaults"
 
 env > $HOME/.ufbmig.env
 
