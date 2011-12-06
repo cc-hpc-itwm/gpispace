@@ -84,7 +84,6 @@ public:
     }
     catch (boost::bad_any_cast const &ex)
     {
-      MLOG(WARN, "got bad notification event: " << ex.what());
     }
     catch (std::exception const & ex)
     {
@@ -141,7 +140,6 @@ private:
     return sstr.str();
   }
 
-  //  std::list<observe::Observable*> m_observed;
   std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
 };
