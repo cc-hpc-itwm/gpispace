@@ -83,7 +83,8 @@ void fhg_emit_log_message ( const char *filename
                           , const char * msg
                           )
 {
-  global_logc->log (filename, function, line, msg);
+  if (global_logc)
+    global_logc->log (filename, function, line, msg);
 }
 
 EXPORT_FHG_PLUGIN( logc
