@@ -47,8 +47,7 @@ public:
 
   FHG_PLUGIN_STOP()
   {
-    while (!m_observed.empty())
-      stop_to_observe(*m_observed.begin());
+    observe::Observer::stop_to_observe();
     m_destination.reset();
     FHG_PLUGIN_STOPPED();
   }
@@ -58,8 +57,7 @@ public:
     if (observe::Observable* o = fhg_kernel()->acquire<observe::Observable>(plugin))
     {
       MLOG(INFO, "GUI starts to observe: " << o << " (" << plugin << ")");
-      m_observed.push_back(o);
-      o->add_observer(this);
+      start_to_observe(o);
     }
   }
 
@@ -76,7 +74,7 @@ public:
     }
   }
 
-  void notify(boost::any const &evt)
+  void notify(const observe::Observable *, boost::any const &evt)
   {
     try
     {
@@ -94,12 +92,12 @@ public:
     }
   }
 private:
-  void stop_to_observe(observe::Observable* o)
-  {
-    MLOG(INFO, "stopping to observe: " << o);
-    o->del_observer(this);
-    m_observed.remove(o);
-  }
+  // void stop_to_observe(observe::Observable* o)
+  // {
+  //   MLOG(INFO, "stopping to observe: " << o);
+  //   o->del_observer(this);
+  //   m_observed.remove(o);
+  // }
 
   static inline std::string encode (const task_event_t & e)
   {
@@ -143,7 +141,7 @@ private:
     return sstr.str();
   }
 
-  std::list<observe::Observable*> m_observed;
+  //  std::list<observe::Observable*> m_observed;
   std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
 };

@@ -9,15 +9,15 @@ namespace observe
 {
   namespace detail
   {
-    void deliver_event_to(boost::any const & evt, Observer *o)
+    void deliver_event_to(boost::any const & evt, const Observable* src, Observer *dst)
     {
       try
       {
-        o->notify(evt);
+        dst->notify(src, evt);
       }
       catch (std::exception const &ex)
       {
-        LOG(WARN, "could not deliver event to " << o);
+        LOG(WARN, "could not deliver event to " << dst);
       }
     }
   }
@@ -48,6 +48,7 @@ namespace observe
                  , m_observers.end()
                  , boost::bind( &detail::deliver_event_to
                               , boost::ref(evt)
+                              , this
                               , _1
                               )
                 );
