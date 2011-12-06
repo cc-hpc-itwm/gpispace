@@ -4,7 +4,7 @@
 #
 
 # increment this value if anything config related changes!
-CONFIG_VERSION=6
+CONFIG_VERSION=7
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
