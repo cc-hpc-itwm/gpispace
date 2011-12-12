@@ -936,3 +936,8 @@ void SchedulerImpl::forceOldWorkerJobsTermination()
 	}
 }
 
+
+Worker::worker_id_t SchedulerImpl::getWorkerId(unsigned int r)
+{
+	return ptr_worker_man_->getWorkerId(r);
+}

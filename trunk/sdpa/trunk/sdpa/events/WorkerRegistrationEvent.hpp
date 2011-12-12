@@ -44,7 +44,7 @@ namespace sdpa { namespace events {
 
       WorkerRegistrationEvent(	const address_t& a_from,
     		  	  	  	  	  	const address_t& a_to,
-    		            		const unsigned int capacity = 2,
+    		            		const unsigned int& capacity = 2,
     		            		const capabilities_set_t& cpbset = capabilities_set_t(),
     		            		const unsigned int& agent_rank = 0,
     		            		const sdpa::worker_id_t& agent_uuid = "" )
@@ -94,10 +94,24 @@ namespace sdpa { namespace events {
     const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_;}
     sdpa::worker_id_t& agent_uuid() { return agent_uuid_;}
 
-    virtual void handleBy(EventHandler *handler)
-    {
-    	handler->handleWorkerRegistrationEvent(this);
-    }
+
+    template <class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+    	ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(*this);
+		ar & capacity();
+		ar & capabilities();
+		ar & rank_;
+		ar & agent_uuid();
+	}
+
+	friend class boost::serialization::access;
+
+	 virtual void handleBy(EventHandler *handler)
+	  {
+		  handler->handleWorkerRegistrationEvent(this);
+	  }
+
 
     private:
       unsigned int capacity_;

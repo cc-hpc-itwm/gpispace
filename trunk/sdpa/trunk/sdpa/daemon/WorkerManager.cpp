@@ -584,47 +584,25 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 	}
 }
 
-/*
-void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& agentCpbSet)
-{
-	lock_type lock(mtx_);
-
-	for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
-	{
-		const sdpa::capabilities_set_t& workerCpbSet = it->second->capabilities();
-
-		for(sdpa::capabilities_set_t::iterator itwcpbs = workerCpbSet.begin(); itwcpbs != workerCpbSet.end();  itwcpbs++  )
-		{
-			capability_t cpb(*itwcpbs);
-
-			// see if there is already an entry into agentCpbSet
-			sdpa::capabilities_set_t::iterator itCpb = find_if( agentCpbSet.begin(), agentCpbSet.end(), boost::bind(&sdpa::capability_t::operator==, _1, cpb ));
-			if( itCpb == agentCpbSet.end() ) //SDPA_LOG_INFO( "There is already capability "<<cpb );
-			{
-				agentCpbSet.insert(cpb);
-			}
-		}
-	}
-}
-*/
-
 template <typename TPtrWorker, typename TReqSet>
-int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set )
+int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, bool bOwn = false )
 {
 	int matchingDeg = 0;
 
 	// for all job requirements
 	for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
 	{
-		if( pWorker->hasCapability(it->value()) )
+		//LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
+		if( pWorker->hasCapability(it->value(), bOwn ) )
 		{
 			// increase the number of matchings
 			matchingDeg++;
 		}
 		else // if the worker doesn't have the capability
-			if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree 0
+			if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
 			{
-				LOG(ERROR, "The worker "<<pWorker->name()<<" doesn't have the capability required ("<<it->value()<<")!");
+				//LOG(ERROR, "The worker "<<pWorker->name()<<" doesn't have the required capability: "<<it->value()<<"!");
+				//std:cout<<pWorker->capabilities();
 				return 0;
 			}
 	}
@@ -632,7 +610,7 @@ int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set )
 	return matchingDeg;
 }
 
-Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException)
+Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq,bool bOwn ) throw (NoWorkerFoundException)
 {
 	lock_type lock(mtx_);
 	if( worker_map_.empty() )
@@ -649,7 +627,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 
 	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 	{
-		int matchingDeg = matchRequirements( pair.second, listJobReq );
+		int matchingDeg = matchRequirements( pair.second, listJobReq, bOwn );
 		if( matchingDeg > maxMatchingDeg )
 		{
 			maxMatchingDeg = matchingDeg;
@@ -688,3 +666,27 @@ void WorkerManager::cancelWorkerJobs(sdpa::daemon::Scheduler* ptrSched)
 		}
 	}
 }
+
+Worker::worker_id_t WorkerManager::getWorkerId(unsigned int r)
+{
+	lock_type lock(mtx_);
+	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
+	{
+		worker_id_t workerId  = pair.first;
+		Worker::ptr_t pWorker = pair.second;
+		if(pWorker->rank() == r)
+			return workerId;
+	}
+
+	return "";
+}
+
+void WorkerManager::removeWorkers()
+{
+	lock_type lock(mtx_);
+	common_queue_.clear();
+	worker_map_.clear();
+	rank_map_.clear();
+	owner_map_.clear();
+}
+

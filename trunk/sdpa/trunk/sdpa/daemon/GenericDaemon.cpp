@@ -396,19 +396,6 @@ void GenericDaemon::stop()
   m_threadBkpService.stop();
   SDPA_LOG_INFO("The backup service was stopped!");
 
-  // here one should only generate a message of type interrupt
-  SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
-  InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
-  sendEventToSelf(pEvtInterrupt);
-
-  // wait to be stopped
-  {
-	  SDPA_LOG_INFO("The daemon can be safely stopped now ...");
-	  lock_type lock(mtx_);
-	  while(!is_stopped())
-		  cond_can_stop_.wait(lock);
-  }
-
   SDPA_LOG_INFO("Shutdown the network...");
   shutdown_network();
 
@@ -1323,7 +1310,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 
 	if( pCpbGainEvt->capabilities().empty() )
 	{
-		SDPA_LOG_ERROR("Received empty set of capabilities from agent "<<worker_id);
+		//SDPA_LOG_ERROR("Received empty set of capabilities from agent "<<worker_id);
 		return;
 	}
 
@@ -1341,7 +1328,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 					sendEventToMaster(shpCpbGainEvt);
 				}
 
-			SDPA_LOG_INFO("Gained new capabilities: "<<pCpbGainEvt->capabilities());
+			//SDPA_LOG_INFO("Gained new capabilities: "<<pCpbGainEvt->capabilities());
 		}
 	}
 	catch( const WorkerNotFoundException& ex)
@@ -1701,14 +1688,16 @@ void GenericDaemon::removeMasters(const worker_id_list_t& listMasters)
 
 void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
 {
+	lock_type lock(mtx_cpb_);
 	for(sdpa::capabilities_set_t::iterator it = m_capabilities.begin(); it!= m_capabilities.end(); it++ )
-		cpbset.insert(*it);
+			cpbset.insert(*it);
 
 	ptr_scheduler_->getWorkerCapabilities(cpbset);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
 {
+	lock_type lock(mtx_cpb_);
 	m_capabilities.insert(cpb);
 }
 
@@ -1809,4 +1798,50 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 	sdpa::subscriber_map_t::iterator it = m_listSubscribers.find(agentId);
 
 	return (it != m_listSubscribers.end());
+}
+
+Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
+{
+	return scheduler()->getWorkerId(r);
+}
+
+bool GenericDaemon::forward(const id_type& job_id, const result_type& result, unsigned int rank)
+{
+   	//SubmitJobEvent::Ptr pSubJobEvt(new SubmitJobEvent(name(), forward_to, job_id, result, ""));
+   	//sendEventToSlave(pSubJobEvt);
+
+	try {
+		const sdpa::job_id_t jobId(job_id);
+		// One should parse the workflow in order to be able to create a valid job
+		// if the event comes from Gwes parent_id is the owner_workflow_id
+		JobFSM* ptrFSM = new JobFSM( jobId, result, this, "" );
+		ptrFSM->start_fsm();
+		Job::ptr_t pJob( ptrFSM );
+		pJob->set_owner(name());
+
+		// the job job_id is in the Pending state now!
+		ptr_job_man_->addJob(jobId, pJob);
+
+		const sdpa::worker_id_t workerId = getWorkerId(rank);
+		if(!workerId.empty() )
+		{
+			SDPA_LOG_INFO("Forward the result of the job "<<job_id<<" to the agent "<<workerId);
+			scheduler()->schedule_to(jobId, workerId);
+		}
+		else
+		{
+			 SDPA_LOG_ERROR("Could not find a worker with the specified rank!");
+			 throw;
+		}
+	}
+	catch(std::exception const & ex)
+	{
+	  SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
+	  throw;
+	}
+	catch(...)
+	{
+	  SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
+	  throw;
+	}
 }

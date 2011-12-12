@@ -52,6 +52,7 @@ namespace daemon {
 	 virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException) = 0;
 
 	 virtual void getWorkerList(std::list<std::string>&) = 0;
+	 virtual Worker::worker_id_t getWorkerId(unsigned int rank) = 0;
 
 	 virtual size_t numberOfWorkers() = 0;
 	 virtual void feed_workers()= 0;

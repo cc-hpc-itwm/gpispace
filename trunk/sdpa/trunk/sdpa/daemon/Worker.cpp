@@ -51,13 +51,14 @@ void Worker::update()
 
 void Worker::dispatch(const sdpa::job_id_t& jobId)
 {
-	update();
-	SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
-	pending_.push(jobId);
+  SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
+  pending_.push(jobId);
 }
 
 bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
+  //update();
+
   try
   {
 	  acknowledged().push(job_id);
@@ -71,6 +72,7 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 	  return false;
   }
 }
+
 
 void Worker::delete_job(const sdpa::job_id_t &job_id)
 {
@@ -126,7 +128,6 @@ void Worker::print()
 
 unsigned int Worker::nbAllocatedJobs()
 {
-	lock_type lock(mtx_);
 	unsigned int nJobs = pending().size() + submitted().size() + acknowledged().size();
 
 	return nJobs;
@@ -179,3 +180,28 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 		}*/
 	}
 }
+
+bool Worker::hasCapability(const std::string& cpbName, bool bOwn)
+{
+	lock_type lock(mtx_);
+	bool bHasCpb = false;
+	for( sdpa::capabilities_set_t::iterator it = capabilities_.begin();
+		 !bHasCpb && it != capabilities_.end();
+		 it++ )
+	{
+		if(bOwn)
+		{
+			if( it->name() == cpbName && it->owner() == name() )
+				bHasCpb = true;
+		}
+		else
+		{
+			if(it->name() == cpbName)
+				bHasCpb = true;
+		}
+	}
+
+	return bHasCpb;
+}
+
+

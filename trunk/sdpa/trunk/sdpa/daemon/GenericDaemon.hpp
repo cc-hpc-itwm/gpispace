@@ -143,6 +143,7 @@ namespace sdpa { namespace daemon {
 	  virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() );
       virtual bool cancel(const id_type & id, const reason_type & reason);
       virtual bool finished(const id_type & id, const result_type & result);
+      virtual bool forward(const id_type & id, const result_type & result,  unsigned int rank );
       virtual bool failed(const id_type & id, const result_type & result);
       virtual bool cancelled(const id_type & id);
 
@@ -187,6 +188,8 @@ namespace sdpa { namespace daemon {
 
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
+
+      virtual Worker::worker_id_t getWorkerId(unsigned int rank);
 
       const unsigned int& capacity() const { return m_nCap; }
       unsigned int& capacity() { return m_nCap; }
@@ -335,6 +338,8 @@ protected:
         condition_type cond_can_start_;
 
         mutex_type mtx_subscriber_;
+        mutex_type mtx_cpb_;
+
 	protected:
         bool m_bRequestsAllowed;
         bool m_bStopped;

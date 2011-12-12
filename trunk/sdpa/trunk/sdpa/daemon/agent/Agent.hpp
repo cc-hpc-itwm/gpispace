@@ -46,13 +46,7 @@ namespace sdpa {
           SDPA_LOG_DEBUG("Agent's constructor called ...");
           //ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::Scheduler(this));
 
-          // add pre-defined capabilities
-          std::ostringstream oss;
-          oss<<rank;
-          capability_t cpb(oss.str(), "rank", name);
-          addCapability(cpb);
-
-          // application gui service
+         // application gui service
           if(!guiUrl.empty())
           {
               m_guiService.open ();

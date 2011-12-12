@@ -48,7 +48,8 @@ namespace sdpa { namespace daemon {
       const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
       const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
-      void addWorker( const Worker::worker_id_t& workerId, unsigned int capacity,
+      void addWorker( const Worker::worker_id_t& workerId,
+    		  	  	  unsigned int capacity,
     		          const capabilities_set_t& cpbset = capabilities_set_t(),
     		          const unsigned int& agent_rank = 0,
     		          const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
@@ -61,13 +62,13 @@ namespace sdpa { namespace daemon {
 
      // void getListOfRegisteredRanks( std::vector<unsigned int>& );
 
-      void removeWorkers() { worker_map_.clear(); }
+      void removeWorkers();
       const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
       worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
 
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
-      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException);
+      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq, bool bOwn = false ) throw (NoWorkerFoundException);
 
       const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
       void dispatchJob(const sdpa::job_id_t& jobId);
@@ -85,6 +86,7 @@ namespace sdpa { namespace daemon {
       const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
       void cancelWorkerJobs(sdpa::daemon::Scheduler*);
       void forceOldWorkerJobsTermination();
+      virtual Worker::worker_id_t getWorkerId(unsigned int r);
 
       bool has_job(const sdpa::job_id_t& job_id);
 
@@ -114,7 +116,9 @@ namespace sdpa { namespace daemon {
         	  SDPA_LOG_DEBUG("No job without preferences available!");
 
           if( worker_map_.begin() == worker_map_.end() )
+          {
         	  SDPA_LOG_DEBUG("The worker manager has NO worker! ");
+          }
           else
           {
               SDPA_LOG_DEBUG("The worker manager has workers! ");

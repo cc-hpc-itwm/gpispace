@@ -43,13 +43,15 @@ namespace sdpa { namespace events {
 
       virtual ~WorkerRegistrationAckEvent() { }
 
-      std::string str() const { return "WorkerRegistrationAckEvent"; }
-
       virtual void handleBy(EventHandler *handler)
       {
-    	  LOG(TRACE, "Handle registration acknowledgment from "<<from()<<" to "<<to());
-    	  handler->handleWorkerRegistrationAckEvent(this);
+      	  handler->handleWorkerRegistrationAckEvent(this);
       }
+
+
+      std::string str() const { return "WorkerRegistrationAckEvent"; }
+
+
   };
 }}
 
