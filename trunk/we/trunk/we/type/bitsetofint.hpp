@@ -134,32 +134,46 @@ namespace bitsetofint
     std::string::const_iterator pos (s.begin());
     const std::string::const_iterator& end (s.end());
 
-    if (std::distance (pos, end) >= 3)
+    if (  std::distance (pos, end) >= 3
+       && *pos == '0' && *(pos+1) == 'x' && *(pos+2) == '/'
+       )
+    {
+      pos += 3;
+
+      while (std::distance (pos, end) >= 17)
       {
-	if (*pos == '0' && *(pos+1) == 'x' && *(pos+2) == '/')
-	  {
-	    pos += 3;
+        uint64_t value (0);
 
-	    while (std::distance (pos, end) >= 17)
-	      {
-		uint64_t value (0);
+        std::istringstream iss (std::string (pos, pos + 16));
 
-		std::istringstream iss (std::string (pos, pos + 16));
+        iss.flags (std::ios::hex);
+        iss.width (16);
+        iss.fill ('0');
 
-		iss.flags (std::ios::hex);
-		iss.width (16);
-		iss.fill ('0');
+        iss >> value;
 
-		iss >> value;
+        // TODO: if (iss.bad()) throw
 
-		container.push_back (value);
+        container.push_back (value);
 
-		pos += 17;
-	      }
-	  }
+        pos += 17;
       }
+    }
+    else
+    {
+      throw std::runtime_error
+        ("bitsetofint::from_hex invalid argument: \"" + s + "\"");
+    }
 
-    return type (container);
+    if (pos != end)
+    {
+      throw std::runtime_error
+        ("bitsetofint::from_hex invalid argument: \"" + s + "\"");
+    }
+    else
+    {
+      return type (container);
+    }
   }
 
   inline std::size_t hash_value (const type & t)
