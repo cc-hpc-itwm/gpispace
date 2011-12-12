@@ -1,52 +1,28 @@
-<defun name="update">
+<defun name="update_salt_mask">
 
   <include-structs href="types.xml"/>
 
   <in name="file_with_config" type="string" place="file_with_config"/>
   <in name="file_with_mask" type="string" place="file_with_mask"/>
-  <out name="done" type="control" place="done"/>
+  <out name="done" type="control" place="finalized"/>
 
   <net>
     <place name="file_with_config" type="string"/>
     <place name="file_with_mask" type="string"/>
+    <place name="finalized" type="control"/>
     <place name="config" type="config"/>
-    <place name="done" type="control"/>
 
-    <transition name="read_config" inline="true">
-      <defun>
-	<in name="filename" type="string"/>
-	<out name="config" type="config"/>
-	<module name="ufbmig_update" function="read_config (filename, config)">
-	  <cinclude href="fhglog/fhglog.hpp"/>
-	  <cinclude href="util/rw.hpp"/>
-	  <code><![CDATA[
-	  MLOG (INFO, "reading config from file " << filename);
-
-	  ::ufbmig::util::serialize::read (filename, config);
-	  ]]></code>
-	</module>
-      </defun>
-      <connect-in port="filename" place="file_with_config"/>
+    <transition name="one" inline="true">
+      <include-function href="update_salt_mask_one.xml"/>
+      <connect-in port="file_with_config" place="file_with_config"/>
+      <connect-in port="file_with_mask" place="file_with_mask"/>
       <connect-out port="config" place="config"/>
     </transition>
 
-    <transition name="update_salt_mask" inline="true">
-      <defun>
-	<in name="config" type="config"/>
-	<in name="mask" type="string"/>
-	<out name="done" type="control"/>
-	<module name="ufbmig_update" function="update_salt_mask (config, mask)">
-	  <cinclude href="fhglog/fhglog.hpp"/>
-	  <code><![CDATA[
-	  MLOG ( INFO
-	       , "updating salt mask from file: " << mask
-	       );
-	  ]]></code>
-	</module>
-      </defun>
+    <transition name="two" inline="true">
+      <include-function href="update_salt_mask_two.xml"/>
       <connect-in port="config" place="config"/>
-      <connect-in port="mask" place="file_with_mask"/>
-      <connect-out port="done" place="done"/>
+      <connect-out port="done" place="finalized"/>
     </transition>
   </net>
 </defun>
