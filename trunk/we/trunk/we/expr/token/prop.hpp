@@ -28,6 +28,9 @@ namespace expr
         case _bitset_insert:
         case _bitset_delete:
         case _bitset_is_element:
+        case _bitset_tohex:
+        case _bitset_fromhex:
+        case _bitset_or:
         case _stack_empty:
         case _stack_top:
         case _stack_push:
