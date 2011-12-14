@@ -296,8 +296,8 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
 //	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
 
 	return kernel;
 }
@@ -335,6 +335,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts1 )
 
 	drts_0->stop();
 	drts_0_thread.join();
+        drts_0->unload_all();
 
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
@@ -377,6 +378,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts2 )
 
 	drts_00->stop();
 	drts_00_thread.join();
+	drts_00->unload_all();
 
 	ptrAg00->shutdown();
 
@@ -427,9 +429,11 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts3 )
 
 	drts_00->stop();
 	drts_00_thread.join();
+        drts_00->unload_all();
 
 	drts_01->stop();
 	drts_01_thread.join();
+        drts_01->unload_all();
 
 	ptrAg00->shutdown();
 	ptrAg01->shutdown();
