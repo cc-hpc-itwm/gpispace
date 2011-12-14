@@ -26,6 +26,8 @@ using std::endl;
 #  define DISABLE_BINARY_TESTS
 #endif
 
+#define REQUIRE(b) if (!(b)) { cerr << "FAILURE in line " << __LINE__ << endl; ++ec; }
+
 int
 main ()
 {
@@ -231,10 +233,6 @@ main ()
 
 #endif
 
-  cout << "testing bitwise operations on bitsetofint" << std::endl;
-
-  cout << "*** OR: ";
-
   {
     set_t a (1); // 64bit
     set_t b (2); // 128bit
@@ -244,20 +242,118 @@ main ()
 
     set_t c = a | b;
 
-    if (not c.is_element(32) || not c.is_element(96))
-    {
-      cout << "FAILED" << endl;
-      cerr << "ERROR: expected bits 32 and 96 to be set, but they were not!" << endl;
-      cerr << std::hex << "       a := " << a << endl;
-      cerr << std::hex << "       b := " << b << endl;
-      cerr << std::hex << "   a | b := " << c << endl;
-      ++ec;
-    }
-    else
-    {
-      cout << "SUCCESS" << endl;
-    }
+    REQUIRE (c.is_element(32));
+    REQUIRE (c.is_element(96));
   }
 
-  return EXIT_SUCCESS;
+  {
+    set_t bs;
+
+    REQUIRE (bitsetofint::to_hex (bs) == "0x/");
+
+    bs.ins (0);
+
+    REQUIRE (bitsetofint::to_hex (bs) == "0x/0000000000000001/");
+
+    bs.ins (1);
+
+    REQUIRE (bitsetofint::to_hex (bs) == "0x/0000000000000003/");
+
+    bs.ins (2);
+
+    REQUIRE (bitsetofint::to_hex (bs) == "0x/0000000000000007/");
+
+    bs.ins (3);
+
+    REQUIRE (bitsetofint::to_hex (bs) == "0x/000000000000000f/");
+
+    bs.ins (4);
+
+    REQUIRE (bitsetofint::to_hex (bs) == "0x/000000000000001f/");
+
+    bs.ins (64);
+
+    REQUIRE (bitsetofint::to_hex (bs) == "0x/000000000000001f/0000000000000001/");
+  }
+
+  {
+    REQUIRE (bitsetofint::from_hex ("0x/") == bitsetofint::type());
+
+    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000001/")
+            == bitsetofint::type().ins (0)
+            );
+
+    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000003/")
+            == bitsetofint::type().ins (0).ins (1)
+            );
+
+    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000007/")
+            == bitsetofint::type().ins (0).ins (1).ins (2)
+            );
+
+    REQUIRE (  bitsetofint::from_hex ("0x/000000000000001f/0000000000000001/")
+            == bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64)
+            );
+  }
+
+  {
+    std::string inp ("0x");
+    std::string::const_iterator pos (inp.begin());
+    const std::string::const_iterator& end (inp.end());
+
+    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+
+    REQUIRE (!bs);
+    REQUIRE (pos == inp.begin());
+  }
+
+  {
+    std::string inp ("0x/");
+    std::string::const_iterator pos (inp.begin());
+    const std::string::const_iterator& end (inp.end());
+
+    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+
+    REQUIRE (bs);
+    REQUIRE (*bs == bitsetofint::type());
+    REQUIRE (pos == end);
+  }
+
+  {
+    std::string inp ("0x/foo");
+    std::string::const_iterator pos (inp.begin());
+    const std::string::const_iterator& end (inp.end());
+
+    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+
+    REQUIRE (bs);
+    REQUIRE (*bs == bitsetofint::type());
+    REQUIRE (std::string (pos, end) == "foo");
+  }
+
+  {
+    std::string inp ("0x/0000000000000000");
+    std::string::const_iterator pos (inp.begin());
+    const std::string::const_iterator& end (inp.end());
+
+    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+
+    REQUIRE (bs);
+    REQUIRE (*bs == bitsetofint::type());
+    REQUIRE (std::string (pos, end) == "0000000000000000");
+  }
+
+  {
+    std::string inp ("0x/0000000000000000/");
+    std::string::const_iterator pos (inp.begin());
+    const std::string::const_iterator& end (inp.end());
+
+    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+
+    REQUIRE (bs);
+    REQUIRE (*bs == bitsetofint::type());
+    REQUIRE (pos == end);
+  }
+
+  return ec;
 }

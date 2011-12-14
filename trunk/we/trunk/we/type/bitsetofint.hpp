@@ -12,6 +12,8 @@
 
 #include <boost/functional/hash.hpp>
 
+#include <boost/optional.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -51,17 +53,21 @@ namespace bitsetofint
     explicit type (const container_type & c) : container (c) {}
     explicit type (const std::size_t n = 0) : container (n) {}
 
-    void ins (const element_type & x)
+    type& ins (const element_type & x)
     {
       if (the_container(x) >= container.size())
         container.resize(the_container(x) + 1, 0);
       container[the_container(x)] |= (1UL << the_slot(x));
+
+      return *this;
     }
 
-    void del (const element_type & x)
+    type& del (const element_type & x)
     {
       if (the_container(x) < container.size())
         container[the_container(x)] &= ~(1UL << the_slot(x));
+
+      return *this;
     }
 
     bool is_element (const element_type & x) const
@@ -70,11 +76,12 @@ namespace bitsetofint
         && ((container[the_container(x)] & (1UL << the_slot(x))) != 0);
     }
 
-    friend type operator|(const type &, const type &);
+    friend type operator | (const type &, const type &);
     friend std::ostream & operator << (std::ostream &, const type &);
     friend std::size_t hash_value (const type &);
     friend bool operator == (const type &, const type &);
     friend std::string to_hex (const type &);
+    template<typename IT> friend std::string to_hex (IT&, const IT&);
   };
 
   inline type operator| (const type & lhs, const type & rhs)
@@ -127,53 +134,60 @@ namespace bitsetofint
     return oss.str();
   }
 
+  template<typename IT>
+  inline boost::optional<type> from_hex (IT& pos, const IT& end)
+  {
+    if (  (pos + 0) != end && *(pos + 0) == '0'
+       && (pos + 1) != end && *(pos + 1) == 'x'
+       && (pos + 2) != end && *(pos + 2) == '/'
+       )
+      {
+        std::advance (pos, 3);
+
+        type::container_type container;
+
+        while (std::distance (pos, end) >= 17)
+          {
+            uint64_t value (0);
+
+            std::istringstream iss (std::string (pos, pos + 16));
+
+            iss.flags (std::ios::hex);
+            iss.width (16);
+            iss.fill ('0');
+
+            iss >> value;
+
+            if (iss.fail() && !iss.eof())
+              {
+                return type (container);
+              }
+
+            container.push_back (value);
+
+            std::advance (pos, 17);
+          }
+
+        return type (container);
+      }
+
+    return boost::none;
+  }
+
   inline type from_hex (const std::string & s)
   {
-    type::container_type container;
-
     std::string::const_iterator pos (s.begin());
     const std::string::const_iterator& end (s.end());
 
-    if (  std::distance (pos, end) >= 3
-       && *pos == '0' && *(pos+1) == 'x' && *(pos+2) == '/'
-       )
-    {
-      pos += 3;
+    boost::optional<type> mtype (from_hex (pos, end));
 
-      while (std::distance (pos, end) >= 17)
-      {
-        uint64_t value (0);
-
-        std::istringstream iss (std::string (pos, pos + 16));
-
-        iss.flags (std::ios::hex);
-        iss.width (16);
-        iss.fill ('0');
-
-        iss >> value;
-
-        // TODO: if (iss.bad()) throw
-
-        container.push_back (value);
-
-        pos += 17;
-      }
-    }
-    else
+    if (!(mtype && pos == end))
     {
       throw std::runtime_error
         ("bitsetofint::from_hex invalid argument: \"" + s + "\"");
     }
 
-    if (pos != end)
-    {
-      throw std::runtime_error
-        ("bitsetofint::from_hex invalid argument: \"" + s + "\"");
-    }
-    else
-    {
-      return type (container);
-    }
+    return *mtype;
   }
 
   inline std::size_t hash_value (const type & t)
@@ -185,7 +199,43 @@ namespace bitsetofint
 
   inline bool operator == (const type & x, const type & y)
   {
-    return x.container == y.container;
+    type::container_type::const_iterator pos_x (x.container.begin());
+    const type::container_type::const_iterator& end_x (x.container.end());
+    type::container_type::const_iterator pos_y (y.container.begin());
+    const type::container_type::const_iterator& end_y (y.container.end());
+
+    while (pos_x != end_x && pos_y != end_y)
+      {
+        if (*pos_x != *pos_y)
+          {
+            return false;
+          }
+
+        ++pos_x;
+        ++pos_y;
+      }
+
+    while (pos_x != end_x)
+      {
+        if (*pos_x != 0)
+          {
+            return false;
+          }
+
+        ++pos_x;
+      }
+
+    while (pos_y != end_y)
+      {
+        if (*pos_y != 0)
+          {
+            return false;
+          }
+
+        ++pos_y;
+      }
+
+    return true;
   }
 }
 
