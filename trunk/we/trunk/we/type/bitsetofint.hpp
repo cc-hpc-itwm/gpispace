@@ -185,10 +185,18 @@ namespace bitsetofint
 
     boost::optional<type> mtype (from_hex (pos, end));
 
-    if (!(mtype && pos == end))
+    if (!mtype)
     {
       throw std::runtime_error
-        ("bitsetofint::from_hex invalid argument: \"" + s + "\"");
+        ("bitsetofint::from_hex: missing prefix 0x");
+    }
+
+    if (pos != end)
+    {
+      throw std::runtime_error
+        ("bitsetofint::from_hex invalid argument: \"" + s + "\""
+        + ", rest after parsing: " + std::string (pos, end)
+        );
     }
 
     return *mtype;
