@@ -139,33 +139,37 @@ namespace bitsetofint
   {
     if (  (pos + 0) != end && *(pos + 0) == '0'
        && (pos + 1) != end && *(pos + 1) == 'x'
-       && (pos + 2) != end && *(pos + 2) == '/'
        )
       {
-        std::advance (pos, 3);
+        std::advance (pos, 2);
 
         type::container_type container;
 
-        while (std::distance (pos, end) >= 17)
+        while (pos != end && *pos == '/')
           {
-            uint64_t value (0);
+            std::advance (pos, 1);
 
-            std::istringstream iss (std::string (pos, pos + 16));
-
-            iss.flags (std::ios::hex);
-            iss.width (16);
-            iss.fill ('0');
-
-            iss >> value;
-
-            if (iss.fail() && !iss.eof())
+            if (std::distance (pos, end) >= 16)
               {
-                return type (container);
+                uint64_t value (0);
+
+                std::istringstream iss (std::string (pos, pos + 16));
+
+                iss.flags (std::ios::hex);
+                iss.width (16);
+                iss.fill ('0');
+
+                iss >> value;
+
+                if (iss.fail() && !iss.eof())
+                  {
+                    return type (container);
+                  }
+
+                container.push_back (value);
+
+                std::advance (pos, 16);
               }
-
-            container.push_back (value);
-
-            std::advance (pos, 17);
           }
 
         return type (container);
