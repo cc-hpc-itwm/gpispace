@@ -12,7 +12,7 @@ test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
 
 # set some default values
 gpi_bin_path=""
-if [ -n "$GPI_PRIV_DIR" -a -w "$GPI_PRIV_DIR" ] ; then
+if [ -n "$GPI_PRIV_DIR" ] ; then
     gpi_bin_path="$GPI_PRIV_DIR"
 elif [ -r "$HOME/.sdpa/configs/gpi.dir" ] ; then
     gpi_bin_path=$( cat "$HOME/.sdpa/configs/gpi.dir" )
@@ -118,7 +118,7 @@ if [ $do_copy = "true" ] ; then
 	cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
 	chmod ug=rx,o= "${gpi_bin_path}/${gpi_bin}"
     else
-	log "privileged path $gpi_bin_path does not exist, or i am not allowed to write to it!"
+	log "W: privileged path $gpi_bin_path does not exist, or i am not allowed to write to it!"
     fi
 fi
 
