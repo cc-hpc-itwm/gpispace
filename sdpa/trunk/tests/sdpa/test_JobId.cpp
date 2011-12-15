@@ -1,4 +1,3 @@
-
 #define BOOST_TEST_MODULE TestJobId
 #include "sdpa/daemon/jobFSM/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
