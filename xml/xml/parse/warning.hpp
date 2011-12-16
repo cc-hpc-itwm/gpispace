@@ -140,6 +140,35 @@ namespace xml
 
       // ******************************************************************* //
 
+      class shadow_function : public generic
+      {
+      private:
+        std::string nice ( const ::fhg::util::maybe<std::string>& name
+                         , const boost::filesystem::path& path_early
+                         , const boost::filesystem::path& path_late
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "function " << name << " shadowed "
+            << "in " << path_late
+            << ", first definition was in " << path_early
+            ;
+
+          return s.str();
+        }
+
+      public:
+        shadow_function ( const ::fhg::util::maybe<std::string>& name
+                        , const boost::filesystem::path& path_early
+                        , const boost::filesystem::path& path_late
+                        )
+          : generic (nice (name, path_early, path_late))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class default_construction : public generic
       {
       private:

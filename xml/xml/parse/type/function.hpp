@@ -49,6 +49,7 @@ namespace xml
     {
       typedef xml::util::unique<port_type>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
+      typedef xml::util::unique<function_type>::elements_type functions_type;
 
       // ******************************************************************* //
 
@@ -157,6 +158,31 @@ namespace xml
         void operator () (const expression_type &) const { return; }
         void operator () (const mod_type &) const { return; }
         void operator () (const Net & net) const { net.type_check (state); }
+      };
+
+      // ******************************************************************* //
+
+      template<typename Net>
+      class function_distribute_function : public boost::static_visitor<void>
+      {
+      private:
+        const state::type& _state;
+        const functions_type& _functions;
+
+      public:
+        function_distribute_function ( const state::type& state
+                                     , const functions_type& functions
+                                     )
+          : _state (state)
+          , _functions (functions)
+        {}
+
+        void operator () (expression_type&) const { return; }
+        void operator () (mod_type&) const { return; }
+        void operator () (Net& net) const
+        {
+          net.distribute_function (_state, _functions);
+        }
       };
 
       // ******************************************************************* //
@@ -536,6 +562,23 @@ namespace xml
             }
 
           return forbidden;
+        }
+
+        // ***************************************************************** //
+
+        void distribute_function (const state::type& state)
+        {
+          distribute_function (state, functions_type());
+        }
+
+        void distribute_function ( const state::type& state
+                                 , const functions_type& functions
+                                 )
+        {
+          boost::apply_visitor
+            ( function_distribute_function<net_type> (state, functions)
+            , f
+            );
         }
 
         // ***************************************************************** //
@@ -1792,8 +1835,7 @@ namespace xml
 
             structs_to_cpp (n.structs, state);
 
-            for ( typename NET::functions_type::const_iterator pos
-                   (n.functions().begin())
+            for ( functions_type::const_iterator pos (n.functions().begin())
                 ; pos != n.functions().end()
                 ; ++pos
                 )
