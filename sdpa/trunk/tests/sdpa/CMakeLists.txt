@@ -1,6 +1,9 @@
 # -*- mode: cmake; -*-
 include (fhg_plugin_macros)
 
+find_package(FVM REQUIRED QUIET)
+include_directories(${FVM_INCLUDE_DIR})
+
 set(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/stresstest")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}")
 
@@ -40,7 +43,7 @@ include(pnet_macros)
 
 pnet_compile(sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-  FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib 
+  FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
 )
 
 set (test_srcs
