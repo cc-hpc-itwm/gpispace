@@ -1227,13 +1227,6 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-std::string const & version ()
-{
-  // TODO: get this from config.h/version.h
-  static std::string ver("v0.1");
-  return ver;
-}
-
 path_list_t collect_sockets (fs::path const & prefix)
 {
   namespace fs = boost::filesystem;
