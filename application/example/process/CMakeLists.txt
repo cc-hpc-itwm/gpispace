@@ -47,7 +47,7 @@ install(FILES ${xmls}
 
 install(FILES ${hdrs}
   DESTINATION include/process
-  COMPONENT headers
+  COMPONENT module-headers
 )
 
 install(TARGETS process
