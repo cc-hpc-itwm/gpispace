@@ -9,6 +9,6 @@ set (prgs
 add_subdirectory(xml)
 
 install (PROGRAMS ${prgs}
-  DESTINATION bin/cc
+  DESTINATION libexec/apps/sdpacc/bin
   COMPONENT applications
 )
