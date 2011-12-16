@@ -22,5 +22,5 @@ install(PROGRAMS ${prgs}
   COMPONENT runtime)
 
 install(PROGRAMS ${scripts}
-  DESTINATION libexec/scripts
+  DESTINATION libexec/sdpa/scripts
   COMPONENT runtime)

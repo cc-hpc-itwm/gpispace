@@ -106,7 +106,7 @@ if [ -z "$SDPA_HOME" ] ; then
     prepend_to_path PATH "$SDPA_HOME/bin"
 fi
 
-export SDPA_SCRIPT_DIR="$SDPA_HOME/libexec/scripts"
+export SDPA_SCRIPT_DIR="$SDPA_HOME/libexec/sdpa/scripts"
 prepend_to_path PATH "$SDPA_SCRIPT_DIR"
 
 ##############################################
