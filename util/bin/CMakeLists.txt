@@ -13,4 +13,4 @@ include_directories(${FhgLog_INCLUDE_DIR})
 install (TARGETS fhgcfg fhgmodinfo fhgkernel
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)

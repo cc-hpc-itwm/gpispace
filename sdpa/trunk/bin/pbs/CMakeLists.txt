@@ -17,4 +17,4 @@ set (prgs
 
 install(PROGRAMS ${prgs}
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)

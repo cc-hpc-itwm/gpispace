@@ -28,4 +28,4 @@ target_link_libraries (sdpa-mon
 install(TARGETS sdpa-mon
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)

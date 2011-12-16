@@ -34,5 +34,5 @@ target_link_libraries ( pnete
 install ( TARGETS pnete
           RUNTIME
           DESTINATION bin
-          COMPONENT applications
+          COMPONENT runtime
         )
