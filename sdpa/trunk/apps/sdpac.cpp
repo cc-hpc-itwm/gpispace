@@ -469,6 +469,7 @@ int main (int argc, char **argv) {
       lines.push_back (seperator);
       lines.push_back ("");
       lines.push_back (api->version());
+      lines.push_back (api->revision());
       lines.push_back (api->copyright());
       lines.push_back (api->build_timestamp());
       lines.push_back (api->contact());
