@@ -1,5 +1,4 @@
-
-set (PARSU_DIFF "libexec/apps/parus/diff")
+set (PARSU_DIFF "libexec/apps/parsu/diff")
 
 add_subdirectory (xml)
 
