@@ -4,6 +4,8 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+cd $(dirname $(which "$0"))
+
 if ! echo "$1" | grep -q -e '^[[:digit:]]\+\(\.[[:digit:]]\+\(\.[[:digit:]]\+[^ .]*\)\?\)\?$'; then
   echo "version input was not ok: $1"
   echo "   must match \d+(.\d+(.\d+)?)?"
