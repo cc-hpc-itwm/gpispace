@@ -28,4 +28,4 @@ set (mods
 
 install(FILES ${mods}
   DESTINATION share/sdpa/cmake
-  COMPONENT libraries)
+  COMPONENT cmake-scripts)
