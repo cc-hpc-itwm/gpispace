@@ -11,6 +11,7 @@
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
+#include <boost/foreach.hpp>
 
 #include <fhg/util/maybe.hpp>
 
@@ -59,7 +60,6 @@ namespace xml
 
       public:
         typedef xml::util::unique<place_type>::elements_type places_type;
-        typedef xml::util::unique<function_type>::elements_type functions_type;
         typedef xml::util::unique<function_type>::elements_type templates_type;
         typedef xml::util::unique<transition_type>::elements_type transitions_type;
         typedef xml::util::unique<specialize_type>::elements_type specializes_type;
@@ -363,6 +363,39 @@ namespace xml
             }
 
           specialize_structs (map, structs, state);
+        }
+
+        // ***************************************************************** //
+
+        void distribute_function ( const state::type& state
+                                 , const functions_type& functions_above
+                                 )
+        {
+          BOOST_FOREACH (const function_type& fun, functions_above)
+            {
+              function_type fun_local;
+
+              if (!_functions.push (fun, fun_local))
+                {
+                  state.warn ( warning::shadow_function ( fun.name
+                                                        , fun.path
+                                                        , fun_local.path
+                                                        )
+                             );
+                }
+            }
+
+          functions_type funs (functions());
+
+          BOOST_FOREACH (function_type& fun, funs)
+            {
+              fun.distribute_function (state, functions());
+            }
+
+          BOOST_FOREACH (transition_type& transition, transitions())
+            {
+              transition.distribute_function (state, functions());
+            }
         }
 
         // ***************************************************************** //

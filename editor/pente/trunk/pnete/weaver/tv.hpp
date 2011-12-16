@@ -128,11 +128,7 @@ namespace fhg
       WSIG(tv, specialize::type_map, XMLTYPE(type_map_type), tm);
       WSIG(tv, specialize::type_get, XMLTYPE(type_get_type), tg);
       WSIG(tv, conditions::open, XMLTYPE(conditions_type), cs);
-      WSIG( tv
-          , function::open
-          , ITVAL(XMLTYPE(net_type::functions_type))
-          , fun
-          );
+      WSIG(tv, function::open, ITVAL(XMLTYPE(functions_type)), fun);
       WSIGE(tv, function::close);
       WSIG(tv, function::name, MAYBE(std::string), name);
       WSIG(tv, function::internal, MAYBE(bool), internal);
@@ -180,11 +176,7 @@ namespace fhg
           , XMLTYPE(net_type::specializes_type)
           , specializes
           );
-      WSIG( tv
-          , net::functions
-          , XMLTYPE(net_type::functions_type)
-          , functions
-          );
+      WSIG(tv, net::functions, XMLTYPE(functions_type), functions);
       WSIG(tv, net::places, XMLTYPE(net_type::places_type), places);
       WSIG( tv
           , net::transitions
