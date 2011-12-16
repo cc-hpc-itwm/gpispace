@@ -217,7 +217,7 @@ install(FILES ${hdrs}
   )
 
 install(PROGRAMS kdm.sh
-  DESTINATION bin
+  DESTINATION libexec/apps/kdm/bin
   COMPONENT examples
 )
 
@@ -228,10 +228,10 @@ install(TARGETS determine_size do_load do_write
 
 install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
   LIBRARY
-  DESTINATION libexec
+  DESTINATION libexec/apps/kdm/lib
   COMPONENT modules)
 
 install(TARGETS kdm_mod kdmfull_mod
   LIBRARY
-  DESTINATION libexec
+  DESTINATION libexec/apps/kdm/lib
   COMPONENT modules)
