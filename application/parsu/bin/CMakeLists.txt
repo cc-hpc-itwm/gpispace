@@ -4,5 +4,5 @@ set (prgs
 )
 
 install(PROGRAMS ${prgs}
-  DESTINATION bin/parsu
+  DESTINATION libexec/apps/parsu/bin
   COMPONENT applications)

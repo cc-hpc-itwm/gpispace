@@ -1,5 +1,5 @@
 
-set (PARSU_STACK "share/sdpa/parsu/stack")
+set (PARSU_STACK "libexec/apps/parsu/stack")
 
 add_subdirectory (xml)
 
@@ -16,7 +16,7 @@ set (prgs
 )
 
 install(PROGRAMS ${prgs}
-  DESTINATION bin/parsu
+  DESTINATION libexec/apps/parsu/bin
   COMPONENT applications)
 
 set (helper

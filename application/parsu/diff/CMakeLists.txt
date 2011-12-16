@@ -1,5 +1,5 @@
 
-set (PARSU_DIFF "share/sdpa/parsu/diff")
+set (PARSU_DIFF "libexec/apps/parus/diff")
 
 add_subdirectory (xml)
 
@@ -16,7 +16,7 @@ set (prgs
 )
 
 install(PROGRAMS ${prgs}
-  DESTINATION bin/parsu
+  DESTINATION libexec/apps/parsu/bin
   COMPONENT applications)
 
 set (helper
