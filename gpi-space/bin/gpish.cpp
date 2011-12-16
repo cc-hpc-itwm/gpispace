@@ -298,6 +298,7 @@ std::string disclaimer ()
   std::stringstream sstr;
   sstr << "Fraunhofer GPI shell, version " << gpi::version_string () << std::endl;
   sstr << "copyright: Alexander Petry <petry@itwm.fhg.de> (c) 2011" << std::endl;
+  sstr << "revision: " << gpi::revision_string() << std::endl;
   return sstr.str();
 }
 
