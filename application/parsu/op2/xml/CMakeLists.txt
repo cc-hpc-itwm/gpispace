@@ -7,4 +7,4 @@ set (xml
 
 install(FILES ${xml}
   DESTINATION ${PARSU_OPTWO}
-  COMPONENT parsu)
+  COMPONENT applications)

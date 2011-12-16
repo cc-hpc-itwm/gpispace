@@ -17,7 +17,7 @@ set (prgs
 
 install(PROGRAMS ${prgs}
   DESTINATION bin/parsu
-  COMPONENT parsu)
+  COMPONENT applications)
 
 set (helper
    mk.xml
@@ -25,5 +25,5 @@ set (helper
 
 install(PROGRAMS ${helper}
   DESTINATION ${PARSU_SHRINK}
-  COMPONENT parsu)
+  COMPONENT applications)
 
