@@ -106,6 +106,9 @@ if [ -z "$SDPA_HOME" ] ; then
     prepend_to_path PATH "$SDPA_HOME/bin"
 fi
 
+export SDPA_SCRIPT_DIR="$SDPA_HOME/libexec/scripts"
+prepend_to_path PATH "$SDPA_SCRIPT_DIR"
+
 ##############################################
 #                                            #
 #  F U N C T I O N    D E F I N I T I O N S  #
@@ -944,9 +947,6 @@ function generate_environment ()
     echo export SDPA_LIBEXEC="$SDPA_HOME/libexec"
 
     prepend_to_path PATH "$SDPA_HOME/bin"
-    prepend_to_path PATH "$SDPA_HOME/bin/pbs"
-    prepend_to_path PATH "$SDPA_HOME/bin/parsu"
-
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/libexec"
     prepend_to_path LD_LIBRARY_PATH "$HOME/.sdpa/plugins"
@@ -1202,7 +1202,7 @@ function start_agent ()
         node=localhost
     fi
 
-    err=$(rexec "$node" "$SDPA_HOME/bin/start-agent" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         echo "$name" >&2
@@ -1224,7 +1224,7 @@ function stop_agent ()
     if [ "$node" == "$name" ] ; then
         node=localhost # maybe we should use the master node?
     fi
-    local cmd="rexec $node $SDPA_HOME/bin/stop-agent -n $name"
+    local cmd="rexec $node $SDPA_SCRIPT_DIR/stop-agent -n $name"
     debug $cmd
     err=$($cmd 2>&1)
     ec=$?
@@ -1247,7 +1247,7 @@ function status_agent ()
         node=localhost # maybe we should use the master node?
     fi
 
-    local cmd="rexec $node $SDPA_HOME/bin/status-agent -n $name"
+    local cmd="rexec $node $SDPA_SCRIPT_DIR/status-agent -n $name"
     debug $cmd
     $cmd </dev/null >/dev/null 2>&1
 }
@@ -1383,7 +1383,7 @@ function send_signal_to_pc ()
 {
     local node=$1 ; shift
     local sig=$1 ; shift
-    local err=$(rexec "$node" "$SDPA_HOME/bin/send-signal" -n "nre-pcd" -s "$sig")
+    local err=$(rexec "$node" "$SDPA_SCRIPT_DIR/send-signal" -n "nre-pcd" -s "$sig")
     ec=$?
     if [ $ec -ne 0 ] ; then
         log "E: could not send signal $sig to pc on node $node: $err"
@@ -1442,7 +1442,7 @@ function stop_nre_on_node ()
     local node=$1 ; shift
     local err
     local ec
-    err=$(rexec "$node" "$SDPA_HOME/bin/stop-agent" -n "nre-$node" 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/stop-agent" -n "nre-$node" 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         return 0
@@ -1656,7 +1656,7 @@ function start_drts_on_node ()
         master="nre-$node"
     fi
 
-    err=$(rexec "$node" "$SDPA_HOME/bin/start-drts" -D -m "$master" -c "$per_node" $@ 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -D -m "$master" -c "$per_node" $@ 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         return 0
@@ -1675,7 +1675,7 @@ function stop_drts_on_node ()
     local node=$1 ; shift
     local err
     local ec
-    err=$(rexec "$node" "$SDPA_HOME/bin/stop-drts" $@)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/stop-drts" $@)
     ec=$?
     if [ $ec -ne 0 ] ; then
         log "W: stop-drts on node $node failed: $ec: $err"
@@ -1688,7 +1688,7 @@ function status_drts_on_node ()
     local node=$1 ; shift
     local err
     local ec
-    err=$(rexec "$node" "$SDPA_HOME/bin/status-drts $@" 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/status-drts $@" 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
         log "W: status-drts on node $node failed: $ec: $err"
@@ -1714,7 +1714,7 @@ function start_gui ()
     fi
     local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
 
-    local cmd="$SDPA_HOME/bin/start-gui $gui_port $log_port"
+    local cmd="$SDPA_SCRIPT_DIR/start-gui $gui_port $log_port"
     if [ "$gui_host" != "$(hostname -f)" ] ; then
         log "W: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
         cmd="ssh -X $gui_host $cmd"
