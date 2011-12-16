@@ -70,7 +70,7 @@ void Portfolio::Init()
     strBackendDir = sdpa_home;
   }
 
-  m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
+  m_pUi->m_editBackendFile->setText(strBackendDir + "/libexec/apps/asian/bin/Asian");
   m_pUi->m_editWorkflowFile->setText(strBackendDir + "/libexec/apps/asian/asian.pnet");
   m_pUi->m_nThreads->setValue(1);
 
