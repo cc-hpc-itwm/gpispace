@@ -288,6 +288,7 @@ int main (int argc, char **argv) {
     ("force,f", "force the operation")
     ("make-config", "create a basic config file")
     ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
+    ("revision", "Dump the revision identifier")
     ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
@@ -380,7 +381,7 @@ int main (int argc, char **argv) {
     std::cerr << "W: could not parse config file: "
 	      << cfg.get("config")
 	      << std::endl;
-    
+
     std::cerr << "W: try generating one with '"
 	      << argv[0] << " --make-config'"
 	      << std::endl;
@@ -467,7 +468,7 @@ int main (int argc, char **argv) {
       lines.push_back (header);
       lines.push_back (seperator);
       lines.push_back ("");
-      lines.push_back (api->revision());
+      lines.push_back (api->version());
       lines.push_back (api->copyright());
       lines.push_back (api->build_timestamp());
       lines.push_back (api->contact());
@@ -486,6 +487,11 @@ int main (int argc, char **argv) {
       return 0;
     }
     if (cfg.is_set("dumpversion"))
+    {
+      std::cout << api->version() << std::endl;
+      return 0;
+    }
+    if (cfg.is_set("revision"))
     {
       std::cout << api->revision() << std::endl;
       return 0;
