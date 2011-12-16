@@ -291,6 +291,7 @@ int main (int ac, char *av[])
   if (gpi_api.is_master())
   {
     LOG(INFO, "GPISpace version: " << gpi::version_string());
+    LOG(INFO, "GPISpace revision: " << gpi::revision_string());
     LOG(INFO, "GPIApi version: " << gpi_api.version());
   }
 

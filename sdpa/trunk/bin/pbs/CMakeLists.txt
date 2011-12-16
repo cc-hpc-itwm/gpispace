@@ -1,7 +1,9 @@
 set (prgs
-  clear-logs
-  init-screen
   sdpa
+)
+
+set (scripts
+  clear-logs
   start-gpi
   start-gui
   start-orch
@@ -17,4 +19,8 @@ set (prgs
 
 install(PROGRAMS ${prgs}
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)
+
+install(PROGRAMS ${scripts}
+  DESTINATION libexec/sdpa/scripts
+  COMPONENT runtime)

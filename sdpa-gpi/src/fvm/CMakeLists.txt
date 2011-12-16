@@ -25,4 +25,4 @@ set_target_properties(sdpa-gpi
 install (TARGETS sdpa-gpi
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)

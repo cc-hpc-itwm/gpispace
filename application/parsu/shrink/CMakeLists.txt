@@ -1,5 +1,5 @@
 
-set (PARSU_SHRINK "share/sdpa/parsu/shrink")
+set (PARSU_SHRINK "libexec/apps/parsu/shrink")
 
 add_subdirectory (xml)
 
@@ -16,8 +16,8 @@ set (prgs
 )
 
 install(PROGRAMS ${prgs}
-  DESTINATION bin/parsu
-  COMPONENT parsu)
+  DESTINATION libexec/apps/parsu/bin
+  COMPONENT applications)
 
 set (helper
    mk.xml
@@ -25,5 +25,5 @@ set (helper
 
 install(PROGRAMS ${helper}
   DESTINATION ${PARSU_SHRINK}
-  COMPONENT parsu)
+  COMPONENT applications)
 

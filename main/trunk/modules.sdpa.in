@@ -10,10 +10,9 @@ module-whatis   "[module-info name] adds SDPA to the environment"
 conflict soft/sdpa
 set prefix @CMAKE_INSTALL_PREFIX@
 prepend-path    PATH              ${prefix}/bin
-prepend-path    PATH              ${prefix}/bin/pbs
-prepend-path    PATH              ${prefix}/bin/parsu
 prepend-path    LD_LIBRARY_PATH   ${prefix}/lib/:${prefix}/libexec
 prepend-path    PC_LIBRARY_PATH   ${prefix}/libexec
+setenv          SDPA_SCRIPT_DIR   ${prefix}/libexec/apps/scripts
 setenv          SDPA_LIBEXEC      ${prefix}/libexec
 setenv          SDPA_HOME         ${prefix}
 setenv		SDPA_VERSION	  @PROJECT_REVISION@

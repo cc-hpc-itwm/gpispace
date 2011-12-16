@@ -63,4 +63,4 @@ install(FILES ${sdpa-gui_HDRS}
 install(TARGETS sdpa-gui
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)
