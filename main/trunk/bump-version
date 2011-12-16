@@ -31,10 +31,6 @@ else
     cur_minor=$(echo $cur_minor | tr -d \")
     cur_patch=$(echo $cur_patch | tr -d \")
 
-    echo $cur_major
-    echo $cur_minor
-    echo $cur_patch
-
     if [ $major -lt $cur_major ]; then
 	echo "new major cannot be less than current major"
 	exit 4
