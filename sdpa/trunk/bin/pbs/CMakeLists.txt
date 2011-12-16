@@ -1,6 +1,5 @@
 set (prgs
   clear-logs
-  init-screen
   sdpa
   start-gpi
   start-gui
