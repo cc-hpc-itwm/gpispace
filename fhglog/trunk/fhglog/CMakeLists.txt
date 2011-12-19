@@ -64,7 +64,7 @@ if (WITH_REMOTE_LOGGING)
     )
   install(FILES ${remote_hdrs}
     DESTINATION include/fhglog/remote
-    COMPONENT headers)
+    COMPONENT fhglog-headers)
 endif (WITH_REMOTE_LOGGING)
 
 ADD_LIBRARY(fhglog ${hdrs} ${srcs} ${remote_srcs} ${remote_hdrs})
@@ -73,7 +73,7 @@ set_target_properties(fhglog-shared PROPERTIES OUTPUT_NAME fhglog)
 
 install(FILES ${hdrs}
   DESTINATION include/fhglog
-  COMPONENT headers)
+  COMPONENT fhglog-headers)
 install(TARGETS fhglog
   ARCHIVE
   DESTINATION lib

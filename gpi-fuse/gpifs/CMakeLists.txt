@@ -41,7 +41,7 @@ install(TARGETS gpi-fuse
 install(TARGETS gpifs
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)
 
 install(FILES ${hdrs}
   DESTINATION include/gpifs

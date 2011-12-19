@@ -20,5 +20,5 @@ add_subdirectory(pnet)
 
 install(TARGETS Asian
   RUNTIME
-  DESTINATION bin
+  DESTINATION libexec/apps/asian/bin
   COMPONENT applications)

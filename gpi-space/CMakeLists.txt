@@ -101,6 +101,9 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package (MMGR REQUIRED)
 include_directories(${MMGR_INCLUDE_DIR})
 
+find_package (LibRT REQUIRED)
+include_directories(${LIBRT_INCLUDE_DIR})
+
 add_subdirectory(gpi-space)
 add_subdirectory(bin)
 
