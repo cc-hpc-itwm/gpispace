@@ -24,10 +24,14 @@ namespace expr
 {
   namespace parse
   {
-    parser::parser (const std::string & input, eval::context & context)
+    parser::parser ( const std::string & input
+                   , eval::context & context
+                   , const bool& constant_folding
+                   )
       : op_stack ()
       , nd_stack ()
       , tmp_stack ()
+      , _constant_folding (constant_folding)
     {
       parse (input, boost::bind ( eval::refnode_value
                                 , boost::ref(context)
@@ -35,17 +39,23 @@ namespace expr
                                 )
             );
     }
-    parser::parser (const std::string & input)
+    parser::parser ( const std::string & input
+                   , const bool& constant_folding
+                   )
       : op_stack ()
       , nd_stack ()
       , tmp_stack ()
+      , _constant_folding (constant_folding)
     {
       parse (input, eval::refnode_name);
     }
-    parser::parser (const nd_stack_t & seq)
+    parser::parser ( const nd_stack_t & seq
+                   , const bool& constant_folding
+                   )
       : op_stack ()
       , nd_stack (seq)
       , tmp_stack ()
+      , _constant_folding (constant_folding)
     {}
 
     void parser::add (const parser & other)
@@ -117,7 +127,9 @@ namespace expr
 
       nd_t c (tmp_stack.back()); tmp_stack.pop_back();
 
-      if (boost::apply_visitor (node::visitor::is_value(), c))
+      if (  constant_folding()
+         && boost::apply_visitor (node::visitor::is_value(), c)
+         )
         //! \todo use c++0x to write this as
         // if (node::is_value(c))
         {
@@ -146,7 +158,8 @@ namespace expr
 
       nd_t l (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (  boost::apply_visitor (node::visitor::is_value(), l)
+      if (  constant_folding()
+         && boost::apply_visitor (node::visitor::is_value(), l)
          && boost::apply_visitor (node::visitor::is_value(), r)
          )
         tmp_stack.push_back
@@ -199,7 +212,9 @@ namespace expr
 
       nd_t c (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (boost::apply_visitor (node::visitor::is_value(), c))
+      if (  constant_folding()
+         && boost::apply_visitor (node::visitor::is_value(), c)
+         )
         {
           if (value::function::is_true(boost::get<value::type> (c)))
             tmp_stack.push_back (t);
@@ -362,13 +377,15 @@ namespace expr
       return s;
     }
 
-    std::string parse_result (const std::string& input)
+    std::string parse_result ( const std::string& input
+                             , const bool& constant_folding
+                             )
     {
       std::ostringstream oss;
 
       try
         {
-          oss << parser (input) << std::endl;
+          oss << parser (input, constant_folding) << std::endl;
         }
       catch (const exception::parse::exception& e)
         {
