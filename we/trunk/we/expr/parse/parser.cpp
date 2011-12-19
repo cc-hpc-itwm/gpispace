@@ -377,13 +377,15 @@ namespace expr
       return s;
     }
 
-    std::string parse_result (const std::string& input)
+    std::string parse_result ( const std::string& input
+                             , const bool& constant_folding
+                             )
     {
       std::ostringstream oss;
 
       try
         {
-          oss << parser (input) << std::endl;
+          oss << parser (input, constant_folding) << std::endl;
         }
       catch (const exception::parse::exception& e)
         {

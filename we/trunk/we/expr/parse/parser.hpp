@@ -120,7 +120,9 @@ namespace expr
     };
 
     std::ostream& operator << (std::ostream&, const parser&);
-    std::string parse_result (const std::string&);
+    std::string parse_result ( const std::string&
+                             , const bool& constant_folding = false
+                             );
   }
 }
 
