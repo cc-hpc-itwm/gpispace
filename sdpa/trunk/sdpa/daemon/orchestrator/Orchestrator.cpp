@@ -54,7 +54,7 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
 	BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
 	{
-		DLOG(TRACE, "Notify the subscriber "<<subscriber);
+          // DLOG(TRACE, "Notify the subscriber "<<subscriber);
 		ptrEvt->to() = pair_subscr_joblist.first;
 		sendEventToMaster(ptrEvt);
 	}
