@@ -989,7 +989,7 @@ function initialize ()
         return 1
     fi
 
-    if ! grep -q -e "^$(hostname)$" "${hostfile}" ; then
+    if ! grep -q -e "^$(hostname -f)$" "${hostfile}" ; then
         if ! grep -q -e "^$(hostname -s)$" "${hostfile}" ; then
             log "E: could not find current host '$(hostname)' in hostfile: $hostfile"
             return 1
@@ -2014,10 +2014,12 @@ function on_valid_host ()
 
 function on_master_node ()
 {
-    local host="$(hostname -s)"
     if test -r "$state_dir/nodefile" ; then
         local master=$( head -n 1 "$state_dir/nodefile" )
-        if [ "$host" = "$master" ] ; then
+        if [ "$master" = "$(hostname -s)" ] ; then
+            return 0
+        fi
+        if [ "$master" = "$(hostname -f)" ] ; then
             return 0
         fi
     else
