@@ -46,6 +46,12 @@ namespace fhg
         return m_container.size();
       }
 
+      bool empty() const
+      {
+    	  lock_type lock(m_mtx);
+    	  return m_container.empty();
+      }
+
       size_t erase (T const &t)
       {
         lock_type lock(m_mtx);
