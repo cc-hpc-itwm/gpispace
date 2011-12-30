@@ -74,7 +74,9 @@ namespace sdpa {
 	void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
 	virtual void getWorkerList(std::list<std::string>&);
-	 virtual Worker::worker_id_t getWorkerId(unsigned int rank);
+	virtual Worker::worker_id_t getWorkerId(unsigned int rank);
+
+	virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
 
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 

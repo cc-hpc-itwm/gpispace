@@ -580,20 +580,20 @@ void SchedulerImpl::check_post_request()
 
 void SchedulerImpl::feed_workers()
 {
-  sdpa::worker_id_list_t workerList;
-  ptr_worker_man_->getWorkerListNotFull(workerList);
+	sdpa::worker_id_list_t workerList;
+	ptr_worker_man_->getWorkerListNotFull(workerList);
 
-  if (ptr_comm_handler_)
-  {
-    BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
-    {
-      ptr_comm_handler_->serve_job(worker_id);
-    }
-  }
-  else
-  {
-    MLOG(FATAL, "STRANGE: Communication is handler while it is not supposed to be!");
-  }
+	if (ptr_comm_handler_)
+	{
+		BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
+		{
+			ptr_comm_handler_->serve_job(worker_id);
+		}
+	}
+	else
+	{
+		MLOG(FATAL, "STRANGE: Invalid communication handler while it is not supposed to be!");
+	}
 }
 
 void SchedulerImpl::run()
@@ -940,4 +940,9 @@ void SchedulerImpl::forceOldWorkerJobsTermination()
 Worker::worker_id_t SchedulerImpl::getWorkerId(unsigned int r)
 {
 	return ptr_worker_man_->getWorkerId(r);
+}
+
+void SchedulerImpl::setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime)
+{
+	ptr_worker_man_->setLastTimeServed(wid, servTime);
 }

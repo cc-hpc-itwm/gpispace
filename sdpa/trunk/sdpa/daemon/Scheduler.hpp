@@ -54,6 +54,8 @@ namespace daemon {
 	 virtual void getWorkerList(std::list<std::string>&) = 0;
 	 virtual Worker::worker_id_t getWorkerId(unsigned int rank) = 0;
 
+	 virtual void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&) = 0;
+
 	 virtual size_t numberOfWorkers() = 0;
 	 virtual void feed_workers()= 0;
 
@@ -81,13 +83,13 @@ namespace daemon {
 	 virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
 	 virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
 
-	 virtual void start(IComm*)=0;
-	 virtual void stop()=0;
-	 virtual void run()=0;
-	 virtual void print()=0;
+	 virtual void start(IComm*) = 0;
+	 virtual void stop() = 0;
+	 virtual void run() = 0;
+	 virtual void print() = 0;
 
 	 virtual bool useRequestModel()=0;
-	 virtual void setUseRequestModel(bool)=0;
+	 virtual void setUseRequestModel(bool) = 0;
 
 	 friend class boost::serialization::access;
 	 template<class Archive>
