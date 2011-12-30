@@ -134,7 +134,7 @@ namespace daemon
 			{
 				try
 				{
-                                  DMLOG(TRACE, "Backing up daemon: " << daemon()->name());
+					DMLOG(TRACE, "Backing up daemon: " << daemon()->name());
 
 					std::ofstream ofs(tmpBakFile.string().c_str());
 					daemon()->backup(ofs);
