@@ -758,6 +758,7 @@ void Agent::recover( std::istream& ifs )
         ia >> ptr_workflow_engine_;*/
         ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
         SDPA_LOG_INFO("The list of recoverd masters is: ");
+        lock_type lock(mtx_master_);
         BOOST_FOREACH(sdpa::MasterInfo& m, m_arrMasterInfo)
         {
         	SDPA_LOG_INFO(m.name());
