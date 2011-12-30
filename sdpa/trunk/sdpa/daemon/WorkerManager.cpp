@@ -24,6 +24,8 @@
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/daemon/IComm.hpp>
 
+#include <algorithm>
+
 using namespace std;
 using namespace sdpa::daemon;
 
@@ -138,9 +140,6 @@ void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 	if(worker_map_.size() == 1)
 		iter_last_worker_ = worker_map_.begin();
 }
-
-// you should here delete_worker as well, for the
-// case when the workers unregisters
 
 void WorkerManager::balanceWorkers()
 {
@@ -500,6 +499,54 @@ void WorkerManager::getWorkerList(std::list<std::string>& workerList)
     workerList.push_back(iter->second->name());
 }
 
+
+// order this list according to the service time
+// first element -> the one with the smallest service time
+/*void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
+{
+	lock_type lock(mtx_);
+	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+	{
+		Worker::ptr_t ptrWorker = iter->second;
+		if(ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
+			workerList.push_back(ptrWorker->name());
+	}
+}
+*/
+
+void WorkerManager::setLastTimeServed(const sdpa::worker_id_t& workerId, const sdpa::util::time_type& last_time_srv )
+{
+	 lock_type lock(mtx_);
+	try {
+		Worker::ptr_t ptrWorker = findWorker(workerId);
+		ptrWorker->setLastTimeServed(last_time_srv);
+	}
+	catch( const WorkerNotFoundException& exc)
+	{
+		  SDPA_LOG_WARN( "Couldn't update the last service time for the worker "<<workerId );
+	}
+}
+
+class CComparator
+{
+public:
+	CComparator(sdpa::daemon::WorkerManager* ptrWorkerMan)
+	{
+		m_ptrWorkerMan = ptrWorkerMan;
+	}
+
+	bool operator() (sdpa::worker_id_t widLeft, sdpa::worker_id_t widRight)
+	{
+		Worker::ptr_t ptrWorkerL = m_ptrWorkerMan->findWorker(widLeft);
+		Worker::ptr_t ptrWorkerR = m_ptrWorkerMan->findWorker(widRight);
+
+		return (ptrWorkerL->lastTimeServed( )< ptrWorkerR->lastTimeServed() );
+	}
+
+private:
+	sdpa::daemon::WorkerManager* m_ptrWorkerMan;
+};
+
 void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
 {
 	lock_type lock(mtx_);
@@ -509,6 +556,9 @@ void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
 		if(ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
 			workerList.push_back(ptrWorker->name());
 	}
+
+	CComparator comparator(this);
+	sort(workerList.begin(), workerList.end(), comparator);
 }
 
 bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbSet)
