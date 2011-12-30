@@ -338,6 +338,7 @@ protected:
         condition_type cond_can_start_;
 
         mutex_type mtx_subscriber_;
+        mutex_type mtx_master_;
         mutex_type mtx_cpb_;
 
 	protected:

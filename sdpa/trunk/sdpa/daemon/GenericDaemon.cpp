@@ -274,6 +274,7 @@ void GenericDaemon::shutdown( )
 template <typename T>
 void GenericDaemon::notifyMasters(const T& ptrNotEvt)
 {
+	lock_type lock(mtx_master_);
 	if(m_arrMasterInfo.empty())
 	{
 		SDPA_LOG_INFO("The master list is empty. No mater to be notified exist!");
@@ -377,6 +378,7 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
 
 void GenericDaemon::shutdown_network()
 {
+	lock_type lock(mtx_master_);
     BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
     {
       if( !masterInfo.name().empty() && masterInfo.is_registered() )
@@ -648,6 +650,8 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
             // Post a SubmitJobEvent to the slave who made the request
             sendEventToSlave(pSubmitEvt);
+
+            ptr_scheduler_->setLastTimeServed(worker_id, sdpa::util::now());
         }
         else // send an error event
         {
@@ -849,8 +853,9 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 
 	if (! evtRegWorker.capabilities().empty())
 	{
-	  // propagate the capabilities upward to the masters
-	  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+		lock_type lock(mtx_master_);
+		// propagate the capabilities upward to the masters
+		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
 		  if (it->is_registered() && it->name() != worker_id )
 		  {
 			  sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
@@ -940,6 +945,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		// mark the agen as not-registered
 
     		// check if the message comes from a master
+    		lock_type lock(mtx_master_);
     		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
     		{
     			if( error.from() == masterInfo.name() )
@@ -968,6 +974,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     			SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
 
     			// notify capability losses...
+    			lock_type lock(mtx_master_);
     			BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
     			{
     				sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
@@ -985,6 +992,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		catch (WorkerNotFoundException const& /*ignored*/)
     		{
     			// check if the message comes from a master
+    			lock_type lock(mtx_master_);
     			BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
 				{
     				if( error.from() == masterInfo.name() )
@@ -1011,6 +1019,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	{
     		MLOG(WARN, "last message could not be sent due to a network failure!");
     		// mark the current agent as not registered to the failing master
+    		lock_type lock(mtx_master_);
     		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
     		{
     			if( error.from() == masterInfo.name() )
@@ -1283,6 +1292,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 	SDPA_LOG_INFO("Received registration acknowledgment from "<<masterName);
 
 	bool bFound = false;
+	lock_type lock(mtx_master_);
 	for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end() && !bFound; it++)
 		if( it->name() == masterName )
 		{
@@ -1319,6 +1329,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 
 		if(!bIsSubset)
 		{
+			lock_type lock(mtx_master_);
 			for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
 				if (it->is_registered() && it->name() != worker_id  )
 				{
@@ -1354,6 +1365,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 	try {
 		scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
 
+		lock_type lock(mtx_master_);
 		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
 			if (it->is_registered() && it->name() != worker_id )
 			{
@@ -1628,6 +1640,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 void GenericDaemon::requestRegistration()
 {
     // try to re-register
+	lock_type lock(mtx_master_);
     BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
 	{
     	requestRegistration(masterInfo);
@@ -1653,6 +1666,7 @@ void GenericDaemon::start_fsm()
 
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
 {
+	lock_type lock(mtx_master_);
 	MasterInfo mInfo(newMasterId);
 	m_arrMasterInfo.push_back(mInfo);
 	requestRegistration(mInfo);
@@ -1660,6 +1674,7 @@ void GenericDaemon::addMaster(const agent_id_t& newMasterId )
 
 void GenericDaemon::addMasters(const agent_id_list_t& listMasters )
 {
+	lock_type lock(mtx_master_);
 	for( sdpa::agent_id_list_t::const_iterator it = listMasters.begin(); it != listMasters.end(); it ++ )
 	{
 		MasterInfo mInfo(*it);
@@ -1678,6 +1693,7 @@ bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
 
 void GenericDaemon::removeMasters(const worker_id_list_t& listMasters)
 {
+	lock_type lock(mtx_master_);
 	BOOST_FOREACH(const sdpa::agent_id_t& id, listMasters)
 	{
 		master_info_list_t::iterator it = find_if( m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasId, _1, id) );
