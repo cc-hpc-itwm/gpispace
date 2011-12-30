@@ -20,6 +20,7 @@ Worker::Worker(	const worker_id_t& name,
     agent_uuid_(agent_uuid),
     location_(location),
     tstamp_(sdpa::util::now()),
+    last_time_served_(0),
     timedout_(false)
 {
 
@@ -72,7 +73,6 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 	  return false;
   }
 }
-
 
 void Worker::delete_job(const sdpa::job_id_t &job_id)
 {

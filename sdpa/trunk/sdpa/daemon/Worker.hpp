@@ -86,6 +86,10 @@ namespace sdpa { namespace daemon {
       */
     sdpa::util::time_type tstamp() const { return tstamp_; }
 
+    // update last service time
+    sdpa::util::time_type lastTimeServed() { return last_time_served_; }
+    void setLastTimeServed(const sdpa::util::time_type& last_time_srv ) { last_time_served_ = last_time_srv; }
+
     /**
       Return the name of the worker.
       */
@@ -176,6 +180,7 @@ namespace sdpa { namespace daemon {
         ar & rank_;
         ar & location_;
     	ar & tstamp_;
+    	ar & last_time_served_;
     	ar & pending_;
     	ar & submitted_;
     	ar & acknowledged_;
@@ -197,6 +202,7 @@ namespace sdpa { namespace daemon {
 	sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
+    sdpa::util::time_type last_time_served_; //! time of last message received
 
     JobQueue pending_; //! the queue of jobs assigned to this worker (not yet submitted)
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
