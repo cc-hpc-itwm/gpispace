@@ -54,7 +54,6 @@ JobManager::~JobManager(){
         , job_requirements_.size()
         , "there are still entries left in the preferences map: " << job_requirements_.size()
         );
-
 }
 
 //helpers
@@ -166,7 +165,6 @@ const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
     requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
     if( it_req == job_requirements_.end() )
             throw NoJobRequirements(jobId);
-
 
     return it_req->second;;
 }
