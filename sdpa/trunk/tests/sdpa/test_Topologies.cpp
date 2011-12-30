@@ -315,6 +315,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	return kernel;
 }
 
+
 int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
 	typedef boost::posix_time::ptime time_type;
@@ -511,6 +512,7 @@ void MyFixture::run_cannon_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
+/*
 BOOST_AUTO_TEST_CASE( testPathOneDrts )
 {
 
@@ -656,6 +658,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 
 	LOG( DEBUG, "The test case testMultipleMastersOneDrts terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_CASE( testCannonParMM )
 {
