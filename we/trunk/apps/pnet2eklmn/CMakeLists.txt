@@ -11,5 +11,5 @@ target_link_libraries(${target} dl)
 install (TARGETS ${target}
 	RUNTIME
 	DESTINATION bin
-	COMPONENT applications
+	COMPONENT runtime
 )
