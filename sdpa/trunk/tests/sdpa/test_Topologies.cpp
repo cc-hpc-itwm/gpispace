@@ -512,7 +512,6 @@ void MyFixture::run_cannon_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-/*
 BOOST_AUTO_TEST_CASE( testPathOneDrts )
 {
 
@@ -658,7 +657,6 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 
 	LOG( DEBUG, "The test case testMultipleMastersOneDrts terminated!");
 }
-*/
 
 BOOST_AUTO_TEST_CASE( testCannonParMM )
 {
