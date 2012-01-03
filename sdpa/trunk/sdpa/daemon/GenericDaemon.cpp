@@ -530,10 +530,10 @@ void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
 
 void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 {
-  SDPA_LOG_DEBUG("Call 'action_interrupt'");
-  // save the current state of the system .i.e serialize the daemon's state
-  // the following code shoud be executed on action action_interrupt!!
-  m_bRequestsAllowed = false;
+	SDPA_LOG_DEBUG("Call 'action_interrupt'");
+	// save the current state of the system .i.e serialize the daemon's state
+	// the following code shoud be executed on action action_interrupt!!
+	m_bRequestsAllowed = false;
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
@@ -1821,7 +1821,7 @@ Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 	return scheduler()->getWorkerId(r);
 }
 
-bool GenericDaemon::forward(const id_type& job_id, const result_type& result, unsigned int rank)
+void GenericDaemon::forward(const id_type& job_id, const result_type& result, unsigned int rank)
 {
    	//SubmitJobEvent::Ptr pSubJobEvt(new SubmitJobEvent(name(), forward_to, job_id, result, ""));
    	//sendEventToSlave(pSubJobEvt);

@@ -143,7 +143,7 @@ namespace sdpa { namespace daemon {
 	  virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() );
       virtual bool cancel(const id_type & id, const reason_type & reason);
       virtual bool finished(const id_type & id, const result_type & result);
-      virtual bool forward(const id_type & id, const result_type & result,  unsigned int rank );
+      virtual void forward(const id_type & id, const result_type & result,  unsigned int rank );
       virtual bool failed(const id_type & id, const result_type & result);
       virtual bool cancelled(const id_type & id);
 
