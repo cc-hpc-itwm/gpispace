@@ -7,7 +7,8 @@
 #include <string>
 #include <map>
 
-#include <fhg/plugin/build.hpp>
+#include <fhg/plugin/magic.hpp>
+#include <fhg/plugin/descriptor.hpp>
 #include <fhg/plugin/plugin_base.hpp>
 #include <fhg/plugin/kernel.hpp>
 

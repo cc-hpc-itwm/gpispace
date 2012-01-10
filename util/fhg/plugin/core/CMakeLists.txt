@@ -1,4 +1,5 @@
 set(hdrs
+  exception.hpp
   plugin.hpp
   kernel.hpp
   plugin_kernel_mediator.hpp

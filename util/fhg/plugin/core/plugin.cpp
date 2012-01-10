@@ -9,6 +9,8 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <fhg/plugin/core/exception.hpp>
+#include <fhg/plugin/magic.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 
@@ -239,12 +241,15 @@ namespace fhg
 
       if (! force)
       {
-        const std::string magic(FHG_PLUGIN_VERSION_MAGIC);
-        if (magic != desc->magic)
+        const std::string my_magic(FHG_PLUGIN_VERSION_MAGIC);
+        const std::string plugin_magic (desc->magic);
+        const std::string plugin_name (desc->name);
+
+        if (my_magic != plugin_magic)
         {
           dlclose(handle);
-          throw std::runtime_error
-            ("could not load plugin: version mismatch: expected := " + magic + " got := " + desc->magic);
+          throw fhg::core::exception::plugin_version_magic_mismatch
+            (plugin_name, plugin_magic, my_magic);
         }
       }
 

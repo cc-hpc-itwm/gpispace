@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fhg/plugin/magic.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 
 int main(int ac, char **av)
