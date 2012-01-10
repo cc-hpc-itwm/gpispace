@@ -1,10 +1,11 @@
 find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/build.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/build.hpp @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/magic.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/magic.hpp @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(hdrs
-  ${CMAKE_CURRENT_BINARY_DIR}/build.hpp
+  ${CMAKE_CURRENT_BINARY_DIR}/magic.hpp
+  descriptor.hpp
   config.hpp
   plugin_base.hpp
   plugin.hpp
