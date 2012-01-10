@@ -9,6 +9,7 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <fhg/plugin/magic.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 

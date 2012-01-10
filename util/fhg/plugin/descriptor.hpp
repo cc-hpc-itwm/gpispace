@@ -1,7 +1,5 @@
-#ifndef FHG_PLUGIN_BUILD_HPP
-#define FHG_PLUGIN_BUILD_HPP 1
-
-#  define FHG_PLUGIN_VERSION_MAGIC "@PROJECT_REVISION@"
+#ifndef FHG_PLUGIN_DESCRIPTOR_HPP
+#define FHG_PLUGIN_DESCRIPTOR_HPP 1
 
 struct fhg_plugin_descriptor_t
 {

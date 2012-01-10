@@ -7,7 +7,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
-#include <fhg/plugin/build.hpp>
+#include <fhg/plugin/descriptor.hpp>
 #include <fhg/plugin/kernel.hpp>
 #include <fhg/plugin/plugin_base.hpp>
 
