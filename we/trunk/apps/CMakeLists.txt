@@ -44,4 +44,4 @@ foreach (target ${simple_targets})
   endif (ENABLE_STATIC_BINARIES)
 endforeach (target ${simple_targets})
 
-add_subdirectory(pnet2eklmn)
+add_subdirectory(pnetv)
