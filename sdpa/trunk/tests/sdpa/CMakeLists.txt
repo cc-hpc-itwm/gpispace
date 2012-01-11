@@ -81,6 +81,7 @@ set (tc_srcs
   test_MultipleMasters.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
+  test_CannonOnTorus.cpp
 )
 
 foreach (tc_src ${tc_srcs})

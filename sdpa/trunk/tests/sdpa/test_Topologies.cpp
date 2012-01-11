@@ -46,9 +46,6 @@
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 
-#include <sdpa/engine/TorusWorkflowEngineOrch.hpp>
-#include <sdpa/engine/TorusWorkflowEngineAgent.hpp>
-
 #include <boost/thread.hpp>
 #include <boost/shared_array.hpp>
 #include <sdpa/types.hpp>
@@ -62,7 +59,6 @@ const int MAX_CAP = 100;
 const int NAGENTS = 1;
 
 const int BUNCH_SIZE = 1;
-const int nDim = 3;
 
 namespace po = boost::program_options;
 
@@ -73,7 +69,6 @@ using namespace sdpa::tests;
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
-
 
 struct MyFixture
 {
@@ -433,83 +428,6 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
   	return exit_code;
 }
 
-void MyFixture::run_cannon_client()
-{
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	cav.push_back("--network.timeout=0");
-	config.parse_command_line(cav);
-
-	std::ostringstream osstr;
-	osstr<<"sdpac_"<<0;
-
-	LOG(INFO, "Starting client_0 ...");
-
-	matrix_t A(nDim, nDim);
-	matrix_t B(nDim, nDim);
-	// initialize m
-
-	A<<=1, 3, 5, 7,  9, 11, 13, 15, 17;
-	B<<=2, 4, 6, 8, 10, 12, 14, 16, 18;
-
-	std::stringstream sstr;
-	boost::archive::text_oarchive ar(sstr);
-    ar << A;
-    ar << B;
-    ar << nDim;
-	m_strWorkflow = sstr.str();
-
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
-	ptrCli->configure_network( config );
-
-	int nTrials = 0;
-	sdpa::job_id_t job_id_user;
-
-	try {
-
-		LOG( DEBUG, "Submitting new workflow ..."); //<<m_strWorkflow);
-		job_id_user = ptrCli->submitJob(m_strWorkflow);
-	}
-	catch(const sdpa::client::ClientException& cliExc)
-	{
-		if(nTrials++ > NMAXTRIALS)
-		{
-			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
-		}
-	}
-
-
-	int exit_code = subscribe_and_wait( job_id_user, ptrCli );
-
-	try {
-		LOG( DEBUG, "User: delete the job "<<job_id_user);
-		ptrCli->deleteJob(job_id_user);
-		boost::this_thread::sleep(boost::posix_time::seconds(3));
-	}
-	catch(const sdpa::client::ClientException& cliExc)
-	{
-		LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
-
-		ptrCli->shutdown_network();
-		ptrCli.reset();
-		return;
-
-		boost::this_thread::sleep(boost::posix_time::seconds(3));
-	}
-
-	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
-}
-
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testPathOneDrts )
@@ -656,87 +574,6 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 	ptrOrch->shutdown();
 
 	LOG( DEBUG, "The test case testMultipleMastersOneDrts terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testCannonParMM )
-{
-	LOG( DEBUG, "////////// testCannon'sAlg //////////");
-
-	//guiUrl
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-	//LOG( DEBUG, "Create Agent with an Dummy workflow engine ...");
-	sdpa::master_info_list_t list_masters;
-
-	sdpa::master_info_list_t arrOrchMasterInfo;
-	sdpa::daemon::Agent::ptr_t ptrOrch = sdpa::daemon::AgentFactory<TorusWorkflowEngineOrch>::create("orchestrator_0", addrOrch, arrOrchMasterInfo, MAX_CAP);
-	ptrOrch->start_agent(false);
-
-
-	//LOG( DEBUG, "Create the Aggregator ...");
-	//sdpa::daemon::Agent::ptr_t arrAgents[NAGENTS];
-	boost::shared_array<sdpa::daemon::Agent::ptr_t> arrAgents( new sdpa::daemon::Agent::ptr_t[nDim*nDim] );
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	// all agents have a the orchestrator as master -> initial distribution
-	for(int k=0; k<nDim*nDim; k++)
-	{
-		ostringstream oss;
-		oss<<"agent_"<<k;
-
-		arrAgents[k] = sdpa::daemon::AgentFactory<TorusWorkflowEngineAgent>::create( oss.str(),
-																					 addrAgent,
-																					 arrAgentMasterInfo,
-																					 MAX_CAP,
-																					 false,  // can execute jobs
-																					 k);    // rank
-	}
-
-	for(int k=0; k<nDim*nDim; k++)
-		arrAgents[k]->start_agent(false);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(2));
-	LOG(INFO, "create agents communication topology");
-
-	LOG(INFO, "On the horizontal axis:");
-	for(int i=0; i<nDim; i++)
-		for(int j=0; j<nDim; j++)
-		{
-			int right = i*nDim+(j+1)%nDim;
-
-			ostringstream oss;
-			oss<<"agent_"<<i*nDim+j;
-
-			arrAgents[right]->addMaster(oss.str());
-			LOG(INFO, "added new master of agent_"<<right<<" -> "<<oss.str());
-		}
-
-
-	LOG(INFO, "On the vertical axis:");
-	for(int i=0; i<nDim; i++)
-		for(int j=0; j<nDim; j++)
-		{
-			int down = ((i+1)%nDim)*nDim+j;
-
-			ostringstream oss;
-			oss<<"agent_"<<i*nDim+j;
-
-			arrAgents[down]->addMaster(oss.str());
-			LOG(INFO, "added new master of agent_"<<down<<" -> "<<oss.str());
-		}
-
-	boost::this_thread::sleep(boost::posix_time::seconds(2));
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_cannon_client, this));
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
-
-	for(int k=0; k<nDim*nDim; k++)
-		arrAgents[k]->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testAgentNoWe terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
