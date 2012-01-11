@@ -35,7 +35,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
     TorusWorkflowEngineAgent( GenericDaemon* pIAgent = NULL, Function_t f = id_gen)
     	: SDPA_INIT_LOGGER(pIAgent->name()+": AgentTorusWFE")
-    	, m_product(1,1)
 	{
     	pIAgent_ = pIAgent;
     	fct_id_gen_ = f;
@@ -100,6 +99,18 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 		return false;
     }
 
+    Token::ptr_t genBlueToken(Token& token)
+    {
+    	Token::ptr_t ptrTok(new Token(BLUE, pIAgent_->name(), pIAgent_->rank(), m_nTorusDim, token.block_1()));
+    	return ptrTok;
+    }
+
+    Token::ptr_t genRedToken(Token& token)
+      {
+      	Token::ptr_t ptrTok(new Token(RED, pIAgent_->name(), pIAgent_->rank(), m_nTorusDim, token.block_2()));
+      	return ptrTok;
+      }
+
     /**
 	 * Submit a workflow to the GWES.
 	 * This method is to be invoked by the SDPA.
@@ -119,25 +130,25 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 		Token token;
 		token.decode(wf_desc);
 
-		int nDim = token.size();
+		//int nTorusDim = token.size();
 
 		if( token.color() == YELLOW )
 		{
 			SDPA_LOG_DEBUG("Got YELLOW token ...");
-			print(token.block_1());
-			print(token.block_2());
+			//print(token.block_1());
+			//print(token.block_2());
 
 			m_orch = token.owner();
 			m_wfid = wfid;
 
-			Token::ptr_t pBlueToken(new Token(BLUE, pIAgent_->name(), pIAgent_->rank(), nDim, token.block_1()));
-			Token::ptr_t pRedToken(new Token(RED,  pIAgent_->name(), pIAgent_->rank(), nDim, token.block_2()));
+			// generate one blue and one red token, respectively
+			Token::ptr_t pBlueToken = genBlueToken(token);
+			Token::ptr_t pRedToken  = genRedToken(token);
 
-			m_product.clear();
-			multiplyBlocks( pRedToken,  pBlueToken ); // C += A * B
+			accumulate( pRedToken, pBlueToken, true ); // C += A * B
 
-			propagateRight(pBlueToken);
-			propagateDown(pRedToken);
+			propagate(RIGHT, pBlueToken);
+			propagate(DOWN, pRedToken);
 
 			return;
 		}
@@ -158,24 +169,40 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 				}
 				else
 					std::cout<<"Invalid token color"<<std::endl;
-
 		}
 	}
 
-	void multiplyBlocks(const Token::ptr_t& pRedToken, const Token::ptr_t& pBlueToken )
+	void accumulate(const Token::ptr_t& pRedToken, const Token::ptr_t& pBlueToken, bool bClear = false )
 	{
-		axpy_prod( pRedToken->block_1(),  pBlueToken->block_1(), m_product, false); // C += A * B
+		size_t nBlockDim = pRedToken->block_1().size1();
+		if(bClear)
+		{
+			m_product = matrix_t(nBlockDim, nBlockDim);
+		}
+
+		axpy_prod( pBlueToken->block_1(), pRedToken->block_1(), m_product, bClear); // C += A * B
 	}
+
+	void propagate(const direction_t& dir, const Token::ptr_t& pToken)
+	{
+		if(dir == RIGHT)
+			propagateRight(pToken);
+		else
+			if( dir == DOWN )
+				propagateDown(pToken);
+			else
+				SDPA_LOG_FATAL("Invalid propagation direction!");
+	}
+
 
 	void propagateRight(const Token::ptr_t& pBlueToken)
 	{
 		int rank = pIAgent_->rank();
-		int nDim = pBlueToken->size();
 
-		int i  = rank/nDim;
-		int j  = rank%nDim;
+		int i = rank / m_nTorusDim;
+		int j = rank % m_nTorusDim;
 
-		int rankRight = i*nDim+(j+1)%nDim;
+		int rankRight = i*m_nTorusDim+(j+1)%m_nTorusDim;
 
 		id_type actIdRed, actIdBlue;
 		try {
@@ -192,14 +219,13 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 	void propagateDown(const Token::ptr_t& pRedToken)
 	{
 		int rank = pIAgent_->rank();
-		int nDim = pRedToken->size();
 
-		SDPA_LOG_INFO("The number of agents is: "<<nDim*nDim);
+		SDPA_LOG_INFO("The number of agents is: "<<m_nTorusDim*m_nTorusDim);
 
-		int i  = rank/nDim;
-		int j  = rank%nDim;
+		int i  = rank/m_nTorusDim;
+		int j  = rank%m_nTorusDim;
 
-		int rankBottom = ((i+1)%nDim)*nDim+j;
+		int rankBottom = ((i+1)%m_nTorusDim)*m_nTorusDim+j;
 
 		id_type actIdRed, actIdBlue;
 		try {
@@ -210,7 +236,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 			return;
 		}
 
-		pIAgent_->forward(actIdRed,  pRedToken->encode(),  rankBottom );
+		pIAgent_->forward( actIdRed,  pRedToken->encode(),  rankBottom );
 	}
 
 	/**
@@ -229,26 +255,24 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 	 // thread related functions
       void start()
       {
-    	   bStopRequested = false;
-			if(!pIAgent_)
-			{
-				SDPA_LOG_ERROR("The Workfow engine cannot be started. Invalid communication handler. ");
-				return;
-			}
+    	  bStopRequested = false;
+    	  if(!pIAgent_)
+    	  {
+    		  SDPA_LOG_ERROR("The Workfow engine cannot be started. Invalid communication handler. ");
+    		  return;
+    	  }
 
-			m_thread = boost::thread(boost::bind(&TorusWorkflowEngineAgent::run, this));
-
-			SDPA_LOG_DEBUG("EmptyWE thread started ...");
+    	  m_thread = boost::thread(boost::bind(&TorusWorkflowEngineAgent::run, this));
+    	  SDPA_LOG_DEBUG("EmptyWE thread started ...");
       }
 
       void stop()
       {
-			bStopRequested = true;
-			m_thread.interrupt();
-			DLOG(TRACE, "EmptyWE thread before join ...");
-			m_thread.join();
-
-			DLOG(TRACE, "EmptyWE thread joined ...");
+    	  bStopRequested = true;
+    	  m_thread.interrupt();
+    	  DLOG(TRACE, "EmptyWE thread before join ...");
+    	  m_thread.join();
+    	  DLOG(TRACE, "EmptyWE thread joined ...");
       }
 
       void run()
@@ -263,36 +287,34 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     		  if(!queueBlueTokens.empty() && !queueRedTokens.empty() )
     		  {
 				  pBlueToken = queueBlueTokens.pop();
-				  SDPA_LOG_DEBUG("Poped-up a BLUE token ...");
+				  SDPA_LOG_DEBUG("Popped-up a BLUE token ...");
 
 				  if( pBlueToken->owner() != pIAgent_->name() )
-					  propagateRight(pBlueToken);
+					  propagate(RIGHT, pBlueToken);
 
 				  pRedToken  = queueRedTokens.pop();
-				  SDPA_LOG_DEBUG("Poped-up a RED token ...");
+				  SDPA_LOG_DEBUG("Popped-up a RED token ...");
 
 				  if( pRedToken->owner() != pIAgent_->name() )
-					  propagateDown(pRedToken);
+					  propagate(DOWN, pRedToken);
 
-				  int nDim = pRedToken->size();
-
-				  if( pRedToken->owner() == pIAgent_->name() && pBlueToken->owner() == pIAgent_->name() ) // propagation finished
+				  if( pRedToken->owner() != pIAgent_->name() && pBlueToken->owner() != pIAgent_->name() ) // propagation finished
 				  {
-					  // care master
-					  Token* pYellowToken = new Token(YELLOW, pIAgent_->name(), pIAgent_->rank(), nDim, m_product);
+					  accumulate(pRedToken, pBlueToken );
+					  continue;
+				  }
+
+				  // care master
+				  if( pRedToken->owner() == pIAgent_->name() && pBlueToken->owner() == pIAgent_->name() )
+				  {
+					  Token yellowToken(YELLOW, pIAgent_->name(), pIAgent_->rank(), m_nTorusDim, m_product);
 
 					  SDPA_LOG_DEBUG("Inform the orchestrator that the job "<<m_wfid<<" finished! Product: ");
-					  print(m_product);
+					  print(yellowToken.block_1());
 
-					  pIAgent_->finished(m_wfid, pYellowToken->encode() );
-
+					  pIAgent_->finished(m_wfid, yellowToken.encode() );
 					  m_product.clear();
 				  }
-				  else // continue propagation to the right and down
-				  {
-					  multiplyBlocks(pRedToken, pBlueToken );
-				  }
-
     		  }
     		  else
     			  boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -306,6 +328,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
   public:
     mutable GenericDaemon *pIAgent_;
+    static size_t m_nTorusDim;
 
   private:
     mutex_type mtx_;
@@ -323,7 +346,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
     std::string m_wfid;
     matrix_t m_product;
-
 };
 
 
