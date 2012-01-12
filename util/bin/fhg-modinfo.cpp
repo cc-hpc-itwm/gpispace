@@ -31,6 +31,7 @@ int main(int ac, char **av)
       std::cout << "depends: " << p->descriptor()->depends << std::endl;
       std::cout << "key:     " << p->descriptor()->featurekey << std::endl;
       std::cout << "magic:   " << p->descriptor()->magic << std::endl;
+      std::cout << "rev:     " << p->descriptor()->buildrev << std::endl;
 
       if ((i+1) < ac) std::cout << std::endl;
     }

@@ -36,7 +36,17 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
   const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name()   \
   {                                                                     \
     static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =       \
-      {FHG_PLUGIN_VERSION_MAGIC,#name,desc,author,version,__DATE__ " " __TIME__,license,depends,key}; \
+      { FHG_PLUGIN_VERSION_MAGIC,                                       \
+        #name,                                                          \
+        desc,                                                           \
+        author,                                                         \
+        version,                                                        \
+        __DATE__ " " __TIME__,                                          \
+        license,                                                        \
+        depends,                                                        \
+        key,                                                            \
+        FHG_PLUGIN_BUILD_REV                                            \
+      };                                                                \
     return &fhg_plugin_descriptor_##name;                               \
   }                                                                     \
   fhg::plugin::Plugin *fhg_get_plugin_instance_##name()                 \
@@ -51,9 +61,19 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
   {                                                                     \
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor()        \
     {                                                                   \
-      static fhg_plugin_descriptor_t fhg_plugin_descriptor __attribute__((section(".fhg_plugin"))) = \
-        {FHG_PLUGIN_VERSION_MAGIC,#name,desc,author,version,__DATE__ " " __TIME__,license,depends,key}; \
-      return &fhg_plugin_descriptor;                                    \
+      static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =     \
+        { FHG_PLUGIN_VERSION_MAGIC,                                     \
+          #name,                                                        \
+          desc,                                                         \
+          author,                                                       \
+          version,                                                      \
+          __DATE__ " " __TIME__,                                        \
+          license,                                                      \
+          depends,                                                      \
+          key,                                                          \
+          FHG_PLUGIN_BUILD_REV                                          \
+        };                                                              \
+      return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
     fhg::plugin::Plugin *fhg_get_plugin_instance()                      \
     {                                                                   \
