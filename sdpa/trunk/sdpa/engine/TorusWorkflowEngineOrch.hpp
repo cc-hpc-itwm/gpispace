@@ -165,8 +165,6 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
 		m_product = matrix_t(A.size1(), A.size1());
 		m_expectedProduct = matrix_t(A.size1(), A.size1());
 
-		//ar >> m_nTorusDim;
-
 		SDPA_LOG_ERROR("Got the matrices: ");
 		print(A);
 		print(B);

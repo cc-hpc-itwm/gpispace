@@ -40,7 +40,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     	fct_id_gen_ = f;
     	start();
     	SDPA_LOG_DEBUG("Torus workflow engine created ...");
-    	// de lucrat aici -> cu neighbors, care-i left, care-i down etc
     }
 
     ~TorusWorkflowEngineAgent()
@@ -130,8 +129,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 		Token token;
 		token.decode(wf_desc);
 
-		//int nTorusDim = token.size();
-
 		if( token.color() == YELLOW )
 		{
 			SDPA_LOG_DEBUG("Got YELLOW token ...");
@@ -148,7 +145,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 			accumulate( pRedToken, pBlueToken, true ); // C += A * B
 
 			propagate(RIGHT, pBlueToken);
-			propagate(DOWN, pRedToken);
+			propagate(DOWN,  pRedToken);
 
 			return;
 		}
@@ -277,10 +274,8 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
       void run()
       {
-    	  //lock_type lock(mtx_stop);
     	  while(!bStopRequested)
     	  {
-    		  	//cond_stop.wait(lock);
     		  Token::ptr_t pBlueToken, pRedToken;
 
     		  // consume always 2 tokens
