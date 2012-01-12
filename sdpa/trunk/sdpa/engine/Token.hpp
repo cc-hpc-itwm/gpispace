@@ -28,6 +28,7 @@
 #include <fstream>
 #include <vector>
 
+enum direction_t {LEFT, RIGHT, UP, DOWN};
 enum color_t {YELLOW, RED, BLUE, BLACK};
 typedef boost::numeric::ublas::matrix<int> matrix_t;
 
@@ -43,7 +44,7 @@ void print(const matrix_t& A)
 	for (unsigned i = 0; i < A.size1(); ++i)
 	{
 		for (unsigned j = 0; j < A.size2(); ++j)
-			std::cout << A(i, j) << ", ";
+			std::cout<< std::fixed << std::setw(5) << A(i, j) << ", ";
 		std::cout << std::endl;
 	}
 }
@@ -55,17 +56,16 @@ class Token
 public:
 	 typedef sdpa::shared_ptr<Token> ptr_t;
 
-	Token(	const color_t& c=BLACK,
+	Token(	const color_t& c = BLACK,
 			const std::string& owner="",
 			int rankOwner=0,
-			const int size=1,
+			const int torusDim = 3,
 			const matrix_t& m1=matrix_t(),
 			const matrix_t& m2=matrix_t() )
 
 		: m_col(c)
 		, m_owner(owner)
 		, m_rankOwner(rankOwner)
-		, m_size(size)
 		, m_block_1(m1)
 		, m_block_2(m2)
 	{
@@ -78,7 +78,6 @@ public:
 		m_rankOwner = t.rankOwner() ;
 		m_block_1 = t.block_1();
 		m_block_2 = t.block_2();
-		m_size = t.size();
 	}
 
 	Token& operator=(const Token& t)
@@ -90,7 +89,6 @@ public:
 			m_rankOwner = t.rankOwner() ;
 			m_block_1 = t.block_1();
 			m_block_2 = t.block_2();
-			m_size = t.size();
 		}
 
 		return *this;
@@ -106,7 +104,6 @@ public:
 		ar & rankOwner();
 		ar & block_1();
 		ar & block_2();
-		ar & size();
 	}
 
 	void decode( const std::string& strInput )
@@ -140,16 +137,12 @@ public:
 	color_t& color() { return m_col; }
 	const color_t& color() const { return m_col; }
 
-	int& size() { return m_size; }
-	const int& size() const { return m_size; }
-
 	private:
 	color_t  m_col;
 	std::string m_owner;
 	int m_rankOwner;
 	matrix_t m_block_1;
 	matrix_t m_block_2;
-	int m_size;
 };
 
 
