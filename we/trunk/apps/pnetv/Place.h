@@ -14,6 +14,7 @@ namespace pnetv {
 class Place {
     std::string name_; ///< Name of the transition.
     boost::optional<TokenCount> capacity_; ///< Capacity, if any.
+    TokenCount initialMarking_; ///< Initial marking.
 
     public:
 
@@ -23,8 +24,8 @@ class Place {
      * \param name Name of the place.
      * \param capacity Capacity of the place, if any.
      */
-    Place(const std::string &name, boost::optional<TokenCount> capacity):
-        name_(name), capacity_(capacity)
+    Place(const std::string &name):
+        name_(name), initialMarking_(0)
     {}
     
     /**
@@ -36,6 +37,25 @@ class Place {
      * \return Capacity of the place.
      */
     const boost::optional<TokenCount> &capacity() const { return capacity_; }
+
+    /**
+     * Sets capacity of the place.
+     *
+     * \param count Maximal number of tokens allowed.
+     */
+    void setCapacity(TokenCount count) { capacity_ = count; }
+
+    /**
+     * \return Initial marking of this place.
+     */
+    TokenCount initialMarking() const { return initialMarking_; }
+
+    /**
+     * Sets initial marking of the place.
+     *
+     * \param count Initial token count.
+     */
+    void setInitialMarking(TokenCount count) { initialMarking_ = count; }
 };
 
 } // namespace pnetv

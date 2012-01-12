@@ -1,13 +1,13 @@
 set(target pnetv)
 
 set(sources
+	Parsing.cpp
 	Parsing.h
 	PetriNet.h
 	Place.h
 	Transition.h
 	Types.h
 	main.cpp
-	Parsing.cpp
 )
 
 add_executable (${target} ${sources})

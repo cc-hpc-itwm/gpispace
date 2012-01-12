@@ -24,7 +24,9 @@ class Transition {
      * \param name Name of the transition.
      * \param conditionIsAlwaysTrue Whether transition's condition is constant true.
      */
-    Transition(const std::string &nanme, bool conditionIsAlwaysTrue);
+    Transition(const std::string &name, bool conditionIsAlwaysTrue = true):
+        name_(name), conditionIsAlwaysTrue_(conditionIsAlwaysTrue)
+    { return; }
 
     /**
      * Name of the transition.

@@ -4,6 +4,8 @@
 #include <fstream>
 
 #include <boost/format.hpp>
+#include <boost/unordered_map.hpp>
+
 #include <jpn/common/Foreach.h>
 #include <we/we.hpp>
 
@@ -13,123 +15,118 @@ namespace pnetv {
 
 namespace {
 
-std::string escape_tcl_string(const std::string &string) {
-    std::string result;
-    result.reserve(string.size());
-
-    foreach(char ch, string) {
-        switch (ch) {
-        case '$':
-            result += "\\$";
-            break;
-        case '[':
-            result += "\\[";
-            break;
-        case ']':
-            result += "\\]";
-            break;
-        case '"':
-            result += "\\\"";
-            break;
-        case '\\':
-            result += "\\\\";
-            break;
-        case '\n':
-            result += "\\n";
-            break;
-        case '\r':
-            result += "\\r";
-            break;
-        default:
-            result.push_back(ch);
-            break;
-        }
-    }
-
-    return result;
+/**
+ * \param container An associative container.
+ * \param key Key.
+ *
+ * \return An element from the container with given key. The element must exist.
+ *
+ * \tparam Container Type of the associative container.
+ */
+template<class Container>
+typename Container::mapped_type find(const Container &container, const typename Container::key_type &key) {
+    typename Container::const_iterator i = container.find(key);
+    assert(i != container.end());
+    return i->second;
 }
 
-std::string escape_filename(const std::string &string) {
-    std::string result;
-    result.reserve(string.size());
+/**
+ * Visitor for discovering subnets in workflows and translating them to Petri nets.
+ */
+class TransitionVisitor: public boost::static_visitor<void> {
+    PetriNet petriNet_; ///< Resulting Petri net.
+    std::vector<PetriNet> &petriNets_; ///< Where to add the resulting Petri net when done.
 
-    foreach(char ch, string) {
-        if (isalnum(ch)) {
-            result.push_back(ch);
-        } else {
-            result.push_back('_');
-        }
-    }
+    /**
+     * Places present in the workflow.
+     */
+    boost::unordered_map<petri_net::pid_t, PlaceId> place2place_;
 
-    return result;
-}
+    /**
+     * Helper places for implementing capacities.
+     */
+    boost::unordered_map<petri_net::pid_t, PlaceId> place2capacity_;
 
-class transition_visitor_eklmn: public boost::static_visitor<void> {
-    std::string prefix_;
-    std::ofstream out_;
+    /**
+     * Places for storing tokens representing an activity being executed.
+     */
+    boost::unordered_map<petri_net::tid_t, PlaceId> transition2activity_;
+
+    /**
+     * Transitions present in the workflow.
+     */
+    boost::unordered_map<petri_net::tid_t, TransitionId> transition2transition_;
+
+    /**
+     * Transitions for representing execution of an activity.
+     */
+    boost::unordered_map<petri_net::tid_t, TransitionId> transition2execute_;
 
     public:
 
-    transition_visitor_eklmn(const std::string &prefix):
-        prefix_(prefix),
-        out_()
-    {
-        std::string filename = prefix + ".tcl";
-        out_.open(filename.c_str());
-        if (!out_) {
-            throw std::runtime_error ("failed to open " + filename + " for writing");
-        }
-    }
+    /**
+     * Constructor.
+     *
+     * \param[in] name of the component being visited.
+     * \param[out] petriNets Where to add the result of parsing a subnet.
+     */
+    TransitionVisitor(const std::string &name, std::vector<PetriNet> &petriNets):
+        petriNet_(name), petriNets_(petriNets_)
+    { return; }
 
-    const std::string &prefix() const { return prefix_; }
+    void operator()(const we::type::expression_t & expr) { return; }
 
-    std::ostream &out() { return out_; }
+    void operator()(const we::type::module_call_t & mod_call) { return; }
 
-        void operator()(const we::type::expression_t & expr) {
-        out() << "# An expression." << std::endl;
-        }
+    template<class P, class E, class T>
+    void operator()(const petri_net::net<P, we::type::transition_t<P, E, T>, E, T> &net) {
+        typedef petri_net::net<P, we::type::transition_t<P, E, T>, E, T> pnet_t;
+        typedef we::type::transition_t<P, E, T> transition_t;
 
-        void operator()(const we::type::module_call_t & mod_call) {
-        out() << "# A module call." << std::endl;
-        }
-
-    template<class Place, class Edge, class Token>
-    void operator()(const petri_net::net<Place, we::type::transition_t<Place, Edge, Token>, Edge, Token> &net) {
-        typedef petri_net::net<Place, we::type::transition_t<Place, Edge, Token>, Edge, Token> pnet_t;
-        typedef we::type::transition_t<Place, Edge, Token> transition_t;
-
-        out() << "# A Petri Net." << std::endl;
-
+        /* Translate places. */
         for (typename pnet_t::place_const_it it = net.places(); it.has_more(); ++it) {
-            petri_net::pid_t id = *it;
-            const Place &place = net.get_place(id);
+            petri_net::pid_t pid = *it;
+            const P &p = net.get_place(pid);
 
-            out() << "add_place $pnet p" << id << std::endl;
-            out() << "set_node_attr $pnet p" << id << " label \"" << escape_tcl_string(place.get_name()) << "\"" << std::endl;
+            Place place("normal_" + p.get_name());
+            if (net.get_capacity(pid)) {
+                place.setCapacity(*net.get_capacity(pid));
+            }
+            place2place_[pid] = petriNet_.addPlace(place);
 
-            if (boost::optional<petri_net::capacity_t> capacity = net.get_capacity(id)) {
-                out() << "add_place $pnet cap" << id << std::endl;
-                out() << "set_node_attr $pnet cap" << id << " label {Capacity " << *capacity << "}" << std::endl;
-                out() << "set_place_marking $pnet cap" << id << " initial " << *capacity << std::endl;
+            if (place.capacity()) {
+                Place capacityPlace("capacity_" + place.name());
+                capacityPlace.setCapacity(*place.capacity());
+                capacityPlace.setInitialMarking(*place.capacity());
+                place2capacity_[pid] = petriNet_.addPlace(capacityPlace);
             }
         }
 
+        /* Translate transitions. */
         for (typename pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::pid_t id = *it;
-            const transition_t &transition = net.get_transition(id);
+            petri_net::pid_t tid = *it;
+            const transition_t &t = net.get_transition(tid);
 
             std::ostringstream condition;
-            condition << transition.condition();
+            condition << t.condition();
 
-            out() << "add_transition $pnet t" << id << std::endl;
-            out() << "set_node_attr $pnet t" << id << " label \"" << escape_tcl_string(transition.name()) << "\"" << std::endl;
-            out() << "set_node_attr $pnet t" << id << " condition \"" << escape_tcl_string(condition.str()) << "\"" << std::endl;
+            Transition transition("normal_" + t.name() + "[" + condition.str() + "]", condition.str() == "true");
+            TransitionId transitionId = petriNet_.addTransition(transition);
+            transition2transition_[tid] = transitionId;
 
-            out() << "add_place $pnet act" << id << std::endl;
-            out() << "add_arc $pnet t" << id << " act" << id << std::endl;
+            Place activityPlace("activity_" + transition.name());
+            PlaceId activityId = petriNet_.addPlace(activityPlace);
+            transition2activity_[tid] = activityId;
 
-            out() << "add_transition $pnet do" << id << std::endl;
-            out() << "add_arc $pnet act" << id << " do" << id << std::endl;
+            Transition executeTransition("execute_" + t.name());
+            TransitionId executeId = petriNet_.addTransition(executeTransition);
+            transition2execute_[tid] = executeId;
+
+            /* When a transition is fired, an activity token is produced. */
+            petriNet_.addOutputArc(transitionId, activityId);
+
+            /* When an activity is executed, the token is consumed. */
+            petriNet_.addInputArc(executeId, activityId);
         }
 
         for (typename pnet_t::edge_const_it it = net.edges(); it.has_more(); ++it) {
@@ -137,23 +134,45 @@ class transition_visitor_eklmn: public boost::static_visitor<void> {
 
             switch (connection.type) {
                 case petri_net::PT: {
-                    out() << "add_arc $pnet p" << connection.pid << " t" << connection.tid << std::endl;
+                    PlaceId placeId = find(place2place_, connection.pid);
+                    TransitionId transitionId = find(transition2transition_, connection.tid);
+
+                    /* Transition consumes the token on input place. */
+                    petriNet_.addInputArc(transitionId, placeId);
 
                     if (net.get_capacity(connection.pid)) {
-                        out() << "add_arc $pnet do" << connection.tid << " cap" << connection.pid << std::endl;
+                        PlaceId capacityId = find(place2capacity_, connection.pid);
+
+                        /* Transition produces a token on capacity place. */
+                        petriNet_.addOutputArc(transitionId, capacityId);
                     }
                     break;
                 }
                 case petri_net::PT_READ: {
-                    out() << "add_arc $pnet p" << connection.pid << " t" << connection.tid << std::endl;
-                    out() << "add_arc $pnet t" << connection.tid << " p" << connection.pid << std::endl;
+                    PlaceId placeId = find(place2place_, connection.pid);
+                    TransitionId transitionId = find(transition2transition_, connection.tid);
+
+                    /* Transition takes a token and instantly puts it back. */
+                    petriNet_.addInputArc(transitionId, placeId);
+                    petriNet_.addOutputArc(transitionId, placeId);
                     break;
                 }
                 case petri_net::TP: {
-                    out() << "add_arc $pnet do" << connection.tid << " p" << connection.pid << std::endl;
+                    TransitionId executeId = find(transition2execute_, connection.tid);
+                    PlaceId placeId = find(place2place_, connection.pid);
+
+                    /* Executing the transition puts a token on output place. */
+                    petriNet_.addOutputArc(executeId, placeId);
 
                     if (net.get_capacity(connection.pid)) {
-                        out() << "add_arc $pnet cap" << connection.pid << " t" << connection.tid << std::endl;
+                        PlaceId capacityId = find(place2capacity_, connection.pid);
+
+                        /* Transition consumes a token on capacity place. */
+                        petriNet_.addInputArc(executeId, capacityId);
+
+                        // TODO: in fact, a place with limited capacity can receive more
+                        // tokens than allowed. This is not modelled by us currently.
+                        // In practice it shouldn't give much difference.
                     }
                     break;
                 }
@@ -162,32 +181,36 @@ class transition_visitor_eklmn: public boost::static_visitor<void> {
             }
         }
 
+        petriNets_.push_back(petriNet_);
+
         for (typename pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
             petri_net::pid_t id = *it;
             const transition_t &transition = net.get_transition(id);
 
-            std::cout << "Recursing..." << std::endl;
-
-            transition_visitor_eklmn visitor((boost::format("%1%_%2%_%3%") % prefix() % id % escape_filename(transition.name())).str());
+            TransitionVisitor visitor(petriNet_.name() + "_" + transition.name(), petriNets_);
             visitor(transition);
-
-            std::cout << "Coming back from recursion..." << std::endl;
         }
     }
 
-    template<class Place, class Edge, class Token>
-    void operator()(const we::type::transition_t<Place, Edge, Token> &transition) {
-        typedef we::type::transition_t<Place, Edge, Token> transition_t;
+    template<class P, class E, class T>
+    void operator()(const we::type::transition_t<P, E, T> &transition) {
+        typedef we::type::transition_t<P, E, T> transition_t;
 
         boost::apply_visitor(*this, transition.data());
 
         foreach(const typename transition_t::port_map_t::value_type &item, transition.ports()) {
             const typename transition_t::port_t &port = item.second;
+
             if (port.has_associated_place()) {
-                petri_net::pid_t id = port.associated_place();
-                out() << "set_place_marking $pnet p" << id << " initial 1" << std::endl;
-                out() << "if {[has_node $pnet cap" << id << "]} { set_place_marking $pnet cap" << id
-                      << " initial [expr {[get_place_marking $pnet cap" << id << "]} - 1]}" << std::endl;
+                petri_net::pid_t pid = port.associated_place();
+
+                Place &place = petriNet_.getPlace(find(place2place_, pid));
+                place.setInitialMarking(place.initialMarking() + 1);
+
+                if (place.capacity()) {
+                    Place &capacityPlace = petriNet_.getPlace(find(place2capacity_, pid));
+                    place.setInitialMarking(capacityPlace.initialMarking() - 1);
+                }
             }
         }
     }
@@ -209,7 +232,7 @@ void parse(const char *filename, std::vector<PetriNet> &petriNets) {
     }
 
     {
-        transition_visitor_eklmn visitor("output_prefix");
+        TransitionVisitor visitor("", petriNets);
         visitor(activity.transition());
     }
 }

@@ -11,10 +11,18 @@ namespace pnetv {
  * Petri Net representing a workflow with unnecessary details being abstracted away.
  */
 class PetriNet {
+    std::string name_; ///< Name of the Petri net.
     std::vector<Transition> transitions_; ///< Transitions.
     std::vector<Place> places_; ///< Places.
 
     public:
+
+    PetriNet(const std::string &name) { name_ = name; }
+
+    /**
+     * \return Name of the Petri net.
+     */
+    const std::string &name() const { return name_; }
 
     /**
      * \return All the transitions in the Petri net.
@@ -26,7 +34,10 @@ class PetriNet {
      *
      * \param transition Transition.
      */
-    void addTransition(const Transition &transition) { transitions_.push_back(transition); }
+    TransitionId addTransition(const Transition &transition) {
+        transitions_.push_back(transition);
+        return transitions_.size() - 1;
+    }
 
     /**
      * \param id Id of the transitions.
@@ -52,7 +63,10 @@ class PetriNet {
      *
      * \param place Place.
      */
-    void addPlace(const Place &place) { places_.push_back(place); }
+    PlaceId addPlace(const Place &place) {
+        places_.push_back(place);
+        return places_.size() - 1;
+    }
 
     /**
      * \param id Id of the place.
@@ -67,6 +81,26 @@ class PetriNet {
      * \return Place with given id.
      */
     const Place &getPlace(PlaceId id) const { return places_[id]; }
+
+    /**
+     * Adds an input arc from a place to a transition.
+     *
+     * \param transitionId Id of a transition.
+     * \param placeId      Id of a place.
+     */
+    void addInputArc(TransitionId transitionId, PlaceId placeId) {
+        getTransition(transitionId).addInputPlace(placeId);
+    }
+
+    /**
+     * Adds an output arc from a transition to a place.
+     *
+     * \param transitionId Id of a transition.
+     * \param placeId      Id of a place.
+     */
+    void addOutputArc(TransitionId transitionId, PlaceId placeId) {
+        getTransition(transitionId).addOutputPlace(placeId);
+    }
 };
 
 } // namespace pnetv
