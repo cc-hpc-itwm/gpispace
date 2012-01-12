@@ -378,7 +378,6 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
 
 void GenericDaemon::shutdown_network()
 {
-	lock_type lock(mtx_master_);
     BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
     {
       if( !masterInfo.name().empty() && masterInfo.is_registered() )
@@ -1024,7 +1023,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		{
     			if( error.from() == masterInfo.name() )
     			{
-    				SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
+    				SDPA_LOG_WARN("The connection with the master " << masterInfo.name() << " is broken!");
 
     				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
     				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
