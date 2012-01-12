@@ -4,7 +4,7 @@
 #
 
 # increment this value if anything config related changes!
-CONFIG_VERSION=8
+CONFIG_VERSION=9
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
@@ -855,7 +855,8 @@ done
 
 put "config.version" "$CONFIG_VERSION"
 put "config.modified" "$(date)"
-put "config.revision" "$(sdpac --dumpversion 2>/dev/null)"
+put "config.sdpa_version" "$(sdpac --dumpversion 2>/dev/null)"
+put "config.sdpa_revision" "$(sdpac --revision 2>/dev/null)"
 
 cp "$real_config_file" "${real_config_file}.bak"
 mv "$temp_config_file" "$real_config_file"
