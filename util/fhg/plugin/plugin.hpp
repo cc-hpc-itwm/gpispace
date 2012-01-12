@@ -45,7 +45,8 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
         license,                                                        \
         depends,                                                        \
         key,                                                            \
-        FHG_PLUGIN_BUILD_REV                                            \
+        FHG_PLUGIN_BUILD_REV,                                           \
+        FHG_PLUGIN_BUILD_COMPILER                                       \
       };                                                                \
     return &fhg_plugin_descriptor_##name;                               \
   }                                                                     \
@@ -71,7 +72,8 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
           license,                                                      \
           depends,                                                      \
           key,                                                          \
-          FHG_PLUGIN_BUILD_REV                                          \
+          FHG_PLUGIN_BUILD_REV,                                         \
+          FHG_PLUGIN_BUILD_COMPILER                                     \
         };                                                              \
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
