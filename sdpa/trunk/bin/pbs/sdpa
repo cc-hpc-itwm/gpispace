@@ -4,7 +4,7 @@
 #
 
 # increment this value if anything config related changes!
-CONFIG_VERSION=7
+CONFIG_VERSION=8
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
@@ -564,7 +564,7 @@ EOF
     fi
 
     log "-: setting up the DRTS"
-    put "kernel.plugins" "logc,gui,kvs,progress,wfe,gpi,gpi-compat,drts"
+    put "kernel.plugins" "logc,gui,kvs,progress,wfe,gpi,gpi_compat,drts"
     put "kernel.lazy" $(get "kernel.lazy" "${DEFAULT_KERNEL_LOAD_LAZY:?}")
 
     log "-: configuring plugins"
@@ -741,7 +741,7 @@ to adjust the amount.
         return 1
     fi
 
-    local shm_size=$(get "plugin.gpi-compat.shm_size" "${DEFAULT_GPI_SHMSIZE:?}")
+    local shm_size=$(get "plugin.gpi_compat.shm_size" "${DEFAULT_GPI_SHMSIZE:?}")
     get_user_input "shm memory size (per worker) [$shm_size]:" shm_size
     parse_human_readable_size $shm_size shm_size
     if [ $shm_size -le 0 ] ; then
@@ -749,7 +749,7 @@ to adjust the amount.
         return 1
     fi
 
-    local com_size=$(get "plugin.gpi-compat.com_size" "${DEFAULT_GPI_COMSIZE:?}")
+    local com_size=$(get "plugin.gpi_compat.com_size" "${DEFAULT_GPI_COMSIZE:?}")
     get_user_input "communication buffer size (per worker) [$com_size]:" com_size
     parse_human_readable_size $com_size com_size
     if [ $com_size -le 0 ] ; then
@@ -775,8 +775,8 @@ to adjust the amount.
 
     put "gpi.memory_size" "$gpi_size"
     put "gpi.priv_dir" "$gpid_dir"
-    put "plugin.gpi-compat.shm_size" "$shm_size"
-    put "plugin.gpi-compat.com_size" "$com_size"
+    put "plugin.gpi_compat.shm_size" "$shm_size"
+    put "plugin.gpi_compat.com_size" "$com_size"
 
     put "gpi.api" $(get gpi.api "${DEFAULT_GPI_API:?}")
     put "gpi.timeout" $(get gpi.timeout "30")
