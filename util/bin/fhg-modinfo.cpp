@@ -21,18 +21,18 @@ int main(int ac, char **av)
         std::cout << "*** WARNING: version magics differ, this module might be incompatible!" << std::endl;
       }
 
-      std::cout << "file:    " << av[i] << std::endl;
-      std::cout << "name:    " << p->name() << std::endl;
-      std::cout << "author:  " << p->descriptor()->author << std::endl;
-      std::cout << "desc:    " << p->descriptor()->description << std::endl;
-      std::cout << "version: " << p->descriptor()->version << std::endl;
-      std::cout << "built:   " << p->descriptor()->tstamp << std::endl;
-      std::cout << "license: " << p->descriptor()->license << std::endl;
-      std::cout << "depends: " << p->descriptor()->depends << std::endl;
-      std::cout << "key:     " << p->descriptor()->featurekey << std::endl;
-      std::cout << "magic:   " << p->descriptor()->magic << std::endl;
-      std::cout << "rev:     " << p->descriptor()->buildrev << std::endl;
-      std::cout << "compiler:" << p->descriptor()->compiler << std::endl;
+      std::cout << "file:      " << av[i] << std::endl;
+      std::cout << "name:      " << p->name() << std::endl;
+      std::cout << "author:    " << p->descriptor()->author << std::endl;
+      std::cout << "desc:      " << p->descriptor()->description << std::endl;
+      std::cout << "version:   " << p->descriptor()->version << std::endl;
+      std::cout << "built:     " << p->descriptor()->tstamp << std::endl;
+      std::cout << "license:   " << p->descriptor()->license << std::endl;
+      std::cout << "depends:   " << p->descriptor()->depends << std::endl;
+      std::cout << "key:       " << p->descriptor()->featurekey << std::endl;
+      std::cout << "magic:     " << p->descriptor()->magic << std::endl;
+      std::cout << "rev:       " << p->descriptor()->buildrev << std::endl;
+      std::cout << "compiler:  " << p->descriptor()->compiler << std::endl;
 
       if ((i+1) < ac) std::cout << std::endl;
     }
