@@ -33,7 +33,7 @@ class Marking: public Printable {
      *
      * \param[in] placeMarkings Markings of individual places.
      */
-    Marking(std::vector<PlaceMarking> placeMarkings);
+    Marking(const std::vector<PlaceMarking> &placeMarkings);
 
     /**
      * \return Markings of individual places.

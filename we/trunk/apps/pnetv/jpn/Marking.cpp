@@ -24,7 +24,7 @@ namespace {
     };
 } // anonymous namespace
 
-Marking::Marking(std::vector<PlaceMarking> placeMarkings):
+Marking::Marking(const std::vector<PlaceMarking> &placeMarkings):
     placeMarkings_(placeMarkings)
 {
     placeMarkings_.erase(std::remove_if(placeMarkings_.begin(), placeMarkings_.end(), CountIsZero()), placeMarkings_.end());
