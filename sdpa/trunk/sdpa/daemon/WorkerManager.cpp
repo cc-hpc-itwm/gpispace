@@ -677,11 +677,15 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 
 	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 	{
-		int matchingDeg = matchRequirements( pair.second, listJobReq, bOwn );
-		if( matchingDeg > maxMatchingDeg )
+		Worker::ptr_t pWorker = pair.second;
+		if( !pWorker->disconnected() ) // if the worker is disconnected, skip it!
 		{
-			maxMatchingDeg = matchingDeg;
-			bestMatchingWorkerId = pair.first;
+			int matchingDeg = matchRequirements( pair.second, listJobReq, bOwn );
+			if( matchingDeg > maxMatchingDeg )
+			{
+				maxMatchingDeg = matchingDeg;
+				bestMatchingWorkerId = pair.first;
+			}
 		}
 	}
 
