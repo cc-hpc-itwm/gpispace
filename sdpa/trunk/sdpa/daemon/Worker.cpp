@@ -21,7 +21,8 @@ Worker::Worker(	const worker_id_t& name,
     location_(location),
     tstamp_(sdpa::util::now()),
     last_time_served_(0),
-    timedout_(false)
+    timedout_(false),
+    disconnected_(false)
 {
 
 }
