@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
 
         try {
             pnetv::parse(filename, petriNets);
+
             foreach (const pnetv::PetriNet &petriNet, petriNets) {
                 std::cout << petriNet.name() << ": ";
                 std::cout.flush();

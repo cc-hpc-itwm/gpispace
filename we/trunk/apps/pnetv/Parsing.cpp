@@ -114,7 +114,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             TransitionId transitionId = petriNet_.addTransition(transition);
             transition2transition_[tid] = transitionId;
 
-            Place activityPlace("activity_" + transition.name());
+            Place activityPlace("activity_" + t.name());
             PlaceId activityId = petriNet_.addPlace(activityPlace);
             transition2activity_[tid] = activityId;
 
@@ -181,8 +181,6 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        petriNets_.push_back(petriNet_);
-
         for (typename pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
             petri_net::pid_t id = *it;
             const transition_t &transition = net.get_transition(id);
@@ -209,10 +207,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
                 if (place.capacity()) {
                     Place &capacityPlace = petriNet_.getPlace(find(place2capacity_, pid));
-                    place.setInitialMarking(capacityPlace.initialMarking() - 1);
+                    capacityPlace.setInitialMarking(capacityPlace.initialMarking() - 1);
                 }
             }
         }
+
+        petriNets_.push_back(petriNet_);
     }
 };
 

@@ -3,6 +3,7 @@ set(target pnetv)
 set(sources
 	Parsing.cpp
 	Parsing.h
+	PetriNet.cpp
 	PetriNet.h
 	Place.h
 	Transition.h

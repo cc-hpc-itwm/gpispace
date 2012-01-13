@@ -2,6 +2,8 @@
 
 #include <boost/unordered_map.hpp>
 
+#include <jpn/common/Printable.h>
+
 #include "Place.h"
 #include "Transition.h"
 
@@ -10,7 +12,7 @@ namespace pnetv {
 /**
  * Petri Net representing a workflow with unnecessary details being abstracted away.
  */
-class PetriNet {
+class PetriNet: public jpn::Printable {
     std::string name_; ///< Name of the Petri net.
     std::vector<Transition> transitions_; ///< Transitions.
     std::vector<Place> places_; ///< Places.
@@ -106,6 +108,13 @@ class PetriNet {
     void addOutputArc(TransitionId transitionId, PlaceId placeId) {
         getTransition(transitionId).addOutputPlace(placeId);
     }
+
+    /**
+     * Dumps the graph in DOT format into given stream.
+     *
+     * \param out Output stream.
+     */
+    virtual void print(std::ostream &out) const;
 };
 
 } // namespace pnetv
