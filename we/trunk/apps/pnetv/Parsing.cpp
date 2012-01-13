@@ -187,7 +187,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             petri_net::pid_t id = *it;
             const transition_t &transition = net.get_transition(id);
 
-            TransitionVisitor visitor(petriNet_.name() + "_" + transition.name(), petriNets_);
+            TransitionVisitor visitor(petriNet_.name() + "::" + transition.name(), petriNets_);
             visitor(transition);
         }
     }
@@ -232,7 +232,7 @@ void parse(const char *filename, std::vector<PetriNet> &petriNets) {
     }
 
     {
-        TransitionVisitor visitor("", petriNets);
+        TransitionVisitor visitor(filename, petriNets);
         visitor(activity.transition());
     }
 }

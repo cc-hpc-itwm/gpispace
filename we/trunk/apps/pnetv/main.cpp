@@ -5,6 +5,7 @@
 
 #include "Parsing.h"
 #include "PetriNet.h"
+#include "Verification.h"
 
 int main(int argc, char *argv[]) {
     if (!argc) {
@@ -15,13 +16,17 @@ int main(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::vector<pnetv::PetriNet> petriNets;
 
+        const char *filename = argv[i];
+
         try {
-            pnetv::parse(argv[i], petriNets);
+            pnetv::parse(filename, petriNets);
             foreach (const pnetv::PetriNet &petriNet, petriNets) {
-                std::cout << petriNet.name() << std::endl;
+                std::cout << petriNet.name() << ": ";
+                std::cout.flush();
+                std::cout << pnetv::verify(petriNet) << std::endl;
             }
         } catch (const std::exception &e) {
-            std::cerr << argv[i] << ":" << e.what() << std::endl;
+            std::cerr << filename << ":" << e.what() << std::endl;
             return EXIT_FAILURE;
         }
     }

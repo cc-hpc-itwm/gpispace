@@ -7,6 +7,8 @@ set(sources
 	Place.h
 	Transition.h
 	Types.h
+	Verification.cpp
+	Verification.h
 	main.cpp
 )
 
