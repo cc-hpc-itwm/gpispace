@@ -71,7 +71,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
      * \param[out] petriNets Where to add the result of parsing a subnet.
      */
     TransitionVisitor(const std::string &name, std::vector<PetriNet> &petriNets):
-        petriNet_(name), petriNets_(petriNets_)
+        petriNet_(name), petriNets_(petriNets)
     { return; }
 
     void operator()(const we::type::expression_t & expr) { return; }

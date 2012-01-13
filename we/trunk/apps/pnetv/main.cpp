@@ -1,6 +1,8 @@
 #include <cstdlib> /* EXIT_XXXX constants. */
 #include <iostream>
 
+#include <jpn/common/Foreach.h>
+
 #include "Parsing.h"
 #include "PetriNet.h"
 
@@ -15,6 +17,9 @@ int main(int argc, char *argv[]) {
 
         try {
             pnetv::parse(argv[i], petriNets);
+            foreach (const pnetv::PetriNet &petriNet, petriNets) {
+                std::cout << petriNet.name() << std::endl;
+            }
         } catch (const std::exception &e) {
             std::cerr << argv[i] << ":" << e.what() << std::endl;
             return EXIT_FAILURE;

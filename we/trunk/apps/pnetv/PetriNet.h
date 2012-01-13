@@ -17,6 +17,11 @@ class PetriNet {
 
     public:
 
+    /**
+     * Constructor.
+     *
+     * \param name Name of the Petri net.
+     */
     PetriNet(const std::string &name) { name_ = name; }
 
     /**
