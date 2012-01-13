@@ -378,11 +378,11 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
 
 void GenericDaemon::shutdown_network()
 {
-    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
+    /*BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
     {
       if( !masterInfo.name().empty() && masterInfo.is_registered() )
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
-    }
+    }*/
 }
 
 void GenericDaemon::stop()
@@ -606,23 +606,8 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id)
 {
-    //SDPA_LOG_DEBUG("got job request from: " << e.from());
+    //take a job from the workers' queue and serve it
 
-    /*
-    the slave(aggregator) requests new executable jobs
-    this message is sent in regular frequencies depending on the load of the slave(aggregator)
-    this message can be seen as the trigger for a submitJob
-    it contains the id of the last job that has been received
-    the orchestrator answers to this message with a submitJob
-    */
-
-    // ATTENTION: you should submit/schedule only jobs that are in Pending state
-    // A job received from the user should be automatically put into the Running state
-    // after submitting the corresponding workflow to WFE
-
-    //take a job from the workers' queue? and serve it
-
-    //To do: replace this with schedule
     try {
 
         // you should consume from the  worker's pending list; put the job into the worker's submitted list
@@ -659,7 +644,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
     }
     catch(const NoJobScheduledException&)
     {
-        //SDPA_LOG_INFO("No job was scheduled to the worker '"<<worker_id);
+        SDPA_LOG_DEBUG("No job was scheduled on the worker '"<<worker_id);
     }
     catch(const WorkerNotFoundException&)
     {
@@ -960,7 +945,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		break;
     	}
     	case ErrorEvent::SDPA_ENODE_SHUTDOWN:
+    	case ErrorEvent::SDPA_ENETWORKFAILURE:
     	{
+    		// if it's a subscriber, unsubscribe it automatically
     		if( isSubscriber(error.from()) )
     			unsubscribe(error.from());
 
@@ -972,7 +959,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
     			SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
 
-    			// notify capability losses...
+    			// notify the master about capability losses in my subtree...
     			lock_type lock(mtx_master_);
     			BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
     			{
@@ -1014,29 +1001,6 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		}
     		break;
     	}
-    	case ErrorEvent::SDPA_ENETWORKFAILURE:
-    	{
-    		MLOG(WARN, "last message could not be sent due to a network failure!");
-    		// mark the current agent as not registered to the failing master
-    		lock_type lock(mtx_master_);
-    		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-    		{
-    			if( error.from() == masterInfo.name() )
-    			{
-    				SDPA_LOG_WARN("The connection with the master " << masterInfo.name() << " is broken!");
-
-    				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-    				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-    				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-    				masterInfo.set_registered(false);
-
-    				//requestRegistration(masterInfo);
-    			}
-    		}
-
-    		break;
-    	}
     	case ErrorEvent::SDPA_EJOBEXISTS:
     	{
     		SDPA_LOG_INFO("The worker managed to recover the job "<<error.job_id()<<", it already has it!");
@@ -1044,9 +1008,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
     		Worker::worker_id_t worker_id = error.from();
     		try {
-    			// Only, now should be state of the job updated to RUNNING
-    			// since it was not rejected, no error occurred etc ....
-    			//find the job ptrJob and call
+    			// Only now should be the job state machine make a transition to RUNNING
+    			// this means that the job was not rejected, no error occurred etc ....
+    			// find the job ptrJob and call
     			Job::ptr_t ptrJob = ptr_job_man_->findJob(error.job_id());
     			ptrJob->Dispatch();
     			ptr_scheduler_->acknowledgeJob(worker_id, error.job_id());
