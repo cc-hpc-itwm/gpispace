@@ -3,7 +3,7 @@ project(sdpa_main)
 
 include (./version.cmake)
 
-set(PROJECT_VERSION  "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version")
+set(PROJECT_VERSION  "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version" FORCE)
 set(PROJECT_REVISION     CACHE STRING "Source code revision")
 set(PROJECT_BUILD    "0" CACHE STRING "Build number")
 set(PROJECT_DESCRIPTION "Seismic Development and Processing Architecture" CACHE STRING "Project description")

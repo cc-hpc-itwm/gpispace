@@ -33,7 +33,7 @@ public:
     }
     catch (std::exception const & ex)
     {
-      LOG(ERROR, "could not parse plugin.gpi-compat.shm_size: " << ex.what());
+      LOG(ERROR, "could not parse plugin.gpi_compat.shm_size: " << ex.what());
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -44,7 +44,7 @@ public:
     }
     catch (std::exception const & ex)
     {
-      LOG(ERROR, "could not parse plugin.gpi-compat.scratch_size: " << ex.what());
+      LOG(ERROR, "could not parse plugin.gpi_compat.scratch_size: " << ex.what());
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -61,7 +61,7 @@ public:
       int ec = reinitialize_gpi_state();
       if (ec < 0)
       {
-        LOG(WARN, "gpi-compat plugin could not be started, gpi plugin is not (yet) available");
+        LOG(WARN, "gpi_compat plugin could not be started, gpi plugin is not (yet) available");
         LOG(WARN, "There be dragons! (Segfaults are imminent if you execute gpi modules!)");
         FHG_PLUGIN_INCOMPLETE();
       }
@@ -81,7 +81,7 @@ public:
       }
       catch (std::exception const &ex)
       {
-        LOG(WARN, "gpi-compat plugin could not clean up GPI allocations");
+        LOG(WARN, "gpi_compat plugin could not clean up GPI allocations");
       }
 
       m_shm_ptr = 0;
@@ -522,7 +522,7 @@ int fvmGetNodeCount()
   return gpi_compat->gpi_info.nodes;
 }
 
-EXPORT_FHG_PLUGIN( gpi-compat
+EXPORT_FHG_PLUGIN( gpi_compat
                  , GPICompatPluginImpl
                  , "Plugin to access the gpi-space (compatibility)"
                  , "Alexander Petry <petry@itwm.fhg.de>"
