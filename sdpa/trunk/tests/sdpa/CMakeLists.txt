@@ -77,6 +77,8 @@ set (tc_srcs
   test_StopRestartOrchSubscriberCli.cpp
   test_StopRestartAgentsSubscriberCli.cpp
   test_StopRestartAgentsPollingCli.cpp
+  test_StopRestartDrtsSubscriberCli.cpp 
+  test_StopRestartDrtsPollingCli.cpp
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
   test_Topologies.cpp
