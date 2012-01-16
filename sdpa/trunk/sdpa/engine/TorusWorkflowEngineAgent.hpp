@@ -182,7 +182,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
 	void propagate(const direction_t& dir, const Token::ptr_t& pToken)
 	{
-		if(dir == RIGHT)
+		if( dir == RIGHT )
 			propagateRight(pToken);
 		else
 			if( dir == DOWN )
@@ -219,8 +219,8 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
 		SDPA_LOG_INFO("The number of agents is: "<<m_nTorusDim*m_nTorusDim);
 
-		int i  = rank/m_nTorusDim;
-		int j  = rank%m_nTorusDim;
+		int i  = rank / m_nTorusDim;
+		int j  = rank % m_nTorusDim;
 
 		int rankBottom = ((i+1)%m_nTorusDim)*m_nTorusDim+j;
 
