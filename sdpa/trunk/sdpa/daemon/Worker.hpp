@@ -125,9 +125,10 @@ namespace sdpa { namespace daemon {
 		 Return true if the worker is timedout, false otherwise
      */
     bool timedout() const { return timedout_; }
-
     void set_timedout(bool bValue = true ) { timedout_ = bValue; }
 
+    bool disconnected() const { return disconnected_; }
+    void set_disconnected(bool bValue = true) { disconnected_ = bValue; }
 
     /**
       Return the next pending job or throw an exception.
@@ -209,6 +210,7 @@ namespace sdpa { namespace daemon {
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
     bool timedout_;
+    bool disconnected_;
 
     mutable mutex_type mtx_;
   };

@@ -450,6 +450,32 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
 
+	LOG(INFO, "On the horizontal axis:");
+		for(int i=0; i<g_nTorusDim; i++)
+			for(int j=0; j<g_nTorusDim; j++)
+			{
+				int right = i*g_nTorusDim+(j+1)%g_nTorusDim;
+
+				ostringstream oss;
+				oss<<"agent_"<<i*g_nTorusDim+j;
+
+				arrAgents[right]->removeMaster(oss.str());
+				LOG(INFO, "added new master of agent_"<<right<<" -> "<<oss.str());
+			}
+
+	LOG(INFO, "On the vertical axis:");
+	for(int i=0; i<g_nTorusDim; i++)
+		for(int j=0; j<g_nTorusDim; j++)
+		{
+			int down = ((i+1)%g_nTorusDim)*g_nTorusDim+j;
+
+			ostringstream oss;
+			oss<<"agent_"<<i*g_nTorusDim+j;
+
+			arrAgents[down]->removeMaster(oss.str());
+			LOG(INFO, "added new master of agent_"<<down<<" -> "<<oss.str());
+		}
+
 	for(int k=0; k<g_nTorusDim*g_nTorusDim; k++)
 		arrAgents[k]->shutdown();
 	ptrOrch->shutdown();

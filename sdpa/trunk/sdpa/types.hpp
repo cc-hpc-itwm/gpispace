@@ -39,11 +39,21 @@ namespace sdpa {
 		MasterInfo(const std::string& name  = "", bool registered = false )
 		: name_(name)
 		, registered_(registered)
+		, nConsecNetFailCnt_(0)
+		, nConsecRegAttempts_(0)
 		{}
 
 		std::string name() const { return name_; }
 		bool is_registered() const { return registered_; }
 		void set_registered(bool b) { registered_ = b; }
+
+		int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
+		void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
+		void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
+
+		int getConsecRegAttempts() { return nConsecRegAttempts_;}
+		void incConsecRegAttempts() { nConsecRegAttempts_++;}
+		void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
 
 		template <class Archive>
 		void serialize(Archive& ar, const unsigned int)
@@ -53,10 +63,11 @@ namespace sdpa {
 	private:
 		std::string name_;
 		bool registered_;
+		int nConsecNetFailCnt_;
+		int nConsecRegAttempts_;
 	};
 
 	typedef std::vector<MasterInfo> master_info_list_t;
-
 }
 
 #endif

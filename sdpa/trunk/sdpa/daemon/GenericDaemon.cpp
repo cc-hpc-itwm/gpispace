@@ -378,12 +378,11 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
 
 void GenericDaemon::shutdown_network()
 {
-	lock_type lock(mtx_master_);
-    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
+    /*BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
     {
       if( !masterInfo.name().empty() && masterInfo.is_registered() )
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
-    }
+    }*/
 }
 
 void GenericDaemon::stop()
@@ -607,23 +606,8 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id)
 {
-    //SDPA_LOG_DEBUG("got job request from: " << e.from());
+    //take a job from the workers' queue and serve it
 
-    /*
-    the slave(aggregator) requests new executable jobs
-    this message is sent in regular frequencies depending on the load of the slave(aggregator)
-    this message can be seen as the trigger for a submitJob
-    it contains the id of the last job that has been received
-    the orchestrator answers to this message with a submitJob
-    */
-
-    // ATTENTION: you should submit/schedule only jobs that are in Pending state
-    // A job received from the user should be automatically put into the Running state
-    // after submitting the corresponding workflow to WFE
-
-    //take a job from the workers' queue? and serve it
-
-    //To do: replace this with schedule
     try {
 
         // you should consume from the  worker's pending list; put the job into the worker's submitted list
@@ -660,7 +644,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
     }
     catch(const NoJobScheduledException&)
     {
-        //SDPA_LOG_INFO("No job was scheduled to the worker '"<<worker_id);
+        SDPA_LOG_DEBUG("No job was scheduled on the worker '"<<worker_id);
     }
     catch(const WorkerNotFoundException&)
     {
@@ -940,104 +924,112 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		break;
     	}
     	case ErrorEvent::SDPA_EWORKERNOTREG:
-    	{
-    		SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
-    		// mark the agen as not-registered
+		{
+			SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
+			// mark the agen as not-registered
 
-    		// check if the message comes from a master
-    		lock_type lock(mtx_master_);
-    		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-    		{
-    			if( error.from() == masterInfo.name() )
-    			{
-    				// we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
-    				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-    				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-    				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-    				masterInfo.set_registered(false);
-    				requestRegistration(masterInfo);
-    			}
-    		}
-    		break;
-    	}
-    	case ErrorEvent::SDPA_ENODE_SHUTDOWN:
-    	{
-    		if( isSubscriber(error.from()) )
-    			unsubscribe(error.from());
+			worker_id_list_t listDeadMasters;
 
-    		worker_id_t worker_id(error.from());
-
-    		try
-    		{
-    			Worker::ptr_t ptrWorker = findWorker(worker_id);
-
-    			SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
-
-    			// notify capability losses...
-    			lock_type lock(mtx_master_);
-    			BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-    			{
-    				sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
-    						new sdpa::events::CapabilitiesLostEvent(  	name(),
-																		masterInfo.name(),
-																		ptrWorker->capabilities()
-																  	  ));
-
-    				sendEventToMaster(shpCpbLostEvt);
-    			}
-
-    			ptr_scheduler_->reschedule(worker_id);
-    			ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
-    		}
-    		catch (WorkerNotFoundException const& /*ignored*/)
-    		{
-    			// check if the message comes from a master
-    			lock_type lock(mtx_master_);
-    			BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+			{
+				 lock_type lock(mtx_master_);
+				BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
 				{
-    				if( error.from() == masterInfo.name() )
-    				{
-    					SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
+					if( error.from() == masterInfo.name() )
+					{
+						// we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
+						masterInfo.set_registered(false);
 
-    					const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-    					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-    					boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-    					masterInfo.set_registered(false);
-
-    					//requestRegistration(masterInfo);
-    				}
+						if(masterInfo.getConsecRegAttempts()< cfg().get<unsigned long>("max_consecutive_reg_attempts", 5) )
+						{
+							const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+							SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+							boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+							requestRegistration(masterInfo);
+						}
+						else
+							listDeadMasters.push_back( masterInfo.name() );
+					}
 				}
-    		}
-    		catch (std::exception const& ex)
-    		{
-    			LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
-    		}
-    		break;
-    	}
-    	case ErrorEvent::SDPA_ENETWORKFAILURE:
-    	{
-    		MLOG(WARN, "last message could not be sent due to a network failure!");
-    		// mark the current agent as not registered to the failing master
-    		lock_type lock(mtx_master_);
-    		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-    		{
-    			if( error.from() == masterInfo.name() )
-    			{
-    				SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
+			}
 
-    				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-    				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-    				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+			removeMasters(listDeadMasters);
 
-    				masterInfo.set_registered(false);
+			break;
+		}
+		case ErrorEvent::SDPA_ENODE_SHUTDOWN:
+		case ErrorEvent::SDPA_ENETWORKFAILURE:
+		{
+			if( isSubscriber(error.from()) )
+				unsubscribe(error.from());
 
-    				//requestRegistration(masterInfo);
-    			}
-    		}
+			worker_id_t worker_id(error.from());
 
-    		break;
-    	}
+			try
+			{
+				Worker::ptr_t ptrWorker = findWorker(worker_id);
+
+				if(ptrWorker)
+				{
+					SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
+
+					// notify capability losses...
+					lock_type lock(mtx_master_);
+					BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+					{
+						sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
+								new sdpa::events::CapabilitiesLostEvent(  	name(),
+																			masterInfo.name(),
+																			ptrWorker->capabilities()
+																		));
+
+						sendEventToMaster(shpCpbLostEvt);
+					}
+
+					// if there still are registered workers, otherwise declare the remaining
+					// jobs failed
+					ptr_scheduler_->reschedule(worker_id);
+					ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
+				}
+			}
+			catch (WorkerNotFoundException const& /*ignored*/)
+			{
+
+				worker_id_list_t listDeadMasters;
+				{
+					lock_type lock(mtx_master_);
+					// check if the message comes from a master
+					BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+					{
+						if( error.from() == masterInfo.name() )
+						{
+							SDPA_LOG_WARN("The connection with the master " << masterInfo.name() << " is broken!");
+							masterInfo.incConsecNetFailCnt();
+
+							if( masterInfo.getConsecNetFailCnt() < cfg().get<unsigned long>("max_consecutive_net_faults", 5) )
+							{
+								const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+								SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s ...");
+								boost::this_thread::sleep(boost::posix_time::seconds(reg_timeout/1000000));
+
+								masterInfo.set_registered(false);
+
+								// don't request registration, you'll be notified by the master when he wakes up!
+								// requestRegistration(masterInfo);
+							}
+							else
+								listDeadMasters.push_back( masterInfo.name() );
+						}
+					}
+				}
+
+				removeMasters(listDeadMasters);
+			}
+			catch (std::exception const& ex)
+			{
+				LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
+			}
+			break;
+		}
     	case ErrorEvent::SDPA_EJOBEXISTS:
     	{
     		SDPA_LOG_INFO("The worker managed to recover the job "<<error.job_id()<<", it already has it!");
@@ -1045,9 +1037,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
     		Worker::worker_id_t worker_id = error.from();
     		try {
-    			// Only, now should be state of the job updated to RUNNING
-    			// since it was not rejected, no error occurred etc ....
-    			//find the job ptrJob and call
+    			// Only now should be the job state machine make a transition to RUNNING
+    			// this means that the job was not rejected, no error occurred etc ....
+    			// find the job ptrJob and call
     			Job::ptr_t ptrJob = ptr_job_man_->findJob(error.job_id());
     			ptrJob->Dispatch();
     			ptr_scheduler_->acknowledgeJob(worker_id, error.job_id());
@@ -1689,6 +1681,15 @@ bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
 		return true;
 	else
 		return false;
+}
+
+void GenericDaemon::removeMaster( const agent_id_t& id )
+{
+	lock_type lock(mtx_master_);
+
+	master_info_list_t::iterator it = find_if( m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasId, _1, id) );
+	if( it != m_arrMasterInfo.end() )
+		m_arrMasterInfo.erase(it);
 }
 
 void GenericDaemon::removeMasters(const worker_id_list_t& listMasters)
