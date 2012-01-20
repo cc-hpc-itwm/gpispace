@@ -1855,9 +1855,6 @@ void GenericDaemon::forward(const id_type& job_id, const result_type& result, un
 		Job::ptr_t pJob( ptrFSM );
 		pJob->set_owner(name());
 
-		/*if( !isTop() )
-			pJob->setType(Job::TMP);*/
-
 		// the job job_id is in the Pending state now!
 		ptr_job_man_->addJob(jobId, pJob);
 
