@@ -165,6 +165,8 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
 		m_product = matrix_t(A.size1(), A.size1());
 		m_expectedProduct = matrix_t(A.size1(), A.size1());
 
+		//ar >> m_nTorusDim;
+
 		SDPA_LOG_ERROR("Got the matrices: ");
 		print(A);
 		print(B);
@@ -195,19 +197,24 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
 				print(block_2);
 
 				try {
-					actId  = fct_id_gen_();
 					// care master
 					// the rank doesn't matter for the orchestrator
-					if(pIAgent_)
-					{
-						Token yellowToken(YELLOW, pIAgent_->name(), -1, m_nTorusDim, block_1, block_2);
+					Token yellowToken(YELLOW, pIAgent_->name(), -1, m_nTorusDim, block_1, block_2);
+					yellowToken.activityId() = fct_id_gen_();
 
-						unsigned int agentRank = i*m_nTorusDim+j;
-						//sdpa::worker_id_t agentId = pIAgent_->getWorkerId();
-						SDPA_LOG_INFO("The agent with the rank "<<i*m_nTorusDim+j<<" is "<<agentRank);
+					unsigned int agentRank = i*m_nTorusDim+j;
+					//sdpa::worker_id_t agentId = pIAgent_->getWorkerId();
+					SDPA_LOG_INFO("The agent with the rank "<<i*m_nTorusDim+j<<" is "<<agentRank);
 
-						pIAgent_->forward(actId, yellowToken.encode(), agentRank);
-					}
+					std::ostringstream oss;
+					oss<<"rank"<<agentRank;
+					requirement_t req(oss.str(), true);
+					requirement_list_t reqList;
+					reqList.push_back(req);
+
+					pIAgent_->submit(yellowToken.activityId(), yellowToken.encode(), reqList);
+
+					//pIAgent_->forward(actId, yellowToken.encode(), agentRank);
 				}
 				catch(boost::bad_function_call& ex) {
 					SDPA_LOG_ERROR("Bad function call exception occurred!");
