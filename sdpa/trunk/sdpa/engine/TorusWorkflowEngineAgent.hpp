@@ -29,6 +29,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef std::string internal_id_type;
+    typedef std::map<id_type, id_type> map_act_ids_t;
 
     //typedef std::pair<sdpa::job_id_t, result_type>
     typedef SynchronizedQueue<std::list<Token::ptr_t> > TokenQueue;
@@ -40,6 +41,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     	fct_id_gen_ = f;
     	start();
     	SDPA_LOG_DEBUG("Torus workflow engine created ...");
+    	// de lucrat aici -> cu neighbors, care-i left, care-i down etc
     }
 
     ~TorusWorkflowEngineAgent()
@@ -81,7 +83,10 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     */
 	bool finished(const id_type& activityId, const result_type& result )
     {
-    	SDPA_LOG_DEBUG("The activity " << activityId<<" forward!");
+    	SDPA_LOG_DEBUG( "The activity " << activityId<<" forward!" );
+    	pIAgent_->finished( m_mapActIds[activityId], "" );
+    	m_mapActIds.erase(activityId);
+
     	return false;
     }
 
@@ -101,14 +106,16 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     Token::ptr_t genBlueToken(Token& token)
     {
     	Token::ptr_t ptrTok(new Token(BLUE, pIAgent_->name(), pIAgent_->rank(), m_nTorusDim, token.block_1()));
+    	ptrTok->activityId() = token.activityId();
     	return ptrTok;
     }
 
     Token::ptr_t genRedToken(Token& token)
-      {
+    {
       	Token::ptr_t ptrTok(new Token(RED, pIAgent_->name(), pIAgent_->rank(), m_nTorusDim, token.block_2()));
+      	ptrTok->activityId() = token.activityId();
       	return ptrTok;
-      }
+    }
 
     /**
 	 * Submit a workflow to the GWES.
@@ -129,6 +136,8 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 		Token token;
 		token.decode(wf_desc);
 
+		//int nTorusDim = token.size();
+
 		if( token.color() == YELLOW )
 		{
 			SDPA_LOG_DEBUG("Got YELLOW token ...");
@@ -145,7 +154,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 			accumulate( pRedToken, pBlueToken, true ); // C += A * B
 
 			propagate(RIGHT, pBlueToken);
-			propagate(DOWN,  pRedToken);
+			propagate(DOWN, pRedToken);
 
 			return;
 		}
@@ -182,7 +191,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
 	void propagate(const direction_t& dir, const Token::ptr_t& pToken)
 	{
-		if( dir == RIGHT )
+		if(dir == RIGHT)
 			propagateRight(pToken);
 		else
 			if( dir == DOWN )
@@ -201,16 +210,25 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
 		int rankRight = i*m_nTorusDim+(j+1)%m_nTorusDim;
 
-		id_type actIdRed, actIdBlue;
 		try {
-			actIdBlue = fct_id_gen_();
+			id_type newActId = fct_id_gen_();
+			m_mapActIds[newActId] = pBlueToken->activityId();
+			pBlueToken->activityId() = newActId;
 		}
 		catch(boost::bad_function_call& ex) {
 			SDPA_LOG_ERROR("Bad function call exception occurred!");
 			return;
 		}
 
-		pIAgent_->forward(actIdBlue, pBlueToken->encode(), rankRight );
+		std::ostringstream oss;
+		oss<<"rank"<<rankRight;
+		requirement_t req(oss.str(), true);
+		requirement_list_t reqList;
+		reqList.push_back(req);
+
+		pIAgent_->submit(pBlueToken->activityId(), pBlueToken->encode(), reqList);
+
+		//pIAgent_->forward(actIdBlue, pBlueToken->encode(), rankRight );
 	}
 
 	void propagateDown(const Token::ptr_t& pRedToken)
@@ -219,21 +237,30 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
 		SDPA_LOG_INFO("The number of agents is: "<<m_nTorusDim*m_nTorusDim);
 
-		int i  = rank / m_nTorusDim;
-		int j  = rank % m_nTorusDim;
+		int i  = rank/m_nTorusDim;
+		int j  = rank%m_nTorusDim;
 
 		int rankBottom = ((i+1)%m_nTorusDim)*m_nTorusDim+j;
 
-		id_type actIdRed, actIdBlue;
 		try {
-			actIdRed  = fct_id_gen_();
+			id_type newActId = fct_id_gen_();
+			m_mapActIds[newActId] = pRedToken->activityId();
+			pRedToken->activityId() = newActId;
 		}
 		catch(boost::bad_function_call& ex) {
 			SDPA_LOG_ERROR("Bad function call exception occurred!");
 			return;
 		}
 
-		pIAgent_->forward( actIdRed,  pRedToken->encode(),  rankBottom );
+		std::ostringstream oss;
+		oss<<"rank"<<rankBottom;
+		requirement_t req(oss.str(), true);
+		requirement_list_t reqList;
+		reqList.push_back(req);
+
+		pIAgent_->submit(pRedToken->activityId(), pRedToken->encode(), reqList);
+
+		//pIAgent_->forward( actIdRed,  pRedToken->encode(),  rankBottom );
 	}
 
 	/**
@@ -274,8 +301,10 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
       void run()
       {
+    	  //lock_type lock(mtx_stop);
     	  while(!bStopRequested)
     	  {
+    		  	//cond_stop.wait(lock);
     		  Token::ptr_t pBlueToken, pRedToken;
 
     		  // consume always 2 tokens
@@ -306,6 +335,9 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
 					  SDPA_LOG_DEBUG("Inform the orchestrator that the job "<<m_wfid<<" finished! Product: ");
 					  print(yellowToken.block_1());
+
+					  pIAgent_->finished(pBlueToken->activityId(), "");
+					  pIAgent_->finished(pRedToken->activityId(), "");
 
 					  pIAgent_->finished(m_wfid, yellowToken.encode() );
 					  m_product.clear();
@@ -341,6 +373,8 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
     std::string m_wfid;
     matrix_t m_product;
+
+    map_act_ids_t m_mapActIds;
 };
 
 
