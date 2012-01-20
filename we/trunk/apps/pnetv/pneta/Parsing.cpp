@@ -36,33 +36,33 @@ typename Container::mapped_type find(const Container &container, const typename 
  * Visitor for discovering subnets in workflows and translating them to Petri nets.
  */
 class TransitionVisitor: public boost::static_visitor<void> {
-    PetriNet petriNet_; ///< Resulting Petri net.
-    std::vector<PetriNet> &petriNets_; ///< Where to add the resulting Petri net when done.
+    std::auto_ptr<PetriNet> petriNet_; ///< Resulting Petri net.
+    boost::ptr_vector<PetriNet> &petriNets_; ///< Where to add the resulting Petri net when done.
 
     /**
      * Places present in the workflow.
      */
-    boost::unordered_map<petri_net::pid_t, PlaceId> place2place_;
+    boost::unordered_map<petri_net::pid_t, Place *> place2place_;
 
     /**
      * Helper places for implementing capacities.
      */
-    boost::unordered_map<petri_net::pid_t, PlaceId> place2capacity_;
+    boost::unordered_map<petri_net::pid_t, Place *> place2capacity_;
 
     /**
      * Places for storing tokens representing an activity being executed.
      */
-    boost::unordered_map<petri_net::tid_t, PlaceId> transition2activity_;
+    boost::unordered_map<petri_net::tid_t, Place *> transition2activity_;
 
     /**
      * Transitions present in the workflow.
      */
-    boost::unordered_map<petri_net::tid_t, TransitionId> transition2transition_;
+    boost::unordered_map<petri_net::tid_t, Transition *> transition2transition_;
 
     /**
      * Transitions for representing execution of an activity.
      */
-    boost::unordered_map<petri_net::tid_t, TransitionId> transition2execute_;
+    boost::unordered_map<petri_net::tid_t, Transition *> transition2execute_;
 
     public:
 
@@ -72,8 +72,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
      * \param[in] name of the component being visited.
      * \param[out] petriNets Where to add the result of parsing a subnet.
      */
-    TransitionVisitor(const std::string &name, std::vector<PetriNet> &petriNets):
-        petriNet_(name), petriNets_(petriNets)
+    TransitionVisitor(const std::string &name, boost::ptr_vector<PetriNet> &petriNets):
+        petriNet_(new PetriNet(name)), petriNets_(petriNets)
     { return; }
 
     void operator()(const we::type::expression_t & expr) { return; }
@@ -90,17 +90,19 @@ class TransitionVisitor: public boost::static_visitor<void> {
             petri_net::pid_t pid = *it;
             const P &p = net.get_place(pid);
 
-            Place place("normal_" + p.get_name());
+            Place *place = petriNet_->createPlace();
+            place->setName("normal_" + p.get_name());
             if (net.get_capacity(pid)) {
-                place.setCapacity(*net.get_capacity(pid));
+                place->setCapacity(*net.get_capacity(pid));
             }
-            place2place_[pid] = petriNet_.addPlace(place);
+            place2place_[pid] = place;
 
-            if (place.capacity()) {
-                Place capacityPlace("capacity_" + place.name());
-                capacityPlace.setCapacity(*place.capacity());
-                capacityPlace.setInitialMarking(*place.capacity());
-                place2capacity_[pid] = petriNet_.addPlace(capacityPlace);
+            if (place->capacity()) {
+                Place *capacity = petriNet_->createPlace();
+                capacity->setName("capacity_" + p.get_name());
+                capacity->setCapacity(place->capacity());
+                capacity->setInitialMarking(*place->capacity());
+                place2capacity_[pid] = capacity;
             }
         }
 
@@ -112,23 +114,24 @@ class TransitionVisitor: public boost::static_visitor<void> {
             std::ostringstream condition;
             condition << t.condition();
 
-            Transition transition("normal_" + t.name() + "[" + condition.str() + "]", condition.str() == "true");
-            TransitionId transitionId = petriNet_.addTransition(transition);
-            transition2transition_[tid] = transitionId;
+            Transition *transition = petriNet_->createTransition();
+            transition->setName("normal_" + t.name() + "[" + condition.str() + "]");
+            transition->setConditionAlwaysTrue(condition.str() == "true");
+            transition2transition_[tid] = transition;
 
-            Place activityPlace("activity_" + t.name());
-            PlaceId activityId = petriNet_.addPlace(activityPlace);
-            transition2activity_[tid] = activityId;
+            Place *activity = petriNet_->createPlace();
+            activity->setName("activity_" + t.name());
+            transition2activity_[tid] = activity;
 
-            Transition executeTransition("execute_" + t.name());
-            TransitionId executeId = petriNet_.addTransition(executeTransition);
-            transition2execute_[tid] = executeId;
+            Transition *execute = petriNet_->createTransition();
+            execute->setName("execute_" + t.name());
+            transition2execute_[tid] = execute;
 
             /* When a transition is fired, an activity token is produced. */
-            petriNet_.addOutputArc(transitionId, activityId);
+            transition->addOutputPlace(activity);
 
             /* When an activity is executed, the token is consumed. */
-            petriNet_.addInputArc(executeId, activityId);
+            execute->addInputPlace(activity);
         }
 
         for (typename pnet_t::edge_const_it it = net.edges(); it.has_more(); ++it) {
@@ -136,41 +139,41 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             switch (connection.type) {
                 case petri_net::PT: {
-                    PlaceId placeId = find(place2place_, connection.pid);
-                    TransitionId transitionId = find(transition2transition_, connection.tid);
+                    Place *place = find(place2place_, connection.pid);
+                    Transition *transition = find(transition2transition_, connection.tid);
 
                     /* Transition consumes the token on input place. */
-                    petriNet_.addInputArc(transitionId, placeId);
+                    transition->addInputPlace(place);
 
-                    if (net.get_capacity(connection.pid)) {
-                        PlaceId capacityId = find(place2capacity_, connection.pid);
+                    if (place->capacity()) {
+                        Place *capacity = find(place2capacity_, connection.pid);
 
                         /* Transition produces a token on capacity place. */
-                        petriNet_.addOutputArc(transitionId, capacityId);
+                        transition->addOutputPlace(capacity);
                     }
                     break;
                 }
                 case petri_net::PT_READ: {
-                    PlaceId placeId = find(place2place_, connection.pid);
-                    TransitionId transitionId = find(transition2transition_, connection.tid);
+                    Place *place = find(place2place_, connection.pid);
+                    Transition *transition = find(transition2transition_, connection.tid);
 
                     /* Transition takes a token and instantly puts it back. */
-                    petriNet_.addInputArc(transitionId, placeId);
-                    petriNet_.addOutputArc(transitionId, placeId);
+                    transition->addInputPlace(place);
+                    transition->addOutputPlace(place);
                     break;
                 }
                 case petri_net::TP: {
-                    TransitionId executeId = find(transition2execute_, connection.tid);
-                    PlaceId placeId = find(place2place_, connection.pid);
+                    Transition *execute = find(transition2execute_, connection.tid);
+                    Place *place = find(place2place_, connection.pid);
 
                     /* Executing the transition puts a token on output place. */
-                    petriNet_.addOutputArc(executeId, placeId);
+                    execute->addOutputPlace(place);
 
                     if (net.get_capacity(connection.pid)) {
-                        PlaceId capacityId = find(place2capacity_, connection.pid);
+                        Place *capacity = find(place2capacity_, connection.pid);
 
                         /* Transition consumes a token on capacity place. */
-                        petriNet_.addInputArc(executeId, capacityId);
+                        execute->addInputPlace(capacity);
 
                         // TODO: in fact, a place with limited capacity can receive more
                         // tokens than allowed. This is not modelled by us currently.
@@ -187,7 +190,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             petri_net::pid_t id = *it;
             const transition_t &transition = net.get_transition(id);
 
-            TransitionVisitor visitor(petriNet_.name() + "::" + transition.name(), petriNets_);
+            TransitionVisitor visitor(petriNet_->name() + "::" + transition.name(), petriNets_);
             visitor(transition);
         }
     }
@@ -204,12 +207,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.has_associated_place()) {
                 petri_net::pid_t pid = port.associated_place();
 
-                Place &place = petriNet_.getPlace(find(place2place_, pid));
-                place.setInitialMarking(place.initialMarking() + 1);
+                Place *place = find(place2place_, pid);
+                place->setInitialMarking(place->initialMarking() + 1);
 
-                if (place.capacity()) {
-                    Place &capacityPlace = petriNet_.getPlace(find(place2capacity_, pid));
-                    capacityPlace.setInitialMarking(capacityPlace.initialMarking() - 1);
+                if (place->capacity()) {
+                    Place *capacity = find(place2capacity_, pid);
+                    capacity->setInitialMarking(capacity->initialMarking() - 1);
                 }
             }
         }
@@ -220,7 +223,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
 } // anonymous namespace
 
-void parse(const char *filename, std::vector<PetriNet> &petriNets) {
+void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
     we::activity_t activity;
 
     {

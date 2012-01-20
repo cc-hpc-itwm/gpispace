@@ -12,6 +12,7 @@ namespace pneta {
  * Place from a workflow abstracted from unnecessary details.
  */
 class Place {
+    PlaceId id_; ///< Id of the place.
     std::string name_; ///< Name of the transition.
     boost::optional<TokenCount> capacity_; ///< Capacity, if any.
     TokenCount initialMarking_; ///< Initial marking.
@@ -19,19 +20,28 @@ class Place {
     public:
 
     /**
-     * Construction.
+     * Constructor.
      *
-     * \param name Name of the place.
-     * \param capacity Capacity of the place, if any.
+     * \param id Id.
      */
-    Place(const std::string &name):
-        name_(name), initialMarking_(0)
-    {}
+    Place(PlaceId id): id_(id), initialMarking_(0) {}
     
+    /**
+     * \return Id of the transition.
+     */
+    PlaceId id() const { return id_; }
+
     /**
      * \return Name of the place.
      */
     const std::string &name() const { return name_; }
+
+    /**
+     * Sets the name of the transition.
+     *
+     * \param name New name.
+     */
+    void setName(const std::string &name) { name_ = name; }
 
     /**
      * \return Capacity of the place.
@@ -43,7 +53,7 @@ class Place {
      *
      * \param count Maximal number of tokens allowed.
      */
-    void setCapacity(TokenCount count) { capacity_ = count; }
+    void setCapacity(boost::optional<TokenCount> count) { capacity_ = count; }
 
     /**
      * \return Initial marking of this place.

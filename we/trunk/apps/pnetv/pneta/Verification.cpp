@@ -2,65 +2,42 @@
 
 #include <jpn/common/Foreach.h>
 #include <jpn/common/PrintRange.h>
-#include <jpn/common/Unreachable.h>
 #include <jpn/analysis/Termination.h>
 
 #include "PetriNet.h"
 
 namespace pneta {
 
-void VerificationResult::print(std::ostream &out) const {
-    out << "(";
-    switch (result()) {
-        case TERMINATES:
-            out << "TERMINATES";
-            break;
-        case UNBOUNDED:
-            out << "UNBOUNDED";
-            break;
-        case MAYBE_UNBOUNDED:
-            out << "MAYBE_UNBOUNDED";
-            break;
-        case INFINITE:
-            out << "INFINITE";
-            break;
-        case MAYBE_INFINITE:
-            out << "MAYBE_INFINITE";
-            break;
-        default:
-            jpn::unreachable();
-    }
-    if (result() != TERMINATES) {
-        out << ", ";
-        jpn::printRange(out, trace());
-    }
-    out << ")";
-}
-
 namespace {
 
-inline jpn::Marking makeInitialMarking(const std::vector<Place> &places) {
+inline jpn::Marking makeInitialMarking(const std::vector<const Place *> &places) {
     std::vector<jpn::PlaceMarking> placeMarkings;
-    PlaceId id = 0;
-    foreach (const Place &place, places) {
-        if (place.initialMarking()) {
-            placeMarkings.push_back(jpn::PlaceMarking(id, place.initialMarking()));
+    foreach (const Place *place, places) {
+        if (place->initialMarking()) {
+            placeMarkings.push_back(jpn::PlaceMarking(place->id(), place->initialMarking()));
         }
-        ++id;
     }
     return jpn::Marking(placeMarkings);
 }
 
-inline jpn::Marking makeMarking(const std::vector<PlaceId> &placeIds) {
+inline jpn::Marking makeMarking(const std::vector<const Place *> &places) {
     std::vector<jpn::PlaceMarking> placeMarkings;
-    foreach (PlaceId place, placeIds) {
-        placeMarkings.push_back(jpn::PlaceMarking(place, 1));
+    foreach (const Place *place, places) {
+        placeMarkings.push_back(jpn::PlaceMarking(place->id(), 1));
     }
     return jpn::Marking(placeMarkings);
 }
 
-jpn::Transition makeTransition(jpn::TransitionId id, const Transition &transition) {
-    return jpn::Transition(id, makeMarking(transition.inputPlaces()), makeMarking(transition.outputPlaces()));
+jpn::Transition makeTransition(const Transition *transition) {
+    return jpn::Transition(transition->id(), makeMarking(transition->inputPlaces()), makeMarking(transition->outputPlaces()));
+}
+
+std::vector<const Transition *> makeTrace(const std::vector<jpn::TransitionId> &trace, const PetriNet &petriNet) {
+    std::vector<const Transition *> result;
+    foreach (jpn::TransitionId transitionId, trace) {
+        result.push_back(petriNet.getTransition(transitionId));
+    }
+    return result;
 }
 
 } // anonymous namespace
@@ -70,42 +47,38 @@ VerificationResult verify(const PetriNet &petriNet) {
 
     std::vector<jpn::Transition> transitions;
 
-    TransitionId id = 0;
-    foreach(const Transition &transition, petriNet.transitions()) {
-        if (transition.conditionIsAlwaysTrue()) {
-            transitions.push_back(makeTransition(id, transition));
+    foreach(const Transition *transition, petriNet.transitions()) {
+        if (transition->conditionAlwaysTrue()) {
+            transitions.push_back(makeTransition(transition));
         }
-        ++id;
     }
 
     std::vector<TransitionId> trace;
 
     trace = jpn::analysis::findUnboundedness(transitions, initialMarking);
     if (!trace.empty()) {
-        return VerificationResult(VerificationResult::UNBOUNDED, trace);
+        return VerificationResult(VerificationResult::UNBOUNDED, makeTrace(trace, petriNet));
     }
 
     trace = jpn::analysis::findLivelock(transitions, initialMarking);
     if (!trace.empty()) {
-        return VerificationResult(VerificationResult::INFINITE, trace);
+        return VerificationResult(VerificationResult::INFINITE, makeTrace(trace, petriNet));
     }
 
-    id = 0;
-    foreach(const Transition &transition, petriNet.transitions()) {
-        if (!transition.conditionIsAlwaysTrue()) {
-            transitions.push_back(makeTransition(id, transition));
+    foreach(const Transition *transition, petriNet.transitions()) {
+        if (!transition->conditionAlwaysTrue()) {
+            transitions.push_back(makeTransition(transition));
         }
-        ++id;
     }
 
     trace = jpn::analysis::findUnboundedness(transitions, initialMarking);
     if (!trace.empty()) {
-        return VerificationResult(VerificationResult::MAYBE_UNBOUNDED, trace);
+        return VerificationResult(VerificationResult::MAYBE_UNBOUNDED, makeTrace(trace, petriNet));
     }
 
     trace = jpn::analysis::findLivelock(transitions, initialMarking);
     if (!trace.empty()) {
-        return VerificationResult(VerificationResult::MAYBE_INFINITE, trace);
+        return VerificationResult(VerificationResult::MAYBE_INFINITE, makeTrace(trace, petriNet));
     }
 
     return VerificationResult(VerificationResult::TERMINATES);

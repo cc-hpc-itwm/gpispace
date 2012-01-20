@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/ptr_container/ptr_vector.hpp>
+
 namespace pneta {
 
 class PetriNet;
@@ -13,7 +15,7 @@ class PetriNet;
  * \param[in] filename Input file name.
  * \param[out] petriNets Where to store the Petri nets.
  */
-void parse(const char *filename, std::vector<PetriNet> &petriNets);
+void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets);
 
 } // namespace pneta
 

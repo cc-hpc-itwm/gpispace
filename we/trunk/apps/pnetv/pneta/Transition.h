@@ -7,26 +7,31 @@
 
 namespace pneta {
 
+class Place;
+
 /**
  * Transition from a workflow abstracted from unnecessary details.
  */
 class Transition {
+    TransitionId id_; ///< Id of the transition.
     std::string name_; ///< Name of the transition.
-    std::vector<PlaceId> inputPlaces_; ///< Ids of input places.
-    std::vector<PlaceId> outputPlaces_; ///< Ids of output places.
-    bool conditionIsAlwaysTrue_; ///< True iff transition's condition is constant true.
+    std::vector<const Place *> inputPlaces_; ///< Ids of input places.
+    std::vector<const Place *> outputPlaces_; ///< Ids of output places.
+    bool conditionAlwaysTrue_; ///< True iff transition's condition is constant true.
 
     public:
 
     /**
      * Constructor.
      *
-     * \param name Name of the transition.
-     * \param conditionIsAlwaysTrue Whether transition's condition is constant true.
+     * \param id Id.
      */
-    Transition(const std::string &name, bool conditionIsAlwaysTrue = true):
-        name_(name), conditionIsAlwaysTrue_(conditionIsAlwaysTrue)
-    { return; }
+    Transition(TransitionId id): id_(id), conditionAlwaysTrue_(true) {}
+
+    /**
+     * \return Id of the transition.
+     */
+    TransitionId id() const { return id_; }
 
     /**
      * Name of the transition.
@@ -34,33 +39,47 @@ class Transition {
     const std::string &name() const { return name_; }
 
     /**
+     * Sets the name of the transition.
+     *
+     * \param name New name.
+     */
+    void setName(const std::string &name) { name_ = name; }
+
+    /**
      * \return True iff transition's condition is constant true.
      */
-    bool conditionIsAlwaysTrue() const { return conditionIsAlwaysTrue_; }
+    bool conditionAlwaysTrue() const { return conditionAlwaysTrue_; }
+
+    /**
+     * Sets whether condition is always true.
+     *
+     * \param value True iff the condition is always true.
+     */
+    void setConditionAlwaysTrue(bool value) { conditionAlwaysTrue_ = value; }
 
     /**
      * Adds input place.
      *
-     * \param id Place id.
+     * \param place Place.
      */
-    void addInputPlace(PlaceId id) { inputPlaces_.push_back(id); }
+    void addInputPlace(const Place *place) { inputPlaces_.push_back(place); }
 
     /**
      * \return Ids of input places.
      */
-    const std::vector<PlaceId> &inputPlaces() const { return inputPlaces_; }
+    const std::vector<const Place *> &inputPlaces() const { return inputPlaces_; }
 
     /**
      * Adds output place.
      *
-     * \param id Place id.
+     * \param place Place.
      */
-    void addOutputPlace(PlaceId id) { outputPlaces_.push_back(id); }
+    void addOutputPlace(const Place *place) { outputPlaces_.push_back(place); }
 
     /**
      * \return Ids of output places.
      */
-    const std::vector<PlaceId> &outputPlaces() const { return outputPlaces_; }
+    const std::vector<const Place *> &outputPlaces() const { return outputPlaces_; }
 };
 
 } // namespace pneta

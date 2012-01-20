@@ -8,6 +8,8 @@ set(PNETV_PNETA_SOURCES
     Types.h
     Verification.cpp
     Verification.h
+    VerificationResult.cpp
+    VerificationResult.h
 )
 
 add_library(pnetv-pneta STATIC ${PNETV_PNETA_SOURCES})

@@ -1,30 +1,49 @@
 #include "PetriNet.h"
 
+#include <memory>
+
 #include <jpn/common/Foreach.h>
 
 namespace pneta {
 
+PetriNet::~PetriNet() {
+    foreach(Transition *transition, transitions_) {
+        delete transition;
+    }
+    foreach(Place *place, places_) {
+        delete place;
+    }
+}
+
+Transition *PetriNet::createTransition() {
+    std::auto_ptr<Transition> result(new Transition(transitions_.size()));
+    transitions_.push_back(result.get());
+    return result.release();
+}
+
+Place *PetriNet::createPlace() {
+    std::auto_ptr<Place> result(new Place(places_.size()));
+    places_.push_back(result.get());
+    return result.release();
+}
+
 void PetriNet::print(std::ostream &out) const {
     out << "digraph Blabla { label=\"" << name() << "\"; ";
 
-    PlaceId placeId = 0;
-    foreach (const Place &place, places()) {
-        out << "place" << placeId << "[label=\"" << place.name() << " (" << place.initialMarking() << ")\",shape=\"ellipse\"];" << std::endl;
-        ++placeId;
+    foreach (const Place *place, places()) {
+        out << "place" << place->id() << "[label=\"" << place->name() << " (" << place->initialMarking() << ")\",shape=\"ellipse\"];" << std::endl;
     }
 
-    TransitionId transitionId = 0;
-    foreach (const Transition &transition, transitions()) {
-        out << "transition" << transitionId << "[label=\"" << transition.name() << "\",shape=\"box\"];" << std::endl;
+    foreach (const Transition *transition, transitions()) {
+        out << "transition" << transition->id() << "[label=\"" << transition->name() << "\",shape=\"box\"];" << std::endl;
 
-        foreach (PlaceId placeId, transition.inputPlaces()) {
-            out << "place" << placeId << " -> transition" << transitionId << std::endl;
+        foreach (const Place *place, transition->inputPlaces()) {
+            out << "place" << place->id() << " -> transition" << transition->id() << std::endl;
         }
 
-        foreach (PlaceId placeId, transition.outputPlaces()) {
-            out << "transition" << transitionId << " -> place" << placeId << std::endl;
+        foreach (const Place *place, transition->outputPlaces()) {
+            out << "transition" << transition->id() << " -> place" << place->id() << std::endl;
         }
-        ++transitionId;
     }
 
     out << "}" << std::endl;

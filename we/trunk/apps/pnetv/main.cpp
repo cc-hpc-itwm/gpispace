@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     }
 
     for (int i = 1; i < argc; ++i) {
-        std::vector<pneta::PetriNet> petriNets;
+        boost::ptr_vector<pneta::PetriNet> petriNets;
 
         const char *filename = argv[i];
 

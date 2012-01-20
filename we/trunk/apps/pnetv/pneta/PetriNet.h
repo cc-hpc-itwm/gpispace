@@ -14,8 +14,8 @@ namespace pneta {
  */
 class PetriNet: public jpn::Printable {
     std::string name_; ///< Name of the Petri net.
-    std::vector<Transition> transitions_; ///< Transitions.
-    std::vector<Place> places_; ///< Places.
+    std::vector<Transition *> transitions_; ///< Transitions.
+    std::vector<Place *> places_; ///< Places.
 
     public:
 
@@ -27,87 +27,72 @@ class PetriNet: public jpn::Printable {
     PetriNet(const std::string &name) { name_ = name; }
 
     /**
+     * Destructor.
+     */
+    ~PetriNet();
+
+    /**
      * \return Name of the Petri net.
      */
     const std::string &name() const { return name_; }
 
     /**
+     * \return Newly created transition owned by the Petri net.
+     */
+    Transition *createTransition();
+
+    /**
      * \return All the transitions in the Petri net.
      */
-    const std::vector<Transition> &transitions() const { return transitions_; }
+    const std::vector<Transition *> &transitions() { return transitions_; }
 
     /**
-     * Adds a transition to the Petri net.
-     *
-     * \param transition Transition.
+     * \return All the transitions in the Petri net.
      */
-    TransitionId addTransition(const Transition &transition) {
-        transitions_.push_back(transition);
-        return transitions_.size() - 1;
-    }
+    const std::vector<const Transition *> &transitions() const { return reinterpret_cast<const std::vector<const Transition *> &>(transitions_); }
 
     /**
      * \param id Id of the transitions.
      *
      * \return Transition with given id.
      */
-    Transition &getTransition(TransitionId id) { return transitions_[id]; }
+    Transition *getTransition(TransitionId id) { return transitions_[id]; }
 
     /**
      * \param id Id of the transitions.
      *
      * \return Transition with given id.
      */
-    const Transition &getTransition(TransitionId id) const { return transitions_[id]; }
+    const Transition *getTransition(TransitionId id) const { return transitions_[id]; }
+
+    /**
+     * \return Newly created place owned by the Petri net.
+     */
+    Place *createPlace();
 
     /**
      * \return All the places in the Petri net.
      */
-    const std::vector<Place> &places() const { return places_; }
+    const std::vector<Place *> &places() { return places_; }
 
     /**
-     * Adds a place to the Petri net.
-     *
-     * \param place Place.
+     * \return All the places in the Petri net.
      */
-    PlaceId addPlace(const Place &place) {
-        places_.push_back(place);
-        return places_.size() - 1;
-    }
+    const std::vector<const Place *> &places() const { return reinterpret_cast<const std::vector<const Place *> &>(places_); }
+
+    /**
+     * \param id Valid id of the place.
+     *
+     * \return Place with given id.
+     */
+    Place *getPlace(PlaceId id) { return places_[id]; }
 
     /**
      * \param id Id of the place.
      *
      * \return Place with given id.
      */
-    Place &getPlace(PlaceId id) { return places_[id]; }
-
-    /**
-     * \param id Id of the place.
-     *
-     * \return Place with given id.
-     */
-    const Place &getPlace(PlaceId id) const { return places_[id]; }
-
-    /**
-     * Adds an input arc from a place to a transition.
-     *
-     * \param transitionId Id of a transition.
-     * \param placeId      Id of a place.
-     */
-    void addInputArc(TransitionId transitionId, PlaceId placeId) {
-        getTransition(transitionId).addInputPlace(placeId);
-    }
-
-    /**
-     * Adds an output arc from a transition to a place.
-     *
-     * \param transitionId Id of a transition.
-     * \param placeId      Id of a place.
-     */
-    void addOutputArc(TransitionId transitionId, PlaceId placeId) {
-        getTransition(transitionId).addOutputPlace(placeId);
-    }
+    const Place *getPlace(PlaceId id) const { return places_[id]; }
 
     /**
      * Dumps the graph in DOT format into given stream.
