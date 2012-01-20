@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 
 enum direction_t {LEFT, RIGHT, UP, DOWN};
@@ -48,8 +49,6 @@ void print(const matrix_t& A)
 		std::cout << std::endl;
 	}
 }
-
-
 
 class Token
 {
@@ -78,6 +77,7 @@ public:
 		m_rankOwner = t.rankOwner() ;
 		m_block_1 = t.block_1();
 		m_block_2 = t.block_2();
+		m_activityId = t.activityId();
 	}
 
 	Token& operator=(const Token& t)
@@ -89,6 +89,7 @@ public:
 			m_rankOwner = t.rankOwner() ;
 			m_block_1 = t.block_1();
 			m_block_2 = t.block_2();
+			m_activityId = t.activityId();
 		}
 
 		return *this;
@@ -104,6 +105,7 @@ public:
 		ar & rankOwner();
 		ar & block_1();
 		ar & block_2();
+		ar & activityId();
 	}
 
 	void decode( const std::string& strInput )
@@ -137,12 +139,16 @@ public:
 	color_t& color() { return m_col; }
 	const color_t& color() const { return m_col; }
 
+	id_type& activityId() { return m_activityId; }
+	const id_type& activityId() const { return m_activityId; }
+
 	private:
 	color_t  m_col;
 	std::string m_owner;
 	int m_rankOwner;
 	matrix_t m_block_1;
 	matrix_t m_block_2;
+	id_type  m_activityId;
 };
 
 
