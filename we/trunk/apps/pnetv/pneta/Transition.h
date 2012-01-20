@@ -18,6 +18,7 @@ class Transition {
     std::vector<const Place *> inputPlaces_; ///< Ids of input places.
     std::vector<const Place *> outputPlaces_; ///< Ids of output places.
     bool conditionAlwaysTrue_; ///< True iff transition's condition is constant true.
+    bool firesFinitely_; ///< True iff transition fires finite number of times.
 
     public:
 
@@ -56,6 +57,16 @@ class Transition {
      * \param value True iff the condition is always true.
      */
     void setConditionAlwaysTrue(bool value) { conditionAlwaysTrue_ = value; }
+
+    /**
+     * \return True iff transition fires finite number of times.
+     */
+    bool firesFinitely() { return firesFinitely_; }
+
+    /**
+     * \param value True iff transition fires finite number of times.
+     */
+    void setFiresFinitely(bool value) { firesFinitely_ = value; }
 
     /**
      * Adds input place.

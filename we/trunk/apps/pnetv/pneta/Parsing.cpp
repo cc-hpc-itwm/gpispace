@@ -117,6 +117,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             Transition *transition = petriNet_->createTransition();
             transition->setName("normal_" + t.name() + "[" + condition.str() + "]");
             transition->setConditionAlwaysTrue(condition.str() == "true");
+            transition->setFiresFinitely(t.prop().get_maybe_val("pnetv.fires_finitely"));
             transition2transition_[tid] = transition;
 
             Place *activity = petriNet_->createPlace();
