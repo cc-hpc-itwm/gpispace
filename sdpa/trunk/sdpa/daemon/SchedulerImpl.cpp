@@ -21,6 +21,7 @@
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/id_generator.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <cassert>
 #include <sdpa/capability.hpp>
@@ -320,7 +321,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const Worker::ptr_t
 	SDPA_LOG_DEBUG("Schedule job "<<jobId.str()<<" to the worker "<<worker_id);
 
 	// if the worker is marked for deletion don't schedule any job on it
-	// should have a monitoring thread that detects the timedout nodes
+	// should have a monitoring thread that detects the timed-out nodes
 	// add a boolean variable to the worker bTimedout or not
 	try
 	{
@@ -368,7 +369,7 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
 /*
  * Scheduling with constraints
  */
-bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bDelNonRespWorkers )
+bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bOwn )
 {
   DLOG(TRACE, "Called schedule_with_contraints ...");
 
@@ -400,7 +401,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
         	  try
         	  {
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list);
+        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list, bOwn);
         		  SDPA_LOG_INFO("The best worker matching the requirements for the job  "<<jobId<<" is "<<ptrBestWorker->name());
 
         		  // schedule the job to that one
