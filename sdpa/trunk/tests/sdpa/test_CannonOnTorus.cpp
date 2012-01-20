@@ -460,7 +460,7 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 				oss<<"agent_"<<i*g_nTorusDim+j;
 
 				arrAgents[right]->removeMaster(oss.str());
-				LOG(INFO, "added new master of agent_"<<right<<" -> "<<oss.str());
+				LOG(INFO, "remove master of agent_"<<right<<" -> "<<oss.str());
 			}
 
 	LOG(INFO, "On the vertical axis:");
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 			oss<<"agent_"<<i*g_nTorusDim+j;
 
 			arrAgents[down]->removeMaster(oss.str());
-			LOG(INFO, "added new master of agent_"<<down<<" -> "<<oss.str());
+			LOG(INFO, "remove master of agent_"<<down<<" -> "<<oss.str());
 		}
 
 	for(int k=0; k<g_nTorusDim*g_nTorusDim; k++)
