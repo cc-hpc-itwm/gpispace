@@ -29,7 +29,11 @@ inline jpn::Marking makeMarking(const std::vector<const Place *> &places) {
 }
 
 jpn::Transition makeTransition(const Transition *transition) {
-    return jpn::Transition(transition->id(), makeMarking(transition->inputPlaces()), makeMarking(transition->outputPlaces()));
+    return jpn::Transition(
+        transition->id(),
+        makeMarking(transition->inputPlaces()),
+        makeMarking(transition->outputPlaces()),
+        transition->firesFinitely());
 }
 
 std::vector<const Transition *> makeTrace(const std::vector<jpn::TransitionId> &trace, const PetriNet &petriNet) {

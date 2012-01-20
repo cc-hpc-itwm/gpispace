@@ -13,14 +13,15 @@ class Transition {
     Marking input_; ///< Input of the transition.
     Marking output_; ///< Output of the transition.
     Marking effect_; ///< Effect of the transition (output - input).
+    bool firesFinitely_; ///< True iff transition fires finite number of times.
 
     public:
 
     /**
      * Class constructor.
      */
-    Transition(TransitionId id, const Marking &input, const Marking &output):
-        id_(id), input_(input), output_(output), effect_(output - input)
+    Transition(TransitionId id, const Marking &input, const Marking &output, bool firesFinitely = false):
+        id_(id), input_(input), output_(output), effect_(output - input), firesFinitely_(firesFinitely)
     {}
 
     /**
@@ -56,6 +57,11 @@ class Transition {
      * \return Marking which is the result of firing the transition in given marking.
      */
     Marking fire(const Marking &marking) const { return marking + effect(); }
+
+    /**
+     * \return True iff transition fires finite number of times.
+     */
+    bool firesFinitely() const { return firesFinitely_; }
 };
 
 } // namespace jpn

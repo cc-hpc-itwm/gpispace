@@ -27,7 +27,7 @@ class Transition {
      *
      * \param id Id.
      */
-    Transition(TransitionId id): id_(id), conditionAlwaysTrue_(true) {}
+    Transition(TransitionId id): id_(id), conditionAlwaysTrue_(true), firesFinitely_(false) {}
 
     /**
      * \return Id of the transition.
@@ -61,7 +61,7 @@ class Transition {
     /**
      * \return True iff transition fires finite number of times.
      */
-    bool firesFinitely() { return firesFinitely_; }
+    bool firesFinitely() const { return firesFinitely_; }
 
     /**
      * \param value True iff transition fires finite number of times.
