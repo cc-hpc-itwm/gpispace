@@ -38,7 +38,7 @@ namespace sdpa { namespace daemon {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
-        enum job_type {MASTER, LOCAL, WORKER};
+        enum job_type {MASTER, LOCAL, WORKER, TMP};
 
         virtual ~Job() {}
 
