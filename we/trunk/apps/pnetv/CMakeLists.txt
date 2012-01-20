@@ -1,33 +1,28 @@
-set(target pnetv)
-
-set(sources
-	Parsing.cpp
-	Parsing.h
-	PetriNet.cpp
-	PetriNet.h
-	Place.h
-	Transition.h
-	Types.h
-	Verification.cpp
-	Verification.h
+set(PNETV_SOURCES
 	main.cpp
 )
 
-add_executable (${target} ${sources})
+add_executable(pnetv ${PNETV_SOURCES})
 
 include_directories(".")
 
-target_link_libraries(${target} ${WE_LIBRARIES})
-target_link_libraries(${target} ${FhgLog_LIBRARY})
-target_link_libraries(${target} ${Boost_LIBRARIES})
-target_link_libraries(${target} pthread)
-target_link_libraries(${target} dl)
-target_link_libraries(${target} jpn)
+target_link_libraries(pnetv pnetv-pneta)
+target_link_libraries(pnetv pnetv-jpn)
+target_link_libraries(pnetv ${WE_LIBRARIES})
+target_link_libraries(pnetv ${Boost_LIBRARIES})
 
-install (TARGETS ${target}
+install (TARGETS pnetv
 	RUNTIME
 	DESTINATION bin
 	COMPONENT runtime
 )
 
 add_subdirectory(jpn)
+add_subdirectory(pneta)
+
+include(CTest)
+if (BUILD_TESTING)
+	add_subdirectory(tests)
+endif()
+
+# vim:set et sts=4 sw=4 nospell:

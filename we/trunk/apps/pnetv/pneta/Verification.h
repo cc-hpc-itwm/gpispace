@@ -7,7 +7,7 @@
 
 #include "Types.h"
 
-namespace pnetv {
+namespace pneta {
 
 class PetriNet;
 
@@ -73,6 +73,6 @@ class VerificationResult: public jpn::Printable {
 
 VerificationResult verify(const PetriNet &petriNet);
 
-} // namespace pnetv
+} // namespace pneta
 
 /* vim:set et sts=4 sw=4: */

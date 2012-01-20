@@ -2,7 +2,7 @@
 
 #include <jpn/common/Foreach.h>
 
-namespace pnetv {
+namespace pneta {
 
 void PetriNet::print(std::ostream &out) const {
     out << "digraph Blabla { label=\"" << name() << "\"; ";
@@ -30,6 +30,6 @@ void PetriNet::print(std::ostream &out) const {
     out << "}" << std::endl;
 }
 
-} // namespace pnetv
+} // namespace pneta
 
 /* vim:set et sts=4 sw=4: */

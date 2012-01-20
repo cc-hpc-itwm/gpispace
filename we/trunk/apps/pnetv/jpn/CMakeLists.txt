@@ -1,4 +1,4 @@
-set(JPN_SOURCES
+set(PNETV_JPN_SOURCES
     config.h
     Marking.cpp
     Marking.h
@@ -16,6 +16,6 @@ set(JPN_SOURCES
     common/Unreachable.h
 )
 
-add_library(jpn STATIC ${JPN_SOURCES})
+add_library(pnetv-jpn STATIC ${PNETV_JPN_SOURCES})
 
 # vim:set et sts=4 sw=4 nospell:

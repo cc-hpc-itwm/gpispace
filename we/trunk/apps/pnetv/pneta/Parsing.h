@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace pnetv {
+namespace pneta {
 
 class PetriNet;
 
@@ -15,6 +15,6 @@ class PetriNet;
  */
 void parse(const char *filename, std::vector<PetriNet> &petriNets);
 
-} // namespace pnetv
+} // namespace pneta
 
 /* vim:set et sts=4 sw=4: */

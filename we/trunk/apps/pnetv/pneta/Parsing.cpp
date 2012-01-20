@@ -7,11 +7,13 @@
 #include <boost/unordered_map.hpp>
 
 #include <jpn/common/Foreach.h>
+#include <jpn/common/Unreachable.h>
+
 #include <we/we.hpp>
 
 #include "PetriNet.h"
 
-namespace pnetv {
+namespace pneta {
 
 namespace {
 
@@ -177,7 +179,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     break;
                 }
                 default:
-                    assert(!"NEVER REACHED");
+                    jpn::unreachable();
             }
         }
 
@@ -237,6 +239,6 @@ void parse(const char *filename, std::vector<PetriNet> &petriNets) {
     }
 }
 
-} // namespace pnetv
+} // namespace pneta
 
 /* vim:set et sts=4 sw=4: */

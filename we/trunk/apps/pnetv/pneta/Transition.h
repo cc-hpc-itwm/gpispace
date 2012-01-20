@@ -5,7 +5,7 @@
 
 #include "Types.h"
 
-namespace pnetv {
+namespace pneta {
 
 /**
  * Transition from a workflow abstracted from unnecessary details.
@@ -63,6 +63,6 @@ class Transition {
     const std::vector<PlaceId> &outputPlaces() const { return outputPlaces_; }
 };
 
-} // namespace pnetv
+} // namespace pneta
 
 /* vim:set et sts=4 sw=4: */

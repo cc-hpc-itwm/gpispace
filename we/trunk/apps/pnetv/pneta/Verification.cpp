@@ -2,11 +2,12 @@
 
 #include <jpn/common/Foreach.h>
 #include <jpn/common/PrintRange.h>
+#include <jpn/common/Unreachable.h>
 #include <jpn/analysis/Termination.h>
 
 #include "PetriNet.h"
 
-namespace pnetv {
+namespace pneta {
 
 void VerificationResult::print(std::ostream &out) const {
     out << "(";
@@ -27,9 +28,10 @@ void VerificationResult::print(std::ostream &out) const {
             out << "MAYBE_INFINITE";
             break;
         default:
-            assert(!"NEVER REACHED");
+            jpn::unreachable();
     }
     if (result() != TERMINATES) {
+        out << ", ";
         jpn::printRange(out, trace());
     }
     out << ")";
@@ -109,6 +111,6 @@ VerificationResult verify(const PetriNet &petriNet) {
     return VerificationResult(VerificationResult::TERMINATES);
 }
 
-} // namespace pnetv
+} // namespace pneta
 
 /* vim:set et sts=4 sw=4: */
