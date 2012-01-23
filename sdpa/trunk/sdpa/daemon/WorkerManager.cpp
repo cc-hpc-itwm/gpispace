@@ -660,26 +660,12 @@ int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, boo
 	return matchingDeg;
 }
 
-Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq, bool bOwn ) throw (NoWorkerFoundException)
+Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException)
 {
 	lock_type lock(mtx_);
 	if( worker_map_.empty() )
 		throw NoWorkerFoundException();
 
-	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
-    {
-		Worker::ptr_t pWorker = pair.second;
-		std::ostringstream oss;
-		oss<<"rank"<<pWorker->rank();
-		requirement_t req = listJobReq.front();
-		if(req.value() == oss.str() ) //&& listJobReq[0].is_mandatory()
-		{
-			SDPA_LOG_INFO( "BINGO! The worker "<<pair.first<<" is matching the requirement "<<req.value());
-			return pWorker;
-		}
-    }
-
-	sdpa::map_degs_t mapDegs;
 	int maxMatchingDeg = 0;
 
 	// the worker id of the worker that fulfills most of the requirements
@@ -690,9 +676,10 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 	{
 		Worker::ptr_t pWorker = pair.second;
+
 		if( !pWorker->disconnected() ) // if the worker is disconnected, skip it!
 		{
-			int matchingDeg = matchRequirements( pair.second, listJobReq, bOwn );
+			int matchingDeg = matchRequirements( pair.second, listJobReq, true ); // only proper capabilities of the worker
 			if( matchingDeg > maxMatchingDeg )
 			{
 				maxMatchingDeg = matchingDeg;
@@ -701,10 +688,31 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 		}
 	}
 
-	if(maxMatchingDeg == 0)
-		throw NoWorkerFoundException();
+	if(maxMatchingDeg != 0)
+		return worker_map_[bestMatchingWorkerId];
+	else
+	{
+		maxMatchingDeg = 0;
+		BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
+		{
+			Worker::ptr_t pWorker = pair.second;
 
-	return worker_map_[bestMatchingWorkerId];
+			if( !pWorker->disconnected() ) // if the worker is disconnected, skip it!
+			{
+				int matchingDeg = matchRequirements( pair.second, listJobReq, false ); // aggregated capabilities of the worker
+				if( matchingDeg > maxMatchingDeg )
+				{
+					maxMatchingDeg = matchingDeg;
+					bestMatchingWorkerId = pair.first;
+				}
+			}
+		}
+
+		if(maxMatchingDeg != 0)
+			return worker_map_[bestMatchingWorkerId];
+		else
+			throw NoWorkerFoundException();
+	}
 }
 
 void WorkerManager::cancelWorkerJobs(sdpa::daemon::Scheduler* ptrSched)
