@@ -369,7 +369,7 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
 /*
  * Scheduling with constraints
  */
-bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bOwn )
+bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 {
   DLOG(TRACE, "Called schedule_with_contraints ...");
 
@@ -401,7 +401,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
         	  try
         	  {
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list, bOwn);
+        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list);
         		  SDPA_LOG_INFO("The best worker matching the requirements for the job  "<<jobId<<" is "<<ptrBestWorker->name());
 
         		  // schedule the job to that one
