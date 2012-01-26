@@ -10,6 +10,7 @@ set(PNETV_JPN_SOURCES
     analysis/Termination.h
     analysis/Termination.cpp
     common/Foreach.h
+    common/ExtendedInteger.h
     common/Printable.h
     common/Printable.cpp
     common/PrintRange.h

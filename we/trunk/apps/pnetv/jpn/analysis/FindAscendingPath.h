@@ -69,6 +69,9 @@ findAscendingPath(
 
                         return result;
                     }
+                    if (state->lastTransition()->firesFinitely()) {
+//                        break;
+                    }
                 }
 
                 /* State space reduction. */

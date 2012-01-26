@@ -2,16 +2,19 @@
 
 #include <jpn/config.h>
 #include <jpn/Types.h>
+#include <jpn/common/ExtendedInteger.h>
 #include <jpn/common/Printable.h>
 
 namespace jpn {
+
+typedef ExtendedInteger<TokenCount> ExtendedTokenCount;
 
 /**
  * Marking of a place.
  */
 class PlaceMarking: public Printable {
     PlaceId placeId_; ///< Identifier of the place.
-    TokenCount count_; ///< Token count.
+    ExtendedTokenCount count_; ///< Token count.
 
     public:
 
@@ -21,7 +24,7 @@ class PlaceMarking: public Printable {
      * \param[in] placeId Identifier of the place.
      * \param[in] count Token count.
      */
-    PlaceMarking(PlaceId placeId, TokenCount count):
+    PlaceMarking(PlaceId placeId, ExtendedTokenCount count):
         placeId_(placeId), count_(count)
     {}
 
@@ -33,7 +36,7 @@ class PlaceMarking: public Printable {
     /**
      * \return Token count.
      */
-    TokenCount count() const { return count_; }
+    const ExtendedTokenCount &count() const { return count_; }
 
     virtual void print(std::ostream &out) const;
 };
