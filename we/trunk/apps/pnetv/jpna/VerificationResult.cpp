@@ -5,7 +5,7 @@
 
 #include "Transition.h"
 
-namespace pneta {
+namespace jpna {
 
 void VerificationResult::print(std::ostream &out) const {
     out << "(";
@@ -50,6 +50,6 @@ void VerificationResult::print(std::ostream &out) const {
     out << ")";
 }
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */

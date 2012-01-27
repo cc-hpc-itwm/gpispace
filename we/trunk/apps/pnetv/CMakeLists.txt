@@ -6,7 +6,7 @@ add_executable(pnetv ${PNETV_SOURCES})
 
 include_directories(".")
 
-target_link_libraries(pnetv pnetv-pneta)
+target_link_libraries(pnetv pnetv-jpna)
 target_link_libraries(pnetv pnetv-jpn)
 target_link_libraries(pnetv ${WE_LIBRARIES})
 target_link_libraries(pnetv ${Boost_LIBRARIES})
@@ -18,7 +18,7 @@ install (TARGETS pnetv
 )
 
 add_subdirectory(jpn)
-add_subdirectory(pneta)
+add_subdirectory(jpna)
 
 include(CTest)
 if (BUILD_TESTING)

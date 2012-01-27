@@ -5,7 +5,7 @@
 
 #include "Types.h"
 
-namespace pneta {
+namespace jpna {
 
 class Place;
 
@@ -93,6 +93,6 @@ class Transition {
     const std::vector<const Place *> &outputPlaces() const { return outputPlaces_; }
 };
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */

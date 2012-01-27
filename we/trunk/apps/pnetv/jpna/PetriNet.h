@@ -7,7 +7,7 @@
 #include "Place.h"
 #include "Transition.h"
 
-namespace pneta {
+namespace jpna {
 
 /**
  * Petri Net representing a workflow with unnecessary details being abstracted away.
@@ -102,6 +102,6 @@ class PetriNet: public jpn::Printable {
     virtual void print(std::ostream &out) const;
 };
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */

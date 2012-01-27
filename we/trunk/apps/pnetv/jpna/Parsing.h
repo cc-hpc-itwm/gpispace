@@ -5,7 +5,7 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
-namespace pneta {
+namespace jpna {
 
 class PetriNet;
 
@@ -17,6 +17,6 @@ class PetriNet;
  */
 void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets);
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */

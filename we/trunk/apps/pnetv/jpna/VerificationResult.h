@@ -5,7 +5,7 @@
 
 #include <jpn/common/Printable.h>
 
-namespace pneta {
+namespace jpna {
 
 class Transition;
 
@@ -74,6 +74,6 @@ class VerificationResult: public jpn::Printable {
     virtual void print(std::ostream &out) const;
 };
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */

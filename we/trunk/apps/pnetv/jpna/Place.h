@@ -6,7 +6,7 @@
 
 #include "Types.h"
 
-namespace pneta {
+namespace jpna {
 
 /**
  * Place from a workflow abstracted from unnecessary details.
@@ -68,6 +68,6 @@ class Place {
     void setInitialMarking(TokenCount count) { initialMarking_ = count; }
 };
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */

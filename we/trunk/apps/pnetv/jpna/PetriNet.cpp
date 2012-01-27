@@ -4,7 +4,7 @@
 
 #include <jpn/common/Foreach.h>
 
-namespace pneta {
+namespace jpna {
 
 PetriNet::~PetriNet() {
     foreach(Transition *transition, transitions_) {
@@ -49,6 +49,6 @@ void PetriNet::print(std::ostream &out) const {
     out << "}" << std::endl;
 }
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */

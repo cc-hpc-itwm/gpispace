@@ -6,7 +6,7 @@
 
 #include "PetriNet.h"
 
-namespace pneta {
+namespace jpna {
 
 namespace {
 
@@ -75,6 +75,6 @@ VerificationResult verify(const PetriNet &petriNet) {
     return VerificationResult(VerificationResult::TERMINATES);
 }
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */

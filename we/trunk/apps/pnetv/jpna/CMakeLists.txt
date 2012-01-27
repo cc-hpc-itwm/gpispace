@@ -1,4 +1,4 @@
-set(PNETV_PNETA_SOURCES
+set(PNETV_JPNA_SOURCES
     Parsing.cpp
     Parsing.h
     PetriNet.cpp
@@ -12,6 +12,6 @@ set(PNETV_PNETA_SOURCES
     VerificationResult.h
 )
 
-add_library(pnetv-pneta STATIC ${PNETV_PNETA_SOURCES})
+add_library(pnetv-jpna STATIC ${PNETV_JPNA_SOURCES})
 
 # vim:set et sts=4 sw=4 nospell:

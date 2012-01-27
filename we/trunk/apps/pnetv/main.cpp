@@ -3,9 +3,9 @@
 
 #include <jpn/common/Foreach.h>
 
-#include <pneta/Parsing.h>
-#include <pneta/PetriNet.h>
-#include <pneta/Verification.h>
+#include <jpna/Parsing.h>
+#include <jpna/PetriNet.h>
+#include <jpna/Verification.h>
 
 int main(int argc, char *argv[]) {
     if (!argc) {
@@ -14,17 +14,17 @@ int main(int argc, char *argv[]) {
     }
 
     for (int i = 1; i < argc; ++i) {
-        boost::ptr_vector<pneta::PetriNet> petriNets;
+        boost::ptr_vector<jpna::PetriNet> petriNets;
 
         const char *filename = argv[i];
 
         try {
-            pneta::parse(filename, petriNets);
+            jpna::parse(filename, petriNets);
 
-            foreach (const pneta::PetriNet &petriNet, petriNets) {
+            foreach (const jpna::PetriNet &petriNet, petriNets) {
                 std::cout << petriNet.name() << ": ";
                 std::cout.flush();
-                std::cout << pneta::verify(petriNet) << std::endl;
+                std::cout << jpna::verify(petriNet) << std::endl;
             }
         } catch (const std::exception &e) {
             std::cerr << filename << ":" << e.what() << std::endl;

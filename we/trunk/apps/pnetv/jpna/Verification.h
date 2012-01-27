@@ -2,12 +2,12 @@
 
 #include "VerificationResult.h"
 
-namespace pneta {
+namespace jpna {
 
 class PetriNet;
 
 VerificationResult verify(const PetriNet &petriNet);
 
-} // namespace pneta
+} // namespace jpna
 
 /* vim:set et sts=4 sw=4: */
