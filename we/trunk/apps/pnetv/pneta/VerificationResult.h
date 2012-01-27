@@ -19,17 +19,16 @@ class VerificationResult: public jpn::Printable {
      * Verdict.
      */
     enum Result {
-        TERMINATES,      ///< Terminates.
-        UNBOUNDED,       ///< Definitely unbounded.
-        MAYBE_UNBOUNDED, ///< Maybe unbounded (trace contains transitions with non-trivial conditions).
-        INFINITE,        ///< Definitely has infinite loop.
-        MAYBE_INFINITE,  ///< Maybe has an infinite loop (trace contains transitions with non-trivial conditions).
+        TERMINATES, ///< Terminates.
+        LOOPS,      ///< Definitely loops.
+        MAYBE_LOOPS ///< Maybe loops (trace contains transitions with non-trivial conditions).
     };
 
     private:
 
     Result result_; ///< Verdict.
-    std::vector<const Transition *> trace_; ///< Trace.
+    std::vector<const Transition *> init_; ///< Trace leading to the loop.
+    std::vector<const Transition *> loop_; ///< Trace realising one iteration of the loop.
 
     public:
 
@@ -48,10 +47,11 @@ class VerificationResult: public jpn::Printable {
      * Constructor for verdicts requiring traces.
      *
      * \param result Verdict.
-     * \param trace Trace, a sequence of transition ids.
+     * \param init Trace leading to the loop.
+     * \param loop Trace realising one iteration of the loop.
      */
-    VerificationResult(Result result, const std::vector<const Transition *> &trace):
-        result_(result), trace_(trace)
+    VerificationResult(Result result, const std::vector<const Transition *> &init, const std::vector<const Transition *> &loop):
+        result_(result), init_(init), loop_(loop)
     {
         assert(result != TERMINATES);
     }
@@ -62,9 +62,14 @@ class VerificationResult: public jpn::Printable {
     Result result() const { return result_; }
 
     /**
-     * \return Trace.
+     * \return Trace leading to the loop.
      */
-    const std::vector<const Transition *> &trace() const { return trace_; }
+    const std::vector<const Transition *> &init() const { return init_; }
+
+    /**
+     * \return Trace realising one iteration of the loop.
+     */
+    const std::vector<const Transition *> &loop() const { return loop_; }
 
     virtual void print(std::ostream &out) const;
 };

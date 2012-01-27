@@ -3,6 +3,10 @@
 #include <cassert>
 #include <ostream>
 
+#ifdef JPN_BOOST_HASH
+#include <boost/functional/hash.hpp>
+#endif
+
 #include <jpn/common/Unreachable.h>
 
 namespace jpn {
@@ -268,5 +272,20 @@ std::ostream &operator<<(std::ostream &out, const ExtendedInteger<T> &a) {
 }
 
 } // namespace jpn
+
+#ifdef JPN_BOOST_HASH
+namespace boost {
+    template<class T>
+    struct hash<jpn::ExtendedInteger<T> > {
+        std::size_t operator()(const jpn::ExtendedInteger<T> &x) const {
+            if (x.isNormal()) {
+                return x.value();
+            } else {
+                return static_cast<std::size_t>(x.kind()) << 8;
+            }
+        }
+    };
+}
+#endif
 
 /* vim:set et sts=4 sw=4: */

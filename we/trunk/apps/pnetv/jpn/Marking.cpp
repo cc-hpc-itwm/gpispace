@@ -30,13 +30,16 @@ Marking::Marking(const std::vector<PlaceMarking> &placeMarkings):
     placeMarkings_.erase(std::remove_if(placeMarkings_.begin(), placeMarkings_.end(), CountIsZero()), placeMarkings_.end());
     std::sort(placeMarkings_.begin(), placeMarkings_.end(), CompareId());
 
+#ifndef NDEBUG
     check();
+#endif
 }
 
 void Marking::print(std::ostream &out) const {
     printRange(out, placeMarkings().begin(), placeMarkings().end());
 }
 
+#ifndef NDEBUG
 void Marking::check() const {
     foreach (const PlaceMarking &placeMarking, placeMarkings_) {
         assert(placeMarking.count() != 0);
@@ -46,6 +49,7 @@ void Marking::check() const {
         assert(placeMarkings_[i - 1].placeId() < placeMarkings_[i].placeId());
     }
 }
+#endif
 
 } // namespace jpn
 

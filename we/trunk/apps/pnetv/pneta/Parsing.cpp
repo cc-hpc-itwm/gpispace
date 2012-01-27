@@ -117,7 +117,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
             Transition *transition = petriNet_->createTransition();
             transition->setName("normal_" + t.name() + "[" + condition.str() + "]");
             transition->setConditionAlwaysTrue(condition.str() == "true");
-            transition->setFiresFinitely(t.prop().get_maybe_val("pnetv.fires_finitely"));
+            transition->setFiresFinitely(t.prop().get_maybe_val("fhg.pnetv.fires_finitely"));
+            if (transition->firesFinitely()) {
+                transition->setName(transition->name() + "[firesFinitely]");
+            }
             transition2transition_[tid] = transition;
 
             Place *activity = petriNet_->createPlace();
@@ -164,6 +167,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     break;
                 }
                 case petri_net::TP: {
+                    Transition *transition = find(transition2transition_, connection.tid);
                     Transition *execute = find(transition2execute_, connection.tid);
                     Place *place = find(place2place_, connection.pid);
 
@@ -173,7 +177,11 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     if (net.get_capacity(connection.pid)) {
                         Place *capacity = find(place2capacity_, connection.pid);
 
-                        /* Transition consumes a token on capacity place. */
+                        /* Transition checks whether some capacity is available. */
+                        transition->addInputPlace(capacity);
+                        transition->addOutputPlace(capacity);
+
+                        /* Execution consumes a token on capacity place. */
                         execute->addInputPlace(capacity);
 
                         // TODO: in fact, a place with limited capacity can receive more

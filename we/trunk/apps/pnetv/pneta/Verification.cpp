@@ -2,7 +2,7 @@
 
 #include <jpn/common/Foreach.h>
 #include <jpn/common/PrintRange.h>
-#include <jpn/analysis/Termination.h>
+#include <jpn/analysis/StateSpace.h>
 
 #include "PetriNet.h"
 
@@ -32,8 +32,7 @@ jpn::Transition makeTransition(const Transition *transition) {
     return jpn::Transition(
         transition->id(),
         makeMarking(transition->inputPlaces()),
-        makeMarking(transition->outputPlaces()),
-        transition->firesFinitely());
+        makeMarking(transition->outputPlaces()));
 }
 
 std::vector<const Transition *> makeTrace(const std::vector<jpn::TransitionId> &trace, const PetriNet &petriNet) {
@@ -57,32 +56,20 @@ VerificationResult verify(const PetriNet &petriNet) {
         }
     }
 
-    std::vector<TransitionId> trace;
-
-    trace = jpn::analysis::findUnboundedness(transitions, initialMarking);
-    if (!trace.empty()) {
-        return VerificationResult(VerificationResult::UNBOUNDED, makeTrace(trace, petriNet));
-    }
-
-    trace = jpn::analysis::findLivelock(transitions, initialMarking);
-    if (!trace.empty()) {
-        return VerificationResult(VerificationResult::INFINITE, makeTrace(trace, petriNet));
+    std::vector<TransitionId> init;
+    std::vector<TransitionId> loop;
+    if (jpn::analysis::findLoop(transitions, initialMarking, init, loop)) {
+        return VerificationResult(VerificationResult::LOOPS, makeTrace(init, petriNet), makeTrace(loop, petriNet));
     }
 
     foreach(const Transition *transition, petriNet.transitions()) {
-        if (!transition->conditionAlwaysTrue()) {
+        if (!transition->conditionAlwaysTrue() && !transition->firesFinitely()) {
             transitions.push_back(makeTransition(transition));
         }
     }
 
-    trace = jpn::analysis::findUnboundedness(transitions, initialMarking);
-    if (!trace.empty()) {
-        return VerificationResult(VerificationResult::MAYBE_UNBOUNDED, makeTrace(trace, petriNet));
-    }
-
-    trace = jpn::analysis::findLivelock(transitions, initialMarking);
-    if (!trace.empty()) {
-        return VerificationResult(VerificationResult::MAYBE_INFINITE, makeTrace(trace, petriNet));
+    if (jpn::analysis::findLoop(transitions, initialMarking, init, loop)) {
+        return VerificationResult(VerificationResult::MAYBE_LOOPS, makeTrace(init, petriNet), makeTrace(loop, petriNet));
     }
 
     return VerificationResult(VerificationResult::TERMINATES);

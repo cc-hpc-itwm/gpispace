@@ -38,9 +38,11 @@
     </transition>
 
     <transition name="not_break">
-      <properties name="pnetv">
-        <property key="fires_finitely" />
-      </properties>       
+      <properties name="fhg">
+        <properties name="pnetv">
+          <property key="fires_finitely" />
+        </properties>
+      </properties>
       <defun>
         <in name="state" type="state"/>
         <out name="state" type="state"/>

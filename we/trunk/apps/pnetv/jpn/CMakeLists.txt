@@ -6,9 +6,11 @@ set(PNETV_JPN_SOURCES
     PlaceMarking.cpp
     Transition.h
     Types.h
-    analysis/FindAscendingPath.h
-    analysis/Termination.h
-    analysis/Termination.cpp
+    analysis/Backtrack.cpp
+    analysis/Backtrack.h
+    analysis/State.h
+    analysis/StateSpace.cpp
+    analysis/StateSpace.h
     common/Foreach.h
     common/ExtendedInteger.h
     common/Printable.h

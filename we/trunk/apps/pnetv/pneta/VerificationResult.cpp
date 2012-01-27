@@ -13,26 +13,31 @@ void VerificationResult::print(std::ostream &out) const {
         case TERMINATES:
             out << "TERMINATES";
             break;
-        case UNBOUNDED:
-            out << "UNBOUNDED";
+        case LOOPS:
+            out << "LOOPS";
             break;
-        case MAYBE_UNBOUNDED:
-            out << "MAYBE_UNBOUNDED";
-            break;
-        case INFINITE:
-            out << "INFINITE";
-            break;
-        case MAYBE_INFINITE:
-            out << "MAYBE_INFINITE";
+        case MAYBE_LOOPS:
+            out << "MAYBE_LOOPS";
             break;
         default:
             jpn::unreachable();
     }
     if (result() != TERMINATES) {
-        out << ", {";
+        out << ", init:{";
 
 	bool comma = false;
-	foreach (const Transition *transition, trace()) {
+	foreach (const Transition *transition, init()) {
+	    if (comma) {
+                out << ", ";
+            } else {
+                comma = true;
+            }
+            out << "`" << transition->name() << "'";
+	}
+	out << "}, loop:{";
+
+	comma = false;
+	foreach (const Transition *transition, loop()) {
 	    if (comma) {
                 out << ", ";
             } else {

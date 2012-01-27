@@ -66,6 +66,11 @@
       <condition>
         ${state.its} :lt: ${state.param.n}
       </condition>
+      <properties name="fhg">
+        <properties name="pnetv">
+	  <property key="fires_finitely" />
+	</properties>
+      </properties>       
       <connect-in port="state" place="state"/>
       <connect-out port="state" place="state"/>
       <connect-out port="param" place="param_to_run"/>
