@@ -138,6 +138,14 @@ void install_signal_handler()
     exit(EXIT_FAILURE);
   }
 
+  if (sigaction(SIGBUS, &sigact, (struct sigaction *)NULL) != 0)
+  {
+    fprintf(stderr, "error setting signal handler for %d (%s)\n",
+           SIGBUS, strsignal(SIGBUS));
+
+    exit(EXIT_FAILURE);
+  }
+
   if (sigaction(SIGABRT, &sigact, (struct sigaction *)NULL) != 0)
   {
     fprintf(stderr, "error setting signal handler for %d (%s)\n",
