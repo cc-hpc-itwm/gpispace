@@ -125,6 +125,36 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 	}
 }
 
+void SchedulerImpl::reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
+{
+	ostringstream os;
+	try {
+		// delete it from the worker's queues
+		Worker::ptr_t pWorker = findWorker(worker_id);
+		pWorker->delete_job(job_id);
+
+		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
+		pJob->Reschedule(); // put the job back into the pending state
+
+		pWorker->dispatch(job_id); // or schedule_to(job_id, worker_id);
+	}
+	catch (const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_WARN("Cannot delete the worker "<<worker_id<<". Worker not found!");
+	}
+	catch(JobNotFoundException const &ex)
+	{
+		SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
+	}
+	catch(JobNotDeletedException const & ex)
+	{
+		SDPA_LOG_WARN("The job " << job_id << " could not be deleted: " << ex.what());
+	}
+	catch(const std::exception& ex) {
+		SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+	}
+}
+
 void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::JobQueue* pQueue )
 {
 	assert (pQueue);
