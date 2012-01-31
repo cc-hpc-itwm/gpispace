@@ -37,7 +37,7 @@ typedef struct _sig_ucontext {
  sigset_t          uc_sigmask;
 } sig_ucontext_t;
 
-void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
+void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
 {
  void *             array[50];
  void *             caller_address;
@@ -86,8 +86,18 @@ void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
  LOG(ERROR, log_message.str());
 
  free(messages);
+}
 
- _exit(EXIT_FAILURE);
+void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
+{
+  log_backtrace (sig_num, info, ucontext);
+  _exit(EXIT_FAILURE);
+}
+
+void noncrit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
+{
+  log_backtrace (sig_num, info, ucontext);
+  LOG(INFO, "trying to continue anyways");
 }
 
 // END OF BORROWED CODE
@@ -155,6 +165,17 @@ void install_signal_handler()
   }
 
   // install non-critical handlers
+  sigact.sa_sigaction = noncrit_err_hdlr;
+  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+  if (sigaction(SIGFPE, &sigact, (struct sigaction *)NULL) != 0)
+  {
+    fprintf(stderr, "error setting signal handler for %d (%s)\n",
+           SIGFPE, strsignal(SIGFPE));
+
+    exit(EXIT_FAILURE);
+  }
+
+  // install informative handlers
   sigact.sa_sigaction = sigterm_hdlr;
   sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
