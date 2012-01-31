@@ -454,6 +454,7 @@ public:
                                               , e->from()
                                               , sdpa::events::ErrorEvent::SDPA_EPERM
                                               , "you are not yet connected"
+                                              , e->job_id()
                                               )
                  );
       return;
@@ -474,7 +475,8 @@ public:
         send_event (new sdpa::events::ErrorEvent( m_my_name
                                                 , e->from()
                                                 , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
-                                                , e->job_id() // "I am busy right now, please try again later"
+                                                , "I am busy right now, please try again later!"
+                                                , e->job_id()
                                                 )
                    );
         return;
