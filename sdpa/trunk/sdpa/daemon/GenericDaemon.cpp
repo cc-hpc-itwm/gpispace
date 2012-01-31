@@ -708,6 +708,24 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
    * put the job into the job-map
    * send a submitJobAck back
   */
+  BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+  {
+	  if( e.from() == masterInfo.name() && !masterInfo.is_registered() )
+	  {
+		  SDPA_LOG_INFO("The agent "<<name()<<" is not yet registered with the master "<<masterInfo.name()
+						  <<". No job from this master will be accepted until registration is confirmed!");
+
+		  //send job rejected error event back to the master
+		  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(	name(),
+													e.from(),
+													ErrorEvent::SDPA_EPERM,
+													"Waiting for registration confirmation. No job submission is allowed!",
+													e.job_id()) );
+		  sendEventToMaster(pErrorEvt);
+
+		  return;
+	  }
+  }
 
   //if my capacity is reached, refuse to take any external job until at least one of my
   //assigned jobs completes
@@ -716,7 +734,11 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	  //generate a reject event
 	  SDPA_LOG_INFO("Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
 	  //send job rejected error event back to the master
-	  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBREJECTED, e.job_id().str()) );
+	  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(	name(),
+			  	  	  	  	  	  	  	  	  	e.from(),
+			  	  	  	  	  	  	  	  	  	ErrorEvent::SDPA_EJOBREJECTED,
+			  	  	  	  	  	  	  	  	  	"Capacity exceeded! Cannot take further jobs",
+			  	  	  	  	  	  	  	  	  	e.job_id()) );
 	  sendEventToMaster(pErrorEvt);
 
 	  return;
@@ -923,9 +945,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	// 'reason' should not be reused for important information
     	case ErrorEvent::SDPA_EJOBREJECTED:
     	{
-    		sdpa::job_id_t jobId(error.reason());
+    		sdpa::job_id_t jobId(error.job_id());
     		sdpa::worker_id_t worker_id(error.from());
-    		SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<jobId.str()<<". Reschedule it now!");
+    		SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Reschedule it now!");
 
     		scheduler()->reschedule(worker_id, jobId);
     		break;
@@ -1062,10 +1084,26 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		catch(std::exception const &ex)
     		{
     			SDPA_LOG_ERROR("Unexpected exception occurred upon receiving ErrorEvent::SDPA_EJOBEXISTS: " << ex.what());
+
     		}
 
     		break;
     	}
+    	case ErrorEvent::SDPA_EPERM:
+		{
+			SDPA_LOG_INFO("Got error from "<<error.from()<<". Reason: "<<error.reason());
+			if( error.job_id() != sdpa::job_id_t::invalid_job_id() )
+			{
+				// check if there were any jobs submitted and not acknowledged to that worker
+				// if this is the case, move the submitted jobs back into the pending queue
+				// don't forget to update the state machine
+				sdpa::job_id_t jobId(error.job_id());
+				sdpa::worker_id_t worker_id(error.from());
+				SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-dispatch it now!");
+
+				scheduler()->reassign(worker_id, jobId);
+			}
+		}
     	default:
     	{
     		MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
