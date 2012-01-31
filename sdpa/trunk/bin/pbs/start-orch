@@ -15,6 +15,11 @@ bind_addr='0'
 name="orchestrator"
 bkp_dir="${SDPA_SCRATCH_DIR}/state"
 kvs_url="$KVS_URL"
+bin=$(which orchestrator 2>/dev/null)
+if [ -z "$bin" ] ; then
+    log "# could not find orchestrator binary in the path!"
+    exit 1
+fi
 
 while getopts ":hgn:l:d:k:" opt; do
   case $opt in
@@ -59,7 +64,11 @@ fi
 
 if $debug ; then
   log "running within gdb..."
-  FHGLOG_to_console="stderr" gdb -ex run --args orchestrator $argv
+  FHGLOG_to_console="stderr" gdb -ex run --args $bin $argv
 else
-  FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec orchestrator $argv
+    if [ -x /usr/bin/catchsegv ] ; then
+	bin="/usr/bin/catchsegv $bin"
+    fi
+
+    FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec $bin $argv
 fi
