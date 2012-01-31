@@ -151,6 +151,10 @@ if [ x"$debug" = x"true" ] ; then
     log "running within gdb..."
     gdb -ex run --args ${cmd}
 else
+    if [ -x /usr/bin/catchsegv ] ; then
+	cmd="/usr/bin/catchsegv ${cmd}"
+    fi
+
     if [ x"$daemonize" = x"true" ] ; then
 	FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" ${cmd} </dev/null >/dev/null 2>&1 &
     else
