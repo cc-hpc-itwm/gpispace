@@ -272,7 +272,9 @@ namespace fhg
             }
             else
             {
-              it = store_.insert (it, "0");
+              it = store_.insert ( it
+                                 , store_type::value_type (k, "0")
+                                 );
             }
 
             value += step;
