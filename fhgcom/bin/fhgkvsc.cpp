@@ -222,12 +222,14 @@ int main(int ac, char *av[])
   }
   else if (vm.count("inc") || vm.count("dec"))
   {
-    int step = vm.count("inc") ? 1 : -1;
+    int direction = vm.count("inc") ? 1 : -1;
+
+    int step = direction * 1;
     if (! value.empty())
     {
       try
       {
-        step = boost::lexical_cast<int>(value);
+        step = direction * std::abs (boost::lexical_cast<int>(value));
       }
       catch (std::exception const &)
       {
