@@ -1,6 +1,7 @@
 #ifndef SDPA_JOB_HPP
 #define SDPA_JOB_HPP 1
 
+#include <sdpa/daemon/mpl.hpp>
 #include <string>
 #include <vector>
 #include <utility>
