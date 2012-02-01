@@ -17,6 +17,7 @@ namespace kvs
     virtual value_type get(key_type const & k, value_type const &dflt) const = 0;
     virtual void       put(key_type const & k, value_type const &value) = 0;
     virtual void       del(key_type const & k) = 0;
+    virtual int        inc(key_type const & k, int step = 1) = 0;
 
     template <typename T>
     T get(key_type const & k, value_type const & dflt) const
