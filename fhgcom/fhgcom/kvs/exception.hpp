@@ -19,7 +19,7 @@ namespace fhg
             : std::runtime_error (msg)
           {}
 
-          virtual ~generic() {}
+          virtual ~generic() throw () {}
         };
 
         struct no_such : public generic
