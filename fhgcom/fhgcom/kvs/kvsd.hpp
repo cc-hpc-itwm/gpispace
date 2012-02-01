@@ -74,6 +74,23 @@ namespace fhg
           }
 
           fhg::com::kvs::message::type
+          operator () (fhg::com::kvs::message::msg_inc const & m)
+          {
+            DLOG(TRACE, "inc (" << m.key() << ", " << m.step() << ")");
+            try
+            {
+              fhg::com::kvs::message::list list;
+              list.entries()[ m.key() ] = store_.inc(m.key(), m.step());
+              return list;
+            }
+            catch (std::exception const & ex)
+            {
+              return fhg::com::kvs::message::error
+                (fhg::com::kvs::message::error::KVS_EUNKNOWN, ex.what());
+            }
+          }
+
+          fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::msg_save const & m)
           {
             DLOG(TRACE, "save (" << m.file() << ")");
@@ -238,6 +255,31 @@ namespace fhg
               if (e->first.substr(0, k.size()) == k)
                 m[e->first] = e->second;
             }
+          }
+
+          store_type::mapped_type inc ( key_type const & k
+                                      , int step
+                                      )
+          {
+            lock_t lock(mutex_);
+
+            int value = 0;
+
+            store_type::iterator it (store_.find(k));
+            if (it != store_.end())
+            {
+              value = boost::lexical_cast<int>(it->second);
+            }
+            else
+            {
+              it = store_.insert (it, "0");
+            }
+
+            value += step;
+
+            it->second = boost::lexical_cast<std::string>(value);
+
+            return it->second;
           }
 
           void clear (std::string const & /*regexp*/)
