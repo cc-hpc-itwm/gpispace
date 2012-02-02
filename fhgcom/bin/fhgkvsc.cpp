@@ -63,8 +63,7 @@ int main(int ac, char *av[])
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
     ("get,g", po::value<std::vector<std::string> >(&key_list), "get values from the key-value store")
     ("del,d", po::value<std::vector<std::string> >(&key_list), "delete entries from the key-value store")
-    ("inc", po::value<std::string>(&key), "atomically increment a numeric entry")
-    ("dec", po::value<std::string>(&key), "atomically decrement a numeric entry")
+    ("cnt", po::value<std::string>(&key), "atomically increment/decrement a numeric entry")
     ;
 
   po::variables_map vm;
@@ -220,16 +219,14 @@ int main(int ac, char *av[])
       return EX_CONN;
     }
   }
-  else if (vm.count("inc") || vm.count("dec"))
+  else if (vm.count("cnt"))
   {
-    int direction = vm.count("inc") ? 1 : -1;
-
-    int step = direction * 1;
+    int step = 1;
     if (! value.empty())
     {
       try
       {
-        step = direction * std::abs (boost::lexical_cast<int>(value));
+        step = boost::lexical_cast<int>(value);
       }
       catch (std::exception const &)
       {
@@ -244,7 +241,7 @@ int main(int ac, char *av[])
     }
     catch (std::exception const & ex)
     {
-      std::cerr << "E: operation failed: " << ex.what() << std::endl;
+      std::cerr << "E: cnt operation failed: " << ex.what() << std::endl;
       return EX_CONN;
     }
   }
