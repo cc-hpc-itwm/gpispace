@@ -113,17 +113,17 @@ namespace sdpa {
         a_irow< Cancelled,  sdpa::events::RetrieveJobResultsEvent,			&sm::action_retrieve_job_results >
         >{};
 
-        /*template <class FSM, class Event>
+        template <class FSM, class Event>
         void no_transition(Event const& e, FSM&, int state)
         {
-          LOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
+        	//DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
         }
 
         template <class FSM>
         void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
         {
-          DLOG(DEBUG, "process event QueryJobStatusEvent");
-        }*/
+        	//DLOG(DEBUG, "process event QueryJobStatusEvent");
+        }
       };
 
       // Pick a back-end

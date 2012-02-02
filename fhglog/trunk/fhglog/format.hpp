@@ -88,7 +88,7 @@ namespace fhg
     {
       static std::string const & SHORT()
       {
-        static std::string f("%s: %l %p:%L - %m%n");
+        static std::string f("[%t] %s: %l %p:%L - %m%n");
         return f;
       }
       static std::string const & LONG()

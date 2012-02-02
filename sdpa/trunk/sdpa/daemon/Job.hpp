@@ -1,6 +1,7 @@
 #ifndef SDPA_JOB_HPP
 #define SDPA_JOB_HPP 1
 
+#include <sdpa/daemon/mpl.hpp>
 #include <string>
 #include <vector>
 #include <utility>
@@ -38,7 +39,7 @@ namespace sdpa { namespace daemon {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
-        enum job_type {MASTER, LOCAL, WORKER};
+        enum job_type {MASTER, LOCAL, WORKER, TMP};
 
         virtual ~Job() {}
 

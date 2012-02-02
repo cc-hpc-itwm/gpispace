@@ -414,6 +414,11 @@ void MonitorWindow::clearActivityLog()
   }
 }
 
+static const int TABLE_COL_TIME = 0;
+static const int TABLE_COL_SOURCE = 1;
+static const int TABLE_COL_LOCATION = 2;
+static const int TABLE_COL_MESSAGE = 3;
+
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
 {
 
@@ -436,11 +441,26 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
 
   QColor bg(severityToColor(evt.severity()));
   QBrush fg(severityToColor(evt.severity()));
+
   {
-    QTableWidgetItem *i(new QTableWidgetItem (evt.logged_on ().c_str()));
+    char buf[128]; memset (buf, 0, sizeof(buf));
+    time_t tm = (evt.tstamp());
+    ctime_r (&tm, buf);
+
+    QTableWidgetItem *i(new QTableWidgetItem (buf));
     i->setForeground(fg);
-    ui->m_log_table->setItem(row, 0, i);
+    ui->m_log_table->setItem(row, TABLE_COL_TIME, i);
   }
+
+  {
+    std::ostringstream sstr;
+    sstr << evt.pid() << "@" << evt.logged_on();
+    std::string logged_on;
+    QTableWidgetItem *i(new QTableWidgetItem (sstr.str().c_str()));
+    i->setForeground(fg);
+    ui->m_log_table->setItem(row, TABLE_COL_SOURCE, i);
+  }
+
   {
     QTableWidgetItem *i
         (new QTableWidgetItem (( evt.file ()
@@ -449,19 +469,17 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
                                )
         );
     i->setForeground (fg);
-    ui->m_log_table->setItem (row, 1, i);
+    ui->m_log_table->setItem (row, TABLE_COL_LOCATION, i);
   }
   {
     QTableWidgetItem *i
         (new QTableWidgetItem (evt.message().c_str()));
     i->setForeground (fg);
-    ui->m_log_table->setItem (row, 2, i);
+    ui->m_log_table->setItem (row, TABLE_COL_MESSAGE, i);
   }
   if (m_follow_logging)
     ui->m_log_table->scrollToBottom ();
   ui->m_log_table->resizeRowToContents (row);
-  //  ui->m_log_table->resizeColumnsToContents();
-  //  ui->m_log_table->resizeColumnToContents(2);
 
   if (evt.severity() < ui->m_level_filter_selector->currentIndex())
     ui->m_log_table->setRowHidden (row, true);

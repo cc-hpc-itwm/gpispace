@@ -46,15 +46,16 @@ namespace sdpa {
 	virtual void schedule_remote(const sdpa::job_id_t&);
 	void delete_job(const sdpa::job_id_t&);
 
-	void schedule_round_robin(const sdpa::job_id_t&);
-	bool schedule_with_constraints(const sdpa::job_id_t&, bool bDelNonRespWorkers = false);
-	bool schedule_to(const sdpa::job_id_t&, const sdpa::worker_id_t&);
-	bool schedule_to(const sdpa::job_id_t&, const Worker::ptr_t& pWorker);
+	void schedule_round_robin( const sdpa::job_id_t& );
+	bool schedule_with_constraints( const sdpa::job_id_t& );
+	bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
+	bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
 	void schedule_anywhere( const sdpa::job_id_t& jobId );
 
 	void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
 	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
 	void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
+	void reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 
 	virtual bool has_job(const sdpa::job_id_t&);
 	virtual void start_job(const sdpa::job_id_t&);

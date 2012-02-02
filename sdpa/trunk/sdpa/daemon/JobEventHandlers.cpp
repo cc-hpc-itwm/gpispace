@@ -41,8 +41,10 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 		// since it was not rejected, no error occurred etc ....
 		//find the job ptrJob and call
 		Job::ptr_t ptrJob = ptr_job_man_->findJob(pEvent->job_id());
+
 		ptrJob->Dispatch();
-		ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
+        ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
+
 	} catch(WorkerNotFoundException const &)
 	{
 		SDPA_LOG_ERROR("job submission could not be acknowledged: worker " << worker_id << " not found!!");

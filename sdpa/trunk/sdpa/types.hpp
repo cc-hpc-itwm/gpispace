@@ -47,11 +47,11 @@ namespace sdpa {
 		bool is_registered() const { return registered_; }
 		void set_registered(bool b) { registered_ = b; }
 
-		int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
+		unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
 		void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
 		void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
 
-		int getConsecRegAttempts() { return nConsecRegAttempts_;}
+		unsigned int getConsecRegAttempts() { return nConsecRegAttempts_;}
 		void incConsecRegAttempts() { nConsecRegAttempts_++;}
 		void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
 
@@ -63,8 +63,8 @@ namespace sdpa {
 	private:
 		std::string name_;
 		bool registered_;
-		int nConsecNetFailCnt_;
-		int nConsecRegAttempts_;
+		unsigned int nConsecNetFailCnt_;
+		unsigned int nConsecRegAttempts_;
 	};
 
 	typedef std::vector<MasterInfo> master_info_list_t;

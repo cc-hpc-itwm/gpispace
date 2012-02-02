@@ -21,6 +21,7 @@
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/id_generator.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <cassert>
 #include <sdpa/capability.hpp>
@@ -106,6 +107,36 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 		pJob->Reschedule(); // put the job back into the pending state
 
 		schedule(job_id);
+	}
+	catch (const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_WARN("Cannot delete the worker "<<worker_id<<". Worker not found!");
+	}
+	catch(JobNotFoundException const &ex)
+	{
+		SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
+	}
+	catch(JobNotDeletedException const & ex)
+	{
+		SDPA_LOG_WARN("The job " << job_id << " could not be deleted: " << ex.what());
+	}
+	catch(const std::exception& ex) {
+		SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+	}
+}
+
+void SchedulerImpl::reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
+{
+	ostringstream os;
+	try {
+		// delete it from the worker's queues
+		Worker::ptr_t pWorker = findWorker(worker_id);
+		pWorker->delete_job(job_id);
+
+		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
+		pJob->Reschedule(); // put the job back into the pending state
+
+		pWorker->dispatch(job_id); // or schedule_to(job_id, worker_id);
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
@@ -320,7 +351,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const Worker::ptr_t
 	SDPA_LOG_DEBUG("Schedule job "<<jobId.str()<<" to the worker "<<worker_id);
 
 	// if the worker is marked for deletion don't schedule any job on it
-	// should have a monitoring thread that detects the timedout nodes
+	// should have a monitoring thread that detects the timed-out nodes
 	// add a boolean variable to the worker bTimedout or not
 	try
 	{
@@ -368,7 +399,7 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
 /*
  * Scheduling with constraints
  */
-bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bDelNonRespWorkers )
+bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 {
   DLOG(TRACE, "Called schedule_with_contraints ...");
 

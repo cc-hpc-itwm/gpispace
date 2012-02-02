@@ -378,11 +378,11 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
 
 void GenericDaemon::shutdown_network()
 {
-    /*BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
+    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
     {
       if( !masterInfo.name().empty() && masterInfo.is_registered() )
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
-    }*/
+    }
 }
 
 void GenericDaemon::stop()
@@ -634,7 +634,6 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
             // Post a SubmitJobEvent to the slave who made the request
             sendEventToSlave(pSubmitEvt);
-
             ptr_scheduler_->setLastTimeServed(worker_id, sdpa::util::now());
         }
         else // send an error event
@@ -644,7 +643,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
     }
     catch(const NoJobScheduledException&)
     {
-        SDPA_LOG_DEBUG("No job was scheduled on the worker '"<<worker_id);
+        //SDPA_LOG_DEBUG("No job was scheduled on the worker '"<<worker_id);
     }
     catch(const WorkerNotFoundException&)
     {
@@ -709,6 +708,24 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
    * put the job into the job-map
    * send a submitJobAck back
   */
+  BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+  {
+	  if( e.from() == masterInfo.name() && !masterInfo.is_registered() )
+	  {
+		  SDPA_LOG_INFO("The agent "<<name()<<" is not yet registered with the master "<<masterInfo.name()
+						  <<". No job from this master will be accepted until registration is confirmed!");
+
+		  //send job rejected error event back to the master
+		  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(	name(),
+													e.from(),
+													ErrorEvent::SDPA_EPERM,
+													"Waiting for registration confirmation. No job submission is allowed!",
+													e.job_id()) );
+		  sendEventToMaster(pErrorEvt);
+
+		  return;
+	  }
+  }
 
   //if my capacity is reached, refuse to take any external job until at least one of my
   //assigned jobs completes
@@ -717,7 +734,11 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	  //generate a reject event
 	  SDPA_LOG_INFO("Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
 	  //send job rejected error event back to the master
-	  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBREJECTED, e.job_id().str()) );
+	  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(	name(),
+			  	  	  	  	  	  	  	  	  	e.from(),
+			  	  	  	  	  	  	  	  	  	ErrorEvent::SDPA_EJOBREJECTED,
+			  	  	  	  	  	  	  	  	  	"Capacity exceeded! Cannot take further jobs",
+			  	  	  	  	  	  	  	  	  	e.job_id()) );
 	  sendEventToMaster(pErrorEvt);
 
 	  return;
@@ -825,9 +846,18 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 
 	SDPA_LOG_INFO("****************Register new worker, " << worker_id << ", with the capacity "<<evtRegWorker.capacity()<<"***********");
 
-	addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.rank(), evtRegWorker.agent_uuid() );
+	// delete inherited capabilities that are owned by the current agent
+	sdpa::capabilities_set_t workerCpbSet;
+	BOOST_FOREACH(const sdpa::capability_t& cpb, evtRegWorker.capabilities())
+	{
+		if( cpb.owner() != name() )
+			workerCpbSet.insert(cpb);
+	}
 
-	SDPA_LOG_INFO("The worker \"" << worker_id << "\" has the following capabilities: " << evtRegWorker.capabilities());
+	addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
+
+	/*SDPA_LOG_INFO("The worker \"" << worker_id << "\" has the following capabilities: ");
+	std::cout << evtRegWorker.capabilities();*/
 
 	// send back an acknowledgment
 	SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -835,11 +865,11 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 
 	sendEventToSlave(pWorkerRegAckEvt);
 
-	if (! evtRegWorker.capabilities().empty())
+	if (!evtRegWorker.capabilities().empty() )
 	{
 		lock_type lock(mtx_master_);
-		// propagate the capabilities upward to the masters
-		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+	  // propagate the capabilities upward to the masters
+	  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
 		  if (it->is_registered() && it->name() != worker_id )
 		  {
 			  sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
@@ -847,7 +877,6 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 		  }
 	}
 }
-
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
   worker_id_t worker_id (evtRegWorker.from());
@@ -916,9 +945,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	// 'reason' should not be reused for important information
     	case ErrorEvent::SDPA_EJOBREJECTED:
     	{
-    		sdpa::job_id_t jobId(error.reason());
+    		sdpa::job_id_t jobId(error.job_id());
     		sdpa::worker_id_t worker_id(error.from());
-    		SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<jobId.str()<<". Reschedule it now!");
+    		SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Reschedule it now!");
 
     		scheduler()->reschedule(worker_id, jobId);
     		break;
@@ -939,7 +968,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 						// we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
 						masterInfo.set_registered(false);
 
-						if(masterInfo.getConsecRegAttempts()< cfg().get<unsigned long>("max_consecutive_reg_attempts", 5) )
+						if(masterInfo.getConsecRegAttempts()< cfg().get<unsigned int>("max_consecutive_reg_attempts", 5) )
 						{
 							const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
 							SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
@@ -1055,10 +1084,26 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		catch(std::exception const &ex)
     		{
     			SDPA_LOG_ERROR("Unexpected exception occurred upon receiving ErrorEvent::SDPA_EJOBEXISTS: " << ex.what());
+
     		}
 
     		break;
     	}
+    	case ErrorEvent::SDPA_EPERM:
+		{
+			SDPA_LOG_INFO("Got error from "<<error.from()<<". Reason: "<<error.reason());
+			if( error.job_id() != sdpa::job_id_t::invalid_job_id() )
+			{
+				// check if there were any jobs submitted and not acknowledged to that worker
+				// if this is the case, move the submitted jobs back into the pending queue
+				// don't forget to update the state machine
+				sdpa::job_id_t jobId(error.job_id());
+				sdpa::worker_id_t worker_id(error.from());
+				SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-dispatch it now!");
+
+				scheduler()->reassign(worker_id, jobId);
+			}
+		}
     	default:
     	{
     		MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
@@ -1317,7 +1362,15 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 	}
 
 	try {
-		bool bIsSubset = scheduler()->addCapabilities(worker_id, pCpbGainEvt->capabilities());
+
+		sdpa::capabilities_set_t workerCpbSet;
+		BOOST_FOREACH(const sdpa::capability_t& cpb, pCpbGainEvt->capabilities())
+		{
+			if( cpb.owner() != name() )
+				workerCpbSet.insert(cpb);
+		}
+
+		bool bIsSubset = scheduler()->addCapabilities(worker_id, workerCpbSet);
 
 		if(!bIsSubset)
 		{
@@ -1619,10 +1672,14 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
     if( !masterInfo.is_registered() )
 	{
-		SDPA_LOG_INFO("The agent \"" << name() << "\" is sending a registration event to master \"" << masterInfo.name() << "\", capacity = "<<capacity());
+		SDPA_LOG_INFO("The agent \"" << name()
+				                     << "\" is sending a registration event to master \"" << masterInfo.name()
+				                     << "\", capacity = "<<capacity() );
 
 		capabilities_set_t cpbSet;
 		getCapabilities(cpbSet);
+
+		//std::cout<<cpbSet;
 
 		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), cpbSet,  rank(), agent_uuid()));
 		sendEventToMaster(pEvtWorkerReg);

@@ -541,8 +541,13 @@
               <number>0</number>
              </property>
              <property name="columnCount">
-              <number>3</number>
+              <number>4</number>
              </property>
+             <column>
+              <property name="text">
+               <string>Time</string>
+              </property>
+             </column>
              <column>
               <property name="text">
                <string>Source</string>
