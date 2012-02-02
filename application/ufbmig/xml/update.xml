@@ -24,10 +24,7 @@
       <defun>
         <in name="i" type="interval"/>
         <out name="i" type="interval"/>
-        <in name="wait" type="long"/>
-        <out name="wait" type="long"/>
         <expression>
-          ${wait} := ${wait} - 1L;
         </expression>
       </defun>
       <condition>
@@ -35,8 +32,6 @@
       </condition>
       <connect-in port="i" place="processed_interval"/>
       <connect-out port="i" place="updated_interval"/>
-      <connect-in port="wait" place="wait"/>
-      <connect-out port="wait" place="wait"/>
     </transition>
 
     <transition name="nonempty">
