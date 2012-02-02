@@ -97,6 +97,21 @@ namespace fhg
             return boost::get<fhg::com::kvs::message::list>(m).entries();
           }
 
+          int
+          inc(key_type const & k, int step) const
+          {
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::msg_inc(k, step)
+                    , m
+                    );
+            DLOG(TRACE, "inc(" << k << ", " << step << ") := " << m);
+            return boost::lexical_cast<int>
+              (boost::get<fhg::com::kvs::message::list>(m).entries().begin()->second);
+          }
+
           void del (key_type const & k)
           {
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
@@ -350,6 +365,13 @@ namespace fhg
       void del (Key k)
       {
         return global_kvs().del (k);
+      }
+
+      template <typename Key>
+      inline
+      int inc (Key k, int step)
+      {
+        return global_kvs().inc (k, step);
       }
 
       template <typename Key>

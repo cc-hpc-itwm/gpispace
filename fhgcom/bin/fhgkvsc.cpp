@@ -63,6 +63,7 @@ int main(int ac, char *av[])
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
     ("get,g", po::value<std::vector<std::string> >(&key_list), "get values from the key-value store")
     ("del,d", po::value<std::vector<std::string> >(&key_list), "delete entries from the key-value store")
+    ("cnt", po::value<std::string>(&key), "atomically increment/decrement a numeric entry")
     ;
 
   po::variables_map vm;
@@ -215,6 +216,32 @@ int main(int ac, char *av[])
     catch (std::exception const & ex)
     {
       std::cerr << "E: " << ex.what() << std::endl;
+      return EX_CONN;
+    }
+  }
+  else if (vm.count("cnt"))
+  {
+    int step = 1;
+    if (! value.empty())
+    {
+      try
+      {
+        step = boost::lexical_cast<int>(value);
+      }
+      catch (std::exception const &)
+      {
+        std::cerr << "invalid argument: value must be an integer: " << value << std::endl;
+        return EX_INVAL;
+      }
+    }
+
+    try
+    {
+      std::cout << client.inc (key, step) << std::endl;
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "E: cnt operation failed: " << ex.what() << std::endl;
       return EX_CONN;
     }
   }
