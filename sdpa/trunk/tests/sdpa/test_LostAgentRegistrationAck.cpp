@@ -161,7 +161,7 @@ struct MyFixture
 };
 
 
-int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
+int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli, bool& bForceExit )
 {
 	typedef boost::posix_time::ptime time_type;
 	time_type poll_start = boost::posix_time::microsec_clock::local_time();
@@ -223,7 +223,7 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
 			LOG(INFO, "Timeout expired!");
 		}
 
-  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS);
+  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS && !bForceExit);
 
   	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
 
@@ -259,6 +259,7 @@ public:
 	: Agent(name, url, arrMasterNames, cap, bCanRunTasksLocally)
 	, nSuccFailures_(0)
 	, strWorkflow_(strWorkflow)
+	, bForceExit_(false)
 	{
 		threadClient = boost::thread(boost::bind(&FaultyAgent::start_client, this));
 	}
@@ -275,7 +276,7 @@ public:
 		std::ostringstream osstr;
 		osstr<<"sdpac_"<<testNb++;
 
-		ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
+		sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
 		ptrCli->configure_network( config );
 
 		int nTrials = 0;
@@ -298,11 +299,12 @@ public:
 			}
 		}
 
-		int exit_code = subscribe_and_wait( job_id_user, ptrCli );
+		int exit_code = subscribe_and_wait( job_id_user, ptrCli, bForceExit_ );
 	}
 
 	void stop_client()
 	{
+		bForceExit_ = true;
 		threadClient.interrupt();
 		threadClient.join();
 	}
@@ -316,16 +318,16 @@ public:
 			nSuccFailures_++;
 		else
 		{
+			//shutdown();
 			stop_client();
-			shutdown();
 		}
 	}
 
   private:
 	int nSuccFailures_;
-	sdpa::client::ClientApi::ptr_t ptrCli;
 	std::string strWorkflow_;
 	boost::thread threadClient;
+	bool bForceExit_;
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
