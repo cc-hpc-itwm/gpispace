@@ -1,0 +1,213 @@
+<defun name="asian" internal="true">
+
+  <struct name="sums">
+    <field name="sum1" type="double"/>
+    <field name="sum2" type="double"/>
+    <field name="param" type="param"/>
+  </struct>
+
+  <struct name="pair_of_sums">
+    <field name="one" type="sums"/>
+    <field name="two" type="sums"/>
+  </struct>
+
+  <in name="param" type="param" place="param"/>
+
+  <out name="result" type="result" place="result"/>
+
+  <net>
+
+    <place name="param" type="param">
+<!--
+      <token>
+        <field name="S"><value>7000.0</value></field>
+        <field name="K"><value>85.0</value></field>
+        <field name="T"><value>1.02</value></field>
+        <field name="sigma"><value>0.2</value></field>
+        <field name="r"><value>0.05</value></field>
+        <field name="d"><value>0.0</value></field>
+        <field name="FirstFixing"><value>1</value></field>
+        <field name="FixingsProJahr"><value>50.0</value></field>
+        <field name="AnzahlderDividende"><value>3</value></field>
+        <field name="n"><value>200000</value></field>
+
+        <field name="rowID"><value>0</value></field>
+        <field name="bin"><value>"@BUILD@/application/asian/Asian"</value></field>
+
+        <field name="epsilon"><value>0.01</value></field>
+        <field name="delta"><value>0.01</value></field>
+
+        <field name="iterations_per_run"><value>50000</value></field>
+      </token>
+-->
+    </place>
+
+    <place name="param_eps1" type="param"/>
+    <place name="param_eps2" type="param"/>
+    <place name="param_delta" type="param"/>
+
+    <place name="id" type="param"/>
+    <place name="eps1" type="param"/>
+    <place name="eps2" type="param"/>
+    <place name="delta" type="param"/>
+
+    <transition name="id">
+      <defun>
+        <in name="param" type="param"/>
+        <out name="param" type="param"/>
+        <out name="div" type="param"/>
+        <expression>
+          ${div} := ${param};
+        </expression>
+      </defun>
+      <connect-in port="param" place="param"/>
+      <connect-out port="param" place="param_eps1"/>
+      <connect-out port="div" place="id"/>
+    </transition>
+
+    <transition name="eps1">
+      <defun>
+        <in name="param" type="param"/>
+        <out name="param" type="param"/>
+        <out name="div" type="param"/>
+        <expression>
+          ${div} := ${param};
+          ${div.S} := ${div.S} * (1.0 + ${div.epsilon});
+        </expression>
+      </defun>
+      <connect-in port="param" place="param_eps1"/>
+      <connect-out port="param" place="param_eps2"/>
+      <connect-out port="div" place="eps1"/>
+    </transition>
+
+    <transition name="eps2">
+      <defun>
+        <in name="param" type="param"/>
+        <out name="param" type="param"/>
+        <out name="div" type="param"/>
+        <expression>
+          ${div} := ${param};
+          ${div.S} := ${div.S} * (1.0 + 2.0 * ${div.epsilon});
+        </expression>
+      </defun>
+      <connect-in port="param" place="param_eps2"/>
+      <connect-out port="param" place="param_delta"/>
+      <connect-out port="div" place="eps2"/>
+    </transition>
+
+    <transition name="delta">
+      <defun>
+        <in name="param" type="param"/>
+        <out name="div" type="param"/>
+        <expression>
+          ${div} := ${param};
+          ${div.sigma} := ${div.sigma} * (1.0 + ${div.delta});
+        </expression>
+      </defun>
+      <connect-in port="param" place="param_delta"/>
+      <connect-out port="div" place="delta"/>
+    </transition>
+
+    <transition name="asian_id" inline="true">
+      <include-function href="run.xml"/>
+      <connect-in port="param" place="id"/>
+      <connect-out port="sums" place="sums_id"/>
+    </transition>
+
+    <transition name="asian_eps1" inline="true">
+      <include-function href="run.xml"/>
+      <connect-in port="param" place="eps1"/>
+      <connect-out port="sums" place="sums_eps1"/>
+    </transition>
+
+    <transition name="asian_eps2" inline="true">
+      <include-function href="run.xml"/>
+      <connect-in port="param" place="eps2"/>
+      <connect-out port="sums" place="sums_eps2"/>
+    </transition>
+
+    <transition name="asian_delta" inline="true">
+      <include-function href="run.xml"/>
+      <connect-in port="param" place="delta"/>
+      <connect-out port="sums" place="sums_delta"/>
+    </transition>
+
+    <place name="sums_id" type="sums"/>
+    <place name="sums_eps1" type="sums"/>
+    <place name="sums_eps2" type="sums"/>
+    <place name="sums_delta" type="sums"/>
+
+    <defun name="collect">
+      <in name="sums_id" type="sums"/>
+      <in name="sums_eps1" type="sums"/>
+      <in name="sums_eps2" type="sums"/>
+      <in name="sums_delta" type="sums"/>
+      <out name="result" type="result"/>
+      <expression>
+        ${r} := ${sums_id.param.r};
+        ${T} := ${sums_id.param.T};
+        ${runs} := (${sums_id.param.n} + ${sums_id.param.iterations_per_run} - 1L)
+                div ${sums_id.param.iterations_per_run};
+        ${n} := double(${runs} * ${sums_id.param.iterations_per_run});
+        ${epsilon} := ${sums_id.param.epsilon};
+        ${delta} := ${sums_id.param.delta};
+
+        ${fak} := e ** (-${r} * ${T});
+
+        ${pv_id} := ${fak} * ${sums_id.sum1} / ${n};
+        ${pv_eps1} := ${fak} * ${sums_eps1.sum1} / ${n};
+        ${pv_eps2} := ${fak} * ${sums_eps2.sum1} / ${n};
+        ${pv_delta} := ${fak} * ${sums_delta.sum1} / ${n};
+
+        ${variance} := (${sums_id.sum2} - ${sums_id.sum1} * ${sums_id.sum1} / ${n})
+                    / ${n} / ${n};
+
+        ${result.pv} := ${pv_id};
+        ${result.stddev} := ${fak} * sqrt (${variance});
+        ${result.Delta} := (${pv_eps1} - ${pv_id}) / ${epsilon};
+        ${result.Gamma} := (${pv_eps2} - 2.0 * ${pv_eps1} + ${pv_id}) / (${epsilon} * ${epsilon});
+        ${result.Vega} := (${pv_delta} - ${pv_id}) / ${delta};
+        ${result.rowID} := ${sums_id.param.rowID};
+      </expression>
+    </defun>
+
+    <transition name="collect">
+      <use name="collect"/>
+      <connect-in port="sums_id" place="sums_id"/>
+      <connect-in port="sums_eps1" place="sums_eps1"/>
+      <connect-in port="sums_eps2" place="sums_eps2"/>
+      <connect-in port="sums_delta" place="sums_delta"/>
+      <connect-out port="result" place="pre_result"/>
+    </transition>
+
+<!--
+    <transition name="collect" inline="true">
+      <include-function href="collect.xml"/>
+      <connect-in port="sums_id" place="sums_id"/>
+      <connect-in port="sums_eps1" place="sums_eps1"/>
+      <connect-in port="sums_eps2" place="sums_eps2"/>
+      <connect-in port="sums_delta" place="sums_delta"/>
+      <connect-out port="result" place="pre_result"/>
+    </transition>
+-->
+
+    <place name="pre_result" type="result"/>
+    <place name="result" type="result"/>
+
+    <transition name="done">
+      <defun>
+        <in name="result" type="result"/>
+        <out name="result" type="result"/>
+        <module name="asian" function="done (result)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG(INFO, "done row with result " << result);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="result" place="pre_result"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+  </net>
+
+</defun>

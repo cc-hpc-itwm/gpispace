@@ -1,0 +1,102 @@
+<defun>
+
+  <in name="config" type="config" place="config"/>
+  <out name="interval" type="interval" place="interval"/>
+
+  <net>
+
+    <place name="config" type="config"/>
+    <place name="interval" type="interval"/>
+
+    <struct name="counter">
+      <field name="max" type="long"/>
+      <field name="id" type="long"/>
+    </struct>
+
+    <struct name="state">
+      <field name="counter" type="counter"/>
+      <field name="size" type="long"/>
+    </struct>
+
+    <transition name="init">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.counter.max} := ${config.num.interval};
+          ${state.counter.id} := 0L;
+          ${state.size} :=
+            ${config.size.alloc.update} div ${config.num.interval};
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <place name="state" type="state"/>
+
+    <transition name="done">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <condition>
+        ${state.counter.id} :ge: ${state.counter.max}
+      </condition>
+      <connect-in port="state" place="state"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+    <place name="trigger" type="control" virtual="true"/>
+
+    <transition name="eat">
+      <defun>
+        <in name="online" type="control"/>
+        <in name="x" type="control"/>
+        <expression/>
+      </defun>
+      <connect-read port="online" place="done"/>
+      <connect-in port="x" place="trigger"/>
+    </transition>
+
+    <place name="done" type="control"/>
+
+    <transition name="not_done">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${state.counter.id} :lt: ${state.counter.max}
+      </condition>
+      <connect-in port="state" place="state"/>
+      <connect-out port="state" place="state_not_done"/>
+    </transition>
+
+    <place name="state_not_done" type="state"/>
+
+    <transition name="step">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <out name="interval" type="interval"/>
+        <expression>
+          ${interval.offset} := ${state.counter.id} * ${state.size};
+          ${interval.size} := ${state.size};
+          ${interval.used} := 0L;
+
+          ${state.counter.id} := ${state.counter.id} + 1
+        </expression>
+      </defun>
+      <connect-in port="trigger" place="trigger"/>
+      <connect-in port="state" place="state_not_done"/>
+      <connect-out port="state" place="state"/>
+      <connect-out port="interval" place="interval"/>
+    </transition>
+  </net>
+</defun>

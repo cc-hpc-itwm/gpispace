@@ -1,0 +1,7 @@
+<structs>
+
+  <struct name="store_volume">
+    <field name="id" type="long"/>
+  </struct>
+
+</structs>

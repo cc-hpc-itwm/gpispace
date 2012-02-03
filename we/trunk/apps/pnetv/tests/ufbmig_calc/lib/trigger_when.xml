@@ -1,0 +1,8 @@
+<template name="trigger_when">
+  <in name="object" type="T"/>
+  <out name="object" type="T"/>
+  <out name="trigger" type="control"/>
+  <expression>
+    ${trigger} := []
+  </expression>
+</template>

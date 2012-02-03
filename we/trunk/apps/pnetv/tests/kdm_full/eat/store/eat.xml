@@ -1,0 +1,68 @@
+<defun>
+
+  <in name="number_store_volume" type="long" place="number_store_volume"/>
+  <in name="number_store_bunch" type="long" place="number_store_bunch"/>
+  <in name="trigger" type="control" place="trigger"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+    <place name="number_store_volume" type="long"/>
+    <place name="number_store_bunch" type="long"/>
+
+    <place name="trigger" type="control"/>
+    <place name="done" type="control"/>
+
+    <include-template href="dup.xml"/>
+    <specialize name="dup_control" use="dup">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="dup">
+      <use name="dup_control"/>
+      <connect-in port="in" place="trigger"/>
+      <connect-out port="one" place="trigger_eat_store_volume"/>
+      <connect-out port="two" place="trigger_eat_store_bunch"/>
+    </transition>
+
+    <place name="trigger_eat_store_volume" type="control"/>
+    <place name="trigger_eat_store_bunch" type="control"/>
+
+    <place name="store_volume" type="store_volume" virtual="true"/>
+
+    <transition name="eat_store_volume">
+      <include-function href="eat/volume.xml"/>
+      <place-map virtual="store_volume" real="store_volume"/>
+      <connect-in port="N" place="number_store_volume"/>
+      <connect-in port="trigger" place="trigger_eat_store_volume"/>
+      <connect-out port="done" place="done_eat_store_volume"/>
+    </transition>
+
+    <place name="store_bunch" type="store_bunch" virtual="true"/>
+
+    <transition name="eat_store_bunch">
+      <include-function href="eat/bunch.xml"/>
+      <place-map virtual="store_bunch" real="store_bunch"/>
+      <connect-in port="N" place="number_store_bunch"/>
+      <connect-in port="trigger" place="trigger_eat_store_bunch"/>
+      <connect-out port="done" place="done_eat_store_bunch"/>
+    </transition>
+
+    <place name="done_eat_store_volume" type="control"/>
+    <place name="done_eat_store_bunch" type="control"/>
+
+    <transition name="join">
+      <defun>
+        <in name="a" type="control"/>
+        <in name="b" type="control"/>
+        <out name="joined" type="control"/>
+        <expression>${joined} := []</expression>
+      </defun>
+      <connect-in port="a" place="done_eat_store_volume"/>
+      <connect-in port="b" place="done_eat_store_bunch"/>
+      <connect-out port="joined" place="done"/>
+    </transition>
+
+  </net>
+
+</defun>

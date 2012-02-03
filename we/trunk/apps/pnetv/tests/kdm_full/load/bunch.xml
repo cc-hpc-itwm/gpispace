@@ -1,0 +1,43 @@
+<defun>
+
+  <in name="config" type="config" place="config"/>
+  <in name="bunch_with_store" type="bunch_with_store" place="bunch_with_store"/>
+  <out name="bunch_loaded" type="bunch_loaded" place="bunch_loaded"/>
+
+  <net>
+
+    <place name="config" type="config"/>
+    <place name="bunch_with_store" type="bunch_with_store"/>
+    <place name="bunch" type="bunch_with_store"/>
+    <place name="bunch_loaded" type="bunch_loaded"/>
+
+    <transition name="load">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="bunch" type="bunch_with_store"/>
+        <out name="bunch" type="bunch_with_store"/>
+        <module name="kdmfull" function="load (bunch)"/>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="bunch" place="bunch_with_store"/>
+      <connect-out port="bunch" place="bunch"/>
+    </transition>
+
+    <transition name="mark_unseen">
+      <defun>
+        <in name="bunch" type="bunch_with_store"/>
+        <in name="config" type="config"/>
+        <out name="marked" type="bunch_loaded"/>
+        <expression>
+          ${marked.bunch} := ${bunch};
+          ${marked.wait} := ${config.per.offset.volumes};
+        </expression>
+      </defun>
+      <connect-in port="bunch" place="bunch"/>
+      <connect-in port="config" place="config"/>
+      <connect-out port="marked" place="bunch_loaded"/>
+    </transition>
+
+  </net>
+
+</defun>

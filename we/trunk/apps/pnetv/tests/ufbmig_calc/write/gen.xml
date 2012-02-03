@@ -1,0 +1,14 @@
+<template name="generic_write">
+  <in name="filename" type="string"/>
+  <in name="x" type="T"/>
+  <out name="x" type="T"/>
+  <module name="ufbmig" function="write (filename, x)">
+    <cinclude href="fhglog/fhglog.hpp"/>
+    <cinclude href="util/rw.hpp"/>
+    <code><![CDATA[
+      LOG (INFO, "write to file " << filename);
+
+      ::ufbmig::util::serialize::write (filename, x);
+    ]]></code>
+  </module>
+</template>

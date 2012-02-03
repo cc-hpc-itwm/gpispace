@@ -1,0 +1,317 @@
+<defun>
+
+  <in name="sums_id" type="sums" place="sums_id"/>
+  <in name="sums_eps1" type="sums" place="sums_eps1"/>
+  <in name="sums_eps2" type="sums" place="sums_eps2"/>
+  <in name="sums_delta" type="sums" place="sums_delta"/>
+
+  <out name="result" type="result" place="result"/>
+
+  <net>
+
+    <template name="eat">
+      <in name="guard" type="control"/>
+      <in name="x" type="T"/>
+      <out name="x" type="T"/>
+      <expression/>
+    </template>
+
+    <specialize name="select_eat" use="eat">
+      <type-map replace="T" with="sums"/>
+    </specialize>
+    <specialize name="select_pair_eat" use="eat">
+      <type-map replace="T" with="pair_of_sums"/>
+    </specialize>
+
+    <template name="produce">
+      <out name="guard" type="control"/>
+      <in name="x" type="T"/>
+      <out name="x" type="T"/>
+      <expression>
+        ${guard} := []
+      </expression>
+    </template>
+
+    <specialize name="select_produce" use="produce">
+      <type-map replace="T" with="sums"/>
+    </specialize>
+    <specialize name="select_pair_produce" use="produce">
+      <type-map replace="T" with="pair_of_sums"/>
+    </specialize>
+
+    <place name="sums_id" type="sums"/>
+    <place name="sums_eps1" type="sums"/>
+    <place name="sums_eps2" type="sums"/>
+    <place name="sums_delta" type="sums"/>
+    <place name="sums_id_selected" type="sums"/>
+    <place name="sums_eps1_selected" type="sums"/>
+    <place name="sums_eps2_selected" type="sums"/>
+    <place name="sums_delta_selected" type="sums"/>
+    <place name="sums_id_store" type="sums"/>
+    <place name="sums_eps1_store" type="sums"/>
+    <place name="sums_eps2_store" type="sums"/>
+    <place name="sums_delta_store" type="sums"/>
+
+    <place name="guard_id_eps1" type="control">
+      <token>
+        <value>
+          []
+        </value>
+      </token>
+    </place>
+
+    <place name="guard_eps2_delta" type="control">
+      <token>
+        <value>
+          []
+        </value>
+      </token>
+    </place>
+
+    <transition name="select_id">
+      <use name="select_eat"/>
+      <connect-in port="guard" place="guard_id_eps1"/>
+      <connect-in port="x" place="sums_id"/>
+      <connect-out port="x" place="sums_id_selected"/>
+    </transition>
+
+    <transition name="select_eps1">
+      <use name="select_eat"/>
+      <connect-in port="guard" place="guard_id_eps1"/>
+      <connect-in port="x" place="sums_eps1"/>
+      <connect-out port="x" place="sums_eps1_selected"/>
+    </transition>
+
+    <transition name="select_eps2">
+      <use name="select_eat"/>
+      <connect-in port="guard" place="guard_eps2_delta"/>
+      <connect-in port="x" place="sums_eps2"/>
+      <connect-out port="x" place="sums_eps2_selected"/>
+    </transition>
+
+    <transition name="select_delta">
+      <use name="select_eat"/>
+      <connect-in port="guard" place="guard_eps2_delta"/>
+      <connect-in port="x" place="sums_delta"/>
+      <connect-out port="x" place="sums_delta_selected"/>
+    </transition>
+
+    <transition name="no_pair_id_eps1_id">
+      <use name="select_produce"/>
+      <connect-out port="guard" place="guard_id_eps1"/>
+      <connect-in port="x" place="sums_id_selected"/>
+      <connect-out port="x" place="sums_id_store"/>
+    </transition>
+
+    <transition name="no_pair_id_eps1_eps1">
+      <use name="select_produce"/>
+      <connect-out port="guard" place="guard_id_eps1"/>
+      <connect-in port="x" place="sums_eps1_selected"/>
+      <connect-out port="x" place="sums_eps1_store"/>
+    </transition>
+
+    <transition name="no_pair_eps2_delta_eps2">
+      <use name="select_produce"/>
+      <connect-out port="guard" place="guard_eps2_delta"/>
+      <connect-in port="x" place="sums_eps2_selected"/>
+      <connect-out port="x" place="sums_eps2_store"/>
+    </transition>
+
+    <transition name="no_pair_eps2_delta_delta">
+      <use name="select_produce"/>
+      <connect-out port="guard" place="guard_eps2_delta"/>
+      <connect-in port="x" place="sums_delta_selected"/>
+      <connect-out port="x" place="sums_delta_store"/>
+    </transition>
+
+    <transition name="pair_id_eps1_id" priority="1">
+      <defun>
+        <in name="id" type="sums"/>
+        <in name="eps1" type="sums"/>
+        <out name="id_eps1" type="pair_of_sums"/>
+        <out name="guard" type="control"/>
+        <expression>
+          ${id_eps1.one} := ${id};
+          ${id_eps1.two} := ${eps1};
+          ${guard} := [];
+        </expression>
+      </defun>
+      <condition>
+        ${id.param.rowID} :eq: ${eps1.param.rowID}
+      </condition>
+      <connect-in port="id" place="sums_id_selected"/>
+      <connect-in port="eps1" place="sums_eps1_store"/>
+      <connect-out port="guard" place="guard_id_eps1"/>
+      <connect-out port="id_eps1" place="sums_id_eps1"/>
+    </transition>
+
+    <transition name="pair_id_eps1_eps1" priority="1">
+      <defun>
+        <in name="id" type="sums"/>
+        <in name="eps1" type="sums"/>
+        <out name="id_eps1" type="pair_of_sums"/>
+        <out name="guard" type="control"/>
+        <expression>
+          ${id_eps1.one} := ${id};
+          ${id_eps1.two} := ${eps1};
+          ${guard} := [];
+        </expression>
+      </defun>
+      <condition>
+        ${id.param.rowID} :eq: ${eps1.param.rowID}
+      </condition>
+      <connect-in port="id" place="sums_id_store"/>
+      <connect-in port="eps1" place="sums_eps1_selected"/>
+      <connect-out port="guard" place="guard_id_eps1"/>
+      <connect-out port="id_eps1" place="sums_id_eps1"/>
+    </transition>
+
+    <place name="sums_id_eps1" type="pair_of_sums"/>
+
+    <transition name="pair_eps2_delta_eps2" priority="1">
+      <defun>
+        <in name="eps2" type="sums"/>
+        <in name="delta" type="sums"/>
+        <out name="guard" type="control"/>
+        <out name="eps2_delta" type="pair_of_sums"/>
+        <expression>
+          ${eps2_delta.one} := ${eps2};
+          ${eps2_delta.two} := ${delta};
+          ${guard} := [];
+        </expression>
+      </defun>
+      <condition>
+        ${eps2.param.rowID} :eq: ${delta.param.rowID}
+      </condition>
+      <connect-in port="eps2" place="sums_eps2_selected"/>
+      <connect-in port="delta" place="sums_delta_store"/>
+      <connect-out port="guard" place="guard_eps2_delta"/>
+      <connect-out port="eps2_delta" place="sums_eps2_delta"/>
+    </transition>
+
+    <transition name="pair_eps2_delta_delta" priority="1">
+      <defun>
+        <in name="eps2" type="sums"/>
+        <in name="delta" type="sums"/>
+        <out name="guard" type="control"/>
+        <out name="eps2_delta" type="pair_of_sums"/>
+        <expression>
+          ${eps2_delta.one} := ${eps2};
+          ${eps2_delta.two} := ${delta};
+          ${guard} := [];
+        </expression>
+      </defun>
+      <condition>
+        ${eps2.param.rowID} :eq: ${delta.param.rowID}
+      </condition>
+      <connect-in port="eps2" place="sums_eps2_store"/>
+      <connect-in port="delta" place="sums_delta_selected"/>
+      <connect-out port="guard" place="guard_eps2_delta"/>
+      <connect-out port="eps2_delta" place="sums_eps2_delta"/>
+    </transition>
+
+    <place name="sums_eps2_delta" type="pair_of_sums"/>
+
+    <place name="guard_collect" type="control">
+      <token>
+        <value>
+          []
+        </value>
+      </token>
+    </place>
+
+    <place name="sums_id_eps1_selected" type="pair_of_sums"/>
+    <place name="sums_id_eps1_store" type="pair_of_sums"/>
+    <place name="sums_eps2_delta_selected" type="pair_of_sums"/>
+    <place name="sums_eps2_delta_store" type="pair_of_sums"/>
+
+    <transition name="select_id_eps1">
+      <use name="select_pair_eat"/>
+      <connect-in port="guard" place="guard_collect"/>
+      <connect-in port="x" place="sums_id_eps1"/>
+      <connect-out port="x" place="sums_id_eps1_selected"/>
+    </transition>
+
+    <transition name="select_eps2_delta">
+      <use name="select_pair_eat"/>
+      <connect-in port="guard" place="guard_collect"/>
+      <connect-in port="x" place="sums_eps2_delta"/>
+      <connect-out port="x" place="sums_eps2_delta_selected"/>
+    </transition>
+
+    <transition name="no_collect_id_eps1">
+      <use name="select_pair_produce"/>
+      <connect-out port="guard" place="guard_collect"/>
+      <connect-in port="x" place="sums_id_eps1_selected"/>
+      <connect-out port="x" place="sums_id_eps1_store"/>
+    </transition>
+
+    <transition name="no_collect_eps2_delta">
+      <use name="select_pair_produce"/>
+      <connect-out port="guard" place="guard_collect"/>
+      <connect-in port="x" place="sums_eps2_delta_selected"/>
+      <connect-out port="x" place="sums_eps2_delta_store"/>
+    </transition>
+
+    <defun name="collect">
+      <in name="sums_id_eps1" type="pair_of_sums"/>
+      <in name="sums_eps2_delta" type="pair_of_sums"/>
+      <out name="guard" type="control"/>
+      <out name="result" type="result"/>
+      <expression>
+        ${sums_id} := ${sums_id_eps1.one};
+        ${sums_eps1} := ${sums_id_eps1.two};
+        ${sums_eps2} := ${sums_eps2_delta.one};
+        ${sums_delta} := ${sums_eps2_delta.two};
+
+        ${r} := ${sums_id.param.r};
+        ${T} := ${sums_id.param.T};
+        ${runs} := (${sums_id.param.n} + ${sums_id.param.iterations_per_run} - 1L)
+                div ${sums_id.param.iterations_per_run};
+        ${n} := double(${runs} * ${sums_id.param.iterations_per_run});
+        ${epsilon} := ${sums_id.param.epsilon};
+        ${delta} := ${sums_id.param.delta};
+
+        ${fak} := e ** (-${r} * ${T});
+
+        ${pv_id} := ${fak} * ${sums_id.sum1} / ${n};
+        ${pv_eps1} := ${fak} * ${sums_eps1.sum1} / ${n};
+        ${pv_eps2} := ${fak} * ${sums_eps2.sum1} / ${n};
+        ${pv_delta} := ${fak} * ${sums_delta.sum1} / ${n};
+
+        ${variance} := (${sums_id.sum2} - ${sums_id.sum1} * ${sums_id.sum1} / ${n})
+                    / ${n} / ${n};
+
+        ${result.pv} := ${pv_id};
+        ${result.stddev} := ${fak} * sqrt (${variance});
+        ${result.Delta} := (${pv_eps1} - ${pv_id}) / ${epsilon};
+        ${result.Gamma} := (${pv_eps2} - 2.0 * ${pv_eps1} + ${pv_id}) / (${epsilon} * ${epsilon});
+        ${result.Vega} := (${pv_delta} - ${pv_id}) / ${delta};
+        ${result.rowID} := ${sums_id.param.rowID};
+
+        ${guard} := [];
+      </expression>
+      <condition>
+        ${sums_id_eps1.one.param.rowID} :eq: ${sums_eps2_delta.one.param.rowID}
+      </condition>
+    </defun>
+
+    <transition name="collect_id_eps1" priority="1">
+      <use name="collect"/>
+      <connect-in port="sums_id_eps1" place="sums_id_eps1_selected"/>
+      <connect-in port="sums_eps2_delta" place="sums_eps2_delta_store"/>
+      <connect-out port="guard" place="guard_collect"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+    <transition name="collect_eps2_delta" priority="1">
+      <use name="collect"/>
+      <connect-in port="sums_id_eps1" place="sums_id_eps1_store"/>
+      <connect-in port="sums_eps2_delta" place="sums_eps2_delta_selected"/>
+      <connect-out port="guard" place="guard_collect"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+    <place name="result" type="result"/>
+  </net>
+</defun>
