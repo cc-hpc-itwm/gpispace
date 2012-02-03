@@ -117,11 +117,16 @@ class TransitionVisitor: public boost::static_visitor<void> {
             Transition *transition = petriNet_->createTransition();
             transition->setName("normal_" + t.name() + "[" + condition.str() + "]");
             transition->setConditionAlwaysTrue(condition.str() == "true");
-            transition->setFiresFinitely(t.prop().get_maybe_val("fhg.pnetv.fires_finitely"));
-            if (transition->firesFinitely()) {
-                transition->setName(transition->name() + "[firesFinitely]");
-            }
             transition2transition_[tid] = transition;
+
+            /* If there is a limit on number of firings, implement it using an additional place. */
+            if (boost::optional<const we::type::property::value_type &> limit = t.prop().get_maybe_val("fhg.pnetv.firings_limit")) {
+                Place *place = petriNet_->createPlace();
+                place->setName("limit_" + t.name());
+                place->setInitialMarking(boost::lexical_cast<TokenCount>(*limit));
+
+                transition->addInputPlace(place);
+            }
 
             Place *activity = petriNet_->createPlace();
             activity->setName("activity_" + t.name());

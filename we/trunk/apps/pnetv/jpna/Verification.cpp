@@ -63,7 +63,7 @@ VerificationResult verify(const PetriNet &petriNet) {
     }
 
     foreach(const Transition *transition, petriNet.transitions()) {
-        if (!transition->conditionAlwaysTrue() && !transition->firesFinitely()) {
+        if (!transition->conditionAlwaysTrue()) {
             transitions.push_back(makeTransition(transition));
         }
     }

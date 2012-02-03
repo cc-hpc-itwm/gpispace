@@ -40,7 +40,7 @@
     <transition name="not_break">
       <properties name="fhg">
         <properties name="pnetv">
-          <property key="fires_finitely" />
+          <property key="firings_limit">1</property>
         </properties>
       </properties>
       <defun>
