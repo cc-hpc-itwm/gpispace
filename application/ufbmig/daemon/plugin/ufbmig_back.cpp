@@ -314,6 +314,11 @@ public:
 
   int initialize(std::string const &xml)
   {
+    if (progress)
+    {
+      progress->initialize ("ufbmig", 100);
+    }
+
     update_progress(0);
 
     if (state::UNINITIALIZED != m_state)
@@ -682,26 +687,19 @@ private:
   {
     if (progress)
     {
-      int value = progress->get("ufbmig");
-      if (value >= 0)
+      size_t value; size_t max;
+      if (0 == progress->current ("ufbmig", &value, &max))
       {
-        update_progress(value);
+        int perc = (int)( (float)value / (float)max * 100.);
+        update_progress(perc);
       }
     }
   }
 
   void update_progress (int v)
   {
-    if (m_frontend) m_frontend->update_progress(v);
-  }
-
-  void set_progress (int v)
-  {
-    if (progress)
-    {
-      progress->set("ufbmig", v);
-    }
-    update_progress (v);
+    if (m_frontend)
+      m_frontend->update_progress(v);
   }
 
   int allocate_file_descriptor ()

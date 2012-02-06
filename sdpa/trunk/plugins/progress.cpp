@@ -5,6 +5,8 @@
 #include <errno.h>
 
 #include <string>
+#include <limits>
+
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
@@ -37,42 +39,85 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
-  int set (const char *name, size_t value)
+  int set (std::string const &name, size_t value)
   {
-    if (! name)
+    assert (name);
+
+    size_t cur_value, max_value;
+    if (0 == current(name, &cur_value, &max_value))
+    {
+      if (value <= max_value)
+      {
+        m_kvs->put ( get_key_for_current (name)
+                   , value
+                   );
+        return 0;
+      }
+      else
+      {
+        return -EINVAL;
+      }
+    }
+    else
     {
       return -EINVAL;
     }
+  }
 
-    if (value > 100)
-      return -EOVERFLOW;
+  int initialize (std::string const &name, size_t max)
+  {
+    assert (name);
 
-    m_kvs->put( add_prefix(name)
-              , boost::lexical_cast<std::string>(value)
-              );
+    m_kvs->put ( get_key_for_current (name), 0);
+    m_kvs->put ( get_key_for_maximum (name), max);
 
     return 0;
   }
 
-  int get (const char *name) const
+  int current (std::string const &name, size_t *value, size_t *max) const
   {
-    if (! name)
+    assert (name);
+
+    if (value)
     {
-      return -EINVAL;
+      *value = m_kvs->get<size_t>(get_key_for_current (name), 0);
     }
 
-    try
+    if (max)
     {
-      return std::abs( boost::lexical_cast<int>(m_kvs->get( add_prefix(name)
-                                                          , "0"
-                                                          )
-                                               )
-                     );
+      *max = m_kvs->get<size_t>(get_key_for_maximum (name), 1);
     }
-    catch (std::exception const &ex)
+
+    return 0;
+  }
+
+  int finalize (std::string const &name)
+  {
+    assert (name);
+
+    size_t max;
+    if (0 == current (name, 0, &max))
     {
-      return -EINVAL;
+      return set (name, max);
     }
+
+    return -ESRCH;
+  }
+
+  int tick (std::string const &name, size_t step)
+  {
+    assert (name);
+
+    if (step > (size_t)std::numeric_limits<int>::max())
+    {
+      return -EOVERFLOW;
+    }
+    else
+    {
+      m_kvs->inc (get_key_for_current (name), (int)step);
+    }
+
+    return 0;
   }
 private:
   std::string add_prefix(std::string const &name) const
@@ -80,19 +125,45 @@ private:
     return m_prefix + "." + name;
   }
 
+  std::string get_key_for_current (std::string const &name) const
+  {
+    return m_prefix + "." + name + "." + "current";
+  }
+
+  std::string get_key_for_maximum (std::string const &name) const
+  {
+    return m_prefix + "." + name + "." + "maximum";
+  }
+
   kvs::KeyValueStore *m_kvs;
   std::string m_prefix;
 };
 
-int set_progress(const char *name, size_t value)
+size_t set_progress(const char *name, size_t value)
 {
-  return global_progress->set(name, value);
+  if (0 == global_progress->set(name, value))
+  {
+    return value;
+  }
+  else
+  {
+    return 0;
+  }
 }
 
-int get_progress(const char *name)
+size_t get_progress(const char *name)
 {
-  return global_progress->get(name);
+  size_t value; size_t max;
+  if (0 == global_progress->current(name, &value, &max))
+  {
+    return (int)( (float)value / max) * 100;
+  }
+  else
+  {
+    return 0;
+  }
 }
+
 
 EXPORT_FHG_PLUGIN( progress
                  , ProgressImpl
