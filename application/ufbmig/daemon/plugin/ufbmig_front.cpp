@@ -179,7 +179,7 @@ public:
       m_server = PSProMigIF::StartServer::getInstance(SERVER_APP_NAME);
       m_server->handleExceptionsByLibrary(false);
       m_server->init(info);
-      m_server->addCommunication (new PSProMigIF::ServerCommunicationListen());
+      m_server->addCommunication (new PSProMigIF::ServerCommunicationListen);
 
       MLOG(TRACE, "UfBMig frontend starting on port " << info.m_uPort);
 
