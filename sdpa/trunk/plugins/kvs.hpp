@@ -32,6 +32,26 @@ namespace kvs
         return dflt;
       }
     }
+
+    template <typename T>
+    T get(key_type const & k, T const & dflt) const
+    {
+      value_type v (this->get(k, boost::lexical_cast<std::string>(dflt)));
+      try
+      {
+        return boost::lexical_cast<T>(v);
+      }
+      catch (boost::bad_lexical_cast const &)
+      {
+        return dflt;
+      }
+    }
+
+    template <typename T>
+    void put (key_type const &k, T const & v)
+    {
+      return this->put(k, boost::lexical_cast<std::string>(v));
+    }
   };
 }
 
