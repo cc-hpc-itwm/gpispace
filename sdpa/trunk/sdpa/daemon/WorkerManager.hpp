@@ -101,7 +101,6 @@ namespace sdpa { namespace daemon {
           ar & worker_map_;
           ar & rank_map_;
           ar & owner_map_;
-          //ar & common_queue_;
       }
 
       friend class boost::serialization::access;
