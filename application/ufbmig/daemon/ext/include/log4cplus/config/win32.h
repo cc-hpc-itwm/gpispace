@@ -51,3 +51,4 @@
 
 #endif // _WIN32
 #endif // LOG4CPLUS_CONFIG_WIN32_HEADER_
+

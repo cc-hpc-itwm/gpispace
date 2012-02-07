@@ -42,7 +42,7 @@ namespace log4cplus {
 
         private:
             LOG4CPLUS_MUTEX_PTR_DECLARE _mutex;
-
+ 
             // disable copy
             Guard(const Guard&);
             Guard& operator=(const Guard&);
@@ -97,8 +97,9 @@ namespace log4cplus {
         };
 #endif // LOG4CPLUS_SINGLE_THREADED
 
-    } // end namespace thread
-} // end namespace log4cplus
+    } // end namespace thread 
+} // end namespace log4cplus 
 
 
 #endif // _LOG4CPLUS_THREADS_HEADER_
+

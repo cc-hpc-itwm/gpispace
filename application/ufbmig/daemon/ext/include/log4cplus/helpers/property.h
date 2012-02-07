@@ -59,7 +59,7 @@ namespace log4cplus {
             /**
              * Searches for the property with the specified key in this property
              * list. If the key is not found in this property list, the default
-             * property list, and its defaults, recursively, are then checked.
+             * property list, and its defaults, recursively, are then checked. 
              * The method returns <code>null</code> if the property is not found.
              */
             log4cplus::tstring getProperty(const log4cplus::tstring& key) const;
@@ -67,8 +67,8 @@ namespace log4cplus {
             /**
              * Searches for the property with the specified key in this property
              * list. If the key is not found in this property list, the default
-             * property list, and its defaults, recursively, are then checked.
-             * The method returns the default value argument if the property is
+             * property list, and its defaults, recursively, are then checked. 
+             * The method returns the default value argument if the property is 
              * not found.
              */
             log4cplus::tstring getProperty(const log4cplus::tstring& key,
@@ -113,3 +113,4 @@ namespace log4cplus {
 
 
 #endif // LOG4CPLUS_HELPERS_PROPERTY_HEADER_
+

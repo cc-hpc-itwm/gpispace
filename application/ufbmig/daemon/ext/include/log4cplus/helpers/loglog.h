@@ -39,7 +39,7 @@ namespace log4cplus {
          * the string "log4clus: ".
          */
         class LOG4CPLUS_EXPORT LogLog
-            : public virtual log4cplus::helpers::SharedObject
+            : public virtual log4cplus::helpers::SharedObject 
         {
         public:
           // Static methods
@@ -56,7 +56,7 @@ namespace log4cplus {
 
             /**
              * In quite mode no LogLog generates strictly no output, not even
-             * for errors.
+             * for errors. 
              *
              * @param quietMode A true for not
              */
@@ -103,3 +103,4 @@ namespace log4cplus {
 
 
 #endif // _LOG4CPLUS_HELPERS_LOGLOG
+

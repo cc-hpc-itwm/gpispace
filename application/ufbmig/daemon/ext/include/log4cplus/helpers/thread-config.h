@@ -109,3 +109,4 @@ namespace log4cplus {
 
 
 #endif // LOG4CPLUS_HELPERS_THREAD_CONFIG_HEADER_
+

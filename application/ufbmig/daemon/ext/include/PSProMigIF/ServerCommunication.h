@@ -27,7 +27,6 @@ namespace PSProMigIF
   class ServerCommunicationHelper
   {
     public:
-      virtual ~ServerCommunicationHelper() {}
       /*! @brief Create object of class ServerCommunication
        */
       virtual ServerCommunication* create();
@@ -174,7 +173,6 @@ namespace PSProMigIF
   class ServerCommunicationListenHelper: public ServerCommunicationHelper
   {
     public:
-      virtual ~ServerCommunicationListenHelper() {}
       /*! @brief Create object of class ServerCommunication
        */
       virtual ServerCommunication* create();
