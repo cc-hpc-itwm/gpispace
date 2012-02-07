@@ -88,13 +88,13 @@ namespace sdpa {
         //      Start       Event         		      Next        Action                Guard
         //      +-----------+--------------------- -+-----------+---------------------+-----
         _row<   Pending,    MSMDispatchEvent, 		Running >,
-        a_row<  Pending,    sdpa::events::CancelJobEvent, Cancelled,  &sm::action_cancel_job_from_pending >,
+        a_row<  Pending,    sdpa::events::CancelJobEvent, Cancelled,  		&sm::action_cancel_job_from_pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
         a_row<  Running,    sdpa::events::JobFinishedEvent,	 	Finished, 	&sm::action_job_finished>,
         a_row<  Running,    sdpa::events::JobFailedEvent, 	 	Failed, 	&sm::action_job_failed >,
         a_row<  Running,    sdpa::events::CancelJobEvent,      	Cancelling, &sm::action_cancel_job >,
         // only for the case when the cancelling is triggered by an internal component (eg. WE), not by the user
-        //a_row<  Running,    sdpa::events::CancelJobAckEvent, 	Cancelled,  &sm::action_cancel_job_ack >,
+        //a_row<  Running,  sdpa::events::CancelJobAckEvent, 	Cancelled,  &sm::action_cancel_job_ack >,
         _row<   Running,    MSMRescheduleEvent,                 Pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
         a_irow< Finished,   sdpa::events::DeleteJobEvent, 					&sm::action_delete_job >,
