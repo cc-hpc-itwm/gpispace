@@ -75,8 +75,8 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       // send a JobFinishedAckEvent back to the worker/slave
       JobFinishedAckEvent::Ptr ptrAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
-      // send the event to the slave
-      //SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
+      // send ack to the slave
+      SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
       sendEventToSlave(ptrAckEvt);
     }
 
