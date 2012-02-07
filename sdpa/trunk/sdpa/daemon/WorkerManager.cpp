@@ -31,33 +31,34 @@ using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
 {
+	lock_type lock(mtx_);
 	iter_last_worker_ = worker_map_.end();
 }
 
 WorkerManager::~WorkerManager()
 {
-	worker_map_.clear();
-	rank_map_.clear();
-	owner_map_.clear();
+	lock_type lock(mtx_);
 
-	DLOG(TRACE, "WorkerManager shutting down...");
-	LOG_IF( WARN
-        , worker_map_.size()
-        , "there are still entries left in the worker map: " << worker_map_.size()
-        );
+	SDPA_LOG_DEBUG( "WorkerManager shutting down...");
+	if( worker_map_.size() )
+	{
+		SDPA_LOG_WARN( "there are still entries left in the worker map: " << worker_map_.size());
+	}
 
-	LOG_IF( WARN
-        , rank_map_.size()
-        , "there are still entries left in the rank map: " << rank_map_.size()
-        );
-	LOG_IF( WARN
-        , owner_map_.size()
-        , "there are still entries left in the owner map: " << owner_map_.size()
-        );
-	LOG_IF( WARN
-        , common_queue_.size()
-        , "there are still entries left in the common queue: " << common_queue_.size()
-        );
+	if( rank_map_.size() )
+	{
+		SDPA_LOG_WARN( "there are still entries left in the rank map: " << rank_map_.size() );
+	}
+
+	if( owner_map_.size() )
+	{
+		SDPA_LOG_WARN( "there are still entries left in the owner map: " << owner_map_.size());
+	}
+
+	if( common_queue_.size() )
+	{
+		SDPA_LOG_WARN( "there are still entries left in the common queue: " << common_queue_.size());
+	}
 }
 
 /**
@@ -120,13 +121,6 @@ void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 			bFound = true;
 			throw WorkerAlreadyExistException(workerId, agent_uuid);
 		}
-
-		/*if( it->second->agent_uuid() == agent_uuid )
-		{
-		  //SDPA_LOG_ERROR("An worker with the uuid"<<agent_uuid<<" already exist into the worker map!");
-		  bFound = true;
-		  throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
-		}*/
 	}
 
 	// add TCpbSet HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -264,6 +258,7 @@ Worker::worker_id_t WorkerManager::getOwnerId(const sdpa::job_id_t& job_id) thro
 
 const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException)
 {
+	lock_type lock(mtx_);
   //find a job that prefers worker_id, with the highest preference degree
   const Worker::ptr_t& ptrWorker = findWorker(worker_id);
 
@@ -329,6 +324,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 {
   //SDPA_LOG_DEBUG("Get the next job ...");
 
+	lock_type lock(mtx_);
   sdpa::job_id_t jobId;
 
   try {
@@ -396,6 +392,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
+	lock_type lock(mtx_);
   DLOG(TRACE, "Dispatch the job " << jobId.str() );
   /*SDPA_LOG_DEBUG( "Content of the common queue before: ");
   common_queue_.print();*/
@@ -406,9 +403,10 @@ void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 
 void WorkerManager::delete_job (sdpa::job_id_t const & job)
 {
+	lock_type lock(mtx_);
   if (common_queue_.erase(job))
   {
-    LOG(TRACE, "removed job from the central queue...");
+    SDPA_LOG_DEBUG("removed job from the central queue...");
   }
   else
   {
@@ -424,6 +422,7 @@ void WorkerManager::delete_job (sdpa::job_id_t const & job)
 
 void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
 {
+	lock_type lock(mtx_);
 	try {
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		// delete job from worker's queues
