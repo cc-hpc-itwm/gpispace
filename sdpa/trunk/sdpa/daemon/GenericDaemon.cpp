@@ -49,7 +49,7 @@ GenericDaemon::GenericDaemon( 	const std::string name,
 								unsigned int rank )
       : Strategy(name),
         SDPA_INIT_LOGGER(name),
-        ptr_job_man_(new JobManager()),
+        ptr_job_man_(new JobManager(name)),
         ptr_scheduler_(),
         ptr_workflow_engine_(NULL),
         m_nRank(rank),
@@ -696,7 +696,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
-  DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
+	SDPA_LOG_DEBUG("got job submission from " << e.from() << ": job-id := " << e.job_id());
   /*
    * job-id (ignored by the orchestrator, see below)
    * contains workflow description and initial tokens
@@ -751,18 +751,21 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       ptr_job_man_->findJob(e.job_id());
       // The job already exists -> generate an error message that the job already exists
 
-      MLOG(WARN, "The job with job-id: " << e.job_id()<<" does already exist (possibly recovered)!");
+      SDPA_LOG_WARN("The job with job-id: " << e.job_id()<<" does already exist! (possibly recovered)");
       if( e.from() != sdpa::daemon::WE ) //e.to())
       {
           ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
           sendEventToMaster(pErrorEvt);
       }
 
+      /*SDPA_LOG_DEBUG("Jobs to be scheduled: ");
+      scheduler()->printQ();*/
+
       return;
   }
   catch(const JobNotFoundException&)
   {
-      DLOG(TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
+	  SDPA_LOG_DEBUG( "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
   }
 
   JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
@@ -784,7 +787,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       // if it comes from outside set it as local
       if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() ) //e.to())
       {
-          LOG(DEBUG, "got new job from " << e.from() << " = " << job_id);
+    	  SDPA_LOG_DEBUG("got new job from " << e.from() << " = " << job_id);
           pJob->setType(Job::MASTER);
       }
 
@@ -892,14 +895,14 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
       {
         // TODO: maybe just disallow registration, it is an error, if we have two workers with the same name still active...
 
-    	  LOG(TRACE, "The worker manager already contains an worker with the same id (="<<ex.worker_id()<<") but with a different agent_uuid!" );
+    	  SDPA_LOG_DEBUG( "The worker manager already contains an worker with the same id (="<<ex.worker_id()<<") but with a different agent_uuid!" );
 
-          LOG(TRACE, "Re-schedule the jobs");
+    	  SDPA_LOG_DEBUG( "Re-schedule the jobs" );
           scheduler()->reschedule( worker_id );
-          LOG(TRACE,"Delete worker "<<worker_id);
+          SDPA_LOG_DEBUG( "Delete worker "<<worker_id );
 
           scheduler()->delWorker(worker_id);
-          LOG(TRACE, "Add worker"<<worker_id );
+          SDPA_LOG_DEBUG( "Add worker"<<worker_id );
 
           registerWorker(evtRegWorker);
       }
