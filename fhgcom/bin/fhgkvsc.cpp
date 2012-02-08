@@ -59,7 +59,7 @@ int main(int ac, char *av[])
     ("load,L", "reload the database on the server")
     ("list-all,l", "list all entries in the server")
     ("clear,C", "clear entries on the server")
-
+    ("term", "terminate a running kvs daemon")
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
     ("get,g", po::value<std::vector<std::string> >(&key_list), "get values from the key-value store")
     ("del,d", po::value<std::vector<std::string> >(&key_list), "delete entries from the key-value store")
@@ -118,6 +118,18 @@ int main(int ac, char *av[])
       client.save();
     }
     catch (std::exception const & ex)
+    {
+      std::cerr << "E: " << ex.what() << std::endl;
+      return EX_CONN;
+    }
+  }
+  else if (vm.count ("term"))
+  {
+    try
+    {
+      client.term (15, "client requested termination");
+    }
+    catch (std::exception const &ex)
     {
       std::cerr << "E: " << ex.what() << std::endl;
       return EX_CONN;

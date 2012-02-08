@@ -14,6 +14,7 @@ set (hdrs
   type.hpp
   value.hpp
   atomic.hpp
+  term.hpp
 )
 
 install(FILES ${hdrs}

@@ -173,6 +173,18 @@ namespace fhg
                     );
             DLOG(TRACE, "clear( "<< regexp << ") := " << m);
           }
+
+          void term (int code, std::string const & reason)
+          {
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::msg_term(code, reason)
+                    , m
+                    );
+            DLOG(TRACE, "term("<< code << ", " << reason << ") := " << m);
+          }
         private:
           mutable boost::recursive_mutex mtx_;
           mutable tcp_client kvs_;
