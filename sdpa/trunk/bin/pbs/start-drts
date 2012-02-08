@@ -234,6 +234,7 @@ cfg="$cfg -s plugin.logc.url=${logc_host}:${logc_port}"
 cfg="$cfg -s plugin.drts.name=$name"
 cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
+cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.max_reconnect_attempts -v 128)"
 
 # config values (gpi plugin)
 cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"

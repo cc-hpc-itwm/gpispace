@@ -4,7 +4,7 @@
 #
 
 # increment this value if anything config related changes!
-CONFIG_VERSION=9
+CONFIG_VERSION=10
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
@@ -78,6 +78,7 @@ DEFAULT_GPI_API="gpi.api.real"
 DEFAULT_KERNEL_LOAD_LAZY="true"
 DEFAULT_PLUGIN_GPI_STARTMODE="nowait"
 DEFAULT_PLUGIN_DRTS_BACKLOG="1"
+DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
 
 #
 # override defaults by:
@@ -572,6 +573,7 @@ EOF
     log "-: configuring plugins"
     put "plugin.gpi.startmode" $(get "plugin.gpi.startmode" "${DEFAULT_PLUGIN_GPI_STARTMODE:?}")
     put "plugin.drts.backlog" $(get "plugin.drts.backlog" "${DEFAULT_PLUGIN_DRTS_BACKLOG:?}")
+    put "plugin.drts.max_reconnect_attempts" $(get "plugin.drts.max_reconnect_attempts" "${DEFAULT_PLUGIN_DRTS_MAX_RECONNECT:?}")
 }
 
 function setup_topology ()
