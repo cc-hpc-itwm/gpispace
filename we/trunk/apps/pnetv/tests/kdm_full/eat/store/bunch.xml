@@ -1,0 +1,28 @@
+<defun>
+
+  <in name="N" type="long" place="N"/>
+  <in name="trigger" type="control" place="trigger"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+    <place name="N" type="long"/>
+    <place name="trigger" type="control"/>
+    <place name="done" type="control"/>
+    <place name="store_bunch" type="store_bunch" virtual="true"/>
+
+    <include-template href="eatN.xml"/>
+    <specialize name="eat_store_bunch" use="eatN">
+      <type-map replace="T" with="store_bunch"/>
+    </specialize>
+
+    <transition name="eat">
+      <use name="eat_store_bunch"/>
+      <place-map virtual="what" real="store_bunch"/>
+      <connect-in port="N" place="N"/>
+      <connect-in port="trigger" place="trigger"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+  </net>
+</defun>

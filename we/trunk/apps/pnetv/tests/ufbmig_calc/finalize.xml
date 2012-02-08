@@ -1,0 +1,64 @@
+<defun name="finalize">
+
+  <include-structs href="types.xml"/>
+
+  <in name="file_with_config" type="string" place="file_with_config"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+    <place name="file_with_config" type="string"/>
+    <place name="config" type="config"/>
+    <place name="done" type="control"/>
+
+    <transition name="read_config" inline="true">
+      <defun>
+	<in name="filename" type="string"/>
+	<out name="config" type="config"/>
+	<module name="ufbmig_done" function="read_config (filename, config)">
+	  <cinclude href="fhglog/fhglog.hpp"/>
+	  <cinclude href="util/rw.hpp"/>
+	  <code><![CDATA[
+	  MLOG (INFO, "reading config from file " << filename);
+
+	  ::ufbmig::util::serialize::read (filename, config);
+	  ]]></code>
+	</module>
+      </defun>
+      <connect-in port="filename" place="file_with_config"/>
+      <connect-out port="config" place="config"/>
+    </transition>
+
+    <transition name="finalize">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="done" type="control"/>
+        <module name="ufbmig_done" function="done finalize_ufbmig (config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/memory.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "finalize: " << config);
+
+            namespace vmem = ::ufbmig::util::memory::global;
+
+            vmem::free (config.handle.data.fine_any);
+            vmem::free (config.handle.data.coarse_mask);
+            vmem::free (config.handle.data.coarse_vel);
+            vmem::free (config.handle.data.output);
+            vmem::free (config.handle.data.output_meta);
+            vmem::free (config.handle.data.update);
+            vmem::free (config.handle.data.input);
+
+            vmem::free (config.handle.scratch.update);
+            vmem::free (config.handle.scratch.output);
+            vmem::free (config.handle.scratch.output_meta);
+
+            return control();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+
+</defun>

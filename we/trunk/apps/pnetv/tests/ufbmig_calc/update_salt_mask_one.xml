@@ -1,0 +1,355 @@
+<defun name="update_salt_mask_one">
+
+  <in name="file_with_config" type="string" place="file_with_config"/>
+  <in name="file_with_mask" type="string" place="file_with_mask"/>
+  <out name="config" type="config" place="config_out"/>
+
+  <net>
+    <place name="file_with_config" type="string"/>
+    <place name="file_with_mask" type="string"/>
+
+    <transition name="read_config" inline="true">
+      <defun>
+	<in name="filename" type="string"/>
+	<in name="mask" type="string"/>
+	<out name="config" type="config"/>
+	<module name="ufbmig_update_salt_mask" function="config read_config_one (filename, mask)">
+	  <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/memory.hpp"/>
+	  <cinclude href="util/rw.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="InterMig/intermigjob.h"/>
+          <cinclude href="InterMig/SDPA/src/modules.h"/>
+          <cinclude href="InterMig/SDPA/simulation/src/velocityhandler.h"/>
+	  <code><![CDATA[
+	  MLOG (INFO, "reading config from file " << filename);
+
+          namespace vmem = ::ufbmig::util::memory::global;
+          ::pnetc::type::config::config config;
+	  ::ufbmig::util::serialize::read (filename, config);
+
+          {
+	     MLOG (INFO, "reading mask from file " << mask);
+             Velocityhandler MyHandler;
+             const int ParallelJobs = config.num.nodes;
+             const long TransferSize = MyHandler.DeterminSaltMaskSize( mask );
+
+	     MLOG (INFO, "TransferSize =  " << TransferSize);
+             if ( TransferSize > config.size.alloc.compressed_mask)
+             {
+
+                if ( config.size.alloc.compressed_mask > 0 )
+                  vmem::free (config.handle.data.compressed_mask);
+                config.size.alloc.compressed_mask = TransferSize;
+                MLOG (INFO, "Alloc data.compressed_mask " << config.size.alloc.compressed_mask);
+                config.handle.data.compressed_mask
+                  = vmem::alloc (config.size.alloc.compressed_mask, "data.coarse_mask");
+             }
+             MyHandler.ReadSalttoMem( mask,
+                                      TransferSize,
+                                      static_cast<char*>(fvmGetShmemPtr()) + config.handle.shmem.free
+                                     );
+
+             MLOG(INFO, "Comunicate Compressed Mask");
+             waitComm ( fvmPutGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.data.compressed_mask)
+                         , 0
+                         , config.size.alloc.compressed_mask
+                         , config.handle.shmem.free
+                         , static_cast<fvmAllocHandle_t> (config.handle.scratch.compressed_mask)
+                       )
+                     );
+            }
+            ////////////////////////////////////////////////////////////
+            {
+               LOGGER;
+               std::stringstream LogFile;
+               LogFile << "/u/herc/merten/ISIM/Seis3D/InterMig/SDPA/simulation/out.log_update";
+               LOGGING_MODE = 1;
+               LOGGING_FILE_CREATE(LogFile.str().c_str());
+            }
+
+            InterMigJob Job;
+            sli_property_handler SLIHandler;
+
+            ////////////////////////////////////////////////////////////
+            {
+                  // prepare for GUI !!!
+                  Job.data_ext = true;
+               MLOG (INFO, "Reading configuration string " );
+               IM_Modules::deserializeJob(config.ConfigStringXML, Job, SLIHandler);
+             }
+
+            {
+               Velocityhandler MyHandler;
+               const int ParallelJobs = config.num.nodes;
+               MyHandler.Init( Job, ParallelJobs);
+               config.size.alloc.fine_any = MyHandler.GetFullParallelSize();
+
+               MLOG (INFO, "Alloc data.fine_any " << config.size.alloc.fine_any);
+               config.handle.data.fine_any
+                   = vmem::alloc (config.size.alloc.fine_any / config.num.nodes, "data.fine_any");
+
+               config.size.alloc.coarse_mask = MyHandler.GetParallelSize();
+               MLOG (INFO, "Alloc data.coarse_mask " << config.size.alloc.coarse_mask);
+               config.handle.data.coarse_mask
+                 = vmem::alloc (config.size.alloc.coarse_mask,
+               "data.coarse_mask");
+           }
+
+         MLOG(INFO, "read_config done");
+         return config;
+	  ]]></code>
+	</module>
+      </defun>
+      <connect-in port="filename" place="file_with_config"/>
+      <connect-in port="mask" place="file_with_mask"/>
+      <connect-out port="config" place="config_read"/>
+    </transition>
+
+    <place name="config_read" type="config"/>
+
+    <transition name="generate_m" inline="true">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="config" type="config"/>
+        <out name="m" type="long"/>
+        <out name="parallel" type="long"/>
+        <expression>
+           ${m} := ${config.num.nodes};
+           ${parallel} := ${config.num.nodes};
+         </expression>
+      </defun>
+      <connect-in port="config" place="config_read"/>
+      <connect-out port="config" place="config"/>
+      <connect-out port="m" place="m_in"/>
+      <connect-out port="parallel" place="parallel_in"/>
+    </transition>
+
+    <place name="m_in" type="long"/>
+    <place name="parallel_in" type="long"/>
+    <place name="config" type="config"/>
+
+    <place name="m" type="long"/>
+    <place name="m_gen" type="long"/>
+    <place name="parallel" type="long"/>
+    <place name="parallel_eat" type="long"/>
+    <place name="wait" type="long"/>
+    <place name="credit" type="control"/>
+    <place name="n_after" type="long"/>
+    <place name="n_before" type="long"/>
+    <place name="n_done" type="long"/>
+
+    <include-template href="lib/triple.xml"/>
+    <specialize name="triple_long" use="triple">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <include-template href="lib/dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="scatter_parallel" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="parallel_in"/>
+      <connect-out port="one" place="parallel"/>
+      <connect-out port="two" place="parallel_eat"/>
+    </transition>
+
+    <transition name="scatter_m" inline="true">
+      <use name="triple_long"/>
+      <connect-in port="in" place="m_in"/>
+      <connect-out port="one" place="m"/>
+      <connect-out port="two" place="m_gen"/>
+      <connect-out port="three" place="wait"/>
+    </transition>
+
+    <transition name="generate_credits" inline="true">
+      <include-function href="lib/sequence_control.xml"/>
+      <connect-in port="amount" place="parallel"/>
+      <connect-out port="out" place="credit"/>
+    </transition>
+
+    <transition name="generate" inline="true">
+      <include-function href="lib/sequence_bounded.xml"/>
+      <place-map virtual="credit" real="credit"/>
+      <connect-in port="amount" place="m_gen"/>
+      <connect-out port="out" place="n_before"/>
+    </transition>
+
+    <transition name="run">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="n" type="long"/>
+        <in name="m" type="long"/>
+        <out name="n" type="long"/>
+        <module name="ufbmig_update_salt_mask" function="run_one (config, n, m)">
+          <cinclude href="sstream"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="InterMig/checkreadintermigjob.h"/>
+          <cinclude href="InterMig/SDPA/src/modules.h"/>
+          <cinclude href="InterMig/SDPA/simulation/src/velocityhandler.h"/>
+          <code><![CDATA[
+              MLOG(INFO, "STARTING  " << n << " of " << m);
+
+              ////////////////////////////////////////////////////////////
+              {
+                 LOGGER;
+                 std::stringstream LogFile;
+                 LogFile << "/u/herc/merten/ISIM/Seis3D/InterMig/SDPA/simulation/update_salt.log_" << n;
+                 LOGGING_MODE = 1;
+                 LOGGING_FILE_CREATE(LogFile.str().c_str());
+              }
+
+            InterMigJob Job;
+            sli_property_handler SLIHandler;
+
+            ////////////////////////////////////////////////////////////
+            {
+                  // prepare for GUI !!!
+                  Job.data_ext = true;
+
+               MLOG (INFO, "Reading configuration string " );
+               IM_Modules::deserializeJob(config.ConfigStringXML, Job, SLIHandler);
+            }
+
+           // *************** prepare salt model space
+            {
+                 Velocityhandler MyHandler;
+                 const int ParallelJobs = m;
+                 MLOG (INFO, "Init VelocityHandler for " <<  ParallelJobs << " jobs " );
+                 MyHandler.Init( Job, ParallelJobs);
+
+                 waitComm ( fvmGetGlobalData
+                     ( static_cast<fvmAllocHandle_t> (config.handle.data.compressed_mask)
+                      , 0
+                      , config.size.alloc.compressed_mask
+                      , config.handle.shmem.free
+                      , static_cast<fvmAllocHandle_t> (config.handle.scratch.compressed_mask)
+                    )
+                  );
+
+                 MLOG (INFO, "Call PreloadVelocityField for job " <<  n );
+                 MLOG (INFO, "The config is: " << config);
+                 MLOG (INFO, "Init VelocityHandler for " <<  ParallelJobs << " jobs " );
+                 MyHandler.PreloadSaltMask(Job,
+                                           n,
+                                           config.handle.data.coarse_vel,
+                                           config.handle.scratch.coarse_vel,
+                                           config.handle.data.coarse_mask,
+                                           config.handle.scratch.coarse_mask,
+                                           config.handle.data.fine_any,
+                                           config.handle.scratch.fine_any,
+                                           config.handle.shmem.free + config.size.alloc.compressed_mask,
+                                           static_cast<char*>(fvmGetShmemPtr()) + config.handle.shmem.free ,
+                                           config.size.alloc.compressed_mask
+                                          );
+
+            }
+            // ***********end  prepare model space
+
+
+              ///////////////////////////////////////////////////////////
+              //MigratorSimulation Mig;
+
+              //Mig.run(Job, SLIHandler, n, m);
+              //sleep(10);
+              MLOG (INFO, "Run done for job " <<  n );
+          ]]>
+          </code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-read port="m" place="m"/>
+      <connect-in port="n" place="n_before"/>
+      <connect-out port="n" place="n_after"/>
+    </transition>
+
+    <include-template href="lib/trigger_when.xml"/>
+    <specialize name="trigger_when_long" use="trigger_when">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="return_credit">
+      <use name="trigger_when_long"/>
+      <connect-in port="object" place="n_after"/>
+      <connect-out port="object" place="n_done"/>
+      <connect-out port="trigger" place="credit"/>
+    </transition>
+
+    <include-template href="lib/wait.xml"/>
+    <specialize name="wait" use="wait">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="wait" inline="true">
+      <use name="wait"/>
+      <place-map virtual="wait" real="wait"/>
+      <connect-in port="trigger" place="n_done"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+    <place name="done" type="control"/>
+
+    <include-template href="lib/eatN.xml"/>
+    <specialize name="eatN_control" use="eatN">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="eat_credits" inline="true">
+      <use name="eatN_control"/>
+      <place-map virtual="what" real="credit"/>
+      <connect-in port="N" place="parallel_eat"/>
+      <connect-in port="trigger" place="done"/>
+      <connect-out port="done" place="eaten"/>
+    </transition>
+
+    <place name="eaten" type="control"/>
+    <place name="config_out" type="config"/>
+
+    <transition name="finalize">
+      <defun>
+ 	<in name="config" type="config"/>
+        <in name="m" type="long"/>
+        <in name="eaten" type="control"/>
+        <out name="config" type="config"/>
+	<module name="ufbmig_update_salt_mask" function="finalize_one (config, m, eaten)">
+	  <cinclude href="fhglog/fhglog.hpp"/>
+	  <cinclude href="util/rw.hpp"/>
+          <cinclude href="InterMig/SDPA/src/modules.h"/>
+          <cinclude href="InterMig/SDPA/simulation/src/velocityhandler.h"/>
+	  <code><![CDATA[
+	  MLOG (INFO, "finalize ");
+
+          InterMigJob Job;
+          sli_property_handler SLIHandler;
+
+          ////////////////////////////////////////////////////////////
+          MLOG (INFO, "Reading configuration stream " );
+          {
+             IM_Modules::deserializeJob(config.ConfigStringXML, Job, SLIHandler);
+          }
+
+          Velocityhandler MyHandler;
+          const int ParallelJobs = m;
+          MLOG (INFO, "Init VelocityHandler for " <<  ParallelJobs << " jobs " );
+          MyHandler.Init( Job, ParallelJobs);
+
+          MLOG (INFO, "Call MyHandler.WriteToFile " );
+          int ierr = MyHandler.WriteToFile( Job.VelFile );
+	  ]]></code>
+	</module>
+<!--        <expression>
+          ${finalized} := []
+        </expression> -->
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="m" place="m"/>
+      <connect-in port="eaten" place="eaten"/>
+      <connect-out port="config" place="config_out"/>
+    </transition>
+
+
+  </net>
+</defun>
