@@ -100,7 +100,12 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 	//therefore, I can delete the job from the job map
 	ostringstream os;
 	try {
+
+		SDPA_LOG_INFO("Got acknowledgment for the finished job " << pEvt->job_id() << "!");
+
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+
+		SDPA_LOG_INFO("Delete the job " << pEvt->job_id() << " from the JobManager!");
 		// delete it from the map when you receive a JobFinishedAckEvent!
 		ptr_job_man_->deleteJob(pEvt->job_id());
 	}
@@ -113,7 +118,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
 	}
 	catch(...) {
-        SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
+        SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted, unexpected error!");
 	}
 }
 

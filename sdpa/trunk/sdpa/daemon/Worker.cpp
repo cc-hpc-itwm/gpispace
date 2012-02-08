@@ -118,13 +118,23 @@ sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (No
 void Worker::print()
 {
 	// print the values of the restored job queue
-	std::cout<<name()<<"'s queues:"<<std::endl;
-	std::cout<<"There are still "<<pending().size()<<" pending jobs:"<<std::endl;
-	pending().print();
-	std::cout<<"There are still "<<submitted().size()<<" submitted jobs:"<<std::endl;
-	submitted().print();
-	std::cout<<"There are still "<<acknowledged().size()<<" acknowledged jobs:"<<std::endl;
-	acknowledged().print();
+	if(pending().size())
+	{
+		SDPA_LOG_INFO("There are still "<<pending().size()<<" pending jobs:");
+		pending().print();
+	}
+
+	if( submitted().size() )
+	{
+		SDPA_LOG_INFO("There are still "<<submitted().size()<<" submitted jobs:");
+		submitted().print();
+	}
+
+	if(acknowledged().size())
+	{
+		SDPA_LOG_INFO("There are still "<<acknowledged().size()<<" acknowledged jobs:");
+		acknowledged().print();
+	}
 }
 
 unsigned int Worker::nbAllocatedJobs()

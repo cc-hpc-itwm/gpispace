@@ -62,7 +62,7 @@ namespace sdpa {
 
 	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
 	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
-        virtual const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+    virtual const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
 	virtual void addWorker( const Worker::worker_id_t& workerId,
 							const unsigned int& capacity = 10000,
@@ -113,7 +113,6 @@ namespace sdpa {
 	void serialize(Archive& ar, const unsigned int)
 	{
 		ar & boost::serialization::base_object<Scheduler>(*this);
-		//ar & jobs_to_be_scheduled;
 		ar & ptr_worker_man_;
 	}
 
@@ -122,6 +121,8 @@ namespace sdpa {
 	virtual void print();
 	virtual void removeRecoveryInconsistencies();
     void removeWorkers() { ptr_worker_man_->removeWorkers(); }
+
+    void printQ() { jobs_to_be_scheduled.print(); }
 
 protected:
 	JobQueue jobs_to_be_scheduled;

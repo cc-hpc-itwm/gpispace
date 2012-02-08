@@ -92,6 +92,8 @@ namespace daemon {
 	 virtual bool useRequestModel()=0;
 	 virtual void setUseRequestModel(bool) = 0;
 
+	 virtual void printQ() = 0;
+
 	 friend class boost::serialization::access;
 	 template<class Archive>
 		void serialize(Archive&, const unsigned int /* file version */){}

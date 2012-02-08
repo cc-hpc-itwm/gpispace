@@ -45,19 +45,18 @@ namespace sdpa { namespace daemon {
 	  typedef boost::recursive_mutex mutex_type;
 	  typedef boost::unique_lock<mutex_type> lock_type;
 	  typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
-	  //typedef std::map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
 	  typedef job_map_t::iterator iterator;
 
 	  iterator begin() { return job_map_.begin(); }
 	  iterator end() { return job_map_.end(); }
 
-	  JobManager();
+	  JobManager(const std::string& str="");
 	  virtual ~JobManager();
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& ) throw (JobNotFoundException) ;
 	  // virtual Job::ptr_t getJob();
 	  virtual void addJob(const sdpa::job_id_t&, const Job::ptr_t& ) throw(JobNotAddedException) ;
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
-	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
+
 	  std::vector<sdpa::job_id_t> getJobIDList();
 
 	  unsigned int countMasterJobs();
@@ -78,7 +77,6 @@ namespace sdpa { namespace daemon {
 	  void serialize(Archive& ar, const unsigned int)
 	  {
 		  ar & BOOST_SERIALIZATION_NVP(job_map_);
-		  ar & BOOST_SERIALIZATION_NVP(job_map_marked_for_del_);
 	  }
 
 	  /*
@@ -87,19 +85,16 @@ namespace sdpa { namespace daemon {
 	  {
 		  // note, version is always the latest when saving
 		  ar  & job_map_;
-		  ar  & job_map_marked_for_del_;
 	  }
 
 	  template<class Archive>
 	  void load(Archive & ar, const unsigned int version)
 	  {
 		  ar & job_map_;
-		  ar & job_map_marked_for_del_;
 	  }
 
 	  BOOST_SERIALIZATION_SPLIT_MEMBER()
 	  */
-
 
 	  friend class boost::serialization::access;
 	  // only for testing purposes!
@@ -110,7 +105,6 @@ namespace sdpa { namespace daemon {
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  job_map_t job_map_marked_for_del_;
 	  mutable mutex_type mtx_;
       boost::condition_variable_any free_slot_;
       requirements_map_t job_requirements_;

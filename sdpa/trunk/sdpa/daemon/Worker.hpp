@@ -182,9 +182,6 @@ namespace sdpa { namespace daemon {
         ar & location_;
     	ar & tstamp_;
     	ar & last_time_served_;
-    	ar & pending_;
-    	ar & submitted_;
-    	ar & acknowledged_;
 	}
 
     friend class boost::serialization::access;
