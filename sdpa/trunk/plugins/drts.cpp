@@ -61,6 +61,7 @@ public:
   FHG_PLUGIN_START()
   {
     m_shutting_down = false;
+    m_reconnect_counter = 0;
     m_my_name =      fhg_kernel()->get("name", "drts");
     try
     {
@@ -1044,17 +1045,18 @@ private:
       if (m_max_reconnect_attempts)
       {
         lock_type lock_reconnect_rounter (m_reconnect_counter_mutex);
-        if (m_reconnect_counter >= m_max_reconnect_attempts)
+        if (m_reconnect_counter < m_max_reconnect_attempts)
+        {
+          ++m_reconnect_counter;
+        }
+        else
         {
           MLOG(WARN, "still not connected after " << m_reconnect_counter << " trials: shutting down");
           fhg_kernel()->shutdown();
-          return;
         }
-        ++m_reconnect_counter;
       }
     }
-
-    if (at_least_one_disconnected)
+    else if (at_least_one_disconnected)
     {
       fhg_kernel()->schedule ( "connect"
                              , boost::bind( &DRTSImpl::start_connect
