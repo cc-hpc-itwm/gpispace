@@ -61,6 +61,7 @@ public:
   FHG_PLUGIN_START()
   {
     m_shutting_down = false;
+    m_reconnect_counter = 0;
     m_my_name =      fhg_kernel()->get("name", "drts");
     try
     {
@@ -79,6 +80,16 @@ public:
     catch (std::exception const &ex)
     {
       MLOG(ERROR, "could not parse bool from `terminate_on_failure' config key: " << ex.what());
+      FHG_PLUGIN_FAILED(EINVAL);
+    }
+
+    try
+    {
+      m_max_reconnect_attempts = fhg_kernel()->get<std::size_t>("max_reconnect_attempts", "0");
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "could not parse 'max_reconnect_attempts' from config: " << ex.what());
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -369,21 +380,29 @@ public:
   virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e)
   {
     map_of_masters_t::iterator master_it (m_masters.find(e->from()));
-    if (master_it != m_masters.end() && !master_it->second->is_connected())
+    if (master_it != m_masters.end())
     {
-      MLOG(INFO, "successfully connected to " << master_it->second->name());
-      master_it->second->is_connected(true);
-      master_it->second->reset_poll_rate();
-
-      notify_capabilities_to_master (master_it->second);
-      resend_outstanding_events (master_it->second);
-
-      m_connected_event.notify(master_it->second->name());
-
-      // simulate a new job to wake up requestor thread if necessary
+      if (!master_it->second->is_connected())
       {
-        lock_type lock(m_job_arrived_mutex);
-        m_job_arrived.notify_all();
+        MLOG(INFO, "successfully connected to " << master_it->second->name());
+        master_it->second->is_connected(true);
+        master_it->second->reset_poll_rate();
+
+        notify_capabilities_to_master (master_it->second);
+        resend_outstanding_events (master_it->second);
+
+        m_connected_event.notify(master_it->second->name());
+
+        // simulate a new job to wake up requestor thread if necessary
+        {
+          lock_type lock(m_job_arrived_mutex);
+          m_job_arrived.notify_all();
+        }
+      }
+
+      {
+        lock_type lock_reconnect_counter (m_reconnect_counter_mutex);
+        m_reconnect_counter = 0;
       }
     }
   }
@@ -991,6 +1010,7 @@ private:
   void start_connect ()
   {
     bool at_least_one_disconnected = false;
+    bool not_connected_to_anyone = true;
 
     for ( map_of_masters_t::iterator master_it (m_masters.begin())
         ; master_it != m_masters.end()
@@ -1014,9 +1034,29 @@ private:
 
         at_least_one_disconnected = true;
       }
+      else
+      {
+        not_connected_to_anyone = false;
+      }
     }
 
-    if (at_least_one_disconnected)
+    if (not_connected_to_anyone)
+    {
+      if (m_max_reconnect_attempts)
+      {
+        lock_type lock_reconnect_rounter (m_reconnect_counter_mutex);
+        if (m_reconnect_counter < m_max_reconnect_attempts)
+        {
+          ++m_reconnect_counter;
+        }
+        else
+        {
+          MLOG(WARN, "still not connected after " << m_reconnect_counter << " trials: shutting down");
+          fhg_kernel()->shutdown();
+        }
+      }
+    }
+    else if (at_least_one_disconnected)
     {
       fhg_kernel()->schedule ( "connect"
                              , boost::bind( &DRTSImpl::start_connect
@@ -1107,7 +1147,10 @@ private:
     }
     catch (std::exception const &ex)
     {
-      MLOG(WARN, "could not send " << evt->str() << " to " << evt->to() << ": " << ex.what());
+      MLOG_EVERY_N( WARN
+                  , 10
+                  , "could not send " << evt->str() << " to " << evt->to() << ": " << ex.what()
+                  );
       return -ESRCH;
     }
 
@@ -1137,6 +1180,8 @@ private:
   fhg::com::message_t m_message;
   std::string m_my_name;
   map_of_masters_t m_masters;
+  std::size_t m_max_reconnect_attempts;
+  std::size_t m_reconnect_counter;
 
   event_queue_t m_event_queue;
   boost::shared_ptr<boost::thread>    m_event_thread;
@@ -1147,6 +1192,7 @@ private:
   mutable mutex_type m_job_computed_mutex;
   condition_type     m_job_computed;
   mutable mutex_type m_job_arrived_mutex;
+  mutable mutex_type m_reconnect_counter_mutex;
   condition_type     m_job_arrived;
 
   fhg::util::thread::event<std::string> m_connected_event;

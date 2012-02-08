@@ -19,6 +19,7 @@
 #include <fhgcom/kvs/message/req_list.hpp>
 #include <fhgcom/kvs/message/clear.hpp>
 #include <fhgcom/kvs/message/atomic.hpp>
+#include <fhgcom/kvs/message/term.hpp>
 
 namespace fhg
 {
@@ -38,6 +39,7 @@ namespace fhg
                               , list
                               , clear
                               , msg_inc
+                              , msg_term
                               > type;
       }
     }

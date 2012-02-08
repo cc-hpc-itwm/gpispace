@@ -153,6 +153,18 @@ namespace fhg
             return list;
           }
 
+          fhg::com::kvs::message::type
+          operator () (fhg::com::kvs::message::msg_term const & m)
+          {
+            DLOG(TRACE, "term (" << m.code() << ", " << m.reason() << ")");
+            if (15 == m.code())
+            {
+              MLOG(INFO, "termination requested by client: code := " << m.code());
+              kill (getpid(), SIGTERM);
+            }
+            return fhg::com::kvs::message::error ();
+          }
+
           template <typename T>
           fhg::com::kvs::message::type
           operator () (T const &)
