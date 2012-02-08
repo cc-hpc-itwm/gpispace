@@ -181,7 +181,7 @@ public:
       m_server->init(info);
       m_server->addCommunication (new PSProMigIF::ServerCommunicationListen);
 
-      MLOG(TRACE, "UfBMig frontend starting on port " << info.m_uPort);
+      //MLOG(TRACE, "UfBMig frontend starting on port " << info.m_uPort);
 
       // start server control object
       m_server->start(false); // false == do not kill running apps
