@@ -133,6 +133,8 @@ void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 
 	if(worker_map_.size() == 1)
 		iter_last_worker_ = worker_map_.begin();
+
+	cond_feed_workers.notify_one();
 }
 
 void WorkerManager::balanceWorkers()
@@ -393,31 +395,28 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
 	lock_type lock(mtx_);
-  DLOG(TRACE, "Dispatch the job " << jobId.str() );
-  /*SDPA_LOG_DEBUG( "Content of the common queue before: ");
-  common_queue_.print();*/
-  common_queue_.push(jobId);
-  /*SDPA_LOG_DEBUG( "Content of the common queue adterwards: " );
-  common_queue_.print();*/
+	SDPA_LOG_DEBUG( "Dispatch the job " << jobId.str() );
+	common_queue_.push(jobId);
+
+	cond_feed_workers.notify_one();
 }
 
 void WorkerManager::delete_job (sdpa::job_id_t const & job)
 {
 	lock_type lock(mtx_);
-  if (common_queue_.erase(job))
-  {
-    SDPA_LOG_DEBUG("removed job from the central queue...");
-  }
-  else
-  {
-    for( worker_map_t::iterator iter (worker_map_.begin())
-       ; iter != worker_map_.end()
-       ; iter++
-       )
-    {
-      iter->second->delete_job(job);
-    }
-  }
+	if (common_queue_.erase(job))
+	{
+		SDPA_LOG_DEBUG("removed job from the central queue...");
+	}
+	else
+	{
+		for( worker_map_t::iterator iter (worker_map_.begin()); iter != worker_map_.end(); iter++ )
+		{
+			iter->second->delete_job(job);
+		}
+	}
+
+	cond_feed_workers.notify_one();
 }
 
 void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
@@ -436,15 +435,17 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
 	catch(WorkerNotFoundException const &) {
 		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
 	}
+
+	cond_feed_workers.notify_one();
 }
 
 const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWorkerFoundException)
 {
-  lock_type lock(mtx_);
-  if( rank_map().empty() )
-    throw NoWorkerFoundException();
+	lock_type lock(mtx_);
+	if( rank_map().empty() )
+		throw NoWorkerFoundException();
 
-  return rank_map().at(rank);
+	return rank_map().at(rank);
 }
 
 void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
@@ -464,6 +465,8 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
         rank_map_.erase (it);
         break;
     }
+
+  cond_feed_workers.notify_one();
 }
 
 void WorkerManager::make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id )
@@ -497,21 +500,6 @@ void WorkerManager::getWorkerList(std::list<std::string>& workerList)
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
     workerList.push_back(iter->second->name());
 }
-
-
-// order this list according to the service time
-// first element -> the one with the smallest service time
-/*void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
-{
-	lock_type lock(mtx_);
-	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-	{
-		Worker::ptr_t ptrWorker = iter->second;
-		if(ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
-			workerList.push_back(ptrWorker->name());
-	}
-}
-*/
 
 void WorkerManager::setLastTimeServed(const sdpa::worker_id_t& workerId, const sdpa::util::time_type& last_time_srv )
 {
@@ -761,5 +749,22 @@ void WorkerManager::removeWorkers()
 	worker_map_.clear();
 	rank_map_.clear();
 	owner_map_.clear();
+}
+
+sdpa::worker_id_list_t WorkerManager::waitForFreeWorkers(const boost::posix_time::time_duration &timeout)
+{
+	lock_type lock(mtx_);
+	sdpa::worker_id_list_t workerList;
+	getWorkerListNotFull(workerList);
+
+	const boost::system_time t = boost::get_system_time() + timeout;
+
+	while( workerList.empty() )
+	{
+		cond_feed_workers.timed_wait(lock, t);
+		getWorkerListNotFull(workerList);
+	}
+
+	return workerList;
 }
 

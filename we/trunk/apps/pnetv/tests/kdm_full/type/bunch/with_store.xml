@@ -1,0 +1,14 @@
+<structs>
+
+  <struct name="bunch_with_store">
+    <field name="bunch" type="bunch"/>
+    <field name="store" type="store_bunch"/>
+
+    <struct name="volumes">
+      <struct name="seen">
+        <field name="id" type="bitset"/>
+      </struct>
+    </struct>
+  </struct>
+
+</structs>

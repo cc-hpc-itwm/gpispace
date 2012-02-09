@@ -37,6 +37,8 @@ namespace sdpa { namespace daemon {
       typedef sdpa::shared_ptr<WorkerManager> ptr_t;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
+      typedef boost::condition_variable_any condition_type;
+
       typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
       typedef boost::unordered_map<unsigned int, Worker::worker_id_t> rank_map_t;
       typedef boost::unordered_map<sdpa::job_id_t, Worker::worker_id_t > owner_map_t;
@@ -133,6 +135,8 @@ namespace sdpa { namespace daemon {
       const owner_map_t& owner_map() const { return owner_map_; }
       owner_map_t& owner_map() { return owner_map_; }
 
+      sdpa::worker_id_list_t waitForFreeWorkers( const boost::posix_time::time_duration& );
+
 protected:
       worker_map_t  worker_map_;
       rank_map_t    rank_map_;
@@ -144,6 +148,7 @@ protected:
       Worker::JobQueue common_queue_;
 
       mutable mutex_type mtx_;
+      condition_type cond_feed_workers;
   };
 }}
 

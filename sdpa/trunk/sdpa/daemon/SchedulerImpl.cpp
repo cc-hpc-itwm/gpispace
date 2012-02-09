@@ -545,7 +545,8 @@ void SchedulerImpl::start(IComm* p)
       return;
   }
 
-  m_thread = boost::thread(boost::bind(&SchedulerImpl::run, this));
+  m_thread_run = boost::thread(boost::bind(&SchedulerImpl::run, this));
+  m_thread_feed = boost::thread(boost::bind(&SchedulerImpl::feed_workers, this));
 
 
   SDPA_LOG_DEBUG("Scheduler thread started ...");
@@ -553,20 +554,26 @@ void SchedulerImpl::start(IComm* p)
 
 void SchedulerImpl::stop()
 {
-  bStopRequested = true;
-  m_thread.interrupt();
-  DLOG(TRACE, "Scheduler thread before join ...");
-  m_thread.join();
+	bStopRequested = true;
 
-  DLOG(TRACE, "Scheduler thread joined ...");
+  	m_thread_feed.interrupt();
+  	DLOG(TRACE, "Feeding thread before join ...");
+  	m_thread_feed.join();
+  	DLOG(TRACE, "Feeding thread before join ...");
 
-  if( jobs_to_be_scheduled.size() )
-  {
-	  SDPA_LOG_WARN("There are still "<<jobs_to_be_scheduled.size()<<" jobs to be scheduled: " );
-	  jobs_to_be_scheduled.print();
-  }
+  	m_thread_run.interrupt();
+  	DLOG(TRACE, "Scheduler thread before join ...");
+  	m_thread_run.join();
 
-  //ptr_comm_handler_ = NULL;
+  	DLOG(TRACE, "Scheduler thread joined ...");
+
+  	if( jobs_to_be_scheduled.size() )
+  	{
+  		SDPA_LOG_WARN("There are still "<<jobs_to_be_scheduled.size()<<" jobs to be scheduled: " );
+  		jobs_to_be_scheduled.print();
+  	}
+
+  	//ptr_comm_handler_ = NULL;
 }
 
 bool SchedulerImpl::post_request(const MasterInfo& masterInfo, bool force)
@@ -624,19 +631,21 @@ void SchedulerImpl::check_post_request()
 
 void SchedulerImpl::feed_workers()
 {
-	sdpa::worker_id_list_t workerList;
-	ptr_worker_man_->getWorkerListNotFull(workerList);
+	while(!bStopRequested)
+	{
+		sdpa::worker_id_list_t workerList = ptr_worker_man_->waitForFreeWorkers(m_timeout);
 
-	if (ptr_comm_handler_)
-	{
-		BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
+		if (ptr_comm_handler_)
 		{
-			ptr_comm_handler_->serve_job(worker_id);
+			BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
+			{
+				ptr_comm_handler_->serve_job(worker_id);
+			}
 		}
-	}
-	else
-	{
-		MLOG(FATAL, "STRANGE: Invalid communication handler while it is not supposed to be!");
+		else
+		{
+			MLOG(FATAL, "STRANGE: Invalid communication handler while it is not supposed to be!");
+		}
 	}
 }
 
@@ -658,10 +667,7 @@ void SchedulerImpl::run()
 			check_post_request(); // eventually, post a request to the master
 
 			if( numberOfWorkers()>0 )
-			{
 				forceOldWorkerJobsTermination();
-				feed_workers(); //eventually, feed some workers
-			}
 
 			sdpa::job_id_t jobId   = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
