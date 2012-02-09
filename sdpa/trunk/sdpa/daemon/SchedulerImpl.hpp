@@ -129,7 +129,8 @@ protected:
 	WorkerManager::ptr_t ptr_worker_man_;
 
 	bool bStopRequested;
-	boost::thread m_thread;
+	boost::thread m_thread_run;
+	boost::thread m_thread_feed;
 
 	mutable sdpa::daemon::IComm* ptr_comm_handler_;
 	SDPA_DECLARE_LOGGER();
