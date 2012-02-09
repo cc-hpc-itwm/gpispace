@@ -1,0 +1,52 @@
+<defun>
+
+  <in name="config_file" type="string" place="config_file"/>
+  <in name="memsizeGPI" type="long" place="memsizeGPI"/>
+
+  <out name="config" type="config" place="config"/>
+  <out name="assoc" type="map" place="assoc"/>
+  <out name="volumes_left" type="long" place="volumes_left"/>
+
+  <net>
+
+    <place name="config_file" type="string"/>
+    <place name="memsizeGPI" type="long"/>
+    <place name="config" type="config"/>
+    <place name="assoc" type="map"/>
+    <place name="volumes_left" type="long"/>
+
+    <transition name="init">
+      <defun>
+        <in name="config_file" type="string"/>
+        <in name="memsizeGPI" type="long"/>
+        <out name="config" type="config"/>
+        <module name="kdmfull"
+                function="config initialize (config_file, memsizeGPI)"/>
+      </defun>
+      <connect-in port="config_file" place="config_file"/>
+      <connect-in port="memsizeGPI" place="memsizeGPI"/>
+      <connect-out port="config" place="config_initialized"/>
+    </transition>
+
+    <place name="config_initialized" type="config"/>
+
+    <transition name="set_derived">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="config" type="config"/>
+        <out name="left" type="long"/>
+        <out name="assoc" type="map"/>
+        <expression>
+          ${assoc} := [||];
+          ${left} := ${config.offsets}
+                   * ${config.per.offset.volumes}
+                   * ${config.per.volume.copies};
+        </expression>
+      </defun>
+      <connect-in port="config" place="config_initialized"/>
+      <connect-out port="config" place="config"/>
+      <connect-out port="assoc" place="assoc"/>
+      <connect-out port="left" place="volumes_left"/>
+    </transition>
+  </net>
+</defun>
