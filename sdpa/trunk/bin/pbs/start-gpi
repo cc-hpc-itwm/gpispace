@@ -114,8 +114,15 @@ if [ $do_copy = "true" ] ; then
 	fi
     fi
     if [ -w "$gpi_bin_path" ] ; then
-	mv -f "${gpi_bin_path}/${gpi_bin}~"
-	cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
+	test -e "${gpi_bin_path}/${gpi_bin}" && {
+	    log "I: creating backup of old ${gpi_bin}"
+	    mv -f "${gpi_bin_path}/${gpi_bin}" "${gpi_bin_path}/${gpi_bin}~"
+	}
+	cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}" && {
+	    log "I: installed new ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
+	} || {
+	    log "W: could not update ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
+	}
 	chmod ug=rx,o= "${gpi_bin_path}/${gpi_bin}"
     else
 	log "W: privileged path $gpi_bin_path does not exist, or i am not allowed to write to it!"
