@@ -1104,7 +1104,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 				sdpa::worker_id_t worker_id(error.from());
 				SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-dispatch it now!");
 
-				scheduler()->reassign(worker_id, jobId);
+				scheduler()->reschedule(worker_id);
 			}
 		}
     	default:
