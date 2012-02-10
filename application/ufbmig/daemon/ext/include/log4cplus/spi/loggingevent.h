@@ -27,18 +27,18 @@ namespace log4cplus {
     namespace spi {
         /**
          * The internal representation of logging events. When an affirmative
-         * decision is made to log then a <code>InternalLoggingEvent</code>
-         * instance is created. This instance is passed around to the
+         * decision is made to log then a <code>InternalLoggingEvent</code> 
+         * instance is created. This instance is passed around to the 
          * different log4cplus components.
          *
-         * This class is of concern to those wishing to extend log4cplus.
+         * This class is of concern to those wishing to extend log4cplus. 
          */
         class LOG4CPLUS_EXPORT InternalLoggingEvent {
         public:
           // Ctors
              /**
               * Instantiate a LoggingEvent from the supplied parameters.
-              *
+              * 
               * @param logger   The logger of this event.
               * @param ll       The LogLevel of this event.
               * @param message  The message of this event.
@@ -58,7 +58,7 @@ namespace log4cplus {
                 thread(),
                 timestamp(log4cplus::helpers::Time::gettimeofday()),
                 file( (  filename
-                       ? LOG4CPLUS_C_STR_TO_TSTRING(filename)
+                       ? LOG4CPLUS_C_STR_TO_TSTRING(filename) 
                        : log4cplus::tstring()) ),
                 line(line),
                 threadCached(false),
@@ -122,8 +122,8 @@ namespace log4cplus {
 
 
           // public methods
-            /** The logger of the logging event. It is set by
-             *  the LoggingEvent constructor.
+            /** The logger of the logging event. It is set by 
+             *  the LoggingEvent constructor. 
 	     */
             const log4cplus::tstring& getLoggerName() const { return loggerName; }
 
@@ -131,12 +131,12 @@ namespace log4cplus {
             LogLevel getLogLevel() const { return ll; }
 
             /** The nested diagnostic context (NDC) of logging event. */
-            const log4cplus::tstring& getNDC() const {
+            const log4cplus::tstring& getNDC() const { 
                 if(!ndcCached) {
                     ndc = log4cplus::getNDC().get();
                     ndcCached = true;
                 }
-                return ndc;
+                return ndc; 
             }
 
             /** The name of thread in which this logging event was generated. */
@@ -145,7 +145,7 @@ namespace log4cplus {
                     thread = LOG4CPLUS_GET_CURRENT_THREAD_NAME;
                     threadCached = true;
                 }
-                return thread;
+                return thread; 
             }
 
             /** The number of milliseconds elapsed from 1/1/1970 until logging event
@@ -157,7 +157,7 @@ namespace log4cplus {
 
             /** The is the line where this log statement was written */
             int getLine() const { return line; }
-
+ 
           // public operators
             log4cplus::spi::InternalLoggingEvent&
             operator=(const log4cplus::spi::InternalLoggingEvent& rhs);
@@ -187,3 +187,4 @@ namespace log4cplus {
 } // end namespace log4cplus
 
 #endif // _LOG4CPLUS_SPI_INTERNAL_LOGGING_EVENT_HEADER_
+

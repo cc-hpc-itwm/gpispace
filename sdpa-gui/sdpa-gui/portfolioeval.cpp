@@ -17,7 +17,6 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <QDir>
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/version.hpp>
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
@@ -63,14 +62,14 @@ Portfolio::~Portfolio()
 
 void Portfolio::Init()
 {
-  QString strBackendDir(SDPA_PREFIX);
+  QString strBackendDir("/usr/local");
   char *sdpa_home = std::getenv("SDPA_HOME");
   if (sdpa_home)
   {
     strBackendDir = sdpa_home;
   }
 
-  m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
+  m_pUi->m_editBackendFile->setText(strBackendDir + "/libexec/apps/asian/bin/Asian");
   m_pUi->m_editWorkflowFile->setText(strBackendDir + "/libexec/apps/asian/asian.pnet");
   m_pUi->m_nThreads->setValue(1);
 

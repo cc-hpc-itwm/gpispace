@@ -1,4 +1,7 @@
 # -*- mode: cmake; -*-
+find_package (MMGR REQUIRED)
+include_directories (${MMGR_INCLUDE_DIR})
+
 set (pc-srcs pc.cpp)
 
 ADD_LIBRARY(fvm-pc-fake ${pc-srcs})

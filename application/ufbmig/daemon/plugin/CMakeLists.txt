@@ -41,6 +41,7 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/ob
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
                  ${HWLOC_SHARED_LIBRARY}
                  ${LIBIRC_LIBRARY}
+		 ${LOG4CPP_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}

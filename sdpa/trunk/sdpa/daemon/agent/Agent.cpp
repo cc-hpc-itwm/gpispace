@@ -125,14 +125,14 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		  // exactly    that    transition    should    be
 		  // executed. I.e. all this code should go to the
 		  // FSM callback routine.
-		  if( hasWorkflowEngine() )
-		  {
-			  DMLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
-			  ptr_workflow_engine_->finished(actId, output);
-		  }
+
+
+		  DLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
+		  ptr_workflow_engine_->finished(actId, output);
+
 
 		  try {
-			  DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
+                    DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
 			  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
 		  }
 		  catch(WorkerNotFoundException const &)
@@ -145,18 +145,15 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 			  SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
 		  }
 
-		  if( hasWorkflowEngine() )
+		  try {
+			  //delete it also from job_map_
+                    DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
+			  ptr_job_man_->deleteJob(pEvt->job_id());
+		  }
+		  catch(JobNotDeletedException const &)
 		  {
-			  try {
-				  //delete it also from job_map_
-				  DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-				  ptr_job_man_->deleteJob(pEvt->job_id());
-			  }
-			  catch(JobNotDeletedException const &)
-			  {
-				  SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
-				  throw;
-			  }
+			  SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+			  throw;
 		  }
 	  }
 	  catch(std::exception const & ex)
@@ -758,6 +755,7 @@ void Agent::recover( std::istream& ifs )
         ia >> ptr_workflow_engine_;*/
         ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
         SDPA_LOG_INFO("The list of recoverd masters is: ");
+        lock_type lock(mtx_master_);
         BOOST_FOREACH(sdpa::MasterInfo& m, m_arrMasterInfo)
         {
         	SDPA_LOG_INFO(m.name());

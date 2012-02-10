@@ -58,9 +58,11 @@ namespace expr
       op_stack_t op_stack;
       nd_stack_t nd_stack;
       nd_stack_t tmp_stack;
+      bool _constant_folding;
 
       nd_it_t begin () { return nd_stack.begin(); }
       nd_it_t end () { return nd_stack.end(); }
+      const bool& constant_folding() { return _constant_folding; }
 
     public:
       nd_const_it_t begin () const { return nd_stack.begin(); }
@@ -78,9 +80,16 @@ namespace expr
             );
 
     public:
-      parser (const std::string & input, eval::context & context);
-      parser (const std::string & input);
-      parser (const nd_stack_t & seq);
+      parser ( const std::string & input
+             , eval::context & context
+             , const bool& constant_folding = true
+             );
+      parser ( const std::string & input
+             , const bool& constant_folding = true
+             );
+      parser ( const nd_stack_t & seq
+             , const bool& constant_folding = true
+             );
 
       // the parsed expressions in the correct order
       bool empty (void) const { return nd_stack.empty(); }
@@ -111,7 +120,9 @@ namespace expr
     };
 
     std::ostream& operator << (std::ostream&, const parser&);
-    std::string parse_result (const std::string&);
+    std::string parse_result ( const std::string&
+                             , const bool& constant_folding = false
+                             );
   }
 }
 

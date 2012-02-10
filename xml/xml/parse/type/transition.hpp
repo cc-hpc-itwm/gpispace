@@ -76,6 +76,30 @@ namespace xml
       // ******************************************************************* //
 
       template<typename Fun>
+      class transition_distribute_function : public boost::static_visitor<void>
+      {
+      private:
+        const state::type& _state;
+        const functions_type& _functions;
+
+      public:
+        transition_distribute_function ( const state::type& state
+                                       , const functions_type& functions
+                                       )
+          : _state (state)
+          , _functions (functions)
+        {}
+
+        void operator () (use_type&) const { return; }
+        void operator () (Fun& fun) const
+        {
+          fun.distribute_function (_state, _functions);
+        }
+      };
+
+      // ******************************************************************* //
+
+      template<typename Fun>
       class transition_sanity_check : public boost::static_visitor<void>
       {
       private:
@@ -296,6 +320,21 @@ namespace xml
           boost::apply_visitor ( transition_sanity_check<function_type> (state)
                                , f
                                );
+        }
+
+        // ***************************************************************** //
+
+        void distribute_function ( const state::type& state
+                                 , const functions_type& functions
+                                 )
+        {
+          boost::apply_visitor
+            ( transition_distribute_function<function_type>
+              ( state
+              , functions
+              )
+            , f
+            );
         }
 
         // ***************************************************************** //

@@ -44,7 +44,7 @@ target_link_libraries(
 install (TARGETS pnetc
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)
 
 if (ENABLE_STATIC_BINARIES)
   add_executable(pnetc.static pnetc.cpp ${headerlist_hpp})
@@ -58,7 +58,7 @@ if (ENABLE_STATIC_BINARIES)
   install (TARGETS pnetc.static
     RUNTIME
     DESTINATION bin
-    COMPONENT applications)
+    COMPONENT runtime)
 endif (ENABLE_STATIC_BINARIES)
 
 install (FILES ${hdrs} ${headerlist_hpp}

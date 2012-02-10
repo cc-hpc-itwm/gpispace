@@ -350,7 +350,7 @@ namespace fhg
 
       WSIG( tv
           , function::open
-          , ITVAL(XMLTYPE(net_type::functions_type))
+          , ITVAL(XMLTYPE(functions_type))
           , fun
           )
       {
@@ -529,7 +529,7 @@ namespace fhg
       }
       WSIG( tv
           , net::functions
-          , XMLTYPE(net_type::functions_type)
+          , XMLTYPE(functions_type)
           , functions
           )
       {

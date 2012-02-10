@@ -18,8 +18,8 @@ namespace PSProMigIF
   struct StartupInfo
   {
       StartupInfo() :
-        m_nWaitForConnectionTimeout(30),
-        m_nConnectToTimeout(30) // default value
+        m_nConnectToTimeout(30), // default value
+            m_nWaitForConnectionTimeout(30)
       {
         sprintf(m_sHostname, "%s", localhost().c_str());
         sprintf(m_sSSHHostname, "%s", localhost().c_str());
@@ -124,9 +124,9 @@ namespace PSProMigIF
       {
         return std::string("Not Running");
       }
-    default:
-      return std::string("Unknown Server State");
     }
+
+    return std::string("Unknown Server State");
   }
 
   /*! @brief Server stop reason

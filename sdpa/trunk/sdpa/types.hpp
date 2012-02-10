@@ -25,7 +25,7 @@ namespace sdpa {
 	typedef worker_id_t agent_id_t;
 	typedef std::string status_t;
 	typedef std::string job_result_t;
-	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
+	typedef std::vector<sdpa::worker_id_t> worker_id_list_t;
 	typedef worker_id_list_t agent_id_list_t;
 	typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
@@ -39,11 +39,21 @@ namespace sdpa {
 		MasterInfo(const std::string& name  = "", bool registered = false )
 		: name_(name)
 		, registered_(registered)
+		, nConsecNetFailCnt_(0)
+		, nConsecRegAttempts_(0)
 		{}
 
 		std::string name() const { return name_; }
 		bool is_registered() const { return registered_; }
 		void set_registered(bool b) { registered_ = b; }
+
+		unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
+		void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
+		void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
+
+		unsigned int getConsecRegAttempts() { return nConsecRegAttempts_;}
+		void incConsecRegAttempts() { nConsecRegAttempts_++;}
+		void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
 
 		template <class Archive>
 		void serialize(Archive& ar, const unsigned int)
@@ -53,10 +63,11 @@ namespace sdpa {
 	private:
 		std::string name_;
 		bool registered_;
+		unsigned int nConsecNetFailCnt_;
+		unsigned int nConsecRegAttempts_;
 	};
 
 	typedef std::vector<MasterInfo> master_info_list_t;
-
 }
 
 #endif

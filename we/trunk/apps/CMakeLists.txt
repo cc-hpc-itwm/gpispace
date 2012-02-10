@@ -21,7 +21,7 @@ foreach (target ${simple_targets})
   install (TARGETS ${target}
            RUNTIME
            DESTINATION bin
-           COMPONENT applications
+           COMPONENT runtime
           )
 
   if (ENABLE_STATIC_BINARIES)
@@ -39,7 +39,9 @@ foreach (target ${simple_targets})
     install (TARGETS ${target}.static
              RUNTIME
              DESTINATION bin
-             COMPONENT applications
+             COMPONENT runtime
             )
   endif (ENABLE_STATIC_BINARIES)
 endforeach (target ${simple_targets})
+
+add_subdirectory(pnetv)

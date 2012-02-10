@@ -327,8 +327,8 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-	//kernel->load_plugin (TESTS_WFE_TEST_PLUGIN_PATH);
-	//kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
+	// kernel->load_plugin (TESTS_WFE_TEST_PLUGIN_PATH);
+	// kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
 
@@ -369,6 +369,7 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	ptrAgent0->shutdown(strBackupAgent0);
+	ptrAgent0.reset();
 	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
@@ -417,15 +418,16 @@ BOOST_AUTO_TEST_CASE( testStop_AgentWithDrts_push)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	ptrAgent->shutdown(strBackupAgent);
+	ptrAgent.reset();
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrRecAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 
 	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	ptrRecAgent->start_agent(false, strBackupAgent);
+	ptrRecAgent0->start_agent(false, strBackupAgent);
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
@@ -433,12 +435,11 @@ BOOST_AUTO_TEST_CASE( testStop_AgentWithDrts_push)
 	drts_0->stop();
 	drts_0_thread.join();
 
-	ptrRecAgent->shutdown();
+	ptrRecAgent0 ->shutdown();
 	ptrOrch->shutdown();
 
 	LOG( DEBUG, "The test case testStop_AgentNoWE_req terminated!");
 }
-
 
 BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 {
@@ -468,6 +469,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	ptrAgent->shutdown(strBackupAgent);
+	ptrAgent.reset();
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
@@ -518,6 +520,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	ptrAgent->shutdown(strBackupAgent);
+	ptrAgent.reset();
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
@@ -568,6 +571,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	ptrAgent->shutdown(strBackupAgent);
+	ptrAgent.reset();
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
@@ -625,6 +629,7 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Req)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	ptrAgent0->shutdown(strBackupAgent0);
+	ptrAgent0.reset();
 	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
@@ -683,6 +688,7 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	ptrAgent0->shutdown(strBackupAgent0);
+	ptrAgent0.reset();
 	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
@@ -705,6 +711,5 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 
 	LOG( DEBUG, "The test case testStop_2AgentsAndDrts_Push_RealWE terminated!");
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()

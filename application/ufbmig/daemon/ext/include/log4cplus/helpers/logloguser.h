@@ -38,7 +38,7 @@ namespace log4cplus {
 
           // public methods
             LogLog& getLogLog() const;
-
+            
           // operators
             LogLogUser& operator=(const LogLogUser& rhs);
 
@@ -52,3 +52,4 @@ namespace log4cplus {
 
 
 #endif // _LOG4CPLUS_HELPERS_LOGLOG_USER
+

@@ -12,6 +12,8 @@ struct fhg_plugin_descriptor_t
   const char *license;
   const char *depends;
   const char *featurekey;
+  const char *buildrev;
+  const char *compiler;
 };
 
 #endif

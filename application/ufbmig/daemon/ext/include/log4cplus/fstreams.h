@@ -40,3 +40,4 @@
 #endif // UNICODE
 
 #endif // LOG4CPLUS_FSTREAMS_HEADER_
+

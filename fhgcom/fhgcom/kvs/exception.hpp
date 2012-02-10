@@ -12,11 +12,21 @@ namespace fhg
     {
       namespace exception
       {
-        struct no_such : public std::runtime_error
+        struct generic : public std::runtime_error
+        {
+          explicit
+          generic (std::string const & msg)
+            : std::runtime_error (msg)
+          {}
+
+          virtual ~generic() throw () {}
+        };
+
+        struct no_such : public generic
         {
           explicit
           no_such (std::string const & name)
-            : std::runtime_error ("no_such: " + name)
+            : generic ("no_such: " + name)
             , name_(name)
           {}
 

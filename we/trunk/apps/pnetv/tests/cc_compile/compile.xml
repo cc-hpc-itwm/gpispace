@@ -1,0 +1,98 @@
+<defun name="compile">
+  <in name="compiler" type="string" />
+  <in name="params" type="string" />
+  <in name="working_directory" type="string" />
+  <in name="build_environment" type="string" />
+
+  <out name="exit_code" type="long" />
+  <out name="std_out" type="string" />
+  <out name="std_err" type="string" />
+
+  <module name="sdpacc" function="compile ( compiler
+                                          , params
+                                          , working_directory
+                                          , build_environment
+                                          , exit_code
+                                          , std_out
+                                          , std_err
+                                          )">
+    <cinclude href="fhglog/fhglog.hpp"/>
+    <cinclude href="errno.h"/>
+    <cinclude href="unistd.h"/>
+    <cinclude href="limits.h"/>
+    <cinclude href="stdlib.h"/>
+    <cinclude href="string.h"/>
+    <cinclude href="stdexcept"/>
+    <cinclude href="fstream"/>
+    <cinclude href="process/process.hpp"/>
+    <ld flag="-lprocess"/>
+    <code><![CDATA[
+        LOG (INFO, "SDPACC compile");
+
+        LOG (INFO, "===> compiler := " << compiler);
+        LOG (INFO, "===> params   := " << params);
+	LOG (INFO, "===> working directory := " << working_directory);
+	LOG (INFO, "===> build environment := " << build_environment);
+
+	char buf[PATH_MAX];
+	getcwd(buf, sizeof(buf));
+
+	if (chdir(working_directory.c_str()) < 0)
+	{
+	  int ec = errno;
+	  LOG(ERROR, "could not change directory to " << working_directory << ": " << strerror(ec));
+	  throw std::runtime_error("change directory failed: " + working_directory);
+	}
+
+	const std::string cmd (compiler + " " + params);
+
+	LOG (INFO,"====> comand := " << cmd);
+
+        process::circular_buffer buf_stderr;
+	char std_out_buf[1 << 20];
+	memset (std_out_buf, 0, sizeof(std_out_buf));
+
+	process::execute_return_type exec_result;
+        try
+        {
+	  exec_result =
+	    process::execute ( cmd
+                             , process::const_buffer (0, 0)
+                             , process::buffer(&std_out_buf[0], sizeof(std_out_buf))
+                             , buf_stderr
+                             , process::file_const_buffer_list ()
+                             , process::file_buffer_list ()
+                             );
+        }
+        catch (std::exception const &ex)
+        {
+          LOG(ERROR, "compilation failed: " << ex.what());
+	  exec_result.exit_code = -EFAULT;
+        }
+
+	exit_code = exec_result.exit_code;
+
+        std_out_buf[sizeof(std_out_buf)-1] = '\0';
+        std_out = std_out_buf;
+	MLOG(INFO, "stdout = " << std_out);
+
+	if (! buf_stderr.empty())
+	{
+	  buf_stderr[buf_stderr.size()-1] = '\0';
+	  std_err = std::string(&buf_stderr[0], &buf_stderr[buf_stderr.size()-1]);
+	  MLOG(WARN, "stderr = " << std_err);
+        }
+
+        if (exit_code != 0)
+        {
+          LOG(ERROR, "SDPACC failed: " << exit_code);
+        }
+	else
+	{
+          LOG (INFO, "SDPACC done");
+        }
+
+	chdir(buf);
+    ]]></code>
+  </module>
+</defun>

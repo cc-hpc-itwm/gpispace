@@ -37,24 +37,22 @@
 using namespace std;
 using namespace sdpa::daemon;
 
-JobManager::JobManager(): SDPA_INIT_LOGGER("sdpa::daemon::JobManager")  {
+JobManager::JobManager(const std::string& name)
+	: SDPA_INIT_LOGGER(name.empty()?"sdpa::daemon::JobManager":name)
+{
 
 }
 
 JobManager::~JobManager(){
-  LOG_IF( WARN
-        , job_map_.size()
-        , "there are still entries left in the job-map: " << job_map_.size()
-        );
-  LOG_IF( WARN
-        , job_map_marked_for_del_.size()
-        , "there are still entries left in the mark-for-deletion map: " << job_map_marked_for_del_.size()
-        );
-  LOG_IF( WARN
-        , job_requirements_.size()
-        , "there are still entries left in the preferences map: " << job_requirements_.size()
-        );
 
+	if( job_map_.size())
+	{
+		SDPA_LOG_WARN( "there are still entries left in the job-map: " << job_map_.size() );
+		print();
+	}
+
+	if( job_requirements_.size() )
+		SDPA_LOG_WARN( "there are still entries left in the requirements map: " << job_requirements_.size() );
 }
 
 //helpers
@@ -83,22 +81,6 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) th
       throw JobNotAddedException(job_id);
 }
 
-void JobManager::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)
-{
-    lock_type lock(mtx_);
-    ostringstream os;
-    job_map_t::iterator it;
-    bool bsucc = false;
-
-    pair<job_map_t::iterator, bool> ret_pair(it, bsucc);
-    pair<sdpa::job_id_t, Job::ptr_t> job_pair(job_id, pJob);
-
-    ret_pair =  job_map_marked_for_del_.insert(job_pair);
-
-    if(! ret_pair.second)
-      throw JobNotAddedException(job_id);
-}
-
 void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
 {
     lock_type lock(mtx_);
@@ -109,7 +91,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
 
     if(rc)
     {
-        DLOG(TRACE, "Erased the requirements of the job "<<job_id.str());
+      DLOG(TRACE, "Erased the requirements of the job "<<job_id.str());
     }
 
     job_map_t::size_type ret = job_map_.erase(job_id);
@@ -119,7 +101,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
     }
     else
     {
-        DLOG(TRACE, "Erased job "<<job_id.str()<<" from job map");
+      DLOG(TRACE, "Erased the job "<<job_id.str()<<" from job map");
     }
 
     free_slot_.notify_one();
@@ -162,11 +144,10 @@ const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
     if( job_requirements_.empty() )
             throw NoJobRequirements(jobId);
 
-    SDPA_LOG_DEBUG("Locate the preferences of the job "<<jobId.str());
+    DLOG(TRACE, "Locate the preferences of the job "<<jobId.str());
     requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
     if( it_req == job_requirements_.end() )
             throw NoJobRequirements(jobId);
-
 
     return it_req->second;;
 }
@@ -240,7 +221,6 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
 void JobManager::reScheduleAllMasterJobs(IComm* pComm)
 {
 	lock_type lock(mtx_);
-	job_id_list_t listJobsToRemove;
 
 	for ( job_map_t::iterator it = job_map_.begin(); it != job_map_.end(); ++it )
 	{
@@ -254,18 +234,7 @@ void JobManager::reScheduleAllMasterJobs(IComm* pComm)
 			&& status.find("Failed") 	== std::string::npos
 			&& status.find("Cancelled") == std::string::npos )
 		{
-			if( pComm->hasWorkflowEngine() )
-			{
-				if(	pJob->isMasterJob() )
-				{
-					SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
-					pJob->Reschedule();
-
-					SDPA_LOG_INFO("Re-schedule the job"<<pJob->id());
-					pComm->schedule(job_id);
-				}
-			}
-			else
+			if( pComm->hasWorkflowEngine() && pJob->isMasterJob() || !pComm->hasWorkflowEngine() )
 			{
 				SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
 				pJob->Reschedule();

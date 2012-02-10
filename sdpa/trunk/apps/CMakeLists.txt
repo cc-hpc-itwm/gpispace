@@ -26,7 +26,7 @@ target_link_libraries(orchestrator ${daemon_libs})
 install(TARGETS orchestrator
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)
 
 #
 # Agent
@@ -37,7 +37,7 @@ target_link_libraries(agent ${daemon_libs})
 install(TARGETS agent
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)
 
 
 set ( client_libs
@@ -59,14 +59,14 @@ target_link_libraries(sdpac ${client_libs})
 install(TARGETS sdpac
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)
 
 add_executable(bsdpac blocking_client.cpp)
 target_link_libraries(bsdpac ${client_libs})
 install(TARGETS bsdpac
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  )
 
 #add_executable(suca submit_and_cancel.cpp)
 #target_link_libraries(suca ${client_libs})

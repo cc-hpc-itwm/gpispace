@@ -41,8 +41,10 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 		// since it was not rejected, no error occurred etc ....
 		//find the job ptrJob and call
 		Job::ptr_t ptrJob = ptr_job_man_->findJob(pEvent->job_id());
+
 		ptrJob->Dispatch();
-		ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
+        ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
+
 	} catch(WorkerNotFoundException const &)
 	{
 		SDPA_LOG_ERROR("job submission could not be acknowledged: worker " << worker_id << " not found!!");
@@ -98,7 +100,12 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 	//therefore, I can delete the job from the job map
 	ostringstream os;
 	try {
+
+		SDPA_LOG_INFO("Got acknowledgment for the finished job " << pEvt->job_id() << "!");
+
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+
+		SDPA_LOG_INFO("Delete the job " << pEvt->job_id() << " from the JobManager!");
 		// delete it from the map when you receive a JobFinishedAckEvent!
 		ptr_job_man_->deleteJob(pEvt->job_id());
 	}
@@ -111,7 +118,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
 	}
 	catch(...) {
-        SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
+        SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted, unexpected error!");
 	}
 }
 

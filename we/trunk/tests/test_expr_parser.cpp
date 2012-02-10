@@ -6,6 +6,7 @@
 #include "timer.hpp"
 
 #include <iostream>
+#include <iomanip>
 
 #include <cstdlib>
 
@@ -55,19 +56,32 @@ int main (int ac, char **)
     typedef expr::eval::context context_t;
     context_t context;
     std::string input;
+    bool constant_folding (true);
 
     while (read_line(input))
       {
         switch (input[0])
           {
-          case '?': cout << context; break;
+          case '?':
+            cout << "constant_folding: "
+                 << std::boolalpha << constant_folding << std::noboolalpha
+                 << endl;
+            cout << "context: " << endl << context;
+            break;
+          case 'f':
+          case 'F':
+            constant_folding = not constant_folding;
+            cout << "constant_folding: "
+                 << std::boolalpha << constant_folding << std::noboolalpha
+                 << endl;
+            break;
           case '#': context.clear(); cout << "context deleted" << endl; break;
           default:
             try
               {
                 typedef expr::parse::parser parser_t;
 
-                parser_t parser (input);
+                parser_t parser (input, constant_folding);
 
                 while (!parser.empty())
                   {

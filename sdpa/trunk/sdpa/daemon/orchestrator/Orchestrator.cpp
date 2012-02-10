@@ -54,7 +54,7 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
 	BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
 	{
-		DLOG(TRACE, "Notify the subscriber "<<subscriber);
+          // DLOG(TRACE, "Notify the subscriber "<<subscriber);
 		ptrEvt->to() = pair_subscr_joblist.first;
 		sendEventToMaster(ptrEvt);
 	}
@@ -75,8 +75,8 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       // send a JobFinishedAckEvent back to the worker/slave
       JobFinishedAckEvent::Ptr ptrAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
-      // send the event to the slave
-      //SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
+      // send ack to the slave
+      SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
       sendEventToSlave(ptrAckEvt);
     }
 

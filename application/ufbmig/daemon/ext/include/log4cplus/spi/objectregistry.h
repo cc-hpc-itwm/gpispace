@@ -86,3 +86,4 @@ namespace log4cplus {
 
 
 #endif // LOG4CPLUS_SPI_OBJECT_REGISTRY_HEADER_
+

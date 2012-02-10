@@ -70,11 +70,6 @@ include_directories (${FhgLog_INCLUDE_DIR})
 find_package(UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
 
-if (WITH_FAKE_PC)
-  find_package (MMGR REQUIRED)
-  include_directories (${MMGR_INCLUDE_DIR})
-endif (WITH_FAKE_PC)
-
 # Reflect the package structure
 add_subdirectory(fvm)
 add_subdirectory(fvm-pc)
@@ -87,23 +82,23 @@ endif (BUILD_TESTING)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg @ONLY)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile
-  DESTINATION etc/gpi
-  COMPONENT configurations
-  RENAME key
-  )
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey
-  DESTINATION etc/gpi
-  COMPONENT configurations
-  RENAME shm
-  )
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile
+#   DESTINATION etc/gpi
+#   COMPONENT configurations
+#   RENAME key
+#   )
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey
+#   DESTINATION etc/gpi
+#   COMPONENT configurations
+#   RENAME shm
+#   )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
-  DESTINATION etc/gpi
-  COMPONENT configurations
-  RENAME sdpa-gpi.cfg.tpl)
+# install(FILES ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
+#   DESTINATION etc/gpi
+#   COMPONENT configurations
+#   RENAME sdpa-gpi.cfg.tpl)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg
-  DESTINATION etc/gpi
-  COMPONENT configurations
-  RENAME sdpa-gpi.fake.cfg.tpl)
+# install(FILES ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg
+#   DESTINATION etc/gpi
+#   COMPONENT configurations
+#   RENAME sdpa-gpi.fake.cfg.tpl)

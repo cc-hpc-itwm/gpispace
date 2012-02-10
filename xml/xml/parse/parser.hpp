@@ -1546,7 +1546,12 @@ namespace xml
     {
       state.set_input (input);
 
-      return state.generic_parse<type::function_type> (parse_function, input);
+      type::function_type f
+        (state.generic_parse<type::function_type> (parse_function, input));
+
+      f.distribute_function (state);
+
+      return f;
     }
 
     inline type::function_type

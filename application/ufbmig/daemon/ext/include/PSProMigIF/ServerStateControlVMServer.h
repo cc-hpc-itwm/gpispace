@@ -18,11 +18,11 @@ namespace ServerCommunication
 	/*! @brief Constructor
 	 */
 	ServerStateControlVMServer(void);
-
+	        
 	/*! @brief Destructor
 	 */
 	~ServerStateControlVMServer(void);
-
+	
         /*! @brief Start the server control
          */
         virtual void busy(void) throw (ServerStateControlException);

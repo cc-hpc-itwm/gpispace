@@ -31,12 +31,12 @@ class PSProSocket
 {
   public:
     PSProSocket();
-    virtual ~PSProSocket();
+    ~PSProSocket();
     //int frontend_connect(const char *hn,const int port,const unsigned int timeout_secs);
     int connect(const char *_hostname, const unsigned int _port , const int _timeout_secs, bool _bMilliseconds = false);
-
+    
     int setConnected(int _fd, const struct sockaddr_in* _pClientAddress);
-
+    
     virtual void close();
 
     /// This one replaces rem_recv_buffer2(), but with proper error handling
@@ -82,11 +82,13 @@ class PSProSocket
     int32_t m_remoteIpAddress;
     std::string m_remoteHostname;
     mutable pthread_mutex_t m_socketMutex;
+    mutable pthread_mutex_t m_recvMutex;
+    mutable pthread_mutex_t m_sendMutex;
     unsigned long m_ulWrittenBytes;
 };
 
 
-/** The PSProServerSocket class implements a TCP server socket, which can accept new TCP connections on a
+/** The PSProServerSocket class implements a TCP server socket, which can accept new TCP connections on a 
  *  given port (via bindSocket() + waitForConnection().
  *
  * Attention: this class is not thread-safe, it should  be handled by just one thread in some mainloop-like code.
@@ -98,7 +100,7 @@ class PSProServerSocket
     PSProServerSocket();
     ~PSProServerSocket();
 
-    /** This is basically socket() + bind() + listen(). It sets up a TCP server socket on the given port, so
+    /** This is basically socket() + bind() + listen(). It sets up a TCP server socket on the given port, so 
      *  new connections can be received via waitForConnection(). Call close() to close() it again. */
     int bindSocket(unsigned int _port);
 
@@ -110,7 +112,7 @@ class PSProServerSocket
      *  afterwards to communicate over this new connection. */
     int waitForConnection(PSProSocket* _pClientSocket, const int _timeout_sec);
 
-    /** Closes the server socket, i.e. after that it cannot accept new connections anymore.
+    /** Closes the server socket, i.e. after that it cannot accept new connections anymore. 
      *  To enable it again, bindSocket() has to be called again. */
     void close();
 

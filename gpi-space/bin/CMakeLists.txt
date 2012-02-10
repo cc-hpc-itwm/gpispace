@@ -38,4 +38,4 @@ set_target_properties(gpi-space
 install (TARGETS gpi-space gpish
   RUNTIME
   DESTINATION bin
-  COMPONENT applications)
+  COMPONENT runtime)

@@ -6,4 +6,4 @@ set (xml
 
 install(FILES ${xml}
   DESTINATION ${PARSU_STACK}/generate
-  COMPONENT parsu)
+  COMPONENT applications)

@@ -1,0 +1,149 @@
+<defun>
+  <in name="empty_interval" type="interval" place="empty_interval"/>
+  <in name="loaded_package" type="assigned_package" place="loaded_package"/>
+  <out name="processed_interval" type="interval" place="processed_interval"/>
+  <out name="empty_store" type="store" place="empty_store"/>
+
+  <net>
+    <place name="config" type="config" virtual="true"/>
+    <place name="empty_interval" type="interval"/>
+    <place name="loaded_package" type="assigned_package"/>
+    <place name="processed_interval" type="interval"/>
+    <place name="empty_store" type="store"/>
+
+    <transition name="ready_package">
+      <defun>
+        <in name="loaded_package" type="assigned_package"/>
+        <in name="interval" type="interval"/>
+        <out name="ready_package" type="ready_package"/>
+        <expression>
+          ${ready_package.assigned_package} := ${loaded_package};
+          ${ready_package.interval} := ${interval};
+        </expression>
+      </defun>
+      <connect-in port="loaded_package" place="loaded_package"/>
+      <connect-in port="interval" place="empty_interval"/>
+      <connect-out port="ready_package" place="ready_package"/>
+    </transition>
+
+    <place name="ready_package" type="ready_package"/>
+
+    <transition name="calculate">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="ready_package" type="ready_package"/>
+        <out name="ready_package" type="ready_package"/>
+        <module name="ufbmig_calc" function="calculate (config, ready_package)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="string"/>
+	  <cinclude href="plugins/progress.h"/>
+          <code><![CDATA[
+            // use a demo progress thingy
+            static int progress_counter = 0;
+            LOG (INFO, "RUN " << ready_package);
+
+            char * update_descr = static_cast<char *> (fvmGetShmemPtr());
+
+            ::pnetc::type::interval::interval & interval
+             (ready_package.interval);
+            ::pnetc::type::package::package & package
+             (ready_package.assigned_package.package);
+
+            const long ptr0 (package.work.ptr);
+            const long num_updates (53);
+
+            for ( long i (0)
+                ; (i < interval.size) && (package.work.ptr < num_updates)
+                ; ++i, ++package.work.ptr
+                )
+              {
+                update_descr[i] = 'a' + (i + ptr0) % config.num.nodes;
+              }
+
+            package.work.done = (package.work.ptr >= num_updates);
+            interval.used = (package.work.ptr - ptr0);
+
+            // to just demonstrate this
+            if (package.id == 23)
+              {
+                interval.used = 0;
+                package.work.done = true;
+              }
+
+            LOG ( INFO
+                , "RESULT: "
+                << std::string ( update_descr
+                               , update_descr + interval.used
+                               )
+                );
+
+            waitComm ( fvmPutGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
+                       , interval.offset
+                       , interval.used
+                       , 0
+                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
+                       )
+                     );
+
+            set_progress("ufbmig", (progress_counter++) % 100); // 50 of 100
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="ready_package" place="ready_package"/>
+      <connect-out port="ready_package" place="done_package"/>
+    </transition>
+
+    <place name="done_package" type="ready_package"/>
+
+    <transition name="finalize_package">
+      <defun>
+        <in name="done_package" type="ready_package"/>
+        <out name="store" type="store"/>
+        <out name="interval" type="interval"/>
+        <expression>
+          ${store} := ${done_package.assigned_package.store};
+          ${interval} := ${done_package.interval};
+        </expression>
+      </defun>
+      <condition>
+        ${done_package.assigned_package.package.work.done}
+      </condition>
+      <connect-in port="done_package" place="done_package"/>
+      <connect-out port="store" place="empty_store"/>
+      <connect-out port="interval" place="processed_interval"/>
+    </transition>
+
+    <transition name="resubmit_package">
+      <defun>
+        <in name="done_package" type="ready_package"/>
+        <in name="wait" type="long"/>
+        <out name="wait" type="long"/>
+        <out name="loaded_package" type="assigned_package"/>
+        <out name="interval" type="interval"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${loaded_package} := ${done_package.assigned_package};
+          ${interval} := ${done_package.interval};
+          ${trigger} := [];
+          ${wait} := ${wait} + 1;
+        </expression>
+      </defun>
+      <condition>
+        !${done_package.assigned_package.package.work.done}
+      </condition>
+      <connect-in port="done_package" place="done_package"/>
+      <connect-out port="loaded_package" place="loaded_package"/>
+      <connect-out port="interval" place="processed_interval"/>
+      <connect-out port="trigger" place="trigger_interval"/>
+      <connect-in port="wait" place="wait"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <place name="wait" type="long" virtual="true"/>
+    <place name="trigger_interval" type="control" virtual="true"/>
+
+  </net>
+</defun>

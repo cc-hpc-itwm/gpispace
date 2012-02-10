@@ -60,6 +60,11 @@ public:
   {
     fhg::com::kvs::del(k);
   }
+
+  int        inc(key_type const & k, int step)
+  {
+    return fhg::com::kvs::inc(k, step);
+  }
 };
 
 
@@ -67,7 +72,7 @@ EXPORT_FHG_PLUGIN( kvs
                  , KeyValueStorePlugin
                  , "provides access to a key value store"
                  , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "0.0.1"
+                 , "0.0.2"
                  , "NA"
                  , ""
                  , ""

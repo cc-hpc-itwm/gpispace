@@ -6,8 +6,8 @@
 #include <iostream>
 #include <boost/foreach.hpp>
 
-
-namespace sdpa {
+namespace sdpa
+{
 
 	// type, name
 	class Capability
@@ -92,7 +92,6 @@ namespace sdpa {
 				return ( type() == b.type() && name() == b.name() && owner() == b.owner() /*&& depth() == b.depth()*/);
 			}
 
-
 	    private:
 			std::string name_;
 			std::string type_;
@@ -113,7 +112,6 @@ namespace sdpa {
 		}
 	};
 
-
 	typedef std::set<capability_t /*,Compare*/ > capabilities_set_t;
 }
 
@@ -125,14 +123,13 @@ inline std::ostream& operator<<(std::ostream& os, const sdpa::Capability& cpb)
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::capabilities_set_t& cpbSet)
 {
-	os<<"Content of the capabilities set:"<<std::endl;
-
+	os<<"----------------------------------------------------------------------------"<<std::endl;
 	BOOST_FOREACH(const sdpa::capability_t& cpb, cpbSet)
 	{
 		os<<cpb<<std::endl;
 	}
 
-	os<<"****************************************************"<<std::endl;
+	os<<"----------------------------------------------------------------------------"<<std::endl;
 	return os;
 }
 

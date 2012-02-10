@@ -13,6 +13,8 @@ set (hdrs
   show.hpp
   type.hpp
   value.hpp
+  atomic.hpp
+  term.hpp
 )
 
 install(FILES ${hdrs}

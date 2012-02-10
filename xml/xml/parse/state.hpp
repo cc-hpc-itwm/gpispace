@@ -1,4 +1,3 @@
-
 // mirko.rahn@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_STATE_HPP
@@ -94,7 +93,8 @@ namespace xml
         bool _Wall;
         bool _Woverwrite_function_name_as;
         bool _Woverwrite_template_name_as;
-        bool _Wshadow;
+        bool _Wshadow_struct;
+        bool _Wshadow_function;
         bool _Wdefault_construction;
         bool _Wunused_field;
         bool _Wport_not_connected;
@@ -133,7 +133,8 @@ namespace xml
         std::string _OWall;
         std::string _OWoverwrite_function_name_as;
         std::string _OWoverwrite_template_name_as;
-        std::string _OWshadow;
+        std::string _OWshadow_struct;
+        std::string _OWshadow_function;
         std::string _OWdefault_construction;
         std::string _OWunused_field;
         std::string _OWport_not_connected;
@@ -228,7 +229,8 @@ namespace xml
           , _Wall (false)
           , _Woverwrite_function_name_as (false)
           , _Woverwrite_template_name_as (false)
-          , _Wshadow (true)
+          , _Wshadow_struct (true)
+          , _Wshadow_function (true)
           , _Wdefault_construction (true)
           , _Wunused_field (true)
           , _Wport_not_connected (true)
@@ -266,7 +268,8 @@ namespace xml
           , _OWall ("Wall")
           , _OWoverwrite_function_name_as ("Woverwrite-function-name-as")
           , _OWoverwrite_template_name_as ("Woverwrite-template-name-as")
-          , _OWshadow ("Wshadow")
+          , _OWshadow_struct ("Wshadow-struct")
+          , _OWshadow_function ("Wshadow-function")
           , _OWdefault_construction ("Wdefault-construction")
           , _OWunused_field ("Wunused-field")
           , _OWport_not_connected ("Wport-not-connected")
@@ -521,7 +524,8 @@ namespace xml
         ACCESS(Wall)
         ACCESS(Woverwrite_function_name_as)
         ACCESS(Woverwrite_template_name_as)
-        ACCESS(Wshadow)
+        ACCESS(Wshadow_struct)
+        ACCESS(Wshadow_function)
         ACCESS(Wdefault_construction)
         ACCESS(Wunused_field)
         ACCESS(Wport_not_connected)
@@ -553,7 +557,7 @@ namespace xml
         template<typename T>
         void warn (const struct_shadowed<T> & w) const
         {
-          generic_warn (w, _Wshadow);
+          generic_warn (w, _Wshadow_struct);
         }
 
 #define WARN(x) void warn (const x & w) const { generic_warn (w, _W ## x); }
@@ -577,6 +581,7 @@ namespace xml
         WARN(backup_file)
         WARN(duplicate_external_function)
         WARN(property_unknown)
+        WARN(shadow_function)
 
 #undef WARN
 
@@ -681,9 +686,13 @@ namespace xml
             , BOOLVAL(Woverwrite_template_name_as)
             , "warn when overwriting a template name by 'as'"
             )
-            ( _OWshadow.c_str()
-            , BOOLVAL(Wshadow)
+            ( _OWshadow_struct.c_str()
+            , BOOLVAL(Wshadow_struct)
             , "warn when shadowing a struct definition"
+            )
+            ( _OWshadow_function.c_str()
+            , BOOLVAL(Wshadow_function)
+            , "warn when shadowing a function definition"
             )
             ( _OWdefault_construction.c_str()
             , BOOLVAL(Wdefault_construction)

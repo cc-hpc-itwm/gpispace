@@ -4,6 +4,11 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions("-DNDEBUG")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
+set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS_INIT} $ENV{LDFLAGS}
+  CACHE STRING "Flags used by the linker during the creation of shared libraries")
+set(CMAKE_MODULE_LINKER_FLAGS ${CMAKE_MODULE_LINKER_FLAGS_INIT} $ENV{LDFLAGS}
+  CACHE STRING "Flags used by the linker during the creation of modules")
+
 if(NOT WIN32)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   include (CheckCXXSourceCompiles)
@@ -29,6 +34,8 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 
   # release flags
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-unused-parameter -fstack-protector-all")
+  set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT
+    ${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT} "-rdynamic")
 
   # debug flags
   set(CMAKE_CXX_FLAGS_DEBUG
@@ -36,6 +43,8 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
      )
 #    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
 #    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
+
+  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT ${CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT} "-rdynamic")
 
   # gprof and gcov support
   set(CMAKE_CXX_FLAGS_PROFILE

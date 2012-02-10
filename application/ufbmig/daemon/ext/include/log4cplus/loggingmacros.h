@@ -11,7 +11,7 @@
 // distribution in the LICENSE.APL file.
 //
 
-/** @file
+/** @file 
  * This header defines the logging macros. */
 
 #ifndef _LOG4CPLUS_LOGGING_MACROS_HEADER_
@@ -98,9 +98,9 @@ LOG4CPLUS_EXPORT void _clear_tostringstream (tostringstream &);
 
 
 /**
- * @def LOG4CPLUS_TRACE(logger, logEvent)  This macro creates a TraceLogger
+ * @def LOG4CPLUS_TRACE(logger, logEvent)  This macro creates a TraceLogger 
  * to log a TRACE_LOG_LEVEL message to <code>logger</code> upon entry and
- * exiting of a method.
+ * exiting of a method.  
  * <code>logEvent</code> will be streamed into an <code>ostream</code>.
  */
 #if !defined(LOG4CPLUS_DISABLE_TRACE)
@@ -122,7 +122,7 @@ LOG4CPLUS_EXPORT void _clear_tostringstream (tostringstream &);
 
 /**
  * @def LOG4CPLUS_DEBUG(logger, logEvent)  This macro is used to log a
- * DEBUG_LOG_LEVEL message to <code>logger</code>.
+ * DEBUG_LOG_LEVEL message to <code>logger</code>.  
  * <code>logEvent</code> will be streamed into an <code>ostream</code>.
  */
 #if !defined(LOG4CPLUS_DISABLE_DEBUG)
@@ -140,7 +140,7 @@ LOG4CPLUS_EXPORT void _clear_tostringstream (tostringstream &);
 
 /**
  * @def LOG4CPLUS_INFO(logger, logEvent)  This macro is used to log a
- * INFO_LOG_LEVEL message to <code>logger</code>.
+ * INFO_LOG_LEVEL message to <code>logger</code>.  
  * <code>logEvent</code> will be streamed into an <code>ostream</code>.
  */
 #if !defined(LOG4CPLUS_DISABLE_INFO)
@@ -158,7 +158,7 @@ LOG4CPLUS_EXPORT void _clear_tostringstream (tostringstream &);
 
 /**
  * @def LOG4CPLUS_WARN(logger, logEvent)  This macro is used to log a
- * WARN_LOG_LEVEL message to <code>logger</code>.
+ * WARN_LOG_LEVEL message to <code>logger</code>.  
  * <code>logEvent</code> will be streamed into an <code>ostream</code>.
  */
 #if !defined(LOG4CPLUS_DISABLE_WARN)
@@ -176,7 +176,7 @@ LOG4CPLUS_EXPORT void _clear_tostringstream (tostringstream &);
 
 /**
  * @def LOG4CPLUS_ERROR(logger, logEvent)  This macro is used to log a
- * ERROR_LOG_LEVEL message to <code>logger</code>.
+ * ERROR_LOG_LEVEL message to <code>logger</code>.  
  * <code>logEvent</code> will be streamed into an <code>ostream</code>.
  */
 #if !defined(LOG4CPLUS_DISABLE_ERROR)
@@ -194,7 +194,7 @@ LOG4CPLUS_EXPORT void _clear_tostringstream (tostringstream &);
 
 /**
  * @def LOG4CPLUS_FATAL(logger, logEvent)  This macro is used to log a
- * FATAL_LOG_LEVEL message to <code>logger</code>.
+ * FATAL_LOG_LEVEL message to <code>logger</code>.  
  * <code>logEvent</code> will be streamed into an <code>ostream</code>.
  */
 #if !defined(LOG4CPLUS_DISABLE_FATAL)
@@ -211,3 +211,4 @@ LOG4CPLUS_EXPORT void _clear_tostringstream (tostringstream &);
 #endif
 
 #endif /* _LOG4CPLUS_LOGGING_MACROS_HEADER_ */
+

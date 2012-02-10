@@ -41,10 +41,10 @@ namespace log4cplus {
 
         /**
          * Tokenize <code>s</code> using <code>c</code> as the delimiter and
-         * put the resulting tokens in <code>_result</code>.  If
+         * put the resulting tokens in <code>_result</code>.  If 
          * <code>collapseTokens</code> is false, multiple adjacent delimiters
          * will result in zero length tokens.
-         *
+         * 
          * <b>Example:</b>
          * <pre>
          *   string s = // Set string with '.' as delimiters
@@ -53,8 +53,8 @@ namespace log4cplus {
          * </pre>
          */
         template <class StringType, class OutputIter>
-        void tokenize(const StringType& s, typename StringType::value_type c,
-                      OutputIter result, bool collapseTokens = true)
+        void tokenize(const StringType& s, typename StringType::value_type c, 
+                      OutputIter result, bool collapseTokens = true) 
         {
             typedef typename StringType::size_type size_type;
             size_type const slen = s.length();
@@ -75,12 +75,12 @@ namespace log4cplus {
             if (first != i)
                 *result = StringType (s, first, i - first);
         }
-
+        
 
         template<class intType>
         inline
-        tstring
-        convertIntegerToString (intType value)
+        tstring 
+        convertIntegerToString (intType value) 
         {
             if (value == 0)
                 return LOG4CPLUS_TEXT("0");
@@ -88,7 +88,7 @@ namespace log4cplus {
 
             static const size_t buffer_size
                 = std::numeric_limits<intType>::digits10 + 2;
-            tchar buffer[buffer_size];
+            tchar buffer[buffer_size];           
             tchar * it = &buffer[buffer_size];
             tchar const * const buf_end = it;
 
@@ -99,7 +99,7 @@ namespace log4cplus {
             // That's why we handle the case of value == min() specially here.
             if (negative)
             {
-                // The modulo operator on
+                // The modulo operator on 
                 if (value == (std::numeric_limits<intType>::min) ())
                 {
                     intType const r = value / 10;
@@ -159,7 +159,7 @@ namespace log4cplus {
             {
                 return *this;
             }
-
+            
             string_append_iterator<container_type> &
             operator ++ ()
             {

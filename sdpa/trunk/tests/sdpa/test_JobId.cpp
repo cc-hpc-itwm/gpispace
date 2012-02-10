@@ -1,4 +1,3 @@
-
 #define BOOST_TEST_MODULE TestJobId
 #include "sdpa/daemon/jobFSM/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
@@ -16,9 +15,9 @@ using namespace sdpa;
 
 struct MyFixture
 {
-	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testJobId"){}
-	~MyFixture(){}
-	 SDPA_DECLARE_LOGGER();
+   MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testJobId"){}
+   ~MyFixture(){}
+   SDPA_DECLARE_LOGGER();
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_JobId, MyFixture )

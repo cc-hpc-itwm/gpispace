@@ -46,22 +46,23 @@ namespace sdpa {
 	virtual void schedule_remote(const sdpa::job_id_t&);
 	void delete_job(const sdpa::job_id_t&);
 
-	void schedule_round_robin(const sdpa::job_id_t&);
-	bool schedule_with_constraints(const sdpa::job_id_t&, bool bDelNonRespWorkers = false);
-	bool schedule_to(const sdpa::job_id_t&, const sdpa::worker_id_t&);
-	bool schedule_to(const sdpa::job_id_t&, const Worker::ptr_t& pWorker);
+	void schedule_round_robin( const sdpa::job_id_t& );
+	bool schedule_with_constraints( const sdpa::job_id_t& );
+	bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
+	bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
 	void schedule_anywhere( const sdpa::job_id_t& jobId );
 
 	void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
 	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
 	void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
+	void reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 
 	virtual bool has_job(const sdpa::job_id_t&);
 	virtual void start_job(const sdpa::job_id_t&);
 
 	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
 	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
-        virtual const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+    virtual const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
 	virtual void addWorker( const Worker::worker_id_t& workerId,
 							const unsigned int& capacity = 10000,
@@ -74,7 +75,9 @@ namespace sdpa {
 	void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
 	virtual void getWorkerList(std::list<std::string>&);
-	 virtual Worker::worker_id_t getWorkerId(unsigned int rank);
+	virtual Worker::worker_id_t getWorkerId(unsigned int rank);
+
+	virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
 
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 
@@ -110,7 +113,6 @@ namespace sdpa {
 	void serialize(Archive& ar, const unsigned int)
 	{
 		ar & boost::serialization::base_object<Scheduler>(*this);
-		//ar & jobs_to_be_scheduled;
 		ar & ptr_worker_man_;
 	}
 
@@ -120,12 +122,15 @@ namespace sdpa {
 	virtual void removeRecoveryInconsistencies();
     void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 
+    void printQ() { jobs_to_be_scheduled.print(); }
+
 protected:
 	JobQueue jobs_to_be_scheduled;
 	WorkerManager::ptr_t ptr_worker_man_;
 
 	bool bStopRequested;
-	boost::thread m_thread;
+	boost::thread m_thread_run;
+	boost::thread m_thread_feed;
 
 	mutable sdpa::daemon::IComm* ptr_comm_handler_;
 	SDPA_DECLARE_LOGGER();

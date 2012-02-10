@@ -232,7 +232,7 @@ namespace sdpa { namespace daemon {
     	unsigned int k = 0;
     	for( iterator it = begin(); it!= end(); it++, k++)
     	{
-    		LOG(INFO, "   element "<<k<<": \""<<*it<<"\"");
+          DLOG(TRACE, "   element "<<k<<": \""<<*it<<"\"");
     	}
     }
 

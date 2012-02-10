@@ -88,13 +88,13 @@ namespace sdpa {
         //      Start       Event         		      Next        Action                Guard
         //      +-----------+--------------------- -+-----------+---------------------+-----
         _row<   Pending,    MSMDispatchEvent, 		Running >,
-        a_row<  Pending,    sdpa::events::CancelJobEvent, Cancelled,  &sm::action_cancel_job_from_pending >,
+        a_row<  Pending,    sdpa::events::CancelJobEvent, Cancelled,  		&sm::action_cancel_job_from_pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
         a_row<  Running,    sdpa::events::JobFinishedEvent,	 	Finished, 	&sm::action_job_finished>,
         a_row<  Running,    sdpa::events::JobFailedEvent, 	 	Failed, 	&sm::action_job_failed >,
         a_row<  Running,    sdpa::events::CancelJobEvent,      	Cancelling, &sm::action_cancel_job >,
         // only for the case when the cancelling is triggered by an internal component (eg. WE), not by the user
-        //a_row<  Running,    sdpa::events::CancelJobAckEvent, 	Cancelled,  &sm::action_cancel_job_ack >,
+        //a_row<  Running,  sdpa::events::CancelJobAckEvent, 	Cancelled,  &sm::action_cancel_job_ack >,
         _row<   Running,    MSMRescheduleEvent,                 Pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
         a_irow< Finished,   sdpa::events::DeleteJobEvent, 					&sm::action_delete_job >,
@@ -113,17 +113,17 @@ namespace sdpa {
         a_irow< Cancelled,  sdpa::events::RetrieveJobResultsEvent,			&sm::action_retrieve_job_results >
         >{};
 
-        /*template <class FSM, class Event>
+        template <class FSM, class Event>
         void no_transition(Event const& e, FSM&, int state)
         {
-          LOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
+        	//DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
         }
 
         template <class FSM>
         void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
         {
-          DLOG(DEBUG, "process event QueryJobStatusEvent");
-        }*/
+        	//DLOG(DEBUG, "process event QueryJobStatusEvent");
+        }
       };
 
       // Pick a back-end

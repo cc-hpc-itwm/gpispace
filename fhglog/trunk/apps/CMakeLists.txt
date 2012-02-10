@@ -10,5 +10,5 @@ if (WITH_REMOTE_LOGGING)
   install(TARGETS fhglogd fhglogc
     RUNTIME
     DESTINATION bin
-    COMPONENT applications)
+    COMPONENT runtime)
 endif (WITH_REMOTE_LOGGING)

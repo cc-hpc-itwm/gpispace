@@ -4,6 +4,7 @@
 namespace gpi
 {
   const char * version_string ();
+  const char * revision_string ();
 }
 
 #endif

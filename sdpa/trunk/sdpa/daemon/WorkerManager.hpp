@@ -37,6 +37,8 @@ namespace sdpa { namespace daemon {
       typedef sdpa::shared_ptr<WorkerManager> ptr_t;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
+      typedef boost::condition_variable_any condition_type;
+
       typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
       typedef boost::unordered_map<unsigned int, Worker::worker_id_t> rank_map_t;
       typedef boost::unordered_map<sdpa::job_id_t, Worker::worker_id_t > owner_map_t;
@@ -68,7 +70,8 @@ namespace sdpa { namespace daemon {
 
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
-      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq, bool bOwn = false ) throw (NoWorkerFoundException);
+      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq) throw (NoWorkerFoundException);
+      void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
       const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
       void dispatchJob(const sdpa::job_id_t& jobId);
@@ -100,7 +103,6 @@ namespace sdpa { namespace daemon {
           ar & worker_map_;
           ar & rank_map_;
           ar & owner_map_;
-          //ar & common_queue_;
       }
 
       friend class boost::serialization::access;
@@ -133,6 +135,8 @@ namespace sdpa { namespace daemon {
       const owner_map_t& owner_map() const { return owner_map_; }
       owner_map_t& owner_map() { return owner_map_; }
 
+      sdpa::worker_id_list_t waitForFreeWorkers( const boost::posix_time::time_duration& );
+
 protected:
       worker_map_t  worker_map_;
       rank_map_t    rank_map_;
@@ -144,6 +148,7 @@ protected:
       Worker::JobQueue common_queue_;
 
       mutable mutex_type mtx_;
+      condition_type cond_feed_workers;
   };
 }}
 
