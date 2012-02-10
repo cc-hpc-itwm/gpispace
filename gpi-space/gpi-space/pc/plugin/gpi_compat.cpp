@@ -56,72 +56,41 @@ public:
     m_scratch_handle_name = "fvm-pc-com-" + my_pid;
 
     api = fhg_kernel()->acquire<gpi::GPI>("gpi");
-    if (api)
+    if (reinitialize_gpi_state() < 0)
     {
-      int ec = reinitialize_gpi_state();
-      if (ec < 0)
-      {
-        LOG(WARN, "gpi_compat plugin could not be started, gpi plugin is not (yet) available");
-        LOG(WARN, "There be dragons! (Segfaults are imminent if you execute gpi modules!)");
-        FHG_PLUGIN_INCOMPLETE();
-      }
+      LOG(WARN, "gpi plugin is not yet available, state initialization deferred!");
     }
+    else
+    {
+      LOG(INFO, "successfully initialized gpi state");
+    }
+
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
-    if (api)
+    try
     {
-      try
-      {
-        api->free(m_scr_hdl);
-        api->free(m_shm_hdl);
-        api->unregister_segment(m_shm_id);
-      }
-      catch (std::exception const &ex)
-      {
-        LOG(WARN, "gpi_compat plugin could not clean up GPI allocations");
-      }
-
-      m_shm_ptr = 0;
-      api = 0;
+      api->free(m_scr_hdl);
+      api->free(m_shm_hdl);
+      api->unregister_segment(m_shm_id);
+    }
+    catch (std::exception const &ex)
+    {
+      LOG(WARN, "gpi_compat plugin could not clean up GPI allocations");
     }
 
+    m_shm_ptr = 0;
+    api = 0;
     gpi_compat = 0;
 
     FHG_PLUGIN_STOPPED();
   }
 
-  FHG_ON_PLUGIN_LOADED(plugin)
-  {
-    if (! api)
-    {
-      api = fhg_kernel()->acquire<gpi::GPI>(plugin);
-      if (api)
-      {
-        int ec = reinitialize_gpi_state();
-        if (ec < 0)
-        {
-          fhg_kernel()->start_completed(-ec);
-        }
-        else
-        {
-          fhg_kernel()->start_completed(0);
-        }
-      }
-    }
-  }
-
   int reinitialize_gpi_state ()
   {
     lock_type gpi_mutex (m_gpi_state_mutex);
-
-    if (! api)
-    {
-      MLOG(ERROR, "cannot initialize gpi connection: gpi plugin not available");
-      return -EAGAIN;
-    }
 
     if (! api->ping())
     {
@@ -155,6 +124,14 @@ public:
     return 0;
   }
 
+  int ensure_gpi_state ()
+  {
+    int ec;
+
+    do { ec = reinitialize_gpi_state (); } while (ec == -EAGAIN);
+
+    return ec;
+  }
 private:
   int setup_my_gpi_state ()
   {
@@ -225,11 +202,12 @@ int fvmLeave()
 
 fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
+
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size
                                 , name
@@ -245,10 +223,10 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 
 int fvmGlobalFree(fvmAllocHandle_t ptr)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   gpi_compat->api->free(ptr);
   return 0;
@@ -256,10 +234,10 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
 
 fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size, const char *name)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size
@@ -275,10 +253,10 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
 
 int fvmLocalFree(fvmAllocHandle_t ptr)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
 
   gpi_compat->api->free (ptr);
@@ -291,10 +269,10 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 				 const fvmShmemOffset_t shmemOffset,
 				 const fvmAllocHandle_t)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
 
   static const gpi::pc::type::queue_id_t queue = 0;
@@ -360,10 +338,10 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 				 const fvmShmemOffset_t shmemOffset,
 				 const fvmAllocHandle_t)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   static const gpi::pc::type::queue_id_t queue = 1;
 
@@ -427,10 +405,10 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   static const gpi::pc::type::queue_id_t queue = 2;
   return gpi_compat->api->
@@ -441,16 +419,15 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
           );
 }
 
-
 fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 				const fvmOffset_t fvmOffset,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   static const gpi::pc::type::queue_id_t queue = 3;
   return gpi_compat->api->
@@ -464,10 +441,10 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 // wait on communication between fvm and pc
 fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   try
   {
@@ -489,10 +466,10 @@ const char *fvmGetShmemName()
 
 void *fvmGetShmemPtr()
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   return gpi_compat->m_shm_ptr;
 }
@@ -504,20 +481,20 @@ fvmSize_t fvmGetShmemSize()
 
 int fvmGetRank()
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   return gpi_compat->gpi_info.rank;
 }
 
 int fvmGetNodeCount()
 {
-  int ec = gpi_compat->reinitialize_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
   {
-    throw std::runtime_error("GPI not available right now");
+    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   return gpi_compat->gpi_info.nodes;
 }
@@ -528,6 +505,6 @@ EXPORT_FHG_PLUGIN( gpi_compat
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , ""
+                 , "gpi"
                  , ""
                  );

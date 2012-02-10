@@ -48,7 +48,6 @@ public:
                                             )
                               , 0
                               );
-        FHG_PLUGIN_INCOMPLETE();
       }
     }
     FHG_PLUGIN_STARTED();
