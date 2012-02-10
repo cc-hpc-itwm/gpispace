@@ -1,5 +1,11 @@
 SUBDIRS = diff shrink op2 stack
 
+ifeq ($(DESTDIR),)
+DESTDIR=$(SDPA_HOME)/libexec/apps/parsu
+endif
+
+export DESTDIR
+
 ifeq ($(MAKECMDGOALS),)
 MAKECMDGOALS=all
 endif
