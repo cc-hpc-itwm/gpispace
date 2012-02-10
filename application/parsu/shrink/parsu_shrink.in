@@ -11,7 +11,7 @@ if [ ! \( -d "${tmp_dir}" -a -w "${tmp_dir}" \) ] ; then
 fi
 
 scratch_dir="$HOME/.sdpa/scratch"
-test ! -d "${scratch_dir}" && { mkdir -p "${scratch_dir}" }
+test ! -d "${scratch_dir}" && { mkdir -p "${scratch_dir}" ; }
 
 xml_file_in="${shrink_dir}/shrink.xml.in"
 mk_xml="${shrink_dir}/mk.xml"
