@@ -117,7 +117,7 @@ public:
       catch (std::exception const &ex)
       {
         MLOG(ERROR, "could not setup my gpi state: " << ex.what());
-        return -EAGAIN;
+        return -EFAULT;
       }
     }
 
