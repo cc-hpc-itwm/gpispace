@@ -413,7 +413,7 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
  */
 bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 {
- SDPA_LOG_DEBUG("Called schedule_with_contraints ...");
+  DLOG(TRACE, "Called schedule_with_contraints ...");
 
   if(!ptr_comm_handler_)
   {
@@ -501,7 +501,7 @@ void SchedulerImpl::start_job(const sdpa::job_id_t &jobId)
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
-	SDPA_LOG_DEBUG("Schedule the job " << jobId.str());
+  LOG(TRACE, "Schedule the job " << jobId.str());
 	jobs_to_be_scheduled.push(jobId);
 }
 
@@ -842,7 +842,7 @@ const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker
 
 void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException)
 {
-  SDPA_LOG_DEBUG("Acknowledge the job "<<job_id.str());
+  DLOG(TRACE, "Acknowledge the job "<<job_id.str());
   try {
 
 	  // make sure that the job is erased from the scheduling queue

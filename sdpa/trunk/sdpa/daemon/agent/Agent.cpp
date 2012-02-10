@@ -127,12 +127,12 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		  // FSM callback routine.
 
 
-		  SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
+		  DLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
 		  ptr_workflow_engine_->finished(actId, output);
 
 
 		  try {
-			  SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker "<<worker_id);
+                    DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
 			  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
 		  }
 		  catch(WorkerNotFoundException const &)
@@ -147,7 +147,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 		  try {
 			  //delete it also from job_map_
-			  SDPA_LOG_DEBUG("Remove the job "<<pEvt->job_id()<<" from the JobManager");
+                    DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
 			  ptr_job_man_->deleteJob(pEvt->job_id());
 		  }
 		  catch(JobNotDeletedException const &)

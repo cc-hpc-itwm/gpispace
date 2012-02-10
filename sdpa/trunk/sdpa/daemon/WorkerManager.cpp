@@ -387,7 +387,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
   }
   catch(const WorkerNotFoundException& ex2 )
   {
-      SDPA_LOG_ERROR("Worker not found!");
+      SDPA_LOG_WARN("Worker not found!");
       throw ex2;
   }
 }
@@ -395,7 +395,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG( "Dispatch the job " << jobId.str() );
+	DLOG(TRACE, "Dispatch the job " << jobId.str() );
 	common_queue_.push(jobId);
 
 	cond_feed_workers.notify_one();
@@ -540,7 +540,7 @@ void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
 	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
 	{
 		Worker::ptr_t ptrWorker = iter->second;
-		if(ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
+		if(ptrWorker->nbAllocatedJobs() < ptrWorker->capacity())
 			workerList.push_back(ptrWorker->name());
 	}
 

@@ -696,7 +696,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
-	SDPA_LOG_DEBUG("got job submission from " << e.from() << ": job-id := " << e.job_id());
+  DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
   /*
    * job-id (ignored by the orchestrator, see below)
    * contains workflow description and initial tokens
@@ -765,7 +765,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   }
   catch(const JobNotFoundException&)
   {
-	  SDPA_LOG_DEBUG( "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
+    DLOG(TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
   }
 
   JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
@@ -1094,7 +1094,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	}
     	case ErrorEvent::SDPA_EPERM:
 		{
-			SDPA_LOG_INFO("Got error from "<<error.from()<<". Reason: "<<error.reason());
+			SDPA_LOG_WARN("Got error from "<<error.from()<<". Reason: "<<error.reason());
 			if( error.job_id() != sdpa::job_id_t::invalid_job_id() )
 			{
 				// check if there were any jobs submitted and not acknowledged to that worker
@@ -1102,11 +1102,12 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 				// don't forget to update the state machine
 				sdpa::job_id_t jobId(error.job_id());
 				sdpa::worker_id_t worker_id(error.from());
-				SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-dispatch it now!");
+				SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-schedule it now!");
 
 				scheduler()->reschedule(worker_id);
 			}
 		}
+                break;
     	default:
     	{
     		MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());

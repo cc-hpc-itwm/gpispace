@@ -91,7 +91,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
 
     if(rc)
     {
-        SDPA_LOG_DEBUG( "Erased the requirements of the job "<<job_id.str());
+      DLOG(TRACE, "Erased the requirements of the job "<<job_id.str());
     }
 
     job_map_t::size_type ret = job_map_.erase(job_id);
@@ -101,7 +101,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
     }
     else
     {
-        SDPA_LOG_DEBUG( "Erased the job "<<job_id.str()<<" from job map");
+      DLOG(TRACE, "Erased the job "<<job_id.str()<<" from job map");
     }
 
     free_slot_.notify_one();
@@ -144,7 +144,7 @@ const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
     if( job_requirements_.empty() )
             throw NoJobRequirements(jobId);
 
-    SDPA_LOG_DEBUG("Locate the preferences of the job "<<jobId.str());
+    DLOG(TRACE, "Locate the preferences of the job "<<jobId.str());
     requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
     if( it_req == job_requirements_.end() )
             throw NoJobRequirements(jobId);
