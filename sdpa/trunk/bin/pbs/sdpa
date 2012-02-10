@@ -959,7 +959,7 @@ function generate_environment ()
     prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
     prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/.sdpa/modules"
 
-    for f in $( find "$SDPA_LIBEXEC/apps" "$HOME/.sdpa/modules" -type f -name "*.so" ) ; do
+    for f in $(find "$SDPA_LIBEXEC/apps" "$HOME/.sdpa/modules" -type f -name "*.so" ) ; do
         mod_dir=$(dirname "$f")
         prepend_to_path PC_LIBRARY_PATH "$mod_dir"
         prepend_to_path LD_LIBRARY_PATH "$mod_dir"
@@ -967,7 +967,7 @@ function generate_environment ()
 
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
     echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH"
-    echo export PATH="$PATH"
+    echo export PATH="$PATH:\$PATH"
 }
 
 function dump_config ()

@@ -5,7 +5,7 @@ SDPA_INCLUDE = $(SDPA_HOME)/include
 SDPA_LIBEXEC = $(SDPA_HOME)/libexec
 SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
 
-LIB_DESTDIR = $(HOME)/.sdpa/modules/
+LIB_DESTDIR = $(DESTDIR)/$(MAIN)/lib/
 
 PATH_MAIN  = $(CURDIR)
 UTIL       = $(PATH_MAIN)/util
@@ -16,6 +16,7 @@ RM       = /bin/rm -rf
 TOUCH    = touch
 CAT      = /bin/cat
 CP       = /bin/cp
+MKDIR    = mkdir
 
 ###############################################################################
 
@@ -153,9 +154,12 @@ $(GEN): $(XML_MAIN) $(DEP)
 	CXXINCLUDEPATHS="$(CXXINCLUDEPATHS)" $(MAKE) -j -C $(GEN)
 	$(TOUCH) $@
 
+$(LIB_DESTDIR):
+	$(MKDIR) -p "$(LIB_DESTDIR)"
+
 .PHONY: install
 
-install: $(GEN)
+install: $(GEN) $(LIB_DESTDIR)
 	$(CP) $(LIB) $(LIB_DESTDIR)
 
 ###############################################################################
