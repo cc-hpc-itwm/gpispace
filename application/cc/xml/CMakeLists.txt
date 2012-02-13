@@ -11,4 +11,5 @@ pnet_compile(sdpacc compile.xml
            -O3
   DEPENDS process
   BUILD
+  COMPONENT applications
 )

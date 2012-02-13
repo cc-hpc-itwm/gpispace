@@ -12,4 +12,5 @@ pnet_compile(asian wrapper.xml
   BUILD
   DEPENDS process
   INSTALL libexec/apps/asian
+  COMPONENT applications
 )
