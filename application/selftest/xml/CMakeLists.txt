@@ -13,4 +13,5 @@ pnet_compile(selftest selftest.xml
 
 install(FILES selftest.xml
   DESTINATION libexec/apps/selftest
+  COMPONENT applications
 )
