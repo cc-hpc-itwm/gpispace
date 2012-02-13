@@ -188,11 +188,7 @@ private:
 
   void restart_loop ()
   {
-    if (try_start())
-    {
-      fhg_kernel()->start_completed(0);
-    }
-    else
+    if (! try_start())
     {
       fhg_kernel()->schedule( "connect"
                             , boost::bind ( &GpiPluginImpl::restart_loop
