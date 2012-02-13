@@ -44,6 +44,8 @@ namespace helper
     ec += system("sdpa stop nre");
     ec += system("sdpa stop agg");
     ec += system("sdpa stop orch");
+    ec += system("sdpa stop gpi");
+    ec += system("sdpa stop kvs");
     return ec;
   }
 
