@@ -105,7 +105,7 @@ macro(PNET_COMPILE)
   endif()
 
   if (PNET_INSTALL)
-    install (FILES ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL} COMPONENT ${PNET_COMPONENT})
+    install (FILES ${__pnet_sources} ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL} COMPONENT ${PNET_COMPONENT})
     if (PNET_BUILD)
       # TODO:  this doesn't  work  in the  first  install...
       # figure out how to convince cmake to do this only after the build step has
