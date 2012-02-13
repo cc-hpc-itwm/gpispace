@@ -93,6 +93,7 @@ DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
 for system_default in "/etc/sdpa/defaults"               \
                       "/usr/local/etc/sdpa/defaults"     \
                       "${SDPA_HOME}/etc/sdpa/defaults"   \
+                      "${SDPA_SYSTEM_DEFAULTS}"          \
                       ~/.sdpa/defaults                   ; do
     if [ -r "$system_default" ] ; then
         debug "reading system default from: '$system_default'" >&2
