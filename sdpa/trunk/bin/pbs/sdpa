@@ -66,6 +66,7 @@ DEFAULT_GUI_URL=""
 #
 # GPI
 #
+DEFAULT_GPI_PRIV_DIR=""
 DEFAULT_GPI_ENABLED="false"
 DEFAULT_GPI_MEMSIZE="5G"
 DEFAULT_GPI_SHMSIZE="1G"
@@ -731,8 +732,26 @@ to adjust the amount.
         return
     fi
 
-    local gpid_pid=$(ps -C gpid.exe -o pid= | tr -d ' ')
-    local gpid_dir=$(cat /proc/$gpid_pid/cmdline 2>/dev/null | tr '\0' ' ' | grep -o -- '-p [^ ]*' | cut -d' ' -f 2)
+    local gpid_pid=""
+    local gpid_dir="$DEFAULT_GPI_PRIV_DIR"
+
+    if [ -z "$DEFAULT_GPI_PRIV_DIR" ] ; then
+	for gpi_prog in "gpid.exe" "gpid.bin" ; do
+	    gpid_pid=$(ps -C $gpi_prog -o pid= | tr -d ' ')
+	    if [ -z "$gpid_pid" ] ; then
+		continue
+	    fi
+	    gpid_dir=$(cat /proc/$gpid_pid/cmdline 2>/dev/null | tr '\0' ' ' | grep -o -- '-p [^ ]*' | cut -d' ' -f 2)
+	    if [ -d "$gpid_dir" ] ; then
+		break
+	    fi
+	done
+    fi
+
+    if [ -z "$gpid_dir" ] ; then
+	log "W: could not discover GPI priviledged directory, using /"
+	gpid_dir="/"
+    fi
 
     gpid_dir=$(get "gpi.priv_dir" "$gpid_dir")
     get_user_input "GPI privileged directory to use [$gpid_dir]:" gpid_dir
