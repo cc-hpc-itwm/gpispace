@@ -122,8 +122,6 @@ message(STATUS "=== [ sdpa ] ===")
 add_subdirectory(sdpa)
 message(STATUS "=== [ util ] ===")
 add_subdirectory(util)
-message(STATUS "=== [ selftest ] ===")
-add_subdirectory(selftest)
 
 ## optional components
 if (ENABLE_MONITOR_GUI)
