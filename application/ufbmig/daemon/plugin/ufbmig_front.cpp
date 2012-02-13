@@ -548,7 +548,7 @@ private:
     MLOG(TRACE, "waiting for messages...");
 
     size_t fail_counter = 0;
-    while (!m_stop_requested && fail_counter < 100)
+    while (!m_stop_requested && fail_counter < 1)
     {
       try
       {
@@ -591,6 +591,8 @@ private:
       int ec = errno;
       MLOG(ERROR, "terminating, since there were " << fail_counter << " failures while receiving messages from the GUI: " << strerror(ec));
       m_backend->stop();
+
+      sleep (5);
 
       fhg_kernel()->terminate();
     }
