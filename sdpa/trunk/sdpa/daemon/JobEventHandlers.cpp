@@ -150,14 +150,12 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 	sdpa::job_id_t jobId = pEvt->job_id();
 
 	try {
-
 		Job::ptr_t pJob = ptr_job_man_->findJob(jobId);
 		//SDPA_LOG_INFO("The job "<<jobId<<" has the status "<<pJob->getStatus());
 		pJob->QueryJobStatus(pEvt, this); // should send back a message with the status
 	}
 	catch(JobNotFoundException const& ex)
 	{
-		SDPA_LOG_WARN("Couldn't find the job " <<jobId<< "!");
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, ex.what()) );
 		sendEventToMaster(pErrorEvt);
 	}
@@ -171,7 +169,6 @@ void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent*
 	}
 	catch(JobNotFoundException const& ex)
 	{
-		SDPA_LOG_WARN("Couldn't find the job " << pEvt->job_id() << "!");
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, ex.what()) );
 		sendEventToMaster(pErrorEvt);
 	}
