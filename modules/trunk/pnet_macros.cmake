@@ -3,7 +3,7 @@ include(car_cdr_macros)
 
 macro(PNET_COMPILE)
   PARSE_ARGUMENTS(PNET
-    "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS;CXXFLAGS"
+    "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS;CXXFLAGS;COMPONENT"
     "QUIET;BUILD"
     ${ARGN}
     )
@@ -43,6 +43,11 @@ macro(PNET_COMPILE)
 
   if (NOT IS_ABSOLUTE ${PNET_OUTPUT})
     set(PNET_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PNET_OUTPUT})
+  endif()
+
+  if (PNET_COMPONENT)
+  else()
+    set(PNET_COMPONENT "pnet")
   endif()
 
   set(__pnet_sources)
@@ -100,7 +105,7 @@ macro(PNET_COMPILE)
   endif()
 
   if (PNET_INSTALL)
-    install (FILES ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL})
+    install (FILES ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL} COMPONENT ${PNET_COMPONENT})
     if (PNET_BUILD)
       # TODO:  this doesn't  work  in the  first  install...
       # figure out how to convince cmake to do this only after the build step has
@@ -111,6 +116,7 @@ macro(PNET_COMPILE)
 	                 GROUP_EXECUTE GROUP_READ
 	DIRECTORY_PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
 	                      GROUP_EXECUTE GROUP_READ
+	COMPONENT ${PNET_COMPONENT}
 	FILES_MATCHING PATTERN "*.so"
 	PATTERN "we" EXCLUDE
 	)
