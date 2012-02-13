@@ -144,6 +144,6 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 # add some files to the installation target
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp ${CMAKE_CURRENT_BINARY_DIR}/sdpa/version.hpp
   DESTINATION include/sdpa
   COMPONENT headers)
