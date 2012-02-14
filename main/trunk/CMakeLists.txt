@@ -156,7 +156,7 @@ endif (ENABLE_APPLICATION)
 
 if (ENABLE_PNET_EDITOR)
   message(STATUS "=== [ pnete ] ===")
-  add_subdirectory(pnete)
+  add_subdirectory(editor)
 endif (ENABLE_PNET_EDITOR)
 
 include(TargetDoc.cmake OPTIONAL)
