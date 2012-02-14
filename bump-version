@@ -57,7 +57,7 @@ version="${major}.${minor}.${patch}"
 cur_version="${cur_major}.${cur_minor}.${cur_patch}"
 tag="v${version}"
 cur_tag="v${cur_version}"
-if git tag | grep "$tag"; then
+if git tag | grep "^$tag$" ; then
   echo "tag \"$tag\" does already exist, try a different one!"
   exit 3
 fi
@@ -76,4 +76,4 @@ esac
 
 echo "bumping version number..."
 sed -e "s/\@V_MAJOR\@/$major/" -e "s/\@V_MINOR\@/$minor/" -e "s/\@V_PATCH\@/$patch/" version.cmake.in > version.cmake
-git commit version.cmake -m "bumbed version to $version" && touch sdpa/version.hpp.in
+git commit version.cmake -m "bumped version to: '$version'" && touch sdpa/version.hpp.in
