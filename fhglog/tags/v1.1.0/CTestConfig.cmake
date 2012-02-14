@@ -1,6 +1,0 @@
-SET (CTEST_DROP_METHOD http)
-SET (CTEST_DROP_SITE "localhost")
-SET (CTEST_DROP_LOCATION "/cgi-bin/HTTPUploadDartFile.cgi")
-SET (CTEST_TRIGGER_SITE "http://${DROP_SITE}/cgi-bin/Submit-CMake-TestingResults.pl")
-SET (VALGRIND_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=full --show-reachable=yes --workaround-gcc296-bugs=yes --num-callers=50")
-SET (CTEST_EXPERIMENTAL_COVERAGE_EXCLUDE ".*test_.*")
