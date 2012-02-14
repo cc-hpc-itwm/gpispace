@@ -18,7 +18,7 @@ set(KDE_CTEST_BUILD_SUFFIX "gcc")
 set(KDE_CTEST_VCS_PATH "trunk")
 set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/coverage")
 set(KDE_CTEST_PARALLEL_LEVEL 8)
-##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR}/main/trunk)
+##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR})
 
 # for now hardcode the generator to "Unix Makefiles"
 #set(CTEST_CMAKE_GENERATOR "Unix Makefiles" )
@@ -40,7 +40,7 @@ kde_ctest_setup()
 ctest_empty_binary_directory("${CTEST_BINARY_DIRECTORY}")
 ctest_start(Coverage)
 ctest_update(SOURCE "${CTEST_SOURCE_DIRECTORY}" RETURN_VALUE res)
-set(CTEST_SOURCE_DIRECTORY "${CTEST_SOURCE_DIRECTORY}/main/trunk")
+set(CTEST_SOURCE_DIRECTORY "${CTEST_SOURCE_DIRECTORY}")
 message(STATUS "ctest_update: res='${res}'")
 
 # read additional settings, like maximum number warnings, warning exceptions, etc.

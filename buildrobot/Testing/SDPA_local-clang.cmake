@@ -14,11 +14,11 @@ set(KDE_CTEST_VCS svn)
 set(KDE_CTEST_VCS_REPOSITORY https://svn.itwm.fhg.de/svn/SDPA)
 set(KDE_CTEST_AVOID_SPACES TRUE)
 set(KDE_CTEST_BUILD_SUFFIX "clang")
-#set(KDE_CTEST_VCS_PATH "main/trunk")
+#set(KDE_CTEST_VCS_PATH ".")
 set(KDE_CTEST_VCS_PATH "trunk")
 set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/nightly")
 set(KDE_CTEST_PARALLEL_LEVEL 8)
-##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR}/main/trunk)
+##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR})
 
 # for now hardcode the generator to "Unix Makefiles"
 #set(CTEST_CMAKE_GENERATOR "Unix Makefiles" )
@@ -36,7 +36,7 @@ kde_ctest_setup()
 ctest_empty_binary_directory("${CTEST_BINARY_DIRECTORY}")
 ctest_start(Nightly)
 ctest_update(SOURCE "${CTEST_SOURCE_DIRECTORY}" )
-set(CTEST_SOURCE_DIRECTORY "${CTEST_SOURCE_DIRECTORY}/main/trunk")
+set(CTEST_SOURCE_DIRECTORY "${CTEST_SOURCE_DIRECTORY}")
 
 # read additional settings, like maximum number warnings, warning exceptions, etc.
 include("${CTEST_SOURCE_DIRECTORY}/CTestConfig.cmake")
