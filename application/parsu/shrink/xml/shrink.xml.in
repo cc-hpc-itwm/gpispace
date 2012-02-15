@@ -125,7 +125,6 @@
         <in name="gpi_mem_per_node" type="long"/>
         <in name="cmd" type="string"/>
         <out name="write_info" type="shrink_write_info"/>
-        <out name="give_back_trace" type="long"/>
         <out name="config" type="shrink_config"/>
         <module name="shrink"
                 function="init ( file_input
@@ -136,7 +135,6 @@
                                , shmem_per_node
                                , gpi_mem_per_node
                                , write_info
-                               , give_back_trace
                                , config
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
@@ -204,7 +202,7 @@
             config.file.output.type = type_output;
             config.cmd = cmd;
 
-            write_info.next_trace = give_back_trace = 0;
+            write_info.next_trace = 0;
             write_info.offset = 0;
 
             {
@@ -226,7 +224,6 @@
       <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
       <connect-in port="cmd" place="cmd"/>
       <connect-out port="write_info" place="write_info"/>
-      <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
     </transition>
 
@@ -245,7 +242,6 @@
     <place name="config_generate_slot" type="shrink_config"/>
 
     <place name="write_info" type="shrink_write_info"/>
-    <place name="give_back_trace" type="long"/>
 
     <transition name="extract_eat_slot">
       <defun>
@@ -460,27 +456,6 @@
 
     <place name="package_written" type="shrink_loaded_package"/>
 
-    <transition name="back_loaded_package">
-      <defun>
-        <in name="loaded_package" type="shrink_loaded_package"/>
-        <in name="give_back_trace" type="long"/>
-        <out name="give_back_trace" type="long"/>
-        <out name="loaded_package" type="shrink_loaded_package"/>
-        <expression>
-          ${give_back_trace} := ${loaded_package.package.right};
-        </expression>
-        <condition>
-          ${give_back_trace} :eq: ${loaded_package.package.left}
-        </condition>
-      </defun>
-      <connect-in port="loaded_package" place="package_written"/>
-      <connect-out port="loaded_package" place="loaded_package_finished"/>
-      <connect-in port="give_back_trace" place="give_back_trace"/>
-      <connect-out port="give_back_trace" place="give_back_trace"/>
-    </transition>
-
-    <place name="loaded_package_finished" type="shrink_loaded_package"/>
-
     <transition name="back_store">
       <defun>
         <in name="loaded_package" type="shrink_loaded_package"/>
@@ -491,7 +466,7 @@
           ${slot} := ${loaded_package.slot};
         </expression>
       </defun>
-      <connect-in port="loaded_package" place="loaded_package_finished"/>
+      <connect-in port="loaded_package" place="package_written"/>
       <connect-out port="package" place="package_finished"/>
       <connect-out port="slot" place="empty_slot"/>
     </transition>
@@ -593,7 +568,6 @@
         <in name="done_eat" type="control"/>
         <in name="done_finalize" type="control"/>
         <in name="write_info" type="shrink_write_info"/>
-        <in name="give_back_trace" type="long"/>
 
         <out name="done" type="control"/>
         <expression>
@@ -604,7 +578,6 @@
       <connect-in port="done_eat" place="done_eat"/>
       <connect-in port="done_finalize" place="done_finalize"/>
       <connect-in port="write_info" place="write_info"/>
-      <connect-in port="give_back_trace" place="give_back_trace"/>
 
       <connect-out port="done" place="done"/>
     </transition>
