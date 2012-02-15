@@ -44,6 +44,7 @@ target_link_libraries (sdpa-gui
 	sdpa-events
 #	sdpa-util
 	sdpa-com
+	fhg-revision
 	seda
 	${FhgLog_LIBRARY}
 	${Boost_LIBRARIES}

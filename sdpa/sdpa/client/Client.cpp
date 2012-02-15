@@ -32,6 +32,8 @@
 
 #include <sdpa/version.hpp>
 
+#include <fhg/revision.hpp>
+
 namespace se = sdpa::events;
 using namespace sdpa::client;
 
@@ -51,7 +53,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   , version_(SDPA_VERSION)
   , copyright_(SDPA_COPYRIGHT)
   , contact_(SDPA_CONTACT)
-  , timestamp_(SDPA_TIMESTAMP)
+  , timestamp_(fhg::project_build_time())
   , revision_(SDPA_REVISION)
   , build_(SDPA_BUILD)
   , name_(a_name)
