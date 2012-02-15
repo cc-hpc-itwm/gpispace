@@ -22,6 +22,7 @@ OPTION(ENABLE_GPI_SPACE "Build the gpi-space interface" YES)
 OPTION(ENABLE_STATIC_BINARIES "Build static linked binaries" YES)
 OPTION(ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
 OPTION(ENABLE_PNET_EDITOR "Build the pnet editor" YES)
+OPTION(INSTALL_AS_BUNDLE "Install as a bundle" NO)
 OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 set(FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set(WITH_COMM OFF)
@@ -165,6 +166,10 @@ install (FILES ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa
   DESTINATION etc/modules/soft/sdpa
   RENAME current
   COMPONENT configurations)
+
+if (INSTALL_AS_BUNDLE)
+  add_subdirectory(bundle)
+endif()
 
 # CPACK packaging
 INCLUDE(InstallRequiredSystemLibraries)
