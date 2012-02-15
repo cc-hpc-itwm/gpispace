@@ -1,10 +1,19 @@
 #!/bin/bash
+
+src=$(cd $( dirname "$0" ) && pwd)
+
+build_dir=$(pwd)
+
 if [ -e ./CMakeLists.txt ] ; then
-  echo "F: This script is intended to be executed in a build directory!"
-  exit 1
+  build_dir="$(pwd)/build"
+  if [ ! -d "${build_dir}" ] ; then
+    echo >&2 "W: This script is intended to be executed in a build directory!"
+    echo >&2 "I: using '${build_dir}' instead"
+    mkdir -p "${build_dir}"
+  fi
 fi
 
-src=$( cd $( dirname "$0" ) && pwd )
+cd "${build_dir}"
 
 build_type=Release
 build_tests=false
@@ -85,7 +94,7 @@ cat >&2 <<EOF
 #     revision: $build_rev
 #       prefix: $build_prefix
 #       source: $src
-#        build: `pwd`
+#        build: $build_dir
 #         type: $build_type
 #
 #        tests: $build_tests
