@@ -18,6 +18,7 @@ list(APPEND libSearchDirs $ENV{BOOST_ROOT}/lib/)
 list(APPEND libSearchDirs $ENV{HWLOC_HOME}/lib/)
 list(APPEND libSearchDirs ${QT_LIBRARY_DIR}/)
 list(APPEND libSearchDirs $ENV{GRAPHVIZ_HOME}/lib/)
+list(APPEND libSearchDirs \${CMAKE_INSTALL_PREFIX}/lib/)
 
 foreach(app ${APPS})
   include(InstallRequiredSystemLibraries)
