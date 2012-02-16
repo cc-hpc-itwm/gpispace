@@ -18,16 +18,14 @@ list(APPEND libSearchDirs $ENV{BOOST_ROOT}/lib/)
 list(APPEND libSearchDirs $ENV{HWLOC_HOME}/lib/)
 list(APPEND libSearchDirs ${QT_LIBRARY_DIR}/)
 list(APPEND libSearchDirs $ENV{GRAPHVIZ_HOME}/lib/)
-#list(APPEND libSearchDirs "\${CMAKE_INSTALL_PREFIX}/lib/")
-#list(APPEND libSearchDirs "\${CMAKE_INSTALL_PREFIX}/libexec/")
-#list(APPEND libSearchDirs /lib /lib64 /usr/lib /usr/lib64)
 
 foreach(app ${APPS})
   include(InstallRequiredSystemLibraries)
   install(CODE "
-  file(GLOB_RECURSE SHARED_LIBS
-         \"\${CMAKE_INSTALL_PREFIX}/*.so\")
+  file(GLOB_RECURSE PLUGINS
+         \"\${CMAKE_INSTALL_PREFIX}/libexec/plugins/*.so\")
+  message(STATUS \"plugins='\${PLUGINS}'\")
   include(BundleUtilities)
-  fixup_bundle(\"${app}\" \"\${SHARED_LIBS}\" \"${libSearchDirs}\")
+  fixup_bundle(\"${app}\" \"\${PLUGINS}\" \"${libSearchDirs}\")
   " COMPONENT runtime)
 endforeach()
