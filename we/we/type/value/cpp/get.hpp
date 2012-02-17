@@ -21,7 +21,7 @@ namespace value
       {
       public:
         bad_get (const std::string & msg)
-          : std::runtime_error ("BAD_GET: " + msg)
+          : std::runtime_error ("bad_get: " + msg)
         {}
       };
     }
