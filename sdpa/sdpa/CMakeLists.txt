@@ -32,6 +32,6 @@ install(FILES ${hdrs}
 install(TARGETS sdpa
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)
 
 add_subdirectory (com)

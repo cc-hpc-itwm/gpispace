@@ -43,4 +43,4 @@ install(FILES ${hdrs}
 install(TARGETS seda-comm
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)

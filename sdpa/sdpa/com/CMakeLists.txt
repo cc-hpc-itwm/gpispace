@@ -16,4 +16,4 @@ install(FILES ${hdrs}
   COMPONENT headers)
 install(TARGETS sdpa-com
   ARCHIVE DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)

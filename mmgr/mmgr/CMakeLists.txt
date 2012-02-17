@@ -33,7 +33,7 @@ install(FILES ${hdrs}
 install(TARGETS mmgr
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)
 install(TARGETS mmgr.shared
   LIBRARY
   DESTINATION lib

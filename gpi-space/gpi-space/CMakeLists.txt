@@ -37,7 +37,7 @@ install(FILES ${hdrs}
 install(TARGETS gpi-space-static
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)
 
 install(TARGETS gpi-space-shared
   LIBRARY

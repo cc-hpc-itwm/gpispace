@@ -74,4 +74,4 @@ install(TARGETS seda
   EXPORT ${PROJECT_NAME}Exports
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)

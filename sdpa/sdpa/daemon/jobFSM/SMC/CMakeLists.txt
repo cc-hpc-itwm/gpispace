@@ -31,4 +31,4 @@ install(FILES ${hdrs}
 install(TARGETS sdpa-jobFSM_SMC
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)

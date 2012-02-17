@@ -60,4 +60,4 @@ install(FILES ${hdrs}
 install(TARGETS sdpa-daemon
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)

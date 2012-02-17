@@ -17,7 +17,7 @@ if (SMC_FOUND)
 	set(hdrs ${hdrs} ${DAEMON_FSM_H})
 	set(srcs ${srcs} ${DAEMON_FSM_CPP})
 else (SMC_FOUND)
-# simply, use the generated files 
+# simply, use the generated files
 	set(hdrs ${hdrs} generated/DaemonFSM_sm.h)
 	set(srcs ${srcs} generated/DaemonFSM_sm.cpp)
 endif (SMC_FOUND)
@@ -31,4 +31,4 @@ install(FILES ${hdrs}
 install(TARGETS sdpa-daemonFSM_SMC
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)
