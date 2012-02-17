@@ -1,14 +1,14 @@
 <defun>
 
-  <in name="config" type="shrink_config" place="config"/>
-  <out name="package" type="shrink_loaded_package" place="package"/>
+  <in name="config" type="tracebytrace_config" place="config"/>
+  <out name="package" type="tracebytrace_loaded_package" place="package"/>
   <out name="num" type="long" place="num"/>
 
   <net>
 
-    <place name="config" type="shrink_config"/>
+    <place name="config" type="tracebytrace_config"/>
 
-    <place name="package" type="shrink_loaded_package"/>
+    <place name="package" type="tracebytrace_loaded_package"/>
     <place name="num" type="long"/>
 
     <struct name="state">
@@ -23,7 +23,7 @@
 
     <transition name="init">
       <defun>
-        <in name="config" type="shrink_config"/>
+        <in name="config" type="tracebytrace_config"/>
         <out name="state" type="state"/>
         <out name="num" type="long"/>
         <expression>
@@ -71,7 +71,7 @@
         <in name="state" type="state"/>
         <in name="slot" type="long"/>
         <out name="state" type="state"/>
-        <out name="loaded_package" type="shrink_loaded_package"/>
+        <out name="loaded_package" type="tracebytrace_loaded_package"/>
         <expression>
           ${left} := ${state.id};
 

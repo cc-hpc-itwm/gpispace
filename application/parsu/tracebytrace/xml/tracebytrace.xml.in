@@ -1,4 +1,4 @@
-<defun name="shrink">
+<defun name="tracebytrace">
 
   <in name="cmd" type="string" place="cmd"/>
   <in name="shmem_per_node" type="long" place="shmem_per_node"/>
@@ -10,7 +10,7 @@
 
   <out name="done" type="control" place="done"/>
 
-  <struct name="shrink_package">
+  <struct name="tracebytrace_package">
     <field name="part" type="long"/>
     <struct name="num">
       <field name="trace" type="long"/>
@@ -21,18 +21,18 @@
     </struct>
   </struct>
 
-  <struct name="shrink_loaded_package">
-    <field name="package" type="shrink_package"/>
+  <struct name="tracebytrace_loaded_package">
+    <field name="package" type="tracebytrace_package"/>
     <field name="slot" type="long"/>
   </struct>
 
-  <struct name="shrink_write_info">
+  <struct name="tracebytrace_write_info">
     <field name="next_part" type="long"/>
     <field name="offset" type="long"/>
   </struct>
 
-  <struct name="shrink_package_to_be_written">
-    <field name="loaded_package" type="shrink_loaded_package"/>
+  <struct name="tracebytrace_package_to_be_written">
+    <field name="loaded_package" type="tracebytrace_loaded_package"/>
     <field name="offset" type="long"/>
   </struct>
 
@@ -46,7 +46,7 @@
     <field name="type" type="string"/>
   </struct>
 
-  <struct name="shrink_config">
+  <struct name="tracebytrace_config">
     <struct name="file">
       <field name="input" type="file"/>
       <field name="output" type="file"/>
@@ -86,7 +86,7 @@
 
     <include-template href="triple.xml"/>
     <specialize name="triple_config" use="triple">
-      <type-map replace="T" with="shrink_config"/>
+      <type-map replace="T" with="tracebytrace_config"/>
     </specialize>
 
     <!-- tuning -->
@@ -125,9 +125,9 @@
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
         <in name="cmd" type="string"/>
-        <out name="write_info" type="shrink_write_info"/>
-        <out name="config" type="shrink_config"/>
-        <module name="shrink"
+        <out name="write_info" type="tracebytrace_write_info"/>
+        <out name="config" type="tracebytrace_config"/>
+        <module name="tracebytrace"
                 function="init ( file_input
                                , type_input
                                , file_output
@@ -202,7 +202,7 @@
 
             if (config.size.resulting_trace > config.size.trace)
             {
-              LOG (FATAL, "Trace would get bigger and .. this is shrink. You know? SHRINK.");
+              LOG (FATAL, "Trace would get bigger and .. this once was shrink. You know? SHRINK. And the programmer has been too lazy to correct this behaviour.");
               throw std::runtime_error ("trace getting bigger.");
             }
 
@@ -273,7 +273,7 @@
       <connect-out port="config" place="config_generated"/>
     </transition>
 
-    <place name="config_generated" type="shrink_config"/>
+    <place name="config_generated" type="tracebytrace_config"/>
 
     <transition name="scatter_config" inline="true">
       <use name="triple_config"/>
@@ -283,17 +283,17 @@
       <connect-out port="three" place="config_generate_slot"/>
     </transition>
 
-    <place name="config" type="shrink_config"/>
-    <place name="config_generate_package" type="shrink_config"/>
-    <place name="config_generate_slot" type="shrink_config"/>
+    <place name="config" type="tracebytrace_config"/>
+    <place name="config_generate_package" type="tracebytrace_config"/>
+    <place name="config_generate_slot" type="tracebytrace_config"/>
 
-    <place name="write_info" type="shrink_write_info"/>
+    <place name="write_info" type="tracebytrace_write_info"/>
 
     <transition name="extract_eat_slot">
       <defun>
         <in name="trigger" type="control"/>
-        <in name="config" type="shrink_config"/>
-        <out name="config" type="shrink_config"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="config" type="tracebytrace_config"/>
         <out name="N" type="long"/>
         <expression>
           ${N} := ${config.num.slot}
@@ -305,7 +305,7 @@
       <connect-out port="N" place="num_slot_eat"/>
     </transition>
 
-    <place name="config_finalize" type="shrink_config"/>
+    <place name="config_finalize" type="tracebytrace_config"/>
 
     <place name="num_slot_eat" type="long"/>
 
@@ -317,7 +317,7 @@
 
     <place name="empty_slot" type="long"/>
 
-    <place name="new_package" type="shrink_loaded_package"/>
+    <place name="new_package" type="tracebytrace_loaded_package"/>
     <place name="num_packages" type="long"/>
 
     <transition name="generate_package" inline="true">
@@ -330,10 +330,10 @@
 
     <transition name="load">
       <defun>
-        <in name="package" type="shrink_loaded_package"/>
-        <in name="config" type="shrink_config"/>
-        <out name="package" type="shrink_loaded_package"/>
-        <module name="shrink" function="load (package, config)">
+        <in name="package" type="tracebytrace_loaded_package"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="package" type="tracebytrace_loaded_package"/>
+        <module name="tracebytrace" function="load (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
@@ -366,14 +366,14 @@
       <connect-out port="package" place="loaded_package"/>
     </transition>
 
-    <place name="loaded_package" type="shrink_loaded_package"/>
+    <place name="loaded_package" type="tracebytrace_loaded_package"/>
 
-    <transition name="shrink">
+    <transition name="tracebytrace">
       <defun>
-        <in name="package" type="shrink_loaded_package"/>
-        <in name="config" type="shrink_config"/>
-        <out name="package" type="shrink_loaded_package"/>
-        <module name="shrink" function="shrink (package, config)">
+        <in name="package" type="tracebytrace_loaded_package"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="package" type="tracebytrace_loaded_package"/>
+        <module name="tracebytrace" function="tracebytrace (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
@@ -382,7 +382,7 @@
           <code><![CDATA[
             const std::string cmd (config.cmd);
 
-            LOG (INFO, "SHRINK " << ::print::loaded_package (package)
+            LOG (INFO, "TRACEBYTRACE " << ::print::loaded_package (package)
                                  << cmd
                 );
 
@@ -414,14 +414,14 @@
       <connect-out port="package" place="writeable_package"/>
     </transition>
 
-    <place name="writeable_package" type="shrink_loaded_package"/>
+    <place name="writeable_package" type="tracebytrace_loaded_package"/>
 
     <transition name="select_writeable">
       <defun>
-        <in name="write_info" type="shrink_write_info"/>
-        <out name="write_info" type="shrink_write_info"/>
-        <in name="p" type="shrink_loaded_package"/>
-        <out name="w" type="shrink_package_to_be_written"/>
+        <in name="write_info" type="tracebytrace_write_info"/>
+        <out name="write_info" type="tracebytrace_write_info"/>
+        <in name="p" type="tracebytrace_loaded_package"/>
+        <out name="w" type="tracebytrace_package_to_be_written"/>
         <expression>
           ${w.loaded_package} := ${p};
           ${w.offset} := ${write_info.offset};
@@ -439,14 +439,14 @@
       <connect-out port="w" place="package_to_be_written"/>
     </transition>
 
-    <place name="package_to_be_written" type="shrink_package_to_be_written"/>
+    <place name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
 
     <transition name="write">
       <defun>
-        <in name="package_to_be_written" type="shrink_package_to_be_written"/>
-        <in name="config" type="shrink_config"/>
-        <out name="p" type="shrink_loaded_package"/>
-        <module name="shrink" function="p write (package_to_be_written, config)">
+        <in name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="p" type="tracebytrace_loaded_package"/>
+        <module name="tracebytrace" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_write.hpp"/>
@@ -454,7 +454,7 @@
           <cinclude href="comm.hpp"/>
           <ld flag="-ldo_write"/>
           <code><![CDATA[
-            const ::pnetc::type::shrink_loaded_package::shrink_loaded_package & p
+            const ::pnetc::type::tracebytrace_loaded_package::tracebytrace_loaded_package & p
               (package_to_be_written.loaded_package);
 
             LOG (INFO, "WRITE " << ::print::loaded_package (p)
@@ -491,12 +491,12 @@
       <connect-out port="p" place="package_written"/>
     </transition>
 
-    <place name="package_written" type="shrink_loaded_package"/>
+    <place name="package_written" type="tracebytrace_loaded_package"/>
 
     <transition name="back_store">
       <defun>
-        <in name="loaded_package" type="shrink_loaded_package"/>
-        <out name="package" type="shrink_package"/>
+        <in name="loaded_package" type="tracebytrace_loaded_package"/>
+        <out name="package" type="tracebytrace_package"/>
         <out name="slot" type="long"/>
         <expression>
           ${package} := ${loaded_package.package};
@@ -508,11 +508,11 @@
       <connect-out port="slot" place="empty_slot"/>
     </transition>
 
-    <place name="package_finished" type="shrink_package"/>
+    <place name="package_finished" type="tracebytrace_package"/>
 
     <include-template href="wait.xml"/>
     <specialize name="wait_package" use="wait">
-      <type-map replace="T" with="shrink_package"/>
+      <type-map replace="T" with="tracebytrace_package"/>
     </specialize>
 
     <transition name="wait_package">
@@ -529,9 +529,9 @@
 
     <transition name="finalize">
       <defun>
-        <in name="config" type="shrink_config"/>
+        <in name="config" type="tracebytrace_config"/>
         <out name="trigger" type="control"/>
-        <module name="shrink" function="finalize (trigger, config)">
+        <module name="tracebytrace" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[
@@ -604,7 +604,7 @@
       <defun>
         <in name="done_eat" type="control"/>
         <in name="done_finalize" type="control"/>
-        <in name="write_info" type="shrink_write_info"/>
+        <in name="write_info" type="tracebytrace_write_info"/>
 
         <out name="done" type="control"/>
         <expression>

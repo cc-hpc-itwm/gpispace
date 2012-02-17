@@ -1,6 +1,6 @@
 #!/bin/bash
 
-shrink_dir="@PARSU_SHRINK_DIR@"
+tracebytrace_dir="@PARSU_TRACEBYTRACE_DIR@"
 
 tmp_dir=${PARSU_TMP_DIR:-${TMPDIR}}
 
@@ -13,8 +13,8 @@ fi
 scratch_dir="$HOME/.sdpa/scratch"
 test ! -d "${scratch_dir}" && { mkdir -p "${scratch_dir}" ; }
 
-xml_file_in="${shrink_dir}/shrink.xml.in"
-mk_xml="${shrink_dir}/mk.xml"
+xml_file_in="${tracebytrace_dir}/tracebytrace.xml.in"
+mk_xml="${tracebytrace_dir}/mk.xml"
 
 shmem_per_node_default=$((2**28))
 gpi_mem_per_node_default=$((2**30))
@@ -50,19 +50,19 @@ cleanup ()
 }
 trap cleanup EXIT
 
-xml_file=$( mktemp "${tmp_dir}/parsu_shrink.xml.XXXXXX" )
+xml_file=$( mktemp "${tmp_dir}/parsu_tracebytrace.xml.XXXXXX" )
 if [ $? -ne 0 ] ; then
   echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
   exit 2
 fi
 
-pnet_file=$( mktemp "${tmp_dir}/parsu_shrink.pnet.XXXXXX" )
+pnet_file=$( mktemp "${tmp_dir}/parsu_tracebytrace.pnet.XXXXXX" )
 if [ $? -ne 0 ] ; then
   echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
   exit 2
 fi
 
-script_file=$( mktemp "${scratch_dir}/parsu_shrink.sh.XXXXXX" )
+script_file=$( mktemp "${scratch_dir}/parsu_tracebytrace.sh.XXXXXX" )
 if [ $? -ne 0 ] ; then
     echo "could not create temporary script in ${scratch_dir}" >&2
     exit 2
@@ -114,5 +114,5 @@ if [ $? -ne 0 ] ; then
 fi
 echo "ok" >/dev/stderr
 
-PARSU_PNETC_LIB_DIR="${shrink_dir} -I @PARSU_PNETC_LIB_DIR@" \
+PARSU_PNETC_LIB_DIR="${tracebytrace_dir} -I @PARSU_PNETC_LIB_DIR@" \
 parsu_run "${xml_file}" "${pnet_file}"

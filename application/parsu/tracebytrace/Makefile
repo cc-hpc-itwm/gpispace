@@ -1,5 +1,5 @@
 
-MAIN = shrink
+MAIN = tracebytrace
 
 SDPA_INCLUDE = $(SDPA_HOME)/include
 SDPA_LIBEXEC = $(SDPA_HOME)/libexec

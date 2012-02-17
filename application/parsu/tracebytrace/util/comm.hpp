@@ -1,8 +1,8 @@
 #ifndef _COMM_HPP
 #define _COMM_HPP 1
 
-#include <pnetc/type/shrink_config.hpp>
-#include <pnetc/type/shrink_loaded_package.hpp>
+#include <pnetc/type/tracebytrace_config.hpp>
+#include <pnetc/type/tracebytrace_loaded_package.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -15,8 +15,8 @@
 namespace comm
 {
   inline void put
-  ( const ::pnetc::type::shrink_config::shrink_config config
-  , const ::pnetc::type::shrink_loaded_package::shrink_loaded_package package
+  ( const ::pnetc::type::tracebytrace_config::tracebytrace_config config
+  , const ::pnetc::type::tracebytrace_loaded_package::tracebytrace_loaded_package package
   , const long shmem_offset = 0
   )
   {
@@ -39,8 +39,8 @@ namespace comm
   }
 
   inline void get
-  ( const ::pnetc::type::shrink_config::shrink_config config
-  , const ::pnetc::type::shrink_loaded_package::shrink_loaded_package package
+  ( const ::pnetc::type::tracebytrace_config::tracebytrace_config config
+  , const ::pnetc::type::tracebytrace_loaded_package::tracebytrace_loaded_package package
   , const long shmem_offset = 0
   )
   {
