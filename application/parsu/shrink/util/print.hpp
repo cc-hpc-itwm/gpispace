@@ -16,10 +16,7 @@ namespace print
     std::ostringstream os;
 
     os << "package ["
-       << p.left
-       << ".."
-       << p.right
-       << ")"
+       << p.part
        << " (size " << p.num.trace << " x " << p.size.trace
        << " = " << (p.num.trace * p.size.trace)
        << ")"

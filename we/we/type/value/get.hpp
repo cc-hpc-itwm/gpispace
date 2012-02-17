@@ -26,7 +26,7 @@ namespace value
       {
       public:
         missing_field (const signature::field_name_t & name)
-          : std::runtime_error ("missing field " + name)
+          : std::runtime_error ("get_field: missing field " + name)
         {}
       };
 

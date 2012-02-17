@@ -11,13 +11,13 @@
   <out name="done" type="control" place="done"/>
 
   <struct name="shrink_package">
-    <field name="left" type="long"/>
-    <field name="right" type="long"/>
+    <field name="part" type="long"/>
     <struct name="num">
       <field name="trace" type="long"/>
     </struct>
     <struct name="size">
       <field name="trace" type="long"/>
+      <field name="full_package" type="long"/>
     </struct>
   </struct>
 
@@ -27,7 +27,7 @@
   </struct>
 
   <struct name="shrink_write_info">
-    <field name="next_trace" type="long"/>
+    <field name="next_part" type="long"/>
     <field name="offset" type="long"/>
   </struct>
 
@@ -57,6 +57,7 @@
     <struct name="size">
       <field name="trace" type="long"/>
       <field name="bunch" type="long"/>
+      <field name="resulting_trace" type="long"/>
     </struct>
 
     <struct name="per">
@@ -142,9 +143,19 @@
           <cinclude href="stdexcept"/>
           <cinclude href="fstream"/>
           <cinclude href="determine_size.hpp"/>
+          <cinclude href="do_load.hpp"/>
+          <cinclude href="process/process.hpp"/>
+          <ld flag="-lprocess"/>
           <ld flag="-ldetermine_size"/>
+          <ld flag="-ldo_load"/>
           <code><![CDATA[
             LOG (INFO, "INIT");
+
+            config.file.input.name = file_input;
+            config.file.input.type = type_input;
+            config.file.output.name = file_output;
+            config.file.output.type = type_output;
+            config.cmd = cmd;
 
             determine_size ( file_input
                            , type_input
@@ -155,9 +166,50 @@
             LOG (INFO, "num.trace = " << config.num.trace);
             LOG (INFO, "size.trace = " << config.size.trace);
 
-            const long mem_per_node (std::min ( shmem_per_node
-                                              , gpi_mem_per_node
-                                              )
+            // ---- get size of resulting traces -------------
+
+            char* input_trace (new char [config.size.trace]);
+
+            do_load ( config.file.input.name
+                    , config.file.input.type
+                    , 0 // dummy "part" and "part size"
+                    , 0
+                    , config.size.trace
+                    , 1
+                    , input_trace
+                    );
+
+            config.size.resulting_trace = LONG_MAX;
+
+            for ( long size (std::max (1024 * 1024L, config.size.trace * 2))
+                ; size <= config.size.resulting_trace
+                ; size *= 2
+                )
+            {
+              char* output_buffer (new char[size]);
+              config.size.resulting_trace = process::execute ( cmd
+                                                             , input_trace
+                                                             , config.size.trace
+                                                             , output_buffer
+                                                             , size
+                                                             );
+              delete[] output_buffer;
+            }
+
+            delete[] input_trace;
+
+            LOG (INFO, "size.resulting_trace = " << config.size.resulting_trace);
+
+            if (config.size.resulting_trace > config.size.trace)
+            {
+              LOG (FATAL, "Trace would get bigger and .. this is shrink. You know? SHRINK.");
+              throw std::runtime_error ("trace getting bigger.");
+            }
+
+
+            const long mem_per_node ( std::min ( shmem_per_node
+                                               , gpi_mem_per_node
+                                               )
                                     );
 
             config.per.bunch.trace = mem_per_node / config.size.trace;
@@ -196,13 +248,7 @@
                 throw std::runtime_error ("BUMMER! handle.scratch == 0");
               }
 
-            config.file.input.name = file_input;
-            config.file.input.type = type_input;
-            config.file.output.name = file_output;
-            config.file.output.type = type_output;
-            config.cmd = cmd;
-
-            write_info.next_trace = 0;
+            write_info.next_part = 0;
             write_info.offset = 0;
 
             {
@@ -296,24 +342,19 @@
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
 
-            const long part (package.package.left / config.per.bunch.trace);
-            const long size (package.package.num.trace * package.package.size.trace);
-
-            LOG (INFO, "do_load: part " << part
+            LOG (INFO, "do_load: part " << package.package.part
                     << ", part_size "  << config.size.bunch
-                    << ", size " << size
+                    << ", size " << package.package.size.full_package
                     << ", num " << package.package.num.trace
                 );
 
-            void * buf (fvmGetShmemPtr());
-
             do_load ( config.file.input.name
                     , config.file.input.type
-                    , part
+                    , package.package.part
                     , config.size.bunch
-                    , size
+                    , package.package.size.full_package
                     , package.package.num.trace
-                    , buf
+                    , fvmGetShmemPtr()
                     );
 
             comm::put (config, package);
@@ -349,17 +390,18 @@
 
             void * buf (fvmGetShmemPtr());
 
-            const long size
-              (package.package.num.trace * package.package.size.trace);
+            const long& size (package.package.size.full_package);
 
             const std::size_t size_shrunken
               (process::execute (cmd, buf, size, buf, size));
 
             LOG (INFO, "size_shrunken = " << size_shrunken);
 
-            package.package.size.trace = size_shrunken
-                                       / package.package.num.trace
-                                       ;
+            package.package.size.trace = config.size.resulting_trace;
+            package.package.size.full_package = size_shrunken;
+            package.package.num.trace = package.package.size.full_package
+                                      / package.package.size.trace;
+
 
             comm::put (config, package);
 
@@ -384,14 +426,11 @@
           ${w.loaded_package} := ${p};
           ${w.offset} := ${write_info.offset};
 
-          ${write_info.next_trace} := ${p.package.right};
-          ${write_info.offset} :=
-            ${write_info.offset} +
-            ${p.package.size.trace} * ${p.package.num.trace}
-          ;
+          ${write_info.next_part} := ${p.package.part} + 1;
+          ${write_info.offset} := ${write_info.offset} + ${p.package.size.full_package};
         </expression>
         <condition>
-          ${write_info.next_trace} :eq: ${p.package.left}
+          ${write_info.next_part} :eq: ${p.package.part}
         </condition>
       </defun>
       <connect-in port="write_info" place="write_info"/>
@@ -423,23 +462,21 @@
                                 << ":" << package_to_be_written.offset
                 );
 
-            const long size (p.package.num.trace * p.package.size.trace);
-
-            if (size > 0)
+            if (p.package.size.full_package > 0)
               {
                 comm::get (config, p);
 
                 LOG (INFO, "do_write: part " << package_to_be_written.offset
                         << ", part_size "  << 1
-                        << ", size " << size
-                        << ", num " << size * p.package.num.trace
+                        << ", size " << p.package.size.full_package
+                        << ", num " << p.package.num.trace
                     );
 
                 do_write ( config.file.output.name
                          , config.file.output.type
                          , package_to_be_written.offset
                          , 1
-                         , size
+                         , p.package.size.full_package
                          , p.package.num.trace
                          , fvmGetShmemPtr()
                          );

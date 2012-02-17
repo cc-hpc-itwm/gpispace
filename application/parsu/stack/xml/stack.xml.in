@@ -607,7 +607,7 @@
         ${package.package.size} :eq: 0
       </condition>
       <connect-in port="package" place="done_package"/>
-      <connect-out port="package" place="loaded_package_finished"/>
+      <connect-out port="package" place="package_written"/>
     </transition>
 
     <place name="writeable_package" type="stack_loaded_package"/>

@@ -50,7 +50,12 @@ namespace value
             const structured_t::const_iterator pos (v.find (sig->first));
 
             if (!v.has_field (sig->first))
-              throw ::type::error ("missing field " + sig->first);
+              {
+                throw ::type::error
+                  ( "require_field: missing (or uninitialized) field "
+                  + sig->first
+                  );
+              }
 
             boost::apply_visitor
               ( require_type (field_name + "." + sig->first)
