@@ -46,6 +46,7 @@ set ( client_libs
       sdpa-util
       sdpa-com
       sdpa
+      fhg-revision
       ${FhgLog_LIBRARY}
       ${SEDA_LIBRARY}
       ${Boost_LIBRARIES}
