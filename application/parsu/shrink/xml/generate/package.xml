@@ -73,14 +73,14 @@
         <out name="state" type="state"/>
         <out name="loaded_package" type="shrink_loaded_package"/>
         <expression>
-          ${package.left} := ${state.id};
+          ${left} := ${state.id};
 
+          ${package.part} := ${state.id} div ${state.inc};
           ${state.id} := ${state.id} + ${state.inc};
 
-          ${package.right} := min (${state.max}, ${state.id});
-
-          ${package.num.trace} := ${package.right} - ${package.left};
+          ${package.num.trace} := min (${state.max}, ${state.id}) - ${left};
           ${package.size.trace} := ${state.size};
+          ${package.size.full_package} := ${package.num.trace} * ${package.size.trace};
 
           ${loaded_package.package} := ${package};
           ${loaded_package.slot} := ${slot};
