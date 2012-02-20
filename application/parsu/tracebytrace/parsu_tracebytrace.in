@@ -16,11 +16,13 @@ test ! -d "${scratch_dir}" && { mkdir -p "${scratch_dir}" ; }
 xml_file_in="${tracebytrace_dir}/tracebytrace.xml.in"
 mk_xml="${tracebytrace_dir}/mk.xml"
 
+skipped_traces_default=0
+
 shmem_per_node_default=$((2**28))
 gpi_mem_per_node_default=$((2**30))
 
 if [ $# -lt 5 ]; then
-  echo "usage: $0 input-file input-type output-file output-type \"su cmd\" [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
+  echo "usage: $0 input-file input-type output-file output-type \"su cmd\" [skipped-traces:${skipped_traces_default}] [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
   exit 1
 fi
 
@@ -29,8 +31,9 @@ int=${2}
 outf=${3}
 outt=${4}
 cmd=${5}
-shmem_per_node=${6:-${shmem_per_node_default}}
-gpi_mem_per_node=${7:-${gpi_mem_per_node_default}}
+skipped_traces=${6:-${skipped_traces_default}}
+shmem_per_node=${7:-${shmem_per_node_default}}
+gpi_mem_per_node=${8:-${gpi_mem_per_node_default}}
 
 if [ ! -r "$inf" ] ; then
   echo "E: cannot access $inf for reading, aborting" >/dev/stderr
@@ -103,6 +106,7 @@ cat "${xml_file_in}" | ${mk_xml}             \
                        "${abs_outf}"         \
                        "${outt}"             \
                        "${script_file}"      \
+                       "${skipped_traces}"   \
                        "${shmem_per_node}"   \
                        "${gpi_mem_per_node}" \
                        "--BUILD--"           \

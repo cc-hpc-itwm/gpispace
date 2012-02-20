@@ -7,6 +7,7 @@
   <in name="type_input" type="string" place="type_input"/>
   <in name="file_output" type="string" place="file_output"/>
   <in name="type_output" type="string" place="type_output"/>
+  <in name="skipped_traces" type="long" place="skipped_traces"/>
 
   <out name="done" type="control" place="done"/>
 
@@ -69,6 +70,7 @@
     <struct name="num">
       <field name="trace" type="long"/>
       <field name="slot" type="long"/>
+      <field name="skipped_traces" type="long"/>
     </struct>
 
     <field name="cmd" type="string"/>
@@ -114,6 +116,11 @@
       <token><value>"@TYPE_OUTPUT@"</value></token>
     </place>
 
+    <!-- optional parameters -->
+    <place name="skipped_traces" type="long">
+      <token><value>@SKIPPED_TRACES@</value></token>
+    </place>
+
     <place name="done" type="control"/>
 
     <transition name="init">
@@ -122,6 +129,7 @@
         <in name="type_input" type="string"/>
         <in name="file_output" type="string"/>
         <in name="type_output" type="string"/>
+        <in name="skipped_traces" type="long"/>
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
         <in name="cmd" type="string"/>
@@ -133,6 +141,7 @@
                                , file_output
                                , type_output
                                , cmd
+                               , skipped_traces
                                , shmem_per_node
                                , gpi_mem_per_node
                                , write_info
@@ -156,6 +165,7 @@
             config.file.output.name = file_output;
             config.file.output.type = type_output;
             config.cmd = cmd;
+            config.num.skipped_traces = skipped_traces;
 
             determine_size ( file_input
                            , type_input
@@ -163,7 +173,11 @@
                            , config.size.trace
                            );
 
-            LOG (INFO, "num.trace = " << config.num.trace);
+            LOG (INFO, "num.skipped_traces = " << config.num.skipped_traces);
+
+            config.num.trace -= config.num.skipped_traces;
+
+            LOG (INFO, "num.trace (without skipped) = " << config.num.trace);
             LOG (INFO, "size.trace = " << config.size.trace);
 
             // ---- get size of resulting traces -------------
@@ -205,6 +219,13 @@
               LOG (FATAL, "Trace would get bigger and .. this once was shrink. You know? SHRINK. And the programmer has been too lazy to correct this behaviour.");
               throw std::runtime_error ("trace getting bigger.");
             }
+            else
+            {
+              LOG ( INFO, "Resulting trace is smaller or equal to input trace. "
+                          "Therefore operating inplace with same io buffer"
+                  );
+            }
+
 
 
             const long mem_per_node ( std::min ( shmem_per_node
@@ -266,6 +287,7 @@
       <connect-in port="type_input" place="type_input"/>
       <connect-in port="file_output" place="file_output"/>
       <connect-in port="type_output" place="type_output"/>
+      <connect-in port="skipped_traces" place="skipped_traces"/>
       <connect-in port="shmem_per_node" place="shmem_per_node"/>
       <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
       <connect-in port="cmd" place="cmd"/>
@@ -348,10 +370,14 @@
                     << ", num " << package.package.num.trace
                 );
 
+            const long offset ( package.package.part * config.size.bunch
+                              + config.num.skipped_traces * config.size.trace
+                              );
+
             do_load ( config.file.input.name
                     , config.file.input.type
-                    , package.package.part
-                    , config.size.bunch
+                    , 1
+                    , offset
                     , package.package.size.full_package
                     , package.package.num.trace
                     , fvmGetShmemPtr()
