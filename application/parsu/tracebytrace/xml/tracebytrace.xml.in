@@ -204,6 +204,12 @@
                 ; size *= 2
                 )
             {
+              if (size + config.size.trace.input >= shmem_per_node)
+              {
+                LOG (FATAL, "not enough memory to determine size of resulting trace.");
+                throw std::runtime_error ("not enough memory (determine result size)");
+              }
+
               char* output_buffer (new char[size]);
               config.size.trace.output = process::execute ( cmd
                                                           , input_trace
