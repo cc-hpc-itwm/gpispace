@@ -20,18 +20,16 @@ namespace comm
   , const long shmem_offset = 0
   )
   {
-    const long size (package.package.num.trace * package.package.size.trace);
-
     LOG (INFO, "comm::put " << ::print::loaded_package (package)
-        << " offset " << package.slot * config.size.slot
-        << " to shmem_offset " << shmem_offset
-        << " (" << size << " bytes)"
+        << " offset " << package.slot * config.size.slot.gpi
+        << " from shmem_offset " << shmem_offset
+        << " (" << package.package.size.package << " bytes)"
         );
 
     waitComm ( fvmPutGlobalData
                ( static_cast<fvmAllocHandle_t> (config.handle.data)
-               , package.slot * config.size.slot
-               , size
+               , package.slot * config.size.slot.gpi
+               , package.package.size.package
                , shmem_offset
                , static_cast<fvmAllocHandle_t> (config.handle.scratch)
                )
@@ -44,18 +42,16 @@ namespace comm
   , const long shmem_offset = 0
   )
   {
-    const long size (package.package.num.trace * package.package.size.trace);
-
     LOG (INFO, "comm::get " << ::print::loaded_package (package)
-        << " offset " << package.slot * config.size.slot
-        << " from shmem_offset " << shmem_offset
-        << " (" << size << " bytes)"
+        << " offset " << package.slot * config.size.slot.gpi
+        << " to shmem_offset " << shmem_offset
+        << " (" << package.package.size.package << " bytes)"
         );
 
     waitComm ( fvmGetGlobalData
                ( static_cast<fvmAllocHandle_t> (config.handle.data)
-               , package.slot * config.size.slot
-               , size
+               , package.slot * config.size.slot.gpi
+               , package.package.size.package
                , shmem_offset
                , static_cast<fvmAllocHandle_t> (config.handle.scratch)
                )

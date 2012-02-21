@@ -54,9 +54,14 @@
     </struct>
 
     <field name="handle" type="handle"/>
+    <field name="seperate_io_buffers" type="bool"/>
 
     <struct name="size">
-      <field name="slot" type="long"/>
+      <struct name="slot">
+        <field name="gpi" type="long"/>
+        <field name="input" type="long"/>
+      </struct>
+
       <struct name="trace">
         <field name="input" type="long"/>
         <field name="output" type="long"/>
@@ -251,11 +256,53 @@
 
             //! \note Decide which memory layout to use.
 
-            if (config.size.trace.output > config.size.trace.input)
+            config.seperate_io_buffers =
+              (config.size.trace.output > config.size.trace.input);
+
+            const long size_needed_per_trace_on_node
+              ( config.size.trace.input
+              + config.seperate_io_buffers ? config.size.trace.output
+                                           : 0
+              );
+
+            const long size_needed_per_trace_in_gpi
+              (std::max (config.size.trace.input, config.size.trace.output));
+
+            const long mem_per_node
+              (std::min (shmem_per_node, gpi_mem_per_node));
+
+            config.num.trace.per_slot = mem_per_node
+                                      / size_needed_per_trace_on_node;
+
+            if (config.num.trace.per_slot < 1)
             {
-              LOG ( FATAL, "Resulting trace is bigger than input trace. "
-                           "Therefore operating in two IO buffers."
-                           "This is not really implemented yet and will crash."
+              throw std::runtime_error ("not enough memory (shmem)");
+            }
+
+            config.size.slot.gpi = config.num.trace.per_slot
+                                 * size_needed_per_trace_in_gpi;
+
+            const long slot_per_node
+              (gpi_mem_per_node / config.size.slot.gpi);
+
+            if (slot_per_node < 2)
+            {
+              throw std::runtime_error ("not enough memory (gpi)");
+            }
+
+            config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
+            config.size.slot.input = config.size.trace.input
+                                   * config.num.trace.per_slot;
+
+            config.handle.data = static_cast<long>
+              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.slot.gpi));
+            config.handle.scratch = static_cast<long>
+              (fvmGlobalAlloc (                 1  * config.size.slot.gpi));
+
+            if (config.seperate_io_buffers)
+            {
+              LOG ( INFO, "Resulting trace is bigger than input trace. "
+                          "Therefore operating in two IO buffers."
                   );
             }
             else
@@ -263,49 +310,16 @@
               LOG ( INFO, "Resulting trace is smaller or equal to input trace. "
                           "Therefore operating in-place with same IO buffer."
                   );
+            }
 
-              const long mem_per_node ( std::min ( shmem_per_node
-                                                 , gpi_mem_per_node
-                                                 )
-                                      );
+            if (config.handle.data == 0)
+            {
+              throw std::runtime_error ("BUMMER! handle.data == 0");
+            }
 
-              //! \note Needed for generating packages. (gen/package.xml)
-              config.num.trace.per_slot = mem_per_node / config.size.trace.input;
-
-              LOG (INFO, "num.trace.per_slot = " << config.num.trace.per_slot);
-
-              if (config.num.trace.per_slot < 1)
-              {
-                throw std::runtime_error ("not enough memory (shmem)");
-              }
-
-              config.size.slot = config.num.trace.per_slot * config.size.trace.input;
-              const long slot_per_node (gpi_mem_per_node / config.size.slot);
-
-              if (slot_per_node < 2)
-              {
-                throw std::runtime_error ("not enough memory (gpi)");
-              }
-
-              config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
-
-              LOG (INFO, "num.slot = " << config.num.slot);
-
-              config.handle.data = static_cast<long>
-                (fvmGlobalAlloc ((slot_per_node - 1) * config.size.slot));
-              config.handle.scratch = static_cast<long>
-                (fvmGlobalAlloc (                 1  * config.size.slot));
-
-              if (config.handle.data == 0)
-              {
-                throw std::runtime_error ("BUMMER! handle.data == 0");
-              }
-
-              if (config.handle.scratch == 0)
-              {
-                throw std::runtime_error ("BUMMER! handle.scratch == 0");
-              }
-
+            if (config.handle.scratch == 0)
+            {
+              throw std::runtime_error ("BUMMER! handle.scratch == 0");
             }
 
             write_info.next_part = 0;
@@ -396,12 +410,12 @@
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
 
             LOG (INFO, "do_load: part " << package.package.part
-                    << ", part_size "  << config.size.slot
+                    << ", part_size "  << config.size.slot.input
                     << ", size " << package.package.size.package
                     << ", num " << package.package.num.trace
                 );
 
-            const long offset ( package.package.part * config.size.slot
+            const long offset ( package.package.part * config.size.slot.input
                               + config.num.trace.skipped * config.size.trace.input
                               );
 
@@ -443,14 +457,26 @@
                                  << cmd
                 );
 
+            const long shmem_output_offset
+              ( config.seperate_io_buffers
+              ? config.size.trace.input * config.num.trace.per_slot
+              : 0
+              );
+
             comm::get (config, package);
 
-            void * buf (fvmGetShmemPtr());
+            void* buf_in (fvmGetShmemPtr());
+            void* buf_out ( static_cast<char*> (fvmGetShmemPtr())
+                          + shmem_output_offset
+                          );
 
-            const long& size (package.package.size.package);
+            const long& size_in (package.package.size.package);
+            const long size_out ( package.package.num.trace
+                                * config.size.trace.output
+                                );
 
             const std::size_t size_shrunken
-              (process::execute (cmd, buf, size, buf, size));
+              (process::execute (cmd, buf_in, size_in, buf_out, size_out));
 
             LOG (INFO, "size_shrunken = " << size_shrunken);
 
@@ -459,7 +485,7 @@
             package.package.num.trace = package.package.size.package
                                       / package.package.size.trace;
 
-            comm::put (config, package);
+            comm::put (config, package, shmem_output_offset);
 
             LOG (INFO, "SHRUNKEN " << ::print::loaded_package (package));
           ]]></code>
@@ -513,29 +539,29 @@
             const ::pnetc::type::tracebytrace_loaded_package::tracebytrace_loaded_package & p
               (package_to_be_written.loaded_package);
 
-            LOG (INFO, "WRITE " << ::print::loaded_package (p)
-                                << " to " << config.file.output.name
-                                << ":" << package_to_be_written.offset
+            LOG ( INFO, "WRITE " << ::print::loaded_package (p)
+                                 << " to " << config.file.output.name
+                                 << ":" << package_to_be_written.offset
                 );
 
             if (p.package.size.package > 0)
-              {
-                comm::get (config, p);
+            {
+              comm::get (config, p);
 
-                LOG (INFO, "do_write: part " << package_to_be_written.offset
-                        << ", part_size "  << 1
-                        << ", size " << p.package.size.package
-                        << ", num " << p.package.num.trace
-                    );
+              LOG ( INFO, "do_write: part " << package_to_be_written.offset
+                          << ", part_size "  << 1
+                          << ", size " << p.package.size.package
+                          << ", num " << p.package.num.trace
+                  );
 
-                do_write ( config.file.output.name
-                         , config.file.output.type
-                         , package_to_be_written.offset
-                         , 1
-                         , p.package.size.package
-                         , p.package.num.trace
-                         , fvmGetShmemPtr()
-                         );
+              do_write ( config.file.output.name
+                       , config.file.output.type
+                       , package_to_be_written.offset
+                       , 1
+                       , p.package.size.package
+                       , p.package.num.trace
+                       , fvmGetShmemPtr()
+                       );
               }
 
             return p;
