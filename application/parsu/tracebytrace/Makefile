@@ -111,6 +111,7 @@ PNETC += --gen-cxxflags=-O3
 PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include
 PNETC += --gen-cxxflags=-I../../../kdm/src
 PNETC += --gen-cxxflags=-I../util
+PNETC += --gen-cxxflags=-Wno-deprecated-declarations
 PNETC += --force-overwrite-file=true
 PNETC += --Woverwrite-file=false
 PNETC += --Wbackup-file=false
