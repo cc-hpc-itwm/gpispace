@@ -18,6 +18,9 @@ CAT      = /bin/cat
 CP       = /bin/cp
 MKDIR    = mkdir
 
+.PHONY: default
+default: all
+
 ###############################################################################
 
 XML_MAIN    = $(PATH_MAIN)/xml/$(MAIN).xml
@@ -43,14 +46,6 @@ PATH_LIB = $(PATH_MAIN)/$(GEN)/pnetc/op
 LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
-
-#FILE_INPUT       = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
-#TYPE_INPUT       = segy
-#FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy.winded
-#TYPE_OUTPUT      = segy
-#CMD              = suwind itmin=10 nt=300
-#SHMEM_PER_NODE   = 2^28
-#GPI_MEM_PER_NODE = 2^30
 
 FILE_INPUT       = /u/herc/rahn/test.dat
 TYPE_INPUT       = su
@@ -131,9 +126,7 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 
 ###############################################################################
 
-.PHONY: default ps all out net
-
-default: all
+.PHONY: ps all out net
 
 ps: $(PS) $(PS_NOINLINE)
 
