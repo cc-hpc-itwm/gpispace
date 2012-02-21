@@ -139,6 +139,7 @@
         <in name="cmd" type="string"/>
         <out name="write_info" type="tracebytrace_write_info"/>
         <out name="config" type="tracebytrace_config"/>
+        <out name="remaining_traces_to_be_written" type="long"/>
         <module name="tracebytrace"
                 function="init ( file_input
                                , type_input
@@ -150,6 +151,7 @@
                                , gpi_mem_per_node
                                , write_info
                                , config
+                               , remaining_traces_to_be_written
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -211,6 +213,9 @@
             LOG (INFO, "size.trace.input = " << config.size.trace.input);
 
             //! \todo Super-fast-terminating when no input traces?
+
+            //! \todo !!!!Get via parameter!!!!
+            remaining_traces_to_be_written = 1000;
 
 
             //! \note Get size of output data.
@@ -338,6 +343,8 @@
       <connect-in port="cmd" place="cmd"/>
       <connect-out port="write_info" place="write_info"/>
       <connect-out port="config" place="config_generated"/>
+      <connect-out port="remaining_traces_to_be_written"
+                   place="remaining_traces_to_be_written"/>
     </transition>
 
     <place name="config_generated" type="tracebytrace_config"/>
@@ -522,13 +529,17 @@
     </transition>
 
     <place name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
+    <place name="remaining_traces_to_be_written" type="long"/>
 
     <transition name="write">
       <defun>
         <in name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
         <in name="config" type="tracebytrace_config"/>
+        <in name="remaining" type="long"/>
+        <out name="remaining" type="long"/>
         <out name="p" type="tracebytrace_loaded_package"/>
-        <module name="tracebytrace" function="p write (package_to_be_written, config)">
+        <module name="tracebytrace"
+                function="p write (package_to_be_written, config, remaining)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_write.hpp"/>
@@ -544,7 +555,8 @@
                                  << ":" << package_to_be_written.offset
                 );
 
-            if (p.package.size.package > 0)
+            //! \todo Really not sure about order. RETHINK THIS!
+            if (p.package.size.package > 0 && remaining > 0)
             {
               comm::get (config, p);
 
@@ -554,12 +566,16 @@
                           << ", num " << p.package.num.trace
                   );
 
+              const long num_traces
+                (std::min (p.package.num.trace, remaining));
+              remaining -= num_traces;
+
               do_write ( config.file.output.name
                        , config.file.output.type
                        , package_to_be_written.offset
                        , 1
-                       , p.package.size.package
-                       , p.package.num.trace
+                       , num_traces * config.size.trace.output
+                       , num_traces
                        , fvmGetShmemPtr()
                        );
               }
@@ -570,6 +586,8 @@
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="package_to_be_written" place="package_to_be_written"/>
+      <connect-in port="remaining" place="remaining_traces_to_be_written"/>
+      <connect-out port="remaining" place="remaining_traces_to_be_written"/>
       <connect-out port="p" place="package_written"/>
     </transition>
 
