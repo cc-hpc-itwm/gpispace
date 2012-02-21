@@ -23,14 +23,14 @@ namespace comm
     const long size (package.package.num.trace * package.package.size.trace);
 
     LOG (INFO, "comm::put " << ::print::loaded_package (package)
-        << " offset " << package.slot * config.size.bunch
+        << " offset " << package.slot * config.size.slot
         << " to shmem_offset " << shmem_offset
         << " (" << size << " bytes)"
         );
 
     waitComm ( fvmPutGlobalData
                ( static_cast<fvmAllocHandle_t> (config.handle.data)
-               , package.slot * config.size.bunch
+               , package.slot * config.size.slot
                , size
                , shmem_offset
                , static_cast<fvmAllocHandle_t> (config.handle.scratch)
@@ -47,14 +47,14 @@ namespace comm
     const long size (package.package.num.trace * package.package.size.trace);
 
     LOG (INFO, "comm::get " << ::print::loaded_package (package)
-        << " offset " << package.slot * config.size.bunch
+        << " offset " << package.slot * config.size.slot
         << " from shmem_offset " << shmem_offset
         << " (" << size << " bytes)"
         );
 
     waitComm ( fvmGetGlobalData
                ( static_cast<fvmAllocHandle_t> (config.handle.data)
-               , package.slot * config.size.bunch
+               , package.slot * config.size.slot
                , size
                , shmem_offset
                , static_cast<fvmAllocHandle_t> (config.handle.scratch)

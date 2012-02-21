@@ -18,7 +18,7 @@
     </struct>
     <struct name="size">
       <field name="trace" type="long"/>
-      <field name="full_package" type="long"/>
+      <field name="package" type="long"/>
     </struct>
   </struct>
 
@@ -38,7 +38,7 @@
   </struct>
 
   <struct name="handle">
-    <field name="data" type="long"/>
+    <field name="data" type="long"/> <!-- these two are fvmAllocHandle_ts -->
     <field name="scratch" type="long"/>
   </struct>
 
@@ -56,21 +56,20 @@
     <field name="handle" type="handle"/>
 
     <struct name="size">
-      <field name="trace" type="long"/>
-      <field name="bunch" type="long"/>
-      <field name="resulting_trace" type="long"/>
-    </struct>
-
-    <struct name="per">
-      <struct name="bunch">
-        <field name="trace" type="long"/>
+      <field name="slot" type="long"/>
+      <struct name="trace">
+        <field name="input" type="long"/>
+        <field name="output" type="long"/>
       </struct>
     </struct>
 
     <struct name="num">
-      <field name="trace" type="long"/>
       <field name="slot" type="long"/>
-      <field name="skipped_traces" type="long"/>
+      <struct name="trace">
+        <field name="input" type="long"/>
+        <field name="skipped" type="long"/>
+        <field name="per_slot" type="long"/>
+      </struct>
     </struct>
 
     <field name="cmd" type="string"/>
@@ -165,64 +164,71 @@
             config.file.output.name = file_output;
             config.file.output.type = type_output;
             config.cmd = cmd;
-            config.num.skipped_traces = skipped_traces;
 
             determine_size ( file_input
                            , type_input
-                           , config.num.trace
-                           , config.size.trace
+                           , config.num.trace.input
+                           , config.size.trace.input
                            );
 
-            LOG (INFO, "num.skipped_traces = " << config.num.skipped_traces);
+            //! \todo Or throw error. Behaviour to be defined.
+            config.num.trace.skipped = std::min ( skipped_traces
+                                                , config.num.trace.input
+                                                );
 
-            config.num.trace -= config.num.skipped_traces;
+            config.num.trace.input -= config.num.trace.skipped;
 
-            LOG (INFO, "num.trace (without skipped) = " << config.num.trace);
-            LOG (INFO, "size.trace = " << config.size.trace);
+            LOG (INFO, "num.trace.skipped = " << config.num.trace.skipped);
+            LOG (INFO, "num.trace.input (without skipped) = " << config.num.trace.input);
+            LOG (INFO, "size.trace.input = " << config.size.trace.input);
+
+            //! \todo Super-fast-terminating when no input traces?
 
             // ---- get size of resulting traces -------------
 
-            char* input_trace (new char [config.size.trace]);
+            char* input_trace (new char [config.size.trace.input]);
 
             do_load ( config.file.input.name
                     , config.file.input.type
                     , 0 // dummy "part" and "part size"
                     , 0
-                    , config.size.trace
+                    , config.size.trace.input
                     , 1
                     , input_trace
                     );
 
-            config.size.resulting_trace = LONG_MAX;
+            config.size.trace.output = LONG_MAX;
 
-            for ( long size (std::max (1024 * 1024L, config.size.trace * 2))
-                ; size <= config.size.resulting_trace
+            for ( long size (std::max (1024 * 1024L, config.size.trace.input * 2))
+                ; size <= config.size.trace.output
                 ; size *= 2
                 )
             {
               char* output_buffer (new char[size]);
-              config.size.resulting_trace = process::execute ( cmd
-                                                             , input_trace
-                                                             , config.size.trace
-                                                             , output_buffer
-                                                             , size
-                                                             );
+              config.size.trace.output = process::execute ( cmd
+                                                          , input_trace
+                                                          , config.size.trace.input
+                                                          , output_buffer
+                                                          , size
+                                                          );
               delete[] output_buffer;
             }
 
             delete[] input_trace;
 
-            LOG (INFO, "size.resulting_trace = " << config.size.resulting_trace);
+            LOG (INFO, "size.trace.output = " << config.size.trace.output);
 
-            if (config.size.resulting_trace > config.size.trace)
+            if (config.size.trace.output > config.size.trace.input)
             {
-              LOG (FATAL, "Trace would get bigger and .. this once was shrink. You know? SHRINK. And the programmer has been too lazy to correct this behaviour.");
-              throw std::runtime_error ("trace getting bigger.");
+              LOG ( FATAL, "Resulting trace is bigger than input trace. "
+                           "Therefore operating in two IO buffers."
+                           "This is not really implemented yet and will crash."
+                  );
             }
             else
             {
               LOG ( INFO, "Resulting trace is smaller or equal to input trace. "
-                          "Therefore operating inplace with same io buffer"
+                          "Therefore operating in-place with same IO buffer."
                   );
             }
 
@@ -233,17 +239,18 @@
                                                )
                                     );
 
-            config.per.bunch.trace = mem_per_node / config.size.trace;
+            //! \note Needed for generating packages. (gen/package.xml)
+            config.num.trace.per_slot = mem_per_node / config.size.trace.input;
 
-            LOG (INFO, "per.bunch.trace = " << config.per.bunch.trace);
+            LOG (INFO, "num.trace.per_slot = " << config.num.trace.per_slot);
 
-            if (config.per.bunch.trace < 1)
+            if (config.num.trace.per_slot < 1)
               {
                 throw std::runtime_error ("not enough memory (shmem)");
               }
 
-            config.size.bunch = config.per.bunch.trace * config.size.trace;
-            const long slot_per_node (gpi_mem_per_node / config.size.bunch);
+            config.size.slot = config.num.trace.per_slot * config.size.trace.input;
+            const long slot_per_node (gpi_mem_per_node / config.size.slot);
 
             if (slot_per_node < 2)
               {
@@ -255,9 +262,9 @@
             LOG (INFO, "num.slot = " << config.num.slot);
 
             config.handle.data = static_cast<long>
-              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.bunch));
+              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.slot));
             config.handle.scratch = static_cast<long>
-              (fvmGlobalAlloc (                 1  * config.size.bunch));
+              (fvmGlobalAlloc (                 1  * config.size.slot));
 
             if (config.handle.data == 0)
               {
@@ -365,20 +372,20 @@
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
 
             LOG (INFO, "do_load: part " << package.package.part
-                    << ", part_size "  << config.size.bunch
-                    << ", size " << package.package.size.full_package
+                    << ", part_size "  << config.size.slot
+                    << ", size " << package.package.size.package
                     << ", num " << package.package.num.trace
                 );
 
-            const long offset ( package.package.part * config.size.bunch
-                              + config.num.skipped_traces * config.size.trace
+            const long offset ( package.package.part * config.size.slot
+                              + config.num.trace.skipped * config.size.trace.input
                               );
 
             do_load ( config.file.input.name
                     , config.file.input.type
                     , 1
                     , offset
-                    , package.package.size.full_package
+                    , package.package.size.package
                     , package.package.num.trace
                     , fvmGetShmemPtr()
                     );
@@ -416,18 +423,17 @@
 
             void * buf (fvmGetShmemPtr());
 
-            const long& size (package.package.size.full_package);
+            const long& size (package.package.size.package);
 
             const std::size_t size_shrunken
               (process::execute (cmd, buf, size, buf, size));
 
             LOG (INFO, "size_shrunken = " << size_shrunken);
 
-            package.package.size.trace = config.size.resulting_trace;
-            package.package.size.full_package = size_shrunken;
-            package.package.num.trace = package.package.size.full_package
+            package.package.size.trace = config.size.trace.output;
+            package.package.size.package = size_shrunken;
+            package.package.num.trace = package.package.size.package
                                       / package.package.size.trace;
-
 
             comm::put (config, package);
 
@@ -453,7 +459,7 @@
           ${w.offset} := ${write_info.offset};
 
           ${write_info.next_part} := ${p.package.part} + 1;
-          ${write_info.offset} := ${write_info.offset} + ${p.package.size.full_package};
+          ${write_info.offset} := ${write_info.offset} + ${p.package.size.package};
         </expression>
         <condition>
           ${write_info.next_part} :eq: ${p.package.part}
@@ -488,13 +494,13 @@
                                 << ":" << package_to_be_written.offset
                 );
 
-            if (p.package.size.full_package > 0)
+            if (p.package.size.package > 0)
               {
                 comm::get (config, p);
 
                 LOG (INFO, "do_write: part " << package_to_be_written.offset
                         << ", part_size "  << 1
-                        << ", size " << p.package.size.full_package
+                        << ", size " << p.package.size.package
                         << ", num " << p.package.num.trace
                     );
 
@@ -502,7 +508,7 @@
                          , config.file.output.type
                          , package_to_be_written.offset
                          , 1
-                         , p.package.size.full_package
+                         , p.package.size.package
                          , p.package.num.trace
                          , fvmGetShmemPtr()
                          );

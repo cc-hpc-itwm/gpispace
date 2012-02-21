@@ -27,10 +27,10 @@
         <out name="state" type="state"/>
         <out name="num" type="long"/>
         <expression>
-          ${state.max} := ${config.num.trace};
-          ${state.inc} := ${config.per.bunch.trace};
+          ${state.max} := ${config.num.trace.input};
+          ${state.inc} := ${config.num.trace.per_slot};
           ${state.id} := 0L;
-          ${state.size} := ${config.size.trace};
+          ${state.size} := ${config.size.trace.input};
           ${num} := 1 + (${state.max} - 1) div ${state.inc}
         </expression>
       </defun>
@@ -80,7 +80,8 @@
 
           ${package.num.trace} := min (${state.max}, ${state.id}) - ${left};
           ${package.size.trace} := ${state.size};
-          ${package.size.full_package} := ${package.num.trace} * ${package.size.trace};
+          ${package.size.package} := ${package.num.trace}
+                                   * ${package.size.trace};
 
           ${loaded_package.package} := ${package};
           ${loaded_package.slot} := ${slot};
