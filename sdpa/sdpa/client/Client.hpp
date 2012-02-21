@@ -25,6 +25,9 @@
 
 #include <sdpa/client/generated/ClientFsm_sm.h>
 
+#include <sdpa/version.hpp>
+#include <fhg/revision.hpp>
+
 namespace sdpa { namespace client {
   class Client : public ClientActions, public seda::Strategy {
   public:
