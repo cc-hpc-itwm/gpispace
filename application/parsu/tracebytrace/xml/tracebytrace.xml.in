@@ -159,14 +159,37 @@
           <code><![CDATA[
             LOG (INFO, "INIT");
 
+            config.cmd = cmd;
+
+
+            //! \note Check input and output files for being valid.
+
             config.file.input.name = file_input;
             config.file.input.type = type_input;
             config.file.output.name = file_output;
             config.file.output.type = type_output;
-            config.cmd = cmd;
 
-            determine_size ( file_input
-                           , type_input
+            {
+              std::ifstream in (config.file.input.name.c_str());
+              if (!in)
+              {
+                LOG (FATAL, "Input file could not be opened.");
+                throw std::runtime_error ("BUMMER! in not good");
+              }
+            }
+            {
+              std::ofstream out (config.file.output.name.c_str());
+              if (!out)
+              {
+                LOG (FATAL, "Output file could not be opened.");
+                throw std::runtime_error ("BUMMER! out not good");
+              }
+            }
+
+            //! \note Get size of input data and respect skipped traces.
+
+            determine_size ( config.file.input.name
+                           , config.file.input.type
                            , config.num.trace.input
                            , config.size.trace.input
                            );
@@ -184,7 +207,8 @@
 
             //! \todo Super-fast-terminating when no input traces?
 
-            // ---- get size of resulting traces -------------
+
+            //! \note Get size of output data.
 
             char* input_trace (new char [config.size.trace.input]);
 
@@ -224,6 +248,9 @@
 
             LOG (INFO, "size.trace.output = " << config.size.trace.output);
 
+
+            //! \note Decide which memory layout to use.
+
             if (config.size.trace.output > config.size.trace.input)
             {
               LOG ( FATAL, "Resulting trace is bigger than input trace. "
@@ -236,63 +263,54 @@
               LOG ( INFO, "Resulting trace is smaller or equal to input trace. "
                           "Therefore operating in-place with same IO buffer."
                   );
-            }
 
+              const long mem_per_node ( std::min ( shmem_per_node
+                                                 , gpi_mem_per_node
+                                                 )
+                                      );
 
+              //! \note Needed for generating packages. (gen/package.xml)
+              config.num.trace.per_slot = mem_per_node / config.size.trace.input;
 
-            const long mem_per_node ( std::min ( shmem_per_node
-                                               , gpi_mem_per_node
-                                               )
-                                    );
+              LOG (INFO, "num.trace.per_slot = " << config.num.trace.per_slot);
 
-            //! \note Needed for generating packages. (gen/package.xml)
-            config.num.trace.per_slot = mem_per_node / config.size.trace.input;
-
-            LOG (INFO, "num.trace.per_slot = " << config.num.trace.per_slot);
-
-            if (config.num.trace.per_slot < 1)
+              if (config.num.trace.per_slot < 1)
               {
                 throw std::runtime_error ("not enough memory (shmem)");
               }
 
-            config.size.slot = config.num.trace.per_slot * config.size.trace.input;
-            const long slot_per_node (gpi_mem_per_node / config.size.slot);
+              config.size.slot = config.num.trace.per_slot * config.size.trace.input;
+              const long slot_per_node (gpi_mem_per_node / config.size.slot);
 
-            if (slot_per_node < 2)
+              if (slot_per_node < 2)
               {
                 throw std::runtime_error ("not enough memory (gpi)");
               }
 
-            config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
+              config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
 
-            LOG (INFO, "num.slot = " << config.num.slot);
+              LOG (INFO, "num.slot = " << config.num.slot);
 
-            config.handle.data = static_cast<long>
-              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.slot));
-            config.handle.scratch = static_cast<long>
-              (fvmGlobalAlloc (                 1  * config.size.slot));
+              config.handle.data = static_cast<long>
+                (fvmGlobalAlloc ((slot_per_node - 1) * config.size.slot));
+              config.handle.scratch = static_cast<long>
+                (fvmGlobalAlloc (                 1  * config.size.slot));
 
-            if (config.handle.data == 0)
+              if (config.handle.data == 0)
               {
                 throw std::runtime_error ("BUMMER! handle.data == 0");
               }
 
-            if (config.handle.scratch == 0)
+              if (config.handle.scratch == 0)
               {
                 throw std::runtime_error ("BUMMER! handle.scratch == 0");
               }
 
+            }
+
             write_info.next_part = 0;
             write_info.offset = 0;
 
-            {
-              std::ofstream out (config.file.output.name.c_str());
-
-              if (!out)
-                {
-                  throw std::runtime_error ("BUMMER! out not good");
-                }
-            }
           ]]></code>
         </module>
       </defun>
