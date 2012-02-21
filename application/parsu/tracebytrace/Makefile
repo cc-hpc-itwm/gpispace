@@ -154,7 +154,7 @@ $(LIB_DESTDIR):
 
 .PHONY: install
 
-install: $(GEN) $(LIB_DESTDIR)
+install: all $(GEN) $(LIB_DESTDIR)
 	$(CP) $(LIB) $(LIB_DESTDIR)
 
 ###############################################################################
