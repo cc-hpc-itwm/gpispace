@@ -81,6 +81,13 @@
     <field name="cmd" type="string"/>
   </struct>
 
+  <struct name="generate_package_state">
+    <field name="max" type="long"/>
+    <field name="id" type="long"/>
+    <field name="inc" type="long"/>
+    <field name="size" type="long"/>
+  </struct>
+
   <net>
 
     <include-template href="dup.xml"/>
@@ -386,12 +393,15 @@
 
     <place name="empty_slot" type="long"/>
 
+    <place name="generate_package_break_check" type="generate_package_state"/>
+
     <place name="new_package" type="tracebytrace_loaded_package"/>
     <place name="num_packages" type="long"/>
 
     <transition name="generate_package" inline="true">
       <include-function href="generate/package.xml"/>
       <place-map virtual="empty_slot" real="empty_slot"/>
+      <place-map virtual="check_break" real="generate_package_break_check"/>
       <connect-in port="config" place="config_generate_package"/>
       <connect-out port="package" place="new_package"/>
       <connect-out port="num" place="num_packages"/>
@@ -535,6 +545,26 @@
       <connect-in port="remaining" place="remaining_traces_to_be_written"/>
       <connect-out port="remaining" place="remaining_traces_to_be_written"/>
       <connect-read port="config" place="config"/>
+    </transition>
+
+    <transition name="maximum_output_trace_checker" priority="1">
+      <defun>
+        <in name="state" type="generate_package_state"/>
+        <in name="remaining" type="long"/>
+        <in name="num_packages" type="long"/>
+        <out name="num_packages" type="long"/>
+        <expression>
+          ${packages_remaining} := (${state.max} - ${state.id}) div ${state.inc};
+          ${num_packages} := ${num_packages} - ${packages_remaining};
+        </expression>
+        <condition>
+          ${remaining} == 0
+        </condition>
+      </defun>
+      <connect-in port="state" place="generate_package_break_check"/>
+      <connect-read port="remaining" place="remaining_traces_to_be_written"/>
+      <connect-in port="num_packages" place="num_packages"/>
+      <connect-out port="num_packages" place="num_packages"/>
     </transition>
 
     <place name="package_to_be_written" type="tracebytrace_package_to_be_written"/>

@@ -11,20 +11,14 @@
     <place name="package" type="tracebytrace_loaded_package"/>
     <place name="num" type="long"/>
 
-    <struct name="state">
-      <field name="max" type="long"/>
-      <field name="id" type="long"/>
-      <field name="inc" type="long"/>
-      <field name="size" type="long"/>
-    </struct>
-
-    <place name="check_break" type="state" capacity="1"/>
-    <place name="state" type="state"/>
+    <place name="check_break" type="generate_package_state"
+           capacity="1" virtual="true"/>
+    <place name="state" type="generate_package_state"/>
 
     <transition name="init">
       <defun>
         <in name="config" type="tracebytrace_config"/>
-        <out name="state" type="state"/>
+        <out name="state" type="generate_package_state"/>
         <out name="num" type="long"/>
         <expression>
           ${state.max} := ${config.num.trace.input};
@@ -41,7 +35,7 @@
 
     <transition name="break">
       <defun>
-        <in name="state" type="state"/>
+        <in name="state" type="generate_package_state"/>
         <expression>
         </expression>
       </defun>
@@ -53,8 +47,8 @@
 
     <transition name="not_break">
       <defun>
-        <in name="state" type="state"/>
-        <out name="state" type="state"/>
+        <in name="state" type="generate_package_state"/>
+        <out name="state" type="generate_package_state"/>
         <expression></expression>
       </defun>
       <condition>
@@ -68,9 +62,9 @@
 
     <transition name="step">
       <defun>
-        <in name="state" type="state"/>
+        <in name="state" type="generate_package_state"/>
         <in name="slot" type="long"/>
-        <out name="state" type="state"/>
+        <out name="state" type="generate_package_state"/>
         <out name="loaded_package" type="tracebytrace_loaded_package"/>
         <expression>
           ${left} := ${state.id};
