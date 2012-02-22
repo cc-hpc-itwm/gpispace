@@ -722,6 +722,7 @@
         <in name="done_eat" type="control"/>
         <in name="done_finalize" type="control"/>
         <in name="write_info" type="tracebytrace_write_info"/>
+        <in port="remaining" type="long"/>
 
         <out name="done" type="control"/>
         <expression>
@@ -732,6 +733,7 @@
       <connect-in port="done_eat" place="done_eat"/>
       <connect-in port="done_finalize" place="done_finalize"/>
       <connect-in port="write_info" place="write_info"/>
+      <connect-in port="remaining" place="remaining_traces_to_be_written"/>
 
       <connect-out port="done" place="done"/>
     </transition>
