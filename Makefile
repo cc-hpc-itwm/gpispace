@@ -4,9 +4,15 @@ ifeq ($(MAKECMDGOALS),)
 MAKECMDGOALS=all
 endif
 
-.PHONY : all $(SUBDIRS)
+.PHONY : all config release $(SUBDIRS)
 
 all: $(SUBDIRS)
+
+config:
+	@ccmake build
+
+release:
+	cd build && cpack --config cpack-rel.cmake
 
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
