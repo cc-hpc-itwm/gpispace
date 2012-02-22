@@ -511,7 +511,18 @@
         <out name="write_info" type="tracebytrace_write_info"/>
         <in name="p" type="tracebytrace_loaded_package"/>
         <out name="w" type="tracebytrace_package_to_be_written"/>
+        <in name="remaining" type="long"/>
+        <out name="remaining" type="long"/>
+        <in name="config" type="tracebytrace_config"/>
         <expression>
+          /* limit number of traces written to the maximum remaining traces. */
+          ${p.package.num.trace} := min ( ${p.package.num.trace}
+                                        , ${remaining}
+                                        );
+          ${remaining} := ${remaining} - ${p.package.num.trace};
+          ${p.package.size.package} := ${p.package.num.trace}
+                                     * ${config.size.trace.output};
+
           ${w.loaded_package} := ${p};
           ${w.offset} := ${write_info.offset};
 
@@ -526,6 +537,9 @@
       <connect-out port="write_info" place="write_info"/>
       <connect-in port="p" place="writeable_package"/>
       <connect-out port="w" place="package_to_be_written"/>
+      <connect-in port="remaining" place="remaining_traces_to_be_written"/>
+      <connect-out port="remaining" place="remaining_traces_to_be_written"/>
+      <connect-read port="config" place="config"/>
     </transition>
 
     <place name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
@@ -535,11 +549,9 @@
       <defun>
         <in name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
         <in name="config" type="tracebytrace_config"/>
-        <in name="remaining" type="long"/>
-        <out name="remaining" type="long"/>
         <out name="p" type="tracebytrace_loaded_package"/>
         <module name="tracebytrace"
-                function="p write (package_to_be_written, config, remaining)">
+                function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_write.hpp"/>
@@ -555,8 +567,7 @@
                                  << ":" << package_to_be_written.offset
                 );
 
-            //! \todo Really not sure about order. RETHINK THIS!
-            if (p.package.size.package > 0 && remaining > 0)
+            if (p.package.size.package > 0)
             {
               comm::get (config, p);
 
@@ -566,16 +577,12 @@
                           << ", num " << p.package.num.trace
                   );
 
-              const long num_traces
-                (std::min (p.package.num.trace, remaining));
-              remaining -= num_traces;
-
               do_write ( config.file.output.name
                        , config.file.output.type
                        , package_to_be_written.offset
                        , 1
-                       , num_traces * config.size.trace.output
-                       , num_traces
+                       , p.package.size.package
+                       , p.package.num.trace
                        , fvmGetShmemPtr()
                        );
               }
@@ -586,8 +593,6 @@
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="package_to_be_written" place="package_to_be_written"/>
-      <connect-in port="remaining" place="remaining_traces_to_be_written"/>
-      <connect-out port="remaining" place="remaining_traces_to_be_written"/>
       <connect-out port="p" place="package_written"/>
     </transition>
 
