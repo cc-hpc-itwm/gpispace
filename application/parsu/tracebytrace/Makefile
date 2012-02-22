@@ -53,11 +53,12 @@ FILE_OUTPUT      = /u/herc/rahn/test.dat.out
 TYPE_OUTPUT      = su
 CMD              = cat
 SKIPPED_TRACES   = 0
+MAX_TRACE_COUNT  = -1
 SHMEM_PER_NODE   = 4240 * 2
 GPI_MEM_PER_NODE = 4240 * 6
 
 $(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SKIPPED_TRACES)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(SDPA_LIBEXEC)" > $@
+	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SKIPPED_TRACES)" "$(MAX_TRACE_COUNT)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(SDPA_LIBEXEC)" > $@
 
 ###############################################################################
 

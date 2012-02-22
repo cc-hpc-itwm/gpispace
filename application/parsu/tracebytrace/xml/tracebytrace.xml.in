@@ -124,6 +124,9 @@
     <place name="skipped_traces" type="long">
       <token><value>@SKIPPED_TRACES@</value></token>
     </place>
+    <place name="maximum_trace_count" type="long">
+      <token><value>@MAX_TRACE_COUNT@</value></token>
+    </place>
 
     <place name="done" type="control"/>
 
@@ -137,6 +140,7 @@
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
         <in name="cmd" type="string"/>
+        <in name="maximum_trace_count" type="long"/>
         <out name="write_info" type="tracebytrace_write_info"/>
         <out name="config" type="tracebytrace_config"/>
         <out name="remaining_traces_to_be_written" type="long"/>
@@ -152,6 +156,7 @@
                                , write_info
                                , config
                                , remaining_traces_to_be_written
+                               , maximum_trace_count
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -213,10 +218,16 @@
             LOG (INFO, "size.trace.input = " << config.size.trace.input);
 
             //! \todo Super-fast-terminating when no input traces?
+            if (config.num.trace.input == 0)
+            {
+              LOG ( WARN, "No traces to operate on (all skipped). "
+                          "This is probably not what you want."
+                  );
+            }
 
-            //! \todo !!!!Get via parameter!!!!
-            remaining_traces_to_be_written = 1000;
-
+            remaining_traces_to_be_written = maximum_trace_count == -1
+                                           ? LONG_MAX
+                                           : maximum_trace_count;
 
             //! \note Get size of output data.
 
@@ -341,6 +352,7 @@
       <connect-in port="shmem_per_node" place="shmem_per_node"/>
       <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
       <connect-in port="cmd" place="cmd"/>
+      <connect-in port="maximum_trace_count" place="maximum_trace_count"/>
       <connect-out port="write_info" place="write_info"/>
       <connect-out port="config" place="config_generated"/>
       <connect-out port="remaining_traces_to_be_written"

@@ -6,9 +6,10 @@ FILE_OUTPUT=${3:?}
 TYPE_OUTPUT=${4:?}
 CMD=${5:?}
 SKIPPED_TRACES=${6:?}
-SHMEM_PER_NODE=${7:?}
-GPI_MEM_PER_NODE=${8:?}
-SDPA_LIBEXEC=${9:?}
+MAX_TRACE_COUNT=${7:?}
+SHMEM_PER_NODE=${8:?}
+GPI_MEM_PER_NODE=${9:?}
+SDPA_LIBEXEC=${10:?}
 
 `which sed`                                  \
   "s;@SHMEM_PER_NODE@;${SHMEM_PER_NODE};     \
@@ -19,4 +20,5 @@ SDPA_LIBEXEC=${9:?}
   ;s;@TYPE_INPUT@;${TYPE_INPUT};             \
   ;s;@TYPE_OUTPUT@;${TYPE_OUTPUT};           \
   ;s;@SKIPPED_TRACES@;${SKIPPED_TRACES};     \
+  ;s;@MAX_TRACE_COUNT@;${MAX_TRACE_COUNT};   \
   ;s;@SDPA_LIBEXEC@;${SDPA_LIBEXEC};         "
