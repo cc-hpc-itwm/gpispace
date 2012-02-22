@@ -23,9 +23,7 @@ default: all
 
 ###############################################################################
 
-XML_MAIN    = $(PATH_MAIN)/xml/$(MAIN).xml
-XML_MAIN_IN = $(XML_MAIN).in
-MK_XML      = $(PATH_MAIN)/mk.xml
+XML_MAIN    = $(PATH_MAIN)/xml/$(MAIN).xml.in
 
 ###############################################################################
 
@@ -38,27 +36,11 @@ DEP += $(UTIL)/comm.hpp
 
 NET = $(MAIN).pnet
 GEN = gen
-OUT = $(MAIN).out
 PS  = $(MAIN).ps
 
 PATH_LIB = $(PATH_MAIN)/$(GEN)/pnetc/op
 
 LIB = $(PATH_LIB)/lib$(MAIN).so
-
-###############################################################################
-
-FILE_INPUT       = /u/herc/rahn/test.dat
-TYPE_INPUT       = su
-FILE_OUTPUT      = /u/herc/rahn/test.dat.out
-TYPE_OUTPUT      = su
-CMD              = cat
-SKIPPED_TRACES   = 0
-MAX_TRACE_COUNT  = -1
-SHMEM_PER_NODE   = 4240 * 2
-GPI_MEM_PER_NODE = 4240 * 6
-
-$(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SKIPPED_TRACES)" "$(MAX_TRACE_COUNT)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(SDPA_LIBEXEC)" > $@
 
 ###############################################################################
 
@@ -127,7 +109,7 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 
 ###############################################################################
 
-.PHONY: ps all out net
+.PHONY: ps all net
 
 ps: $(PS) $(PS_NOINLINE)
 
@@ -168,14 +150,6 @@ $(PS_NOINLINE): $(NET_NOINLINE)
 
 ###############################################################################
 
-$(OUT): $(GEN) $(NET)
-	$(WE_EXEC) --net $(NET) 2>&1 | $(TEE) $@
-
-out: $(GEN) $(NET)
-	$(WE_EXEC) --net $(NET) 2>&1 | $(TEE) $(OUT)
-
-###############################################################################
-
 .PHONY: clean
 
 clean:
@@ -184,5 +158,3 @@ clean:
 	$(RM) $(NET_NOINLINE)
 	$(RM) $(PS)
 	$(RM) $(PS_NOINLINE)
-	$(RM) $(OUT)
-	$(RM) $(XML_MAIN)

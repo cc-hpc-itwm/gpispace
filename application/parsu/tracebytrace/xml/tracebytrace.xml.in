@@ -8,6 +8,7 @@
   <in name="file_output" type="string" place="file_output"/>
   <in name="type_output" type="string" place="type_output"/>
   <in name="skipped_traces" type="long" place="skipped_traces"/>
+  <in name="maximum_trace_count" type="long" place="maximum_trace_count"/>
 
   <out name="done" type="control" place="done"/>
 
@@ -96,37 +97,19 @@
     </specialize>
 
     <!-- tuning -->
-    <place name="shmem_per_node" type="long">
-      <token><value>@SHMEM_PER_NODE@</value></token>
-    </place>
-    <place name="gpi_mem_per_node" type="long">
-      <token><value>@GPI_MEM_PER_NODE@</value></token>
-    </place>
+    <place name="shmem_per_node" type="long"/>
+    <place name="gpi_mem_per_node" type="long"/>
 
     <!-- necessary parameters -->
-    <place name="cmd" type="string">
-      <token><value>"@CMD@"</value></token>
-    </place>
-    <place name="file_input" type="string">
-      <token><value>"@FILE_INPUT@"</value></token>
-    </place>
-    <place name="file_output" type="string">
-      <token><value>"@FILE_OUTPUT@"</value></token>
-    </place>
-    <place name="type_input" type="string">
-      <token><value>"@TYPE_INPUT@"</value></token>
-    </place>
-    <place name="type_output" type="string">
-      <token><value>"@TYPE_OUTPUT@"</value></token>
-    </place>
+    <place name="cmd" type="string"/>
+    <place name="file_input" type="string"/>
+    <place name="file_output" type="string"/>
+    <place name="type_input" type="string"/>
+    <place name="type_output" type="string"/>
 
     <!-- optional parameters -->
-    <place name="skipped_traces" type="long">
-      <token><value>@SKIPPED_TRACES@</value></token>
-    </place>
-    <place name="maximum_trace_count" type="long">
-      <token><value>@MAX_TRACE_COUNT@</value></token>
-    </place>
+    <place name="skipped_traces" type="long"/>
+    <place name="maximum_trace_count" type="long"/>
 
     <place name="done" type="control"/>
 
@@ -722,7 +705,7 @@
         <in name="done_eat" type="control"/>
         <in name="done_finalize" type="control"/>
         <in name="write_info" type="tracebytrace_write_info"/>
-        <in port="remaining" type="long"/>
+        <in name="remaining" type="long"/>
 
         <out name="done" type="control"/>
         <expression>
