@@ -353,9 +353,10 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	LOG( DEBUG, "The test case testStop_2Agents_NoDrts_push_1 terminated!");
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testStop_AgentWithDrts_push)
 {
-	LOG( DEBUG, "testStop_AgentNoWE_req");
+	LOG( DEBUG, "testStop_AgentWithDrts_push");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -400,13 +401,12 @@ BOOST_AUTO_TEST_CASE( testStop_AgentWithDrts_push)
 	ptrRecAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_AgentNoWE_req terminated!");
+	LOG( DEBUG, "The test case testStop_AgentWithDrts_push terminated!");
 }
-
 
 BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 {
-	LOG( DEBUG, "testStop_AgentNoWE_req");
+	LOG( DEBUG, "testStop_AgentNoWE_push");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -434,8 +434,6 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	ptrAgent->shutdown(strBackupAgent);
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
 
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
-
 	// now try to recover the system
 	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<void>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 
@@ -451,7 +449,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	ptrRecAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_AgentNoWE_req terminated!");
+	LOG( DEBUG, "The test case testStop_AgentNoWE_push terminated!");
 }
 
 BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
@@ -611,6 +609,7 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Req)
 
 	LOG( DEBUG, "The test case testStop_2AgentsAndDrts_Req terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 {

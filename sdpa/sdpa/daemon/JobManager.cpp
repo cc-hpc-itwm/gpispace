@@ -38,7 +38,7 @@ using namespace std;
 using namespace sdpa::daemon;
 
 JobManager::JobManager(const std::string& name)
-	: SDPA_INIT_LOGGER(name.empty()?"sdpa::daemon::JobManager":name)
+	: SDPA_INIT_LOGGER(name)
 {
 
 }
@@ -215,6 +215,18 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
         	// send it to the master
         	pComm->sendEventToMaster(pEvtJobCancelled);
         }
+        else
+        {
+        	//submit JobSubmitAck -> eventually will be ignored -> if the job was in pending state -> put it into running state
+        	sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( 	pComm->name(),
+        			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	pJob->owner(),
+        			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	pJob->id(),
+        			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	""));
+
+        	// There is a problem with this if uncommented
+        	pComm->sendEventToMaster(pSubmitJobAckEvt);
+        }
+
     }
 }
 

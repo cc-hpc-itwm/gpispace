@@ -1102,9 +1102,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 				// don't forget to update the state machine
 				sdpa::job_id_t jobId(error.job_id());
 				sdpa::worker_id_t worker_id(error.from());
-				SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-schedule it now!");
+				SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-assign it now!");
 
-				scheduler()->reschedule(worker_id);
+				scheduler()->reassign(worker_id, jobId);
 			}
 		}
                 break;

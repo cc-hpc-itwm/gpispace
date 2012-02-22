@@ -390,60 +390,9 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	LOG( DEBUG, "The test case testStop_2Agents_NoDrts_push_1 terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( testStop_AgentWithDrts_push)
-{
-	LOG( DEBUG, "testStop_AgentNoWE_req");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false, strBackupAgent);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
-
-	ptrAgent->shutdown(strBackupAgent);
-	ptrAgent.reset();
-	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
-
-	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-
-	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	ptrRecAgent0->start_agent(false, strBackupAgent);
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-
-	ptrRecAgent0 ->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testStop_AgentNoWE_req terminated!");
-}
-
 BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 {
-	LOG( DEBUG, "testStop_AgentNoWE_req");
+	LOG( DEBUG, "testStop_AgentNoWE_push");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -469,130 +418,25 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	ptrAgent->shutdown(strBackupAgent);
-	ptrAgent.reset();
-	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<void>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	ptrAgent = sdpa::daemon::AgentFactory<void>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 
 	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	ptrRecAgent->start_agent(false, strBackupAgent);
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-
-	ptrRecAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testStop_AgentNoWE_req terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
-{
-	LOG( DEBUG, "testStop_AgentEmptyWE_push");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false, strBackupAgent);
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
-
-	ptrAgent->shutdown(strBackupAgent);
-	ptrAgent.reset();
-	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
-
-	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-
-	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	ptrRecAgent->start_agent(false, strBackupAgent);
-
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
 	drts_0_thread.join();
 
-	ptrRecAgent->shutdown();
+	ptrAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_AgentEmptyWE_push terminated!");
+	LOG( DEBUG, "The test case testStop_AgentNoWE_push terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
-{
-	LOG( DEBUG, "testStop_AgentRealWE_push");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false, strBackupAgent);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
-
-	ptrAgent->shutdown(strBackupAgent);
-	ptrAgent.reset();
-	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
-
-	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-
-	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	ptrRecAgent->start_agent(false, strBackupAgent);
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-
-	ptrRecAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testStop_AgentRealWE_push terminated!");
-}
 
 BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Req)
 {
@@ -711,5 +555,58 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 
 	LOG( DEBUG, "The test case testStop_2AgentsAndDrts_Push_RealWE terminated!");
 }
+
+/*
+BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
+{
+	LOG( DEBUG, "testStop_AgentRealWE_push");
+	//guiUrl
+	string guiUrl   	= "";
+	string workerUrl 	= "127.0.0.1:5500";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgent 	= "127.0.0.1";
+
+
+	typedef void OrchWorkflowEngine;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
+	ptrOrch->start_agent(false, strBackupOrch);
+
+	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	ptrAgent->start_agent(false, strBackupAgent);
+
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
+
+	ptrAgent->shutdown(strBackupAgent);
+	ptrAgent.reset();
+	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
+
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
+
+	// now try to recover the system
+	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+
+	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
+	ptrRecAgent->start_agent(false, strBackupAgent);
+
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread!" );
+
+	drts_0->stop();
+	drts_0_thread.join();
+
+	ptrRecAgent->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( DEBUG, "The test case testStop_AgentRealWE_push terminated!");
+}
+*/
 
 BOOST_AUTO_TEST_SUITE_END()

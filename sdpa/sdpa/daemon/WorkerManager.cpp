@@ -338,6 +338,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
         jobId = ptrWorker->get_next_job(last_job_id);
 
         SDPA_LOG_INFO("The worker "<<worker_id<<" has a capacity of "<<ptrWorker->capacity()<<" jobs and has "<<ptrWorker->nbAllocatedJobs()<<" jobs allocated!");
+        cond_feed_workers.notify_one();
 
         return jobId;
     }
@@ -350,7 +351,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
         /*SDPA_LOG_DEBUG("The content of the common queue is: ");
         common_queue_.print();*/
 
-        jobId = common_queue_.pop();
+        jobId = common_queue_.pop(); cond_feed_workers.notify_one();
 
         /*SDPA_LOG_DEBUG("Popped the job "<<jobId<<"The content of the common queue is now: ");
         common_queue_.print();*/
@@ -363,6 +364,9 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
              );
         ptrWorker->submitted().push(jobId);
         ptrWorker->update();
+
+        cond_feed_workers.notify_one();
+
         return jobId;
       }
       catch(const QueueEmpty& ex0)
@@ -757,11 +761,9 @@ sdpa::worker_id_list_t WorkerManager::waitForFreeWorkers(const boost::posix_time
 	sdpa::worker_id_list_t workerList;
 	getWorkerListNotFull(workerList);
 
-	const boost::system_time t = boost::get_system_time() + timeout;
-
 	while( workerList.empty() )
 	{
-		cond_feed_workers.timed_wait(lock, t);
+		cond_feed_workers.timed_wait(lock, timeout);
 		getWorkerListNotFull(workerList);
 	}
 
