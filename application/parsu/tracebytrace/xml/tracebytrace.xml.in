@@ -229,7 +229,7 @@
             // Maybe don't ++trace but trace += random;
             //! \note Skip traces that get a zero size output.
             config.size.trace.output = 0;
-            for ( long trace (0)
+            for ( long trace (config.num.trace.skipped)
                 ; config.size.trace.output == 0 && trace < config.num.trace.input
                 ; ++trace
                 )
@@ -520,7 +520,7 @@
 
             comm::put (config, package, shmem_output_offset);
 
-            LOG (INFO, "SHRUNKEN " << ::print::loaded_package (package));
+            LOG (INFO, "TRACEBYTRACE OUTPUT " << ::print::loaded_package (package));
           ]]></code>
         </module>
       </defun>
