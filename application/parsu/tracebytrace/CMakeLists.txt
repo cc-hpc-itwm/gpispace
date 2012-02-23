@@ -18,12 +18,3 @@ set (prgs
 install(PROGRAMS ${prgs}
   DESTINATION libexec/apps/parsu/bin
   COMPONENT applications)
-
-set (helper
-   mk.xml
-)
-
-install(PROGRAMS ${helper}
-  DESTINATION ${PARSU_TRACEBYTRACE}
-  COMPONENT applications)
-
