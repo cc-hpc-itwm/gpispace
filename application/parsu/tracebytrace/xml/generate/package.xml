@@ -1,36 +1,30 @@
 <defun>
 
-  <in name="config" type="shrink_config" place="config"/>
-  <out name="package" type="shrink_loaded_package" place="package"/>
+  <in name="config" type="tracebytrace_config" place="config"/>
+  <out name="package" type="tracebytrace_loaded_package" place="package"/>
   <out name="num" type="long" place="num"/>
 
   <net>
 
-    <place name="config" type="shrink_config"/>
+    <place name="config" type="tracebytrace_config"/>
 
-    <place name="package" type="shrink_loaded_package"/>
+    <place name="package" type="tracebytrace_loaded_package"/>
     <place name="num" type="long"/>
 
-    <struct name="state">
-      <field name="max" type="long"/>
-      <field name="id" type="long"/>
-      <field name="inc" type="long"/>
-      <field name="size" type="long"/>
-    </struct>
-
-    <place name="check_break" type="state" capacity="1"/>
-    <place name="state" type="state"/>
+    <place name="check_break" type="generate_package_state"
+           capacity="1" virtual="true"/>
+    <place name="state" type="generate_package_state"/>
 
     <transition name="init">
       <defun>
-        <in name="config" type="shrink_config"/>
-        <out name="state" type="state"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="state" type="generate_package_state"/>
         <out name="num" type="long"/>
         <expression>
-          ${state.max} := ${config.num.trace};
-          ${state.inc} := ${config.per.bunch.trace};
+          ${state.max} := ${config.num.trace.input};
+          ${state.inc} := ${config.num.trace.per_slot};
           ${state.id} := 0L;
-          ${state.size} := ${config.size.trace};
+          ${state.size} := ${config.size.trace.input};
           ${num} := 1 + (${state.max} - 1) div ${state.inc}
         </expression>
       </defun>
@@ -41,7 +35,7 @@
 
     <transition name="break">
       <defun>
-        <in name="state" type="state"/>
+        <in name="state" type="generate_package_state"/>
         <expression>
         </expression>
       </defun>
@@ -53,8 +47,8 @@
 
     <transition name="not_break">
       <defun>
-        <in name="state" type="state"/>
-        <out name="state" type="state"/>
+        <in name="state" type="generate_package_state"/>
+        <out name="state" type="generate_package_state"/>
         <expression></expression>
       </defun>
       <condition>
@@ -68,10 +62,10 @@
 
     <transition name="step">
       <defun>
-        <in name="state" type="state"/>
+        <in name="state" type="generate_package_state"/>
         <in name="slot" type="long"/>
-        <out name="state" type="state"/>
-        <out name="loaded_package" type="shrink_loaded_package"/>
+        <out name="state" type="generate_package_state"/>
+        <out name="loaded_package" type="tracebytrace_loaded_package"/>
         <expression>
           ${left} := ${state.id};
 
@@ -80,7 +74,8 @@
 
           ${package.num.trace} := min (${state.max}, ${state.id}) - ${left};
           ${package.size.trace} := ${state.size};
-          ${package.size.full_package} := ${package.num.trace} * ${package.size.trace};
+          ${package.size.package} := ${package.num.trace}
+                                   * ${package.size.trace};
 
           ${loaded_package.package} := ${package};
           ${loaded_package.slot} := ${slot};

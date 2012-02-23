@@ -37,6 +37,9 @@ namespace sdpa {
 
 	typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
 	typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
+	typedef boost::recursive_mutex mutex_type;
+	typedef boost::unique_lock<mutex_type> lock_type;
+	typedef boost::condition_variable_any condition_type;
 
 	SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL, bool bUseRequestModel = true );
 	virtual ~SchedulerImpl();
@@ -138,6 +141,9 @@ protected:
 
 	bool m_bUseRequestModel; // true -> request model, false -> push model
 	sdpa::cancellation_list_t cancellation_list_;
+
+	mutable mutex_type mtx_;
+	condition_type cond_feed_workers;
   };
 }}
 
