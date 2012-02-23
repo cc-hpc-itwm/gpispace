@@ -1,5 +1,5 @@
 
-MAIN = shrink
+MAIN = tracebytrace
 
 SDPA_INCLUDE = $(SDPA_HOME)/include
 SDPA_LIBEXEC = $(SDPA_HOME)/libexec
@@ -18,11 +18,12 @@ CAT      = /bin/cat
 CP       = /bin/cp
 MKDIR    = mkdir
 
+.PHONY: default
+default: all
+
 ###############################################################################
 
-XML_MAIN    = $(PATH_MAIN)/xml/$(MAIN).xml
-XML_MAIN_IN = $(XML_MAIN).in
-MK_XML      = $(PATH_MAIN)/mk.xml
+XML_MAIN    = $(PATH_MAIN)/xml/$(MAIN).xml.in
 
 ###############################################################################
 
@@ -35,33 +36,11 @@ DEP += $(UTIL)/comm.hpp
 
 NET = $(MAIN).pnet
 GEN = gen
-OUT = $(MAIN).out
 PS  = $(MAIN).ps
 
 PATH_LIB = $(PATH_MAIN)/$(GEN)/pnetc/op
 
 LIB = $(PATH_LIB)/lib$(MAIN).so
-
-###############################################################################
-
-#FILE_INPUT       = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
-#TYPE_INPUT       = segy
-#FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy.winded
-#TYPE_OUTPUT      = segy
-#CMD              = suwind itmin=10 nt=300
-#SHMEM_PER_NODE   = 2^28
-#GPI_MEM_PER_NODE = 2^30
-
-FILE_INPUT       = /u/herc/rahn/test.dat
-TYPE_INPUT       = su
-FILE_OUTPUT      = /u/herc/rahn/test.dat.out
-TYPE_OUTPUT      = su
-CMD              = cat
-SHMEM_PER_NODE   = 4240 * 2
-GPI_MEM_PER_NODE = 4240 * 6
-
-$(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(SDPA_LIBEXEC)" > $@
 
 ###############################################################################
 
@@ -110,6 +89,7 @@ PNETC += --gen-cxxflags=-O3
 PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include
 PNETC += --gen-cxxflags=-I../../../kdm/src
 PNETC += --gen-cxxflags=-I../util
+PNETC += --gen-cxxflags=-Wno-deprecated-declarations
 PNETC += --force-overwrite-file=true
 PNETC += --Woverwrite-file=false
 PNETC += --Wbackup-file=false
@@ -129,9 +109,7 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 
 ###############################################################################
 
-.PHONY: default ps all out net
-
-default: all
+.PHONY: ps all net
 
 ps: $(PS) $(PS_NOINLINE)
 
@@ -159,7 +137,7 @@ $(LIB_DESTDIR):
 
 .PHONY: install
 
-install: $(GEN) $(LIB_DESTDIR)
+install: all $(GEN) $(LIB_DESTDIR)
 	$(CP) $(LIB) $(LIB_DESTDIR)
 
 ###############################################################################
@@ -172,14 +150,6 @@ $(PS_NOINLINE): $(NET_NOINLINE)
 
 ###############################################################################
 
-$(OUT): $(GEN) $(NET)
-	$(WE_EXEC) --net $(NET) 2>&1 | $(TEE) $@
-
-out: $(GEN) $(NET)
-	$(WE_EXEC) --net $(NET) 2>&1 | $(TEE) $(OUT)
-
-###############################################################################
-
 .PHONY: clean
 
 clean:
@@ -188,5 +158,3 @@ clean:
 	$(RM) $(NET_NOINLINE)
 	$(RM) $(PS)
 	$(RM) $(PS_NOINLINE)
-	$(RM) $(OUT)
-	$(RM) $(XML_MAIN)

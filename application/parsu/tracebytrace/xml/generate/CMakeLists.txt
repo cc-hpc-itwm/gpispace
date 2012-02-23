@@ -5,5 +5,5 @@ set (xml
 )
 
 install(FILES ${xml}
-  DESTINATION ${PARSU_SHRINK}/generate
+  DESTINATION ${PARSU_TRACEBYTRACE}/generate
   COMPONENT applications)

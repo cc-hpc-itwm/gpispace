@@ -1,0 +1,160 @@
+#!/bin/bash
+
+tracebytrace_dir="@PARSU_TRACEBYTRACE_DIR@"
+
+tmp_dir=${PARSU_TMP_DIR:-${TMPDIR}}
+
+if [ ! \( -d "${tmp_dir}" -a -w "${tmp_dir}" \) ] ; then
+  echo "E: no (writeable) temp dir given (is: \"${tmp_dir}\")"
+  echo "set PARSU_TMP_DIR or TMPDIR"
+  exit 1
+fi
+
+scratch_dir="$HOME/.sdpa/scratch"
+test ! -d "${scratch_dir}" && { mkdir -p "${scratch_dir}" ; }
+
+xml_file_in="${tracebytrace_dir}/tracebytrace.xml.in"
+
+skipped_traces_default=0
+max_trace_count_default=-1
+
+shmem_per_node_default=$((2**28))
+gpi_mem_per_node_default=$((2**30))
+
+if [ $# -lt 5 ]; then
+  echo "usage: $0 input-file input-type output-file output-type \"su cmd\" [skipped-traces:${skipped_traces_default}] [max-trace-count:${max_trace_count_default}] [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
+  exit 1
+fi
+
+inf=${1}
+int=${2}
+outf=${3}
+outt=${4}
+cmd=${5}
+skipped_traces=${6:-${skipped_traces_default}}
+max_trace_count=${7:-${max_trace_count_default}}
+shmem_per_node=${8:-${shmem_per_node_default}}
+gpi_mem_per_node=${9:-${gpi_mem_per_node_default}}
+
+if [ ! -r "$inf" ] ; then
+  echo "E: cannot access $inf for reading, aborting" >/dev/stderr
+  exit 1
+fi
+
+if [ -e "$outf" ] ; then
+  echo "W: deleting old output file" >/dev/stderr
+  rm "$outf"
+fi
+
+cleanup ()
+{
+  test -e "${xml_file}"  && rm -f "${xml_file}"
+  test -e "${pnet_file_in}" && rm -f "${pnet_file_in}"
+  test -e "${pnet_file}" && rm -f "${pnet_file}"
+  test -e "${script_file}" && rm -f "${script_file}"
+}
+trap cleanup EXIT
+
+xml_file=$( mktemp "${tmp_dir}/parsu_tracebytrace.xml.XXXXXX" )
+if [ $? -ne 0 ] ; then
+  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
+  exit 2
+fi
+
+pnet_file_in=$( mktemp "${tmp_dir}/parsu_tracebytrace.pnet.in.XXXXXX" )
+if [ $? -ne 0 ] ; then
+  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
+  exit 2
+fi
+
+pnet_file=$( mktemp "${tmp_dir}/parsu_tracebytrace.pnet.XXXXXX" )
+if [ $? -ne 0 ] ; then
+  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
+  exit 2
+fi
+
+script_file=$( mktemp "${scratch_dir}/parsu_tracebytrace.sh.XXXXXX" )
+if [ $? -ne 0 ] ; then
+  echo "could not create temporary script in ${scratch_dir}" >/dev/stderr
+  exit 2
+fi
+chmod +x "${script_file}"
+
+abspath ()
+{
+  p="$1"
+  case "$p" in
+	/*)
+	  REPLY="$p"
+	  ;;
+	*)
+	  REPLY="`pwd`/$p"
+	  ;;
+  esac
+  return 0
+}
+
+abspath ${inf}
+abs_inf="$REPLY"
+
+abspath ${outf}
+abs_outf="$REPLY"
+
+echo -n "-: generating command script... " >/dev/stderr
+cat > "$script_file" <<EOF
+#!/bin/sh
+exec $cmd
+EOF
+
+if [ $? -ne 0 ] ; then
+  echo "E: generating failed!" >/dev/stderr
+  exit 2
+fi
+echo "ok" >/dev/stderr
+
+echo -n "-: compiling job description... " >/dev/stderr
+pnetc ${xml_file_in}                        \
+      -I "${tracebytrace_dir}"              \
+      -I "${SDPA_HOME}/share/sdpa/xml/lib"  \
+      > ${pnet_file_in}
+
+if [ $? -ne 0 ] ; then
+  echo "E: generating failed!" >/dev/stderr
+  exit 2
+fi
+echo "ok" >/dev/stderr
+
+echo -n "-: putting parameters on input places... " >/dev/stderr
+pnetput -p "cmd=\"${script_file}\""                 \
+        -p "file_input=\"${abs_inf}\""              \
+        -p "file_output=\"${abs_outf}\""            \
+        -p "type_input=\"${int}\""                  \
+        -p "type_output=\"${outt}\""                \
+        -p "skipped_traces=${skipped_traces}"       \
+        -p "maximum_trace_count=${max_trace_count}" \
+        -p "shmem_per_node=${shmem_per_node}"       \
+        -p "gpi_mem_per_node=${gpi_mem_per_node}"   \
+        < ${pnet_file_in} > ${pnet_file}
+
+if [ $? -ne 0 ] ; then
+  echo "E: generating failed!" >/dev/stderr
+  exit 2
+fi
+echo "ok" >/dev/stderr
+
+jobid=$( sdpac submit ${pnet_file} 2>&1 )
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Could not submit job: $jobid" >/dev/stderr
+  exit $ec
+fi
+echo "JOB-ID := $jobid"
+sdpac wait "$jobid"
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Job execution failed: $ec" >/dev/stderr
+else
+  echo "Success."
+fi
+sdpac delete "$jobid"
+exit $ec

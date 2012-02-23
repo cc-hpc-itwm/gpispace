@@ -2,19 +2,19 @@
 add_subdirectory (generate)
 
 set (xml
-   shrink.xml.in
+   tracebytrace.xml.in
 )
 
 install(FILES ${xml}
-  DESTINATION ${PARSU_SHRINK}
+  DESTINATION ${PARSU_TRACEBYTRACE}
   COMPONENT applications)
 
 # include(pnet_macros)
 
-# pnet_compile(parsu_shrink shrink.xml.in
+# pnet_compile(parsu_tracebytrace tracebytrace.xml.in
 #   INCLUDES generate
 #            ${CMAKE_SOURCE_DIR}/application/lib
-#   GENERATE parsu_shrink
+#   GENERATE parsu_tracebytrace
 #   LDFLAGS "-L${CMAKE_BINARY_DIR}/application/example/process"
 #   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/../util
 #            -I${CMAKE_SOURCE_DIR}/fhglog
@@ -23,5 +23,5 @@ install(FILES ${xml}
 #            -O3
 #   BUILD
 #   DEPENDS process
-#   INSTALL libexec/apps/parsu/shrink
+#   INSTALL libexec/apps/parsu/tracebytrace
 #)
