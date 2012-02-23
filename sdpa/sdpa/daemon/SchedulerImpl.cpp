@@ -476,21 +476,25 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
-  // check if there are any responsive workers left
-  // delete non_responsive workers
+	// check if there are any responsive workers left
+	// delete non_responsive workers
 
-  // schedule_round_robin(jobId);
-  // fairly re-distribute tasks, if necessary
-  // ptr_worker_man_->balanceWorkers();
-  // fix this later -> use a monitoring thread
+	// schedule_round_robin(jobId);
+	// fairly re-distribute tasks, if necessary
+	// ptr_worker_man_->balanceWorkers();
+	// fix this later -> use a monitoring thread
 
-  if( !numberOfWorkers() )
-  {
-      SDPA_LOG_WARN("No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
-      throw NoWorkerFoundException();
-  }
-  else
-      schedule_with_constraints(jobId);
+	if( !numberOfWorkers() )
+	{
+		SDPA_LOG_WARN("No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
+		throw NoWorkerFoundException();
+	}
+	else
+	{
+		lock_type lock(mtx_);
+		schedule_with_constraints(jobId);
+		cond_feed_workers.notify_one();
+	}
 }
 
 // obsolete, only for testing purposes!
@@ -633,18 +637,25 @@ void SchedulerImpl::feed_workers()
 {
 	while(!bStopRequested)
 	{
-		sdpa::worker_id_list_t workerList = ptr_worker_man_->waitForFreeWorkers(m_timeout);
+		lock_type lock(mtx_);
+		cond_feed_workers.timed_wait(lock, m_timeout);
 
-		if (ptr_comm_handler_)
+		sdpa::worker_id_list_t workerList;
+		ptr_worker_man_->getWorkerListNotFull(workerList);
+
+		if(!workerList.empty())
 		{
 			BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
 			{
-				ptr_comm_handler_->serve_job(worker_id);
+				if(ptr_comm_handler_)
+				{
+					ptr_comm_handler_->serve_job(worker_id);
+				}
+				else
+				{
+					SDPA_LOG_WARN("Invalid communication handler");
+				}
 			}
-		}
-		else
-		{
-			MLOG(FATAL, "STRANGE: Invalid communication handler while it is not supposed to be!");
 		}
 	}
 }
@@ -868,7 +879,9 @@ void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
 void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
 {
   try {
+	  lock_type lock(mtx_);
       ptr_worker_man_->deleteWorkerJob(worker_id, job_id);
+      cond_feed_workers.notify_one();
   }
   catch(JobNotDeletedException const& ex1)
   {

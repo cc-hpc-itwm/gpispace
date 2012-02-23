@@ -24,5 +24,5 @@ add_library(task-view ${task-view_SRC} ${task-view_MOC_SRC})
 install(TARGETS task-view
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries
+  COMPONENT staticlibraries
   )

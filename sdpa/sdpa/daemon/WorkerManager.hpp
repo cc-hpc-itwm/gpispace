@@ -135,8 +135,6 @@ namespace sdpa { namespace daemon {
       const owner_map_t& owner_map() const { return owner_map_; }
       owner_map_t& owner_map() { return owner_map_; }
 
-      sdpa::worker_id_list_t waitForFreeWorkers( const boost::posix_time::time_duration& );
-
 protected:
       worker_map_t  worker_map_;
       rank_map_t    rank_map_;
@@ -148,7 +146,6 @@ protected:
       Worker::JobQueue common_queue_;
 
       mutable mutex_type mtx_;
-      condition_type cond_feed_workers;
   };
 }}
 

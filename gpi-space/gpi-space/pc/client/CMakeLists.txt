@@ -20,7 +20,7 @@ install(FILES ${hdrs}
 install(TARGETS gpi-space-pc-client-static
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)
 
 install(TARGETS gpi-space-pc-client-shared
   LIBRARY

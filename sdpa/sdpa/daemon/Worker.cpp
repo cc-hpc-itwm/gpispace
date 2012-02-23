@@ -139,8 +139,7 @@ void Worker::print()
 
 unsigned int Worker::nbAllocatedJobs()
 {
-	unsigned int nJobs = pending().size() + submitted().size() + acknowledged().size();
-
+	unsigned int nJobs = /*pending().size() +*/ submitted().size() + acknowledged().size();
 	return nJobs;
 }
 
@@ -214,5 +213,3 @@ bool Worker::hasCapability(const std::string& cpbName, bool bOwn)
 
 	return bHasCpb;
 }
-
-

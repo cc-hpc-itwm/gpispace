@@ -52,4 +52,4 @@ install(FILES ${hdrs}
 install(TARGETS sdpa-events
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)

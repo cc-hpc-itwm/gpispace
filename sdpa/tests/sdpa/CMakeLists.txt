@@ -101,6 +101,7 @@ foreach (tc_src ${tc_srcs})
                         sdpa-util
                         sdpa
                         fhg-plugin
+                        fhg-revision
                         ${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
                         ${WE_LIBRARIES}

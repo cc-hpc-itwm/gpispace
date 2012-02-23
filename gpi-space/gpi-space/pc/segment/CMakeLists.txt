@@ -20,7 +20,7 @@ target_link_libraries (gpi-space-pc-segment-shared ${LIBRT_SHARED_LIBRARY})
 install(TARGETS gpi-space-pc-segment
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)
 
 install(TARGETS gpi-space-pc-segment-shared
   LIBRARY

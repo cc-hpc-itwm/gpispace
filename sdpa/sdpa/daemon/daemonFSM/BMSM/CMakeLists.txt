@@ -15,4 +15,4 @@ install(FILES ${hdrs}
 install(TARGETS sdpa-daemonFSM_BMSM
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)

@@ -18,6 +18,7 @@ list(APPEND libSearchDirs $ENV{BOOST_ROOT}/lib/)
 list(APPEND libSearchDirs $ENV{HWLOC_HOME}/lib/)
 list(APPEND libSearchDirs ${QT_LIBRARY_DIR}/)
 list(APPEND libSearchDirs $ENV{GRAPHVIZ_HOME}/lib/)
+list(APPEND libSearchDirs \${CMAKE_INSTALL_PREFIX}/lib/)
 
 foreach(app ${APPS})
   include(InstallRequiredSystemLibraries)
@@ -29,3 +30,15 @@ foreach(app ${APPS})
   fixup_bundle(\"${app}\" \"\${PLUGINS}\" \"${libSearchDirs}\")
   " COMPONENT runtime)
 endforeach()
+
+# move libraries to lib
+install(CODE "
+  file(GLOB LIBS RELATIVE \"\${CMAKE_INSTALL_PREFIX}/bin\"
+	 \"\${CMAKE_INSTALL_PREFIX}/bin/*.so\"
+	 \"\${CMAKE_INSTALL_PREFIX}/bin/*.so.*\")
+  message(STATUS \"moving libraries \(\${LIBS}\) from bin to lib\")
+  foreach(f \${LIBS})
+    file(RENAME \"\${CMAKE_INSTALL_PREFIX}/bin/\${f}\" \"\${CMAKE_INSTALL_PREFIX}/lib/\${f}\")
+  endforeach()
+  
+  " COMPONENT runtime)

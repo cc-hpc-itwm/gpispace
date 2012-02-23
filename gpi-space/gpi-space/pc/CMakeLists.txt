@@ -21,4 +21,4 @@ merge_static_libs(gpi-space-pc-server
 install(TARGETS gpi-space-pc
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)

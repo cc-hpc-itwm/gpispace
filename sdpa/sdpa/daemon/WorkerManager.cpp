@@ -133,8 +133,6 @@ void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 
 	if(worker_map_.size() == 1)
 		iter_last_worker_ = worker_map_.begin();
-
-	cond_feed_workers.notify_one();
 }
 
 void WorkerManager::balanceWorkers()
@@ -321,7 +319,6 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
   throw NoJobScheduledException(worker_id);
 }
 
-
 const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
   //SDPA_LOG_DEBUG("Get the next job ...");
@@ -363,6 +360,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
              );
         ptrWorker->submitted().push(jobId);
         ptrWorker->update();
+
         return jobId;
       }
       catch(const QueueEmpty& ex0)
@@ -397,8 +395,6 @@ void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 	lock_type lock(mtx_);
 	DLOG(TRACE, "Dispatch the job " << jobId.str() );
 	common_queue_.push(jobId);
-
-	cond_feed_workers.notify_one();
 }
 
 void WorkerManager::delete_job (sdpa::job_id_t const & job)
@@ -415,8 +411,6 @@ void WorkerManager::delete_job (sdpa::job_id_t const & job)
 			iter->second->delete_job(job);
 		}
 	}
-
-	cond_feed_workers.notify_one();
 }
 
 void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
@@ -435,8 +429,6 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
 	catch(WorkerNotFoundException const &) {
 		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
 	}
-
-	cond_feed_workers.notify_one();
 }
 
 const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWorkerFoundException)
@@ -465,8 +457,6 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
         rank_map_.erase (it);
         break;
     }
-
-  cond_feed_workers.notify_one();
 }
 
 void WorkerManager::make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id )
@@ -540,8 +530,9 @@ void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
 	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
 	{
 		Worker::ptr_t ptrWorker = iter->second;
-		if(ptrWorker->nbAllocatedJobs() < ptrWorker->capacity())
-			workerList.push_back(ptrWorker->name());
+		if( !(ptrWorker->pending().empty() && common_queue_.empty()) &&
+			ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
+				workerList.push_back(ptrWorker->name());
 	}
 
 	CComparator comparator(this);
@@ -750,21 +741,3 @@ void WorkerManager::removeWorkers()
 	rank_map_.clear();
 	owner_map_.clear();
 }
-
-sdpa::worker_id_list_t WorkerManager::waitForFreeWorkers(const boost::posix_time::time_duration &timeout)
-{
-	lock_type lock(mtx_);
-	sdpa::worker_id_list_t workerList;
-	getWorkerListNotFull(workerList);
-
-	const boost::system_time t = boost::get_system_time() + timeout;
-
-	while( workerList.empty() )
-	{
-		cond_feed_workers.timed_wait(lock, t);
-		getWorkerListNotFull(workerList);
-	}
-
-	return workerList;
-}
-

@@ -55,7 +55,7 @@ install(FILES ${hdrs}
 install(TARGETS fhgcom
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)
 
 install(TARGETS fhgcom-shared
   LIBRARY DESTINATION lib

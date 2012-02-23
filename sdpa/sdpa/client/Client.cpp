@@ -30,10 +30,6 @@
 
 #include <sdpa/com/NetworkStrategy.hpp>
 
-#include <sdpa/version.hpp>
-
-#include <fhg/revision.hpp>
-
 namespace se = sdpa::events;
 using namespace sdpa::client;
 
