@@ -164,9 +164,6 @@ void install_signal_handler()
     exit(EXIT_FAILURE);
   }
 
-  // install non-critical handlers
-  sigact.sa_sigaction = noncrit_err_hdlr;
-  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
   if (sigaction(SIGFPE, &sigact, (struct sigaction *)NULL) != 0)
   {
     fprintf(stderr, "error setting signal handler for %d (%s)\n",
@@ -174,6 +171,10 @@ void install_signal_handler()
 
     exit(EXIT_FAILURE);
   }
+
+  // install non-critical handlers
+  //sigact.sa_sigaction = noncrit_err_hdlr;
+  //sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
   // install informative handlers
   sigact.sa_sigaction = sigterm_hdlr;
