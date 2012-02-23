@@ -219,45 +219,66 @@
                                            ? LONG_MAX
                                            : maximum_trace_count;
 
+
             //! \note Get size of output data.
 
             char* input_trace (new char [config.size.trace.input]);
 
-            do_load ( config.file.input.name
-                    , config.file.input.type
-                    , 0 // dummy "part" and "part size"
-                    , 0
-                    , config.size.trace.input
-                    , 1
-                    , input_trace
-                    );
-
-            config.size.trace.output = LONG_MAX;
-
-            for ( long size (std::max (1024 * 1024L, config.size.trace.input * 2))
-                ; size <= config.size.trace.output
-                ; size *= 2
+            //! \todo This might get made better.
+            // Worst case: this checks _all_ traces.
+            // Maybe don't ++trace but trace += random;
+            //! \note Skip traces that get a zero size output.
+            config.size.trace.output = 0;
+            for ( long trace (0)
+                ; config.size.trace.output == 0 && trace < config.num.trace.input
+                ; ++trace
                 )
             {
-              if (size + config.size.trace.input >= shmem_per_node)
-              {
-                LOG (FATAL, "not enough memory to determine size of resulting trace.");
-                throw std::runtime_error ("not enough memory (determine result size)");
-              }
+              do_load ( config.file.input.name
+                      , config.file.input.type
+                      , trace
+                      , config.size.trace.input
+                      , config.size.trace.input
+                      , 1
+                      , input_trace
+                      );
 
-              char* output_buffer (new char[size]);
-              config.size.trace.output = process::execute ( cmd
-                                                          , input_trace
-                                                          , config.size.trace.input
-                                                          , output_buffer
-                                                          , size
-                                                          );
-              delete[] output_buffer;
+              config.size.trace.output = LONG_MAX;
+
+              for ( long size (std::max (1024 * 1024L, config.size.trace.input * 2))
+                  ; size <= config.size.trace.output
+                  ; size *= 2
+                  )
+              {
+                if (size + config.size.trace.input >= shmem_per_node)
+                {
+                  LOG (FATAL, "not enough memory to determine size of resulting trace.");
+                  throw std::runtime_error ("not enough memory (determine result size)");
+                }
+
+                char* output_buffer (new char[size]);
+                config.size.trace.output = process::execute ( cmd
+                                                            , input_trace
+                                                            , config.size.trace.input
+                                                            , output_buffer
+                                                            , size
+                                                            );
+                delete[] output_buffer;
+              }
             }
 
             delete[] input_trace;
 
             LOG (INFO, "size.trace.output = " << config.size.trace.output);
+            if (config.size.trace.output == 0)
+            {
+              LOG ( FATAL, "output size of trace == 0. This means there is no "
+                           "trace for outputting. this should be handled "
+                           "better than by just aborting now."
+                  );
+              throw std::runtime_error ("size.trace.output == 0");
+            }
+
 
 
             //! \note Decide which memory layout to use.
