@@ -2,7 +2,6 @@
 
 set (simple_targets
      we-exec
-     loader
      we-eval
      pnetget
      pnetput
