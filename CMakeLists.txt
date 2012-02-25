@@ -7,6 +7,7 @@ set(PROJECT_VERSION  "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project ve
 set(PROJECT_REVISION     CACHE STRING "Source code revision")
 set(PROJECT_BUILD    "0" CACHE STRING "Build number")
 set(PROJECT_DESCRIPTION "Seismic Development and Processing Architecture" CACHE STRING "Project description")
+set(PROJECT_DESCRIPTION_SUMMARY "Seismic Development and Processing Architecture" CACHE STRING "Project description summary")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
 set(PROJECT_COPYRIGHT   "Copyright 2011 Fraunhofer ITWM" CACHE STRING "Copyright")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
@@ -161,11 +162,6 @@ if (ENABLE_PNET_EDITOR)
 endif (ENABLE_PNET_EDITOR)
 
 include(TargetDoc.cmake OPTIONAL)
-
-install (FILES ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa
-  DESTINATION etc/modules/soft/sdpa
-  RENAME current
-  COMPONENT configurations)
 
 if (INSTALL_AS_BUNDLE)
   add_subdirectory(bundle)
