@@ -20,9 +20,9 @@ include(packages.list.cmake)
 
 set(COMPONENTS_TO_INSTALL
   runtime
-  libraries
+  runtime-libraries
   plugins
-  fhglog-headers
+  runtime-headers
   module-headers
   documentation
   configurations

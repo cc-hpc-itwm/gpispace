@@ -66,7 +66,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp
   DESTINATION include/fhglog
-  COMPONENT fhglog-headers)
+  COMPONENT runtime-headers)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake)
 add_definitions(-DHAVE_CONFIG_H)
