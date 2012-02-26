@@ -259,7 +259,7 @@ for p in $(echo $plugins | tr ',' ' '); do
 	    continue
 	fi
     fi
-    plugin_load_flags="$plugin_load_flags -l $SDPA_HOME/libexec/plugins/$p.so"
+    plugin_load_flags="$plugin_load_flags -l $SDPA_PLUGINS/$p.so"
 done
 
 cmd="${bin} $cfg $plugin_load_flags"

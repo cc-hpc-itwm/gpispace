@@ -7,11 +7,11 @@ pnet_compile(selftest selftest.xml
            -I${CMAKE_BINARY_DIR}/fhglog
            -O3
   BUILD
-  INSTALL libexec/apps/selftest
+  INSTALL ${SDPA_APPS_DIR}/selftest
   COMPONENT applications
 )
 
 install(FILES selftest.xml
-  DESTINATION libexec/apps/selftest
+  DESTINATION ${SDPA_APPS_DIR}/selftest
   COMPONENT applications
 )

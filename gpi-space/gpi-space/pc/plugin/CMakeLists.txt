@@ -13,8 +13,8 @@ fhg_add_plugin(gpi gpi.cpp
     ${Boost_SERIALIZATION_SHARED_LIBRARY}
   INSTALL
   HEADERS gpi.hpp
-  HEADER_DESTINATION include/plugins
-  PLUGIN_DESTINATION libexec/plugins
+  HEADER_DESTINATION include/fhg/plugins
+  PLUGIN_DESTINATION libexec/fhg/plugins
   COMPONENT plugins
 )
 
@@ -23,6 +23,6 @@ fhg_add_plugin(gpi_compat gpi_compat.cpp
   LINK_LIBRARIES
     ${Boost_SERIALIZATION_SHARED_LIBRARY}
   INSTALL
-  PLUGIN_DESTINATION libexec/plugins
+  PLUGIN_DESTINATION libexec/fhg/plugins
   COMPONENT plugins
 )

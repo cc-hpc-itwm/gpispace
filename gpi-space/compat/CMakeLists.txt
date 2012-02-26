@@ -31,11 +31,11 @@ target_link_libraries (fvm-pc-compat.shared
   # todo add shared libs for boost....
 )
 
-install(TARGETS fvm-pc-compat
-  ARCHIVE
-  DESTINATION libexec
-  COMPONENT modules)
-install(TARGETS fvm-pc-compat.shared
-  LIBRARY
-  DESTINATION libexec
-  COMPONENT modules)
+#install(TARGETS fvm-pc-compat
+#  ARCHIVE
+#  DESTINATION libexec
+#  COMPONENT modules)
+#install(TARGETS fvm-pc-compat.shared
+#  LIBRARY
+#  DESTINATION libexec
+#  COMPONENT modules)

@@ -16,15 +16,15 @@ if (WITH_DEPRECATED_FVM_PC)
 
   install(FILES ${hdrs}
     DESTINATION include/fvm-pc
-    COMPONENT headers)
-  install(TARGETS fvm-pc
-    ARCHIVE
-    DESTINATION libexec
-    COMPONENT modules)
-  install(TARGETS fvm-pc.shared
-    LIBRARY
-    DESTINATION libexec
-    COMPONENT modules)
+    COMPONENT runtime-headers)
+#  install(TARGETS fvm-pc
+#    ARCHIVE
+#    DESTINATION libexec
+#    COMPONENT modules)
+#  install(TARGETS fvm-pc.shared
+#    LIBRARY
+#    DESTINATION libexec
+#    COMPONENT modules)
 
   if (WITH_FAKE_PC)
     add_subdirectory(fake)
