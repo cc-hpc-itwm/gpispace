@@ -6,17 +6,21 @@ set (hdrs
   )
 
 if (WITH_DEPRECATED_FVM_PC)
-  set (srcs
-    pc.cpp
-    )
+  if (WITH_FAKE_PC)
+    add_subdirectory(fake)
+  endif (WITH_FAKE_PC)
 
-  ADD_LIBRARY(fvm-pc ${srcs})
-  ADD_LIBRARY(fvm-pc.shared SHARED ${srcs})
-  set_target_properties(fvm-pc.shared PROPERTIES OUTPUT_NAME fvm-pc)
+#  set (srcs
+#    pc.cpp
+#    )
 
-  install(FILES ${hdrs}
-    DESTINATION include/fvm-pc
-    COMPONENT runtime-headers)
+  # ADD_LIBRARY(fvm-pc ${srcs})
+  # ADD_LIBRARY(fvm-pc.shared SHARED ${srcs})
+  # set_target_properties(fvm-pc.shared PROPERTIES OUTPUT_NAME fvm-pc)
+
+  # install(FILES ${hdrs}
+  #   DESTINATION include/fvm-pc
+  #   COMPONENT runtime-headers)
 #  install(TARGETS fvm-pc
 #    ARCHIVE
 #    DESTINATION libexec
@@ -26,7 +30,4 @@ if (WITH_DEPRECATED_FVM_PC)
 #    DESTINATION libexec
 #    COMPONENT modules)
 
-  if (WITH_FAKE_PC)
-    add_subdirectory(fake)
-  endif (WITH_FAKE_PC)
 endif()
