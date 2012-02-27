@@ -470,9 +470,9 @@ int main (int argc, char **argv) {
       lines.push_back ("");
       lines.push_back (api->version());
       lines.push_back (api->revision());
-      lines.push_back (api->copyright());
-      lines.push_back (api->build_timestamp());
+      lines.push_back (api->build_info());
       lines.push_back (api->contact());
+      lines.push_back (api->copyright());
 
       for ( std::vector<std::string>::iterator line (lines.begin())
 	  ; line != lines.end()

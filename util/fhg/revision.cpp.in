@@ -27,4 +27,14 @@ namespace fhg
   {
     return __VERSION__;
   }
+
+  const char * project_build_info ()
+  {
+    return "@FHG_BUILD_INFO@";
+  }
+
+  const char * project_build_count ()
+  {
+    return "@FHG_BUILD_COUNT@";
+  }
 }

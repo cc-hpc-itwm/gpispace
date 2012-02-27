@@ -69,6 +69,11 @@ namespace sdpa { namespace client {
       return pimpl->build();
     }
 
+    const std::string &build_info() const
+    {
+      return pimpl->build_info();
+    }
+
     void subscribe(const job_id_t& jobId)
    	{
     	job_id_list_t listJobIds;

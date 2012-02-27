@@ -24,6 +24,8 @@ namespace fhg
   extern const char * project_revision ();
   extern const char * project_build_time ();
   extern const char * project_build_compiler ();
+  extern const char * project_build_info ();
+  extern const char * project_build_count ();
 }
 
 #endif
