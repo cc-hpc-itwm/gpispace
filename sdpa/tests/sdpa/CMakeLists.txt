@@ -78,7 +78,7 @@ set (tc_srcs
   test_StopRestartOrchSubscriberCli.cpp
   test_StopRestartAgentsSubscriberCli.cpp
   test_StopRestartAgentsPollingCli.cpp
-  test_StopRestartDrtsSubscriberCli.cpp 
+  test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
@@ -107,7 +107,7 @@ foreach (tc_src ${tc_srcs})
                         ${WE_LIBRARIES}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
-                        dl
+                        ${CMAKE_DL_LIBS}
                         )
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})

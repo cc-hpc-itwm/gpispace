@@ -27,7 +27,7 @@ message(STATUS "***************** ${fhg-plugin-static-libs}")
 include(libutils)
 merge_static_libs(fhg-plugin fhg-plugin "${fhg-plugin-static-libs}")
 
-target_link_libraries(fhg-plugin dl)
+target_link_libraries(fhg-plugin ${CMAKE_DL_LIBS})
 
 install (FILES ${hdrs}
   DESTINATION include/fhg/plugin
