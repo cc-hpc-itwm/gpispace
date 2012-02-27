@@ -2182,7 +2182,7 @@ function selftest ()
         if [ -z "$USER" ] ; then
             greeting="You-Know-Who"
         else
-            greeting="$USER"
+            greeting="user $USER"
         fi
 
         log "I: Congratulations $greeting, your SDPA installation is working!"
