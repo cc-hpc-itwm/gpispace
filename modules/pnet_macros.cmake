@@ -107,26 +107,15 @@ macro(PNET_COMPILE)
   if (PNET_INSTALL)
     install (FILES ${__pnet_sources} ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL} COMPONENT ${PNET_COMPONENT})
     if (PNET_BUILD)
-      # TODO:  this doesn't  work  in the  first  install...
-      # figure out how to convince cmake to do this only after the build step has
-      # been completed
-      install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}
-	DESTINATION ${PNET_INSTALL}
-        FILE_PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
-	                 GROUP_EXECUTE GROUP_READ
-	DIRECTORY_PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
-	                      GROUP_EXECUTE GROUP_READ
-	COMPONENT ${PNET_COMPONENT}
-	FILES_MATCHING PATTERN "*.so"
-	PATTERN "we" EXCLUDE
-	)
-#      file(GLOB_RECURSE pnet_modules ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}/*.so)
-#      install (FILES ${pnet_modules}
-#	PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
-#	            GROUP_EXECUTE GROUP_READ
-#		    WORLD_EXECUTE WORLD_READ
-#	DESTINATION ${PNET_INSTALL}
-#	)
+      install(CODE "
+         file(GLOB_RECURSE MODULES \"${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}/*.so\")
+         message(STATUS \"  found modules: \${MODULES} \")
+         if (NOT CMAKE_INSTALL_COMPONENT OR \"\${CMAKE_INSTALL_COMPONENT}\" STREQUAL \"${PNET_COMPONENT}\")
+            file(INSTALL \${MODULES} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PNET_INSTALL}/modules\"
+                         USE_SOURCE_PERMISSIONS
+                )
+         endif()
+      ")
     endif()
   endif()
 endmacro()
