@@ -49,6 +49,19 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
   COMPONENT plugins
 )
 
+fhg_add_plugin(wfe_eval wfe_eval.cpp
+  EXPORTS WFE_EVAL
+  LINK_LIBRARIES ${WE_LIBRARIES}
+		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
+		 ${Boost_FILESYSTEM_SHARED_LIBRARY}
+		 ${Boost_THREAD_SHARED_LIBRARY}
+		 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
+  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
+  COMPONENT plugins
+)
+
 fhg_add_plugin(gui gui.cpp observable.cpp
   EXPORTS GUI
   LINK_LIBRARIES ${FhgCom_LIBRARY}

@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <wfe.hpp>
+#include "wfe.hpp"
 
 class WfeEvalPluginImpl : FHG_PLUGIN
 {
