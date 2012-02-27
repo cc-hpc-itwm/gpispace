@@ -110,12 +110,10 @@ macro(PNET_COMPILE)
       install(CODE "
          file(GLOB_RECURSE MODULES \"${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}/*.so\")
          message(STATUS \"  found modules: \${MODULES} \")
-         if (NOT CMAKE_INSTALL_COMPONENT OR \"\${CMAKE_INSTALL_COMPONENT}\" STREQUAL \"${PNET_COMPONENT}\")
-            file(INSTALL \${MODULES} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PNET_INSTALL}/modules\"
-                         USE_SOURCE_PERMISSIONS
-                )
-         endif()
-      ")
+         file(INSTALL \${MODULES} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PNET_INSTALL}/modules\"
+                      USE_SOURCE_PERMISSIONS
+             )
+      " COMPONENT ${PNET_COMPONENT})
     endif()
   endif()
 endmacro()
