@@ -6,6 +6,25 @@ verbose=false
 dry=false
 force=false
 keep_going=false
+dst=lib # folder within prefix where libs shall be copied to
+
+function usage ()
+{
+    cat <<EOF
+usage: $(basename $0) [options]
+
+  -h : print this help
+  -v : be verbose
+  -n : dry run
+  -k : keep going in case of errors
+  -f : force (overwrite existing files)
+  -p : installation prefix (=$prefix)
+  -x : exclude pattern (can occur multiple times)
+
+  -o  : output destination  folder  for  dependencies, if  not  absolute,  interpreted
+        as a relative to <prefix> (=$dst)
+EOF
+}
 
 function debug ()
 {
@@ -31,14 +50,14 @@ function locate_file ()
   IFS="$OLDIFS"
 }
 
-function is_filtered ()
+function is_filtered_by ()
 {
-    for pattern in ${exclude[@]} ; do
-        if echo "$1" | grep -q "$pattern" ; then
-            return 0
+    for ((p=0 ; p < ${#exclude[@]}; ++p)) ; do
+        if echo $(basename "$1") | grep -q "${exclude[$p]}" ; then
+	    return $p
         fi
     done
-    return 1
+    return ${#exclude[@]}
 }
 
 function bundle_dependencies ()
@@ -53,10 +72,13 @@ function bundle_dependencies ()
     for dep_and_path in $(ldd "$file" | grep '=>' | grep '/' | awk '{printf("%s:%s\n", $1, $3)}') ; do
         dep=$(echo "$dep_and_path" | cut -d: -f 1)
         pth=$(echo "$dep_and_path" | cut -d: -f 2)
-        debug $(printf "%${indent}s" "") "$file <- $pth"
-        if is_filtered "$dep" ; then
-            debug "dependency '$dep' was filtered by pattern '$pattern'"
+	is_filtered_by "$dep"
+	res_pattern=$?
+        if [ $res_pattern -lt ${#exclude[@]} ] ; then
+            debug $(printf "%${indent}s" "") "$file >- $pth  (filtered by pattern: '${exclude[$res_pattern]}')"
             continue
+	else
+            debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
         path="$pth"
         if [ -n "$path" ] ; then
@@ -71,7 +93,7 @@ function bundle_dependencies ()
 }
 
 shiftcount=0
-while getopts ":hvnkfp:x:" opt ; do
+while getopts ":hvnkfp:x:o:" opt ; do
     case $opt in
         h)
             usage
@@ -101,6 +123,9 @@ while getopts ":hvnkfp:x:" opt ; do
             exclude=( ${exclude[@]} $OPTARG )
             shiftcount=$(( shiftcount + 2 ))
             ;;
+	o)
+	    dst=$OPTARG
+	    ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
             echo "try: $(basename $0) -h" >&2
@@ -111,9 +136,18 @@ done
 
 shift $shiftcount
 
-dry_run mkdir -p "$prefix/lib"
+case "$dst" in
+    /*)
+	:
+	;;
+    *)
+	dst="$prefix/$dst"
+	;;
+esac
+
+dry_run mkdir -p "$dst"
 
 for bin ;  do
    echo >&2 "# bundling dependencies for '$bin'"
-   bundle_dependencies "$bin" "$prefix/lib"
+   bundle_dependencies "$bin" "$dst"
 done
