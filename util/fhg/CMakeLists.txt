@@ -1,17 +1,36 @@
 add_subdirectory(util)
 add_subdirectory(plugin)
 
-add_custom_target (generate_revision_cpp ALL
-    ${CMAKE_CURRENT_SOURCE_DIR}/../gen-revision-cpp ${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    COMMENT "generating revision.cpp..."
-    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp
-    )
+execute_process(COMMAND hostname -f
+                OUTPUT_VARIABLE FHG_BUILD_HOST
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+               )
+execute_process(COMMAND id -un
+                OUTPUT_VARIABLE FHG_BUILD_USER
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+               )
+execute_process(COMMAND uname -p
+                OUTPUT_VARIABLE FHG_BUILD_CPU
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+               )
+execute_process(COMMAND uname -s
+                OUTPUT_VARIABLE FHG_BUILD_KERNEL
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+               )
+execute_process(COMMAND uname -v
+                OUTPUT_VARIABLE FHG_BUILD_KERNEL_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+               )
+execute_process(COMMAND date
+                OUTPUT_VARIABLE FHG_BUILD_TIMESTAMP
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+               )
+set(FHG_BUILD_INFO "${FHG_BUILD_KERNEL} ${FHG_KERNEL_CPU} ${FHG_BUILD_USER}@${FHG_BUILD_HOST} ${FHG_BUILD_TIMESTAMP}")
+set(FHG_BUILD_COUNT ${PROJECT_BUILD})
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp @ONLY)
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
-add_dependencies (fhg-revision generate_revision_cpp)
 
 install (FILES revision.hpp
   DESTINATION include/fhg

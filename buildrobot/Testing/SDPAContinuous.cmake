@@ -16,11 +16,11 @@ set(KDE_CTEST_VCS svn)
 set(KDE_CTEST_VCS_REPOSITORY https://svn.itwm.fhg.de/svn/SDPA)
 set(KDE_CTEST_AVOID_SPACES TRUE)
 set(KDE_CTEST_BUILD_SUFFIX "gcc")
-#set(KDE_CTEST_VCS_PATH "main/trunk")
+#set(KDE_CTEST_VCS_PATH ".")
 set(KDE_CTEST_VCS_PATH "trunk")
 set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/continious")
 set(KDE_CTEST_PARALLEL_LEVEL 8)
-##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR}/main/trunk)
+##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR})
 
 
 # for now hardcode the generator to "Unix Makefiles"
@@ -56,7 +56,7 @@ while (${CTEST_ELAPSED_TIME} LESS 36000)
   ctest_start(Continuous)
   ctest_update(SOURCE "${SDPA_TOPSRCDIR}" RETURN_VALUE updatedFiles)
 
-  set(CTEST_SOURCE_DIRECTORY "${SDPA_TOPSRCDIR}/main/trunk")
+  set(CTEST_SOURCE_DIRECTORY "${SDPA_TOPSRCDIR}")
   message("====> Update: ${updatedFiles}")
    
   if ("${updatedFiles}" GREATER 0  OR  firstLoop)

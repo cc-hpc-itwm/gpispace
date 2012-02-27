@@ -36,7 +36,7 @@ set (xmls
 
 install(TARGETS stresstest_mod
   LIBRARY
-  DESTINATION libexec
+  DESTINATION libexec/sdpa
   COMPONENT modules)
 
 install(FILES ${xmls}

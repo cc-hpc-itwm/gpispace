@@ -1,0 +1,297 @@
+#!/bin/bash
+
+src=$(cd $( dirname "$0" ) && pwd)
+
+build_dir=$(pwd)
+
+if [ -e ./CMakeLists.txt ] ; then
+  build_dir="$(pwd)/build"
+  if [ ! -d "${build_dir}" ] ; then
+    echo >&2 "W: This script is intended to be executed in a build directory!"
+    echo >&2 "I: using '${build_dir}' instead"
+    mkdir -p "${build_dir}"
+  fi
+fi
+
+cd "${build_dir}"
+
+build_type=Release
+build_tests=false
+build_static=false
+
+build_apps=true
+build_gpi=true
+build_gpi_fuse=false
+build_gui=true
+build_pnete=true
+
+strip_log=
+build_rev=
+build_prefix=
+
+function get_cmake_cache_entry ()
+{
+    cache_entry="$1"
+    variable="$2"
+
+    result=$( grep "$cache_entry": CMakeCache.txt 2>/dev/null | cut -d= -f 2 )
+    if [ $? -eq 0 -a -n "$result" ] ; then
+	case "$result" in
+	    ON)
+		result="true"
+		;;
+	    OFF)
+		result="false"
+		;;
+	    *)
+		;;
+	esac
+	eval "$variable=$result"
+	return 0
+    else
+	return 1
+    fi
+}
+
+# initialize from CMakeCache.txt
+echo -n "initializing variables..." >&2
+if [ -r "CMakeCache.txt" ] ; then
+
+    get_cmake_cache_entry CMAKE_HOME_DIRECTORY src
+    get_cmake_cache_entry CMAKE_BUILD_TYPE build_type
+    get_cmake_cache_entry BUILD_TESTING build_tests
+
+    get_cmake_cache_entry ENABLE_STATIC_BINARIES build_static
+    get_cmake_cache_entry ENABLE_APPLICATION build_apps
+    get_cmake_cache_entry ENABLE_GPI_SPACE build_gpi
+    get_cmake_cache_entry ENABLE_GPI_FUSE build_gpi_fuse
+    get_cmake_cache_entry ENABLE_SDPA_GUI build_gui
+    get_cmake_cache_entry ENABLE_PNET_EDITOR build_pnete
+
+    get_cmake_cache_entry CMAKE_INSTALL_PREFIX build_prefix
+    get_cmake_cache_entry FHGLOG_STRIP_LEVEL strip_log
+fi
+echo "done." >&2
+
+build_rev=$( cd "$src" && git rev-parse HEAD 2>/dev/null )
+if [ $? != 0 ]; then
+    echo "W: could not get version information from git, trying svn..." >&2
+    build_rev="$( cd "$src" && svn info | grep '^Revision:' | cut -d' ' -f 2 )"
+    if [ -z "$build_rev" ] ; then
+	get_cmake_cache_entry PROJECT_REVISION build_rev
+	if [ -n "$build_rev" ] ; then
+	    echo "W: using old revision ($build_rev), this might not be what you want..." >&2
+	fi
+    fi
+fi
+
+function print_settings ()
+{
+cat >&2 <<EOF
+#  Current settings:
+#  =================
+#
+#     revision: $build_rev
+#       prefix: $build_prefix
+#       source: $src
+#        build: $build_dir
+#         type: $build_type
+#
+#        tests: $build_tests
+#         apps: $build_apps
+#       static: $build_static
+#        gpifs: $build_gpi_fuse
+#          gui: $build_gui
+#     real-gpi: $build_gpi
+#    strip-log: $strip_log
+EOF
+}
+
+function usage ()
+{
+    cat >&2 <<EOF
+$0 [-h] [-b type] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-m|-M] [-r version] [-L level] [-p prefix] [-- options to cmake]
+   -h  : print help
+   -b  : build type
+   -aA : build apps (a:yes A:no)
+   -tT : build tests (t:yes T:no)
+   -sS : build static (s:yes S:no)
+   -gG : build gpi (g:yes G:no)
+   -fF : build gpi filesystem (f:yes F:no)
+   -mM : build monitor guil (m:yes M:no)
+   -eE : build pnet editor (e:yes E:no)
+   -r  : explicitly set revision
+   -L  : strip log level up to and including N
+   -p  : install prefix
+
+EOF
+    print_settings
+}
+
+count=0
+while getopts ":hb:tTsSaAgGfFmMeEL:r:p:" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+        b)
+            count=$(( count + 2 ))
+            build_type="$OPTARG"
+	    ;;
+	a)
+	    count=$(( count + 1 ))
+	    build_apps=true
+	    ;;
+	A)
+	    count=$(( count + 1 ))
+	    build_apps=false
+	    ;;
+	t)
+	    count=$(( count + 1 ))
+	    build_tests=true
+	    ;;
+	T)
+	    count=$(( count + 1 ))
+	    build_tests=false
+	    ;;
+	s)
+	    count=$(( count + 1 ))
+	    build_static=true
+	    ;;
+	S)
+	    count=$(( count + 1 ))
+	    build_static=false
+	    ;;
+	g)
+	    count=$(( count + 1 ))
+	    build_gpi=true
+	    ;;
+	G)
+	    count=$(( count + 1 ))
+	    build_gpi=false
+	    ;;
+	f)
+	    count=$(( count + 1 ))
+	    build_gpi_fuse=true
+	    ;;
+	F)
+	    count=$(( count + 1 ))
+	    build_gpi_fuse=false
+	    ;;
+	m)
+	    count=$(( count + 1 ))
+	    build_gui=true
+	    ;;
+	M)
+	    count=$(( count + 1 ))
+	    build_gui=false
+	    ;;
+	e)
+	    count=$(( count + 1 ))
+	    build_pnete=true
+	    ;;
+	E)
+	    count=$(( count + 1 ))
+	    build_pnete=false
+	    ;;
+	L)
+	    count=$(( count + 2 ))
+	    strip_log="$OPTARG"
+	    ;;
+	r)
+	    count=$(( count + 2 ))
+	    build_rev="$OPTARG"
+	    ;;
+	p)
+	    count=$(( count + 2 ))
+	    build_prefix="$OPTARG"
+	    ;;
+	\?)
+	    echo "E: invalid option: -$OPTARG" >&2
+	    echo "try: $0 -h" >&2
+	    exit 1
+	    ;;
+    esac
+done
+shift $count
+
+if [ "$1" == "--" ] ; then
+    shift
+fi
+
+cmake_flags=
+if [ -n "$build_rev" ] ; then
+    build_rev=$( echo $build_rev | sed -e 's/^v//' )
+    cmake_flags="$cmake_flags -DPROJECT_REVISION=$build_rev"
+else
+    echo "E: no revision specified!" >&2
+    exit 2
+fi
+
+if [ -n "$strip_log" ] ; then
+    cmake_flags="$cmake_flags -DFHGLOG_STRIP_LEVEL=$strip_log"
+fi
+
+if [ -n "$build_type" ] ; then
+    cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=$build_type"
+fi
+
+if [ "$build_tests" == "true" ] ; then
+    cmake_flags="$cmake_flags -DBUILD_TESTING=ON"
+else
+    cmake_flags="$cmake_flags -DBUILD_TESTING=OFF"
+fi
+
+if [ "$build_static" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_STATIC_BINARIES=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_STATIC_BINARIES=OFF"
+fi
+
+if [ "$build_apps" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_APPLICATION=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_APPLICATION=OFF"
+fi
+
+if [ "$build_gpi" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_REAL_GPI=ON -DENABLE_GPI_SPACE=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_REAL_GPI=OFF"
+fi
+
+if [ "$build_gpi_fuse" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_GPI_FUSE=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_GPI_FUSE=OFF"
+fi
+
+if [ "$build_gui" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_SDPA_GUI=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_SDPA_GUI=OFF"
+fi
+
+if [ "$build_pnete" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_PNET_EDITOR=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_PNET_EDITOR=OFF"
+fi
+
+if [ -z "$build_prefix" ] ; then
+    build_prefix=$( grep CMAKE_INSTALL_PREFIX ./CMakeCache.txt 2>/dev/null | cut -d= -f 2 | tr -d \" 2>&1 )
+fi
+if [ -n "$build_prefix" ] ; then
+    cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
+fi
+
+cmake_flags="$cmake_flags $@"
+
+cmd="cmake \"$src\" $cmake_flags"
+print_settings
+echo "#"
+echo "# cmake \"$src\" $cmake_flags"
+read -t 10 -n 1 -p "press any key to continue (Ctrl+C to abort)..."
+echo
+cmake "$src" $cmake_flags

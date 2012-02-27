@@ -1,4 +1,5 @@
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
+set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 add_subdirectory(lib)
 add_subdirectory(example)

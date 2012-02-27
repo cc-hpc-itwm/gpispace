@@ -228,7 +228,7 @@ macro(KDE_CTEST_SETUP)
       set(_tmpDir "${KDE_CTEST_DASHBOARD_DIR}/tmp/${_tmpDir}")
       message("_tmpDir is ${_tmpDir}")
       file(MAKE_DIRECTORY "${_tmpDir}")
-      execute_process(COMMAND ${SVN_EXECUTABLE} export ${KDE_CTEST_VCS_REPOSITORY}/trunk/main/trunk/CTestConfig.cmake
+      execute_process(COMMAND ${SVN_EXECUTABLE} export ${KDE_CTEST_VCS_REPOSITORY}/trunk/CTestConfig.cmake
                       WORKING_DIRECTORY "${_tmpDir}")
       include("${_tmpDir}/CTestConfig.cmake")
       file(REMOVE_RECURSE "${_tmpDir}")

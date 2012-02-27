@@ -31,5 +31,5 @@ set_target_properties(concurrent_mod PROPERTIES OUTPUT_NAME concurrent)
 
 install(TARGETS concurrent_mod
   LIBRARY
-  DESTINATION libexec
+  DESTINATION libexec/sdpa
   COMPONENT modules)

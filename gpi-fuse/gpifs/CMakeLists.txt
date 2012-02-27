@@ -36,7 +36,7 @@ endforeach (target ${targets})
 install(TARGETS gpi-fuse
   ARCHIVE
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT static-libraries)
 
 install(TARGETS gpifs
   RUNTIME

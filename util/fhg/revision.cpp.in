@@ -13,4 +13,28 @@ namespace fhg
   {
     return "@PROJECT_REVISION@";
   }
+
+  const char * project_build_time ()
+  {
+#ifdef __TIMESTAMP__
+    return __TIMESTAMP__;
+#else
+    return __DATE__ " " __TIME__;
+#endif
+  }
+
+  const char * project_build_compiler ()
+  {
+    return __VERSION__;
+  }
+
+  const char * project_build_info ()
+  {
+    return "@FHG_BUILD_INFO@";
+  }
+
+  const char * project_build_count ()
+  {
+    return "@FHG_BUILD_COUNT@";
+  }
 }

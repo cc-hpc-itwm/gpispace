@@ -1,0 +1,91 @@
+<defun>
+
+  <in name="config" type="tracebytrace_config" place="config"/>
+  <out name="package" type="tracebytrace_loaded_package" place="package"/>
+  <out name="num" type="long" place="num"/>
+
+  <net>
+
+    <place name="config" type="tracebytrace_config"/>
+
+    <place name="package" type="tracebytrace_loaded_package"/>
+    <place name="num" type="long"/>
+
+    <place name="check_break" type="generate_package_state"
+           capacity="1" virtual="true"/>
+    <place name="state" type="generate_package_state"/>
+
+    <transition name="init">
+      <defun>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="state" type="generate_package_state"/>
+        <out name="num" type="long"/>
+        <expression>
+          ${state.max} := ${config.num.trace.input};
+          ${state.inc} := ${config.num.trace.per_slot};
+          ${state.id} := 0L;
+          ${state.size} := ${config.size.trace.input};
+          ${num} := 1 + (${state.max} - 1) div ${state.inc}
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="state" place="check_break"/>
+      <connect-out port="num" place="num"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="generate_package_state"/>
+        <expression>
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :ge: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+    </transition>
+
+    <transition name="not_break">
+      <defun>
+        <in name="state" type="generate_package_state"/>
+        <out name="state" type="generate_package_state"/>
+        <expression></expression>
+      </defun>
+      <condition>
+        ${state.id} :lt: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <place name="empty_slot" type="long" virtual="true"/>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="generate_package_state"/>
+        <in name="slot" type="long"/>
+        <out name="state" type="generate_package_state"/>
+        <out name="loaded_package" type="tracebytrace_loaded_package"/>
+        <expression>
+          ${left} := ${state.id};
+
+          ${package.part} := ${state.id} div ${state.inc};
+          ${state.id} := ${state.id} + ${state.inc};
+
+          ${package.num.trace} := min (${state.max}, ${state.id}) - ${left};
+          ${package.size.trace} := ${state.size};
+          ${package.size.package} := ${package.num.trace}
+                                   * ${package.size.trace};
+
+          ${loaded_package.package} := ${package};
+          ${loaded_package.slot} := ${slot};
+        </expression>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-in port="slot" place="empty_slot"/>
+      <connect-out port="state" place="check_break"/>
+      <connect-out port="loaded_package" place="package"/>
+    </transition>
+
+  </net>
+</defun>

@@ -128,7 +128,6 @@
         <in name="gpi_mem_per_node" type="long"/>
         <in name="key" type="string"/>
         <out name="write_info" type="stack_write_info"/>
-        <out name="give_back_trace" type="long"/>
         <out name="config" type="stack_config"/>
         <module name="stack"
                 function="init ( file_input
@@ -139,7 +138,6 @@
                                , shmem_per_node
                                , gpi_mem_per_node
                                , write_info
-                               , give_back_trace
                                , config
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
@@ -208,7 +206,7 @@
             config.file.output.type = type_output;
             config.key = key;
 
-            write_info.next_trace = give_back_trace = 0;
+            write_info.next_trace = 0;
             write_info.offset = 0;
 
             {
@@ -230,7 +228,6 @@
       <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
       <connect-in port="key" place="key"/>
       <connect-out port="write_info" place="write_info"/>
-      <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
     </transition>
 
@@ -249,7 +246,6 @@
     <place name="config_generate_slot" type="stack_config"/>
 
     <place name="write_info" type="stack_write_info"/>
-    <place name="give_back_trace" type="long"/>
 
     <transition name="extract_eat_slot">
       <defun>
@@ -611,7 +607,7 @@
         ${package.package.size} :eq: 0
       </condition>
       <connect-in port="package" place="done_package"/>
-      <connect-out port="package" place="loaded_package_finished"/>
+      <connect-out port="package" place="package_written"/>
     </transition>
 
     <place name="writeable_package" type="stack_loaded_package"/>
@@ -695,27 +691,6 @@
 
     <place name="package_written" type="stack_loaded_package"/>
 
-    <transition name="back_loaded_package">
-      <defun>
-        <in name="loaded_package" type="stack_loaded_package"/>
-        <in name="give_back_trace" type="long"/>
-        <out name="give_back_trace" type="long"/>
-        <out name="loaded_package" type="stack_loaded_package"/>
-        <expression>
-          ${give_back_trace} := ${loaded_package.package.right.trace};
-        </expression>
-        <condition>
-          ${give_back_trace} :eq: ${loaded_package.package.left.trace}
-        </condition>
-      </defun>
-      <connect-in port="loaded_package" place="package_written"/>
-      <connect-out port="loaded_package" place="loaded_package_finished"/>
-      <connect-in port="give_back_trace" place="give_back_trace"/>
-      <connect-out port="give_back_trace" place="give_back_trace"/>
-    </transition>
-
-    <place name="loaded_package_finished" type="stack_loaded_package"/>
-
     <transition name="back_store">
       <defun>
         <in name="loaded_package" type="stack_loaded_package"/>
@@ -726,7 +701,7 @@
           ${slot} := ${loaded_package.slot};
         </expression>
       </defun>
-      <connect-in port="loaded_package" place="loaded_package_finished"/>
+      <connect-in port="loaded_package" place="package_written"/>
       <connect-out port="package" place="package_finished"/>
       <connect-out port="slot" place="empty_slot"/>
     </transition>
@@ -828,7 +803,6 @@
         <in name="done_eat" type="control"/>
         <in name="done_finalize" type="control"/>
         <in name="write_info" type="stack_write_info"/>
-        <in name="give_back_trace" type="long"/>
 
         <out name="done" type="control"/>
         <expression>
@@ -839,7 +813,6 @@
       <connect-in port="done_eat" place="done_eat"/>
       <connect-in port="done_finalize" place="done_finalize"/>
       <connect-in port="write_info" place="write_info"/>
-      <connect-in port="give_back_trace" place="give_back_trace"/>
 
       <connect-out port="done" place="done"/>
     </transition>

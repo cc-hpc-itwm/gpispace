@@ -1,4 +1,4 @@
 install(PROGRAMS
   ufbmigd
-  DESTINATION bin
+  DESTINATION libexec/apps/ufbmig/bin
   COMPONENT applications)

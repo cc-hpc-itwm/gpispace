@@ -50,14 +50,9 @@ install(FILES ${hdrs}
   COMPONENT module-headers
 )
 
-install(TARGETS process
-  ARCHIVE
-  DESTINATION libexec
-  COMPONENT modules)
-
 install(TARGETS process.shared
   LIBRARY
-  DESTINATION libexec
+  DESTINATION libexec/sdpa
   COMPONENT modules)
 
 include (CTest)

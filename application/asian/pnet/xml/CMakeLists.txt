@@ -11,5 +11,6 @@ pnet_compile(asian wrapper.xml
            -O3
   BUILD
   DEPENDS process
-  INSTALL libexec/apps/asian
+  INSTALL "${SDPA_APPS_DIR}/asian"
+  COMPONENT applications
 )

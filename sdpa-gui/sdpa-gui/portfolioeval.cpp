@@ -63,14 +63,14 @@ Portfolio::~Portfolio()
 void Portfolio::Init()
 {
   QString strBackendDir("/usr/local");
-  char *sdpa_home = std::getenv("SDPA_HOME");
+  char *sdpa_home = std::getenv("SDPA_LIBEXEC");
   if (sdpa_home)
   {
     strBackendDir = sdpa_home;
   }
 
-  m_pUi->m_editBackendFile->setText(strBackendDir + "/libexec/apps/asian/bin/Asian");
-  m_pUi->m_editWorkflowFile->setText(strBackendDir + "/libexec/apps/asian/asian.pnet");
+  m_pUi->m_editBackendFile->setText(strBackendDir + "/apps/asian/bin/Asian");
+  m_pUi->m_editWorkflowFile->setText(strBackendDir + "/apps/asian/asian.pnet");
   m_pUi->m_nThreads->setValue(1);
 
 	char* szKvsEnv = std::getenv("KVS_URL");

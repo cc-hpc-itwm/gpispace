@@ -2,7 +2,6 @@
 MAIN = diff
 
 SDPA_INCLUDE = $(SDPA_HOME)/include
-SDPA_LIBEXEC = $(SDPA_HOME)/libexec
 SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
 
 LIB_DESTDIR = $(DESTDIR)/$(MAIN)/lib/
@@ -108,7 +107,7 @@ PNET2DOT = $(SDPA_HOME)/bin/pnet2dot
 ###############################################################################
 
 PNETC += $(addprefix -I ,$(SDPA_XML_LIB))
-PNETC += --gen-ldflags=-L$(SDPA_HOME)/libexec
+PNETC += --gen-ldflags=-L$(SDPA_LIBEXEC)
 PNETC += --gen-ldflags=-L$(SDPA_HOME)/lib
 PNETC += --gen-cxxflags=-O3
 PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include
