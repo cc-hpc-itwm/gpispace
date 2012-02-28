@@ -9,7 +9,7 @@ set(PROJECT_BUILD    "0" CACHE STRING "Build number")
 set(PROJECT_DESCRIPTION "Seismic Development and Processing Architecture" CACHE STRING "Project description")
 set(PROJECT_DESCRIPTION_SUMMARY "Seismic Development and Processing Architecture" CACHE STRING "Project description summary")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
-set(PROJECT_COPYRIGHT   "Copyright 2011 Fraunhofer ITWM" CACHE STRING "Copyright")
+set(PROJECT_COPYRIGHT   "Copyright 2009-2012 Fraunhofer ITWM" CACHE STRING "Copyright")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
