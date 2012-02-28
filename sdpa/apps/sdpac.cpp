@@ -461,14 +461,13 @@ int main (int argc, char **argv) {
     if (cfg.is_set("version"))
     {
       const std::size_t maxlen (72);
-      const std::string header (fhg::project_summary());
+      const std::string header (std::string(fhg::project_summary()) + " v" + fhg::project_version());
       std::string seperator; seperator.resize (header.size(), '=');
 
       std::vector <std::string> lines;
       lines.push_back (header);
       lines.push_back (seperator);
       lines.push_back ("");
-      lines.push_back (fhg::project_version());
       lines.push_back (fhg::project_build_time());
       lines.push_back (std::string("rev: ") + fhg::project_revision());
       lines.push_back (fhg::project_build_info());
