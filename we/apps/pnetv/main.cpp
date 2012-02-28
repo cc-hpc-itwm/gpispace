@@ -1,4 +1,3 @@
-#include <cstdlib> /* EXIT_XXXX constants. */
 #include <iostream>
 
 #include <jpn/common/Foreach.h>
