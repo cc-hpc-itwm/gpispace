@@ -54,7 +54,6 @@ if( ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 endif( ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 endif(NOT WIN32)
 
-
 # just print the results if requested
 function(info_compiler)
   message(STATUS "CMAKE_FORCE_CXX_COMPILER  = '${CMAKE_FORCE_CXX_COMPILER}'")
