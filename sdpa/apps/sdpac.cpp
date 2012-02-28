@@ -27,7 +27,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
-
+#include <fhg/revision.hpp>
 
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
@@ -461,18 +461,20 @@ int main (int argc, char **argv) {
     if (cfg.is_set("version"))
     {
       const std::size_t maxlen (72);
-      const std::string header ("SDPA - Seismic Data Processing Architecture");
+      const std::string header (fhg::project_summary());
       std::string seperator; seperator.resize (header.size(), '=');
 
       std::vector <std::string> lines;
       lines.push_back (header);
       lines.push_back (seperator);
       lines.push_back ("");
-      lines.push_back (api->version());
-      lines.push_back (api->revision());
-      lines.push_back (api->build_info());
-      lines.push_back (api->contact());
-      lines.push_back (api->copyright());
+      lines.push_back (fhg::project_version());
+      lines.push_back (fhg::project_build_time());
+      lines.push_back (std::string("rev: ") + fhg::project_revision());
+      lines.push_back (fhg::project_build_info());
+      lines.push_back (fhg::project_build_compiler());
+      lines.push_back (fhg::project_contact());
+      lines.push_back (fhg::project_copyright());
 
       for ( std::vector<std::string>::iterator line (lines.begin())
 	  ; line != lines.end()
@@ -489,12 +491,12 @@ int main (int argc, char **argv) {
     }
     if (cfg.is_set("dumpversion"))
     {
-      std::cout << api->version() << std::endl;
+      std::cout << fhg::project_version() << std::endl;
       return 0;
     }
     if (cfg.is_set("revision"))
     {
-      std::cout << api->revision() << std::endl;
+      std::cout << fhg::project_revision() << std::endl;
       return 0;
     }
 
