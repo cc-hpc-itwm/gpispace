@@ -36,7 +36,7 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
   const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name()   \
   {                                                                     \
     static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =       \
-      { FHG_PLUGIN_VERSION_MAGIC,                                       \
+      { FHG_PLUGIN_API_VERSION,                                         \
         #name,                                                          \
         desc,                                                           \
         author,                                                         \
@@ -63,7 +63,7 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor()        \
     {                                                                   \
       static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =     \
-        { FHG_PLUGIN_VERSION_MAGIC,                                     \
+        { FHG_PLUGIN_API_VERSION,                                       \
           #name,                                                        \
           desc,                                                         \
           author,                                                       \

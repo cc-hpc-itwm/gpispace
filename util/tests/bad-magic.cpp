@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fhg/plugin/magic.hpp>
-#undef FHG_PLUGIN_VERSION_MAGIC
-#define FHG_PLUGIN_VERSION_MAGIC "bad-version-magic"
+#undef FHG_PLUGIN_API_VERSION
+#define FHG_PLUGIN_API_VERSION "bad-version-magic"
 #include <fhg/plugin/plugin.hpp>
 
 #include <boost/thread.hpp>
