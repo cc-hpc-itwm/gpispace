@@ -161,6 +161,9 @@
           <code><![CDATA[
             LOG (INFO, "INIT");
 
+            LOG(INFO, "shmem_per_node = " << shmem_per_node);
+            LOG(INFO, "gpi_mem_per_node = " << gpi_mem_per_node);
+
             config.cmd = cmd;
 
 
@@ -219,6 +222,8 @@
                                            ? LONG_MAX
                                            : maximum_trace_count;
 
+
+            LOG(INFO, "remaining_traces_to_be_written = " << remaining_traces_to_be_written);
 
             //! \note Get size of output data.
 
@@ -288,18 +293,30 @@
 
             const long size_needed_per_trace_on_node
               ( config.size.trace.input
-              + config.seperate_io_buffers ? config.size.trace.output
-                                           : 0
+              + ( config.seperate_io_buffers
+                ? config.size.trace.output
+                : 0
+                )
               );
+
+            LOG(INFO, "size_needed_per_trace_on_node = " << size_needed_per_trace_on_node);
 
             const long size_needed_per_trace_in_gpi
               (std::max (config.size.trace.input, config.size.trace.output));
 
+            LOG(INFO, "size_needed_per_trace_in_gpi = " << size_needed_per_trace_in_gpi);
+
             const long mem_per_node
               (std::min (shmem_per_node, gpi_mem_per_node));
 
-            config.num.trace.per_slot = mem_per_node
+            LOG(INFO, "mem_per_node = " << mem_per_node);
+
+            const long max_slot_size (1L << 30);
+
+            config.num.trace.per_slot = std::min (mem_per_node, max_slot_size)
                                       / size_needed_per_trace_on_node;
+
+            LOG(INFO, "config.num.trace.per_slot = " << config.num.trace.per_slot);
 
             if (config.num.trace.per_slot < 1)
             {
@@ -309,8 +326,12 @@
             config.size.slot.gpi = config.num.trace.per_slot
                                  * size_needed_per_trace_in_gpi;
 
+            LOG(INFO, "config.size.slot.gpi = " << config.size.slot.gpi);
+
             const long slot_per_node
               (gpi_mem_per_node / config.size.slot.gpi);
+
+            LOG(INFO, "slot_per_node = " << slot_per_node);
 
             if (slot_per_node < 2)
             {
@@ -318,8 +339,13 @@
             }
 
             config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
+
+            LOG(INFO, "config.num.slot = " << config.num.slot);
+
             config.size.slot.input = config.size.trace.input
                                    * config.num.trace.per_slot;
+
+            LOG(INFO, "config.size.slot.input = " << config.size.slot.input);
 
             config.handle.data = static_cast<long>
               (fvmGlobalAlloc ((slot_per_node - 1) * config.size.slot.gpi));
@@ -575,7 +601,9 @@
         <in name="num_packages" type="long"/>
         <out name="num_packages" type="long"/>
         <expression>
-          ${packages_remaining} := (${state.max} - ${state.id}) div ${state.inc};
+          ${packages_remaining} :=
+            1 + (${state.max} - ${state.id} - 1) div ${state.inc}
+            ;
           ${num_packages} := ${num_packages} - ${packages_remaining};
         </expression>
         <condition>
