@@ -20,6 +20,8 @@ install(CODE "
          \"\${CMAKE_INSTALL_PREFIX}/libexec/plugins/*.so\")
   execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
+                          -x \"libgcc_s\"
+                          -x \"libc.so\"
                           -v
                            ${APPS} \${PLUGINS}
   )

@@ -1,5 +1,5 @@
 
-set (PARSU_TRACEBYTRACE "libexec/apps/parsu/tracebytrace")
+set (PARSU_TRACEBYTRACE "${SDPA_APPS_DIR}/parsu/tracebytrace")
 
 add_subdirectory (xml)
 
@@ -16,5 +16,5 @@ set (prgs
 )
 
 install(PROGRAMS ${prgs}
-  DESTINATION libexec/apps/parsu/bin
+  DESTINATION ${SDPA_APPS_DIR}/parsu/bin
   COMPONENT applications)

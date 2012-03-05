@@ -12,6 +12,22 @@
 #error "MAX_FVM_SIZE must be defined!"
 #endif
 
+typedef enum {
+  START,
+  FGLOBALLOC,
+  FLOCALLOC,
+  FGLOBALFREE,
+  FLOCALFREE,
+  PUTGLOBAL,
+  GETGLOBAL,
+  PUTLOCAL,
+  GETLOCAL,
+  READDMA,
+  WRITEDMA,
+  WAITCOMM,
+  LEAVE
+} fvmOperation_t;
+
 // global variables
 static DTmmgr_t dtmmgr(NULL);
 

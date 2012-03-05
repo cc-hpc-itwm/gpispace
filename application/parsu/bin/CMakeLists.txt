@@ -4,5 +4,5 @@ set (prgs
 )
 
 install(PROGRAMS ${prgs}
-  DESTINATION libexec/apps/parsu/bin
+  DESTINATION ${SDPA_APPS_DIR}/parsu/bin
   COMPONENT applications)

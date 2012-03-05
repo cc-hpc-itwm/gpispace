@@ -20,5 +20,5 @@ add_subdirectory(pnet)
 
 install(TARGETS Asian
   RUNTIME
-  DESTINATION libexec/apps/asian/bin
+  DESTINATION ${SDPA_APPS_DIR}/asian/bin
   COMPONENT applications)

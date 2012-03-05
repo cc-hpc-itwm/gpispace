@@ -9,6 +9,6 @@ set (prgs
 add_subdirectory(xml)
 
 install (PROGRAMS ${prgs}
-  DESTINATION libexec/apps/sdpacc/bin
+  DESTINATION "${SDPA_APPS_DIR}/sdpacc/bin"
   COMPONENT applications
 )

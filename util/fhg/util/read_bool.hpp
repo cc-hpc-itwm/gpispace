@@ -65,7 +65,7 @@ namespace fhg
         }
       else
         {
-          throw std::runtime_error ("failed to read a bool from: " + inp);
+          throw std::runtime_error ("failed to read a bool from: '" + inp + "'");
         }
     }
   }

@@ -16,7 +16,7 @@ int main(int ac, char **av)
     {
       fhg::core::plugin_t::ptr_t p (fhg::core::plugin_t::create(av[i], true));
 
-      if (std::string(FHG_PLUGIN_VERSION_MAGIC) != p->descriptor()->magic)
+      if (std::string(FHG_PLUGIN_API_VERSION) != p->descriptor()->magic)
       {
         std::cout << "*** WARNING: version magics differ, this module might be incompatible!" << std::endl;
       }

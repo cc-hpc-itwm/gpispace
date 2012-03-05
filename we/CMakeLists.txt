@@ -111,10 +111,10 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
-  DESTINATION share/doc/${PROJECT_NAME}
-  COMPONENT documentation
-)
+#INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
+#  DESTINATION share/doc/${PROJECT_NAME}
+#  COMPONENT documentation
+#)
 
 # Reflect the package structure
 add_subdirectory(we)

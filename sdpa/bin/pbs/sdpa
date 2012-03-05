@@ -84,17 +84,18 @@ DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
 #
 # override defaults by:
 #
-#     1. /etc/sdpa/sdpa.system.defaults
-#     2. /usr/local/etc/sdpa/sdpa.system.defaults
-#     3. $SDPA_HOME/etc/sdpa/sdpa.system.defaults
-#     4. $HOME/.sdpa/sdpa.system.defaults
+#     1. /etc/sdpa/defaults
+#     2. /usr/local/etc/sdpa/defaults
+#     3. $SDPA_HOME/etc/sdpa/defaults
+#     4. $HOME/.sdpa.defaults
 #
 
 for system_default in "/etc/sdpa/defaults"               \
+                      "/usr/etc/sdpa/defaults"           \
                       "/usr/local/etc/sdpa/defaults"     \
                       "${SDPA_HOME}/etc/sdpa/defaults"   \
                       "${SDPA_SYSTEM_DEFAULTS}"          \
-                      ~/.sdpa/defaults                   ; do
+                      ~/.sdpa.defaults                   ; do
     if [ -r "$system_default" ] ; then
         debug "reading system default from: '$system_default'" >&2
         source "$system_default"
@@ -106,10 +107,11 @@ done
 #
 if [ -z "$SDPA_HOME" ] ; then
     export SDPA_HOME=$(dirname $(dirname $(which "$0")))
+    export SDPA_LIBEXEC="${SDPA_HOME}/libexec/sdpa"
     prepend_to_path PATH "$SDPA_HOME/bin"
 fi
 
-export SDPA_SCRIPT_DIR="$SDPA_HOME/libexec/sdpa/scripts"
+export SDPA_SCRIPT_DIR="$SDPA_LIBEXEC/scripts"
 prepend_to_path PATH "$SDPA_SCRIPT_DIR"
 
 ##############################################
@@ -966,23 +968,39 @@ function generate_environment ()
         # sanitize HOME
         export SDPA_HOME="$(echo $SDPA_HOME | sed -e 's,/\+$,,')"
     fi
-    export SDPA_LIBEXEC="$SDPA_HOME/libexec"
+    export SDPA_LIBEXEC="$SDPA_HOME/libexec/sdpa"
+    export SDPA_PLUGINS="$SDPA_HOME/libexec/fhg/plugins"
 
     echo export SDPA_HOME="$SDPA_HOME"
-    echo export SDPA_LIBEXEC="$SDPA_HOME/libexec"
+    echo export SDPA_LIBEXEC="$SDPA_LIBEXEC"
+    echo export SDPA_PLUGINS="$SDPA_PLUGINS"
 
     prepend_to_path PATH "$SDPA_HOME/bin"
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
-    prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/libexec"
+    prepend_to_path LD_LIBRARY_PATH "$SDPA_LIBEXEC"
     prepend_to_path LD_LIBRARY_PATH "$HOME/.sdpa/plugins"
 
     prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
-    prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/.sdpa/modules"
+    prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
 
-    for f in $(find "$SDPA_LIBEXEC/apps" "$HOME/.sdpa/modules" -type f -name "*.so" ) ; do
-        mod_dir=$(dirname "$f")
-        prepend_to_path PC_LIBRARY_PATH "$mod_dir"
-        prepend_to_path LD_LIBRARY_PATH "$mod_dir"
+    app_directories=(                       "$SDPA_LIBEXEC/apps"  )
+
+    OLDIFS="$IFS"
+    IFS=":"
+    for d in $SDPA_APP_PATH ; do
+	# eval echo: resolve "~"
+	app_directories=( ${app_directories[@]} $(eval echo "$d") )
+    done
+    IFS="$OLDIFS"
+
+    app_directories=( ${app_directories[@]} "$HOME/.sdpa/modules" )
+
+    for app_dir in ${app_directories[@]} ; do
+	for f in $(find "$app_dir" -type f -name "*.so" ) ; do
+            mod_dir=$(dirname "$f")
+            prepend_to_path PC_LIBRARY_PATH "$mod_dir"
+            prepend_to_path LD_LIBRARY_PATH "$mod_dir"
+	done
     done
 
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
@@ -2057,7 +2075,7 @@ function selftest ()
 {
     log "I: performing self-test"
 
-    local xml="$SDPA_HOME/libexec/apps/selftest/selftest.xml"
+    local xml="$SDPA_LIBEXEC/apps/selftest/selftest.xml"
     if ! test -r "$xml" ; then
         log "E: cannot read $xml"
         return 1
@@ -2164,7 +2182,7 @@ function selftest ()
         if [ -z "$USER" ] ; then
             greeting="You-Know-Who"
         else
-            greeting="$USER"
+            greeting="user $USER"
         fi
 
         log "I: Congratulations $greeting, your SDPA installation is working!"

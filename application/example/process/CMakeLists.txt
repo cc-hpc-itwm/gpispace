@@ -52,7 +52,7 @@ install(FILES ${hdrs}
 
 install(TARGETS process.shared
   LIBRARY
-  DESTINATION libexec
+  DESTINATION libexec/sdpa
   COMPONENT modules)
 
 include (CTest)

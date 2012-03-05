@@ -8,9 +8,35 @@
 #  define DEPRECATE_API(msg)
 #endif
 
-#include <fvm/fvmAllocatorTypes.h>
-#include <fvm/fvm_common.h>
 #include <cstring>
+
+typedef unsigned long fvmAllocHandle_t;
+typedef unsigned long fvmSize_t;
+typedef unsigned long fvmOffset_t;
+typedef unsigned long fvmShmemOffset_t;
+typedef int           fvmCommHandle_t;
+
+typedef enum
+  {
+    COMM_HANDLE_ERROR_SHMEM_BOUNDARY = -11,
+
+    COMM_HANDLE_ERROR_INVALID_HANDLE,
+    COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE,
+    COMM_HANDLE_ERROR_INVALID_SIZE,
+    COMM_HANDLE_ERROR_ARENA_UNKNOWN,
+
+    /* error states */
+    COMM_HANDLE_ERROR_TOO_MANY,
+    COMM_HANDLE_ERROR_HANDLE_UNKNOWN,
+    COMM_HANDLE_ERROR_ACK_FAILED,
+    COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL,
+    COMM_HANDLE_ERROR_SIZE_NOT_MATCH,
+    COMM_HANDLE_ERROR,
+    COMM_HANDLE_FREE = 0, // 0
+    COMM_HANDLE_NOT_FINISHED,
+    COMM_HANDLE_OK
+
+  } fvmCommHandleState_t;
 
 typedef struct fvmPcConfig {
   static const size_t max_len = 1024;

@@ -31,5 +31,5 @@ set_target_properties(put_get_mod PROPERTIES OUTPUT_NAME put_get)
 
 install(TARGETS put_get_mod
   LIBRARY
-  DESTINATION libexec
+  DESTINATION libexec/sdpa
   COMPONENT modules)

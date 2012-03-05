@@ -11,7 +11,7 @@ if (ENABLE_OBSOLETE_KDM)
   add_subdirectory(obsolete)
 endif (ENABLE_OBSOLETE_KDM)
 
-add_subdirectory(src/fake)
+#add_subdirectory(src/fake)
 
 include_directories(./src
 		    ./src/include
@@ -217,21 +217,21 @@ install(FILES ${hdrs}
   )
 
 install(PROGRAMS kdm.sh
-  DESTINATION libexec/apps/kdm/bin
+  DESTINATION ${SDPA_APPS_DIR}/kdm/bin
   COMPONENT examples
 )
 
 install(TARGETS determine_size do_load do_write
   LIBRARY
-  DESTINATION libexec
+  DESTINATION libexec/sdpa
   COMPONENT modules)
 
 install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
   LIBRARY
-  DESTINATION libexec/apps/kdm/lib
+  DESTINATION ${SDPA_APPS_DIR}/kdm/lib
   COMPONENT modules)
 
 install(TARGETS kdm_mod kdmfull_mod
   LIBRARY
-  DESTINATION libexec/apps/kdm/lib
+  DESTINATION ${SDPA_APPS_DIR}/kdm/lib
   COMPONENT modules)
