@@ -85,6 +85,8 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "ErrorEvent"; }
 
+      int priority() const { return 1; }
+
       virtual void handleBy(EventHandler *handler)
       {
     	  handler->handleErrorEvent(this);

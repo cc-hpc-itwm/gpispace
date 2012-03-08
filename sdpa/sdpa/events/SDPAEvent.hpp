@@ -45,7 +45,6 @@ namespace sdpa { namespace events {
 	  message_id_type &id() { return id_; }
 
       virtual std::string str() const = 0;
-
       virtual void handleBy(EventHandler *) = 0;
 
       virtual Ptr create_reply (boost::system::error_code const &)
