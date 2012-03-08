@@ -139,7 +139,7 @@ namespace sdpa
         }
         else
         {
-          LOG(TRACE, m_peer->name() << " is shutting down");
+        	LOG(TRACE, m_peer->name() << " is shutting down");
         }
       }
     }
