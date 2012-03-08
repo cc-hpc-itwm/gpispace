@@ -47,7 +47,6 @@ namespace sdpa { namespace daemon {
 			virtual void action_config_ok(const sdpa::events::ConfigOkEvent&)=0;
 			virtual void action_config_nok(const sdpa::events::ConfigNokEvent&)=0;
 			virtual void action_interrupt(const sdpa::events::InterruptEvent& )=0;
-			//virtual void action_lifesign(const sdpa::events::LifeSignEvent& )=0;
 			virtual void action_delete_job(const sdpa::events::DeleteJobEvent& )=0;
 			virtual void action_request_job(const sdpa::events::RequestJobEvent& )=0;
 			virtual void action_submit_job(const sdpa::events::SubmitJobEvent& )=0;
