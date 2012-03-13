@@ -322,18 +322,6 @@ function setup_state ()
         fi
     fi
 
-    if [ -n "$PBS_NODEFILE" ] ; then
-        real_file=$(readlink -e "$PBS_NODEFILE")
-        if [ -n "$real_file" ] ; then
-            test -e ~/.sdpa/data/aux && rm -f ~/.sdpa/data/aux
-            /bin/ln -s "$(dirname "${real_file}")" ~/.sdpa/data/aux
-        else
-            log "E: PBS_NODEFILE does not point to an existing file: $PBS_NODEFILE"
-        fi
-    else
-        log "E: PBS_NODEFILE is empty, could not figure out where the aux directory should be!"
-    fi
-
     return 0
 }
 
