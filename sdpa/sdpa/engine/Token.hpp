@@ -67,6 +67,7 @@ public:
 		, m_rankOwner(rankOwner)
 		, m_block_1(m1)
 		, m_block_2(m2)
+	 	, m_nVisitedNodes(0)
 	{
 	}
 
@@ -78,6 +79,8 @@ public:
 		m_block_1 = t.block_1();
 		m_block_2 = t.block_2();
 		m_activityId = t.activityId();
+		m_workflowId = t.workflowId();
+		m_nVisitedNodes = t.nVisitedNodes();
 	}
 
 	Token& operator=(const Token& t)
@@ -90,6 +93,8 @@ public:
 			m_block_1 = t.block_1();
 			m_block_2 = t.block_2();
 			m_activityId = t.activityId();
+			m_workflowId = t.workflowId();
+			m_nVisitedNodes = t.nVisitedNodes();
 		}
 
 		return *this;
@@ -106,6 +111,8 @@ public:
 		ar & block_1();
 		ar & block_2();
 		ar & activityId();
+		ar & workflowId();
+		ar & nVisitedNodes();
 	}
 
 	void decode( const std::string& strInput )
@@ -142,6 +149,13 @@ public:
 	id_type& activityId() { return m_activityId; }
 	const id_type& activityId() const { return m_activityId; }
 
+	id_type& workflowId() { return m_workflowId; }
+	const id_type& workflowId() const { return m_workflowId; }
+
+	void incVisitedNodes() { m_nVisitedNodes++; }
+	int& nVisitedNodes() { return m_nVisitedNodes; }
+	const int& nVisitedNodes() const { return m_nVisitedNodes; }
+
 	private:
 	color_t  m_col;
 	std::string m_owner;
@@ -149,6 +163,8 @@ public:
 	matrix_t m_block_1;
 	matrix_t m_block_2;
 	id_type  m_activityId;
+	id_type  m_workflowId;
+	int m_nVisitedNodes;
 };
 
 
