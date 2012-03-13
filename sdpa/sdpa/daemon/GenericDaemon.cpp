@@ -19,6 +19,7 @@
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/events/CodecStrategy.hpp>
+#include <seda/EventPrioQueue.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
@@ -359,8 +360,11 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
 												)
               );
 
-        seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, net));
+        int maxQueueSize = 5000;
+        seda::IEventQueue::Ptr ptrEvtPrioQueue( new seda::EventPrioQueue("network.stage."+name()+".queue", maxQueueSize) );
+        seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, ptrEvtPrioQueue, net, 1));
         seda::StageRegistry::instance().insert (network_stage);
+
         //network_stage->start ();
 
         ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
@@ -1106,8 +1110,8 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
 				scheduler()->reassign(worker_id, jobId);
 			}
+			 break;
 		}
-                break;
     	default:
     	{
     		MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
@@ -1908,18 +1912,18 @@ void GenericDaemon::forward(const id_type& job_id, const result_type& result, un
 		}
 		else
 		{
-			 SDPA_LOG_ERROR("Could not find a worker with the specified rank!");
-			 throw;
+			SDPA_LOG_ERROR("Could not find a worker with the specified rank!");
+			throw;
 		}
 	}
 	catch(std::exception const & ex)
 	{
-	  SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
-	  throw;
+		SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
+		throw;
 	}
 	catch(...)
 	{
-	  SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
-	  throw;
+		SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
+		throw;
 	}
 }

@@ -38,6 +38,8 @@ namespace seda {
             return os << str();
         }
 
+        virtual int priority() const { return 0; }
+
         /* TODO: introduce timeouts to preserve the ordering of events? */
     protected:
         IEvent() {}
