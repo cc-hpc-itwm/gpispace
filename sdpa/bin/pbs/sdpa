@@ -460,7 +460,7 @@ to. It should be on the same host that you run the GUI on.
     local lvl=$(get "log.server.level" "INFO")
     local prompt="log level [$lvl]:"
     get_user_input "log level to use [$lvl]:" lvl ""
-    lvl=$( echo "$lvl" | tr [a-z] [A-Z] )
+    lvl=$( echo "$lvl" | tr 'a-z' 'A-Z' )
 
     local log_dir=$(get "sdpa.log_dir" "${DEFAULT_LOG_DIRECTORY:?}")
     get_user_input "log directory to use [$log_dir]:" log_dir ""
@@ -626,7 +626,7 @@ function parse_human_readable_size ()
 {
     local size_value="$1"; shift
     local var="$1"; shift
-    size_value=$( echo "$size_value" | tr [a-z] [A-Z] )
+    size_value=$( echo "$size_value" | tr 'a-z' 'A-Z' )
     size_value=$( echo "$size_value" | sed -e 's/E$/*1024T/' )
     size_value=$( echo "$size_value" | sed -e 's/T$/*1024G/' )
     size_value=$( echo "$size_value" | sed -e 's/G$/*1024M/' )
@@ -1990,7 +1990,7 @@ function submit ()
         sdpac wait "$jobid"
         s=$(sdpac status "${jobid}")
         log "    $jobid -> $s"
-        s=$(echo "$s" | tr [A-Z] [a-z])
+        s=$(echo "$s" | tr 'A-Z' 'a-z')
         case "$s" in
             *finish*)
                 log "I: job finished"
