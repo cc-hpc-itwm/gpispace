@@ -383,6 +383,7 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
           add_ports (trans, fun.out(), we::type::PORT_OUT);
+          add_requirements (trans, fun.requirements);
 
           return trans;
         }
@@ -415,6 +416,7 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN, pid_of_place);
           add_ports (trans, fun.out(), we::type::PORT_OUT, pid_of_place);
+          add_requirements (trans, fun.requirements);
 
           return trans;
         }
