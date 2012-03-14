@@ -17,11 +17,15 @@ endif()
 
 install(CODE "
   file(GLOB_RECURSE PLUGINS
-         \"\${CMAKE_INSTALL_PREFIX}/libexec/plugins/*.so\")
+         \"\${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/*.so\")
   execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -x \"libgcc_s\"
                           -x \"libc.so\"
+                          -x \"libdl.so\"
+                          -x \"libstdc++.so\"
+                          -x \"libpthread.so\"
+                          -x \"libfontconfig.so\"
                           -v
                            ${APPS} \${PLUGINS}
   )
