@@ -32,6 +32,7 @@ gpi_socket="$gpi_socket/$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_name -
 lib_path="$PC_LIBRARY_PATH"
 kvs_url="${KVS_URL}"
 count=
+capabilities=""
 
 function usage ()
 {
@@ -49,6 +50,7 @@ usage: $(basename "$0") [options]
     -l path (=$lib_path): library path
     -k kvs-url (=$kvs_url): url to the key-value-store
     -c count: start this many processes (0==#cores)
+    -C capability: start with this capability (can be specified more than once
     -D daemonize
     -L logfile
 EOF
@@ -77,7 +79,7 @@ function to_bg ()
     /bin/kill -CONT "$pid"
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:L:M:" opt; do
+while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:" opt; do
     case $opt in
 	h)
 	    usage
@@ -122,6 +124,13 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:L:M:" opt; do
 	    ;;
 	c)
 	    count="$OPTARG"
+	    ;;
+	C)
+	    if [ -z "$capacities" ] ; then
+		capabilities="$OPTARG"
+	    else
+		capabilities="$capabilities,$OPTARG"
+	    fi
 	    ;;
 	\?)
 	    echo "invalid option: -$OPTARG" >&2
@@ -235,6 +244,7 @@ cfg="$cfg -s plugin.drts.name=$name"
 cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
 cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.max_reconnect_attempts -v 128)"
+cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
 
 # config values (gpi plugin)
 cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"

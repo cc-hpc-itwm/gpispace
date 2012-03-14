@@ -804,13 +804,10 @@ namespace we { namespace mgmt {
 
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
 
-        // TO DO: set here the requirements !!!!
-        typedef requirement_t<std::string> capability_t;
-        typedef std::list<capability_t> required_capabilities_t;
-        required_capabilities_t required_capabilities;
-        // TODO: transport the requirements from the XML to the activity, then get them from there
-        //        required_capabilities.push_back (capability_t ("FOO", true));
-        ext_submit ( ext_id, policy::codec::encode (ext_act), required_capabilities);
+        ext_submit ( ext_id
+                   , policy::codec::encode (ext_act)
+                   , ext_act.transition().requirements()
+                   );
       }
 
       // WORK HERE: rewrite!

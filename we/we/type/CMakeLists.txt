@@ -17,6 +17,7 @@ set (hdrs
   token.hpp
   transition.hpp
   value.hpp
+  requirement.hpp
   )
 install(FILES ${hdrs}
   DESTINATION include/we/type
