@@ -122,6 +122,8 @@
 
     <transition name="init">
       <defun>
+	<require key="GPI" />
+	<require key="I/O" mandatory="false" />
         <in name="file_input" type="string"/>
         <in name="type_input" type="string"/>
         <in name="file_output" type="string"/>
@@ -456,6 +458,8 @@
 
     <transition name="load">
       <defun>
+	<require key="GPI" />
+	<require key="I/O" />
         <in name="package" type="tracebytrace_loaded_package"/>
         <in name="config" type="tracebytrace_config"/>
         <out name="package" type="tracebytrace_loaded_package"/>
@@ -500,6 +504,8 @@
 
     <transition name="tracebytrace">
       <defun>
+	<require key="GPI" />
+	<require key="CPU" />
         <in name="package" type="tracebytrace_loaded_package"/>
         <in name="config" type="tracebytrace_config"/>
         <out name="package" type="tracebytrace_loaded_package"/>
@@ -621,6 +627,8 @@
 
     <transition name="write">
       <defun>
+	<require key="GPI" />
+	<require key="I/O" />
         <in name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
         <in name="config" type="tracebytrace_config"/>
         <out name="p" type="tracebytrace_loaded_package"/>
@@ -708,6 +716,7 @@
 
     <transition name="finalize">
       <defun>
+	<require key="GPI" />
         <in name="config" type="tracebytrace_config"/>
         <out name="trigger" type="control"/>
         <module name="tracebytrace" function="finalize (trigger, config)">
