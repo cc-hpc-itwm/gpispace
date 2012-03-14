@@ -102,7 +102,7 @@ public:
 
     // parse virtual capabilities
     {
-      std::string virtual_capabilities (fhg_kernel()->get("virtual_capabilities", ""));
+      std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
       std::list<std::string> capability_list;
       fhg::util::split( virtual_capabilities
                       , ","
