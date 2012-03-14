@@ -27,6 +27,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
+#include <we/type/requirement.hpp>
 
 #include <fhg/util/show.hpp>
 #include <fhg/util/xml.hpp>
@@ -36,13 +37,15 @@ namespace xml_util = ::fhg::util::xml;
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
+#include <boost/unordered_set.hpp>
+#include <boost/unordered_map.hpp>
+
 #include <boost/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/serialization/nvp.hpp>
-
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/version.hpp>
 
 namespace we { namespace type {
     namespace exception {
@@ -314,6 +317,9 @@ namespace we { namespace type {
       typedef typename port_map_t::iterator port_iterator;
       typedef boost::unordered_set<port_t::name_type> port_names_t;
 
+      typedef we::type::requirement_t<std::string> requirement_t;
+      typedef std::list<requirement_t> requirements_t;
+
       const static bool internal = true;
       const static bool external = false;
 
@@ -500,6 +506,11 @@ namespace we { namespace type {
       data_type & data (void)
       {
         return data_;
+      }
+
+      requirements_t const & requirements (void) const
+      {
+        return m_requirements;
       }
 
       this_type & operator=(const this_type & other)
@@ -1082,6 +1093,16 @@ namespace we { namespace type {
         return names;
       }
 
+      void add_requirement ( requirement_t const & r )
+      {
+        m_requirements.push_back (r);
+      }
+
+      void del_requirement ( requirement_t const & r )
+      {
+        m_requirements.remove (r);
+      }
+
     private:
       std::string name_;
       data_type data_;
@@ -1095,6 +1116,8 @@ namespace we { namespace type {
 
       we::type::property::type prop_;
 
+      requirements_t m_requirements;
+
     private:
       template <typename P, typename E, typename T>
       friend std::ostream & operator<< ( std::ostream &
@@ -1103,7 +1126,7 @@ namespace we { namespace type {
 
       friend class boost::serialization::access;
       template <typename Archive>
-      void save(Archive & ar, const unsigned int) const
+      void save(Archive & ar, const unsigned int version) const
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
@@ -1114,10 +1137,11 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
+        ar & BOOST_SERIALIZATION_NVP(m_requirements);
       }
 
       template <typename Archive>
-      void load(Archive & ar, const unsigned int)
+      void load(Archive & ar, const unsigned int version)
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
@@ -1136,6 +1160,11 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
+
+        if (version > 0)
+        {
+          ar & BOOST_SERIALIZATION_NVP(m_requirements);
+        }
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
@@ -1357,6 +1386,18 @@ namespace we { namespace type {
         }
       };
     }
+  }
+}
+
+namespace boost {
+  namespace serialization {
+    template <typename P, typename E, typename T>
+    struct version< we::type::transition_t<P,E,T> >
+    {
+      typedef mpl::int_<1> type;
+      typedef mpl::integral_c_tag tag;
+      BOOST_STATIC_CONSTANT(unsigned int, value = version::type::value);
+    };
   }
 }
 

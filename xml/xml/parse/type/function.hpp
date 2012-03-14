@@ -249,6 +249,8 @@ namespace xml
         typedef typename we_transition_type::mod_type we_mod_type;
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
 
+        typedef typename we_transition_type::requirement_t we_requirement_type;
+
         typedef typename we_transition_type::pid_t pid_t;
 
         typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
@@ -306,6 +308,22 @@ namespace xml
             }
         }
 
+        void add_requirements ( we_transition_type & trans
+                              , xml::parse::type::requirements_type const & req
+                              ) const
+        {
+          for ( requirements_type::const_iterator r (req.begin())
+              ; r != req.end()
+              ; ++r
+              )
+          {
+            trans.add_requirement (we_requirement_type ( r->first
+                                                       , r->second
+                                                       )
+                                  );
+          }
+        }
+
         std::string name (void) const
         {
           if (fun.name.isNothing())
@@ -348,6 +366,7 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
           add_ports (trans, fun.out(), we::type::PORT_OUT);
+          add_requirements (trans, fun.requirements);
 
           return trans;
         }
