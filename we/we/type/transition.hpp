@@ -465,6 +465,7 @@ namespace we { namespace type {
         , ports_(other.ports_)
         , port_id_counter_(other.port_id_counter_)
         , prop_ (other.prop_)
+        , m_requirements (other.m_requirements)
       { }
 
       template <typename Choices>
@@ -533,6 +534,7 @@ namespace we { namespace type {
               )
             );
           prop_ = other.prop_;
+          m_requirements = other.m_requirements;
         }
         return *this;
       }
