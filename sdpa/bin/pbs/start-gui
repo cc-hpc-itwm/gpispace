@@ -10,7 +10,7 @@ cat ~/.sdpa/state/sdpa.env >/dev/null 2>&1
 
 test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
 
-echo "Running sdpa-gui $@ on $(hostname)" >&2
+echo "Running $(which sdpa-gui) $@ on $(hostname)" >&2
 
 err=$(sdpa-gui $@ 2>&1)
 ec=$?
