@@ -126,7 +126,7 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:" opt; do
 	    count="$OPTARG"
 	    ;;
 	C)
-	    if [ -z "$capacities" ] ; then
+	    if [ -z "$capabilities" ] ; then
 		capabilities="$OPTARG"
 	    else
 		capabilities="$capabilities,$OPTARG"
