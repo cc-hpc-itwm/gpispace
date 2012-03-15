@@ -659,10 +659,11 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 		if( !pWorker->disconnected() ) // if the worker is disconnected, skip it!
 		{
 			int matchingDeg = matchRequirements( pair.second, listJobReq, true ); // only proper capabilities of the worker
-			if( matchingDeg > maxMatchingDeg )
+			if( matchingDeg > maxMatchingDeg || ( matchingDeg == maxMatchingDeg && pWorker->lastTimeServed()<last_time_served ) )
 			{
 				maxMatchingDeg = matchingDeg;
 				bestMatchingWorkerId = pair.first;
+				last_time_served = pWorker->lastTimeServed();
 			}
 		}
 	}
