@@ -1,5 +1,5 @@
 
-set (PARSU_SHRINK "libexec/apps/parsu/shrink")
+set (PARSU_SHRINK "${SDPA_APPS_DIR}/parsu/shrink")
 
 add_subdirectory (xml)
 
@@ -16,7 +16,7 @@ set (prgs
 )
 
 install(PROGRAMS ${prgs}
-  DESTINATION libexec/apps/parsu/bin
+  DESTINATION ${SDPA_APPS_DIR}/parsu/bin
   COMPONENT applications)
 
 set (helper
