@@ -21,6 +21,7 @@ Worker::Worker(	const worker_id_t& name,
     location_(location),
     tstamp_(sdpa::util::now()),
     last_time_served_(0),
+    last_schedule_time_(0),
     timedout_(false),
     disconnected_(false)
 {
@@ -54,6 +55,7 @@ void Worker::update()
 void Worker::dispatch(const sdpa::job_id_t& jobId)
 {
   SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
+  setLastScheduleTime(sdpa::util::now());
   pending_.push(jobId);
 }
 
