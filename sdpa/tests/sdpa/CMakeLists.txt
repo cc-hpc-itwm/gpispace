@@ -7,6 +7,10 @@ include_directories(${FVM_INCLUDE_DIR})
 set(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/stresstest")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}")
 
+set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/capabilities/capabilities/pnetc/op")
+message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH}")
+
+
 get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
 message(STATUS "fvm module is in: ${TESTS_FVM_PC_MODULE}")
 
@@ -24,8 +28,6 @@ get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
 message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
 
-set(TESTS_NRE_PCD_BIN_PATH "/todo/remove/dummy/nre/pcd/path")
-
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
 get_target_property(TESTS_GUI_PLUGIN_PATH gui-plugin LOCATION)
 get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
@@ -36,15 +38,22 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/tests_config.hpp)
-
 add_subdirectory(workflows)
 
 include(pnet_macros)
 
-pnet_compile(sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
+pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
   FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
 )
+
+get_target_property(CAPABILITY_PNET_LOCATION pnet-capapilities LOCATION)
+add_custom_command (
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
+  COMMAND  ${CMAKE_BINARY_DIR}/we/apps/pnetput 
+  ARGS --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L > ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
+  DEPENDS pnet-capabilities
+ )
 
 set (test_srcs
   SchedulerTestImpl.cpp
@@ -85,6 +94,7 @@ set (tc_srcs
   test_Topologies.cpp
   test_Subscriber.cpp
   test_CannonOnTorus.cpp
+  test_Capabilities.cpp
 )
 
 foreach (tc_src ${tc_srcs})
