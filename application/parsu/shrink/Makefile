@@ -1,7 +1,8 @@
 
-MAIN = diff
+MAIN = shrink
 
 SDPA_INCLUDE = $(SDPA_HOME)/include
+#SDPA_LIBEXEC = $(SDPA_LIBEXEC)/libexec
 SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
 
 LIB_DESTDIR = $(DESTDIR)/$(MAIN)/lib/
@@ -31,7 +32,6 @@ DEP += util/print.hpp
 DEP += Makefile
 DEP += $(UTIL)/print.hpp
 DEP += $(UTIL)/comm.hpp
-DEP += $(wildcard $(UTIL)/*)
 
 NET = $(MAIN).pnet
 GEN = gen
@@ -44,27 +44,24 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-#FILE1_INPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
-#TYPE1_INPUT      = segy
-#FILE2_INPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.su
-#TYPE2_INPUT      = su
-#FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.diff.su
-#TYPE_OUTPUT      = su
+#FILE_INPUT       = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
+#TYPE_INPUT       = segy
+#FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy.winded
+#TYPE_OUTPUT      = segy
+#CMD              = suwind itmin=10 nt=300
+#SHMEM_PER_NODE   = 2^28
+#GPI_MEM_PER_NODE = 2^30
 
-DAT = /p/hpc/sdpa/mr/trunk/application/parsu/diff
-
-FILE1_INPUT      = $(DAT)/small1.dat
-TYPE1_INPUT      = su
-FILE2_INPUT      = $(DAT)/small2.dat
-TYPE2_INPUT      = su
-FILE_OUTPUT      = $(DAT)/small.diff
+FILE_INPUT       = /u/herc/rahn/test.dat
+TYPE_INPUT       = su
+FILE_OUTPUT      = /u/herc/rahn/test.dat.out
 TYPE_OUTPUT      = su
-
-SHMEM_PER_NODE   = 4240 * 4
-GPI_MEM_PER_NODE = 4240 * 10
+CMD              = cat
+SHMEM_PER_NODE   = 4240 * 2
+GPI_MEM_PER_NODE = 4240 * 6
 
 $(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE1_INPUT)" "$(TYPE1_INPUT)" "$(FILE2_INPUT)" "$(TYPE2_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(SDPA_LIBEXEC)" > $@
+	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(SDPA_LIBEXEC)" > $@
 
 ###############################################################################
 
