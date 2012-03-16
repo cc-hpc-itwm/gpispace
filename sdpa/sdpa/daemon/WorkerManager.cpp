@@ -645,7 +645,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 		throw NoWorkerFoundException();
 
 	int maxMatchingDeg = 0;
-	sdpa::util::time_type last_time_served = sdpa::util::now();
+	sdpa::util::time_type last_schedule_time = sdpa::util::now();
 
 	// the worker id of the worker that fulfills most of the requirements
 	// a matching degree 0 means that either at least a mandatory requirement
@@ -659,11 +659,11 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 		if( !pWorker->disconnected() ) // if the worker is disconnected, skip it!
 		{
 			int matchingDeg = matchRequirements( pair.second, listJobReq, true ); // only proper capabilities of the worker
-			if( matchingDeg > maxMatchingDeg || ( matchingDeg == maxMatchingDeg && pWorker->lastTimeServed()<last_time_served ) )
+			if( matchingDeg > maxMatchingDeg || ( matchingDeg == maxMatchingDeg && pWorker->lastScheduleTime()<last_schedule_time ) )
 			{
 				maxMatchingDeg = matchingDeg;
 				bestMatchingWorkerId = pair.first;
-				last_time_served = pWorker->lastTimeServed();
+				last_schedule_time = pWorker->lastScheduleTime();
 			}
 		}
 	}
@@ -680,11 +680,11 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 			if( !pWorker->disconnected() ) // if the worker is disconnected, skip it!
 			{
 				int matchingDeg = matchRequirements( pair.second, listJobReq, false ); // aggregated capabilities of the worker
-				if( matchingDeg > maxMatchingDeg || ( matchingDeg == maxMatchingDeg && pWorker->lastTimeServed()<last_time_served ) )
+				if( matchingDeg > maxMatchingDeg || ( matchingDeg == maxMatchingDeg && pWorker->lastScheduleTime()<last_schedule_time ) )
 				{
 					maxMatchingDeg = matchingDeg;
 					bestMatchingWorkerId = pair.first;
-					last_time_served = pWorker->lastTimeServed();
+					last_schedule_time = pWorker->lastScheduleTime();
 				}
 			}
 		}
