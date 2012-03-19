@@ -47,13 +47,12 @@ pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.x
   FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
 )
 
-get_target_property(CAPABILITY_PNET_LOCATION pnet-capapilities LOCATION)
- add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
-  COMMAND  ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L --of ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
-  COMMENT "Executing: ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L --of ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
-  DEPENDS pnet-capabilities
- )
+#get_target_property(CAPABILITY_PNET_LOCATION pnet-capabilities LOCATION)
+set(CAPABILITY_PNET_LOCATION ${CMAKE_BINARY_DIR}/application/example/capabilities/capabilities.pnet)
+add_custom_target(gen-cpb-test-wf ALL
+    COMMAND  ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L --of ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
+    COMMENT "Executing: ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L --of ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
+)
 
 set (test_srcs
   SchedulerTestImpl.cpp
@@ -61,6 +60,7 @@ set (test_srcs
 )
 
 ADD_LIBRARY(sdpa-test ${test_srcs})
+add_dependencies(sdpa-test gen-cpb-test-wf)
 target_link_libraries(sdpa-test
 	 sdpa-daemon
 	 sdpa-client
