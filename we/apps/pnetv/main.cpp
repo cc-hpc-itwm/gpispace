@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
                   << "conditions), or LOOPS (there are loops involving only transitions without" << std::endl
                   << "conditions). In the latter two cases, the names of transitions leading to" << std::endl
                   << "the loop (init:) and constituting the loop (loop:) are printed." << std::endl
-                  << "  The fhg.pnetv.firings_limit transition property sets the maximum number" << std::endl
+                  << "  The `fhg.pnetv.firings_limit' transition property sets the maximum number" << std::endl
                   << "of times a transition can fire. False positives can be eliminated by setting" << std::endl
                   << "this property to (typically) 1 for a transition involved into discovered loop." << std::endl;
 
@@ -86,18 +86,22 @@ int main(int argc, char *argv[]) {
                 std::cout << result << std::endl;
 
                 switch (result.result()) {
-                    case jpna::VerificationResult::TERMINATES:
+                    case jpna::VerificationResult::TERMINATES: {
                         break;
-                    case jpna::VerificationResult::MAYBE_LOOPS:
+                    }
+                    case jpna::VerificationResult::MAYBE_LOOPS: {
                         if (exitCode == EXIT_SUCCESS) {
                             exitCode = EXIT_MAYBE_LOOPS;
                         }
                         break;
-                    case jpna::VerificationResult::LOOPS:
+                    }
+                    case jpna::VerificationResult::LOOPS: {
                         exitCode = EXIT_LOOPS;
                         break;
-                    default:
+                    }
+                    default: {
                         jpn::unreachable();
+                    }
                 }
             }
         } catch (const std::exception &e) {

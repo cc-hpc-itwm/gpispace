@@ -107,6 +107,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             Transition *transition = petriNet_->createTransition();
             transition->setName(t.name() + "[" + condition.str() + "]");
             transition->setConditionAlwaysTrue(condition.str() == "true");
+            transition->setPriority(net.get_transition_priority(tid));
             transitions_[tid] = transition;
 
             /* If there is a limit on number of firings, implement it using an additional place. */

@@ -32,7 +32,8 @@ jpn::Transition makeTransition(const Transition *transition) {
     return jpn::Transition(
         transition->id(),
         makeMarking(transition->inputPlaces()),
-        makeMarking(transition->outputPlaces()));
+        makeMarking(transition->outputPlaces()),
+        transition->priority());
 }
 
 std::vector<const Transition *> makeTrace(const std::vector<jpn::TransitionId> &trace, const PetriNet &petriNet) {
