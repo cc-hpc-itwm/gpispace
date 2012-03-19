@@ -48,10 +48,10 @@ pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.x
 )
 
 get_target_property(CAPABILITY_PNET_LOCATION pnet-capapilities LOCATION)
-add_custom_command (
+ add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
-  COMMAND  ${CMAKE_BINARY_DIR}/we/apps/pnetput 
-  ARGS --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L > ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
+  COMMAND  ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L --of ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
+  COMMENT "Executing: ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L --of ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
   DEPENDS pnet-capabilities
  )
 
