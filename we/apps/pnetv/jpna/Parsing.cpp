@@ -209,22 +209,21 @@ class TransitionVisitor: public boost::static_visitor<void> {
 } // anonymous namespace
 
 void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
+    std::ifstream in(filename);
+
+    if (!in) {
+        throw std::runtime_error((boost::format("failed to open %1% for reading") % filename).str());
+    }
+
+    parse(filename, in, petriNets);
+}
+
+void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets) {
     we::activity_t activity;
+    we::util::text_codec::decode(in, activity);
 
-    {
-        std::ifstream in(filename);
-
-        if (!in) {
-            throw std::runtime_error((boost::format("failed to open %1% for reading") % filename).str());
-        }
-
-        we::util::text_codec::decode(in, activity);
-    }
-
-    {
-        TransitionVisitor visitor(filename, petriNets);
-        visitor(activity.transition());
-    }
+    TransitionVisitor visitor(filename, petriNets);
+    visitor(activity.transition());
 }
 
 } // namespace jpna

@@ -69,13 +69,15 @@ int main(int argc, char *argv[]) {
 
     int exitCode = EXIT_SUCCESS;
 
-    for (int i = 1; i < argc; ++i) {
+    foreach(const std::string &filename, inputFiles) {
         boost::ptr_vector<jpna::PetriNet> petriNets;
 
-        const char *filename = argv[i];
-
         try {
-            jpna::parse(filename, petriNets);
+            if (filename == "-") {
+                jpna::parse("stdin", std::cin, petriNets);
+            } else {
+                jpna::parse(filename.c_str(), petriNets);
+            }
 
             foreach (const jpna::PetriNet &petriNet, petriNets) {
                 std::cout << petriNet.name() << ": ";
