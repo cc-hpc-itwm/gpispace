@@ -13,14 +13,15 @@ class Transition {
     Marking input_; ///< Input of the transition.
     Marking output_; ///< Output of the transition.
     Marking effect_; ///< Effect of the transition (output - input).
+    int priority_; ///< Transition priority.
 
     public:
 
     /**
      * Class constructor.
      */
-    Transition(TransitionId id, const Marking &input, const Marking &output):
-        id_(id), input_(input), output_(output), effect_(output - input)
+    Transition(TransitionId id, const Marking &input, const Marking &output, int priority = 0):
+        id_(id), input_(input), output_(output), effect_(output - input), priority_(priority)
     {}
 
     /**
@@ -42,6 +43,19 @@ class Transition {
      * \return Effect of the transition (output - input).
      */
     const Marking &effect() const { return effect_; }
+
+    /**
+     * \return Priority of the transition.
+     * Transitions with lower priority don't fire unless there are enabled transitions with higher priority.
+     */
+    int priority() const { return priority_; }
+
+    /**
+     * Sets the transition's priority.
+     *
+     * \param[in] priority New priority.
+     */
+    void setPriority(int priority) { priority_ = priority; }
 
     /**
      * \param[in] marking Marking.
