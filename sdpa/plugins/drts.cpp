@@ -280,7 +280,7 @@ public:
       {
         if (master_it->second->is_connected())
         {
-        	sdpa::capability_t sdpa_cap(cap->capability_name(), cap->capability_type());
+        	sdpa::capability_t sdpa_cap( cap->capability_name(), cap->capability_type(), m_my_name );
         	send_event (new sdpa::events::CapabilitiesGainedEvent( m_my_name
                                                                , master_it->first
                                                                , sdpa_cap
