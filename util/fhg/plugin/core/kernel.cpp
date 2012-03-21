@@ -142,6 +142,8 @@ namespace fhg
       }
       else
       {
+        m->stop();
+
         throw std::runtime_error
           ("plugin " + p->name() + " failed to start: " + std::string(strerror(-rc)));
       }
