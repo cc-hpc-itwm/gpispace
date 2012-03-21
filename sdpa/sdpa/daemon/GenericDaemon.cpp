@@ -38,6 +38,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -851,20 +852,23 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 {
 	worker_id_t worker_id (evtRegWorker.from());
 
-	SDPA_LOG_INFO("****************Register new worker, " << worker_id << ", with the capacity "<<evtRegWorker.capacity()<<"***********");
+	SDPA_LOG_INFO("****************Got new registration request from: " << worker_id << ", capacity = "<<evtRegWorker.capacity()<<", capabilities:");
+	std::cout<<evtRegWorker.capabilities()<<std::endl;
 
 	// delete inherited capabilities that are owned by the current agent
 	sdpa::capabilities_set_t workerCpbSet;
-	BOOST_FOREACH(const sdpa::capability_t& cpb, evtRegWorker.capabilities())
+
+	// take the difference
+	BOOST_FOREACH( const sdpa::capability_t& cpb, evtRegWorker.capabilities() )
 	{
-		if( cpb.owner() != name() )
+		if( m_capabilities.find(cpb) == m_capabilities.end() )
 			workerCpbSet.insert(cpb);
 	}
 
 	addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
 
-	/*SDPA_LOG_INFO("The worker \"" << worker_id << "\" has the following capabilities: ");
-	std::cout << evtRegWorker.capabilities();*/
+	SDPA_LOG_INFO("Register the worker \"" << worker_id << "\"" <<" with the following capabilities: ");
+	std::cout << workerCpbSet;
 
 	// send back an acknowledgment
 	SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -884,6 +888,7 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 		  }
 	}
 }
+
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
   worker_id_t worker_id (evtRegWorker.from());
@@ -1048,9 +1053,6 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 								boost::this_thread::sleep(boost::posix_time::seconds(reg_timeout/1000000));
 
 								masterInfo.set_registered(false);
-
-								// don't request registration, you'll be notified by the master when he wakes up!
-								// requestRegistration(masterInfo);
 							}
 							else
 								listDeadMasters.push_back( masterInfo.name() );
@@ -1386,9 +1388,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 			for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
 				if (it->is_registered() && it->name() != worker_id  )
 				{
-					sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent( name(),
-																														it->name(),
-																														pCpbGainEvt->capabilities() ));
+					CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new CapabilitiesGainedEvent(name(), it->name(),pCpbGainEvt->capabilities()));
 					sendEventToMaster(shpCpbGainEvt);
 				}
 
@@ -1422,9 +1422,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
 			if (it->is_registered() && it->name() != worker_id )
 			{
-				sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new sdpa::events::CapabilitiesLostEvent(*pCpbLostEvt));
-				shpCpbLostEvt->from() = name();
-				shpCpbLostEvt->to()   = it->name();
+				CapabilitiesLostEvent::Ptr shpCpbLostEvt(new CapabilitiesLostEvent(name(), it->name(), pCpbLostEvt->capabilities()));
 				sendEventToMaster(shpCpbLostEvt);
 			}
 	}
