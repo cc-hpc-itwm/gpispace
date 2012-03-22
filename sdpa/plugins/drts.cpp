@@ -1053,10 +1053,13 @@ private:
         {
           MLOG(WARN, "still not connected after " << m_reconnect_counter << " trials: shutting down");
           fhg_kernel()->shutdown();
+          return;
         }
       }
     }
-    else if (at_least_one_disconnected)
+
+
+    if (at_least_one_disconnected)
     {
       fhg_kernel()->schedule ( "connect"
                              , boost::bind( &DRTSImpl::start_connect
