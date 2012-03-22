@@ -779,10 +779,10 @@ namespace fhg
       {
         connection_data_t & cd = connections_[c->remote_address()];
 
-        LOG_IF( WARN
-              , ec && (ec.value() != boost::asio::error::eof)
-              , "error on connection to " << cd.name << " - closing it: cat=" << ec.category().name() << " val=" << ec.value() << " txt=" << ec.message()
-              );
+        DLOG_IF( WARN
+               , ec && (ec.value() != boost::asio::error::eof)
+               , "error on connection to " << cd.name << " - closing it: cat=" << ec.category().name() << " val=" << ec.value() << " txt=" << ec.message()
+               );
 
         while (! cd.o_queue.empty())
         {
