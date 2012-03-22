@@ -867,8 +867,13 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 
 	addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
 
-	SDPA_LOG_INFO("Register the worker \"" << worker_id << "\"" <<" with the following capabilities: ");
-	std::cout << workerCpbSet;
+        if (not workerCpbSet.empty())
+        {
+          SDPA_LOG_INFO(  "Register the worker \"" << worker_id << "\""
+                       <<" with the following capabilities: " << std::endl
+                       << workerCpbSet
+                       );
+        }
 
 	// send back an acknowledgment
 	SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -1392,7 +1397,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 					sendEventToMaster(shpCpbGainEvt);
 				}
 
-			//SDPA_LOG_INFO("Gained new capabilities: "<<pCpbGainEvt->capabilities());
+			SDPA_LOG_INFO("gained capabilities via: " << worker_id << ": "<<pCpbGainEvt->capabilities());
 		}
 	}
 	catch( const WorkerNotFoundException& ex)
@@ -1417,6 +1422,8 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 	sdpa::worker_id_t worker_id = pCpbLostEvt->from();
 	try {
 		scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
+
+                SDPA_LOG_INFO("lost capabilities from: " << worker_id << ": "<<pCpbLostEvt->capabilities());
 
 		lock_type lock(mtx_master_);
 		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
