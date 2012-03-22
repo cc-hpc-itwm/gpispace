@@ -467,7 +467,7 @@ namespace fhg
 
       if (! ec)
       {
-        connection_data_t & cd = connections_.at (a);
+        connection_data_t & cd = connections_.find (a)->second;
 
         LOG( TRACE
              , my_addr_ << " (" << name_ << ")"
@@ -497,13 +497,22 @@ namespace fhg
       }
       else
       {
-        LOG(WARN, "connection to " << a << " could not be established: " << ec);
+        DLOG(WARN, "connection to " << a << " could not be established: " << ec);
 
         if (connections_.find (a) != connections_.end())
-          handle_error (connections_.at (a).connection, ec);
-        // TODO: remove connection data
-        //     call handler for all o_queue elements
-        //     call handler for all i_queue elements
+        {
+          connection_data_t & cd = connections_.find (a)->second;
+
+          handle_error (cd.connection, ec);
+
+          while (! cd.o_queue.empty())
+          {
+            to_send_t & to_send = cd.o_queue.front();
+            using namespace boost::system;
+            to_send.handler (errc::make_error_code(errc::connection_refused));
+            cd.o_queue.pop_front();
+          }
+        }
       }
     }
 
