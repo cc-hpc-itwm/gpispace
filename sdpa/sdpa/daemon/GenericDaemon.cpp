@@ -980,7 +980,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 						// we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
 						masterInfo.set_registered(false);
 
-						if(masterInfo.getConsecRegAttempts()< cfg().get<unsigned int>("max_consecutive_reg_attempts", 5) )
+						if(masterInfo.getConsecRegAttempts()< cfg().get<unsigned int>("max_consecutive_reg_attempts", 360) )
 						{
 							const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
 							SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
@@ -1046,7 +1046,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 							SDPA_LOG_WARN("The connection with the master " << masterInfo.name() << " is broken!");
 							masterInfo.incConsecNetFailCnt();
 
-							if( masterInfo.getConsecNetFailCnt() < cfg().get<unsigned long>("max_consecutive_net_faults", 5) )
+							if( masterInfo.getConsecNetFailCnt() < cfg().get<unsigned long>("max_consecutive_net_faults", 360) )
 							{
 								const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
 								SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s ...");
