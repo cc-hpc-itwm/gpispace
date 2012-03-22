@@ -179,9 +179,10 @@ private:
     }
     catch (std::exception const &ex)
     {
-      LOG( WARN
-         , "could not start gpi connection on `" << api.path() << "': " << ex.what()
-         );
+      MLOG_EVERY_N( WARN
+                  , 10
+                  , "could not start gpi connection on `" << api.path() << "': " << ex.what()
+                  );
       return false;
     }
   }
