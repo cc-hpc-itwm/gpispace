@@ -47,6 +47,10 @@ namespace sdpa { namespace daemon {
 	  typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
 	  typedef job_map_t::iterator iterator;
 
+    // AP: those two functions should be removed from the interface they are not
+    //     used  by   the  regular  code,   most  likely  by  tests   i.e.   the
+    //     functionality, the tests require, needs to be added to the jobmanager
+    //     itself.
 	  iterator begin() { return job_map_.begin(); }
 	  iterator end() { return job_map_.end(); }
 
