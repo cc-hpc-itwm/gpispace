@@ -244,7 +244,7 @@ sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundExce
   worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end(), compare_workers());
 
   if( it->second->nbAllocatedJobs() >= it->second->capacity() )
-	  throw AllWorkersFullException();
+    throw AllWorkersFullException();
 
   return it->first;
 }
@@ -435,7 +435,7 @@ const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWor
 {
 	lock_type lock(mtx_);
 	if( rank_map().empty() )
-		throw NoWorkerFoundException();
+          throw NoWorkerFoundException();
 
 	return rank_map().at(rank);
 }
@@ -642,7 +642,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 {
 	lock_type lock(mtx_);
 	if( worker_map_.empty() )
-		throw NoWorkerFoundException();
+          throw NoWorkerFoundException();
 
 	int maxMatchingDeg = 0;
 	sdpa::util::time_type last_schedule_time = sdpa::util::now();
@@ -692,7 +692,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 		if(maxMatchingDeg != 0)
 			return worker_map_[bestMatchingWorkerId];
 		else
-			throw NoWorkerFoundException();
+                  throw NoWorkerFoundException();
 	}
 }
 
