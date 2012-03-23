@@ -1058,7 +1058,12 @@ namespace we { namespace mgmt {
           desc->failed();
 
           DLOG(WARN, "failed (" << desc->name() << ")-" << desc->id());
-          sig_failed (this, internal_id, policy::codec::encode(desc->activity()));
+
+          if (sig_failed.connected())
+            sig_failed ( this
+                       , internal_id
+                       , policy::codec::encode(desc->activity())
+                       );
 
           if (desc->has_parent ())
           {
@@ -1119,10 +1124,11 @@ namespace we { namespace mgmt {
             throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + fhg::util::show (*desc));
           }
 
-          sig_cancelled ( this
-                        , internal_id
-                        , policy::codec::encode(desc->activity())
-                        );
+          if (sig_cancelled.connected())
+            sig_cancelled ( this
+                          , internal_id
+                          , policy::codec::encode(desc->activity())
+                          );
 
           remove_activity (desc);
         }
