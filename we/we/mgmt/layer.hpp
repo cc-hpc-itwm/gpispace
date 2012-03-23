@@ -1085,7 +1085,7 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found<internal_id_type> &)
         {
-          LOG(WARN, "got finished notification for old activity: " << internal_id);
+          LOG(WARN, "got failed notification for old activity: " << internal_id);
         }
       }
 
