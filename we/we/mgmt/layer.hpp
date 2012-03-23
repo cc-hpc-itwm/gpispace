@@ -1220,7 +1220,9 @@ namespace we { namespace mgmt {
       {
         lock_t (mutex_);
         typename activities_t::iterator a = activities_.find(id);
-        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+fhg::util::show(id)+") failed!", id);
+        if (a == activities_.end())
+          throw exception::activity_not_found<internal_id_type>
+            ("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }
 
@@ -1228,7 +1230,9 @@ namespace we { namespace mgmt {
       {
         lock_t (mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
-        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+fhg::util::show(id)+") failed!", id);
+        if (a == activities_.end())
+          throw exception::activity_not_found<internal_id_type>
+            ("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }
 
