@@ -84,7 +84,6 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) th
 void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
 {
     lock_type lock(mtx_);
-    ostringstream os;
 
     // delete the requirements of this job
     requirements_map_t::size_type rc = job_requirements_.erase(job_id);
@@ -95,7 +94,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
     }
 
     job_map_t::size_type ret = job_map_.erase(job_id);
-    if( !ret )
+    if( ! ret )
     {
         throw JobNotDeletedException(job_id);
     }
@@ -246,7 +245,7 @@ void JobManager::reScheduleAllMasterJobs(IComm* pComm)
 			&& status.find("Failed") 	== std::string::npos
 			&& status.find("Cancelled") == std::string::npos )
 		{
-			if( pComm->hasWorkflowEngine() && pJob->isMasterJob() || !pComm->hasWorkflowEngine() )
+                  if( (pComm->hasWorkflowEngine() && pJob->isMasterJob()) || (!pComm->hasWorkflowEngine()) )
 			{
 				SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
 				pJob->Reschedule();
