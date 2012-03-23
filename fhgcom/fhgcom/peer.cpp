@@ -504,7 +504,6 @@ namespace fhg
           connection_data_t & cd = connections_.find (a)->second;
 
           handle_error (cd.connection, ec);
-
           while (! cd.o_queue.empty())
           {
             to_send_t & to_send = cd.o_queue.front();
@@ -744,8 +743,6 @@ namespace fhg
 
       DLOG(TRACE, "got user message from: " << m->header.src);
 
-      to_recv_t to_recv;
-
       {
         lock_type lock (mutex_);
         if (m_to_recv.empty())
@@ -758,15 +755,15 @@ namespace fhg
         }
         else
         {
-          to_recv = m_to_recv.front();
+          to_recv_t to_recv = m_to_recv.front();
           m_to_recv.pop_front();
           *to_recv.message = *m;
           delete m;
+
+          using namespace boost::system;
+          to_recv.handler(errc::make_error_code (errc::success));
         }
       }
-
-      using namespace boost::system;
-      to_recv.handler(errc::make_error_code (errc::success));
     }
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
