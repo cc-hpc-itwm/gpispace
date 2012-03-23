@@ -33,6 +33,8 @@ using namespace sdpa::events;
 
 void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 {
+  assert (pEvent);
+
 	DLOG(TRACE, "handleSubmitJobAckEvent: " << pEvent->job_id() << " from " << pEvent->from());
 
 	Worker::worker_id_t worker_id = pEvent->from();
@@ -47,11 +49,19 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 
 	} catch(WorkerNotFoundException const &)
 	{
-		SDPA_LOG_ERROR("job submission could not be acknowledged: worker " << worker_id << " not found!!");
+          SDPA_LOG_ERROR( "job " << pEvent->job_id()
+                        << " could not be acknowledged:"
+                        << " worker " << worker_id
+                        << " not found!"
+                        );
 	}
 	catch(std::exception const &ex)
 	{
-		SDPA_LOG_ERROR("Unexpected exception occurred during submitJobAck: " << ex.what());
+          SDPA_LOG_ERROR( "Unexpected exception during "
+                        << " handle_submitJobAck("<< pEvent->job_id() << ")"
+                        << ": "
+                        << ex.what()
+                        );
 	}
 }
 
