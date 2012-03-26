@@ -854,52 +854,6 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
   sendEventToSlave(pCfgReplyEvt);
 }
 
-void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
-{
-	worker_id_t worker_id (evtRegWorker.from());
-
-	SDPA_LOG_INFO("****************Got new registration request from: " << worker_id << ", capacity = "<<evtRegWorker.capacity()<<", capabilities:");
-	std::cout<<evtRegWorker.capabilities()<<std::endl;
-
-	// delete inherited capabilities that are owned by the current agent
-	sdpa::capabilities_set_t workerCpbSet;
-
-	// take the difference
-	BOOST_FOREACH( const sdpa::capability_t& cpb, evtRegWorker.capabilities() )
-	{
-		if( m_capabilities.find(cpb) == m_capabilities.end() )
-			workerCpbSet.insert(cpb);
-	}
-
-	addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
-
-        if (not workerCpbSet.empty())
-        {
-          SDPA_LOG_INFO(  "Register the worker \"" << worker_id << "\""
-                       <<" with the following capabilities: " << std::endl
-                       << workerCpbSet
-                       );
-        }
-
-	// send back an acknowledgment
-	SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
-	WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
-
-	sendEventToSlave(pWorkerRegAckEvt);
-
-	if (!evtRegWorker.capabilities().empty() )
-	{
-		lock_type lock(mtx_master_);
-	  // propagate the capabilities upward to the masters
-	  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-		  if (it->is_registered() && it->name() != worker_id )
-		  {
-			  sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
-			  sendEventToMaster(shpCpbGainEvt);
-		  }
-	}
-}
-
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
   worker_id_t worker_id (evtRegWorker.from());
@@ -1370,6 +1324,101 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
 }
 
+/*
+void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
+{
+	worker_id_t worker_id (evtRegWorker.from());
+
+	SDPA_LOG_INFO("****************Got new registration request from: " << worker_id << ", capacity = "<<evtRegWorker.capacity()<<", capabilities:");
+	std::cout<<evtRegWorker.capabilities()<<std::endl;
+
+	// delete inherited capabilities that are owned by the current agent
+	sdpa::capabilities_set_t workerCpbSet;
+
+	// take the difference
+	BOOST_FOREACH( const sdpa::capability_t& cpb, evtRegWorker.capabilities() )
+	{
+		if( m_capabilities.find(cpb) == m_capabilities.end() )
+		{
+			workerCpbSet.insert(cpb);
+		}
+	}
+
+	addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
+
+        if (not workerCpbSet.empty())
+        {
+          SDPA_LOG_INFO(  "Register the worker \"" << worker_id << "\""
+                       <<" with the following capabilities: " << std::endl
+                       << workerCpbSet
+                       );
+        }
+
+	// send back an acknowledgment
+	SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
+	WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
+
+	sendEventToSlave(pWorkerRegAckEvt);
+
+	if (!evtRegWorker.capabilities().empty() )
+	{
+		lock_type lock(mtx_master_);
+	  // propagate the capabilities upward to the masters
+	  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+		  if (it->is_registered() && it->name() != worker_id )
+		  {
+			  sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
+			  sendEventToMaster(shpCpbGainEvt);
+		  }
+	}
+}
+*/
+
+void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
+{
+	worker_id_t worker_id (evtRegWorker.from());
+
+	SDPA_LOG_INFO( "****************Got new registration request from: " << worker_id << ", capacity = "<<evtRegWorker.capacity()<<", capabilities:" );
+	std::cout<<evtRegWorker.capabilities()<<std::endl;
+
+	// delete inherited capabilities that are owned by the current agent
+	sdpa::capabilities_set_t workerCpbSet;
+
+	// take the difference
+	BOOST_FOREACH( const sdpa::capability_t& cpb, evtRegWorker.capabilities() )
+	{
+		// own capabilities have always the depth 0 and are not inherited by the descendants
+		if( !isOwnCapability(cpb) )
+		{
+			sdpa::capability_t cpbMod(cpb);
+			cpbMod.incDepth();
+			workerCpbSet.insert(cpbMod);
+		}
+	}
+
+	addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
+
+	//SDPA_LOG_INFO("Register the worker \"" << worker_id << "\"" <<", added the following capabilities: "<< workerCpbSet);
+
+	// send back an acknowledgment
+	SDPA_LOG_INFO( "Send back to the worker " << worker_id << " a registration acknowledgment!" );
+	WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
+
+	sendEventToSlave(pWorkerRegAckEvt);
+
+	if( !workerCpbSet.empty() && !isTop() )
+	{
+		lock_type lock(mtx_master_);
+		// send to the masters my new set of capabilities
+		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
+			if (it->is_registered() && it->name() != worker_id  )
+			{
+				CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new CapabilitiesGainedEvent(name(), it->name(), workerCpbSet));
+				sendEventToMaster(shpCpbGainEvt);
+			}
+	}
+}
+
 void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent* pCpbGainEvt)
 {
 	DMLOG(TRACE, "Received CapabilitiesGainedEvent!");
@@ -1382,35 +1431,49 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 		return;
 	}
 
-	try {
-
+	try
+	{
 		sdpa::capabilities_set_t workerCpbSet;
-		BOOST_FOREACH(const sdpa::capability_t& cpb, pCpbGainEvt->capabilities())
+
+		BOOST_FOREACH(const sdpa::capability_t& cpb,  pCpbGainEvt->capabilities() )
 		{
-			if( cpb.owner() != name() )
-				workerCpbSet.insert(cpb);
+			// own capabilities have always the depth 0
+			if( !isOwnCapability(cpb) )
+			{
+				sdpa::capability_t cpbMod(cpb);
+				cpbMod.incDepth();
+				workerCpbSet.insert(cpbMod);
+			}
 		}
 
-		bool bIsSubset = scheduler()->addCapabilities(worker_id, workerCpbSet);
+		bool bModified = scheduler()->addCapabilities(worker_id, workerCpbSet);
 
-		if(!bIsSubset)
+		if(bModified)
 		{
-			lock_type lock(mtx_master_);
-			for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-				if (it->is_registered() && it->name() != worker_id  )
-				{
-					CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new CapabilitiesGainedEvent(name(), it->name(),pCpbGainEvt->capabilities()));
-					sendEventToMaster(shpCpbGainEvt);
-				}
+			if( !isTop() )
+			{
+				sdpa::capabilities_set_t newWorkerCpbSet;
+				getWorkerCapabilities(worker_id, newWorkerCpbSet);
+				//getCapabilities(newWorkerCpbSet);
 
-			SDPA_LOG_INFO("gained capabilities via: " << worker_id << ": "<<pCpbGainEvt->capabilities());
+				if( !newWorkerCpbSet.empty() )
+				{
+					lock_type lock(mtx_master_);
+					for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
+						if( it->is_registered() && it->name() != worker_id  )
+						{
+							CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new CapabilitiesGainedEvent(name(), it->name(), newWorkerCpbSet));
+							sendEventToMaster(shpCpbGainEvt);
+						}
+				}
+			}
 		}
 	}
-	catch( const WorkerNotFoundException& ex)
+	catch( const WorkerNotFoundException& ex )
 	{
 		SDPA_LOG_ERROR("Could not add new capabilities. The worker "<<worker_id<<" was not found!");
 	}
-	catch( const AlreadyHasCpbException& ex)
+	catch( const AlreadyHasCpbException& ex )
 	{
 		//SDPA_LOG_ERROR("The agent "<<name()<<" already has the capability "<<ex.capability());
 	}
@@ -1429,7 +1492,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 	try {
 		scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
 
-                SDPA_LOG_INFO("lost capabilities from: " << worker_id << ": "<<pCpbLostEvt->capabilities());
+		SDPA_LOG_INFO("lost capabilities from: " << worker_id << ": "<<pCpbLostEvt->capabilities());
 
 		lock_type lock(mtx_master_);
 		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
@@ -1451,7 +1514,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 
 void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt )
 {
-	 SDPA_LOG_INFO("Received subscribe event!");
+	 DMLOG(TRACE, "Received subscribe event!");
 	 try {
 		 subscribe(pEvt->subscriber(), pEvt->listJobIds());
 	 }
@@ -1785,7 +1848,12 @@ void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
 	for(sdpa::capabilities_set_t::iterator it = m_capabilities.begin(); it!= m_capabilities.end(); it++ )
 			cpbset.insert(*it);
 
-	ptr_scheduler_->getWorkerCapabilities(cpbset);
+	ptr_scheduler_->getAllWorkersCapabilities(cpbset);
+}
+
+void GenericDaemon::getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
+{
+	ptr_scheduler_->getWorkerCapabilities(worker_id, wCpbset);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)

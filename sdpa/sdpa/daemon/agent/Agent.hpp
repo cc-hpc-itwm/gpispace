@@ -50,7 +50,7 @@ namespace sdpa {
 		  oss<<"rank"<<rank;
 
 		  sdpa::capability_t properCpb(oss.str(), "rank", name);
-		  m_capabilities.insert(properCpb);
+		  addCapability(properCpb);
 
          // application gui service
           if(!guiUrl.empty())

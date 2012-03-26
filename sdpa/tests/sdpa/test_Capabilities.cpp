@@ -363,8 +363,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-/*
-BOOST_AUTO_TEST_CASE( testCapabilities_Agents )
+/*BOOST_AUTO_TEST_CASE( testCapabilities_Agents )
 {
 	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
 	//guiUrl

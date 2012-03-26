@@ -144,7 +144,7 @@ namespace sdpa {
           DLOG(TRACE, "State machine created: " << id);
         }
 
-        ~JobFSM()
+        virtual ~JobFSM()
         {
           DLOG(TRACE, "State machine destroyed");
         }

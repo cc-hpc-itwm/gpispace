@@ -946,11 +946,23 @@ void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 	ptr_worker_man_->removeCapabilities(worker_id, cpbset);
 }
 
-void SchedulerImpl::getWorkerCapabilities(sdpa::capabilities_set_t& cpbset)
+void SchedulerImpl::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
 {
 	ptr_worker_man_->getCapabilities(ptr_comm_handler_->name(), cpbset);
 }
 
+void SchedulerImpl::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sdpa::capabilities_set_t& cpbset)
+{
+	try {
+		Worker::ptr_t ptrWorker = findWorker(worker_id);
+		cpbset = ptrWorker->capabilities();
+	}
+	catch(WorkerNotFoundException const &ex2 )
+	{
+		SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
+		cpbset = sdpa::capabilities_set_t();
+	}
+}
 
 void SchedulerImpl::removeRecoveryInconsistencies()
 {

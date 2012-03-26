@@ -572,42 +572,20 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 {
 	lock_type lock(mtx_);
 
-	for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
+	for( worker_map_t::iterator it_worker = worker_map_.begin(); it_worker != worker_map_.end(); it_worker++ )
 	{
-		sdpa::capabilities_set_t workerCpbSet = it->second->capabilities();
-
-		bool bFound = false;
-		sdpa::capability_t cpbAg;
-		for( sdpa::capabilities_set_t::iterator itAg = workerCpbSet.begin(); itAg != workerCpbSet.end() && !bFound; itAg++)
-			if( itAg->name() == agentName )
-			{
-				bFound = true;
-				cpbAg = *itAg;
-			}
-
-		if(bFound)
+		sdpa::capabilities_set_t workerCpbSet = it_worker->second->capabilities();
+		for(sdpa::capabilities_set_t::iterator itw_cpbs = workerCpbSet.begin(); itw_cpbs != workerCpbSet.end();  itw_cpbs++  )
 		{
-			workerCpbSet.erase(cpbAg);
-		}
+			sdpa::capabilities_set_t::iterator itag_cpbs = agentCpbSet.find(*itw_cpbs);
+			if(itag_cpbs == agentCpbSet.end())
+				agentCpbSet.insert(*itw_cpbs);
 
-		for(sdpa::capabilities_set_t::iterator itwcpbs = workerCpbSet.begin(); itwcpbs != workerCpbSet.end();  itwcpbs++  )
-		{
-			{
-				capability_t cpb(*itwcpbs);
-				cpb.incDepth();
-
-				// see if there is already an entry into agentCpbSet
-				sdpa::capabilities_set_t::iterator itCpb = find_if( agentCpbSet.begin(), agentCpbSet.end(), boost::bind(&sdpa::capability_t::operator==, _1, cpb ));
-				if( itCpb != agentCpbSet.end() ) //SDPA_LOG_INFO( "There is already capability "<<cpb );
+			else
+				if(itag_cpbs->depth() > itw_cpbs->depth())
 				{
-					if(itCpb->depth() > cpb.depth())
-						const_cast<sdpa::capability_t&>(*itCpb).setDepth(cpb.depth());
+					const_cast<sdpa::capability_t&>(*itag_cpbs).setDepth(itw_cpbs->depth());
 				}
-				else
-				{
-					agentCpbSet.insert(cpb);
-				}
-			}
 		}
 	}
 }
