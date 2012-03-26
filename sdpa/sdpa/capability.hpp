@@ -55,7 +55,7 @@ namespace sdpa
 				return (a ==*this) && (b==*this)  && (a.depth() < b.depth());
 			}*/
 
-			virtual ~Capability () {}
+			~Capability () {}
 
 			std::string name() const { return name_;}
 			void setName(const std::string& name) { name_ = name;}
@@ -64,7 +64,7 @@ namespace sdpa
 			void setType(const std::string& type) { type_ = type;}
 
 			size_t depth() const { return depth_;}
-			void setDepth(const size_t& depth) { depth_ = depth;}
+			void setDepth(size_t depth) { depth_ = depth;}
 			void incDepth() { depth_++; }
 
 			std::string owner() const { return owner_; }
@@ -124,19 +124,19 @@ namespace sdpa
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::Capability& cpb)
 {
-	os<<"name: "<<cpb.name()<<", type: "<<cpb.type()<<", depth: "<<cpb.depth()<<", owner = "<<cpb.owner()<<", uuid: "<<cpb.uuid();
+	os<<"("<<cpb.name()<<", "<<cpb.type()<<", "<<cpb.depth()<<", "<<cpb.owner()<<", "<<cpb.uuid()<<")";
 	return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::capabilities_set_t& cpbSet)
 {
-	os<<"----------------------------------------------------------------------------"<<std::endl;
-	BOOST_FOREACH(const sdpa::capability_t& cpb, cpbSet)
+	//os<<"----------------------------------------------------------------------------"<<std::endl;
+	for(sdpa::capabilities_set_t::iterator it = cpbSet.begin(); it!= cpbSet.end(); it++)
 	{
-		os<<cpb<<std::endl;
+		os<<*it<<std::endl;
 	}
 
-	os<<"----------------------------------------------------------------------------"<<std::endl;
+	//os<<"----------------------------------------------------------------------------"<<std::endl;
 	return os;
 }
 
