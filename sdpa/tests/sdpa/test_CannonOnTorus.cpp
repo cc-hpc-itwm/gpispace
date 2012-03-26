@@ -414,7 +414,7 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 	for(int k=0; k<g_nTorusDim*g_nTorusDim; k++)
 		arrAgents[k]->start_agent(false);
 
-	boost::this_thread::sleep(boost::posix_time::seconds(2));
+	boost::this_thread::sleep(boost::posix_time::seconds(5));
 	LOG(INFO, "create agents communication topology");
 
 	LOG(INFO, "On the horizontal axis:");
@@ -444,9 +444,17 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 			LOG(INFO, "added new master of agent_"<<down<<" -> "<<oss.str());
 		}
 
-	boost::this_thread::sleep(boost::posix_time::seconds(2));
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_cannon_client, this));
+	 boost::this_thread::sleep(boost::posix_time::seconds(10));
 
+	for(int k=0; k<g_nTorusDim*g_nTorusDim; k++)
+	{
+		sdpa::capabilities_set_t agentCpbSet;
+		arrAgents[k]->getCapabilities(agentCpbSet);
+		std::cout<<"The capabilities of "<<arrAgents[k]->name()<< " are:"<<std::endl;
+		std::cout<<agentCpbSet<<std::endl;
+	}
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_cannon_client, this));
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
 
