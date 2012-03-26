@@ -168,6 +168,7 @@ namespace sdpa { namespace daemon {
     		                  const sdpa::worker_id_t& agent_uuid  = "");
 
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
+      void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
 
       const std::string& name() const { return Strategy::name(); }
 
@@ -269,6 +270,12 @@ namespace sdpa { namespace daemon {
       bool isSubscriber(const sdpa::agent_id_t&);
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
+      bool isOwnCapability(const sdpa::capability_t& cpb)
+      {
+    	  lock_type lock_cpb(mtx_cpb_);
+    	  sdpa::capabilities_set_t::iterator itOwnCcpb = m_capabilities.find(cpb);
+    	  return (itOwnCcpb != m_capabilities.end());
+      }
 protected:
 
        // observe workflow engine
