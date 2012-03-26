@@ -334,10 +334,10 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0", "A") );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0", "A") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0", "B") );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( create_drts("drts_2", "agent_0", "B") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( create_drts("drts_2", "agent_0", "A") );
 	boost::thread drts_2_thread = boost::thread( &fhg::core::kernel_t::run, drts_2 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
@@ -363,8 +363,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-/*
-BOOST_AUTO_TEST_CASE( testCapabilities_Agents )
+/*BOOST_AUTO_TEST_CASE( testCapabilities_Agents )
 {
 	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
 	//guiUrl
@@ -382,7 +381,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Agents )
 	ptrOrch->start_agent(false);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP, true );
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP, true );
 	ptrAgent->start_agent(false);
 
 	sdpa::master_info_list_t arrLeafAgentMasterInfo(1, MasterInfo("agent_0"));

@@ -280,7 +280,7 @@ public:
       {
         if (master_it->second->is_connected())
         {
-        	sdpa::capability_t sdpa_cap(cap->capability_name(), cap->capability_type());
+        	sdpa::capability_t sdpa_cap( cap->capability_name(), cap->capability_type(), m_my_name );
         	send_event (new sdpa::events::CapabilitiesGainedEvent( m_my_name
                                                                , master_it->first
                                                                , sdpa_cap
@@ -1053,10 +1053,13 @@ private:
         {
           MLOG(WARN, "still not connected after " << m_reconnect_counter << " trials: shutting down");
           fhg_kernel()->shutdown();
+          return;
         }
       }
     }
-    else if (at_least_one_disconnected)
+
+
+    if (at_least_one_disconnected)
     {
       fhg_kernel()->schedule ( "connect"
                              , boost::bind( &DRTSImpl::start_connect

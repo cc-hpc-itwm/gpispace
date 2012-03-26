@@ -99,10 +99,10 @@ namespace sdpa { namespace events {
 	void serialize(Archive& ar, const unsigned int)
 	{
     	ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(*this);
-		ar & capacity();
-		ar & capabilities();
+		ar & capacity_;
+		ar & cpbset_;
 		ar & rank_;
-		ar & agent_uuid();
+		ar & agent_uuid_;
 	}
 
 	friend class boost::serialization::access;

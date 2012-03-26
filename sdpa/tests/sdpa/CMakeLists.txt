@@ -1,6 +1,8 @@
 # -*- mode: cmake; -*-
 include (fhg_plugin_macros)
 
+add_subdirectory(workflows)
+
 find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
@@ -38,7 +40,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/tests_config.hpp)
-add_subdirectory(workflows)
 
 include(pnet_macros)
 
@@ -47,13 +48,33 @@ pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.x
   FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
 )
 
-get_target_property(CAPABILITY_PNET_LOCATION pnet-capapilities LOCATION)
-add_custom_command (
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
-  COMMAND  ${CMAKE_BINARY_DIR}/we/apps/pnetput 
-  ARGS --if  ${CAPABILITY_PNET_LOCATION} -p n_A=60L -p time_A=500000L -p n_B=20L -p time_B=1000000L > ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet
-  DEPENDS pnet-capabilities
- )
+pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabilities.xml
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
+  GENERATE capabilities
+  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/application/example
+           -O3
+  BUILD
+  COMPONENT tests
+)
+
+get_target_property(CAPABILITY_PNET_LOCATION pnet-capabilities-test-wf LOCATION)
+set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=100L -p time_A=500000L -p n_B=50L -p time_B=500000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
+           
+#add_custom_command(TARGET target
+#                   PRE_BUILD | PRE_LINK | POST_BUILD
+#                   COMMAND command1 [ARGS] [args1...]
+#                   [COMMAND command2 [ARGS] [args2...] ...]
+#                   [WORKING_DIRECTORY dir]
+#                   [COMMENT comment] [VERBATIM])
+            
+add_custom_command(TARGET pnet-capabilities-test-wf
+                   POST_BUILD
+                   COMMAND ${command}
+                   COMMENT "putting tokens into capabilities workflow: ${command}"
+)
 
 set (test_srcs
   SchedulerTestImpl.cpp
@@ -61,6 +82,7 @@ set (test_srcs
 )
 
 ADD_LIBRARY(sdpa-test ${test_srcs})
+#add_dependencies(sdpa-test gen-cpb-test-wf)
 target_link_libraries(sdpa-test
 	 sdpa-daemon
 	 sdpa-client
@@ -122,4 +144,5 @@ foreach (tc_src ${tc_srcs})
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
   add_dependencies(${tc_name} fvm-fake-plugin)
+  add_dependencies(${tc_name} pnet-capabilities-test-wf)
 endforeach(tc_src ${tc_srcs})
