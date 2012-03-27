@@ -1,4 +1,4 @@
-SUBDIRS = diff tracebytrace op2 stack
+SUBDIRS = diff tracebytrace op2 stack shrink
 
 ifeq ($(DESTDIR),)
 DESTDIR=$(SDPA_HOME)/libexec/apps/parsu
