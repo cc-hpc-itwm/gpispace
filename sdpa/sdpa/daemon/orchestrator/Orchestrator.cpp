@@ -263,9 +263,10 @@ void Orchestrator::cancelNotRunning (sdpa::job_id_t const & job)
     try
     {
     	if(hasWorkflowEngine())
+    	{
     		ptr_workflow_engine_->cancelled(job);
-
-    	ptr_job_man_->deleteJob(job);
+    		ptr_job_man_->deleteJob(job);
+    	}
     }
     catch (std::exception const & ex)
     {
@@ -314,24 +315,24 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     return;
   }
 
-  if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
+  if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
   {
-    LOG(TRACE, "Propagate cancel job event downwards.");
-    try
-    {
-      sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
+	  LOG(TRACE, "Propagate cancel job event downwards.");
+	  try
+	  {
+		  sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
 
-        SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
-        CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
-                                        , worker_id
-                                        , pEvt->job_id()
-                                        , pEvt->reason()
-                                       ) );
-        sendEventToSlave(pCancelEvt);
+		  SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
+		  CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
+				  	  	  	  	  	  	  	  	  	  	  	  , worker_id
+				  	  	  	  	  	  	  	  	  	  	  	  , pEvt->job_id()
+				  	  	  	  	  	  	  	  	  	  	  	  , pEvt->reason()
+                                       	   	   	   	   	   	) );
+		  sendEventToSlave(pCancelEvt);
     }
     catch(const NoWorkerFoundException&)
     {
-        cancelNotRunning (pEvt->job_id());
+        cancelNotRunning(pEvt->job_id());
     }
     catch(...)
     {
