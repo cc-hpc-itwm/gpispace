@@ -332,6 +332,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
   if( pEvt->from() == sdpa::daemon::WE )
   {
 	  failed(pEvt->job_id(), pEvt->result());
+	  return;
   }
 
   // send a JobFailedAckEvent back to the worker/slave
