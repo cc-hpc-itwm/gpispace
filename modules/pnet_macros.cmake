@@ -94,7 +94,7 @@ macro(PNET_COMPILE)
 
   if (PNET_BUILD)
     add_custom_command(TARGET pnet-${PNET_NAME} POST_BUILD
-      COMMAND make -C ${PNET_GENERATE}
+      COMMAND "$(MAKE)" -C ${PNET_GENERATE}
       COMMENT "Compiling modules for: ${PNET_NAME}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       )

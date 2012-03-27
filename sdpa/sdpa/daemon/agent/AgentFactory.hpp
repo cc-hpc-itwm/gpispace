@@ -49,6 +49,11 @@ namespace daemon {
 
       seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
       seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );
+      // seda::Stage::Ptr daemon_stage (new seda::Stage( name
+      //                                               , pAgent
+      //                                               , 1
+      //                                               )
+      //                               );
 
       pAgent->setStage(daemon_stage);
       seda::StageRegistry::instance().insert(daemon_stage);

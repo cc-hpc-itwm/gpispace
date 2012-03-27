@@ -572,6 +572,14 @@ public:
         MLOG(TRACE, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
       }
+      else if (job_it->second->state() == drts::Job::FAILED)
+      {
+        MLOG(TRACE, "cancelling already failed job: " << e->job_id());
+      }
+      else if (job_it->second->state() == drts::Job::CANCELED)
+      {
+        MLOG(TRACE, "cancelling already cancelled job: " << e->job_id());
+      }
       else
       {
         MLOG(WARN, "what shall I do with an already computed job? (" << e->job_id() << ")");

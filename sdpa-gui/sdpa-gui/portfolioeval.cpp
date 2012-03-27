@@ -334,10 +334,7 @@ static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job
 
 std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 {
-
 	QString qstrBackend = m_pUi->m_editBackendFile->text();
-        //	qDebug()<<"Use the backend: "<<m_pUi->m_editBackendFile->text();
-
 
 	QFile wfFile(qstrBackend);
 	if( !wfFile.exists() )
@@ -349,8 +346,6 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 		EnableControls();
 		return "";
 	}
-
-        //	qDebug()<<"Submit the workflow contained in the file "<<m_pUi->m_editWorkflowFile->text();
 
 	std::ifstream ifs(m_pUi->m_editWorkflowFile->text().toStdString().c_str()); // TODO: make this configurable: file open dialog
 
@@ -367,28 +362,45 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 
 	we::activity_t act;
 
-	we::util::text_codec::decode (ifs, act);
-	for (std::size_t row (0); row < job_data.size(); ++row)
-		act.add_input( we::input_t::value_type
-                               ( make_token
-                                 ( qstrBackend
-                                 , job_data
-                                 , row
-                                 , m_pUi->m_nThreads->value()
-                                 )
-                               , act.transition().input_port_by_name ("param")
-                               )
-                             );
+        try
+        {
+          we::util::text_codec::decode (ifs, act);
+        }
+        catch (std::exception const & ex)
+        {
+          QMessageBox::critical( m_pUi->SDPAGUI
+                               , QString("Error!")
+                               , QString("Could not load workflow: ") + QString(ex.what())
+                               );
+          EnableControls();
+          return "";
+        }
+
+        try
+        {
+          for (std::size_t row (0); row < job_data.size(); ++row)
+            act.add_input( we::input_t::value_type
+                         ( make_token
+                         ( qstrBackend
+                         , job_data
+                         , row
+                         , m_pUi->m_nThreads->value()
+                         )
+                         , act.transition().input_port_by_name ("param")
+                         )
+                         );
+        }
+        catch (std::exception const & ex)
+        {
+          QMessageBox::critical( m_pUi->SDPAGUI
+                               , QString("Error!")
+                               , QString("Could not place tokens: ") + QString(ex.what())
+                               );
+          EnableControls();
+          return "";
+        }
 
 	ifs.close();
-        /*
-        {
-          std::ostringstream sstr;
-          sstr << act;
-          //	qDebug()<<"The workflow to be submitted is: " << QString(sstr.str().c_str());
-        }
-        */
-
 	return we::util::text_codec::encode(act);
 }
 
@@ -401,7 +413,9 @@ void Portfolio::StopClient()
       return;
     }
 
-    if (m_poll_thread)
+    if ( m_poll_thread
+      && (boost::this_thread::get_id() != m_poll_thread->get_id())
+       )
     {
       m_poll_thread->interrupt();
       m_poll_thread->join();

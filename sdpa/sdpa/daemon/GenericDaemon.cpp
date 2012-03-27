@@ -364,6 +364,12 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
         int maxQueueSize = 5000;
         seda::IEventQueue::Ptr ptrEvtPrioQueue( new seda::EventPrioQueue("network.stage."+name()+".queue", maxQueueSize) );
         seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, ptrEvtPrioQueue, net, 1));
+
+        // seda::Stage::Ptr network_stage (new seda::Stage( m_to_master_stage_name_
+        //                                                , net
+        //                                                , 1
+        //                                                )
+        //                                );
         seda::StageRegistry::instance().insert (network_stage);
 
         //network_stage->start ();

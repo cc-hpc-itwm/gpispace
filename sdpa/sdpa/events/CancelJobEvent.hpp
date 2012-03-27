@@ -66,7 +66,7 @@ namespace sdpa { namespace events {
         return m_reason;
       }
 
-      int priority() const { return 3; }
+      int priority() const { return 1; }
 
       virtual void handleBy(EventHandler *handler)
       {

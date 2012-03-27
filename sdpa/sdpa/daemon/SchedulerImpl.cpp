@@ -425,22 +425,16 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
   if( ptr_worker_man_ )
   {
       // if no preferences are explicitly set for this job
-      LOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
+      DLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
 
       try
       {
     	  const requirement_list_t job_req_list = ptr_comm_handler_->getJobRequirements(jobId);
-    	  ostringstream ossReq;
-    	  BOOST_FOREACH(const requirement_t& req, job_req_list)
-    	  {
-    	  	  ossReq<<req.value()<<",";
-    	  }
-
           // no preferences specified
           if( job_req_list.empty() )
           {
         	  // schedule to the first worker that requests a job
-        	  SDPA_LOG_INFO("The requirements list for the job "<<jobId<<" is empty. Schedule it anywhere!");
+              DLOG(TRACE, "The requirements list for the job "<<jobId<<" is empty. Schedule it anywhere!");
               schedule_anywhere(jobId);
               return true;
           }
@@ -450,10 +444,22 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         	  {
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
         		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list);
-        		  SDPA_LOG_INFO("The best worker matching the requirements: "<<ossReq.str()<<" for the job  "<<jobId<<" is "<<ptrBestWorker->name());
+
+                          ostringstream ossReq;
+                          BOOST_FOREACH(const requirement_t& req, job_req_list)
+                          {
+                            ossReq<<req.value()<<",";
+                          }
+
+        		  LOG( TRACE
+                             , "The best worker matching the requirements: "
+                             << ossReq.str()
+                             <<" for the job  " << jobId
+                             << " is " << ptrBestWorker->name()
+                             );
 
         		  // schedule the job to that one
-        		  SDPA_LOG_INFO("Schedule the job "<<jobId<<" on the worker "<<ptrBestWorker->name());
+        		  DMLOG(TRACE, "Schedule the job "<<jobId<<" on the worker "<<ptrBestWorker->name());
         		  return schedule_to(jobId, ptrBestWorker);
         	  }
         	  catch(const NoWorkerFoundException& ex1)
@@ -512,7 +518,7 @@ void SchedulerImpl::start_job(const sdpa::job_id_t &jobId)
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
-  LOG(TRACE, "Schedule the job " << jobId.str());
+  DLOG(TRACE, "Schedule the job " << jobId.str());
 	jobs_to_be_scheduled.push(jobId);
 }
 
