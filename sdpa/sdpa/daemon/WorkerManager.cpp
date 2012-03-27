@@ -21,7 +21,6 @@
 #include <sdpa/types.hpp>
 #include <boost/foreach.hpp>
 #include "boost/bind.hpp"
-#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/daemon/IComm.hpp>
 
 #include <algorithm>
