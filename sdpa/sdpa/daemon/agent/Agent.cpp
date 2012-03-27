@@ -326,6 +326,15 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
   SDPA_LOG_INFO("handleJobFailed(" << pEvt->job_id() << ")");
 
+  // if the event comes from the workflow engine (e.g. submission failed,
+  // see the scheduler
+
+  if( pEvt->from() == sdpa::daemon::WE )
+  {
+	  failed(pEvt->job_id(), pEvt->result());
+	  return;
+  }
+
   // send a JobFailedAckEvent back to the worker/slave
   JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent( name()
 																  , pEvt->from()

@@ -1324,56 +1324,6 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
 }
 
-/*
-void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
-{
-	worker_id_t worker_id (evtRegWorker.from());
-
-	SDPA_LOG_INFO("****************Got new registration request from: " << worker_id << ", capacity = "<<evtRegWorker.capacity()<<", capabilities:");
-	std::cout<<evtRegWorker.capabilities()<<std::endl;
-
-	// delete inherited capabilities that are owned by the current agent
-	sdpa::capabilities_set_t workerCpbSet;
-
-	// take the difference
-	BOOST_FOREACH( const sdpa::capability_t& cpb, evtRegWorker.capabilities() )
-	{
-		if( m_capabilities.find(cpb) == m_capabilities.end() )
-		{
-			workerCpbSet.insert(cpb);
-		}
-	}
-
-	addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
-
-        if (not workerCpbSet.empty())
-        {
-          SDPA_LOG_INFO(  "Register the worker \"" << worker_id << "\""
-                       <<" with the following capabilities: " << std::endl
-                       << workerCpbSet
-                       );
-        }
-
-	// send back an acknowledgment
-	SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
-	WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
-
-	sendEventToSlave(pWorkerRegAckEvt);
-
-	if (!evtRegWorker.capabilities().empty() )
-	{
-		lock_type lock(mtx_master_);
-	  // propagate the capabilities upward to the masters
-	  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-		  if (it->is_registered() && it->name() != worker_id )
-		  {
-			  sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
-			  sendEventToMaster(shpCpbGainEvt);
-		  }
-	}
-}
-*/
-
 void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 {
 	worker_id_t worker_id (evtRegWorker.from());
