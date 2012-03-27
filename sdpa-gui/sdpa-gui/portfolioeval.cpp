@@ -413,7 +413,9 @@ void Portfolio::StopClient()
       return;
     }
 
-    if (m_poll_thread)
+    if ( m_poll_thread
+      && (boost::this_thread::get_id() != m_poll_thread->get_id())
+       )
     {
       m_poll_thread->interrupt();
       m_poll_thread->join();
