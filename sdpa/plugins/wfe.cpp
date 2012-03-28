@@ -298,6 +298,8 @@ private:
           task->state = wfe_task_t::FAILED;
           task->result = ex.what();
           task->done.notify(1);
+
+          m_loader->unload_autoloaded();
         }
       }
     }
