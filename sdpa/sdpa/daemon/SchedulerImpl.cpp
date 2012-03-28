@@ -445,11 +445,11 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
         		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list);
 
-                          ostringstream ossReq;
-                          BOOST_FOREACH(const requirement_t& req, job_req_list)
-                          {
-                            ossReq<<req.value()<<",";
-                          }
+				  ostringstream ossReq;
+				  BOOST_FOREACH(const requirement_t& req, job_req_list)
+				  {
+					ossReq<<req.value()<<",";
+				  }
 
         		  LOG( TRACE
                              , "The best worker matching the requirements: "
