@@ -132,7 +132,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 
 		  try {
-                    DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
+			  DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
 			  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
 		  }
 		  catch(WorkerNotFoundException const &)
@@ -147,7 +147,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 		  try {
 			  //delete it also from job_map_
-                    DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
+			  DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
 			  ptr_job_man_->deleteJob(pEvt->job_id());
 		  }
 		  catch(JobNotDeletedException const &)
