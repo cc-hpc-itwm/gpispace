@@ -213,7 +213,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
             }
 
             try {
-                SDPA_LOG_DEBUG("Remove job "<<actId<<" from the worker "<<worker_id);
+                SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker "<<worker_id<<"'s queues");
                 ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
             }
             catch(const WorkerNotFoundException&)
