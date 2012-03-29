@@ -7,6 +7,7 @@
 #include <fstream>
 
 static const char * program_name = "gpi-test";
+static const float  PROGRAM_VERSION = 0.1;
 
 static const int EX_USAGE = 2;
 
@@ -86,9 +87,14 @@ int main (int ac, char **av)
 			++i;
 			fprintf(stderr, "%s: [options]\n", program_name);
 			fprintf(stderr, "\n");
+			fprintf(stderr, "      version: %0.2f\n", PROGRAM_VERSION);
+			fprintf(stderr, "      GPI version: %0.2f\n", getVersionGPI());
+			fprintf(stderr, "\n");
 			fprintf(stderr, "options\n");
 			fprintf(stderr, "    --help|-h\n");
 			fprintf(stderr, "      print this help information\n");
+			fprintf(stderr, "    --version|-V\n");
+			fprintf(stderr, "      print version information\n");
 			fprintf(stderr, "\n");
 			fprintf(stderr, "    --verbose|-v\n");
 			fprintf(stderr, "      be verbose\n");
@@ -128,6 +134,11 @@ int main (int ac, char **av)
 			fprintf(stderr, "      do not perform checks before gpi startup\n");
 			fprintf(stderr, "    --gpi-clear-caches\n");
 			fprintf(stderr, "      clear file caches on all nodes\n");
+			exit(EXIT_SUCCESS);
+		}
+		else if (strcmp(av[i], "--version") == 0 || strcmp(av[i], "-V") == 0)
+		{
+			printf("GPI %0.2f %0.2f\n", getVersionGPI(), PROGRAM_VERSION);
 			exit(EXIT_SUCCESS);
 		}
 		else if (strcmp(av[i], "--pidfile") == 0)
@@ -371,7 +382,8 @@ int main (int ac, char **av)
 		}
 		else
 		{
-			break;
+			fprintf(stderr, "%s: unknown option: %s\n", program_name, av[i]);
+			++i;
 		}
 	}
 
@@ -562,7 +574,7 @@ int main (int ac, char **av)
 	  gpi_argc = 1;
 	}
 
-	if (startGPI (ac, av, av[0], gpi_mem) != 0)
+	if (startGPI (gpi_argc, av, av[0], gpi_mem) != 0)
 	{
 	  ofs << "failed to start GPI!" << std::endl;
 	  return EXIT_FAILURE;
