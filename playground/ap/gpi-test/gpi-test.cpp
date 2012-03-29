@@ -93,6 +93,7 @@ int main (int ac, char **av)
 	config.kvs_port = 2439;
 	config.log_port = 2438;
 	config.log_level = 'I';
+        config.magic = 0x0;
 
 	// dump command line
 	for (i = 0; i < ac; ++i)
@@ -477,7 +478,7 @@ int main (int ac, char **av)
 			fprintf(stderr, "%s...", hostname);
 
 			if (verbose) fprintf(stderr, "\n");
-			
+
 			error_code = checkPortGPI(hostname, getPortGPI());
 			if (error_code == 0)
 			{
@@ -633,8 +634,8 @@ int main (int ac, char **av)
                 alarm(0);
                 config.magic = 0xdeadbeef;
 		memcpy(getDmaMemPtrGPI(), &config, sizeof(config));
-		size_t max_enqueued_requests = getQueueDepthGPI();
-		for (size_t rank = 1 ; rank < getNodeCountGPI() ; ++rank)
+		const size_t max_enqueued_requests (getQueueDepthGPI());
+		for (size_t rank (1); rank < getNodeCountGPI(); ++rank)
 		{
 			ofs << "distributing config structure to rank " << rank << std::endl;
 			if (openDmaPassiveRequestsGPI() >= max_enqueued_requests)
@@ -646,11 +647,12 @@ int main (int ac, char **av)
 				   exit(EXIT_FAILURE);
 				}
 			}
-			
+
 			if (-1 == sendDmaPassiveGPI ( 0 // local_offset
 		                                    , sizeof(config)
                                                     , rank
-                                                    ))
+                                                    )
+                           )
                         {
                            ofs << program_name << ": could not send config to " << rank << std::flush << std::endl;
                            killProcsGPI();
