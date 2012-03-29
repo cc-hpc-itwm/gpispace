@@ -1,5 +1,5 @@
 #include <errno.h>
-#include <GPI/GPI.h>
+#include <GPI.h>
 #include <string>
 #include <unistd.h>
 #include <string.h>
@@ -38,12 +38,14 @@ int main (int ac, char **av)
 	int i;
 	std::string pidfile;
         bool daemonize;
+	bool is_master;
+	int verbose;
 
 	unsigned long long gpi_mem;
 	unsigned short gpi_port;
 	unsigned int gpi_mtu;
 	int gpi_net;
-	unsigned int gpi_np;
+	int gpi_np;
 	bool gpi_perform_checks;
 	bool gpi_clear_caches;
 
@@ -51,20 +53,22 @@ int main (int ac, char **av)
 
 	// default config
 	daemonize = false;
+	is_master = true;
+	verbose = 0;
 	gpi_mem = 1 << 30;
 	gpi_mtu = 2048;
 	gpi_net = 0;
 	gpi_port = 10820;
-	gpi_np = 0;
+	gpi_np = -1;
 	gpi_perform_checks = true;
 	gpi_clear_caches = false;
 
 	config_t config;
-	sprintf (config.socket, "");
-	sprintf (config.kvs_host, "");
-	sprintf (config.log_host, "");
+	snprintf (config.socket, sizeof(config.socket), "/tmp/S-gpi-space-%d", getuid());
+	snprintf (config.kvs_host, sizeof(config.kvs_host), "localhost");
+	snprintf (config.log_host, sizeof(config.log_host), "localhost");
 	config.kvs_port = 2439;
-	config.log_port = 0;
+	config.log_port = 2438;
 	config.log_level = 'I';
 
 	// dump command line
@@ -80,24 +84,42 @@ int main (int ac, char **av)
 		if      (strcmp(av[i], "--help") == 0 || strcmp(av[i], "-h") == 0)
 		{
 			++i;
-			fprintf(stderr, "%s: -h|--help options\n", program_name);
+			fprintf(stderr, "%s: [options]\n", program_name);
+			fprintf(stderr, "\n");
+			fprintf(stderr, "options\n");
+			fprintf(stderr, "    --help|-h\n");
+			fprintf(stderr, "      print this help information\n");
+			fprintf(stderr, "\n");
+			fprintf(stderr, "    --verbose|-v\n");
+			fprintf(stderr, "      be verbose\n");
 			fprintf(stderr, "\n");
 			fprintf(stderr, "    --pidfile PATH\n");
+			fprintf(stderr, "      write master's PID to this file\n");
+			fprintf(stderr, "\n");
 			fprintf(stderr, "    --daemonize\n");
-			fprintf(stderr, "    --socket PATH\n");
-			fprintf(stderr, "    --kvs-host HOST\n");
+			fprintf(stderr, "      fork to background when all checks were ok\n");
+			fprintf(stderr, "\n");
+			fprintf(stderr, "    --socket PATH (%s)\n", config.socket);
+			fprintf(stderr, "      listen for process containers on this path\n");
+			fprintf(stderr, "\n");
+			fprintf(stderr, "KVS options\n");
+			fprintf(stderr, "    --kvs-host HOST (%s)\n", config.kvs_host);
 			fprintf(stderr, "    --kvs-port PORT (%hu)\n", config.kvs_port);
 			fprintf(stderr, "\n");
-			fprintf(stderr, " LOG options\n");
-			fprintf(stderr, "    --log-host HOST\n");
-			fprintf(stderr, "    --log-port PORT\n");
-			fprintf(stderr, "    --log-level {T, D, I, W, E, F}\n");
+			fprintf(stderr, "LOG options\n");
+			fprintf(stderr, "    --log-host HOST (%s)\n", config.log_host);
+			fprintf(stderr, "    --log-port PORT (%hu)\n", config.log_port);
+			fprintf(stderr, "    --log-level {T, D, I, W, E, F} (%c)\n", config.log_level);
 			fprintf(stderr, "\n");
-			fprintf(stderr, " GPI options\n");
-			fprintf(stderr, "    --gpi-mem SIZE (%llu)\n", gpi_mem);
+			fprintf(stderr, "GPI options\n");
+			fprintf(stderr, "    --gpi-mem|-s SIZE (%llu)\n", gpi_mem);
 			fprintf(stderr, "\n");
-			fprintf(stderr, " GPI options (expert)\n");
-			fprintf(stderr, "    --gpi-port PORT (%hu)\n", gpi_port);
+			fprintf(stderr, "GPI options (expert)\n");
+			fprintf(stderr, "    --gpi-port|-p PORT (%hu)\n", gpi_port);
+			fprintf(stderr, "    --gpi-np NUM (%d)\n", gpi_np);
+			fprintf(stderr, "      number of processes to start\n");
+			fprintf(stderr, "        -1 - one per host in hostlist\n");
+			fprintf(stderr, "         N - only on the first N hosts\n");
 			fprintf(stderr, "    --gpi-mtu SIZE (%u)\n", gpi_mtu);
 			fprintf(stderr, "    --gpi-net TYPE (%d)\n", gpi_net);
 			fprintf(stderr, "              0=IB\n");
@@ -121,6 +143,11 @@ int main (int ac, char **av)
 				fprintf(stderr, "%s: missing argument to --pidfile\n", program_name);
 				exit(EX_USAGE);
 			}
+		}
+		else if (strcmp(av[i], "--verbose") == 0 || strcmp(av[i], "-v") == 0)
+		{
+			++i;
+			++verbose;
 		}
 		else if (strcmp(av[i], "--daemonize") == 0)
 		{
@@ -219,7 +246,7 @@ int main (int ac, char **av)
 				exit(EX_USAGE);
 			}
 		}
-		else if (strcmp(av[i], "--gpi-mem") == 0)
+		else if (strcmp(av[i], "--gpi-mem") == 0 || strcmp(av[i], "-s") == 0)
 		{
 			++i;
 			if (i < ac)
@@ -237,7 +264,7 @@ int main (int ac, char **av)
 				exit(EX_USAGE);
 			}
 		}
-		else if (strcmp(av[i], "--gpi-port") == 0)
+		else if (strcmp(av[i], "--gpi-port") == 0 || strcmp(av[i], "-p") == 0)
 		{
 			++i;
 			if (i < ac)
@@ -297,7 +324,7 @@ int main (int ac, char **av)
 			++i;
 			if (i < ac)
 			{
-				if (sscanf(av[i], "%u", &gpi_np) == 0)
+				if (sscanf(av[i], "%d", &gpi_np) == 0)
 				{
 					fprintf(stderr, "%s: gpi-np invalid: %s\n", program_name, av[i]);
 					exit(EX_USAGE);
@@ -325,54 +352,30 @@ int main (int ac, char **av)
 			++i;
 			break;
 		}
+		else if (strcmp(av[i], "-t") == 0)
+		{
+			++i;
+			if (i < ac)
+			{
+				if (strcmp(av[i], "GPI_WORKER") == 0)
+				{
+					is_master = false;
+					++i;
+				}
+				else
+				{
+					fprintf(stderr, "%s: invalid GPI worker type: %s\n", program_name, av[i]);
+					exit(EX_USAGE);
+				}
+			}
+		}
 		else
 		{
 			break;
 		}
 	}
-	char **gpi_argv = av+(i-1);
-	int    gpi_argc = ac-(i-1);
-
-	// dump gpi_command command line
-	for (i = 0; i < gpi_argc; ++i)
-	{
-		ofs << "gpi_av[" << i << "] = " << gpi_argv[i] << std::endl;
-	}
-
-	int is_master = isMasterProcGPI(gpi_argc, gpi_argv);
 
 	ofs << "is-master = " << is_master << std::endl;
-
-	// work around bug in startGPI, so that we use the same port as the master...
-	if (not is_master)
-	{
-		i = 1;
-		while (i < ac)
-		{
-		  if (strcmp(av[i], "-p") == 0)
-		  {
-			++i;
-			if (i < ac)
-			{
-				if (sscanf(av[i], "%hu", &gpi_port) == 0)
-				{
-					ofs << "gpi-port invalid: " << av[i] << std::endl;
-					exit(EX_USAGE);
-				}
-				++i;
-			}
-			else
-			{
-				ofs << "missing argument to -p" << std::endl;
-				exit(EX_USAGE);
-			}
-		}
-		else
-		{
-			++i;
-		}
-	      }
-	}
 
 	ofs << "port = " << gpi_port << std::endl;
 
@@ -397,6 +400,7 @@ int main (int ac, char **av)
 			fprintf(stderr, "%s: could not set MTU to %u\n", program_name, gpi_mtu);
 			exit (EXIT_FAILURE);
 		}
+		setNpGPI(gpi_np);
 
 		// perform GPI checks
 		int number_of_nodes = generateHostlistGPI();
@@ -414,11 +418,15 @@ int main (int ac, char **av)
 		  {
 		  	const char * hostname = getHostnameGPI(i);
 			int error_code;
+
+			fprintf(stderr, "%s...", hostname);
+
+			if (verbose) fprintf(stderr, "\n");
 			
 			error_code = checkPortGPI(hostname, getPortGPI());
 			if (error_code == 0)
 			{
-			  fprintf(stderr, "  * %s port %hu: ok\n", hostname, getPortGPI());
+			  if (verbose) fprintf(stderr, "  * %s port %hu: ok\n", hostname, getPortGPI());
 			}
 			else if (error_code == -42)
 			{
@@ -434,7 +442,7 @@ int main (int ac, char **av)
 			error_code = pingDaemonGPI(hostname);
 			if (error_code == 0)
 			{
-			   fprintf(stderr, "  * %s daemon: ok\n", hostname);
+			   if (verbose) fprintf(stderr, "  * %s daemon: ok\n", hostname);
 			}
 			else
 			{
@@ -445,7 +453,7 @@ int main (int ac, char **av)
 			error_code = checkSharedLibsGPI(hostname);
 			if (error_code == 0)
 			{
-			   fprintf(stderr, "  * %s shared libs: ok\n", hostname);
+			   if (verbose) fprintf(stderr, "  * %s shared libs: ok\n", hostname);
 			}
 			else if (error_code == -1)
 			{
@@ -466,7 +474,7 @@ int main (int ac, char **av)
 			error_code = runIBTestGPI(hostname);
 			if (error_code == 0)
 			{
-			   fprintf(stderr, "  * %s IB test: ok\n", hostname);
+			   if (verbose) fprintf(stderr, "  * %s IB test: ok\n", hostname);
 			}
 			else if (error_code == -2)
 			{
@@ -483,6 +491,8 @@ int main (int ac, char **av)
 			   fprintf(stderr, "*** %s IB test: failed\n", hostname);
 			   exit(GPI_IB_FAILED);
 			}
+
+			fprintf(stderr, "OK\n", hostname);
 		  }
 		  fprintf(stderr, "all checks OK!\n");
 		}
@@ -524,9 +534,17 @@ int main (int ac, char **av)
 		{
 			if (pid_t child = fork())
 			{
-				fprintf(stderr, "daemon pid %d\n", child);
-				fflush(stderr);
-				exit (EXIT_SUCCESS);
+				if (child == -1)
+				{
+					fprintf(stderr, "%s: could not fork: %s\n", program_name, strerror(errno));
+					exit (EXIT_FAILURE);
+				}
+				else
+				{
+					fprintf(stderr, "daemon pid %d\n", child);
+					fflush(stderr);
+					exit (EXIT_SUCCESS);
+				}
 			}
 			setsid();
 			close(0); close(1); close(2);
@@ -534,15 +552,22 @@ int main (int ac, char **av)
 
 		if (not pidfile.empty())
 		{
-		  pidfile_stream << getpid() << std::endl;
+		  pidfile_stream << getpid() << std::flush << std::endl;
 		}
 	}
 
-	if (startGPI (gpi_argc, gpi_argv, av[0], gpi_mem) != 0)
+	int gpi_argc = ac;
+	if (is_master)
 	{
-		ofs << "failed to start GPI!" << std::endl;
-		return EXIT_FAILURE;
+	  gpi_argc = 1;
 	}
+
+	if (startGPI (ac, av, av[0], gpi_mem) != 0)
+	{
+	  ofs << "failed to start GPI!" << std::endl;
+	  return EXIT_FAILURE;
+	}
+
 	ofs << "started gpi: " << getRankGPI() << std::endl;
 
 	if (is_master)
