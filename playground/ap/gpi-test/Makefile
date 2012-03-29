@@ -2,19 +2,18 @@ default: all
 
 all: gpi-test
 
-CC = g++
-
-CXXFLAGS += -I$(GPI_INCLUDE_DIR)
-LIBS += $(GPI_LIBRARY_DIR)/libGPI.a
-LIBS += $(GPI_LIBRARY_DIR)/libibverbs15.so
-
-gpi-test: gpi-test.o $(LIBS)
+gpi-test: gpi-test.cpp -lGPI -libverbs
 
 clean:
 	@rm -f gpi-test
 	@rm -f *.o
 
-run: gpi-test
-	cp gpi-test $(DESTDIR)/gpi-test && $(DESTDIR)/gpi-test $(ARGS)
+install: $(DESTDIR)/gpi-test
 
-.PHONY: clean default all
+$(DESTDIR)/gpi-test: gpi-test
+	cp gpi-test $(DESTDIR)/gpi-test
+
+run: install
+	$(DESTDIR)/gpi-test $(ARGS)
+
+.PHONY: clean default all run install
