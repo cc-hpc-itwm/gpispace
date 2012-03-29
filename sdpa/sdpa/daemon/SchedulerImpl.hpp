@@ -145,6 +145,7 @@ protected:
 
 	mutable mutex_type mtx_;
 	condition_type cond_feed_workers;
+	condition_type cond_workers_registered;
   };
 }}
 
