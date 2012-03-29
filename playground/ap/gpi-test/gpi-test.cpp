@@ -8,9 +8,13 @@
 
 static const char * program_name = "gpi-test";
 
+static const int EX_USAGE = 2;
+
 static const int GPI_TIMEOUT = 10;
 static const int GPI_DAEMON_FAILED = 11;
 static const int GPI_PORT_INUSE = 12;
+static const int GPI_NET_TYPE = 13;
+static const int GPI_HOST_LIST = 14;
 
 static const int GPI_IB_FAILED = 30;
 static const int GPI_IB_NO_LINK = 31;
@@ -115,7 +119,7 @@ int main (int ac, char **av)
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --pidfile\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--daemonize") == 0)
@@ -134,7 +138,7 @@ int main (int ac, char **av)
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --socket\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--kvs-host") == 0)
@@ -148,7 +152,7 @@ int main (int ac, char **av)
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --kvs-host\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--kvs-port") == 0)
@@ -159,14 +163,14 @@ int main (int ac, char **av)
 				if (sscanf(av[i], "%hu", &config.kvs_port) == 0)
 				{
 					fprintf(stderr, "%s: kvs-port invalid: %s\n", program_name, av[i]);
-					exit(EXIT_FAILURE);
+					exit(EX_USAGE);
 				}
 				++i;
 			}
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --kvs-port\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--log-host") == 0)
@@ -180,7 +184,7 @@ int main (int ac, char **av)
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --log-host\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--log-port") == 0)
@@ -191,14 +195,14 @@ int main (int ac, char **av)
 				if (sscanf(av[i], "%hu", &config.log_port) == 0)
 				{
 					fprintf(stderr, "%s: log-port invalid: %s\n", program_name, av[i]);
-					exit(EXIT_FAILURE);
+					exit(EX_USAGE);
 				}
 				++i;
 			}
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --log-port\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--log-level") == 0)
@@ -212,28 +216,25 @@ int main (int ac, char **av)
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --log-level\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--gpi-mem") == 0)
 		{
-			fprintf(stderr, "gpi-mem option\n");
 			++i;
 			if (i < ac)
 			{
-				fprintf(stderr, "parsing %s\n", av[i]);
 				if (sscanf(av[i], "%llu", &gpi_mem) == 0)
 				{
 					fprintf(stderr, "%s: mem-size invalid: %s\n", program_name, av[i]);
-					exit(EXIT_FAILURE);
+					exit(EX_USAGE);
 				}
-				fprintf(stderr, "gpi-mem = %llu\n", gpi_mem);
 				++i;
 			}
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --gpi-mem\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--gpi-port") == 0)
@@ -244,7 +245,7 @@ int main (int ac, char **av)
 				if (sscanf(av[i], "%hu", &gpi_port) == 0)
 				{
 					fprintf(stderr, "%s: gpi-port invalid: %s\n", program_name, av[i]);
-					exit(EXIT_FAILURE);
+					exit(EX_USAGE);
 				}
 				++i;
 				ofs << "set port to " << gpi_port << std::endl;
@@ -252,7 +253,7 @@ int main (int ac, char **av)
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --gpi-port\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--gpi-mtu") == 0)
@@ -263,14 +264,14 @@ int main (int ac, char **av)
 				if (sscanf(av[i], "%u", &gpi_mtu) == 0)
 				{
 					fprintf(stderr, "%s: gpi-mtu invalid: %s\n", program_name, av[i]);
-					exit(EXIT_FAILURE);
+					exit(EX_USAGE);
 				}
 				++i;
 			}
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --gpi-mtu\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--gpi-net") == 0)
@@ -281,14 +282,14 @@ int main (int ac, char **av)
 				if (sscanf(av[i], "%d", &gpi_net) == 0)
 				{
 					fprintf(stderr, "%s: gpi-net invalid: %s\n", program_name, av[i]);
-					exit(EXIT_FAILURE);
+					exit(EX_USAGE);
 				}
 				++i;
 			}
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --gpi-net\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--gpi-np") == 0)
@@ -299,14 +300,14 @@ int main (int ac, char **av)
 				if (sscanf(av[i], "%u", &gpi_np) == 0)
 				{
 					fprintf(stderr, "%s: gpi-np invalid: %s\n", program_name, av[i]);
-					exit(EXIT_FAILURE);
+					exit(EX_USAGE);
 				}
 				++i;
 			}
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --gpi-np\n", program_name);
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else if (strcmp(av[i], "--gpi-no-checks") == 0)
@@ -356,14 +357,14 @@ int main (int ac, char **av)
 				if (sscanf(av[i], "%hu", &gpi_port) == 0)
 				{
 					ofs << "gpi-port invalid: " << av[i] << std::endl;
-					exit(EXIT_FAILURE);
+					exit(EX_USAGE);
 				}
 				++i;
 			}
 			else
 			{
 				ofs << "missing argument to -p" << std::endl;
-				exit(EXIT_FAILURE);
+				exit(EX_USAGE);
 			}
 		}
 		else
@@ -378,13 +379,14 @@ int main (int ac, char **av)
 	if (setPortGPI(gpi_port) != 0)
 	{
 		fprintf(stderr, "%s: could not set port to %hu\n", program_name, gpi_port);
-		exit (EXIT_FAILURE);
+		exit (GPI_PORT_INUSE);
 	}
 
 	if (is_master)
 	{
-		// do those calls actually work on the workers???
-		// I could not find out a way how to get this working
+		// AP: do those calls actually work???  I could not find out a
+		// way how to get this working, the information is not
+		// transported to the workers, is it?
 		if (setNetworkGPI((GPI_NETWORK_TYPE)gpi_net) != 0)
 		{
 			fprintf(stderr, "%s: could not set network type to %d\n", program_name, gpi_net);
@@ -395,9 +397,15 @@ int main (int ac, char **av)
 			fprintf(stderr, "%s: could not set MTU to %u\n", program_name, gpi_mtu);
 			exit (EXIT_FAILURE);
 		}
-		// perform GPI checks
 
+		// perform GPI checks
 		int number_of_nodes = generateHostlistGPI();
+
+		if (number_of_nodes <= 0)
+		{
+			fprintf(stderr, "%s: could not generate hostlist: %d\n", program_name, number_of_nodes);
+			exit (GPI_HOST_LIST);
+		}
 
 		if (gpi_perform_checks)
 		{
@@ -406,6 +414,22 @@ int main (int ac, char **av)
 		  {
 		  	const char * hostname = getHostnameGPI(i);
 			int error_code;
+			
+			error_code = checkPortGPI(hostname, getPortGPI());
+			if (error_code == 0)
+			{
+			  fprintf(stderr, "  * %s port %hu: ok\n", hostname, getPortGPI());
+			}
+			else if (error_code == -42)
+			{
+			  fprintf(stderr, "*** %s port %hu: timeout\n", hostname, getPortGPI());
+			  exit(GPI_TIMEOUT);
+			}
+			else
+			{
+			  fprintf(stderr, "*** %s port %hu: in use\n", hostname, getPortGPI());
+			  exit(GPI_PORT_INUSE);
+			}
 
 			error_code = pingDaemonGPI(hostname);
 			if (error_code == 0)
@@ -437,22 +461,6 @@ int main (int ac, char **av)
 			{
 			   fprintf(stderr, "*** %s shared libs: timeout\n", hostname);
 			   exit(GPI_TIMEOUT);
-			}
-			
-			error_code = checkPortGPI(hostname, getPortGPI());
-			if (error_code == 0)
-			{
-			  fprintf(stderr, "  * %s port %hu: ok\n", hostname, getPortGPI());
-			}
-			else if (error_code == -42)
-			{
-			  fprintf(stderr, "*** %s port %hu: timeout\n", hostname, getPortGPI());
-			  exit(GPI_TIMEOUT);
-			}
-			else
-			{
-			  fprintf(stderr, "*** %s port %hu: in use\n", hostname, getPortGPI());
-			  exit(GPI_PORT_INUSE);
 			}
 
 			error_code = runIBTestGPI(hostname);
@@ -488,15 +496,15 @@ int main (int ac, char **av)
 		    int error_code = clearFileCacheGPI(hostname);
 		    if (1 == error_code)
 		    {
-		      fprintf(stderr, "    %s: %s\n", hostname, "ok");
+		      fprintf(stderr, "    %s: ok\n", hostname);
 		    }
 		    else if (-42 == error_code)
 		    {
-		      fprintf(stderr, "    %s: %s\n", hostname, "timeout");
+		      fprintf(stderr, "    %s: timeout\n", hostname);
 		    }
 		    else
 		    {
-		      fprintf(stderr, "    %s: %s\n", hostname, "failed");
+		      fprintf(stderr, "    %s: failed\n", hostname);
 		    }
 		  }
 		}
@@ -514,8 +522,7 @@ int main (int ac, char **av)
 		// everything is fine so far, daemonize
 		if (daemonize)
 		{
-			pid_t child;
-			if (child = fork())
+			if (pid_t child = fork())
 			{
 				fprintf(stderr, "daemon pid %d\n", child);
 				fflush(stderr);
