@@ -283,7 +283,7 @@ private:
 
           if (task->state == wfe_task_t::CANCELED)
           {
-            task->result = "cancelled";
+            task->result = we::util::text_codec::encode(task->activity);
             task->done.notify(-ECANCELED);
           }
           else
