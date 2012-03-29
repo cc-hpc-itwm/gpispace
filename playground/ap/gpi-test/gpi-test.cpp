@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <fstream>
 
 static const char * program_name = "gpi-test";
@@ -34,6 +35,25 @@ struct config_t
 	char log_level;
 };
 
+static void cleanupGPI()
+{
+  (void)killProcsGPI();
+}
+
+static void handle_keyboard_interrupt(int s)
+{
+  fprintf(stderr, "%s: interrupted\n", program_name);
+  (void)killProcsGPI();
+  exit(EXIT_FAILURE);
+}
+
+static void handle_gpi_timeout(int s)
+{
+  fprintf(stderr, "%s: startup timed out!\n", program_name);
+  (void)killProcsGPI();
+  exit(GPI_TIMEOUT);
+}
+
 int main (int ac, char **av)
 {
 	int i;
@@ -49,6 +69,7 @@ int main (int ac, char **av)
 	int gpi_np;
 	bool gpi_perform_checks;
 	bool gpi_clear_caches;
+	unsigned int gpi_timeout;
 
 	std::ofstream ofs("/tmp/gpi-test.log");
 
@@ -63,6 +84,7 @@ int main (int ac, char **av)
 	gpi_np = -1;
 	gpi_perform_checks = true;
 	gpi_clear_caches = false;
+	gpi_timeout = 120;
 
 	config_t config;
 	snprintf (config.socket, sizeof(config.socket), "/tmp/S-gpi-space-%d", getuid());
@@ -116,9 +138,11 @@ int main (int ac, char **av)
 			fprintf(stderr, "    --log-host HOST (%s)\n", config.log_host);
 			fprintf(stderr, "    --log-port PORT (%hu)\n", config.log_port);
 			fprintf(stderr, "    --log-level {T, D, I, W, E, F} (%c)\n", config.log_level);
+			fprintf(stderr, "         _T_race, _D_ebug, _I_nfo\n");
+			fprintf(stderr, "         _W_arn, _E_rror, _F_atal_\n");
 			fprintf(stderr, "\n");
 			fprintf(stderr, "GPI options\n");
-			fprintf(stderr, "    --gpi-mem|-s SIZE (%llu)\n", gpi_mem);
+			fprintf(stderr, "    --gpi-mem|-s BYTES (%llu)\n", gpi_mem);
 			fprintf(stderr, "\n");
 			fprintf(stderr, "GPI options (expert)\n");
 			fprintf(stderr, "    --gpi-port|-p PORT (%hu)\n", gpi_port);
@@ -126,10 +150,11 @@ int main (int ac, char **av)
 			fprintf(stderr, "      number of processes to start\n");
 			fprintf(stderr, "        -1 - one per host in hostlist\n");
 			fprintf(stderr, "         N - only on the first N hosts\n");
-			fprintf(stderr, "    --gpi-mtu SIZE (%u)\n", gpi_mtu);
+			fprintf(stderr, "    --gpi-mtu BYTES (%u)\n", gpi_mtu);
 			fprintf(stderr, "    --gpi-net TYPE (%d)\n", gpi_net);
 			fprintf(stderr, "              0=IB\n");
 			fprintf(stderr, "              1=ETH\n");
+			fprintf(stderr, "    --gpi-timeout SECONDS (%u)\n", gpi_timeout);
 			fprintf(stderr, "    --gpi-no-checks\n");
 			fprintf(stderr, "      do not perform checks before gpi startup\n");
 			fprintf(stderr, "    --gpi-clear-caches\n");
@@ -327,6 +352,24 @@ int main (int ac, char **av)
 			else
 			{
 				fprintf(stderr, "%s: missing argument to --gpi-net\n", program_name);
+				exit(EX_USAGE);
+			}
+		}
+		else if (strcmp(av[i], "--gpi-timeout") == 0)
+		{
+			++i;
+			if (i < ac)
+			{
+				if (sscanf(av[i], "%u", &gpi_timeout) == 0)
+				{
+					fprintf(stderr, "%s: gpi-timeout invalid: %s\n", program_name, av[i]);
+					exit(EX_USAGE);
+				}
+				++i;
+			}
+			else
+			{
+				fprintf(stderr, "%s: missing argument to --gpi-timeout\n", program_name);
 				exit(EX_USAGE);
 			}
 		}
@@ -572,6 +615,9 @@ int main (int ac, char **av)
 	if (is_master)
 	{
 	  gpi_argc = 1;
+          signal(SIGALRM, handle_gpi_timeout);
+          signal(SIGINT, handle_keyboard_interrupt);
+          alarm(gpi_timeout);
 	}
 
 	if (startGPI (gpi_argc, av, av[0], gpi_mem) != 0)
@@ -584,23 +630,40 @@ int main (int ac, char **av)
 
 	if (is_master)
 	{
+                alarm(0);
                 config.magic = 0xdeadbeef;
 		memcpy(getDmaMemPtrGPI(), &config, sizeof(config));
 		size_t max_enqueued_requests = getQueueDepthGPI();
 		for (size_t rank = 1 ; rank < getNodeCountGPI() ; ++rank)
 		{
 			ofs << "distributing config structure to rank " << rank << std::endl;
-			if (openDMAPassiveRequestsGPI() >= max_enqueued_requests)
+			if (openDmaPassiveRequestsGPI() >= max_enqueued_requests)
 			{
-				waitDmaPassiveGPI();
+				if (-1 == waitDmaPassiveGPI())
+				{
+				   ofs << program_name << ": could not wait on passive channel" << std::flush << std::endl;
+				   killProcsGPI();
+				   exit(EXIT_FAILURE);
+				}
 			}
 			
-			sendDmaPassiveGPI ( 0 // local_offset
-		                          , sizeof(config)
-                                          , rank
-                                          );
+			if (-1 == sendDmaPassiveGPI ( 0 // local_offset
+		                                    , sizeof(config)
+                                                    , rank
+                                                    ))
+                        {
+                           ofs << program_name << ": could not send config to " << rank << std::flush << std::endl;
+                           killProcsGPI();
+                           exit(EXIT_FAILURE);
+                        }
 		}
-		waitDmaPassiveGPI();
+		if (-1 == waitDmaPassiveGPI())
+		{
+		   ofs << program_name << ": could not wait on passive channel" << std::flush << std::endl;
+		   fprintf(stderr, "%s: could not wait on passive channel\n", program_name);
+		   killProcsGPI();
+		   exit(EXIT_FAILURE);
+		}
 	}
 	else
 	{
