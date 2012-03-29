@@ -69,6 +69,7 @@ void SchedulerImpl::addWorker( 	const Worker::worker_id_t& workerId,
 {
   try {
       ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
+      cond_workers_registered.notify_all();
       // only with a round-robin schedule
       // ptr_worker_man_->balanceWorkers();
 
@@ -544,8 +545,7 @@ const Worker::worker_id_t& SchedulerImpl::findWorker(const sdpa::job_id_t& job_i
   }
 }
 
-const Worker::worker_id_t&
-SchedulerImpl::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t& SchedulerImpl::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
   return ptr_worker_man_->findAcknowlegedWorker(job_id);
 }
@@ -728,7 +728,14 @@ void SchedulerImpl::run()
 					else
 					{
 						//SDPA_LOG_DEBUG("no worker available, put the job back into the scheduler's queue!");
-						jobs_to_be_scheduled.push(jobId);
+						if( !ptr_comm_handler_->canRunTasksLocally() )
+						{
+							jobs_to_be_scheduled.push(jobId);
+							lock_type lock(mtx_);
+							cond_workers_registered.wait(lock);
+						}
+						else
+							execute(jobId);
 					}
 
 				} // else fail

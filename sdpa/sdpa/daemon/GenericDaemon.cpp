@@ -326,65 +326,64 @@ void GenericDaemon::notifyWorkers(const T& ptrNotEvt)
 // void GenericDaemon::configure_network( const std::string& bind_addr, const std::string& bind_port )
 void GenericDaemon::configure_network( const std::string& daemonUrl /*, const std::string& masterName*/ )
 {
-  SDPA_LOG_DEBUG("configuring network components...");
+	SDPA_LOG_DEBUG("configuring network components...");
 
-  typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
-  boost::char_separator<char> sep(":");
-  tokenizer tok(daemonUrl, sep);
+	boost::char_separator<char> sep(":");
+	tokenizer tok(daemonUrl, sep);
 
-  vector< string > vec;
-  vec.assign(tok.begin(),tok.end());
+	vector< string > vec;
+	vec.assign(tok.begin(),tok.end());
 
-  if( vec.empty() || vec.size() > 2 )
-  {
-      LOG(ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
-      return;
-  }
-  else
-  {
-      std::string bind_addr = vec[0];
-      std::string bind_port("0");
+	if( vec.empty() || vec.size() > 2 )
+	{
+		LOG(ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
+		return;
+	}
+	else
+	{
+		std::string bind_addr = vec[0];
+		std::string bind_port("0");
 
-      if( vec.size() == 2)
-        bind_port = vec[1];
+		if( vec.size() == 2)
+			bind_port = vec[1];
 
-      SDPA_LOG_INFO("Host: "<<bind_addr<<", port: "<<bind_port);
+		SDPA_LOG_INFO("Host: "<<bind_addr<<", port: "<<bind_port);
 
-      try
-      {
-        sdpa::com::NetworkStrategy::ptr_t net
-              (new sdpa::com::NetworkStrategy( 	 /*daemon_stage_->*/name()
+		try
+		{
+			sdpa::com::NetworkStrategy::ptr_t net
+				(new sdpa::com::NetworkStrategy( 	 /*daemon_stage_->*/name()
 												 , name()
 												 , fhg::com::host_t (bind_addr)
 												 , fhg::com::port_t (bind_port)
-												)
-              );
+												) );
 
-        int maxQueueSize = 5000;
-        seda::IEventQueue::Ptr ptrEvtPrioQueue( new seda::EventPrioQueue("network.stage."+name()+".queue", maxQueueSize) );
-        seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, ptrEvtPrioQueue, net, 1));
+			int maxQueueSize = 5000;
+			seda::IEventQueue::Ptr ptrEvtPrioQueue( new seda::EventPrioQueue("network.stage."+name()+".queue", maxQueueSize) );
+			seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, ptrEvtPrioQueue, net, 1));
 
-        // seda::Stage::Ptr network_stage (new seda::Stage( m_to_master_stage_name_
-        //                                                , net
-        //                                                , 1
-        //                                                )
-        //                                );
-        seda::StageRegistry::instance().insert (network_stage);
+			// seda::Stage::Ptr network_stage (new seda::Stage( m_to_master_stage_name_
+			//                                                , net
+			//                                                , 1
+			//                                                )
+			//                                );
+			seda::StageRegistry::instance().insert (network_stage);
 
-        //network_stage->start ();
+			//network_stage->start ();
 
-        ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
+			ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 
-        /*if (! masterName.empty())
-          setMaster(masterName);*/
-      }
-      catch (std::exception const &ex)
-      {
-          LOG(ERROR, "could not configure network component: " << ex.what());
-          throw;
-      }
-  }
+			/*if (! masterName.empty())
+				setMaster(masterName);*/
+		}
+		catch (std::exception const &ex)
+		{
+			LOG(ERROR, "could not configure network component: " << ex.what());
+			throw;
+		}
+	}
 }
 
 void GenericDaemon::shutdown_network()
