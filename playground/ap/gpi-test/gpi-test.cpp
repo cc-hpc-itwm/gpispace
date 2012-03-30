@@ -22,7 +22,7 @@ struct config_t
   char log_host[MAX_HOST_LEN];
   unsigned short log_port;
   char log_level;
-};
+} __attribute__((packed));
 static config_t config;
 
 static char pidfile[MAX_PATH_LEN];
