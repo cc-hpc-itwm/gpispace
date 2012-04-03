@@ -26,6 +26,7 @@ struct config_t
 static config_t config;
 
 static char pidfile[MAX_PATH_LEN];
+static char remote_binary[MAX_PATH_LEN];
 static unsigned long long gpi_mem = (1<<28);
 static unsigned short gpi_port = 10820;
 static unsigned int gpi_mtu = 2048;
@@ -126,6 +127,7 @@ int main (int ac, char **av)
 
   // default config
   memset(&config, 0, sizeof(config));
+  memset(&remote_binary, 0, sizeof(remote_binary));
   config.magic = 0x0;
   snprintf ( config.socket
            , sizeof(config.socket)
@@ -420,6 +422,26 @@ int main (int ac, char **av)
         exit(EX_USAGE);
       }
     }
+    else if (strcmp(av[i], "--gpi-binary") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen(av[i] + 1) > sizeof(remote_binary)))
+        {
+          fprintf(stderr, "%s: path is too large!\n", program_name);
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(remote_binary));
+          exit(EX_INVAL);
+        }
+        strncpy(remote_binary, av[i], sizeof(remote_binary));
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --log-host\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
     else if (strcmp(av[i], "--no-gpi-checks") == 0)
     {
       ++i;
@@ -573,7 +595,13 @@ int main (int ac, char **av)
     alarm(gpi_timeout);
   }
 
-  if (startGPI (gpi_argc, av, av[0], gpi_mem) != 0)
+  char *binary = av[0];
+  if (strlen(remote_binary))
+  {
+    binary = &remote_binary[0];
+  }
+
+  if (startGPI (gpi_argc, av, binary, gpi_mem) != 0)
   {
     fprintf(stderr, "%s: failed to start GPI!\n", program_name);
     return EXIT_FAILURE;
