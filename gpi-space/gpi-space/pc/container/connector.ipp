@@ -144,6 +144,7 @@ namespace gpi
           close (sfd);
           return -err;
         }
+        chmod (path.c_str(), 0700);
 
         if (listen(sfd, backlog_size) == -1)
         {
