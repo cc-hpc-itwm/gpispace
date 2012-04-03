@@ -37,7 +37,7 @@ if(ENABLE_REAL_GPI)
   CHECK_C_SOURCE_RUNS(
 "
 #include <stdio.h>
-#include <GPI/GPI.h>
+#include <GPI.h>
 int main ()
 {
    printf(\"%f\", getVersionGPI());
