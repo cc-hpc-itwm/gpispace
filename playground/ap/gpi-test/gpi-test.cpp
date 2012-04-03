@@ -584,11 +584,22 @@ int main (int ac, char **av)
   if (is_master)
   {
     alarm(0);
+    config.magic = 0xdeadbeef;
     distribute_config_or_die();
   }
   else
   {
     receive_config_or_die();
+    if (config.magic != 0xdeadbeef)
+    {
+      fprintf( stderr
+             , "%s: magic is invalid: expected: %x got: %x\n"
+             , program_name
+             , 0xdeadbeef
+             , config.magic
+           );
+      exit(GPI_MAGIC_MISMATCH);
+    }
   }
 
   barrierGPI();
@@ -699,7 +710,6 @@ static int check_gpi_on_node (const char * hostname)
 
 static void distribute_config_or_die ()
 {
-  config.magic = 0xdeadbeef;
   memcpy(getDmaMemPtrGPI(), &config, sizeof(config));
   const size_t max_enqueued_requests (getQueueDepthGPI());
   for (size_t rank (1); rank < getNodeCountGPI(); ++rank)
@@ -761,18 +771,4 @@ static void receive_config_or_die ()
 
   memcpy(&config, getDmaMemPtrGPI(), sizeof(config));
   memset(getDmaMemPtrGPI(), 0, sizeof(config_t));
-
-  if (config.magic != 0xdeadbeef)
-  {
-    fprintf( stderr
-           , "%s: magic is invalid: expected: %x got: %x\n"
-           , program_name
-           , 0xdeadbeef
-           , config.magic
-           );
-    exit(GPI_MAGIC_MISMATCH);
-  }
-
-  gpi_mem = getMemWorkerGPI();
-  gpi_port = getPortGPI();
 }
