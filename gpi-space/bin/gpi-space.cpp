@@ -15,25 +15,677 @@
 #include <fstream>
 
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <gpi-space/version.hpp>
-#include <gpi-space/config/config.hpp>
-#include <gpi-space/config/config_io.hpp>
-#include <gpi-space/config/parser.hpp>
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/gpi/api.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
-typedef gpi::api::gpi_api_t gpi_api_t;
+static const char * program_name = "gpi-space";
+static const float  PROGRAM_VERSION = 1.1;
+static const int CONFIG_MAGIC = 0xdeadbeef;
 
+#define MAX_PATH_LEN 4096
+#define MAX_HOST_LEN 1024
+
+struct config_t
+{
+  int  magic;
+  char socket[MAX_PATH_LEN];
+  char kvs_host[MAX_HOST_LEN];
+  unsigned short kvs_port;
+  unsigned int kvs_retry_count;
+  char log_host[MAX_HOST_LEN];
+  unsigned short log_port;
+  char log_level;
+} __attribute__((packed));
+static config_t config;
+
+static char pidfile[MAX_PATH_LEN];
+static char api_name[MAX_PATH_LEN];
+static unsigned long long gpi_mem = (1<<26);
+static unsigned short gpi_port = 10820;
+static unsigned int gpi_mtu = 0;
+static int gpi_net = 0;
+static int gpi_np = -1;
+static int gpi_numa_socket = 0;
+static unsigned int gpi_timeout = 120;
+static int verbose = 0;
+
+typedef gpi::api::gpi_api_t gpi_api_t;
 gpi::pc::container::manager_t *global_container_mgr(NULL);
+
+static void long_usage()
+{
+  fprintf(stderr, "%s: [options]\n", program_name);
+  fprintf(stderr, "\n");
+  fprintf(stderr, "      version: %0.2f\n", PROGRAM_VERSION);
+  //  fprintf(stderr, "      GPI version: %0.2f\n", getVersionGPI());
+  fprintf(stderr, "\n");
+  fprintf(stderr, "options\n");
+  fprintf(stderr, "    --help|-h\n");
+  fprintf(stderr, "      print this help information\n");
+  fprintf(stderr, "    --version|-V\n");
+  fprintf(stderr, "      print version information\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    --verbose|-v\n");
+  fprintf(stderr, "      be verbose\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    --pidfile PATH (%s)\n", pidfile);
+  fprintf(stderr, "      write master's PID to this file\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    --daemonize\n");
+  fprintf(stderr, "      fork to background when all checks were ok\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    --socket PATH (%s)\n", config.socket);
+  fprintf(stderr, "      listen for process containers on this path\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "KVS options\n");
+  fprintf(stderr, "    --kvs-host HOST (%s)\n", config.kvs_host);
+  fprintf(stderr, "    --kvs-port PORT (%hu)\n", config.kvs_port);
+  fprintf(stderr, "    --kvs-retry-count SIZE (%hu)\n", config.kvs_retry_count);
+  fprintf(stderr, "\n");
+  fprintf(stderr, "LOG options\n");
+  fprintf(stderr, "    --log-host HOST (%s)\n", config.log_host);
+  fprintf(stderr, "    --log-port PORT (%hu)\n", config.log_port);
+  fprintf(stderr, "    --log-level {T, D, I, W, E, F} (%c)\n", config.log_level);
+  fprintf(stderr, "         _T_race, _D_ebug, _I_nfo\n");
+  fprintf(stderr, "         _W_arn, _E_rror, _F_atal_\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "GPI options\n");
+  fprintf(stderr, "    --gpi-mem|-s BYTES (%llu)\n", gpi_mem);
+  fprintf(stderr, "    --gpi-api STRING (%s)\n", api_name);
+  fprintf(stderr, "      choose the GPI API to use\n");
+  fprintf(stderr, "        fake - use the fake api\n");
+  fprintf(stderr, "        real - use the real api\n");
+  fprintf(stderr, "        auto - choose the best api\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "GPI options (expert)\n");
+  fprintf(stderr, "    --gpi-port|-p PORT (%hu)\n", gpi_port);
+  fprintf(stderr, "    --gpi-np NUM (%d)\n", gpi_np);
+  fprintf(stderr, "      number of processes to start\n");
+  fprintf(stderr, "        -1 - one per host in hostlist\n");
+  fprintf(stderr, "         N - only on the first N hosts\n");
+  fprintf(stderr, "    --gpi-mtu BYTES (%u)\n", gpi_mtu);
+  fprintf(stderr, "    --gpi-net TYPE (%d)\n", gpi_net);
+  fprintf(stderr, "              0=IB\n");
+  fprintf(stderr, "              1=ETH\n");
+  fprintf(stderr, "    --gpi-timeout SECONDS (%u)\n", gpi_timeout);
+  fprintf(stderr, "    --no-gpi-checks\n");
+  fprintf(stderr, "      do not perform checks before gpi startup\n");
+  fprintf(stderr, "    --clear-file-caches\n");
+  fprintf(stderr, "      clear file caches on all nodes\n");
+}
+
+// exit codes
+static const int EX_USAGE = 2;
+static const int EX_INVAL = 3;
+
+static const int GPI_TIMEOUT = 10;
+static const int GPI_DAEMON_FAILED = 11;
+static const int GPI_PORT_INUSE = 12;
+static const int GPI_NET_TYPE = 13;
+static const int GPI_HOST_LIST = 14;
+
+static const int GPI_SHLIB_FAILED = 20;
+static const int GPI_SHLIB_MISSING = 21;
+static const int GPI_MAGIC_MISMATCH = 23;
+
+static const int GPI_IB_FAILED = 30;
+static const int GPI_IB_NO_LINK = 31;
+
+static void initialize_config(config_t *c);
+static void distribute_config_or_die(const config_t *c);
+static void receive_config_or_die(config_t *c);
+
+//static void cleanupGPI();
+//static void handle_keyboard_interrupt(int s);
+//static void handle_gpi_timeout(int s);
+//static int check_gpi_on_node(const char * host);
+
+static int shutdown_handler(int signal);
+static int suspend_handler (int signal);
+static int resume_handler (int signal);
+static int configure_logging (const config_t *cfg);
+static int configure_kvs (const config_t *cfg);
+static int main_loop (const config_t *cfg, const gpi::rank_t rank);
+
+int main (int ac, char *av[])
+{
+  gpi::signal::handler().start();
+  FHGLOG_SETUP (ac, av);
+
+  int i = 0;
+  bool daemonize = false;
+  bool is_master = true;
+  bool gpi_perform_checks = true;
+  bool gpi_clear_caches = false;
+  snprintf (pidfile, sizeof(pidfile), "%s", "");
+  snprintf (api_name, sizeof(api_name), "%s", "auto");
+
+  initialize_config (&config);
+
+  // parse command line
+  i = 1;
+  while (i < ac)
+  {
+    if (strcmp(av[i], "--help") == 0 || strcmp(av[i], "-h") == 0)
+    {
+      ++i;
+      long_usage ();
+      exit(EXIT_SUCCESS);
+    }
+    else if (strcmp(av[i], "--version") == 0 || strcmp(av[i], "-V") == 0)
+    {
+      printf("%0.2f\n", PROGRAM_VERSION);
+      exit(EXIT_SUCCESS);
+    }
+    else if (strcmp(av[i], "--pidfile") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen(av[i] + 1) > sizeof(pidfile)))
+        {
+          fprintf(stderr, "%s: path to pidfile is too large!\n", program_name);
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(pidfile));
+          exit(EX_INVAL);
+        }
+
+        strncpy(pidfile, av[i], sizeof(pidfile));
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --pidfile\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--verbose") == 0 || strcmp(av[i], "-v") == 0)
+    {
+      ++i;
+      ++verbose;
+    }
+    else if (strcmp(av[i], "--daemonize") == 0)
+    {
+      ++i;
+      daemonize = true;
+    }
+    else if (strcmp(av[i], "--socket") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen(av[i] + 1) > sizeof(config.socket)))
+        {
+          fprintf(stderr, "%s: path to socket is too large!\n", program_name);
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(config.socket));
+          exit(EX_INVAL);
+        }
+
+        strncpy(config.socket, av[i], sizeof(config.socket));
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --socket\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--kvs-host") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen(av[i] + 1) > sizeof(config.kvs_host)))
+        {
+          fprintf(stderr, "%s: hostname is too large!\n", program_name);
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(config.kvs_host));
+          exit(EX_INVAL);
+        }
+        strncpy(config.kvs_host, av[i], sizeof(config.kvs_host));
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --kvs-host\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--kvs-port") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%hu", &config.kvs_port) == 0)
+        {
+          fprintf(stderr, "%s: kvs-port invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --kvs-port\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--kvs-retry-count") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%u", &config.kvs_retry_count) == 0)
+        {
+          fprintf(stderr, "%s: kvs-retry-count invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --kvs-retry-count\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--log-host") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen(av[i] + 1) > sizeof(config.log_host)))
+        {
+          fprintf(stderr, "%s: hostname is too large!\n", program_name);
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(config.log_host));
+          exit(EX_INVAL);
+        }
+        strncpy(config.log_host, av[i], sizeof(config.log_host));
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --log-host\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--log-port") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%hu", &config.log_port) == 0)
+        {
+          fprintf(stderr, "%s: log-port invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --log-port\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--log-level") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        config.log_level = av[i][0];
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --log-level\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--gpi-mem") == 0 || strcmp(av[i], "-s") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%llu", &gpi_mem) == 0)
+        {
+          fprintf(stderr, "%s: mem-size invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        if (gpi_mem < sizeof(config_t))
+        {
+          fprintf (stderr
+                  , "%s: memory size too small, at least %lu bytes required!\n"
+                  , program_name
+                  , sizeof(config_t)
+                  );
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --gpi-mem\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--gpi-api") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen(av[i] + 1) > sizeof(api_name)))
+        {
+          fprintf(stderr, "%s: api name is too long!\n", program_name);
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(api_name));
+          exit(EX_INVAL);
+        }
+        strncpy(api_name, av[i], sizeof(api_name));
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --gpi-api\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--gpi-port") == 0 || strcmp(av[i], "-p") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%hu", &gpi_port) == 0)
+        {
+          fprintf(stderr, "%s: gpi-port invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --gpi-port\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--gpi-mtu") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%u", &gpi_mtu) == 0)
+        {
+          fprintf(stderr, "%s: gpi-mtu invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --gpi-mtu\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--gpi-net") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%d", &gpi_net) == 0)
+        {
+          fprintf(stderr, "%s: gpi-net invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --gpi-net\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--gpi-timeout") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%u", &gpi_timeout) == 0)
+        {
+          fprintf(stderr, "%s: gpi-timeout invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --gpi-timeout\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--gpi-np") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (sscanf(av[i], "%d", &gpi_np) == 0)
+        {
+          fprintf(stderr, "%s: gpi-np invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --gpi-np\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--no-gpi-checks") == 0)
+    {
+      ++i;
+      gpi_perform_checks = false;
+    }
+    else if (strcmp(av[i], "--clear-file-caches") == 0)
+    {
+      ++i;
+      gpi_clear_caches = true;
+    }
+    else if (strcmp(av[i], "--") == 0)
+    {
+      ++i;
+      break;
+    }
+    else if (strcmp(av[i], "-t") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if (strcmp(av[i], "GPI_WORKER") == 0)
+        {
+          is_master = false;
+          ++i;
+        }
+        else
+        {
+          fprintf(stderr, "%s: invalid GPI worker type: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+      }
+    }
+    else
+    {
+      fprintf(stderr, "%s: unknown option: %s\n", program_name, av[i]);
+      ++i;
+    }
+  }
+
+  // initialize gpi api
+  if (strcmp(api_name, "auto") == 0 || strcmp(api_name, "real") == 0)
+  {
+    gpi_api_t * gpi_api = &(gpi_api_t::create (gpi_api_t::REAL_API));
+    if (is_master)
+    {
+      gpi_api->set_is_master (true);
+
+      int num_nodes = gpi_api->build_hostlist();
+      if (num_nodes <= 0)
+      {
+        fprintf (stderr, "%s: could not build hostlist: %d\n", program_name, num_nodes);
+
+        if (strcmp(api_name, "real") == 0)
+        {
+          exit (GPI_HOST_LIST);
+        }
+        else
+        {
+          fprintf (stderr, "%s: fallback to fake API\n", program_name);
+
+          gpi_api_t::destroy();
+          gpi_api = &(gpi_api_t::create (gpi_api_t::FAKE_API));
+        }
+      }
+    }
+  }
+  else
+  {
+    gpi_api_t::create (gpi_api_t::FAKE_API);
+  }
+
+  gpi::signal::handler().connect(SIGINT,  &shutdown_handler);
+  gpi::signal::handler().connect(SIGTERM, &shutdown_handler);
+  gpi::signal::handler().connect(SIGTSTP, &suspend_handler);
+  gpi::signal::handler().connect(SIGCONT, &resume_handler);
+
+  gpi_api_t & gpi_api = gpi_api_t::get();
+  gpi_api.set_is_master (is_master);
+
+  gpi_api.set_binary_path (av[0]);
+  gpi_api.set_memory_size (gpi_mem);
+  gpi_api.set_port (gpi_port);
+  gpi_api.set_mtu (gpi_mtu);
+  gpi_api.set_number_of_processes (gpi_np);
+  gpi_api.set_network_type ((gpi::network_type_t)gpi_net);
+
+  if (gpi_api.is_master())
+  {
+    LOG(INFO, "GPISpace version: " << gpi::version_string());
+    LOG(INFO, "GPISpace revision: " << gpi::revision_string());
+    LOG(INFO, "GPIApi version: " << gpi_api.version());
+
+    if (gpi_perform_checks)
+    {
+      try
+      {
+        gpi_api.check();
+      }
+      catch (std::exception const & ex)
+      {
+        LOG(ERROR, "*** gpi check failed: " << ex.what());
+        exit (EXIT_FAILURE);
+      }
+    }
+
+    if (gpi_clear_caches)
+    {
+      gpi_api.clear_caches();
+    }
+
+    FILE *pidfile_stream = 0;
+
+    if (0 != strlen (pidfile))
+    {
+      pidfile_stream = fopen (pidfile, "w");
+      if (0 == pidfile_stream)
+      {
+        LOG( ERROR, "could not open pidfile for writing: "
+           << pidfile
+           << strerror(errno)
+           );
+        exit(EXIT_FAILURE);
+      }
+    }
+
+    // everything is fine so far, daemonize
+    if (daemonize)
+    {
+      if (pid_t child = fork())
+      {
+        if (child == -1)
+        {
+          LOG(ERROR, "could not fork: " << strerror(errno));
+          exit(EXIT_FAILURE);
+        }
+        else
+        {
+          LOG(INFO, "daemon pid " << child);
+          exit (EXIT_SUCCESS);
+        }
+      }
+      setsid();
+      close(0); close(1); close(2);
+    }
+
+    if (pidfile_stream)
+    {
+      fprintf(pidfile_stream, "%d\n", getpid());
+      fclose (pidfile_stream);
+    }
+  }
+
+  try
+  {
+    gpi_api.start (ac, av, gpi_timeout);
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(ERROR, "GPI could not be started: " << ex.what());
+    return EXIT_FAILURE;
+  }
+  LOG(INFO, "GPI started");
+
+  if (gpi_api.is_master())
+  {
+    config.magic = CONFIG_MAGIC;
+    distribute_config_or_die (&config);
+  }
+  else
+  {
+    receive_config_or_die (&config);
+    if (CONFIG_MAGIC != config.magic)
+    {
+      exit(GPI_MAGIC_MISMATCH);
+    }
+  }
+
+  if (0 != configure_logging (&config))
+  {
+    LOG(WARN, "could not setup logging");
+  }
+
+  int ec = configure_kvs (&config);
+  if (ec != 0)
+  {
+    LOG(ERROR, "could not connect to KVS: " << strerror(ec));
+    exit(EXIT_FAILURE);
+  }
+
+  try
+  {
+    ec = main_loop(&config, gpi_api.rank());
+    LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated with exitcode: " << ec);
+  }
+  catch (std::exception const & ex)
+  {
+    ec = EXIT_FAILURE;
+    LOG(ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
+  }
+
+  gpi::signal::handler().stop();
+  return ec;
+}
 
 static int shutdown_handler(int signal)
 {
@@ -44,6 +696,9 @@ static int shutdown_handler(int signal)
 
   LOG(INFO, "GPISpace terminating due to signal: " << signal);
   FHGLOG_FLUSH();
+
+  gpi_api_t::get().kill();
+
   exit (-signal);
 }
 
@@ -60,22 +715,95 @@ static int resume_handler (int signal)
   return 0;
 }
 
-static void configure (const gpi_space::config & cfg)
+static int configure_logging (const config_t *cfg)
 {
-  gpi_space::logging::configure (cfg.logging);
-  gpi_space::node::configure (cfg.node);
+  char server_url[MAX_HOST_LEN + 32];
+
+  // logging oonfiguration
+  snprintf( server_url, sizeof(server_url), "%s:%hu"
+          , cfg->log_host, cfg->log_port
+          );
+  const char *log_level = 0;
+  switch (cfg->log_level)
+  {
+  case 'T':
+    log_level = "TRACE";
+    break;
+  case 'D':
+    log_level = "DEBUG";
+    break;
+  case 'I':
+    log_level = "INFO";
+    break;
+  case 'W':
+    log_level = "WARN";
+    break;
+  case 'E':
+    log_level = "ERROR";
+    break;
+  case 'F':
+    log_level = "FATAL";
+    break;
+  }
+
+  setenv("FHGLOG_to_server", server_url, true);
+  if (log_level)
+  {
+    setenv("FHGLOG_level", log_level, true);
+  }
+  FHGLOG_SETUP();
+
+  return 0;
 }
 
-static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
+static int configure_kvs (const config_t *cfg)
 {
-  configure(cfg);
+  char server_url[MAX_HOST_LEN + 32];
 
+  // kvs configuration
+  snprintf( server_url, sizeof(server_url), "%s:%hu"
+          , cfg->kvs_host, cfg->kvs_port
+          );
+
+  setenv("KVS_URL", server_url, true);
+  unsigned int trial = 0;
+  do
+  {
+    try
+    {
+      fhg::com::kvs::global::get_kvs_info().init();
+
+      // workaround until we have the above structure
+      // put/del some entry to check the connection
+      fhg::com::kvs::scoped_entry_t
+        ( "kvs.connection.check"
+        , "dummy value"
+        );
+      break;
+    }
+    catch (std::exception const &ex)
+    {
+      usleep (5000);
+
+      ++trial;
+
+      LOG( WARN
+         , "could not connect to KVS at: " << server_url
+         << ": " << ex.what()
+         );
+    }
+  }
+  while (trial < cfg->kvs_retry_count);
+
+  if (trial >= cfg->kvs_retry_count)
+    return -ESRCH;
+  else
+    return 0;
+}
+
+static int main_loop (const config_t *cfg, const gpi::rank_t rank)
+{
   gpi_api_t & gpi_api (gpi_api_t::get());
-
-  const std::string kvs_prefix
-      ( "gpi.node."
-      + boost::lexical_cast<std::string>(gpi_api.rank())
-      );
 
   LOG( TRACE
      ,  "rank=" << gpi_api.rank()
@@ -84,260 +812,182 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
      << " mem_size=" << gpi_api.memory_size()
      );
 
-  // create socket path and generate a process specific socket
-  namespace fs = boost::filesystem;
-  fs::path socket_path (cfg.gpi.socket_path);
+  try
   {
-    fs::create_directories (socket_path);
-    chmod (socket_path.string().c_str(), 01777);
-
-    socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
-    fs::create_directories (socket_path);
-    chmod (socket_path.string().c_str(), 00700);
-
-    socket_path /= cfg.gpi.socket_name;
+    global_container_mgr = new gpi::pc::container::manager_t(cfg->socket);
+    global_container_mgr->start ();
+  }
+  catch (std::exception const & ex)
+  {
+    LOG( ERROR
+       , "could not start container manager on"
+       << " rank = " << rank
+       << " socket = " << cfg->socket
+       );
+    return -EFAULT;
   }
 
-  global_container_mgr = new gpi::pc::container::manager_t(socket_path.string());
-  gpi::pc::container::manager_t & mgr = *global_container_mgr;
+  LOG(INFO, "started GPI interface on rank " << rank << " at " << cfg->socket);
 
-  mgr.start ();
-
-  LOG(INFO, "started GPI interface on rank " << rank << " at " << socket_path);
-
-/* // TODO: use the shell interface
-  else if (isatty (0) && isatty (1)) // usually on the master node only
+  if (0 == rank)
   {
-    static const std::string prompt
-      ("Please type \"q\" followed by return to quit: ");
-
-    bool done (false);
-
-    while (std::cin.good() && !done)
+    if (isatty(0) && isatty(1))
     {
-      std::cout << prompt;
+      static const std::string prompt
+        ("Please type \"q\" followed by return to quit: ");
 
-      std::string line;
-      std::getline (std::cin, line);
-      if (line.empty())
-        continue;
-
-      char c = line[0];
-      switch (c)
+      bool done = false;
+      while (std::cin.good() && !done)
       {
-      case 'q':
-        done = true;
-        break;
-      case 'l':
-        std::cerr << "list of attached processes:" << std::endl;
-        std::cerr << "    implement me" << std::endl;
-        break;
-      case 'h':
-      case '?':
-        std::cerr << "list of supported commands:"             << std::endl;
-        std::cerr                                              << std::endl;
-        std::cerr << "    h|? - print this help"               << std::endl;
-        std::cerr << "      p - list all attached processes"   << std::endl;
-        std::cerr << "d [num] - detach process #num or first"  << std::endl;
-        std::cerr << "      s - print statistics"              << std::endl;
-        std::cerr << "      a - list allocations"              << std::endl;
-        std::cerr << "f [num] - remove an allocation (or all)" << std::endl;
-        break;
-      default:
-        std::cerr << "command not understood, please use \"h\"" << std::endl;
-        break;
+        std::cout << prompt;
+
+        std::string line;
+        std::getline (std::cin, line);
+        if (line.empty())
+          continue;
+
+        char c = line[0];
+        switch (c)
+        {
+        case 'q':
+          done = true;
+          break;
+        case 'l':
+          std::cerr << "list of attached processes:" << std::endl;
+          std::cerr << "    implement me" << std::endl;
+          break;
+        case 'h':
+        case '?':
+          std::cerr << "list of supported commands:"             << std::endl;
+          std::cerr                                              << std::endl;
+          std::cerr << "    h|? - print this help"               << std::endl;
+          std::cerr << "      q - quit"                          << std::endl;
+          std::cerr << "      p - list all attached processes"   << std::endl;
+          std::cerr << "d [num] - detach process #num or first"  << std::endl;
+          std::cerr << "      s - print statistics"              << std::endl;
+          std::cerr << "      a - list allocations"              << std::endl;
+          std::cerr << "f [num] - remove an allocation (or all)" << std::endl;
+          break;
+        default:
+          std::cerr << "command not understood, please use \"h\"" << std::endl;
+          break;
+        }
       }
     }
+    else
+    {
+      gpi::signal::handler().join ();
+    }
   }
-*/
-  gpi::signal::handler().join ();
+  else
+  {
+    gpi::signal::handler().join ();
+  }
 
-  mgr.stop ();
+  global_container_mgr->stop ();
 
   return EXIT_SUCCESS;
 }
 
-namespace
+static void initialize_config (config_t * c)
 {
-  static std::string get_home_dir()
-  {
-    struct passwd *pw(getpwuid(getuid()));
-    if (pw && pw->pw_dir)
-    {
-      return pw->pw_dir;
-    }
-    return "/";
-  }
+  memset(c, 0, sizeof(config_t));
+  snprintf( c->socket
+          , sizeof(c->socket), "/var/tmp/S-gpi-space.%d.%d"
+          , getuid()
+          , gpi_numa_socket
+          );
 
-  static std::string const & home_dir()
-  {
-    static std::string home(get_home_dir());
-    return home;
-  }
+  snprintf ( c->kvs_host
+           , sizeof(c->kvs_host)
+           , "localhost"
+           );
+  c->kvs_port = 2439;
+  c->kvs_retry_count = 8;
 
-  static std::string expand_user(std::string const &arg)
-  {
-    std::string s(arg);
-    std::string::size_type pos(s.find('~'));
-    if (pos != std::string::npos)
-    {
-      s.replace(pos, 1, home_dir().c_str());
-    }
-    return s;
-  }
-
-  static void init_config (gpi_space::config & cfg)
-  {
-    cfg.gpi.timeout_in_sec = 0;
-
-    std::string kvs_url_file (home_dir() + "/.sdpa/state/kvs.url");
-    std::ifstream ifs(kvs_url_file.c_str());
-    if (! ifs)
-    {
-      throw std::runtime_error("could not open kvs url file: " + kvs_url_file);
-    }
-    std::string kvs_url("localhost:2439");
-    std::getline(ifs, kvs_url);
-
-    snprintf ( cfg.node.kvs_url
-             , gpi_space::MAX_HOST_LEN
-             , "%s"
-             , kvs_url.c_str()
-             );
-  }
+  snprintf ( c->log_host
+           , sizeof(c->log_host)
+           , "localhost"
+           );
+  c->log_port = 2438;
+  c->log_level = 'I';
 }
 
-int main (int ac, char *av[])
+static void distribute_config_or_die(const config_t *c)
 {
-  gpi::signal::handler().start();
+  gpi_api_t & gpi_api = gpi_api_t::get();
 
-  FHGLOG_SETUP (ac, av);
-
+  memcpy(gpi_api.dma_ptr(), c, sizeof(config_t));
+  const size_t max_enqueued_requests (gpi_api.queue_depth());
+  for (size_t rank (1); rank < gpi_api.number_of_nodes(); ++rank)
   {
-    for (int i (0) ; i < ac; ++i)
-    {
-      std::cerr << "   av[" << i << "] = " << av[i] << std::endl;
-    }
-  }
+    if (verbose)
+      fprintf( stderr
+             , "%s: distributing config structure to rank %lu\n"
+             , program_name
+             , rank
+             );
 
-  // read config from file
-  typedef std::vector<std::string> path_list_t;
-  path_list_t search_path;
-  search_path.push_back ("/etc/gpi.rc");
-  search_path.push_back (expand_user("~/.sdpa/configs/gpi.rc"));
-
-  gpi_space::parser::config_parser_t cfg_parser;
-  {
-    std::map <std::string, bool> files_seen;
-    for ( path_list_t::const_iterator p (search_path.begin())
-        ; p != search_path.end()
-        ; ++p
-        )
+    if (gpi_api.open_passive_requests () >= max_enqueued_requests)
     {
-      const std::string config_file (*p);
-      if (files_seen.find (config_file) == files_seen.end())
+      try
       {
-        namespace fs = boost::filesystem;
-
-        LOG(TRACE, "trying to read config from: " << config_file);
-
-        files_seen[config_file] = true;
-
-        if (fs::exists(fs::path(config_file)))
-        {
-          try
-          {
-            gpi_space::parser::parse (config_file, boost::ref(cfg_parser));
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(ERROR, "could not read config file: " << config_file << ": " << ex.what());
-            return EXIT_FAILURE;
-          }
-        }
+        gpi_api.wait_passive ();
+      }
+      catch (std::exception const & ex)
+      {
+        LOG(ERROR, "could not wait on passive channel: " << ex.what());
+        gpi_api.kill();
+        exit(EXIT_FAILURE);
       }
     }
-  }
 
-  gpi_space::config config;
-  try
-  {
-    init_config (config);
-    config.load (cfg_parser);
-    gpi_space::logging::configure (config.logging);
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(ERROR, "could not configure: " << ex.what());
-    return EXIT_FAILURE;
-  }
-
-  if (config.node.daemonize)
-  {
-    if (0 == fork())
-    {
-      setsid();
-    }
-    else
-    {
-      exit (0);
-    }
-  }
-
-  // initialize gpi api
-  gpi_api_t & gpi_api (gpi_api_t::create (cfg_parser.get("gpi.api", gpi_api_t::REAL_API)));
-  gpi_api.init (ac, av);
-
-  if (gpi_api.is_master())
-  {
-    LOG(INFO, "GPISpace version: " << gpi::version_string());
-    LOG(INFO, "GPISpace revision: " << gpi::revision_string());
-    LOG(INFO, "GPIApi version: " << gpi_api.version());
-  }
-
-  gpi_api.set_memory_size (config.gpi.memory_size);
-  gpi_api.set_port (config.gpi.port);
-
-  if (gpi_api.is_master ())
-  {
     try
     {
-      gpi_api.check();
+      gpi_api.send_passive( 0, sizeof(config_t), rank );
     }
     catch (std::exception const & ex)
     {
-      LOG(ERROR, "*** gpi check failed: " << ex.what());
-      return EXIT_FAILURE;
+      LOG(ERROR, "could not send config to: " << rank << ": " << ex.what());
+      gpi_api.kill();
+      exit(EXIT_FAILURE);
     }
   }
 
   try
   {
-    gpi_api.start (config.gpi.timeout_in_sec);
+    gpi_api.wait_passive ();
   }
   catch (std::exception const & ex)
   {
-    LOG(ERROR, "GPI could not be started: " << ex.what());
-    return EXIT_FAILURE;
+    LOG(ERROR, "could not wait on passive channel: " << ex.what());
+    gpi_api.kill();
+    exit(EXIT_FAILURE);
   }
+  memset(gpi_api.dma_ptr(), 0, sizeof(config_t));
+}
 
-  gpi::signal::handler().connect(SIGINT,  &shutdown_handler);
-  gpi::signal::handler().connect(SIGTERM, &shutdown_handler);
-  gpi::signal::handler().connect(SIGTSTP, &suspend_handler);
-  gpi::signal::handler().connect(SIGCONT, &resume_handler);
+static void receive_config_or_die(config_t *c)
+{
+  gpi_api_t & gpi_api = gpi_api_t::get();
+  gpi::rank_t source = 0;
 
-  int rc (EXIT_SUCCESS);
   try
   {
-    rc = main_loop(config, gpi_api.rank());
-    LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated with exitcode: " << rc);
+    gpi_api.recv_passive( 0, sizeof(config_t), source );
+    if (0 != source)
+    {
+      LOG(ERROR, "got passive dma message from unexpected source: " << source);
+      throw std::runtime_error
+        ("got passive dma message from unexpected source");
+    }
   }
   catch (std::exception const & ex)
   {
-    rc = EXIT_FAILURE;
-    LOG(ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
+    LOG(ERROR, "could not receive passive dma message: " << ex.what());
+    exit(EXIT_FAILURE);
   }
 
-  gpi::signal::handler().stop();
-  return rc;
+  memcpy(c, gpi_api.dma_ptr(), sizeof(config_t));
+  memset(gpi_api.dma_ptr(), 0, sizeof(config_t));
 }

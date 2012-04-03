@@ -57,8 +57,10 @@ namespace gpi
       virtual ~gpi_api_t();
 
       // wrapped C function calls
-      virtual void init (int ac, char *av[]) = 0;
-      virtual void start (const gpi::timeout_t timeout) = 0;
+      virtual void set_binary_path (const char *) = 0;
+      virtual void clear_caches () = 0;
+      virtual int build_hostlist () = 0;
+      virtual void start (int ac, char *av[], const gpi::timeout_t timeout) = 0;
       virtual void stop () = 0;
       virtual void kill () = 0;
       virtual void shutdown () = 0;
@@ -77,7 +79,7 @@ namespace gpi
       virtual gpi::size_t open_passive_requests () const = 0;
       virtual bool max_passive_requests_reached () const = 0;
 
-      virtual std::string hostname (const gpi::rank_t) const = 0;
+      virtual const char * hostname (const gpi::rank_t) const = 0;
       virtual gpi::rank_t rank () const = 0;
       virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const = 0;
       virtual void *dma_ptr (void) = 0;
@@ -92,11 +94,13 @@ namespace gpi
       virtual void set_memory_size (const gpi::size_t) = 0;
 
       virtual bool ping (const gpi::rank_t) const = 0;
-      virtual bool ping (std::string const & hostname) const = 0;
+      virtual bool ping (const char * host) const = 0;
 
-      virtual void check (const gpi::rank_t) const = 0;
+      virtual void check (gpi::rank_t) const = 0;
+      virtual void check (const char * hostname) const = 0;
       virtual void check () const = 0;
 
+      virtual void set_is_master(const bool b) = 0;
       virtual bool is_master (void) const = 0;
       virtual bool is_slave (void) const = 0;
 

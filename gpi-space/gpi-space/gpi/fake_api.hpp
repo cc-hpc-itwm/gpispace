@@ -20,8 +20,10 @@ namespace gpi
       ~fake_gpi_api_t();
 
       // wrapped C function calls
-      void init (int ac, char *av[]);
-      void start (const gpi::timeout_t timeout);
+      void clear_caches () {}
+      int build_hostlist () { return 1; }
+      void set_binary_path (const char *);
+      void start (int ac, char *av[], const gpi::timeout_t timeout);
       void stop ();
       void kill ();
       void shutdown ();
@@ -40,7 +42,7 @@ namespace gpi
       gpi::size_t open_passive_requests () const;
       bool max_passive_requests_reached () const;
 
-      std::string hostname (const gpi::rank_t) const;
+      const char * hostname (const gpi::rank_t) const;
       gpi::rank_t rank () const;
       gpi::error_vector_t get_error_vector(const queue_desc_t) const;
       void *dma_ptr (void);
@@ -55,11 +57,13 @@ namespace gpi
       void set_memory_size (const gpi::size_t);
 
       bool ping (const gpi::rank_t) const;
-      bool ping (std::string const & host) const;
+      bool ping (const char * host) const;
 
+      void check (const char * host) const;
       void check (const gpi::rank_t) const;
       void check () const;
 
+      void set_is_master(const bool b);
       bool is_master (void) const;
       bool is_slave (void) const;
 
@@ -113,9 +117,8 @@ namespace gpi
       fake_gpi_api_t ();
 
       mutable mutex_type m_mutex;
-      int   m_ac;
-      char **m_av;
       bool m_is_master;
+      const char *m_binary_path;
       bool  m_startup_done;
       rank_t m_rank;
       size_t m_mem_size;

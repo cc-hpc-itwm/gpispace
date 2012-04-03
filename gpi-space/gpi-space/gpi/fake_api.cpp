@@ -17,9 +17,8 @@ namespace gpi
     typedef boost::function<void (int)> signal_handler_t;
 
     fake_gpi_api_t::fake_gpi_api_t ()
-      : m_ac (0)
-      , m_av (NULL)
-      , m_is_master (true)
+      : m_is_master (true)
+      , m_binary_path("")
       , m_startup_done (false)
       , m_rank (0)
       , m_mem_size (0)
@@ -41,20 +40,18 @@ namespace gpi
       }
     }
 
-    void fake_gpi_api_t::init (int ac, char *av[])
-    {
-      m_ac = ac;
-      m_av = av;
-      m_is_master = true;
-    }
-
     void fake_gpi_api_t::set_memory_size (const gpi::size_t sz)
     {
       m_mem_size = sz;
     }
 
     // wrapped C function calls
-    void fake_gpi_api_t::start (const gpi::timeout_t timeout)
+    void fake_gpi_api_t::set_binary_path (const char *path)
+    {
+      m_binary_path = path;
+    }
+
+    void fake_gpi_api_t::start (int ac, char *av[], const gpi::timeout_t timeout)
     {
       assert (! m_startup_done);
       if (m_dma)
@@ -169,15 +166,9 @@ namespace gpi
       return (open_passive_requests() >= queue_depth());
     }
 
-    std::string fake_gpi_api_t::hostname (const gpi::rank_t r) const
+    const char * fake_gpi_api_t::hostname (const gpi::rank_t r) const
     {
-      if (r == 0)
-        return "localhost";
-      else
-        throw gpi::exception::gpi_error
-          ( gpi::error::operation_not_permitted()
-          , "hostname(rank) is not allowed for invalid ranks"
-          );
+      return "localhost";
     }
 
     gpi::rank_t fake_gpi_api_t::rank () const
@@ -217,20 +208,20 @@ namespace gpi
     {
       return ping (hostname (r));
     }
-    bool fake_gpi_api_t::ping (std::string const & host) const
+
+    bool fake_gpi_api_t::ping (const char * host) const
     {
-      lock_type lock (m_mutex);
-      if (host == "localhost")
-        return true;
-      else
-        return false;
+      return true;
     }
 
     void fake_gpi_api_t::check (const gpi::rank_t node) const
     {
-      std::string host (hostname (node));
+      check (hostname (node));
+    }
 
-      LOG(DEBUG, "checking GPI on host := " << host << " rank := " << node);
+    void fake_gpi_api_t::check (const char * host) const
+    {
+      LOG(DEBUG, "checking GPI on host := " << host);
 
       if (!ping (host))
       {
@@ -257,6 +248,11 @@ namespace gpi
         check (nd);
       }
       LOG(INFO, "GPI check successful.");
+    }
+
+    void fake_gpi_api_t::set_is_master(const bool b)
+    {
+      m_is_master = b;
     }
 
     bool fake_gpi_api_t::is_master (void) const
@@ -475,8 +471,7 @@ namespace gpi
 
     size_t fake_gpi_api_t::wait_passive ( void )
     {
-      throw gpi::exception::gpi_error
-        (gpi::error::wait_passive_failed());
+      return 0;
     }
   }
 }
