@@ -6,7 +6,6 @@
 #include <fhglog/minimal.hpp>
 
 #include <gpi-space/exception.hpp>
-#include <gpi-space/signal_handler.hpp>
 
 #include "system.hpp"
 
@@ -14,8 +13,6 @@ namespace gpi
 {
   namespace api
   {
-    typedef boost::function<void (int)> signal_handler_t;
-
     fake_gpi_api_t::fake_gpi_api_t ()
       : m_is_master (true)
       , m_binary_path("")
@@ -214,24 +211,19 @@ namespace gpi
       return true;
     }
 
-    void fake_gpi_api_t::check (const gpi::rank_t node) const
+    int fake_gpi_api_t::check (const gpi::rank_t node) const
     {
-      check (hostname (node));
+      return check (hostname (node));
     }
 
-    void fake_gpi_api_t::check (const char * host) const
+    int fake_gpi_api_t::check (const char * host) const
     {
       LOG(DEBUG, "checking GPI on host := " << host);
-
-      if (!ping (host))
-      {
-        LOG(ERROR, "failed to ping GPI daemon on host := " << host);
-        throw gpi::exception::gpi_error
-          ( gpi::error::ping_check_failed () );
-      }
+      if (ping(host)) return 0;
+      else            return 1;
     }
 
-    void fake_gpi_api_t::check (void) const
+    int fake_gpi_api_t::check (void) const
     {
       lock_type lock (m_mutex);
       if (!is_master())
@@ -243,11 +235,20 @@ namespace gpi
       }
 
       LOG(DEBUG, "running GPI check...");
+      int ec = 0;
       for (rank_t nd (0); nd < number_of_nodes(); ++nd)
       {
-        check (nd);
+        ec += check (nd);
       }
-      LOG(INFO, "GPI check successful.");
+      if (ec)
+      {
+        LOG(WARN, "gpi check failed!");
+      }
+      else
+      {
+        LOG(INFO, "GPI check successful.");
+      }
+      return ec;
     }
 
     void fake_gpi_api_t::set_is_master(const bool b)

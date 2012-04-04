@@ -16,12 +16,12 @@
 
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <gpi-space/version.hpp>
-#include <gpi-space/signal_handler.hpp>
 #include <gpi-space/gpi/api.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
@@ -47,12 +47,14 @@ struct config_t
 } __attribute__((packed));
 static config_t config;
 
+static bool gpi_startup_done = false;
+static bool stop_requested = false;
 static char pidfile[MAX_PATH_LEN];
 static char api_name[MAX_PATH_LEN];
 static unsigned long long gpi_mem = (1<<26);
-static unsigned short gpi_port = 10820;
+static unsigned short gpi_port = 0;
 static unsigned int gpi_mtu = 0;
-static int gpi_net = 0;
+static int gpi_net = -1;
 static int gpi_np = -1;
 static int gpi_numa_socket = 0;
 static unsigned int gpi_timeout = 120;
@@ -65,8 +67,8 @@ static void long_usage()
 {
   fprintf(stderr, "%s: [options]\n", program_name);
   fprintf(stderr, "\n");
-  fprintf(stderr, "      version: %0.2f\n", PROGRAM_VERSION);
-  //  fprintf(stderr, "      GPI version: %0.2f\n", getVersionGPI());
+  fprintf(stderr, "      version: %s\n", gpi::version_string());
+  fprintf(stderr, "     revision: %s\n", gpi::revision_string());
   fprintf(stderr, "\n");
   fprintf(stderr, "options\n");
   fprintf(stderr, "    --help|-h\n");
@@ -89,7 +91,7 @@ static void long_usage()
   fprintf(stderr, "KVS options\n");
   fprintf(stderr, "    --kvs-host HOST (%s)\n", config.kvs_host);
   fprintf(stderr, "    --kvs-port PORT (%hu)\n", config.kvs_port);
-  fprintf(stderr, "    --kvs-retry-count SIZE (%hu)\n", config.kvs_retry_count);
+  fprintf(stderr, "    --kvs-retry-count SIZE (%u)\n", config.kvs_retry_count);
   fprintf(stderr, "\n");
   fprintf(stderr, "LOG options\n");
   fprintf(stderr, "    --log-host HOST (%s)\n", config.log_host);
@@ -126,6 +128,7 @@ static void long_usage()
 // exit codes
 static const int EX_USAGE = 2;
 static const int EX_INVAL = 3;
+static const int EX_STILL_RUNNING = 4;
 
 static const int GPI_TIMEOUT = 10;
 static const int GPI_DAEMON_FAILED = 11;
@@ -144,21 +147,13 @@ static void initialize_config(config_t *c);
 static void distribute_config_or_die(const config_t *c);
 static void receive_config_or_die(config_t *c);
 
-//static void cleanupGPI();
-//static void handle_keyboard_interrupt(int s);
-//static void handle_gpi_timeout(int s);
-//static int check_gpi_on_node(const char * host);
-
-static int shutdown_handler(int signal);
-static int suspend_handler (int signal);
-static int resume_handler (int signal);
+static void signal_handler (int sig);
 static int configure_logging (const config_t *cfg);
 static int configure_kvs (const config_t *cfg);
 static int main_loop (const config_t *cfg, const gpi::rank_t rank);
 
 int main (int ac, char *av[])
 {
-  gpi::signal::handler().start();
   FHGLOG_SETUP (ac, av);
 
   int i = 0;
@@ -183,7 +178,7 @@ int main (int ac, char *av[])
     }
     else if (strcmp(av[i], "--version") == 0 || strcmp(av[i], "-V") == 0)
     {
-      printf("%0.2f\n", PROGRAM_VERSION);
+      printf("%s\n", gpi::version_string());
       exit(EXIT_SUCCESS);
     }
     else if (strcmp(av[i], "--pidfile") == 0)
@@ -554,26 +549,45 @@ int main (int ac, char *av[])
     gpi_api_t::create (gpi_api_t::FAKE_API);
   }
 
-  gpi::signal::handler().connect(SIGINT,  &shutdown_handler);
-  gpi::signal::handler().connect(SIGTERM, &shutdown_handler);
-  gpi::signal::handler().connect(SIGTSTP, &suspend_handler);
-  gpi::signal::handler().connect(SIGCONT, &resume_handler);
-
   gpi_api_t & gpi_api = gpi_api_t::get();
   gpi_api.set_is_master (is_master);
 
   gpi_api.set_binary_path (av[0]);
   gpi_api.set_memory_size (gpi_mem);
-  gpi_api.set_port (gpi_port);
-  gpi_api.set_mtu (gpi_mtu);
-  gpi_api.set_number_of_processes (gpi_np);
-  gpi_api.set_network_type ((gpi::network_type_t)gpi_net);
+
+  if (gpi_port)
+  {
+    gpi_api.set_port (gpi_port);
+  }
+
+  if (gpi_mtu)
+  {
+    gpi_api.set_mtu (gpi_mtu);
+  }
+
+  if (gpi_np != -1)
+  {
+    gpi_api.set_number_of_processes (gpi_np);
+  }
+
+  if (gpi_net != -1)
+  {
+    gpi_api.set_network_type ((gpi::network_type_t)gpi_net);
+  }
 
   if (gpi_api.is_master())
   {
     LOG(INFO, "GPISpace version: " << gpi::version_string());
     LOG(INFO, "GPISpace revision: " << gpi::revision_string());
     LOG(INFO, "GPIApi version: " << gpi_api.version());
+
+    if (0 != configure_kvs (&config))
+    {
+      LOG( ERROR
+         , "could not configure KVS at: [" << config.kvs_host << "]:" << config.kvs_port
+         );
+      exit(EXIT_FAILURE);
+    }
 
     if (gpi_perform_checks)
     {
@@ -593,15 +607,14 @@ int main (int ac, char *av[])
       gpi_api.clear_caches();
     }
 
-    FILE *pidfile_stream = 0;
+    int pidfile_fd = -1;
 
     if (0 != strlen (pidfile))
     {
-      pidfile_stream = fopen (pidfile, "w");
-      if (0 == pidfile_stream)
+      pidfile_fd = open(pidfile, O_CREAT|O_RDWR, 0640);
+      if (pidfile_fd < 0)
       {
         LOG( ERROR, "could not open pidfile for writing: "
-           << pidfile
            << strerror(errno)
            );
         exit(EXIT_FAILURE);
@@ -620,24 +633,45 @@ int main (int ac, char *av[])
         }
         else
         {
-          LOG(INFO, "daemon pid " << child);
           exit (EXIT_SUCCESS);
         }
       }
       setsid();
       close(0); close(1); close(2);
+      int fd = open("/dev/null", O_RDWR);
+      dup(fd);
+      dup(fd);
     }
 
-    if (pidfile_stream)
+    if (pidfile_fd >= 0)
     {
-      fprintf(pidfile_stream, "%d\n", getpid());
-      fclose (pidfile_stream);
+      if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+      {
+        LOG( ERROR, "could not lock pidfile: "
+           << strerror(errno)
+           );
+        exit(EX_STILL_RUNNING);
+      }
+
+      char buf[32];
+      ftruncate(pidfile_fd, 0);
+      snprintf(buf, sizeof(buf), "%d\n", getpid());
+      write(pidfile_fd, buf, strlen(buf));
+      fsync(pidfile_fd);
     }
   }
 
+  signal(SIGTERM, signal_handler);
+  signal(SIGINT, signal_handler);
+  signal(SIGALRM, signal_handler);
+  signal(SIGHUP, signal_handler);
+  signal(SIGCHLD, signal_handler);
+
   try
   {
+    gpi_startup_done = false;
     gpi_api.start (ac, av, gpi_timeout);
+    gpi_startup_done = true;
   }
   catch (std::exception const & ex)
   {
@@ -683,36 +717,35 @@ int main (int ac, char *av[])
     LOG(ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
   }
 
-  gpi::signal::handler().stop();
   return ec;
 }
 
-static int shutdown_handler(int signal)
+static void signal_handler (int sig)
 {
-  if (global_container_mgr)
+  LOG(DEBUG, "got signal " << sig);
+
+  switch (sig)
   {
-    global_container_mgr->stop();
+  case SIGALRM:
+    if (not gpi_startup_done)
+    {
+      LOG(ERROR, "startup failed");
+      exit (1);
+    }
+    else
+    {
+      LOG(DEBUG, "ignoring signal: " << sig);
+    }
+    break;
+  case SIGTERM:
+    close(0);
+  case SIGINT:
+    stop_requested = true;
+    break;
+  default:
+    LOG(DEBUG, "ignoring signal: " << sig);
+    break;
   }
-
-  LOG(INFO, "GPISpace terminating due to signal: " << signal);
-  FHGLOG_FLUSH();
-
-  gpi_api_t::get().kill();
-
-  exit (-signal);
-}
-
-static int suspend_handler (int signal)
-{
-  LOG(INFO, "GPISpace process (" << gpi_api_t::get().rank() << ") suspended");
-  ::raise (SIGSTOP);
-  return 0;
-}
-
-static int resume_handler (int signal)
-{
-  LOG(INFO, "GPISpace process (" << gpi_api_t::get().rank() << ") resumed");
-  return 0;
 }
 
 static int configure_logging (const config_t *cfg)
@@ -758,51 +791,34 @@ static int configure_logging (const config_t *cfg)
 
 static int configure_kvs (const config_t *cfg)
 {
-  char server_url[MAX_HOST_LEN + 32];
-
-  // kvs configuration
-  snprintf( server_url, sizeof(server_url), "%s:%hu"
-          , cfg->kvs_host, cfg->kvs_port
-          );
-
-  setenv("KVS_URL", server_url, true);
   unsigned int trial = 0;
-  do
+  try
   {
-    try
-    {
-      fhg::com::kvs::global::get_kvs_info().init();
+    fhg::com::kvs::global::get_kvs_info().init( cfg->kvs_host
+                                              , boost::lexical_cast<std::string>(cfg->kvs_port)
+                                              , boost::posix_time::seconds(cfg->kvs_retry_count)
+                                              , cfg->kvs_retry_count
+                                              );
 
-      // workaround until we have the above structure
-      // put/del some entry to check the connection
-      fhg::com::kvs::scoped_entry_t
-        ( "kvs.connection.check"
-        , "dummy value"
-        );
-      break;
-    }
-    catch (std::exception const &ex)
-    {
-      usleep (5000);
-
-      ++trial;
-
-      LOG( WARN
-         , "could not connect to KVS at: " << server_url
-         << ": " << ex.what()
-         );
-    }
+    // workaround until we have the above structure
+    // put/del some entry to check the connection
+    fhg::com::kvs::scoped_entry_t
+      ( "kvs.connection.check"
+      , "dummy value"
+      );
   }
-  while (trial < cfg->kvs_retry_count);
-
-  if (trial >= cfg->kvs_retry_count)
+  catch (std::exception const &ex)
+  {
     return -ESRCH;
-  else
-    return 0;
+  }
+
+  return 0;
 }
 
 static int main_loop (const config_t *cfg, const gpi::rank_t rank)
 {
+  stop_requested = false;
+
   gpi_api_t & gpi_api (gpi_api_t::get());
 
   LOG( TRACE
@@ -876,12 +892,12 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
     }
     else
     {
-      gpi::signal::handler().join ();
+      do { } while (!stop_requested && pause() == -1 && errno == EINTR);
     }
   }
   else
   {
-    gpi::signal::handler().join ();
+    do { } while (!stop_requested && pause() == -1 && errno == EINTR);
   }
 
   global_container_mgr->stop ();
@@ -898,17 +914,23 @@ static void initialize_config (config_t * c)
           , gpi_numa_socket
           );
 
-  snprintf ( c->kvs_host
-           , sizeof(c->kvs_host)
-           , "localhost"
-           );
+  if (gethostname (c->kvs_host, MAX_HOST_LEN) != 0)
+  {
+    snprintf ( c->kvs_host
+             , sizeof(c->kvs_host)
+             , "localhost"
+             );
+  }
   c->kvs_port = 2439;
   c->kvs_retry_count = 8;
 
-  snprintf ( c->log_host
-           , sizeof(c->log_host)
-           , "localhost"
-           );
+  if (gethostname (c->log_host, MAX_HOST_LEN) != 0)
+  {
+    snprintf ( c->log_host
+             , MAX_HOST_LEN
+             , "localhost"
+             );
+  }
   c->log_port = 2438;
   c->log_level = 'I';
 }

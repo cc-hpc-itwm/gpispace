@@ -2,14 +2,13 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <csignal> // kill
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <fhglog/minimal.hpp>
-
-#include <gpi-space/signal_handler.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -311,8 +310,6 @@ namespace gpi
           return;
         }
 
-        broadcast(detail::command_t("SHUTDOWN"));
-
         m_shutting_down = true;
         m_peer->stop();
         m_peer_thread->join();
@@ -551,7 +548,7 @@ namespace gpi
             LOG(INFO, "shutting down");
             m_children.clear();
             m_shutting_down = true;
-            gpi::signal::handler().raise(15);
+            kill(getpid(), SIGTERM);
           }
           else
           {
@@ -569,8 +566,8 @@ namespace gpi
           LOG(WARN, "error on connection to child node " << rank);
           LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
           del_child (rank);
-          //        gpi::signal::handler().raise(15);
-          _exit(15);
+          kill(getpid(), SIGTERM);
+          //_exit(15);
         }
       }
     }

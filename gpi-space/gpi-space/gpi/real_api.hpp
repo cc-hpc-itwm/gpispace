@@ -57,9 +57,9 @@ namespace gpi
       bool ping (const gpi::rank_t) const;
       bool ping (const char * hostname) const;
 
-      void check (const gpi::rank_t) const;
-      void check (const char *) const;
-      void check () const;
+      int check (const gpi::rank_t) const;
+      int check (const char *) const;
+      int check () const;
 
       void set_is_master(const bool b);
       bool is_master (void) const;

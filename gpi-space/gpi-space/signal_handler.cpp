@@ -98,7 +98,7 @@ namespace gpi
         {
           m_stopping = true;
           this->raise (0);
-          ::raise (SIGINT);
+          ::raise (SIGALRM);
         }
       }
 
@@ -126,7 +126,7 @@ namespace gpi
       {
         m_worker_thread->join ();
       }
-      if (m_handler_thread && (boost::this_thread::get_id() != m_handler_thread->get_id()))
+      if (m_handler_thread && (boost::this_thread::get_id() != m_worker_thread->get_id()))
       {
         m_handler_thread->join ();
       }

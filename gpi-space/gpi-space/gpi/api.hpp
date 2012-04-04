@@ -96,9 +96,9 @@ namespace gpi
       virtual bool ping (const gpi::rank_t) const = 0;
       virtual bool ping (const char * host) const = 0;
 
-      virtual void check (gpi::rank_t) const = 0;
-      virtual void check (const char * hostname) const = 0;
-      virtual void check () const = 0;
+      virtual int check (gpi::rank_t) const = 0;
+      virtual int check (const char * hostname) const = 0;
+      virtual int check () const = 0;
 
       virtual void set_is_master(const bool b) = 0;
       virtual bool is_master (void) const = 0;

@@ -12,15 +12,12 @@
 #include <fhglog/minimal.hpp>
 
 #include <gpi-space/exception.hpp>
-#include <gpi-space/signal_handler.hpp>
 #include "system.hpp"
 
 namespace gpi
 {
   namespace api
   {
-    typedef boost::function<void (int)> signal_handler_t;
-
     real_gpi_api_t::real_gpi_api_t ()
       : m_is_master (true)
       , m_binary_path ("")
@@ -82,18 +79,6 @@ namespace gpi
       }
 
       int rc (0);
-
-      // 1. register alarm signal handler
-      gpi::signal::handler_t::scoped_connection_t
-        conn (gpi::signal::handler().connect
-             ( SIGALRM
-             , boost::bind ( &real_gpi_api_t::startup_timedout_cb
-                           , this
-                           , timeout
-                           , _1
-                           )
-             )
-             );
 
       if (timeout) alarm (timeout);
       if (is_master())
@@ -318,7 +303,7 @@ namespace gpi
       }
     }
 
-    void real_gpi_api_t::check (const gpi::rank_t node) const
+    int real_gpi_api_t::check (const gpi::rank_t node) const
     {
       if (! is_master())
       {
@@ -329,11 +314,11 @@ namespace gpi
       }
 
       const char * host (hostname (node));
-      check (host);
+      return check (host);
     }
 
 
-    void real_gpi_api_t::check (const char *host) const
+    int real_gpi_api_t::check (const char *host) const
     {
       LOG(DEBUG, "checking GPI on host := " << host << " port := " << port());
 
@@ -349,34 +334,17 @@ namespace gpi
       int rc (0);
       int errors (0);
 
-      if (checkPortGPI(host, port()) != 0)
+      rc = findProcGPI (host);
+      if (rc == 0)
       {
-        LOG(WARN, "*** port " << port() << " on " << host << " seems to be in use!");
-        ++errors;
-
-        if (findProcGPI (host) == 1)
-        {
-          LOG(WARN, "another GPI binary is still running and blocking the port, trying to kill it now");
-          if (killProcsGPI() == 0)
-          {
-            if (checkPortGPI(host, port()))
-            {
-              LOG(INFO, "successfully killed old processes");
-              --errors;
-            }
-          }
-          else
-          {
-            LOG(ERROR, "could not kill old processes");
-          }
-        }
-        else
-        {
-          LOG(ERROR, "another program seems to block port " << port() << " on node " << host);
-        }
+        throw gpi::exception::gpi_error
+          ( gpi::error::another_binary_running()
+          , "[" + std::string(host) + "]:" + boost::lexical_cast<std::string>(port())
+          );
       }
 
-      if (errors)
+      rc = checkPortGPI(host, port());
+      if (rc != 0)
       {
         throw gpi::exception::gpi_error
           ( gpi::error::port_check_failed()
@@ -387,21 +355,25 @@ namespace gpi
       rc = checkSharedLibsGPI(host);
       if (rc != 0)
       {
-        LOG(ERROR, "shared library requirements could not be met on host " << host << " with error " << rc);
         throw gpi::exception::gpi_error
-          ( gpi::error::libs_check_failed () );
+          ( gpi::error::libs_check_failed ()
+          , "[" + std::string(host) + "]:" + boost::lexical_cast<std::string>(port())
+          );
       }
 
       rc = runIBTestGPI (host);
       if (rc != 0)
       {
-        LOG(ERROR, "InfiniBand test failed for host " << host << " with error " << rc);
         throw gpi::exception::gpi_error
-          ( gpi::error::ib_check_failed () );
+          ( gpi::error::ib_check_failed ()
+          , "[" + std::string(host) + "]:" + boost::lexical_cast<std::string>(port())
+          );
       }
+
+      return rc;
     }
 
-    void real_gpi_api_t::check (void) const
+    int real_gpi_api_t::check (void) const
     {
       if (!is_master())
       {
@@ -425,7 +397,7 @@ namespace gpi
       }
 
       LOG(DEBUG, "running GPI check...");
-      size_t rc (0);
+      int rc (0);
       for (rank_t nd (0); nd < max_rank; ++nd)
       {
         try
@@ -435,9 +407,20 @@ namespace gpi
         catch (std::exception const & ex)
         {
           LOG(ERROR, "check on host " << hostname(nd) << " failed: " << ex.what());
+          rc += 1;
         }
       }
-      LOG(INFO, "GPI check successful.");
+
+      if (rc)
+      {
+        LOG(ERROR, "GPI check failed on " << rc << " hosts");
+        throw gpi::exception::gpi_error
+          ( gpi::error::unknown()
+          , "GPI check failed"
+          );
+      }
+
+      return 0;
     }
 
     void real_gpi_api_t::set_is_master(const bool b)
