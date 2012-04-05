@@ -28,6 +28,8 @@ using namespace std;
 enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
 const unsigned int MAX_CAP = 10000;
 
+static const int EX_STILL_RUNNING = 4;
+
 int main (int argc, char **argv)
 {
 	string agentName;
@@ -37,6 +39,8 @@ int main (int argc, char **argv)
 	string appGuiUrl;
 	string kvsUrl;
 	unsigned int agentRank;
+        string pidfile;
+        bool daemonize = false;
 
 	bool bDoBackup = false;
 	string backup_file;
@@ -58,6 +62,8 @@ int main (int argc, char **argv)
 	   ("app_gui_url,a", po::value<string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
 	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
 	   ("request-mode", po::value<string>(&requestMode)->default_value(requestMode), "send periodical job requests to master")
+           ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
+           ("daemonize", "daemonize after all checks were successful")
 	   ;
 
 	po::variables_map vm;
@@ -102,6 +108,8 @@ int main (int argc, char **argv)
 
 	if( vm.count("backup_folder") )
 	  bkpOpt *= FLD_DEF;
+        if (vm.count ("daemonize"))
+          daemonize = true;
 
 	bfs::path bkp_path(backup_folder);
 	boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
@@ -160,6 +168,59 @@ int main (int argc, char **argv)
 	  arrMasterNames.push_back("orchestrator"); // default master name
 
 	sdpa::master_info_list_t listMasterInfo;
+
+        int pidfile_fd = -1;
+
+        if (not pidfile.empty())
+        {
+          pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
+          if (pidfile_fd < 0)
+          {
+            LOG( ERROR, "could not open pidfile for writing: "
+               << strerror(errno)
+               );
+            exit(EXIT_FAILURE);
+          }
+        }
+
+        // everything is fine so far, daemonize
+        if (daemonize)
+        {
+          if (pid_t child = fork())
+          {
+            if (child == -1)
+            {
+              LOG(ERROR, "could not fork: " << strerror(errno));
+              exit(EXIT_FAILURE);
+            }
+            else
+            {
+              exit (EXIT_SUCCESS);
+            }
+          }
+          setsid();
+          close(0); close(1); close(2);
+          int fd = open("/dev/null", O_RDWR);
+          dup(fd);
+          dup(fd);
+        }
+
+        if (pidfile_fd >= 0)
+        {
+          if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+          {
+            LOG( ERROR, "could not lock pidfile: "
+               << strerror(errno)
+               );
+            exit(EX_STILL_RUNNING);
+          }
+
+          char buf[32];
+          ftruncate(pidfile_fd, 0);
+          snprintf(buf, sizeof(buf), "%d\n", getpid());
+          write(pidfile_fd, buf, strlen(buf));
+          fsync(pidfile_fd);
+        }
 
 	LOG(INFO, "Starting the agent with the name = '"<<agentName<<"' at location "<<agentUrl<<", having the masters: ");
 	BOOST_FOREACH(string master, arrMasterNames)

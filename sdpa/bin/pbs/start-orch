@@ -16,12 +16,14 @@ name="orchestrator"
 bkp_dir="${SDPA_SCRATCH_DIR}/state"
 kvs_url="$KVS_URL"
 bin=$(which orchestrator 2>/dev/null)
+daemonize=false
+pidfile=
 if [ -z "$bin" ] ; then
     log "# could not find orchestrator binary in the path!"
     exit 1
 fi
 
-while getopts ":hgn:l:d:k:" opt; do
+while getopts ":hgn:l:d:k:DP:" opt; do
   case $opt in
 	g)
 	  debug=true
@@ -35,8 +37,14 @@ while getopts ":hgn:l:d:k:" opt; do
 	b)
 	  bkp_dir=$OPTARG
 	;;
-      k)
+        k)
 	  kvs_url=$OPTARG
+	  ;;
+        D)
+	  daemonize=true
+	  ;;
+        P)
+	  pidfile=$OPTARG
 	  ;;
 	h)
 	  echo "usage: $0 [-h] [-g] [-l interface] [-n name] [-b backup-dir]" >&2
@@ -46,6 +54,8 @@ while getopts ":hgn:l:d:k:" opt; do
           echo "    -b : path to the backup directory (${bkp_dir})" >&2
 	  echo "    -k : kvs url" >&2
 	  echo "    -g : run within gdb" >&2
+	  echo "    -D : daemonize" >&2
+	  echo "    -P pidfile: write pid to this file and lock it" >&2
 	  exit 0
 	;;
 	\?)
@@ -61,14 +71,16 @@ stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
     argv="$argv -d ${bkp_dir}"
 fi
+if $daemonize && ! $debug ; then
+    argv="$argv --daemonize"
+fi
+if [ -n "$pidfile" ] ; then
+    argv="$argv --pidfile $pidfile"
+fi
 
 if $debug ; then
-  log "running within gdb..."
-  FHGLOG_to_console="stderr" gdb -ex run --args $bin $argv
+    log "running within gdb..."
+    FHGLOG_to_console="stderr" gdb -ex run --args $bin $argv
 else
-    if [ -x /usr/bin/catchsegv ] ; then
-	bin="/usr/bin/catchsegv $bin"
-    fi
-
     FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec $bin $argv
 fi

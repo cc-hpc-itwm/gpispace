@@ -37,6 +37,7 @@ daemonize=false
 bind_addr='0'
 name=
 master=
+pidfile=
 force=false
 logfile="$SDPA_LOG_DIR/${name}.log"
 backlog=1000
@@ -60,11 +61,12 @@ usage: $(basename "$0") [options]
     -b N (=$backlog): set the backlog size
     -k kvs-url (=$kvs_url): url to the key-value-store
     -D daemonize
+    -P pidfile
     -L logfile (=$logfile)
 EOF
 }
 
-while getopts ":hDfdm:g:b:n:k:L:" opt; do
+while getopts ":hDfdm:g:b:n:k:L:P:" opt; do
     case $opt in
 	h)
 	    usage
@@ -96,6 +98,9 @@ while getopts ":hDfdm:g:b:n:k:L:" opt; do
 	    ;;
 	L)
 	    logfile=$OPTARG
+	    ;;
+	P)
+	    pidfile=$OPTARG
 	    ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
@@ -142,22 +147,20 @@ stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
     opts="$opts -d ${SDPA_SCRATCH_DIR}/state"
 fi
+if $daemonize && ! $debug ; then
+    opts="$opts --daemonize"
+fi
+if [ -n "$pidfile" ] ; then
+    opts="$opts --pidfile $pidfile"
+fi
 
 cmd="${bin} $opts"
 
 log "Running $name on $(hostname -s) with master $master"
 
-if [ x"$debug" = x"true" ] ; then
+if "$debug" ; then
     log "running within gdb..."
     gdb -ex run --args ${cmd}
 else
-    if [ -x /usr/bin/catchsegv ] ; then
-	cmd="/usr/bin/catchsegv ${cmd}"
-    fi
-
-    if [ x"$daemonize" = x"true" ] ; then
-	FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" ${cmd} </dev/null >/dev/null 2>&1 &
-    else
-	FHGLOG_to_console=stderr FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" exec ${cmd}
-    fi
+    FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" exec ${cmd}
 fi

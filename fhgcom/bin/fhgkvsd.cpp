@@ -14,6 +14,8 @@
 static fhg::com::io_service_pool pool (1);
 static fhg::com::kvs::server::kvsd *g_kvsd (0);
 
+static const int EX_STILL_RUNNING = 4;
+
 void save_state (int s)
 {
   try
@@ -65,6 +67,8 @@ int main(int ac, char *av[])
 
   std::string server_address ("*");
   std::string server_port ("2439");
+  std::string pidfile;
+  bool daemonize = false;
 
   if (getenv("KVS_URL") != NULL)
   {
@@ -94,6 +98,8 @@ int main(int ac, char *av[])
     ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
     ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store, set KVS_STORE to override default")
     ("clear,C", "start with an empty store")
+    ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
+    ("daemonize", "daemonize after all checks were successful")
     ;
 
   po::variables_map vm;
@@ -122,9 +128,65 @@ int main(int ac, char *av[])
 
   if (vm.count ("clear")) kvsd.clear ("");
 
+  if (vm.count ("daemonize"))
+    daemonize = true;
+
   if (server_address == "*")
   {
     server_address = "0";
+  }
+
+  int pidfile_fd = -1;
+
+  if (not pidfile.empty())
+  {
+    pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
+    if (pidfile_fd < 0)
+    {
+      LOG( ERROR, "could not open pidfile for writing: "
+         << strerror(errno)
+         );
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  // everything is fine so far, daemonize
+  if (daemonize)
+  {
+    if (pid_t child = fork())
+    {
+      if (child == -1)
+      {
+        LOG(ERROR, "could not fork: " << strerror(errno));
+        exit(EXIT_FAILURE);
+      }
+      else
+      {
+        exit (EXIT_SUCCESS);
+      }
+    }
+    setsid();
+    close(0); close(1); close(2);
+    int fd = open("/dev/null", O_RDWR);
+    dup(fd);
+    dup(fd);
+  }
+
+  if (pidfile_fd >= 0)
+  {
+    if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+    {
+      LOG( ERROR, "could not lock pidfile: "
+         << strerror(errno)
+         );
+      exit(EX_STILL_RUNNING);
+    }
+
+    char buf[32];
+    ftruncate(pidfile_fd, 0);
+    snprintf(buf, sizeof(buf), "%d\n", getpid());
+    write(pidfile_fd, buf, strlen(buf));
+    fsync(pidfile_fd);
   }
 
   signal(SIGINT, signal_handler);
@@ -132,7 +194,6 @@ int main(int ac, char *av[])
   signal(SIGUSR1, save_state);
   signal(SIGUSR2, clear_state);
   signal(SIGHUP, load_state);
-
 
   try
   {

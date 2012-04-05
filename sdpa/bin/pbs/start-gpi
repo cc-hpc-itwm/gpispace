@@ -18,10 +18,18 @@ elif [ -r "$HOME/.sdpa/configs/gpi.dir" ] ; then
     gpi_bin_path=$( cat "$HOME/.sdpa/configs/gpi.dir" )
 fi
 
-gpi_cfg=
 gpi_exe="$(which gpi-space)"
-force=false
 debug=false
+mem_size=
+gpi_port=
+pidfile=
+force=false
+daemonize=true
+kvs_host=
+kvs_port=
+log_host=
+log_port=
+verbose=false
 
 function usage ()
 {
@@ -30,33 +38,65 @@ usage: $0 [options]
 
     -h: print this help
     -d gpid directory (=$gpi_bin_path): priviledged binary path for the gpid
-    -c gpi-cfg (=$gpi_cfg): path to the gpi cfg
     -x gpi-exe (=$gpi_exe): gpi program to use
     -g run within debugger
+    -m size: memory size
+    -p port: GPI port
+    -P pidfile: write pid to this file
     -f: force (always copy binary)
+    -D: daemonize
+    -k host: kvs host
+    -K port: kvs port
+    -l host: log host
+    -L port: log port
+    -v: verbose
 EOF
 }
 
-while getopts ":hgfd:c:x:" opt; do
+while getopts ":hd:x:gm:p:P:fDk:K:l:L:v" opt; do
     case $opt in
-	g)
-	    debug=true
-	    ;;
-	f)
-	    force=true
-	    ;;
-	d)
-	    gpi_bin_path=$OPTARG
-	    ;;
-	c)
-	    gpi_cfg=$OPTARG
-	    ;;
 	h)
 	    usage
 	    exit 0
 	    ;;
+	d)
+	    gpi_bin_path=$OPTARG
+	    ;;
 	x)
 	    gpi_exe=$OPTARG
+	    ;;
+	g)
+	    debug=true
+	    ;;
+	m)
+	    mem_size=$OPTARG
+	    ;;
+	p)
+	    gpi_port=$OPTARG
+	    ;;
+	P)
+	    pidfile=$OPTARG
+	    ;;
+	f)
+	    force=true
+	    ;;
+	D)
+	    daemonize=true
+	    ;;
+	k)
+	    kvs_host=$OPTARG
+	    ;;
+	K)
+	    kvs_port=$OPTARG
+	    ;;
+	l)
+	    log_host=$OPTARG
+	    ;;
+	L)
+	    log_port=$OPTARG
+	    ;;
+	v)
+	    verbose=true
 	    ;;
 	\?)
 	    echo "invalid option: -$OPTARG" >&2
@@ -131,14 +171,34 @@ fi
 
 if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
     cmdline=
-    if [ "$debug" = "true" ] ; then
+    if $debug ; then
 	cmdline="gdb -ex run --args $cmdline"
     fi
     cmdline="$cmdline ${gpi_bin_path}/${gpi_bin}"
 
-    if [ -n "$gpi_cfg" ] ; then
-	log "# Using config file in: $gpi_cfg"
-	cmdline="$cmdline $gpi_cfg"
+    if $verbose ; then
+	cmdline="$cmdline --log-level TRACE"
+    fi
+    if $daemonize && ! $debug ; then
+	cmdline="$cmdline --daemonize"
+    fi
+    if test -n "$mem_size" ; then
+	cmdline="$cmdline --gpi-mem $mem_size"
+    fi
+    if test -n "$pidfile" ; then
+	cmdline="$cmdline --pidfile $pidfile"
+    fi
+    if test -n "$kvs_host" ; then
+	cmdline="$cmdline --kvs_host $kvs_host"
+    fi
+    if test -n "$kvs_port" ; then
+	cmdline="$cmdline --kvs_host $kvs_port"
+    fi
+    if test -n "$log_host" ; then
+	cmdline="$cmdline --kvs_host $log_host"
+    fi
+    if test -n "$log_port" ; then
+	cmdline="$cmdline --kvs_host $log_port"
     fi
 
     log "executing $cmdline"
