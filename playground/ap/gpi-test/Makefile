@@ -1,8 +1,9 @@
 default: all
 
-all: gpi-test
+all: gpi-test gpi-exec
 
 gpi-test: gpi-test.cpp -lGPI -libverbs
+gpi-exec: gpi-exec.cpp -lGPI -libverbs
 
 clean:
 	@rm -f gpi-test
