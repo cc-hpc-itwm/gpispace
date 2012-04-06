@@ -224,11 +224,11 @@ int main (int argc, char **argv)
           char buf[32];
           if (not ftruncate(pidfile_fd, 0))
           {
-            LOG(ERROR, "could not truncate pidfile: " << strerrror(errno));
+            LOG(ERROR, "could not truncate pidfile: " << strerror(errno));
             exit(EXIT_FAILURE);
           }
           snprintf(buf, sizeof(buf), "%d\n", getpid());
-          if (strlen(buf) != write(pidfile_fd, buf, strlen(buf)))
+          if (write(pidfile_fd, buf, strlen(buf)) <= 0)
           {
             LOG(ERROR, "could not write pid: " << strerror(errno));
             exit(EXIT_FAILURE);
