@@ -24,7 +24,13 @@ public:
 
   FHG_PLUGIN_START()
   {
-    api.path (fhg_kernel()->get("socket", "/var/tmp/gpi-space/control"));
+    api.path (fhg_kernel()->get( "socket"
+                               , "/var/tmp/S-gpi-space."
+                               + boost::lexical_cast<std::string>(getuid())
+                               + "."
+                               + boost::lexical_cast<std::string>(0) // numa socket
+                               )
+             );
     if (fhg_kernel()->get("startmode", "nowait")  == "wait")
     {
       LOG(INFO, "gpi plugin starting in synchronous mode, this might take forever!");
