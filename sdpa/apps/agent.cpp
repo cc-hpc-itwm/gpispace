@@ -201,8 +201,14 @@ int main (int argc, char **argv)
           setsid();
           close(0); close(1); close(2);
           int fd = open("/dev/null", O_RDWR);
-          dup(fd);
-          dup(fd);
+          if (-1 == dup(fd))
+          {
+            LOG(WARN, "could not duplicate /dev/null to stdout: " << strerror(errno));
+          }
+          if (-1 == dup(fd))
+          {
+            LOG(WARN, "could not duplicate /dev/null to stdout: " << strerror(errno));
+          }
         }
 
         if (pidfile_fd >= 0)
@@ -216,9 +222,17 @@ int main (int argc, char **argv)
           }
 
           char buf[32];
-          ftruncate(pidfile_fd, 0);
+          if (not ftruncate(pidfile_fd, 0))
+          {
+            LOG(ERROR, "could not truncate pidfile: " << strerrror(errno));
+            exit(EXIT_FAILURE);
+          }
           snprintf(buf, sizeof(buf), "%d\n", getpid());
-          write(pidfile_fd, buf, strlen(buf));
+          if (strlen(buf) != write(pidfile_fd, buf, strlen(buf)))
+          {
+            LOG(ERROR, "could not write pid: " << strerror(errno));
+            exit(EXIT_FAILURE);
+          }
           fsync(pidfile_fd);
         }
 
