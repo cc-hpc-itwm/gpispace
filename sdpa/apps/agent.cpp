@@ -222,10 +222,9 @@ int main (int argc, char **argv)
           }
 
           char buf[32];
-          if (not ftruncate(pidfile_fd, 0))
+          if (0 != ftruncate(pidfile_fd, 0))
           {
-            LOG(ERROR, "could not truncate pidfile: " << strerror(errno));
-            exit(EXIT_FAILURE);
+            LOG(WARN, "could not truncate pidfile: " << strerror(errno));
           }
           snprintf(buf, sizeof(buf), "%d\n", getpid());
           if (write(pidfile_fd, buf, strlen(buf)) <= 0)
