@@ -4,26 +4,40 @@
   <out name="done" type="control" place="done"/>
   <net>
     <place name="n" type="long"/>
-    <place name="ns" type="long"/>
     <transition name="start">
       <defun>
         <in name="n" type="long"/>
-        <out name="n" type="long"/>
+        <out name="s" type="set"/>
         <out name="t" type="double"/>
-        <module name="tm" function="t start (n)">
+        <module name="tm" function="t start (n, s)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="sys/time.h"/>
           <code><![CDATA[
             LOG(INFO, "START");
 
-            struct timeval tv; gettimeofday (&tv, NULL);
+            struct timeval tv;
 
-            return ((double)(tv.tv_sec) + (double)(tv.tv_usec) * 1e-6);
+            gettimeofday (&tv, NULL);
+
+            double t0 ((double)(tv.tv_sec) + (double)(tv.tv_usec) * 1e-6);
+
+            for (int i (0); i < n; ++i)
+              {
+                s.insert (i);
+              }
+
+            gettimeofday (&tv, NULL);
+
+            double t ((double)(tv.tv_sec) + (double)(tv.tv_usec) * 1e-6);
+
+            LOG(INFO, "TIME-CONSTRUCT (" << n << "): " << t-t0);
+
+            return t;
           ]]></code>
         </module>
       </defun>
       <connect-in port="n" place="n"/>
-      <connect-out port="n" place="ns"/>
+      <connect-out port="s" place="x"/>
       <connect-out port="t" place="t"/>
     </transition>
     <place name="t" type="double"/>
@@ -40,74 +54,6 @@
       <connect-in port="in" place="m"/>
       <connect-out port="one" place="ms"/>
       <connect-out port="two" place="mt"/>
-    </transition>
-    <transition name="dup_n">
-      <use name="dup_long"/>
-      <connect-in port="in" place="ns"/>
-      <connect-out port="one" place="n_seq"/>
-      <connect-out port="two" place="n_ins"/>
-    </transition>
-    <place name="n_seq" type="long"/>
-    <place name="n_ins" type="long"/>
-    <transition name="gen">
-      <include-function href="sequence.xml"/>
-      <connect-in port="amount" place="n_seq"/>
-      <connect-out port="out" place="id"/>
-    </transition>
-    <place name="id" type="long"/>
-    <place name="accu" type="set">
-      <token><value>{::}</value></token>
-    </place>
-    <transition name="ins">
-      <defun>
-        <in name="n" type="long"/>
-        <out name="n" type="long"/>
-        <in name="s" type="set"/>
-        <out name="s" type="set"/>
-        <in name="i" type="long"/>
-        <expression>
-          ${n} := ${n} - 1L;
-          ${s} := set_insert (${s}, ${i});
-        </expression>
-      </defun>
-      <condition>
-        ${n} :gt: 0
-      </condition>
-      <connect-in port="n" place="n_ins"/>
-      <connect-out port="n" place="n_ins"/>
-      <connect-in port="s" place="accu"/>
-      <connect-out port="s" place="accu"/>
-      <connect-in port="i" place="id"/>
-    </transition>
-    <transition name="done_ins">
-      <defun>
-        <in name="n" type="long"/>
-        <in name="s" type="set"/>
-        <in name="t" type="double"/>
-        <out name="t" type="double"/>
-        <out name="s" type="set"/>
-        <module name="tm" function="t done_ins (s, t)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="sys/time.h"/>
-          <code><![CDATA[
-            struct timeval tv; gettimeofday (&tv, NULL);
-
-            const double t_now ((double)(tv.tv_sec) + (double)(tv.tv_usec) * 1e-6);
-
-            LOG (INFO, "TIME-CONSTRUCT (" << s.size() << "): " << t_now - t);
-
-            return t_now;
-          ]]></code>
-        </module>
-      </defun>
-      <condition>
-        ${n} :le: 0
-      </condition>
-      <connect-in port="n" place="n_ins"/>
-      <connect-in port="s" place="accu"/>
-      <connect-out port="s" place="x"/>
-      <connect-in port="t" place="t"/>
-      <connect-out port="t" place="t"/>
     </transition>
     <place name="x" type="set"/>
     <transition name="take">
@@ -159,7 +105,11 @@
 
             const double t_now ((double)(tv.tv_sec) + (double)(tv.tv_usec) * 1e-6);
 
-            LOG(INFO, "DONE TIME-COPY (" << s.size() << ", " << mt << "): " << t_now - t);
+            LOG ( INFO
+                , "DONE TIME-COPY (" << s.size() << ", " << mt << "): "
+                << t_now - t << " sec(s) => "
+                << 1000 * (t_now - t) / mt << " ms per copy"
+                );
 
             return control();
           ]]></code>
