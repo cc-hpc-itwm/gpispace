@@ -66,7 +66,7 @@ namespace we { namespace type {
         typedef typename transition_t::port_t port_t;
         typedef typename port_t::name_type name_type;
         typedef petri_net::pid_t pid_t;
-        typedef petri_net::pid_t eid_t;
+        typedef petri_net::eid_t eid_t;
         typedef petri_net::tid_t tid_t;
         typedef petri_net::connection_t connection_t;
         typedef boost::unordered_map<name_type, pid_t> map_type;
