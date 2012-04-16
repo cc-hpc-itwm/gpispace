@@ -69,7 +69,6 @@ namespace we { namespace type {
         typedef petri_net::eid_t eid_t;
         typedef petri_net::tid_t tid_t;
         typedef petri_net::connection_t connection_t;
-        typedef boost::unordered_map<name_type, pid_t> map_type;
         typedef typename transition_t::outer_to_inner_t outer_to_inner;
         typedef typename transition_t::inner_to_outer_t inner_to_outer;
         typedef boost::unordered_map<name_type, pid_t> map_type;
