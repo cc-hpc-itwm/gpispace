@@ -1495,6 +1495,10 @@ namespace xml
                 {
                   t.push_out (connect_type(child, state));
                 }
+              else if (child_name == "connect-inout")
+                {
+                  t.push_inout (connect_type (child, state));
+                }
               else if (child_name == "connect-read")
                 {
                   t.push_read (connect_type(child, state));
