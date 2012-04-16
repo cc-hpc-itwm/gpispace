@@ -481,6 +481,10 @@ namespace xml
                 {
                   f.push_out (port_type (child, state));
                 }
+              else if (child_name == "inout")
+                {
+                  f.push_inout (port_type (child, state));
+                }
               else if (child_name == "struct")
                 {
                   f.structs.push_back (struct_type (child, state));

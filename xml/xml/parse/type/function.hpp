@@ -558,6 +558,7 @@ namespace xml
 
         void push_in (const port_type & p) { push (p, _in, _out, "in"); }
         void push_out (const port_type & p) { push (p, _out, _in, "out"); }
+        void push_inout (const port_type & p) { push_in (p); push_out (p); }
 
         // ***************************************************************** //
 

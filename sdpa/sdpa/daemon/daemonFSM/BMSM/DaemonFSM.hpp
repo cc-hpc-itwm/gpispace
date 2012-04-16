@@ -136,8 +136,8 @@ namespace sdpa {
 				template <class Archive>
 				void serialize(Archive& ar, const unsigned int)
 				{
-				  ar & boost::serialization::base_object<GenericDaemon>(*this);
-				  ar & boost::serialization::base_object<msm::back::state_machine<DaemonFSM_> >(*this);
+					ar & boost::serialization::base_object<GenericDaemon>(*this);
+					ar & boost::serialization::base_object<msm::back::state_machine<DaemonFSM_> >(*this);
 				}
 
 				friend class boost::serialization::access;

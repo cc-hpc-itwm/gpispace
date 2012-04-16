@@ -153,7 +153,7 @@ public:
 	const id_type& workflowId() const { return m_workflowId; }
 
 	void incVisitedNodes() { m_nVisitedNodes++; }
-	int& nVisitedNodes() { return m_nVisitedNodes; }
+	size_t& nVisitedNodes() { return m_nVisitedNodes; }
 	const int& nVisitedNodes() const { return m_nVisitedNodes; }
 
 	private:
@@ -164,7 +164,7 @@ public:
 	matrix_t m_block_2;
 	id_type  m_activityId;
 	id_type  m_workflowId;
-	int m_nVisitedNodes;
+	size_t m_nVisitedNodes;
 };
 
 

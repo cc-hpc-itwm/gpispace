@@ -323,7 +323,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 				  pRedToken  = queueRedTokens.pop();
 				  SDPA_LOG_DEBUG("Popped-up a RED token ...");
 
-				  if(  pRedToken->nVisitedNodes() < m_nTorusDim )
+				  if( pRedToken->nVisitedNodes() < m_nTorusDim )
 					  propagate(DOWN, pRedToken);
 
 				  Token::ptr_t pYellowToken = mapActId2YellowTokenPtr[m_wfid];
