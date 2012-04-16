@@ -44,6 +44,8 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/weak_ptr.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include <boost/utility.hpp>
 
@@ -74,8 +76,9 @@ namespace sdpa { namespace daemon {
 
 	  SDPA_DECLARE_LOGGER();
 
-	  // API
-	  virtual void start_fsm();
+	  const std::string& name() const { return Strategy::name(); }
+	  const unsigned int& rank() const { return m_nRank; }
+	  unsigned int& rank() { return m_nRank; }
 
 	  void start_agent( bool bUseReqModel, const bfs::path& bkpFile, const std::string& cfgFile = ""  ); // from cfg file!
 	  void start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile = ""  );
@@ -89,14 +92,85 @@ namespace sdpa { namespace daemon {
 	  virtual void shutdown_network();
 	  void stop();
 
+	  void addMaster(const agent_id_t& );
+	  void addMasters(const worker_id_list_t& );
+	  void removeMaster(const agent_id_t& masterId);
+	  void removeMasters(const worker_id_list_t& );
+
+	  sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
+
+	  // WE interface
+	  virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() );
+	  virtual bool cancel(const id_type & id, const reason_type & reason);
+	  virtual bool finished(const id_type & id, const result_type & result);
+	  virtual bool failed(const id_type & id, const result_type & result);
+	  virtual bool cancelled(const id_type & id);
+
+	  void setStage(const seda::Stage::Ptr& stage)
+	  {
+		  ptr_daemon_stage_ = stage ;
+	  }
+
+      virtual void print()
+      {
+          SDPA_LOG_DEBUG("The content of the JobManager is:");
+          ptr_job_man_->print();
+
+          SDPA_LOG_DEBUG("The content of the Scheduler is:");
+          ptr_scheduler_->print();
+      }
+
+      // should be overriden by the end components
+      // virtual void print_statistics (std::ostream & s) const {}
+
+      template <typename T>
+      T* create_workflow_engine()
+      {
+          T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
+          assert (pWfE);
+          ptr_workflow_engine_ = pWfE;
+          return pWfE;
+      }
+
+      void addCapability(const capability_t& cpb);
+      void getCapabilities(sdpa::capabilities_set_t& cpbset);
+
+protected:
+      virtual const std::string url() const {return std::string();}
+
+      virtual bool isTop() { return false; }
+
+      template <typename T>
+      void notifyMasters(const T&);
+
+      template <typename T>
+      void notifyWorkers(const T&);
+
+      void unsubscribe(const sdpa::agent_id_t&);
+      void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
+      bool isSubscriber(const sdpa::agent_id_t&);
+      bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
+
+      sdpa::util::Config& cfg() { return daemon_cfg_;}
+      void setDefaultConfiguration();
+
+	  virtual void start_fsm();
 	  virtual void perform(const seda::IEvent::Ptr&);
 	  virtual void schedule(const sdpa::job_id_t& job);
 
-	  bool is_configured(){ return m_bConfigOk; }
-	  bool is_stopped()   { return m_bStopped;  }
-	  bool is_started()   { return m_bStarted;  }
+	  bool isStarted(){ return m_bStarted;  }
+	  void setStarted(bool bVal = true){ m_bStarted = bVal; }
 
-	  void setDefaultConfiguration();
+	  bool isConfigured(){ return m_bConfigOk; }
+	  void setConfigured(bool bVal = true) { m_bConfigOk = bVal; }
+
+	  bool isStopped(){ return m_bStopped;  }
+	  void setStopped(bool bVal = true) { m_bStopped = bVal; }
+
+	  bool reuestsAllowed() { return m_bRequestsAllowed; }
+	  void setRequestsAllowed(bool bVal = true) { m_bRequestsAllowed = bVal; }
+
+	  const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
 	  // daemon actions
 	  virtual void action_configure( const sdpa::events::StartUpEvent& );
@@ -135,17 +209,13 @@ namespace sdpa { namespace daemon {
 	  virtual void requestJob(const MasterInfo& masterInfo);
 	  virtual void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 
+	  void create_workflow_engine( IWorkflowEngine* pWfEArg ) { ptr_workflow_engine_ = pWfEArg; }
+	  virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
+	  virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
+
 	  virtual sdpa::status_t getStatus() { throw std::runtime_error("not implemented by the generic daemon!"); }
 
 	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
-
-      // WE interface
-	  virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() );
-      virtual bool cancel(const id_type & id, const reason_type & reason);
-      virtual bool finished(const id_type & id, const result_type & result);
-      virtual void forward(const id_type & id, const result_type & result,  unsigned int rank );
-      virtual bool failed(const id_type & id, const result_type & result);
-      virtual bool cancelled(const id_type & id);
 
       virtual void serve_job(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id = sdpa::JobId::invalid_job_id() );
 
@@ -167,28 +237,15 @@ namespace sdpa { namespace daemon {
     		                  const unsigned int& rank = 0,
     		                  const sdpa::worker_id_t& agent_uuid  = "");
 
-      void getCapabilities(sdpa::capabilities_set_t& cpbset);
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
-
-      const std::string& name() const { return Strategy::name(); }
 
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
 
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
 
-      void setStage(const seda::Stage::Ptr& stage)
-      {
-    	  ptr_daemon_stage_ = stage ;
-      }
-
       virtual seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
       virtual seda::Stage::Ptr to_slave_stage() const { return ptr_to_slave_stage_ ; }
-
-      sdpa::util::Config& cfg() { return daemon_cfg_;}
-
-      const unsigned int& rank() const { return m_nRank; }
-      unsigned int& rank() { return m_nRank; }
 
       virtual Worker::worker_id_t getWorkerId(unsigned int rank);
 
@@ -201,8 +258,6 @@ namespace sdpa { namespace daemon {
       std::string gen_id() { JobId jobId; return jobId.str(); }
 
       void jobFailed(const job_id_t&, const std::string& reason);
-      const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
-      void addCapability(const capability_t& cpb);
 
       virtual void update_last_request_time();
       virtual bool requestsAllowed();
@@ -223,60 +278,12 @@ namespace sdpa { namespace daemon {
 
       friend class boost::serialization::access;
 
-      virtual void print()
-      {
-          SDPA_LOG_DEBUG("The content of the JobManager is:");
-          ptr_job_man_->print();
-
-          SDPA_LOG_DEBUG("The content of the Scheduler is:");
-          ptr_scheduler_->print();
-      }
-
-      // should be overriden by the end components
-      // virtual void print_statistics (std::ostream & s) const {}
-
-      template <typename T>
-      T* create_workflow_engine()
-      {
-          T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-          assert (pWfE);
-          ptr_workflow_engine_ = pWfE;
-          return pWfE;
-      }
-
-      void create_workflow_engine( IWorkflowEngine* pWfEArg ) { ptr_workflow_engine_ = pWfEArg; }
-      virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
-      virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
-      virtual bool isTop() { return false; }
-
-      virtual const std::string url() const {return std::string();}
-      //virtual const std::string masterName() const { return  std::string(); }
-
-      template <typename T>
-      void notifyMasters(const T&);
-
-      template <typename T>
-      void notifyWorkers(const T&);
-
-      void addMaster(const agent_id_t& );
-      void addMasters(const worker_id_list_t& );
-      void removeMaster(const agent_id_t& masterId);
-      void removeMasters(const worker_id_list_t& );
-
-      sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
-
-      void unsubscribe(const sdpa::agent_id_t&);
-      void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
-      bool isSubscriber(const sdpa::agent_id_t&);
-      bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
-
       bool isOwnCapability(const sdpa::capability_t& cpb)
       {
     	  lock_type lock_cpb(mtx_cpb_);
     	  sdpa::capabilities_set_t::iterator itOwnCcpb = m_capabilities.find(cpb);
     	  return (itOwnCcpb != m_capabilities.end());
       }
-protected:
 
        // observe workflow engine
        template <typename T>
@@ -314,51 +321,55 @@ protected:
            l->print_statistics( std::cerr );
        }
 
-        virtual Scheduler* create_scheduler(bool bUseReqModel)
-        {
+       virtual Scheduler* create_scheduler(bool bUseReqModel)
+       {
            return NULL;
-        }
+       }
 
-        JobManager::ptr_t ptr_job_man_;
-        Scheduler::ptr_t  ptr_scheduler_;
-        IWorkflowEngine*  ptr_workflow_engine_;
+       void backupJobManager(boost::archive::text_oarchive& oa) { oa << ptr_job_man_;}
+       void recoverJobManager(boost::archive::text_iarchive& ia) { ia >> ptr_job_man_; }
 
-        seda::Stage::Ptr  ptr_to_master_stage_;
-        seda::Stage::Ptr  ptr_to_slave_stage_;
+       void backupScheduler(boost::archive::text_oarchive& oa) { oa << ptr_scheduler_;}
+       void recoverScheduler(boost::archive::text_iarchive& ia) { ia >> ptr_scheduler_;}
 
-        sdpa::weak_ptr<seda::Stage> ptr_daemon_stage_;
+       mutex_type mtx_;
+       condition_type cond_can_stop_;
+       condition_type cond_can_start_;
 
-        sdpa::util::Config daemon_cfg_;
+       sdpa::master_info_list_t m_arrMasterInfo;
+       sdpa::subscriber_map_t m_listSubscribers;
 
-        unsigned int m_nRank;
-        unsigned int m_nCap; // maximum number of external jobs
-        sdpa::worker_id_t m_strAgentUID;
+private:
+       sdpa::weak_ptr<seda::Stage> ptr_daemon_stage_;
+       std::string m_to_master_stage_name_;
+       std::string m_to_slave_stage_name_;
+       seda::Stage::Ptr ptr_to_master_stage_;
+       seda::Stage::Ptr ptr_to_slave_stage_;
 
-        sdpa::util::time_type m_ullPollingInterval;
-        unsigned int m_nExternalJobs;
+       sdpa::util::Config daemon_cfg_;
 
-        std::string m_to_master_stage_name_;
-        std::string m_to_slave_stage_name_;
+       JobManager::ptr_t ptr_job_man_;
+       Scheduler::ptr_t ptr_scheduler_;
+       IWorkflowEngine* ptr_workflow_engine_;
 
-        mutex_type mtx_;
-        condition_type cond_can_stop_;
-        condition_type cond_can_start_;
+       unsigned int m_nRank;
+       unsigned int m_nCap; // maximum number of external jobs
+       sdpa::worker_id_t m_strAgentUID;
+       unsigned int m_nExternalJobs;
+       sdpa::util::time_type m_ullPollingInterval;
 
-        mutex_type mtx_subscriber_;
-        mutex_type mtx_master_;
-        mutex_type mtx_cpb_;
+       bool m_bRequestsAllowed;
+       bool m_bStarted;
+       bool m_bConfigOk;
+       bool m_bStopped;
 
-	protected:
-        bool m_bRequestsAllowed;
-        bool m_bStopped;
-        bool m_bStarted;
-        bool m_bConfigOk;
-        BackupService m_threadBkpService;
+       mutex_type mtx_subscriber_;
+       mutex_type mtx_master_;
+       mutex_type mtx_cpb_;
 
-        sdpa::util::time_type m_last_request_time;
-        sdpa::master_info_list_t m_arrMasterInfo;
-        sdpa::capabilities_set_t m_capabilities;
-        sdpa::subscriber_map_t m_listSubscribers;
+       BackupService m_threadBkpService;
+       sdpa::capabilities_set_t m_capabilities;
+       sdpa::util::time_type m_last_request_time;
   };
 }}
 
