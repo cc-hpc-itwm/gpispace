@@ -92,7 +92,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
     if(!ptr_scheduler_)
     {
         SDPA_LOG_INFO("Create the scheduler...");
-        sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler(bUseReqModel));
+        sdpa::daemon::Scheduler::ptr_t ptrSched(createScheduler(bUseReqModel));
         ptr_scheduler_ = ptrSched;
     }
 
@@ -157,7 +157,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
     if(!ptr_scheduler_)
     {
         SDPA_LOG_INFO("Create the scheduler...");
-        sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler(bUseReqModel));
+        sdpa::daemon::Scheduler::ptr_t ptrSched(createScheduler(bUseReqModel));
         ptr_scheduler_ = ptrSched;
     }
 
@@ -222,7 +222,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 	if(!ptr_scheduler_)
 	{
 		SDPA_LOG_INFO("Create the scheduler...");
-		sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler(bUseReqModel));
+		sdpa::daemon::Scheduler::ptr_t ptrSched(createScheduler(bUseReqModel));
 		ptr_scheduler_ = ptrSched;
 	}
 
@@ -400,43 +400,43 @@ void GenericDaemon::shutdown_network()
 
 void GenericDaemon::stop()
 {
-  SDPA_LOG_INFO("Shutting down...");
+	SDPA_LOG_INFO("Shutting down...");
 
-  SDPA_LOG_INFO("Stop the scheduler now!");
-  scheduler()->stop();
-  SDPA_LOG_INFO("The scheduler was stopped!");
+	SDPA_LOG_INFO("Stop the scheduler now!");
+	scheduler()->stop();
+	SDPA_LOG_INFO("The scheduler was stopped!");
 
-  SDPA_LOG_INFO("Stop the backup service now!");
-  m_threadBkpService.stop();
-  SDPA_LOG_INFO("The backup service was stopped!");
+	SDPA_LOG_INFO("Stop the backup service now!");
+	m_threadBkpService.stop();
+	SDPA_LOG_INFO("The backup service was stopped!");
 
-  SDPA_LOG_INFO("Shutdown the network...");
-  shutdown_network();
+	SDPA_LOG_INFO("Shutdown the network...");
+	shutdown_network();
 
-  // stop the daemon stage
-  SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
-  seda::StageRegistry::instance().lookup(name())->stop();
+	// stop the daemon stage
+	SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
+	seda::StageRegistry::instance().lookup(name())->stop();
 
-  //  stop the network stage
-  SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
-  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+	//  stop the network stage
+	SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
+	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
 
-  SDPA_LOG_INFO("Removing the network stage...");
-  // remove the network stage
-  seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+	SDPA_LOG_INFO("Removing the network stage...");
+	// remove the network stage
+	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
 
-  SDPA_LOG_INFO("Removing the daemon stage...");
-  // remove the daemon stage
-  seda::StageRegistry::instance().remove(name());
+	SDPA_LOG_INFO("Removing the daemon stage...");
+	// remove the daemon stage
+	seda::StageRegistry::instance().remove(name());
 
-  if ( hasWorkflowEngine() )
-  {
-    SDPA_LOG_DEBUG("Deleting the workflow engine ...");
-    delete ptr_workflow_engine_;
-    ptr_workflow_engine_ = NULL;
-  }
+	if ( hasWorkflowEngine() )
+	{
+		SDPA_LOG_DEBUG("Deleting the workflow engine ...");
+		delete ptr_workflow_engine_;
+		ptr_workflow_engine_ = NULL;
+	}
 
-  SDPA_LOG_INFO("The daemon "<<name()<<" was successfully stopped!");
+	SDPA_LOG_INFO("The daemon "<<name()<<" was successfully stopped!");
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -1574,7 +1574,7 @@ void GenericDaemon::addWorker( const Worker::worker_id_t& workerId,
 	}
 }
 
-void GenericDaemon::update_last_request_time()
+void GenericDaemon::updateLastRequestTime()
 {
     sdpa::util::time_type current_time = sdpa::util::now();
     sdpa::util::time_type difftime = current_time - m_last_request_time;
@@ -1606,25 +1606,25 @@ bool GenericDaemon::requestsAllowed()
 
 void GenericDaemon::activityFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
 {
-  if( hasWorkflowEngine() )
-  {
-	  SDPA_LOG_INFO("worker job failed: " << jobId);
-      workflowEngine()->failed( jobId.str(), reason );
+	if( hasWorkflowEngine() )
+	{
+		SDPA_LOG_INFO("worker job failed: " << jobId);
+		workflowEngine()->failed( jobId.str(), reason );
 
-      try {
-    	  jobManager()->deleteJob(jobId);
-      }
-      catch(const JobNotDeletedException& ex)
-      {
-    	  SDPA_LOG_WARN("Could not find the job "<<jobId.str()<<" ...");
-      }
-  }
-  else
-  {
-      DLOG(TRACE, "Sent JobFailedEvent to self for the job"<<jobId);
-      JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(worker_id, name(), jobId, reason ));
-      sendEventToSelf(pEvtJobFailed);
-  }
+		try {
+			jobManager()->deleteJob(jobId);
+		}
+		catch(const JobNotDeletedException& ex)
+		{
+			SDPA_LOG_WARN("Could not find the job "<<jobId.str()<<" ...");
+		}
+	}
+	else
+	{
+		DLOG(TRACE, "Sent JobFailedEvent to self for the job"<<jobId);
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(worker_id, name(), jobId, reason ));
+		sendEventToSelf(pEvtJobFailed);
+	}
 }
 
 void GenericDaemon::activityFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
@@ -1680,7 +1680,7 @@ void GenericDaemon::requestJob(const MasterInfo& masterInfo)
 		sendEventToMaster(pEvtReq);
 	}
 
-    update_last_request_time();
+	updateLastRequestTime();
 }
 
 void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)

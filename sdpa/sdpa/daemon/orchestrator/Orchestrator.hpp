@@ -77,7 +77,7 @@ namespace daemon {
 		void notifySubscribers(const T& ptrEvt);
 
 	  private:
-		Scheduler* create_scheduler(bool bUseReqModel)
+		Scheduler* createScheduler(bool bUseReqModel)
 		{
 		    DLOG(TRACE, "creating orchestrator scheduler...");
 		    return new SchedulerOrch(this, bUseReqModel);
