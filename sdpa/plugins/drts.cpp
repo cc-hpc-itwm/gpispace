@@ -1220,6 +1220,7 @@ private:
 
 EXPORT_FHG_PLUGIN( drts
                  , DRTSImpl
+                 , "DRTS"
                  , "provides access to the distributed runtime-system"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

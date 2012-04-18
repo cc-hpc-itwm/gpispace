@@ -62,6 +62,7 @@ private:
 
 EXPORT_FHG_PLUGIN( wfe
                  , WFEImpl_test
+                 , "WFE"
                  , "provides access to a workflow-engine"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

@@ -14,6 +14,8 @@ struct fhg_plugin_descriptor_t
   const char *featurekey;
   const char *buildrev;
   const char *compiler;
+  // >= version 1.1
+  const char *provides;
 };
 
 #endif

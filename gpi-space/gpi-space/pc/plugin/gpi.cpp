@@ -211,6 +211,7 @@ private:
 
 EXPORT_FHG_PLUGIN( gpi
                  , GpiPluginImpl
+                 , "GPI"
                  , "Plugin to access the gpi-space"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

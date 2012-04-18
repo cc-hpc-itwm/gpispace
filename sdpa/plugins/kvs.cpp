@@ -88,6 +88,7 @@ private:
 
 EXPORT_FHG_PLUGIN( kvs
                  , KeyValueStorePlugin
+                 , "kvs"
                  , "provides access to a key value store"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.2"

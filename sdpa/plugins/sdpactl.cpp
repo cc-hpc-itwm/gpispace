@@ -142,6 +142,7 @@ private:
 
 EXPORT_FHG_PLUGIN( sdpactl
                  , ControlImpl
+                 , "sdpactl"
                  , "provides control functions for SDPA"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
