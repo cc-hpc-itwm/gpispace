@@ -64,9 +64,9 @@ const std::string USER("user");
 	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;
 
-	  virtual void workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t&, const std::string& result /*or reason*/ ) = 0;
-	  virtual void workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
-	  virtual void workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id ) = 0;
+	  virtual void activityFailed(const Worker::worker_id_t& worker_id, const job_id_t&, const std::string& result /*or reason*/ ) = 0;
+	  virtual void activityFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
+	  virtual void activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id ) = 0;
 
 	  virtual const std::string& name() const = 0;
 	  //virtual bool is_registered() const = 0;

@@ -162,8 +162,6 @@ namespace sdpa {
     	  if( isConfigured() )
     	  {
     		  LOG(INFO, "Starting the scheduler...");
-    		  //sdpa::daemon::Scheduler::ptr_t ptrSched(this->create_scheduler());
-    		  //ptr_scheduler_ = ptrSched;
     		  scheduler()->start(this);
 
     		  // start the network stage
@@ -265,7 +263,7 @@ namespace sdpa {
     	  process_event(*pEvent);
       }
 
-      sdpa::status_t DaemonFSM::getStatus()
+      sdpa::status_t DaemonFSM::getCurrentState()
       {
     	  //SDPA_LOG_INFO("Look for the status of the job "<<id());
     	  sdpa::status_t status(agent_state_names[*current_state()]);

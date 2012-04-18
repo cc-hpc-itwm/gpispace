@@ -245,6 +245,8 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
 
 const int NMAXFAIL=5;
 
+template <typename T> class FaultyAgentFactory;
+
 class FaultyAgent : public sdpa::daemon::Agent
 {
 public:
@@ -323,11 +325,35 @@ public:
 		}
 	}
 
+	template <typename T> friend class FaultyAgentFactory;
+
   private:
 	int nSuccFailures_;
 	std::string strWorkflow_;
 	boost::thread threadClient;
 	bool bForceExit_;
+};
+
+template <typename T>
+struct FaultyAgentFactory
+{
+	   static FaultyAgent::ptr_t create( const std::string& name,
+								   const std::string& url,
+								   const sdpa::master_info_list_t& arrMasterNames,
+								   const unsigned int capacity )
+	   {
+		   LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
+		   FaultyAgent::ptr_t pAgent( new FaultyAgent( name, url, arrMasterNames, capacity ) );
+		   pAgent->create_workflow_engine<T>();
+
+		   seda::IEventQueue::Ptr ptrEvtQueue(new seda::EventQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
+		   seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtQueue, pAgent, 1) );
+
+		   pAgent->setStage(daemon_stage);
+		   seda::StageRegistry::instance().insert(daemon_stage);
+
+		   return pAgent;
+	   }
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
@@ -360,10 +386,8 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 
 	// create faulty agent
 	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-	FaultyAgent::ptr_t ptrAgent1( new FaultyAgent( "agent_1", addrAgent1, arrAgent1MasterInfo, MAX_CAP, true, m_strWorkflow) );
-	seda::Stage::Ptr daemon_stage( new seda::Stage("agent_1", ptrAgent1, 1) );
-	ptrAgent1->setStage(daemon_stage);
-	seda::StageRegistry::instance().insert(daemon_stage);
+	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent1, arrAgent0MasterInfo, MAX_CAP );
+
 	ptrAgent1->start_agent(false, strBackupAgent1);
 
 	ptrAgent1->shutdown();

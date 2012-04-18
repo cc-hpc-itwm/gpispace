@@ -92,7 +92,7 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
 
       if( ptr_comm_handler_ )
       {
-          ptr_comm_handler_->workerJobFailed(worker_id, jobId, "Worker timeout detected!" );
+          ptr_comm_handler_->activityFailed(worker_id, jobId, "Worker timeout detected!" );
       }
       else
       {
@@ -342,7 +342,7 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
   catch(const NoWorkerFoundException&)
   {
 	  // put the job back into the queue
-      ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
+      ptr_comm_handler_->activityFailed("", jobId, "No worker available!");
       SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
   }
 }
@@ -466,7 +466,7 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         	  catch(const NoWorkerFoundException& ex1)
         	  {
         		  LOG(WARN, "No worker meets the requirements for the job " << jobId.str()<<" found!");
-        		  ptr_comm_handler_->workerJobFailed("", jobId, "No worker meets the requirements for this job!");
+        		  ptr_comm_handler_->activityFailed("", jobId, "No worker meets the requirements for this job!");
         		  return false;
         	  }
           }
@@ -481,7 +481,7 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
   else
   {
       //SDPA_LOG_DEBUG("Could not schedule job: no worker available: " << jobId);
-      ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
+      ptr_comm_handler_->activityFailed("", jobId, "No worker available!");
       return false;
   }
 
@@ -778,7 +778,7 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
 	{
 		LOG(ERROR, "nre scheduler does not have a comm-handler!");
 		result_type output_fail;
-		ptr_comm_handler_->workerJobFailed("", jobId, output_fail);
+		ptr_comm_handler_->activityFailed("", jobId, output_fail);
 		return;
 	}
 
@@ -809,14 +809,14 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
 		DLOG(TRACE, "activity finished: " << act_id);
 		// notify the gui
 		// and then, the workflow engine
-		ptr_comm_handler_->workerJobFinished("", jobId, result.second);
+		ptr_comm_handler_->activityFinished("", jobId, result.second);
 	}
 	else if( result.first == ACTIVITY_FAILED )
 	{
 		DLOG(TRACE, "activity failed: " << act_id);
 		// notify the gui
 		// and then, the workflow engine
-		ptr_comm_handler_->workerJobFailed("", jobId, result.second);
+		ptr_comm_handler_->activityFailed("", jobId, result.second);
 	}
 	else if( result.first == ACTIVITY_CANCELLED )
 	{
@@ -824,12 +824,12 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
 
 		// notify the gui
 		// and then, the workflow engine
-		ptr_comm_handler_->workerJobCancelled("", jobId);
+		ptr_comm_handler_->activityCancelled("", jobId);
 	}
 	else
 	{
 		SDPA_LOG_ERROR("Invalid status of the executed activity received from the worker!");
-		ptr_comm_handler_->workerJobFailed("", jobId, result.second);
+		ptr_comm_handler_->activityFailed("", jobId, result.second);
 	}
 }
 

@@ -1250,13 +1250,6 @@ void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
 	}
 }
 
-void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
-{
-	DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
-	workflowEngine()->failed( jobId.str(), reason );
-	jobManager()->deleteJob(jobId);
-}
-
 const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
 	try {
@@ -1285,18 +1278,6 @@ void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string&
 	else
 	{
 		LOG(WARN, "would cancel " << workflowId << " on myself");
-	}
-}
-
-void GenericDaemon::activityCancelled(const id_type& actId, const std::string& )
-{
-	if (hasWorkflowEngine())
-	{
-		ptr_workflow_engine_->cancelled( actId );
-	}
-	else
-	{
-		LOG(WARN, "cannot notify cancelled(" << actId << "): no workflow engine!");
 	}
 }
 
@@ -1623,7 +1604,7 @@ bool GenericDaemon::requestsAllowed()
   return ( diff_time > m_ullPollingInterval ) && ( ptr_job_man_->countMasterJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
 }
 
-void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
+void GenericDaemon::activityFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
 {
   if( hasWorkflowEngine() )
   {
@@ -1646,7 +1627,7 @@ void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const 
   }
 }
 
-void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
+void GenericDaemon::activityFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
 {
 	if( hasWorkflowEngine() )
 	{
@@ -1668,7 +1649,7 @@ void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, cons
 	}
 }
 
-void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
+void GenericDaemon::activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
 {
 	if( hasWorkflowEngine() )
 	{
@@ -1783,7 +1764,7 @@ void GenericDaemon::removeMaster( const agent_id_t& id )
 		m_arrMasterInfo.erase(it);
 }
 
-void GenericDaemon::removeMasters(const worker_id_list_t& listMasters)
+void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
 {
 	lock_type lock(mtx_master_);
 	BOOST_FOREACH(const sdpa::agent_id_t& id, listMasters)

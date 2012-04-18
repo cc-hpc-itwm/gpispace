@@ -108,16 +108,16 @@ namespace sdpa {
 
 				void start_fsm() { start(); }
 
-				virtual void action_configure(const sdpa::events::StartUpEvent& );
-				virtual void action_config_ok(const sdpa::events::ConfigOkEvent& );
-				virtual void action_config_nok(const sdpa::events::ConfigNokEvent& );
-				virtual void action_interrupt(const sdpa::events::InterruptEvent& );
-				virtual void action_delete_job(const sdpa::events::DeleteJobEvent& );
-				virtual void action_request_job(const sdpa::events::RequestJobEvent& );
-				virtual void action_submit_job(const sdpa::events::SubmitJobEvent& );
-				virtual void action_config_request(const sdpa::events::ConfigRequestEvent& );
-				virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
-				virtual void action_error_event(const sdpa::events::ErrorEvent& );
+				void action_configure(const sdpa::events::StartUpEvent& );
+				void action_config_ok(const sdpa::events::ConfigOkEvent& );
+				void action_config_nok(const sdpa::events::ConfigNokEvent& );
+				void action_interrupt(const sdpa::events::InterruptEvent& );
+				void action_delete_job(const sdpa::events::DeleteJobEvent& );
+				void action_request_job(const sdpa::events::RequestJobEvent& );
+				void action_submit_job(const sdpa::events::SubmitJobEvent& );
+				void action_config_request(const sdpa::events::ConfigRequestEvent& );
+				void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
+				void action_error_event(const sdpa::events::ErrorEvent& );
 
 				// event handlers
 				void handleStartUpEvent(const sdpa::events::StartUpEvent* );
@@ -131,7 +131,7 @@ namespace sdpa {
 				void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent* );
 				void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
-				sdpa::status_t getStatus();
+				sdpa::status_t getCurrentState();
 
 				template <class Archive>
 				void serialize(Archive& ar, const unsigned int)
