@@ -199,6 +199,7 @@
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="in" type="port_type"/>
         <xsd:element name="out" type="port_type"/>
+        <xsd:element name="inout" type="port_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="1" maxOccurs="1">
         <xsd:element name="expression" type="xsd:string"/>
@@ -225,6 +226,7 @@
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
         <xsd:element name="connect-out" type="connect_type"/>
+        <xsd:element name="connect-inout" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
         <xsd:element name="place-map" type="place_map_type"/>
         <xsd:element name="condition" type="xsd:string"/>
