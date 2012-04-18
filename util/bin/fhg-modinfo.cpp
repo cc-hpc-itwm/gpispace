@@ -16,7 +16,9 @@ int main(int ac, char **av)
     {
       fhg::core::plugin_t::ptr_t p (fhg::core::plugin_t::create(av[i], true));
 
-      if (std::string(FHG_PLUGIN_API_VERSION) != p->descriptor()->magic)
+      const std::string api_used_by_plugin(p->descriptor()->magic);
+
+      if (api_used_by_plugin != FHG_PLUGIN_API_VERSION)
       {
         std::cout << "*** WARNING: version magics differ, this module might be incompatible!" << std::endl;
       }
@@ -29,12 +31,16 @@ int main(int ac, char **av)
       std::cout << "built:     " << p->descriptor()->tstamp << std::endl;
       std::cout << "license:   " << p->descriptor()->license << std::endl;
       std::cout << "depends:   " << p->descriptor()->depends << std::endl;
+      if (api_used_by_plugin > "1.0")
+      {
+        std::cout << "provides:  " << p->descriptor()->provides << std::endl;
+      }
       std::cout << "key:       " << p->descriptor()->featurekey << std::endl;
       std::cout << "magic:     " << p->descriptor()->magic << std::endl;
       std::cout << "rev:       " << p->descriptor()->buildrev << std::endl;
       std::cout << "compiler:  " << p->descriptor()->compiler << std::endl;
 
-      if ((i+1) < ac) std::cout << std::endl;
+      if ((i+1) < ac) std::cout  << std::endl;
     }
     catch (std::exception const &ex)
     {
