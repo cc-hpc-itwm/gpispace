@@ -310,6 +310,7 @@ private:
 
 EXPORT_FHG_PLUGIN( sdpac
                  , SDPACImpl
+                 , "sdpac"
                  , "provides the client side interface to the SDPA"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

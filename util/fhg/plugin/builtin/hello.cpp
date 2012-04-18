@@ -35,6 +35,7 @@ private:
 
 EXPORT_FHG_PLUGIN( hello
                  , HelloImpl
+                 , ""
                  , "say hello"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "v0.0.1"

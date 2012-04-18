@@ -102,7 +102,7 @@ namespace sdpa {
         //void requestRegistration(const MasterInfo& masterInfo);
 
         private:
-        Scheduler* create_scheduler(bool bUseReqModel)
+        Scheduler* createScheduler(bool bUseReqModel)
         {
         	DLOG(TRACE, "creating agent scheduler...");
         	return new AgentScheduler(this, bUseReqModel);

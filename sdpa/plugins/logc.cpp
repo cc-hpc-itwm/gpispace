@@ -89,6 +89,7 @@ void fhg_emit_log_message ( const char *filename
 
 EXPORT_FHG_PLUGIN( logc
                  , LogcPluginImpl
+                 , ""
                  , "provides access to the logging client"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

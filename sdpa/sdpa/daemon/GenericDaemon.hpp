@@ -149,7 +149,7 @@ namespace sdpa { namespace daemon {
 	  bool reuestsAllowed() { return m_bRequestsAllowed; }
 	  void setRequestsAllowed(bool bVal = true) { m_bRequestsAllowed = bVal; }
 
-      virtual void update_last_request_time();
+      virtual void updateLastRequestTime();
       virtual bool requestsAllowed();
 
       virtual sdpa::status_t getCurrentState() { throw std::runtime_error("not implemented by the generic daemon!"); }
@@ -202,7 +202,7 @@ namespace sdpa { namespace daemon {
 
 	  // job
 	  virtual void schedule(const sdpa::job_id_t& job);
-	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
+	  virtual bool isScheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
 	  const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
 	  // event communication
@@ -218,10 +218,9 @@ namespace sdpa { namespace daemon {
 	  // workflow engine
 	  virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
 	  virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
-	  void create_workflow_engine( IWorkflowEngine* pWfEArg ) { ptr_workflow_engine_ = pWfEArg; }
 
 	  template <typename T>
-	  T* create_workflow_engine()
+	  T* createWorkflowEngine()
 	  {
 		  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
 		  assert (pWfE);
@@ -260,7 +259,7 @@ namespace sdpa { namespace daemon {
       // scheduler
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
       void setScheduler(Scheduler* p) {ptr_scheduler_ = Scheduler::ptr_t(p);}
-      virtual Scheduler* create_scheduler(bool bUseReqModel)
+      virtual Scheduler* createScheduler(bool bUseReqModel)
 	  {
 		  return NULL;
 	  }
@@ -310,7 +309,7 @@ namespace sdpa { namespace daemon {
     	  ar & ptr_job_man_;
     	  ar & ptr_scheduler_;
     	  ar & ptr_workflow_engine_;
-    	  ar & m_arrMasterInfo; //boost::serialization::make_nvp("url_", m_arrMasterInfo);
+    	  ar & m_arrMasterInfo;
     	  ar & m_listSubscribers;
       }
 

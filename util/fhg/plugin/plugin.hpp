@@ -32,7 +32,7 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 #define FHG_ON_PLUGIN_PREUNLOAD(p) void fhg_on_plugin_preunload(std::string const &p)
 
 #ifdef FHG_STATIC_PLUGIN
-#  define EXPORT_FHG_PLUGIN(name, cls, desc, author, version, license, depends, key) \
+#  define EXPORT_FHG_PLUGIN(name, cls, provides, desc, author, version, license, depends, key) \
   const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name()   \
   {                                                                     \
     static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =       \
@@ -46,7 +46,8 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
         depends,                                                        \
         key,                                                            \
         FHG_PLUGIN_BUILD_REV,                                           \
-        FHG_PLUGIN_BUILD_COMPILER                                       \
+        FHG_PLUGIN_BUILD_COMPILER,                                      \
+        provides                                                        \
       };                                                                \
     return &fhg_plugin_descriptor_##name;                               \
   }                                                                     \
@@ -57,7 +58,7 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 
 #else
 
-#  define EXPORT_FHG_PLUGIN(name, cls, desc, author, version, license, depends, key) \
+#  define EXPORT_FHG_PLUGIN(name, cls, provides, desc, author, version, license, depends, key) \
   extern "C"                                                            \
   {                                                                     \
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor()        \
@@ -73,7 +74,8 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
           depends,                                                      \
           key,                                                          \
           FHG_PLUGIN_BUILD_REV,                                         \
-          FHG_PLUGIN_BUILD_COMPILER                                     \
+          FHG_PLUGIN_BUILD_COMPILER,                                    \
+          provides                                                      \
         };                                                              \
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \

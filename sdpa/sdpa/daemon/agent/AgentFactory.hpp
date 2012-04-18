@@ -46,7 +46,7 @@ namespace daemon {
     {
       LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
-      pAgent->create_workflow_engine<T>();
+      pAgent->createWorkflowEngine<T>();
 
       seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
       seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );

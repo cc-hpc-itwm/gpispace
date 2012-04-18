@@ -139,6 +139,7 @@ private:
 
 EXPORT_FHG_PLUGIN( ufbmig_test
                  , UfBMigTest
+                 , ""
                  , "provides test cases for the ufbmig_backend"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

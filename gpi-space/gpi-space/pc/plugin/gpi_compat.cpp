@@ -524,6 +524,7 @@ int fvmGetNodeCount()
 
 EXPORT_FHG_PLUGIN( gpi_compat
                  , GPICompatPluginImpl
+                 , ""
                  , "Plugin to access the gpi-space (compatibility)"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

@@ -117,6 +117,7 @@ private:
 
 EXPORT_FHG_PLUGIN( net
                  , PeerImpl
+                 , "net"
                  , "provides access to the peer infrastructure"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

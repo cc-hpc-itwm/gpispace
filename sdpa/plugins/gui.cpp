@@ -146,6 +146,7 @@ private:
 
 EXPORT_FHG_PLUGIN( gui
                  , GuiObserverPlugin
+                 , "gui"
                  , "provides an gui-observer"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

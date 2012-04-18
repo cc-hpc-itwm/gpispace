@@ -137,6 +137,7 @@ private:
 
 EXPORT_FHG_PLUGIN( stats
                  , StatisticsImpl
+                 , "stats"
                  , "a simple statistics plugin"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "v0.0.1"

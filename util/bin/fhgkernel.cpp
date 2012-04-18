@@ -7,7 +7,9 @@
 #include <unistd.h>
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <signal.h>
 
 #include <vector>
@@ -102,6 +104,7 @@ void noncrit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 
 // END OF BORROWED CODE
 
+static const int EX_STILL_RUNNING = 4;
 static fhg::core::kernel_t *kernel = 0;
 
 static void shutdown_kernel ()
@@ -219,12 +222,16 @@ int main(int ac, char **av)
   std::vector<std::string> config_vars;
   bool keep_going (false);
   std::string state_path;
+  std::string pidfile;
+  bool daemonize (false);
 
   desc.add_options()
     ("help,h", "this message")
     ("verbose,v", "be verbose")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
     ("state,S", po::value<std::string>(&state_path), "state directory to use")
+    ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
+    ("daemonize", "daemonize after all checks were successful")
     ( "keep-going,k", "just log errors, but do not refuse to start")
     ( "load,l"
     , po::value<std::vector<std::string> >(&mods_to_load)
@@ -259,11 +266,80 @@ int main(int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  kernel = new fhg::core::kernel_t (state_path);
+  if (vm.count("daemonize"))
+    daemonize = true;
+
+  keep_going = vm.count("keep-going") != 0;
+
+  int pidfile_fd = -1;
+
+  if (not pidfile.empty())
+  {
+    pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
+    if (pidfile_fd < 0)
+    {
+      LOG( ERROR, "could not open pidfile for writing: "
+         << strerror(errno)
+         );
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  // everything is fine so far, daemonize
+  if (daemonize)
+  {
+    if (pid_t child = fork())
+    {
+      if (child == -1)
+      {
+        LOG(ERROR, "could not fork: " << strerror(errno));
+        exit(EXIT_FAILURE);
+      }
+      else
+      {
+        exit (EXIT_SUCCESS);
+      }
+    }
+    setsid();
+    close(0); close(1); close(2);
+    int fd = open("/dev/null", O_RDWR);
+    if (-1 == dup(fd))
+    {
+      LOG(WARN, "could not duplicate /dev/null to stdout: " << strerror(errno));
+    }
+    if (-1 == dup(fd))
+    {
+      LOG(WARN, "could not duplicate /dev/null to stdout: " << strerror(errno));
+    }
+  }
+
+  if (pidfile_fd >= 0)
+  {
+    if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+    {
+      LOG( ERROR, "could not lock pidfile: "
+         << strerror(errno)
+         );
+      exit(EX_STILL_RUNNING);
+    }
+
+    char buf[32];
+    if (0 != ftruncate(pidfile_fd, 0))
+    {
+      LOG(WARN, "could not truncate pidfile: " << strerror(errno));
+    }
+    snprintf(buf, sizeof(buf), "%d\n", getpid());
+    if (write(pidfile_fd, buf, strlen(buf)) <= 0)
+    {
+      LOG(ERROR, "could not write pid: " << strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+    fsync(pidfile_fd);
+  }
 
   install_signal_handler();
 
-  keep_going = vm.count("keep-going") != 0;
+  kernel = new fhg::core::kernel_t (state_path);
 
   BOOST_FOREACH (std::string const & p, config_vars)
   {
@@ -299,6 +375,7 @@ int main(int ac, char **av)
   }
 
   atexit(&shutdown_kernel);
+
   int rc = kernel->run();
   MLOG(TRACE, "shutting down... (" << rc << ")");
   MLOG(TRACE, "killing children...");
