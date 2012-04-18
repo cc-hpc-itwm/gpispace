@@ -22,6 +22,7 @@
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
 #include <seda/EventPrioQueue.hpp>
+#include <seda/EventQueue.hpp>
 #include <typeinfo>
 #include <vector>
 #include <string>

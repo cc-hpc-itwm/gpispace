@@ -83,7 +83,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     //put the job into the state Finished or Cancelled
     Job::ptr_t pJob;
     try {
-        pJob = ptr_job_man_->findJob(pEvt->job_id());
+        pJob = jobManager()->findJob(pEvt->job_id());
         pJob->JobFinished(pEvt);
         SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
     }
@@ -105,7 +105,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
             if( hasWorkflowEngine() )
             {
                 SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<act_id<<" finished");
-                ptr_workflow_engine_->finished(act_id, output);
+                workflowEngine()->finished(act_id, output);
             }
             else
             {
@@ -115,7 +115,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
             try {
                 SDPA_LOG_DEBUG("Remove job "<<act_id<<" from the worker "<<worker_id);
-                ptr_scheduler_->deleteWorkerJob ( worker_id, act_id );
+                scheduler()->deleteWorkerJob ( worker_id, act_id );
             }
             catch(WorkerNotFoundException const &)
             {
@@ -134,7 +134,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
             {
                 try {
                     //delete it also from job_map_
-                    ptr_job_man_->deleteJob(act_id);
+                    jobManager()->deleteJob(act_id);
                 }
                 catch(JobNotDeletedException const &)
                 {
@@ -181,7 +181,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
     //put the job into the state Failed or Cancelled
     Job::ptr_t pJob;
     try {
-        pJob = ptr_job_man_->findJob(pEvt->job_id());
+        pJob = jobManager()->findJob(pEvt->job_id());
         pJob->JobFailed(pEvt);
         SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
     }
@@ -204,7 +204,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
             if( hasWorkflowEngine() )
             {
                 SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" failed");
-                ptr_workflow_engine_->failed(actId, output);
+                workflowEngine()->failed(actId, output);
             }
             else
             {
@@ -214,7 +214,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
             try {
                 SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker "<<worker_id<<"'s queues");
-                ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
+                scheduler()->deleteWorkerJob(worker_id, pJob->id());
             }
             catch(const WorkerNotFoundException&)
             {
@@ -229,7 +229,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
             {
                 try {
                     //delete it also from job_map_
-                    ptr_job_man_->deleteJob(pEvt->job_id());
+                    jobManager()->deleteJob(pEvt->job_id());
                 }
                 catch(const JobNotDeletedException&)
                 {
@@ -253,19 +253,19 @@ void Orchestrator::cancelNotRunning (sdpa::job_id_t const & job)
 {
   try
   {
-    Job::ptr_t pJob(ptr_job_man_->findJob(job));
+    Job::ptr_t pJob(jobManager()->findJob(job));
 
     // update the job status to "Cancelled" we don't have an ack
     sdpa::events::CancelJobAckEvent cae;
     pJob->CancelJobAck(&cae);
-    ptr_scheduler_->delete_job (job);
+    scheduler()->delete_job (job);
 
     try
     {
     	if(hasWorkflowEngine())
     	{
-    		ptr_workflow_engine_->cancelled(job);
-    		ptr_job_man_->deleteJob(job);
+    		workflowEngine()->cancelled(job);
+    		jobManager()->deleteJob(job);
     	}
     }
     catch (std::exception const & ex)
@@ -287,7 +287,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
   try
   {
-    Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+    Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
 
     // change the job status to "Cancelling"
     pJob->CancelJob(pEvt);
@@ -355,7 +355,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
     try
     {
-        Job::ptr_t pJob(ptr_job_man_->findJob(pEvt->job_id()));
+        Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
 
         // update the job status to "Cancelled"
         pJob->CancelJobAck(pEvt);
@@ -381,7 +381,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
             try
             {
-                ptr_job_man_->deleteJob(pEvt->job_id());
+                jobManager()->deleteJob(pEvt->job_id());
             }
             catch(const JobNotDeletedException&)
             {
@@ -399,7 +399,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
         try
         {
-            ptr_workflow_engine_->cancelled(pEvt->job_id());
+            workflowEngine()->cancelled(pEvt->job_id());
         }
         catch (std::exception const & ex)
         {
@@ -411,7 +411,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         try
         {
             LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
-            ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
+            scheduler()->deleteWorkerJob(worker_id, pEvt->job_id());
         }
         catch (const WorkerNotFoundException&)
         {
@@ -432,7 +432,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         // delete the job completely from the job manager
         try
         {
-            ptr_job_man_->deleteJob(pEvt->job_id());
+            jobManager()->deleteJob(pEvt->job_id());
         }
         catch(const JobNotDeletedException&)
         {
@@ -444,7 +444,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
 {
     try {
-        Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+        Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
         pJob->RetrieveJobResults(pEvt, this);
     }
     catch(const JobNotFoundException&)
@@ -466,11 +466,13 @@ void Orchestrator::backup( std::ostream& os )
         oa.register_type(static_cast<JobManager*>(NULL));
         oa.register_type(static_cast<JobImpl*>(NULL));
         oa.register_type(static_cast<JobFSM*>(NULL));
-        oa << ptr_job_man_;
+        //oa << ptr_job_man_;
+        backupJobManager(oa);
 
         oa.register_type(static_cast<SchedulerOrch*>(NULL));
         oa.register_type(static_cast<SchedulerImpl*>(NULL));
-        oa<<ptr_scheduler_;
+        //oa<<ptr_scheduler_;
+        backupScheduler(oa);
 
         /*oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
         oa << ptr_workflow_engine_;*/
@@ -493,14 +495,16 @@ void Orchestrator::recover( std::istream& is )
       ia.register_type(static_cast<JobImpl*>(NULL));
       ia.register_type(static_cast<JobFSM*>(NULL));
       // restore the schedule from the archive
-      ia >> ptr_job_man_;
+      //ia >> ptr_job_man_;
+      recoverJobManager(ia);
 
       //SDPA_LOG_INFO("Job manager after recovery: \n");
-      //ptr_job_man_->print();
+      //jobManager()->print();
 
       ia.register_type(static_cast<SchedulerOrch*>(NULL));
       ia.register_type(static_cast<SchedulerImpl*>(NULL));
-      ia>> ptr_scheduler_;
+      //ia>> ptr_scheduler_;
+      recoverScheduler(ia);
 
       // should ignore the workflow engine recovery,
       // since it is not always possible to recover it

@@ -49,24 +49,27 @@ GenericDaemon::GenericDaemon( 	const std::string name,
 								const master_info_list_t arrMasterInfo,
 								unsigned int cap,
 								unsigned int rank )
-      : Strategy(name),
-        SDPA_INIT_LOGGER(name),
+      :	Strategy(name),
+       	SDPA_INIT_LOGGER(name),
+        m_arrMasterInfo(arrMasterInfo),
+        m_to_master_stage_name_(name+".net"),
+        m_to_slave_stage_name_ (name+".net"),
+
         ptr_job_man_(new JobManager(name)),
         ptr_scheduler_(),
         ptr_workflow_engine_(NULL),
+
         m_nRank(rank),
         m_nCap(cap),
         m_strAgentUID(id_generator::instance().next()),
         m_nExternalJobs(0),
-        m_to_master_stage_name_(name+".net"),
-        m_to_slave_stage_name_ (name+".net"),
+        m_ullPollingInterval(100000),
         m_bRequestsAllowed(false),
-        m_bStopped(false),
         m_bStarted(false),
         m_bConfigOk(false),
+        m_bStopped(false),
         m_threadBkpService(this),
-        m_last_request_time(0),
-        m_arrMasterInfo(arrMasterInfo)
+        m_last_request_time(0)
 {
 	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
 	//     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -124,10 +127,10 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
     sendEventToSelf(pEvtStartUp);
 
     lock_type lock(mtx_);
-    while(!m_bStarted)
+    while( !isStarted() )
     	cond_can_start_.wait(lock);
 
-    if( is_configured() )  // can register now
+    if( isConfigured() )  // can register now
     {
         m_threadBkpService.start(bkp_file);
 
@@ -188,10 +191,10 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
     sendEventToSelf(pEvtStartUp);
 
     lock_type lock(mtx_);
-    while(!m_bStarted)
+    while( !isStarted() )
     	cond_can_start_.wait(lock);
 
-    if( is_configured() )
+    if( isConfigured() )
     {
         m_threadBkpService.start();
 
@@ -232,10 +235,10 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 	sendEventToSelf(pEvtStartUp);
 
 	lock_type lock(mtx_);
-	while(!m_bStarted)
+	while( !isStarted() )
 		cond_can_start_.wait(lock);
 
-	if( is_configured() )
+	if( isConfigured() )
 	{
 		// no backup, if a backup file was not specified!
 		// m_threadBkpService.start();
@@ -260,7 +263,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 
 void GenericDaemon::shutdown(std::string& strBackup )
 {
-  if(!m_bStopped)
+  if( !isStopped() )
     stop();
 
   SDPA_LOG_INFO("Get the last backup of the daemon "<<name());
@@ -269,7 +272,7 @@ void GenericDaemon::shutdown(std::string& strBackup )
 
 void GenericDaemon::shutdown( )
 {
-  if(!m_bStopped)
+  if( !isStopped() )
     stop();
 }
 
@@ -529,7 +532,7 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 	// check if the system should be recovered
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("The configuration phase succeeded!");
-	m_bRequestsAllowed = true;
+	setRequestsAllowed(true);
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
@@ -542,7 +545,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 	SDPA_LOG_DEBUG("Call 'action_interrupt'");
 	// save the current state of the system .i.e serialize the daemon's state
 	// the following code shoud be executed on action action_interrupt!!
-	m_bRequestsAllowed = false;
+	setRequestsAllowed(false);
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
@@ -1247,13 +1250,6 @@ void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
 	}
 }
 
-void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
-{
-	DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
-	workflowEngine()->failed( jobId.str(), reason );
-	jobManager()->deleteJob(jobId);
-}
-
 const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
 	try {
@@ -1282,18 +1278,6 @@ void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string&
 	else
 	{
 		LOG(WARN, "would cancel " << workflowId << " on myself");
-	}
-}
-
-void GenericDaemon::activityCancelled(const id_type& actId, const std::string& )
-{
-	if (hasWorkflowEngine())
-	{
-		ptr_workflow_engine_->cancelled( actId );
-	}
-	else
-	{
-		LOG(WARN, "cannot notify cancelled(" << actId << "): no workflow engine!");
 	}
 }
 
@@ -1620,7 +1604,7 @@ bool GenericDaemon::requestsAllowed()
   return ( diff_time > m_ullPollingInterval ) && ( ptr_job_man_->countMasterJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
 }
 
-void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
+void GenericDaemon::activityFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
 {
   if( hasWorkflowEngine() )
   {
@@ -1643,7 +1627,7 @@ void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const 
   }
 }
 
-void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
+void GenericDaemon::activityFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
 {
 	if( hasWorkflowEngine() )
 	{
@@ -1665,7 +1649,7 @@ void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, cons
 	}
 }
 
-void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
+void GenericDaemon::activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
 {
 	if( hasWorkflowEngine() )
 	{
@@ -1780,7 +1764,7 @@ void GenericDaemon::removeMaster( const agent_id_t& id )
 		m_arrMasterInfo.erase(it);
 }
 
-void GenericDaemon::removeMasters(const worker_id_list_t& listMasters)
+void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
 {
 	lock_type lock(mtx_master_);
 	BOOST_FOREACH(const sdpa::agent_id_t& id, listMasters)
@@ -1913,45 +1897,4 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 {
 	return scheduler()->getWorkerId(r);
-}
-
-void GenericDaemon::forward(const id_type& job_id, const result_type& result, unsigned int rank)
-{
-   	//SubmitJobEvent::Ptr pSubJobEvt(new SubmitJobEvent(name(), forward_to, job_id, result, ""));
-   	//sendEventToSlave(pSubJobEvt);
-
-	try {
-		const sdpa::job_id_t jobId(job_id);
-		// One should parse the workflow in order to be able to create a valid job
-		// if the event comes from Gwes parent_id is the owner_workflow_id
-		JobFSM* ptrFSM = new JobFSM( jobId, result, this, "" );
-		ptrFSM->start_fsm();
-		Job::ptr_t pJob( ptrFSM );
-		pJob->set_owner(name());
-
-		// the job job_id is in the Pending state now!
-		ptr_job_man_->addJob(jobId, pJob);
-
-		const sdpa::worker_id_t workerId = getWorkerId(rank);
-		if(!workerId.empty() )
-		{
-			SDPA_LOG_INFO("Forward the result of the job "<<job_id<<" to the agent "<<workerId);
-			scheduler()->schedule_to(jobId, workerId);
-		}
-		else
-		{
-			SDPA_LOG_ERROR("Could not find a worker with the specified rank!");
-			throw;
-		}
-	}
-	catch(std::exception const & ex)
-	{
-		SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
-		throw;
-	}
-	catch(...)
-	{
-		SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
-		throw;
-	}
 }

@@ -245,6 +245,11 @@ namespace xml
             }
         }
 
+        void push_inout (const connect_type& connect)
+        {
+          push_in (connect); push_out (connect);
+        }
+
         void push_read (const connect_type & connect)
         {
           if (!_read.push (connect))

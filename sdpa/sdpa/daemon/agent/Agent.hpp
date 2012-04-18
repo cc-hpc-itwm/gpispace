@@ -24,6 +24,9 @@
 
 namespace sdpa {
   namespace daemon {
+
+    template <typename T> struct AgentFactory;
+
     class Agent : public dsm::DaemonFSM
     {
       public:
@@ -93,7 +96,7 @@ namespace sdpa {
         virtual void recover( std::istream& );
 
         friend class boost::serialization::access;
-        //friend class sdpa::tests::WorkerSerializationTest;
+        template <typename T> friend struct AgentFactory;
 
         void notifyAppGui(const result_type & result);
         //void requestRegistration(const MasterInfo& masterInfo);

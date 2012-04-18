@@ -24,6 +24,8 @@
 namespace sdpa {
 namespace daemon {
 
+	template <typename T> struct OrchestratorFactory;
+
 	class Orchestrator : public dsm::DaemonFSM
 	{
 	  public:
@@ -69,6 +71,7 @@ namespace daemon {
 		virtual void recover( std::istream& );
 
 		friend class boost::serialization::access;
+		template <typename T> friend struct OrchestratorFactory;
 
 		template <typename T>
 		void notifySubscribers(const T& ptrEvt);
