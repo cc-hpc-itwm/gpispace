@@ -1,0 +1,145 @@
+default namespace = ""
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+
+a:documentation [
+  "\x{a}" ~
+  "\x{a}" ~
+  "    petri nets with\x{a}" ~
+  "      typed ports\x{a}" ~
+  "      typed places\x{a}" ~
+  "      typed tokens\x{a}" ~
+  "      user defined types\x{a}" ~
+  "      hierarchical structure\x{a}" ~
+  "      hierarchical properties\x{a}" ~
+  "\x{a}" ~
+  "  "
+]
+start = element defun { function_type }
+      | element props { property_map_list_type }
+      | element structs { struct_list_type }
+      | element template { function_type }
+transition_include_type = attribute href { xsd:anyURI }
+struct_include_type = attribute href { xsd:anyURI }
+function_include_type =
+  attribute href { xsd:anyURI },
+  attribute as { xsd:string }?
+properties_include_type = attribute href { xsd:anyURI }
+cinclude_type = attribute href { xsd:anyURI }
+flag_type = attribute flag { xsd:string }
+property_type =
+  attribute key { xsd:ID },
+  attribute value { xsd:string }
+property_map_type =
+  (element property { property_type }
+   | element properties { property_map_type }
+   | element include-properties { properties_include_type })*,
+  attribute name { xsd:ID }
+property_map_list_type =
+  (element properties { property_map_type }
+   | element include-properties { properties_include_type })*
+struct_list_type =
+  (element struct { struct_type }
+   | element include-structs { struct_include_type })*
+struct_field_type =
+  attribute name { xsd:ID },
+  attribute type { xsd:string }
+struct_type =
+  (element field { struct_field_type }
+   | element struct { struct_type })*,
+  attribute name { xsd:ID }
+token_field_type =
+  (element value { xsd:string }
+   | element field { token_field_type }+)?,
+  attribute name { xsd:ID }
+token_type =
+  (element value { xsd:string }
+   | element field { token_field_type }+)?
+mod_type =
+  (element cinclude { cinclude_type }
+   | element ld { flag_type }
+   | element cxx { flag_type })*,
+  element code { xsd:string }?,
+  attribute name { xsd:ID },
+  attribute function { xsd:string }
+type_map_type =
+  attribute replace { xsd:ID },
+  attribute with { xsd:string }
+type_get_type = attribute name { xsd:ID }
+template_use_type =
+  (element type-map { type_map_type }
+   | element type-get { type_get_type })*,
+  attribute name { xsd:ID },
+  attribute use { xsd:string }
+use_type = attribute name { xsd:ID }
+require_type =
+  attribute key { xsd:string },
+  attribute mandatory { xsd:boolean }?
+place_type =
+  (element properties { property_map_type }
+   | element include-properties { properties_include_type })*,
+  element token { token_type }*,
+  attribute name { xsd:ID },
+  attribute capacity { xsd:nonNegativeInteger }?,
+  attribute type { xsd:string },
+  attribute virtual { xsd:boolean }?
+port_type =
+  (element properties { property_map_type }
+   | element include-properties { properties_include_type })*,
+  attribute name { xsd:ID },
+  attribute type { xsd:string },
+  attribute place { xsd:string }?
+connect_type =
+  (element properties { property_map_type }
+   | element include-properties { properties_include_type })*,
+  attribute place { xsd:string },
+  attribute port { xsd:ID }
+place_map_type =
+  (element properties { property_map_type }
+   | element include-properties { properties_include_type })*,
+  attribute virtual { xsd:string },
+  attribute real { xsd:ID }
+function_type =
+  (element properties { property_map_type }
+   | element include-properties { properties_include_type })*,
+  (element struct { struct_type }
+   | element include-structs { struct_include_type })*,
+  element require { require_type }*,
+  (element in { port_type }
+   | element out { port_type }
+   | element inout { port_type })*,
+  (element expression { xsd:string }
+   | element module { mod_type }
+   | element net { net_type }),
+  element condition { xsd:string }*,
+  attribute name { xsd:ID }?,
+  attribute internal { xsd:boolean }?
+transition_type =
+  (element properties { property_map_type }
+   | element include-properties { properties_include_type })*,
+  (element defun { function_type }
+   | element include-function { transition_include_type }
+   | element use { use_type }),
+  (element connect-in { connect_type }
+   | element connect-out { connect_type }
+   | element connect-inout { connect_type }
+   | element connect-read { connect_type }
+   | element place-map { place_map_type }
+   | element condition { xsd:string })*,
+  attribute name { xsd:ID },
+  attribute priority { xsd:nonNegativeInteger }?,
+  attribute inline { xsd:boolean }?,
+  attribute internal { xsd:boolean }?
+net_type =
+  (element defun { function_type }
+   | element include-function { function_include_type }
+   | element include-properties { properties_include_type }
+   | element include-structs { struct_include_type }
+   | element include-template { function_include_type }
+   | element place { place_type }
+   | element properties { property_map_type }
+   | element specialize { template_use_type }
+   | element struct { struct_type }
+   | element template { function_type }
+   | element transition { transition_type })*
