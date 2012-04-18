@@ -44,10 +44,10 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
         __DATE__ " " __TIME__,                                          \
         license,                                                        \
         depends,                                                        \
-        provides,                                                       \
         key,                                                            \
         FHG_PLUGIN_BUILD_REV,                                           \
-        FHG_PLUGIN_BUILD_COMPILER                                       \
+        FHG_PLUGIN_BUILD_COMPILER,                                      \
+        provides                                                        \
       };                                                                \
     return &fhg_plugin_descriptor_##name;                               \
   }                                                                     \
@@ -72,10 +72,10 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
           __DATE__ " " __TIME__,                                        \
           license,                                                      \
           depends,                                                      \
-          provides,                                                     \
           key,                                                          \
           FHG_PLUGIN_BUILD_REV,                                         \
-          FHG_PLUGIN_BUILD_COMPILER                                     \
+          FHG_PLUGIN_BUILD_COMPILER,                                    \
+          provides                                                      \
         };                                                              \
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
