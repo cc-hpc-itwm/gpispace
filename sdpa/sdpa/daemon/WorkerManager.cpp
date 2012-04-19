@@ -44,16 +44,6 @@ WorkerManager::~WorkerManager()
 		SDPA_LOG_WARN( "there are still entries left in the worker map: " << worker_map_.size());
 	}
 
-	if( rank_map_.size() )
-	{
-		SDPA_LOG_WARN( "there are still entries left in the rank map: " << rank_map_.size() );
-	}
-
-	if( owner_map_.size() )
-	{
-		SDPA_LOG_WARN( "there are still entries left in the owner map: " << owner_map_.size());
-	}
-
 	if( common_queue_.size() )
 	{
 		SDPA_LOG_WARN( "there are still entries left in the common queue: " << common_queue_.size());
@@ -248,12 +238,12 @@ sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundExce
   return it->first;
 }
 
-Worker::worker_id_t WorkerManager::getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException)
+/*Worker::worker_id_t WorkerManager::getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException)
 {
   lock_type lock(mtx_);
   Worker::worker_id_t owner_worker_id = owner_map().at(job_id);
   return owner_worker_id;
-}
+}*/
 
 const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException)
 {
@@ -430,15 +420,6 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
 	}
 }
 
-const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWorkerFoundException)
-{
-	lock_type lock(mtx_);
-	if( rank_map().empty() )
-          throw NoWorkerFoundException();
-
-	return rank_map().at(rank);
-}
-
 void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
 {
   lock_type lock(mtx_);
@@ -448,20 +429,6 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
     throw WorkerNotFoundException(workerId);
 
   worker_map_.erase (w);
-
-  // delete the workerId from the list of ranks
-  for (rank_map_t::iterator it (rank_map_.begin()); it != rank_map_.end(); ++it)
-    if (it->second == workerId)
-    {
-        rank_map_.erase (it);
-        break;
-    }
-}
-
-void WorkerManager::make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id )
-{
-  lock_type lock(mtx_);
-  owner_map().insert(WorkerManager::owner_map_t::value_type(job_id, worker_id));
 }
 
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
@@ -718,6 +685,4 @@ void WorkerManager::removeWorkers()
 	lock_type lock(mtx_);
 	common_queue_.clear();
 	worker_map_.clear();
-	rank_map_.clear();
-	owner_map_.clear();
 }

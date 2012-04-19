@@ -89,11 +89,10 @@ GenericDaemon::~GenericDaemon()
 
 void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, const std::string& cfgFile )
 {
-    if(!ptr_scheduler_)
+    if(!scheduler())
     {
         SDPA_LOG_INFO("Create the scheduler...");
-        sdpa::daemon::Scheduler::ptr_t ptrSched(createScheduler(bUseReqModel));
-        ptr_scheduler_ = ptrSched;
+        createScheduler(bUseReqModel);
     }
 
     bfs::ifstream ifs(bkp_file);
@@ -102,10 +101,10 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
         SDPA_LOG_INFO( "Recover the agent "<<name()<<" from the backup file "<<bkp_file);
 
         recover(ifs);
-              //if( isTop() )
+        //if( isTop() )
         {
           SDPA_LOG_WARN( "JobManager after recovering:" );
-          ptr_job_man_->print();
+          jobManager()->print();
 
           SDPA_LOG_INFO("Worker manager after recovering:");
           scheduler()->print();
@@ -154,11 +153,10 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
 
 void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile )
 {
-    if(!ptr_scheduler_)
+    if(!scheduler())
     {
         SDPA_LOG_INFO("Create the scheduler...");
-        sdpa::daemon::Scheduler::ptr_t ptrSched(createScheduler(bUseReqModel));
-        ptr_scheduler_ = ptrSched;
+        createScheduler(bUseReqModel);
     }
 
     if( !strBackup.empty() )
@@ -171,7 +169,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
         //if( isTop() )
         {
             SDPA_LOG_WARN( "JobManager after recovering:" );
-            ptr_job_man_->print();
+            jobManager()->print();
 
             SDPA_LOG_INFO("Scheduler after recovering:");
             scheduler()->print();
@@ -219,11 +217,10 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
 
 void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 {
-	if(!ptr_scheduler_)
+	if(!scheduler())
 	{
 		SDPA_LOG_INFO("Create the scheduler...");
-		sdpa::daemon::Scheduler::ptr_t ptrSched(createScheduler(bUseReqModel));
-		ptr_scheduler_ = ptrSched;
+		createScheduler(bUseReqModel);
 	}
 
 	// The stage uses 2 threads
@@ -553,10 +550,10 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   LOG( INFO, e.from() << " requesting to delete job " << e.job_id() );
 
   try{
-      Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
+      Job::ptr_t pJob = jobManager()->findJob(e.job_id());
       pJob->DeleteJob(&e, this);
 
-      ptr_job_man_->deleteJob(e.job_id());
+      jobManager()->deleteJob(e.job_id());
   }
   catch(JobNotFoundException const &)
   {
@@ -617,14 +614,14 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
 }
 
-void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id)
+void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id)
 {
     //take a job from the workers' queue and serve it
 
     try {
 
         // you should consume from the  worker's pending list; put the job into the worker's submitted list
-        sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(worker_id, last_job_id);
+        sdpa::job_id_t jobId = scheduler()->getNextJob(worker_id, last_job_id);
         DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
 
         const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
@@ -647,7 +644,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
             // Post a SubmitJobEvent to the slave who made the request
             sendEventToSlave(pSubmitEvt);
-            ptr_scheduler_->setLastTimeServed(worker_id, sdpa::util::now());
+            scheduler()->setLastTimeServed(worker_id, sdpa::util::now());
         }
         else // send an error event
         {
@@ -704,7 +701,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
     //To do: replace this with schedule
     Worker::worker_id_t worker_id = e.from();
-    serve_job( worker_id, e.last_job_id() );
+    serveJob( worker_id, e.last_job_id() );
 }
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
@@ -761,7 +758,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
   // First, check if the job 'job_id' wasn't already submitted!
   try {
-      ptr_job_man_->findJob(e.job_id());
+      jobManager()->findJob(e.job_id());
       // The job already exists -> generate an error message that the job already exists
 
       SDPA_LOG_WARN("The job with job-id: " << e.job_id()<<" does already exist! (possibly recovered)");
@@ -794,7 +791,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       pJob->set_owner(e.from());
 
       // the job job_id is in the Pending state now!
-      ptr_job_man_->addJob(job_id, pJob);
+      jobManager()->addJob(job_id, pJob);
 
       // check if the message comes from outside/slave or from WFE
       // if it comes from outside set it as local
@@ -995,8 +992,8 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
 					// if there still are registered workers, otherwise declare the remaining
 					// jobs failed
-					ptr_scheduler_->reschedule(worker_id);
-					ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
+					scheduler()->reschedule(worker_id);
+					scheduler()->delWorker(worker_id); // do a re-scheduling here
 				}
 			}
 			catch (WorkerNotFoundException const& /*ignored*/)
@@ -1045,9 +1042,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     			// Only now should be the job state machine make a transition to RUNNING
     			// this means that the job was not rejected, no error occurred etc ....
     			// find the job ptrJob and call
-    			Job::ptr_t ptrJob = ptr_job_man_->findJob(error.job_id());
+    			Job::ptr_t ptrJob = jobManager()->findJob(error.job_id());
     			ptrJob->Dispatch();
-    			ptr_scheduler_->acknowledgeJob(worker_id, error.job_id());
+    			scheduler()->acknowledgeJob(worker_id, error.job_id());
     		}
     		catch(JobNotFoundException const& ex)
     		{
@@ -1109,10 +1106,10 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc, 
 		job_id_t job_id(activityId);
 		job_id_t parent_id("WE"); // is this really needed?
 
-		ptr_job_man_->addJobRequirements(job_id, job_req_list);
+		jobManager()->addJobRequirements(job_id, job_req_list);
 
 		// WORK HERE: limit number of maximum parallel jobs
-		ptr_job_man_->waitForFreeSlot ();
+		jobManager()->waitForFreeSlot ();
 
 		// don't forget to set here the job's preferences
 		SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
@@ -1231,7 +1228,7 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
 {
 	try {
-		return ptr_job_man_->findJob(job_id);
+		return jobManager()->findJob(job_id);
 	}
 	catch(const JobNotFoundException& ex)
 	{
@@ -1253,7 +1250,7 @@ void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
 const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
 	try {
-		return ptr_job_man_->getJobRequirements(jobId);
+		return jobManager()->getJobRequirements(jobId);
 	}
 	catch (const NoJobRequirements& ex)
 	{
@@ -1299,7 +1296,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 	// for all jobs that are in a terminal state and not yet acknowledged by the  master
 	// re-submit  them to the master, after registration
 
-	ptr_job_man_->resubmitJobsAndResults(this);
+	jobManager()->resubmitJobsAndResults(this);
 }
 
 void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
@@ -1542,7 +1539,7 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
 {
 	try {
-		return  ptr_scheduler_->findWorker(worker_id);
+		return  scheduler()->findWorker(worker_id);
 	}
 	catch(const WorkerNotFoundException& ex) {
 		throw ex;
@@ -1552,7 +1549,7 @@ Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worke
 const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
 {
 	try {
-		return  ptr_scheduler_->findWorker(job_id);
+		return  scheduler()->findWorker(job_id);
 	}
 	catch(const NoWorkerFoundException& ex) {
 		throw ex;
@@ -1566,7 +1563,7 @@ void GenericDaemon::addWorker( const Worker::worker_id_t& workerId,
 		                       const sdpa::worker_id_t& agent_uuid )
 {
 	try {
-		ptr_scheduler_->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
+		scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
 	}
 	catch( const WorkerAlreadyExistException& ex )
 	{
@@ -1594,14 +1591,14 @@ bool GenericDaemon::requestsAllowed()
       return false;
   }
 
-  if( ptr_job_man_->countMasterJobs() == 0 )
+  if( jobManager()->countMasterJobs() == 0 )
     if( m_ullPollingInterval < cfg().get<unsigned int>("upper bound polling interval") )
        m_ullPollingInterval = m_ullPollingInterval + 100 * 1000; //0.1s
 
   sdpa::util::time_type current_time = sdpa::util::now();
   sdpa::util::time_type diff_time    = current_time - m_last_request_time;
 
-  return ( diff_time > m_ullPollingInterval ) && ( ptr_job_man_->countMasterJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
+  return ( diff_time > m_ullPollingInterval ) && ( jobManager()->countMasterJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
 }
 
 void GenericDaemon::activityFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
@@ -1713,9 +1710,9 @@ void GenericDaemon::requestRegistration()
 
 void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 {
-    if( ptr_scheduler_ )
+    if( scheduler() )
     {
-        ptr_scheduler_->schedule(jobId);
+        scheduler()->schedule(jobId);
         return;
     }
 
@@ -1725,7 +1722,7 @@ void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 
 void GenericDaemon::start_fsm()
 {
-  // to be overriden in DaemonFSM
+  // to be overriden by DaemonFSM
 }
 
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
@@ -1781,12 +1778,12 @@ void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
 	for(sdpa::capabilities_set_t::iterator it = m_capabilities.begin(); it!= m_capabilities.end(); it++ )
 			cpbset.insert(*it);
 
-	ptr_scheduler_->getAllWorkersCapabilities(cpbset);
+	scheduler()->getAllWorkersCapabilities(cpbset);
 }
 
 void GenericDaemon::getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
 {
-	ptr_scheduler_->getWorkerCapabilities(worker_id, wCpbset);
+	scheduler()->getWorkerCapabilities(worker_id, wCpbset);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
@@ -1844,10 +1841,10 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 			if(jobStatus.find("Finished") != std::string::npos)
 			{
 				 JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
-                                                                                           , subscriber
-                                                                                           , pJob->id()
-                                                                                           , pJob->result()
-                                                                                           ));
+						 	 	 	 	 	 	 	 	 	 	 	 	 	 , subscriber
+						 	 	 	 	 	 	 	 	 	 	 	 	 	 , pJob->id()
+						 	 	 	 	 	 	 	 	 	 	 	 	 	 , pJob->result()
+																		   ));
 				 sendEventToMaster(pEvtJobFinished);
 			}
 			else if(jobStatus.find("Failed") != std::string::npos)
@@ -1871,18 +1868,6 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 				 sendEventToMaster(pEvtCancelJobAck);
 			}
 		}
-		/*catch(const JobNotFoundException& ex)
-		{
-                  SDPA_LOG_WARN("The subscriber "<<subscriber<<" subscribed for a job that doesn't exist anymore! "<<ex.what());
-                  ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
-                                                          , subscriber
-                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
-                                                          , "no such job"
-                                                          )
-                                           );
-                  sendEventToMaster(pErrorEvt);
-                  throw ex;
-		}*/
 	}
 }
 

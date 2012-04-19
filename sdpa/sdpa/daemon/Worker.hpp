@@ -81,11 +81,6 @@ namespace sdpa { namespace daemon {
 	 */
     bool acknowledge(const sdpa::job_id_t &job_id);
 
-    /**
-      Time of last received event designated to this worker.
-      */
-    sdpa::util::time_type tstamp() const { return tstamp_; }
-
     // update last service time
     sdpa::util::time_type lastTimeServed() { return last_time_served_; }
     void setLastTimeServed(const sdpa::util::time_type& last_time_srv ) { last_time_served_ = last_time_srv; }
@@ -198,7 +193,6 @@ namespace sdpa { namespace daemon {
     SDPA_DECLARE_LOGGER();
 
     worker_id_t name_; //! name of the worker
-    //unsigned int rank_;
     unsigned int capacity_;
     sdpa::capabilities_set_t capabilities_;
     unsigned int rank_;

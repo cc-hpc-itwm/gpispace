@@ -40,8 +40,6 @@ namespace sdpa { namespace daemon {
       typedef boost::condition_variable_any condition_type;
 
       typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
-      typedef boost::unordered_map<unsigned int, Worker::worker_id_t> rank_map_t;
-      typedef boost::unordered_map<sdpa::job_id_t, Worker::worker_id_t > owner_map_t;
 
       WorkerManager();
       virtual ~WorkerManager();
@@ -57,19 +55,18 @@ namespace sdpa { namespace daemon {
     		          const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
 
       void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+      void removeWorkers();
 
       bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
       virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
       virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
-     // void getListOfRegisteredRanks( std::vector<unsigned int>& );
 
-      void removeWorkers();
       const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-      worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
 
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
+      worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
       Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq) throw (NoWorkerFoundException);
       void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
@@ -78,15 +75,11 @@ namespace sdpa { namespace daemon {
       void delete_job(const sdpa::job_id_t& jobId);
       void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
-      Worker::worker_id_t getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException);
-      void make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id );
-
       size_t numberOfWorkers() { return worker_map_.size(); }
       void getWorkerList(std::list<std::string>& workerList);
       void getWorkerListNotFull(sdpa::worker_id_list_t& workerList);
 
       void balanceWorkers();
-      const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
       void cancelWorkerJobs(sdpa::daemon::Scheduler*);
       void forceOldWorkerJobsTermination();
       virtual Worker::worker_id_t getWorkerId(unsigned int r);
@@ -101,8 +94,6 @@ namespace sdpa { namespace daemon {
       void serialize(Archive& ar, const unsigned int)
       {
           ar & worker_map_;
-          ar & rank_map_;
-          ar & owner_map_;
       }
 
       friend class boost::serialization::access;
@@ -131,14 +122,9 @@ namespace sdpa { namespace daemon {
 
 
       const worker_map_t&  worker_map() const { return worker_map_; }
-      const rank_map_t& rank_map() const { return rank_map_; }
-      const owner_map_t& owner_map() const { return owner_map_; }
-      owner_map_t& owner_map() { return owner_map_; }
 
 protected:
       worker_map_t  worker_map_;
-      rank_map_t    rank_map_;
-      owner_map_t   owner_map_;
 
       SDPA_DECLARE_LOGGER();
       worker_map_t::iterator iter_last_worker_;

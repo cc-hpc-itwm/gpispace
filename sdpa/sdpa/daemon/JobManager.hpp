@@ -49,8 +49,8 @@ namespace sdpa { namespace daemon {
 
 	  JobManager(const std::string& str="");
 	  virtual ~JobManager();
+
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& ) throw (JobNotFoundException) ;
-	  // virtual Job::ptr_t getJob();
 	  virtual void addJob(const sdpa::job_id_t&, const Job::ptr_t& ) throw(JobNotAddedException) ;
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 
@@ -62,7 +62,7 @@ namespace sdpa { namespace daemon {
 	  const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
 
 	  std::string print() const;
-	  size_t number_of_jobs() const { return job_map_.size(); }
+	  size_t getNumberJobs() const { return job_map_.size(); }
 
 	  void waitForFreeSlot();
 	  bool slotAvailable() const;
@@ -76,32 +76,14 @@ namespace sdpa { namespace daemon {
 		  ar & BOOST_SERIALIZATION_NVP(job_map_);
 	  }
 
-	  /*
-      template<class Archive>
-      void save(Archive & ar, const unsigned int version) const
-	  {
-		  // note, version is always the latest when saving
-		  ar  & job_map_;
-	  }
-
-	  template<class Archive>
-	  void load(Archive & ar, const unsigned int version)
-	  {
-		  ar & job_map_;
-	  }
-
-	  BOOST_SERIALIZATION_SPLIT_MEMBER()
-	  */
-
 	  friend class boost::serialization::access;
 	  // only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
 
-	  job_map_t job_map_;
   protected:
 	  SDPA_DECLARE_LOGGER();
-
+	  job_map_t job_map_;
 	  mutable mutex_type mtx_;
       boost::condition_variable_any free_slot_;
       requirements_map_t job_requirements_;

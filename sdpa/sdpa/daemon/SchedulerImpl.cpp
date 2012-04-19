@@ -314,40 +314,6 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 }
 
 /*
- * Round-Robin schedule
- */
-void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
-{
-  SDPA_LOG_DEBUG("Called schedule_remote ...");
-
-  if(!ptr_comm_handler_)
-  {
-      SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
-      stop();
-      return;
-  }
-
-  try
-  {
-	  if( ptr_worker_man_ )
-	  {
-		  SDPA_LOG_DEBUG("Get the next worker ...");
-		  const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
-
-		  SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
-
-		  pWorker->dispatch(jobId);
-	  }
-  }
-  catch(const NoWorkerFoundException&)
-  {
-	  // put the job back into the queue
-      ptr_comm_handler_->activityFailed("", jobId, "No worker available!");
-      SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
-  }
-}
-
-/*
  * return true only if scheduling the job jobid on the worker with the rank 'rank' succeeded
  */
 // test if the specified rank is valid
@@ -490,14 +456,6 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
-	// check if there are any responsive workers left
-	// delete non_responsive workers
-
-	// schedule_round_robin(jobId);
-	// fairly re-distribute tasks, if necessary
-	// ptr_worker_man_->balanceWorkers();
-	// fix this later -> use a monitoring thread
-
 	if( !numberOfWorkers() )
 	{
 		SDPA_LOG_WARN("No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
@@ -662,7 +620,7 @@ void SchedulerImpl::feed_workers()
 			{
 				if(ptr_comm_handler_)
 				{
-					ptr_comm_handler_->serve_job(worker_id);
+					ptr_comm_handler_->serveJob(worker_id);
 				}
 				else
 				{

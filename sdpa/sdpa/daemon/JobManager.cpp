@@ -160,7 +160,7 @@ void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const requirem
 static const std::size_t MAX_PARALLEL_JOBS = 1024;
 bool JobManager::slotAvailable () const
 {
-  return number_of_jobs () < MAX_PARALLEL_JOBS;
+  return getNumberJobs () < MAX_PARALLEL_JOBS;
 }
 
 void JobManager::waitForFreeSlot ()

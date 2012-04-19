@@ -47,7 +47,6 @@ namespace sdpa {
           m_bCanRunTasksLocally(bCanRunTasksLocally)
         {
           SDPA_LOG_DEBUG("Agent's constructor called ...");
-          //ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::Scheduler(this));
 
           std::ostringstream oss;
 		  oss<<"rank"<<rank;
@@ -102,10 +101,11 @@ namespace sdpa {
         //void requestRegistration(const MasterInfo& masterInfo);
 
         private:
-        Scheduler* createScheduler(bool bUseReqModel)
+        void createScheduler(bool bUseReqModel)
         {
         	DLOG(TRACE, "creating agent scheduler...");
-        	return new AgentScheduler(this, bUseReqModel);
+        	Scheduler::ptr_t ptrSched( new AgentScheduler(this, bUseReqModel) );
+        	ptr_scheduler_ = ptrSched;
         }
 
         std::string url_;

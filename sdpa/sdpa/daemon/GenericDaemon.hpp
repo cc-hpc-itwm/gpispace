@@ -202,7 +202,7 @@ namespace sdpa { namespace daemon {
 
 	  // job
 	  virtual void schedule(const sdpa::job_id_t& job);
-	  virtual bool isScheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
+	  virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
 	  const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
 	  // event communication
@@ -240,7 +240,7 @@ namespace sdpa { namespace daemon {
       virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const;
       const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) const;
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
-      virtual void serve_job(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id = sdpa::JobId::invalid_job_id() );
+      virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id = sdpa::JobId::invalid_job_id() );
       virtual void requestJob(const MasterInfo& masterInfo);
       virtual void addWorker( const Worker::worker_id_t& workerId,
     		  	  	  	  	  unsigned int cap,
@@ -258,11 +258,7 @@ namespace sdpa { namespace daemon {
 
       // scheduler
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
-      void setScheduler(Scheduler* p) {ptr_scheduler_ = Scheduler::ptr_t(p);}
-      virtual Scheduler* createScheduler(bool bUseReqModel)
-	  {
-		  return NULL;
-	  }
+      virtual void createScheduler(bool bUseReqModel) = 0;
 
       // workflow engine observers
       template <typename T>
@@ -300,7 +296,7 @@ namespace sdpa { namespace daemon {
           l->print_statistics( std::cerr );
       }
 
-      // backup & serialization
+      // backup
       friend class boost::serialization::access;
 
       template <class Archive>
@@ -337,7 +333,9 @@ private:
       sdpa::util::Config daemon_cfg_;
 
       JobManager::ptr_t ptr_job_man_;
+protected:
       Scheduler::ptr_t ptr_scheduler_;
+private:
       IWorkflowEngine* ptr_workflow_engine_;
 
       unsigned int m_nRank;

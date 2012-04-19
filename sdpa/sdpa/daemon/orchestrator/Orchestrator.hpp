@@ -77,10 +77,11 @@ namespace daemon {
 		void notifySubscribers(const T& ptrEvt);
 
 	  private:
-		Scheduler* createScheduler(bool bUseReqModel)
+		void createScheduler(bool bUseReqModel)
 		{
 		    DLOG(TRACE, "creating orchestrator scheduler...");
-		    return new SchedulerOrch(this, bUseReqModel);
+		    Scheduler::ptr_t ptrSched( new SchedulerOrch(this, bUseReqModel) );
+		    ptr_scheduler_ = ptrSched;
 		}
 
 		std::string url_;
