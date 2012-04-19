@@ -27,6 +27,7 @@ private:
 
 EXPORT_FHG_PLUGIN( bad_magic
                  , BadMagicImpl
+                 , ""
                  , "bad magic test plugin"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "v0.0.1"
