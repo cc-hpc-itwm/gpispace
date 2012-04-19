@@ -344,7 +344,7 @@ struct FaultyAgentFactory
 	   {
 		   LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
 		   FaultyAgent::ptr_t pAgent( new FaultyAgent( name, url, arrMasterNames, capacity ) );
-		   pAgent->create_workflow_engine<T>();
+		   pAgent->createWorkflowEngine<T>();
 
 		   seda::IEventQueue::Ptr ptrEvtQueue(new seda::EventQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
 		   seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtQueue, pAgent, 1) );

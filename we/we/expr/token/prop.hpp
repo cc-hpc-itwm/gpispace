@@ -31,11 +31,9 @@ namespace expr
         case _bitset_tohex:
         case _bitset_fromhex:
         case _bitset_or:
-        case _stack_empty:
         case _stack_top:
         case _stack_push:
         case _stack_pop:
-        case _stack_size:
         case _stack_join:
         case _map_assign:
         case _map_unassign:

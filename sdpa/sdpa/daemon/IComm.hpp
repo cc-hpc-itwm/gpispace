@@ -75,7 +75,7 @@ const std::string USER("user");
 	  virtual unsigned int& rank() = 0;
 	  virtual const sdpa::worker_id_t& agent_uuid() = 0;
 
-	  virtual void update_last_request_time() = 0;
+	  virtual void updateLastRequestTime() = 0;
 	  virtual bool requestsAllowed() = 0;
 
 	  virtual void serve_job(const Worker::worker_id_t& worker_id, const job_id_t& last_id = sdpa::JobId::invalid_job_id()) = 0;
@@ -88,7 +88,7 @@ const std::string USER("user");
 	  virtual void backup( std::ostream& ) { throw std::runtime_error("not supported at this level"); }
 	  virtual void recover( std::istream& ) { throw std::runtime_error("not supported at this level"); }
 
-	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) = 0;
+	  virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
 
 	  //GUI notification methods
 	  virtual void notifyActivityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }

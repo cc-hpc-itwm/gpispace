@@ -41,7 +41,7 @@ namespace daemon {
 			{
 				LOG( DEBUG, "Create orchestrator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
-				pOrch->create_workflow_engine<T>();
+				pOrch->createWorkflowEngine<T>();
 
 				seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", orchestrator::MAX_Q_SIZE));
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pOrch, 1) );
