@@ -55,6 +55,15 @@ namespace bytearray
 
       return s;
     }
+    template<typename T>
+    operator T () const
+    {
+      T x;
+
+      copy (&x);
+
+      return x;
+    }
 
     std::size_t size () const { return _v.size(); }
     const container_type & container () const { return _v; }
@@ -69,6 +78,19 @@ namespace bytearray
         {
           _v = other._v;
         }
+
+      return *this;
+    }
+
+    template<typename T>
+    type& operator= (const T& other)
+    {
+      _v.clear();
+
+      std::copy ( (char*)&other
+                , (char*)&other + sizeof (T)
+                , std::back_inserter(_v)
+                );
 
       return *this;
     }
