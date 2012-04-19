@@ -241,7 +241,7 @@ namespace signature
 
           if (literal::cpp::known (t))
             {
-              this->s << "x." << fieldname;
+              this->s << "::literal::type (x." << fieldname << ")";
             }
           else
             {
