@@ -365,25 +365,10 @@ namespace xml
                                         , const property::value_type & value
                                         )
         {
-          if (path.size() == 3 && path[0] == "pnetc")
+          if (path.size() > 0 && path[0] == "pnetc")
             {
-              if (path[1] != "context")
+              if (path.size() > 2 && path[1] == "context")
                 {
-                  warn ( property_unknown ( path
-                                          , value
-                                          , file_in_progress()
-                                          )
-                       );
-                }
-              else
-                {
-                  std::ostringstream s;
-
-                  s << "when try to bind context key "
-                    << path[2] << " with " << value
-                    << " in " << file_in_progress()
-                    ;
-
                   try
                     {
                       const value::type & old_val (_context.value (path[2]));
@@ -399,6 +384,13 @@ namespace xml
                     {
                       /* do nothing, that's what we want */
                     }
+
+                  std::ostringstream s;
+
+                  s << "when try to bind context key "
+                    << path[2] << " with " << value
+                    << " in " << file_in_progress()
+                    ;
 
                   const util::we_parser_t parser
                     ( util::generic_we_parse ( "${" + path[2] + "}:=" + value
@@ -422,6 +414,21 @@ namespace xml
                     }
 
                   return true;
+                }
+              else if (  path.size() > 2
+                      && path[1] == "warning"
+                      && path[2] == "inline-many-output-ports"
+                      )
+                {
+                  /* do nothing, it's known */
+                }
+              else
+                {
+                  warn ( property_unknown ( path
+                                          , value
+                                          , file_in_progress()
+                                          )
+                       );
                 }
             }
 

@@ -772,11 +772,19 @@ namespace xml
 
             if (num_outport > 1)
               {
-                state.warn
-                  ( warning::inline_many_output_ports ( trans.name
-                                                      , state.file_in_progress()
-                                                      )
-                  );
+                const std::string
+                  key ("pnetc.warning.inline-many-output-ports");
+                const boost::optional<const ::we::type::property::value_type&>
+                  warning_switch (trans.prop.get_maybe_val (key));
+
+                if (!warning_switch || *warning_switch != "off")
+                  {
+                    state.warn ( warning::inline_many_output_ports
+                                 ( trans.name
+                                 , state.file_in_progress()
+                                 )
+                               );
+                  }
               }
 
             const tid_t tid_out (we_net.add_transition (trans_out));
