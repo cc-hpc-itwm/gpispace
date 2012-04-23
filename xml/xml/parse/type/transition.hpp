@@ -211,6 +211,8 @@ namespace xml
 
         conditions_type cond;
 
+        requirements_type requirements;
+
         fhg::util::maybe<petri_net::prio_t> priority;
 
         fhg::util::maybe<bool> finline;
@@ -532,6 +534,8 @@ namespace xml
                         , trans.cond.begin()
                         , trans.cond.end()
                         );
+
+        fun.requirements.join (trans.requirements);
 
         util::property::join (state, fun.prop, trans.prop);
 
@@ -1007,6 +1011,7 @@ namespace xml
           s.attr ("internal", t.internal);
 
           ::we::type::property::dump::dump (s, t.prop);
+          ::xml::parse::type::dump::dump (s, t.requirements);
 
           boost::apply_visitor (visitor::transition_dump (s), t.f);
 

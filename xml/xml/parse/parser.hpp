@@ -1514,6 +1514,10 @@ namespace xml
 
                   t.cond.insert (t.cond.end(), conds.begin(), conds.end());
                 }
+              else if (child_name == "require")
+                {
+                  require_type (t.requirements, child, state);
+                }
               else if (child_name == "properties")
                 {
                   property_map_type (t.prop, child, state);
