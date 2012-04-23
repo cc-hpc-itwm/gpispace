@@ -290,7 +290,7 @@ namespace xml
           , _OWbackup_file ("Wbackup-file")
           , _OWduplicate_external_function ("Wduplicate-external-function")
           , _OWproperty_unknown ("Wproperty-unknown")
-          , _OWinline_many_output_ports ("Winline_many_output_ports")
+          , _OWinline_many_output_ports ("Winline-many-output-ports")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
