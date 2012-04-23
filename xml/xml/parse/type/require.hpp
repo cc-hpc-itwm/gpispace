@@ -6,6 +6,7 @@
 #include <string>
 
 #include <boost/unordered_map.hpp>
+#include <boost/foreach.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -47,6 +48,14 @@ namespace xml
 
         const_iterator begin () const { return map.begin(); }
         const_iterator end () const { return map.end(); }
+
+        void join (const requirements_type& reqs)
+        {
+          BOOST_FOREACH (const map_type::value_type& req, reqs)
+            {
+              set (req.first, req.second);
+            }
+        }
       };
 
       namespace dump
