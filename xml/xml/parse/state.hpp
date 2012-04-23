@@ -771,7 +771,8 @@ namespace xml
             ( _OWinline_many_output_ports.c_str()
             , BOOLVAL(Winline_many_output_ports)
             , "warn when a transition with more than one connected output"
-              " port is inlined."
+              " port is inlined. This could lead to problems when the number"
+              " of tokens is not the same on all output ports."
             )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)
