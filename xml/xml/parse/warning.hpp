@@ -346,6 +346,31 @@ namespace xml
 
       // ******************************************************************* //
 
+      class inline_many_output_ports : public generic
+      {
+      private:
+        std::string nice ( const std::string& name
+                         , const boost::filesystem::path& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "the inlined transition " << name
+            << " has more than one connected output port"
+            << " in " << path;
+
+          return s.str();
+        }
+      public:
+        inline_many_output_ports ( const std::string& name
+                                 , const boost::filesystem::path& path
+                                 )
+          : generic (nice (name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class property_overwritten : public generic
       {
       private:

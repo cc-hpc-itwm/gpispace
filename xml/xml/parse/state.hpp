@@ -112,6 +112,7 @@ namespace xml
         bool _Wbackup_file;
         bool _Wduplicate_external_function;
         bool _Wproperty_unknown;
+        bool _Winline_many_output_ports;
 
         std::string _dump_xml_file;
         bool _no_inline;
@@ -152,6 +153,7 @@ namespace xml
         std::string _OWbackup_file;
         std::string _OWduplicate_external_function;
         std::string _OWproperty_unknown;
+        std::string _OWinline_many_output_ports;
 
         std::string _Odump_xml_file;
         std::string _Ono_inline;
@@ -248,6 +250,7 @@ namespace xml
           , _Wbackup_file (true)
           , _Wduplicate_external_function (true)
           , _Wproperty_unknown (true)
+          , _Winline_many_output_ports (true)
 
           , _dump_xml_file ("")
           , _no_inline (false)
@@ -287,6 +290,7 @@ namespace xml
           , _OWbackup_file ("Wbackup-file")
           , _OWduplicate_external_function ("Wduplicate-external-function")
           , _OWproperty_unknown ("Wproperty-unknown")
+          , _OWinline_many_output_ports ("Winline_many_output_ports")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
@@ -543,6 +547,7 @@ namespace xml
         ACCESS(Wbackup_file)
         ACCESS(Wduplicate_external_function)
         ACCESS(Wproperty_unknown)
+        ACCESS(Winline_many_output_ports)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
@@ -581,6 +586,7 @@ namespace xml
         WARN(backup_file)
         WARN(duplicate_external_function)
         WARN(property_unknown)
+        WARN(inline_many_output_ports)
         WARN(shadow_function)
 
 #undef WARN
@@ -761,6 +767,11 @@ namespace xml
             ( _OWproperty_unknown.c_str()
             , BOOLVAL(Wproperty_unknown)
             , "warn when a property is unknown"
+            )
+            ( _OWinline_many_output_ports.c_str()
+            , BOOLVAL(Winline_many_output_ports)
+            , "warn when a transition with more than one connected output"
+              " port is inlined."
             )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)
