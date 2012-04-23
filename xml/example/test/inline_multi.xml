@@ -17,6 +17,16 @@
       <use name="f"/>
       <connect-out port="o2" place="p2"/>
     </transition>
+    <transition name="t3" inline="true">
+      <properties name="pnetc">
+        <properties name="warning">
+          <property key="inline-many-output-ports" value="off"/>
+        </properties>
+      </properties>
+      <use name="f"/>
+      <connect-out port="o1" place="p1"/>
+      <connect-out port="o2" place="p2"/>
+    </transition>
     <place name="p1" type="control"/>
     <place name="p2" type="control"/>
   </net>
