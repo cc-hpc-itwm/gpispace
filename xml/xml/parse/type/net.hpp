@@ -371,6 +371,13 @@ namespace xml
                                  , const functions_type& functions_above
                                  )
         {
+          functions_type funs (functions());
+
+          BOOST_FOREACH (function_type& fun, funs)
+            {
+              fun.distribute_function (state, functions());
+            }
+
           BOOST_FOREACH (const function_type& fun, functions_above)
             {
               function_type fun_local;
@@ -383,13 +390,6 @@ namespace xml
                                                         )
                              );
                 }
-            }
-
-          functions_type funs (functions());
-
-          BOOST_FOREACH (function_type& fun, funs)
-            {
-              fun.distribute_function (state, functions());
             }
 
           BOOST_FOREACH (transition_type& transition, transitions())
