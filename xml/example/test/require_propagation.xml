@@ -38,8 +38,8 @@
           <place name="done" type="control"/>
 
           <transition name="run">
+            <require key="cap23" mandatory="true"/>
             <defun>
-              <require key="cap23"/>
               <require key="cap3141" mandatory="false"/>
               <require key="GPI"/>
               <require key="GPU" mandatory="false"/>
