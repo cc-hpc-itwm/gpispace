@@ -14,14 +14,7 @@
       <connect-out port="o2" place="p2"/>
     </transition>
     <transition name="t2" inline="true">
-      <defun>
-        <out name="o1" type="control" place="p1"/>
-        <out name="o2" type="control" place="p2"/>
-        <net>
-          <place name="p1" type="control"/>
-          <place name="p2" type="control"/>
-        </net>
-      </defun>
+      <use name="f"/>
       <connect-out port="o2" place="p2"/>
     </transition>
     <place name="p1" type="control"/>
