@@ -321,9 +321,10 @@ static void add_edge_transition_to_place ( pnet_t & n
 
 static void put_token (pnet_t & n, const place_t & place, const token_t & token)
 {
-  cout << "put_token (" << place << "," << token << ") => "
-       << n.put_token (n.get_place_id (place), token)
-       << endl;
+  cout << "put_token (" << place << "," << token << ")" <<  endl;
+
+  n.put_token (n.get_place_id (place), token);
+
   print_enabled (n);
 }
 
@@ -611,9 +612,9 @@ main ()
       boost::archive::text_iarchive ia (iss, boost::archive::no_header);
       ia >> BOOST_SERIALIZATION_NVP(d);
     }
-  
+
     print_net (d);
-  
+
     cout << oss.str() << endl;
     cout << "SERIALIZATION SIZE = " << oss.str().length() << endl;
 
