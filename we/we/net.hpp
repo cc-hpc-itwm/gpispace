@@ -104,14 +104,7 @@ namespace petri_net
       {}
       bool left () const { return _left; }
       const capacity_t capacity () const { return _left + _used; }
-      void extract () {
-        if (not (_left > 0))
-          {
-            throw std::runtime_error ("STRANGE: not (_left > 0)");
-          }
-
-        assert (_left > 0); --_left; ++_used;
-      }
+      void extract () { assert (_left > 0); --_left; ++_used; }
       void put () { if (_used > 0) { --_used; ++_left; } }
 
       friend class boost::serialization::access;
