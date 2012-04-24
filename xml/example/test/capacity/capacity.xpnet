@@ -1,0 +1,39 @@
+<defun name="capacity">
+
+  <in name="n" type="long" place="n"/>
+  <out name="r" type="long" place="r"/>
+
+  <net>
+
+    <place name="n" type="long"/>
+    <place name="r" type="long" capacity="1"/>
+
+    <defun name="wait">
+      <inout name="w" type="long"/>
+      <module name="capacity" function="wait (w)">
+        <cinclude href="fhglog/fhglog.hpp"/>
+        <code><![CDATA[
+          LOG (INFO, "sleeping for " << w << " seconds");
+
+          sleep (w);
+        ]]></code>
+      </module>
+    </defun>
+
+    <transition name="generate" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="n"/>
+      <connect-out port="out" place="k"/>
+    </transition>
+
+    <place name="k" type="long"/>
+
+    <transition name="wait">
+      <use name="wait"/>
+      <connect-in port="w" place="k"/>
+      <connect-out port="w" place="r"/>
+    </transition>
+
+  </net>
+
+</defun>
