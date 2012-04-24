@@ -1097,18 +1097,18 @@ public:
     output_descr_t output_descr (get_output_descr(tid));
 
     input_t input;
-    typename enabled_choice_t::iterator choice_consume
+    const typename enabled_choice_t::iterator choice_consume
       (enabled_choice_consume.find(tid));
-    typename enabled_choice_t::iterator choice_read
+    const typename enabled_choice_t::iterator choice_read
       (enabled_choice_read.find(tid));
 
     assert (  (choice_consume != enabled_choice_consume.end())
            || (choice_read != enabled_choice_read.end())
            );
 
-    choice_vec_t choice_vec_consume (choice_consume->second);
+    const choice_vec_t choice_vec_consume (choice_consume->second);
     enabled_choice_consume.erase (choice_consume);
-    choice_vec_t choice_vec_read (choice_read->second);
+    const choice_vec_t choice_vec_read (choice_read->second);
 
     for ( typename choice_vec_t::const_iterator choice
             (choice_vec_consume.begin())
