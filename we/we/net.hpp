@@ -88,6 +88,41 @@ namespace petri_net
 
   typedef connection<edge_type, tid_t, pid_t> connection_t;
 
+  namespace detail
+  {
+    struct capacity_and_placeholder_type
+    {
+    private:
+      capacity_t _left;
+      capacity_t _used;
+    public:
+      capacity_and_placeholder_type () : _left (0), _used (0) {}
+      explicit capacity_and_placeholder_type (const capacity_t& cap)
+        : _left (cap)
+        , _used (0)
+      {}
+      bool left () const { return _left; }
+      const capacity_t capacity () const { return _left + _used; }
+      void extract () {
+        if (not (_left > 0))
+          {
+            throw std::runtime_error ("STRANGE: not (_left > 0)");
+          }
+
+        assert (_left > 0); --_left; ++_used;
+      }
+      void put () { if (_used > 0) { --_used; ++_left; } }
+
+      friend class boost::serialization::access;
+      template<typename Archive>
+      void serialize (Archive & ar, const unsigned int)
+      {
+        ar & BOOST_SERIALIZATION_NVP(_left);
+        ar & BOOST_SERIALIZATION_NVP(_used);
+      }
+    };
+  }
+
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
 // single map<tid_t,(X,Y)>?
 
@@ -153,7 +188,9 @@ private:
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
   typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
 
-  typedef boost::unordered_map<pid_t,capacity_t> capacity_map_t;
+  typedef boost::unordered_map< pid_t
+                              , detail::capacity_and_placeholder_type
+                              > capacity_map_t;
 
   // *********************************************************************** //
 
@@ -500,12 +537,7 @@ private:
   {
     const capacity_map_t::const_iterator cap (capacity_map.find (pid));
 
-    if (cap != capacity_map.end() && num_token (pid) >= cap->second)
-      {
-        return true;
-      }
-
-    return false;
+    return cap != capacity_map.end() && num_token (pid) >= cap->second.left();
   }
 
   // *********************************************************************** //
@@ -582,7 +614,7 @@ public:
 
   void set_capacity (const pid_t & pid, const capacity_t & cap)
   {
-    capacity_map[pid] = cap;
+    capacity_map[pid] = detail::capacity_and_placeholder_type (cap);
 
     recalculate_out_enabled_by_place (pid);
   }
@@ -600,7 +632,7 @@ public:
 
     return (pos == capacity_map.end())
       ? boost::none
-      : boost::optional<capacity_t> (pos->second)
+      : boost::optional<capacity_t> (pos->second.capacity())
       ;
   }
 
