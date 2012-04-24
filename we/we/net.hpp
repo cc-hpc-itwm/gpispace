@@ -357,8 +357,7 @@ private:
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       recalculate_in_enabled (*t, pid, t());
 
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
+    recalculate_out_enabled_by_place (pid);
   }
 
   void recalculate_out_enabled_by_place (const pid_t & pid)
@@ -999,8 +998,7 @@ public:
         for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
           update_in_enabled_put_token (*t, pid, t(), token);
 
-        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-          update_out_enabled (*t, pid, t());
+        recalculate_out_enabled_by_place (pid);
       }
 
     return successful;
@@ -1033,8 +1031,7 @@ public:
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_one_token (*t, pid, token);
 
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
+    recalculate_out_enabled_by_place (pid);
 
     return ret;
   }
@@ -1046,8 +1043,7 @@ public:
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_all_token (*t, pid, token);
 
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
+    recalculate_out_enabled_by_place (pid);
 
     return ret;
   }
