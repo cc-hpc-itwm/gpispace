@@ -24,6 +24,7 @@
 #include <boost/optional.hpp>
 
 #include <boost/function.hpp>
+#include <boost/foreach.hpp>
 
 #include <boost/serialization/nvp.hpp>
 
@@ -487,6 +488,13 @@ private:
                       );
   }
 
+  bool capacity_exceeded (const pid_t & pid) const
+  {
+    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
+
+    return cap != capacity_map.end() && num_token (pid) >= cap->second.left();
+  }
+
   void update_output_descr ( output_descr_t & output_descr
                            , const pid_t & pid
                            , const eid_t & eid
@@ -531,13 +539,6 @@ private:
                       , out_enabled
                       , in_enabled
                       );
-  }
-
-  bool capacity_exceeded (const pid_t & pid) const
-  {
-    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
-
-    return cap != capacity_map.end() && num_token (pid) >= cap->second.left();
   }
 
   // *********************************************************************** //
@@ -979,15 +980,22 @@ public:
 
   bool put_token (const pid_t & pid, const token_type & token)
   {
-    if (capacity_exceeded (pid))
+    capacity_map_t::iterator cap (capacity_map.find (pid));
+
+    if (cap != capacity_map.end())
       {
-        throw exception::capacity_exceeded ();
+        if (num_token (pid) >= cap->second.left())
+          {
+            throw exception::capacity_exceeded ();
+          }
       }
 
     const bool successful (token_place_rel.add (token, pid));
 
     if (successful)
       {
+        cap->second.put();
+
         for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
           update_in_enabled_put_token (*t, pid, t(), token);
 
@@ -1127,6 +1135,18 @@ public:
 
     // before! constructing the input, as this consumes tokens
     output_descr_t output_descr (get_output_descr(tid));
+
+    BOOST_FOREACH (const typename output_descr_t::value_type& val, output_descr)
+      {
+        capacity_map_t::iterator cap (capacity_map.find (val.first));
+
+        if (cap != capacity_map.end())
+          {
+            cap->second.extract();
+
+            recalculate_out_enabled_by_place (val.first);
+          }
+      }
 
     input_t input;
     const typename enabled_choice_t::iterator choice_consume
