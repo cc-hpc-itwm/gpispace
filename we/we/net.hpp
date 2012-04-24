@@ -48,14 +48,6 @@ namespace petri_net
       explicit no_such (const std::string & msg) : std::runtime_error (msg) {}
       ~no_such () throw () {}
     };
-
-    class capacity_unbounded : public std::runtime_error
-    {
-    public:
-      explicit capacity_unbounded (const std::string & msg)
-        : std::runtime_error ("capacity unbounded: " + msg)
-      {}
-    };
   }
 
   enum edge_type {PT,PT_READ,TP};
