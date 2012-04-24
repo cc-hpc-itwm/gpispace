@@ -1398,7 +1398,7 @@ namespace boost {
     {
       typedef mpl::int_<1> type;
       typedef mpl::integral_c_tag tag;
-      BOOST_STATIC_CONSTANT(unsigned int, value = version::type::value);
+      BOOST_STATIC_CONSTANT(int, value = version::type::value);
     };
   }
 }
