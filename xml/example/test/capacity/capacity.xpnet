@@ -1,21 +1,27 @@
 <defun name="capacity">
 
   <in name="n" type="long" place="n"/>
+  <in name="sa" type="long" place="sa"/>
+  <in name="sb" type="long" place="sb"/>
   <out name="r" type="long" place="r"/>
 
   <net>
 
     <place name="n" type="long"/>
-    <place name="r" type="long" capacity="1"/>
+    <place name="sa" type="long"/>
+    <place name="sb" type="long"/>
+    <place name="r" type="long"/>
 
     <defun name="wait">
-      <inout name="w" type="long"/>
-      <module name="capacity" function="wait (w)">
+      <in name="d" type="string"/>
+      <in name="s" type="long"/>
+      <inout name="k" type="long"/>
+      <module name="capacity" function="wait (d, s, k)">
         <cinclude href="fhglog/fhglog.hpp"/>
         <code><![CDATA[
-          LOG (INFO, "sleeping for " << w << " seconds");
+          LOG (INFO, d << "-" << k << ": sleeping for " << s << " seconds");
 
-          sleep (w);
+          sleep (s);
         ]]></code>
       </module>
     </defun>
@@ -23,15 +29,33 @@
     <transition name="generate" inline="true">
       <include-function href="sequence.xml"/>
       <connect-in port="amount" place="n"/>
-      <connect-out port="out" place="k"/>
+      <connect-out port="out" place="a"/>
     </transition>
 
-    <place name="k" type="long"/>
+    <place name="a" type="long"/>
+    <place name="b" type="long" capacity="1"/>
 
-    <transition name="wait">
+    <place name="wa" type="string">
+      <token><value>"WAIT-A"</value></token>
+    </place>
+    <place name="wb" type="string">
+      <token><value>"WAIT-B"</value></token>
+    </place>
+
+    <transition name="waita">
       <use name="wait"/>
-      <connect-in port="w" place="k"/>
-      <connect-out port="w" place="r"/>
+      <connect-read port="d" place="wa"/>
+      <connect-read port="s" place="sa"/>
+      <connect-in port="k" place="a"/>
+      <connect-out port="k" place="b"/>
+    </transition>
+
+    <transition name="waitb">
+      <use name="wait"/>
+      <connect-read port="d" place="wb"/>
+      <connect-read port="s" place="sb"/>
+      <connect-in port="k" place="b"/>
+      <connect-out port="k" place="r"/>
     </transition>
 
   </net>

@@ -111,11 +111,21 @@ $(NET_NOINLINE): $(XML_MAIN) $(DEP)
 ###############################################################################
 
 ifeq ($(N),)
-N = 2
+N = 4
 endif
 
-$(PUT).$(N): $(NET)
-	$(PNETPUT) --if $(NET) --of $(PUT).$(N) -p n=$(N)
+ifeq ($(SA),)
+SA = 1
+endif
+
+ifeq ($(SB),)
+SB = 2
+endif
+
+PUTTED = $(PUT).$(N).$(SA).$(SB)
+
+$(PUTTED): $(NET)
+	$(PNETPUT) --if $(NET) --of $(PUTTED) -p n=$(N) -p sa=$(SA) -p sb=$(SB)
 
 ###############################################################################
 
@@ -134,8 +144,8 @@ $(PS_NOINLINE): $(NET_NOINLINE)
 
 ###############################################################################
 
-out: $(GEN) $(PUT).$(N)
-	$(WE_EXEC) --net $(PUT).$(N) 2>&1 | $(TEE) $(OUT)
+out: $(GEN) $(PUTTED)
+	$(WE_EXEC) --net $(PUTTED) 2>&1 | $(TEE) $(OUT)
 
 ###############################################################################
 
@@ -144,7 +154,7 @@ out: $(GEN) $(PUT).$(N)
 clean:
 	$(RM) $(GEN)
 	$(RM) $(NET)
-	$(RM) $(PUT).*
+	$(RM) $(PUTTED)
 	$(RM) $(NET_NOINLINE)
 	$(RM) $(PS)
 	$(RM) $(PS_NOINLINE)
