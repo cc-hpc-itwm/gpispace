@@ -2,7 +2,7 @@
 #define WFE_PLUGIN_CONTEXT_HPP 1
 
 #include <we/loader/loader.hpp>
-#include <we/loader/module.hpp>
+#include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
 
 #include "wfe_task.hpp"

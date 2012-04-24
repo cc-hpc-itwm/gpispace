@@ -4,7 +4,7 @@ set (hdrs
   IModule.hpp
   loader.hpp
   macros.hpp
-  module.hpp
+  module_call.hpp
   Module.hpp
   module_traits.hpp
   types.hpp
