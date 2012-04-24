@@ -39,14 +39,12 @@ namespace petri_net
       explicit transition_not_enabled (const std::string & msg)
         : std::runtime_error(msg)
       {}
-      ~transition_not_enabled() throw () {}
     };
 
     class no_such : public std::runtime_error
     {
     public:
       explicit no_such (const std::string & msg) : std::runtime_error (msg) {}
-      ~no_such () throw () {}
     };
   }
 
@@ -203,7 +201,6 @@ private:
                      , const COL & c
                      , adjacency::table<ROW,COL,eid_t> & m
                      )
-    throw (bijection::exception::already_there)
   {
     if (m.get_adjacent (r, c) != eid_invalid)
       throw bijection::exception::already_there ("adjacency");
@@ -219,7 +216,6 @@ private:
   const typename MAP::mapped_type & get_fun ( const MAP & map
                                             , const tid_t & tid
                                             ) const
-    throw (exception::no_such)
   {
     const typename MAP::const_iterator f (map.find (tid));
 
@@ -524,52 +520,44 @@ public:
 
   // condition+transition function accessores
   const trans_t & get_trans (const tid_t & tid) const
-    throw (exception::no_such)
   {
     return get_fun (trans, tid);
   }
 
   // get id
   const pid_t & get_place_id (const place_type & place) const
-    throw (bijection::exception::no_such)
   {
     return pmap.get_id (place);
   }
 
   const tid_t & get_transition_id (const transition_type & transition) const
-    throw (bijection::exception::no_such)
   {
     return tmap.get_id (transition);
   }
 
   const eid_t & get_edge_id (const edge_type & edge) const
-    throw (bijection::exception::no_such)
   {
     return emap.get_id (edge);
   }
 
   // get element
   const place_type & get_place (const pid_t & pid) const
-    throw (bijection::exception::no_such)
   {
     return pmap.get_elem (pid);
   }
 
   const transition_type & get_transition (const tid_t & tid) const
-    throw (bijection::exception::no_such)
   {
     return tmap.get_elem (tid);
   }
 
   const edge_type & get_edge (const eid_t & eid) const
-    throw (bijection::exception::no_such)
   {
     return emap.get_elem (eid);
   }
 
   // add element
   pid_t add_place (const place_type & place)
-    throw (bijection::exception::already_there)
   {
     return pmap.add (place);
   }
@@ -617,7 +605,6 @@ public:
   ( const transition_type & transition
   , const trans_t & tf = Function::Transition::Default<token_type>()
   )
-    throw (bijection::exception::already_there)
   {
     const tid_t tid (tmap.add (transition));
 
@@ -683,7 +670,6 @@ public:
 
   // get edge info
   connection_t get_edge_info (const eid_t & eid) const
-    throw (exception::no_such)
   {
     const typename connection_map_t::const_iterator it
       (connection_map.find (eid));
@@ -789,7 +775,6 @@ public:
   }
 
   const pid_t & delete_place (const pid_t & pid)
-    throw (bijection::exception::no_such)
   {
     // make the token deletion visible to delete_edge
     token_place_rel.delete_right (pid);
@@ -823,7 +808,6 @@ public:
   }
 
   const tid_t & delete_transition (const tid_t & tid)
-    throw (bijection::exception::no_such)
   {
     std::stack<eid_t> stack;
 
@@ -867,7 +851,6 @@ public:
   // modify and replace
   // erased in case of conflict after modification
   pid_t modify_place (const pid_t & pid, const place_type & place)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const pid_t new_pid (pmap.modify (pid, place));
 
@@ -878,7 +861,6 @@ public:
 
   // kept old value in case of conflict after modification
   pid_t replace_place (const pid_t & pid, const place_type & place)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const pid_t new_pid (pmap.replace (pid, place));
 
@@ -890,7 +872,6 @@ public:
   tid_t modify_transition ( const tid_t & tid
                           , const transition_type & transition
                           )
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.modify (tid, transition);
   }
@@ -898,13 +879,11 @@ public:
   tid_t replace_transition ( const tid_t & tid
                            , const transition_type & transition
                            )
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.replace (tid, transition);
   }
 
   eid_t modify_edge (const eid_t & eid, const edge_type & edge)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const eid_t new_eid (emap.modify (eid, edge));
 
@@ -914,7 +893,6 @@ public:
   }
 
   eid_t replace_edge (const eid_t & eid, const edge_type & edge)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const eid_t new_eid (emap.replace (eid, edge));
 
@@ -925,7 +903,6 @@ public:
 
   // deal with tokens
   const pid_in_map_t & get_pid_in_map (const tid_t & tid) const
-    throw (exception::no_such)
   {
     const typename in_map_t::const_iterator m (in_map.find (tid));
 
@@ -936,7 +913,6 @@ public:
   }
 
   const output_descr_t & get_output_descr (const tid_t & tid) const
-    throw (exception::no_such)
   {
     const typename out_map_t::const_iterator m (out_map.find (tid));
 
@@ -1052,7 +1028,7 @@ public:
     return enabled.elem(tid);
   }
 
-  choices_t choices (const tid_t & tid) const throw (exception::no_such)
+  choices_t choices (const tid_t & tid) const
   {
     return choices_t (get_pid_in_map (tid));
   }
@@ -1090,7 +1066,6 @@ public:
   }
 
   activity_t extract_activity (const tid_t tid)
-    throw (exception::no_such, exception::transition_not_enabled)
   {
     if (!get_can_fire (tid))
       throw exception::transition_not_enabled ("during call of fire");
