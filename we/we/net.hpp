@@ -33,18 +33,36 @@ namespace petri_net
 {
   namespace exception
   {
-    class transition_not_enabled : public std::runtime_error
+    class generic : public std::runtime_error
     {
     public:
-      explicit transition_not_enabled (const std::string & msg)
-        : std::runtime_error(msg)
+      explicit generic (const std::string& msg)
+        : std::runtime_error ("net: " + msg)
       {}
     };
 
-    class no_such : public std::runtime_error
+    class transition_not_enabled : public generic
     {
     public:
-      explicit no_such (const std::string & msg) : std::runtime_error (msg) {}
+      explicit transition_not_enabled (const std::string & msg)
+        : generic ("transition_not_enabled: " + msg)
+      {}
+    };
+
+    class capacity_exceeded : public generic
+    {
+    public:
+      explicit capacity_exceeded ()
+        : generic ("capacity exceeded")
+      {}
+    };
+
+    class no_such : public generic
+    {
+    public:
+      explicit no_such (const std::string & msg)
+        : generic ("no_such: " + msg)
+      {}
     };
   }
 
@@ -478,6 +496,18 @@ private:
                       );
   }
 
+  bool capacity_exceeded (const pid_t & pid) const
+  {
+    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
+
+    if (cap != capacity_map.end() && num_token (pid) >= cap->second)
+      {
+        return true;
+      }
+
+    return false;
+  }
+
   // *********************************************************************** //
 
 public:
@@ -500,18 +530,6 @@ public:
     , in_enabled ()
     , out_enabled ()
   {};
-
-  bool capacity_exceeded (const pid_t & pid) const
-  {
-    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
-
-    if (cap != capacity_map.end() && num_token (pid) >= cap->second)
-      {
-        return true;
-      }
-
-    return false;
-  }
 
   // numbers of elements
   size_type get_num_places (void) const { return places().size(); }
@@ -929,6 +947,11 @@ public:
 
   bool put_token (const pid_t & pid, const token_type & token)
   {
+    if (capacity_exceeded (pid))
+      {
+        throw exception::capacity_exceeded ();
+      }
+
     const bool successful (token_place_rel.add (token, pid));
 
     if (successful)
