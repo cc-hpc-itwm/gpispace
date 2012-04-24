@@ -103,7 +103,7 @@ namespace petri_net
         , _used (0)
       {}
       const capacity_t& left () const { return _left; }
-      const capacity_t capacity () const { return _left + _used; }
+      capacity_t capacity () const { return _left + _used; }
       void extract () { assert (_left > 0); --_left; ++_used; }
       void put () { if (_used > 0) { --_used; ++_left; } }
 
