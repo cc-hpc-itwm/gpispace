@@ -977,36 +977,31 @@ public:
     return enabled;
   }
 
-  bool put_token (const pid_t & pid, const token_type & token)
+  void put_token (const pid_t & pid, const token_type & token)
   {
     capacity_map_t::iterator cap (capacity_map.find (pid));
 
     if (cap != capacity_map.end())
       {
+        cap->second.put();
+
         if (num_token (pid) >= cap->second.left())
           {
             throw exception::capacity_exceeded ();
           }
       }
 
-    const bool successful (token_place_rel.add (token, pid));
+    token_place_rel.add (token, pid);
 
-    if (successful)
-      {
-        cap->second.put();
+    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+      update_in_enabled_put_token (*t, pid, t(), token);
 
-        for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-          update_in_enabled_put_token (*t, pid, t(), token);
-
-        recalculate_out_enabled_by_place (pid);
-      }
-
-    return successful;
+    recalculate_out_enabled_by_place (pid);
   }
 
-  bool put_token (const pid_t & pid)
+  void put_token (const pid_t & pid)
   {
-    return put_token (pid, token_type());
+    put_token (pid, token_type());
   }
 
   token_place_it get_token (const pid_t & pid) const
