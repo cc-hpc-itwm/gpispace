@@ -101,6 +101,26 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
   }
 }
 
+void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
+{
+	ostringstream os;
+	try {
+
+		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
+		pJob->Reschedule(); // put the job back into the pending state
+
+		schedule(job_id);
+	}
+	catch(JobNotFoundException const &ex)
+	{
+		SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
+	}
+	catch(const std::exception& ex) {
+		SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+	}
+}
+
+
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
 	ostringstream os;
