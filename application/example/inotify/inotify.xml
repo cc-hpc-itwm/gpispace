@@ -1,0 +1,186 @@
+<defun name="inotify">
+  <in name="N" type="long" place="N" />
+  <!-- watched_file -->
+  <in name="watched_file" type="string" place="watched_file" />
+
+  <out name="done" type="control" place="done" />
+
+  <net>
+    <!-- input/output places -->
+    <place name="N" type="long" />    
+    <place name="watched_file" type="string" />
+
+    <place name="done" type="control" />
+
+    <!-- template specializations -->
+    <include-template href="dup.xml" />
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long" />
+    </specialize>
+
+    <include-template href="wait.xml" />
+    <specialize name="wait_control" use="wait">
+      <type-map replace="T" with="control" />
+    </specialize>
+
+    <!-- initialization -->
+
+    <transition name="init_places_test">
+      <use name="dup_long" />
+      <connect-in port="in" place="N"/>
+      <connect-out port="one" place="generate"/>
+      <connect-out port="two" place="wait"/>
+    </transition>
+
+    <place name="generate" type="long" />
+    <place name="wait" type="long" />
+
+    <transition name="generate_test"  inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in  port="amount" place="generate" />
+      <connect-out port="out"    place="a" />
+    </transition>
+
+    <place name="a" type="long" />
+
+    <transition name="run_test">
+      <defun>
+	<in name="id" type="long" />
+	<in name="filename" type="string" />
+	<out name="done" type="control" />
+	<module name="inotify_test" function="testInotify (id,filename)">
+	  	<cinclude href="fhglog/minimal.hpp"/>
+	  	<cinclude href="unistd.h" />
+	  	<cinclude href="stdio.h" />
+	
+		<cinclude href="sys/types.h"/>
+		<cinclude href="sys/stat.h"/>
+		<cinclude href="fcntl.h"/>
+		<cinclude href="string.h"/>
+		<cinclude href="stdio.h"/>
+		<cinclude href="errno.h"/>
+		<cinclude href="sys/inotify.h"/>
+		
+		<code><![CDATA[
+	  	LOG(INFO, ">>> running  testInotify(" << id << ", " << filename << ")");
+	  
+		const int BUFF_SIZE = ((sizeof(struct inotify_event)+FILENAME_MAX)*1024);		
+		const char* target = filename.c_str(); // "/var/tmp/inotify_test.txt"
+		
+		int result;
+	   	int fd;
+	   	int wd;   /* watch descriptor */
+	
+	   	FILE * pFile = fopen(target,"r");
+	
+	   	if(!pFile) // file does not exist, create the file
+	   	{
+			pFile = fopen(target,"w");
+			fputc('1', pFile);
+			fclose(pFile);
+		}
+	
+	   	LOG(INFO, "Watching the file "<<target);
+	
+	   	fd = inotify_init();
+	   	if (fd < 0) 
+	   	{
+			LOG(ERROR, "Error: "<<strerror(errno));
+	    	return;
+	   	}
+	
+	   	wd = inotify_add_watch (fd, target, IN_ALL_EVENTS);
+	   	if (wd < 0) 
+	   	{
+			LOG(ERROR, "Error: "<<strerror(errno));
+	      	return;
+		}
+	
+	   	//while (1)
+	   	{
+	      	ssize_t len, i = 0;
+		   	char action[81+FILENAME_MAX] = {0};
+		   	char buff[BUFF_SIZE] = {0};
+		
+		   	len = read (fd, buff, BUFF_SIZE);
+		
+		   	while (i < len) 
+		   	{
+		    	struct inotify_event *pevent = (struct inotify_event *)&buff[i];
+		      	char action[81+FILENAME_MAX] = {0};
+		
+		      	if (pevent->len)
+		        	strcpy (action, pevent->name);
+		      	else
+		        	strcpy (action, target);
+		
+		      	if (pevent->mask & IN_ACCESS)
+		        	strcat(action, " was read");
+		      	if (pevent->mask & IN_ATTRIB)
+		        	strcat(action, " Metadata changed");
+		      	if (pevent->mask & IN_CLOSE_WRITE)
+		        	strcat(action, " opened for writing was closed");
+		      	if (pevent->mask & IN_CLOSE_NOWRITE)
+		        	strcat(action, " not opened for writing was closed");
+		      	if (pevent->mask & IN_CREATE)
+		        	strcat(action, " created in watched directory");
+		      	if (pevent->mask & IN_DELETE)
+		        	strcat(action, " deleted from watched directory");
+		      	if (pevent->mask & IN_DELETE_SELF)
+		         	strcat(action, "Watched file/directory was itself deleted");
+		      	if (pevent->mask & IN_MODIFY)
+		         	strcat(action, " was modified");
+		      	if (pevent->mask & IN_MOVE_SELF)
+		         	strcat(action, "Watched file/directory was itself moved");
+		      	if (pevent->mask & IN_MOVED_FROM)
+		         	strcat(action, " moved out of watched directory");
+		      	if (pevent->mask & IN_MOVED_TO)
+		         	strcat(action, " moved into watched directory");
+		      	if (pevent->mask & IN_OPEN)
+		         	strcat(action, " was opened");
+		
+				printf ("%s\n", action);
+		
+		      	i += sizeof(struct inotify_event) + pevent->len;
+			}
+		}
+		
+	  	LOG(INFO, "<<< finished testInotify(" << id << ", " << filename << ")");
+	  ]]></code>
+	</module>
+      </defun>
+      <connect-in port="id" place="a" />
+      <connect-read port="filename" place="watched_file" />
+      <connect-out port="done" place="done_run_test" />
+    </transition>
+
+    <place name="done_run_test" type="control" />
+
+    <transition name="wait_until_test_completed">
+      <use name="wait_control"/>
+      <place-map virtual="wait" real="wait" />
+      <connect-in  port="trigger" place="done_run_test" />
+      <connect-out port="done"    place="done_test" />
+    </transition>
+
+    <place name="done_test" type="control" />
+
+    <!-- path A complete -->
+
+    <!-- everything done, remove tokens -->
+
+    <transition name="finalize">
+      <defun>
+	<in name="done_test" type="control" />
+	<in name="watched_file" type="string" />
+	<out name="done" type="control" />
+	<expression>
+	  ${done} := []
+	</expression>
+      </defun>
+      <connect-in  port="done_test" place="done_test" />
+      <connect-in  port="watched_file" place="watched_file" />
+      <connect-out port="done"   place="done" />
+    </transition>
+  </net>
+</defun>
