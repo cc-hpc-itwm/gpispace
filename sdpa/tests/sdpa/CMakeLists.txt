@@ -12,6 +12,13 @@ message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}
 set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/capabilities/capabilities/pnetc/op")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH}")
 
+set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/atomic/atomic/pnetc/op")
+message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
+
+set(TESTS_N_ATOMIC_TASKS 200)
+
+set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/inotify/inotify/pnetc/op")
+message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
 
 get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
 message(STATUS "fvm module is in: ${TESTS_FVM_PC_MODULE}")
@@ -48,6 +55,7 @@ pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.x
   FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
 )
 
+###########################################################################################
 pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabilities.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
   GENERATE capabilities
@@ -62,27 +70,61 @@ pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabili
 
 get_target_property(CAPABILITY_PNET_LOCATION pnet-capabilities-test-wf LOCATION)
 set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=100L -p time_A=500000L -p n_B=50L -p time_B=500000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
-           
-#add_custom_command(TARGET target
-#                   PRE_BUILD | PRE_LINK | POST_BUILD
-#                   COMMAND command1 [ARGS] [args1...]
-#                   [COMMAND command2 [ARGS] [args2...] ...]
-#                   [WORKING_DIRECTORY dir]
-#                   [COMMENT comment] [VERBATIM])
-            
+       
 add_custom_command(TARGET pnet-capabilities-test-wf
                    POST_BUILD
                    COMMAND ${command}
                    COMMENT "putting tokens into capabilities workflow: ${command}"
 )
+############################################################################################
+pnet_compile(atomic-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/atomic.xml
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic-test-wf.in.pnet
+  GENERATE atomic
+  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/application/example
+           -O3
+  BUILD
+  COMPONENT tests
+)
 
+get_target_property(ATOMIC_PNET_LOCATION pnet-atomic-test-wf LOCATION)
+set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${ATOMIC_PNET_LOCATION}" -p n_A=${TESTS_N_ATOMIC_TASKS}L -p n_B=${TESTS_N_ATOMIC_TASKS}L -p shared_file=\\"/var/tmp/atomic_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet")
+           
+add_custom_command(TARGET pnet-atomic-test-wf
+                   POST_BUILD
+                   COMMAND ${command}
+                   COMMENT "putting tokens into atomic workflow: ${command}"
+)
+################################################################################################
+pnet_compile(inotify-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/inotify.xml
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
+  GENERATE inotify
+  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/application/example
+           -O3
+  BUILD
+  COMPONENT tests
+)
+
+get_target_property(INOTIFY_PNET_LOCATION pnet-inotify-test-wf LOCATION)
+set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${INOTIFY_PNET_LOCATION}" -p N=5L -p watched_file=\\"/var/tmp/inotify_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet")
+           
+add_custom_command(TARGET pnet-inotify-test-wf
+                   POST_BUILD
+                   COMMAND ${command}
+                   COMMENT "putting tokens into inotify workflow: ${command}"
+)
+################################################################################################
 set (test_srcs
   SchedulerTestImpl.cpp
   test_Config.cpp
 )
 
 ADD_LIBRARY(sdpa-test ${test_srcs})
-#add_dependencies(sdpa-test gen-cpb-test-wf)
 target_link_libraries(sdpa-test
 	 sdpa-daemon
 	 sdpa-client
@@ -94,6 +136,8 @@ target_link_libraries(sdpa-test
 	 ${Boost_LIBRARIES})
 
 set (tc_srcs
+  test_Atomic.cpp
+  test_Inotify.cpp
   test_CancelJob.cpp
   test_Config.cpp
   test_Worker.cpp
@@ -146,4 +190,6 @@ foreach (tc_src ${tc_srcs})
   add_test(${tc_name} ${LOC})
   add_dependencies(${tc_name} fvm-fake-plugin)
   add_dependencies(${tc_name} pnet-capabilities-test-wf)
+  add_dependencies(${tc_name} pnet-atomic-test-wf)
+  add_dependencies(${tc_name} pnet-inotify-test-wf)
 endforeach(tc_src ${tc_srcs})
