@@ -97,7 +97,11 @@ public:
     if (0 == m_wfe)
     {
       MLOG(ERROR, "could not access workflow-engine plugin!");
+#ifdef ELIBACC
       FHG_PLUGIN_FAILED(ELIBACC);
+#else // For example on OSX.
+      FHG_PLUGIN_FAILED(EACCES);
+#endif
     }
 
     // parse virtual capabilities
