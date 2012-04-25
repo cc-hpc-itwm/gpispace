@@ -313,7 +313,7 @@ namespace signature
       public:
         cpp_includes ( Stream& _os
                      , seen_type & _seen
-                     , const boost::filesystem::path _incpath
+                     , const boost::filesystem::path& _incpath
                      )
           : os (_os), seen (_seen), incpath (_incpath)
         {}
