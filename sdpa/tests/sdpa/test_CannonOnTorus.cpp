@@ -53,6 +53,8 @@
 #include <boost/shared_array.hpp>
 #include <sdpa/types.hpp>
 
+#include <stdio.h>
+
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
 const int NAGENTS = 1;
@@ -390,7 +392,6 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 	sdpa::master_info_list_t arrOrchMasterInfo;
 	sdpa::daemon::Agent::ptr_t ptrOrch = sdpa::daemon::AgentFactory<TorusWorkflowEngineOrch>::create("orchestrator_0", addrOrch, arrOrchMasterInfo, MAX_CAP);
 	ptrOrch->start_agent(false);
-
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	//sdpa::daemon::Agent::ptr_t arrAgents[NAGENTS];
