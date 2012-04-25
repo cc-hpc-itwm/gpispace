@@ -164,10 +164,10 @@ namespace sdpa { namespace daemon {
       virtual void print()
       {
     	  SDPA_LOG_DEBUG("The content of the JobManager is:");
-    	  ptr_job_man_->print();
+    	  jobManager()->print();
 
     	  SDPA_LOG_DEBUG("The content of the Scheduler is:");
-    	  ptr_scheduler_->print();
+    	  scheduler()->print();
       }
 
 	  // event handlers
@@ -199,11 +199,6 @@ namespace sdpa { namespace daemon {
 	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
 	  virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
 	  virtual void action_error_event(const sdpa::events::ErrorEvent& );
-
-	  // job
-	  virtual void schedule(const sdpa::job_id_t& job);
-	  virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
-	  const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
 	  // event communication
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
@@ -255,10 +250,15 @@ namespace sdpa { namespace daemon {
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
       std::string gen_id() { return sdpa::events::id_generator::instance().next(); }
+      const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
       // scheduler
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
       virtual void createScheduler(bool bUseReqModel) = 0;
+      virtual void schedule(const sdpa::job_id_t& job);
+      virtual void reschedule(const sdpa::job_id_t& job);
+      virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
+      void reScheduleAllMasterJobs();
 
       // workflow engine observers
       template <typename T>

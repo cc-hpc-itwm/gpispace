@@ -148,7 +148,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
         SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
     }
 
-    jobManager()->reScheduleAllMasterJobs(this);
+    reScheduleAllMasterJobs();
 }
 
 void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile )
@@ -211,7 +211,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
         SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
     }
 
-    jobManager()->reScheduleAllMasterJobs(this);
+    reScheduleAllMasterJobs();
 
 }
 
@@ -255,7 +255,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 		SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
 	}
 
-	jobManager()->reScheduleAllMasterJobs(this);
+	reScheduleAllMasterJobs();
 }
 
 void GenericDaemon::shutdown(std::string& strBackup )
@@ -1720,9 +1720,21 @@ void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
     throw std::runtime_error(name() + " does not have scheduler!");
 }
 
+void GenericDaemon::reschedule(const sdpa::job_id_t& jobId)
+{
+	if( scheduler() )
+	{
+		scheduler()->reschedule(jobId);
+		return;
+	}
+
+	SDPA_LOG_ERROR("The agent "<<name()<<" has no scheduler!");
+	throw std::runtime_error(name() + " does not have scheduler!");
+}
+
 void GenericDaemon::start_fsm()
 {
-  // to be overriden by DaemonFSM
+	// to be overriden by DaemonFSM
 }
 
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
@@ -1882,4 +1894,17 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 {
 	return scheduler()->getWorkerId(r);
+}
+
+void GenericDaemon::reScheduleAllMasterJobs()
+{
+	lock_type lock(mtx_);
+
+	sdpa::job_id_list_t listNotCompletedMsterJobs = jobManager()->getListNotCompletedMasterJobs();
+
+	BOOST_FOREACH(const job_id_t& jobId, listNotCompletedMsterJobs)
+	{
+		SDPA_LOG_INFO("Re-schedule the job"<<jobId);
+		reschedule(jobId);
+	}
 }
