@@ -9,7 +9,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp
   LINK_LIBRARIES sdpa-events
                  sdpa-util
 		 sdpa
-		 ${FhgCom_LIBRARY}
+		 ${FhgCom_LIBRARY_SHARED}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_DATE_TIME_SHARED_LIBRARY}
@@ -23,7 +23,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp
 
 fhg_add_plugin(kvs kvs.cpp
   EXPORTS KVS
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
+  LINK_LIBRARIES ${FhgCom_LIBRARY_SHARED}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
@@ -36,7 +36,7 @@ fhg_add_plugin(kvs kvs.cpp
 
 fhg_add_plugin(wfe wfe.cpp observable.cpp
   EXPORTS WFE
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
+  LINK_LIBRARIES ${FhgCom_LIBRARY_SHARED}
                  ${WE_LIBRARIES}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_FILESYSTEM_SHARED_LIBRARY}
@@ -64,7 +64,7 @@ fhg_add_plugin(wfe_eval wfe_eval.cpp
 
 fhg_add_plugin(gui gui.cpp observable.cpp
   EXPORTS GUI
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
+  LINK_LIBRARIES ${FhgCom_LIBRARY_SHARED}
                  ${WE_LIBRARIES}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
@@ -80,7 +80,7 @@ fhg_add_plugin(sdpac sdpac.cpp
   LINK_LIBRARIES sdpa-events
                  sdpa-util
 		 sdpa
-		 ${FhgCom_LIBRARY}
+		 ${FhgCom_LIBRARY_SHARED}
                  ${WE_PRECOMPILE_LIBRARIES}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
@@ -94,7 +94,7 @@ fhg_add_plugin(sdpac sdpac.cpp
 
 fhg_add_plugin(net net.cpp
   EXPORTS Peer
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
+  LINK_LIBRARIES ${FhgCom_LIBRARY_SHARED}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
@@ -107,7 +107,8 @@ fhg_add_plugin(net net.cpp
 
 fhg_add_plugin(sdpactl sdpactl.cpp
   EXPORTS Control
-  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+  LINK_LIBRARIES ${FhgLog_LIBRARY_SHARED}
+     ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
@@ -119,7 +120,8 @@ fhg_add_plugin(sdpactl sdpactl.cpp
 
 fhg_add_plugin(progress progress.cpp
   EXPORTS Progress
-  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+  LINK_LIBRARIES ${FhgLog_LIBRARY_SHARED}
+     ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
@@ -143,7 +145,8 @@ fhg_add_plugin(logd logd.cpp observable.cpp
 
 fhg_add_plugin(logc logc.cpp
   EXPORTS Logc
-  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+  LINK_LIBRARIES ${FhgLog_LIBRARY_SHARED}
+     ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
