@@ -106,16 +106,6 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
     free_slot_.notify_one();
 }
 
-std::vector<sdpa::job_id_t> JobManager::getJobIDList()
-{
-    lock_type lock(mtx_);
-    std::vector<sdpa::job_id_t> v;
-    for(job_map_t::iterator it = job_map_.begin(); it!= job_map_.end(); it++)
-      v.push_back(it->first);
-
-    return v;
-}
-
 std::string JobManager::print() const
 {
     lock_type lock(mtx_);
@@ -160,7 +150,7 @@ void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const requirem
 static const std::size_t MAX_PARALLEL_JOBS = 1024;
 bool JobManager::slotAvailable () const
 {
-  return getNumberJobs () < MAX_PARALLEL_JOBS;
+  return getNumberOfJobs () < MAX_PARALLEL_JOBS;
 }
 
 void JobManager::waitForFreeSlot ()
@@ -229,32 +219,31 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
     }
 }
 
-void JobManager::reScheduleAllMasterJobs(IComm* pComm)
+sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs()
 {
 	lock_type lock(mtx_);
+	sdpa::job_id_list_t listJobsNotCompleted;
 
 	for ( job_map_t::iterator it = job_map_.begin(); it != job_map_.end(); ++it )
 	{
-		sdpa::job_id_t job_id = it->first;
+		sdpa::job_id_t jobId = it->first;
 		Job::ptr_t pJob = it->second;
-		std::string status = pJob->getStatus();
-		pJob->set_icomm(pComm);
 
-		// the job is not in a terminal state
-		if(	status.find("Finished") 	== std::string::npos
-			&& status.find("Failed") 	== std::string::npos
-			&& status.find("Cancelled") == std::string::npos )
+		if(pJob->isMasterJob() )
 		{
-                  if( (pComm->hasWorkflowEngine() && pJob->isMasterJob()) || (!pComm->hasWorkflowEngine()) )
-			{
-				SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
-				pJob->Reschedule();
+			std::string status = pJob->getStatus();
 
-				SDPA_LOG_INFO("Re-schedule the job"<<pJob->id());
-				pComm->schedule(job_id);
+			// the job is not in a terminal state
+			if(	status.find("Finished") 	== std::string::npos
+				&& status.find("Failed") 	== std::string::npos
+				&& status.find("Cancelled") == std::string::npos )
+			{
+				listJobsNotCompleted.push_back(jobId);
 			}
 		}
 	}
+
+	return listJobsNotCompleted;
 }
 
 unsigned int JobManager::countMasterJobs()
