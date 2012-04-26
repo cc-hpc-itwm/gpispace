@@ -87,9 +87,9 @@ namespace fhg
         }
 
         template<typename Key, typename Val>
-        void attr (const Key & key, const boost::optional<Val> & val) const
+        void attr (const Key & key, const fhg::util::maybe<Val> & val) const
         {
-          if (val)
+          if (val.isJust())
             {
               attr<Key, Val> (key, *val);
             }

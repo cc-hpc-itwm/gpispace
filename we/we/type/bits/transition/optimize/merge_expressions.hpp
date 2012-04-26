@@ -19,7 +19,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template<typename P, typename E, typename T>
-      inline boost::optional<const typename transition_t<P, E, T>::port_t>
+      inline fhg::util::maybe<const typename transition_t<P, E, T>::port_t>
       input_port_by_pid ( const transition_t<P, E, T> & trans
                         , const petri_net::pid_t & pid
                         )
@@ -29,11 +29,12 @@ namespace we { namespace type {
 
         try
           {
-            return trans.get_port (trans.input_port_by_pid (pid).first);
+            return fhg::util::Just<const port_t>
+              (trans.get_port (trans.input_port_by_pid (pid).first));
           }
         catch (const we::type::exception::not_connected<petri_net::pid_t> &)
           {
-            return boost::none;
+            return fhg::util::Nothing<const port_t>();
           }
       }
 
@@ -57,7 +58,7 @@ namespace we { namespace type {
       };
 
       template<typename P, typename E, typename T>
-      inline boost::optional<trans_info<P, E, T> >
+      inline fhg::util::maybe<trans_info<P, E, T> >
       expression_predecessor
       ( const transition_t<P, E, T> & trans
       , const petri_net::tid_t & tid
@@ -108,7 +109,7 @@ namespace we { namespace type {
           {
             if (names_out.find (*n) != names_out.end())
               {
-                return boost::none;
+                return fhg::util::Nothing<trans_info>();
               }
           }
 
@@ -158,7 +159,7 @@ namespace we { namespace type {
                           {
                             if (pid_out.find (*tp) != pid_out.end())
                               {
-                                return boost::none;
+                                return fhg::util::Nothing<trans_info>();
                               }
                           }
                      }
@@ -169,7 +170,7 @@ namespace we { namespace type {
                // WORK HERE: possible optimization: make the place an
                // input place of the only one predecessor
                // BEWARE: check the conditions!
-               return boost::none;
+               return fhg::util::Nothing<trans_info>();
              }
             else
               {
@@ -185,7 +186,7 @@ namespace we { namespace type {
                        != content::expression
                        )
                       {
-                        return boost::none;
+                        return fhg::util::Nothing<trans_info>();
                       }
 
                     for ( adj_place_const_it tp (net.out_of_transition (*t))
@@ -195,7 +196,7 @@ namespace we { namespace type {
                       {
                         if (pid_out.find (*tp) != pid_out.end())
                           {
-                            return boost::none;
+                            return fhg::util::Nothing<trans_info>();
                           }
 
                         max_successors_of_pred =
@@ -213,7 +214,7 @@ namespace we { namespace type {
            || (!preds_read.empty() && max_successors_of_pred > 1)
            )
           {
-            return boost::none;
+            return fhg::util::Nothing<trans_info>();
           }
 
         const pair_type p (*preds.begin());
@@ -270,10 +271,10 @@ namespace we { namespace type {
               }
             else
               {
-                const boost::optional<const port_t>
+                const fhg::util::maybe<const port_t>
                   maybe_pred_in (input_port_by_pid (pred, *p));
 
-                if (maybe_pred_in)
+                if (maybe_pred_in.isJust())
                   {
                     const port_t & pred_in (*maybe_pred_in);
 
@@ -381,7 +382,7 @@ namespace we { namespace type {
 
                     if (pid_read.find (pid) != pid_read.end())
                       {
-                        if (!input_port_by_pid (pred, pid))
+                        if (input_port_by_pid (pred, pid).isNothing())
                           {
                             pred.UNSAFE_add_port (p->second);
 
@@ -503,10 +504,10 @@ namespace we { namespace type {
                 typedef trans_info<P, E, T> trans_info;
                 typedef typename trans_info::pid_set_type pid_set_type;
 
-                const boost::optional<trans_info>
+                const fhg::util::maybe<trans_info>
                   maybe_pred (expression_predecessor (trans, tid_trans, net));
 
-                if (maybe_pred)
+                if (maybe_pred.isJust())
                   {
                     transition_t pred ((*maybe_pred).pred);
                     tid_t tid_pred ((*maybe_pred).tid_pred);

@@ -14,7 +14,7 @@ namespace xml
 {
   namespace util
   {
-    template<typename T, typename Key = std::string, typename Hash = boost::hash<Key> >
+    template<typename T, typename Key = std::string>
     struct unique
     {
     public:
@@ -23,7 +23,6 @@ namespace xml
     private:
       typedef boost::unordered_map< Key
                                   , typename elements_type::iterator
-                                  , Hash
                                   > names_type;
 
       elements_type _elements;

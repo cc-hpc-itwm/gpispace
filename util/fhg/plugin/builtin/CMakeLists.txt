@@ -5,8 +5,7 @@ include(fhg_plugin_macros)
 fhg_add_plugin(stats stats.cpp)
 fhg_add_plugin(hello hello.cpp)
 fhg_add_plugin(world world.cpp)
-fhg_add_plugin(helloworld helloworld.cpp
-  LINK_LIBRARIES ${FhgLog_LIBRARY_SHARED})
+fhg_add_plugin(helloworld helloworld.cpp)
 
 include(libutils)
 merge_static_libs(fhg-builtin-plugins fhg-builtin-plugins "${builtin-plugins}")

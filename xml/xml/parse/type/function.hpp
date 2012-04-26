@@ -287,7 +287,7 @@ namespace xml
               const signature::type type
                 (fun.type_of_port (direction, *port));
 
-              if (!port->place)
+              if (port->place.isNothing())
                 {
                   trans.add_ports () (port->name, type, direction, port->prop);
                 }
@@ -326,7 +326,7 @@ namespace xml
 
         std::string name (void) const
         {
-          if (!fun.name)
+          if (fun.name.isNothing())
             {
               throw error::synthesize_anonymous_function (fun.path);
             }
@@ -360,7 +360,7 @@ namespace xml
             ( name()
             , we_expr_type (expr, parsed_expression)
             , condition()
-            , fun.internal.get_value_or (true)
+            , fun.internal.get_with_default (true)
             , fun.prop
             );
 
@@ -377,7 +377,7 @@ namespace xml
             ( name()
             , we_mod_type (mod.name, mod.function)
             , condition()
-            , fun.internal.get_value_or (false)
+            , fun.internal.get_with_default (false)
             , fun.prop
             );
 
@@ -410,7 +410,7 @@ namespace xml
             ( name()
             , we_net
             , condition()
-            , fun.internal.get_value_or (true)
+            , fun.internal.get_with_default (true)
             , fun.prop
             );
 
@@ -480,8 +480,8 @@ namespace xml
         bool contains_a_module_call;
         structs_type structs;
 
-        boost::optional<std::string> name;
-        boost::optional<bool> internal;
+        fhg::util::maybe<std::string> name;
+        fhg::util::maybe<bool> internal;
 
         conditions_type cond;
 
@@ -1246,7 +1246,7 @@ namespace xml
         template<typename Stream>
         void
         mod_signature ( Stream& s
-                      , const boost::optional<port_with_type> & port_return
+                      , const fhg::util::maybe<port_with_type> & port_return
                       , const ports_type & ports_const
                       , const ports_type & ports_mutable
                       , const ports_type & ports_out
@@ -1256,7 +1256,7 @@ namespace xml
           std::ostringstream pre;
 
           pre << "      "
-              << (port_return ? mk_type ((*port_return).type) : "void")
+              << (port_return.isJust() ? mk_type ((*port_return).type) : "void")
               << " "
               << mod.function
               << " "
@@ -1322,7 +1322,7 @@ namespace xml
                     , const ports_type & ports_const
                     , const ports_type & ports_mutable
                     , const ports_type & ports_out
-                    , const boost::optional<port_with_type> & port_return
+                    , const fhg::util::maybe<port_with_type> & port_return
                     )
         {
           cpp_util::include ( s
@@ -1373,7 +1373,7 @@ namespace xml
 
           bool first_put (true);
 
-          if (port_return)
+          if (port_return.isJust())
             {
               first_put = false;
 
@@ -1432,7 +1432,7 @@ namespace xml
 
           s << ")";
 
-          if (port_return)
+          if (port_return.isJust())
             {
               s << ")";
 
@@ -1532,10 +1532,10 @@ namespace xml
             ports_type ports_const;
             ports_type ports_mutable;
             ports_type ports_out;
-            boost::optional<port_with_type> port_return;
+            fhg::util::maybe<port_with_type> port_return;
             types_type types;
 
-            if (mod.port_return)
+            if (mod.port_return.isJust())
               {
                 port_type port;
 
@@ -1581,7 +1581,7 @@ namespace xml
                                 );
                       }
 
-                    if (    mod.port_return
+                    if (    mod.port_return.isJust()
                        && (*mod.port_return == port_in.name)
                        )
                       {
@@ -1615,7 +1615,7 @@ namespace xml
                         STRANGE ("failed to get port_out " << *name);
                       }
 
-                    if (    mod.port_return
+                    if (    mod.port_return.isJust()
                        && (*mod.port_return == port_out.name)
                        )
                       {
@@ -1638,7 +1638,7 @@ namespace xml
             const path_t path (prefix / cpp_util::path::op() / mod.name);
             const std::string file_hpp (cpp_util::make::hpp (mod.function));
             const std::string file_cpp
-              ( mod.code
+              ( mod.code.isJust()
               ? cpp_util::make::cpp (mod.function)
               : cpp_util::make::tmpl (mod.function)
               );
@@ -1726,7 +1726,7 @@ namespace xml
                   cpp_util::include (stream, *inc);
                 }
 
-              if (!mod.code)
+              if (mod.code.isNothing())
                 {
                   cpp_util::include (stream, "stdexcept");
                 }
@@ -1740,7 +1740,7 @@ namespace xml
 
               stream << std::endl << "      {" << std::endl;
 
-              if (!mod.code)
+              if (mod.code.isNothing())
                 {
                   stream << "        // INSERT CODE HERE" << std::endl
                          << "        throw std::runtime_error (\""

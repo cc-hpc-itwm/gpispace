@@ -9,7 +9,7 @@ if (NOT FhgCom_FIND_QUIETLY)
   message(STATUS "FindFhgCom check")
 endif (NOT FhgCom_FIND_QUIETLY)
 
-if (NOT TARGET fhgcom)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   find_path (FhgCom_INCLUDE_DIR
 	NAMES "fhgcom/header.hpp"
 	HINTS ${FHGCOM_HOME} ENV FHGCOM_HOME
@@ -38,14 +38,13 @@ if (NOT TARGET fhgcom)
 	endif (FhgCom_FIND_REQUIRED)
   endif (FhgCom_INCLUDE_DIR AND FhgCom_LIBRARY)
 
-else (NOT TARGET fhgcom)
+else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(FhgCom_FOUND true)
   set(FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgcom ${CMAKE_BINARY_DIR}/fhgcom)
   set(FhgCom_LIBRARY_DIR "")
   set(FhgCom_LIBRARY fhgcom)
-  set(FhgCom_LIBRARY_SHARED fhgcom-shared)
 
   if (NOT FhgCom_FIND_QUIETLY)
     message (STATUS "Found FhgCom headers in ${FhgCom_INCLUDE_DIR} and libraries ${FhgCom_LIBRARY} ${FhgCom_LIBRARY_SHARED}")
   endif (NOT FhgCom_FIND_QUIETLY)
-endif (NOT TARGET fhgcom)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})

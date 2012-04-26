@@ -1,41 +1,31 @@
-set (REQUIRED_COMPONENTS
-  THREAD
-  SYSTEM
-  FILESYSTEM
-  SERIALIZATION
-  PROGRAM_OPTIONS
-  IOSTREAMS
-  DATE_TIME
-)
-set (REQUIRED_UNITTEST_COMPONENTS
-  TEST_EXEC_MONITOR
-  UNIT_TEST_FRAMEWORK
-)
+## check for boost
+if (NOT BOOST_ROOT)
+  set(BOOST_ROOT $ENV{BOOST_ROOT})
+endif()
 
-find_package (Boost 1.45 REQUIRED
-  COMPONENTS ${REQUIRED_COMPONENTS} ${REQUIRED_UNITTEST_COMPONENTS}
+set(Boost_FIND_QUIETLY NO)
+set(Boost_USE_STATIC_LIBS ON)
+#set(Boost_USE_STATIC_LIBS OFF)
+set (COMPONENTS
+  thread
+  system
+  filesystem
+  serialization
+  program_options
+  iostreams
+  date_time
+  test_exec_monitor
+  unit_test_framework
 )
-
-# Boost_LIBRARIES and Boost_SHARED_LIBRARIES are already set,
-# but we split them for being able to link to unit tests only.
-set (Boost_LIBRARIES "")
-set (Boost_SHARED_LIBRARIES "")
-foreach (REQUIRED_COMPONENT ${REQUIRED_COMPONENTS})
-  set (Boost_LIBRARIES
-    ${Boost_LIBRARIES} ${Boost_${REQUIRED_COMPONENT}_LIBRARY}
-  )
-  set (Boost_SHARED_LIBRARIES
-    ${Boost_SHARED_LIBRARIES} ${Boost_${REQUIRED_COMPONENT}_SHARED_LIBRARY}
-  )
-endforeach (REQUIRED_COMPONENT ${Boost_REQUIRED_COMPONENTS})
-
-set (Boost_UNIT_TEST_LIBRARIES "")
-set (Boost_UNIT_TEST_SHARED_LIBRARIES "")
-foreach (REQUIRED_COMPONENT ${REQUIRED_UNITTEST_COMPONENTS})
-  set (Boost_UNIT_TEST_LIBRARIES
-    ${Boost_UNIT_TEST_LIBRARIES} ${Boost_${REQUIRED_COMPONENT}_LIBRARY}
-  )
-  set (Boost_UNIT_TEST_SHARED_LIBRARIES
-    ${Boost_UNIT_TEST_SHARED_LIBRARIES} ${Boost_${REQUIRED_COMPONENT}_SHARED_LIBRARY}
-  )
-endforeach (REQUIRED_COMPONENT ${Boost_REQUIRED_COMPONENTS})
+find_package(Boost 1.45 REQUIRED COMPONENTS ${COMPONENTS})
+if (Boost_MAJOR_VERSION LESS 1)
+  message(FATAL_ERROR "At least Boost 1.45 is required. Found ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
+else (Boost_MAJOR_VERSION LESS 1)
+  if (Boost_MAJOR_VERSION EQUAL 1)
+    if (Boost_MINOR_VERSION LESS 45)
+      message(FATAL_ERROR "At least Boost 1.45 is required. Found ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
+    endif (Boost_MINOR_VERSION LESS 45)
+  endif (Boost_MAJOR_VERSION EQUAL 1)
+endif(Boost_MAJOR_VERSION LESS 1)
+set(Boost_LIBRARIES "${Boost_FILESYSTEM_LIBRARY};${Boost_IOSTREAMS_LIBRARY};${Boost_PROGRAM_OPTIONS_LIBRARY};${Boost_SERIALIZATION_LIBRARY};${Boost_DATE_TIME_LIBRARY};${Boost_THREAD_LIBRARY};${Boost_SYSTEM_LIBRARY}")
+set(Boost_UNIT_TEST_LIBRARIES "${Boost_TEST_EXEC_MONITOR_LIBRARY};${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")

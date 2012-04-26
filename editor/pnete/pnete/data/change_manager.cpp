@@ -95,7 +95,7 @@ namespace fhg
         }
         else
         {
-          fun.name = boost::none;
+          fun.name.clear();
         }
 
         emit signal_set_function_name (origin, fun, name);

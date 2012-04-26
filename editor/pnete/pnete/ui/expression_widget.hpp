@@ -36,7 +36,7 @@ namespace fhg
         void set_expression (const QString&);
         void set_expression (const std::string&);
 
-        void set_name (const boost::optional<std::string>&);
+        void set_name (const fhg::util::maybe<std::string>&);
         void set_name (const QString&);
         void set_name (const std::string&);
 

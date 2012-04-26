@@ -3,10 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __APPLE__ // stuff is marked as deprecated here
-#define _XOPEN_SOURCE
-#include <machine/signal.h> // sigcontext
-#endif
 #include <ucontext.h>
 #include <unistd.h>
 
@@ -34,7 +30,6 @@
 //
 // by: jschmier, http://stackoverflow.com/users/203667/jschmier
 
-#ifndef __APPLE__
 /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
 typedef struct _sig_ucontext {
  unsigned long     uc_flags;
@@ -43,9 +38,6 @@ typedef struct _sig_ucontext {
  struct sigcontext uc_mcontext;
  sigset_t          uc_sigmask;
 } sig_ucontext_t;
-#else
-typedef ucontext_t sig_ucontext_t;
-#endif
 
 void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
 {
@@ -57,20 +49,12 @@ void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
 
  uc = (sig_ucontext_t *)ucontext;
 
- /* Get the address at the time the signal was raised from the IP */
-#ifndef __APPLE__
 #if __WORDSIZE == 32
+ /* Get the address at the time the signal was raised from the EIP (x86) */
  caller_address = (void *) uc->uc_mcontext.eip;
 #else /* __WORDSIZE == 64 */
  caller_address = (void *) uc->uc_mcontext.rip;
 #endif /* __WORDSIZE == 64 */
-#else
-#if __WORDSIZE == 32
- caller_address = (void *) uc->uc_mcontext->__ss.__eip;
-#else /* __WORDSIZE == 64 */
- caller_address = (void *) uc->uc_mcontext->__ss.__rip;
-#endif /* __WORDSIZE == 64 */
-#endif
 
  fprintf(stderr, "signal %d (%s), address is %p from %p\n",
   sig_num, strsignal(sig_num), info->si_addr,

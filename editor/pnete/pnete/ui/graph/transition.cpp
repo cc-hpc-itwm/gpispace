@@ -35,7 +35,7 @@ namespace fhg
           {
             if (style::predicate::is_transition (i))
               {
-                const boost::optional<std::string>& n
+                const fhg::util::maybe<std::string>& n
                   (qgraphicsitem_cast<const item*>(i)->transition().name);
 
                 if (n && *n == name.toStdString())

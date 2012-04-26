@@ -50,12 +50,12 @@ namespace xml
       struct net_type
       {
       private:
-        typedef boost::optional<std::string> maybe_string_type;
+        typedef fhg::util::maybe<std::string> maybe_string_type;
 
         xml::util::unique<place_type> _places;
         xml::util::unique<transition_type> _transitions;
-        xml::util::unique<function_type,maybe_string_type, ::fhg::util::optional_hash<std::string> > _functions;
-        xml::util::unique<function_type,maybe_string_type, ::fhg::util::optional_hash<std::string> > _templates;
+        xml::util::unique<function_type,maybe_string_type> _functions;
+        xml::util::unique<function_type,maybe_string_type> _templates;
         xml::util::unique<specialize_type> _specializes;
 
       public:
@@ -624,7 +624,7 @@ namespace xml
               const signature::type type (net.type_of_place (*place));
 
               if (  !state.synthesize_virtual_places()
-                 && place->is_virtual.get_value_or (false)
+                 && place->is_virtual.get_with_default (false)
                  )
                 {
                   // try to find a mapping
@@ -643,7 +643,7 @@ namespace xml
                 {
                   we::type::property::type prop (place->prop);
 
-                  if (place->is_virtual.get_value_or (false))
+                  if (place->is_virtual.get_with_default (false))
                     {
                       prop.set ("virtual", "true");
                     }
@@ -656,7 +656,7 @@ namespace xml
                                        )
                     );
 
-                  if (place->capacity)
+                  if (place->capacity.isJust())
                     {
                       we_net.set_capacity (pid, *place->capacity);
                     }
@@ -697,7 +697,7 @@ namespace xml
 
               if (  (we_net.in_to_place (pid).size() == 0)
                  && (we_net.out_of_place (pid).size() == 0)
-                 && (!place->is_virtual.get_value_or (false))
+                 && (!place->is_virtual.get_with_default (false))
                  )
                 {
                   state.warn

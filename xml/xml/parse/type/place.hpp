@@ -219,19 +219,19 @@ namespace xml
       public:
         std::string name;
         std::string type;
-        boost::optional<petri_net::capacity_t> capacity;
+        fhg::util::maybe<petri_net::capacity_t> capacity;
         tokens_type tokens;
         values_type values;
         signature::type sig;
         we::type::property::type prop;
-        boost::optional<bool> is_virtual;
+        fhg::util::maybe<bool> is_virtual;
 
         place_type () {}
 
         place_type ( const std::string & _name
                    , const std::string & _type
-                   , const boost::optional<petri_net::capacity_t> _capacity
-                   , const boost::optional<bool> _is_virtual
+                   , const fhg::util::maybe<petri_net::capacity_t> _capacity
+                   , const fhg::util::maybe<bool> _is_virtual
                    )
           : name (_name)
           , type (_type)

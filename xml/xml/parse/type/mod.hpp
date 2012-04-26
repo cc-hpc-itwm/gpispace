@@ -36,10 +36,10 @@ namespace xml
       public:
         std::string name;
         std::string function;
-        boost::optional<std::string> port_return;
+        fhg::util::maybe<std::string> port_return;
         port_args_type port_arg;
 
-        boost::optional<std::string> code;
+        fhg::util::maybe<std::string> code;
         cincludes_type cincludes;
         flags_type ldflags;
         flags_type cxxflags;
@@ -49,7 +49,7 @@ namespace xml
         template<typename Fun>
         void sanity_check (const Fun & fun) const
         {
-          if (port_return)
+          if (port_return.isJust())
             {
               if (!fun.is_known_port (*port_return))
                 {
@@ -183,7 +183,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          if (m.port_return)
+          if (m.port_return.isJust())
             {
               s << *m.port_return << " ";
             }
@@ -242,7 +242,7 @@ namespace xml
               s.close ();
             }
 
-          if (m.code)
+          if (m.code.isJust())
             {
               s.open ("code");
               s.content ("<![CDATA[" + *m.code + "]]>");
