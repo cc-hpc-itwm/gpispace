@@ -435,12 +435,12 @@ namespace xml
     {
       const std::string key
         (required ("require_type", node, "key", state.file_in_progress()));
-      const fhg::util::maybe<bool> mmandatory
+      const boost::optional<bool> mmandatory
         ( fhg::util::fmap<std::string, bool>( fhg::util::read_bool
                                             , optional (node, "mandatory")
                                             )
         );
-      const bool mandatory (mmandatory.isJust() ? *mmandatory : true);
+      const bool mandatory (mmandatory.get_value_or (true));
 
       requirements.set (key, mandatory);
 
@@ -712,14 +712,14 @@ namespace xml
                                                     , state.file_in_progress()
                                                     )
                                          );
-                  const fhg::util::maybe<std::string> as
+                  const boost::optional<std::string> as
                     (optional (child, "as"));
 
                   type::function_type fun (function_include (file, state));
 
-                  if (as.isJust())
+                  if (as)
                     {
-                      if (fun.name.isJust() && *fun.name != *as)
+                      if (fun.name && *fun.name != *as)
                         {
                           state.warn
                             ( warning::overwrite_function_name_as
@@ -733,7 +733,7 @@ namespace xml
                       fun.name = *as;
                     }
 
-                  if (fun.name.isNothing())
+                  if (!fun.name)
                     {
                       throw error::top_level_anonymous_function
                         (file, "net_type");
@@ -749,14 +749,14 @@ namespace xml
                                                     , state.file_in_progress()
                                                     )
                                          );
-                  const fhg::util::maybe<std::string> as
+                  const boost::optional<std::string> as
                     (optional (child, "as"));
 
                   type::function_type tmpl (template_include (file, state));
 
-                  if (as.isJust())
+                  if (as)
                     {
-                      if (tmpl.name.isJust() && *tmpl.name != *as)
+                      if (tmpl.name && *tmpl.name != *as)
                         {
                           state.warn
                             ( warning::overwrite_template_name_as
@@ -770,7 +770,7 @@ namespace xml
                       tmpl.name = *as;
                     }
 
-                  if (tmpl.name.isNothing())
+                  if (!tmpl.name)
                     {
                       throw error::top_level_anonymous_template
                         (file, "net_type");
@@ -973,7 +973,7 @@ namespace xml
                                                    , state.file_in_progress()
                                                    )
                                         );
-                  const fhg::util::maybe<std::string>
+                  const boost::optional<std::string>
                     value (optional (child, "value"));
 
                   typedef std::vector<std::string> cdatas_container_type;
@@ -996,7 +996,7 @@ namespace xml
                         );
                     }
 
-                  if (value.isNothing())
+                  if (!value)
                     {
                       if (cdata.empty())
                         {

@@ -213,11 +213,11 @@ namespace xml
 
         requirements_type requirements;
 
-        fhg::util::maybe<petri_net::prio_t> priority;
+        boost::optional<petri_net::prio_t> priority;
 
-        fhg::util::maybe<bool> finline;
+        boost::optional<bool> finline;
 
-        fhg::util::maybe<bool> internal;
+        boost::optional<bool> internal;
 
         // ***************************************************************** //
 
@@ -498,7 +498,7 @@ namespace xml
               }
           }
 
-        if (fun.name.isJust())
+        if (fun.name)
           {
             if (  (*fun.name != trans.name)
                && (!rewrite::has_magic_prefix (trans.name))
@@ -516,9 +516,9 @@ namespace xml
 
         fun.name = trans.name;
 
-        if (fun.internal.isJust())
+        if (fun.internal)
           {
-            if (trans.internal.isJust() && *trans.internal != *fun.internal)
+            if (trans.internal && *trans.internal != *fun.internal)
               {
                 state.warn ( warning::overwrite_function_internal_trans
                            ( trans.name
@@ -539,13 +539,13 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
-        if (  trans.priority.isNothing() // WORK HERE: make it work with prio
+        if (  !trans.priority // WORK HERE: make it work with prio
            && (
                (  !state.synthesize_virtual_places()
                && !trans.place_map().empty()
                )
                || (  !state.no_inline()
-                  && trans.finline.get_with_default(false)
+                  && trans.finline.get_value_or(false)
                   && boost::apply_visitor (function_is_net(), fun.f)
                   )
               )
@@ -631,7 +631,7 @@ namespace xml
                                       , port->prop
                                       );
 
-                if (port->place.isJust())
+                if (port->place)
                   {
                     trans_in.add_connections ()
                       ( port->name
@@ -669,7 +669,7 @@ namespace xml
                 ; ++port
                 )
               {
-                if (port->place.isJust())
+                if (port->place)
                   {
                     we_net.add_edge
                       ( e++, connection_t ( TP
@@ -751,7 +751,7 @@ namespace xml
                                        , port->prop
                                        );
 
-                if (port->place.isJust())
+                if (port->place)
                   {
                     trans_out.add_connections ()
                       ( get_pid (pid_of_place , prefix + *port->place)
@@ -798,7 +798,7 @@ namespace xml
                 ; ++port
                 )
               {
-                if (port->place.isJust())
+                if (port->place)
                   {
                     we_net.add_edge
                       ( e++, connection_t ( PT
@@ -902,7 +902,7 @@ namespace xml
 
             const tid_t tid (we_net.add_transition (we_trans));
 
-            if (trans.priority.isJust())
+            if (trans.priority)
               {
                 we_net.set_transition_priority (tid, *trans.priority);
               }
@@ -947,14 +947,14 @@ namespace xml
 
                         if (fun.get_port_out (connect->port, port_out))
                           {
-                            if (port_out.place.isJust())
+                            if (port_out.place)
                               {
                                 const Net & net (boost::get<Net> (fun.f));
 
                                 place_type place;
 
                                 if (  net.get_place (*port_out.place, place)
-                                   && place.capacity.isJust()
+                                   && place.capacity
                                    )
                                   {
                                     okay = (*mcap == *place.capacity);

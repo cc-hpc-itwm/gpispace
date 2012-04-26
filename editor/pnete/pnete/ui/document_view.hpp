@@ -32,7 +32,7 @@ namespace fhg
         void setWidget (base_editor_widget* widget);
 
       protected:
-        void set_title (const fhg::util::maybe<std::string>&);
+        void set_title (const boost::optional<std::string>&);
 
       signals:
         void focus_gained (QWidget*);

@@ -10,8 +10,8 @@ int main ()
   s.open ("second");
 
   s.attr ("key", "val");
-  s.attr ("maybe_key", fhg::util::maybe<std::string>("Just val"));
-  s.attr ("maybe_key", fhg::util::maybe<std::string>());
+  s.attr ("maybe_key", boost::optional<std::string>("Just val"));
+  s.attr ("maybe_key", boost::none);
 
   s.close ();
 

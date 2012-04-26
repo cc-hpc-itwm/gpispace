@@ -50,10 +50,10 @@ namespace fhg
         template<typename T>
         void append_maybe_key_value ( const std::string & key
                                     , const std::string & fmt
-                                    , const fhg::util::maybe<T> & val
+                                    , const boost::optional<T> & val
                                     );
         void append_maybe_bool ( const std::string & key
-                               , const fhg::util::maybe<bool> & val
+                               , const boost::optional<bool> & val
                                );
 
         template<typename T> QStandardItem * append (const T & x);

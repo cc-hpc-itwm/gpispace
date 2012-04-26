@@ -30,14 +30,14 @@ namespace xml
       public:
         std::string name;
         std::string type;
-        fhg::util::maybe<std::string> place;
+        boost::optional<std::string> place;
         we::type::property::type prop;
 
         port_type () : name (), type (), place (), prop () {}
 
         port_type ( const std::string & _name
                   , const std::string & _type
-                  , const fhg::util::maybe<std::string> & _place
+                  , const boost::optional<std::string> & _place
                   )
           : name (_name)
           , type (_type)
@@ -84,7 +84,7 @@ namespace xml
 
         void operator () (const NET & net) const
         {
-          if (port.place.isNothing())
+          if (!port.place)
             {
               if (direction == "in")
                 {
@@ -118,7 +118,7 @@ namespace xml
         template<typename T>
         void operator () (const T &) const
         {
-          if (port.place.isJust())
+          if (port.place)
             {
               throw error::port_connected_place_nonexistent
                 (direction, port.name, *port.place, path);

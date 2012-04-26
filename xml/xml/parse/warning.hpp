@@ -143,7 +143,7 @@ namespace xml
       class shadow_function : public generic
       {
       private:
-        std::string nice ( const ::fhg::util::maybe<std::string>& name
+        std::string nice ( const ::boost::optional<std::string>& name
                          , const boost::filesystem::path& path_early
                          , const boost::filesystem::path& path_late
                          ) const
@@ -159,7 +159,7 @@ namespace xml
         }
 
       public:
-        shadow_function ( const ::fhg::util::maybe<std::string>& name
+        shadow_function ( const ::boost::optional<std::string>& name
                         , const boost::filesystem::path& path_early
                         , const boost::filesystem::path& path_late
                         )

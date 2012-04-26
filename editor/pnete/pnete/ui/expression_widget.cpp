@@ -173,9 +173,9 @@ namespace fhg
         _parse_result->setPlainText (result);
       }
       void
-      expression_widget::set_name (const fhg::util::maybe<std::string>& name)
+      expression_widget::set_name (const boost::optional<std::string>& name)
       {
-        set_name (name ? *name : "");
+        set_name (name.get_value_or (""));
       }
       void expression_widget::set_name (const std::string& name)
       {
