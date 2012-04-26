@@ -203,7 +203,6 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
 					yellowToken.activityId() = fct_id_gen_();
 
 					unsigned int agentRank = i*m_nTorusDim+j;
-					//sdpa::worker_id_t agentId = pIAgent_->getWorkerId();
 					SDPA_LOG_INFO("The agent with the rank "<<i*m_nTorusDim+j<<" is "<<agentRank);
 
 					std::ostringstream oss;
@@ -213,8 +212,6 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
 					reqList.push_back(req);
 
 					pIAgent_->submit(yellowToken.activityId(), yellowToken.encode(), reqList);
-
-					//pIAgent_->forward(actId, yellowToken.encode(), agentRank);
 				}
 				catch(boost::bad_function_call& ex) {
 					SDPA_LOG_ERROR("Bad function call exception occurred!");
