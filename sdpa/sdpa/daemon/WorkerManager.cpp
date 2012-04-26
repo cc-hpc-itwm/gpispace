@@ -80,13 +80,13 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
 const Worker::worker_id_t&
 WorkerManager::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
-  lock_type lock(mtx_);
+	lock_type lock(mtx_);
 
-  for (worker_map_t::const_iterator it = worker_map_.begin(); it!= worker_map_.end(); ++it)
-    if( it->second->is_job_acknowleged(job_id))
-      return it->second->name();
+	for (worker_map_t::const_iterator it = worker_map_.begin(); it!= worker_map_.end(); ++it)
+		if( it->second->is_job_acknowleged(job_id))
+			return it->second->name();
 
-  throw NoWorkerFoundException();
+	throw NoWorkerFoundException();
 }
 
 /**
@@ -104,7 +104,7 @@ void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 	for( worker_map_t::iterator it = worker_map_.begin(); !bFound && it != worker_map_.end(); it++ )
 	{
 		//if( it->second->name() ==  workerId )
-		if( it->first ==  workerId )
+		if( it->first == workerId )
 		{
 			//SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
 			bFound = true;
@@ -248,64 +248,64 @@ sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundExce
 const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException)
 {
 	lock_type lock(mtx_);
-  //find a job that prefers worker_id, with the highest preference degree
-  const Worker::ptr_t& ptrWorker = findWorker(worker_id);
+	//find a job that prefers worker_id, with the highest preference degree
+	const Worker::ptr_t& ptrWorker = findWorker(worker_id);
 
-  // take the job with the lowest pref_deg (= the position into the ranks list)
-  // check if it still exists into the pending queue of the owner worker,
-  // steal it and become the new owner
+	// take the job with the lowest pref_deg (= the position into the ranks list)
+	// check if it still exists into the pending queue of the owner worker,
+	// steal it and become the new owner
 
-  /*
-  Worker::mi_ordered_prefs& mi_pref = get<0>(ptrWorker->mi_affinity_list);
-  Worker::mi_ordered_prefs::iterator it = mi_pref.begin();
+	/*
+	Worker::mi_ordered_prefs& mi_pref = get<0>(ptrWorker->mi_affinity_list);
+	Worker::mi_ordered_prefs::iterator it = mi_pref.begin();
 
-  if( it == mi_pref.end() )
-    throw NoJobScheduledException(worker_id);
+	if( it == mi_pref.end() )
+	throw NoJobScheduledException(worker_id);
 
-  while( it != mi_pref.end() )
-  {
-    // check if the job it->job_id_ is in the pending queue of the owner_worker_id_
-    sdpa::job_id_t job_id = it->job_id_;
+	while( it != mi_pref.end() )
+	{
+		// check if the job it->job_id_ is in the pending queue of the owner_worker_id_
+		sdpa::job_id_t job_id = it->job_id_;
 
-    try {
-      Worker::worker_id_t owner_worker_id = getOwnerId(job_id);
+		try {
+			Worker::worker_id_t owner_worker_id = getOwnerId(job_id);
 
-      // delete the corresponding pair (pref_deg, job_id) from jobs_preferring_this_
-      mi_pref.erase(it);
+			// delete the corresponding pair (pref_deg, job_id) from jobs_preferring_this_
+			mi_pref.erase(it);
 
-      const Worker::ptr_t& ptrOwnerWorker = findWorker(owner_worker_id);
+			const Worker::ptr_t& ptrOwnerWorker = findWorker(owner_worker_id);
 
-      // look for the job into the owner worker's pending queue and steal the job if it is there
-      Worker::JobQueue::lock_type lockQ( ptrOwnerWorker->pending().mutex() );
-      for ( Worker::JobQueue::iterator iter = ptrOwnerWorker->pending().begin(); iter != ptrOwnerWorker->pending().end(); iter++ )
-      {
-        if( job_id == *iter )
-        {
-          // remove the job from the owner's queue and become the new owner
-          ptrOwnerWorker->pending().erase(iter);
+			// look for the job into the owner worker's pending queue and steal the job if it is there
+			Worker::JobQueue::lock_type lockQ( ptrOwnerWorker->pending().mutex() );
+			for ( Worker::JobQueue::iterator iter = ptrOwnerWorker->pending().begin(); iter != ptrOwnerWorker->pending().end(); iter++ )
+			{
+				if( job_id == *iter )
+				{
+					// remove the job from the owner's queue and become the new owner
+					ptrOwnerWorker->pending().erase(iter);
 
-          // become owner
-          make_owner(job_id, worker_id);
+					// become owner
+					make_owner(job_id, worker_id);
 
-          // take the job and return job_id_
-          return job_id;
-        }
-      }
+					// take the job and return job_id_
+					return job_id;
+				}
+			}
 
-      // if not, continue with the next preferences (sorted)
-      it = mi_pref.begin();
-    }
-    catch (JobNotAssignedException)
-    {
-      // ignore this preference
-      mi_pref.erase(it);
-    }
-  }
+			// if not, continue with the next preferences (sorted)
+			it = mi_pref.begin();
+		}
+		catch (JobNotAssignedException)
+		{
+		  // ignore this preference
+		  mi_pref.erase(it);
+		}
+	}
 
-  */
+	*/
 
-  // erase the job from
-  throw NoJobScheduledException(worker_id);
+	// erase the job from
+	throw NoJobScheduledException(worker_id);
 }
 
 const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
@@ -354,21 +354,21 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
       }
       catch(const QueueEmpty& ex0)
       {
-        // try to steal some work from other workers
-        // if not possible, throw an exception
-        try {
+    	  // try to steal some work from other workers
+    	  // if not possible, throw an exception
+    	  try {
 
-          //SDPA_LOG_INFO("Try to steal work from another worker ...");
-          jobId = stealWork(worker_id);
-          ptrWorker->submitted().push(jobId);
+    		  //SDPA_LOG_INFO("Try to steal work from another worker ...");
+    		  jobId = stealWork(worker_id);
+    		  ptrWorker->submitted().push(jobId);
 
-          return jobId;
-        }
-        catch( const NoJobScheduledException& )
-        {
-          //SDPA_LOG_INFO("There is really no job to assign/steal for the worker "<<worker_id<<"  ...");
-          throw;
-        }
+    		  return jobId;
+    	  }
+    	  catch( const NoJobScheduledException& ex)
+    	  {
+    		  //SDPA_LOG_INFO("There is really no job to assign/steal for the worker "<<worker_id<<"  ...");
+    		  throw ex;
+    	  }
       }
     }
   }

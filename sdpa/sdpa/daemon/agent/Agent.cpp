@@ -598,7 +598,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     LOG(TRACE, "Propagate cancel job event downwards.");
     try
     {
-      sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
+    	sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
 
         SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
         CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()

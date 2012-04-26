@@ -120,9 +120,6 @@ namespace sdpa { namespace daemon {
           }
       }
 
-
-      const worker_map_t&  worker_map() const { return worker_map_; }
-
 protected:
       worker_map_t  worker_map_;
 

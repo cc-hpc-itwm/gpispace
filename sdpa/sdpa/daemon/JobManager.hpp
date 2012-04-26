@@ -50,19 +50,19 @@ namespace sdpa { namespace daemon {
 	  virtual void addJob(const sdpa::job_id_t&, const Job::ptr_t& ) throw(JobNotAddedException) ;
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 
-	  unsigned int countMasterJobs();
-
 	  void addJobRequirements( const sdpa::job_id_t&, const requirement_list_t& ) throw (JobNotFoundException);
 	  const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
 
-	  std::string print() const;
-	  size_t getNumberOfJobs() const { return job_map_.size(); }
+	  size_t countMasterJobs() const;
+	  size_t getNumberOfJobs() const;
 
 	  void waitForFreeSlot();
 	  bool slotAvailable() const;
 
       void resubmitJobsAndResults(IComm* );
       sdpa::job_id_list_t getListNotCompletedMasterJobs(bool bHasWfe);
+
+      std::string print() const;
 
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)
