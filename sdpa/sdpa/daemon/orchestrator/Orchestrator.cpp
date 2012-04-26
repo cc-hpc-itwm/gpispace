@@ -466,18 +466,15 @@ void Orchestrator::backup( std::ostream& os )
         oa.register_type(static_cast<JobManager*>(NULL));
         oa.register_type(static_cast<JobImpl*>(NULL));
         oa.register_type(static_cast<JobFSM*>(NULL));
-        //oa << ptr_job_man_;
         backupJobManager(oa);
 
         oa.register_type(static_cast<SchedulerOrch*>(NULL));
         oa.register_type(static_cast<SchedulerImpl*>(NULL));
-        //oa<<ptr_scheduler_;
         backupScheduler(oa);
 
         /*oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
         oa << ptr_workflow_engine_;*/
-        oa << m_arrMasterInfo; //boost::serialization::make_nvp("url_", m_arrMasterInfo);
-        //oa << m_listSubscribers;
+        oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
     }
     catch(exception &e)
     {
@@ -495,7 +492,6 @@ void Orchestrator::recover( std::istream& is )
       ia.register_type(static_cast<JobImpl*>(NULL));
       ia.register_type(static_cast<JobFSM*>(NULL));
       // restore the schedule from the archive
-      //ia >> ptr_job_man_;
       recoverJobManager(ia);
 
       //SDPA_LOG_INFO("Job manager after recovery: \n");
@@ -503,26 +499,19 @@ void Orchestrator::recover( std::istream& is )
 
       ia.register_type(static_cast<SchedulerOrch*>(NULL));
       ia.register_type(static_cast<SchedulerImpl*>(NULL));
-      //ia>> ptr_scheduler_;
       recoverScheduler(ia);
 
       // should ignore the workflow engine recovery,
       // since it is not always possible to recover it
 
-      // re-schedule the jobs master jobs
+      // re-schedule the master jobs
       // for any master job in the job_map
       // if the state is running -> go back to pending
       // or simply create a new job with the same job id
-      // but the state to be pending -> schedule it to the workflow engine
-      // better the last variant!
 
       /*ia.register_type(static_cast<T*>(NULL));
       ia >> ptr_workflow_engine_;*/
-      ia >> m_arrMasterInfo; //boost::serialization::make_nvp("url_", m_arrMasterInfo);
-      //ia >> m_listSubscribers;
-
-      //SDPA_LOG_INFO("Worker manager after recovery: \n");
-      //scheduler()->print();
+      ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
   }
   catch(exception &e)
   {
