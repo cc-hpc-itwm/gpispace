@@ -62,7 +62,7 @@ namespace sdpa { namespace daemon {
 	  bool slotAvailable() const;
 
       void resubmitJobsAndResults(IComm* );
-      sdpa::job_id_list_t getListNotCompletedMasterJobs();
+      sdpa::job_id_list_t getListNotCompletedMasterJobs(bool bHasWfe);
 
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)

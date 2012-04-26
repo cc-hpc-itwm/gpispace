@@ -1296,7 +1296,8 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 	// for all jobs that are in a terminal state and not yet acknowledged by the  master
 	// re-submit  them to the master, after registration
 
-	jobManager()->resubmitJobsAndResults(this);
+	if(!isTop())
+		jobManager()->resubmitJobsAndResults(this);
 }
 
 void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
@@ -1898,9 +1899,10 @@ Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 
 void GenericDaemon::reScheduleAllMasterJobs()
 {
-	lock_type lock(mtx_);
 
-	sdpa::job_id_list_t listNotCompletedMsterJobs = jobManager()->getListNotCompletedMasterJobs();
+	//jobManager()->reScheduleAllMasterJobs(this);
+
+	sdpa::job_id_list_t listNotCompletedMsterJobs = jobManager()->getListNotCompletedMasterJobs(hasWorkflowEngine());
 
 	BOOST_FOREACH(const job_id_t& jobId, listNotCompletedMsterJobs)
 	{

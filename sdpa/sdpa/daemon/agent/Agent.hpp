@@ -98,7 +98,6 @@ namespace sdpa {
         template <typename T> friend struct AgentFactory;
 
         void notifyAppGui(const result_type & result);
-        //void requestRegistration(const MasterInfo& masterInfo);
 
         private:
         void createScheduler(bool bUseReqModel)

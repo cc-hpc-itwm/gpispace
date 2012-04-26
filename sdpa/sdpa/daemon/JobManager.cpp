@@ -114,7 +114,7 @@ std::string JobManager::print() const
     SDPA_LOG_DEBUG("Begin dumping the JobManager...");
 
     if( job_map_.begin() == job_map_.end() )
-            os<<"The JobManager is empty!";
+    	os<<"The JobManager is empty!";
     else
     {
         os<<"The list of jobs still owned by the JobManager:"<<std::endl;
@@ -219,7 +219,7 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
     }
 }
 
-sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs()
+sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 {
 	lock_type lock(mtx_);
 	sdpa::job_id_list_t listJobsNotCompleted;
@@ -229,7 +229,7 @@ sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs()
 		sdpa::job_id_t jobId = it->first;
 		Job::ptr_t pJob = it->second;
 
-		if(pJob->isMasterJob() )
+		if( (bHasWfe && pJob->isMasterJob()) || !bHasWfe )
 		{
 			std::string status = pJob->getStatus();
 

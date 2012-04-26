@@ -734,7 +734,7 @@ void Agent::backup( std::ostream& ofs )
         /*oa.register_type(static_cast<T*>(NULL));
         oa << ptr_workflow_engine_;*/
         oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
-        oa << m_listSubscribers;
+        //oa << m_listSubscribers;
     }
     catch(exception &e) {
         cout <<"Exception occurred: "<< e.what() << endl;
@@ -750,7 +750,6 @@ void Agent::recover( std::istream& ifs )
 		ia.register_type(static_cast<JobManager*>(NULL));
 		ia.register_type(static_cast<JobImpl*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
-		//ia>>ptr_job_man_;
 		 recoverJobManager(ia);
 
 		// probably makes no sense to recover the scheduler
@@ -758,7 +757,6 @@ void Agent::recover( std::istream& ifs )
 
 		ia.register_type(static_cast<AgentScheduler*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		//ia>>ptr_scheduler_;
 		recoverScheduler(ia);
 
 		// should ignore the workflow engine recovery,
@@ -768,7 +766,7 @@ void Agent::recover( std::istream& ifs )
         ia >> ptr_workflow_engine_;*/
         ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
         SDPA_LOG_INFO("The list of recoverd masters is: ");
-        ia >> m_listSubscribers;
+        //ia >> m_listSubscribers;
 	}
 	catch(exception &e) {
 		cout <<"Exception occurred: " << e.what() << endl;
