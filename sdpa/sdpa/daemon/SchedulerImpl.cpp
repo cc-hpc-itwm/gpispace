@@ -107,9 +107,12 @@ void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
 	try {
 
 		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-		pJob->Reschedule(); // put the job back into the pending state
-
-		schedule(job_id);
+		std::string status = pJob->getStatus();
+		if(	status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+			pJob->Reschedule(); // put the job back into the pending state
+			schedule(job_id);
+		}
 	}
 	catch(JobNotFoundException const &ex)
 	{
@@ -130,9 +133,12 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 		pWorker->delete_job(job_id);
 
 		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-		pJob->Reschedule(); // put the job back into the pending state
-
-		schedule(job_id);
+		std::string status = pJob->getStatus();
+		if(	status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+			pJob->Reschedule(); // put the job back into the pending state
+			schedule(job_id);
+		}
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
@@ -160,9 +166,12 @@ void SchedulerImpl::reassign( const Worker::worker_id_t& worker_id, const sdpa::
 		pWorker->delete_job(job_id);
 
 		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-		pJob->Reschedule(); // put the job back into the pending state
-
-		pWorker->dispatch(job_id); // or schedule_to(job_id, worker_id);
+		std::string status = pJob->getStatus();
+		if(	status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+			pJob->Reschedule(); // put the job back into the pending state
+			pWorker->dispatch(job_id); // or schedule_to(job_id, worker_id);
+		}
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
@@ -674,7 +683,7 @@ void SchedulerImpl::run()
 			sdpa::job_id_t jobId   = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-			if( !pJob->isMasterJob() ) //it's a we job
+			if( !pJob->isMasterJob() ) //it's a job submitted by the WE
 			{
 				// if it's an NRE just execute it!
 				// Attention!: an NRE has no WorkerManager!!!!
@@ -690,12 +699,10 @@ void SchedulerImpl::run()
 					{
 						SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
 						// do so as when no preferences were set, just ignore them right now
-						//schedule_anywhere(jobId);
-
 						ptr_worker_man_->dispatchJob(jobId);
 					}
 				}
-				else //  if has backends try to execute it
+				else //  if has backends, try to execute it
 				{
 					// just for testing
 					if(ptr_comm_handler_->canRunTasksLocally())
