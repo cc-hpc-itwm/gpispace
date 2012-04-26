@@ -361,5 +361,4 @@ BOOST_AUTO_TEST_CASE( testInotifyExecution )
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-
 BOOST_AUTO_TEST_SUITE_END()
