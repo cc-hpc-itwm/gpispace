@@ -37,6 +37,8 @@
 using namespace std;
 using namespace sdpa::daemon;
 
+static const std::size_t MAX_PARALLEL_JOBS = 1024;
+
 JobManager::JobManager(const std::string& name)
 	: SDPA_INIT_LOGGER(name)
 {
@@ -147,10 +149,9 @@ void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const requirem
     job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 
-static const std::size_t MAX_PARALLEL_JOBS = 1024;
 bool JobManager::slotAvailable () const
 {
-  return getNumberOfJobs () < MAX_PARALLEL_JOBS;
+	return getNumberOfJobs () < MAX_PARALLEL_JOBS;
 }
 
 void JobManager::waitForFreeSlot ()
@@ -246,15 +247,21 @@ sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 	return listJobsNotCompleted;
 }
 
-unsigned int JobManager::countMasterJobs()
+size_t JobManager::countMasterJobs() const
 {
-  lock_type lock(mtx_);
-  unsigned int nMasterJobs = 0;
-  BOOST_FOREACH(job_map_t::value_type& job_pair, job_map_ )
-  {
-	  if( job_pair.second->isMasterJob() )
-		  nMasterJobs++;
-  }
+	lock_type lock(mtx_);
+	size_t nMasterJobs = 0;
+	BOOST_FOREACH(const job_map_t::value_type& job_pair, job_map_ )
+	{
+		if( job_pair.second->isMasterJob() )
+			nMasterJobs++;
+	}
 
-  return nMasterJobs;
+	return nMasterJobs;
+}
+
+size_t JobManager::getNumberOfJobs() const
+{
+	lock_type lock(mtx_);
+	return job_map_.size();
 }
