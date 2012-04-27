@@ -1,7 +1,7 @@
 <defun name="atomic">
   <in name="n_A" type="long" place="n_A" />
   <in name="n_B" type="long" place="n_B" />
-    
+
   <!-- shared_file -->
   <in name="shared_file" type="string" place="shared_file" />
 
@@ -11,7 +11,7 @@
     <!-- input/output places -->
     <place name="n_A" type="long" />
     <place name="n_B" type="long" />
-    
+
     <place name="shared_file" type="string" />
 
     <place name="done" type="control" />
@@ -29,14 +29,14 @@
 
     <!-- initialization -->
 
-    <transition name="init_places_a">
+    <transition name="init_places_a" inline="true">
       <use name="dup_long" />
       <connect-in port="in" place="n_A"/>
       <connect-out port="one" place="generate_A"/>
       <connect-out port="two" place="wait_A"/>
     </transition>
 
-    <transition name="init_places_b">
+    <transition name="init_places_b" inline="true">
       <use name="dup_long" />
       <connect-in port="in" place="n_B"/>
       <connect-out port="one" place="generate_B"/>
@@ -69,9 +69,9 @@
 	  <cinclude href="stdio.h" />
 	  <code><![CDATA[
 	  	LOG(INFO, ">>> running  A(" << id << ", " << filename << ")");
-	  
+
 		FILE * pFile = fopen(filename.c_str(),"r");
-		
+
 		if(!pFile) // file does not exist
 		{
 			pFile = fopen(filename.c_str(),"w");
@@ -84,12 +84,12 @@
 			fscanf(pFile, "%d", &i);
 			i++;
 			fclose(pFile);
-		
+
 			pFile = fopen(filename.c_str(),"w");
 			fprintf(pFile, "%d", i);
 			fclose(pFile);
 		}
-		
+
 	  	LOG(INFO, "<<< finished A(" << id << ", " << filename << ")");
 	  ]]></code>
 	</module>
@@ -101,7 +101,7 @@
 
     <place name="done_run_a" type="control" />
 
-    <transition name="wait_until_A_is_complete">
+    <transition name="wait_until_A_is_complete" inline="true">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait_A" />
       <connect-in  port="trigger" place="done_run_a" />
@@ -117,7 +117,7 @@
     <place name="generate_B" type="long" />
     <place name="wait_B" type="long" />
 
-    <transition name="generate_b"  inline="true">
+    <transition name="generate_b"  inline="true" inline="true">
       <include-function href="sequence.xml"/>
       <connect-in  port="amount" place="generate_B" />
       <connect-out port="out"    place="b" />
@@ -138,9 +138,9 @@
 		<cinclude href="stdio.h" />
         <code><![CDATA[
 	  		LOG(INFO, ">>> running  B(" << id << ", " << filename << ")");
-	  
+
 			FILE * pFile = fopen(filename.c_str(),"r");
-			
+
 			if(!pFile) // file does not exist
 			{
 				pFile = fopen(filename.c_str(),"w");
@@ -153,12 +153,12 @@
 				fscanf(pFile, "%d", &i);
 				i++;
 				fclose(pFile);
-			
+
 				pFile = fopen(filename.c_str(),"w");
 				fprintf(pFile, "%d", i);
 				fclose(pFile);
 			}
-	  
+
 	  		LOG(INFO, "<<< finished B(" << id << ", " << filename << ")");
 	  ]]></code>
 	</module>
@@ -170,7 +170,7 @@
 
     <place name="done_run_b" type="control" />
 
-    <transition name="wait_until_B_is_complete">
+    <transition name="wait_until_B_is_complete" inline="true">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait_B" />
       <connect-in  port="trigger" place="done_run_b" />
