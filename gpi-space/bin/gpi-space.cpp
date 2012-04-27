@@ -639,8 +639,16 @@ int main (int ac, char *av[])
       setsid();
       close(0); close(1); close(2);
       int fd = open("/dev/null", O_RDWR);
-      dup(fd);
-      dup(fd);
+      if (dup(fd) == -1)
+      {
+        LOG(ERROR, "could not duplicate file descriptor: " << strerror(errno));
+        exit (EXIT_FAILURE);
+      }
+      if (dup(fd) == -1)
+      {
+        LOG(ERROR, "could not duplicate file descriptor: " << strerror(errno));
+        exit (EXIT_FAILURE);
+      }
     }
 
     if (pidfile_fd >= 0)
@@ -654,9 +662,17 @@ int main (int ac, char *av[])
       }
 
       char buf[32];
-      ftruncate(pidfile_fd, 0);
+      if (ftruncate(pidfile_fd, 0) == -1)
+      {
+        LOG(ERROR, "could not truncate pidfile: " << strerror(errno));
+        exit(EXIT_FAILURE);
+      }
       snprintf(buf, sizeof(buf), "%d\n", getpid());
-      write(pidfile_fd, buf, strlen(buf));
+      if (write(pidfile_fd, buf, strlen(buf)) != strlen(buf))
+      {
+        LOG(ERROR, "could not write pid to file: " << strerror(errno));
+        exit(EXIT_FAILURE);
+      }
       fsync(pidfile_fd);
     }
   }
