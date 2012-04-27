@@ -1,4 +1,9 @@
 <template name="trigger_when">
+  <properties name="pnetc">
+    <properties name="warning">
+      <property key="inline-many-output-ports" value="off"/>
+    </properties>
+  </properties>
   <in name="object" type="T"/>
   <out name="object" type="T"/>
   <out name="trigger" type="control"/>
