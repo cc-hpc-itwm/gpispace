@@ -164,6 +164,11 @@ namespace xml
                   ++pos;
                 }
 
+              while (!pos.end() && isspace(*pos))
+                {
+                  ++pos;
+                }
+
               if (!pos.end())
                 {
                   throw error::parse_function::expected ( _name
