@@ -154,7 +154,7 @@ public:
 
 	void incVisitedNodes() { m_nVisitedNodes++; }
 	size_t& nVisitedNodes() { return m_nVisitedNodes; }
-	const int& nVisitedNodes() const { return m_nVisitedNodes; }
+        const size_t& nVisitedNodes() const { return m_nVisitedNodes; }
 
 	private:
 	color_t  m_col;
