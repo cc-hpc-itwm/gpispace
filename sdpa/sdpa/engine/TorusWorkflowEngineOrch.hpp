@@ -50,7 +50,7 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
     {
     	fct_id_gen_ = f;
     }
-    
+
     /**
      * Notify the GWES that an activity has failed
      * (state transition from "running" to "failed").
@@ -183,8 +183,8 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
 		size_t nBlockDim = A.size1()/m_nTorusDim;
 
 		// split the initial matrix into PxP submatrices here
-		for(int i=0;i<m_nTorusDim;i++ )
-			for(int j=0;j<m_nTorusDim;j++)
+		for(size_t i=0;i<m_nTorusDim;i++ )
+			for(size_t j=0;j<m_nTorusDim;j++)
 			{
 				int k = (i+j)%m_nTorusDim;
 
