@@ -711,6 +711,12 @@ namespace xml
                 (port_type_check<net_type> ("out", *port, path, state), f);
             }
 
+          BOOST_FOREACH (const port_type& port, tunnel())
+            {
+              boost::apply_visitor
+                (port_type_check<net_type> ("tunnel", port, path, state), f);
+            }
+
           boost::apply_visitor (function_type_check<net_type> (state), f);
         }
 
