@@ -262,7 +262,7 @@ cfg="$cfg -s plugin.kvs.port=$kvs_port"
 
 # config values (logc plugin)
 logc_port=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.logd.port -v "3456")
-logc_host=$(head -n 1 ~/.sdpa/state/nodefile)
+logc_host=$(head -n 1 "${state_dir}/nodefile")
 cfg="$cfg -s plugin.logc.url=${logc_host}:${logc_port}"
 
 # config values (drts plugin)
