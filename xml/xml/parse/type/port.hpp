@@ -112,6 +112,13 @@ namespace xml
                     error::port_connected_type_error<port_type,place_type>
                     (direction, port, place, path);
                 }
+
+              if (direction == "tunnel" && not place.is_virtual())
+                {
+                  throw
+                    error::tunnel_connected_non_virtual<port_type,place_type>
+                    (port, place, path);
+                }
             }
         }
 
