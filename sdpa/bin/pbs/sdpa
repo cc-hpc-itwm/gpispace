@@ -1401,29 +1401,6 @@ function node_loop ()
     return $rc
 }
 
-function kill_pc ()
-{
-    if [ $# -ne 1 ] ; then
-        echo "you have to specify a signal to send!" >&2
-        return 1
-    fi
-    node_loop send_signal_to_pc $@
-}
-
-function send_signal_to_pc ()
-{
-    local node=$1 ; shift
-    local sig=$1 ; shift
-    local err=$(rexec "$node" "$SDPA_SCRIPT_DIR/send-signal" -n "nre-pcd" -s "$sig")
-    ec=$?
-    if [ $ec -ne 0 ] ; then
-        log "E: could not send signal $sig to pc on node $node: $err"
-        return 1
-    else
-        return 0
-    fi
-}
-
 function start_nre ()
 {
     local with_mediator=$(get "topology.with-mediator" "true")
