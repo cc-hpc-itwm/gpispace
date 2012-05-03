@@ -514,6 +514,7 @@ namespace xml
 
         const ports_type & in (void) const { return _in.elements(); }
         const ports_type & out (void) const { return _out.elements(); }
+        const ports_type& tunnel (void) const { return _tunnel.elements(); }
 
         bool get_port_in (const std::string & name, port_type & port) const
         {
@@ -568,8 +569,6 @@ namespace xml
             {
               throw error::duplicate_port ("tunnel", p.name, path);
             }
-
-          std::cerr << "pushed tunnel " << p.name << std::endl;
         }
 
         // ***************************************************************** //
@@ -2002,6 +2001,7 @@ namespace xml
 
           dumps (s, f.in().begin(), f.in().end(), "in");
           dumps (s, f.out().begin(), f.out().end(), "out");
+          dumps (s, f.tunnel().begin(), f.tunnel().end(), "tunnel");
 
           boost::apply_visitor (visitor::function_dump<net_type> (s), f.f);
 
