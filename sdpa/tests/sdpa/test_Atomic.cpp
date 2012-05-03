@@ -294,7 +294,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	kernel->put("plugin.drts.master", masterName);
 	kernel->put("plugin.drts.backlog", "2");
 	kernel->put("plugin.drts.request-mode", "false");
-	
+
 	kernel->put("plugin.drts.capabilities", cpbList);
 	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_ATOMIC_MODULES_PATH);
 
@@ -311,25 +311,31 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testModiFile )
 {
-	char* filename("test.txt");
+        const char* filename = "test.txt";
 	FILE * pFile = fopen(filename,"r");
 
-	if(!pFile) // file does not exist
+	if(!pFile) // file does not exist, create it
 	{
 		pFile = fopen(filename,"w");
-		fputc('0', pFile);
+                fprintf(pFile, "%d\n", 0);
 		fclose(pFile);
 	}
 	else
 	{
 		int i = 0;
-		fscanf(pFile, "%d", &i);
-		i++;
-		fclose(pFile);
-
-		pFile = fopen(filename,"w");
-		fprintf(pFile, "%d", i);
-		fclose(pFile);
+		if (1 == fscanf(pFile, "%d", &i))
+                {
+                  fclose(pFile);
+                  pFile = fopen(filename,"w");
+                  ++i;
+                  fprintf(pFile, "%d\n", i);
+                  fclose(pFile);
+                }
+                else
+                {
+                  fclose(pFile);
+                  throw std::runtime_error("testModiFile: could not read old state");
+                }
 	}
 }
 
