@@ -8,6 +8,7 @@
 ###
 # set some default values
 state_dir=~/.sdpa/state
+logdir=
 gui=
 kvs_url=
 debug=false
@@ -35,53 +36,53 @@ usage: $(basename "$0") [options]
     -k kvs-url: url to the key-value-store
     -D daemonize
     -P pidfile
-    -L logfile (=$logfile)
+    -L logdir
     -s state-dir
 EOF
 }
 
 while getopts ":hDfdm:g:b:n:k:L:P:s:" opt; do
     case $opt in
-	h)
-	    usage
-	    exit 0
-	    ;;
-	f)
-	    force=true
-	    ;;
-	d)
-	    debug=true
-	    ;;
+        h)
+            usage
+            exit 0
+            ;;
+        f)
+            force=true
+            ;;
+        d)
+            debug=true
+            ;;
         n)
             name=$OPTARG
             ;;
-	m)
-	    master=$OPTARG
-	    ;;
-	g)
-	    gui=$OPTARG
-	    ;;
-	b)
-	    backlog=$OPTARG
-	    ;;
-	k)
-	    kvs_url=$OPTARG
-	    ;;
-	D)
-	    daemonize=true
-	    ;;
-	L)
-	    logfile=$OPTARG
-	    ;;
-	P)
-	    pidfile=$OPTARG
-	    ;;
-	s)
-	    state_dir=$OPTARG
-	    ;;
-	\?)
-	    echo "Invalid option: -$OPTARG" >&2
-	    exit 1
+        m)
+            master=$OPTARG
+            ;;
+        g)
+            gui=$OPTARG
+            ;;
+        b)
+            backlog=$OPTARG
+            ;;
+        k)
+            kvs_url=$OPTARG
+            ;;
+        D)
+            daemonize=true
+            ;;
+        L)
+            logdir=$OPTARG
+            ;;
+        P)
+            pidfile=$OPTARG
+            ;;
+        s)
+            state_dir=$OPTARG
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
     esac
 done
 
@@ -95,7 +96,13 @@ if [ -z "$gui" ]
 then
   gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)"
 fi
-logfile="$SDPA_LOG_DIR/${name}.log"
+
+if [ -z "$logdir" ]
+then
+    logdir="${state_dir}/log"
+fi
+
+logprefix="${logdir}/${name}"
 
 if [ -z "$kvs_url" ]
 then
@@ -113,22 +120,22 @@ function agent_status ()
     local name="$1" ; shift
     local pids=$(ps aux | grep -v [s]tart-agent | grep "[a]gent.*-n \<$name\>" | awk '{print $2;}')
     if [ -z "$pids" ] ; then
-	return 1
+        return 1
     else
-	echo $pids
-	return 0
+        echo $pids
+        return 0
     fi
 }
 
 pids=$(agent_status $name)
 if [ $? -eq 0 ] ; then
     if [ x"$force" = x"true" ] ; then
-	kill -TERM $pids
-	sleep 1.5
-	kill -KILL $pids &>/dev/null
+        kill -TERM $pids
+        sleep 1.5
+        kill -KILL $pids &>/dev/null
     else
-	echo "W: agent $name still running with pid(s): $pids" >&2
-	exit 2
+        echo "W: agent $name still running with pid(s): $pids" >&2
+        exit 2
     fi
 fi
 
@@ -140,7 +147,7 @@ opts="$opts -k ${kvs_url}"
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
     if [ ! -d "${state_dir}/agent" ] ; then
-	mkdir -p "${state_dir}/agent"
+        mkdir -p "${state_dir}/agent"
     fi
     opts="$opts -d ${state_dir}/agent"
 fi
@@ -159,5 +166,5 @@ if "$debug" ; then
     log "running within gdb..."
     gdb -ex run --args ${cmd}
 else
-    FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" exec ${cmd}
+    FHGLOG_to_file="${logprefix}.log" exec ${cmd} >"${logprefix}.out" 2>"${logprefix}.err"
 fi

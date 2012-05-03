@@ -55,7 +55,6 @@ DEFAULT_TMP_DIR="/var/tmp"
 DEFAULT_WORKER_PER_NODE="1"
 DEFAULT_WITH_MEDIATOR="false"
 
-DEFAULT_LOG_DIRECTORY="${DEFAULT_SCRATCH_DIR}/log"
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 DEFAULT_KVS_PORT=2439
@@ -261,14 +260,6 @@ function setup_required ()
 
 function setup_state ()
 {
-    if [ ! -d "$state_dir" ] ; then
-        local msg=$( mkdir -p "$state_dir" 2>&1 )
-        if [ $? -ne 0 ] ; then
-            echo "E: failed to create state-dir: $state_dir: $msg" >&2
-            return 1
-        fi
-    fi
-
     local sdpa_home="$SDPA_HOME"
     if [ -z "$sdpa_home" ] ; then
         mydir=$(cd $(dirname $( which $0 )) && pwd)
@@ -277,16 +268,6 @@ function setup_state ()
     get_user_input "SDPA installation directory [$sdpa_home]:" sdpa_home
 
     export SDPA_HOME="$sdpa_home"
-
-    #put "sdpa.home" "$sdpa_home"
-
-    local node_file="$state_dir/nodefile"
-
-    put "sdpa.node_file" "$node_file"
-    log "I: node file configured to be stored in $node_file"
-
-    put "sdpa.state_dir" "$state_dir"
-    log "I: state directory configured to be in $state_dir"
 
     local p_stateful=$(get "sdpa.stateful" "${DEFAULT_STATEFUL_EXECUTION:?}")
     if [ x"$p_stateful" = x"true" ] ; then
@@ -427,13 +408,6 @@ that is shared among all nodes.
         fi
     fi
 
-    if ! test -d "$scratch_dir/state" ; then
-        if ! mkdir -p "$scratch_dir/state" ; then
-            log "E: failed to create state directory: $scratch_dir/state"
-            return 1
-        fi
-    fi
-
     put "sdpa.scratch_dir" "$scratch_dir"
 }
 
@@ -462,19 +436,8 @@ to. It should be on the same host that you run the GUI on.
     get_user_input "log level to use [$lvl]:" lvl ""
     lvl=$( echo "$lvl" | tr 'a-z' 'A-Z' )
 
-    local log_dir=$(get "sdpa.log_dir" "${DEFAULT_LOG_DIRECTORY:?}")
-    get_user_input "log directory to use [$log_dir]:" log_dir ""
-
-    if ! test -d "$log_dir" ; then
-        if ! mkdir -p "$log_dir" ; then
-            log "E: failed to create log directory: $log_dir"
-            return 1
-        fi
-    fi
-
     put "log.server.url" "$url"
     put "log.server.level" "$lvl"
-    put "sdpa.log_dir" "$log_dir"
     put "plugin.logd.port" "${DEFAULT_LOGD_PORT:?}"
 }
 
@@ -930,9 +893,6 @@ function generate_environment ()
             sdpa.temp_dir)
                 echo export SDPA_TEMP_DIR="$val"
                 ;;
-            sdpa.log_dir)
-                echo export SDPA_LOG_DIR="$val"
-                ;;
             sdpa.home)
                 ;;
             *)
@@ -1042,10 +1002,18 @@ function initialize ()
         fi
     fi
 
-    if [ ! -d "${state_dir}" ] ; then
-        log "I: creating state directory: ${state_dir}"
-        mkdir -p "${state_dir}"
+    if [ ! -d "$state_dir" ] ; then
+        local msg=$( mkdir -p "$state_dir" 2>&1 )
+        if [ $? -ne 0 ] ; then
+            echo "E: failed to create state-dir: $state_dir: $msg" >&2
+            return 1
+        fi
     fi
+
+    mkdir -p "$state_dir/log" || {
+        echo >&2 "E: could not create log directory!"
+        return 1
+    }
 
     node_file="${state_dir}/nodefile"
 
@@ -1181,7 +1149,7 @@ function start_proc ()
 
     # check for old one
     local pid_file="$state_dir/$name.pid"
-    local log_file="$SDPA_LOG_DIR/$name.log"
+    local log_file="$state_dir/log/$name.log"
     local pid=$( cat "$pid_file" 2>/dev/null )
     if ! is_proc_alive "$name" "$pid" ; then
         :> "$pid_file"
