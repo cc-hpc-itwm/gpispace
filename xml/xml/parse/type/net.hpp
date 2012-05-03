@@ -623,9 +623,7 @@ namespace xml
             {
               const signature::type type (net.type_of_place (*place));
 
-              if (  !state.synthesize_virtual_places()
-                 && place->is_virtual.get_with_default (false)
-                 )
+              if (!state.synthesize_virtual_places() && place->is_virtual())
                 {
                   // try to find a mapping
                   const place_map_map_type::const_iterator pid
@@ -643,7 +641,7 @@ namespace xml
                 {
                   we::type::property::type prop (place->prop);
 
-                  if (place->is_virtual.get_with_default (false))
+                  if (place->is_virtual())
                     {
                       prop.set ("virtual", "true");
                     }
@@ -697,7 +695,7 @@ namespace xml
 
               if (  (we_net.in_to_place (pid).size() == 0)
                  && (we_net.out_of_place (pid).size() == 0)
-                 && (!place->is_virtual.get_with_default (false))
+                 && (!place->is_virtual())
                  )
                 {
                   state.warn
