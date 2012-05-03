@@ -6,19 +6,8 @@
 ###     source anything
 ###
 ###
-cat ~/.sdpa/state/sdpa.env >/dev/null 2>&1
-
-test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
-
-# set some default values
 gpi_bin_path=""
-if [ -n "$GPI_PRIV_DIR" ] ; then
-    gpi_bin_path="$GPI_PRIV_DIR"
-elif [ -r "$HOME/.sdpa/configs/gpi.dir" ] ; then
-    gpi_bin_path=$( cat "$HOME/.sdpa/configs/gpi.dir" )
-fi
-
-gpi_exe="$(which gpi-space)"
+gpi_exe=""
 debug=false
 mem_size=
 gpi_port=
@@ -30,6 +19,7 @@ kvs_port=
 log_host=
 log_port=
 verbose=false
+state_dir=~/.sdpa/state
 
 function usage ()
 {
@@ -37,8 +27,8 @@ function usage ()
 usage: $0 [options]
 
     -h: print this help
-    -d gpid directory (=$gpi_bin_path): priviledged binary path for the gpid
-    -x gpi-exe (=$gpi_exe): gpi program to use
+    -d gpid directory: priviledged binary path for the gpid
+    -x gpi-exe: gpi program to use
     -g run within debugger
     -m size: memory size
     -p port: GPI port
@@ -50,10 +40,11 @@ usage: $0 [options]
     -l host: log host
     -L port: log port
     -v: verbose
+    -s dir: state-dir
 EOF
 }
 
-while getopts ":hd:x:gm:p:P:fDk:K:l:L:v" opt; do
+while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:" opt; do
     case $opt in
 	h)
 	    usage
@@ -98,6 +89,9 @@ while getopts ":hd:x:gm:p:P:fDk:K:l:L:v" opt; do
 	v)
 	    verbose=true
 	    ;;
+	s)
+	    state_dir=$OPTARG
+	    ;;
 	\?)
 	    echo "invalid option: -$OPTARG" >&2
 	    echo "try: $0 -h" >&2
@@ -106,9 +100,23 @@ while getopts ":hd:x:gm:p:P:fDk:K:l:L:v" opt; do
     esac
 done
 
+test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
+
+if [ -z "$gpi_bin_path" ] ; then
+    if [ -n "$GPI_PRIV_DIR" ] ; then
+	gpi_bin_path="$GPI_PRIV_DIR"
+    else
+	gpi_bin_path=$(fhgcfg -f "$HOME/.sdpa/configs/sdpa.rc" -g gpi.priv_dir)
+    fi
+fi
+
 if [ -z "$gpi_bin_path" ] ; then
     log "could not deduce GPI_PRIV_DIR, please export GPI_PRIV_DIR or pass via commandline!"
     exit 1
+fi
+
+if [ -z "$gpi_exe" ] ; then
+    gpi_exe=$(which gpi-space)
 fi
 
 if [ ! -x "${gpi_exe}" ] ; then

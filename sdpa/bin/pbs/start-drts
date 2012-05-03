@@ -6,34 +6,22 @@
 ###     source anything
 ###
 ###
-cat ~/.sdpa/state/sdpa.env >/dev/null 2>&1
 
-test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
-
-# set some default values
-gui="$SDPA_GUI"
-if [ -z "$gui" ]
-then
-  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)"
-fi
-
+gui=
 force=false
 debug=false
 verbose=false
 daemonize=false
-backlog=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.backlog -v 3)
+backlog=-1
 identity=0
 name_prefix="drts-$(hostname -s)"
 master=
-gpi_enabled="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.enabled -v true)"
 gpi_socket=
-#gpi_socket="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_path -v /var/tmp/gpi-space)"
-#gpi_socket="$gpi_socket/GPISpace-$(id -u)"
-#gpi_socket="$gpi_socket/$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_name -v control)"
-lib_path="$PC_LIBRARY_PATH"
-kvs_url="${KVS_URL}"
+lib_path=
+kvs_url=
 count=
 capabilities=""
+state_dir="~/.sdpa/state"
 
 function usage ()
 {
@@ -48,12 +36,13 @@ usage: $(basename "$0") [options]
     -g ip:port (=$gui): gui address
     -b N (=$backlog): set the backlog
     -S path (=$gpi_socket): gpi socket path
-    -l path (=$lib_path): library path
+    -l path: library path
     -k kvs-url (=$kvs_url): url to the key-value-store
     -c count: start this many processes (0==#cores)
     -C capability: start with this capability (can be specified more than once
     -D daemonize
     -L logfile
+    -s state-dir
 EOF
 }
 
@@ -80,7 +69,7 @@ function to_bg ()
     /bin/kill -CONT "$pid"
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:" opt; do
+while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:s:" opt; do
     case $opt in
 	h)
 	    usage
@@ -133,6 +122,9 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:" opt; do
 		capabilities="$capabilities,$OPTARG"
 	    fi
 	    ;;
+	s)
+	    state_dir="$OPTARG"
+	    ;;
 	\?)
 	    echo "invalid option: -$OPTARG" >&2
 	    echo "try: $0 -h" >&2
@@ -140,6 +132,31 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:" opt; do
 	    ;;
     esac
 done
+
+# read sdpa state if it exists
+
+test -r "${state_dir}/sdpa.env" && source "${state_dir}/sdpa.env"
+
+if [ -z "$gui" ]
+then
+  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui -v "$GUI_URL")"
+fi
+
+gpi_enabled="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.enabled -v true)"
+if [ $backlog -lt 0 ] ; then
+    backlog=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.backlog -v 1)
+fi
+
+if [ -z "$lib_path" ]
+then
+    lib_path="$PC_LIBRARY_PATH"
+fi
+
+if [ -z "$kvs_url" ]
+then
+    kvs_url="${KVS_URL}"
+fi
+
 
 if [ -z "$kvs_url" ] ; then
     log "E: no kvs-url specified!"
@@ -166,6 +183,7 @@ if [ x"$identity" == x"0" ] ; then
 	fi
 	opts="$opts -g $gui"
 	opts="$opts -l lib_path"
+	opts="$opts -s $state_dir"
 
 	if [ x"$force" = x"true" ] ; then
 	    opts="$opts -f"

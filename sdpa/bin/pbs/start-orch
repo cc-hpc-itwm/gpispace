@@ -6,69 +6,81 @@
 ###     source anything
 ###
 ###
-cat ~/.sdpa/state/sdpa.env >/dev/null 2>&1
-
-test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
-
 debug=false
 bind_addr='0'
 name="orchestrator"
-bkp_dir="${SDPA_SCRATCH_DIR}/state"
-kvs_url="$KVS_URL"
-bin=$(which orchestrator 2>/dev/null)
+kvs_url=
 daemonize=false
 pidfile=
-if [ -z "$bin" ] ; then
-    log "# could not find orchestrator binary in the path!"
-    exit 1
+state_dir="~/.sdpa/state"
+
+while getopts ":hgn:l:d:k:DP:s:" opt; do
+    case $opt in
+        g)
+            debug=true
+            ;;
+        l)
+            bind_addr=$OPTARG
+            ;;
+        n)
+            name=$OPTARG
+            ;;
+        k)
+            kvs_url=$OPTARG
+            ;;
+        D)
+            daemonize=true
+            ;;
+        P)
+            pidfile=$OPTARG
+            ;;
+        s)
+            state_dir=$OPTARG
+            ;;
+        h)
+            echo "usage: $0 [-h] [-g] [-l interface] [-n name] [-b backup-dir]" >&2
+            echo "    -h : print this help" >&2
+            echo "    -l : address to listen on (default: $bind_addr)" >&2
+            echo "    -n : name (default: $name)" >&2
+            echo "    -k : kvs url" >&2
+            echo "    -g : run within gdb" >&2
+            echo "    -D : daemonize" >&2
+            echo "    -P pidfile: write pid to this file and lock it" >&2
+            echo "    -s dir: sdpa state dir to use" >&2
+            exit 0
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+    esac
+done
+
+if [ -r "$state_dir/sdpa.env" ] ; then
+    source "$state_dir/sdpa.env"
+else
+    echo >&2 "must be executed within sdpa!"
 fi
 
-while getopts ":hgn:l:d:k:DP:" opt; do
-  case $opt in
-	g)
-	  debug=true
-	;;
-	l)
-	  bind_addr=$OPTARG
-	;;
-        n)
-          name=$OPTARG
-        ;;
-	b)
-	  bkp_dir=$OPTARG
-	;;
-        k)
-	  kvs_url=$OPTARG
-	  ;;
-        D)
-	  daemonize=true
-	  ;;
-        P)
-	  pidfile=$OPTARG
-	  ;;
-	h)
-	  echo "usage: $0 [-h] [-g] [-l interface] [-n name] [-b backup-dir]" >&2
-	  echo "    -h : print this help" >&2
-	  echo "    -l : address to listen on (default: $bind_addr)" >&2
-	  echo "    -n : name (default: $name)" >&2
-          echo "    -b : path to the backup directory (${bkp_dir})" >&2
-	  echo "    -k : kvs url" >&2
-	  echo "    -g : run within gdb" >&2
-	  echo "    -D : daemonize" >&2
-	  echo "    -P pidfile: write pid to this file and lock it" >&2
-	  exit 0
-	;;
-	\?)
-	  echo "Invalid option: -$OPTARG" >&2
-	  exit 1
-  esac
-done
+if [ -z "$kvs_url" ]
+then
+    kvs_url="$KVS_URL"
+fi
+
+# check environment
+
+if [ -z "$kvs_url" ]
+then
+    echo >&2 "E: kvs url was not specified!"
+    exit 2
+fi
 
 log "Running $name at $bind_addr"
 
-argv="-u $bind_addr -n ${name} -k ${kvs_url}"
+argv="$SDPA_HOME/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
+    bkp_dir="${state_dir}/orch"
+    mkdir -p "${bkp_dir}"
     argv="$argv -d ${bkp_dir}"
 fi
 if $daemonize && ! $debug ; then
@@ -80,7 +92,7 @@ fi
 
 if $debug ; then
     log "running within gdb..."
-    FHGLOG_to_console="stderr" gdb -ex run --args $bin $argv
+    FHGLOG_to_console="stderr" gdb -ex run --args $argv
 else
-    FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec $bin $argv
+    FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec $argv
 fi

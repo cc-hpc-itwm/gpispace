@@ -6,32 +6,10 @@
 ###     source anything
 ###
 ###
-cat ~/.sdpa/state/sdpa.env >/dev/null 2>&1
-
-test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
-
-#usage: agent [options] ....
-#Allowed options:
-#  -h [ --help ]                         Display this message
-#  -n [ --name ] arg (=agent)            Agent's logical name
-#  -u [ --url ] arg (=localhost)         Agent's url
-#  -m [ --master ] arg                   Agent's master list
-#  -d [ --backup_folder ] arg            Agent's backup folder
-#  -f [ --backup_file ] arg              Agent's backup file (stored into the
-#                                        backup folder)
-#  -a [ --app_gui_url ] arg (=127.0.0.1:9000)
-#                                        application GUI's url
-#  -k [ --kvs_url ] arg                  The kvs daemon's url
-#  --request-mode arg (=false)           send periodical job requests to master
-
 # set some default values
-gui="$SDPA_GUI"
-if [ -z "$gui" ]
-then
-  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)"
-fi
-
-kvs_url="$KVS_URL"
+state_dir=~/.sdpa/state
+gui=
+kvs_url=
 debug=false
 daemonize=false
 bind_addr='0'
@@ -39,13 +17,8 @@ name=
 master=
 pidfile=
 force=false
-logfile="$SDPA_LOG_DIR/${name}.log"
+logfile=
 backlog=1000
-bin=$(which agent 2>/dev/null)
-if [ -z "$bin" ] ; then
-    log "# could not find agent binary in the path!"
-    exit 1
-fi
 
 function usage ()
 {
@@ -57,16 +30,17 @@ usage: $(basename "$0") [options]
     -d: debug mode
     -n name (*): name of this agent
     -m master (*): master to connect to
-    -g ip:port (=$gui): gui address
+    -g ip:port: gui address
     -b N (=$backlog): set the backlog size
-    -k kvs-url (=$kvs_url): url to the key-value-store
+    -k kvs-url: url to the key-value-store
     -D daemonize
     -P pidfile
     -L logfile (=$logfile)
+    -s state-dir
 EOF
 }
 
-while getopts ":hDfdm:g:b:n:k:L:P:" opt; do
+while getopts ":hDfdm:g:b:n:k:L:P:s:" opt; do
     case $opt in
 	h)
 	    usage
@@ -102,11 +76,31 @@ while getopts ":hDfdm:g:b:n:k:L:P:" opt; do
 	P)
 	    pidfile=$OPTARG
 	    ;;
+	s)
+	    state_dir=$OPTARG
+	    ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
 	    exit 1
     esac
 done
+
+
+# load state
+if test -e "${state_dir}/sdpa.env" ; then
+    source "${state_dir}/sdpa.env"
+fi
+
+if [ -z "$gui" ]
+then
+  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)"
+fi
+logfile="$SDPA_LOG_DIR/${name}.log"
+
+if [ -z "$kvs_url" ]
+then
+    kvs_url="$KVS_URL"
+fi
 
 if [ -z "$name" -o -z "$master" ] ; then
     echo "E: I need both, a name and a master!" 2>&1
@@ -145,7 +139,10 @@ opts="$opts -k ${kvs_url}"
 
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
-    opts="$opts -d ${SDPA_SCRATCH_DIR}/state"
+    if [ ! -d "${state_dir}/agent" ] ; then
+	mkdir -p "${state_dir}/agent"
+    fi
+    opts="$opts -d ${state_dir}/agent"
 fi
 if $daemonize && ! $debug ; then
     opts="$opts --daemonize"
@@ -154,7 +151,7 @@ if [ -n "$pidfile" ] ; then
     opts="$opts --pidfile $pidfile"
 fi
 
-cmd="${bin} $opts"
+cmd="${SDPA_HOME}/bin/agent $opts"
 
 log "Running $name on $(hostname -s) with master $master"
 
