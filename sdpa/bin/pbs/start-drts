@@ -22,6 +22,7 @@ kvs_url=
 count=
 capabilities=""
 state_dir="~/.sdpa/state"
+logdir=
 
 function usage ()
 {
@@ -51,14 +52,14 @@ function to_bg ()
 {
     local pid="$1"; shift
     if [ -z "$pid" ] ; then
-	return 1
+        return 1
     fi
     if ! kill -0 "$pid" &>/dev/null ; then
-	return 2
+        return 2
     fi
     local when="$1"; shift
     if [ -z "$when" ] ; then
-	when=0
+        when=0
     fi
     #echo "to_bg: sleeping $when second(s)"
     sleep $when
@@ -71,65 +72,65 @@ function to_bg ()
 
 while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:s:" opt; do
     case $opt in
-	h)
-	    usage
-	    exit 0
-	    ;;
-	v)
-	    verbose=true
-	    ;;
-	f)
-	    force=true
-	    ;;
-	g)
-	    gui=$OPTARG
-	    ;;
-	m)
-	    master=$OPTARG
-	    ;;
-	i)
-	    if [ $OPTARG -le 0 ] ; then
-		echo "identity must be greater than 0!" >&2
-		exit 2
-	    fi
-	    identity=$OPTARG
-	    ;;
-	b)
-	    backlog=$OPTARG
-	    ;;
-	S)
-	    gpi_socket=$OPTARG
-	    ;;
-	l)
-	    lib_path=$OPTARG
-	    ;;
-	k)
-	    kvs_url=$OPTARG
-	    ;;
-	D)
-	    daemonize=true
-	    ;;
-	L)
-	    logfile="$OPTARG"
-	    ;;
-	c)
-	    count="$OPTARG"
-	    ;;
-	C)
-	    if [ -z "$capabilities" ] ; then
-		capabilities="$OPTARG"
-	    else
-		capabilities="$capabilities,$OPTARG"
-	    fi
-	    ;;
-	s)
-	    state_dir="$OPTARG"
-	    ;;
-	\?)
-	    echo "invalid option: -$OPTARG" >&2
-	    echo "try: $0 -h" >&2
-	    exit 1
-	    ;;
+        h)
+            usage
+            exit 0
+            ;;
+        v)
+            verbose=true
+            ;;
+        f)
+            force=true
+            ;;
+        g)
+            gui=$OPTARG
+            ;;
+        m)
+            master=$OPTARG
+            ;;
+        i)
+            if [ $OPTARG -le 0 ] ; then
+                echo "identity must be greater than 0!" >&2
+                exit 2
+            fi
+            identity=$OPTARG
+            ;;
+        b)
+            backlog=$OPTARG
+            ;;
+        S)
+            gpi_socket=$OPTARG
+            ;;
+        l)
+            lib_path=$OPTARG
+            ;;
+        k)
+            kvs_url=$OPTARG
+            ;;
+        D)
+            daemonize=true
+            ;;
+        L)
+            logdir="$OPTARG"
+            ;;
+        c)
+            count="$OPTARG"
+            ;;
+        C)
+            if [ -z "$capabilities" ] ; then
+                capabilities="$OPTARG"
+            else
+                capabilities="$capabilities,$OPTARG"
+            fi
+            ;;
+        s)
+            state_dir="$OPTARG"
+            ;;
+        \?)
+            echo "invalid option: -$OPTARG" >&2
+            echo "try: $0 -h" >&2
+            exit 1
+            ;;
     esac
 done
 
@@ -171,46 +172,50 @@ fi
 if [ x"$identity" == x"0" ] ; then
 # quick hack to easily start multiple instances
     if [ -n "$count" ] ; then
-	if [ $count -eq 0 ] ; then
-	    count=$(grep ^processor /proc/cpuinfo | wc -l)
-	fi
-	opts=
-	opts="$opts -m $master"
-	opts="$opts -k $kvs_url"
-	opts="$opts -b $backlog"
-	if [ -n "$gpi_socket" ] ; then
-	    opts="$opts -S $gpi_socket"
-	fi
-	opts="$opts -g $gui"
-	opts="$opts -l lib_path"
-	opts="$opts -s $state_dir"
+        if [ $count -eq 0 ] ; then
+            count=$(grep ^processor /proc/cpuinfo | wc -l)
+        fi
+        opts=
+        opts="$opts -m $master"
+        opts="$opts -k $kvs_url"
+        opts="$opts -b $backlog"
+        if [ -n "$gpi_socket" ] ; then
+            opts="$opts -S $gpi_socket"
+        fi
+        opts="$opts -g $gui"
+        opts="$opts -l lib_path"
+        opts="$opts -s $state_dir"
 
-	if [ x"$force" = x"true" ] ; then
-	    opts="$opts -f"
-	fi
+        if [ x"$force" = x"true" ] ; then
+            opts="$opts -f"
+        fi
 
-	ec=0
-	for i in $(seq 1 $count) ; do
-	    $0 -i $i $opts -D &
-	done
-	for i in $(jobs -p) ; do
-	    wait $i
-	    err=$?
-	    if [ $err -eq 1 ] ; then
-		ec=$(( ec + 1 ))
-	    fi
-	done
-	if [ $ec -ne 0 ] ; then
-	    exit 1
-	else
-	    exit 0
-	fi
+        ec=0
+        for i in $(seq 1 $count) ; do
+            $0 -i $i $opts -D &
+        done
+        for i in $(jobs -p) ; do
+            wait $i
+            err=$?
+            if [ $err -eq 1 ] ; then
+                ec=$(( ec + 1 ))
+            fi
+        done
+        if [ $ec -ne 0 ] ; then
+            exit 1
+        else
+            exit 0
+        fi
     fi
 fi
 
 name="${name_prefix}-${identity}"
 
-logfile="$SDPA_LOG_DIR/${name}.log"
+if [ -z "$logdir" ]
+then
+    logdir="${state_dir}/log"
+fi
+logprefix="${logdir}/${name}"
 
 bin="$(which fhgkernel)"
 if [ ! -x "$bin" ] ; then
@@ -222,15 +227,15 @@ fi
 still_running=$(ps -C fhgkernel -o pid=)
 for p in $still_running ; do
     if grep -q -e "plugin.drts.name=$name" /proc/$p/cmdline ; then
-	if [ "$force" = "true" ] ; then
-	    log "W: $name is still running, terminating it"
-	    kill -TERM "$p"
-	    sleep 3
-	    kill -KILL "$p" &>/dev/null
-	else
-	    log "E: $name still running, not starting again"
-	    exit 2
-	fi
+        if [ "$force" = "true" ] ; then
+            log "W: $name is still running, terminating it"
+            kill -TERM "$p"
+            sleep 3
+            kill -KILL "$p" &>/dev/null
+        else
+            log "E: $name still running, not starting again"
+            exit 2
+        fi
     fi
 done
 
@@ -246,7 +251,7 @@ fi
 
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
-    cfg="$cfg -S $SDPA_SCRATCH_DIR/state/kernel/$name"
+    cfg="$cfg -S ${state_dir}/state/kernel/$name"
 fi
 
 # config values (kvs plugin)
@@ -288,19 +293,19 @@ plugins="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g kernel.plugins)"
 plugin_load_flags=""
 for p in $(echo $plugins | tr ',' ' '); do
     if [ x"$gpi_enabled" == x"false" ] ; then
-	if echo $p | grep -q 'gpi' ; then
-	    continue
-	fi
+        if echo $p | grep -q 'gpi' ; then
+            continue
+        fi
     fi
     plugin_load_flags="$plugin_load_flags -l $SDPA_PLUGINS/$p.so"
 done
 
 cmd="${bin} $cfg $plugin_load_flags"
 
-export FHGLOG_to_file="$logfile"
+export FHGLOG_to_file="${logprefix}.log"
 log "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
-    $cmd >"$logfile.out" 2>"$logfile.err" </dev/null &
+    $cmd >"${logprefix}.out" 2>"${logprefix}.err" </dev/null &
 else
     $cmd
 fi

@@ -13,8 +13,9 @@ kvs_url=
 daemonize=false
 pidfile=
 state_dir="~/.sdpa/state"
+logdir=
 
-while getopts ":hgn:l:d:k:DP:s:" opt; do
+while getopts ":hgn:l:d:k:DP:L:s:" opt; do
     case $opt in
         g)
             debug=true
@@ -33,6 +34,9 @@ while getopts ":hgn:l:d:k:DP:s:" opt; do
             ;;
         P)
             pidfile=$OPTARG
+            ;;
+        L)
+            logdir=$OPTARG
             ;;
         s)
             state_dir=$OPTARG
@@ -60,6 +64,13 @@ if [ -r "$state_dir/sdpa.env" ] ; then
 else
     echo >&2 "must be executed within sdpa!"
 fi
+
+if [ -z "$logdir" ]
+then
+    logdir="${state_dir}/log"
+fi
+
+logprefix="${logdir}/${name}"
 
 if [ -z "$kvs_url" ]
 then
@@ -94,5 +105,5 @@ if $debug ; then
     log "running within gdb..."
     FHGLOG_to_console="stderr" gdb -ex run --args $argv
 else
-    FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec $argv
+    FHGLOG_to_file="${logprefix}.log" exec $argv >"${logprefix}.out" 2>"${logprefix}.err"
 fi
