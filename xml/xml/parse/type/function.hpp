@@ -441,6 +441,7 @@ namespace xml
 
         unique_port_type _in;
         unique_port_type _out;
+        unique_port_type _tunnel;
 
         // ***************************************************************** //
 
@@ -559,6 +560,17 @@ namespace xml
         void push_in (const port_type & p) { push (p, _in, _out, "in"); }
         void push_out (const port_type & p) { push (p, _out, _in, "out"); }
         void push_inout (const port_type & p) { push_in (p); push_out (p); }
+        void push_tunnel (const port_type& p)
+        {
+          port_type old;
+
+          if (!_tunnel.push (p, old))
+            {
+              throw error::duplicate_port ("tunnel", p.name, path);
+            }
+
+          std::cerr << "pushed tunnel " << p.name << std::endl;
+        }
 
         // ***************************************************************** //
 

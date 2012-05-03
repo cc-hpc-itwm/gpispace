@@ -485,6 +485,10 @@ namespace xml
                 {
                   f.push_inout (port_type (child, state));
                 }
+              else if (child_name == "tunnel")
+                {
+                  f.push_tunnel (port_type (child, state));
+                }
               else if (child_name == "struct")
                 {
                   f.structs.push_back (struct_type (child, state));
