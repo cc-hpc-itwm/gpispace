@@ -118,10 +118,7 @@ namespace xml
                   if (not place.is_virtual())
                     {
                       throw
-                        error::tunnel_connected_non_virtual< port_type
-                                                           , place_type
-                                                           >
-                        (port, place, path);
+                        error::tunnel_connected_non_virtual (port, place, path);
                     }
 
                   if (port.name != place.name)

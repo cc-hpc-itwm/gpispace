@@ -834,10 +834,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename PORT, typename PLACE>
       class tunnel_connected_non_virtual : public generic
       {
       private:
+        template<typename PORT, typename PLACE>
         std::string nice ( const PORT& port
                          , const PLACE& place
                          , const boost::filesystem::path& path
@@ -853,6 +853,7 @@ namespace xml
           return s.str();
         }
       public:
+        template<typename PORT, typename PLACE>
         tunnel_connected_non_virtual ( const PORT& port
                                      , const PLACE& place
                                      , const boost::filesystem::path& path
