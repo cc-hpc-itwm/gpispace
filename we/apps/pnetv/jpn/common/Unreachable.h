@@ -6,7 +6,7 @@ namespace jpn {
 
 inline void unreachable() {
     assert("NEVER REACHED");
-    while (true);
+    while (true) {}
 }
 
 } // namespace jpn
