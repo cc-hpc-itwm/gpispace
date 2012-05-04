@@ -670,7 +670,7 @@ namespace fhg
           WEAVE(place::open, ITVAL(XMLTYPE(places_type)))(place);
           WEAVE(place::name, std::string)(place.name);
           WEAVE(place::type, std::string)(place.type);
-          WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual);
+          WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());
           WEAVE(place::capacity, MAYBE(petri_net::capacity_t))
             (place.capacity);
           WEAVE(place::properties, WETYPE(property::type))(place.prop);
