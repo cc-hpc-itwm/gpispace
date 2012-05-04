@@ -51,7 +51,7 @@ namespace sdpa { namespace events {
 
         virtual void handleBy(EventHandler *handler)
         {
-          handler->handleDeleteJobEvent(this);
+        	handler->handleDeleteJobEvent(this);
         }
 	};
 }}
