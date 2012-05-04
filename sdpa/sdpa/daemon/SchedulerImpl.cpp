@@ -498,12 +498,6 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 	}
 }
 
-// obsolete, only for testing purposes!
-void SchedulerImpl::start_job(const sdpa::job_id_t &jobId)
-{
-	SDPA_LOG_DEBUG("Start the job "<<jobId.str());
-}
-
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
   DLOG(TRACE, "Schedule the job " << jobId.str());
@@ -550,7 +544,7 @@ void SchedulerImpl::start(IComm* p)
   }
 
   m_thread_run = boost::thread(boost::bind(&SchedulerImpl::run, this));
-  m_thread_feed = boost::thread(boost::bind(&SchedulerImpl::feed_workers, this));
+  m_thread_feed = boost::thread(boost::bind(&SchedulerImpl::feedWorkers, this));
 
 
   SDPA_LOG_DEBUG("Scheduler thread started ...");
@@ -633,7 +627,7 @@ void SchedulerImpl::check_post_request()
 	}
 }
 
-void SchedulerImpl::feed_workers()
+void SchedulerImpl::feedWorkers()
 {
 	while(!bStopRequested)
 	{

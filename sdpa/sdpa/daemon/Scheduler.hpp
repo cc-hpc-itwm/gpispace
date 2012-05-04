@@ -57,7 +57,7 @@ namespace daemon {
 	 virtual void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&) = 0;
 
 	 virtual size_t numberOfWorkers() = 0;
-	 virtual void feed_workers()= 0;
+	 virtual void feedWorkers()= 0;
 
 	 //virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& ) = 0;
 	 virtual void removeRecoveryInconsistencies() = 0;
