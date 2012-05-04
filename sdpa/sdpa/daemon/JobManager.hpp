@@ -59,7 +59,7 @@ namespace sdpa { namespace daemon {
 	  void waitForFreeSlot();
 	  bool slotAvailable() const;
 
-      void resubmitJobsAndResults(IComm* );
+      void resubmitResults(IComm* );
       sdpa::job_id_list_t getListNotCompletedMasterJobs(bool bHasWfe);
 
       std::string print() const;
