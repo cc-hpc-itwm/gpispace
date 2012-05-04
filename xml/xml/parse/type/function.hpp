@@ -141,7 +141,10 @@ namespace xml
 
         void operator () (const expression_type &) const { return; }
         void operator () (const mod_type & m) const { m.sanity_check (fun); }
-        void operator () (const Net & net) const { net.sanity_check (state); }
+        void operator () (const Net & net) const
+        {
+          net.sanity_check (state, fun);
+        }
       };
 
       // ******************************************************************* //
@@ -544,6 +547,11 @@ namespace xml
         bool is_known_port_inout (const std::string & name) const
         {
           return is_known_port_in (name) && is_known_port_out (name);
+        }
+
+        bool is_known_tunnel (const std::string& name) const
+        {
+          return _tunnel.is_element (name);
         }
 
         // ***************************************************************** //
