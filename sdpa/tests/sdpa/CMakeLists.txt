@@ -15,7 +15,7 @@ message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_MODULES_PAT
 set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/atomic/atomic/pnetc/op")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
 
-set(TESTS_N_ATOMIC_TASKS 200)
+set(TESTS_N_ATOMIC_TASKS 100)
 
 set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/inotify/inotify/pnetc/op")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
