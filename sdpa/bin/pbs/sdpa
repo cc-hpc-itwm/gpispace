@@ -955,7 +955,7 @@ function dump_config ()
 
 function initialize ()
 {
-    local hostfile=
+    local hostfile="$PBS_NODEFILE"
     local node_file=
 
     argv="$@"
@@ -980,7 +980,7 @@ function initialize ()
         esac
     done
 
-    if [ -z "$hostfile" ] ; then
+    if [ -n "$1" ] ; then
         hostfile="$1"; shift
     fi
 
