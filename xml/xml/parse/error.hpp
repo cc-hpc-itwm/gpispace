@@ -922,10 +922,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename PORT, typename PLACE>
       class port_connected_type_error : public generic
       {
       private:
+        template<typename PORT, typename PLACE>
         std::string nice ( const std::string & direction
                          , const PORT & port
                          , const PLACE & place
@@ -945,6 +945,7 @@ namespace xml
         }
 
       public:
+        template<typename PORT, typename PLACE>
         port_connected_type_error ( const std::string & direction
                                   , const PORT & port
                                   , const PLACE & place
@@ -1066,10 +1067,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename PORT, typename PLACE>
       class connect_type_error : public generic
       {
       private:
+        template<typename PORT, typename PLACE>
         std::string nice ( const std::string & direction
                          , const std::string & trans
                          , const PORT & port
@@ -1091,6 +1092,7 @@ namespace xml
         }
 
       public:
+        template<typename PORT, typename PLACE>
         connect_type_error ( const std::string & direction
                            , const std::string trans
                            , const PORT & port
