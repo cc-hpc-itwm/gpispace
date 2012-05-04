@@ -113,11 +113,21 @@ namespace xml
                     (direction, port, place, path);
                 }
 
-              if (direction == "tunnel" && not place.is_virtual())
+              if (direction == "tunnel")
                 {
-                  throw
-                    error::tunnel_connected_non_virtual<port_type,place_type>
-                    (port, place, path);
+                  if (not place.is_virtual())
+                    {
+                      throw
+                        error::tunnel_connected_non_virtual< port_type
+                                                           , place_type
+                                                           >
+                        (port, place, path);
+                    }
+
+                  if (port.name != place.name)
+                    {
+                      throw error::tunnel_name_mismatch (port, place, path);
+                    }
                 }
             }
         }

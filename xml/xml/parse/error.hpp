@@ -863,6 +863,36 @@ namespace xml
 
       // ******************************************************************* //
 
+      class tunnel_name_mismatch : public generic
+      {
+      private:
+        template<typename PORT, typename PLACE>
+        std::string nice ( const PORT& port
+                         , const PLACE& place
+                         , const boost::filesystem::path& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "tunnel with name " << port.name
+            << " is connected to place with different name " << place.name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        template<typename PORT, typename PLACE>
+        tunnel_name_mismatch ( const PORT& port
+                             , const PLACE& place
+                             , const boost::filesystem::path& path
+                             )
+          : generic (nice (port, place, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class port_not_connected : public generic
       {
       private:
