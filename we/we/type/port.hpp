@@ -118,20 +118,6 @@ namespace we
         , prop_(prop)
       {}
 
-      template <typename Signature, typename Dir>
-      static
-      port create ( const name_type & name, const Signature & signature )
-      {
-        return port<Signature, IdType, Traits> ( name, Dir::value, signature );
-      }
-
-      template <typename Signature, typename PlaceId, typename Dir>
-      static
-      port create ( const name_type & name, const Signature & signature, const PlaceId place_id )
-      {
-        return port<Signature, IdType, Traits> ( name, Dir::value, signature, place_id );
-      }
-
       name_type & name() { return name_; }
       const name_type & name() const { return name_; }
 
