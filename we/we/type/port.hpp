@@ -56,57 +56,6 @@ namespace we
         }
     }
 
-    namespace detail {
-      namespace direction
-      {
-        struct i_port
-        {
-          static const PortDirection value = PORT_IN;
-        };
-
-        struct r_port
-        {
-          static const PortDirection value = PORT_READ;
-        };
-
-        struct o_port
-        {
-          static const PortDirection value = PORT_OUT;
-        };
-
-        struct io_port
-        {
-          static const PortDirection value = PORT_IN_OUT;
-        };
-
-        template <int Dir>
-        struct tag {};
-
-        template <>
-        struct tag<PORT_IN>
-        {
-          typedef i_port type;
-        };
-
-        template <>
-        struct tag<PORT_READ>
-        {
-          typedef r_port type;
-        };
-
-        template <>
-        struct tag<PORT_OUT>
-        {
-          typedef o_port type;
-        };
-
-        template <>
-        struct tag<PORT_IN_OUT>
-        {
-          typedef io_port type;
-        };
-      }
-    }
     template < typename SignatureType
              , typename IdType = petri_net::pid_t
              , typename Traits = petri_net::traits::id_traits<IdType>
@@ -118,14 +67,11 @@ namespace we
       typedef IdType pid_type;
       typedef Traits pid_traits;
 
-      typedef detail::direction::i_port I_PORT;
-      typedef detail::direction::o_port O_PORT;
-
       typedef std::string name_type;
 
       port ()
         : name_("default")
-        , direction_(I_PORT::value)
+        , direction_(PORT_IN)
         , associated_place_(pid_traits::invalid())
       {}
 
