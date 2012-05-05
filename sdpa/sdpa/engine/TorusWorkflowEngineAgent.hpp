@@ -228,8 +228,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 		reqList.push_back(req);
 
 		pIAgent_->submit(pBlueToken->activityId(), pBlueToken->encode(), reqList);
-
-		//pIAgent_->forward(actIdBlue, pBlueToken->encode(), rankRight );
 	}
 
 	void propagateDown( const Token::ptr_t& pRedToken )
@@ -262,8 +260,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 		reqList.push_back(req);
 
 		pIAgent_->submit(pRedToken->activityId(), pRedToken->encode(), reqList);
-
-		//pIAgent_->forward( actIdRed,  pRedToken->encode(),  rankBottom );
 	}
 
 	/**
@@ -384,7 +380,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     id_type m_bottomNghb;
 
     std::string m_wfid;
-    //matrix_t m_product;
 
     map_act_ids_t m_mapActIds;
 };

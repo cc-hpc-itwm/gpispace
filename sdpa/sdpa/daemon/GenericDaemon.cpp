@@ -626,30 +626,15 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 
         const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
 
-        // INVESTIGATE HERE!
-        std::string job_status = ptrJob->getStatus();
-        bool bTerminal = false;
-        if( job_status.find("Finished") != std::string::npos ||
-            job_status.find("Failed")   != std::string::npos ||
-            job_status.find("Cancelled")!= std::string::npos )
-          bTerminal = true;
+        DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
-        if( ptrJob.get() && !bTerminal )
-        {
-            DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
+        // create a SubmitJobEvent for the job job_id serialize and attach description
+        DMLOG(TRACE, "sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
+        SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), ""));
 
-            // create a SubmitJobEvent for the job job_id serialize and attach description
-            DMLOG(TRACE, "sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
-            SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), ""));
-
-            // Post a SubmitJobEvent to the slave who made the request
-            sendEventToSlave(pSubmitEvt);
-            scheduler()->setLastTimeServed(worker_id, sdpa::util::now());
-        }
-        else // send an error event
-        {
-            SDPA_LOG_DEBUG("no job available, get_next_job should probably throw an exception?");
-        }
+        // Post a SubmitJobEvent to the slave who made the request
+        sendEventToSlave(pSubmitEvt);
+        scheduler()->setLastTimeServed(worker_id, sdpa::util::now());
     }
     catch(const NoJobScheduledException&)
     {
@@ -779,15 +764,16 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   }
 
   JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
-  if(e.job_id() != job_id_empty)  //use the job_id already  assigned by the master
-    job_id = e.job_id();        //the orchestrator will assign a new job_id for the user jobs, the Agg/NRE will use the job_id assigned by the master
+  if(e.job_id() != job_id_empty)  // use the job_id already  assigned by the master
+    job_id = e.job_id();          // the orchestrator will assign a new job_id for the user jobs,
+                                  // the Agg/NRE will use the job_id assigned by the master
 
   try {
       // One should parse the workflow in order to be able to create a valid job
       // if the event comes from Gwes parent_id is the owner_workflow_id
-      JobFSM* ptrFSM = new JobFSM( job_id, e.description(), this, e.parent_id() );
+      JobFSM* ptrFSM = new JobFSM(job_id, e.description(), this, e.parent_id());
       ptrFSM->start_fsm();
-      Job::ptr_t pJob( ptrFSM );
+      Job::ptr_t pJob(ptrFSM);
       pJob->set_owner(e.from());
 
       // the job job_id is in the Pending state now!
@@ -795,7 +781,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
       // check if the message comes from outside/slave or from WFE
       // if it comes from outside set it as local
-      if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() ) //e.to())
+      if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() )
       {
     	  SDPA_LOG_DEBUG("got new job from " << e.from() << " = " << job_id);
           pJob->setType(Job::MASTER);
@@ -805,11 +791,11 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
       if( e.from() != sdpa::daemon::WE )
       {
-        //send back to the user a SubmitJobAckEvent
-        SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id, e.id()));
+    	  // send back to the user a SubmitJobAckEvent
+    	  SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id, e.id()));
 
-        // There is a problem with this if uncommented
-        sendEventToMaster(pSubmitJobAckEvt);
+    	  // There is a problem with this if uncommented
+    	  sendEventToMaster(pSubmitJobAckEvt);
       }
   }
   catch(JobNotAddedException const &ex)
@@ -1297,7 +1283,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 	// re-submit  them to the master, after registration
 
 	if(!isTop())
-		jobManager()->resubmitJobsAndResults(this);
+		jobManager()->resubmitResults(this);
 }
 
 void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)

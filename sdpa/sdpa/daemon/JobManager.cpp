@@ -160,7 +160,7 @@ void JobManager::waitForFreeSlot ()
   free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
 }
 
-void JobManager::resubmitJobsAndResults(IComm* pComm)
+void JobManager::resubmitResults(IComm* pComm)
 {
     lock_type lock(mtx_);
     SDPA_LOG_INFO("Re-submit to the master the results of the jobs that are either finished, failed or cancelled!");
@@ -207,7 +207,6 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
         }
         else
         {
-        	//submit JobSubmitAck -> eventually will be ignored -> if the job was in pending state -> put it into running state
         	sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( 	pComm->name(),
         			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	pJob->owner(),
         			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	pJob->id(),
