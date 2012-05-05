@@ -1988,12 +1988,6 @@ function on_valid_host ()
 {
     local host="$(hostname -s)"
     if test -r "$state_dir/nodefile" ; then
-        if [ -n "$PBS_NODEFILE" ] ; then
-            if ! diff -q "$PBS_NODEFILE" "$state_dir/nodefile" >/dev/null ; then
-                log "W: $PBS_NODEFILE and $state_dir/nodefile differ"
-                return 1
-            fi
-        fi
         if grep -q -e "^$host" "$state_dir/nodefile" ; then
             return 0
         else
