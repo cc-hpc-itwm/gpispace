@@ -14,7 +14,7 @@ verbose=false
 daemonize=false
 backlog=-1
 identity=0
-name_prefix="drts-$(hostname -s)"
+name_prefix="drts"
 master=
 gpi_socket=
 lib_path=
@@ -34,6 +34,7 @@ usage: $(basename "$0") [options]
     -f: force: kill still running processes
     -i ident (=$identiy): identity
     -m master (=$master): master to connect to
+    -n name prefix: name to prefix before hostname and identity
     -g ip:port (=$gui): gui address
     -b N (=$backlog): set the backlog
     -S path (=$gpi_socket): gpi socket path
@@ -70,7 +71,7 @@ function to_bg ()
     /bin/kill -CONT "$pid"
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:s:" opt; do
+while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:s:n:" opt; do
     case $opt in
         h)
             usage
@@ -125,6 +126,9 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:M:s:" opt; do
             ;;
         s)
             state_dir="$OPTARG"
+            ;;
+        n)
+            name_prefix="$OPTARG"
             ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
@@ -185,6 +189,7 @@ if [ x"$identity" == x"0" ] ; then
         opts="$opts -g $gui"
         opts="$opts -l lib_path"
         opts="$opts -s $state_dir"
+        opts="$opts -n $name_prefix"
 
         if [ x"$force" = x"true" ] ; then
             opts="$opts -f"
@@ -209,7 +214,7 @@ if [ x"$identity" == x"0" ] ; then
     fi
 fi
 
-name="${name_prefix}-${identity}"
+name="${name_prefix}-$(hostname -s)-${identity}"
 
 if [ -z "$logdir" ]
 then
