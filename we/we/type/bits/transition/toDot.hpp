@@ -150,6 +150,7 @@ namespace we { namespace type {
         static std::string condition;
         static std::string port_in;
         static std::string port_out;
+        static std::string port_tunnel;
         static std::string expression;
         static std::string modcall;
         static std::string place;
@@ -161,9 +162,19 @@ namespace we { namespace type {
           condition = prop.get_with_default (prefix + ".condition", "record");
           port_in = prop.get_with_default (prefix + ".port-in", "house");
           port_out = prop.get_with_default (prefix + ".port-out", "invhouse");
+          port_tunnel = prop.get_with_default (prefix + ".port-tunnel", "ellipse");
           expression = prop.get_with_default (prefix + ".expression", "none");
           modcall = prop.get_with_default (prefix + ".modcall", "box");
           place = prop.get_with_default (prefix + ".place", "ellipse");
+        }
+
+        template<typename Port>
+        inline std::string port (const Port& p)
+        {
+          return p.is_input()
+            ? port_in
+            : (p.is_output() ? port_out : port_tunnel)
+            ;
         }
       }
 
@@ -321,8 +332,8 @@ namespace we { namespace type {
           , show_signature (true)
           , show_priority (true)
           , show_intext (false)
-          , show_virtual (true)
-          , show_real (true)
+          , show_virtual (false)
+          , show_real (false)
         {}
       };
 
@@ -397,8 +408,18 @@ namespace we { namespace type {
           typedef typename pnet_t::transition_const_it transition_const_it;
           typedef typename pnet_t::token_place_it token_place_it;
           typedef petri_net::connection_t connection_t;
+          typedef typename transition_t::port_map_t::value_type pmv_t;
+          typedef std::string place_dot_name_type;
+          typedef std::pair< place_dot_name_type
+                           , typename transition_t::port_id_t
+                           > extra_connection_type;
+          typedef std::string transition_name_type;
+          typedef boost::unordered_map< transition_name_type
+                                      , std::list<extra_connection_type>
+                                      > extra_connection_by_transition_type;
 
           std::ostringstream s;
+          extra_connection_by_transition_type ecbt;
 
           const id_type id_net (id);
 
@@ -409,6 +430,8 @@ namespace we { namespace type {
           for (place_const_it p (net.places()); p.has_more(); ++p)
             {
               const P place (net.get_place (*p));
+              const place_dot_name_type place_dot_name
+                (name (id_net, "place_" + fhg::util::show (*p)));
 
               std::ostringstream token;
 
@@ -470,29 +493,54 @@ namespace we { namespace type {
 
               std::ostringstream real;
 
-              if (opts.show_real)
-                {
-                  namespace prop = we::type::property::traverse;
+              {
+                namespace prop = we::type::property::traverse;
 
-                  prop::stack_type stack
-                    (prop::dfs (place.get_property(), "real"));
+                prop::stack_type stack
+                  (prop::dfs (place.get_property(), "real"));
 
-                  while (!stack.empty())
-                    {
-                      real << endl
-                           << property ("real"
-                                       , stack.top().first[0]
-                                       + "."
-                                       + stack.top().second
-                                       )
-                        ;
+                while (!stack.empty())
+                  {
+                    if (opts.show_real)
+                      {
+                        real << endl
+                             << property ("real"
+                                         , stack.top().first[0]
+                                         + "."
+                                         + stack.top().second
+                                         )
+                          ;
+                      }
 
-                      stack.pop();
-                    }
-                }
+                    for ( transition_const_it t (net.transitions())
+                        ; t.has_more()
+                        ; ++t
+                        )
+                      {
+                        const transition_t& trans (net.get_transition (*t));
+
+                        if (trans.name() == stack.top().first[0])
+                          {
+                            BOOST_FOREACH (const pmv_t& pmv, trans.ports())
+                              {
+                                if (pmv.second.name() == stack.top().second)
+                                  {
+                                    ecbt[trans.name()].push_back
+                                      (extra_connection_type
+                                      (place_dot_name, pmv.first)
+                                      )
+                                      ;
+                                  }
+                              }
+                          }
+                      }
+
+                    stack.pop();
+                  }
+              }
 
               level (s, l + 1)
-                << name (id_net, "place_" + fhg::util::show (*p))
+                << place_dot_name
                 << node
                    ( shape::place
                    , with_signature ( place.get_name()
@@ -514,6 +562,19 @@ namespace we { namespace type {
               const petri_net::prio_t prio (net.get_transition_priority (*t));
 
               s << to_dot<P, E, T> (trans, id, opts, l + 1, prio);
+
+              BOOST_FOREACH ( const extra_connection_type& ec
+                            , ecbt[trans.name()]
+                            )
+                {
+                  level (s, l + 1)
+                    << name (id_trans, "port_" + fhg::util::show(ec.second))
+                    << arrow
+                    << ec.first
+                    << association()
+                    << std::endl
+                    ;
+                }
 
               for ( typename transition_t::inner_to_outer_t::const_iterator
                       connection (trans.inner_to_outer_begin())
@@ -660,7 +721,7 @@ namespace we { namespace type {
           {
             level (s, l + 1)
               << name (id_trans, "port_" + fhg::util::show(p->first))
-              << node ( p->second.is_input() ? shape::port_in : shape::port_out
+              << node ( shape::port (p->second)
                       , with_signature ( p->second.name()
                                        , p->second.signature()
                                        , opts
