@@ -1,6 +1,7 @@
 <template name="wait">
   <in name="trigger" type="T" place="trigger"/>
   <out name="done" type="control" place="done"/>
+  <tunnel name="wait" type="long" place="wait"/>
   <net>
     <place name="trigger" type="T"/>
     <place name="done" type="control"/>
