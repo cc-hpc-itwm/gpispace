@@ -55,7 +55,6 @@ DEFAULT_TMP_DIR="/var/tmp"
 DEFAULT_WORKER_PER_NODE="1"
 DEFAULT_WITH_MEDIATOR="false"
 
-DEFAULT_LOG_DIRECTORY="${DEFAULT_SCRATCH_DIR}/log"
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 DEFAULT_KVS_PORT=2439
@@ -216,10 +215,10 @@ function isatty()
     local f="$1" ; shift
     f=$(readlink -f "$f")
     if [ -e "$f" ] ; then
-	tty -s < "$f" >/dev/null 2>&1
-	return $?
+        tty -s < "$f" >/dev/null 2>&1
+        return $?
     else
-	return 1
+        return 1
     fi
 }
 
@@ -230,7 +229,7 @@ function is_unattended ()
     fi
 
     if ! isatty /dev/stdin ; then
-	return 0
+        return 0
     fi
 
     return 1
@@ -261,14 +260,6 @@ function setup_required ()
 
 function setup_state ()
 {
-    if [ ! -d "$state_dir" ] ; then
-        local msg=$( mkdir -p "$state_dir" 2>&1 )
-        if [ $? -ne 0 ] ; then
-            echo "E: failed to create state-dir: $state_dir: $msg" >&2
-            return 1
-        fi
-    fi
-
     local sdpa_home="$SDPA_HOME"
     if [ -z "$sdpa_home" ] ; then
         mydir=$(cd $(dirname $( which $0 )) && pwd)
@@ -277,16 +268,6 @@ function setup_state ()
     get_user_input "SDPA installation directory [$sdpa_home]:" sdpa_home
 
     export SDPA_HOME="$sdpa_home"
-
-    #put "sdpa.home" "$sdpa_home"
-
-    local node_file="$state_dir/nodefile"
-
-    put "sdpa.node_file" "$node_file"
-    log "I: node file configured to be stored in $node_file"
-
-    put "sdpa.state_dir" "$state_dir"
-    log "I: state directory configured to be in $state_dir"
 
     local p_stateful=$(get "sdpa.stateful" "${DEFAULT_STATEFUL_EXECUTION:?}")
     if [ x"$p_stateful" = x"true" ] ; then
@@ -427,13 +408,6 @@ that is shared among all nodes.
         fi
     fi
 
-    if ! test -d "$scratch_dir/state" ; then
-        if ! mkdir -p "$scratch_dir/state" ; then
-            log "E: failed to create state directory: $scratch_dir/state"
-            return 1
-        fi
-    fi
-
     put "sdpa.scratch_dir" "$scratch_dir"
 }
 
@@ -462,19 +436,8 @@ to. It should be on the same host that you run the GUI on.
     get_user_input "log level to use [$lvl]:" lvl ""
     lvl=$( echo "$lvl" | tr 'a-z' 'A-Z' )
 
-    local log_dir=$(get "sdpa.log_dir" "${DEFAULT_LOG_DIRECTORY:?}")
-    get_user_input "log directory to use [$log_dir]:" log_dir ""
-
-    if ! test -d "$log_dir" ; then
-        if ! mkdir -p "$log_dir" ; then
-            log "E: failed to create log directory: $log_dir"
-            return 1
-        fi
-    fi
-
     put "log.server.url" "$url"
     put "log.server.level" "$lvl"
-    put "sdpa.log_dir" "$log_dir"
     put "plugin.logd.port" "${DEFAULT_LOGD_PORT:?}"
 }
 
@@ -727,21 +690,21 @@ to adjust the amount.
     local gpid_dir="$DEFAULT_GPI_PRIV_DIR"
 
     if [ -z "$DEFAULT_GPI_PRIV_DIR" ] ; then
-	for gpi_prog in "gpid.exe" "gpid.bin" ; do
-	    gpid_pid=$(ps -C $gpi_prog -o pid= | tr -d ' ')
-	    if [ -z "$gpid_pid" ] ; then
-		continue
-	    fi
-	    gpid_dir=$(cat /proc/$gpid_pid/cmdline 2>/dev/null | tr '\0' ' ' | grep -o -- '-p [^ ]*' | cut -d' ' -f 2)
-	    if [ -d "$gpid_dir" ] ; then
-		break
-	    fi
-	done
+        for gpi_prog in "gpid.exe" "gpid.bin" ; do
+            gpid_pid=$(ps -C $gpi_prog -o pid= | tr -d ' ')
+            if [ -z "$gpid_pid" ] ; then
+                continue
+            fi
+            gpid_dir=$(cat /proc/$gpid_pid/cmdline 2>/dev/null | tr '\0' ' ' | grep -o -- '-p [^ ]*' | cut -d' ' -f 2)
+            if [ -d "$gpid_dir" ] ; then
+                break
+            fi
+        done
     fi
 
     if [ -z "$gpid_dir" ] ; then
-	log "W: could not discover GPI priviledged directory, using /"
-	gpid_dir="/"
+        log "W: could not discover GPI priviledged directory, using /"
+        gpid_dir="/"
     fi
 
     gpid_dir=$(get "gpi.priv_dir" "$gpid_dir")
@@ -900,8 +863,8 @@ function generate_environment ()
 
     kvs_port=$(get "plugin.kvs.port")
     if [ -z "$kvs_port" ] ; then
-	log "E: could not get kvs port from config!"
-	return 1
+        log "E: could not get kvs port from config!"
+        return 1
     fi
     echo export KVS_URL="$(hostname -s):${kvs_port:?}"
 
@@ -914,9 +877,6 @@ function generate_environment ()
                 ;;
             log.server.url)
                 echo export FHGLOG_to_server="$val"
-                ;;
-            kvs.store)
-                echo export KVS_STORE="$val"
                 ;;
             kvs.url)
                 echo export KVS_URL="$val"
@@ -933,15 +893,6 @@ function generate_environment ()
             sdpa.temp_dir)
                 echo export SDPA_TEMP_DIR="$val"
                 ;;
-            sdpa.log_dir)
-                echo export SDPA_LOG_DIR="$val"
-                ;;
-            sdpa.state_dir)
-                echo export SDPA_STATE_DIR="$val"
-                ;;
-            sdpa.node_file)
-                echo export SDPA_NODEFILE="$val"
-                ;;
             sdpa.home)
                 ;;
             *)
@@ -956,6 +907,7 @@ function generate_environment ()
         # sanitize HOME
         export SDPA_HOME="$(echo $SDPA_HOME | sed -e 's,/\+$,,')"
     fi
+
     export SDPA_LIBEXEC="$SDPA_HOME/libexec/sdpa"
     export SDPA_PLUGINS="$SDPA_HOME/libexec/fhg/plugins"
 
@@ -976,19 +928,19 @@ function generate_environment ()
     OLDIFS="$IFS"
     IFS=":"
     for d in $SDPA_APP_PATH ; do
-	# eval echo: resolve "~"
-	app_directories=( ${app_directories[@]} $(eval echo "$d") )
+        # eval echo: resolve "~"
+        app_directories=( ${app_directories[@]} $(eval echo "$d") )
     done
     IFS="$OLDIFS"
 
     app_directories=( ${app_directories[@]} "$HOME/.sdpa/modules" )
 
     for app_dir in ${app_directories[@]} ; do
-	for f in $(find "$app_dir" -type f -name "*.so" ) ; do
+        for f in $(find "$app_dir" -type f -name "*.so" ) ; do
             mod_dir=$(dirname "$f")
             prepend_to_path PC_LIBRARY_PATH "$mod_dir"
             prepend_to_path LD_LIBRARY_PATH "$mod_dir"
-	done
+        done
     done
 
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
@@ -1003,15 +955,38 @@ function dump_config ()
 
 function initialize ()
 {
-    local hostfile="$1"; shift
-    local node_file=$(get "sdpa.node_file" "$SDPA_NODEFILE")
+    local hostfile="$PBS_NODEFILE"
+    local node_file=
 
-    if [ -z "$hostfile" ] ; then
-        hostfile="$PBS_NODEFILE"
+    argv="$@"
+    OPTIND=1
+    while getopts ":hF:n:s:" opt $argv ; do
+        case $opt in
+            h)
+                echo >&2 "usage: init: [-h] [-F hostfile] [-s state-dir]"
+                return 0
+                ;;
+            F)
+                hostfile="$OPTARG"
+                shift 2
+                ;;
+            s)
+                state_dir="$OPTARG"
+                shift 2
+                ;;
+            \?)
+                shift
+                ;;
+        esac
+    done
+
+    if [ -n "$1" ] ; then
+        hostfile="$1"; shift
     fi
 
     if [ -z "$hostfile" ] ; then
-        log "E: usage: init [hostfile] or export PBS_NODEFILE"
+        log "E: hostfile not set"
+        log "usage: init: [-h] [-F hostfile] [-s state-dir]"
         return 1
     fi
 
@@ -1026,6 +1001,21 @@ function initialize ()
             return 1
         fi
     fi
+
+    if [ ! -d "$state_dir" ] ; then
+        local msg=$( mkdir -p "$state_dir" 2>&1 )
+        if [ $? -ne 0 ] ; then
+            echo "E: failed to create state-dir: $state_dir: $msg" >&2
+            return 1
+        fi
+    fi
+
+    mkdir -p "$state_dir/log" || {
+        echo >&2 "E: could not create log directory!"
+        return 1
+    }
+
+    node_file="${state_dir}/nodefile"
 
     if ! cp "$hostfile" "$node_file" ; then
         log "E: could not copy nodefile from '$hostfile' to '$node_file'"
@@ -1159,7 +1149,7 @@ function start_proc ()
 
     # check for old one
     local pid_file="$state_dir/$name.pid"
-    local log_file="$SDPA_LOG_DIR/$name.log"
+    local log_file="$state_dir/log/$name.log"
     local pid=$( cat "$pid_file" 2>/dev/null )
     if ! is_proc_alive "$name" "$pid" ; then
         :> "$pid_file"
@@ -1167,12 +1157,12 @@ function start_proc ()
         $binary $@ </dev/null >"$log_file" 2>&1
         for (( i = 0 ; i < 6 ; ++i )) ; do
             sleep 0.5
-	    pid=$( cat "$pid_file" 2>/dev/null )
-	    if [ -n "$pid" ] ; then
-		if is_proc_alive "$name" "$pid" ; then
+            pid=$( cat "$pid_file" 2>/dev/null )
+            if [ -n "$pid" ] ; then
+                if is_proc_alive "$name" "$pid" ; then
                     echo "+ $name ($pid)" >&2
                     return 0
-		fi
+                fi
             fi
         done
         echo "- $name (dead)" >&2
@@ -1233,7 +1223,7 @@ function start_agent ()
         node=localhost
     fi
 
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         echo "$name" >&2
@@ -1291,11 +1281,11 @@ function start_kvs ()
     fi
     kvs_port=$(get "plugin.kvs.port")
     if [ -z "$kvs_port" ] ; then
-	log "E: could not get kvs port from config!"
-	return 1
+        log "E: could not get kvs port from config!"
+        return 1
     fi
 
-    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" "-C" "-b" "0" "-p" "${kvs_port}" "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize"; then
+    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" -s "$state_dir/kvs.dat" "-C" "-b" "0" "-p" "${kvs_port}" "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize"; then
         log "E: could not start kvs, giving up!"
         return 1
     else
@@ -1319,7 +1309,7 @@ function start_orch ()
         log "E: Orchestrator must be started on the master node"
         exit 1
     fi
-    if ! start_proc "orchestrator" "start-orch" "-P" "$state_dir/orchestrator.pid" "-D" ; then
+    if ! start_proc "orchestrator" "start-orch" "-s" "$state_dir" "-P" "$state_dir/orchestrator.pid" "-D" ; then
         echo "E: could not start orchestrator, giving up!" >&2
         return 1
     else
@@ -1356,14 +1346,14 @@ function stop_agg ()
 
 function node_loop ()
 {
-    if [ ! -r "$SDPA_NODEFILE" ] ; then
-        echo "Cannot read nodefile: $SDPA_NODEFILE" >&2
+    if [ ! -r "${state_dir}/nodefile" ] ; then
+        echo "Cannot read nodefile: ${state_dir}/nodefile" >&2
         return 1
     fi
 
     local body="$1" ; shift
 
-    nodes=$(uniq "$SDPA_NODEFILE")
+    nodes=$(uniq "${state_dir}/nodefile")
 
     local rc=0
     local bunch_size=16
@@ -1399,29 +1389,6 @@ function node_loop ()
         echo >&2
     done
     return $rc
-}
-
-function kill_pc ()
-{
-    if [ $# -ne 1 ] ; then
-        echo "you have to specify a signal to send!" >&2
-        return 1
-    fi
-    node_loop send_signal_to_pc $@
-}
-
-function send_signal_to_pc ()
-{
-    local node=$1 ; shift
-    local sig=$1 ; shift
-    local err=$(rexec "$node" "$SDPA_SCRIPT_DIR/send-signal" -n "nre-pcd" -s "$sig")
-    ec=$?
-    if [ $ec -ne 0 ] ; then
-        log "E: could not send signal $sig to pc on node $node: $err"
-        return 1
-    else
-        return 0
-    fi
 }
 
 function start_nre ()
@@ -1687,7 +1654,7 @@ function start_drts_on_node ()
         master="nre-$node"
     fi
 
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -D -m "$master" -c "$per_node" $@ 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -s "$state_dir" -D -m "$master" -c "$per_node" $@ 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         return 0
@@ -1745,7 +1712,7 @@ function start_gui ()
     fi
     local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
 
-    local cmd="$SDPA_SCRIPT_DIR/start-gui $gui_port $log_port"
+    local cmd="$SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port"
     if [ "$gui_host" != "$(hostname -f)" ] ; then
         log "W: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
         cmd="ssh -X $gui_host $cmd"
@@ -1768,7 +1735,7 @@ function start_gpi ()
     fi
     local gpi_enabled=$(get "gpi.enabled" "true")
     if [ x"$gpi_enabled" == x"true" ] ; then
-        if ! start_proc "gpi-space" "$SDPA_SCRIPT_DIR/start-gpi" "-f" "-P" "$HOME/.sdpa/state/gpi-space.pid" "-m" $(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}"); then
+        if ! start_proc "gpi-space" "$SDPA_SCRIPT_DIR/start-gpi" "-s" "$state_dir" "-f" "-P" "$state_dir/gpi-space.pid" "-m" $(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}"); then
             log "E: could not start GPI, giving up!"
             return 1
         else
@@ -1855,7 +1822,7 @@ function program_status ()
 
 function status_orch ()
 {
-    is_proc_alive "orchestrator" $(cat "$state_dir/orchestrator.pid")
+    is_proc_alive "orchestrator" $(cat "$state_dir/orchestrator.pid" 2>/dev/null)
 }
 
 function status_agg ()
@@ -1865,7 +1832,7 @@ function status_agg ()
 
 function status_kvs ()
 {
-    is_proc_alive "fhgkvsd" $(cat "$state_dir/fhgkvsd.pid")
+    is_proc_alive "fhgkvsd" $(cat "$state_dir/fhgkvsd.pid" 2>/dev/null)
 }
 
 function status_gpi ()
@@ -2015,29 +1982,21 @@ function submit ()
 function configure()
 {
     test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
-    # write the kvs url to a file
-    echo "$KVS_URL" > "$state_dir/kvs.url"
 }
 
 function on_valid_host ()
 {
     local host="$(hostname -s)"
     if test -r "$state_dir/nodefile" ; then
-        if [ -n "$PBS_NODEFILE" ] ; then
-            if ! diff -q "$PBS_NODEFILE" "$state_dir/nodefile" >/dev/null ; then
-                log "W: $PBS_NODEFILE and $state_dir/nodefile differ"
-                return 1
-            fi
-        fi
         if grep -q -e "^$host" "$state_dir/nodefile" ; then
             return 0
         else
             log "W: your hostname ($host) does not match any in $state_dir/nodefile"
-	    return 1
+            return 1
         fi
     else
         log "E: no nodefile present"
-	return 2
+        return 2
     fi
     return 1
 }
@@ -2208,6 +2167,12 @@ if [ "$1" = "setup" ] ; then
     exit $?
 fi
 
+if [ "$1" = "-s" ] ; then
+    shift
+    state_dir="$1"; shift
+    export SDPA_STATE_DIR="$state_dir"
+fi
+
 if setup_required ; then
     if setup ; then
         log "I: setup complete"
@@ -2224,7 +2189,6 @@ if [ "$1" = "init" ] ; then
         log "E: could not initialize!"
         exit 1
     else
-        log "I: please don't forget to execute \"eval \$(sdpa load)\""
         exit 0
     fi
 fi

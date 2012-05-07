@@ -58,8 +58,8 @@
 
     <transition name="run_A">
       <defun>
-	<require key="A" />
-	<require key="ATOMIC" />
+	<require key="A" mandatory="false"/>
+	<require key="ATOMIC" mandatory="true"/>
 	<in name="id" type="long" />
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
@@ -127,8 +127,8 @@
 
     <transition name="run_B">
       <defun>
-	<require key="B" />
-	<require key="ATOMIC" />
+	<require key="B" mandatory="false"/>
+	<require key="ATOMIC" mandatory="true"/>
 	<in name="id" type="long" />
 	<in name="filename" type="string" />
 	<out name="done" type="control" />

@@ -61,7 +61,6 @@ namespace sdpa {
 	void reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 
 	virtual bool has_job(const sdpa::job_id_t&);
-	virtual void start_job(const sdpa::job_id_t&);
 
 	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
 	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
@@ -97,7 +96,7 @@ namespace sdpa {
 	virtual void execute(const sdpa::job_id_t& jobId); //just for testing
 	virtual void check_post_request();
 	virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
-	virtual void feed_workers();
+	virtual void feedWorkers();
 
 	void cancelWorkerJobs();
 	void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);

@@ -26,6 +26,7 @@ install(CODE "
                           -x \"libstdc++.so\"
                           -x \"libpthread.so\"
                           -x \"libfontconfig.so\"
+                          -x \"libibverbs.so\"
                           -v
                            ${APPS} \${PLUGINS}
   )
