@@ -444,15 +444,15 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 				  ostringstream ossReq;
 				  BOOST_FOREACH(const requirement_t& req, job_req_list)
 				  {
-					ossReq<<req.value()<<",";
+					  ossReq<<req.value()<<",";
 				  }
 
         		  LOG( TRACE
-                             , "The best worker matching the requirements: "
-                             << ossReq.str()
-                             <<" for the job  " << jobId
-                             << " is " << ptrBestWorker->name()
-                             );
+        			   , "The best worker matching the requirements: "
+                       << ossReq.str()
+                       <<" for the job  " << jobId
+                       << " is " << ptrBestWorker->name()
+        		  );
 
         		  // schedule the job to that one
         		  DMLOG(TRACE, "Schedule the job "<<jobId<<" on the worker "<<ptrBestWorker->name());
