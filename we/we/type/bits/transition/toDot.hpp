@@ -323,6 +323,7 @@ namespace we { namespace type {
         bool show_intext;
         bool show_virtual;
         bool show_real;
+        bool show_tunnel_connection;
 
         options ()
           : full (false)
@@ -334,6 +335,7 @@ namespace we { namespace type {
           , show_intext (false)
           , show_virtual (false)
           , show_real (false)
+          , show_tunnel_connection (true)
         {}
       };
 
@@ -563,17 +565,20 @@ namespace we { namespace type {
 
               s << to_dot<P, E, T> (trans, id, opts, l + 1, prio);
 
-              BOOST_FOREACH ( const extra_connection_type& ec
-                            , ecbt[trans.name()]
-                            )
+              if (opts.show_tunnel_connection)
                 {
-                  level (s, l + 1)
-                    << name (id_trans, "port_" + fhg::util::show(ec.second))
-                    << arrow
-                    << ec.first
-                    << association()
-                    << std::endl
-                    ;
+                  BOOST_FOREACH ( const extra_connection_type& ec
+                                , ecbt[trans.name()]
+                                )
+                    {
+                      level (s, l + 1)
+                        << name (id_trans, "port_" + fhg::util::show(ec.second))
+                        << arrow
+                        << ec.first
+                        << association()
+                        << std::endl
+                        ;
+                    }
                 }
 
               for ( typename transition_t::inner_to_outer_t::const_iterator
