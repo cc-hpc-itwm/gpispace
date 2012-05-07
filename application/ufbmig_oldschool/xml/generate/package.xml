@@ -2,6 +2,10 @@
 
   <in name="offset" type="offset" place="offset"/>
   <out name="assigned_package" type="assigned_package" place="assigned_package"/>
+  <tunnel name="trigger" type="control" place="trigger"/>
+  <tunnel name="trigger_offset" type="control" place="trigger_offset"/>
+  <tunnel name="config" type="config" place="confgi"/>
+  <tunnel name="store" type="store" place="store"/>
 
   <net>
 

@@ -5,6 +5,8 @@
        type="assigned_package"
        place="assigned_package"
   />
+  <tunnel name="trigger" type="control" place="trigger"/>
+  <tunnel name="store" type="store" place="store"/>
 
   <net>
 

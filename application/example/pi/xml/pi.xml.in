@@ -78,6 +78,8 @@
         <out name="seed" type="long" place="seed"/>
         <out name="wait" type="long" place="wait"/>
         <out name="accum" type="ratio" place="accum"/>
+        <tunnel name="start_seed" type="long" place="start_seed"/>
+        <tunnel name="credit_generate" type="long" place="credit_generate"/>
         <net>
           <place name="start_seed" type="long" virtual="true"/>
           <place name="num_packet" type="long"/>
@@ -167,6 +169,8 @@
       <defun>
         <in name="seed" type="long" place="seed"/>
         <out name="job" type="job" place="job"/>
+        <tunnel name="points" type="long" place="points"/>
+        <tunnel name="credit_get_key" type="long" place="credit_get_key"/>
         <net>
           <place name="seed" type="long"/>
           <place name="job" type="job"/>
@@ -255,6 +259,7 @@
       <defun>
         <in name="job" type="job" place="job"/>
         <out name="ratio" type="ratio" place="ratio"/>
+        <tunnel name="credit_run" type="long" place="credit_run"/>
 
         <net>
           <place name="job" type="job"/>
