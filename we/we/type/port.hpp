@@ -40,6 +40,7 @@ namespace we
       , PORT_OUT
       , PORT_READ
       , PORT_IN_OUT
+      , PORT_TUNNEL
       };
 
     inline
@@ -51,6 +52,7 @@ namespace we
         case PORT_OUT: return s << "port-out";
         case PORT_READ: return s << "port-read";
         case PORT_IN_OUT: return s << "port-inout";
+        case PORT_TUNNEL: return s << "port-tunnel";
         default:
           throw std::runtime_error ("STRANGE: unknown PortDirection");
         }
@@ -129,6 +131,7 @@ namespace we
 
       inline bool is_input (void) const { return direction_ == PORT_IN || direction_ == PORT_IN_OUT || direction_ == PORT_READ; }
       inline bool is_output (void) const { return direction_ == PORT_OUT || direction_ == PORT_IN_OUT; }
+      inline bool is_tunnel (void) const { return direction_ == PORT_TUNNEL; }
       inline bool has_associated_place (void) const { return associated_place_ != pid_traits::invalid(); }
     private:
       name_type name_;
@@ -219,6 +222,9 @@ namespace we
             case PORT_IN_OUT:
               dump_generic (s, p, "in", place_name);
               dump_generic (s, p, "out", place_name);
+              break;
+            case PORT_TUNNEL:
+              dump_generic (s, p, "tunnel", place_name);
               break;
             default:
               throw std::runtime_error ("STRANGE: unknown port direction");
