@@ -573,9 +573,8 @@ int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, boo
 		else // if the worker doesn't have the capability
 			if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
 			{
-				//LOG(ERROR, "The worker "<<pWorker->name()<<" doesn't have the required capability: "<<it->value()<<"!");
-				//std:cout<<pWorker->capabilities();
-				return 0;
+				// At least one mandatory requiremenet is not fulfilled
+				return -1;
 			}
 	}
 
@@ -588,7 +587,6 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 	if( worker_map_.empty() )
           throw NoWorkerFoundException();
 
-	int maxMatchingDeg = 0;
 	sdpa::util::time_type last_schedule_time = sdpa::util::now();
 
 	// the worker id of the worker that fulfills most of the requirements
@@ -596,6 +594,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 	// is not fulfilled or the worker does not have at all that capability
 	worker_id_t bestMatchingWorkerId;
 
+	int maxMatchingDeg = -1;
 	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 	{
 		Worker::ptr_t pWorker = pair.second;
@@ -612,11 +611,11 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 		}
 	}
 
-	if(maxMatchingDeg != 0)
+	if(maxMatchingDeg != -1)
 		return worker_map_[bestMatchingWorkerId];
 	else
 	{
-		maxMatchingDeg = 0;
+		maxMatchingDeg = -1;
 		BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 		{
 			Worker::ptr_t pWorker = pair.second;
@@ -633,10 +632,10 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 			}
 		}
 
-		if(maxMatchingDeg != 0)
+		if(maxMatchingDeg != -1)
 			return worker_map_[bestMatchingWorkerId];
 		else
-                  throw NoWorkerFoundException();
+			throw NoWorkerFoundException();
 	}
 }
 
