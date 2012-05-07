@@ -550,6 +550,7 @@
       <defun>
         <in name="N" type="long" place="check_break"/>
         <out name="done" type="control" place="done"/>
+        <tunnel name="what" type="long" place="what"/>
         <net>
           <place name="N" type="long"/>
           <place name="done" type="control"/>

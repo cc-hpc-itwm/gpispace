@@ -7,6 +7,7 @@
   <in name="tag" type="T" place="tag"/>
   <in name="amount" type="long" place="N"/>
   <out name="pair" type="PAIR" place="pair"/>
+  <tunnel name="credit" type="control" place="credit"/>
 
   <net>
     <struct name="state">

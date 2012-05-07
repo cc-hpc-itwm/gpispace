@@ -3,6 +3,9 @@
   <in name="loaded_package" type="assigned_package" place="loaded_package"/>
   <out name="processed_interval" type="interval" place="processed_interval"/>
   <out name="empty_store" type="store" place="empty_store"/>
+  <tunnel name="config" type="config" place="config"/>
+  <tunnel name="wait" type="long" place="wait"/>
+  <tunnel name="trigger_interval" type="control" place="trigger_interval"/>
 
   <net>
     <place name="config" type="config" virtual="true"/>

@@ -1,7 +1,7 @@
 <defun name="sequence_bounded">
   <in name="amount" type="long" place="N"/>
   <out name="out" type="long" place="id"/>
-
+  <tunnel name="credit" type="control" place="credit"/>
   <net>
     <struct name="state">
       <field name="id" type="long"/>

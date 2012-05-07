@@ -113,6 +113,7 @@ namespace xml
         bool _Wduplicate_external_function;
         bool _Wproperty_unknown;
         bool _Winline_many_output_ports;
+        bool _Wvirtual_place_not_tunneled;
 
         std::string _dump_xml_file;
         bool _no_inline;
@@ -154,6 +155,7 @@ namespace xml
         std::string _OWduplicate_external_function;
         std::string _OWproperty_unknown;
         std::string _OWinline_many_output_ports;
+        std::string _OWvirtual_place_not_tunneled;
 
         std::string _Odump_xml_file;
         std::string _Ono_inline;
@@ -251,6 +253,7 @@ namespace xml
           , _Wduplicate_external_function (true)
           , _Wproperty_unknown (true)
           , _Winline_many_output_ports (true)
+          , _Wvirtual_place_not_tunneled (true)
 
           , _dump_xml_file ("")
           , _no_inline (false)
@@ -291,6 +294,7 @@ namespace xml
           , _OWduplicate_external_function ("Wduplicate-external-function")
           , _OWproperty_unknown ("Wproperty-unknown")
           , _OWinline_many_output_ports ("Winline-many-output-ports")
+          , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
@@ -555,6 +559,7 @@ namespace xml
         ACCESS(Wduplicate_external_function)
         ACCESS(Wproperty_unknown)
         ACCESS(Winline_many_output_ports)
+        ACCESS(Wvirtual_place_not_tunneled)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
@@ -594,6 +599,7 @@ namespace xml
         WARN(duplicate_external_function)
         WARN(property_unknown)
         WARN(inline_many_output_ports)
+        WARN(virtual_place_not_tunneled)
         WARN(shadow_function)
 
 #undef WARN
@@ -780,6 +786,10 @@ namespace xml
             , "warn when a transition with more than one connected output"
               " port is inlined. This could lead to problems when the number"
               " of tokens is not the same on all output ports."
+            )
+            ( _OWvirtual_place_not_tunneled.c_str()
+            , BOOLVAL(Wvirtual_place_not_tunneled)
+            , "warn when a virtual place is not tunneled"
             )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)

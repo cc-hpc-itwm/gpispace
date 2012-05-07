@@ -36,6 +36,7 @@ namespace xml_util = ::fhg::util::xml;
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <boost/foreach.hpp>
 
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
@@ -699,54 +700,42 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename Direction>
-      void add_port ( const std::string & port_name
-                    , SignatureType const & signature
+      void add_port ( const std::string & name
+                    , SignatureType const & sig
                     , Direction direction
                     , const we::type::property::type & prop
                     )
       {
-        if (direction == PORT_IN)
-          this->add_input_port (port_name, signature, prop);
-        if (direction == PORT_OUT)
-          this->add_output_port (port_name, signature, prop);
-        if (direction == PORT_READ)
-          this->add_read_port (port_name, signature, prop);
-        else
-          this->add_input_output_port (port_name, signature, prop);
+        switch (direction)
+          {
+          case PORT_IN: this->add_input_port (name, sig, prop); break;
+          case PORT_OUT: this->add_output_port (name, sig, prop); break;
+          case PORT_READ: this->add_read_port (name, sig, prop); break;
+          case PORT_IN_OUT: this->add_input_output_port (name, sig, prop);
+            break;
+          case PORT_TUNNEL: this->add_tunnel (name, sig, prop); break;
+          default: throw std::runtime_error ("STRANGE: unknown port direction");
+          }
       }
 
       template <typename SignatureType, typename Direction, typename PlaceId>
       void add_port ( const std::string & name
-                    , SignatureType const & signature
+                    , SignatureType const & sig
                     , const Direction direction
-                    , const PlaceId associated_place
+                    , const PlaceId pid
                     , const we::type::property::type & prop
                     )
       {
-        if (direction == PORT_IN)
-          this->add_input_port ( name
-                               , signature
-                               , associated_place
-                               , prop
-                               );
-        if (direction == PORT_OUT)
-          this->add_output_port ( name
-                                , signature
-                                , associated_place
-                                , prop
-                                );
-        if (direction == PORT_READ)
-          this->add_read_port ( name
-                              , signature
-                              , associated_place
-                              , prop
-                              );
-        else
-          this->add_input_output_port ( name
-                                      , signature
-                                      , associated_place
-                                      , prop
-                                      );
+        switch (direction)
+          {
+          case PORT_IN: this->add_input_port (name, sig, pid, prop); break;
+          case PORT_OUT: this->add_output_port (name, sig, pid, prop); break;
+          case PORT_READ: this->add_read_port (name, sig, pid, prop); break;
+          case PORT_IN_OUT: this->add_input_output_port (name, sig, pid, prop);
+            break;
+          case PORT_TUNNEL: this->add_tunnel (name, sig, pid, prop); break;
+          default: throw std::runtime_error ("STRANGE: unknown port direction");
+          }
       }
 
       template <typename SignatureType>
@@ -853,6 +842,48 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename PlaceId>
+      pid_t add_tunnel ( const std::string & port_name
+                       , const SignatureType & signature
+                       , const PlaceId associated_place
+                       , const we::type::property::type & prop
+                       )
+      {
+        BOOST_FOREACH (const port_map_t::value_type& p, ports_)
+          {
+            if (p.second.is_tunnel() && p.second.name() == port_name)
+              {
+                throw exception::port_already_defined ("trans: " + name() + ": tunnel " + port_name + " already defined", port_name);
+              }
+          }
+
+        const port_t port (port_name, PORT_TUNNEL, signature, associated_place, prop);
+        const port_id_t port_id (port_id_counter_++);
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType>
+      pid_t add_tunnel ( const std::string & port_name
+                       , const SignatureType & signature
+                       , const we::type::property::type & prop
+                       )
+      {
+        BOOST_FOREACH (const port_map_t::value_type& p, ports_)
+          {
+            if (p.second.is_tunnel() && p.second.name() == port_name)
+              {
+                throw exception::port_already_defined("trans: " + name() + ": tunnel " + port_name + " already defined", port_name);
+              }
+          }
+        const port_t port (port_name, PORT_OUT, signature, prop);
+        const port_id_t port_id (port_id_counter_++);
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType, typename PlaceId>
       pid_t add_output_port ( const std::string & port_name
                             , const SignatureType & signature
                             , const PlaceId associated_place
@@ -872,6 +903,8 @@ namespace we { namespace type {
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
       }
+
+
 
       template <typename SignatureType>
       void add_input_output_port ( const std::string & port_name

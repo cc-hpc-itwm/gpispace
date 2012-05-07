@@ -3,6 +3,7 @@
   <in name="config" type="diff_config" place="config"/>
   <out name="package" type="diff_loaded_package" place="package"/>
   <out name="num" type="long" place="num"/>
+  <tunnel name="empty_slot" type="long" place="empty_slot"/>
 
   <net>
 

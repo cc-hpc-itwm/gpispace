@@ -3,6 +3,7 @@
   <in name="config" type="stack_config" place="config"/>
   <out name="package" type="stack_loaded_package" place="package"/>
   <out name="num" type="long" place="num"/>
+  <tunnel name="empty_slot" type="long" place="empty_slot"/>
 
   <net>
 
