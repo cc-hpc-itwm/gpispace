@@ -12,7 +12,7 @@ name="orchestrator"
 kvs_url=
 daemonize=false
 pidfile=
-state_dir="~/.sdpa/state"
+state_dir="$HOME/.sdpa/state"
 logdir=
 
 while getopts ":hgn:l:d:k:DP:L:s:" opt; do
@@ -59,10 +59,11 @@ while getopts ":hgn:l:d:k:DP:L:s:" opt; do
     esac
 done
 
-if [ -r "$state_dir/sdpa.env" ] ; then
-    source "$state_dir/sdpa.env"
+if [ -r "${state_dir}/sdpa.env" ] ; then
+    source "${state_dir}/sdpa.env"
 else
-    echo >&2 "must be executed within sdpa!"
+    echo >&2 "needs to be executed under SDPA"
+    exit 4
 fi
 
 if [ -z "$logdir" ]
