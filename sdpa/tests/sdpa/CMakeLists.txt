@@ -12,6 +12,9 @@ message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}
 set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/capabilities/capabilities/pnetc/op")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH}")
 
+set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory/pnetc/op")
+message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH}")
+
 set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/atomic/atomic/pnetc/op")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
 
@@ -50,6 +53,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_B
 
 include(pnet_macros)
 
+###########################################################################################
 pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
   FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
@@ -75,6 +79,27 @@ add_custom_command(TARGET pnet-capabilities-test-wf
                    POST_BUILD
                    COMMAND ${command}
                    COMMENT "putting tokens into capabilities workflow: ${command}"
+)
+###########################################################################################
+pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabilities_no_mandatory.xml
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
+  GENERATE capabilities_no_mandatory
+  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/application/example
+           -O3
+  BUILD
+  COMPONENT tests
+)
+
+get_target_property(CAPABILITY_NO_MANDATORY_PNET_LOCATION pnet-capabilities_no_mandatory-test-wf LOCATION)
+set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=500L -p n_B=10L -p time_B=500L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
+       
+add_custom_command(TARGET pnet-capabilities_no_mandatory-test-wf
+                   POST_BUILD
+                   COMMAND ${command}
+                   COMMENT "putting tokens into capabilities_no_mandatory workflow: ${command}"
 )
 ############################################################################################
 pnet_compile(atomic-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/atomic.xml
@@ -190,6 +215,7 @@ foreach (tc_src ${tc_srcs})
   add_test(${tc_name} ${LOC})
   add_dependencies(${tc_name} fvm-fake-plugin)
   add_dependencies(${tc_name} pnet-capabilities-test-wf)
+  add_dependencies(${tc_name} pnet-capabilities_no_mandatory-test-wf)
   add_dependencies(${tc_name} pnet-atomic-test-wf)
   add_dependencies(${tc_name} pnet-inotify-test-wf)
 endforeach(tc_src ${tc_srcs})

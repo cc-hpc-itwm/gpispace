@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 
 	// create faulty agent
 	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent1, arrAgent0MasterInfo, MAX_CAP );
+	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo, MAX_CAP );
 
 	ptrAgent1->start_agent(false, strBackupAgent1);
 

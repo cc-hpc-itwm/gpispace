@@ -750,7 +750,7 @@ void Agent::recover( std::istream& ifs )
 		ia.register_type(static_cast<JobManager*>(NULL));
 		ia.register_type(static_cast<JobImpl*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
-		 recoverJobManager(ia);
+		recoverJobManager(ia);
 
 		// probably makes no sense to recover the scheduler
 		// since the workflow engine cannot be recovered
