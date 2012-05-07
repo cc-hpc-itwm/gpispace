@@ -8,13 +8,19 @@ usage: $(basename "$0") [options]
     -h: print this help
     -i ident (=$identiy): identity
     -d: dry run
+    -n: name prefix
+    -p: pattern
+    -v: be verbose
 EOF
 }
 
 identity=
 dry_run=false
+name_prefix=''
+pattern=
+verbose=false
 
-while getopts ":hi:d" opt; do
+while getopts ":hi:dn:p:v" opt; do
     case $opt in
         h)
             usage
@@ -26,6 +32,15 @@ while getopts ":hi:d" opt; do
         d)
             dry_run=true
             ;;
+        n)
+            name_prefix="$OPTARG"
+            ;;
+        p)
+            pattern="$OPTARG"
+            ;;
+        v)
+            verbose=true
+            ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
             echo "try: $0 -h" >&2
@@ -33,6 +48,11 @@ while getopts ":hi:d" opt; do
             ;;
     esac
 done
+
+function debug()
+{
+    $verbose && echo >&2 $@
+}
 
 function kill_drts ()
 {
@@ -58,21 +78,32 @@ function kill_drts ()
     fi
 }
 
+if [ -z "$pattern" ] ; then
+    if [ -z "$name_prefix" ] ; then
+        pattern=".*"
+    else
+        pattern="$name_prefix-$(hostname -s)"
+    fi
+
+    if [ -n "$identity" ] ; then
+        pattern="$pattern-${identity}"
+    else
+        pattern="$pattern-[0-9]\+"
+    fi
+fi
+
+debug "pattern = '$pattern'"
+
 still_running=$(ps -C fhgkernel -o pid=)
 for p in $still_running ; do
     name=$(cat /proc/$p/cmdline | tr '\0' ' ' |  grep -o 'plugin.drts.name=[^ ]\+' | cut -d= -f2)
     if [ -z "$name" ] ; then
         continue
     fi
-    if [ -n "$identity" ] ; then
-        if [ x"$name" == x"drts-$(hostname -s)-$identity" ] ; then
-            if $dry_run ; then
-                echo kill_drts "$p" "$name"
-            else
-                kill_drts "$p" "$name" >/dev/null 2>&1
-            fi
-        fi
-    else
+
+    debug "found running drts: $name"
+
+    if echo "$name" | grep -q "^${pattern}$" ; then
         if $dry_run ; then
             echo kill_drts "$p" "$name"
         else
