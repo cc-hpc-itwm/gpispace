@@ -130,7 +130,7 @@ struct MyFixture
 	}
 
 	void run_client();
-	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName, const std::string& cpbList );
+	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName, const std::string& cpbList, const std::string& strWfePath );
 
 	string read_workflow(string strFileName)
 	{
@@ -279,7 +279,10 @@ void MyFixture::run_client()
 }
 
 
-sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName, const std::string& cpbList )
+sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(	const std::string& drtsName,
+																const std::string& masterName,
+																const std::string& cpbList,
+																const std::string& strWfePath)
 {
 	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
 
@@ -296,7 +299,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	kernel->put("plugin.drts.request-mode", "false");
 	
 	kernel->put("plugin.drts.capabilities", cpbList);
-	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH);
+	kernel->put("plugin.wfe.library_path", strWfePath /*TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH*/);
 
 	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
@@ -331,13 +334,13 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 	ptrAgent->start_agent(false);
 
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0", "A") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH) );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0", "B") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0", "B", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( create_drts("drts_2", "agent_0", "A") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( create_drts("drts_2", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH) );
 	boost::thread drts_2_thread = boost::thread( &fhg::core::kernel_t::run, drts_2 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
@@ -363,7 +366,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-/*BOOST_AUTO_TEST_CASE( testCapabilities_Agents )
+BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 {
 	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
 	//guiUrl
@@ -374,51 +377,48 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/capabilities.pnet");
+	m_strWorkflow = read_workflow("workflows/capabilities_no_mandatory.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP, true );
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
 
-	sdpa::master_info_list_t arrLeafAgentMasterInfo(1, MasterInfo("agent_0"));
 
-	sdpa::capability_t cpbA("A");
-	sdpa::capability_t cpbB("B");
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH) );
+	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent, arrLeafAgentMasterInfo, MAX_CAP, true );
-	ptrAgent1->addCapability(cpbA);
-	ptrAgent1->start_agent(false);
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH) );
+	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	sdpa::daemon::Agent::ptr_t ptrAgent2 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_2", addrAgent, arrLeafAgentMasterInfo, MAX_CAP, true );
-	ptrAgent2->addCapability(cpbA);
-	ptrAgent2->start_agent(false);
-
-	sdpa::daemon::Agent::ptr_t ptrAgent3 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_3", addrAgent, arrLeafAgentMasterInfo, MAX_CAP, true );
-	ptrAgent3->addCapability(cpbB);
-	ptrAgent3->start_agent(false);
-
-	sdpa::daemon::Agent::ptr_t ptrAgent4 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_4", addrAgent, arrLeafAgentMasterInfo, MAX_CAP, true );
-	ptrAgent2->addCapability(cpbA);
-	ptrAgent2->start_agent(false);
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( create_drts("drts_2", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH) );
+	boost::thread drts_2_thread = boost::thread( &fhg::core::kernel_t::run, drts_2 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
-	ptrAgent3->shutdown();
-	ptrAgent2->shutdown();
-	ptrAgent1->shutdown();
+	drts_0->stop();
+	drts_0_thread.join();
+	drts_0->unload_all();
+
+	drts_1->stop();
+	drts_1_thread.join();
+	drts_1->unload_all();
+
+	drts_2->stop();
+	drts_2_thread.join();
+	drts_2->unload_all();
 
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
 
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
-*/
+
 
 BOOST_AUTO_TEST_SUITE_END()
