@@ -369,6 +369,7 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
           add_ports (trans, fun.out(), we::type::PORT_OUT);
+          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL);
           add_requirements (trans, fun.requirements);
 
           return trans;
@@ -386,6 +387,7 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
           add_ports (trans, fun.out(), we::type::PORT_OUT);
+          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL);
           add_requirements (trans, fun.requirements);
 
           return trans;
@@ -419,6 +421,7 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN, pid_of_place);
           add_ports (trans, fun.out(), we::type::PORT_OUT, pid_of_place);
+          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL, pid_of_place);
           add_requirements (trans, fun.requirements);
 
           return trans;
@@ -788,6 +791,11 @@ namespace xml
               )
             {
               port->specialize (map, state);
+            }
+
+          BOOST_FOREACH (port_type& port, _tunnel.elements())
+            {
+              port.specialize (map, state);
             }
 
           specialize_structs (map, structs, state);
