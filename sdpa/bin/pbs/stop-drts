@@ -7,14 +7,14 @@ usage: $(basename "$0") [options]
 
     -h: print this help
     -i ident (=$identiy): identity
-    -n: dry run
+    -d: dry run
 EOF
 }
 
 identity=
 dry_run=false
 
-while getopts ":hi:n" opt; do
+while getopts ":hi:d" opt; do
     case $opt in
         h)
             usage
@@ -23,7 +23,7 @@ while getopts ":hi:n" opt; do
         i)
             identity=$OPTARG
             ;;
-        n)
+        d)
             dry_run=true
             ;;
         \?)
