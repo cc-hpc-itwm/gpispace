@@ -1,7 +1,7 @@
 <defun name="atomic">
   <in name="n_A" type="long" place="n_A" />
   <in name="n_B" type="long" place="n_B" />
-    
+
   <!-- shared_file -->
   <in name="shared_file" type="string" place="shared_file" />
 
@@ -11,7 +11,7 @@
     <!-- input/output places -->
     <place name="n_A" type="long" />
     <place name="n_B" type="long" />
-    
+
     <place name="shared_file" type="string" />
 
     <place name="done" type="control" />
@@ -69,9 +69,9 @@
 	  <cinclude href="stdio.h" />
 	  <code><![CDATA[
 	  	LOG(INFO, ">>> running  A(" << id << ", " << filename << ")");
-	  
+
 		FILE * pFile = fopen(filename.c_str(),"r");
-		
+
 		if(!pFile) // file does not exist
 		{
 			pFile = fopen(filename.c_str(),"w");
@@ -84,12 +84,12 @@
 			fscanf(pFile, "%d", &i);
 			i++;
 			fclose(pFile);
-		
+
 			pFile = fopen(filename.c_str(),"w");
 			fprintf(pFile, "%d", i);
 			fclose(pFile);
 		}
-		
+
 	  	LOG(INFO, "<<< finished A(" << id << ", " << filename << ")");
 	  ]]></code>
 	</module>
@@ -138,9 +138,9 @@
 		<cinclude href="stdio.h" />
         <code><![CDATA[
 	  		LOG(INFO, ">>> running  B(" << id << ", " << filename << ")");
-	  
+
 			FILE * pFile = fopen(filename.c_str(),"r");
-			
+
 			if(!pFile) // file does not exist
 			{
 				pFile = fopen(filename.c_str(),"w");
@@ -153,12 +153,12 @@
 				fscanf(pFile, "%d", &i);
 				i++;
 				fclose(pFile);
-			
+
 				pFile = fopen(filename.c_str(),"w");
 				fprintf(pFile, "%d", i);
 				fclose(pFile);
 			}
-	  
+
 	  		LOG(INFO, "<<< finished B(" << id << ", " << filename << ")");
 	  ]]></code>
 	</module>
