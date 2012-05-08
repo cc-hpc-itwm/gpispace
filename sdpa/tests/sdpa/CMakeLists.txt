@@ -53,6 +53,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_B
 
 include(pnet_macros)
 
+get_target_property(PNETPUT_LOCATION pnetput LOCATION)
+
 ###########################################################################################
 pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
@@ -73,13 +75,14 @@ pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabili
 )
 
 get_target_property(CAPABILITY_PNET_LOCATION pnet-capabilities-test-wf LOCATION)
-set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=100L -p time_A=500000L -p n_B=50L -p time_B=500000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
-       
+set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=100L -p time_A=500000L -p n_B=50L -p time_B=500000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
+
 add_custom_command(TARGET pnet-capabilities-test-wf
                    POST_BUILD
                    COMMAND ${command}
                    COMMENT "putting tokens into capabilities workflow: ${command}"
 )
+add_dependencies(pnet-capabilities-test-wf pnetput)
 ###########################################################################################
 pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabilities_no_mandatory.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
@@ -94,15 +97,16 @@ pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workf
 )
 
 get_target_property(CAPABILITY_NO_MANDATORY_PNET_LOCATION pnet-capabilities_no_mandatory-test-wf LOCATION)
-set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=500L -p n_B=10L -p time_B=500L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
-       
+set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=500L -p n_B=10L -p time_B=500L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
+
 add_custom_command(TARGET pnet-capabilities_no_mandatory-test-wf
                    POST_BUILD
                    COMMAND ${command}
                    COMMENT "putting tokens into capabilities_no_mandatory workflow: ${command}"
 )
+add_dependencies(pnet-capabilities_no_mandatory-test-wf pnetput)
 ############################################################################################
-pnet_compile(atomic-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/atomic.xml
+pnet_compile(atomic-test-wf ${CMAKE_SOURCE_DIR}/application/example/atomic/atomic.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic-test-wf.in.pnet
   GENERATE atomic
   INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
@@ -115,13 +119,20 @@ pnet_compile(atomic-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/atomic.xml
 )
 
 get_target_property(ATOMIC_PNET_LOCATION pnet-atomic-test-wf LOCATION)
-set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${ATOMIC_PNET_LOCATION}" -p n_A=${TESTS_N_ATOMIC_TASKS}L -p n_B=${TESTS_N_ATOMIC_TASKS}L -p shared_file=\\"/var/tmp/atomic_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet")
-           
+set(command ${PNETPUT_LOCATION}
+       --if  "${ATOMIC_PNET_LOCATION}"
+       -p n_A=${TESTS_N_ATOMIC_TASKS}L
+       -p n_B=${TESTS_N_ATOMIC_TASKS}L
+       -p shared_file=\\"/var/tmp/atomic_test.txt\\"
+       --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
+   )
+
 add_custom_command(TARGET pnet-atomic-test-wf
                    POST_BUILD
                    COMMAND ${command}
                    COMMENT "putting tokens into atomic workflow: ${command}"
 )
+add_dependencies(pnet-atomic-test-wf pnetput)
 ################################################################################################
 pnet_compile(inotify-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/inotify.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
@@ -136,13 +147,14 @@ pnet_compile(inotify-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/inotify.xml
 )
 
 get_target_property(INOTIFY_PNET_LOCATION pnet-inotify-test-wf LOCATION)
-set(command ${CMAKE_BINARY_DIR}/we/apps/pnetput --if  "${INOTIFY_PNET_LOCATION}" -p N=5L -p watched_file=\\"/var/tmp/inotify_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet")
-           
+set(command ${PNETPUT_LOCATION} --if  "${INOTIFY_PNET_LOCATION}" -p N=5L -p watched_file=\\"/var/tmp/inotify_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet")
+
 add_custom_command(TARGET pnet-inotify-test-wf
                    POST_BUILD
                    COMMAND ${command}
                    COMMENT "putting tokens into inotify workflow: ${command}"
 )
+add_dependencies(pnet-inotify-test-wf pnetput)
 ################################################################################################
 set (test_srcs
   SchedulerTestImpl.cpp
