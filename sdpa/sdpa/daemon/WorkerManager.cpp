@@ -24,6 +24,7 @@
 #include <sdpa/daemon/IComm.hpp>
 
 #include <algorithm>
+#include <limits>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -581,13 +582,14 @@ int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, boo
 	return matchingDeg;
 }
 
-Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException)
+Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq, int *matching_degree) throw (NoWorkerFoundException)
 {
 	lock_type lock(mtx_);
 	if( worker_map_.empty() )
           throw NoWorkerFoundException();
 
 	sdpa::util::time_type last_schedule_time = sdpa::util::now();
+	size_t least_load = numeric_limits<int>::max();
 
 	// the worker id of the worker that fulfills most of the requirements
 	// a matching degree 0 means that either at least a mandatory requirement
@@ -598,24 +600,45 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 	{
 		Worker::ptr_t pWorker = pair.second;
+		if (pWorker->disconnected()) continue;
 
-		if( !pWorker->disconnected() ) // if the worker is disconnected, skip it!
+		int matchingDeg = matchRequirements( pair.second, listJobReq, true ); // only proper capabilities of the worker
+
+		DLOG(TRACE, "matching_degree(" << pair.first << ") = " << matchingDeg);
+
+		if (matchingDeg == -1 || matchingDeg < maxMatchingDeg)
 		{
-			int matchingDeg = matchRequirements( pair.second, listJobReq, true ); // only proper capabilities of the worker
-			if( matchingDeg > maxMatchingDeg || ( matchingDeg == maxMatchingDeg && pWorker->lastScheduleTime()<last_schedule_time ) )
-			{
-				maxMatchingDeg = matchingDeg;
-				bestMatchingWorkerId = pair.first;
-				last_schedule_time = pWorker->lastScheduleTime();
-			}
+			continue;
 		}
+
+		if (matchingDeg == maxMatchingDeg)
+		{
+		  if (pWorker->nbAllocatedJobs() > least_load)
+		  {
+		    continue;
+		  }
+		  else if (pWorker->nbAllocatedJobs() == least_load)
+		  {
+		    if (pWorker->lastScheduleTime() >= last_schedule_time) continue;
+		  }
+		}
+
+		DLOG(TRACE, "worker " << pair.first << " (" << matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
+		maxMatchingDeg = matchingDeg;
+		bestMatchingWorkerId = pair.first;
+		last_schedule_time = pWorker->lastScheduleTime();
+		least_load = pWorker->nbAllocatedJobs();
 	}
+
+#if 0
 
 	if(maxMatchingDeg != -1)
 		return worker_map_[bestMatchingWorkerId];
 	else
 	{
 		maxMatchingDeg = -1;
+		least_load = numeric_limits<int>::max();
+
 		BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 		{
 			Worker::ptr_t pWorker = pair.second;
@@ -623,20 +646,30 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 			if( !pWorker->disconnected() ) // if the worker is disconnected, skip it!
 			{
 				int matchingDeg = matchRequirements( pair.second, listJobReq, false ); // aggregated capabilities of the worker
-				if( matchingDeg > maxMatchingDeg || ( matchingDeg == maxMatchingDeg && pWorker->lastScheduleTime()<last_schedule_time ) )
+				if( matchingDeg > maxMatchingDeg ||
+					( matchingDeg == maxMatchingDeg && pWorker->nbAllocatedJobs() < least_load ) ||
+					( matchingDeg == maxMatchingDeg &&  pWorker->nbAllocatedJobs() == least_load && pWorker->lastScheduleTime()<last_schedule_time ) )
 				{
 					maxMatchingDeg = matchingDeg;
 					bestMatchingWorkerId = pair.first;
 					last_schedule_time = pWorker->lastScheduleTime();
+					least_load = pWorker->nbAllocatedJobs();
 				}
 			}
 		}
+	}
+#endif
 
 		if(maxMatchingDeg != -1)
+		{
+			assert (bestMatchingWorkerId != worker_id_t());
+			if (matching_degree) *matching_degree = maxMatchingDeg;
 			return worker_map_[bestMatchingWorkerId];
+		}
 		else
+		{
 			throw NoWorkerFoundException();
-	}
+		}
 }
 
 void WorkerManager::cancelWorkerJobs(sdpa::daemon::Scheduler* ptrSched)
