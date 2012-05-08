@@ -216,6 +216,9 @@ namespace xml
 
       struct place_type
       {
+      private:
+        fhg::util::maybe<bool> _is_virtual;
+
       public:
         std::string name;
         std::string type;
@@ -224,19 +227,18 @@ namespace xml
         values_type values;
         signature::type sig;
         we::type::property::type prop;
-        fhg::util::maybe<bool> is_virtual;
 
         place_type () {}
 
         place_type ( const std::string & _name
                    , const std::string & _type
                    , const fhg::util::maybe<petri_net::capacity_t> _capacity
-                   , const fhg::util::maybe<bool> _is_virtual
+                   , const fhg::util::maybe<bool> is_virtual
                    )
-          : name (_name)
+          : _is_virtual (is_virtual)
+          , name (_name)
           , type (_type)
           , capacity (_capacity)
-          , is_virtual (_is_virtual)
         {}
 
         void push_token (const token_type & t)
@@ -274,6 +276,15 @@ namespace xml
               type = mapped->second;
             }
         }
+
+        const fhg::util::maybe<bool>& get_is_virtual (void) const
+        {
+          return _is_virtual;
+        }
+        bool is_virtual (void) const
+        {
+          return _is_virtual.get_with_default (false);
+        }
       };
 
       typedef xml::util::unique<place_type>::elements_type places_type;
@@ -288,7 +299,7 @@ namespace xml
           s.attr ("name", p.name);
           s.attr ("type", p.type);
           s.attr ("capacity", p.capacity);
-          s.attr ("virtual", p.is_virtual);
+          s.attr ("virtual", p.get_is_virtual());
 
           ::we::type::property::dump::dump (s, p.prop);
 

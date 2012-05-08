@@ -63,7 +63,7 @@
 	<in name="id" type="long" />
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
-	<module name="atomic_test" function="A (id,filename)">
+	<module name="atomic_test" function="done A (id,filename)">
           <cinclude href="fhglog/minimal.hpp"/>
 	  <cinclude href="unistd.h" />
 	  <cinclude href="stdio.h" />
@@ -91,6 +91,8 @@
 		}
 
 	  	LOG(INFO, "<<< finished A(" << id << ", " << filename << ")");
+
+                return control();
 	  ]]></code>
 	</module>
       </defun>
@@ -132,7 +134,7 @@
 	<in name="id" type="long" />
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
-	<module name="atomic_test" function="B(id, filename)">
+	<module name="atomic_test" function="done B(id, filename)">
 		<cinclude href="fhglog/minimal.hpp" />
 		<cinclude href="unistd.h" />
 		<cinclude href="stdio.h" />
@@ -160,6 +162,8 @@
 			}
 
 	  		LOG(INFO, "<<< finished B(" << id << ", " << filename << ")");
+
+                        return control();
 	  ]]></code>
 	</module>
       </defun>

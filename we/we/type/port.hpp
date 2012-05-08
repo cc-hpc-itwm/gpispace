@@ -40,6 +40,7 @@ namespace we
       , PORT_OUT
       , PORT_READ
       , PORT_IN_OUT
+      , PORT_TUNNEL
       };
 
     inline
@@ -51,62 +52,12 @@ namespace we
         case PORT_OUT: return s << "port-out";
         case PORT_READ: return s << "port-read";
         case PORT_IN_OUT: return s << "port-inout";
+        case PORT_TUNNEL: return s << "port-tunnel";
         default:
           throw std::runtime_error ("STRANGE: unknown PortDirection");
         }
     }
 
-    namespace detail {
-      namespace direction
-      {
-        struct i_port
-        {
-          static const PortDirection value = PORT_IN;
-        };
-
-        struct r_port
-        {
-          static const PortDirection value = PORT_READ;
-        };
-
-        struct o_port
-        {
-          static const PortDirection value = PORT_OUT;
-        };
-
-        struct io_port
-        {
-          static const PortDirection value = PORT_IN_OUT;
-        };
-
-        template <int Dir>
-        struct tag {};
-
-        template <>
-        struct tag<PORT_IN>
-        {
-          typedef i_port type;
-        };
-
-        template <>
-        struct tag<PORT_READ>
-        {
-          typedef r_port type;
-        };
-
-        template <>
-        struct tag<PORT_OUT>
-        {
-          typedef o_port type;
-        };
-
-        template <>
-        struct tag<PORT_IN_OUT>
-        {
-          typedef io_port type;
-        };
-      }
-    }
     template < typename SignatureType
              , typename IdType = petri_net::pid_t
              , typename Traits = petri_net::traits::id_traits<IdType>
@@ -118,14 +69,11 @@ namespace we
       typedef IdType pid_type;
       typedef Traits pid_traits;
 
-      typedef detail::direction::i_port I_PORT;
-      typedef detail::direction::o_port O_PORT;
-
       typedef std::string name_type;
 
       port ()
         : name_("default")
-        , direction_(I_PORT::value)
+        , direction_(PORT_IN)
         , associated_place_(pid_traits::invalid())
       {}
 
@@ -172,20 +120,6 @@ namespace we
         , prop_(prop)
       {}
 
-      template <typename Signature, typename Dir>
-      static
-      port create ( const name_type & name, const Signature & signature )
-      {
-        return port<Signature, IdType, Traits> ( name, Dir::value, signature );
-      }
-
-      template <typename Signature, typename PlaceId, typename Dir>
-      static
-      port create ( const name_type & name, const Signature & signature, const PlaceId place_id )
-      {
-        return port<Signature, IdType, Traits> ( name, Dir::value, signature, place_id );
-      }
-
       name_type & name() { return name_; }
       const name_type & name() const { return name_; }
 
@@ -197,6 +131,7 @@ namespace we
 
       inline bool is_input (void) const { return direction_ == PORT_IN || direction_ == PORT_IN_OUT || direction_ == PORT_READ; }
       inline bool is_output (void) const { return direction_ == PORT_OUT || direction_ == PORT_IN_OUT; }
+      inline bool is_tunnel (void) const { return direction_ == PORT_TUNNEL; }
       inline bool has_associated_place (void) const { return associated_place_ != pid_traits::invalid(); }
     private:
       name_type name_;
@@ -287,6 +222,9 @@ namespace we
             case PORT_IN_OUT:
               dump_generic (s, p, "in", place_name);
               dump_generic (s, p, "out", place_name);
+              break;
+            case PORT_TUNNEL:
+              dump_generic (s, p, "tunnel", place_name);
               break;
             default:
               throw std::runtime_error ("STRANGE: unknown port direction");

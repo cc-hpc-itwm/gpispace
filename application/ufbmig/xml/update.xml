@@ -9,6 +9,11 @@
   <out name="empty_interval" type="interval" place="empty_interval"/>
   <out name="done_update" type="control" place="done_update"/>
 
+  <tunnel name="config" type="config" place="config"/>
+  <tunnel name="wait" type="long" place="wait"/>
+  <tunnel name="interval_size" type="long" place="interval_size"/>
+  <tunnel name="output" type="long" place="output"/>
+
   <net>
     <place name="config" type="config" virtual="true"/>
     <place name="processed_interval" type="interval"/>

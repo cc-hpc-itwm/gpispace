@@ -2,6 +2,7 @@
   <in name="amount" type="long" place="amount"/>
   <in name="volume" type="VOLUME" place="volume"/>
   <out name="out" type="BUNCH" place="out"/>
+  <tunnel name="credit" type="control" place="credit"/>
 
   <net>
     <place name="amount" type="long"/>

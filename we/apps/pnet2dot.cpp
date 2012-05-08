@@ -111,31 +111,35 @@ main (int argc, char ** argv)
     )
     ( "show-token"
     , po::value<bool>(&options.show_token)->default_value(options.show_token)
-    , "whether or not show the tokens on a place"
+    , "whether or not to show the tokens on a place"
     )
     ( "show-capacity"
     , po::value<bool>(&options.show_capacity)->default_value(options.show_capacity)
-    , "whether or not show the place capacities"
+    , "whether or not to show the place capacities"
     )
     ( "show-signature"
     , po::value<bool>(&options.show_signature)->default_value(options.show_signature)
-    , "whether or not show the place and port signatures"
+    , "whether or not to show the place and port signatures"
     )
     ( "show-priority"
     , po::value<bool>(&options.show_priority)->default_value(options.show_priority)
-    , "whether or not show the transition priority"
+    , "whether or not to show the transition priority"
     )
     ( "show-intext"
     , po::value<bool>(&options.show_intext)->default_value(options.show_intext)
-    , "whether or not show the transition internal/external falg"
+    , "whether or not to show the transition internal/external flag"
     )
     ( "show-virtual"
     , po::value<bool>(&options.show_virtual)->default_value(options.show_virtual)
-    , "whether or not show the virtual flag"
+    , "whether or not to show the virtual flag"
     )
     ( "show-real"
     , po::value<bool>(&options.show_real)->default_value(options.show_real)
-    , "whether or not show the real places, associated with a place"
+    , "whether or not to show the real places, associated with a place"
+    )
+    ( "show-tunnel-connection"
+    , po::value<bool>(&options.show_tunnel_connection)->default_value(options.show_tunnel_connection)
+    , "whether or not to show the tunnel connections"
     )
     ( "not-starts-with"
     , po::value<vec_type>(&not_starts_with)

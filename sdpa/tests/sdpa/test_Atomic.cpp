@@ -19,6 +19,7 @@
 #include "sdpa/daemon/jobFSM/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/assert.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 
@@ -354,11 +355,17 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	m_strWorkflow = read_workflow("workflows/atomic.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	int nInitial;
-	ifstream ifs("/var/tmp/atomic_test.txt");
-	ifs>>nInitial;
-	LOG(INFO, "Intial value is "<<nInitial);
-	ifs.close();
+        const std::string atomic_file ("/var/tmp/atomic_test.txt");
+
+	int nInitial (0);
+
+        {
+          ifstream ifs(atomic_file.c_str());
+          if (ifs.good())
+            {
+              ifs>>nInitial;
+            }
+        }
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
@@ -391,16 +398,19 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	ptrOrch->shutdown();
 
 	int nCounterVal=0;
-	ifs.open("/var/tmp/atomic_test.txt");
-	ifs>>nCounterVal;
+
+        {
+          std::ifstream ifs (atomic_file.c_str());
+          BOOST_CHECK (ifs.good());
+          ifs>>nCounterVal;
+        }
+
+	LOG(INFO, "Intial value was "<<nInitial);
+	LOG(INFO, "The counter value now is: "<<nCounterVal);
 
 	nCounterVal-=nInitial;
-	LOG(INFO, "The counter value is: "<<nCounterVal);
-	ifs.close();
 
-	int nTasks=0;
-	stringstream sstr(TESTS_N_ATOMIC_TASKS);
-	sstr>>nTasks;
+	const int nTasks (boost::lexical_cast<int> (TESTS_N_ATOMIC_TASKS));
 
 	BOOST_CHECK((nCounterVal==2*nTasks));
 

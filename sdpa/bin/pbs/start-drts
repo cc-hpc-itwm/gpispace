@@ -21,7 +21,7 @@ lib_path=
 kvs_url=
 count=
 capabilities=""
-state_dir="~/.sdpa/state"
+state_dir="$HOME/.sdpa/state"
 logdir=
 
 function usage ()
@@ -140,7 +140,12 @@ done
 
 # read sdpa state if it exists
 
-test -r "${state_dir}/sdpa.env" && source "${state_dir}/sdpa.env"
+if [ -r "${state_dir}/sdpa.env" ] ; then
+    source "${state_dir}/sdpa.env"
+else
+    echo >&2 "needs to be executed under SDPA"
+    exit 4
+fi
 
 if [ -z "$gui" ]
 then

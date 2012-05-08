@@ -3,7 +3,8 @@
   <in name="config" type="tracebytrace_config" place="config"/>
   <out name="package" type="tracebytrace_loaded_package" place="package"/>
   <out name="num" type="long" place="num"/>
-
+  <tunnel name="empty_slot" type="long" place="empty_slot"/>
+  <tunnel name="check_break" type="generate_package_state" place="check_break"/>
   <net>
 
     <place name="config" type="tracebytrace_config"/>
