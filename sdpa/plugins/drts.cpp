@@ -313,7 +313,7 @@ public:
         if (master_it->second->is_connected())
           send_event (new sdpa::events::CapabilitiesLostEvent( m_my_name
                                                              , master_it->first
-                                                             , cap->first
+                                                             , sdpa::Capability(cap->first, "no-type", m_my_name)
                                                              )
                      );
       }
@@ -869,7 +869,7 @@ private:
         ; ++cap_it
         )
     {
-      caps.insert (cap_it->first);
+      caps.insert (sdpa::Capability(cap_it->first, "no-type", m_my_name));
     }
 
     for ( map_of_capabilities_t::const_iterator cap_it(m_virtual_capabilities.begin())
@@ -877,7 +877,7 @@ private:
         ; ++cap_it
         )
     {
-      caps.insert (cap_it->first);
+      caps.insert (sdpa::Capability(cap_it->first, "virtual", m_my_name));
     }
 
     if (! caps.empty())

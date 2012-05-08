@@ -307,7 +307,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	kernel->put("plugin.drts.master", masterName);
 	kernel->put("plugin.drts.backlog", "2");
 	kernel->put("plugin.drts.request-mode", "false");
-	
+
 	kernel->put("plugin.drts.capabilities", cpbList);
 	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_INOTIFY_MODULES_PATH);
 
@@ -324,7 +324,7 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testInotifyExecution )
 {
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	LOG( DEBUG, "***** test_INotify *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_CASE( testInotifyExecution )
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	LOG( DEBUG, "The test case test_INotify terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
