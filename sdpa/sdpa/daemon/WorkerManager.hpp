@@ -67,7 +67,7 @@ namespace sdpa { namespace daemon {
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
       worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
-      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq) throw (NoWorkerFoundException);
+      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq, int* matching_degree) throw (NoWorkerFoundException);
       void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
       const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);

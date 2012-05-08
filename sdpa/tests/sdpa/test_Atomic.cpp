@@ -343,7 +343,7 @@ BOOST_AUTO_TEST_CASE( testModiFile )
 
 BOOST_AUTO_TEST_CASE( testAtomicExecution )
 {
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	LOG( DEBUG, "***** test_Atomic *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -414,7 +414,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 
 	BOOST_CHECK((nCounterVal==2*nTasks));
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	LOG( DEBUG, "The test case test_Atomic terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
