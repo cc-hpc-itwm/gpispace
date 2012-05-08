@@ -437,7 +437,8 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         	  try
         	  {
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list);
+			  int matching_degree (-1);
+        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list, &matching_degree);
 
 				  ostringstream ossReq;
 				  BOOST_FOREACH(const requirement_t& req, job_req_list)
@@ -450,6 +451,7 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
                        << ossReq.str()
                        <<" for the job  " << jobId
                        << " is " << ptrBestWorker->name()
+		       << " degree " << matching_degree
         		  );
 
         		  // schedule the job to that one
