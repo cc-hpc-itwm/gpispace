@@ -2,6 +2,7 @@
   <in name="config" type="config" place="config"/>
   <in name="interval" type="interval" place="interval"/>
   <out name="interval_tagged" type="interval_tagged_with_id" place="splitted"/>
+  <tunnel name="wait" type="long" place="wait"/>
 
   <net>
     <place name="config" type="config"/>

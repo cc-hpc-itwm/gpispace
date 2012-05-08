@@ -834,6 +834,66 @@ namespace xml
 
       // ******************************************************************* //
 
+      class tunnel_connected_non_virtual : public generic
+      {
+      private:
+        template<typename PORT, typename PLACE>
+        std::string nice ( const PORT& port
+                         , const PLACE& place
+                         , const boost::filesystem::path& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "tunnel " << port.name
+            << " connected to non-virtual place " << place.name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        template<typename PORT, typename PLACE>
+        tunnel_connected_non_virtual ( const PORT& port
+                                     , const PLACE& place
+                                     , const boost::filesystem::path& path
+                                     )
+          : generic (nice (port, place, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class tunnel_name_mismatch : public generic
+      {
+      private:
+        template<typename PORT, typename PLACE>
+        std::string nice ( const PORT& port
+                         , const PLACE& place
+                         , const boost::filesystem::path& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "tunnel with name " << port.name
+            << " is connected to place with different name " << place.name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        template<typename PORT, typename PLACE>
+        tunnel_name_mismatch ( const PORT& port
+                             , const PLACE& place
+                             , const boost::filesystem::path& path
+                             )
+          : generic (nice (port, place, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class port_not_connected : public generic
       {
       private:
@@ -862,10 +922,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename PORT, typename PLACE>
       class port_connected_type_error : public generic
       {
       private:
+        template<typename PORT, typename PLACE>
         std::string nice ( const std::string & direction
                          , const PORT & port
                          , const PLACE & place
@@ -885,6 +945,7 @@ namespace xml
         }
 
       public:
+        template<typename PORT, typename PLACE>
         port_connected_type_error ( const std::string & direction
                                   , const PORT & port
                                   , const PLACE & place
@@ -1006,10 +1067,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename PORT, typename PLACE>
       class connect_type_error : public generic
       {
       private:
+        template<typename PORT, typename PLACE>
         std::string nice ( const std::string & direction
                          , const std::string & trans
                          , const PORT & port
@@ -1031,6 +1092,7 @@ namespace xml
         }
 
       public:
+        template<typename PORT, typename PLACE>
         connect_type_error ( const std::string & direction
                            , const std::string trans
                            , const PORT & port

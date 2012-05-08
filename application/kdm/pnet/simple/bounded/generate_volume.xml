@@ -2,6 +2,7 @@
   <in name="amount" type="long" place="amount"/>
   <in name="offset" type="long" place="offset"/>
   <out name="out" type="VOLUME" place="out"/>
+  <tunnel name="credit" type="control" place="credit"/>
 
   <net>
     <place name="amount" type="long"/>

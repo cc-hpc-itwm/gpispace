@@ -7,6 +7,7 @@
   <in name="assigned_package" type="assigned_package" place="assigned_package"/>
   <out name="assigned_package" type="assigned_package" place="loaded_package"/>
   <out name="trigger" type="control" place="trigger"/>
+  <tunnel name="config" type="config" place="config"/>
 
   <net>
 

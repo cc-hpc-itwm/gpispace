@@ -200,6 +200,7 @@
         <xsd:element name="in" type="port_type"/>
         <xsd:element name="out" type="port_type"/>
         <xsd:element name="inout" type="port_type"/>
+        <xsd:element name="tunnel" type="port_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="1" maxOccurs="1">
         <xsd:element name="expression" type="xsd:string"/>

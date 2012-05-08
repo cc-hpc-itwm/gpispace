@@ -1,6 +1,8 @@
 <defun name="loadTT">
   <in name="trigger" type="control" place="start"/>
   <out name="trigger" type="control" place="done"/>
+  <tunnel name="config" type="CONFIG" place="config"/>
+
   <net>
     <place name="config" type="CONFIG" virtual="true"/>
     <place name="done" type="control"/>

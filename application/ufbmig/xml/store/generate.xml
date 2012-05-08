@@ -2,6 +2,7 @@
 
   <in name="config" type="config" place="config"/>
   <out name="store" type="store" place="store"/>
+  <tunnel name="trigger" type="control" place="trigger"/>
 
   <net>
 
