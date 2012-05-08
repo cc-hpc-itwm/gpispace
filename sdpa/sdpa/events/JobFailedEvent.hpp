@@ -1,5 +1,5 @@
 /*
- * =====================================================================================
+ * =============================================================================
  *
  *       Filename:  JobFailedEvent.hpp
  *
@@ -13,8 +13,9 @@
  *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
  *        Company:  Fraunhofer ITWM
  *
- * =====================================================================================
+ * =============================================================================
  */
+
 #ifndef SDPA_JOB_FAILED_EVENT_HPP
 #define SDPA_JOB_FAILED_EVENT_HPP 1
 
@@ -26,43 +27,45 @@ namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/JobEvent.hpp>
 
-namespace sdpa { namespace events {
+namespace sdpa {
+  namespace events {
+
+    class JobFailedEvent : public JobEvent
 #ifdef USE_BOOST_SC
-	class JobFailedEvent : public JobEvent, public sc::event<JobFailedEvent>
-#else
-	class JobFailedEvent : public JobEvent
+                         , public sc::event<JobFailedEvent>
 #endif
     {
-	public:
-		typedef sdpa::shared_ptr<JobFailedEvent> Ptr;
+    public:
+      typedef sdpa::shared_ptr<JobFailedEvent> Ptr;
 
-        JobFailedEvent()
-          : JobEvent("", "", "")
-        {}
+      JobFailedEvent()
+        : JobEvent("", "", "")
+      {}
 
-		JobFailedEvent(	const address_t& a_from
-					  ,	const address_t& a_to
-					  ,	const sdpa::job_id_t& a_job_id
-                      , const job_result_t &job_result)
-          :  sdpa::events::JobEvent( a_from, a_to, a_job_id )
-          , result_(job_result)
-        { }
+      JobFailedEvent( const address_t& a_from
+                    , const address_t& a_to
+                    , const sdpa::job_id_t& a_job_id
+                    , const job_result_t &job_result
+                    )
+        :  sdpa::events::JobEvent( a_from, a_to, a_job_id )
+        , result_(job_result)
+      { }
 
-		virtual ~JobFailedEvent() {
-		}
+      virtual ~JobFailedEvent() {}
 
-		std::string str() const { return "JobFailedEvent"; }
+      std::string str() const { return "JobFailedEvent"; }
 
-        virtual void handleBy(EventHandler *handler)
-        {
-          handler->handleJobFailedEvent(this);
-        }
+      virtual void handleBy(EventHandler *handler)
+      {
+        handler->handleJobFailedEvent(this);
+      }
 
       const job_result_t &result() const { return result_; }
       job_result_t &result() { return result_; }
     private:
       job_result_t result_;
-	};
-}}
+    };
+  }
+}
 
 #endif
