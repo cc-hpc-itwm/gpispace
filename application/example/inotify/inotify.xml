@@ -7,7 +7,7 @@
 
   <net>
     <!-- input/output places -->
-    <place name="N" type="long" />    
+    <place name="N" type="long" />
     <place name="watched_file" type="string" />
 
     <place name="done" type="control" />
@@ -25,7 +25,7 @@
 
     <!-- initialization -->
 
-    <transition name="init_places_test">
+    <transition name="init_places_test" inline="true">
       <use name="dup_long" />
       <connect-in port="in" place="N"/>
       <connect-out port="one" place="generate"/>
@@ -48,11 +48,11 @@
 	<in name="id" type="long" />
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
-	<module name="inotify_test" function="testInotify (id,filename)">
+	<module name="inotify_test" function="done testInotify (id,filename)">
 	  	<cinclude href="fhglog/minimal.hpp"/>
 	  	<cinclude href="unistd.h" />
 	  	<cinclude href="stdio.h" />
-	
+
 		<cinclude href="sys/types.h"/>
 		<cinclude href="sys/stat.h"/>
 		<cinclude href="fcntl.h"/>
@@ -60,58 +60,58 @@
 		<cinclude href="stdio.h"/>
 		<cinclude href="errno.h"/>
 		<cinclude href="sys/inotify.h"/>
-		
+
 		<code><![CDATA[
 	  	LOG(INFO, ">>> running  testInotify(" << id << ", " << filename << ")");
-	  
-		const int BUFF_SIZE = ((sizeof(struct inotify_event)+FILENAME_MAX)*1024);		
+
+		const int BUFF_SIZE = ((sizeof(struct inotify_event)+FILENAME_MAX)*1024);
 		const char* target = filename.c_str(); // "/var/tmp/inotify_test.txt"
-		
+
 		int result;
 	   	int fd;
 	   	int wd;   /* watch descriptor */
-	
+
 	   	FILE * pFile = fopen(target,"r");
-	
+
 	   	if(!pFile) // file does not exist, create the file
 	   	{
 			pFile = fopen(target,"w");
 			fputc('1', pFile);
 			fclose(pFile);
 		}
-	
+
 	   	LOG(INFO, "Watching the file "<<target);
-	
+
 	   	fd = inotify_init();
-	   	if (fd < 0) 
+	   	if (fd < 0)
 	   	{
 			LOG(ERROR, "Error: "<<strerror(errno));
-	    	return;
+	    	 throw std::runtime_error ("Error: init: " + std::string (strerror(errno)));
 	   	}
-	
+
 	   	wd = inotify_add_watch (fd, target, IN_ALL_EVENTS);
-	   	if (wd < 0) 
+	   	if (wd < 0)
 	   	{
 			LOG(ERROR, "Error: "<<strerror(errno));
-	      	return;
+	    	 throw std::runtime_error ("Error: add_watch: " + std::string (strerror(errno)));
 		}
-	
+
       	ssize_t len, i = 0;
 	   	char action[81+FILENAME_MAX] = {0};
 	   	char buff[BUFF_SIZE] = {0};
-	
+
 	   	len = read (fd, buff, BUFF_SIZE);
-	
-	   	while (i < len) 
+
+	   	while (i < len)
 	   	{
 	    	struct inotify_event *pevent = (struct inotify_event *)&buff[i];
 	      	char action[81+FILENAME_MAX] = {0};
-	
+
 	      	if (pevent->len)
 	        	strcpy (action, pevent->name);
 	      	else
 	        	strcpy (action, target);
-	
+
 	      	if (pevent->mask & IN_ACCESS)
 	        	strcat(action, " was read");
 	      	if (pevent->mask & IN_ATTRIB)
@@ -136,13 +136,15 @@
 	         	strcat(action, " moved into watched directory");
 	      	if (pevent->mask & IN_OPEN)
 	         	strcat(action, " was opened");
-	
+
 			printf ("%s\n", action);
-	
+
 	      	i += sizeof(struct inotify_event) + pevent->len;
 		}
-		
+
 	  	LOG(INFO, "<<< finished testInotify(" << id << ", " << filename << ")");
+
+                return control();
 	  ]]></code>
 	</module>
       </defun>

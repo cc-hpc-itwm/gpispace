@@ -134,7 +134,7 @@ add_custom_command(TARGET pnet-atomic-test-wf
 )
 add_dependencies(pnet-atomic-test-wf pnetput)
 ################################################################################################
-pnet_compile(inotify-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/inotify.xml
+pnet_compile(inotify-test-wf ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
   GENERATE inotify
   INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
