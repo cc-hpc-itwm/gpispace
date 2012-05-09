@@ -29,6 +29,8 @@
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 
+typedef std::list<std::pair<sdpa::worker_id_t, int> > job_pref_list_t;
+
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
@@ -67,7 +69,7 @@ namespace sdpa { namespace daemon {
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
       worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
-      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq, int* matching_degree) throw (NoWorkerFoundException);
+      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
       void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
       const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
