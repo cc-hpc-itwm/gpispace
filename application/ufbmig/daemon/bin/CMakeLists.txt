@@ -1,4 +1,4 @@
-install(PROGRAMS
-  ufbmigd
-  DESTINATION libexec/apps/ufbmig/bin
-  COMPONENT applications)
+#install(PROGRAMS
+#  ufbmigd
+#  DESTINATION libexec/sdpa/apps/ufbmig/bin
+#  COMPONENT applications)

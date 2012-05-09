@@ -24,7 +24,13 @@ public:
 
   FHG_PLUGIN_START()
   {
-    api.path (fhg_kernel()->get("socket", "/var/tmp/gpi-space/control"));
+    api.path (fhg_kernel()->get( "socket"
+                               , "/var/tmp/S-gpi-space."
+                               + boost::lexical_cast<std::string>(getuid())
+                               + "."
+                               + boost::lexical_cast<std::string>(0) // numa socket
+                               )
+             );
     if (fhg_kernel()->get("startmode", "nowait")  == "wait")
     {
       LOG(INFO, "gpi plugin starting in synchronous mode, this might take forever!");
@@ -179,9 +185,10 @@ private:
     }
     catch (std::exception const &ex)
     {
-      LOG( WARN
-         , "could not start gpi connection on `" << api.path() << "': " << ex.what()
-         );
+      MLOG_EVERY_N( WARN
+                  , 10
+                  , "could not start gpi connection on `" << api.path() << "': " << ex.what()
+                  );
       return false;
     }
   }
@@ -204,6 +211,7 @@ private:
 
 EXPORT_FHG_PLUGIN( gpi
                  , GpiPluginImpl
+                 , "GPI"
                  , "Plugin to access the gpi-space"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

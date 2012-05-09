@@ -18,9 +18,10 @@ if (WITH_DEPRECATED_FVM_PC)
   # ADD_LIBRARY(fvm-pc.shared SHARED ${srcs})
   # set_target_properties(fvm-pc.shared PROPERTIES OUTPUT_NAME fvm-pc)
 
-  # install(FILES ${hdrs}
-  #   DESTINATION include/fvm-pc
-  #   COMPONENT runtime-headers)
+install(FILES ${hdrs}
+  DESTINATION include/fvm-pc
+  COMPONENT runtime-headers
+)
 #  install(TARGETS fvm-pc
 #    ARCHIVE
 #    DESTINATION libexec

@@ -18,7 +18,7 @@
 #include <boost/foreach.hpp>
 
 #include <we/loader/loader.hpp>
-#include <we/loader/module.hpp>
+#include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
 
 struct wfe_exec_context : public we::mgmt::context<>

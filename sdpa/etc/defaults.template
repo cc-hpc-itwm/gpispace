@@ -22,11 +22,10 @@
 #                                                                              #
 ################################################################################
 
-#
 # were is SDPA installed to.
-# if empty , it is automatically guessed
+# if empty or not set, it is automatically guessed
 #
-SDPA_HOME=""
+#SDPA_HOME=""
 
 # if needed, runs gui and logserver
 DEFAULT_CLUSTER_HEAD=""
@@ -49,8 +48,9 @@ DEFAULT_WITH_MEDIATOR="false"
 DEFAULT_LOG_DIRECTORY="${DEFAULT_SCRATCH_DIR}/log"
 
 # unique ports for each concurrent user
-DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
-DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
+
+DEFAULT_LOG_PORT="$(( (($(id -u) * 2 + 0) % ((1<<16) - 1024 - 18000)) + 18000 ))"
+DEFAULT_GUI_PORT="$(( (($(id -u) * 2 + 1) % ((1<<16) - 1024 - 18000)) + 18000 ))"
 DEFAULT_KVS_PORT=2439
 DEFAULT_LOGD_PORT=3456
 
@@ -61,13 +61,15 @@ DEFAULT_GUI_URL=""
 #
 # GPI
 #
-DEFAULT_GPI_ENABLED="false"
+DEFAULT_GPI_ENABLED="true"
+
+DEFAULT_GPI_PRIV_DIR="/opt/cluster/GPI/bin/$(id -un)"
 
 # memory to be used by GPI (each node)
-DEFAULT_GPI_MEMSIZE="5G"
+DEFAULT_GPI_MEMSIZE="2G"
 
 # memory for each worker
-DEFAULT_GPI_SHMSIZE="1G"
+DEFAULT_GPI_SHMSIZE="500M"
 
 # communication buffer size
 DEFAULT_GPI_COMSIZE="16M"

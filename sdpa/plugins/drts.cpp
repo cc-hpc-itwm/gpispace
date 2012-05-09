@@ -102,7 +102,7 @@ public:
 
     // parse virtual capabilities
     {
-      std::string virtual_capabilities (fhg_kernel()->get("virtual_capabilities", ""));
+      std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
       std::list<std::string> capability_list;
       fhg::util::split( virtual_capabilities
                       , ","
@@ -280,7 +280,7 @@ public:
       {
         if (master_it->second->is_connected())
         {
-        	sdpa::capability_t sdpa_cap(cap->capability_name(), cap->capability_type());
+        	sdpa::capability_t sdpa_cap( cap->capability_name(), cap->capability_type(), m_my_name );
         	send_event (new sdpa::events::CapabilitiesGainedEvent( m_my_name
                                                                , master_it->first
                                                                , sdpa_cap
@@ -313,7 +313,7 @@ public:
         if (master_it->second->is_connected())
           send_event (new sdpa::events::CapabilitiesLostEvent( m_my_name
                                                              , master_it->first
-                                                             , cap->first
+                                                             , sdpa::Capability(cap->first, "no-type", m_my_name)
                                                              )
                      );
       }
@@ -571,6 +571,14 @@ public:
       {
         MLOG(TRACE, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
+      }
+      else if (job_it->second->state() == drts::Job::FAILED)
+      {
+        MLOG(TRACE, "cancelling already failed job: " << e->job_id());
+      }
+      else if (job_it->second->state() == drts::Job::CANCELED)
+      {
+        MLOG(TRACE, "cancelling already cancelled job: " << e->job_id());
       }
       else
       {
@@ -861,7 +869,7 @@ private:
         ; ++cap_it
         )
     {
-      caps.insert (cap_it->first);
+      caps.insert (sdpa::Capability(cap_it->first, "no-type", m_my_name));
     }
 
     for ( map_of_capabilities_t::const_iterator cap_it(m_virtual_capabilities.begin())
@@ -869,7 +877,7 @@ private:
         ; ++cap_it
         )
     {
-      caps.insert (cap_it->first);
+      caps.insert (sdpa::Capability(cap_it->first, "virtual", m_my_name));
     }
 
     if (! caps.empty())
@@ -1053,10 +1061,13 @@ private:
         {
           MLOG(WARN, "still not connected after " << m_reconnect_counter << " trials: shutting down");
           fhg_kernel()->shutdown();
+          return;
         }
       }
     }
-    else if (at_least_one_disconnected)
+
+
+    if (at_least_one_disconnected)
     {
       fhg_kernel()->schedule ( "connect"
                              , boost::bind( &DRTSImpl::start_connect
@@ -1209,6 +1220,7 @@ private:
 
 EXPORT_FHG_PLUGIN( drts
                  , DRTSImpl
+                 , "DRTS"
                  , "provides access to the distributed runtime-system"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

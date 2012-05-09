@@ -380,7 +380,7 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
     // check event type
     if (/* se::DeleteJobAckEvent *ack = */ dynamic_cast<se::DeleteJobAckEvent*>(reply.get()))
     {
-    	DMLOG(DEBUG,"deletion of job has been acknowledged");
+    	MLOG(DEBUG,"deletion of job has been acknowledged");
     }
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {

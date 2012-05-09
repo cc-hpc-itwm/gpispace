@@ -81,14 +81,13 @@ namespace sdpa { namespace daemon {
 	 */
     bool acknowledge(const sdpa::job_id_t &job_id);
 
-    /**
-      Time of last received event designated to this worker.
-      */
-    sdpa::util::time_type tstamp() const { return tstamp_; }
-
     // update last service time
     sdpa::util::time_type lastTimeServed() { return last_time_served_; }
     void setLastTimeServed(const sdpa::util::time_type& last_time_srv ) { last_time_served_ = last_time_srv; }
+
+    // update last service time
+    sdpa::util::time_type lastScheduleTime() { return last_schedule_time_; }
+    void setLastScheduleTime(const sdpa::util::time_type& last_schedule_time ) { last_schedule_time_ = last_schedule_time; }
 
     /**
       Return the name of the worker.
@@ -182,6 +181,7 @@ namespace sdpa { namespace daemon {
         ar & location_;
     	ar & tstamp_;
     	ar & last_time_served_;
+    	ar & last_schedule_time_;
 	}
 
     friend class boost::serialization::access;
@@ -193,7 +193,6 @@ namespace sdpa { namespace daemon {
     SDPA_DECLARE_LOGGER();
 
     worker_id_t name_; //! name of the worker
-    //unsigned int rank_;
     unsigned int capacity_;
     sdpa::capabilities_set_t capabilities_;
     unsigned int rank_;
@@ -201,6 +200,7 @@ namespace sdpa { namespace daemon {
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
     sdpa::util::time_type last_time_served_; //! time of last message received
+    sdpa::util::time_type last_schedule_time_;
 
     JobQueue pending_; //! the queue of jobs assigned to this worker (not yet submitted)
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

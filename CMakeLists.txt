@@ -9,7 +9,7 @@ set(PROJECT_BUILD    "0" CACHE STRING "Build number")
 set(PROJECT_DESCRIPTION "Seismic Development and Processing Architecture" CACHE STRING "Project description")
 set(PROJECT_DESCRIPTION_SUMMARY "Seismic Development and Processing Architecture" CACHE STRING "Project description summary")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
-set(PROJECT_COPYRIGHT   "Copyright 2011 Fraunhofer ITWM" CACHE STRING "Copyright")
+set(PROJECT_COPYRIGHT   "Copyright 2009-2012 Fraunhofer ITWM" CACHE STRING "Copyright")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
@@ -20,7 +20,7 @@ OPTION(ENABLE_FVM_PC "Build the deprecated fvm-pc libraries" ON)
 OPTION(ENABLE_SDPA_GUI "Build the monitor gui" YES)
 OPTION(ENABLE_SDPA_GPI "Build the sdpa-gpi interface" NO)
 OPTION(ENABLE_GPI_SPACE "Build the gpi-space interface" YES)
-OPTION(ENABLE_STATIC_BINARIES "Build static linked binaries" YES)
+OPTION(ENABLE_STATIC_BINARIES "Build static linked binaries" NO)
 OPTION(ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
 OPTION(ENABLE_PNET_EDITOR "Build the pnet editor" YES)
 OPTION(INSTALL_AS_BUNDLE "Install as a bundle" NO)
@@ -71,7 +71,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/packages.list.cmake.in
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/modules.sdpa.in    ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa     @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/configure          ${CMAKE_CURRENT_BINARY_DIR}/configure       @COPYONLY)
 
-cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
+cmake_minimum_required(VERSION "2.6.7" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")

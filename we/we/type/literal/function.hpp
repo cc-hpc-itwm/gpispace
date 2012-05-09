@@ -60,6 +60,18 @@ namespace literal
     public:
       unary (const expr::token::type & _token) : token (_token) {}
 
+      literal::type operator () (literal::map_type & m) const
+      {
+        switch (token)
+          {
+          case expr::token::_map_size: return long (m.size());
+          case expr::token::_map_empty: return m.empty();
+          default:
+            throw expr::exception::eval::type_error
+              (fhg::util::show (token) + " (" + literal::show (m) + ")");
+          }
+      }
+
       literal::type operator () (literal::set_type & s) const
       {
         switch (token)

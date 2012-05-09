@@ -278,17 +278,19 @@ namespace expr
                         case 'p': ++pos; require ("_");
                           if (is_eof())
                             throw exception::parse::expected
-                              ("'assign', 'unassign', 'is_assigned' or 'get_assignment'", pos());
+                              ("'assign', 'unassign', 'is_assigned', 'size', 'empty' or 'get_assignment'", pos());
                           else
                             switch (*pos)
                               {
                               case 'a': ++pos; require ("ssign"); token = _map_assign; break;
+                              case 'e': ++pos; require ("mpty"); unary (_map_empty, "map_empty"); break;
                               case 'u': ++pos; require ("nassign"); token = _map_unassign; break;
                               case 'i': ++pos; require ("s_assigned"); token = _map_is_assigned; break;
                               case 'g': ++pos; require ("et_assignment"); token = _map_get_assignment; break;
+                              case 's': ++pos; require ("ize"); unary (_map_size, "map_size"); break;
                               default:
                                 throw exception::parse::expected
-                                  ("'assign', 'unassign', 'is_assigned' or 'get_assignment'", pos());
+                                  ("'assign', 'unassign', 'is_assigned', 'size', 'empty' or 'get_assignment'", pos());
                               }
                           break;
                         default:

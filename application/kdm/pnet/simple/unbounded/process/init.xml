@@ -2,6 +2,7 @@
   <in name="volume" type="VOLUME"  place="volume_in"/>
   <in name="config" type="CONFIG" place="config"/>
   <out name="bunch" type="BUNCH" place="bunch"/>
+  <tunnel name="credit_load" type="control" place="credit_load"/>
 
   <net>
     <place name="volume_in" type="VOLUME" />

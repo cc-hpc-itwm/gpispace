@@ -101,6 +101,7 @@ private:
 
 EXPORT_FHG_PLUGIN( helloworld
                  , HelloWorldImpl
+                 , ""
                  , "say world"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "v0.0.1"

@@ -111,28 +111,6 @@ namespace we
         }
         else
         {
-
-#if 0
-          DLOG(TRACE, "checking passed data against my expected parameters...");
-          const param_names_list_t &expected_input = fun->second.second;
-          std::string missing;
-          for (param_names_list_t::const_iterator exp_inp(expected_input.begin()); exp_inp != expected_input.end(); ++exp_inp)
-          {
-            // locate if the expected input parameter is in the data also
-            data_t::const_iterator act_inp(data.find(*exp_inp));
-            if (act_inp == data.end())
-            {
-              DLOG(ERROR, name() << "." << function << " without required parameter " << *exp_inp);
-              missing += ", " + *exp_inp;
-            }
-          }
-
-          if (! keep_going && (! missing.empty()))
-          {
-            throw MissingFunctionArgument(name(), function, missing.substr(2)); // substr() -> remove leading ", "
-          }
-#endif
-
           // hopefully safe to call now
           (*(fun->second.first))(state(), input, output);
         }
@@ -150,20 +128,13 @@ namespace we
                        , const param_names_list_t &parameters
                        )
       {
-#if 0
-        {
-          std::ostringstream ostr;
-          param_names_list_t::const_iterator exp_inp(parameters.begin());
-          while (exp_inp != parameters.end())
-          {
-            ostr << *exp_inp;
-            ++exp_inp;
-            if (exp_inp != parameters.end()) ostr << ", ";
-          }
-          DLOG(DEBUG, "adding function " << function << "( " << ostr.str() << " )");
-        }
-#endif
-        std::pair<call_table_t::iterator, bool> insertPosition = call_table_.insert(std::make_pair(function, std::make_pair(f, parameters)));
+        std::pair<call_table_t::iterator, bool> insertPosition
+          = call_table_.insert( std::make_pair( function
+                                              , std::make_pair (f
+                                                               , parameters
+                                                               )
+                                              )
+                              );
         if (! insertPosition.second) {
           throw DuplicateFunction(name(), function);
         }

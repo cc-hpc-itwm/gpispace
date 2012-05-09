@@ -167,6 +167,7 @@ size_t get_progress(const char *name)
 
 EXPORT_FHG_PLUGIN( progress
                  , ProgressImpl
+                 , "progress"
                  , "provides access to progress values"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

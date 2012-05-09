@@ -283,7 +283,7 @@ private:
 
           if (task->state == wfe_task_t::CANCELED)
           {
-            task->result = "cancelled";
+            task->result = we::util::text_codec::encode(task->activity);
             task->done.notify(-ECANCELED);
           }
           else
@@ -298,6 +298,8 @@ private:
           task->state = wfe_task_t::FAILED;
           task->result = ex.what();
           task->done.notify(1);
+
+          m_loader->unload_autoloaded();
         }
       }
     }
@@ -312,6 +314,7 @@ private:
 
 EXPORT_FHG_PLUGIN( wfe
                  , WFEImpl
+                 , "WFE"
                  , "provides access to a workflow-engine"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

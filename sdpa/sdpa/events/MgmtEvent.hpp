@@ -35,6 +35,8 @@ namespace sdpa { namespace events {
         : SDPAEvent(a_from, a_to) {}
       ~MgmtEvent() {}
 
+      int priority() const { return 1; }
+
       virtual std::string str() const = 0;
   };
 }}

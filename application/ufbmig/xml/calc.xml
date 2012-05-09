@@ -177,6 +177,7 @@
       <defun>
         <in name="done" type="control" place="done_update"/>
         <out name="done" type="control" place="done"/>
+        <tunnel name="config" type="config" place="config"/>
         <net>
           <place name="config" type="config" virtual="true"/>
           <place name="done_update" type="control"/>

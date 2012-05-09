@@ -24,6 +24,8 @@
 namespace sdpa {
 namespace daemon {
 
+	template <typename T> struct OrchestratorFactory;
+
 	class Orchestrator : public dsm::DaemonFSM
 	{
 	  public:
@@ -69,15 +71,17 @@ namespace daemon {
 		virtual void recover( std::istream& );
 
 		friend class boost::serialization::access;
+		template <typename T> friend struct OrchestratorFactory;
 
 		template <typename T>
 		void notifySubscribers(const T& ptrEvt);
 
 	  private:
-		Scheduler* create_scheduler(bool bUseReqModel)
+		void createScheduler(bool bUseReqModel)
 		{
 		    DLOG(TRACE, "creating orchestrator scheduler...");
-		    return new SchedulerOrch(this, bUseReqModel);
+		    Scheduler::ptr_t ptrSched( new SchedulerOrch(this, bUseReqModel) );
+		    ptr_scheduler_ = ptrSched;
 		}
 
 		std::string url_;

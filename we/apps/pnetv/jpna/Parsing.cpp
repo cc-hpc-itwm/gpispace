@@ -42,27 +42,17 @@ class TransitionVisitor: public boost::static_visitor<void> {
     /**
      * Places present in the workflow.
      */
-    boost::unordered_map<petri_net::pid_t, Place *> place2place_;
+    boost::unordered_map<petri_net::pid_t, Place *> places_;
 
     /**
      * Helper places for implementing capacities.
      */
-    boost::unordered_map<petri_net::pid_t, Place *> place2capacity_;
-
-    /**
-     * Places for storing tokens representing an activity being executed.
-     */
-    boost::unordered_map<petri_net::tid_t, Place *> transition2activity_;
+    boost::unordered_map<petri_net::pid_t, Place *> capacityPlaces_;
 
     /**
      * Transitions present in the workflow.
      */
-    boost::unordered_map<petri_net::tid_t, Transition *> transition2transition_;
-
-    /**
-     * Transitions for representing execution of an activity.
-     */
-    boost::unordered_map<petri_net::tid_t, Transition *> transition2execute_;
+    boost::unordered_map<petri_net::tid_t, Transition *> transitions_;
 
     public:
 
@@ -91,18 +81,18 @@ class TransitionVisitor: public boost::static_visitor<void> {
             const P &p = net.get_place(pid);
 
             Place *place = petriNet_->createPlace();
-            place->setName("normal_" + p.get_name());
+            place->setName(p.get_name());
             if (net.get_capacity(pid)) {
                 place->setCapacity(*net.get_capacity(pid));
             }
-            place2place_[pid] = place;
+            places_[pid] = place;
 
             if (place->capacity()) {
                 Place *capacity = petriNet_->createPlace();
-                capacity->setName("capacity_" + p.get_name());
+                capacity->setName("capacity!" + p.get_name());
                 capacity->setCapacity(place->capacity());
                 capacity->setInitialMarking(*place->capacity());
-                place2capacity_[pid] = capacity;
+                capacityPlaces_[pid] = capacity;
             }
         }
 
@@ -115,32 +105,19 @@ class TransitionVisitor: public boost::static_visitor<void> {
             condition << t.condition();
 
             Transition *transition = petriNet_->createTransition();
-            transition->setName("normal_" + t.name() + "[" + condition.str() + "]");
-            transition->setConditionAlwaysTrue(condition.str() == "true");
-            transition2transition_[tid] = transition;
+            transition->setName(t.name() + "[" + condition.str() + "]");
+            transition->setConditionAlwaysTrue(t.condition().is_const_true());
+            transition->setPriority(net.get_transition_priority(tid));
+            transitions_[tid] = transition;
 
             /* If there is a limit on number of firings, implement it using an additional place. */
             if (boost::optional<const we::type::property::value_type &> limit = t.prop().get_maybe_val("fhg.pnetv.firings_limit")) {
                 Place *place = petriNet_->createPlace();
-                place->setName("limit_" + t.name());
+                place->setName("limit!" + t.name());
                 place->setInitialMarking(boost::lexical_cast<TokenCount>(*limit));
 
                 transition->addInputPlace(place);
             }
-
-            Place *activity = petriNet_->createPlace();
-            activity->setName("activity_" + t.name());
-            transition2activity_[tid] = activity;
-
-            Transition *execute = petriNet_->createTransition();
-            execute->setName("execute_" + t.name());
-            transition2execute_[tid] = execute;
-
-            /* When a transition is fired, an activity token is produced. */
-            transition->addOutputPlace(activity);
-
-            /* When an activity is executed, the token is consumed. */
-            execute->addInputPlace(activity);
         }
 
         for (typename pnet_t::edge_const_it it = net.edges(); it.has_more(); ++it) {
@@ -148,14 +125,14 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             switch (connection.type) {
                 case petri_net::PT: {
-                    Place *place = find(place2place_, connection.pid);
-                    Transition *transition = find(transition2transition_, connection.tid);
+                    Place *place = find(places_, connection.pid);
+                    Transition *transition = find(transitions_, connection.tid);
 
                     /* Transition consumes the token on input place. */
                     transition->addInputPlace(place);
 
                     if (place->capacity()) {
-                        Place *capacity = find(place2capacity_, connection.pid);
+                        Place *capacity = find(capacityPlaces_, connection.pid);
 
                         /* Transition produces a token on capacity place. */
                         transition->addOutputPlace(capacity);
@@ -163,8 +140,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     break;
                 }
                 case petri_net::PT_READ: {
-                    Place *place = find(place2place_, connection.pid);
-                    Transition *transition = find(transition2transition_, connection.tid);
+                    Place *place = find(places_, connection.pid);
+                    Transition *transition = find(transitions_, connection.tid);
 
                     /* Transition takes a token and instantly puts it back. */
                     transition->addInputPlace(place);
@@ -172,22 +149,17 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     break;
                 }
                 case petri_net::TP: {
-                    Transition *transition = find(transition2transition_, connection.tid);
-                    Transition *execute = find(transition2execute_, connection.tid);
-                    Place *place = find(place2place_, connection.pid);
+                    Transition *transition = find(transitions_, connection.tid);
+                    Place *place = find(places_, connection.pid);
 
                     /* Executing the transition puts a token on output place. */
-                    execute->addOutputPlace(place);
+                    transition->addOutputPlace(place);
 
                     if (net.get_capacity(connection.pid)) {
-                        Place *capacity = find(place2capacity_, connection.pid);
+                        Place *capacity = find(capacityPlaces_, connection.pid);
 
-                        /* Transition checks whether some capacity is available. */
+                        /* Transition consumes a token on capacity place. */
                         transition->addInputPlace(capacity);
-                        transition->addOutputPlace(capacity);
-
-                        /* Execution consumes a token on capacity place. */
-                        execute->addInputPlace(capacity);
 
                         // TODO: in fact, a place with limited capacity can receive more
                         // tokens than allowed. This is not modelled by us currently.
@@ -221,11 +193,11 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.has_associated_place()) {
                 petri_net::pid_t pid = port.associated_place();
 
-                Place *place = find(place2place_, pid);
+                Place *place = find(places_, pid);
                 place->setInitialMarking(place->initialMarking() + 1);
 
                 if (place->capacity()) {
-                    Place *capacity = find(place2capacity_, pid);
+                    Place *capacity = find(capacityPlaces_, pid);
                     capacity->setInitialMarking(capacity->initialMarking() - 1);
                 }
             }
@@ -238,22 +210,21 @@ class TransitionVisitor: public boost::static_visitor<void> {
 } // anonymous namespace
 
 void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
+    std::ifstream in(filename);
+
+    if (!in) {
+        throw std::runtime_error((boost::format("failed to open %1% for reading") % filename).str());
+    }
+
+    parse(filename, in, petriNets);
+}
+
+void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets) {
     we::activity_t activity;
+    we::util::text_codec::decode(in, activity);
 
-    {
-        std::ifstream in(filename);
-
-        if (!in) {
-            throw std::runtime_error((boost::format("failed to open %1% for reading") % filename).str());
-        }
-
-        we::util::text_codec::decode(in, activity);
-    }
-
-    {
-        TransitionVisitor visitor(filename, petriNets);
-        visitor(activity.transition());
-    }
+    TransitionVisitor visitor(filename, petriNets);
+    visitor(activity.transition());
 }
 
 } // namespace jpna

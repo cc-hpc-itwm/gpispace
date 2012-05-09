@@ -371,6 +371,13 @@ namespace xml
                                  , const functions_type& functions_above
                                  )
         {
+          functions_type funs (functions());
+
+          BOOST_FOREACH (function_type& fun, funs)
+            {
+              fun.distribute_function (state, functions());
+            }
+
           BOOST_FOREACH (const function_type& fun, functions_above)
             {
               function_type fun_local;
@@ -383,13 +390,6 @@ namespace xml
                                                         )
                              );
                 }
-            }
-
-          functions_type funs (functions());
-
-          BOOST_FOREACH (function_type& fun, funs)
-            {
-              fun.distribute_function (state, functions());
             }
 
           BOOST_FOREACH (transition_type& transition, transitions())
@@ -457,7 +457,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        void sanity_check (const state::type & state) const
+        template<typename Fun>
+        void sanity_check (const state::type & state, const Fun& outerfun) const
         {
           for ( transitions_type::const_iterator trans (transitions().begin())
               ; trans != transitions().end()
@@ -473,6 +474,18 @@ namespace xml
               )
             {
               fun->sanity_check (state);
+            }
+
+          BOOST_FOREACH (const place_type& place, places())
+            {
+              if (place.is_virtual() && !outerfun.is_known_tunnel (place.name))
+                {
+                  state.warn
+                    ( warning::virtual_place_not_tunneled ( place.name
+                                                          , outerfun.path
+                                                          )
+                    );
+                }
             }
         }
 
@@ -623,9 +636,7 @@ namespace xml
             {
               const signature::type type (net.type_of_place (*place));
 
-              if (  !state.synthesize_virtual_places()
-                 && place->is_virtual.get_with_default (false)
-                 )
+              if (!state.synthesize_virtual_places() && place->is_virtual())
                 {
                   // try to find a mapping
                   const place_map_map_type::const_iterator pid
@@ -643,7 +654,7 @@ namespace xml
                 {
                   we::type::property::type prop (place->prop);
 
-                  if (place->is_virtual.get_with_default (false))
+                  if (place->is_virtual())
                     {
                       prop.set ("virtual", "true");
                     }
@@ -697,7 +708,7 @@ namespace xml
 
               if (  (we_net.in_to_place (pid).size() == 0)
                  && (we_net.out_of_place (pid).size() == 0)
-                 && (!place->is_virtual.get_with_default (false))
+                 && (!place->is_virtual())
                  )
                 {
                   state.warn

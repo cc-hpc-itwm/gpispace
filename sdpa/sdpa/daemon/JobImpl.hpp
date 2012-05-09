@@ -18,7 +18,6 @@
 #ifndef SDPA_JOB_IMPL_HPP
 #define SDPA_JOB_IMPL_HPP 1
 #include <sdpa/daemon/Job.hpp>
-#include <sdpa/daemon/JobFSMActions.hpp>
 #include <sdpa/daemon/IComm.hpp>
 #include <sdpa/common.hpp>
 #include <boost/thread.hpp>

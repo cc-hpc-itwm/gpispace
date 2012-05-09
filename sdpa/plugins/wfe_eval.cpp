@@ -63,6 +63,7 @@ public:
 
 EXPORT_FHG_PLUGIN( wfe_eval
                  , WfeEvalPluginImpl
+                 , ""
                  , "provides an easy way to evaluate a workflow in a fhgkernel context"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

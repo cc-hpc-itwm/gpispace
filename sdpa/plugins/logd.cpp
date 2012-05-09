@@ -78,6 +78,7 @@ private:
 
 EXPORT_FHG_PLUGIN( logd
                  , LogdPluginImpl
+                 , ""
                  , "provides access to the logging server"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

@@ -266,3 +266,48 @@ BOOST_AUTO_TEST_CASE (ba_list_of_something)
       }
   }
 }
+
+BOOST_AUTO_TEST_CASE (ba_assign_from_ba)
+{
+  char buf[10];
+
+  for (int i (0); i < 10; ++i)
+    {
+      buf[i] = i + 'a';
+    }
+
+  bytearray::type y;
+
+  {
+    const bytearray::type x (buf, 10);
+
+    y = x;
+  }
+
+  std::fill (buf, buf + 10, 0);
+
+  BOOST_CHECK (y.copy (buf, 10) == 10);
+  BOOST_CHECK (std::string (buf, buf + 10) == "abcdefghij");
+  BOOST_CHECK (y.copy (buf, 12) == 10);
+}
+
+BOOST_AUTO_TEST_CASE (ba_assign_from_alien)
+{
+  bytearray::type ba;
+
+  ba = 1.0f;
+
+  float f;
+
+  BOOST_CHECK (ba.copy (&f) == sizeof(float));
+  BOOST_CHECK (f == 1.0f);
+}
+
+BOOST_AUTO_TEST_CASE (ba_cast_to_alien)
+{
+  bytearray::type ba;
+
+  ba = 1.0f;
+
+  BOOST_CHECK (static_cast<float>(ba) == 1.0f);
+}

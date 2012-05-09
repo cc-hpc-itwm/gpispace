@@ -24,6 +24,9 @@
 
 namespace sdpa {
   namespace daemon {
+
+    template <typename T> struct AgentFactory;
+
     class Agent : public dsm::DaemonFSM
     {
       public:
@@ -44,13 +47,12 @@ namespace sdpa {
           m_bCanRunTasksLocally(bCanRunTasksLocally)
         {
           SDPA_LOG_DEBUG("Agent's constructor called ...");
-          //ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::Scheduler(this));
 
           std::ostringstream oss;
 		  oss<<"rank"<<rank;
 
 		  sdpa::capability_t properCpb(oss.str(), "rank", name);
-		  m_capabilities.insert(properCpb);
+		  addCapability(properCpb);
 
          // application gui service
           if(!guiUrl.empty())
@@ -93,16 +95,16 @@ namespace sdpa {
         virtual void recover( std::istream& );
 
         friend class boost::serialization::access;
-        //friend class sdpa::tests::WorkerSerializationTest;
+        template <typename T> friend struct AgentFactory;
 
         void notifyAppGui(const result_type & result);
-        //void requestRegistration(const MasterInfo& masterInfo);
 
         private:
-        Scheduler* create_scheduler(bool bUseReqModel)
+        void createScheduler(bool bUseReqModel)
         {
         	DLOG(TRACE, "creating agent scheduler...");
-        	return new AgentScheduler(this, bUseReqModel);
+        	Scheduler::ptr_t ptrSched( new AgentScheduler(this, bUseReqModel) );
+        	ptr_scheduler_ = ptrSched;
         }
 
         std::string url_;

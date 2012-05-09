@@ -112,6 +112,8 @@ namespace xml
         bool _Wbackup_file;
         bool _Wduplicate_external_function;
         bool _Wproperty_unknown;
+        bool _Winline_many_output_ports;
+        bool _Wvirtual_place_not_tunneled;
 
         std::string _dump_xml_file;
         bool _no_inline;
@@ -152,6 +154,8 @@ namespace xml
         std::string _OWbackup_file;
         std::string _OWduplicate_external_function;
         std::string _OWproperty_unknown;
+        std::string _OWinline_many_output_ports;
+        std::string _OWvirtual_place_not_tunneled;
 
         std::string _Odump_xml_file;
         std::string _Ono_inline;
@@ -248,6 +252,8 @@ namespace xml
           , _Wbackup_file (true)
           , _Wduplicate_external_function (true)
           , _Wproperty_unknown (true)
+          , _Winline_many_output_ports (true)
+          , _Wvirtual_place_not_tunneled (true)
 
           , _dump_xml_file ("")
           , _no_inline (false)
@@ -287,6 +293,8 @@ namespace xml
           , _OWbackup_file ("Wbackup-file")
           , _OWduplicate_external_function ("Wduplicate-external-function")
           , _OWproperty_unknown ("Wproperty-unknown")
+          , _OWinline_many_output_ports ("Winline-many-output-ports")
+          , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
@@ -361,25 +369,10 @@ namespace xml
                                         , const property::value_type & value
                                         )
         {
-          if (path.size() == 3 && path[0] == "pnetc")
+          if (path.size() > 0 && path[0] == "pnetc")
             {
-              if (path[1] != "context")
+              if (path.size() > 2 && path[1] == "context")
                 {
-                  warn ( property_unknown ( path
-                                          , value
-                                          , file_in_progress()
-                                          )
-                       );
-                }
-              else
-                {
-                  std::ostringstream s;
-
-                  s << "when try to bind context key "
-                    << path[2] << " with " << value
-                    << " in " << file_in_progress()
-                    ;
-
                   try
                     {
                       const value::type & old_val (_context.value (path[2]));
@@ -395,6 +388,13 @@ namespace xml
                     {
                       /* do nothing, that's what we want */
                     }
+
+                  std::ostringstream s;
+
+                  s << "when try to bind context key "
+                    << path[2] << " with " << value
+                    << " in " << file_in_progress()
+                    ;
 
                   const util::we_parser_t parser
                     ( util::generic_we_parse ( "${" + path[2] + "}:=" + value
@@ -418,6 +418,21 @@ namespace xml
                     }
 
                   return true;
+                }
+              else if (  path.size() > 2
+                      && path[1] == "warning"
+                      && path[2] == "inline-many-output-ports"
+                      )
+                {
+                  /* do nothing, it's known */
+                }
+              else
+                {
+                  warn ( property_unknown ( path
+                                          , value
+                                          , file_in_progress()
+                                          )
+                       );
                 }
             }
 
@@ -543,6 +558,8 @@ namespace xml
         ACCESS(Wbackup_file)
         ACCESS(Wduplicate_external_function)
         ACCESS(Wproperty_unknown)
+        ACCESS(Winline_many_output_ports)
+        ACCESS(Wvirtual_place_not_tunneled)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
@@ -581,6 +598,8 @@ namespace xml
         WARN(backup_file)
         WARN(duplicate_external_function)
         WARN(property_unknown)
+        WARN(inline_many_output_ports)
+        WARN(virtual_place_not_tunneled)
         WARN(shadow_function)
 
 #undef WARN
@@ -761,6 +780,16 @@ namespace xml
             ( _OWproperty_unknown.c_str()
             , BOOLVAL(Wproperty_unknown)
             , "warn when a property is unknown"
+            )
+            ( _OWinline_many_output_ports.c_str()
+            , BOOLVAL(Winline_many_output_ports)
+            , "warn when a transition with more than one connected output"
+              " port is inlined. This could lead to problems when the number"
+              " of tokens is not the same on all output ports."
+            )
+            ( _OWvirtual_place_not_tunneled.c_str()
+            , BOOLVAL(Wvirtual_place_not_tunneled)
+            , "warn when a virtual place is not tunneled"
             )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)

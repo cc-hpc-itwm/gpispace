@@ -1,7 +1,13 @@
 <defun>
+  <properties name="pnetc">
+    <properties name="warning">
+      <property key="inline-many-output-ports" value="off"/>
+    </properties>
+  </properties>
   <in name="assigned_package" type="assigned_package" place="assigned_package"/>
   <out name="assigned_package" type="assigned_package" place="loaded_package"/>
   <out name="trigger" type="control" place="trigger"/>
+  <tunnel name="config" type="config" place="config"/>
 
   <net>
 

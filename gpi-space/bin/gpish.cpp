@@ -1230,20 +1230,26 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
 path_list_t collect_sockets (fs::path const & prefix)
 {
   namespace fs = boost::filesystem;
-  fs::path socket_path (prefix);
-  socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
+
+  std::string file_name_prefix;
+  file_name_prefix += prefix.string();
+  file_name_prefix += "/S-gpi-space";
+  file_name_prefix += ".";
+  file_name_prefix += boost::lexical_cast<std::string>(getuid());
 
   path_list_t paths;
-  if (!fs::exists (socket_path))
+  if (!fs::exists (prefix))
     return paths;
 
   fs::directory_iterator end_itr;
-  for ( fs::directory_iterator itr (socket_path)
+  for ( fs::directory_iterator itr (prefix)
       ; itr != end_itr
       ; ++itr
       )
   {
-    if (fs::is_other (itr->status()))
+    if ( (itr->path().string().find(file_name_prefix) == 0)
+       && fs::is_other (itr->status())
+       )
     {
       paths.push_back (itr->path());
     }

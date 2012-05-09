@@ -211,6 +211,8 @@ namespace xml
 
         conditions_type cond;
 
+        requirements_type requirements;
+
         fhg::util::maybe<petri_net::prio_t> priority;
 
         fhg::util::maybe<bool> finline;
@@ -243,6 +245,11 @@ namespace xml
             {
               throw error::duplicate_connect ("out", connect.name, name, path);
             }
+        }
+
+        void push_inout (const connect_type& connect)
+        {
+          push_in (connect); push_out (connect);
         }
 
         void push_read (const connect_type & connect)
@@ -383,8 +390,12 @@ namespace xml
           // typecheck connect.place.type vs connect.port.type
           if (place.type != port.type)
             {
-              throw error::connect_type_error<port_type, place_type>
-                (direction, name, port, place, path);
+              throw error::connect_type_error ( direction
+                                              , name
+                                              , port
+                                              , place
+                                              , path
+                                              );
             }
         };
 
@@ -527,6 +538,8 @@ namespace xml
                         , trans.cond.begin()
                         , trans.cond.end()
                         );
+
+        fun.requirements.join (trans.requirements);
 
         util::property::join (state, fun.prop, trans.prop);
 
@@ -753,14 +766,33 @@ namespace xml
                   }
               }
 
+            std::size_t num_outport (0);
+
             for ( connections_type::const_iterator connect (trans.out().begin())
                 ; connect != trans.out().end()
-                ; ++connect
+                ; ++connect, ++num_outport
                 )
               {
                 trans_out.add_connections ()
                   (connect->port, get_pid (pids, connect->place), connect->prop)
                   ;
+              }
+
+            if (num_outport > 1)
+              {
+                const std::string
+                  key ("pnetc.warning.inline-many-output-ports");
+                const boost::optional<const ::we::type::property::value_type&>
+                  warning_switch (fun.prop.get_maybe_val (key));
+
+                if (!warning_switch || *warning_switch != "off")
+                  {
+                    state.warn ( warning::inline_many_output_ports
+                                 ( trans.name
+                                 , state.file_in_progress()
+                                 )
+                               );
+                  }
               }
 
             const tid_t tid_out (we_net.add_transition (trans_out));
@@ -983,6 +1015,7 @@ namespace xml
           s.attr ("internal", t.internal);
 
           ::we::type::property::dump::dump (s, t.prop);
+          ::xml::parse::type::dump::dump (s, t.requirements);
 
           boost::apply_visitor (visitor::transition_dump (s), t.f);
 

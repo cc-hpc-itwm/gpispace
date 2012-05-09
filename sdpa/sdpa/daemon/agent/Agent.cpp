@@ -67,7 +67,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   //put the job into the state Finished
   Job::ptr_t pJob;
   try {
-      pJob = ptr_job_man_->findJob(pEvt->job_id());
+      pJob = jobManager()->findJob(pEvt->job_id());
       pJob->JobFinished(pEvt);
   }
   catch(JobNotFoundException const &)
@@ -93,7 +93,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		}
 		catch(QueueFull const &)
 		{
-			SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+			SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFinishedEvent");
 		}
 		catch(seda::StageNotFound const &)
 		{
@@ -128,12 +128,12 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 
 		  DLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
-		  ptr_workflow_engine_->finished(actId, output);
+		  workflowEngine()->finished(actId, output);
 
 
 		  try {
-                    DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
-			  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
+			  DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
+			  scheduler()->deleteWorkerJob( worker_id, pJob->id() );
 		  }
 		  catch(WorkerNotFoundException const &)
 		  {
@@ -147,8 +147,8 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 		  try {
 			  //delete it also from job_map_
-                    DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-			  ptr_job_man_->deleteJob(pEvt->job_id());
+			  DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
+			  jobManager()->deleteJob(pEvt->job_id());
 		  }
 		  catch(JobNotDeletedException const &)
 		  {
@@ -174,7 +174,7 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 	JobId id(wfid);
 	Job::ptr_t pJob;
 	try {
-		pJob = ptr_job_man_->findJob(id);
+		pJob = jobManager()->findJob(id);
 	}
 	catch(JobNotFoundException const &){
 		SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
@@ -217,7 +217,7 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 	}
 	catch(QueueFull const &)
 	{
-		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+		SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFinishedEvent");
 		return false;
 	}
 	catch(seda::StageNotFound const &)
@@ -245,7 +245,7 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
 	JobId job_id(wfid);
 	Job::ptr_t pJob;
 	try {
-		pJob = ptr_job_man_->findJob(job_id);
+		pJob = jobManager()->findJob(job_id);
 	}
 	catch(JobNotFoundException const &)
 	{
@@ -294,7 +294,7 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
 	}
 	catch(QueueFull const &)
 	{
-		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+		SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFinishedEvent");
 		return false;
 	}
 	catch(seda::StageNotFound const &)
@@ -326,6 +326,15 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
   SDPA_LOG_INFO("handleJobFailed(" << pEvt->job_id() << ")");
 
+  // if the event comes from the workflow engine (e.g. submission failed,
+  // see the scheduler
+
+  if( pEvt->from() == sdpa::daemon::WE )
+  {
+	  failed(pEvt->job_id(), pEvt->result());
+	  return;
+  }
+
   // send a JobFailedAckEvent back to the worker/slave
   JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent( name()
 																  , pEvt->from()
@@ -337,7 +346,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
   //put the job into the state Failed
   Job::ptr_t pJob;
   try {
-      pJob = ptr_job_man_->findJob(pEvt->job_id());
+      pJob = jobManager()->findJob(pEvt->job_id());
       pJob->JobFailed(pEvt);
   }
   catch(JobNotFoundException const &)
@@ -363,7 +372,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		}
 		catch(QueueFull const &)
 		{
-			SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
+			SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFailedEvent");
 		}
 		catch(seda::StageNotFound const &)
 		{
@@ -398,12 +407,12 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		  if( hasWorkflowEngine() )
 		  {
 			  DMLOG(TRACE, "Inform WE that the activity "<<actId<<" failed");
-			  ptr_workflow_engine_->failed(actId, output);
+			  workflowEngine()->failed(actId, output);
 		  }
 
 		  try {
 			  DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
-			  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
+			  scheduler()->deleteWorkerJob( worker_id, pJob->id() );
 		  }
 		  catch(WorkerNotFoundException const &)
 		  {
@@ -420,7 +429,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			  try {
 				  //delete it also from job_map_
 				  DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-				  ptr_job_man_->deleteJob(pEvt->job_id());
+				  jobManager()->deleteJob(pEvt->job_id());
 			  }
 			  catch(JobNotDeletedException const &)
 			  {
@@ -447,7 +456,7 @@ bool Agent::failed(const id_type & wfid, const result_type & result)
 	JobId id(wfid);
 	Job::ptr_t pJob;
 	try {
-		pJob = ptr_job_man_->findJob(id);
+		pJob = jobManager()->findJob(id);
 	}
 	catch(JobNotFoundException const &)
 	{
@@ -489,7 +498,7 @@ bool Agent::failed(const id_type & wfid, const result_type & result)
 	}
 	catch(QueueFull const &)
 	{
-		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
+		SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFailedEvent");
 		return false;
 	}
 	catch(seda::StageNotFound const &)
@@ -516,19 +525,19 @@ void Agent::cancelNotRunning (sdpa::job_id_t const & job)
 {
   try
   {
-    Job::ptr_t pJob(ptr_job_man_->findJob(job));
+    Job::ptr_t pJob(jobManager()->findJob(job));
 
     // update the job status to "Cancelled" we don't have an ack
     sdpa::events::CancelJobAckEvent cae;
     pJob->CancelJobAck(&cae);
-    ptr_scheduler_->delete_job (job);
+    scheduler()->delete_job (job);
 
     try
     {
     	if(hasWorkflowEngine())
-    		ptr_workflow_engine_->cancelled(job);
+    		workflowEngine()->cancelled(job);
 
-    	ptr_job_man_->deleteJob(job);
+    	jobManager()->deleteJob(job);
     }
     catch (std::exception const & ex)
     {
@@ -549,7 +558,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
   try
   {
-    Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+    Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
 
     // change the job status to "Cancelling"
     pJob->CancelJob(pEvt);
@@ -589,7 +598,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     LOG(TRACE, "Propagate cancel job event downwards.");
     try
     {
-      sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
+    	sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
 
         SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
         CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
@@ -624,7 +633,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
     try
     {
-        Job::ptr_t pJob(ptr_job_man_->findJob(pEvt->job_id()));
+        Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
 
         // update the job status to "Cancelled"
         pJob->CancelJobAck(pEvt);
@@ -649,7 +658,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
             try
             {
-                ptr_job_man_->deleteJob(pEvt->job_id());
+                jobManager()->deleteJob(pEvt->job_id());
             }
             catch(const JobNotDeletedException&)
             {
@@ -662,7 +671,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
 
         try {
-            ptr_workflow_engine_->cancelled(pEvt->job_id());
+            workflowEngine()->cancelled(pEvt->job_id());
         }
         catch (std::exception const & ex)
         {
@@ -673,7 +682,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         Worker::worker_id_t worker_id = pEvt->from();
         try {
             LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
-            ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
+            scheduler()->deleteWorkerJob(worker_id, pEvt->job_id());
         }
         catch (const WorkerNotFoundException&)
         {
@@ -694,7 +703,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         // delete the job completely from the job manager
         try
         {
-            ptr_job_man_->deleteJob(pEvt->job_id());
+            jobManager()->deleteJob(pEvt->job_id());
         }
         catch(const JobNotDeletedException&)
         {
@@ -714,16 +723,18 @@ void Agent::backup( std::ostream& ofs )
         oa.register_type(static_cast<JobManager*>(NULL));
         oa.register_type(static_cast<JobImpl*>(NULL));
         oa.register_type(static_cast<JobFSM*>(NULL));
-        oa << ptr_job_man_;
+        //oa << ptr_job_man_;
+        backupJobManager(oa);
 
         oa.register_type(static_cast<AgentScheduler*>(NULL));
         oa.register_type(static_cast<SchedulerImpl*>(NULL));
-        oa<<ptr_scheduler_;
+        //oa<<ptr_scheduler_;
+        backupScheduler(oa);
 
         /*oa.register_type(static_cast<T*>(NULL));
         oa << ptr_workflow_engine_;*/
         oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
-        oa << m_listSubscribers;
+        //oa << m_listSubscribers;
     }
     catch(exception &e) {
         cout <<"Exception occurred: "<< e.what() << endl;
@@ -739,14 +750,14 @@ void Agent::recover( std::istream& ifs )
 		ia.register_type(static_cast<JobManager*>(NULL));
 		ia.register_type(static_cast<JobImpl*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
-		ia>>ptr_job_man_;
+		recoverJobManager(ia);
 
 		// probably makes no sense to recover the scheduler
 		// since the workflow engine cannot be recovered
 
 		ia.register_type(static_cast<AgentScheduler*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		ia>>ptr_scheduler_;
+		recoverScheduler(ia);
 
 		// should ignore the workflow engine recovery,
 		// since it is not always possible to recover it
@@ -755,13 +766,7 @@ void Agent::recover( std::istream& ifs )
         ia >> ptr_workflow_engine_;*/
         ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
         SDPA_LOG_INFO("The list of recoverd masters is: ");
-        lock_type lock(mtx_master_);
-        BOOST_FOREACH(sdpa::MasterInfo& m, m_arrMasterInfo)
-        {
-        	SDPA_LOG_INFO(m.name());
-        }
-
-        ia >> m_listSubscribers;
+        //ia >> m_listSubscribers;
 	}
 	catch(exception &e) {
 		cout <<"Exception occurred: " << e.what() << endl;

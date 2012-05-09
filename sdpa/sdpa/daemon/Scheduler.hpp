@@ -57,7 +57,7 @@ namespace daemon {
 	 virtual void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&) = 0;
 
 	 virtual size_t numberOfWorkers() = 0;
-	 virtual void feed_workers()= 0;
+	 virtual void feedWorkers()= 0;
 
 	 //virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& ) = 0;
 	 virtual void removeRecoveryInconsistencies() = 0;
@@ -68,7 +68,8 @@ namespace daemon {
 
 	 virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) = 0;
 	 virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException) = 0;
-	 virtual void getWorkerCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
+	 virtual void getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
+	 virtual void getWorkerCapabilities(const sdpa::worker_id_t&, sdpa::capabilities_set_t& cpbset) = 0;
 
 	 virtual void schedule(const sdpa::job_id_t& jobId) = 0;
 	 virtual bool schedule_to(const sdpa::job_id_t&, const Worker::ptr_t& pWorker) = 0;
@@ -76,10 +77,11 @@ namespace daemon {
 	 virtual void schedule_remote(const sdpa::job_id_t &job) = 0;
 	 virtual void schedule_local(const sdpa::job_id_t &job) = 0;
 
+	 virtual void reschedule(const sdpa::job_id_t &job) = 0;
      virtual void reschedule(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job) = 0;
 	 virtual void reschedule(const Worker::worker_id_t& ) throw (WorkerNotFoundException) = 0;
 	 virtual void reschedule(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue ) = 0;
-	 virtual void reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id ) = 0;
+	 virtual void reassign(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id ) = 0;
 
 	 virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
 	 virtual void delete_job(const sdpa::job_id_t & job_id) = 0;

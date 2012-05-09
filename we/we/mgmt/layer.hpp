@@ -804,13 +804,10 @@ namespace we { namespace mgmt {
 
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
 
-        // TO DO: set here the requirements !!!!
-        typedef requirement_t<std::string> capability_t;
-        typedef std::list<capability_t> required_capabilities_t;
-        required_capabilities_t required_capabilities;
-        // TODO: transport the requirements from the XML to the activity, then get them from there
-        //        required_capabilities.push_back (capability_t ("FOO", true));
-        ext_submit ( ext_id, policy::codec::encode (ext_act), required_capabilities);
+        ext_submit ( ext_id
+                   , policy::codec::encode (ext_act)
+                   , ext_act.transition().requirements()
+                   );
       }
 
       // WORK HERE: rewrite!
@@ -1061,7 +1058,12 @@ namespace we { namespace mgmt {
           desc->failed();
 
           DLOG(WARN, "failed (" << desc->name() << ")-" << desc->id());
-          sig_failed (this, internal_id, policy::codec::encode(desc->activity()));
+
+          if (sig_failed.connected())
+            sig_failed ( this
+                       , internal_id
+                       , policy::codec::encode(desc->activity())
+                       );
 
           if (desc->has_parent ())
           {
@@ -1088,7 +1090,7 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found<internal_id_type> &)
         {
-          LOG(WARN, "got finished notification for old activity: " << internal_id);
+          LOG(WARN, "got failed notification for old activity: " << internal_id);
         }
       }
 
@@ -1122,10 +1124,11 @@ namespace we { namespace mgmt {
             throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + fhg::util::show (*desc));
           }
 
-          sig_cancelled ( this
-                        , internal_id
-                        , policy::codec::encode(desc->activity())
-                        );
+          if (sig_cancelled.connected())
+            sig_cancelled ( this
+                          , internal_id
+                          , policy::codec::encode(desc->activity())
+                          );
 
           remove_activity (desc);
         }
@@ -1217,7 +1220,9 @@ namespace we { namespace mgmt {
       {
         lock_t (mutex_);
         typename activities_t::iterator a = activities_.find(id);
-        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+fhg::util::show(id)+") failed!", id);
+        if (a == activities_.end())
+          throw exception::activity_not_found<internal_id_type>
+            ("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }
 
@@ -1225,7 +1230,9 @@ namespace we { namespace mgmt {
       {
         lock_t (mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
-        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+fhg::util::show(id)+") failed!", id);
+        if (a == activities_.end())
+          throw exception::activity_not_found<internal_id_type>
+            ("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }
 

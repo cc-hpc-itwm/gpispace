@@ -10,26 +10,20 @@ class KeyValueStorePlugin : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
-    try
-    {
-      const std::string host(fhg_kernel()->get("host", "localhost"));
-      const std::string port(fhg_kernel()->get("port", "2439"));
+    m_host = fhg_kernel()->get("host", "localhost");
+    m_port = fhg_kernel()->get("port", "2439");
 
-      LOG(INFO, "initializing KeyValueStore @ ["<<host<<"]:"<<port);
+    MLOG( INFO
+        , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
+        );
 
-      fhg::com::kvs::global::get_kvs_info().init( host
-                                                , port
-                                                , boost::posix_time::seconds(2)
-                                                , 1
-                                                );
-      fhg::com::kvs::global::get_kvs_info().start();
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "could not connect to KVS: " << ex.what());
-      LOG(INFO, "HINT: try setting plugin.kvs.host and/or plugin.kvs.port");
-      FHG_PLUGIN_FAILED(ECONNREFUSED);
-    }
+    fhg::com::kvs::global::get_kvs_info().init( m_host
+                                              , m_port
+                                              , boost::posix_time::seconds(2)
+                                              , 1
+                                              );
+
+    async_start();
 
     FHG_PLUGIN_STARTED();
   }
@@ -65,11 +59,36 @@ public:
   {
     return fhg::com::kvs::inc(k, step);
   }
+
+private:
+  void async_start ()
+  {
+    try
+    {
+      fhg::com::kvs::global::get_kvs_info().start();
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(ERROR, "could not connect to KVS: " << ex.what());
+      LOG(INFO, "HINT: try setting plugin.kvs.host and/or plugin.kvs.port");
+
+      fhg_kernel()->schedule ( "kvs_connect"
+                             , boost::bind ( &KeyValueStorePlugin::async_start
+                                           , this
+                                           )
+                             , 10
+                             );
+    }
+  }
+
+  std::string m_host;
+  std::string m_port;
 };
 
 
 EXPORT_FHG_PLUGIN( kvs
                  , KeyValueStorePlugin
+                 , "kvs"
                  , "provides access to a key value store"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.2"

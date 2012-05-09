@@ -59,6 +59,7 @@ public:
 
 EXPORT_FHG_PLUGIN( fvm_fake
                  , FvmFakePluginImpl
+                 , ""
                  , "provides a fake implementation for the deprecated fvm-pc library"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

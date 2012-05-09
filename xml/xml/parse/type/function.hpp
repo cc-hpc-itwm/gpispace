@@ -141,7 +141,10 @@ namespace xml
 
         void operator () (const expression_type &) const { return; }
         void operator () (const mod_type & m) const { m.sanity_check (fun); }
-        void operator () (const Net & net) const { net.sanity_check (state); }
+        void operator () (const Net & net) const
+        {
+          net.sanity_check (state, fun);
+        }
       };
 
       // ******************************************************************* //
@@ -249,6 +252,8 @@ namespace xml
         typedef typename we_transition_type::mod_type we_mod_type;
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
 
+        typedef typename we_transition_type::requirement_t we_requirement_type;
+
         typedef typename we_transition_type::pid_t pid_t;
 
         typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
@@ -306,6 +311,22 @@ namespace xml
             }
         }
 
+        void add_requirements ( we_transition_type & trans
+                              , xml::parse::type::requirements_type const & req
+                              ) const
+        {
+          for ( requirements_type::const_iterator r (req.begin())
+              ; r != req.end()
+              ; ++r
+              )
+          {
+            trans.add_requirement (we_requirement_type ( r->first
+                                                       , r->second
+                                                       )
+                                  );
+          }
+        }
+
         std::string name (void) const
         {
           if (fun.name.isNothing())
@@ -348,6 +369,8 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
           add_ports (trans, fun.out(), we::type::PORT_OUT);
+          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL);
+          add_requirements (trans, fun.requirements);
 
           return trans;
         }
@@ -364,6 +387,8 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
           add_ports (trans, fun.out(), we::type::PORT_OUT);
+          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL);
+          add_requirements (trans, fun.requirements);
 
           return trans;
         }
@@ -396,6 +421,8 @@ namespace xml
 
           add_ports (trans, fun.in(), we::type::PORT_IN, pid_of_place);
           add_ports (trans, fun.out(), we::type::PORT_OUT, pid_of_place);
+          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL, pid_of_place);
+          add_requirements (trans, fun.requirements);
 
           return trans;
         }
@@ -420,6 +447,7 @@ namespace xml
 
         unique_port_type _in;
         unique_port_type _out;
+        unique_port_type _tunnel;
 
         // ***************************************************************** //
 
@@ -492,6 +520,7 @@ namespace xml
 
         const ports_type & in (void) const { return _in.elements(); }
         const ports_type & out (void) const { return _out.elements(); }
+        const ports_type& tunnel (void) const { return _tunnel.elements(); }
 
         bool get_port_in (const std::string & name, port_type & port) const
         {
@@ -523,6 +552,11 @@ namespace xml
           return is_known_port_in (name) && is_known_port_out (name);
         }
 
+        bool is_known_tunnel (const std::string& name) const
+        {
+          return _tunnel.is_element (name);
+        }
+
         // ***************************************************************** //
 
         std::string condition (void) const
@@ -537,6 +571,16 @@ namespace xml
 
         void push_in (const port_type & p) { push (p, _in, _out, "in"); }
         void push_out (const port_type & p) { push (p, _out, _in, "out"); }
+        void push_inout (const port_type & p) { push_in (p); push_out (p); }
+        void push_tunnel (const port_type& p)
+        {
+          port_type old;
+
+          if (!_tunnel.push (p, old))
+            {
+              throw error::duplicate_port ("tunnel", p.name, path);
+            }
+        }
 
         // ***************************************************************** //
 
@@ -678,6 +722,12 @@ namespace xml
                 (port_type_check<net_type> ("out", *port, path, state), f);
             }
 
+          BOOST_FOREACH (const port_type& port, tunnel())
+            {
+              boost::apply_visitor
+                (port_type_check<net_type> ("tunnel", port, path, state), f);
+            }
+
           boost::apply_visitor (function_type_check<net_type> (state), f);
         }
 
@@ -741,6 +791,11 @@ namespace xml
               )
             {
               port->specialize (map, state);
+            }
+
+          BOOST_FOREACH (port_type& port, _tunnel.elements())
+            {
+              port.specialize (map, state);
             }
 
           specialize_structs (map, structs, state);
@@ -1968,6 +2023,7 @@ namespace xml
 
           dumps (s, f.in().begin(), f.in().end(), "in");
           dumps (s, f.out().begin(), f.out().end(), "out");
+          dumps (s, f.tunnel().begin(), f.tunnel().end(), "tunnel");
 
           boost::apply_visitor (visitor::function_dump<net_type> (s), f.f);
 

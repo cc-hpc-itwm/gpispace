@@ -21,6 +21,7 @@ Worker::Worker(	const worker_id_t& name,
     location_(location),
     tstamp_(sdpa::util::now()),
     last_time_served_(0),
+    last_schedule_time_(0),
     timedout_(false),
     disconnected_(false)
 {
@@ -54,6 +55,7 @@ void Worker::update()
 void Worker::dispatch(const sdpa::job_id_t& jobId)
 {
   SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
+  setLastScheduleTime(sdpa::util::now());
   pending_.push(jobId);
 }
 
@@ -149,25 +151,32 @@ const sdpa::capabilities_set_t& Worker::capabilities() const
 	return capabilities_;
 }
 
-bool Worker::addCapabilities( const capabilities_set_t& cpbset )
+bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 {
 	lock_type lock(mtx_);
-	if(cpbset.empty())
-		return true;
+	if(recvCpbSet.empty())
+		return false;
 
-	bool bIsSubset = true;
-	for(sdpa::capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); ++it)
+	bool bModified = false;
+	for(sdpa::capabilities_set_t::iterator it = recvCpbSet.begin(); it != recvCpbSet.end(); ++it)
 	{
 		sdpa::capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
 		if( itwcpb == capabilities_.end() )
 		{
 			capabilities_.insert(*it);
-			//LOG( TRACE, "The worker " << name() << " gained capability: "<< *it );
-			bIsSubset = false;
+			SDPA_LOG_INFO("The worker "<<name()<<" gained the capability:"<<*it);
+			bModified = true;
 		}
+		else
+			if( itwcpb->depth()>it->depth() )
+			{
+				SDPA_LOG_INFO("Worker " << name() << ": updated the depth of the capability:\n   "<<*it<<" from "<<itwcpb->depth()<<" to "<<it->depth() );
+				const_cast<sdpa::capability_t&>(*itwcpb).setDepth(it->depth());
+				bModified = true;
+			}
 	}
 
-	return bIsSubset;
+	return bModified;
 }
 
 void Worker::removeCapabilities( const capabilities_set_t& cpbset )
@@ -181,7 +190,7 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 			capabilities_.erase(itwcpb);
 
 			//LOG( TRACE, "worker " << name() << " lost capability: "
-    			//<< *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")");
+    		//<< *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")");
 		}
 		/*else
 		{

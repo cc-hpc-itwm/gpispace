@@ -103,8 +103,6 @@ namespace sdpa {
         a_irow< Failed, 	sdpa::events::DeleteJobEvent, 		 		 	&sm::action_delete_job >,
         a_irow< Failed, 	sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
         //      +-----------+------------------------+----------+---------------------+-----
-        a_irow< Cancelling, sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
-        a_irow< Cancelling, sdpa::events::DeleteJobEvent, 					&sm::action_delete_job >,
         a_row<  Cancelling, sdpa::events::CancelJobAckEvent, 	 Cancelled, &sm::action_cancel_job_ack>,
         a_row<  Cancelling, sdpa::events::JobFinishedEvent, 	 Cancelled, &sm::action_job_finished>,
         a_row<  Cancelling, sdpa::events::JobFailedEvent, 		 Cancelled, &sm::action_job_failed>,
@@ -144,7 +142,7 @@ namespace sdpa {
           DLOG(TRACE, "State machine created: " << id);
         }
 
-        ~JobFSM()
+        virtual ~JobFSM()
         {
           DLOG(TRACE, "State machine destroyed");
         }

@@ -49,19 +49,18 @@ namespace sdpa {
 	virtual void schedule_remote(const sdpa::job_id_t&);
 	void delete_job(const sdpa::job_id_t&);
 
-	void schedule_round_robin( const sdpa::job_id_t& );
 	bool schedule_with_constraints( const sdpa::job_id_t& );
 	bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
 	bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
 	void schedule_anywhere( const sdpa::job_id_t& jobId );
 
+	void reschedule(const sdpa::job_id_t &job);
 	void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
 	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
 	void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 	void reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 
 	virtual bool has_job(const sdpa::job_id_t&);
-	virtual void start_job(const sdpa::job_id_t&);
 
 	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
 	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
@@ -86,7 +85,8 @@ namespace sdpa {
 
 	virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
 	virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
-	virtual void getWorkerCapabilities(sdpa::capabilities_set_t& cpbset);
+	virtual void getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset);
+	virtual void getWorkerCapabilities(const sdpa::worker_id_t&, sdpa::capabilities_set_t& cpbset);
 
 	virtual const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
 	virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
@@ -96,7 +96,7 @@ namespace sdpa {
 	virtual void execute(const sdpa::job_id_t& jobId); //just for testing
 	virtual void check_post_request();
 	virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
-	virtual void feed_workers();
+	virtual void feedWorkers();
 
 	void cancelWorkerJobs();
 	void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);
@@ -144,6 +144,7 @@ protected:
 
 	mutable mutex_type mtx_;
 	condition_type cond_feed_workers;
+	condition_type cond_workers_registered;
   };
 }}
 

@@ -2,6 +2,7 @@
 
   <in name="empty" type="interval" place="pre_empty"/>
   <out name="interval" type="interval" place="interval"/>
+  <tunnel name="size_wanted" type="long" place="size_wanted"/>
 
   <net>
 

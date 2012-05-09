@@ -1164,6 +1164,7 @@ private:
 
 EXPORT_FHG_PLUGIN( ufbmig_back
                  , UfBMigBackImpl
+                 , ""
                  , "provides the backend functionality for the UfBMig"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

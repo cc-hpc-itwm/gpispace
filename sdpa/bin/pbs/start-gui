@@ -1,20 +1,54 @@
 #!/bin/bash
-### avoid strange behaviour with temporary inconsistency
-### on Panasas Filesystems:
-###
-###     the test -r was sucessful but the source didn't
-###     source anything
-###
-###
-cat ~/.sdpa/state/sdpa.env >/dev/null 2>&1
 
-test -r ~/.sdpa/state/sdpa.env && source ~/.sdpa/state/sdpa.env
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $0 [options]
 
-echo "Running sdpa-gui $@ on $(hostname)" >&2
+    -h: print this help
+    -s dir: state-dir
+EOF
+}
 
-err=$(sdpa-gui $@ 2>&1)
+state_dir="$HOME/.sdpa/state"
+log_port=
+gui_port=
+
+while getopts ":hG:L:s:" opt; do
+    case $opt in
+        h)
+            usage
+            exit 0
+            ;;
+        G)
+            gui_port=$OPTARG
+            ;;
+        L)
+            log_port=$OPTARG
+            ;;
+        s)
+            state_dir="$OPTARG"
+            ;;
+        \?)
+            echo "invalid option: -$OPTARG" >&2
+            echo "try: $0 -h" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [ -r "${state_dir}/sdpa.env" ] ; then
+    source "${state_dir}/sdpa.env"
+else
+    echo >&2 "needs to be executed under SDPA"
+    exit 4
+fi
+
+echo >&2 "Running $(which sdpa-gui) $gui_port $log_port on $(hostname)"
+
+err=$(sdpa-gui $gui_port $log_port 2>&1)
 ec=$?
 if [ $ec -ne 0 ] ; then
-	echo "sdpa-gui failed: $ec: $err" >&2
-	exit $ec
+        echo >&2 "sdpa-gui failed: $ec: $err"
+        exit $ec
 fi

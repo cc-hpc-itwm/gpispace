@@ -1,6 +1,8 @@
 #ifndef FHG_COM_KVSD_HPP
 #define FHG_COM_KVSD_HPP 1
 
+#include <signal.h> /* For SIGTERM. */
+
 #include <string>
 
 #include <fhglog/fhglog.hpp>

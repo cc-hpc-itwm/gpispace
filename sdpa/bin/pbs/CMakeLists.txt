@@ -13,7 +13,6 @@ set (scripts
   stop-agent
   status-agent
   status-drts
-  send-signal
   pidof
 )
 

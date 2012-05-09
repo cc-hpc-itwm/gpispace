@@ -1,4 +1,9 @@
 <template name="quad">
+  <properties name="pnetc">
+    <properties name="warning">
+      <property key="inline-many-output-ports" value="off"/>
+    </properties>
+  </properties>
   <in name="in" type="T" place="x"/>
   <out name="one" type="T" place="one"/>
   <out name="two" type="T" place="two"/>

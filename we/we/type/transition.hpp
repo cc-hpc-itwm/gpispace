@@ -27,6 +27,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
+#include <we/type/requirement.hpp>
 
 #include <fhg/util/show.hpp>
 #include <fhg/util/xml.hpp>
@@ -35,14 +36,17 @@ namespace xml_util = ::fhg::util::xml;
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <boost/foreach.hpp>
+
+#include <boost/unordered_set.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/serialization/nvp.hpp>
-
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/version.hpp>
 
 namespace we { namespace type {
     namespace exception {
@@ -314,6 +318,9 @@ namespace we { namespace type {
       typedef typename port_map_t::iterator port_iterator;
       typedef boost::unordered_set<port_t::name_type> port_names_t;
 
+      typedef we::type::requirement_t<std::string> requirement_t;
+      typedef std::list<requirement_t> requirements_t;
+
       const static bool internal = true;
       const static bool external = false;
 
@@ -459,6 +466,7 @@ namespace we { namespace type {
         , ports_(other.ports_)
         , port_id_counter_(other.port_id_counter_)
         , prop_ (other.prop_)
+        , m_requirements (other.m_requirements)
       { }
 
       template <typename Choices>
@@ -502,6 +510,11 @@ namespace we { namespace type {
         return data_;
       }
 
+      requirements_t const & requirements (void) const
+      {
+        return m_requirements;
+      }
+
       this_type & operator=(const this_type & other)
       {
         if (this != &other)
@@ -522,6 +535,7 @@ namespace we { namespace type {
               )
             );
           prop_ = other.prop_;
+          m_requirements = other.m_requirements;
         }
         return *this;
       }
@@ -686,54 +700,42 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename Direction>
-      void add_port ( const std::string & port_name
-                    , SignatureType const & signature
+      void add_port ( const std::string & name
+                    , SignatureType const & sig
                     , Direction direction
                     , const we::type::property::type & prop
                     )
       {
-        if (direction == PORT_IN)
-          this->add_input_port (port_name, signature, prop);
-        if (direction == PORT_OUT)
-          this->add_output_port (port_name, signature, prop);
-        if (direction == PORT_READ)
-          this->add_read_port (port_name, signature, prop);
-        else
-          this->add_input_output_port (port_name, signature, prop);
+        switch (direction)
+          {
+          case PORT_IN: this->add_input_port (name, sig, prop); break;
+          case PORT_OUT: this->add_output_port (name, sig, prop); break;
+          case PORT_READ: this->add_read_port (name, sig, prop); break;
+          case PORT_IN_OUT: this->add_input_output_port (name, sig, prop);
+            break;
+          case PORT_TUNNEL: this->add_tunnel (name, sig, prop); break;
+          default: throw std::runtime_error ("STRANGE: unknown port direction");
+          }
       }
 
       template <typename SignatureType, typename Direction, typename PlaceId>
       void add_port ( const std::string & name
-                    , SignatureType const & signature
+                    , SignatureType const & sig
                     , const Direction direction
-                    , const PlaceId associated_place
+                    , const PlaceId pid
                     , const we::type::property::type & prop
                     )
       {
-        if (direction == PORT_IN)
-          this->add_input_port ( name
-                               , signature
-                               , associated_place
-                               , prop
-                               );
-        if (direction == PORT_OUT)
-          this->add_output_port ( name
-                                , signature
-                                , associated_place
-                                , prop
-                                );
-        if (direction == PORT_READ)
-          this->add_read_port ( name
-                              , signature
-                              , associated_place
-                              , prop
-                              );
-        else
-          this->add_input_output_port ( name
-                                      , signature
-                                      , associated_place
-                                      , prop
-                                      );
+        switch (direction)
+          {
+          case PORT_IN: this->add_input_port (name, sig, pid, prop); break;
+          case PORT_OUT: this->add_output_port (name, sig, pid, prop); break;
+          case PORT_READ: this->add_read_port (name, sig, pid, prop); break;
+          case PORT_IN_OUT: this->add_input_output_port (name, sig, pid, prop);
+            break;
+          case PORT_TUNNEL: this->add_tunnel (name, sig, pid, prop); break;
+          default: throw std::runtime_error ("STRANGE: unknown port direction");
+          }
       }
 
       template <typename SignatureType>
@@ -840,6 +842,48 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename PlaceId>
+      pid_t add_tunnel ( const std::string & port_name
+                       , const SignatureType & signature
+                       , const PlaceId associated_place
+                       , const we::type::property::type & prop
+                       )
+      {
+        BOOST_FOREACH (const port_map_t::value_type& p, ports_)
+          {
+            if (p.second.is_tunnel() && p.second.name() == port_name)
+              {
+                throw exception::port_already_defined ("trans: " + name() + ": tunnel " + port_name + " already defined", port_name);
+              }
+          }
+
+        const port_t port (port_name, PORT_TUNNEL, signature, associated_place, prop);
+        const port_id_t port_id (port_id_counter_++);
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType>
+      pid_t add_tunnel ( const std::string & port_name
+                       , const SignatureType & signature
+                       , const we::type::property::type & prop
+                       )
+      {
+        BOOST_FOREACH (const port_map_t::value_type& p, ports_)
+          {
+            if (p.second.is_tunnel() && p.second.name() == port_name)
+              {
+                throw exception::port_already_defined("trans: " + name() + ": tunnel " + port_name + " already defined", port_name);
+              }
+          }
+        const port_t port (port_name, PORT_OUT, signature, prop);
+        const port_id_t port_id (port_id_counter_++);
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType, typename PlaceId>
       pid_t add_output_port ( const std::string & port_name
                             , const SignatureType & signature
                             , const PlaceId associated_place
@@ -859,6 +903,8 @@ namespace we { namespace type {
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
       }
+
+
 
       template <typename SignatureType>
       void add_input_output_port ( const std::string & port_name
@@ -1082,6 +1128,16 @@ namespace we { namespace type {
         return names;
       }
 
+      void add_requirement ( requirement_t const & r )
+      {
+        m_requirements.push_back (r);
+      }
+
+      void del_requirement ( requirement_t const & r )
+      {
+        m_requirements.remove (r);
+      }
+
     private:
       std::string name_;
       data_type data_;
@@ -1095,6 +1151,8 @@ namespace we { namespace type {
 
       we::type::property::type prop_;
 
+      requirements_t m_requirements;
+
     private:
       template <typename P, typename E, typename T>
       friend std::ostream & operator<< ( std::ostream &
@@ -1103,7 +1161,7 @@ namespace we { namespace type {
 
       friend class boost::serialization::access;
       template <typename Archive>
-      void save(Archive & ar, const unsigned int) const
+      void save(Archive & ar, const unsigned int version) const
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
@@ -1114,10 +1172,11 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
+        ar & BOOST_SERIALIZATION_NVP(m_requirements);
       }
 
       template <typename Archive>
-      void load(Archive & ar, const unsigned int)
+      void load(Archive & ar, const unsigned int version)
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
@@ -1136,6 +1195,11 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
+
+        if (version > 0)
+        {
+          ar & BOOST_SERIALIZATION_NVP(m_requirements);
+        }
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
@@ -1357,6 +1421,18 @@ namespace we { namespace type {
         }
       };
     }
+  }
+}
+
+namespace boost {
+  namespace serialization {
+    template <typename P, typename E, typename T>
+    struct version< we::type::transition_t<P,E,T> >
+    {
+      typedef mpl::int_<1> type;
+      typedef mpl::integral_c_tag tag;
+      BOOST_STATIC_CONSTANT(int, value = version::type::value);
+    };
   }
 }
 

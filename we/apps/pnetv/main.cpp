@@ -1,6 +1,8 @@
 #include <cstdlib> /* EXIT_XXXX constants. */
 #include <iostream>
 
+#include <boost/program_options.hpp>
+
 #include <jpn/common/Foreach.h>
 #include <jpn/common/Unreachable.h>
 
@@ -8,28 +10,74 @@
 #include <jpna/PetriNet.h>
 #include <jpna/Verification.h>
 
+enum {
+    EXIT_INVALID_ARGUMENTS = EXIT_FAILURE,
+    EXIT_IO_ERROR,
+    EXIT_MAYBE_LOOPS,
+    EXIT_LOOPS
+};
+
 int main(int argc, char *argv[]) {
-    if (argc <= 1) {
-        std::cout << "Usage: pnetv FILE..." << std::endl
-                  << "Load compiled Petri nets from given files and check them for termination." << std::endl
-                  << "Possible exit codes:" << std::endl
-                  << " 0 - termination is guaranteed" << std::endl
-                  << " 1 - wrong arguments" << std::endl
-                  << " 2 - I/O error" << std::endl
-                  << " 3 - loops are possible" << std::endl
-                  << " 4 - loops are guaranteed" << std::endl;
-        return 1;
+    namespace po = boost::program_options;
+
+    std::vector<std::string> inputFiles;
+
+    po::options_description options("options");
+    options.add_options()
+        ( "help,h", "this message")
+        ( "input,i"
+          , po::value(&inputFiles)
+          , "input file name, - for stdin"
+        );
+
+    po::positional_options_description positional;
+    positional.add("input", -1);
+
+    po::variables_map variables;
+    po::store(po::command_line_parser(argc, argv)
+        . options(options).positional(positional).run()
+        , variables
+    );
+    po::notify(variables);
+
+    if (variables.count("help") || inputFiles.empty()) {
+        std::cout << "usage: pnetv [options] FILE..." << std::endl
+                  << std::endl
+                  << options
+                  << std::endl
+                  << "possible exit codes:" << std::endl
+                  << " " << EXIT_SUCCESS << " - termination is guaranteed" << std::endl
+                  << " " << EXIT_INVALID_ARGUMENTS << " - invalid arguments" << std::endl
+                  << " " << EXIT_IO_ERROR << " - I/O error" << std::endl
+                  << " " << EXIT_MAYBE_LOOPS << " - infinite loops are possible" << std::endl
+                  << " " << EXIT_LOOPS << " - infinite loops are guaranteed" << std::endl
+                  << std::endl
+                  << "  For every file, for each subnet in this file, pnetv checks whether this" << std::endl
+                  << "subnet terminates and prints the result on a separate line. This line" << std::endl
+                  << "includes the name of the file and the path to the subnet separated by" << std::endl
+                  << "double colon (::) as well as the verification result. The latter is either" << std::endl
+                  << "TERMINATES, MAYBE_LOOPS (there are only loops involving transitions having" << std::endl
+                  << "conditions), or LOOPS (there are loops involving only transitions without" << std::endl
+                  << "conditions). In the latter two cases, the names of transitions leading to" << std::endl
+                  << "the loop (init:) and constituting the loop (loop:) are printed." << std::endl
+                  << "  The `fhg.pnetv.firings_limit' transition property sets the maximum number" << std::endl
+                  << "of times a transition can fire. False positives can be eliminated by setting" << std::endl
+                  << "this property to (typically) 1 for a transition involved into discovered loop." << std::endl;
+
+        return inputFiles.empty() ? EXIT_INVALID_ARGUMENTS : EXIT_SUCCESS;
     }
 
-    int exitCode = 0;
+    int exitCode = EXIT_SUCCESS;
 
-    for (int i = 1; i < argc; ++i) {
+    foreach(const std::string &filename, inputFiles) {
         boost::ptr_vector<jpna::PetriNet> petriNets;
 
-        const char *filename = argv[i];
-
         try {
-            jpna::parse(filename, petriNets);
+            if (filename == "-") {
+                jpna::parse("stdin", std::cin, petriNets);
+            } else {
+                jpna::parse(filename.c_str(), petriNets);
+            }
 
             foreach (const jpna::PetriNet &petriNet, petriNets) {
                 std::cout << petriNet.name() << ": ";
@@ -38,23 +86,27 @@ int main(int argc, char *argv[]) {
                 std::cout << result << std::endl;
 
                 switch (result.result()) {
-                    case jpna::VerificationResult::TERMINATES:
+                    case jpna::VerificationResult::TERMINATES: {
                         break;
-                    case jpna::VerificationResult::MAYBE_LOOPS:
-                        if (exitCode == 0) {
-                            exitCode = 3;
+                    }
+                    case jpna::VerificationResult::MAYBE_LOOPS: {
+                        if (exitCode == EXIT_SUCCESS) {
+                            exitCode = EXIT_MAYBE_LOOPS;
                         }
                         break;
-                    case jpna::VerificationResult::LOOPS:
-                        exitCode = 4;
+                    }
+                    case jpna::VerificationResult::LOOPS: {
+                        exitCode = EXIT_LOOPS;
                         break;
-                    default:
+                    }
+                    default: {
                         jpn::unreachable();
+                    }
                 }
             }
         } catch (const std::exception &e) {
             std::cerr << filename << ":" << e.what() << std::endl;
-            return 2;
+            return EXIT_IO_ERROR;
         }
     }
 

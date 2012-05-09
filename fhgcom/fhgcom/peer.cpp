@@ -467,7 +467,7 @@ namespace fhg
 
       if (! ec)
       {
-        connection_data_t & cd = connections_.at (a);
+        connection_data_t & cd = connections_.find (a)->second;
 
         LOG( TRACE
              , my_addr_ << " (" << name_ << ")"
@@ -497,13 +497,21 @@ namespace fhg
       }
       else
       {
-        LOG(WARN, "connection to " << a << " could not be established: " << ec);
+        DLOG(WARN, "connection to " << a << " could not be established: " << ec);
 
         if (connections_.find (a) != connections_.end())
-          handle_error (connections_.at (a).connection, ec);
-        // TODO: remove connection data
-        //     call handler for all o_queue elements
-        //     call handler for all i_queue elements
+        {
+          connection_data_t & cd = connections_.find (a)->second;
+
+          handle_error (cd.connection, ec);
+          while (! cd.o_queue.empty())
+          {
+            to_send_t & to_send = cd.o_queue.front();
+            using namespace boost::system;
+            to_send.handler (errc::make_error_code(errc::connection_refused));
+            cd.o_queue.pop_front();
+          }
+        }
       }
     }
 
@@ -735,8 +743,6 @@ namespace fhg
 
       DLOG(TRACE, "got user message from: " << m->header.src);
 
-      to_recv_t to_recv;
-
       {
         lock_type lock (mutex_);
         if (m_to_recv.empty())
@@ -749,15 +755,15 @@ namespace fhg
         }
         else
         {
-          to_recv = m_to_recv.front();
+          to_recv_t to_recv = m_to_recv.front();
           m_to_recv.pop_front();
           *to_recv.message = *m;
           delete m;
+
+          using namespace boost::system;
+          to_recv.handler(errc::make_error_code (errc::success));
         }
       }
-
-      using namespace boost::system;
-      to_recv.handler(errc::make_error_code (errc::success));
     }
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
@@ -770,10 +776,10 @@ namespace fhg
       {
         connection_data_t & cd = connections_[c->remote_address()];
 
-        LOG_IF( WARN
-              , ec && (ec.value() != boost::asio::error::eof)
-              , "error on connection to " << cd.name << " - closing it: cat=" << ec.category().name() << " val=" << ec.value() << " txt=" << ec.message()
-              );
+        DLOG_IF( WARN
+               , ec && (ec.value() != boost::asio::error::eof)
+               , "error on connection to " << cd.name << " - closing it: cat=" << ec.category().name() << " val=" << ec.value() << " txt=" << ec.message()
+               );
 
         while (! cd.o_queue.empty())
         {

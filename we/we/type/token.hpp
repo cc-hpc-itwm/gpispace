@@ -113,31 +113,26 @@ namespace token
   }
 
   template<typename NET>
-  bool put ( NET & net
+  void put ( NET & net
            , const petri_net::pid_t & pid
            , const value::type & v = control()
            )
   {
-    if (net.capacity_exceeded (pid))
-      {
-        throw std::runtime_error ("token::put: capacity exceeded");
-      }
-
-    return net.put_token ( pid
-                         , type ( place::name<NET> (net, pid)
-                                , place::signature<NET> (net, pid)
-                                , v
-                                )
-                         );
+    net.put_token ( pid
+                  , type ( place::name<NET> (net, pid)
+                         , place::signature<NET> (net, pid)
+                         , v
+                         )
+                  );
   }
 
   template<typename NET>
-  bool put ( NET & net
+  void put ( NET & net
            , const petri_net::pid_t & pid
            , const type & t
            )
   {
-    return put (net, pid, t.value);
+    put (net, pid, t.value);
   }
 }
 

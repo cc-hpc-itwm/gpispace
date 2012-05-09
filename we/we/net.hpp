@@ -24,6 +24,7 @@
 #include <boost/optional.hpp>
 
 #include <boost/function.hpp>
+#include <boost/foreach.hpp>
 
 #include <boost/serialization/nvp.hpp>
 
@@ -33,27 +34,35 @@ namespace petri_net
 {
   namespace exception
   {
-    class transition_not_enabled : public std::runtime_error
+    class generic : public std::runtime_error
+    {
+    public:
+      explicit generic (const std::string& msg)
+        : std::runtime_error ("net: " + msg)
+      {}
+    };
+
+    class transition_not_enabled : public generic
     {
     public:
       explicit transition_not_enabled (const std::string & msg)
-        : std::runtime_error(msg)
+        : generic ("transition_not_enabled: " + msg)
       {}
-      ~transition_not_enabled() throw () {}
     };
 
-    class no_such : public std::runtime_error
+    class capacity_exceeded : public generic
     {
     public:
-      explicit no_such (const std::string & msg) : std::runtime_error (msg) {}
-      ~no_such () throw () {}
+      explicit capacity_exceeded ()
+        : generic ("capacity exceeded")
+      {}
     };
 
-    class capacity_unbounded : public std::runtime_error
+    class no_such : public generic
     {
     public:
-      explicit capacity_unbounded (const std::string & msg)
-        : std::runtime_error ("capacity unbounded: " + msg)
+      explicit no_such (const std::string & msg)
+        : generic ("no_such: " + msg)
       {}
     };
   }
@@ -79,6 +88,34 @@ namespace petri_net
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
   typedef connection<edge_type, tid_t, pid_t> connection_t;
+
+  namespace detail
+  {
+    struct capacity_and_placeholder_type
+    {
+    private:
+      capacity_t _left;
+      capacity_t _used;
+    public:
+      capacity_and_placeholder_type () : _left (0), _used (0) {}
+      explicit capacity_and_placeholder_type (const capacity_t& cap)
+        : _left (cap)
+        , _used (0)
+      {}
+      const capacity_t& left () const { return _left; }
+      capacity_t capacity () const { return _left + _used; }
+      void extract () { assert (_left > 0); --_left; ++_used; }
+      void put () { if (_used > 0) { --_used; ++_left; } }
+
+      friend class boost::serialization::access;
+      template<typename Archive>
+      void serialize (Archive & ar, const unsigned int)
+      {
+        ar & BOOST_SERIALIZATION_NVP(_left);
+        ar & BOOST_SERIALIZATION_NVP(_used);
+      }
+    };
+  }
 
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
 // single map<tid_t,(X,Y)>?
@@ -145,7 +182,9 @@ private:
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
   typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
 
-  typedef boost::unordered_map<pid_t,capacity_t> capacity_map_t;
+  typedef boost::unordered_map< pid_t
+                              , detail::capacity_and_placeholder_type
+                              > capacity_map_t;
 
   // *********************************************************************** //
 
@@ -211,7 +250,6 @@ private:
                      , const COL & c
                      , adjacency::table<ROW,COL,eid_t> & m
                      )
-    throw (bijection::exception::already_there)
   {
     if (m.get_adjacent (r, c) != eid_invalid)
       throw bijection::exception::already_there ("adjacency");
@@ -227,7 +265,6 @@ private:
   const typename MAP::mapped_type & get_fun ( const MAP & map
                                             , const tid_t & tid
                                             ) const
-    throw (exception::no_such)
   {
     const typename MAP::const_iterator f (map.find (tid));
 
@@ -313,8 +350,7 @@ private:
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       recalculate_in_enabled (*t, pid, t());
 
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
+    recalculate_out_enabled_by_place (pid);
   }
 
   void recalculate_out_enabled_by_place (const pid_t & pid)
@@ -444,6 +480,13 @@ private:
                       );
   }
 
+  bool capacity_exceeded (const pid_t & pid) const
+  {
+    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
+
+    return cap != capacity_map.end() && num_token (pid) >= cap->second.left();
+  }
+
   void update_output_descr ( output_descr_t & output_descr
                            , const pid_t & pid
                            , const eid_t & eid
@@ -513,18 +556,6 @@ public:
     , out_enabled ()
   {};
 
-  bool capacity_exceeded (const pid_t & pid) const
-  {
-    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
-
-    if (cap != capacity_map.end() && num_token (pid) >= cap->second)
-      {
-        return true;
-      }
-
-    return false;
-  }
-
   // numbers of elements
   size_type get_num_places (void) const { return places().size(); }
   size_type get_num_transitions (void) const { return transitions().size(); }
@@ -532,59 +563,51 @@ public:
 
   // condition+transition function accessores
   const trans_t & get_trans (const tid_t & tid) const
-    throw (exception::no_such)
   {
     return get_fun (trans, tid);
   }
 
   // get id
   const pid_t & get_place_id (const place_type & place) const
-    throw (bijection::exception::no_such)
   {
     return pmap.get_id (place);
   }
 
   const tid_t & get_transition_id (const transition_type & transition) const
-    throw (bijection::exception::no_such)
   {
     return tmap.get_id (transition);
   }
 
   const eid_t & get_edge_id (const edge_type & edge) const
-    throw (bijection::exception::no_such)
   {
     return emap.get_id (edge);
   }
 
   // get element
   const place_type & get_place (const pid_t & pid) const
-    throw (bijection::exception::no_such)
   {
     return pmap.get_elem (pid);
   }
 
   const transition_type & get_transition (const tid_t & tid) const
-    throw (bijection::exception::no_such)
   {
     return tmap.get_elem (tid);
   }
 
   const edge_type & get_edge (const eid_t & eid) const
-    throw (bijection::exception::no_such)
   {
     return emap.get_elem (eid);
   }
 
   // add element
   pid_t add_place (const place_type & place)
-    throw (bijection::exception::already_there)
   {
     return pmap.add (place);
   }
 
   void set_capacity (const pid_t & pid, const capacity_t & cap)
   {
-    capacity_map[pid] = cap;
+    capacity_map[pid] = detail::capacity_and_placeholder_type (cap);
 
     recalculate_out_enabled_by_place (pid);
   }
@@ -602,7 +625,7 @@ public:
 
     return (pos == capacity_map.end())
       ? boost::none
-      : boost::optional<capacity_t> (pos->second)
+      : boost::optional<capacity_t> (pos->second.capacity())
       ;
   }
 
@@ -625,7 +648,6 @@ public:
   ( const transition_type & transition
   , const trans_t & tf = Function::Transition::Default<token_type>()
   )
-    throw (bijection::exception::already_there)
   {
     const tid_t tid (tmap.add (transition));
 
@@ -691,7 +713,6 @@ public:
 
   // get edge info
   connection_t get_edge_info (const eid_t & eid) const
-    throw (exception::no_such)
   {
     const typename connection_map_t::const_iterator it
       (connection_map.find (eid));
@@ -797,7 +818,6 @@ public:
   }
 
   const pid_t & delete_place (const pid_t & pid)
-    throw (bijection::exception::no_such)
   {
     // make the token deletion visible to delete_edge
     token_place_rel.delete_right (pid);
@@ -831,7 +851,6 @@ public:
   }
 
   const tid_t & delete_transition (const tid_t & tid)
-    throw (bijection::exception::no_such)
   {
     std::stack<eid_t> stack;
 
@@ -875,7 +894,6 @@ public:
   // modify and replace
   // erased in case of conflict after modification
   pid_t modify_place (const pid_t & pid, const place_type & place)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const pid_t new_pid (pmap.modify (pid, place));
 
@@ -886,7 +904,6 @@ public:
 
   // kept old value in case of conflict after modification
   pid_t replace_place (const pid_t & pid, const place_type & place)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const pid_t new_pid (pmap.replace (pid, place));
 
@@ -898,7 +915,6 @@ public:
   tid_t modify_transition ( const tid_t & tid
                           , const transition_type & transition
                           )
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.modify (tid, transition);
   }
@@ -906,13 +922,11 @@ public:
   tid_t replace_transition ( const tid_t & tid
                            , const transition_type & transition
                            )
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.replace (tid, transition);
   }
 
   eid_t modify_edge (const eid_t & eid, const edge_type & edge)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const eid_t new_eid (emap.modify (eid, edge));
 
@@ -922,7 +936,6 @@ public:
   }
 
   eid_t replace_edge (const eid_t & eid, const edge_type & edge)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const eid_t new_eid (emap.replace (eid, edge));
 
@@ -933,7 +946,6 @@ public:
 
   // deal with tokens
   const pid_in_map_t & get_pid_in_map (const tid_t & tid) const
-    throw (exception::no_such)
   {
     const typename in_map_t::const_iterator m (in_map.find (tid));
 
@@ -944,7 +956,6 @@ public:
   }
 
   const output_descr_t & get_output_descr (const tid_t & tid) const
-    throw (exception::no_such)
   {
     const typename out_map_t::const_iterator m (out_map.find (tid));
 
@@ -959,25 +970,31 @@ public:
     return enabled;
   }
 
-  bool put_token (const pid_t & pid, const token_type & token)
+  void put_token (const pid_t & pid, const token_type & token)
   {
-    const bool successful (token_place_rel.add (token, pid));
+    capacity_map_t::iterator cap (capacity_map.find (pid));
 
-    if (successful)
+    if (cap != capacity_map.end())
       {
-        for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-          update_in_enabled_put_token (*t, pid, t(), token);
+        cap->second.put();
 
-        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-          update_out_enabled (*t, pid, t());
+        if (num_token (pid) >= cap->second.left())
+          {
+            throw exception::capacity_exceeded ();
+          }
       }
 
-    return successful;
+    token_place_rel.add (token, pid);
+
+    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+      update_in_enabled_put_token (*t, pid, t(), token);
+
+    recalculate_out_enabled_by_place (pid);
   }
 
-  bool put_token (const pid_t & pid)
+  void put_token (const pid_t & pid)
   {
-    return put_token (pid, token_type());
+    put_token (pid, token_type());
   }
 
   token_place_it get_token (const pid_t & pid) const
@@ -1002,8 +1019,7 @@ public:
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_one_token (*t, pid, token);
 
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
+    recalculate_out_enabled_by_place (pid);
 
     return ret;
   }
@@ -1015,8 +1031,7 @@ public:
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_all_token (*t, pid, token);
 
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
+    recalculate_out_enabled_by_place (pid);
 
     return ret;
   }
@@ -1060,7 +1075,7 @@ public:
     return enabled.elem(tid);
   }
 
-  choices_t choices (const tid_t & tid) const throw (exception::no_such)
+  choices_t choices (const tid_t & tid) const
   {
     return choices_t (get_pid_in_map (tid));
   }
@@ -1098,7 +1113,6 @@ public:
   }
 
   activity_t extract_activity (const tid_t tid)
-    throw (exception::no_such, exception::transition_not_enabled)
   {
     if (!get_can_fire (tid))
       throw exception::transition_not_enabled ("during call of fire");
@@ -1106,19 +1120,31 @@ public:
     // before! constructing the input, as this consumes tokens
     output_descr_t output_descr (get_output_descr(tid));
 
+    BOOST_FOREACH (const typename output_descr_t::value_type& val, output_descr)
+      {
+        capacity_map_t::iterator cap (capacity_map.find (val.first));
+
+        if (cap != capacity_map.end())
+          {
+            cap->second.extract();
+
+            recalculate_out_enabled_by_place (val.first);
+          }
+      }
+
     input_t input;
-    typename enabled_choice_t::iterator choice_consume
+    const typename enabled_choice_t::iterator choice_consume
       (enabled_choice_consume.find(tid));
-    typename enabled_choice_t::iterator choice_read
+    const typename enabled_choice_t::iterator choice_read
       (enabled_choice_read.find(tid));
 
     assert (  (choice_consume != enabled_choice_consume.end())
            || (choice_read != enabled_choice_read.end())
            );
 
-    choice_vec_t choice_vec_consume (choice_consume->second);
+    const choice_vec_t choice_vec_consume (choice_consume->second);
     enabled_choice_consume.erase (choice_consume);
-    choice_vec_t choice_vec_read (choice_read->second);
+    const choice_vec_t choice_vec_read (choice_read->second);
 
     for ( typename choice_vec_t::const_iterator choice
             (choice_vec_consume.begin())

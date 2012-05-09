@@ -18,6 +18,7 @@ class Transition {
     std::vector<const Place *> inputPlaces_; ///< Ids of input places.
     std::vector<const Place *> outputPlaces_; ///< Ids of output places.
     bool conditionAlwaysTrue_; ///< True iff transition's condition is constant true.
+    int priority_; ///< Priority.
 
     public:
 
@@ -26,7 +27,7 @@ class Transition {
      *
      * \param id Id.
      */
-    Transition(TransitionId id): id_(id), conditionAlwaysTrue_(true) {}
+    Transition(TransitionId id): id_(id), conditionAlwaysTrue_(true), priority_(0) {}
 
     /**
      * \return Id of the transition.
@@ -56,6 +57,19 @@ class Transition {
      * \param value True iff the condition is always true.
      */
     void setConditionAlwaysTrue(bool value) { conditionAlwaysTrue_ = value; }
+
+    /**
+     * \return Priority of the transition.
+     * Transitions with lower priority don't fire unless there are enabled transitions with higher priority.
+     */
+    int priority() const { return priority_; }
+
+    /**
+     * Sets the transition's priority.
+     *
+     * \param[in] priority New priority.
+     */
+    void setPriority(int priority) { priority_ = priority; }
 
     /**
      * Adds input place.

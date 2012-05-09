@@ -30,7 +30,6 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-
 SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler, bool bUseRequestModel )
   : ptr_worker_man_(new WorkerManager())
   , ptr_comm_handler_(pCommHandler)
@@ -42,23 +41,23 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler, bool bUseRequest
 
 SchedulerImpl::~SchedulerImpl()
 {
-  SDPA_LOG_INFO( "Called the destructor of  SchedulerImpl ...");
-  try  {
+	SDPA_LOG_INFO( "Called the destructor of  SchedulerImpl ...");
+	try  {
 		if( jobs_to_be_scheduled.size() )
 		{
 		  SDPA_LOG_WARN("The scheduler has still "<<jobs_to_be_scheduled.size()<<" jobs into his queue!");
 		}
 
 		stop();
-  }
-  catch (std::exception const & ex)
-  {
-      SDPA_LOG_ERROR("exception during SchedulerImpl::stop(): " << ex.what());
-  }
-  catch (...)
-  {
-      SDPA_LOG_ERROR("unexpected exception during SchedulerImpl::stop()");
-  }
+	}
+	catch (std::exception const & ex)
+	{
+		SDPA_LOG_ERROR("exception during SchedulerImpl::stop(): " << ex.what());
+	}
+	catch (...)
+	{
+		SDPA_LOG_ERROR("unexpected exception during SchedulerImpl::stop()");
+	}
 }
 
 void SchedulerImpl::addWorker( 	const Worker::worker_id_t& workerId,
@@ -67,38 +66,62 @@ void SchedulerImpl::addWorker( 	const Worker::worker_id_t& workerId,
 								const unsigned int& agent_rank,
 								const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
-  try {
-      ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
-      // only with a round-robin schedule
-      // ptr_worker_man_->balanceWorkers();
+	try {
+		ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
+		cond_workers_registered.notify_all();
+		// only with a round-robin schedule
+		// ptr_worker_man_->balanceWorkers();
 
-      // with the "schedule job to the least loaded worker" strategy -> apply work stealing
-  }
-  catch( const WorkerAlreadyExistException& ex)
-  {
-      throw ex;
-  }
+		// with the "schedule job to the least loaded worker" strategy -> apply work stealing
+	}
+	catch( const WorkerAlreadyExistException& ex)
+	{
+		throw ex;
+	}
 }
 
 void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue )
 {
-  assert (pQueue);
+	assert (pQueue);
 
-  while( !pQueue->empty() )
-  {
-      sdpa::job_id_t jobId = pQueue->pop_and_wait();
-      SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
+	while( !pQueue->empty() )
+	{
+		sdpa::job_id_t jobId = pQueue->pop_and_wait();
+		SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
 
-      if( ptr_comm_handler_ )
-      {
-          ptr_comm_handler_->workerJobFailed(worker_id, jobId, "Worker timeout detected!" );
-      }
-      else
-      {
-          SDPA_LOG_ERROR("Invalid communication handler!");
-      }
-  }
+		if( ptr_comm_handler_ )
+		{
+			ptr_comm_handler_->activityFailed(worker_id, jobId, "Worker timeout detected!" );
+		}
+		else
+		{
+			SDPA_LOG_ERROR("Invalid communication handler!");
+		}
+	}
 }
+
+void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
+{
+	ostringstream os;
+	try {
+
+		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
+		std::string status = pJob->getStatus();
+		if(	status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+			pJob->Reschedule(); // put the job back into the pending state
+			schedule(job_id);
+		}
+	}
+	catch(JobNotFoundException const &ex)
+	{
+		SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
+	}
+	catch(const std::exception& ex) {
+		SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+	}
+}
+
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
@@ -109,9 +132,12 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 		pWorker->delete_job(job_id);
 
 		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-		pJob->Reschedule(); // put the job back into the pending state
-
-		schedule(job_id);
+		std::string status = pJob->getStatus();
+		if(	status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+			pJob->Reschedule(); // put the job back into the pending state
+			schedule(job_id);
+		}
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
@@ -139,9 +165,12 @@ void SchedulerImpl::reassign( const Worker::worker_id_t& worker_id, const sdpa::
 		pWorker->delete_job(job_id);
 
 		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-		pJob->Reschedule(); // put the job back into the pending state
-
-		pWorker->dispatch(job_id); // or schedule_to(job_id, worker_id);
+		std::string status = pJob->getStatus();
+		if(	status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+			pJob->Reschedule(); // put the job back into the pending state
+			pWorker->dispatch(job_id); // or schedule_to(job_id, worker_id);
+		}
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
@@ -174,40 +203,39 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::J
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
 {
-  // first re-schedule the work:
-  // inspect all queues and re-schedule each job
-  try {
-    const Worker::ptr_t& pWorker = findWorker(worker_id);
+	// first re-schedule the work:
+	// inspect all queues and re-schedule each job
+	try {
+		const Worker::ptr_t& pWorker = findWorker(worker_id);
 
-    // The jobs submitted by the WE should have set a property
-    // which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
+		// The jobs submitted by the WE should have set a property
+		// which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
 
-    // for each job in the queue, either re-schedule it, if is allowed
-    // re_schedule( &pWorker->acknowledged() );
-    // re_schedule( &pWorker->submitted() );
-    // or declare it failed
-    pWorker->set_disconnected();
+		// for each job in the queue, either re-schedule it, if is allowed
+		// re_schedule( &pWorker->acknowledged() );
+		// re_schedule( &pWorker->submitted() );
+		// or declare it failed
+		pWorker->set_disconnected();
 
-    // declare the submitted jobs failed
-    //declare_jobs_failed( worker_id, &pWorker->submitted() );
-    reschedule(worker_id, &pWorker->submitted() );
+		// declare the submitted jobs failed
+		//declare_jobs_failed( worker_id, &pWorker->submitted() );
+		reschedule(worker_id, &pWorker->submitted() );
 
-    // declare the acknowledged jobs failed
-    //declare_jobs_failed( worker_id, &pWorker->acknowledged() );
-    reschedule(worker_id, &pWorker->acknowledged() );
+		// declare the acknowledged jobs failed
+		//declare_jobs_failed( worker_id, &pWorker->acknowledged() );
+		reschedule(worker_id, &pWorker->acknowledged() );
 
-    // re-schedule the pending jobs
-    reschedule(worker_id, &pWorker->pending() );
+		// re-schedule the pending jobs
+		reschedule(worker_id, &pWorker->pending() );
 
-    // put the jobs back into the central queue and don't forget
-    // to reset the status
-
-  }
-  catch (const WorkerNotFoundException& ex)
-  {
-    SDPA_LOG_ERROR("Could not find the worker "<<worker_id);
-    throw ex;
-  }
+		// put the jobs back into the central queue and don't forget
+		// to reset the status
+	}
+	catch (const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Could not find the worker "<<worker_id);
+		throw ex;
+	}
 }
 
 void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
@@ -255,95 +283,61 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 */
 void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 {
-  SDPA_LOG_DEBUG("Schedule the job "<<jobId.str()<<" to the workflow engine!");
+	SDPA_LOG_DEBUG("Schedule the job "<<jobId.str()<<" to the workflow engine!");
 
-  id_type wf_id = jobId.str();
+	id_type wf_id = jobId.str();
 
-  if( !ptr_comm_handler_ )
-  {
-      SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
-      stop();
-      return;
-  }
+	if( !ptr_comm_handler_ )
+	{
+		SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
+		stop();
+		return;
+	}
 
-  try {
-	  const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+	try {
+		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-	  // Should set the workflow_id here, or send it together with the workflow description
-	  SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE. ");
-	  //SDPA_LOG_DEBUG("Workflow description follows: ");
-	  //SDPA_LOG_DEBUG(pJob->description());
+		// Should set the workflow_id here, or send it together with the workflow description
+		SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE. ");
+		//SDPA_LOG_DEBUG("Workflow description follows: ");
+		//SDPA_LOG_DEBUG(pJob->description());
 
-	  pJob->Dispatch();
+		pJob->Dispatch();
 
-	  if(pJob->description().empty() )
-	  {
-		  SDPA_LOG_ERROR("Empty Workflow!!!!");
-		  // declare job as failed
-	  }
+		if(pJob->description().empty() )
+		{
+			SDPA_LOG_ERROR("Empty Workflow!!!!");
+			// declare job as failed
+		}
 
-	  ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
-  }
-  catch(const NoWorkflowEngine& ex)
-  {
-	  SDPA_LOG_ERROR("No workflow engine!!!");
-	  sdpa::job_result_t result(ex.what());
+		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
+	}
+	catch(const NoWorkflowEngine& ex)
+	{
+		SDPA_LOG_ERROR("No workflow engine!!!");
+		sdpa::job_result_t result(ex.what());
 
-	  JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
-	  ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-  catch(const JobNotFoundException& ex)
-  {
-	  SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
-	  sdpa::job_result_t result(ex.what());
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
+		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	}
+	catch(const JobNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+		sdpa::job_result_t result(ex.what());
 
-	  JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
-	  ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-  catch (std::exception const & ex)
-  {
-	  SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
+		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	}
+	catch (std::exception const & ex)
+	{
+		SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
 
-	  //send a JobFailed event
-	  sdpa::job_result_t result(ex.what());
+		//send a JobFailed event
+		sdpa::job_result_t result(ex.what());
 
-	  JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
-	  ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-}
-
-/*
- * Round-Robin schedule
- */
-void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
-{
-  SDPA_LOG_DEBUG("Called schedule_remote ...");
-
-  if(!ptr_comm_handler_)
-  {
-      SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
-      stop();
-      return;
-  }
-
-  try
-  {
-	  if( ptr_worker_man_ )
-	  {
-		  SDPA_LOG_DEBUG("Get the next worker ...");
-		  const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
-
-		  SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
-
-		  pWorker->dispatch(jobId);
-	  }
-  }
-  catch(const NoWorkerFoundException&)
-  {
-	  // put the job back into the queue
-      ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
-      SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
-  }
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
+		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	}
 }
 
 /*
@@ -396,7 +390,7 @@ void SchedulerImpl::delete_job (sdpa::job_id_t const & job)
 	SDPA_LOG_DEBUG("removing job " << job << " from the scheduler's queue ....");
   	if (jobs_to_be_scheduled.erase(job))
 	{
-	  SDPA_LOG_DEBUG("removed job from the central queue...");
+  		SDPA_LOG_DEBUG("removed job from the central queue...");
 	}
 	else
     	ptr_worker_man_->delete_job(job);
@@ -404,7 +398,7 @@ void SchedulerImpl::delete_job (sdpa::job_id_t const & job)
 
 void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
 {
-  ptr_worker_man_->dispatchJob(jobId);
+	ptr_worker_man_->dispatchJob(jobId);
 }
 
 
@@ -425,16 +419,16 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
   if( ptr_worker_man_ )
   {
       // if no preferences are explicitly set for this job
-      LOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
+      DLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
 
       try
       {
     	  const requirement_list_t job_req_list = ptr_comm_handler_->getJobRequirements(jobId);
-
           // no preferences specified
           if( job_req_list.empty() )
           {
         	  // schedule to the first worker that requests a job
+              DLOG(TRACE, "The requirements list for the job "<<jobId<<" is empty. Schedule it anywhere!");
               schedule_anywhere(jobId);
               return true;
           }
@@ -443,16 +437,48 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         	  try
         	  {
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list);
-        		  SDPA_LOG_INFO("The best worker matching the requirements for the job  "<<jobId<<" is "<<ptrBestWorker->name());
+        		  int matching_degree (-1);
+        		  job_pref_list_t listPreferredWorkers;
+        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list, matching_degree, listPreferredWorkers);
+
+        		  // if the degree is 0 -> the job can be scheduled anywhere
+        		  if(matching_degree==0)
+        		  {
+        			  DLOG(TRACE, "No worker matches the optional requirements of the job "<<jobId<<". The matching degree is 0. Schedule it anywhere!");
+        			  schedule_anywhere(jobId);
+        			  return true;
+        		  }
+
+				  ostringstream ossReq;
+				  BOOST_FOREACH(const requirement_t& req, job_req_list)
+				  {
+					  ossReq<<req.value()<<",";
+				  }
+
+        		  LOG( TRACE
+        			   , "The best worker matching the requirements: "
+                       << ossReq.str()
+                       <<" for the job  " << jobId
+                       <<" is " << ptrBestWorker->name()
+                       <<" degree " << matching_degree
+        		  );
+
+        		  ostringstream ossPrefs;
+				  for( job_pref_list_t::iterator it=listPreferredWorkers.begin(); it!=listPreferredWorkers.end(); it++ )
+				  {
+					  ossPrefs<<"("<<it->first<<","<<it->second<<")"<<",";
+				  }
+
+				  LOG( TRACE, "The workers preferred by the job "<<jobId<<" are: "<<ossPrefs.str());
 
         		  // schedule the job to that one
+        		  DMLOG(TRACE, "Schedule the job "<<jobId<<" on the worker "<<ptrBestWorker->name());
         		  return schedule_to(jobId, ptrBestWorker);
         	  }
         	  catch(const NoWorkerFoundException& ex1)
         	  {
         		  LOG(WARN, "No worker meets the requirements for the job " << jobId.str()<<" found!");
-        		  ptr_comm_handler_->workerJobFailed("", jobId, "No worker meets the requirements for this job!");
+        		  ptr_comm_handler_->activityFailed("", jobId, "No worker meets the requirements for this job!");
         		  return false;
         	  }
           }
@@ -467,7 +493,7 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
   else
   {
       //SDPA_LOG_DEBUG("Could not schedule job: no worker available: " << jobId);
-      ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
+      ptr_comm_handler_->activityFailed("", jobId, "No worker available!");
       return false;
   }
 
@@ -476,14 +502,6 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
-	// check if there are any responsive workers left
-	// delete non_responsive workers
-
-	// schedule_round_robin(jobId);
-	// fairly re-distribute tasks, if necessary
-	// ptr_worker_man_->balanceWorkers();
-	// fix this later -> use a monitoring thread
-
 	if( !numberOfWorkers() )
 	{
 		SDPA_LOG_WARN("No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
@@ -497,15 +515,9 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 	}
 }
 
-// obsolete, only for testing purposes!
-void SchedulerImpl::start_job(const sdpa::job_id_t &jobId)
-{
-	SDPA_LOG_DEBUG("Start the job "<<jobId.str());
-}
-
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
-  LOG(TRACE, "Schedule the job " << jobId.str());
+  DLOG(TRACE, "Schedule the job " << jobId.str());
 	jobs_to_be_scheduled.push(jobId);
 }
 
@@ -531,10 +543,9 @@ const Worker::worker_id_t& SchedulerImpl::findWorker(const sdpa::job_id_t& job_i
   }
 }
 
-const Worker::worker_id_t&
-SchedulerImpl::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t& SchedulerImpl::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
-  return ptr_worker_man_->findAcknowlegedWorker(job_id);
+	return ptr_worker_man_->findAcknowlegedWorker(job_id);
 }
 
 void SchedulerImpl::start(IComm* p)
@@ -550,7 +561,7 @@ void SchedulerImpl::start(IComm* p)
   }
 
   m_thread_run = boost::thread(boost::bind(&SchedulerImpl::run, this));
-  m_thread_feed = boost::thread(boost::bind(&SchedulerImpl::feed_workers, this));
+  m_thread_feed = boost::thread(boost::bind(&SchedulerImpl::feedWorkers, this));
 
 
   SDPA_LOG_DEBUG("Scheduler thread started ...");
@@ -633,7 +644,7 @@ void SchedulerImpl::check_post_request()
 	}
 }
 
-void SchedulerImpl::feed_workers()
+void SchedulerImpl::feedWorkers()
 {
 	while(!bStopRequested)
 	{
@@ -649,7 +660,7 @@ void SchedulerImpl::feed_workers()
 			{
 				if(ptr_comm_handler_)
 				{
-					ptr_comm_handler_->serve_job(worker_id);
+					ptr_comm_handler_->serveJob(worker_id);
 				}
 				else
 				{
@@ -680,10 +691,10 @@ void SchedulerImpl::run()
 			if( numberOfWorkers()>0 )
 				forceOldWorkerJobsTermination();
 
-			sdpa::job_id_t jobId   = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+			sdpa::job_id_t jobId  = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-			if( !pJob->isMasterJob() ) //it's a we job
+			if( !pJob->isMasterJob() ) //it's a job submitted by the WE
 			{
 				// if it's an NRE just execute it!
 				// Attention!: an NRE has no WorkerManager!!!!
@@ -699,12 +710,10 @@ void SchedulerImpl::run()
 					{
 						SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
 						// do so as when no preferences were set, just ignore them right now
-						//schedule_anywhere(jobId);
-
 						ptr_worker_man_->dispatchJob(jobId);
 					}
 				}
-				else //  if has backends try to execute it
+				else //  if has backends, try to execute it
 				{
 					// just for testing
 					if(ptr_comm_handler_->canRunTasksLocally())
@@ -715,7 +724,14 @@ void SchedulerImpl::run()
 					else
 					{
 						//SDPA_LOG_DEBUG("no worker available, put the job back into the scheduler's queue!");
-						jobs_to_be_scheduled.push(jobId);
+						if( !ptr_comm_handler_->canRunTasksLocally() )
+						{
+							jobs_to_be_scheduled.push(jobId);
+							lock_type lock(mtx_);
+							cond_workers_registered.wait(lock);
+						}
+						else
+							execute(jobId);
 					}
 
 				} // else fail
@@ -758,7 +774,7 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
 	{
 		LOG(ERROR, "nre scheduler does not have a comm-handler!");
 		result_type output_fail;
-		ptr_comm_handler_->workerJobFailed("", jobId, output_fail);
+		ptr_comm_handler_->activityFailed("", jobId, output_fail);
 		return;
 	}
 
@@ -789,14 +805,14 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
 		DLOG(TRACE, "activity finished: " << act_id);
 		// notify the gui
 		// and then, the workflow engine
-		ptr_comm_handler_->workerJobFinished("", jobId, result.second);
+		ptr_comm_handler_->activityFinished("", jobId, result.second);
 	}
 	else if( result.first == ACTIVITY_FAILED )
 	{
 		DLOG(TRACE, "activity failed: " << act_id);
 		// notify the gui
 		// and then, the workflow engine
-		ptr_comm_handler_->workerJobFailed("", jobId, result.second);
+		ptr_comm_handler_->activityFailed("", jobId, result.second);
 	}
 	else if( result.first == ACTIVITY_CANCELLED )
 	{
@@ -804,12 +820,12 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
 
 		// notify the gui
 		// and then, the workflow engine
-		ptr_comm_handler_->workerJobCancelled("", jobId);
+		ptr_comm_handler_->activityCancelled("", jobId);
 	}
 	else
 	{
 		SDPA_LOG_ERROR("Invalid status of the executed activity received from the worker!");
-		ptr_comm_handler_->workerJobFailed("", jobId, result.second);
+		ptr_comm_handler_->activityFailed("", jobId, result.second);
 	}
 }
 
@@ -933,11 +949,23 @@ void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 	ptr_worker_man_->removeCapabilities(worker_id, cpbset);
 }
 
-void SchedulerImpl::getWorkerCapabilities(sdpa::capabilities_set_t& cpbset)
+void SchedulerImpl::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
 {
 	ptr_worker_man_->getCapabilities(ptr_comm_handler_->name(), cpbset);
 }
 
+void SchedulerImpl::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sdpa::capabilities_set_t& cpbset)
+{
+	try {
+		Worker::ptr_t ptrWorker = findWorker(worker_id);
+		cpbset = ptrWorker->capabilities();
+	}
+	catch(WorkerNotFoundException const &ex2 )
+	{
+		SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
+		cpbset = sdpa::capabilities_set_t();
+	}
+}
 
 void SchedulerImpl::removeRecoveryInconsistencies()
 {

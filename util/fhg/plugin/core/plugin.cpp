@@ -241,7 +241,7 @@ namespace fhg
 
       if (! force)
       {
-        const std::string my_magic(FHG_PLUGIN_VERSION_MAGIC);
+        const std::string my_magic(FHG_PLUGIN_API_VERSION);
         const std::string plugin_magic (desc->magic);
         const std::string plugin_name (desc->name);
 

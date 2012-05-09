@@ -42,9 +42,13 @@
         <in name="in" type="long"/>
         <in name="inout" type="long"/>
         <out name="inout" type="long"/>
+        <inout name="inout2" type="control"/>
         <module name="mod" function="finout (in, inout)"/>
       </defun>
+      <connect-inout port="inout2" place="inout2"/>
     </transition>
+
+    <place name="inout2" type="control"/>
 
     <transition name="inoutreturn">
       <defun>

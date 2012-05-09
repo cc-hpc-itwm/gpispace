@@ -35,6 +35,7 @@ namespace expr
     , _stack_empty, _stack_top, _stack_push, _stack_pop, _stack_size
     , _stack_join
     , _map_assign, _map_unassign, _map_is_assigned, _map_get_assignment
+    , _map_size, _map_empty
     , _set_insert, _set_erase, _set_is_element
     , _set_pop, _set_top, _set_empty, _set_size
     , _len
@@ -103,6 +104,8 @@ namespace expr
         case _map_unassign: return s << "map_unassign";
         case _map_is_assigned: return s << "map_is_assigned";
         case _map_get_assignment: return s << "map_get_assignement";
+        case _map_size: return s << "map_size";
+        case _map_empty: return s << "map_empty";
         case _set_insert: return s << "set_insert";
         case _set_erase: return s << "set_erase";
         case _set_is_element: return s << "set_is_element";

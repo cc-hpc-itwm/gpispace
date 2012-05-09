@@ -13,6 +13,8 @@
 
 #include <fhg/util/join.hpp>
 
+#include <boost/format.hpp>
+
 namespace xml
 {
   namespace parse
@@ -24,6 +26,9 @@ namespace xml
       public:
         generic (const std::string & msg)
           : std::runtime_error ("WARNING: " + msg)
+        {}
+        generic (const boost::format& bf)
+          : std::runtime_error ("WARNING: " + bf.str())
         {}
       };
 
@@ -346,6 +351,31 @@ namespace xml
 
       // ******************************************************************* //
 
+      class inline_many_output_ports : public generic
+      {
+      private:
+        std::string nice ( const std::string& name
+                         , const boost::filesystem::path& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "the inlined transition " << name
+            << " has more than one connected output port"
+            << " in " << path;
+
+          return s.str();
+        }
+      public:
+        inline_many_output_ports ( const std::string& name
+                                 , const boost::filesystem::path& path
+                                 )
+          : generic (nice (name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class property_overwritten : public generic
       {
       private:
@@ -615,6 +645,34 @@ namespace xml
                                     , const boost::filesystem::path & file
                                     )
           : generic (nice (name, mod, file))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class virtual_place_not_tunneled : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const boost::filesystem::path & file
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "the virtual place " << name << " is not tunneled in " << file;
+
+          return s.str();
+        }
+      public:
+        virtual_place_not_tunneled ( const std::string& name
+                                   , const boost::filesystem::path& file
+                                   )
+          : generic ( boost::format ( "the virtual place %1%"
+                                      " is not tunneled in %2%."
+                                    )
+                    % name
+                    % file
+                    )
         {}
       };
     }

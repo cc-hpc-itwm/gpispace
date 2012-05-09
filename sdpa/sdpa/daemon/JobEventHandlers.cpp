@@ -33,6 +33,8 @@ using namespace sdpa::events;
 
 void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 {
+  assert (pEvent);
+
 	DLOG(TRACE, "handleSubmitJobAckEvent: " << pEvent->job_id() << " from " << pEvent->from());
 
 	Worker::worker_id_t worker_id = pEvent->from();
@@ -40,18 +42,27 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 		// Only, now should be state of the job updated to RUNNING
 		// since it was not rejected, no error occurred etc ....
 		//find the job ptrJob and call
-		Job::ptr_t ptrJob = ptr_job_man_->findJob(pEvent->job_id());
+		Job::ptr_t ptrJob = jobManager()->findJob(pEvent->job_id());
 
 		ptrJob->Dispatch();
-        ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
+
+        scheduler()->acknowledgeJob(worker_id, pEvent->job_id());
 
 	} catch(WorkerNotFoundException const &)
 	{
-		SDPA_LOG_ERROR("job submission could not be acknowledged: worker " << worker_id << " not found!!");
+          SDPA_LOG_ERROR( "job " << pEvent->job_id()
+                        << " could not be acknowledged:"
+                        << " worker " << worker_id
+                        << " not found!"
+                        );
 	}
 	catch(std::exception const &ex)
 	{
-		SDPA_LOG_ERROR("Unexpected exception occurred during submitJobAck: " << ex.what());
+          SDPA_LOG_ERROR( "Unexpected exception during "
+                        << " handle_submitJobAck("<< pEvent->job_id() << ")"
+                        << ": "
+                        << ex.what()
+                        );
 	}
 }
 
@@ -76,9 +87,9 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
 
 	ostringstream os;
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
 		// delete it from the map when you receive a CancelJobAckEvent!
-		ptr_job_man_->deleteJob(pEvt->job_id());
+		jobManager()->deleteJob(pEvt->job_id());
 	}
 	catch(JobNotFoundException const &)
 	{
@@ -103,11 +114,11 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 
 		SDPA_LOG_INFO("Got acknowledgment for the finished job " << pEvt->job_id() << "!");
 
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
 
 		SDPA_LOG_INFO("Delete the job " << pEvt->job_id() << " from the JobManager!");
 		// delete it from the map when you receive a JobFinishedAckEvent!
-		ptr_job_man_->deleteJob(pEvt->job_id());
+		jobManager()->deleteJob(pEvt->job_id());
 	}
 	catch(JobNotFoundException const &)
 	{
@@ -128,9 +139,9 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 {
 	ostringstream os;
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
 		// delete it from the map when you receive a JobFinishedAckEvent!
-		ptr_job_man_->deleteJob(pEvt->job_id());
+		jobManager()->deleteJob(pEvt->job_id());
 	}
 	catch(JobNotFoundException const &)
 	{
@@ -150,7 +161,7 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 	sdpa::job_id_t jobId = pEvt->job_id();
 
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(jobId);
+		Job::ptr_t pJob = jobManager()->findJob(jobId);
 		//SDPA_LOG_INFO("The job "<<jobId<<" has the status "<<pJob->getStatus());
 		pJob->QueryJobStatus(pEvt, this); // should send back a message with the status
 	}
@@ -164,7 +175,7 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
 {
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
 		pJob->RetrieveJobResults(pEvt, this);
 	}
 	catch(JobNotFoundException const& ex)

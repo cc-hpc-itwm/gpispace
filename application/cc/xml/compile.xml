@@ -35,7 +35,11 @@
 	LOG (INFO, "===> build environment := " << build_environment);
 
 	char buf[PATH_MAX];
-	getcwd(buf, sizeof(buf));
+	if (0 == getcwd(buf, sizeof(buf)))
+	{
+	   LOG(WARN, "could not get current working path: " << strerror(errno));
+	   snprintf(buf, sizeof(buf), "/");
+	}
 
 	if (chdir(working_directory.c_str()) < 0)
 	{
@@ -92,7 +96,10 @@
           LOG (INFO, "SDPACC done");
         }
 
-	chdir(buf);
+	if (chdir(buf) < 0)
+	{
+	  LOG(WARN, "could not change working directory back to: " << buf);
+	}
     ]]></code>
   </module>
 </defun>

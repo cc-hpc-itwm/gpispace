@@ -30,7 +30,7 @@ namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
     class CancelJobEvent : public JobEvent, public sc::event<CancelJobEvent>
 #else
-                           class CancelJobEvent : public JobEvent
+    class CancelJobEvent : public JobEvent
 #endif
     {
     public:
@@ -65,6 +65,8 @@ namespace sdpa { namespace events {
       {
         return m_reason;
       }
+
+      int priority() const { return 1; }
 
       virtual void handleBy(EventHandler *handler)
       {

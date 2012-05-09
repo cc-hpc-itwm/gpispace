@@ -37,6 +37,8 @@
 using namespace std;
 using namespace sdpa::daemon;
 
+static const std::size_t MAX_PARALLEL_JOBS = 1024;
+
 JobManager::JobManager(const std::string& name)
 	: SDPA_INIT_LOGGER(name)
 {
@@ -84,7 +86,6 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) th
 void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
 {
     lock_type lock(mtx_);
-    ostringstream os;
 
     // delete the requirements of this job
     requirements_map_t::size_type rc = job_requirements_.erase(job_id);
@@ -95,7 +96,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
     }
 
     job_map_t::size_type ret = job_map_.erase(job_id);
-    if( !ret )
+    if( ! ret )
     {
         throw JobNotDeletedException(job_id);
     }
@@ -107,16 +108,6 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
     free_slot_.notify_one();
 }
 
-std::vector<sdpa::job_id_t> JobManager::getJobIDList()
-{
-    lock_type lock(mtx_);
-    std::vector<sdpa::job_id_t> v;
-    for(job_map_t::iterator it = job_map_.begin(); it!= job_map_.end(); it++)
-      v.push_back(it->first);
-
-    return v;
-}
-
 std::string JobManager::print() const
 {
     lock_type lock(mtx_);
@@ -125,7 +116,7 @@ std::string JobManager::print() const
     SDPA_LOG_DEBUG("Begin dumping the JobManager...");
 
     if( job_map_.begin() == job_map_.end() )
-            os<<"The JobManager is empty!";
+    	os<<"The JobManager is empty!";
     else
     {
         os<<"The list of jobs still owned by the JobManager:"<<std::endl;
@@ -158,10 +149,9 @@ void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const requirem
     job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 
-static const std::size_t MAX_PARALLEL_JOBS = 1024;
 bool JobManager::slotAvailable () const
 {
-  return number_of_jobs () < MAX_PARALLEL_JOBS;
+	return getNumberOfJobs () < MAX_PARALLEL_JOBS;
 }
 
 void JobManager::waitForFreeSlot ()
@@ -170,7 +160,7 @@ void JobManager::waitForFreeSlot ()
   free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
 }
 
-void JobManager::resubmitJobsAndResults(IComm* pComm)
+void JobManager::resubmitResults(IComm* pComm)
 {
     lock_type lock(mtx_);
     SDPA_LOG_INFO("Re-submit to the master the results of the jobs that are either finished, failed or cancelled!");
@@ -217,7 +207,6 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
         }
         else
         {
-        	//submit JobSubmitAck -> eventually will be ignored -> if the job was in pending state -> put it into running state
         	sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( 	pComm->name(),
         			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	pJob->owner(),
         			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	pJob->id(),
@@ -230,43 +219,48 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
     }
 }
 
-void JobManager::reScheduleAllMasterJobs(IComm* pComm)
+sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 {
 	lock_type lock(mtx_);
+	sdpa::job_id_list_t listJobsNotCompleted;
 
 	for ( job_map_t::iterator it = job_map_.begin(); it != job_map_.end(); ++it )
 	{
-		sdpa::job_id_t job_id = it->first;
+		sdpa::job_id_t jobId = it->first;
 		Job::ptr_t pJob = it->second;
-		std::string status = pJob->getStatus();
-		pJob->set_icomm(pComm);
 
-		// the job is not in a terminal state
-		if(	status.find("Finished") 	== std::string::npos
-			&& status.find("Failed") 	== std::string::npos
-			&& status.find("Cancelled") == std::string::npos )
+		if( (bHasWfe && pJob->isMasterJob()) || !bHasWfe )
 		{
-			if( pComm->hasWorkflowEngine() && pJob->isMasterJob() || !pComm->hasWorkflowEngine() )
-			{
-				SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
-				pJob->Reschedule();
+			std::string status = pJob->getStatus();
 
-				SDPA_LOG_INFO("Re-schedule the job"<<pJob->id());
-				pComm->schedule(job_id);
+			// the job is not in a terminal state
+			if(	status.find("Finished") 	== std::string::npos
+				&& status.find("Failed") 	== std::string::npos
+				&& status.find("Cancelled") == std::string::npos )
+			{
+				listJobsNotCompleted.push_back(jobId);
 			}
 		}
 	}
+
+	return listJobsNotCompleted;
 }
 
-unsigned int JobManager::countMasterJobs()
+size_t JobManager::countMasterJobs() const
 {
-  lock_type lock(mtx_);
-  unsigned int nMasterJobs = 0;
-  BOOST_FOREACH(job_map_t::value_type& job_pair, job_map_ )
-  {
-	  if( job_pair.second->isMasterJob() )
-		  nMasterJobs++;
-  }
+	lock_type lock(mtx_);
+	size_t nMasterJobs = 0;
+	BOOST_FOREACH(const job_map_t::value_type& job_pair, job_map_ )
+	{
+		if( job_pair.second->isMasterJob() )
+			nMasterJobs++;
+	}
 
-  return nMasterJobs;
+	return nMasterJobs;
+}
+
+size_t JobManager::getNumberOfJobs() const
+{
+	lock_type lock(mtx_);
+	return job_map_.size();
 }

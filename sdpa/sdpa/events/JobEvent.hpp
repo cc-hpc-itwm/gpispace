@@ -49,6 +49,8 @@ namespace events {
 
         virtual std::string str() const = 0;
 
+        int priority() const { return 1; }
+
         virtual void handleBy(EventHandler *handler) = 0;
     private:
         sdpa::job_id_t job_id_;

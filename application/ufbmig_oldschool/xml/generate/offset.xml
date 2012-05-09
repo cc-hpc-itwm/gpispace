@@ -3,6 +3,7 @@
   <in name="config" type="config" place="config"/>
   <out name="offsetA" type="offset" place="offsetA"/>
   <out name="offsetB" type="offset" place="offsetB"/>
+  <tunnel name="trigger" type="control" place="trigger"/>
 
   <net>
 

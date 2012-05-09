@@ -4,6 +4,9 @@
   <in name="bunch" type="BUNCH"  place="bunch"/>
   <out name="done"  type="control" place="done"/>
 
+  <tunnel name="wait" type="long" place="wait"/>
+  <tunnel name="credit" type="control" place="credit"/>
+
   <net>
     <place name="bunch" type="BUNCH"/>
     <place name="wait" type="long" virtual="true"/>

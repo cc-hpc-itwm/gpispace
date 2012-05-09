@@ -16,6 +16,7 @@ namespace gpi
           timeout,
           config_error,
 
+          another_binary_running,
           ping_check_failed,
           port_check_failed,
           libs_check_failed,
@@ -83,6 +84,7 @@ namespace gpi
     MK_CODE_T(timeout);
     MK_CODE_T(config_error);
 
+    MK_CODE_T(another_binary_running);
     MK_CODE_T(ping_check_failed);
     MK_CODE_T(port_check_failed);
     MK_CODE_T(libs_check_failed);

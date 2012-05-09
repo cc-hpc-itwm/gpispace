@@ -64,9 +64,9 @@ const std::string USER("user");
 	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;
 
-	  virtual void workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t&, const std::string& result /*or reason*/ ) = 0;
-	  virtual void workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
-	  virtual void workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id ) = 0;
+	  virtual void activityFailed(const Worker::worker_id_t& worker_id, const job_id_t&, const std::string& result /*or reason*/ ) = 0;
+	  virtual void activityFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
+	  virtual void activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id ) = 0;
 
 	  virtual const std::string& name() const = 0;
 	  //virtual bool is_registered() const = 0;
@@ -75,10 +75,10 @@ const std::string USER("user");
 	  virtual unsigned int& rank() = 0;
 	  virtual const sdpa::worker_id_t& agent_uuid() = 0;
 
-	  virtual void update_last_request_time() = 0;
+	  virtual void updateLastRequestTime() = 0;
 	  virtual bool requestsAllowed() = 0;
 
-	  virtual void serve_job(const Worker::worker_id_t& worker_id, const job_id_t& last_id = sdpa::JobId::invalid_job_id()) = 0;
+	  virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& last_id = sdpa::JobId::invalid_job_id()) = 0;
 
 	  virtual void schedule(const sdpa::job_id_t& job) = 0;
 
@@ -88,7 +88,7 @@ const std::string USER("user");
 	  virtual void backup( std::ostream& ) { throw std::runtime_error("not supported at this level"); }
 	  virtual void recover( std::istream& ) { throw std::runtime_error("not supported at this level"); }
 
-	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) = 0;
+	  virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
 
 	  //GUI notification methods
 	  virtual void notifyActivityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }

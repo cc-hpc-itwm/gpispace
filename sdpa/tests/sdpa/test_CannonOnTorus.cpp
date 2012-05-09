@@ -53,6 +53,8 @@
 #include <boost/shared_array.hpp>
 #include <sdpa/types.hpp>
 
+#include <stdio.h>
+
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
 const int NAGENTS = 1;
@@ -391,7 +393,6 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 	sdpa::daemon::Agent::ptr_t ptrOrch = sdpa::daemon::AgentFactory<TorusWorkflowEngineOrch>::create("orchestrator_0", addrOrch, arrOrchMasterInfo, MAX_CAP);
 	ptrOrch->start_agent(false);
 
-
 	//LOG( DEBUG, "Create the Aggregator ...");
 	//sdpa::daemon::Agent::ptr_t arrAgents[NAGENTS];
 	boost::shared_array<sdpa::daemon::Agent::ptr_t> arrAgents( new sdpa::daemon::Agent::ptr_t[g_nTorusDim*g_nTorusDim] );
@@ -414,7 +415,7 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 	for(int k=0; k<g_nTorusDim*g_nTorusDim; k++)
 		arrAgents[k]->start_agent(false);
 
-	boost::this_thread::sleep(boost::posix_time::seconds(2));
+	boost::this_thread::sleep(boost::posix_time::seconds(5));
 	LOG(INFO, "create agents communication topology");
 
 	LOG(INFO, "On the horizontal axis:");
@@ -444,9 +445,17 @@ BOOST_AUTO_TEST_CASE( testCannonParMM )
 			LOG(INFO, "added new master of agent_"<<down<<" -> "<<oss.str());
 		}
 
-	boost::this_thread::sleep(boost::posix_time::seconds(2));
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_cannon_client, this));
+	 boost::this_thread::sleep(boost::posix_time::seconds(10));
 
+	for(int k=0; k<g_nTorusDim*g_nTorusDim; k++)
+	{
+		sdpa::capabilities_set_t agentCpbSet;
+		arrAgents[k]->getCapabilities(agentCpbSet);
+		std::cout<<"The capabilities of "<<arrAgents[k]->name()<< " are:"<<std::endl;
+		std::cout<<agentCpbSet<<std::endl;
+	}
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_cannon_client, this));
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
 

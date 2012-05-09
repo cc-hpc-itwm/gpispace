@@ -21,10 +21,15 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
+#include <seda/EventPrioQueue.hpp>
+#include <seda/EventQueue.hpp>
 #include <typeinfo>
 #include <vector>
 #include <string>
 
+namespace agent {
+	const int MAX_Q_SIZE = 5000;
+}
 
 namespace sdpa {
 namespace daemon {
@@ -41,8 +46,16 @@ namespace daemon {
     {
       LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
-      pAgent->create_workflow_engine<T>();
-      seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgent, 1) );
+      pAgent->createWorkflowEngine<T>();
+
+      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
+      seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );
+      // seda::Stage::Ptr daemon_stage (new seda::Stage( name
+      //                                               , pAgent
+      //                                               , 1
+      //                                               )
+      //                               );
+
       pAgent->setStage(daemon_stage);
       seda::StageRegistry::instance().insert(daemon_stage);
 
@@ -63,7 +76,10 @@ namespace daemon {
     {
       LOG( DEBUG, "Create Agent "<<name<<" with no workflow engine" );
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
-      seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgent, 1) );
+
+      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
+      seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );
+
       pAgent->setStage(daemon_stage);
       seda::StageRegistry::instance().insert(daemon_stage);
 

@@ -2,6 +2,7 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <unistd.h> // usleep
 #include <fvm-pc/pc.hpp>
 #include "gpi.hpp"
 
@@ -48,6 +49,20 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
+    try
+    {
+      m_initialize_retry_interval =
+        fhg_kernel()->get<useconds_t>("initialize_retry_interval", "500");
+    }
+    catch (std::exception const &ex)
+    {
+      LOG( WARN
+         , "could not parse plugin.gpi_compat.initialize_retry_interval: "
+         << ex.what()
+         );
+      m_initialize_retry_interval = 500;
+    }
+
     const std::string my_pid(boost::lexical_cast<std::string>(getpid()));
     m_segment_name = "fvm-pc-" + my_pid;
     m_segment_handle_name = "fvm-pc-segment-" + my_pid;
@@ -59,10 +74,6 @@ public:
     if (reinitialize_gpi_state() < 0)
     {
       LOG(WARN, "gpi plugin is not yet available, state initialization deferred!");
-    }
-    else
-    {
-      LOG(INFO, "successfully initialized gpi state");
     }
 
     FHG_PLUGIN_STARTED();
@@ -98,7 +109,6 @@ public:
 
       if (! api->connect())
       {
-        MLOG(ERROR, "could not open connection to gpi");
         return -EAGAIN;
       }
     }
@@ -119,6 +129,8 @@ public:
         MLOG(ERROR, "could not setup my gpi state: " << ex.what());
         return -EFAULT;
       }
+
+      LOG(INFO, "successfully initialized gpi state");
     }
 
     return 0;
@@ -128,7 +140,15 @@ public:
   {
     int ec;
 
-    do { ec = reinitialize_gpi_state (); } while (ec == -EAGAIN);
+    do
+    {
+      ec = reinitialize_gpi_state ();
+      if (ec == -EAGAIN)
+      {
+        usleep (m_initialize_retry_interval);
+      }
+    }
+    while (ec == -EAGAIN);
 
     return ec;
   }
@@ -188,6 +208,9 @@ public:
   gpi::pc::type::handle_t            m_shm_hdl;
   fvmSize_t                          m_scr_size;
   gpi::pc::type::handle_t            m_scr_hdl;
+
+private:
+  useconds_t                         m_initialize_retry_interval;
 };
 
 int fvmConnect()
@@ -501,6 +524,7 @@ int fvmGetNodeCount()
 
 EXPORT_FHG_PLUGIN( gpi_compat
                  , GPICompatPluginImpl
+                 , ""
                  , "Plugin to access the gpi-space (compatibility)"
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"

@@ -108,9 +108,25 @@ namespace xml
 
               if (place.type != port.type)
                 {
-                  throw
-                    error::port_connected_type_error<port_type,place_type>
-                    (direction, port, place, path);
+                  throw error::port_connected_type_error ( direction
+                                                         , port
+                                                         , place
+                                                         , path
+                                                         );
+                }
+
+              if (direction == "tunnel")
+                {
+                  if (not place.is_virtual())
+                    {
+                      throw
+                        error::tunnel_connected_non_virtual (port, place, path);
+                    }
+
+                  if (port.name != place.name)
+                    {
+                      throw error::tunnel_name_mismatch (port, place, path);
+                    }
                 }
             }
         }

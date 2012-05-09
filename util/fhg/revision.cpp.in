@@ -9,6 +9,26 @@
 
 namespace fhg
 {
+  const char * project_contact ()
+  {
+    return "@PROJECT_CONTACT@";
+  }
+
+  const char * project_summary ()
+  {
+    return "@PROJECT_DESCRIPTION_SUMMARY@";
+  }
+
+  const char * project_copyright ()
+  {
+    return "@PROJECT_COPYRIGHT@";
+  }
+
+  const char * project_version ()
+  {
+    return "@PROJECT_VERSION@";
+  }
+
   const char * project_revision ()
   {
     return "@PROJECT_REVISION@";
@@ -16,16 +36,12 @@ namespace fhg
 
   const char * project_build_time ()
   {
-#ifdef __TIMESTAMP__
-    return __TIMESTAMP__;
-#else
-    return __DATE__ " " __TIME__;
-#endif
+    return "@FHG_BUILD_TIMESTAMP@";
   }
 
   const char * project_build_compiler ()
   {
-    return __VERSION__;
+    return "@FHG_BUILD_COMPILER@";
   }
 
   const char * project_build_info ()

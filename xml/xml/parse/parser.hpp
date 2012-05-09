@@ -481,6 +481,14 @@ namespace xml
                 {
                   f.push_out (port_type (child, state));
                 }
+              else if (child_name == "inout")
+                {
+                  f.push_inout (port_type (child, state));
+                }
+              else if (child_name == "tunnel")
+                {
+                  f.push_tunnel (port_type (child, state));
+                }
               else if (child_name == "struct")
                 {
                   f.structs.push_back (struct_type (child, state));
@@ -1491,6 +1499,10 @@ namespace xml
                 {
                   t.push_out (connect_type(child, state));
                 }
+              else if (child_name == "connect-inout")
+                {
+                  t.push_inout (connect_type (child, state));
+                }
               else if (child_name == "connect-read")
                 {
                   t.push_read (connect_type(child, state));
@@ -1505,6 +1517,10 @@ namespace xml
                     );
 
                   t.cond.insert (t.cond.end(), conds.begin(), conds.end());
+                }
+              else if (child_name == "require")
+                {
+                  require_type (t.requirements, child, state);
                 }
               else if (child_name == "properties")
                 {
