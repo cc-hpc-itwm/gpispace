@@ -1,0 +1,26 @@
+<defun name="capacity_bug">
+  <in name="i" type="control" place="i"/>
+  <out name="o" type="control" place="o"/>
+  <net>
+<!--
+pnetc capacity.xpnet | pnetput -p i=[] | we-exec
+
+change the capacity of the place from "2" to "1" and try again
+-->
+    <place name="c" type="control" capacity="1">
+      <token><value/></token>
+    </place>
+    <place name="i" type="control"/>
+    <place name="o" type="control"/>
+    <transition name="t">
+      <defun>
+        <inout name="c" type="control"/>
+        <inout name="t" type="control"/>
+        <expression/>
+      </defun>
+      <connect-inout port="c" place="c"/>
+      <connect-out port="t" place="o"/>
+      <connect-in port="t" place="i"/>
+    </transition>
+  </net>
+</defun>
