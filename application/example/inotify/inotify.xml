@@ -97,8 +97,10 @@
 		}
 
       	ssize_t len, i = 0;
-	   	char action[81+FILENAME_MAX] = {0};
-	   	char buff[BUFF_SIZE] = {0};
+	   	char * action = new char[81+FILENAME_MAX];
+                std::fill (action, action + (81 + FILENAME_MAX), 0);
+	   	char * buff = new char[BUFF_SIZE];
+                std::fill (buff, buff + BUFF_SIZE, 0);
 
 	   	len = read (fd, buff, BUFF_SIZE);
 
@@ -141,6 +143,9 @@
 
 	      	i += sizeof(struct inotify_event) + pevent->len;
 		}
+
+                delete[] buff;
+                delete[] action;
 
 	  	LOG(INFO, "<<< finished testInotify(" << id << ", " << filename << ")");
 

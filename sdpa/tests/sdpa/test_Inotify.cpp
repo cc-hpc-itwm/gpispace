@@ -356,6 +356,7 @@ BOOST_AUTO_TEST_CASE( testInotifyExecution )
 	drts->unload_all();
 
 	ptrAgent->shutdown();
+        sleep (1);
 	ptrOrch->shutdown();
 
 	LOG( DEBUG, "The test case test_INotify terminated!");
