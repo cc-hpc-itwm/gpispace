@@ -437,8 +437,17 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         	  try
         	  {
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-			  int matching_degree (-1);
-        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list, &matching_degree);
+        		  int matching_degree (-1);
+        		  job_pref_list_t listPreferredWorkers;
+        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list, matching_degree, listPreferredWorkers);
+
+        		  // if the degree is 0 -> the job can be scheduled anywhere
+        		  if(matching_degree==0)
+        		  {
+        			  DLOG(TRACE, "No worker matches the optional requirements of the job "<<jobId<<". The matching degree is 0. Schedule it anywhere!");
+        			  schedule_anywhere(jobId);
+        			  return true;
+        		  }
 
 				  ostringstream ossReq;
 				  BOOST_FOREACH(const requirement_t& req, job_req_list)
@@ -450,9 +459,17 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         			   , "The best worker matching the requirements: "
                        << ossReq.str()
                        <<" for the job  " << jobId
-                       << " is " << ptrBestWorker->name()
-		       << " degree " << matching_degree
+                       <<" is " << ptrBestWorker->name()
+                       <<" degree " << matching_degree
         		  );
+
+        		  ostringstream ossPrefs;
+				  for( job_pref_list_t::iterator it=listPreferredWorkers.begin(); it!=listPreferredWorkers.end(); it++ )
+				  {
+					  ossPrefs<<"("<<it->first<<","<<it->second<<")"<<",";
+				  }
+
+				  LOG( TRACE, "The workers preferred by the job "<<jobId<<" are: "<<ossPrefs.str());
 
         		  // schedule the job to that one
         		  DMLOG(TRACE, "Schedule the job "<<jobId<<" on the worker "<<ptrBestWorker->name());
