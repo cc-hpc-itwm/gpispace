@@ -291,7 +291,11 @@ private:
             // call the global condition function here, that sets the
             // cross product either to the end or to some valid choice
 
-            if (get_transition (tid).condition (cs))
+            if (not get_transition (tid).condition (cs))
+              {
+                enabled.erase (tid);
+              }
+            else
               {
                 enabled.insert (tid);
 
@@ -315,10 +319,6 @@ private:
                         enabled_choice_consume[tid].push_back (*choice);
                       }
                   }
-              }
-            else
-              {
-                enabled.erase (tid);
               }
           }
       }
