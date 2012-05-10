@@ -6,15 +6,15 @@ function usage ()
 usage: $0 [options]
 
     -h: print this help
-    -s dir: state-dir
+    -r root: sdpa root directory
 EOF
 }
 
-state_dir="$HOME/.sdpa/state"
 log_port=
 gui_port=
+sdpa_root=$(cd $(dirname "$0")/../../../ && pwd)
 
-while getopts ":hG:L:s:" opt; do
+while getopts ":hG:L:s:r:" opt; do
     case $opt in
         h)
             usage
@@ -26,8 +26,8 @@ while getopts ":hG:L:s:" opt; do
         L)
             log_port=$OPTARG
             ;;
-        s)
-            state_dir="$OPTARG"
+        r)
+            sdpa_root="$OPTARG"
             ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
@@ -37,16 +37,16 @@ while getopts ":hG:L:s:" opt; do
     esac
 done
 
-if [ -r "${state_dir}/sdpa.env" ] ; then
-    source "${state_dir}/sdpa.env"
-else
-    echo >&2 "needs to be executed under SDPA"
-    exit 4
+bin="${sdpa_root}/bin/sdpa-gui"
+
+if [ ! -x "${bin}" ] ; then
+    echo >&2 "$bin is not executable"
+    exit 3
 fi
 
-echo >&2 "Running $(which sdpa-gui) $gui_port $log_port on $(hostname)"
+echo >&2 "Running ${bin} $gui_port $log_port on $(hostname -s)"
 
-err=$(sdpa-gui $gui_port $log_port 2>&1)
+err=$($bin $gui_port $log_port 2>&1)
 ec=$?
 if [ $ec -ne 0 ] ; then
         echo >&2 "sdpa-gui failed: $ec: $err"

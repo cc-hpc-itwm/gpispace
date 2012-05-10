@@ -1712,17 +1712,7 @@ function start_gui ()
     fi
     local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
 
-    local cmd="$SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port"
-    if [ "$gui_host" != "$(hostname -f)" ] ; then
-        log "W: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
-        cmd="ssh -X $gui_host $cmd"
-    fi
-
-    if [ "$log_host" != "$gui_host" ] ; then
-        log "E: cannot start gui on different hosts: $log_host vs. $gui_host"
-        return 1
-    fi
-
+    local cmd="ssh -X $gui_host LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port -r $SDPA_HOME"
     log "I: starting gui with $cmd ..."
     $cmd &
 }
