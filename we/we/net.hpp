@@ -188,7 +188,7 @@ private:
 
   typedef boost::unordered_map< tid_t
                               , std::size_t
-                              > in_to_transition_size_map_type;
+                              > adjacent_transition_size_map_type;
 
   // *********************************************************************** //
 
@@ -217,7 +217,8 @@ private:
   in_enabled_t in_enabled;
   out_enabled_t out_enabled;
 
-  in_to_transition_size_map_type in_to_transition_size_map;
+  adjacent_transition_size_map_type in_to_transition_size_map;
+  adjacent_transition_size_map_type out_of_transition_size_map;
 
   // *********************************************************************** //
 
@@ -250,21 +251,48 @@ private:
 
   // *********************************************************************** //
 
-  std::size_t in_to_transition_size (const tid_t& tid)
+  std::size_t adjacent_size
+  ( adjacent_transition_size_map_type& m
+  , boost::function<adj_place_const_it (const tid_t&)> f
+  , const tid_t& tid
+  ) const
   {
-    const in_to_transition_size_map_type::const_iterator pos
-      (in_to_transition_size_map.find (tid));
+    const adjacent_transition_size_map_type::const_iterator pos (m.find (tid));
 
-    if (pos == in_to_transition_size_map.end())
+    if (pos == m.end())
       {
-        const std::size_t s (in_to_transition(tid).size());
+        const std::size_t s (f (tid).size());
 
-        in_to_transition_size_map[tid] = s;
+        m[tid] = s;
 
         return s;
       }
 
     return pos->second;
+  }
+
+  std::size_t in_to_transition_size (const tid_t& tid)
+  {
+    return adjacent_size
+      ( in_to_transition_size_map
+      , boost::bind ( &net<Place,Transition,Edge,Token>::in_to_transition
+                    , this
+                    , _1
+                    )
+      , tid
+      );
+  }
+
+  std::size_t out_of_transition_size (const tid_t& tid)
+  {
+    return adjacent_size
+      ( out_of_transition_size_map
+      , boost::bind ( &net<Place,Transition,Edge,Token>::out_of_transition
+                    , this
+                    , _1
+                    )
+      , tid
+      );
   }
 
   template<typename ROW, typename COL>
@@ -283,6 +311,7 @@ private:
     m.set_adjacent (r, c, eid);
 
     in_to_transition_size_map.erase (tid);
+    out_of_transition_size_map.erase (tid);
 
     return eid;
   }
@@ -553,7 +582,7 @@ private:
     update_output_descr (output_descr, pid, eid);
 
     update_set_of_tid ( tid
-                      , output_descr.size() == out_of_transition(tid).size()
+                      , output_descr.size() == out_of_transition_size(tid)
                       , out_enabled
                       , in_enabled
                       );
@@ -581,6 +610,7 @@ public:
     , in_enabled ()
     , out_enabled ()
     , in_to_transition_size_map ()
+    , out_of_transition_size_map ()
   {};
 
   // numbers of elements
@@ -812,6 +842,7 @@ public:
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
         in_to_transition_size_map.erase (connection.tid);
+        out_of_transition_size_map.erase (connection.tid);
 
         in_map[connection.tid].erase (connection.pid);
 
@@ -827,13 +858,14 @@ public:
       {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
         in_to_transition_size_map.erase (connection.tid);
+        out_of_transition_size_map.erase (connection.tid);
 
         out_map[connection.tid].erase (connection.pid);
 
         update_set_of_tid
           ( connection.tid
           ,  out_map[connection.tid].size()
-          == out_of_transition(connection.tid).size()
+          == out_of_transition_size(connection.tid)
           , out_enabled
           , in_enabled
           );
@@ -916,6 +948,8 @@ public:
     out_map.erase (tid);
     enabled_choice_consume.erase (tid);
     enabled_choice_read.erase (tid);
+    in_to_transition_size_map.erase (tid);
+    out_of_transition_size_map.erase (tid);
 
     return tid;
   }
