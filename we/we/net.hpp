@@ -186,6 +186,10 @@ private:
                               , detail::capacity_and_placeholder_type
                               > capacity_map_t;
 
+  typedef boost::unordered_map< tid_t
+                              , std::size_t
+                              > in_to_transition_size_map_type;
+
   // *********************************************************************** //
 
   std::string name;
@@ -212,6 +216,8 @@ private:
   out_map_t out_map;
   in_enabled_t in_enabled;
   out_enabled_t out_enabled;
+
+  in_to_transition_size_map_type in_to_transition_size_map;
 
   // *********************************************************************** //
 
@@ -244,11 +250,29 @@ private:
 
   // *********************************************************************** //
 
+  std::size_t in_to_transition_size (const tid_t& tid)
+  {
+    const in_to_transition_size_map_type::const_iterator pos
+      (in_to_transition_size_map.find (tid));
+
+    if (pos == in_to_transition_size_map.end())
+      {
+        const std::size_t s (in_to_transition(tid).size());
+
+        in_to_transition_size_map[tid] = s;
+
+        return s;
+      }
+
+    return pos->second;
+  }
+
   template<typename ROW, typename COL>
   eid_t gen_add_edge ( const edge_type & edge
                      , const ROW & r
                      , const COL & c
                      , adjacency::table<ROW,COL,eid_t> & m
+                     , const tid_t& tid
                      )
   {
     if (m.get_adjacent (r, c) != eid_invalid)
@@ -257,6 +281,8 @@ private:
     const eid_t eid (emap.add (edge));
 
     m.set_adjacent (r, c, eid);
+
+    in_to_transition_size_map.erase (tid);
 
     return eid;
   }
@@ -388,7 +414,7 @@ private:
     recalculate_pid_in_map (pid_in_map, pid, eid);
 
     update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , pid_in_map.size() == in_to_transition_size(tid)
                       , in_enabled
                       , out_enabled
                       );
@@ -421,7 +447,7 @@ private:
     vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
     update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , pid_in_map.size() == in_to_transition_size(tid)
                       , in_enabled
                       , out_enabled
                       );
@@ -446,7 +472,7 @@ private:
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , pid_in_map.size() == in_to_transition_size(tid)
                       , in_enabled
                       , out_enabled
                       );
@@ -474,7 +500,7 @@ private:
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , pid_in_map.size() == in_to_transition_size(tid)
                       , in_enabled
                       , out_enabled
                       );
@@ -554,6 +580,7 @@ public:
     , out_map ()
     , in_enabled ()
     , out_enabled ()
+    , in_to_transition_size_map ()
   {};
 
   // numbers of elements
@@ -663,8 +690,8 @@ public:
   {
     const eid_t eid
       ( (is_PT (connection.type))
-      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt)
-      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp)
+      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt, connection.tid)
+      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp, connection.tid)
       );
 
     connection_map[eid] = connection;
@@ -784,13 +811,14 @@ public:
     if (is_PT (connection.type))
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
+        in_to_transition_size_map.erase (connection.tid);
 
         in_map[connection.tid].erase (connection.pid);
 
         update_set_of_tid
           ( connection.tid
           ,  in_map[connection.tid].size()
-          == in_to_transition(connection.tid).size()
+          == in_to_transition_size(connection.tid)
           , in_enabled
           , out_enabled
           );
@@ -798,6 +826,7 @@ public:
     else
       {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
+        in_to_transition_size_map.erase (connection.tid);
 
         out_map[connection.tid].erase (connection.pid);
 
