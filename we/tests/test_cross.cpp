@@ -80,5 +80,7 @@ main ()
 
   traverse (cross_t (map, engine));
 
+  cout << "size = " << cross_t (map).size() << std::endl;
+
   return EXIT_SUCCESS;
 }

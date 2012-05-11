@@ -41,7 +41,7 @@ public:
 
   int set (std::string const &name, size_t value)
   {
-    assert (name);
+    assert (not name.empty());
 
     size_t cur_value, max_value;
     if (0 == current(name, &cur_value, &max_value))
@@ -66,7 +66,7 @@ public:
 
   int initialize (std::string const &name, size_t max)
   {
-    assert (name);
+    assert (not name.empty());
 
     m_kvs->put ( get_key_for_current (name), 0);
     m_kvs->put ( get_key_for_maximum (name), max);
@@ -76,7 +76,7 @@ public:
 
   int current (std::string const &name, size_t *value, size_t *max) const
   {
-    assert (name);
+    assert (not name.empty());
 
     if (value)
     {
@@ -93,7 +93,7 @@ public:
 
   int finalize (std::string const &name)
   {
-    assert (name);
+    assert (not name.empty());
 
     size_t max;
     if (0 == current (name, 0, &max))
@@ -106,7 +106,7 @@ public:
 
   int tick (std::string const &name, size_t step)
   {
-    assert (name);
+    assert (not name.empty());
 
     if (step > (size_t)std::numeric_limits<int>::max())
     {

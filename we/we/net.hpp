@@ -186,6 +186,10 @@ private:
                               , detail::capacity_and_placeholder_type
                               > capacity_map_t;
 
+  typedef boost::unordered_map< tid_t
+                              , std::size_t
+                              > adjacent_transition_size_map_type;
+
   // *********************************************************************** //
 
   std::string name;
@@ -212,6 +216,9 @@ private:
   out_map_t out_map;
   in_enabled_t in_enabled;
   out_enabled_t out_enabled;
+
+  adjacent_transition_size_map_type in_to_transition_size_map;
+  adjacent_transition_size_map_type out_of_transition_size_map;
 
   // *********************************************************************** //
 
@@ -244,11 +251,56 @@ private:
 
   // *********************************************************************** //
 
+  std::size_t adjacent_size
+  ( adjacent_transition_size_map_type& m
+  , boost::function<adj_place_const_it (const tid_t&)> f
+  , const tid_t& tid
+  ) const
+  {
+    const adjacent_transition_size_map_type::const_iterator pos (m.find (tid));
+
+    if (pos == m.end())
+      {
+        const std::size_t s (f (tid).size());
+
+        m[tid] = s;
+
+        return s;
+      }
+
+    return pos->second;
+  }
+
+  std::size_t in_to_transition_size (const tid_t& tid)
+  {
+    return adjacent_size
+      ( in_to_transition_size_map
+      , boost::bind ( &net<Place,Transition,Edge,Token>::in_to_transition
+                    , this
+                    , _1
+                    )
+      , tid
+      );
+  }
+
+  std::size_t out_of_transition_size (const tid_t& tid)
+  {
+    return adjacent_size
+      ( out_of_transition_size_map
+      , boost::bind ( &net<Place,Transition,Edge,Token>::out_of_transition
+                    , this
+                    , _1
+                    )
+      , tid
+      );
+  }
+
   template<typename ROW, typename COL>
   eid_t gen_add_edge ( const edge_type & edge
                      , const ROW & r
                      , const COL & c
                      , adjacency::table<ROW,COL,eid_t> & m
+                     , const tid_t& tid
                      )
   {
     if (m.get_adjacent (r, c) != eid_invalid)
@@ -257,6 +309,9 @@ private:
     const eid_t eid (emap.add (edge));
 
     m.set_adjacent (r, c, eid);
+
+    in_to_transition_size_map.erase (tid);
+    out_of_transition_size_map.erase (tid);
 
     return eid;
   }
@@ -291,7 +346,11 @@ private:
             // call the global condition function here, that sets the
             // cross product either to the end or to some valid choice
 
-            if (get_transition (tid).condition (cs))
+            if (not get_transition (tid).condition (cs))
+              {
+                enabled.erase (tid);
+              }
+            else
               {
                 enabled.insert (tid);
 
@@ -315,10 +374,6 @@ private:
                         enabled_choice_consume[tid].push_back (*choice);
                       }
                   }
-              }
-            else
-              {
-                enabled.erase (tid);
               }
           }
       }
@@ -388,7 +443,7 @@ private:
     recalculate_pid_in_map (pid_in_map, pid, eid);
 
     update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , pid_in_map.size() == in_to_transition_size(tid)
                       , in_enabled
                       , out_enabled
                       );
@@ -421,7 +476,7 @@ private:
     vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
     update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , pid_in_map.size() == in_to_transition_size(tid)
                       , in_enabled
                       , out_enabled
                       );
@@ -446,7 +501,7 @@ private:
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , pid_in_map.size() == in_to_transition_size(tid)
                       , in_enabled
                       , out_enabled
                       );
@@ -474,7 +529,7 @@ private:
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , pid_in_map.size() == in_to_transition_size(tid)
                       , in_enabled
                       , out_enabled
                       );
@@ -527,7 +582,7 @@ private:
     update_output_descr (output_descr, pid, eid);
 
     update_set_of_tid ( tid
-                      , output_descr.size() == out_of_transition(tid).size()
+                      , output_descr.size() == out_of_transition_size(tid)
                       , out_enabled
                       , in_enabled
                       );
@@ -554,6 +609,8 @@ public:
     , out_map ()
     , in_enabled ()
     , out_enabled ()
+    , in_to_transition_size_map ()
+    , out_of_transition_size_map ()
   {};
 
   // numbers of elements
@@ -663,8 +720,8 @@ public:
   {
     const eid_t eid
       ( (is_PT (connection.type))
-      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt)
-      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp)
+      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt, connection.tid)
+      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp, connection.tid)
       );
 
     connection_map[eid] = connection;
@@ -784,13 +841,15 @@ public:
     if (is_PT (connection.type))
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
+        in_to_transition_size_map.erase (connection.tid);
+        out_of_transition_size_map.erase (connection.tid);
 
         in_map[connection.tid].erase (connection.pid);
 
         update_set_of_tid
           ( connection.tid
           ,  in_map[connection.tid].size()
-          == in_to_transition(connection.tid).size()
+          == in_to_transition_size(connection.tid)
           , in_enabled
           , out_enabled
           );
@@ -798,13 +857,15 @@ public:
     else
       {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
+        in_to_transition_size_map.erase (connection.tid);
+        out_of_transition_size_map.erase (connection.tid);
 
         out_map[connection.tid].erase (connection.pid);
 
         update_set_of_tid
           ( connection.tid
           ,  out_map[connection.tid].size()
-          == out_of_transition(connection.tid).size()
+          == out_of_transition_size(connection.tid)
           , out_enabled
           , in_enabled
           );
@@ -887,6 +948,8 @@ public:
     out_map.erase (tid);
     enabled_choice_consume.erase (tid);
     enabled_choice_read.erase (tid);
+    in_to_transition_size_map.erase (tid);
+    out_of_transition_size_map.erase (tid);
 
     return tid;
   }

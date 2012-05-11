@@ -243,7 +243,7 @@ main ()
 
       for (unsigned int f(0); f < num_fire; ++f)
         {
-          pnet_t::enabled_t t (n.enabled_transitions());
+          const pnet_t::enabled_t& t (n.enabled_transitions());
 
           if (!t.empty())
             {
