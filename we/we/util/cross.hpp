@@ -5,6 +5,7 @@
 
 #include <we/util/it.hpp>
 
+#include <numeric>
 #include <vector>
 
 #include <cassert>
