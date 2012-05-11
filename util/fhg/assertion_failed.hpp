@@ -17,7 +17,11 @@ namespace fhg
       std::ostringstream sstr;
       sstr << "assertion '" << cond << "'"
            << " in " << file << ":" << line
-           << " failed: " << message;
+           << " failed";
+      if (not message.empty())
+      {
+        sstr << ": " << message;
+      }
       return sstr.str();
     }
 

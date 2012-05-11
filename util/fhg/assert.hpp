@@ -86,14 +86,11 @@
     {                                                                   \
       std::cerr << "*** assertion '" << FHG_ASSERT_STR(cond) << "'"     \
                 << " in " << __FILE__ << ":" << __LINE__                \
+                << "failed"                                             \
       ;                                                                 \
-      if (! #msg[0])                                                    \
+      if (#msg[0])                                                      \
       {                                                                 \
-        std::cerr << " failed";                                         \
-      }                                                                 \
-      else                                                              \
-      {                                                                 \
-        std::cerr << " failed: " << "" msg;                             \
+        std::cerr << ": " << "" msg;                                    \
       }                                                                 \
       std::cerr << std::endl << std::flush;                             \
     }                                                                   \
@@ -110,7 +107,7 @@
     {                                                                   \
       LOG(ERROR, "*** assertion '" << FHG_ASSERT_STR(cond) << "'"       \
          << " in " << __FILE__ << ":" << __LINE__                       \
-         << " failed: " << msg << std::flush                            \
+         << " failed: " << "" msg << std::flush                         \
          );                                                             \
       abort();                                                          \
     }                                                                   \
