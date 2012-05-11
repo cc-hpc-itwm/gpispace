@@ -162,6 +162,8 @@ namespace fhg
 
 #endif // if 0
 
+#else
+#  error invalid FHG_ASSERT_MODE
 #endif
 
 #ifdef FHG_ASSERT_REPLACE_LEGACY
