@@ -30,52 +30,7 @@
  */
 
 #include <sstream>
-
-namespace fhg
-{
-  class assertion_failed : public std::exception
-  {
-  public:
-    assertion_failed ( std::string const & cond
-                     , std::string const & message
-                     , std::string const & file
-                     , int line
-                     )
-      : m_cond (cond)
-      , m_message (message)
-      , m_file (file)
-      , m_line (line)
-    {
-      std::ostringstream sstr;
-      sstr << "assertion '" << m_cond << "'"
-           << " in " << m_file << ":" << m_line
-           << " failed: " << m_message;
-      m_what_text = sstr.str();
-    }
-
-    virtual ~assertion_failed() throw() {}
-
-    const char * what () const throw() { return m_what_text.c_str(); }
-
-    std::string const & condition() const { return m_cond; }
-    std::string const & message() const { return m_message; }
-    std::string const & file() const { return m_file; }
-    int line() const { return m_line; }
-  private:
-    std::string m_cond;
-    std::string m_message;
-    std::string m_file;
-    int         m_line;
-    std::string m_what_text;
-  };
-}
-
-#define FHG_ASSERT_IGNORE    0
-#define FHG_ASSERT_ENABLED   1
-#define FHG_ASSERT_LEGACY    2
-#define FHG_ASSERT_EXCEPTION 3
-#define FHG_ASSERT_LOG       4
-//#define FHG_ASSERT_LOG_ABORT 5
+#include <fhg/assert_modes.hpp>
 
 #define FHG_ASSERT_STR_(x) #x
 #define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
@@ -111,6 +66,7 @@ namespace fhg
 #  define fhg_assert(cond, msg...) assert(cond)
 
 #elif FHG_ASSERT_EXCEPTION == FHG_ASSERT_MODE
+#  include <fhg/assertion_failed.hpp>
 #  define fhg_assert(cond, msg...)                                      \
   do                                                                    \
   {                                                                     \

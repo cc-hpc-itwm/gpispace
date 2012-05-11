@@ -1,3 +1,5 @@
+configure_file(assert_config.hpp.in assert_config.hpp @ONLY)
+
 add_subdirectory(util)
 add_subdirectory(plugin)
 
@@ -37,7 +39,7 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINA
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
 
-install (FILES revision.hpp assert.hpp
+install (FILES revision.hpp assert.hpp assert_modes.hpp assertion_failed.hpp
   DESTINATION include/fhg
   COMPONENT headers
   )

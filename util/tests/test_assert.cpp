@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <fhg/assert.hpp>
+#include <fhg/assertion_failed.hpp>
 #include <iostream>
 
 BOOST_AUTO_TEST_CASE(assert_true)
