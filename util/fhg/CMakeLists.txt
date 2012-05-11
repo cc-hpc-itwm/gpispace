@@ -28,7 +28,7 @@ execute_process(COMMAND date
 execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version
                 COMMAND head -n 1
                 OUTPUT_VARIABLE FHG_BUILD_COMPILER
-		OUTPUT_STRIP_TRAILING_WHITESPACE
+                OUTPUT_STRIP_TRAILING_WHITESPACE
                )
 set(FHG_BUILD_INFO "${FHG_BUILD_KERNEL} ${FHG_BUILDL_CPU} ${FHG_BUILD_USER}@${FHG_BUILD_HOST} Build #${PROJECT_BUILD}")
 set(FHG_BUILD_COUNT ${PROJECT_BUILD})
@@ -37,7 +37,7 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINA
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
 
-install (FILES revision.hpp
+install (FILES revision.hpp assert.hpp
   DESTINATION include/fhg
   COMPONENT headers
   )

@@ -41,3 +41,8 @@ fhg_add_test(test_plugin_version.cpp
   ARGS ${CMAKE_CURRENT_BINARY_DIR}
   DESCRIPTION "Tests the plugin kernel"
 )
+
+fhg_add_test(test_assert.cpp
+  COMPILE_FLAGS "-DFHG_ASSERT_MODE=3 -DFHG_ASSERT_REPLACE_LEGACY"
+  DESCRIPTION "Tests fhg_assert"
+  )
