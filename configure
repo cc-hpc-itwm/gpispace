@@ -24,6 +24,7 @@ build_gpi=true
 build_gpi_fuse=false
 build_gui=true
 build_pnete=true
+enable_asserts=false
 
 strip_log=
 build_rev=
@@ -36,20 +37,20 @@ function get_cmake_cache_entry ()
 
     result=$( grep "$cache_entry": CMakeCache.txt 2>/dev/null | cut -d= -f 2 )
     if [ $? -eq 0 -a -n "$result" ] ; then
-	case "$result" in
-	    ON)
-		result="true"
-		;;
-	    OFF)
-		result="false"
-		;;
-	    *)
-		;;
-	esac
-	eval "$variable=$result"
-	return 0
+        case "$result" in
+            ON)
+                result="true"
+                ;;
+            OFF)
+                result="false"
+                ;;
+            *)
+                ;;
+        esac
+        eval "$variable=$result"
+        return 0
     else
-	return 1
+        return 1
     fi
 }
 
@@ -78,10 +79,10 @@ if [ $? != 0 ]; then
     echo "W: could not get version information from git, trying svn..." >&2
     build_rev="$( cd "$src" && svn info | grep '^Revision:' | cut -d' ' -f 2 )"
     if [ -z "$build_rev" ] ; then
-	get_cmake_cache_entry PROJECT_REVISION build_rev
-	if [ -n "$build_rev" ] ; then
-	    echo "W: using old revision ($build_rev), this might not be what you want..." >&2
-	fi
+        get_cmake_cache_entry PROJECT_REVISION build_rev
+        if [ -n "$build_rev" ] ; then
+            echo "W: using old revision ($build_rev), this might not be what you want..." >&2
+        fi
     fi
 fi
 
@@ -104,13 +105,14 @@ cat >&2 <<EOF
 #          gui: $build_gui
 #     real-gpi: $build_gpi
 #    strip-log: $strip_log
+#      asserts: $enable_asserts
 EOF
 }
 
 function usage ()
 {
     cat >&2 <<EOF
-$0 [-h] [-b type] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-m|-M] [-r version] [-L level] [-p prefix] [-- options to cmake]
+$0 [-h] [-b type] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-m|-M] [-V version] [-L level] [-p prefix] [-- options to cmake]
    -h  : print help
    -b  : build type
    -aA : build apps (a:yes A:no)
@@ -120,7 +122,8 @@ $0 [-h] [-b type] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-m|-M] [-r version] [
    -fF : build gpi filesystem (f:yes F:no)
    -mM : build monitor guil (m:yes M:no)
    -eE : build pnet editor (e:yes E:no)
-   -r  : explicitly set revision
+   -rR : build with assertions (r:yes R:no)
+   -V  : explicitly set revision
    -L  : strip log level up to and including N
    -p  : install prefix
 
@@ -129,89 +132,97 @@ EOF
 }
 
 count=0
-while getopts ":hb:tTsSaAgGfFmMeEL:r:p:" opt; do
+while getopts ":hb:tTsSaAgGfFmMeErRL:V:p:" opt; do
     case $opt in
-	h)
-	    usage
-	    exit 0
-	    ;;
+        h)
+            usage
+            exit 0
+            ;;
         b)
             count=$(( count + 2 ))
             build_type="$OPTARG"
-	    ;;
-	a)
-	    count=$(( count + 1 ))
-	    build_apps=true
-	    ;;
-	A)
-	    count=$(( count + 1 ))
-	    build_apps=false
-	    ;;
-	t)
-	    count=$(( count + 1 ))
-	    build_tests=true
-	    ;;
-	T)
-	    count=$(( count + 1 ))
-	    build_tests=false
-	    ;;
-	s)
-	    count=$(( count + 1 ))
-	    build_static=true
-	    ;;
-	S)
-	    count=$(( count + 1 ))
-	    build_static=false
-	    ;;
-	g)
-	    count=$(( count + 1 ))
-	    build_gpi=true
-	    ;;
-	G)
-	    count=$(( count + 1 ))
-	    build_gpi=false
-	    ;;
-	f)
-	    count=$(( count + 1 ))
-	    build_gpi_fuse=true
-	    ;;
-	F)
-	    count=$(( count + 1 ))
-	    build_gpi_fuse=false
-	    ;;
-	m)
-	    count=$(( count + 1 ))
-	    build_gui=true
-	    ;;
-	M)
-	    count=$(( count + 1 ))
-	    build_gui=false
-	    ;;
-	e)
-	    count=$(( count + 1 ))
-	    build_pnete=true
-	    ;;
-	E)
-	    count=$(( count + 1 ))
-	    build_pnete=false
-	    ;;
-	L)
-	    count=$(( count + 2 ))
-	    strip_log="$OPTARG"
-	    ;;
-	r)
-	    count=$(( count + 2 ))
-	    build_rev="$OPTARG"
-	    ;;
-	p)
-	    count=$(( count + 2 ))
-	    build_prefix="$OPTARG"
-	    ;;
-	\?)
-	    echo "E: invalid option: -$OPTARG" >&2
-	    echo "try: $0 -h" >&2
-	    exit 1
-	    ;;
+            ;;
+        a)
+            count=$(( count + 1 ))
+            build_apps=true
+            ;;
+        A)
+            count=$(( count + 1 ))
+            build_apps=false
+            ;;
+        t)
+            count=$(( count + 1 ))
+            build_tests=true
+            ;;
+        T)
+            count=$(( count + 1 ))
+            build_tests=false
+            ;;
+        s)
+            count=$(( count + 1 ))
+            build_static=true
+            ;;
+        S)
+            count=$(( count + 1 ))
+            build_static=false
+            ;;
+        g)
+            count=$(( count + 1 ))
+            build_gpi=true
+            ;;
+        G)
+            count=$(( count + 1 ))
+            build_gpi=false
+            ;;
+        f)
+            count=$(( count + 1 ))
+            build_gpi_fuse=true
+            ;;
+        F)
+            count=$(( count + 1 ))
+            build_gpi_fuse=false
+            ;;
+        m)
+            count=$(( count + 1 ))
+            build_gui=true
+            ;;
+        M)
+            count=$(( count + 1 ))
+            build_gui=false
+            ;;
+        e)
+            count=$(( count + 1 ))
+            build_pnete=true
+            ;;
+        E)
+            count=$(( count + 1 ))
+            build_pnete=false
+            ;;
+        L)
+            count=$(( count + 2 ))
+            strip_log="$OPTARG"
+            ;;
+        V)
+            count=$(( count + 2 ))
+            build_rev="$OPTARG"
+            ;;
+        p)
+            count=$(( count + 2 ))
+            build_prefix="$OPTARG"
+            ;;
+        r)
+            count=$(( count + 1 ))
+            enable_asserts=true
+            ;;
+        R)
+            count=$(( count + 1 ))
+            enable_asserts=false
+            ;;
+        \?)
+            echo "E: invalid option: -$OPTARG" >&2
+            echo "try: $0 -h" >&2
+            exit 1
+            ;;
     esac
 done
 shift $count
@@ -284,6 +295,12 @@ if [ -z "$build_prefix" ] ; then
 fi
 if [ -n "$build_prefix" ] ; then
     cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
+fi
+
+if $enable_asserts ; then
+    cmake_flags="$cmake_flags -DFHGLOG_ASSERT_MODE=1"
+else
+    cmake_flags="$cmake_flags -DFHGLOG_ASSERT_MODE=0"
 fi
 
 cmake_flags="$cmake_flags $@"
