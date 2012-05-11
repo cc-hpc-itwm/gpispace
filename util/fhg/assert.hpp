@@ -29,6 +29,8 @@
    the message is optional but if given, must be a C-string
  */
 
+#include <sstream>
+
 namespace fhg
 {
   class assertion_failed : public std::exception
@@ -75,6 +77,9 @@ namespace fhg
 #define FHG_ASSERT_LOG       4
 //#define FHG_ASSERT_LOG_ABORT 5
 
+#define FHG_ASSERT_STR_(x) #x
+#define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
+
 #ifndef FHG_ASSERT_MODE
 #  define FHG_ASSERT_MODE FHG_ASSERT_IGNORE
 #endif
@@ -92,9 +97,9 @@ namespace fhg
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << "*** assertion '" << #cond << "'"                    \
+      std::cerr << "*** assertion '" << FHG_ASSERT_STR(cond) << "'"     \
                 << " in " << __FILE__ << ":" << __LINE__                \
-                << " failed: " << msg                                   \
+                << " failed: " << "" msg                                \
                 << std::endl                                            \
                 << std::flush;                                          \
       abort();                                                          \
@@ -111,7 +116,8 @@ namespace fhg
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      throw fhg::assertion_failed (#cond, "" msg, __FILE__, __LINE__);  \
+      throw fhg::assertion_failed ( FHG_ASSERT_STR(cond)                \
+                                  , "" msg, __FILE__, __LINE__);        \
     }                                                                   \
   } while (0)
 
@@ -122,7 +128,7 @@ namespace fhg
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << "*** assertion '" << #cond << "'"                    \
+      std::cerr << "*** assertion '" << FHG_ASSERT_STR(cond) << "'"     \
                 << " in " << __FILE__ << ":" << __LINE__                \
       ;                                                                 \
       if (! #msg[0])                                                    \
@@ -146,7 +152,7 @@ namespace fhg
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      LOG(ERROR, "*** assertion '" << #cond << "'"                      \
+      LOG(ERROR, "*** assertion '" << FHG_ASSERT_STR(cond) << "'"       \
          << " in " << __FILE__ << ":" << __LINE__                       \
          << " failed: " << msg << std::flush                            \
          );                                                             \
@@ -160,13 +166,17 @@ namespace fhg
 
 #ifdef FHG_ASSERT_REPLACE_LEGACY
 
-#if FHG_ASSERT_LEGACY != FHG_ASSERT_MODE
-#  undef assert
-#  define assert(cond) fhg_assert(cond)
-#else
-#  error cannot replace legacy 'assert' statements in FHG_ASSERT_LEGACY mode!
-#endif
+#  if FHG_ASSERT_LEGACY != FHG_ASSERT_MODE
+#    undef assert
+#    define assert(cond) fhg_assert(cond)
+#  else
+#    error cannot replace legacy 'assert' statements in FHG_ASSERT_LEGACY mode!
+#  endif
 
+#else
+#  ifndef assert
+#    define assert(cond)
+#  endif
 #endif
 
 #endif
