@@ -542,7 +542,6 @@ public:
 
   int open (std::string const & name)
   {
-    gpi::pc::type::handle_t handle = 0;
     size_t size = 0;
     int ec = 0;
 
