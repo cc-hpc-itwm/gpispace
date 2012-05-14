@@ -27,16 +27,6 @@ namespace drts
       , CANCELED
       };
 
-    enum result_code_t
-      {
-        NO_FAILURE                = 0
-      , MODULE_CALL_SEGFAULTED    = 9
-      , MODULE_CALL_FAILED        = 11
-      , MODULE_NOT_FOUND          = 50
-      , MODULE_LOAD_FAILED        = 51
-      , MODULE_UNDEFINED_FUNCTION = 52
-      };
-
     struct ID
     {
       explicit ID(std::string const &s)
@@ -93,11 +83,11 @@ namespace drts
       return *this;
     }
 
-    result_code_t result_code () const {
+    int result_code () const {
       lock_type lck(m_mutex); return m_result_code;
     }
 
-    Job& set_result_code (const result_code_t rc) {
+    Job& set_result_code (const int rc) {
       lock_type lck(m_mutex); m_result_code = rc;
       return *this;
     }
@@ -157,13 +147,13 @@ namespace drts
     inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
     mutable mutex_type m_mutex;
 
-    std::string   m_id;
-    std::string   m_input_description;
-    std::string   m_owner;
-    state_t       m_state;
-    std::string   m_result;
-    result_code_t m_result_code;
-    std::string   m_message;
+    std::string m_id;
+    std::string m_input_description;
+    std::string m_owner;
+    state_t     m_state;
+    std::string m_result;
+    int         m_result_code;
+    std::string m_message;
 
     // timestamps
     boost::posix_time::ptime m_entered;

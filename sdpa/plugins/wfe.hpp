@@ -19,6 +19,7 @@ namespace wfe
                         , std::string const &job_description
                         , capabilities_t const & capabilities
                         , std::string & result
+                        , std::string & error_message
                         , meta_data_t const &meta_data = meta_data_t()
                         ) = 0;
     virtual int cancel (std::string const &job_id) = 0;
