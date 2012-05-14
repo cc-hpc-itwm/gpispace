@@ -11,7 +11,7 @@ namespace drts
     , m_owner (owner.value)
     , m_state (Job::PENDING)
     , m_result ()
-    , m_result_code (Job::NO_FAILURE)
+    , m_result_code (0)
     , m_message ("")
     , m_entered(boost::posix_time::microsec_clock::universal_time())
     , m_started(boost::posix_time::from_time_t(0))

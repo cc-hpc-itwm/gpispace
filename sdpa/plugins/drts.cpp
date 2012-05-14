@@ -3,6 +3,7 @@
 #include "job.hpp"
 #include "wfe.hpp"
 #include "observable.hpp"
+#include "job_result_code.hpp"
 
 #include <errno.h>
 
@@ -856,33 +857,38 @@ private:
           MLOG(TRACE, "executing job " << job->id());
 
           std::string result;
+          std::string error_message;
           int ec = m_wfe->execute ( job->id()
                                   , job->description()
                                   , m_capabilities
                                   , result
+                                  , error_message
                                   , meta_data
                                   );
           job->set_result (result);
+          job->set_result_code (ec);
+          job->set_message (error_message);
 
           job->completed(boost::posix_time::microsec_clock::universal_time());
 
           MLOG( TRACE
               , "job returned."
-              << " error-code := " << ec
+              << " error-code := " << job->result_code()
+              << " error-message := " << job->message()
               << " total-time := " << (job->completed() - job->started())
               );
 
-          if (ec > 0)
+          if (fhg::wfe::NO_FAILURE == ec)
           {
-            job->set_state (drts::Job::FAILED);
+            job->set_state (drts::Job::FINISHED);
           }
-          else if (ec < 0)
+          else if (fhg::wfe::JOB_CANCELLED == ec)
           {
             job->set_state (drts::Job::CANCELED);
           }
           else
           {
-            job->set_state (drts::Job::FINISHED);
+            job->set_state (drts::Job::FAILED);
           }
         }
         catch (std::exception const & ex)
@@ -891,6 +897,10 @@ private:
               , "unexpected exception during job execution: " << ex.what()
               );
           job->set_state (drts::Job::FAILED);
+
+          job->set_result (job->description());
+          job->set_result_code (fhg::wfe::UNEXPECTED_ERROR);
+          job->set_message (ex.what());
         }
 
         send_job_result_to_master (job);
@@ -1038,12 +1048,19 @@ private:
                         );
       break;
     case drts::Job::FAILED:
-      return send_event (new sdpa::events::JobFailedEvent ( m_my_name
-                                                          , job->owner()
-                                                          , job->id()
-                                                          , job->result()
-                                                          )
-                        );
+      {
+        sdpa::events::JobFailedEvent *event
+          (new sdpa::events::JobFailedEvent ( m_my_name
+                                            , job->owner()
+                                            , job->id()
+                                            , job->result()
+                                            )
+          );
+        event->result_code() = job->result_code();
+        event->error_message() = job->message();
+
+        return send_event (event); // send_event takes ownership
+      }
       break;
     case drts::Job::CANCELED:
       return send_event (new sdpa::events::CancelJobAckEvent ( m_my_name

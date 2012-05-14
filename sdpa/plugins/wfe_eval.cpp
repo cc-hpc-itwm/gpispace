@@ -33,11 +33,13 @@ public:
 
     const std::string workflow_descritpion (sstr.str());
     std::string       workflow_result;
+    std::string       error_message;
 
     int ec = wfe->execute ( "job-1"
                           , workflow_descritpion
                           , wfe::capabilities_t ()
                           , workflow_result
+                          , error_message
                           );
 
     if (output == "-")
