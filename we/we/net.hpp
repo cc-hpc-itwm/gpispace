@@ -50,14 +50,6 @@ namespace petri_net
       {}
     };
 
-    class capacity_exceeded : public generic
-    {
-    public:
-      explicit capacity_exceeded ()
-        : generic ("capacity exceeded")
-      {}
-    };
-
     class no_such : public generic
     {
     public:
@@ -88,34 +80,6 @@ namespace petri_net
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
   typedef connection<edge_type, tid_t, pid_t> connection_t;
-
-  namespace detail
-  {
-    struct capacity_and_placeholder_type
-    {
-    private:
-      capacity_t _left;
-      capacity_t _used;
-    public:
-      capacity_and_placeholder_type () : _left (0), _used (0) {}
-      explicit capacity_and_placeholder_type (const capacity_t& cap)
-        : _left (cap)
-        , _used (0)
-      {}
-      const capacity_t& left () const { return _left; }
-      capacity_t capacity () const { return _left + _used; }
-      void extract () { assert (_left > 0); --_left; ++_used; }
-      void put () { if (_used > 0) { --_used; ++_left; } }
-
-      friend class boost::serialization::access;
-      template<typename Archive>
-      void serialize (Archive & ar, const unsigned int)
-      {
-        ar & BOOST_SERIALIZATION_NVP(_left);
-        ar & BOOST_SERIALIZATION_NVP(_used);
-      }
-    };
-  }
 
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
 // single map<tid_t,(X,Y)>?
@@ -182,10 +146,6 @@ private:
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
   typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
 
-  typedef boost::unordered_map< pid_t
-                              , detail::capacity_and_placeholder_type
-                              > capacity_map_t;
-
   typedef boost::unordered_map< tid_t
                               , std::size_t
                               > adjacent_transition_size_map_type;
@@ -209,8 +169,6 @@ private:
   enabled_choice_t enabled_choice_read;
 
   trans_map_t trans;
-
-  capacity_map_t capacity_map;
 
   in_map_t in_map;
   out_map_t out_map;
@@ -242,7 +200,6 @@ private:
     //     because the function is already encapsulated
     //
     //    ar & BOOST_SERIALIZATION_NVP(trans);
-    ar & BOOST_SERIALIZATION_NVP(capacity_map);
     ar & BOOST_SERIALIZATION_NVP(in_map);
     ar & BOOST_SERIALIZATION_NVP(out_map);
     ar & BOOST_SERIALIZATION_NVP(in_enabled);
@@ -535,26 +492,12 @@ private:
                       );
   }
 
-  bool capacity_exceeded (const pid_t & pid) const
-  {
-    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
-
-    return cap != capacity_map.end() && num_token (pid) >= cap->second.left();
-  }
-
   void update_output_descr ( output_descr_t & output_descr
                            , const pid_t & pid
                            , const eid_t & eid
                            )
   {
-    if (capacity_exceeded (pid))
-      {
-        output_descr.erase (pid);
-      }
-    else
-      {
-        output_descr[pid] = eid;
-      }
+    output_descr[pid] = eid;
   }
 
   void calculate_out_enabled (const tid_t & tid)
@@ -604,7 +547,6 @@ public:
     , enabled_choice_consume ()
     , enabled_choice_read ()
     , trans ()
-    , capacity_map ()
     , in_map ()
     , out_map ()
     , in_enabled ()
@@ -660,30 +602,6 @@ public:
   pid_t add_place (const place_type & place)
   {
     return pmap.add (place);
-  }
-
-  void set_capacity (const pid_t & pid, const capacity_t & cap)
-  {
-    capacity_map[pid] = detail::capacity_and_placeholder_type (cap);
-
-    recalculate_out_enabled_by_place (pid);
-  }
-
-  void clear_capacity (const pid_t & pid)
-  {
-    capacity_map.erase (pid);
-
-    recalculate_out_enabled_by_place (pid);
-  }
-
-  boost::optional<capacity_t> get_capacity (const pid_t & pid) const
-  {
-    const capacity_map_t::const_iterator pos (capacity_map.find (pid));
-
-    return (pos == capacity_map.end())
-      ? boost::none
-      : boost::optional<capacity_t> (pos->second.capacity())
-      ;
   }
 
   void set_transition_function (const tid_t & tid, const trans_t & f)
@@ -1035,18 +953,6 @@ public:
 
   void put_token (const pid_t & pid, const token_type & token)
   {
-    capacity_map_t::iterator cap (capacity_map.find (pid));
-
-    if (cap != capacity_map.end())
-      {
-        cap->second.put();
-
-        if (num_token (pid) >= cap->second.left())
-          {
-            throw exception::capacity_exceeded ();
-          }
-      }
-
     token_place_rel.add (token, pid);
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
@@ -1182,18 +1088,6 @@ public:
 
     // before! constructing the input, as this consumes tokens
     output_descr_t output_descr (get_output_descr(tid));
-
-    BOOST_FOREACH (const typename output_descr_t::value_type& val, output_descr)
-      {
-        capacity_map_t::iterator cap (capacity_map.find (val.first));
-
-        if (cap != capacity_map.end())
-          {
-            cap->second.extract();
-
-            recalculate_out_enabled_by_place (val.first);
-          }
-      }
 
     input_t input;
     const typename enabled_choice_t::iterator choice_consume
