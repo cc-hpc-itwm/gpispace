@@ -136,15 +136,11 @@ private:
   typedef boost::unordered_map<eid_t, connection_t> connection_map_t;
   typedef typename multirel::multirel<token_type,pid_t> token_place_rel_t;
 
-  typedef boost::unordered_set<tid_t> set_of_tid_t;
-  typedef set_of_tid_t in_enabled_t;
-  typedef set_of_tid_t out_enabled_t;
-
   typedef typename cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
   typedef boost::unordered_map<tid_t, choice_vec_t> enabled_choice_t;
+  typedef typename enabled_choice_t::iterator choice_iterator_t;
 
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
-  typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
 
   typedef boost::unordered_map< tid_t
                               , std::size_t
@@ -171,9 +167,6 @@ private:
   trans_map_t trans;
 
   in_map_t in_map;
-  out_map_t out_map;
-  in_enabled_t in_enabled;
-  out_enabled_t out_enabled;
 
   adjacent_transition_size_map_type in_to_transition_size_map;
   adjacent_transition_size_map_type out_of_transition_size_map;
@@ -201,10 +194,7 @@ private:
     //
     //    ar & BOOST_SERIALIZATION_NVP(trans);
     ar & BOOST_SERIALIZATION_NVP(in_map);
-    ar & BOOST_SERIALIZATION_NVP(out_map);
-    ar & BOOST_SERIALIZATION_NVP(in_enabled);
-    ar & BOOST_SERIALIZATION_NVP(out_enabled);
-  }
+ }
 
   // *********************************************************************** //
 
@@ -252,6 +242,8 @@ private:
       );
   }
 
+  // *********************************************************************** //
+
   template<typename ROW, typename COL>
   eid_t gen_add_edge ( const edge_type & edge
                      , const ROW & r
@@ -273,6 +265,8 @@ private:
     return eid;
   }
 
+  // *********************************************************************** //
+
   template<typename MAP>
   const typename MAP::mapped_type & get_fun ( const MAP & map
                                             , const tid_t & tid
@@ -286,58 +280,52 @@ private:
     return f->second;
   }
 
-  void update_set_of_tid ( const tid_t & tid
-                         , const bool can_fire
-                         , set_of_tid_t & a
-                         , set_of_tid_t & b
-                         )
+  // *********************************************************************** //
+
+  void update_set_of_tid_in (const tid_t & tid, const bool can_fire)
   {
-    if (can_fire)
+    if (not can_fire)
       {
-        a.insert (tid);
-
-        if (b.find (tid) != b.end())
-          {
-            choices_t cs (choices(tid));
-
-            // call the global condition function here, that sets the
-            // cross product either to the end or to some valid choice
-
-            if (not get_transition (tid).condition (cs))
-              {
-                enabled.erase (tid);
-              }
-            else
-              {
-                enabled.insert (tid);
-
-                enabled_choice_consume[tid].clear();
-                enabled_choice_read[tid].clear();
-
-                for ( typename cross::iterator<pid_in_map_t> choice (*cs)
-                    ; choice.has_more()
-                    ; ++choice
-                    )
-                  {
-                    const token_via_edge_t & token_via_edge (choice.val());
-                    const eid_t & eid (token_via_edge.second);
-
-                    if (is_pt_read (get_edge_info (eid).type))
-                      {
-                        enabled_choice_read[tid].push_back (*choice);
-                      }
-                    else
-                      {
-                        enabled_choice_consume[tid].push_back (*choice);
-                      }
-                  }
-              }
-          }
+        enabled.erase (tid);
       }
     else
       {
-        a.erase (tid);
-        enabled.erase (tid);
+        enabled.insert (tid);
+
+        choices_t cs (choices(tid));
+
+        // call the global condition function here, that sets the
+        // cross product either to the end or to some valid choice
+
+        if (not get_transition (tid).condition (cs))
+          {
+            enabled.erase (tid);
+          }
+        else
+          {
+            enabled.insert (tid);
+
+            enabled_choice_consume[tid].clear();
+            enabled_choice_read[tid].clear();
+
+            for ( typename cross::iterator<pid_in_map_t> choice (*cs)
+                ; choice.has_more()
+                ; ++choice
+                )
+              {
+                const token_via_edge_t & token_via_edge (choice.val());
+                const eid_t & eid (token_via_edge.second);
+
+                if (is_pt_read (get_edge_info (eid).type))
+                  {
+                    enabled_choice_read[tid].push_back (*choice);
+                  }
+                else
+                  {
+                    enabled_choice_consume[tid].push_back (*choice);
+                  }
+              }
+          }
       }
   }
 
@@ -360,15 +348,7 @@ private:
   void recalculate_enabled_by_place (const pid_t & pid)
   {
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      recalculate_in_enabled (*t, pid, t());
-
-    recalculate_out_enabled_by_place (pid);
-  }
-
-  void recalculate_out_enabled_by_place (const pid_t & pid)
-  {
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
+      recalculate_enabled (*t, pid, t());
   }
 
   void recalculate_enabled_by_edge ( const eid_t & eid
@@ -377,11 +357,7 @@ private:
   {
     if (is_PT (connection.type))
       {
-        recalculate_in_enabled (connection.tid, connection.pid, eid);
-      }
-    else
-      {
-        update_out_enabled (connection.tid, connection.pid, eid);
+        recalculate_enabled (connection.tid, connection.pid, eid);
       }
   }
 
@@ -390,23 +366,21 @@ private:
     recalculate_enabled_by_edge (eid, get_edge_info (eid));
   }
 
-  void recalculate_in_enabled ( const tid_t & tid
-                              , const pid_t & pid
-                              , const eid_t & eid
-                              )
+  void recalculate_enabled ( const tid_t & tid
+                           , const pid_t & pid
+                           , const eid_t & eid
+                           )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
 
     recalculate_pid_in_map (pid_in_map, pid, eid);
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition_size(tid)
-                      , in_enabled
-                      , out_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == in_to_transition_size(tid)
+                         );
   }
 
-  void calculate_in_enabled (const tid_t & tid)
+  void calculate_enabled (const tid_t & tid)
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     adj_place_const_it pit (in_to_transition (tid));
@@ -414,35 +388,31 @@ private:
     for (; pit.has_more(); ++pit)
       recalculate_pid_in_map (pid_in_map, *pit, pit());
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == pit.size()
-                      , in_enabled
-                      , out_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == pit.size()
+                         );
   }
 
-  void update_in_enabled_put_token ( const tid_t & tid
-                                   , const pid_t & pid
-                                   , const eid_t & eid
-                                   , const token_type & token
-                                   )
+  void update_enabled_put_token ( const tid_t & tid
+                                , const pid_t & pid
+                                , const eid_t & eid
+                                , const token_type & token
+                                )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
 
     vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition_size(tid)
-                      , in_enabled
-                      , out_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == in_to_transition_size(tid)
+                         );
   }
 
-  void update_in_enabled_del_one_token ( const tid_t & tid
-                                       , const pid_t & pid
-                                       , const token_type & token
-                                       )
+  void update_enabled_del_one_token ( const tid_t & tid
+                                    , const pid_t & pid
+                                    , const token_type & token
+                                    )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
@@ -457,17 +427,15 @@ private:
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition_size(tid)
-                      , in_enabled
-                      , out_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == in_to_transition_size(tid)
+                         );
   }
 
-  void update_in_enabled_del_all_token ( const tid_t & tid
-                                       , const pid_t & pid
-                                       , const token_type & token
-                                       )
+  void update_enabled_del_all_token ( const tid_t & tid
+                                    , const pid_t & pid
+                                    , const token_type & token
+                                    )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
@@ -485,50 +453,9 @@ private:
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition_size(tid)
-                      , in_enabled
-                      , out_enabled
-                      );
-  }
-
-  void update_output_descr ( output_descr_t & output_descr
-                           , const pid_t & pid
-                           , const eid_t & eid
-                           )
-  {
-    output_descr[pid] = eid;
-  }
-
-  void calculate_out_enabled (const tid_t & tid)
-  {
-    output_descr_t & output_descr (out_map[tid]);
-    adj_place_const_it pit (out_of_transition (tid));
-
-    for (; pit.has_more(); ++pit)
-      update_output_descr (output_descr, *pit, pit());
-
-    update_set_of_tid ( tid
-                      , output_descr.size() == pit.size()
-                      , out_enabled
-                      , in_enabled
-                      );
-  }
-
-  void update_out_enabled ( const tid_t & tid
-                          , const pid_t & pid
-                          , const eid_t & eid
-                          )
-  {
-    output_descr_t & output_descr (out_map[tid]);
-
-    update_output_descr (output_descr, pid, eid);
-
-    update_set_of_tid ( tid
-                      , output_descr.size() == out_of_transition_size(tid)
-                      , out_enabled
-                      , in_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == in_to_transition_size(tid)
+                         );
   }
 
   // *********************************************************************** //
@@ -548,9 +475,6 @@ public:
     , enabled_choice_read ()
     , trans ()
     , in_map ()
-    , out_map ()
-    , in_enabled ()
-    , out_enabled ()
     , in_to_transition_size_map ()
     , out_of_transition_size_map ()
   {};
@@ -628,8 +552,7 @@ public:
 
     trans[tid] = tf;
 
-    calculate_in_enabled (tid);
-    calculate_out_enabled (tid);
+    calculate_enabled (tid);
 
     return tid;
   }
@@ -764,12 +687,10 @@ public:
 
         in_map[connection.tid].erase (connection.pid);
 
-        update_set_of_tid
+        update_set_of_tid_in
           ( connection.tid
           ,  in_map[connection.tid].size()
           == in_to_transition_size(connection.tid)
-          , in_enabled
-          , out_enabled
           );
       }
     else
@@ -777,16 +698,6 @@ public:
         adj_tp.clear_adjacent (connection.tid, connection.pid);
         in_to_transition_size_map.erase (connection.tid);
         out_of_transition_size_map.erase (connection.tid);
-
-        out_map[connection.tid].erase (connection.pid);
-
-        update_set_of_tid
-          ( connection.tid
-          ,  out_map[connection.tid].size()
-          == out_of_transition_size(connection.tid)
-          , out_enabled
-          , in_enabled
-          );
       }
 
     connection_map.erase (it);
@@ -858,12 +769,9 @@ public:
 
     trans.erase (tid);
 
-    in_enabled.erase (tid);
-    out_enabled.erase (tid);
     enabled.erase (tid);
     enabled.erase_priority (tid);
     in_map.erase (tid);
-    out_map.erase (tid);
     enabled_choice_consume.erase (tid);
     enabled_choice_read.erase (tid);
     in_to_transition_size_map.erase (tid);
@@ -936,14 +844,19 @@ public:
     return m->second;
   }
 
-  const output_descr_t & get_output_descr (const tid_t & tid) const
+  const output_descr_t get_output_descr (const tid_t & tid) const
   {
-    const typename out_map_t::const_iterator m (out_map.find (tid));
+    output_descr_t output_descr;
 
-    if (m == out_map.end())
-      throw exception::no_such ("transition in out_map");
+    for ( adj_place_const_it pit (out_of_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      {
+        output_descr[*pit] = pit();
+      }
 
-    return m->second;
+    return output_descr;
   }
 
   const enabled_t & enabled_transitions (void) const
@@ -956,9 +869,7 @@ public:
     token_place_rel.add (token, pid);
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_in_enabled_put_token (*t, pid, t(), token);
-
-    recalculate_out_enabled_by_place (pid);
+      update_enabled_put_token (*t, pid, t(), token);
   }
 
   void put_token (const pid_t & pid)
@@ -986,9 +897,7 @@ public:
     const std::size_t ret (token_place_rel.delete_one (token, pid));
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_in_enabled_del_one_token (*t, pid, token);
-
-    recalculate_out_enabled_by_place (pid);
+      update_enabled_del_one_token (*t, pid, token);
 
     return ret;
   }
@@ -998,9 +907,7 @@ public:
     const std::size_t ret (token_place_rel.delete_all (token, pid));
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_in_enabled_del_all_token (*t, pid, token);
-
-    recalculate_out_enabled_by_place (pid);
+      update_enabled_del_all_token (*t, pid, token);
 
     return ret;
   }
@@ -1057,8 +964,8 @@ public:
     const output_descr_t output_descr;
 
     activity_t ( const tid_t _tid
-               , const input_t _input
-               , const output_descr_t _output_descr
+               , const input_t& _input
+               , const output_descr_t& _output_descr
                )
       : tid (_tid)
       , input (_input)
@@ -1086,14 +993,10 @@ public:
     if (!get_can_fire (tid))
       throw exception::transition_not_enabled ("during call of fire");
 
-    // before! constructing the input, as this consumes tokens
-    output_descr_t output_descr (get_output_descr(tid));
-
     input_t input;
-    const typename enabled_choice_t::iterator choice_consume
-      (enabled_choice_consume.find(tid));
-    const typename enabled_choice_t::iterator choice_read
-      (enabled_choice_read.find(tid));
+
+    const choice_iterator_t choice_consume (enabled_choice_consume.find(tid));
+    const choice_iterator_t choice_read (enabled_choice_read.find(tid));
 
     assert (  (choice_consume != enabled_choice_consume.end())
            || (choice_read != enabled_choice_read.end())
@@ -1135,7 +1038,7 @@ public:
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
       }
 
-    return activity_t (tid, input, output_descr);
+    return activity_t (tid, input, get_output_descr (tid));
   }
 
   template<typename Engine>
