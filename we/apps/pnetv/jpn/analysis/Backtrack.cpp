@@ -2,6 +2,7 @@
 
 #include <algorithm> /* std::reverse() */
 #include <cassert>
+#include <fhg/assert.hpp>
 
 #include "State.h"
 

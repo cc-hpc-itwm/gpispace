@@ -18,6 +18,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <fhg/assert.hpp>
+
 #include <fhglog/minimal.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 

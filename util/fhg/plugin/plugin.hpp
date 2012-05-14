@@ -3,10 +3,10 @@
 
 #include <errno.h>
 
-#include <cassert>
 #include <string>
 #include <map>
 
+#include <fhg/assert.hpp>
 #include <fhg/plugin/magic.hpp>
 #include <fhg/plugin/descriptor.hpp>
 #include <fhg/plugin/plugin_base.hpp>
@@ -21,7 +21,7 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 #define FHG_PLUGIN_START() int fhg_plugin_start ()
 #define FHG_PLUGIN_STARTED() return 0
 #define FHG_PLUGIN_INCOMPLETE() return 1
-#define FHG_PLUGIN_FAILED(err) assert((err) > 0); return -err
+#define FHG_PLUGIN_FAILED(err) fhg_assert(err > 0); return -err
 
 #define FHG_PLUGIN_STOP() int fhg_plugin_stop ()
 #define FHG_PLUGIN_STOPPED() return 0

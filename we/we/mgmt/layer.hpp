@@ -19,10 +19,9 @@
 #ifndef WE_MGMT_LAYER_HPP
 #define WE_MGMT_LAYER_HPP 1
 
-#include <cassert>
-
 #include <fhglog/fhglog.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/util/show.hpp>
 #include <fhg/util/warnings.hpp>
 
@@ -123,12 +122,12 @@ namespace we { namespace mgmt {
       /**
        * Submit a new petri net to the petri-net management layer
        *
-       *	  pre-conditions: none
+       *          pre-conditions: none
        *
-       *	  side-effects: parses the passed data
-       *					registeres the petri-net with the mgmt layer
+       *          side-effects: parses the passed data
+       *                                        registeres the petri-net with the mgmt layer
        *
-       *	  post-conditions: the net is registered is with id "id"
+       *          post-conditions: the net is registered is with id "id"
        *
        */
       void submit(const external_id_type & id, const encoded_type & bytes)
@@ -147,15 +146,15 @@ namespace we { namespace mgmt {
       /**
        * Inform the management layer to cancel a previously submitted net
        *
-       *	  pre-conditions:
-       *		  - a network must have been registered and assigned the id "id"
+       *          pre-conditions:
+       *                  - a network must have been registered and assigned the id "id"
        *
-       *	  side-effects:
-       *		  - the hierarchy belonging to the net is cancelled in turn
+       *          side-effects:
+       *                  - the hierarchy belonging to the net is cancelled in turn
        *
-       *	  post-conditions:
-       *		  - the internal state of the network switches to CANCELLING
-       *		  - all children of the network will be terminated
+       *          post-conditions:
+       *                  - the internal state of the network switches to CANCELLING
+       *                  - all children of the network will be terminated
        * */
       bool cancel(const external_id_type & id, const reason_type & reason)
       {
@@ -177,14 +176,14 @@ namespace we { namespace mgmt {
       /**
        * Inform the management layer that an execution finished with the given result
        *
-       *	  pre-conditions:
-       *		  - the management layer submitted an activity to be executed with id "id"
+       *          pre-conditions:
+       *                  - the management layer submitted an activity to be executed with id "id"
        *
-       *	  side-effects:
-       *		  -	the results are integrated into the referenced net
+       *          side-effects:
+       *                  -     the results are integrated into the referenced net
        *
-       *	  post-conditions:
-       *		  - the node belonging to this is activity is removed
+       *          post-conditions:
+       *                  - the node belonging to this is activity is removed
        **/
       bool finished(const external_id_type & id, const result_type & result)
       {
@@ -213,14 +212,14 @@ namespace we { namespace mgmt {
       /**
        * Inform the management layer that an execution failed with the given result
        *
-       *	  pre-conditions:
-       *		  - the management layer submitted an activity to be executed with id "id"
+       *          pre-conditions:
+       *                  - the management layer submitted an activity to be executed with id "id"
        *
-       *	  side-effects:
-       *		  -	the results are integrated into the referenced net
+       *          side-effects:
+       *                  -     the results are integrated into the referenced net
        *
-       *	  post-conditions:
-       *		  - the node belonging to this activity is removed
+       *          post-conditions:
+       *                  - the node belonging to this activity is removed
        **/
       bool failed ( const external_id_type & id
                   , const result_type & result
@@ -255,15 +254,15 @@ namespace we { namespace mgmt {
       /**
        * Inform the management layer that an execution has been cancelled
        *
-       *	  pre-conditions:
-       *		  - the management layer submitted an activity to be executed with id "id"
-       *		  - the management layer requested the cancellation of an activity
+       *          pre-conditions:
+       *                  - the management layer submitted an activity to be executed with id "id"
+       *                  - the management layer requested the cancellation of an activity
        *
-       *	  side-effects:
-       *		  - the enclosing workflow will be informed that an activity has been cancelled
+       *          side-effects:
+       *                  - the enclosing workflow will be informed that an activity has been cancelled
        *
-       *	  post-conditions:
-       *		  - the node belonging to this activity is removed
+       *          post-conditions:
+       *                  - the node belonging to this activity is removed
        **/
       bool cancelled(const external_id_type & id)
       {
@@ -284,15 +283,15 @@ namespace we { namespace mgmt {
       /**
        * Temporarily suspend the execution of the given petri-net
        *
-       *	  pre-conditions:
-       *		  - a net with the given id had been submitted
+       *          pre-conditions:
+       *                  - a net with the given id had been submitted
        *
-       *	  side-effects:
-       *		  - sub-activities are suspended as well
+       *          side-effects:
+       *                  - sub-activities are suspended as well
        *
-       *	  post-conditions:
-       *		  - the network will not be considered in the selection of new activities
-       *		  - the execution of the network is on hold
+       *          post-conditions:
+       *                  - the network will not be considered in the selection of new activities
+       *                  - the execution of the network is on hold
        */
       bool suspend(const external_id_type & id)
       {
@@ -313,14 +312,14 @@ namespace we { namespace mgmt {
       /**
        * Execution of a network is resumed.
        *
-       *	  pre-conditions:
-       *		  - a net with the given id had been submitted
+       *          pre-conditions:
+       *                  - a net with the given id had been submitted
        *
-       *	  side-effects:
-       *		  - sub-activities are resumed as well
+       *          side-effects:
+       *                  - sub-activities are resumed as well
        *
-       *	  post-conditions:
-       *		  - the network will again be considered in the selection of new activities
+       *          post-conditions:
+       *                  - the network will again be considered in the selection of new activities
        *
        */
       bool resume(const external_id_type & id)

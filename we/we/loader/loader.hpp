@@ -18,6 +18,7 @@
 
 #include <fhglog/fhglog.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/util/show.hpp>
 
 namespace we {

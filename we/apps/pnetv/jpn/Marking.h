@@ -8,6 +8,7 @@
 #include <boost/functional/hash.hpp>
 #endif
 
+#include <fhg/assert.hpp>
 #include <jpn/PlaceMarking.h>
 #include <jpn/common/Foreach.h>
 
