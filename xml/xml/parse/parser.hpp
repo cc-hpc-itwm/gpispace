@@ -832,14 +832,18 @@ namespace xml
                         , state.file_in_progress()
                         )
         , required ("place_type", node, "type", state.file_in_progress())
-        , fhg::util::fmap<std::string, petri_net::capacity_t>
-          ( &fhg::util::reader<petri_net::capacity_t>::read
-          , optional (node, "capacity")
-          )
         , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
                                              , optional (node, "virtual")
                                              )
         );
+
+      if (optional (node, "capacity"))
+        {
+          state.warn (warning::capacity_deprecated ( p.name
+                                                   , state.file_in_progress()
+                                                   )
+                     );
+        }
 
       for ( xml_node_type * child (node->first_node())
           ; child

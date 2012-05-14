@@ -675,6 +675,23 @@ namespace xml
                     )
         {}
       };
+
+      // ******************************************************************* //
+
+      class capacity_deprecated : public generic
+      {
+      public:
+        capacity_deprecated ( const std::string& place_name
+                            , const boost::filesystem::path& file
+                            )
+          : generic ( boost::format ( "capacity is deprecated"
+                                      " but used by place %1% in file %2%"
+                                    )
+                    % place_name
+                    % file
+                    )
+        {}
+      };
     }
   }
 }

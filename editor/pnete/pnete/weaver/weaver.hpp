@@ -102,7 +102,7 @@ namespace fhg
         {
           enum
             { first = transition::last + 1
-            , open, close, name, type, is_virtual, capacity, token, properties
+            , open, close, name, type, is_virtual, token, properties
             , last
             };
         }
@@ -671,8 +671,6 @@ namespace fhg
           WEAVE(place::name, std::string)(place.name);
           WEAVE(place::type, std::string)(place.type);
           WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());
-          WEAVE(place::capacity, MAYBE(petri_net::capacity_t))
-            (place.capacity);
           WEAVE(place::properties, WETYPE(property::type))(place.prop);
 
           for ( XMLTYPE(tokens_type::const_iterator) tok (place.tokens.begin())
