@@ -152,7 +152,6 @@
       <xsd:element minOccurs="0" maxOccurs="unbounded" name="token" type="token_type"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
-    <xsd:attribute name="capacity" type="xsd:nonNegativeInteger" use="optional"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
     <xsd:attribute name="virtual" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
