@@ -41,7 +41,7 @@
 
 #if   FHG_ASSERT_IGNORE == FHG_ASSERT_MODE
 
-#  define fhg_assert(cond, msg)
+#  define fhg_assert(cond, msg...)
 
 #elif FHG_ASSERT_ENABLED == FHG_ASSERT_MODE
 #  include <stdlib.h>
