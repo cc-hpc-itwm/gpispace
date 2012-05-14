@@ -6,6 +6,6 @@
 #define FHG_ASSERT_LEGACY    2 //! \note fall back to assert()
 #define FHG_ASSERT_EXCEPTION 3 //! \note throw fhg::assertion_failed
 #define FHG_ASSERT_LOG       4 //! \note just log
-//#define FHG_ASSERT_LOG_ABORT 5
+#define FHG_ASSERT_LOG_ABORT 5 //! \note log and abort
 
 #endif

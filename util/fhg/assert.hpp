@@ -22,6 +22,9 @@
    FHG_ASSERT_LOG       4
    just log to std::cerr
 
+   FHG_ASSERT_LOG_ABORT 5
+   just log to std::cerr
+
    - the syntax is quite easy:
 
    fhg_assert(<condition>, [message])
@@ -78,20 +81,17 @@
   } while (0)
 
 #elif FHG_ASSERT_LOG == FHG_ASSERT_MODE
-#  include <iostream>
+#  include <fhglog/minimal.hpp>
 #  define fhg_assert(cond, msg...)                                      \
   do                                                                    \
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << fhg::assert_helper::message                          \
-                   (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)  \
-                << std::endl                                            \
-                << std::flush;                                          \
+      LOG(ERROR, fhg::assert_helper::message                            \
+         (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)            \
+         );                                                             \
     }                                                                   \
   } while (0)
-
-#if 0
 
 #elif FHG_ASSERT_LOG_ABORT == FHG_ASSERT_MODE
 #  include <fhglog/minimal.hpp>
@@ -106,8 +106,6 @@
       abort();                                                          \
     }                                                                   \
   } while (0)
-
-#endif // if 0
 
 #else
 #  error invalid FHG_ASSERT_MODE
