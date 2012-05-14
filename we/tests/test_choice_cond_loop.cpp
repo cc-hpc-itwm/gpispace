@@ -65,7 +65,6 @@ typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 static token_t max (100000);
 
-typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
 
 static pnet_t::output_t trans_step
@@ -78,18 +77,24 @@ static pnet_t::output_t trans_step
 {
   pnet_t::output_t output;
 
-  map_t m;
-
   for ( pnet_t::input_t::const_iterator it (input.begin())
       ; it != input.end()
       ; ++it
       )
-    m[Function::Transition::get_pid<token_t>(*it)]
-      = Function::Transition::get_token<token_t>(*it);
+    {
+      const token_t val (Function::Transition::get_token<token_t>(*it));
+      const petri_net::pid_t pid (Function::Transition::get_pid<token_t>(*it));
 
-  output.push_back (top_t (m[pid_max], pid_max));
-  output.push_back (top_t (m[pid_state] + 1, pid_state));
-  output.push_back (top_t (m[pid_state], pid_value));
+      if (pid == pid_max)
+        {
+          output.push_back (top_t (val, pid_max));
+        }
+      else if (pid == pid_state)
+        {
+          output.push_back (top_t (val, pid_value));
+          output.push_back (top_t (val + 1, pid_state));
+        }
+    }
 
   return output;
 }
