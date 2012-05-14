@@ -52,9 +52,8 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << "*** assertion '" << FHG_ASSERT_STR(cond) << "'"     \
-                << " in " << __FILE__ << ":" << __LINE__                \
-                << " failed: " << "" msg                                \
+      std::cerr << fhg::assertion_failed::make_what_text                \
+                   (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)  \
                 << std::endl                                            \
                 << std::flush;                                          \
       abort();                                                          \
@@ -72,8 +71,8 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      throw fhg::assertion_failed ( FHG_ASSERT_STR(cond)                \
-                                  , "" msg, __FILE__, __LINE__);        \
+      throw fhg::assertion_failed                                       \
+            (FHG_ASSERT_STR(cond), "" msg, __FILE__, __LINE__);         \
     }                                                                   \
   } while (0)
 
@@ -84,15 +83,10 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << "*** assertion '" << FHG_ASSERT_STR(cond) << "'"     \
-                << " in " << __FILE__ << ":" << __LINE__                \
-                << "failed"                                             \
-      ;                                                                 \
-      if (#msg[0])                                                      \
-      {                                                                 \
-        std::cerr << ": " << "" msg;                                    \
-      }                                                                 \
-      std::cerr << std::endl << std::flush;                             \
+      std::cerr << fhg::assertion_failed::make_what_text                \
+                   (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)  \
+                << std::endl                                            \
+                << std::flush;                                          \
     }                                                                   \
   } while (0)
 
@@ -105,9 +99,8 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      LOG(ERROR, "*** assertion '" << FHG_ASSERT_STR(cond) << "'"       \
-         << " in " << __FILE__ << ":" << __LINE__                       \
-         << " failed: " << "" msg << std::flush                         \
+      LOG(ERROR, fhg::assertion_failed::make_what_text                  \
+                 (FHG_ASSERT_STR(cond), "" msg, __FILE__, __LINE__)     \
          );                                                             \
       abort();                                                          \
     }                                                                   \
