@@ -19,7 +19,7 @@
     <place name="N" type="long"/>
     <place name="pair" type="PAIR"/>
     <place name="state" type="state"/>
-    <place name="check_break" type="state" capacity="1"/>
+    <place name="check_break" type="state"/>
     <place name="credit_check_break" type="control">
       <token><value>[]</value></token>
     </place>
