@@ -317,7 +317,6 @@ namespace we { namespace type {
         bool full;
         Pred predicate;
         bool show_token;
-        bool show_capacity;
         bool show_signature;
         bool show_priority;
         bool show_intext;
@@ -329,7 +328,6 @@ namespace we { namespace type {
           : full (false)
           , predicate()
           , show_token (true)
-          , show_capacity (true)
           , show_signature (true)
           , show_priority (true)
           , show_intext (false)
@@ -466,19 +464,6 @@ namespace we { namespace type {
                     }
                 }
 
-              std::ostringstream capacity;
-
-              if (opts.show_capacity)
-                {
-                  const boost::optional<petri_net::capacity_t>
-                    mcap (net.get_capacity (*p));
-
-                  if (mcap)
-                    {
-                      capacity << endl << "capacity: " << *mcap;
-                    }
-                }
-
               std::ostringstream virt;
 
               if (opts.show_virtual)
@@ -550,7 +535,6 @@ namespace we { namespace type {
                                     , opts
                                     )
                    + token.str()
-                   + capacity.str()
                    + virt.str()
                    + real.str()
                    )

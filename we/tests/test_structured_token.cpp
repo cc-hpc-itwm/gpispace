@@ -232,7 +232,6 @@ main (int argc, char ** argv)
     ("help", "this message")
     ("slices", po::value<long>(&NUM_SLICES)->default_value(3), "num slices")
     ("depth", po::value<long>(&MAX_DEPTH)->default_value(4), "max depth")
-    ("cap", po::value<long>(&CAP_IN_PROGRESS)->default_value(0), "capacity in place 'in_progress'")
     ("print", po::value<bool>(&PRINT_MARKING)->default_value(true), "print after each fire")
     ;
 
@@ -423,9 +422,6 @@ main (int argc, char ** argv)
   net.add_edge ( mk_edge ("put done")
                , connection_t (TP, tid_finalize, pid_done)
                );
-
-  if (CAP_IN_PROGRESS > 0)
-    net.set_capacity (pid_in_progress, CAP_IN_PROGRESS);
 
   // type safe!
   token::put (net, pid_splitted, literal::type(0L));

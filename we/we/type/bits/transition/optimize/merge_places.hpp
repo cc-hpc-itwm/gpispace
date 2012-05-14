@@ -123,27 +123,6 @@ namespace we { namespace type {
             stack.pop();
           }
 
-        // capacities
-        typedef petri_net::capacity_t capacity_t;
-
-        boost::optional<capacity_t> cap_A (net.get_capacity (pid_A));
-        boost::optional<capacity_t> cap_B (net.get_capacity (pid_B));
-
-        if (cap_A)
-          {
-            if (cap_B)
-              {
-                net.set_capacity (pid_A, std::min (*cap_A, *cap_B));
-              }
-          }
-        else
-          {
-            if (cap_B)
-              {
-                net.set_capacity (pid_A, *cap_B);
-              }
-          }
-
         // take the better name
         const std::string name_A (place::name (net, pid_A));
         const std::string name_B (place::name (net, pid_B));

@@ -64,7 +64,6 @@ typedef std::pair<edge_cnt_t,std::string> edge_t;
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 static token_t max (100000);
-static unsigned int capacity_value (3);
 
 typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
@@ -194,8 +193,6 @@ main ()
     ( tid_sum
     , Function::Transition::Generic<token_t> (trans_sum)
     );
-
-  net.set_capacity (pid_value, capacity_value);
 
   net.put_token (pid_state, 0L);
   net.put_token (pid_state, 0L);
