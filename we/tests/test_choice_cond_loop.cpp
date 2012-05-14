@@ -95,7 +95,9 @@ static pnet_t::output_t trans_step
 }
 
 static pnet_t::output_t trans_sum
-( const pnet_t::input_t & input
+( const petri_net::pid_t pid_credit
+, const petri_net::pid_t pid_sum
+, const pnet_t::input_t & input
 , const pnet_t::output_descr_t & output_descr
 )
 {
@@ -109,11 +111,8 @@ static pnet_t::output_t trans_sum
 
   pnet_t::output_t output;
 
-  for ( pnet_t::output_descr_t::const_iterator it (output_descr.begin())
-          ; it != output_descr.end()
-          ; ++it
-      )
-    output.push_back (top_t (sum, Function::Transition::get_pid<token_t>(*it)));
+  output.push_back (top_t (sum, pid_sum));
+  output.push_back (top_t (0L, pid_credit));
 
   return output;
 }
@@ -146,6 +145,8 @@ main ()
   petri_net::pid_t pid_value (net.add_place ("value"));
   petri_net::pid_t pid_sum (net.add_place ("sum"));
 
+  petri_net::pid_t pid_credit_value (net.add_place ("credit_value"));
+
   petri_net::pid_t tid_step
     ( net.add_transition
       ( transition_t
@@ -171,10 +172,12 @@ main ()
   net.add_edge (edge_t (e++, "get max"), connection_t (PT, tid_step, pid_max));
   net.add_edge (edge_t (e++, "set max"), connection_t (TP, tid_step, pid_max));
   net.add_edge (edge_t (e++, "set val"), connection_t (TP, tid_step, pid_value));
+  net.add_edge (edge_t (e++, "get credit"), connection_t (PT, tid_step, pid_credit_value));
 
   net.add_edge (edge_t (e++, "get val"), connection_t (PT, tid_sum, pid_value));
   net.add_edge (edge_t (e++, "get sum"), connection_t (PT, tid_sum, pid_sum));
   net.add_edge (edge_t (e++, "set sum"), connection_t (TP, tid_sum, pid_sum));
+  net.add_edge (edge_t (e++, "set credit"), connection_t (TP, tid_sum, pid_credit_value));
 
   net.set_transition_function
     ( tid_step
@@ -191,13 +194,24 @@ main ()
 
   net.set_transition_function
     ( tid_sum
-    , Function::Transition::Generic<token_t> (trans_sum)
+    , Function::Transition::Generic<token_t>
+      ( boost::bind ( &trans_sum
+                    , pid_credit_value
+                    , pid_sum
+                    , _1
+                    , _2
+                    )
+      )
     );
 
   net.put_token (pid_state, 0L);
   net.put_token (pid_state, 0L);
   net.put_token (pid_sum, 0L);
   net.put_token (pid_max, max);
+
+  net.put_token (pid_credit_value, 0L);
+  net.put_token (pid_credit_value, 0L);
+  net.put_token (pid_credit_value, 0L);
 
   marking (net);
 
