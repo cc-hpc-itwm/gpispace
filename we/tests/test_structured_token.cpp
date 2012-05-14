@@ -232,6 +232,7 @@ main (int argc, char ** argv)
     ("help", "this message")
     ("slices", po::value<long>(&NUM_SLICES)->default_value(3), "num slices")
     ("depth", po::value<long>(&MAX_DEPTH)->default_value(4), "max depth")
+    ("cap", po::value<long>(&CAP_IN_PROGRESS)->default_value(0), "capacity in place 'in_progress'")
     ("print", po::value<bool>(&PRINT_MARKING)->default_value(true), "print after each fire")
     ;
 
@@ -275,6 +276,9 @@ main (int argc, char ** argv)
   petri_net::pid_t pid_run (net.add_place (place::type("run")));
   petri_net::pid_t pid_done (net.add_place (place::type("done")));
   petri_net::pid_t pid_in_progress (net.add_place (place::type("in_progress")));
+
+  petri_net::pid_t pid_credit_in_progress
+    (CAP_IN_PROGRESS ? net.add_place (place::type("credit_in_progress")) :-1);
 
   petri_net::tid_t tid_init
     ( mk_transition
@@ -327,7 +331,11 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "join"
-      , "${joined} := ${joined} + 1"
+      , std::string ("${joined} := ${joined} + 1")
+      + ( CAP_IN_PROGRESS
+        ? std::string ("; ${credit_in_progress} := []")
+        : std::string ("")
+        )
       , "true"
       )
     );
@@ -366,6 +374,12 @@ main (int argc, char ** argv)
   net.add_edge ( mk_edge ("put in_progress")
                , connection_t (TP, tid_split, pid_in_progress)
                );
+  if (CAP_IN_PROGRESS)
+    {
+      net.add_edge ( mk_edge ("get credit_in_progress")
+                   , connection_t (PT, tid_split, pid_credit_in_progress)
+                   );
+    }
 
   net.add_edge ( mk_edge ("get slice_in")
                , connection_t (PT, tid_tag, pid_slice_in)
@@ -407,6 +421,13 @@ main (int argc, char ** argv)
                , connection_t (PT, tid_join, pid_in_progress)
                );
 
+  if (CAP_IN_PROGRESS)
+    {
+      net.add_edge ( mk_edge ("put credit_in_progress")
+                   , connection_t (TP, tid_join, pid_credit_in_progress)
+                   );
+    }
+
   net.add_edge ( mk_edge ("get splitted")
                , connection_t (PT, tid_finalize, pid_splitted)
                );
@@ -429,6 +450,11 @@ main (int argc, char ** argv)
   token::put (net, pid_NUM_SLICES, literal::type(NUM_SLICES));
   token::put (net, pid_MAX_DEPTH, literal::type(MAX_DEPTH));
   token::put (net, pid_start);
+
+  while (CAP_IN_PROGRESS --> 0)
+    {
+      token::put (net, pid_credit_in_progress, literal::type(control()));
+    }
 
   marking (net);
 
