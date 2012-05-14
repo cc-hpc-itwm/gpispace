@@ -2,7 +2,7 @@
 #define FHG_ASSERT_ASSERTION_FAILED_HPP
 
 #include <exception>
-#include <fhg/assert_message.hpp>
+#include <fhg/assert_helper.hpp>
 
 namespace fhg
 {
