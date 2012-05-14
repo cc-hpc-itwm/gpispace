@@ -31,6 +31,7 @@
 
 #include <sstream>
 #include <fhg/assert_modes.hpp>
+#include <fhg/assert_helper.hpp>
 
 #define FHG_ASSERT_STR_(x) #x
 #define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
@@ -52,7 +53,7 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << fhg::assertion_failed::make_what_text                \
+      std::cerr << fhg::assert_helper::message                          \
                    (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)  \
                 << std::endl                                            \
                 << std::flush;                                          \
@@ -83,7 +84,7 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << fhg::assertion_failed::make_what_text                \
+      std::cerr << fhg::assert_helper::message                          \
                    (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)  \
                 << std::endl                                            \
                 << std::flush;                                          \
@@ -99,7 +100,7 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      LOG(ERROR, fhg::assertion_failed::make_what_text                  \
+      LOG(ERROR, fhg::assert_helper::message                            \
                  (FHG_ASSERT_STR(cond), "" msg, __FILE__, __LINE__)     \
          );                                                             \
       abort();                                                          \
