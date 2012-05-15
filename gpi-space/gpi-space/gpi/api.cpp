@@ -1,6 +1,7 @@
 #include "api.hpp"
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include "fake_api.hpp"
 #ifdef ENABLE_REAL_GPI

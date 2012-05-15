@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <fhg/plugin/config.hpp>
 #include <fhg/plugin/plugin.hpp>

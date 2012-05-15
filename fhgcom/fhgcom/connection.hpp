@@ -16,6 +16,7 @@
 
 #include <boost/system/error_code.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhgcom/header.hpp>
 #include <fhgcom/message.hpp>
 

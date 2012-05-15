@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <fhg/assert.hpp>
 #include <fhglog/fhglog.hpp>
 
 #include <fhgcom/peer_info.hpp>

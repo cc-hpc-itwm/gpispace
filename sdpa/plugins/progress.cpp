@@ -8,6 +8,7 @@
 #include <limits>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 #include <fhg/plugin/plugin.hpp>
 
 static progress::Progress *global_progress;

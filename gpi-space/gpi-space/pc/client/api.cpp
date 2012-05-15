@@ -18,6 +18,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
 

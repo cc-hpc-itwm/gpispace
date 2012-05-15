@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <fhg/plugin/core/exception.hpp>
 #include <fhg/plugin/magic.hpp>

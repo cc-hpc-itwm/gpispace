@@ -9,6 +9,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -495,10 +496,10 @@ namespace gpi
             offset_t offset (boost::lexical_cast<offset_t>(av[2]));
             size_t   size (boost::lexical_cast<size_t>(av[3]));
             std::string name
-			  (boost::algorithm::trim_copy_if( av[4]
-			                                 , boost::is_any_of("\"")
-											 )
-			  ); // TODO unquote
+                          (boost::algorithm::trim_copy_if( av[4]
+                                                         , boost::is_any_of("\"")
+                                                                                         )
+                          ); // TODO unquote
 
             int res
               (global::memory_manager().remote_alloc( 1

@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 
+#include <fhg/assert.hpp>
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -52,12 +53,12 @@ void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
-	BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-	{
+        BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+        {
           // DLOG(TRACE, "Notify the subscriber "<<subscriber);
-		ptrEvt->to() = pair_subscr_joblist.first;
-		sendEventToMaster(ptrEvt);
-	}
+                ptrEvt->to() = pair_subscr_joblist.first;
+                sendEventToMaster(ptrEvt);
+        }
 }
 
 void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
@@ -109,8 +110,8 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
             }
             else
             {
-            	JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
-            	notifySubscribers(ptrEvtJobFinished);
+                JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
+                notifySubscribers(ptrEvtJobFinished);
             }
 
             try {
@@ -124,10 +125,10 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
             catch(const JobNotDeletedException& ex)
             {
                 SDPA_LOG_WARN( "Could not delete the job " << act_id
-														   << " from worker "
-														   << worker_id
-														   << "queues: "
-														   << ex.what() );
+                                                                                                                   << " from worker "
+                                                                                                                   << worker_id
+                                                                                                                   << "queues: "
+                                                                                                                   << ex.what() );
             }
 
             if( hasWorkflowEngine() )
@@ -148,8 +149,8 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     }
     else
     {
-    	JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
-    	notifySubscribers(ptrEvtJobFinished);
+        JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
+        notifySubscribers(ptrEvtJobFinished);
     }
 }
 
@@ -208,8 +209,8 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
             }
             else
             {
-            	JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
-            	notifySubscribers(ptrEvtJobFailed);
+                JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
+                notifySubscribers(ptrEvtJobFailed);
             }
 
             try {
@@ -243,8 +244,8 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
     }
     else
     {
-    	JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
-    	notifySubscribers(ptrEvtJobFailed);
+        JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
+        notifySubscribers(ptrEvtJobFailed);
     }
 }
 
@@ -262,11 +263,11 @@ void Orchestrator::cancelNotRunning (sdpa::job_id_t const & job)
 
     try
     {
-    	if(hasWorkflowEngine())
-    	{
-    		workflowEngine()->cancelled(job);
-    		jobManager()->deleteJob(job);
-    	}
+        if(hasWorkflowEngine())
+        {
+                workflowEngine()->cancelled(job);
+                jobManager()->deleteJob(job);
+        }
     }
     catch (std::exception const & ex)
     {
@@ -317,18 +318,18 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
   if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
   {
-	  LOG(TRACE, "Propagate cancel job event downwards.");
-	  try
-	  {
-		  sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
+          LOG(TRACE, "Propagate cancel job event downwards.");
+          try
+          {
+                  sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
 
-		  SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
-		  CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
-				  	  	  	  	  	  	  	  	  	  	  	  , worker_id
-				  	  	  	  	  	  	  	  	  	  	  	  , pEvt->job_id()
-				  	  	  	  	  	  	  	  	  	  	  	  , pEvt->reason()
-                                       	   	   	   	   	   	) );
-		  sendEventToSlave(pCancelEvt);
+                  SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
+                  CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
+                                                                                                                          , worker_id
+                                                                                                                          , pEvt->job_id()
+                                                                                                                          , pEvt->reason()
+                                                                                ) );
+                  sendEventToSlave(pCancelEvt);
     }
     catch(const NoWorkerFoundException&)
     {
@@ -372,7 +373,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
         // just send an acknowledgment to the master
         // send an acknowledgment to the component that requested the cancellation
-    	CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
         if(!isTop())
         {
@@ -390,7 +391,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         }
         else
         {
-        	notifySubscribers(pCancelAckEvt);
+                notifySubscribers(pCancelAckEvt);
         }
     }
     else // acknowledgment comes from a worker -> inform WE that the activity was canceled

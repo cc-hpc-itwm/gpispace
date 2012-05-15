@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <fhg/plugin/core/plugin_kernel_mediator.hpp>
 #include <fhg/plugin/core/kernel.hpp>

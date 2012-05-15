@@ -15,6 +15,9 @@
  *
  * =====================================================================================
  */
+
+#include <fhg/assert.hpp>
+
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
@@ -24,7 +27,6 @@
 #include <boost/tokenizer.hpp>
 
 #include <cassert>
-#include <fhg/assert.hpp>
 #include <sdpa/capability.hpp>
 
 using namespace sdpa::daemon;

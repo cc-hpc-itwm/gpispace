@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <boost/bind.hpp>
 
