@@ -764,7 +764,7 @@ to adjust the amount.
     put "gpi.processes" $(get gpi.processes "default")
 
     local sdpa_temp_dir=$(get "sdpa.temp_dir")
-    local gpi_socket_path=$(get gpi.socket_path "$sdpa_temp_dir/gpi-space")
+    local gpi_socket_path=$(get gpi.socket_path "/var/tmp")
     put "gpi.socket_path" "$gpi_socket_path"
     if ! test -d "$gpi_socket_path" ; then
         if ! mkdir -p "$gpi_socket_path" ; then
@@ -777,8 +777,6 @@ to adjust the amount.
             fi
         fi
     fi
-
-    put "gpi.socket_name" $(get gpi.socket_name "control")
 }
 
 function setup_client ()

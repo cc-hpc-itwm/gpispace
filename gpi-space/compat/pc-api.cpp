@@ -119,10 +119,10 @@ get_handle_info (gpi::pc::type::handle_t h)
 }
 
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
-				 const fvmOffset_t fvmOffset,
-				 const fvmSize_t size,
-				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratch)
+                                 const fvmOffset_t fvmOffset,
+                                 const fvmSize_t size,
+                                 const fvmShmemOffset_t shmemOffset,
+                                 const fvmAllocHandle_t scratch)
 {
   gpi::pc::type::handle::descriptor_t
     hdl_info (get_handle_info(scratch));
@@ -188,10 +188,10 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 }
 
 fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
-				 const fvmOffset_t fvmOffset,
-				 const fvmSize_t size,
-				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratch)
+                                 const fvmOffset_t fvmOffset,
+                                 const fvmSize_t size,
+                                 const fvmShmemOffset_t shmemOffset,
+                                 const fvmAllocHandle_t scratch)
 {
   gpi::pc::type::handle::descriptor_t
     hdl_info (get_handle_info(scratch));
@@ -256,9 +256,9 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 }
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
-				const fvmOffset_t fvmOffset,
-				const fvmSize_t size,
-				const fvmShmemOffset_t shmemOffset)
+                                const fvmOffset_t fvmOffset,
+                                const fvmSize_t size,
+                                const fvmShmemOffset_t shmemOffset)
 {
   return gpi_api().memcpy( gpi::pc::type::memory_location_t(handle, fvmOffset)
                          , gpi::pc::type::memory_location_t(shm_hdl, shmemOffset)
@@ -269,9 +269,9 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 
 
 fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
-				const fvmOffset_t fvmOffset,
-				const fvmSize_t size,
-				const fvmShmemOffset_t shmemOffset)
+                                const fvmOffset_t fvmOffset,
+                                const fvmSize_t size,
+                                const fvmShmemOffset_t shmemOffset)
 {
   return gpi_api().memcpy( gpi::pc::type::memory_location_t(shm_hdl, shmemOffset)
                          , gpi::pc::type::memory_location_t(handle, fvmOffset)
@@ -314,7 +314,7 @@ WE_MOD_INITIALIZE_START (fvm);
 
   gpi_space::parser::config_parser_t cfg_parser;
   fs::path config_file
-    (std::string(getenv("HOME")) + "/.sdpa/configs/gpi.rc");
+    (std::string(getenv("HOME")) + "/.sdpa/configs/sdpa.rc");
 
   try
   {
@@ -339,9 +339,9 @@ WE_MOD_INITIALIZE_START (fvm);
   while (trials --> 0)
   {
     namespace fs = boost::filesystem;
-    fs::path socket_path (cfg_parser.get("gpi.socket_path", "/var/tmp/gpi-space"));
-    socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
-    socket_path /= cfg_parser.get("gpi.socket_name", "control");
+    fs::path socket_path (cfg_parser.get("gpi.socket_path", "/var/tmp"));
+    socket_path /=
+      ("S-gpi-space." + boost::lexical_cast<std::string>(getuid()) + ".0");
 
     gpi_api().path (socket_path.string());
 
