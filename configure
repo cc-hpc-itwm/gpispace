@@ -294,7 +294,7 @@ fi
 if [ -n "$build_prefix" ] ; then
     cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
 fi
-cmake_flags="$cmake_flags -DFHGLOG_ASSERT_MODE=${fhg_assert_mode}"
+cmake_flags="$cmake_flags -DFHG_ASSERT_MODE=${fhg_assert_mode}"
 
 cmake_flags="$cmake_flags $@"
 
