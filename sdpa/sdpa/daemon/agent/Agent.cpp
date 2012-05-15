@@ -182,9 +182,11 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
                 return false;
         }
 
-#ifdef USE_REAL_WE
+#if 0
+#  ifdef USE_REAL_WE
         statistics::dump_maps();
         statistics::reset_maps();
+#  endif
 #endif
 
         try {
@@ -254,9 +256,11 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
                 return false;
         }
 
-#ifdef USE_REAL_WE
+#if 0
+#  ifdef USE_REAL_WE
         statistics::dump_maps();
         statistics::reset_maps();
+#  endif
 #endif
 
         try {
@@ -465,9 +469,11 @@ bool Agent::failed(const id_type & wfid, const result_type & result)
                 return false;
         }
 
-#ifdef USE_REAL_WE
+#if 0
+#  ifdef USE_REAL_WE
         statistics::dump_maps();
         statistics::reset_maps();
+#  endif
 #endif
 
         try {
