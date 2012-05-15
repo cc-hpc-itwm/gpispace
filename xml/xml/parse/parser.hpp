@@ -837,14 +837,6 @@ namespace xml
                                              )
         );
 
-      if (optional (node, "capacity"))
-        {
-          state.warn (warning::capacity_deprecated ( p.name
-                                                   , state.file_in_progress()
-                                                   )
-                     );
-        }
-
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child

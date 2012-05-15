@@ -114,7 +114,6 @@ namespace xml
         bool _Wproperty_unknown;
         bool _Winline_many_output_ports;
         bool _Wvirtual_place_not_tunneled;
-        bool _Wcapacity_deprecated;
 
         std::string _dump_xml_file;
         bool _no_inline;
@@ -157,7 +156,6 @@ namespace xml
         std::string _OWproperty_unknown;
         std::string _OWinline_many_output_ports;
         std::string _OWvirtual_place_not_tunneled;
-        std::string _OWcapacity_deprecated;
 
         std::string _Odump_xml_file;
         std::string _Ono_inline;
@@ -256,7 +254,6 @@ namespace xml
           , _Wproperty_unknown (true)
           , _Winline_many_output_ports (true)
           , _Wvirtual_place_not_tunneled (true)
-          , _Wcapacity_deprecated (true)
 
           , _dump_xml_file ("")
           , _no_inline (false)
@@ -298,7 +295,6 @@ namespace xml
           , _OWproperty_unknown ("Wproperty-unknown")
           , _OWinline_many_output_ports ("Winline-many-output-ports")
           , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
-          , _OWcapacity_deprecated ("Wcapacity-decprecated")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
@@ -564,7 +560,6 @@ namespace xml
         ACCESS(Wproperty_unknown)
         ACCESS(Winline_many_output_ports)
         ACCESS(Wvirtual_place_not_tunneled)
-        ACCESS(Wcapacity_deprecated)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
@@ -605,7 +600,6 @@ namespace xml
         WARN(property_unknown)
         WARN(inline_many_output_ports)
         WARN(virtual_place_not_tunneled)
-        WARN(capacity_deprecated)
         WARN(shadow_function)
 
 #undef WARN
@@ -796,10 +790,6 @@ namespace xml
             ( _OWvirtual_place_not_tunneled.c_str()
             , BOOLVAL(Wvirtual_place_not_tunneled)
             , "warn when a virtual place is not tunneled"
-            )
-            ( _OWcapacity_deprecated.c_str()
-            , BOOLVAL(Wcapacity_deprecated)
-            , "warn when using decprecated keyword 'capacity'"
             )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)
