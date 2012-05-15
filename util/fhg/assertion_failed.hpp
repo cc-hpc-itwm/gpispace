@@ -2,29 +2,13 @@
 #define FHG_ASSERT_ASSERTION_FAILED_HPP
 
 #include <exception>
+#include <fhg/assert_helper.hpp>
 
 namespace fhg
 {
   class assertion_failed : public std::exception
   {
   public:
-    static std::string make_what_text ( std::string const & cond
-                                      , std::string const & message
-                                      , std::string const & file
-                                      , int line
-                                      )
-    {
-      std::ostringstream sstr;
-      sstr << "assertion '" << cond << "'"
-           << " in " << file << ":" << line
-           << " failed";
-      if (not message.empty())
-      {
-        sstr << ": " << message;
-      }
-      return sstr.str();
-    }
-
     assertion_failed ( std::string const & cond
                      , std::string const & message
                      , std::string const & file
@@ -34,7 +18,7 @@ namespace fhg
       , m_message (message)
       , m_file (file)
       , m_line (line)
-      , m_what_text (make_what_text(cond, message, file, line))
+      , m_what_text (fhg::assert_helper::message(cond, message, file, line))
     {}
 
     virtual ~assertion_failed() throw() {}

@@ -1,4 +1,5 @@
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
@@ -248,11 +249,11 @@ namespace fhg
         reverse_lookup_cache_[addr] = n;
 
         DLOG( TRACE
-	      , "corresponding connection data:"
-	      << " name=" << n
-	      << " host=" << std::string(h)
-	      << " port=" << std::string(p)
-	      );
+              , "corresponding connection data:"
+              << " name=" << n
+              << " host=" << std::string(h)
+              << " port=" << std::string(p)
+              );
 
         // store message in out queue
         //    connect_handler -> sends messages from out queue
@@ -269,8 +270,8 @@ namespace fhg
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
-	cd.connection =
-	  connection_t::ptr_t(new connection_t( io_service_
+        cd.connection =
+          connection_t::ptr_t(new connection_t( io_service_
                                               , cookie_
                                               , this
                                               )
@@ -278,16 +279,16 @@ namespace fhg
         cd.connection->local_address (my_addr_);
         cd.connection->remote_address (addr);
 
-	namespace bai = boost::asio::ip;
+        namespace bai = boost::asio::ip;
 
         bai::tcp::resolver resolver(io_service_);
         bai::tcp::resolver::query query(h, p);
         bai::tcp::resolver::iterator iter =
-	  bai::tcp::resolver(io_service_).resolve(query);
+          bai::tcp::resolver(io_service_).resolve(query);
 
         boost::system::error_code ec;
 
-	for (; iter != bai::tcp::resolver::iterator(); ++iter)
+        for (; iter != bai::tcp::resolver::iterator(); ++iter)
         {
           cd.connection->socket().close();
 
@@ -301,7 +302,7 @@ namespace fhg
           }
         }
 
-	connection_established (addr, ec);
+        connection_established (addr, ec);
       }
       else
       {
@@ -521,8 +522,8 @@ namespace fhg
 
       if (connections_.find (a) == connections_.end())
       {
-    	  LOG(WARN, "could not send message to " << a << " connection already closed: " << ec);
-    	  return;
+          LOG(WARN, "could not send message to " << a << " connection already closed: " << ec);
+          return;
       }
 
       connection_data_t & cd = connections_.at (a);

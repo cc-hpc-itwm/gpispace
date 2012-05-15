@@ -22,6 +22,9 @@
    FHG_ASSERT_LOG       4
    just log to std::cerr
 
+   FHG_ASSERT_LOG_ABORT 5
+   just log to std::cerr
+
    - the syntax is quite easy:
 
    fhg_assert(<condition>, [message])
@@ -31,6 +34,7 @@
 
 #include <sstream>
 #include <fhg/assert_modes.hpp>
+#include <fhg/assert_helper.hpp>
 
 #define FHG_ASSERT_STR_(x) #x
 #define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
@@ -52,7 +56,7 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << fhg::assertion_failed::make_what_text                \
+      std::cerr << fhg::assert_helper::message                          \
                    (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)  \
                 << std::endl                                            \
                 << std::flush;                                          \
@@ -77,20 +81,17 @@
   } while (0)
 
 #elif FHG_ASSERT_LOG == FHG_ASSERT_MODE
-#  include <iostream>
+#  include <fhglog/minimal.hpp>
 #  define fhg_assert(cond, msg...)                                      \
   do                                                                    \
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      std::cerr << fhg::assertion_failed::make_what_text                \
-                   (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)  \
-                << std::endl                                            \
-                << std::flush;                                          \
+      LOG(ERROR, fhg::assert_helper::message                            \
+         (FHG_ASSERT_STR(cond),  "" msg, __FILE__, __LINE__)            \
+         );                                                             \
     }                                                                   \
   } while (0)
-
-#if 0
 
 #elif FHG_ASSERT_LOG_ABORT == FHG_ASSERT_MODE
 #  include <fhglog/minimal.hpp>
@@ -99,14 +100,12 @@
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      LOG(ERROR, fhg::assertion_failed::make_what_text                  \
+      LOG(ERROR, fhg::assert_helper::message                            \
                  (FHG_ASSERT_STR(cond), "" msg, __FILE__, __LINE__)     \
          );                                                             \
       abort();                                                          \
     }                                                                   \
   } while (0)
-
-#endif // if 0
 
 #else
 #  error invalid FHG_ASSERT_MODE

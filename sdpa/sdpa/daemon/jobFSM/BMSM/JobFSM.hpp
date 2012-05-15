@@ -24,6 +24,7 @@
 //front-end
 #include <boost/msm/front/state_machine_def.hpp>
 
+#include <fhg/assert.hpp>
 #include <sdpa/daemon/IComm.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/logging.hpp>
@@ -42,7 +43,7 @@
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
-char const* const state_names[] = { 	"SDPA::Pending"
+char const* const state_names[] = {     "SDPA::Pending"
                                         , "SDPA::Running"
                                         , "SDPA::Finished"
                                         , "SDPA::Failed"
@@ -62,12 +63,12 @@ namespace sdpa {
         virtual ~JobFSM_() {}
 
         // The list of FSM states
-        struct Pending : 	public msm::front::state<>{};
-        struct Running : 	public msm::front::state<>{};
-        struct Finished : 	public msm::front::state<>{};
-        struct Failed : 	public msm::front::state<>{};
+        struct Pending :        public msm::front::state<>{};
+        struct Running :        public msm::front::state<>{};
+        struct Finished :       public msm::front::state<>{};
+        struct Failed :         public msm::front::state<>{};
         struct Cancelling : public msm::front::state<>{};
-        struct Cancelled : 	public msm::front::state<>{};
+        struct Cancelled :      public msm::front::state<>{};
 
         // the initial state of the JobFSM SM. Must be defined
         typedef Pending initial_state;
@@ -85,42 +86,42 @@ namespace sdpa {
 
         struct transition_table : mpl::vector
         <
-        //      Start       Event         		      Next        Action                Guard
+        //      Start       Event                             Next        Action                Guard
         //      +-----------+--------------------- -+-----------+---------------------+-----
-        _row<   Pending,    MSMDispatchEvent, 		Running >,
-        a_row<  Pending,    sdpa::events::CancelJobEvent, Cancelled,  		&sm::action_cancel_job_from_pending >,
+        _row<   Pending,    MSMDispatchEvent,           Running >,
+        a_row<  Pending,    sdpa::events::CancelJobEvent, Cancelled,            &sm::action_cancel_job_from_pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
-        a_row<  Running,    sdpa::events::JobFinishedEvent,	 	Finished, 	&sm::action_job_finished>,
-        a_row<  Running,    sdpa::events::JobFailedEvent, 	 	Failed, 	&sm::action_job_failed >,
-        a_row<  Running,    sdpa::events::CancelJobEvent,      	Cancelling, &sm::action_cancel_job >,
+        a_row<  Running,    sdpa::events::JobFinishedEvent,             Finished,       &sm::action_job_finished>,
+        a_row<  Running,    sdpa::events::JobFailedEvent,               Failed,         &sm::action_job_failed >,
+        a_row<  Running,    sdpa::events::CancelJobEvent,       Cancelling, &sm::action_cancel_job >,
         // only for the case when the cancelling is triggered by an internal component (eg. WE), not by the user
-        //a_row<  Running,  sdpa::events::CancelJobAckEvent, 	Cancelled,  &sm::action_cancel_job_ack >,
+        //a_row<  Running,  sdpa::events::CancelJobAckEvent,    Cancelled,  &sm::action_cancel_job_ack >,
         _row<   Running,    MSMRescheduleEvent,                 Pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
-        a_irow< Finished,   sdpa::events::DeleteJobEvent, 					&sm::action_delete_job >,
-        a_irow< Finished,   sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
+        a_irow< Finished,   sdpa::events::DeleteJobEvent,                                       &sm::action_delete_job >,
+        a_irow< Finished,   sdpa::events::RetrieveJobResultsEvent,                      &sm::action_retrieve_job_results >,
         //      +-----------+------------------------+----------+---------------------+-----
-        a_irow< Failed, 	sdpa::events::DeleteJobEvent, 		 		 	&sm::action_delete_job >,
-        a_irow< Failed, 	sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
+        a_irow< Failed,         sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
+        a_irow< Failed,         sdpa::events::RetrieveJobResultsEvent,                  &sm::action_retrieve_job_results >,
         //      +-----------+------------------------+----------+---------------------+-----
-        a_row<  Cancelling, sdpa::events::CancelJobAckEvent, 	 Cancelled, &sm::action_cancel_job_ack>,
-        a_row<  Cancelling, sdpa::events::JobFinishedEvent, 	 Cancelled, &sm::action_job_finished>,
-        a_row<  Cancelling, sdpa::events::JobFailedEvent, 		 Cancelled, &sm::action_job_failed>,
+        a_row<  Cancelling, sdpa::events::CancelJobAckEvent,     Cancelled, &sm::action_cancel_job_ack>,
+        a_row<  Cancelling, sdpa::events::JobFinishedEvent,      Cancelled, &sm::action_job_finished>,
+        a_row<  Cancelling, sdpa::events::JobFailedEvent,                Cancelled, &sm::action_job_failed>,
         //      +-----------+------------------------+----------+---------------------+-----
-        a_irow< Cancelled,  sdpa::events::DeleteJobEvent, 		 			&sm::action_delete_job >,
-        a_irow< Cancelled,  sdpa::events::RetrieveJobResultsEvent,			&sm::action_retrieve_job_results >
+        a_irow< Cancelled,  sdpa::events::DeleteJobEvent,                                       &sm::action_delete_job >,
+        a_irow< Cancelled,  sdpa::events::RetrieveJobResultsEvent,                      &sm::action_retrieve_job_results >
         >{};
 
         template <class FSM, class Event>
         void no_transition(Event const& e, FSM&, int state)
         {
-        	//DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
+                //DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
         }
 
         template <class FSM>
         void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
         {
-        	//DLOG(DEBUG, "process event QueryJobStatusEvent");
+                //DLOG(DEBUG, "process event QueryJobStatusEvent");
         }
       };
 
@@ -195,16 +196,16 @@ namespace sdpa {
 
         void Reschedule()
         {
-        	MSMRescheduleEvent ReschedEvt;
-        	lock_type lock(mtx_);
-        	process_event(ReschedEvt);
+                MSMRescheduleEvent ReschedEvt;
+                lock_type lock(mtx_);
+                process_event(ReschedEvt);
         }
 
         void Dispatch()
         {
-        	MSMDispatchEvent DispEvt;
-        	lock_type lock(mtx_);
-        	process_event(DispEvt);
+                MSMDispatchEvent DispEvt;
+                lock_type lock(mtx_);
+                process_event(DispEvt);
         }
 
         // actions
@@ -243,15 +244,15 @@ namespace sdpa {
         {
           DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
 
-        	if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
-        	{
-        		LOG(ERROR, "state id out of range!");
-        		return "unknown";
-        	}
-        	else
-        	{
-        		return state_names[*current_state()];
-        	}
+                if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
+                {
+                        LOG(ERROR, "state id out of range!");
+                        return "unknown";
+                }
+                else
+                {
+                        return state_names[*current_state()];
+                }
         }
 
         template <class Archive>

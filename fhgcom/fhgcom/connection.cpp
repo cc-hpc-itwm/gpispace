@@ -1,4 +1,5 @@
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include "connection.hpp"
 

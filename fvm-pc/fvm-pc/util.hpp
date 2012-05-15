@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include <fhglog/fhglog.hpp>
+#include <fhg/assert.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/assert.hpp>
 
@@ -146,7 +147,7 @@ namespace fvm
      *
      * Distributes a single data item to all nodes.
      *
-     *	  data   - pointer to the data item
+     *    data   - pointer to the data item
      *    global - global allocation handle to distribute to
      *
      * Copies data to the global-allocation space of all nodes.
@@ -176,8 +177,8 @@ namespace fvm
      * nodes (each gets it's own element)
      *
      * [d0,d1,d2] ---> to global allocation
-     *	  d0 -> n0
-     *	  d1 -> n1
+     *    d0 -> n0
+     *    d1 -> n1
      *      d2 -> n2
      */
     template <typename Type> void distribute_data(const Type *data, fvmAllocHandle_t global)

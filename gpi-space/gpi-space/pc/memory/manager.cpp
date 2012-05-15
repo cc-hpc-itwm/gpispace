@@ -1,6 +1,7 @@
 #include "manager.hpp"
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 

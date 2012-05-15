@@ -3,7 +3,7 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
-#include <cassert>
+#include <fhg/assert.hpp>
 
 #include <we/container/adjacency.hpp>
 #include <we/container/bijection.hpp>

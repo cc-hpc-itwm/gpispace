@@ -1,10 +1,11 @@
 #include "Marking.h"
 
-#include <algorithm>
 #include <cassert>
+#include <algorithm>
 #include <iostream>
 #include <ostream>
 
+#include <fhg/assert.hpp>
 #include <jpn/common/Foreach.h>
 #include <jpn/common/PrintRange.h>
 

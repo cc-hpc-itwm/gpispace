@@ -3,6 +3,7 @@
 #include <stack>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>

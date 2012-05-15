@@ -4,6 +4,7 @@
 #include <boost/bind.hpp>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <gpi-space/exception.hpp>
 

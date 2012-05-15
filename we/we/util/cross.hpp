@@ -8,7 +8,7 @@
 #include <numeric>
 #include <vector>
 
-#include <cassert>
+#include <fhg/assert.hpp>
 
 #include <boost/random.hpp>
 
