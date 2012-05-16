@@ -372,19 +372,27 @@
     </transition>
 
     <place name="package" type="stack_loaded_package"/>
-    <place name="package_check_done" type="stack_loaded_package" capacity="1"/>
+    <place name="package_check_done" type="stack_loaded_package"/>
+    <place name="credit_package_check_done" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <transition name="select_package">
       <use name="select_package"/>
       <connect-in port="x" place="package"/>
+      <connect-in port="credit" place="credit_package_check_done"/>
       <connect-out port="x" place="package_check_done"/>
     </transition>
 
     <transition name="package_done">
       <defun>
         <in name="package" type="stack_loaded_package"/>
+        <in name="credit_done_package" type="control"/>
+        <out name="credit_package_check_done" type="control"/>
         <out name="package" type="stack_loaded_package"/>
-        <expression></expression>
+        <expression>
+          ${credit_package_check_done} := []
+        </expression>
         <condition>
           ${package.package.left.extendable} :eq: false
         </condition>
@@ -393,14 +401,20 @@
         </condition>
       </defun>
       <connect-in port="package" place="package_check_done"/>
+      <connect-in port="credit_done_package" place="credit_done_package"/>
+      <connect-out port="credit_package_check_done" place="credit_package_check_done"/>
       <connect-out port="package" place="done_package"/>
     </transition>
 
     <transition name="package_not_done">
       <defun>
         <in name="package" type="stack_loaded_package"/>
+        <in name="credit_not_done_package" type="control"/>
+        <out name="credit_package_check_done" type="control"/>
         <out name="package" type="stack_loaded_package"/>
-        <expression></expression>
+        <expression>
+          ${credit_package_check_done} := []
+        </expression>
         <condition>
           (${package.package.left.extendable} :eq: true)
           ||
@@ -408,11 +422,19 @@
         </condition>
       </defun>
       <connect-in port="package" place="package_check_done"/>
+      <connect-in port="credit_not_done_package" place="credit_not_done_package"/>
+      <connect-out port="credit_package_check_done" place="credit_package_check_done"/>
       <connect-out port="package" place="not_done_package"/>
     </transition>
 
-    <place name="done_package" type="stack_loaded_package" capacity="1"/>
-    <place name="not_done_package" type="stack_loaded_package" capacity="1"/>
+    <place name="done_package" type="stack_loaded_package"/>
+    <place name="not_done_package" type="stack_loaded_package"/>
+    <place name="credit_done_package" type="control">
+      <token><value>[]</value></token>
+    </place>
+    <place name="credit_not_done_package" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <place name="packages_to_match" type="stack_loaded_package"/>
 
@@ -421,8 +443,10 @@
         <in name="x" type="stack_loaded_package"/>
         <in name="y" type="stack_loaded_package"/>
         <out name="p" type="stack_pair_of_packages"/>
+        <out name="credit_not_done_package" type="control"/>
         <expression>
-          ${p.x} := ${x}; ${p.y} := ${y}
+          ${p.x} := ${x}; ${p.y} := ${y};
+          ${credit_not_done_package} := []
         </expression>
         <condition>
           (${x.package.left.trace} :eq: ${y.package.right.trace})
@@ -432,6 +456,7 @@
       </defun>
       <connect-in port="x" place="not_done_package"/>
       <connect-in port="y" place="packages_to_match"/>
+      <connect-out port="credit_not_done_package" place="credit_not_done_package"/>
       <connect-out port="p" place="pair_of_packages"/>
     </transition>
 
@@ -441,10 +466,14 @@
       <defun>
         <in name="x" type="stack_loaded_package"/>
         <out name="x" type="stack_loaded_package"/>
-        <expression></expression>
+        <out name="credit_not_done_package" type="control"/>
+        <expression>
+          ${credit_not_done_package} := []
+        </expression>
       </defun>
       <connect-in port="x" place="not_done_package"/>
       <connect-out port="x" place="packages_to_match"/>
+      <connect-out port="credit_not_done_package" place="credit_not_done_package"/>
     </transition>
 
     <transition name="stack2">
@@ -567,6 +596,7 @@
 
     <defun name="select_package">
       <in name="x" type="stack_loaded_package"/>
+      <in name="credit" type="control"/>
       <out name="x" type="stack_loaded_package"/>
       <expression></expression>
     </defun>
@@ -574,12 +604,14 @@
     <transition name="back_1">
       <use name="select_package"/>
       <connect-in port="x" place="done_package_1"/>
+      <connect-in port="credit" place="credit_package_check_done"/>
       <connect-out port="x" place="package_check_done"/>
     </transition>
 
     <transition name="back_2">
       <use name="select_package"/>
       <connect-in port="x" place="done_package_2"/>
+      <connect-in port="credit" place="credit_package_check_done"/>
       <connect-out port="x" place="package_check_done"/>
     </transition>
 
@@ -587,12 +619,16 @@
       <defun>
         <in name="package" type="stack_loaded_package"/>
         <out name="package" type="stack_loaded_package"/>
-        <expression></expression>
+        <out name="credit_done_package" type="control"/>
+        <expression>
+          ${credit_done_package} := []
+        </expression>
       </defun>
       <condition>
         ${package.package.size} :gt: 0
       </condition>
       <connect-in port="package" place="done_package"/>
+      <connect-out port="credit_done_package" place="credit_done_package"/>
       <connect-out port="package" place="writeable_package"/>
     </transition>
 
@@ -600,13 +636,16 @@
       <defun>
         <in name="package" type="stack_loaded_package"/>
         <out name="package" type="stack_loaded_package"/>
+        <out name="credit_done_package" type="control"/>
         <expression>
+          ${credit_done_package} := []
         </expression>
       </defun>
       <condition>
         ${package.package.size} :eq: 0
       </condition>
       <connect-in port="package" place="done_package"/>
+      <connect-out port="credit_done_package" place="credit_done_package"/>
       <connect-out port="package" place="package_written"/>
     </transition>
 
@@ -753,7 +792,7 @@
           <place name="N" type="long"/>
           <place name="done" type="control"/>
           <place name="what" type="long" virtual="true"/>
-          <place name="check_break" type="long" capacity="1"/>
+          <place name="check_break" type="long"/>
           <transition name="step">
             <defun>
               <in name="wait" type="long"/>

@@ -81,7 +81,6 @@ place_type =
    | element include-properties { properties_include_type })*,
   element token { token_type }*,
   attribute name { xsd:ID },
-  attribute capacity { xsd:nonNegativeInteger }?,
   attribute type { xsd:string },
   attribute virtual { xsd:boolean }?
 port_type =

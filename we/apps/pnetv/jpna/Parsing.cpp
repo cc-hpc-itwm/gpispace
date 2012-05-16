@@ -45,11 +45,6 @@ class TransitionVisitor: public boost::static_visitor<void> {
     boost::unordered_map<petri_net::pid_t, Place *> places_;
 
     /**
-     * Helper places for implementing capacities.
-     */
-    boost::unordered_map<petri_net::pid_t, Place *> capacityPlaces_;
-
-    /**
      * Transitions present in the workflow.
      */
     boost::unordered_map<petri_net::tid_t, Transition *> transitions_;
@@ -82,18 +77,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             Place *place = petriNet_->createPlace();
             place->setName(p.get_name());
-            if (net.get_capacity(pid)) {
-                place->setCapacity(*net.get_capacity(pid));
-            }
             places_[pid] = place;
-
-            if (place->capacity()) {
-                Place *capacity = petriNet_->createPlace();
-                capacity->setName("capacity!" + p.get_name());
-                capacity->setCapacity(place->capacity());
-                capacity->setInitialMarking(*place->capacity());
-                capacityPlaces_[pid] = capacity;
-            }
         }
 
         /* Translate transitions. */
@@ -131,12 +115,6 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     /* Transition consumes the token on input place. */
                     transition->addInputPlace(place);
 
-                    if (place->capacity()) {
-                        Place *capacity = find(capacityPlaces_, connection.pid);
-
-                        /* Transition produces a token on capacity place. */
-                        transition->addOutputPlace(capacity);
-                    }
                     break;
                 }
                 case petri_net::PT_READ: {
@@ -155,16 +133,6 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     /* Executing the transition puts a token on output place. */
                     transition->addOutputPlace(place);
 
-                    if (net.get_capacity(connection.pid)) {
-                        Place *capacity = find(capacityPlaces_, connection.pid);
-
-                        /* Transition consumes a token on capacity place. */
-                        transition->addInputPlace(capacity);
-
-                        // TODO: in fact, a place with limited capacity can receive more
-                        // tokens than allowed. This is not modelled by us currently.
-                        // In practice it shouldn't give much difference.
-                    }
                     break;
                 }
                 default:
@@ -196,10 +164,6 @@ class TransitionVisitor: public boost::static_visitor<void> {
                 Place *place = find(places_, pid);
                 place->setInitialMarking(place->initialMarking() + 1);
 
-                if (place->capacity()) {
-                    Place *capacity = find(capacityPlaces_, pid);
-                    capacity->setInitialMarking(capacity->initialMarking() - 1);
-                }
             }
         }
 

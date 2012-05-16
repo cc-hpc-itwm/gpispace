@@ -96,7 +96,6 @@ namespace fhg
       WSIG(tv, place::name, std::string, name);
       WSIG(tv, place::type, std::string, type);
       WSIG(tv, place::is_virtual, MAYBE(bool), is_virtual);
-      WSIG(tv, place::capacity, MAYBE(petri_net::capacity_t), capacity);
       WSIG(tv, place::token, ITVAL(XMLTYPE(tokens_type)), token);
       WSIG(tv, place::properties, WETYPE(property::type), prop);
       WSIG(tv, properties::open, WETYPE(property::type), props);

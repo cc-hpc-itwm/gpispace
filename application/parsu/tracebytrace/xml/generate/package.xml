@@ -12,8 +12,7 @@
     <place name="package" type="tracebytrace_loaded_package"/>
     <place name="num" type="long"/>
 
-    <place name="check_break" type="generate_package_state"
-           capacity="1" virtual="true"/>
+    <place name="check_break" type="generate_package_state" virtual="true"/>
     <place name="state" type="generate_package_state"/>
 
     <transition name="init">
