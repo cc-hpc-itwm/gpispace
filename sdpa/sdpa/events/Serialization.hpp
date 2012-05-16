@@ -184,6 +184,8 @@ namespace boost { namespace serialization {
   {
     ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
     ar & e.result();
+    ar & e.result_code();
+    ar & e.error_message();
   }
 
   template <class Archive>
