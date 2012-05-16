@@ -40,7 +40,6 @@
 
   <struct name="handle">
     <field name="data" type="long"/> <!-- these two are fvmAllocHandle_ts -->
-    <field name="scratch" type="long"/>
   </struct>
 
   <struct name="file">
@@ -122,8 +121,8 @@
 
     <transition name="init">
       <defun>
-	<require key="GPI" />
-	<require key="I/O" mandatory="false" />
+        <require key="GPI" />
+        <require key="init" />
         <in name="file_input" type="string"/>
         <in name="type_input" type="string"/>
         <in name="file_output" type="string"/>
@@ -335,12 +334,12 @@
 
             LOG(INFO, "slot_per_node = " << slot_per_node);
 
-            if (slot_per_node < 2)
+            if (slot_per_node < 1)
             {
               throw std::runtime_error ("not enough memory (gpi)");
             }
 
-            config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
+            config.num.slot = slot_per_node * fvmGetNodeCount();
 
             LOG(INFO, "config.num.slot = " << config.num.slot);
 
@@ -350,9 +349,7 @@
             LOG(INFO, "config.size.slot.input = " << config.size.slot.input);
 
             config.handle.data = static_cast<long>
-              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.slot.gpi));
-            config.handle.scratch = static_cast<long>
-              (fvmGlobalAlloc (                 1  * config.size.slot.gpi));
+              (fvmGlobalAlloc (slot_per_node * config.size.slot.gpi));
 
             if (config.seperate_io_buffers)
             {
@@ -370,11 +367,6 @@
             if (config.handle.data == 0)
             {
               throw std::runtime_error ("BUMMER! handle.data == 0");
-            }
-
-            if (config.handle.scratch == 0)
-            {
-              throw std::runtime_error ("BUMMER! handle.scratch == 0");
             }
 
             write_info.next_part = 0;
@@ -458,8 +450,8 @@
 
     <transition name="load">
       <defun>
-	<require key="GPI" />
-	<require key="I/O" />
+        <require key="GPI" />
+        <require key="LOAD" />
         <in name="package" type="tracebytrace_loaded_package"/>
         <in name="config" type="tracebytrace_config"/>
         <out name="package" type="tracebytrace_loaded_package"/>
@@ -504,8 +496,8 @@
 
     <transition name="tracebytrace">
       <defun>
-	<require key="GPI" />
-	<require key="CPU" />
+        <require key="GPI" />
+        <require key="CPU" />
         <in name="package" type="tracebytrace_loaded_package"/>
         <in name="config" type="tracebytrace_config"/>
         <out name="package" type="tracebytrace_loaded_package"/>
@@ -627,8 +619,8 @@
 
     <transition name="write">
       <defun>
-	<require key="GPI" />
-	<require key="I/O" />
+        <require key="GPI" />
+        <require key="WRITE" />
         <in name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
         <in name="config" type="tracebytrace_config"/>
         <out name="p" type="tracebytrace_loaded_package"/>
@@ -716,7 +708,8 @@
 
     <transition name="finalize">
       <defun>
-	<require key="GPI" />
+        <require key="GPI" />
+        <require key="finalize" />
         <in name="config" type="tracebytrace_config"/>
         <out name="trigger" type="control"/>
         <module name="tracebytrace" function="finalize (trigger, config)">
@@ -726,7 +719,6 @@
             LOG (INFO, "FINALIZE");
 
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.data));
-            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.scratch));
           ]]></code>
         </module>
       </defun>

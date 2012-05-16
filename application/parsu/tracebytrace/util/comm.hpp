@@ -31,7 +31,7 @@ namespace comm
                , package.slot * config.size.slot.gpi
                , package.package.size.package
                , shmem_offset
-               , static_cast<fvmAllocHandle_t> (config.handle.scratch)
+               , 0
                )
              );
   }
@@ -53,7 +53,7 @@ namespace comm
                , package.slot * config.size.slot.gpi
                , package.package.size.package
                , shmem_offset
-               , static_cast<fvmAllocHandle_t> (config.handle.scratch)
+               , 0
                )
              );
   }
