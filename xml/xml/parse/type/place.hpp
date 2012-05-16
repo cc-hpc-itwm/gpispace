@@ -222,7 +222,6 @@ namespace xml
       public:
         std::string name;
         std::string type;
-        fhg::util::maybe<petri_net::capacity_t> capacity;
         tokens_type tokens;
         values_type values;
         signature::type sig;
@@ -232,13 +231,11 @@ namespace xml
 
         place_type ( const std::string & _name
                    , const std::string & _type
-                   , const fhg::util::maybe<petri_net::capacity_t> _capacity
                    , const fhg::util::maybe<bool> is_virtual
                    )
           : _is_virtual (is_virtual)
           , name (_name)
           , type (_type)
-          , capacity (_capacity)
         {}
 
         void push_token (const token_type & t)
@@ -298,7 +295,6 @@ namespace xml
           s.open ("place");
           s.attr ("name", p.name);
           s.attr ("type", p.type);
-          s.attr ("capacity", p.capacity);
           s.attr ("virtual", p.get_is_virtual());
 
           ::we::type::property::dump::dump (s, p.prop);

@@ -340,8 +340,6 @@ main (int argc, char ** argv)
   petri_net::pid_t pid_off_try
     (net.add_place (place::type ("off_try", sig_state)));
 
-  net.set_capacity (pid_off_try, 1);
-
   petri_net::pid_t pid_off_to_work
     (net.add_place (place::type ("off_to_work", literal::LONG())));
 
@@ -412,8 +410,6 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_pack_try
     (net.add_place (place::type ("pack_try", sig_offset_with_state)));
-
-  net.set_capacity (pid_pack_try, 1);
 
   petri_net::pid_t pid_pack_to_work
     (net.add_place (place::type ("pack_to_work", sig_package)));
@@ -488,8 +484,6 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_bunch_try
     (net.add_place (place::type ("bunch_try", sig_package_with_state)));
-
-  net.set_capacity (pid_bunch_try, 1);
 
   petri_net::pid_t pid_bunch_to_work
     (net.add_place (place::type ("bunch_to_work", sig_bunch)));

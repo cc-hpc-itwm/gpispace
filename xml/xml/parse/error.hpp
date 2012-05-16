@@ -1210,40 +1210,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename TRANS, typename FUN>
-      class capacity_on_net_output : public generic
-      {
-      private:
-        std::string nice ( const TRANS & trans
-                         , const FUN & fun
-                         , const std::string & place
-                         , const petri_net::capacity_t & capacity
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "try to synthesize transition " << trans.name
-            << " in " << trans.path
-            << " with function of type net "
-            << " from " << fun.path
-            << " with out-connection to place " << place
-            << " which has a capacity of " << capacity
-            ;
-
-          return s.str();
-        }
-      public:
-        capacity_on_net_output ( const TRANS & trans
-                               , const FUN & fun
-                               , const std::string & place
-                               , const petri_net::capacity_t & capacity
-                               )
-          : generic (nice (trans, fun, place, capacity))
-        {}
-      };
-
-      // ******************************************************************* //
-
       class invalid_prefix : public generic
       {
       private:

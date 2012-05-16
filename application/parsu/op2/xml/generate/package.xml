@@ -19,7 +19,7 @@
       <field name="size" type="long"/>
     </struct>
 
-    <place name="check_break" type="state" capacity="1"/>
+    <place name="check_break" type="state"/>
     <place name="state" type="state"/>
 
     <transition name="init">

@@ -2,60 +2,75 @@
   <in name="N" type="long" place="N_in"/>
   <in name="trigger" type="control" place="run"/>
   <out name="done" type="control" place="done"/>
+  <tunnel name="what" type="T" place="what"/>
   <net>
     <place name="N_in" type="long"/>
     <place name="N" type="long"/>
     <place name="done" type="control"/>
     <place name="run" type="control"/>
     <place name="what" type="T" virtual="true"/>
-    <place name="check_break" type="long" capacity="1"/>
+    <place name="check_break" type="long"/>
+    <place name="credit_check_break" type="control">
+      <token><value>[]</value></token>
+    </place>
+
     <transition name="run">
       <defun>
         <in name="trigger" type="control"/>
         <in name="N" type="long"/>
+        <in name="credit_check_break" type="control"/>
         <out name="Nout" type="long"/>
         <expression>${Nout} := ${N}</expression>
       </defun>
       <connect-in port="trigger" place="run"/>
       <connect-in port="N" place="N_in"/>
       <connect-out port="Nout" place="check_break"/>
+      <connect-in port="credit_check_break" place="credit_check_break"/>
     </transition>
     <transition name="step">
       <defun>
         <in name="wait" type="long"/>
         <out name="wait" type="long"/>
         <in name="x" type="T"/>
+        <in name="credit_check_break" type="control"/>
         <expression>${wait} := ${wait} - 1</expression>
       </defun>
       <connect-in port="wait" place="N"/>
       <connect-out port="wait" place="check_break"/>
+      <connect-in port="credit_check_break" place="credit_check_break"/>
       <connect-in port="x" place="what"/>
     </transition>
     <transition name="break">
       <defun>
         <in name="wait" type="long"/>
         <out name="done" type="control"/>
+        <out name="credit_check_break" type="control"/>
         <expression>
-          ${done} := []
+          ${done} := [];
+          ${credit_check_break} := []
         </expression>
         <condition>
           ${wait} :le: 0
         </condition>
       </defun>
       <connect-in port="wait" place="check_break"/>
+      <connect-out port="credit_check_break" place="credit_check_break"/>
       <connect-out port="done" place="done"/>
     </transition>
     <transition name="not_break">
       <defun>
         <in name="wait" type="long"/>
         <out name="wait" type="long"/>
+        <out name="credit_check_break" type="control"/>
         <expression>
+          ${credit_check_break} := []
         </expression>
         <condition>
           ${wait} :gt: 0
         </condition>
       </defun>
       <connect-in port="wait" place="check_break"/>
+      <connect-out port="credit_check_break" place="credit_check_break"/>
       <connect-out port="wait" place="N"/>
     </transition>
   </net>

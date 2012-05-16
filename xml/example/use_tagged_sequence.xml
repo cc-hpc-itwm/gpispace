@@ -9,17 +9,13 @@
   <out name="p" type="p" place="p"/>
 
   <net>
-    <place name="N" type="long">
-      <token><value>10</value></token>
-    </place>
-    <place name="tag" type="string">
-      <token><value>"tag"</value></token>
-    </place>
+    <place name="N" type="long"/>
+    <place name="tag" type="string"/>
     <place name="pair" type="pair_string_long"/>
     <place name="p" type="p"/>
 
     <include-template href="tagged_sequence.xml"/>
-  
+
     <specialize name="f_use_tag" use="tagged_sequence">
       <type-map replace="T" with="string"/>
       <type-map replace="PAIR" with="pair_string_long"/>

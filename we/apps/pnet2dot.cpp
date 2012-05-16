@@ -113,10 +113,6 @@ main (int argc, char ** argv)
     , po::value<bool>(&options.show_token)->default_value(options.show_token)
     , "whether or not to show the tokens on a place"
     )
-    ( "show-capacity"
-    , po::value<bool>(&options.show_capacity)->default_value(options.show_capacity)
-    , "whether or not to show the place capacities"
-    )
     ( "show-signature"
     , po::value<bool>(&options.show_signature)->default_value(options.show_signature)
     , "whether or not to show the place and port signatures"

@@ -57,7 +57,7 @@ public:
   {}
 
   bool
-  condition (Function::Condition::Traits<token_t>::choices_t & choices) const 
+  condition (Function::Condition::Traits<token_t>::choices_t & choices) const
   {
     for ( ; choices.has_more(); ++choices)
       {
@@ -171,8 +171,6 @@ main ()
       char c = 'a';
 
       pid[rem] = n.add_place (place_t (p++,rem));
-
-      n.set_capacity(pid[rem], branch_factor * (branch_factor + 1));
 
       for (token_second_t t (0); t < branch_factor; ++t)
         for (token_second_t i (0); i < branch_factor; ++i)
