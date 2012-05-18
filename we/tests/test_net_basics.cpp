@@ -504,7 +504,7 @@ main ()
     }
   catch (multirel::exception::delete_non_existing_object & e)
     {
-      cout << e.what();
+      cout << e.what() << endl;
     }
 
   try
@@ -514,7 +514,7 @@ main ()
     }
   catch (multirel::exception::delete_non_existing_object & e)
     {
-      cout << e.what();
+      cout << e.what() << endl;
     }
 
   try
@@ -524,7 +524,7 @@ main ()
     }
   catch (multirel::exception::delete_non_existing_object & e)
     {
-      cout << e.what();
+      cout << e.what() << endl;
     }
 
   try
@@ -534,7 +534,7 @@ main ()
     }
   catch (multirel::exception::delete_non_existing_object & e)
     {
-      cout << e.what();
+      cout << e.what() << endl;
     }
 
   print_net (c);
