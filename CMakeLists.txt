@@ -96,6 +96,7 @@ add_definitions("-DFHG_ASSERT_MODE=${FHG_ASSERT_MODE}")
 
 add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
 add_definitions("-DBOOST_FILESYSTEM_NO_DEPRECATED")
+add_definitions("-USTATISTICS_CONDITION")
 
 # to avoid warnings when using gcc 4.5
 add_definitions("-fno-strict-aliasing")
