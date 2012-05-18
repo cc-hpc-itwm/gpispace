@@ -292,7 +292,7 @@ private:
       {
         enabled.insert (tid);
 
-        choices_t cs (choices(tid));
+        choices_t cs (get_pid_in_map(tid));
 
         // call the global condition function here, that sets the
         // cross product either to the end or to some valid choice
@@ -949,11 +949,6 @@ public:
   bool get_can_fire (const tid_t & tid) const
   {
     return enabled.elem(tid);
-  }
-
-  choices_t choices (const tid_t & tid) const
-  {
-    return choices_t (get_pid_in_map (tid));
   }
 
   struct activity_t
