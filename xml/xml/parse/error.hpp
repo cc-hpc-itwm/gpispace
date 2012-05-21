@@ -14,6 +14,7 @@
 #include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
 
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 
 namespace xml
 {
@@ -28,6 +29,10 @@ namespace xml
       public:
         generic (const std::string & msg)
           : std::runtime_error ("ERROR: " + msg)
+        {}
+
+        generic (const boost::format& bf)
+          : std::runtime_error ("ERROR: " + bf.str())
         {}
 
         generic (const std::string & msg, const std::string & pre)
@@ -363,6 +368,18 @@ namespace xml
       public:
         struct_redefined (const T & early, const T & late)
           : generic (nice (early, late))
+        {}
+      };
+
+      class struct_field_redefined : public generic
+      {
+      public:
+        struct_field_redefined ( const std::string& name
+                               , const boost::filesystem::path& path
+                               )
+          : generic ( boost::format ("struct field '%1%' redefined in %2%")
+                    % name % path
+                    )
         {}
       };
 

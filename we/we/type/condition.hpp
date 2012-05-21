@@ -21,6 +21,7 @@
 #include <fhglog/macros.hpp>
 #include <iomanip>
 
+#ifdef STATISTICS_CONDITION
 namespace statistics
 {
   static inline double current_time()
@@ -123,6 +124,7 @@ namespace statistics
       }
   }
 }
+#endif
 
 namespace condition
 {
@@ -156,8 +158,6 @@ namespace condition
 
     typedef Function::Condition::Traits<token::type> traits;
 
-    // WORK TODO split up into save/load, since we need to initialize the
-    // parser
     friend class boost::serialization::access;
     template<typename Archive>
     void save(Archive & ar, const unsigned int) const
@@ -198,6 +198,7 @@ namespace condition
 
     bool operator () (traits::choices_t & choices) const
     {
+#ifdef STATISTICS_CONDITION
       unsigned long eval (0);
 
       statistics::get_call_map()[expression_] += 1;
@@ -208,11 +209,14 @@ namespace condition
 		   );
 	;
       statistics::get_time_map()[expression_] -= statistics::current_time();
+#endif
 
       if (expression_ == "true")
 	{
+#ifdef STATISTICS_CONDITION
 	  statistics::get_time_map()[expression_] += statistics::current_time();
 	  statistics::get_true_map()[expression_] += 1;
+#endif
 
 	  return true;
 	}
@@ -230,11 +234,14 @@ namespace condition
               context.bind (translate (pid), token.value);
             }
 
+#ifdef STATISTICS_CONDITION
 	  statistics::get_eval_map()[expression_] += 1;
 	  eval += 1;
+#endif
 
           if (parser.eval_all_bool (context))
 	    {
+#ifdef STATISTICS_CONDITION
 	      statistics::get_time_map()[expression_] += statistics::current_time();
 
 	      statistics::get_true_map()[expression_] += 1;
@@ -242,11 +249,13 @@ namespace condition
 		= std::max ( statistics::get_max_eval_map()[expression_]
 			   , eval
 			   );
+#endif
 
 	      return true;
 	    }
         }
 
+#ifdef STATISTICS_CONDITION
       statistics::get_time_map()[expression_] += statistics::current_time();
 
       statistics::get_false_map()[expression_] += 1;
@@ -254,6 +263,7 @@ namespace condition
 	= std::max ( statistics::get_max_eval_map()[expression_]
 		   , eval
 		   );
+#endif
 
       return false;
     }

@@ -1132,6 +1132,11 @@ namespace xml
                                         )
                              );
 
+      if (boost::apply_visitor (signature::visitor::has_field (name), sig))
+        {
+          throw error::struct_field_redefined (name, state.file_in_progress());
+        }
+
       boost::apply_visitor ( signature::visitor::add_field (name, type)
                            , sig
                            );
