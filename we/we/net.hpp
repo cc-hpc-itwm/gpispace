@@ -844,21 +844,6 @@ public:
     return m->second;
   }
 
-  const output_descr_t get_output_descr (const tid_t & tid) const
-  {
-    output_descr_t output_descr;
-
-    for ( adj_place_const_it pit (out_of_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      {
-        output_descr[*pit] = pit();
-      }
-
-    return output_descr;
-  }
-
   const enabled_t & enabled_transitions (void) const
   {
     return enabled;
@@ -1033,7 +1018,17 @@ public:
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
       }
 
-    return activity_t (tid, input, get_output_descr (tid));
+    output_descr_t output_descr;
+
+    for ( adj_place_const_it pit (out_of_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      {
+        output_descr[*pit] = pit();
+      }
+
+    return activity_t (tid, input, output_descr);
   }
 
   template<typename Engine>
