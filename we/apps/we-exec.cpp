@@ -250,7 +250,9 @@ int main (int argc, char **argv)
   }
 #endif
 
+#ifdef STATISTICS_CONDITION
   statistics::dump_maps();
+#endif
 
   std::cerr << "Everything done." << std::endl;
 

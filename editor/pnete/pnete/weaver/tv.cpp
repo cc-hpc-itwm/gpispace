@@ -221,10 +221,6 @@ namespace fhg
       {
         append_maybe_bool ("virtual", is_virtual);
       }
-      WSIG(tv, place::capacity, MAYBE(petri_net::capacity_t), capacity)
-      {
-        append_maybe_key_value ("capacity", "%i", capacity);
-      }
       WSIG(tv, place::token, ITVAL(XMLTYPE(tokens_type)), token)
       {
         push (append ("token"));

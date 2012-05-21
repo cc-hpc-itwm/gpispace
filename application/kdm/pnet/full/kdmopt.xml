@@ -49,7 +49,7 @@
 
     <transition name="init_config" inline="true">
       <include-function href="init/config.xml"/>
-      <connect-in port="file_config" place="file_config"/>
+      <connect-in port="config_file" place="file_config"/>
       <connect-in port="memsizeGPI" place="memsizeGPI"/>
       <connect-out port="config" place="config_initialized"/>
       <connect-out port="assoc" place="bunch_store_assoc_offset"/>
@@ -295,15 +295,20 @@
     <transition name="start_check_bunch_done">
       <defun>
         <in name="bunch" type="bunch_loaded"/>
+        <in name="credit_check_bunch_done" type="control"/>
         <out name="bunch" type="bunch_loaded"/>
         <expression>
         </expression>
       </defun>
       <connect-in port="bunch" place="wait_check_bunch_done"/>
       <connect-out port="bunch" place="check_bunch_done"/>
+      <connect-in port="credit_check_bunch_done" place="credit_check_bunch_done"/>
     </transition>
 
-    <place name="check_bunch_done" type="bunch_loaded" capacity="1"/>
+    <place name="check_bunch_done" type="bunch_loaded"/>
+    <place name="credit_check_bunch_done" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <transition name="no_assign_volume_in_progress">
       <defun>
@@ -485,13 +490,18 @@
       <defun>
         <in name="check" type="pair_prog_state"/>
         <out name="check" type="pair_prog_state"/>
+        <in name="credit_check_volume_done" type="control"/>
         <expression></expression>
       </defun>
       <connect-in port="check" place="wait_check_volume_done"/>
       <connect-out port="check" place="check_volume_done"/>
+      <connect-in port="credit_check_volume_done" place="credit_check_volume_done"/>
     </transition>
 
-    <place name="check_volume_done" type="pair_prog_state" capacity="1"/>
+    <place name="check_volume_done" type="pair_prog_state"/>
+    <place name="credit_check_volume_done" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <!-- ****************************************************************** -->
 
@@ -600,8 +610,10 @@
       <defun>
         <in name="bunch" type="bunch_loaded"/>
         <out name="store" type="store_bunch"/>
+        <out name="credit_check_bunch_done" type="control"/>
         <expression>
-          ${store} := ${bunch.bunch.store}
+          ${store} := ${bunch.bunch.store};
+          ${credit_check_bunch_done} := []
         </expression>
         <condition>
           ${bunch.wait} :le: 0
@@ -609,14 +621,17 @@
       </defun>
       <connect-in port="bunch" place="check_bunch_done"/>
       <connect-out port="store" place="store_bunch_put"/>
+      <connect-out port="credit_check_bunch_done" place="credit_check_bunch_done"/>
     </transition>
 
     <transition name="not_bunch_done">
       <defun>
         <in name="bunch" type="bunch_loaded"/>
         <out name="bunch" type="bunch_loaded"/>
+        <out name="credit_check_bunch_done" type="control"/>
         <expression>
-          ${store} := ${bunch.bunch.store}
+          ${store} := ${bunch.bunch.store};
+          ${credit_check_bunch_done} := []
         </expression>
         <condition>
           ${bunch.wait} :gt: 0
@@ -624,6 +639,7 @@
       </defun>
       <connect-in port="bunch" place="check_bunch_done"/>
       <connect-out port="bunch" place="bunch_loaded_pre_unassign"/>
+      <connect-out port="credit_check_bunch_done" place="credit_check_bunch_done"/>
     </transition>
 
     <!-- ****************************************************************** -->
@@ -633,9 +649,11 @@
         <in name="pair" type="pair_prog_state"/>
         <out name="processed" type="volume_in_progress"/>
         <out name="state" type="volume_state"/>
+        <out name="credit_check_volume_done" type="control"/>
         <expression>
           ${processed} := ${pair.volume};
           ${state} := ${pair.state};
+          ${credit_check_volume_done} := []
         </expression>
         <condition>
           ${pair.state.bunches.left} :le: 0
@@ -644,6 +662,7 @@
       <connect-in port="pair" place="check_volume_done"/>
       <connect-out port="state" place="volume_done"/>
       <connect-out port="processed" place="update_bunch_state_pre_unassign"/>
+      <connect-out port="credit_check_volume_done" place="credit_check_volume_done"/>
     </transition>
 
     <transition name="not_volume_done">
@@ -651,9 +670,11 @@
         <in name="pair" type="pair_prog_state"/>
         <out name="processed" type="volume_in_progress"/>
         <out name="state" type="volume_state"/>
+        <out name="credit_check_volume_done" type="control"/>
         <expression>
           ${processed} := ${pair.volume};
           ${state} := ${pair.state};
+          ${credit_check_volume_done} := []
         </expression>
         <condition>
           ${pair.state.bunches.left} :gt: 0
@@ -662,6 +683,7 @@
       <connect-in port="pair" place="check_volume_done"/>
       <connect-out port="state" place="volume_state"/>
       <connect-out port="processed" place="update_bunch_state_pre_unassign"/>
+      <connect-out port="credit_check_volume_done" place="credit_check_volume_done"/>
     </transition>
 
     <place name="volume_done" type="volume_state"/>

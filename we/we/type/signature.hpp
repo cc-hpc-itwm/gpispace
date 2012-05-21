@@ -247,6 +247,18 @@ namespace signature
 
   namespace visitor
   {
+    class has_field : public boost::static_visitor<bool>
+    {
+    private:
+      const field_name_t _field;
+
+    public:
+      has_field (const field_name_t & field) : _field (field) {}
+
+      bool operator () (structured_t & m) const { return m.has_field (_field); }
+      bool operator () (literal::type_name_t &) const { return false; }
+    };
+
     class add_field : public boost::static_visitor<void>
     {
     private:

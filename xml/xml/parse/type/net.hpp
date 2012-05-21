@@ -667,11 +667,6 @@ namespace xml
                                        )
                     );
 
-                  if (place->capacity.isJust())
-                    {
-                      we_net.set_capacity (pid, *place->capacity);
-                    }
-
                   pid_of_place[place->name] = pid;
                 }
             }
