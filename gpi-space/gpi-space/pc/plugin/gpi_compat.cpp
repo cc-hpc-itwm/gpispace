@@ -287,10 +287,10 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
 }
 
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
-				 const fvmOffset_t fvmOffset,
-				 const fvmSize_t size,
-				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t)
+                                 const fvmOffset_t fvmOffset,
+                                 const fvmSize_t size,
+                                 const fvmShmemOffset_t shmemOffset,
+                                 const fvmAllocHandle_t)
 {
   int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
@@ -356,10 +356,10 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 }
 
 fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
-				 const fvmOffset_t fvmOffset,
-				 const fvmSize_t size,
-				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t)
+                                 const fvmOffset_t fvmOffset,
+                                 const fvmSize_t size,
+                                 const fvmShmemOffset_t shmemOffset,
+                                 const fvmAllocHandle_t)
 {
   int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
@@ -371,12 +371,12 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
   gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
   gpi::pc::type::size_t remaining (size);
 
-  LOG_IF( INFO
-        , chunk_size < remaining
-        , "internal communication buffer is too small, need to split 'put' up: "
-        << "requested := " << size << " "
-        << "com-buffer := " << chunk_size
-        );
+  DMLOG_IF( TRACE
+          , chunk_size < remaining
+          , "internal communication buffer is too small, need to split 'get' up: "
+          << "requested := " << size << " "
+          << "com-buffer := " << chunk_size
+          );
 
   gpi::pc::type::size_t src_offset(shmemOffset);
   gpi::pc::type::size_t dst_offset(fvmOffset);
@@ -424,9 +424,9 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 }
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
-				const fvmOffset_t fvmOffset,
-				const fvmSize_t size,
-				const fvmShmemOffset_t shmemOffset)
+                                const fvmOffset_t fvmOffset,
+                                const fvmSize_t size,
+                                const fvmShmemOffset_t shmemOffset)
 {
   int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
@@ -443,9 +443,9 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 }
 
 fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
-				const fvmOffset_t fvmOffset,
-				const fvmSize_t size,
-				const fvmShmemOffset_t shmemOffset)
+                                const fvmOffset_t fvmOffset,
+                                const fvmSize_t size,
+                                const fvmShmemOffset_t shmemOffset)
 {
   int ec = gpi_compat->ensure_gpi_state();
   if (ec < 0)
