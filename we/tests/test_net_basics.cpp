@@ -99,7 +99,7 @@ static void print_enabled (const pnet_t & n)
 
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
-          cout << "Place " << show_place (n, i->first)
+          cout << "  Place " << show_place (n, i->first)
                << " [" << i->second.size() << "]"
                << ":";
 
