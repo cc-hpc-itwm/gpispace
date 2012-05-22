@@ -87,7 +87,8 @@ int main (int argc, char **argv)
   std::string mod_path;
   std::vector<std::string> mods_to_load;
   std::vector<std::string> input_spec;
-  std::size_t num_worker = 8;
+  std::size_t num_worker (1);
+  std::string output ("-");
 
   desc.add_options()
     ("help,h", "this message")
@@ -98,9 +99,10 @@ int main (int argc, char **argv)
         (fhg::util::getenv("PC_LIBRARY_PATH", "."))
     , "where can modules be located"
     )
-    ("worker", po::value<std::size_t>(&num_worker)->default_value(8), "number of workers")
+    ("worker", po::value<std::size_t>(&num_worker)->default_value(num_worker), "number of workers (ignored)")
     ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
     ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity: port=<value>")
+    ("output,o", po::value<std::string>(&output)->default_value(output), "output stream")
     ;
 
   po::positional_options_description p;
@@ -191,7 +193,15 @@ int main (int argc, char **argv)
     act.execute (context);
     act.collect_output ();
 
-    std::cout << we::util::codec::encode (act) << std::endl;
+    if (output == "-")
+      {
+        std::cout << we::util::codec::encode (act) << std::endl;
+      }
+    else
+      {
+        std::ofstream stream (output.c_str());
+        stream << we::util::codec::encode (act) << std::endl;
+      }
   }
   catch (std::exception const & ex)
   {

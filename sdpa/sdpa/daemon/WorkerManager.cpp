@@ -294,11 +294,7 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& workerI
     	// erase the job from the pending list of the donor worker
     	const Worker::ptr_t& ptrWorker = findWorker(secondBestWorker);
     	ptrWorker->pending().erase(stolenJobId);
-    	// put into the submitted queue of the thief worker
     	// return the jobId
-
-    	// what about the maps of preferences -> should be updated, HOW?
-
     	return stolenJobId;
     }
 
@@ -315,16 +311,12 @@ void WorkerManager::deteleJobPreferences(const sdpa::job_id_t& jobId)
 
 const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
-	//SDPA_LOG_DEBUG("Get the next job ...");
-
 	lock_type lock(mtx_);
 	sdpa::job_id_t jobId;
 
 	try {
 		const Worker::ptr_t& ptrWorker = findWorker(worker_id);
-		//ptrWorker->update();
 
-		// look first into the worker's queue
 		try {
 			jobId = ptrWorker->get_next_job(last_job_id);
 			SDPA_LOG_INFO("The worker "<<worker_id<<" has a capacity of "<<ptrWorker->capacity()<<" jobs and has "<<ptrWorker->nbAllocatedJobs()<<" jobs allocated!");
