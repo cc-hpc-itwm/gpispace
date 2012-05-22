@@ -1021,7 +1021,7 @@ namespace xml
                            << boost::filesystem::absolute
                               ( link
                               , fun->path.parent_path()
-                              )
+                              ).string()
                            << std::endl;
                   }
 
