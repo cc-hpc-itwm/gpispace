@@ -823,16 +823,22 @@ namespace xml
         std::string code;
         flags_type ldflags;
         flags_type cxxflags;
+        links_type links;
+        boost::filesystem::path path;
 
         fun_info_type ( const std::string & _name
                       , const std::string & _code
                       , const flags_type & _ldflags
                       , const flags_type & _cxxflags
+                      , const links_type & _links
+                      , const boost::filesystem::path & _path
                       )
           : name (_name)
           , code (_code)
           , ldflags (_ldflags)
           , cxxflags (_cxxflags)
+          , links (_links)
+          , path (_path)
         {}
 
         bool operator == (const fun_info_type & other) const
@@ -1002,6 +1008,16 @@ namespace xml
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
 
+                BOOST_FOREACH (links_type::value_type const& link, fun->links)
+                  {
+                    stream << ldflags << " += "
+                           << boost::filesystem::absolute
+                              ( link
+                              , fun->path.parent_path()
+                              )
+                           << std::endl;
+                  }
+
                 BOOST_FOREACH (flags_type::value_type const& flag, fun->ldflags)
                   {
                     stream << ldflags << " += " << flag << std::endl;
@@ -1040,8 +1056,8 @@ namespace xml
 
             stream << "\t$(CXX)"
                    << " -shared $^ -o $@"
-                   << " $(LDFLAGS)"
-                   << " $(" << ldflags << ")"                      << std::endl;
+                   << " $(" << ldflags << ")"
+                   << " $(LDFLAGS)"                                << std::endl;
             stream                                                 << std::endl;
           }
 
@@ -1692,6 +1708,8 @@ namespace xml
                                            , stream.str()
                                            , mod.ldflags
                                            , mod.cxxflags
+                                           , mod.links
+                                           , mod.path
                                            );
 
               if (m[mod.name].find (fun_info) == m[mod.name].end())
