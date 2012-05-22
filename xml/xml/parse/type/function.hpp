@@ -1008,6 +1008,7 @@ namespace xml
                 stream << "##"                                     << std::endl;
                 stream << "## function " << fun->name              << std::endl;
                 stream << "##"                                     << std::endl;
+
                 const std::string cxxflags
                   ("CXXFLAG_" + mod->first + "_" + fun->name);
 
@@ -1045,11 +1046,14 @@ namespace xml
                        << ": "
                        << cpp_util::make::cpp (mod->first, fun->name)
                                                                    << std::endl;
+                stream << "\t@echo -n \""
+                       << cpp_util::make::dep (mod->first, fun->name)
+                       << " \" > $@"                               << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
                        << " -M $< | sed 's!^"
                        << fun->name
                        << "!" << cpp_util::make::stem (mod->first, fun->name)
-                       << "!' > $@"                                << std::endl;
+                       << "!' >> $@"                               << std::endl;
                 stream << "-include "
                        << cpp_util::make::dep (mod->first, fun->name)
                                                                    << std::endl;
@@ -1078,11 +1082,14 @@ namespace xml
             stream << cpp_util::make::dep (mod->first)
                    << ": "
                    << obj_cpp                                      << std::endl;
+            stream << "\t@echo -n \""
+                   << cpp_util::make::dep (mod->first)
+                   << " \" > $@"                                   << std::endl;
             stream << "\t$(CXX) $(CXXFLAGS)"
                    << " -M $< | sed 's!^"
                    << mod->first
                    << "!" << cpp_util::make::stem (mod->first)
-                   << "!' > $@"                                    << std::endl;
+                   << "!' >> $@"                                   << std::endl;
             stream << "-include "
                    << cpp_util::make::dep (mod->first)             << std::endl;
             stream << "DEPENDS += "
