@@ -329,7 +329,11 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
                 // look first into the worker's queue
                 try {
                         jobId = ptrWorker->get_next_job(last_job_id);
-                        SDPA_LOG_INFO("The worker "<<worker_id<<" has a capacity of "<<ptrWorker->capacity()<<" jobs and has "<<ptrWorker->nbAllocatedJobs()<<" jobs allocated!");
+                        DLOG(TRACE, "The worker " << worker_id
+                            << " has a capacity of "<<ptrWorker->capacity()
+                            <<" and " << ptrWorker->nbAllocatedJobs()
+                            <<" jobs allocated!"
+                            );
                         return jobId;
                 }
                 catch(const NoJobScheduledException& ex)
