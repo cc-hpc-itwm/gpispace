@@ -294,11 +294,7 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& workerI
     	// erase the job from the pending list of the donor worker
     	const Worker::ptr_t& ptrWorker = findWorker(secondBestWorker);
     	ptrWorker->pending().erase(stolenJobId);
-    	// put into the submitted queue of the thief worker
     	// return the jobId
-
-    	// what about the maps of preferences -> should be updated, HOW?
-
     	return stolenJobId;
     }
 
