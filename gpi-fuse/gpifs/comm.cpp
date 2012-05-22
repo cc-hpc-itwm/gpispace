@@ -41,7 +41,7 @@ namespace gpifs
       gpi_space::parser::config_parser_t cfg_parser;
       {
         fs::path config_file
-          (std::string(getenv("HOME")) + "/.sdpa/configs/gpi.rc");
+          (std::string(getenv("HOME")) + "/.sdpa/configs/sdpa.rc");
 
         try
         {
@@ -54,9 +54,9 @@ namespace gpifs
         }
       }
 
-      fs::path socket_path (cfg_parser.get("gpi.socket_path", "/var/tmp/gpi-space"));
-      socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
-      socket_path /= cfg_parser.get("gpi.socket_name", "control");
+      fs::path socket_path (cfg_parser.get("gpi.socket_path", "/var/tmp"));
+      socket_path /=
+        ("S-gpi-space." + boost::lexical_cast<std::string>(getuid()) + ".0");
 
       gpi_api().path (socket_path.string());
 

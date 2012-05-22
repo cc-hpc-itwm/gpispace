@@ -18,8 +18,8 @@ source "$HOME/.bashrc"
 
 export SDPA_HOME=/p/herc/itwm/hpc/soft/sdpa/ap/sles10
 source "${SDPA_HOME}/etc/sdpa/sdpa.env" || {
-	echo "could not load SDPA environment" >&2
-	exit 1
+        echo "could not load SDPA environment" >&2
+        exit 1
 }
 
 # this is the place where one should modify LD_LIBRARY_PATH and PATH and so on...
@@ -73,36 +73,36 @@ EX_CONFIG=78       # configuration error
 
 while getopts ":hf:o:n:p:vF" opt; do
     case $opt in
-	h)
-	    usage
-	    exit 0
-	    ;;
-	f)
-	    node_file="$OPTARG"
-	    shift 2
-	    ;;
-	o)
-	    orchestrator="$OPTARG"
-	    shift 2
-	    ;;
-	n)
-	    name="$OPTARG"
-	    shift 2
-	    ;;
-	p)
-	    port="$OPTARG"
-	    shift 2
-	    ;;
-	v)
-	    verbose=true
-	    shift 1
-	    ;;
-	F)
-	    force=true
-	    shift 2
-	    ;;
-	\?)
-	    ;;
+        h)
+            usage
+            exit 0
+            ;;
+        f)
+            node_file="$OPTARG"
+            shift 2
+            ;;
+        o)
+            orchestrator="$OPTARG"
+            shift 2
+            ;;
+        n)
+            name="$OPTARG"
+            shift 2
+            ;;
+        p)
+            port="$OPTARG"
+            shift 2
+            ;;
+        v)
+            verbose=true
+            shift 1
+            ;;
+        F)
+            force=true
+            shift 2
+            ;;
+        \?)
+            ;;
     esac
 done
 
@@ -117,8 +117,8 @@ if [ ! -e "$HOME/.sdpa/configs/sdpa.rc" ] ; then
     echo "I: sdpa config does not exist, performing automated SDPA setup" >&2
 
     ${sdpa} setup </dev/null || {
-	echo "E: I was unable to setup the SDPA environment for you." >&2
-	exit ${EX_UNAVAILABLE:?}
+        echo "E: I was unable to setup the SDPA environment for you." >&2
+        exit ${EX_UNAVAILABLE:?}
     }
 fi
 
@@ -135,8 +135,8 @@ if [ -z "$node_file" ] ; then
     fi
     node_file="$aux/$node_file"
     if [ ! -r "$node_file" ] ; then
-	echo "Cannot read nodefile @ $node_file" >&2
-	exit $EX_IOERR
+        echo "Cannot read nodefile @ $node_file" >&2
+        exit $EX_IOERR
     fi
 fi
 
@@ -152,14 +152,13 @@ source $HOME/.sdpa/state/sdpa.env
 log "starting kvs..."
 sdpa start kvs
 
-gpi_socket="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_path -v /var/tmp/gpi-space)"
-gpi_socket="$gpi_socket/GPISpace-$(id -u)"
-gpi_socket="$gpi_socket/$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_name -v control)"
+gpi_socket="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_path -v /var/tmp)"
+gpi_socket="$gpi_socket/S-gpi-space.$(id -u).0"
 
 control_sdpa=0
 gpi_api_used="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.api)"
 if [ x"$gpi_api_used" = x"gpi.api.real" ] ; then
-	control_sdpa=1
+        control_sdpa=1
 fi
 
 logd_port=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.logd.port -v 3456)

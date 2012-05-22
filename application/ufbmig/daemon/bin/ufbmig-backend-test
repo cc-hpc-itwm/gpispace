@@ -1,8 +1,7 @@
 #!/bin/bash
 
-gpi_socket="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_path -v /var/tmp/gpi-space)"
-gpi_socket="$gpi_socket/GPISpace-$(id -u)"
-gpi_socket="$gpi_socket/$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_name -v control)"
+gpi_socket="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_path -v /var/tmp)"
+gpi_socket="$gpi_socket/S-gpi-space.$(id -u).0"
 
 state_dir="/tmp/ufbmig"
 mkdir -p "${state_dir}"
