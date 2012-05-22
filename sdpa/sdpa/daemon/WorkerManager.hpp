@@ -29,8 +29,6 @@
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 
-typedef std::list<std::pair<sdpa::worker_id_t, int> > job_pref_list_t;
-
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
@@ -42,6 +40,7 @@ namespace sdpa { namespace daemon {
       typedef boost::condition_variable_any condition_type;
 
       typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
+      typedef boost::unordered_map<sdpa::job_id_t, sdpa::job_pref_list_t> mapJob2PrefWorkersList_t;
 
       WorkerManager();
       virtual ~WorkerManager();
@@ -63,13 +62,11 @@ namespace sdpa { namespace daemon {
       virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
       virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
-
       const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
       worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
-      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
+      Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
       void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
       const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
@@ -85,6 +82,7 @@ namespace sdpa { namespace daemon {
       void cancelWorkerJobs(sdpa::daemon::Scheduler*);
       void forceOldWorkerJobsTermination();
       virtual Worker::worker_id_t getWorkerId(unsigned int r);
+      void deteleJobPreferences(const sdpa::job_id_t& jobId);
 
       bool has_job(const sdpa::job_id_t& job_id);
 
@@ -131,6 +129,7 @@ protected:
       Worker::JobQueue common_queue_;
 
       mutable mutex_type mtx_;
+      mapJob2PrefWorkersList_t m_mapJob2PrefWorkersList;
   };
 }}
 
