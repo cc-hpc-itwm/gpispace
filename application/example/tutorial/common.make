@@ -38,35 +38,67 @@ endif
 ###############################################################################
 
 ifndef XML
-  XML = $(CURDIR)/$(MAIN).xpnet
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable XML)
+  else
+    XML = $(CURDIR)/$(MAIN).xpnet
+  endif
 endif
 
 ifndef NET
-  NET = $(MAIN).pnet
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable NET)
+  else
+    NET = $(CURDIR)/$(MAIN).pnet
+  endif
 endif
 
 ifndef NET_NOINLINE
-  NET_NOINLINE = $(MAIN).noinline.pnet
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable NET_NOINLINE)
+  else
+    NET_NOINLINE = $(CURDIR)/$(MAIN).noinline.pnet
+  endif
 endif
 
 ifndef PUT
-  PUT = $(NET).put
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable PUT)
+  else
+    PUT = $(NET).put
+  endif
 endif
 
 ifndef GEN
-  GEN = gen
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable GEN)
+  else
+    GEN = $(CURDIR)/gen
+  endif
 endif
 
 ifndef OUT
-  OUT = $(MAIN).out
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable OUT)
+  else
+    OUT = $(CURDIR)/$(MAIN).out
+  endif
 endif
 
 ifndef PS
-  PS = $(MAIN).ps
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable PS)
+  else
+    PS = $(CURDIR)/$(MAIN).ps
+  endif
 endif
 
 ifndef PS_NOINLINE
-  PS_NOINLINE = $(MAIN).noinline.ps
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable PS_NOINLINE)
+  else
+    PS_NOINLINE = $(CURDIR)/$(MAIN).noinline.ps
+  endif
 endif
 
 ###############################################################################
@@ -83,8 +115,8 @@ ifndef PNETPUT
   PNETPUT = $(SDPA_BIN)/pnetput
 endif
 
-ifndef WE_EXEC
-  WE_EXEC = $(SDPA_BIN)/we-eval
+ifndef WE_EXEC_CMD
+  WE_EXEC_CMD = $(SDPA_BIN)/we-eval
 endif
 
 ifndef WE_EXEC_WORKER
@@ -93,12 +125,11 @@ endif
 
 ###############################################################################
 
-DEP += Makefile
+DEP += $(CURDIR)/Makefile
 
 ###############################################################################
 
-PATH_LIB = $(CURDIR)/$(GEN)/pnetc/op
-LIB = $(PATH_LIB)/lib$(MAIN).so
+PATH_LIB = $(GEN)/pnetc/op
 
 ###############################################################################
 
@@ -110,9 +141,8 @@ CXXINCLUDEPATHS += $(SDPA_INCLUDE)
 
 ###############################################################################
 
-PNET2DOT_NOINLINE += $(PNET2DOT)
-PNET2DOT_NOINLINE += $(addprefix --not-starts-with ,$(NOT_STARTS_WITH))
-PNET2DOT_NOINLINE += $(addprefix --not-ends-with ,$(NOT_ENDS_WITH))
+PNET2DOT += $(addprefix --not-starts-with ,$(NOT_STARTS_WITH))
+PNET2DOT += $(addprefix --not-ends-with ,$(NOT_ENDS_WITH))
 
 PNETC_NOINLINE += $(PNETC)
 PNETC_NOINLINE += --no-inline true
@@ -128,7 +158,8 @@ PNETC += --force-overwrite-file=true
 PNETC += --Woverwrite-file=false
 PNETC += --Wbackup-file=false
 
-
+WE_EXEC = LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARAYPATHS))
+WE_EXEC += $(WE_EXEC_CMD)
 WE_EXEC += --w $(WE_EXEC_WORKER)
 WE_EXEC += $(addprefix --load,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L,$(WE_EXEC_LIBPATHS))
@@ -172,7 +203,7 @@ $(PS): $(NET)
 	$(PNET2DOT) --input $^ | $(DOT) -o $@
 
 $(PS_NOINLINE): $(NET_NOINLINE)
-	$(PNET2DOT_NOINLINE) --input $^ | $(DOT) -o $@
+	$(PNET2DOT) --input $^ | $(DOT) -o $@
 
 ###############################################################################
 
@@ -180,7 +211,6 @@ $(PS_NOINLINE): $(NET_NOINLINE)
 pathify = $(subst $() ,:,$(1))
 
 out: lib $(PUT)
-	LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARAYPATHS)) \
 	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
 
 ###############################################################################
@@ -204,7 +234,7 @@ help:
 	@echo "default -> all"
 	@echo "all -> net lib out"
 	@echo "net -> build pnet $(NET) from $(XML)"
-	@echo "lib -> build lib $(LIB) from code in $(GEN)"
+	@echo "lib -> build libs from code in $(GEN)"
 	@echo "out -> run $(PUT) with $(WE_EXEC)"
 	@echo
 	@echo "gen -> generate code into $(GEN)"
@@ -212,3 +242,44 @@ help:
 	@echo "ps -> generate $(PS) and $(PS_NOINLINE)"
 	@echo
 	@echo "clean -> delete all generated files"
+	@echo
+	@echo "showconfig -> show the actual configuration"
+
+###############################################################################
+
+.PHONY: showconfig
+
+showconfig:
+	@echo "SDPA_HOME = $(SDPA_HOME)"
+	@echo
+	@echo "TEE = $(TEE)"
+	@echo "DOT = $(DOT)"
+	@echo "RM = $(RM)"
+	@echo "TOUCH = $(TOUCH)"
+	@echo
+	@echo "SDPA_INCLUDE = $(SDPA_INCLUDE)"
+	@echo "SDPA_BIN = $(SDPA_BIN)"
+	@echo "SDPA_XML_LIB = $(SDPA_XML_LIB)"
+	@echo
+	@echo "XML = $(XML)"
+	@echo "NET = $(NET)"
+	@echo "NET_NOINLINE = $(NET_NOINLINE)"
+	@echo "PUT = $(PUT)"
+	@echo "GEN = $(GEN)"
+	@echo "OUT = $(OUT)"
+	@echo "PS = $(PS)"
+	@echo "PS_NOINLINE = $(PS_NOINLINE)"
+	@echo
+	@echo "DEP = $(DEP)"
+	@echo
+	@echo "CXXINCLUDEPATHS = $(CXXINCLUDEPATHS)"
+	@echo
+	@echo "PNETC = $(PNETC)"
+	@echo "PNETC_NOINLINE = $(PNETC_NOINLINE)"
+	@echo "PNET2DOT = $(PNET2DOT)"
+	@echo "PNETPUT = $(PNETPUT)"
+	@echo "WE_EXEC = $(WE_EXEC)"
+	@echo
+	@echo "PATH_LIB = $(PATH_LIB)"
+	@echo
+	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
