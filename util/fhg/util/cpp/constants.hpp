@@ -73,6 +73,7 @@ namespace fhg
         CONSTANT (std::string, tmpl, "cpp_tmpl")
         CONSTANT (std::string, so, "so")
         CONSTANT (std::string, o, "o")
+        CONSTANT (std::string, d, "d")
 
         inline std::string extend (const std::string & x, const std::string & e)
         {
@@ -127,6 +128,34 @@ namespace fhg
           const path_type path (path::op() / mod / fun);
 
           return extension::extend (path.string(), extension::o());
+        }
+
+        inline std::string dep (const std::string & mod)
+        {
+          const path_type path (path::op() / mod);
+
+          return extension::extend (path.string(), extension::d());
+        }
+
+        inline std::string dep ( const std::string & mod
+                               , const std::string & fun
+                               )
+        {
+          const path_type path (path::op() / mod / fun);
+
+          return extension::extend (path.string(), extension::d());
+        }
+
+        inline std::string stem (const std::string & mod)
+        {
+          return (path::op() / mod).string();
+        }
+
+        inline std::string stem ( const std::string & mod
+                                , const std::string & fun
+                                )
+        {
+          return (path::op() / mod / fun).string();
         }
       }
 

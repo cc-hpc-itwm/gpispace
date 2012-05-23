@@ -99,7 +99,7 @@ static void print_enabled (const pnet_t & n)
 
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
-          cout << "Place " << show_place (n, i->first)
+          cout << "  Place " << show_place (n, i->first)
                << " [" << i->second.size() << "]"
                << ":";
 
@@ -117,17 +117,17 @@ static void print_enabled (const pnet_t & n)
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      pnet_t::output_descr_t output_descr (n.get_output_descr(*t));
-
       cout << "Transition " << trans (n, *t)
            << " can_fire = " << (n.get_can_fire (*t) ? "true" : "false")
            << ":";
 
-      for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())
-          ; i != output_descr.end()
-          ; ++i
+      for ( petri_net::adj_place_const_it pit (n.out_of_transition (*t))
+          ; pit.has_more()
+          ; ++pit
           )
-        cout << " {" << show_place (n, i->first) << " via " << edge (n, i->second) << "}";
+        {
+          cout << " {" << show_place (n, *pit) << " via " << edge (n, pit()) << "}";
+        }
 
       cout << endl;
     }
@@ -504,7 +504,7 @@ main ()
     }
   catch (multirel::exception::delete_non_existing_object & e)
     {
-      cout << e.what();
+      cout << e.what() << endl;
     }
 
   try
@@ -514,7 +514,7 @@ main ()
     }
   catch (multirel::exception::delete_non_existing_object & e)
     {
-      cout << e.what();
+      cout << e.what() << endl;
     }
 
   try
@@ -524,7 +524,7 @@ main ()
     }
   catch (multirel::exception::delete_non_existing_object & e)
     {
-      cout << e.what();
+      cout << e.what() << endl;
     }
 
   try
@@ -534,7 +534,7 @@ main ()
     }
   catch (multirel::exception::delete_non_existing_object & e)
     {
-      cout << e.what();
+      cout << e.what() << endl;
     }
 
   print_net (c);

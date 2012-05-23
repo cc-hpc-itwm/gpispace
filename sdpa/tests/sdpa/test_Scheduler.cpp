@@ -41,9 +41,11 @@ using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
 
-const int NWORKERS = 5;
+const int NWORKERS = 12;
 const int NJOBS    = 20;
 const int MAX_CAP  = 100;
+
+const std::string WORKER_CPBS[] = {"CALC", "REDUCE", "MGMT"};
 
 struct MyFixture
 {
@@ -59,21 +61,28 @@ BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
 BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 {
-	/*
 	string addrOrch = "127.0.0.1";
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 
 	ostringstream oss;
-	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get(), false));
+	sdpa::daemon::Scheduler::ptr_t ptrScheduler(new SchedulerImpl(ptrOrch.get(), false));
 
 	// add a number of workers
 	for( int k=0; k<NWORKERS; k++ )
 	{
 		oss.str("");
-		oss<<"Worker"<<k;
-		ptr_scheduler_->addWorker(oss.str(), k);
+		oss<<"Worker_"<<WORKER_CPBS[k/4]<<"_"<<k%4;
+
+		sdpa::capabilities_set_t cpbSet;
+		sdpa::worker_id_t workerId(oss.str());
+		sdpa::capability_t cpb(WORKER_CPBS[k/4], "virtual", workerId);
+		cpbSet.insert(cpb);
+		ptrScheduler->addWorker(workerId, 1, cpbSet);
 	}
 
+	ptrScheduler->print();
+
+/*
 	// submit a number of remote jobs and schedule them
 	for(int i=0; i<NJOBS; i++)
 	{
@@ -93,7 +102,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 		ptrOrch->jobManager()->addJobPreferences(job_id, job_pref);
 
 		//add later preferences to the jobs
-		ptr_scheduler_->schedule_remote(job_id);
+		ptrScheduler->schedule_remote(job_id);
 	}
 
 	// the workers request jobs
@@ -106,7 +115,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
          Worker::worker_id_t workerId(oss.str());
 
          try {
-             sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(workerId, "");
+             sdpa::job_id_t jobId = ptrScheduler->getNextJob(workerId, "");
              LOG(DEBUG, "The worker "<<workerId<<" was served the job "<<jobId.str() );
              nJobsCompleted++;
          }
@@ -115,11 +124,10 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
              LOG(WARN, "No job could be scheduled on the worker  "<<workerId );
          }
      }
+*/
 
    LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
    seda::StageRegistry::instance().remove(ptrOrch->name());
-
-   */
 }
 
 BOOST_AUTO_TEST_SUITE_END()

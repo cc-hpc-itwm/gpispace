@@ -310,6 +310,15 @@ private:
 
           m_loader->unload_autoloaded();
         }
+        catch (...)
+        {
+          task->state = wfe_task_t::FAILED;
+          task->result =
+            "UNKNOWN REASON, exception not derived from std::exception";
+          task->done.notify(1);
+
+          m_loader->unload_autoloaded();
+        }
       }
 
       task->result = we::util::text_codec::encode(task->activity);

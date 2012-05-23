@@ -30,6 +30,7 @@ namespace xml
       typedef std::list<std::string> port_args_type;
       typedef std::list<std::string> cincludes_type;
       typedef std::list<std::string> flags_type;
+      typedef std::list<std::string> links_type;
 
       struct mod_type
       {
@@ -43,6 +44,8 @@ namespace xml
         cincludes_type cincludes;
         flags_type ldflags;
         flags_type cxxflags;
+        links_type links;
+        boost::filesystem::path path;
 
         // ***************************************************************** //
 
@@ -244,6 +247,13 @@ namespace xml
             {
               s.open ("cxx");
               s.attr ("flag", flag);
+              s.close ();
+            }
+
+          BOOST_FOREACH (links_type::value_type const& link, m.links)
+            {
+              s.open ("link");
+              s.attr ("href", link);
               s.close ();
             }
 

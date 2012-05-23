@@ -31,7 +31,6 @@ namespace sdpa { namespace daemon {
     class JobImpl : public Job /*, public sdpa::fsm::JobFSMActions*/  {
     public:
         typedef boost::unordered_map<sdpa::job_id_t, Job::ptr_t> job_list_t;
-        typedef sdpa::shared_ptr<JobImpl> ptr_t;
 
         typedef boost::recursive_mutex mutex_type;
       	typedef boost::unique_lock<mutex_type> lock_type;

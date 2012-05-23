@@ -167,7 +167,7 @@ void JobManager::resubmitResults(IComm* pComm)
 
     for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
     {
-        sdpa::daemon::Job* pJob = it->second.get();
+        sdpa::daemon::Job::ptr_t pJob = it->second;
 
         std::string job_status = pJob->getStatus();
         SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");

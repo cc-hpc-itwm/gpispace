@@ -588,6 +588,8 @@ namespace xml
         , state.file_in_progress()
         );
 
+      mod.path = state.file_in_progress();
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
@@ -618,6 +620,15 @@ namespace xml
                     (required ("mod_type", child, "flag", state.file_in_progress()));
 
                   mod.cxxflags.push_back (flag);
+                }
+              else if (child_name == "link")
+                {
+                  mod.links.push_back ( required ( "mod_type"
+                                                 , child
+                                                 , "href"
+                                                 , state.file_in_progress()
+                                                 )
+                                      );
                 }
               else if (child_name == "code")
                 {
@@ -1131,6 +1142,11 @@ namespace xml
                                         , state.file_in_progress()
                                         )
                              );
+
+      if (boost::apply_visitor (signature::visitor::has_field (name), sig))
+        {
+          throw error::struct_field_redefined (name, state.file_in_progress());
+        }
 
       boost::apply_visitor ( signature::visitor::add_field (name, type)
                            , sig
