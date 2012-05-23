@@ -1,22 +1,20 @@
 
-OBJ += ../lib/hello_world.o
-OBJ += ../lib/hello2.o
-OBJ += ../lib/libhello_util.so
+LIBPATH = ../lib
+INCPATH = $(CURDIR)/../include
 
-CXXFLAGS += -I$(CURDIR)/../include
+OBJ_HELLO = $(LIBPATH)/hello_world.o
+OBJ_HELLO2 = $(LIBPATH)/hello2.o
+OBJ_LIBHELLO = $(LIBPATH)/libhello_util.so
+
+OBJ += $(OBJ_HELLO)
+OBJ += $(OBJ_HELLO2)
+OBJ += $(OBJ_LIBHELLO)
+
+CXXFLAGS += -I$(INCPATH)
 CXXFLAGS += -fPIC
 
-CFLAGS += -I$(CURDIR)/../include
+CFLAGS += -I$(INCPATH)
 CFLAGS += -fPIC
-
-../lib/%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-../lib/%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-../lib/libhello_util.so: hello_util.c
-	$(CC) $(CFLAGS) -shared $< -o $@
 
 ###############################################################################
 
@@ -27,10 +25,23 @@ all: $(OBJ)
 
 ###############################################################################
 
+$(OBJ_HELLO): hello_world.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJ_HELLO2): hello2.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_LIBHELLO): hello_util.c
+	$(CC) $(CFLAGS) -shared $< -o $@
+
+###############################################################################
+
 .PHONY: bakclean objclean clean
+
+RM = $(shell which rm) -f
 
 clean: bakclean objclean
 bakclean:
-	-rm -f *~
+	-$(RM) *~
 objclean:
-	-rm -f $(OBJ)
+	-$(RM) $(OBJ)
