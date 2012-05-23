@@ -15,7 +15,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
-  HEADERS drts.hpp job_result_code.hpp
+  HEADERS drts.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
@@ -43,7 +43,7 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
-  HEADERS wfe.hpp observable.hpp job_result_code.hpp
+  HEADERS wfe.hpp observable.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
@@ -57,7 +57,6 @@ fhg_add_plugin(wfe_eval wfe_eval.cpp
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
-  HEADERS job_result_code.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins

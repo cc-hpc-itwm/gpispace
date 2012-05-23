@@ -3,8 +3,6 @@
 #include "wfe_context.hpp"
 #include "observable.hpp"
 #include "task_event.hpp"
-#include "job_result_code.hpp"
-
 #include <errno.h>
 
 #include <list>
@@ -16,6 +14,7 @@
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/getenv.hpp>
+#include <fhg/error_codes.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -120,7 +119,7 @@ public:
               , wfe::meta_data_t const & meta_data
               )
   {
-    int ec = fhg::wfe::NO_FAILURE;
+    int ec = fhg::error::NO_ERROR;
 
     wfe_task_t task;
     task.state = wfe_task_t::PENDING;
@@ -165,7 +164,7 @@ public:
           task.done.wait(ec);
 
           task.state = wfe_task_t::FAILED;
-          ec = fhg::wfe::WALLTIME_EXCEEDED;
+          ec = fhg::error::WALLTIME_EXCEEDED;
         }
       }
       else
@@ -176,7 +175,7 @@ public:
       task.finished_time = boost::posix_time::microsec_clock::universal_time();
       result = task.result;
 
-      if (fhg::wfe::NO_FAILURE == ec)
+      if (fhg::error::NO_ERROR == ec)
       {
         MLOG(TRACE, "task finished: " << task.id);
         task.state = wfe_task_t::FINISHED;
@@ -189,7 +188,7 @@ public:
                          )
             );
       }
-      else if (fhg::wfe::JOB_CANCELLED == ec)
+      else if (fhg::error::EXECUTION_CANCELLED == ec)
       {
         MLOG(WARN, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
@@ -222,7 +221,7 @@ public:
     {
       MLOG(ERROR, "could not parse activity: " << ex.what());
       task.state = wfe_task_t::FAILED;
-      ec = fhg::wfe::INVALID_JOB_DESCRIPTION;
+      ec = fhg::error::INVALID_JOB_DESCRIPTION;
       error_message = ex.what();
 
       emit(task_event_t( job_id
@@ -276,7 +275,7 @@ private:
 
       if (task->state != wfe_task_t::PENDING)
       {
-        task->errc = fhg::wfe::JOB_CANCELLED;
+        task->errc = fhg::error::EXECUTION_CANCELLED;
         task->error_message = "cancelled";
       }
       else
@@ -291,13 +290,13 @@ private:
 
           if (task->state == wfe_task_t::CANCELED)
           {
-            task->errc = fhg::wfe::JOB_CANCELLED;
+            task->errc = fhg::error::EXECUTION_CANCELLED;
             task->error_message = "cancelled";
           }
           else
           {
             task->state = wfe_task_t::FINISHED;
-            task->errc = fhg::wfe::NO_FAILURE;
+            task->errc = fhg::error::NO_ERROR;
             task->error_message = "success";
           }
         }
@@ -305,7 +304,7 @@ private:
         {
           task->state = wfe_task_t::FAILED;
           // TODO: more detailed error codes
-          task->errc = fhg::wfe::MODULE_CALL_FAILED;
+          task->errc = fhg::error::MODULE_CALL_FAILED;
           task->error_message = ex.what();
 
           m_loader->unload_autoloaded();

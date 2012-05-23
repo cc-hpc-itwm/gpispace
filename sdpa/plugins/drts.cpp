@@ -3,7 +3,6 @@
 #include "job.hpp"
 #include "wfe.hpp"
 #include "observable.hpp"
-#include "job_result_code.hpp"
 
 #include <errno.h>
 
@@ -18,6 +17,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/error_codes.hpp>
 
 #include <sdpa/uuidgen.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -878,11 +878,11 @@ private:
               << " total-time := " << (job->completed() - job->started())
               );
 
-          if (fhg::wfe::NO_FAILURE == ec)
+          if (fhg::error::NO_ERROR == ec)
           {
             job->set_state (drts::Job::FINISHED);
           }
-          else if (fhg::wfe::JOB_CANCELLED == ec)
+          else if (fhg::error::EXECUTION_CANCELLED == ec)
           {
             job->set_state (drts::Job::CANCELED);
           }
@@ -899,7 +899,7 @@ private:
           job->set_state (drts::Job::FAILED);
 
           job->set_result (job->description());
-          job->set_result_code (fhg::wfe::UNEXPECTED_ERROR);
+          job->set_result_code (fhg::error::UNEXPECTED_ERROR);
           job->set_message (ex.what());
         }
 
