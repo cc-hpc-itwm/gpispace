@@ -1,18 +1,17 @@
 <defun name="sum_many">
-  <struct name="pair">
-    <field name="x" type="long"/>
-    <field name="y" type="long"/>
-  </struct>
-  <in name="pair" type="pair" place="pair"/>
-  <out name="sum" type="long" place="sum"/>
+
+  <include-structs href="pair.xpnet"/>
+
+  <in name="p" type="pair" place="p"/>
+  <out name="s" type="long" place="s"/>
 
   <net>
-    <place name="pair" type="pair"/>
-    <place name="sum" type="long"/>
+    <place name="p" type="pair"/>
+    <place name="s" type="long"/>
     <transition name="sum">
       <include-function href="sum.xpnet"/>
-      <connect-in port="" place="in"/>
-      <connect-out port="out" place="out"/>
+      <connect-in port="p" place="p"/>
+      <connect-out port="s" place="s"/>
     </transition>
   </net>
 </defun>
