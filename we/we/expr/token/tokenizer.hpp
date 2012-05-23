@@ -562,7 +562,7 @@ namespace expr
                               if (not (isdigit (*pos) or isalpha (*pos)))
                                 {
                                   throw exception::parse::expected
-                                    ("one of [a-zA-Z0-9]", pos());
+                                    ("identifier", pos());
                                 }
                               _aref.push_back(*pos);
                               break;
