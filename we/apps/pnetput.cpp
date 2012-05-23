@@ -4,6 +4,7 @@
 #include <fhg/util/parse/position.hpp>
 #include <we/type/literal.hpp>
 #include <we/util/token.hpp>
+#include <we/type/value/read.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -109,14 +110,11 @@ main (int argc, char ** argv)
       const std::string value
         ( inp->substr (inp->find('=')+1) );
 
-      literal::type tokval;
       std::size_t k (0);
       std::string::const_iterator begin (value.begin());
-
       fhg::util::parse::position pos (k, begin, value.end());
-      literal::read (tokval, pos);
 
-      we::util::token::put (act, port_name, tokval);
+      we::util::token::put (act, port_name, value::read (pos));
     }
     catch (std::exception const & ex)
     {
