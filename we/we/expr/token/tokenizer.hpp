@@ -550,16 +550,31 @@ namespace expr
                           switch (*pos)
                             {
                             case '.':
+                              if (_aref.empty())
+                                {
+                                  throw exception::parse::expected
+                                    ("identifier", pos());
+                                }
                               _ref.push_back (_aref);
                               _aref.clear();
                               break;
                             default:
+                              if (not (isdigit (*pos) or isalpha (*pos)))
+                                {
+                                  throw exception::parse::expected
+                                    ("one of [a-zA-Z0-9]", pos());
+                                }
                               _aref.push_back(*pos);
                               break;
                             }
                           ++pos;
                         }
                       require ("}");
+                      if (_aref.empty())
+                        {
+                          throw exception::parse::expected
+                            ("identifier", pos());
+                        }
                       _ref.push_back (_aref);
                     }
                     break;
