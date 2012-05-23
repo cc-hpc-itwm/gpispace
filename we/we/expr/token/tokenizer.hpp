@@ -541,42 +541,29 @@ namespace expr
                 switch (*pos)
                   {
                   case '{':
-                    {
-                      ++pos;
-                      std::string _aref;
-                      _ref.clear();
-                      while (!pos.end() && *pos != '}')
-                        {
-                          switch (*pos)
-                            {
-                            case '.':
-                              if (_aref.empty())
-                                {
-                                  throw exception::parse::expected
-                                    ("identifier", pos());
-                                }
-                              _ref.push_back (_aref);
-                              _aref.clear();
-                              break;
-                            default:
-                              if (not (isdigit (*pos) or isalpha (*pos)))
-                                {
-                                  throw exception::parse::expected
-                                    ("identifier", pos());
-                                }
-                              _aref.push_back(*pos);
-                              break;
-                            }
-                          ++pos;
-                        }
-                      require ("}");
-                      if (_aref.empty())
-                        {
-                          throw exception::parse::expected
-                            ("identifier", pos());
-                        }
-                      _ref.push_back (_aref);
-                    }
+                    ++pos;
+
+                    _ref.clear();
+
+                    do
+                      {
+                        _ref.push_back (literal::identifier (pos));
+
+                        if (pos.end())
+                          {
+                            throw exception::parse::expected
+                              ("'.' or '}'", pos());
+                          }
+
+                        if (*pos == '.')
+                          {
+                            ++pos;
+                          }
+                      }
+                    while (!pos.end() && *pos != '}');
+
+                    require ("}");
+
                     break;
                   default: throw exception::parse::expected ("'{'", pos());
                   }

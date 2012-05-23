@@ -9,9 +9,6 @@
 #include <we/type/literal.hpp>
 #include <we/type/literal/read.hpp>
 
-// remove me
-#include <we/type/literal/show.hpp>
-
 #include <we/expr/exception.hpp>
 
 namespace value
@@ -28,18 +25,9 @@ namespace value
 
     std::string identifier (fhg::util::parse::position& pos)
     {
-      std::string x;
-
       skip_spaces (pos);
 
-      while (!pos.end() && (isdigit (*pos) or isalpha (*pos)))
-        {
-          x.push_back (*pos);
-
-          ++pos;
-        }
-
-      return x;
+      return literal::identifier (pos);
     }
   }
 
