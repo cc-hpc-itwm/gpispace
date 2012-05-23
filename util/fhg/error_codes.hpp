@@ -27,7 +27,8 @@ namespace fhg
       , OPERATION_NOT_ALLOWED   = 101
       , NOT_OWNER               = 102
 
-      , UNEXPECTED_ERROR        = 5000
+      , UNEXPECTED_ERROR        = 666
+      , UNASSIGNED_ERROR        = 667
       };
 
     inline
@@ -72,7 +73,7 @@ namespace fhg
       case UNEXPECTED_ERROR:
         return "unexpected error";
       default:
-        return "unknown error";
+        return "unassigned error (error code not yet assigned)";
       }
     }
   }
