@@ -1,0 +1,20 @@
+<defun name="hello_world">
+  <in name="in" type="control"/>
+  <out name="out" type="control"/>
+  <module name="hello_world" function="out call_hello_world (in)">
+    <cinclude href="hello_world.hpp"/>
+    <cinclude href="hello2.h"/>
+    <cinclude href="hello_util.h"/>
+    <link href="lib/hello2.o"/>
+    <link href="lib/hello_world.o"/>
+    <ld flag="-lhello_util"/>
+    <code><![CDATA[
+      impl_hello_world();
+      ::hello_world();
+
+      hello_util ();
+
+      return control();
+    ]]></code>
+  </module>
+</defun>
