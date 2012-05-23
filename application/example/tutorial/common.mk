@@ -156,7 +156,7 @@ WE_EXEC += -o /dev/null
 
 ###############################################################################
 
-.PHONY: default ps all out net put
+.PHONY: default ps all run net put
 
 default: all
 
@@ -165,7 +165,7 @@ ps: $(PS) $(PS_NOINLINE)
 net: $(NET)
 put: $(PUT)
 
-all: net lib out
+all: net lib run
 
 ###############################################################################
 
@@ -199,7 +199,7 @@ $(PS_NOINLINE): $(NET_NOINLINE)
 # does not work for paths that contain spaces
 pathify = $(subst $() ,:,$(1))
 
-out: lib $(PUT)
+run: lib $(PUT)
 	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
 
 ###############################################################################
@@ -221,11 +221,11 @@ clean:
 
 help:
 	@echo "default     'all'"
-	@echo "all         'net' & 'lib' & 'out'"
+	@echo "all         'net' & 'lib' & 'run'"
 	@echo
 	@echo "net         build pnet from xml"
 	@echo "lib         'gen' & build libs from code in gen"
-	@echo "out         execute workflow"
+	@echo "run         execute workflow"
 	@echo
 	@echo "gen         generate code into gen"
 	@echo "put         put tokens into the workflow"
