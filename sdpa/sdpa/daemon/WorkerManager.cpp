@@ -315,16 +315,12 @@ void WorkerManager::deteleJobPreferences(const sdpa::job_id_t& jobId)
 
 const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
-        //SDPA_LOG_DEBUG("Get the next job ...");
-
         lock_type lock(mtx_);
         sdpa::job_id_t jobId;
 
         try {
                 const Worker::ptr_t& ptrWorker = findWorker(worker_id);
-                //ptrWorker->update();
 
-                // look first into the worker's queue
                 try {
                         jobId = ptrWorker->get_next_job(last_job_id);
                         DLOG(TRACE, "The worker " << worker_id

@@ -823,16 +823,22 @@ namespace xml
         std::string code;
         flags_type ldflags;
         flags_type cxxflags;
+        links_type links;
+        boost::filesystem::path path;
 
         fun_info_type ( const std::string & _name
                       , const std::string & _code
                       , const flags_type & _ldflags
                       , const flags_type & _cxxflags
+                      , const links_type & _links
+                      , const boost::filesystem::path & _path
                       )
           : name (_name)
           , code (_code)
           , ldflags (_ldflags)
           , cxxflags (_cxxflags)
+          , links (_links)
+          , path (_path)
         {}
 
         bool operator == (const fun_info_type & other) const
@@ -967,10 +973,10 @@ namespace xml
           }
 
         stream                                                     << std::endl;
-        stream << ".PHONY: default modules"                        << std::endl;
+        stream << ".PHONY: default modules depend"                 << std::endl;
         stream                                                     << std::endl;
-        stream << "default: $(MODULES)"                            << std::endl;
-        stream << "modules: $(MODULES) objcleandep"                << std::endl;
+        stream << "default: depend $(MODULES)"                     << std::endl;
+        stream << "modules: depend $(MODULES) objcleandep"         << std::endl;
         stream                                                     << std::endl;
         stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
@@ -986,6 +992,10 @@ namespace xml
             ; ++mod
             )
           {
+            stream << "####"                                       << std::endl;
+            stream << "#### module-functions " << mod->first       << std::endl;
+            stream << "####"                                       << std::endl;
+
             const std::string objs ("OBJ_" + mod->first);
             const fun_infos_type & funs (mod->second);
             const std::string ldflags ("LDFLAG_" + mod->first);
@@ -995,12 +1005,26 @@ namespace xml
                 ; ++fun
                 )
               {
+                stream << "##"                                     << std::endl;
+                stream << "## function " << fun->name              << std::endl;
+                stream << "##"                                     << std::endl;
+
                 const std::string cxxflags
                   ("CXXFLAG_" + mod->first + "_" + fun->name);
 
                 stream << objs << " += "
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
+
+                BOOST_FOREACH (links_type::value_type const& link, fun->links)
+                  {
+                    stream << objs << " += "
+                           << boost::filesystem::absolute
+                              ( link
+                              , fun->path.parent_path()
+                              ).string()
+                           << std::endl;
+                  }
 
                 BOOST_FOREACH (flags_type::value_type const& flag, fun->ldflags)
                   {
@@ -1017,20 +1041,59 @@ namespace xml
                        << cpp_util::make::cpp (mod->first, fun->name)
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
-                       << " -c $^ -o $@"                           << std::endl;
+                       << " -c $< -o $@"                           << std::endl;
+                stream << cpp_util::make::dep (mod->first, fun->name)
+                       << ": "
+                       << cpp_util::make::cpp (mod->first, fun->name)
+                                                                   << std::endl;
+                stream << "\t@echo -n \""
+                       << cpp_util::make::dep (mod->first, fun->name)
+                       << " \" > $@"                               << std::endl;
+                stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
+                       << " -M $< | sed 's!^"
+                       << fun->name
+                       << "!" << cpp_util::make::stem (mod->first, fun->name)
+                       << "!' >> $@"                               << std::endl;
+                stream << "-include "
+                       << cpp_util::make::dep (mod->first, fun->name)
+                                                                   << std::endl;
+                stream << "DEPENDS += "
+                       << cpp_util::make::dep (mod->first, fun->name)
+                                                                   << std::endl;
                 stream                                             << std::endl;
               }
+
+            stream << "####"                                       << std::endl;
+            stream << "#### module " << mod->first                 << std::endl;
+            stream << "####"                                       << std::endl;
 
             stream << objs << " += " << cpp_util::make::obj (mod->first)
                                                                    << std::endl;
 
+            const std::string obj_cpp (( cpp_util::path::op()
+                                       / cpp_util::make::cpp (mod->first)
+                                       ).string()
+                                      );
+
             stream << cpp_util::make::obj (mod->first)
                    << ": "
-                   << ( cpp_util::path::op()
-                      / cpp_util::make::cpp (mod->first)
-                      ).string()                                   << std::endl;
-            stream << "\t$(CXX) $(CXXFLAGS) -c $^ -o $@"           << std::endl;
-            stream                                                 << std::endl;
+                   << obj_cpp                                      << std::endl;
+            stream << "\t$(CXX) $(CXXFLAGS) -c $< -o $@"           << std::endl;
+            stream << cpp_util::make::dep (mod->first)
+                   << ": "
+                   << obj_cpp                                      << std::endl;
+            stream << "\t@echo -n \""
+                   << cpp_util::make::dep (mod->first)
+                   << " \" > $@"                                   << std::endl;
+            stream << "\t$(CXX) $(CXXFLAGS)"
+                   << " -M $< | sed 's!^"
+                   << mod->first
+                   << "!" << cpp_util::make::stem (mod->first)
+                   << "!' >> $@"                                   << std::endl;
+            stream << "-include "
+                   << cpp_util::make::dep (mod->first)             << std::endl;
+            stream << "DEPENDS += "
+                   << cpp_util::make::dep (mod->first)             << std::endl;
 
             stream                                                 << std::endl;
             stream << cpp_util::make::mod_so (mod->first)
@@ -1040,14 +1103,26 @@ namespace xml
 
             stream << "\t$(CXX)"
                    << " -shared $^ -o $@"
-                   << " $(LDFLAGS)"
-                   << " $(" << ldflags << ")"                      << std::endl;
+                   << " $(" << ldflags << ")"
+                   << " $(LDFLAGS)"                                << std::endl;
             stream                                                 << std::endl;
           }
 
-        stream << ".PHONY: clean objclean modclean objcleandep"    << std::endl;
+        stream << "####"                                          << std::endl;
+        stream << "#### modules finished"                         << std::endl;
+        stream << "####"                                          << std::endl;
         stream                                                     << std::endl;
-        stream << "clean: objclean modclean"                       << std::endl;
+        stream                                                     << std::endl;
+
+        stream << "depend: $(DEPENDS)"                             << std::endl;
+        stream                                                     << std::endl;
+        stream << ".PHONY: clean depclean objclean modclean objcleandep"
+                                                                   << std::endl;
+        stream                                                     << std::endl;
+        stream << "clean: objclean modclean depclean"              << std::endl;
+        stream                                                     << std::endl;
+        stream << "depclean:"                                      << std::endl;
+        stream << "\t-$(RM) $(DEPENDS)"                            << std::endl;
         stream                                                     << std::endl;
         stream << "objclean:"                                      << std::endl;
 
@@ -1067,12 +1142,12 @@ namespace xml
             ; ++mod
             )
           {
-            stream << "\t$(RM) $(OBJ_" << mod->first << ")"        << std::endl;
+            stream << "\t-$(RM) $(OBJ_" << mod->first << ")"       << std::endl;
           }
 
         stream                                                     << std::endl;
         stream << "modclean:"                                      << std::endl;
-        stream << "\t$(RM) $(MODULES)"                             << std::endl;
+        stream << "\t-$(RM) $(MODULES)"                            << std::endl;
 
         stream.commit();
       }
@@ -1692,6 +1767,8 @@ namespace xml
                                            , stream.str()
                                            , mod.ldflags
                                            , mod.cxxflags
+                                           , mod.links
+                                           , mod.path
                                            );
 
               if (m[mod.name].find (fun_info) == m[mod.name].end())
