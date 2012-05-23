@@ -162,14 +162,25 @@ rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "init" -
 rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "finalize" -m aggregator -C "finalize" -M 4 -B 4 &
 
 for host in $hosts ; do
+	wait
+
 	echo >&2 "I: starting workers on host: $host"
+	count=0
 	for i in $(seq 1 ${num_calc_per_node}) ; do
         	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "calc" -m aggregator -C "CPU" &
+		count=$(( count + 1 ))
+		if [ $count -gt 6 ] ; then
+			count=0
+			wait
+		fi
 	done
+	wait
 
 	for i in $(seq 1 ${num_io_per_node}) ; do
         	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "load" -m aggregator -C "LOAD" &
 	done
+	wait
+
 	for i in $(seq 1 ${num_io_per_node}) ; do
         	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "write" -m aggregator -C "WRITE" &
 	done
