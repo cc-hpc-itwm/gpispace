@@ -37,6 +37,28 @@ endif
 
 ###############################################################################
 
+ifndef PNETC
+  PNETC = $(SDPA_BIN)/pnetc
+endif
+
+ifndef PNET2DOT
+  PNET2DOT = $(SDPA_BIN)/pnet2dot
+endif
+
+ifndef PNETPUT
+  PNETPUT = $(SDPA_BIN)/pnetput
+endif
+
+ifndef WE_EXEC_CMD
+  WE_EXEC_CMD = $(SDPA_BIN)/we-eval
+endif
+
+ifndef WE_EXEC_WORKER
+  WE_EXEC_WORKER = 2
+endif
+
+###############################################################################
+
 ifndef XML
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable XML)
@@ -103,40 +125,9 @@ endif
 
 ###############################################################################
 
-ifndef PNETC
-  PNETC = $(SDPA_BIN)/pnetc
-endif
-
-ifndef PNET2DOT
-  PNET2DOT = $(SDPA_BIN)/pnet2dot
-endif
-
-ifndef PNETPUT
-  PNETPUT = $(SDPA_BIN)/pnetput
-endif
-
-ifndef WE_EXEC_CMD
-  WE_EXEC_CMD = $(SDPA_BIN)/we-eval
-endif
-
-ifndef WE_EXEC_WORKER
-  WE_EXEC_WORKER = 2
-endif
-
-###############################################################################
-
 DEP += $(CURDIR)/Makefile
-
-###############################################################################
-
 PATH_LIB = $(GEN)/pnetc/op
-
-###############################################################################
-
 WE_EXEC_LIBPATHS += $(PATH_LIB)
-
-###############################################################################
-
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
 
 ###############################################################################
@@ -147,8 +138,6 @@ PNET2DOT += $(addprefix --not-ends-with ,$(NOT_ENDS_WITH))
 PNETC_NOINLINE += $(PNETC)
 PNETC_NOINLINE += --no-inline true
 PNETC_NOINLINE += --synthesize-virtual-places true
-
-###############################################################################
 
 PNETC += $(addprefix -I,$(SDPA_XML_LIB))
 PNETC += --gen-cxxflags=-O3
@@ -231,19 +220,20 @@ clean:
 .PHONY: help
 
 help:
-	@echo "default -> all"
-	@echo "all -> net lib out"
-	@echo "net -> build pnet $(NET) from $(XML)"
-	@echo "lib -> build libs from code in $(GEN)"
-	@echo "out -> run $(PUT) with $(WE_EXEC)"
+	@echo "default     'all'"
+	@echo "all         'net' & 'lib' & 'out'"
 	@echo
-	@echo "gen -> generate code into $(GEN)"
-	@echo "put -> put tokens into $(NET) and save result in $(PUT)"
-	@echo "ps -> generate $(PS) and $(PS_NOINLINE)"
+	@echo "net         build pnet from xml"
+	@echo "lib         'gen' & build libs from code in gen"
+	@echo "out         execute workflow"
 	@echo
-	@echo "clean -> delete all generated files"
+	@echo "gen         generate code into gen"
+	@echo "put         put tokens into the workflow"
+	@echo "ps          generate postscript"
 	@echo
-	@echo "showconfig -> show the actual configuration"
+	@echo "clean       delete all generated files"
+	@echo
+	@echo "showconfig  show the actual configuration"
 
 ###############################################################################
 
@@ -271,8 +261,11 @@ showconfig:
 	@echo "PS_NOINLINE = $(PS_NOINLINE)"
 	@echo
 	@echo "DEP = $(DEP)"
+	@echo "PATH_LIB = $(PATH_LIB)"
+	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
 	@echo
 	@echo "CXXINCLUDEPATHS = $(CXXINCLUDEPATHS)"
+	@echo "CXXLIBRARYPATHS = $(CXXLIBRARYPATHS)"
 	@echo
 	@echo "PNETC = $(PNETC)"
 	@echo "PNETC_NOINLINE = $(PNETC_NOINLINE)"
