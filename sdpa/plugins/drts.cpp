@@ -1056,7 +1056,7 @@ private:
                                             , job->result()
                                             )
           );
-        event->result_code() = job->result_code();
+        event->error_code() = job->result_code();
         event->error_message() = job->message();
 
         return send_event (event); // send_event takes ownership

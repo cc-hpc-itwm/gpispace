@@ -26,6 +26,7 @@
 namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/JobEvent.hpp>
+#include <fhg/error_codes.hpp>
 
 namespace sdpa {
   namespace events {
@@ -49,8 +50,8 @@ namespace sdpa {
                     )
         :  sdpa::events::JobEvent( a_from, a_to, a_job_id )
         , result_(job_result)
-        , m_result_code (10)
-        , m_error_message ("failed")
+        , m_error_code (fhg::error::UNASSIGNED_ERROR)
+        , m_error_message ()
       { }
 
       virtual ~JobFailedEvent() {}
@@ -65,14 +66,14 @@ namespace sdpa {
       const job_result_t &result() const { return result_; }
       job_result_t &result() { return result_; }
 
-      int result_code () const { return m_result_code; }
-      int & result_code () { return m_result_code; }
+      int error_code () const { return m_error_code; }
+      int & error_code () { return m_error_code; }
 
       std::string const & error_message () const { return m_error_message; }
       std::string & error_message () { return m_error_message; }
     private:
       job_result_t result_;
-      int m_result_code;
+      int m_error_code;
       std::string m_error_message;
     };
   }
