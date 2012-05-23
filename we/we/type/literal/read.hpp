@@ -11,6 +11,25 @@
 
 namespace literal
 {
+  inline std::string identifier (fhg::util::parse::position& pos)
+  {
+    std::string x;
+
+    if (pos.end() or not (isalpha (*pos) or *pos == '_'))
+      {
+        throw expr::exception::parse::expected ("identifier", pos());
+      }
+
+    x.push_back (*pos); ++pos;
+
+    while (not pos.end() and (isalpha (*pos) or isdigit (*pos) or *pos == '_'))
+      {
+        x.push_back (*pos); ++pos;
+      }
+
+    return x;
+  }
+
   static char read_quoted_char (fhg::util::parse::position & pos)
   {
     const std::size_t open (pos());
@@ -285,33 +304,7 @@ namespace literal
           v = bytearray::type (container);
         }
         break;
-      case '[': ++pos;
-        if (pos.end())
-          {
-            throw expr::exception::parse::expected ("']' or '|'", pos());
-          }
-        else
-          switch (*pos)
-            {
-            case ']': ++pos; v = control(); break;
-            case '|': ++pos;
-              {
-                literal::map_type m;
-                long key;
-                long val;
-
-                while (read_map_item (key, val, pos))
-                  {
-                    m[key] = val;
-                  }
-
-                require ("|]", pos); v = m;
-              }
-              break;
-            default:
-              throw expr::exception::parse::expected ("']' or '|'", pos());
-            }
-        break;
+      case '[': ++pos; require ("]", pos); v = control(); break;
       case '@': ++pos;
         {
           literal::stack_type s;
@@ -366,7 +359,7 @@ namespace literal
         break;
       case '{': ++pos;
         if (pos.end())
-          throw expr::exception::parse::expected ("'}' or ':'", pos());
+          throw expr::exception::parse::expected ("'}' or ':' or '|'", pos());
         else
           switch (*pos)
             {
@@ -381,6 +374,20 @@ namespace literal
                   }
 
                 require (":}", pos); v = s;
+              }
+              break;
+            case '|': ++pos;
+              {
+                literal::map_type m;
+                long key;
+                long val;
+
+                while (read_map_item (key, val, pos))
+                  {
+                    m[key] = val;
+                  }
+
+                require ("|}", pos); v = m;
               }
               break;
             default:

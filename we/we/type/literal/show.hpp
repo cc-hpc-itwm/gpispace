@@ -80,7 +80,7 @@ namespace literal
       {
         std::ostringstream s;
 
-        s << "[|";
+        s << "{|";
 
         for ( literal::map_type::const_iterator pos (map.begin())
             ; pos != map.end()
@@ -92,7 +92,7 @@ namespace literal
               ;
           }
 
-        s << "|]";
+        s << "|}";
 
         return s.str();
       }
