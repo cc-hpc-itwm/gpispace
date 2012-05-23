@@ -1,20 +1,32 @@
 <defun name="hello_world">
+
   <in name="in" type="control"/>
   <out name="out" type="control"/>
+
   <module name="hello_world" function="out call_hello_world (in)">
-    <cinclude href="hello_world.hpp"/>
-    <cinclude href="hello2.h"/>
-    <cinclude href="hello_util.h"/>
+
+    <cinclude href="hello_world.hpp"/> <!-- cpp library -->
     <link href="lib/hello2.o"/>
+
+    <cinclude href="hello2.h"/>        <!-- c library -->
     <link href="lib/hello_world.o"/>
+
+    <cinclude href="hello_util.h"/>    <!-- shared object -->
     <ld flag="-lhello_util"/>
+
+    <cinclude href="iostream"/>
+
     <code><![CDATA[
+      std::cout << "Calling 3 versions of hello..." << std::endl;
+
       impl_hello_world();
       ::hello_world();
+      hello_util();
 
-      hello_util ();
+      std::cout << "...[done]" << std::endl;
 
       return control();
     ]]></code>
   </module>
+
 </defun>

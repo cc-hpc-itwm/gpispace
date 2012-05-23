@@ -50,7 +50,7 @@ ifndef PNETPUT
 endif
 
 ifndef WE_EXEC_CMD
-  WE_EXEC_CMD = $(SDPA_BIN)/we-eval
+  WE_EXEC_CMD = $(SDPA_BIN)/we-exec
 endif
 
 ifndef WE_EXEC_WORKER

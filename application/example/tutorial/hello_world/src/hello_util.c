@@ -5,11 +5,11 @@
 
 void hello_util (void)
 {
-  printf ("*** Holla");
+  printf ("*** (LIB) Hola");
 
   fflush (stdout);
 
   sleep (1);
 
-  printf (" util\n");
+  printf (" mundo *** (LIB)\n");
 }

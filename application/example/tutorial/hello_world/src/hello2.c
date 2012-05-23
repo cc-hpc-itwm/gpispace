@@ -5,11 +5,11 @@
 
 void hello_world (void)
 {
-  printf ("*** Hallo");
+  printf ("*** (C) Hallo");
 
   fflush (stdout);
 
   sleep (1);
 
-  printf (" Welt\n");
+  printf (" Welt *** (C)\n");
 }

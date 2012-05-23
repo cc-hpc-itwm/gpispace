@@ -1,6 +1,6 @@
 
 ifndef MAIN
-  MAIN = hello_many
+  MAIN = hello_world
 endif
 
 CXXINCLUDEPATHS += $(CURDIR)/include
@@ -15,4 +15,4 @@ include ../common.make
 ###############################################################################
 
 $(PUT): $(NET)
-	$(PNETPUT) --if $(NET) --of $(PUT) -p in=[] -p in=[] -p in=[]
+	$(PNETPUT) --if $(NET) --of $(PUT) -p in=[]

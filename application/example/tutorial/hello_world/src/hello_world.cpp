@@ -4,9 +4,9 @@
 
 void impl_hello_world (void)
 {
-  std::cout << "*** Hello " << std::flush;
+  std::cout << "*** (CPP) Hello " << std::flush;
 
   sleep (1);
 
-  std::cout << "World" << std::endl;
+  std::cout << "World *** (CPP)" << std::endl;
 }
