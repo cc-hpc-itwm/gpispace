@@ -8,21 +8,11 @@ APPLIBRARYPATH = $(PATH_MAIN)/lib
 
 ###############################################################################
 
-SDPA_INCLUDE = $(SDPA_HOME)/include
-SDPA_BIN = $(SDPA_HOME)/bin
-SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
-
-TEE = $(shell which tee)
-DOT = $(shell which dot) -Tps
-RM = $(shell which rm) -rf
-TOUCH = $(shell which touch)
-CAT = $(shell which cat)
-CP = $(shell which cp)
-MKDIR = $(shell which mkdir)
+include ../common.make
 
 ###############################################################################
 
-XML_MAIN = $(PATH_MAIN)/$(MAIN).xpnet
+XML = $(PATH_MAIN)/$(MAIN).xpnet
 
 ###############################################################################
 
@@ -106,11 +96,11 @@ all: net lib
 
 ###############################################################################
 
-$(NET): $(XML_MAIN) $(DEP)
-	$(PNETC) $(XML_MAIN) -o $@
+$(NET): $(XML) $(DEP)
+	$(PNETC) $(XML) -o $@
 
-$(NET_NOINLINE): $(XML_MAIN) $(DEP)
-	$(PNETC_NOINLINE) $(XML_MAIN) -o $@
+$(NET_NOINLINE): $(XML) $(DEP)
+	$(PNETC_NOINLINE) $(XML) -o $@
 
 ###############################################################################
 
@@ -121,8 +111,8 @@ $(PUTTED): $(NET)
 
 ###############################################################################
 
-$(GEN): $(XML_MAIN) $(DEP)
-	$(PNETC) $(XML_MAIN) -o /dev/null -g $@
+$(GEN): $(XML) $(DEP)
+	$(PNETC) $(XML) -o /dev/null -g $@
 	$(TOUCH) $@
 
 .PHONY: lib
