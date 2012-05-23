@@ -285,33 +285,7 @@ namespace literal
           v = bytearray::type (container);
         }
         break;
-      case '[': ++pos;
-        if (pos.end())
-          {
-            throw expr::exception::parse::expected ("']' or '|'", pos());
-          }
-        else
-          switch (*pos)
-            {
-            case ']': ++pos; v = control(); break;
-            case '|': ++pos;
-              {
-                literal::map_type m;
-                long key;
-                long val;
-
-                while (read_map_item (key, val, pos))
-                  {
-                    m[key] = val;
-                  }
-
-                require ("|]", pos); v = m;
-              }
-              break;
-            default:
-              throw expr::exception::parse::expected ("']' or '|'", pos());
-            }
-        break;
+      case '[': ++pos; require ("]", pos); v = control(); break;
       case '@': ++pos;
         {
           literal::stack_type s;
@@ -366,7 +340,7 @@ namespace literal
         break;
       case '{': ++pos;
         if (pos.end())
-          throw expr::exception::parse::expected ("'}' or ':'", pos());
+          throw expr::exception::parse::expected ("'}' or ':' or '|'", pos());
         else
           switch (*pos)
             {
@@ -381,6 +355,20 @@ namespace literal
                   }
 
                 require (":}", pos); v = s;
+              }
+              break;
+            case '|': ++pos;
+              {
+                literal::map_type m;
+                long key;
+                long val;
+
+                while (read_map_item (key, val, pos))
+                  {
+                    m[key] = val;
+                  }
+
+                require ("|}", pos); v = m;
               }
               break;
             default:
