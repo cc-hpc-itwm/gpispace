@@ -325,7 +325,7 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
         return true;
 }
 
-void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
+void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
 {
   assert (pEvt);
 
@@ -340,7 +340,11 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
   if( pEvt->from() == sdpa::daemon::WE )
   {
-          failed(pEvt->job_id(), pEvt->result());
+          failed( pEvt->job_id()
+                , pEvt->result()
+                , pEvt->error_code()
+                , pEvt->error_message()
+                );
           return;
   }
 
@@ -369,12 +373,14 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
                 try {
                         // forward it up
                         JobFailedEvent::Ptr pEvtJobFailed
-                                                          (new JobFailedEvent( name()
-                                                                                                   , pJob->owner()
-                                                                                                   , pEvt->job_id()
-                                                                                                   , pEvt->result()
-                                                                                                   )
-                                                          );
+                          (new JobFailedEvent( name()
+                                             , pJob->owner()
+                                             , pEvt->job_id()
+                                             , pEvt->result()
+                                             )
+                          );
+                        pEvtJobFailed->error_code() = pEvt->error_code();
+                        pEvtJobFailed->error_message() = pEvt->error_message();
 
                         // send the event to the master
                         sendEventToMaster(pEvtJobFailed);
@@ -405,8 +411,6 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
           try {
                   id_type actId = pEvt->job_id();
 
-                  result_type output = pEvt->result();
-
                   // this  should only  be called  once, therefore
                   // the state machine when we switch the job from
                   // one state  to another, the  code belonging to
@@ -415,8 +419,11 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
                   // FSM callback routine.
                   if( hasWorkflowEngine() )
                   {
-                          DMLOG(TRACE, "Inform WE that the activity "<<actId<<" failed");
-                          workflowEngine()->failed(actId, output);
+                          workflowEngine()->failed( actId
+                                                  , pEvt->result()
+                                                  , pEvt->error_code()
+                                                  , pEvt->error_message()
+                                                  );
                   }
 
                   try {
@@ -459,7 +466,11 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
 }
 
-bool Agent::failed(const id_type & wfid, const result_type & result)
+bool Agent::failed( const id_type& wfid
+                  , const result_type & result
+                  , int error_code
+                  , std::string const & reason
+                  )
 {
         //put the job into the state Failed
         JobId id(wfid);
@@ -485,12 +496,14 @@ bool Agent::failed(const id_type & wfid, const result_type & result)
         try {
             // forward it up
             JobFailedEvent::Ptr pEvtJobFailed
-                          (new JobFailedEvent( name()
-                                               , pJob->owner()
-                                               , id
-                                               , result
-                                               )
-                          );
+              (new JobFailedEvent( name()
+                                 , pJob->owner()
+                                 , id
+                                 , result
+                                 )
+              );
+            pEvtJobFailed->error_code() = error_code;
+            pEvtJobFailed->error_message() = reason;
 
             // send the event to the master
             pJob->JobFailed(pEvtJobFailed.get());
@@ -502,10 +515,13 @@ bool Agent::failed(const id_type & wfid, const result_type & result)
                 {
                         if(subscribedFor(pair_subscr_joblist.first, id))
                         {
-                                sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFailedEvent(*pEvtJobFailed) );
-                                ptrEvt->from() = name();
-                                ptrEvt->to() = pair_subscr_joblist.first;
-                                sendEventToMaster(ptrEvt);
+                          JobFailedEvent::Ptr ptrEvt( new JobFailedEvent(*pEvtJobFailed) );
+                          ptrEvt->from() = name();
+                          ptrEvt->to() = pair_subscr_joblist.first;
+                          ptrEvt->error_code() = error_code;
+                          ptrEvt->error_message() = reason;
+
+                          sendEventToMaster(ptrEvt);
                         }
                 }
         }

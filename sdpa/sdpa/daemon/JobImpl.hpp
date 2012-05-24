@@ -26,6 +26,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
 
 namespace sdpa { namespace daemon {
     class JobImpl : public Job /*, public sdpa::fsm::JobFSMActions*/  {
@@ -33,12 +34,12 @@ namespace sdpa { namespace daemon {
         typedef boost::unordered_map<sdpa::job_id_t, Job::ptr_t> job_list_t;
 
         typedef boost::recursive_mutex mutex_type;
-      	typedef boost::unique_lock<mutex_type> lock_type;
+        typedef boost::unique_lock<mutex_type> lock_type;
 
-      	JobImpl(const sdpa::job_id_t id = JobId(""),
-      			const sdpa::job_desc_t desc = "",
-      	        const sdpa::daemon::IComm* pHandler = NULL,
-      	        const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
+        JobImpl(const sdpa::job_id_t id = JobId(""),
+                        const sdpa::job_desc_t desc = "",
+                const sdpa::daemon::IComm* pHandler = NULL,
+                const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
 
        virtual ~JobImpl();
 
@@ -46,6 +47,28 @@ namespace sdpa { namespace daemon {
         virtual const sdpa::job_id_t& parent() const;
         virtual const sdpa::job_desc_t& description() const;
         virtual const sdpa::job_result_t& result() const { return result_; }
+
+      int error_code() const
+      {
+        return m_error_code;
+      }
+
+      std::string const & error_message () const
+      {
+        return m_error_message;
+      }
+
+      Job& error_code(int ec)
+      {
+        m_error_code = ec;
+        return *this;
+      }
+
+      Job& error_message(std::string const &msg)
+      {
+        m_error_message = msg;
+        return *this;
+      }
 
         virtual void set_icomm(IComm* pArgComm) { pComm = pArgComm; }
         virtual IComm* icomm() { return pComm; }
@@ -85,12 +108,16 @@ namespace sdpa { namespace daemon {
                 os<<"type: "<<type_<<std::endl;
                 os<<"status: "<<getStatus()<<std::endl;
                 os<<"parent: "<<parent_<<std::endl;
+                os<<"error-code: " << m_error_code << std::endl;
+                os<<"error-message: \"" << m_error_message << "\"" << std::endl;
                 //os<<"description: "<<desc_<<std::endl;
 
                 return os.str();
         }
 
-        template <class Archive> void serialize(Archive& ar, const unsigned int)
+        template <class Archive> void serialize( Archive& ar
+                                               , const unsigned int version
+                                               )
         {
                 ar & boost::serialization::base_object<Job>(*this);
                 ar & id_;
@@ -100,6 +127,11 @@ namespace sdpa { namespace daemon {
                 ar & walltime_;
                 ar & type_;
                 ar & m_owner;
+                if (version > 0)
+                {
+                  ar & m_error_code;
+                  ar & m_error_message;
+                }
         }
 
     protected:
@@ -113,6 +145,8 @@ namespace sdpa { namespace daemon {
         bool b_marked_for_del_;
         job_type type_;
         sdpa::job_result_t result_;
+        int m_error_code;
+        std::string m_error_message;
 
         friend class boost::serialization::access;
         unsigned long walltime_;
@@ -122,9 +156,11 @@ namespace sdpa { namespace daemon {
     protected:
 
     public:
-     	/*mutable*/ IComm* pComm;
+        /*mutable*/ IComm* pComm;
 
     };
 }}
+
+BOOST_CLASS_VERSION(sdpa::daemon::JobImpl, 1);
 
 #endif

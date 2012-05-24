@@ -1,5 +1,5 @@
 /*
- * =====================================================================================
+ * =============================================================================
  *
  *       Filename:  test_layer.hpp
  *
@@ -13,7 +13,7 @@
  *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
  *        Company:  Fraunhofer ITWM
  *
- * =====================================================================================
+ * =============================================================================
  */
 
 #ifndef WE_TESTS_TEST_LAYER_HPP
@@ -24,6 +24,7 @@
 #include <boost/bind.hpp>
 #include <boost/unordered_map.hpp>
 #include <fhg/util/show.hpp>
+#include <fhg/error_codes.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/bits/queue.hpp>
 
@@ -100,7 +101,11 @@ namespace test {
         }
         catch (std::exception const & ex)
         {
-          daemon.layer().failed (id, we::util::text_codec::encode(act));
+          daemon.layer().failed ( id
+                                , we::util::text_codec::encode(act)
+                                , fhg::error::MODULE_CALL_FAILED
+                                , ex.what()
+                                );
         }
       }
 
@@ -222,7 +227,10 @@ namespace test {
     }
 
     typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
-    void submit(const id_type & id, const std::string & desc, requirement_list_t req_list = requirement_list_t())
+    void submit( const id_type & id
+               , const std::string & desc
+               , requirement_list_t req_list = requirement_list_t()
+               )
     {
       job_type job (id, desc);
       jobs_[next_worker_] .put(job);
@@ -260,14 +268,19 @@ namespace test {
       }
       catch (std::out_of_range const &)
       {
-        we::activity_t act (we::util::text_codec::decode<we::activity_t> (desc));
+        we::activity_t act
+          (we::util::text_codec::decode<we::activity_t> (desc));
         we::mgmt::type::detail::printer <we::activity_t> p (act, std::cout);
         p << "finished [" << id << "] = " << act.output() << std::endl;
       }
       return true;
     }
 
-    bool failed(const id_type & id, const std::string & desc)
+    bool failed( const id_type & id
+               , const std::string & desc
+               , const int error_code
+               , const std::string & reason
+               )
     {
       try
       {
@@ -275,13 +288,17 @@ namespace test {
         del_mapping (id);
 
         // inform layer
-        mgmt_layer_.failed (mapped_id, desc);
+        mgmt_layer_.failed (mapped_id, desc, error_code, reason);
       }
       catch (std::out_of_range const &)
       {
-        we::activity_t act (we::util::text_codec::decode<we::activity_t> (desc));
+        we::activity_t act
+          (we::util::text_codec::decode<we::activity_t> (desc));
         we::mgmt::type::detail::printer <we::activity_t> p (act, std::cout);
-        p << "failed [" << id << "] = " << act.output() << std::endl;
+        p << "failed [" << id << "] = " << act.output()
+          << " error-code := " << error_code
+          << " reason := " << reason
+          << std::endl;
       }
       return true;
     }

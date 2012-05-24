@@ -12,20 +12,6 @@
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
 
-namespace detail
-{
-  int translate_job_status_from_string_to_enum(std::string const &s)
-  {
-    if (s == "SDPA::Pending")   return sdpa::status::PENDING;
-    if (s == "SDPA::Running")   return sdpa::status::RUNNING;
-    if (s == "SDPA::Finished")  return sdpa::status::FINISHED;
-    if (s == "SDPA::Failed")    return sdpa::status::FAILED;
-    if (s == "SDPA::Cancelled") return sdpa::status::CANCELED;
-    if (s == "SDPA::Suspended") return sdpa::status::SUSPENDED;
-    else                        return sdpa::status::UNKNOWN;
-  }
-}
-
 class SDPACImpl : FHG_PLUGIN
                 , public sdpa::Client
 {
@@ -126,7 +112,7 @@ public:
     {
       if (JobStatusReplyEvent* job_status = dynamic_cast<JobStatusReplyEvent*>(rep.get()))
       {
-        return detail::translate_job_status_from_string_to_enum(job_status->status());
+        return sdpa::status::read(job_status->status());
       }
       else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
       {

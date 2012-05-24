@@ -1,5 +1,5 @@
 /*
- * =====================================================================================
+ * =============================================================================
  *
  *       Filename:  layer.hpp
  *
@@ -13,7 +13,7 @@
  *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
  *        Company:  Fraunhofer ITWM
  *
- * =====================================================================================
+ * =============================================================================
  */
 
 #ifndef WE_MGMT_LAYER_HPP
@@ -22,6 +22,7 @@
 #include <fhglog/fhglog.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/error_codes.hpp>
 #include <fhg/util/show.hpp>
 #include <fhg/util/warnings.hpp>
 
@@ -135,6 +136,11 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "submit (" << id << ", ...)");
 
         activity_type act = policy::codec::decode(bytes);
+        return submit(id, act);
+      }
+
+      void submit(const external_id_type & id, const activity_type &act)
+      {
         descriptor_ptr desc
           (new descriptor_type (generate_internal_id(), act));
         desc->came_from_external_as (id);
@@ -147,15 +153,19 @@ namespace we { namespace mgmt {
        * Inform the management layer to cancel a previously submitted net
        *
        *          pre-conditions:
-       *                  - a network must have been registered and assigned the id "id"
+       *                - a  network  must have  been registered  and
+       *                  assigned the id "id"
        *
        *          side-effects:
-       *                  - the hierarchy belonging to the net is cancelled in turn
+       *                -  the  hierarchy   belonging  to  the  net  is
+       *                   cancelled in turn
        *
        *          post-conditions:
-       *                  - the internal state of the network switches to CANCELLING
-       *                  - all children of the network will be terminated
-       * */
+       *
+       *                - the  internal   state  of  the   network  switches  to
+       *                  CANCELLING
+       *                - all children of the network will be terminated
+       */
       bool cancel(const external_id_type & id, const reason_type & reason)
       {
         DLOG(TRACE, "cancel (" << id << ", " << reason << ")");
@@ -174,16 +184,21 @@ namespace we { namespace mgmt {
       }
 
       /**
-       * Inform the management layer that an execution finished with the given result
+       * Inform the management  layer that an execution finished  with the given
+       * result
        *
        *          pre-conditions:
-       *                  - the management layer submitted an activity to be executed with id "id"
+       *
+       *              - the  management  layer   submitted  an  activity  to  be
+       *                executed with id "id"
        *
        *          side-effects:
-       *                  -     the results are integrated into the referenced net
+       *
+       *              - the results are integrated into the referenced net
        *
        *          post-conditions:
-       *                  - the node belonging to this is activity is removed
+       *
+       *               - the node belonging to this is activity is removed
        **/
       bool finished(const external_id_type & id, const result_type & result)
       {
@@ -196,7 +211,11 @@ namespace we { namespace mgmt {
             {
               activity_type act (policy::codec::decode (result));
               desc->output (act.output());
-              DLOG(TRACE, "finished (" << desc->name() << ")-" << id << ": " << desc->show_output());
+              DLOG( TRACE
+                  , "finished"
+                  << " (" << desc->name() << ")-" << id
+                  << ": " << desc->show_output()
+                  );
             }
           }
 
@@ -210,19 +229,26 @@ namespace we { namespace mgmt {
       }
 
       /**
-       * Inform the management layer that an execution failed with the given result
+       * Inform the  management layer  that an execution  failed with  the given
+       * result
        *
        *          pre-conditions:
-       *                  - the management layer submitted an activity to be executed with id "id"
+       *
+       *               - the  management  layer  submitted  an  activity  to  be
+       *                 executed with id "id"
        *
        *          side-effects:
-       *                  -     the results are integrated into the referenced net
+       *
+       *               - the results are integrated into the referenced net
        *
        *          post-conditions:
-       *                  - the node belonging to this activity is removed
+       *
+       *                - the node belonging to this activity is removed
        **/
       bool failed ( const external_id_type & id
                   , const result_type & result
+                  , const int error_code
+                  , const std::string & error_message
                   )
       {
         DLOG(TRACE, "failed (" << id << ", " << result << ")");
@@ -231,6 +257,12 @@ namespace we { namespace mgmt {
 
         try
         {
+          descriptor_ptr d = lookup(map_to_internal(id));
+
+          d->set_error_code(error_code);
+          d->set_error_message(error_message);
+          d->set_result(result);
+
           // TODO:
           //    lookup activity
           //    mark as failed
@@ -434,10 +466,21 @@ namespace we { namespace mgmt {
       }
     private:
       // handle execution layer
-      boost::function<void (external_id_type const &, encoded_type const &, const std::list<requirement_t<std::string> >& )> ext_submit;
-      boost::function<bool (external_id_type const &, reason_type const &)>  ext_cancel;
-      boost::function<bool (external_id_type const &, result_type const &)>  ext_finished;
-      boost::function<bool (external_id_type const &, result_type const &)>  ext_failed;
+      boost::function<void ( external_id_type const &
+                           , encoded_type const &
+                           , const std::list<requirement_t<std::string> >&
+                           )> ext_submit;
+      boost::function<bool ( external_id_type const &
+                           , reason_type const &
+                           )>  ext_cancel;
+      boost::function<bool ( external_id_type const &
+                           , result_type const &
+                           )>  ext_finished;
+      boost::function<bool ( external_id_type const &
+                           , result_type const &
+                           , const int error_code
+                           , std::string const & reason
+                           )>  ext_failed;
       boost::function<bool (external_id_type const &)>                       ext_cancelled;
 
       void submit (const descriptor_ptr & desc)
@@ -553,7 +596,7 @@ namespace we { namespace mgmt {
         ext_submit = (boost::bind (& T::submit, t, _1, _2, _3));
         ext_cancel = (boost::bind (& T::cancel, t, _1, _2));
         ext_finished = (boost::bind (& T::finished, t, _1, _2));
-        ext_failed = (boost::bind (& T::failed, t, _1, _2));
+        ext_failed = (boost::bind (& T::failed, t, _1, _2, _3, _4));
         ext_cancelled = (boost::bind (& T::cancelled, t, _1));
       }
 
@@ -1066,18 +1109,25 @@ namespace we { namespace mgmt {
 
           if (desc->has_parent ())
           {
+            descriptor_ptr parent_desc =
+              lookup (desc->parent());
+
+            parent_desc->child_failed( *desc
+                                     , desc->error_code()
+                                     , desc->error_message()
+                                     );
             // FIXME: handle failure in a meaningful way:
             //     - check failure reason
             //         - EAGAIN reschedule (had not been submitted yet)
             //         - ECRASH activity crashed (idempotence criteria)
-            lookup (desc->parent())->child_failed(*desc, "TODO: child_failed reason");
             post_cancel_activity_notification (desc->parent());
           }
           else if (desc->came_from_external ())
           {
-            //            if (desc->has_failed()) ; else cancelled()
             ext_failed ( desc->from_external_id()
-                       , "TODO: activity failed reason"
+                       , policy::codec::encode(desc->activity())
+                       , desc->error_code()
+                       , desc->error_message()
                        );
           }
           else
@@ -1115,7 +1165,9 @@ namespace we { namespace mgmt {
           else if (desc->came_from_external ())
           {
             ext_failed ( desc->from_external_id()
-                       , "TODO: activity failed reason"
+                       , policy::codec::encode(desc->activity())
+                       , desc->error_code()
+                       , desc->error_message()
                        );
           }
           else

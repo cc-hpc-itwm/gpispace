@@ -14,6 +14,7 @@ set (hdrs
   types.hpp
   uuidgen.hpp
   uuid.hpp
+  job_states.hpp
 )
 
 set (srcs

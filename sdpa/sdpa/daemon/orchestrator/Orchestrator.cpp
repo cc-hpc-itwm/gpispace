@@ -205,11 +205,16 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
             if( hasWorkflowEngine() )
             {
                 SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" failed");
-                workflowEngine()->failed(actId, output);
+                workflowEngine()->failed( actId
+                                        , output
+                                        , pEvt->error_code()
+                                        , pEvt->error_message()
+                                        );
             }
             else
             {
                 JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
+
                 notifySubscribers(ptrEvtJobFailed);
             }
 

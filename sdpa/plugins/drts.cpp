@@ -17,6 +17,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/error_codes.hpp>
 
 #include <sdpa/uuidgen.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -69,7 +70,11 @@ public:
     }
     catch (std::exception const &ex)
     {
-      MLOG(ERROR, "could not parse backlog size: " << fhg_kernel()->get("backlog", "3") << ": " << ex.what());
+      MLOG( ERROR
+          , "could not parse backlog size: "
+          << fhg_kernel()->get("backlog", "3")
+          << ": " << ex.what()
+          );
       FHG_PLUGIN_FAILED(EINVAL);
     }
     try
@@ -79,17 +84,24 @@ public:
     }
     catch (std::exception const &ex)
     {
-      MLOG(ERROR, "could not parse bool from `terminate_on_failure' config key: " << ex.what());
+      MLOG( ERROR
+          , "could not parse bool from `terminate_on_failure' config key: "
+          << ex.what()
+          );
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
     try
     {
-      m_max_reconnect_attempts = fhg_kernel()->get<std::size_t>("max_reconnect_attempts", "0");
+      m_max_reconnect_attempts =
+        fhg_kernel()->get<std::size_t>("max_reconnect_attempts", "0");
     }
     catch (std::exception const &ex)
     {
-      MLOG(ERROR, "could not parse 'max_reconnect_attempts' from config: " << ex.what());
+      MLOG( ERROR
+          , "could not parse 'max_reconnect_attempts' from config: "
+          << ex.what()
+          );
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -124,9 +136,13 @@ public:
     //      acquire_all<T>() -> [(name, T*)]
     //
     // to get access to all plugins of a particular type
-    if (fhg::plugin::Capability* cap = fhg_kernel()->acquire<fhg::plugin::Capability>("gpi"))
+    fhg::plugin::Capability *cap
+      = fhg_kernel()->acquire< fhg::plugin::Capability>("gpi");
+    if (cap)
     {
-      MLOG(INFO, "gained capability: " << cap->capability_name() << " of type " << cap->capability_type());
+      MLOG( INFO, "gained capability: " << cap->capability_name()
+          << " of type " << cap->capability_type()
+          );
 
       lock_type cap_lock(m_capabilities_mutex);
       m_capabilities.insert (std::make_pair(cap->capability_name(), cap));
@@ -137,11 +153,12 @@ public:
     m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
 
     // initialize peer
-    m_peer.reset (new fhg::com::peer_t ( m_my_name
-                                       , fhg::com::host_t(fhg_kernel()->get("host", "*"))
-                                       , fhg::com::port_t(fhg_kernel()->get("port", "0"))
-                                       )
-                 );
+    m_peer.reset
+      (new fhg::com::peer_t ( m_my_name
+                            , fhg::com::host_t(fhg_kernel()->get("host", "*"))
+                            , fhg::com::port_t(fhg_kernel()->get("port", "0"))
+                            )
+      );
     m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
     try
     {
@@ -178,7 +195,9 @@ public:
           }
           else
           {
-            MLOG(WARN, "master already specified, ignoring new one: " << master);
+            MLOG( WARN
+                , "master already specified, ignoring new one: " << master
+                );
           }
         }
         catch (std::exception const & ex)
@@ -197,9 +216,11 @@ public:
     restore_jobs ();
 
     if (have_master_with_polling)
-      m_request_thread.reset(new boost::thread(&DRTSImpl::job_requestor_thread, this));
+      m_request_thread.reset
+        (new boost::thread(&DRTSImpl::job_requestor_thread, this));
 
-    m_execution_thread.reset(new boost::thread(&DRTSImpl::job_execution_thread, this));
+    m_execution_thread.reset
+      (new boost::thread(&DRTSImpl::job_execution_thread, this));
 
     start_connect ();
 
@@ -266,9 +287,14 @@ public:
 
   FHG_ON_PLUGIN_LOADED(plugin)
   {
-    if (fhg::plugin::Capability* cap = fhg_kernel()->acquire<fhg::plugin::Capability>(plugin))
+    fhg::plugin::Capability *cap
+      = fhg_kernel()->acquire<fhg::plugin::Capability>(plugin);
+    if (cap)
     {
-      MLOG(INFO, "gained capability: " << cap->capability_name() << " of type " << cap->capability_type());
+      MLOG( INFO
+          , "gained capability: " << cap->capability_name()
+          << " of type " << cap->capability_type()
+          );
 
       lock_type cap_lock(m_capabilities_mutex);
       m_capabilities.insert (std::make_pair(cap->capability_name(), cap));
@@ -280,12 +306,16 @@ public:
       {
         if (master_it->second->is_connected())
         {
-        	sdpa::capability_t sdpa_cap( cap->capability_name(), cap->capability_type(), m_my_name );
-        	send_event (new sdpa::events::CapabilitiesGainedEvent( m_my_name
-                                                               , master_it->first
-                                                               , sdpa_cap
-                                                               )
-                     );
+                sdpa::capability_t sdpa_cap( cap->capability_name()
+                                           , cap->capability_type()
+                                           , m_my_name
+                                           );
+                send_event
+                  (new sdpa::events::CapabilitiesGainedEvent( m_my_name
+                                                            , master_it->first
+                                                            , sdpa_cap
+                                                            )
+                  );
         }
       }
     }
@@ -303,20 +333,27 @@ public:
     {
       MLOG(INFO, "lost capability: " << plugin);
       MLOG(WARN, "TODO: make sure none of jobs make use of this capability");
-      m_capabilities.erase(cap);
 
       for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
           ; master_it != m_masters.end()
           ; ++master_it
           )
       {
-        if (master_it->second->is_connected())
-          send_event (new sdpa::events::CapabilitiesLostEvent( m_my_name
-                                                             , master_it->first
-                                                             , sdpa::Capability(cap->first, "no-type", m_my_name)
-                                                             )
-                     );
+        if (not master_it->second->is_connected())
+          continue;
+
+        send_event
+          (new sdpa::events::CapabilitiesLostEvent( m_my_name
+                                                  , master_it->first
+                                                  , sdpa::Capability( cap->first
+                                                                    , "no-type"
+                                                                    , m_my_name
+                                                                    )
+                                                  )
+          );
       }
+
+      m_capabilities.erase(cap);
     }
   }
 
@@ -377,7 +414,8 @@ public:
 
   // event handler callbacks
   //    implemented events
-  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e)
+  virtual void handleWorkerRegistrationAckEvent
+  (const sdpa::events::WorkerRegistrationAckEvent *e)
   {
     map_of_masters_t::iterator master_it (m_masters.find(e->from()));
     if (master_it != m_masters.end())
@@ -410,12 +448,13 @@ public:
   {
     MLOG(WARN, "worker tried to register: " << e->from());
 
-    send_event (new sdpa::events::ErrorEvent( m_my_name
-                                            , e->from()
-                                            , sdpa::events::ErrorEvent::SDPA_EPERM
-                                            , "you are not allowed to connect"
-                                            )
-               );
+    send_event
+      (new sdpa::events::ErrorEvent( m_my_name
+                                   , e->from()
+                                   , sdpa::events::ErrorEvent::SDPA_EPERM
+                                   , "you are not allowed to connect"
+                                   )
+      );
   }
 
   virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*)
@@ -444,12 +483,13 @@ public:
 
   virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent *e)
   {
-    send_event (new sdpa::events::ErrorEvent( m_my_name
-                                            , e->from()
-                                            , sdpa::events::ErrorEvent::SDPA_EPERM
-                                            , "you are not allowed to request jobs"
-                                            )
-               );
+    send_event
+      (new sdpa::events::ErrorEvent( m_my_name
+                                   , e->from()
+                                   , sdpa::events::ErrorEvent::SDPA_EPERM
+                                   , "you are not allowed to request jobs"
+                                   )
+      );
   }
 
   virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent *)
@@ -469,13 +509,14 @@ public:
     else if (! master->second->is_connected())
     {
       MLOG(WARN, "got SubmitJob from not yet connected master: " << e->from());
-      send_event (new sdpa::events::ErrorEvent( m_my_name
-                                              , e->from()
-                                              , sdpa::events::ErrorEvent::SDPA_EPERM
-                                              , "you are not yet connected"
-                                              , e->job_id()
-                                              )
-                 );
+      send_event
+        (new sdpa::events::ErrorEvent( m_my_name
+                                     , e->from()
+                                     , sdpa::events::ErrorEvent::SDPA_EPERM
+                                     , "you are not yet connected"
+                                     , e->job_id()
+                                     )
+        );
       return;
     }
 
@@ -490,14 +531,16 @@ public:
 
       if (m_backlog_size && m_pending_jobs.size() >= m_backlog_size)
       {
-        MLOG(WARN, "cannot accept new job (" << job->id() << "), backlog is full.");
-        send_event (new sdpa::events::ErrorEvent( m_my_name
-                                                , e->from()
-                                                , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
-                                                , "I am busy right now, please try again later!"
-                                                , e->job_id()
-                                                )
-                   );
+        MLOG( WARN
+            , "cannot accept new job (" << job->id() << "), backlog is full."
+            );
+        send_event (new sdpa::events::ErrorEvent
+                   ( m_my_name
+                   , e->from()
+                   , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
+                   , "I am busy right now, please try again later!"
+                   , e->job_id()
+                   ));
         return;
       }
       else
@@ -534,38 +577,40 @@ public:
     if (job_it == m_jobs.end())
     {
       MLOG(ERROR, "could not cancel job: " << e->job_id() << ": not found");
-      send_event (new sdpa::events::ErrorEvent( m_my_name
-                                              , e->from()
-                                              , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
-                                              , "could not find job " + std::string(e->job_id())
-                                              )
-                 );
+      send_event(new sdpa::events::ErrorEvent
+                ( m_my_name
+                , e->from()
+                , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                , "could not find job " + std::string(e->job_id())
+                ));
     }
     else if (job_it->second->owner() != e->from())
     {
       MLOG(ERROR, "could not cancel job: " << e->job_id() << ": not owner");
-      send_event (new sdpa::events::ErrorEvent( m_my_name
-                                              , e->from()
-                                              , sdpa::events::ErrorEvent::SDPA_EPERM
-                                              , "you are not the owner of job " + std::string(e->job_id())
-                                              )
-                 );
+      send_event (new sdpa::events::ErrorEvent
+                 ( m_my_name
+                 , e->from()
+                 , sdpa::events::ErrorEvent::SDPA_EPERM
+                 , "you are not the owner of job " + std::string(e->job_id())
+                 ));
       return;
     }
     else
     {
-      if (drts::Job::PENDING == job_it->second->cmp_and_swp_state( drts::Job::PENDING
-                                                                 , drts::Job::CANCELED
-                                                                 )
+      if (  drts::Job::PENDING
+         == job_it->second->cmp_and_swp_state( drts::Job::PENDING
+                                             , drts::Job::CANCELED
+                                             )
          )
       {
         MLOG(TRACE, "cancelling pending job: " << e->job_id());
-        send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
-                                                        , job_it->second->owner()
-                                                        , job_it->second->id()
-                                                        , "canceled"
-                                                        )
-                   );
+        send_event
+          (new sdpa::events::CancelJobAckEvent ( m_my_name
+                                               , job_it->second->owner()
+                                               , job_it->second->id()
+                                               , "canceled"
+                                               )
+          );
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
@@ -582,7 +627,10 @@ public:
       }
       else
       {
-        MLOG(WARN, "what shall I do with an already computed job? (" << e->job_id() << ")");
+        MLOG( WARN
+            , "what shall I do with an already computed job? "
+            << "(" << e->job_id() << ")"
+            );
       }
     }
   }
@@ -594,24 +642,28 @@ public:
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
     if (job_it == m_jobs.end())
     {
-      MLOG(ERROR, "could not acknowledge failed job: " << e->job_id() << ": not found");
-      send_event (new sdpa::events::ErrorEvent( m_my_name
-                                              , e->from()
-                                              , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
-                                              , "could not find job " + std::string(e->job_id())
-                                              )
-                 );
+      MLOG( ERROR
+          , "could not acknowledge failed job: " << e->job_id() << ": not found"
+          );
+      send_event (new sdpa::events::ErrorEvent
+                 ( m_my_name
+                 , e->from()
+                 , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                 , "could not find job " + std::string(e->job_id())
+                 ));
       return;
     }
     else if (job_it->second->owner() != e->from())
     {
-      MLOG(ERROR, "could not acknowledge failed job: " << e->job_id() << ": not owner");
-      send_event (new sdpa::events::ErrorEvent( m_my_name
-                                              , e->from()
-                                              , sdpa::events::ErrorEvent::SDPA_EPERM
-                                              , "you are not the owner of job " + std::string(e->job_id())
-                                              )
-                 );
+      MLOG( ERROR
+          , "could not acknowledge failed job: " << e->job_id() << ": not owner"
+          );
+      send_event (new sdpa::events::ErrorEvent
+                 ( m_my_name
+                 , e->from()
+                 , sdpa::events::ErrorEvent::SDPA_EPERM
+                 , "you are not the owner of job " + std::string(e->job_id())
+                 ));
       return;
     }
 
@@ -628,24 +680,30 @@ public:
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
     if (job_it == m_jobs.end())
     {
-      MLOG(ERROR, "could not acknowledge finished job: " << e->job_id() << ": not found");
-      send_event (new sdpa::events::ErrorEvent( m_my_name
-                                              , e->from()
-                                              , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
-                                              , "could not find job " + std::string(e->job_id())
-                                              )
-                 );
+      MLOG( ERROR
+          , "could not acknowledge finished job: " << e->job_id()
+          << ": not found"
+          );
+      send_event (new sdpa::events::ErrorEvent
+                 ( m_my_name
+                 , e->from()
+                 , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                 , "could not find job " + std::string(e->job_id())
+                 ));
       return;
     }
     else if (job_it->second->owner() != e->from())
     {
-      MLOG(ERROR, "could not acknowledge finished job: " << e->job_id() << ": not owner");
-      send_event (new sdpa::events::ErrorEvent( m_my_name
-                                              , e->from()
-                                              , sdpa::events::ErrorEvent::SDPA_EPERM
-                                              , "you are not the owner of job " + std::string(e->job_id())
-                                              )
-                 );
+      MLOG( ERROR
+          , "could not acknowledge finished job: " << e->job_id()
+          << ": not owner"
+          );
+      send_event (new sdpa::events::ErrorEvent
+                 ( m_my_name
+                 , e->from()
+                 , sdpa::events::ErrorEvent::SDPA_EPERM
+                 , "you are not the owner of job " + std::string(e->job_id())
+                 ));
       return;
     }
 
@@ -707,7 +765,9 @@ private:
         lock_type lock(m_job_computed_mutex);
         while (m_backlog_size && (m_pending_jobs.size() >= m_backlog_size))
         {
-          MLOG(TRACE, "job requestor waits until job queue frees up some slots");
+          MLOG( TRACE
+              , "job requestor waits until job queue frees up some slots"
+              );
           m_job_computed.wait(lock);
         }
       }
@@ -797,46 +857,60 @@ private:
           MLOG(TRACE, "executing job " << job->id());
 
           std::string result;
+          std::string error_message;
           int ec = m_wfe->execute ( job->id()
                                   , job->description()
                                   , m_capabilities
                                   , result
+                                  , error_message
                                   , meta_data
                                   );
           job->set_result (result);
+          job->set_result_code (ec);
+          job->set_message (error_message);
 
           job->completed(boost::posix_time::microsec_clock::universal_time());
 
           MLOG( TRACE
               , "job returned."
-              << " error-code := " << ec
+              << " error-code := " << job->result_code()
+              << " error-message := " << job->message()
               << " total-time := " << (job->completed() - job->started())
               );
 
-          if (ec > 0)
+          if (fhg::error::NO_ERROR == ec)
           {
-            job->set_state (drts::Job::FAILED);
+            job->set_state (drts::Job::FINISHED);
           }
-          else if (ec < 0)
+          else if (fhg::error::EXECUTION_CANCELLED == ec)
           {
             job->set_state (drts::Job::CANCELED);
           }
           else
           {
-            job->set_state (drts::Job::FINISHED);
+            job->set_state (drts::Job::FAILED);
           }
         }
         catch (std::exception const & ex)
         {
-          MLOG(ERROR, "unexpected exception during job execution: " << ex.what());
+          MLOG( ERROR
+              , "unexpected exception during job execution: " << ex.what()
+              );
           job->set_state (drts::Job::FAILED);
+
+          job->set_result (job->description());
+          job->set_result_code (fhg::error::UNEXPECTED_ERROR);
+          job->set_message (ex.what());
         }
 
         send_job_result_to_master (job);
 
         if (m_terminate_on_failure && job->state() == drts::Job::FAILED)
         {
-          MLOG(WARN, "execution of job failed and terminate on failure policy is in place. Good bye cruel world.");
+          MLOG( WARN, "execution of job failed"
+              << " and terminate on failure policy is in place."
+              << " Good bye cruel world."
+              );
           fhg_kernel()->terminate();
         }
 
@@ -864,7 +938,9 @@ private:
   {
     sdpa::capabilities_set_t caps;
     lock_type capabilities_lock(m_capabilities_mutex);
-    for ( map_of_capabilities_t::const_iterator cap_it(m_capabilities.begin())
+
+    typedef map_of_capabilities_t::const_iterator const_cap_it_t;
+    for ( const_cap_it_t cap_it(m_capabilities.begin())
         ; cap_it != m_capabilities.end()
         ; ++cap_it
         )
@@ -872,7 +948,7 @@ private:
       caps.insert (sdpa::Capability(cap_it->first, "no-type", m_my_name));
     }
 
-    for ( map_of_capabilities_t::const_iterator cap_it(m_virtual_capabilities.begin())
+    for ( const_cap_it_t cap_it(m_virtual_capabilities.begin())
         ; cap_it != m_virtual_capabilities.end()
         ; ++cap_it
         )
@@ -943,7 +1019,12 @@ private:
         )
     {
       job_ptr_t job (job_it->second);
-      MLOG(TRACE, "checking job id := " << job->id() << " state := " << job->state() << " owner := " << job->owner());
+      MLOG( TRACE
+          , "checking job"
+          << " id := " << job->id()
+          << " state := " << job->state()
+          << " owner := " << job->owner()
+          );
       if (   (job->owner() == master->name())
          && (job->state() >= drts::Job::FINISHED)
          )
@@ -967,12 +1048,19 @@ private:
                         );
       break;
     case drts::Job::FAILED:
-      return send_event (new sdpa::events::JobFailedEvent ( m_my_name
-                                                          , job->owner()
-                                                          , job->id()
-                                                          , job->result()
-                                                          )
-                        );
+      {
+        sdpa::events::JobFailedEvent *event
+          (new sdpa::events::JobFailedEvent ( m_my_name
+                                            , job->owner()
+                                            , job->id()
+                                            , job->result()
+                                            )
+          );
+        event->error_code() = job->result_code();
+        event->error_message() = job->message();
+
+        return send_event (event); // send_event takes ownership
+      }
       break;
     case drts::Job::CANCELED:
       return send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
@@ -1059,7 +1147,10 @@ private:
         }
         else
         {
-          MLOG(WARN, "still not connected after " << m_reconnect_counter << " trials: shutting down");
+          MLOG( WARN
+              , "still not connected after " << m_reconnect_counter
+              << " trials: shutting down"
+              );
           fhg_kernel()->shutdown();
           return;
         }
@@ -1158,9 +1249,8 @@ private:
     }
     catch (std::exception const &ex)
     {
-      MLOG_EVERY_N( WARN
-                  , 10
-                  , "could not send " << evt->str() << " to " << evt->to() << ": " << ex.what()
+      MLOG_EVERY_N( WARN, 10, "could not send "
+                  << evt->str() << " to " << evt->to() << ": " << ex.what()
                   );
       return -ESRCH;
     }

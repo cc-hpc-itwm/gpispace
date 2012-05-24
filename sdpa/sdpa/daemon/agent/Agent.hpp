@@ -49,10 +49,10 @@ namespace sdpa {
           SDPA_LOG_DEBUG("Agent's constructor called ...");
 
           std::ostringstream oss;
-		  oss<<"rank"<<rank;
+                  oss<<"rank"<<rank;
 
-		  sdpa::capability_t properCpb(oss.str(), "rank", name);
-		  addCapability(properCpb);
+                  sdpa::capability_t properCpb(oss.str(), "rank", name);
+                  addCapability(properCpb);
 
          // application gui service
           if(!guiUrl.empty())
@@ -78,7 +78,11 @@ namespace sdpa {
 
         bool finished(const id_type & id, const result_type & result);
         bool finished(const id_type & id, const result_type & result, const id_type& );
-        bool failed(const id_type & id, const result_type & result);
+        bool failed( const id_type& workflowId
+                   , const result_type & result
+                   , int error_code
+                   , std::string const & reason
+                   );
 
         const std::string url() const {return url_;}
 
@@ -102,9 +106,9 @@ namespace sdpa {
         private:
         void createScheduler(bool bUseReqModel)
         {
-        	DLOG(TRACE, "creating agent scheduler...");
-        	Scheduler::ptr_t ptrSched( new AgentScheduler(this, bUseReqModel) );
-        	ptr_scheduler_ = ptrSched;
+                DLOG(TRACE, "creating agent scheduler...");
+                Scheduler::ptr_t ptrSched( new AgentScheduler(this, bUseReqModel) );
+                ptr_scheduler_ = ptrSched;
         }
 
         std::string url_;

@@ -39,7 +39,11 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINA
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
 
-install (FILES revision.hpp assert.hpp assert_modes.hpp assertion_failed.hpp
+install (FILES revision.hpp
+               assert.hpp
+               assert_modes.hpp
+               assertion_failed.hpp
+               error_codes.hpp
   DESTINATION include/fhg
   COMPONENT headers
   )

@@ -179,6 +179,8 @@ namespace sdpa {
           sdpa::status_t status = getStatus();
           sdpa::events::JobStatusReplyEvent::Ptr
             pStatReply(new sdpa::events::JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
+          pStatReply->error_code() = error_code();
+          pStatReply->error_message() = error_message();
 
           pDaemon->sendEventToMaster(pStatReply);
         }

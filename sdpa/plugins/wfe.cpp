@@ -3,7 +3,6 @@
 #include "wfe_context.hpp"
 #include "observable.hpp"
 #include "task_event.hpp"
-
 #include <errno.h>
 
 #include <list>
@@ -15,6 +14,7 @@
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/getenv.hpp>
+#include <fhg/error_codes.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -115,10 +115,11 @@ public:
               , std::string const &job_description
               , wfe::capabilities_t const & capabilities
               , std::string & result
+              , std::string & error_message
               , wfe::meta_data_t const & meta_data
               )
   {
-    int ec = -EINVAL;
+    int ec = fhg::error::NO_ERROR;
 
     wfe_task_t task;
     task.state = wfe_task_t::PENDING;
@@ -133,7 +134,8 @@ public:
 
     try
     {
-      task.activity = we::util::text_codec::decode<we::activity_t>(job_description);
+      task.activity =
+        we::util::text_codec::decode<we::activity_t>(job_description);
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
@@ -155,11 +157,14 @@ public:
         MLOG(INFO, "task has a walltime of " << walltime);
         if (! task.done.timed_wait(ec, boost::get_system_time()+walltime))
         {
-          task.state = wfe_task_t::FAILED;
-          ec = ETIMEDOUT;
+          // abort task, i.e. restart worker
+
           // this is  required to ensure  that the execution thread  is actually
           // finished with this task
           task.done.wait(ec);
+
+          task.state = wfe_task_t::FAILED;
+          ec = fhg::error::WALLTIME_EXCEEDED;
         }
       }
       else
@@ -168,45 +173,48 @@ public:
       }
 
       task.finished_time = boost::posix_time::microsec_clock::universal_time();
+      result = task.result;
 
-      if (0 == ec)
+      if (fhg::error::NO_ERROR == ec)
       {
         MLOG(TRACE, "task finished: " << task.id);
         task.state = wfe_task_t::FINISHED;
-        result = task.result;
+        error_message = task.error_message;
 
         emit(task_event_t( job_id
                          , task.activity.transition().name()
                          , task_event_t::FINISHED
-                         , we::util::text_codec::encode(task.activity)
+                         , task.result
                          , task.meta
                          )
             );
       }
-      else if (ec < 0)
+      else if (fhg::error::EXECUTION_CANCELLED == ec)
       {
-        MLOG(WARN, "task canceled: " << task.id << ": " << strerror(-ec) << ": " << task.result);
+        MLOG(WARN, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
         result = task.result;
+        error_message = task.error_message;
 
         emit(task_event_t( job_id
                          , task.activity.transition().name()
                          , task_event_t::CANCELED
-                         , we::util::text_codec::encode(task.activity)
+                         , task.result
                          , task.meta
                          )
             );
       }
       else
       {
-        MLOG(WARN, "task failed: " << task.id << ": " << task.result);
+        MLOG(WARN, "task failed: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::FAILED;
         result = task.result;
+        error_message = task.error_message;
 
         emit(task_event_t( job_id
                          , task.activity.transition().name()
                          , task_event_t::FAILED
-                         , we::util::text_codec::encode(task.activity)
+                         , task.result
                          , task.meta
                          )
             );
@@ -216,12 +224,13 @@ public:
     {
       MLOG(ERROR, "could not parse activity: " << ex.what());
       task.state = wfe_task_t::FAILED;
-      ec = EINVAL;
+      ec = fhg::error::INVALID_JOB_DESCRIPTION;
+      error_message = ex.what();
 
       emit(task_event_t( job_id
                        , "n/a"
-                       , task_event_t::UNKNOWN
-                       , ex.what()
+                       , task_event_t::FAILED
+                       , task.result
                        , task.meta
                        )
           );
@@ -269,7 +278,8 @@ private:
 
       if (task->state != wfe_task_t::PENDING)
       {
-        task->done.notify(-ECANCELED);
+        task->errc = fhg::error::EXECUTION_CANCELLED;
+        task->error_message = "cancelled";
       }
       else
       {
@@ -283,34 +293,39 @@ private:
 
           if (task->state == wfe_task_t::CANCELED)
           {
-            task->result = we::util::text_codec::encode(task->activity);
-            task->done.notify(-ECANCELED);
+            task->errc = fhg::error::EXECUTION_CANCELLED;
+            task->error_message = "cancelled";
           }
           else
           {
             task->state = wfe_task_t::FINISHED;
-            task->result = we::util::text_codec::encode(task->activity);
-            task->done.notify(0);
+            task->errc = fhg::error::NO_ERROR;
+            task->error_message = "success";
           }
         }
         catch (std::exception const & ex)
         {
           task->state = wfe_task_t::FAILED;
-          task->result = ex.what();
-          task->done.notify(1);
+          // TODO: more detailed error codes
+          task->errc = fhg::error::MODULE_CALL_FAILED;
+          task->error_message = ex.what();
 
           m_loader->unload_autoloaded();
         }
         catch (...)
         {
           task->state = wfe_task_t::FAILED;
-          task->result =
+          task->errc = fhg::error::UNEXPECTED_ERROR;
+          task->error_message =
             "UNKNOWN REASON, exception not derived from std::exception";
           task->done.notify(1);
 
           m_loader->unload_autoloaded();
         }
       }
+
+      task->result = we::util::text_codec::encode(task->activity);
+      task->done.notify(task->errc);
     }
   }
 
