@@ -27,12 +27,16 @@ namespace fhg
       , OPERATION_NOT_ALLOWED   = 101
       , NOT_OWNER               = 102
 
+      , WORKER_TIMEDOUT         = 200
+      , WORKER_UNAVAILABLE      = 201
+      , CAPABILITY_MISMATCH     = 202
+
       , UNEXPECTED_ERROR        = 666
       , UNASSIGNED_ERROR        = 667
       };
 
     inline
-    const char *to_string(const int code)
+    const char *show(const int code)
     {
       switch (code)
       {
@@ -69,6 +73,13 @@ namespace fhg
         return "operation not allowed";
       case NOT_OWNER:
         return "not owner";
+
+      case WORKER_TIMEDOUT:
+        return "worker timed out";
+      case WORKER_UNAVAILABLE:
+        return "no worker available";
+      case CAPABILITY_MISMATCH:
+        return "a required capability was not met";
 
       case UNEXPECTED_ERROR:
         return "unexpected error";

@@ -179,6 +179,7 @@ public:
       {
         MLOG(TRACE, "task finished: " << task.id);
         task.state = wfe_task_t::FINISHED;
+        error_message = task.error_message;
 
         emit(task_event_t( job_id
                          , task.activity.transition().name()
@@ -193,6 +194,7 @@ public:
         MLOG(WARN, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
         result = task.result;
+        error_message = task.error_message;
 
         emit(task_event_t( job_id
                          , task.activity.transition().name()
@@ -207,6 +209,7 @@ public:
         MLOG(WARN, "task failed: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::FAILED;
         result = task.result;
+        error_message = task.error_message;
 
         emit(task_event_t( job_id
                          , task.activity.transition().name()
@@ -312,7 +315,8 @@ private:
         catch (...)
         {
           task->state = wfe_task_t::FAILED;
-          task->result =
+          task->errc = fhg::error::UNEXPECTED_ERROR;
+          task->error_message =
             "UNKNOWN REASON, exception not derived from std::exception";
           task->done.notify(1);
 

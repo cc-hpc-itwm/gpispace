@@ -105,7 +105,11 @@ namespace sdpa { namespace daemon {
           virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() );
           virtual bool cancel(const id_type & id, const reason_type & reason);
           virtual bool finished(const id_type & id, const result_type & result);
-          virtual bool failed(const id_type & id, const result_type & result);
+          virtual bool failed( const id_type& workflowId
+                             , const result_type & result
+                             , int error_code
+                             , std::string const & reason
+                             );
           virtual bool cancelled(const id_type & id);
 
           void addCapability(const capability_t& cpb);
@@ -226,7 +230,12 @@ namespace sdpa { namespace daemon {
           }
 
           // workflow engine notifications
-      virtual void activityFailed(const Worker::worker_id_t& worker_id, const job_id_t&, const result_type& result /*or reason*/) ;
+      virtual void activityFailed( const Worker::worker_id_t& worker_id
+                                 , const job_id_t& jobId
+                                 , const std::string& result
+                                 , const int error_code
+                                 , const std::string& reason
+                                 );
       virtual void activityFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result );
       virtual void activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id);
       virtual void submitWorkflow(const id_type& id, const encoded_type& );

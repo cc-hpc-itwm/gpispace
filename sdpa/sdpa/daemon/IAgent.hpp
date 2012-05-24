@@ -35,8 +35,8 @@ typedef std::string encoded_type;
 
 inline const requirement_list_t empty_req_list()
 {
-	static requirement_list_t e_req_list;
-	return e_req_list;
+        static requirement_list_t e_req_list;
+        return e_req_list;
 }
 
 struct IAgent
@@ -45,7 +45,11 @@ struct IAgent
     virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
 
     virtual bool finished(const id_type & id, const result_type & result) = 0;
-    virtual bool failed(const id_type & id, const result_type & result) = 0;
+    virtual bool failed( const id_type& id
+                       , const result_type & result
+                       , int error_code
+                       , std::string const & reason
+                       ) = 0;
     virtual bool cancelled(const id_type & id) = 0;
 
     virtual bool finished(const id_type & id, const result_type & result, const id_type& ) { return false; }

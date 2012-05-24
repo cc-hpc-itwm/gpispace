@@ -10,6 +10,8 @@
 //#include <seda/comm/comm.hpp>
 //#include <seda/comm/ConnectionFactory.hpp>
 //#include <seda/comm/ConnectionStrategy.hpp>
+#include <sdpa/job_states.hpp>
+
 #include <sdpa/client/ClientEvents.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
@@ -179,7 +181,7 @@ void Client::shutdown() throw (ClientException)
 
 void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
 {
-	clear_reply();
+        clear_reply();
   MLOG(DEBUG,"attempting to subscribe ... " );
   client_stage_->send(seda::IEvent::Ptr(new se::SubscribeEvent(name(), orchestrator_, listJobIds)));
   DMLOG(TRACE,"waiting for a reply");
@@ -216,43 +218,43 @@ seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 // on t=0 blocks forever
 seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
 {
-	boost::unique_lock<boost::mutex> lock(mtx_);
+        boost::unique_lock<boost::mutex> lock(mtx_);
 
-	while (reply_.get() == NULL)
-	{
-		if (t)
-		{
-			const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(t));
-			if (!cond_.timed_wait(lock, to))
-			{
-				if (reply_.get() != NULL)
-					break;
-				else
-					throw Timedout("did not receive reply");
-			}
-		}
-		else
-			cond_.wait(lock);
-	}
+        while (reply_.get() == NULL)
+        {
+                if (t)
+                {
+                        const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(t));
+                        if (!cond_.timed_wait(lock, to))
+                        {
+                                if (reply_.get() != NULL)
+                                        break;
+                                else
+                                        throw Timedout("did not receive reply");
+                        }
+                }
+                else
+                        cond_.wait(lock);
+        }
 
-	seda::IEvent::Ptr ret(reply_);
-	reply_.reset();
-	return ret;
+        seda::IEvent::Ptr ret(reply_);
+        reply_.reset();
+        return ret;
 }
 
 void Client::clear_reply()
 {
-	boost::unique_lock<boost::mutex> lock(mtx_);
-	if (reply_)
-	{
-		LOG(WARN, "clearing old reply: " << reply_->str());
-	}
-	reply_.reset();
+        boost::unique_lock<boost::mutex> lock(mtx_);
+        if (reply_)
+        {
+                LOG(WARN, "clearing old reply: " << reply_->str());
+        }
+        reply_.reset();
 }
 
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
-	clear_reply();
+        clear_reply();
   //MLOG(DEBUG,"submitting job with description = " << desc);
   MLOG(DEBUG,"submitting new job ... " );
   client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc, "")));
@@ -293,7 +295,7 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 
 void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
-	clear_reply();
+        clear_reply();
   MLOG(DEBUG,"cancelling job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent( name()
                                                               , orchestrator_
@@ -333,9 +335,9 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 
 std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
 {
-	clear_reply();
-	MLOG(DEBUG,"querying status of job: " << jid);
-	client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
+        clear_reply();
+        MLOG(DEBUG,"querying status of job: " << jid);
+        client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
                                                                  , orchestrator_
                                                                  , jid)));
   DMLOG(TRACE,"waiting for a reply");
@@ -368,9 +370,58 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
   }
 }
 
+int Client::queryJob(const job_id_t &jid, job_info_t &info)
+{
+  clear_reply();
+  MLOG(DEBUG,"querying status of job: " << jid);
+  client_stage_->send
+    (seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
+                                                  , orchestrator_
+                                                  , jid)
+                      )
+    );
+  DMLOG(TRACE,"waiting for a reply");
+  try
+  {
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (se::JobStatusReplyEvent *status
+       = dynamic_cast<se::JobStatusReplyEvent*>(reply.get()))
+    {
+      DMLOG( DEBUG
+           ,"got status for " << status->job_id()
+           << ": " << status->status()
+           );
+      info.error_code = status->error_code();
+      info.error_message = status->error_message();
+
+      return sdpa::status::read(status->status());
+    }
+    else if (se::ErrorEvent *err
+            = dynamic_cast<se::ErrorEvent*>(reply.get()))
+    {
+      throw ClientException( "error during query: reason := "
+                           + err->reason()
+                           + " code := "
+                           + boost::lexical_cast<std::string>(err->error_code())
+                           );
+    }
+    else
+    {
+      MLOG(ERROR, "unexpected reply: " << reply->str());
+      throw ClientException
+        ("got an unexpected reply to QueryJob: " + reply->str());
+    }
+  }
+  catch (const Timedout &)
+  {
+    throw ApiCallFailed("queryJob");
+  }
+}
+
 void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 {
-	clear_reply();
+        clear_reply();
   MLOG(DEBUG,"deleting job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name(), orchestrator_, jid)));
   DMLOG(TRACE,"waiting for a reply");
@@ -380,11 +431,11 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
     // check event type
     if (/* se::DeleteJobAckEvent *ack = */ dynamic_cast<se::DeleteJobAckEvent*>(reply.get()))
     {
-    	MLOG(DEBUG,"deletion of job has been acknowledged");
+        MLOG(DEBUG,"deletion of job has been acknowledged");
     }
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {
-    	throw ClientException( "error during delete: reason := "
+        throw ClientException( "error during delete: reason := "
                            + err->reason()
                            + " code := "
                            + boost::lexical_cast<std::string>(err->error_code())
@@ -398,13 +449,13 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
   }
   catch (const Timedout &)
   {
-	  throw ApiCallFailed("deleteJob");
+          throw ApiCallFailed("deleteJob");
   }
 }
 
 sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
 {
-	clear_reply();
+        clear_reply();
   MLOG(DEBUG,"retrieving results of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
                                                                       , orchestrator_

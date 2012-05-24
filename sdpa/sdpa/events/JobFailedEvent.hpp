@@ -54,6 +54,13 @@ namespace sdpa {
         , m_error_message ()
       { }
 
+      JobFailedEvent (JobFailedEvent const &other)
+        : sdpa::events::JobEvent(other.from(), other.to(), other.id())
+        , result_(other.result())
+        , m_error_code (other.error_code())
+        , m_error_message (other.error_message())
+      {}
+
       virtual ~JobFailedEvent() {}
 
       std::string str() const { return "JobFailedEvent"; }

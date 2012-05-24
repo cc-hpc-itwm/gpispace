@@ -5,12 +5,13 @@
 #include <string>
 #include <vector>
 #include <utility>
+
 #include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/util/Properties.hpp>
 
 #if defined(USE_BOOST_SC)
-	#include <boost/statechart/event_base.hpp>
+        #include <boost/statechart/event_base.hpp>
 #endif
 
 #include <sdpa/events/SubmitJobAckEvent.hpp>
@@ -30,7 +31,7 @@
 namespace sdpa { namespace daemon {
 
     class IComm;
-	class GenericDaemon;
+        class GenericDaemon;
     /**
      * The interface to the generic job description we keep around in all
      * components.
@@ -38,7 +39,7 @@ namespace sdpa { namespace daemon {
     class Job /*: public sdpa::util::Properties */ {
     public:
         //typedef sdpa::shared_ptr<Job> ptr_t;
-		typedef Job* ptr_t;
+                typedef Job* ptr_t;
 
         enum job_type {MASTER, LOCAL, WORKER, TMP};
 
@@ -48,6 +49,12 @@ namespace sdpa { namespace daemon {
         virtual const job_id_t & parent() const = 0;
         virtual const job_desc_t & description() const = 0;
         virtual const sdpa::job_result_t& result() const = 0;
+
+      virtual int error_code() const = 0;
+      virtual std::string const & error_message() const = 0;
+
+      virtual Job & error_code(int) = 0;
+      virtual Job & error_message(std::string const &) = 0;
 
         virtual void set_icomm(IComm* pArgComm) = 0;
         virtual IComm* icomm() = 0;

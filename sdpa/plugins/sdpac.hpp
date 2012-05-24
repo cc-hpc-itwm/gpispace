@@ -2,25 +2,10 @@
 #define SDPA_PLUGIN_SDPAC_HPP 1
 
 #include <string>
+#include <sdpa/job_states.hpp>
 
 namespace sdpa
 {
-  namespace status
-  {
-    enum code
-      {
-        // non-terminal states
-        UNKNOWN,
-        PENDING,
-        SUSPENDED,
-        RUNNING,
-        // terminal states
-        FINISHED,
-        FAILED,
-        CANCELED,
-      };
-  }
-
   class Client
   {
   public:
