@@ -264,9 +264,7 @@ namespace we { namespace type {
             const tid_t & tid (stack.top());
             const transition_t trans (net.get_transition (tid));
 
-            if ( (  boost::apply_visitor (content::visitor (), trans.data())
-                  == content::expression
-                  )
+            if (  content::is_expression (trans)
                && boost::get<expression_t> (trans.data()).is_empty()
                && trans.condition().is_const_true()
                )

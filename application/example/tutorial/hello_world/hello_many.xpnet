@@ -1,0 +1,13 @@
+<defun name="hello_many">
+  <in name="in" type="control" place="in"/>
+  <out name="out" type="control" place="out"/>
+  <net>
+    <place name="in" type="control"/>
+    <place name="out" type="control"/>
+    <transition name="hello">
+      <include-function href="hello_world.xpnet"/>
+      <connect-in port="in" place="in"/>
+      <connect-out port="out" place="out"/>
+    </transition>
+  </net>
+</defun>

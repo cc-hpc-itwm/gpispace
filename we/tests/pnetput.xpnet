@@ -1,0 +1,12 @@
+<defun name="test">
+  <struct name="s">
+    <field name="c" type="control"/>
+    <struct name="s">
+      <field name="x" type="long"/>
+      <field name="y" type="double"/>
+    </struct>
+  </struct>
+  <in name="s" type="s"/>
+  <in name="m" type="map"/>
+  <expression/>
+</defun>

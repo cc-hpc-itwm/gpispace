@@ -89,6 +89,7 @@ int main (int argc, char **argv)
   std::vector<std::string> input_spec;
   std::size_t num_worker (1);
   std::string output ("-");
+  bool show_dots (false);
 
   desc.add_options()
     ("help,h", "this message")
@@ -103,7 +104,7 @@ int main (int argc, char **argv)
     ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
     ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity: port=<value>")
     ("output,o", po::value<std::string>(&output)->default_value(output), "output stream")
-    ;
+    ("show-dots,d", po::value<bool>(&show_dots)->default_value(show_dots), "show dots while waiting for progress (ignored)")    ;
 
   po::positional_options_description p;
   p.add("input", -1);
