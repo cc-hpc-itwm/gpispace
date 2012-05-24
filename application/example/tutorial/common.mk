@@ -170,15 +170,15 @@ all: net lib run
 ###############################################################################
 
 $(NET): $(XML) $(DEP)
-	$(PNETC) $(XML) -o $@
+	$(PNETC) $(PNETC_OPTS) $(XML) -o $@
 
 $(NET_NOINLINE): $(XML) $(DEP)
-	$(PNETC_NOINLINE) $(XML) -o $@
+	$(PNETC_NOINLINE) $(PNETC_OPTS) $(XML) -o $@
 
 ###############################################################################
 
 $(GEN): $(XML) $(DEP)
-	$(PNETC) $(XML) -o /dev/null -g $@
+	$(PNETC) $(PNETC_OPTS) $(XML) -o /dev/null -g $@
 	$(TOUCH) $@
 
 .PHONY: lib

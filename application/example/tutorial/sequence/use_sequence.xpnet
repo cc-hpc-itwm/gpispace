@@ -1,11 +1,11 @@
 <defun name="use_sequence">
   <in name="n" type="long" place="n"/>
-  <out name="done" type="long" place="done"/>
+  <out name="o" type="long" place="o"/>
   <net>
     <place name="n" type="long"/>
-    <place name="done" type="long"/>
-    <transition name="generate">
-<!--    <transition name="generate" inline="true"> -->
+    <place name="o" type="long"/>
+<!--    <transition name="generate"> -->
+    <transition name="generate" inline="true">
       <include-function href="sequence_forward.xpnet"/>
       <connect-in port="n" place="n"/>
       <connect-out port="i" place="i"/>
@@ -22,7 +22,7 @@
         </module>
       </defun>
       <connect-in port="i" place="i"/>
-      <connect-out port="i" place="done"/>
+      <connect-out port="i" place="o"/>
     </transition>
   </net>
 </defun>
