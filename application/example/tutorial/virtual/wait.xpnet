@@ -1,11 +1,15 @@
 <template name="wait">
+
   <in name="object" type="T" place="object"/>
   <out name="done" type="control" place="done"/>
   <tunnel name="num" type="long" place="num"/>
+
   <net>
+
     <place name="object" type="T"/>
     <place name="num" type="long" virtual="true"/>
     <place name="done" type="control"/>
+
     <transition name="dec">
       <defun>
         <in name="object" type="T"/>
@@ -20,6 +24,7 @@
       <connect-in port="object" place="object"/>
       <connect-inout port="num" place="num"/>
     </transition>
+
     <transition name="done">
       <defun>
         <in name="num" type="long"/>
@@ -34,5 +39,7 @@
       <connect-in port="num" place="num"/>
       <connect-out port="done" place="done"/>
     </transition>
+
   </net>
+
 </template>

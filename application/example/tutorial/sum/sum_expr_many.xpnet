@@ -6,12 +6,16 @@
   <out name="s" type="long" place="s"/>
 
   <net>
+
     <place name="p" type="pair"/>
     <place name="s" type="long"/>
+
     <transition name="sum">
       <include-function href="sum_expr.xpnet"/>
       <connect-in port="p" place="p"/>
       <connect-out port="s" place="s"/>
     </transition>
+
   </net>
+
 </defun>

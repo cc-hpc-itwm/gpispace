@@ -1,14 +1,19 @@
 <defun name="sequence_forward">
+
   <in name="n" type="long" place="n"/>
   <out name="i" type="long" place="i"/>
+
   <net>
+
     <struct name="state">
       <field name="max" type="long"/>
       <field name="i" type="long"/>
     </struct>
+
     <place name="n" type="long"/>
     <place name="i" type="long"/>
     <place name="state" type="state"/>
+
     <transition name="init">
       <defun>
         <in name="n" type="long"/>
@@ -21,6 +26,7 @@
       <connect-in port="n" place="n"/>
       <connect-out port="state" place="state"/>
     </transition>
+
     <transition name="step">
       <defun>
         <inout name="state" type="state"/>
@@ -36,6 +42,7 @@
       <connect-inout port="state" place="state"/>
       <connect-out port="i" place="i"/>
     </transition>
+
     <transition name="break">
       <defun>
         <in name="state" type="state"/>
@@ -46,5 +53,7 @@
       </condition>
       <connect-in port="state" place="state"/>
     </transition>
+
   </net>
+
 </defun>

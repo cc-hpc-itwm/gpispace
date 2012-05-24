@@ -1,8 +1,11 @@
 <template name="dup">
+
   <in name="x" type="T"/>
   <out name="a" type="T"/>
   <out name="b" type="T"/>
+
   <expression>
     ${a} := ${x}; ${b} := ${x}
   </expression>
+
 </template>

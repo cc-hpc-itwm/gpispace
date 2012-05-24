@@ -1,9 +1,13 @@
 <defun name="sequence">
+
   <in name="n" type="long" place="n"/>
   <out name="i" type="long" place="i"/>
+
   <net>
+
     <place name="n" type="long"/>
     <place name="i" type="long"/>
+
     <transition name="step">
       <defun>
         <inout name="n" type="long"/>
@@ -19,6 +23,7 @@
       <connect-inout port="n" place="n"/>
       <connect-out port="i" place="i"/>
     </transition>
+
     <transition name="break">
       <defun>
         <in name="n" type="long"/>
@@ -29,5 +34,7 @@
       </condition>
       <connect-in port="n" place="n"/>
     </transition>
+
   </net>
+
 </defun>
