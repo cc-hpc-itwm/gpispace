@@ -12,6 +12,10 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package(WE REQUIRED QUIET)
 include_directories(${WE_INCLUDE_DIR})
 
+# for usage of the sdpac plugin
+find_package(SDPA REQUIRED QUIET)
+include_directories(${SDPA_INCLUDE_DIR})
+
 # add include directory to sdpa-plugin directory
 include_directories(${CMAKE_SOURCE_DIR}/sdpa/plugins)
 
@@ -29,8 +33,8 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   EXPORTS UFBMIG_BACK
   LINK_LIBRARIES ${WE_LIBRARIES}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
-		 ${Boost_THREAD_SHARED_LIBRARY}
-		 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
   HEADERS ufbmig_back.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
@@ -44,10 +48,10 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/ob
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
                  ${HWLOC_SHARED_LIBRARY}
                  ${LIBIRC_LIBRARY}
-		 ${LOG4CPP_LIBRARY}
+                 ${LOG4CPP_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
-		 ${Boost_THREAD_SHARED_LIBRARY}
-		 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
   HEADERS ufbmig_front.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
@@ -58,8 +62,8 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/ob
 fhg_add_plugin(ufbmig_test ufbmig_test.cpp
   EXPORTS UFBMIG_TEST
   LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
-		 ${Boost_THREAD_SHARED_LIBRARY}
-		 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
   HEADERS ufbmig_front.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"

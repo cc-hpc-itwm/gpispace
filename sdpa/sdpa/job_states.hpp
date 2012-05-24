@@ -10,17 +10,17 @@ namespace sdpa
   {
     enum code
       {
-        UNKNOWN
+        // terminal states
+        FINISHED
+      , FAILED
+      , CANCELED
 
       // non-terminal states
       , PENDING
       , SUSPENDED
       , RUNNING
 
-      // terminal states
-      , FINISHED
-      , FAILED
-      , CANCELED
+      , UNKNOWN
       };
 
     typedef std::map<std::string, int> job_state_map_t;

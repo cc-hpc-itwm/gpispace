@@ -53,7 +53,7 @@ namespace job
 
   static bool is_done(info_t const &info)
   {
-    return info.state > sdpa::status::RUNNING;
+    return info.state < sdpa::status::RUNNING;
   }
 
   static int state_to_result_code (int state)
@@ -83,17 +83,6 @@ namespace job
     default:
       return "UNKNOWN";
     }
-  }
-
-  std::string status_to_string(int s)
-  {
-    if (s == sdpa::status::PENDING)   return "Pending";
-    if (s == sdpa::status::RUNNING)   return "Running";
-    if (s == sdpa::status::FINISHED)  return "Finished";
-    if (s == sdpa::status::FAILED)    return "Failed";
-    if (s == sdpa::status::CANCELED)  return "Cancelled";
-    if (s == sdpa::status::SUSPENDED) return "Suspended";
-    else                              return "Unknown";
   }
 }
 
@@ -852,7 +841,7 @@ private:
   {
     LOG( INFO
        , "job returned: " << job::type_to_name(j.type) << " "
-       << job::status_to_string(j.state)
+       << sdpa::status::show(j.state)
        );
 
     update_progress(100);
