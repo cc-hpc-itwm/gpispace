@@ -7,7 +7,7 @@
 
    - supports different modes:
 
-   FHG_ASSERT_IGNORE    0
+   FHG_ASSERT_DISABLED    0
    make fhg_assert a nop
 
    FHG_ASSERT_ENABLED   1
@@ -40,10 +40,10 @@
 #define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
 
 #ifndef FHG_ASSERT_MODE
-#  define FHG_ASSERT_MODE FHG_ASSERT_IGNORE
+#  define FHG_ASSERT_MODE FHG_ASSERT_DISABLED
 #endif
 
-#if   FHG_ASSERT_IGNORE == FHG_ASSERT_MODE
+#if   FHG_ASSERT_DISABLED == FHG_ASSERT_MODE
 
 #  define fhg_assert(cond, msg...)
 
@@ -112,7 +112,6 @@
 #endif
 
 #ifdef FHG_ASSERT_REPLACE_LEGACY
-
 #  if FHG_ASSERT_LEGACY != FHG_ASSERT_MODE
 #    undef assert
 #    define assert(cond) fhg_assert(cond)
