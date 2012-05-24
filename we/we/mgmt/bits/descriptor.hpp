@@ -30,6 +30,9 @@ namespace we
           , from_external_(false)
           , to_external_(false)
           , failure_counter_(0)
+          , m_error_code(0)
+          , m_error_message()
+          , m_result()
         { }
 
         descriptor (id_type const & a_id, activity_type const & a_activity)
@@ -39,6 +42,9 @@ namespace we
           , from_external_(false)
           , to_external_(false)
           , failure_counter_(0)
+          , m_error_code(0)
+          , m_error_message()
+          , m_result()
         {
           activity_.set_id (a_id);
         }
@@ -51,6 +57,9 @@ namespace we
           , from_external_(false)
           , to_external_(false)
           , failure_counter_(0)
+          , m_error_code(0)
+          , m_error_message()
+          , m_result()
         {
           activity_.set_id (a_id);
         }
@@ -66,6 +75,9 @@ namespace we
           , from_external_id_(other.from_external_id_)
           , to_external_id_(other.to_external_id_)
           , failure_counter_(other.failure_counter_)
+          , m_error_code(other.m_error_code)
+          , m_error_message(other.m_error_message)
+          , m_result(other.m_result)
         { }
 
         descriptor & operator= (const descriptor & other)
@@ -85,6 +97,9 @@ namespace we
             from_external_id_ = other.from_external_id_;
             to_external_id_ = other.to_external_id_;
             failure_counter_ = other.failure_counter_;
+            m_error_code = other.m_error_code;
+            m_error_message = other.m_error_message;
+            m_result = other.m_result;
           }
           return *this;
         }
@@ -218,7 +233,10 @@ namespace we
           del_child (child.id());
         }
 
-        void child_failed (this_type const & child, std::string const & /*reason*/)
+        void child_failed ( this_type const & child
+                          , int error_code
+                          , std::string const & error_message
+                          )
         {
           lock_t lock(mutex_);
           if (! is_child (child.id()))
@@ -229,6 +247,10 @@ namespace we
                                      + "' which is not my child!"
                                      );
           del_child (child.id());
+
+          // TODO: add to log of tuples: (childname, code, message)?
+          set_error_code(error_code);
+          set_error_message(error_message);
         }
 
         void child_cancelled (this_type const & child, std::string const & /*reason*/)
@@ -299,6 +321,42 @@ namespace we
         {
           lock_t lock(mutex_);
           return failure_counter_;
+        }
+
+        int error_code () const
+        {
+          lock_t lock(mutex_);
+          return m_error_code;
+        }
+
+        void set_error_code(int ec)
+        {
+          lock_t lock(mutex_);
+          m_error_code = ec;
+        }
+
+        std::string const & error_message () const
+        {
+          lock_t lock(mutex_);
+          return m_error_message;
+        }
+
+        void set_error_message (std::string const &msg)
+        {
+          lock_t lock(mutex_);
+          m_error_message = msg;
+        }
+
+        std::string const & result () const
+        {
+          lock_t lock(mutex_);
+          return m_result;
+        }
+
+        void set_result (std::string const &result)
+        {
+          lock_t lock(mutex_);
+          m_result = result;
         }
 
         bool has_children () const
@@ -422,6 +480,10 @@ namespace we
         external_id_type from_external_id_;
         external_id_type to_external_id_;
         std::size_t failure_counter_;
+
+        int m_error_code;
+        std::string m_error_message;
+        std::string m_result;
       };
 
       template <typename A, typename I, typename E>
