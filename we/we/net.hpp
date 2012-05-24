@@ -267,21 +267,6 @@ private:
 
   // *********************************************************************** //
 
-  template<typename MAP>
-  const typename MAP::mapped_type & get_fun ( const MAP & map
-                                            , const tid_t & tid
-                                            ) const
-  {
-    const typename MAP::const_iterator f (map.find (tid));
-
-    if (f == map.end())
-      throw exception::no_such ("transition id in get_fun");
-
-    return f->second;
-  }
-
-  // *********************************************************************** //
-
   void update_set_of_tid_in (const tid_t & tid, const bool can_fire)
   {
     if (not can_fire)
@@ -483,12 +468,6 @@ public:
   size_type get_num_places (void) const { return places().size(); }
   size_type get_num_transitions (void) const { return transitions().size(); }
   size_type get_num_edges (void) const { return edges().size(); }
-
-  // condition+transition function accessores
-  const trans_t & get_trans (const tid_t & tid) const
-  {
-    return get_fun (trans, tid);
-  }
 
   // get id
   const pid_t & get_place_id (const place_type & place) const
@@ -955,7 +934,12 @@ public:
 
   output_t run_activity (const activity_t & activity) const
   {
-    return get_fun(trans, activity.tid)(activity.input, activity.output_descr);
+    const typename trans_map_t::const_iterator f (trans.find (activity.tid));
+
+    if (f == trans.end())
+      throw exception::no_such ("transition id in run_activity");
+
+    return f->second(activity.input, activity.output_descr);
   }
 
   template <typename Output>
@@ -968,11 +952,9 @@ public:
       put_token (out->second, out->first);
   }
 
+private:
   activity_t extract_activity (const tid_t tid)
   {
-    if (!get_can_fire (tid))
-      throw exception::transition_not_enabled ("during call of fire");
-
     input_t input;
 
     const choice_iterator_t choice_consume (enabled_choice_consume.find(tid));
@@ -1031,6 +1013,7 @@ public:
     return activity_t (tid, input, output_descr);
   }
 
+public:
   template<typename Engine>
   activity_t extract_activity_random (Engine & engine)
   {
