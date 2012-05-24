@@ -4,8 +4,8 @@
   <net>
     <place name="n" type="long"/>
     <place name="o" type="long"/>
-    <transition name="generate">
-<!--    <transition name="generate" inline="true"> -->
+<!--    <transition name="generate"> -->
+    <transition name="generate" inline="true">
       <include-function href="sequence_forward.xpnet"/>
       <connect-in port="n" place="n"/>
       <connect-out port="i" place="i"/>
