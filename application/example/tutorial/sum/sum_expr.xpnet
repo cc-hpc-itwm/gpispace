@@ -1,0 +1,12 @@
+<defun name="sum_expr">
+
+  <include-structs href="pair.xpnet"/>
+
+  <in name="p" type="pair"/>
+  <out name="s" type="long"/>
+
+  <expression>
+    ${s} := ${p.x} + ${p.y}
+  </expression>
+
+</defun>
