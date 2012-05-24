@@ -138,14 +138,14 @@ int main (int ac, char **)
     {
       const long round (1000);
       const long max (1000);
-      const std::string input ("${0} < ${1}");
+      const std::string input ("${_0} < ${_1}");
 
       {
         Timer_t timer ("parse<string> once, eval often", max * round);
 
         context_t context;
 
-        context.bind("1",max);
+        context.bind("_1",max);
 
         parser_t parser (input);
 
@@ -154,7 +154,7 @@ int main (int ac, char **)
             long i (0);
 
             do
-              context.bind ("0",i++);
+              context.bind ("_0",i++);
             while (parser.eval_front_bool (context));
           }
       }
@@ -164,14 +164,14 @@ int main (int ac, char **)
 
         context_t context;
 
-        context.bind("1",max);
+        context.bind("_1",max);
 
         for (int r (0); r < round; ++r)
           {
             long i (0);
 
             do
-              context.bind ("0",i++);
+              context.bind ("_0",i++);
             while (parser_t (input, context).get_front_bool ());
           }
       }
