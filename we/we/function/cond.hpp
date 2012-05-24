@@ -100,7 +100,7 @@ namespace Function { namespace Condition
               ; choice.has_more()
               ; ++choice
               )
-            context.bind ( fhg::util::show ((*choice).first)
+            context.bind ( "_" + fhg::util::show ((*choice).first)
                          , val_t ((*choice).second.first)
                          );
 
