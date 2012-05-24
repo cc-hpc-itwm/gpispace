@@ -1,0 +1,59 @@
+<defun name="sequence_forward">
+
+  <in name="n" type="long" place="n"/>
+  <out name="i" type="long" place="i"/>
+
+  <net>
+
+    <struct name="state">
+      <field name="max" type="long"/>
+      <field name="i" type="long"/>
+    </struct>
+
+    <place name="n" type="long"/>
+    <place name="i" type="long"/>
+    <place name="state" type="state"/>
+
+    <transition name="init">
+      <defun>
+        <in name="n" type="long"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.i} := 0;
+          ${state.max} := ${n};
+        </expression>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <inout name="state" type="state"/>
+        <out name="i" type="long"/>
+        <expression>
+          ${i} := ${state.i};
+          ${state.i} := ${state.i} + 1;
+        </expression>
+      </defun>
+      <condition>
+        ${state.i} :lt: ${state.max}
+      </condition>
+      <connect-inout port="state" place="state"/>
+      <connect-out port="i" place="i"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${state.i} :ge: ${state.max}
+      </condition>
+      <connect-in port="state" place="state"/>
+    </transition>
+
+  </net>
+
+</defun>

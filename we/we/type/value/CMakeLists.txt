@@ -1,5 +1,6 @@
 # -*- mode: cmake; -*-
 set (hdrs
+  read.hpp
   eq.hpp
   field.hpp
   function.hpp
