@@ -1,0 +1,6 @@
+<structs>
+  <struct name="pair">
+    <field name="x" type="long"/>
+    <field name="y" type="long"/>
+  </struct>
+</structs>

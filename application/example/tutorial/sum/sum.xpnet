@@ -1,0 +1,18 @@
+<defun name="sum">
+
+  <include-structs href="pair.xpnet"/>
+
+  <in name="p" type="pair"/>
+  <out name="s" type="long"/>
+
+  <module name="sum" function="s sum (p)">
+
+    <cinclude href="sum.h"/>
+    <link href="lib/sum.o"/>
+
+    <code><![CDATA[
+      return ::sum (p.x,p.y);
+    ]]></code>
+  </module>
+
+</defun>
