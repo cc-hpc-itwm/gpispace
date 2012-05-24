@@ -5,7 +5,7 @@ endif
 
 CXXINCLUDEPATHS += $(CURDIR)/include
 
-DEP = $(wildcard *.xpnet)
+DEP += $(wildcard *.xpnet)
 
 ###############################################################################
 
