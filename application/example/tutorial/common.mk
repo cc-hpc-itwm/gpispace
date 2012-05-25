@@ -240,6 +240,8 @@ help:
 .PHONY: showconfig
 
 showconfig:
+	@echo "MAIN = $(MAIN)"
+	@echo
 	@echo "SDPA_HOME = $(SDPA_HOME)"
 	@echo
 	@echo "TEE = $(TEE)"
