@@ -52,7 +52,8 @@ int main (int ac, char **)
   if (ac > 1) { // just assume "-i" as first parameter for interactive mode
     cout << "enter expression, ^D to start measurement" << endl;
     cout << "clear context: #" << endl;
-    cout << "list context: ?" << endl;
+    cout << "list state: ?" << endl;
+    cout << "switch constant folding: f" << endl;
     typedef expr::eval::context context_t;
     context_t context;
     std::string input;
@@ -63,10 +64,10 @@ int main (int ac, char **)
         switch (input[0])
           {
           case '?':
-            cout << "constant_folding: "
+            cout << "constant_folding (switch with f): "
                  << std::boolalpha << constant_folding << std::noboolalpha
                  << endl;
-            cout << "context: " << endl << context;
+            cout << "context (delete with #): " << endl << context;
             break;
           case 'f':
           case 'F':
@@ -138,14 +139,14 @@ int main (int ac, char **)
     {
       const long round (1000);
       const long max (1000);
-      const std::string input ("${0} < ${1}");
+      const std::string input ("${a} < ${b}");
 
       {
         Timer_t timer ("parse<string> once, eval often", max * round);
 
         context_t context;
 
-        context.bind("1",max);
+        context.bind("b",max);
 
         parser_t parser (input);
 
@@ -154,7 +155,7 @@ int main (int ac, char **)
             long i (0);
 
             do
-              context.bind ("0",i++);
+              context.bind ("a",i++);
             while (parser.eval_front_bool (context));
           }
       }
@@ -164,14 +165,14 @@ int main (int ac, char **)
 
         context_t context;
 
-        context.bind("1",max);
+        context.bind("b",max);
 
         for (int r (0); r < round; ++r)
           {
             long i (0);
 
             do
-              context.bind ("0",i++);
+              context.bind ("a",i++);
             while (parser_t (input, context).get_front_bool ());
           }
       }

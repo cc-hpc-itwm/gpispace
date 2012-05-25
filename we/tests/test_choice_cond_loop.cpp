@@ -156,7 +156,7 @@ main ()
     ( net.add_transition
       ( transition_t
         ( "step"
-        , "${" + fhg::util::show (pid_state) + "} < ${" + fhg::util::show (pid_max) + "}"
+        , "${_" + fhg::util::show (pid_state) + "} < ${_" + fhg::util::show (pid_max) + "}"
         )
       )
     );
