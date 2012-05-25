@@ -577,30 +577,31 @@ int main (int argc, char **argv) {
       const std::string job_id (args.front());
       const int poll_interval = cfg.get<int>("poll-interval");
       sdpa::client::job_info_t job_info;
-      int wait_code = command_wait( job_id
-                                  , api
-                                  , boost::posix_time::milliseconds(poll_interval)
-                                  , job_info
-                                  );
 
-      switch (wait_code)
+      int status = command_wait( job_id
+                               , api
+                               , boost::posix_time::milliseconds(poll_interval)
+                               , job_info
+                               );
+      if (sdpa::status::FAILED == status)
       {
-      case 0: // finished
-      case 1: // failed
-      case 2: // cancelled
-        {
-          std::cerr << "retrieve the results with:" << std::endl;
-          std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
-          std::cerr << "delete the job with:" << std::endl;
-          std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
-          break;
-        }
-      default:
-        std::cerr << "could not get status information!" << std::endl;
-        break;
+        std::cerr << "failed: "
+                  << "error-code"
+                  << " := "
+                  << fhg::error::show(job_info.error_code)
+                  << " (" << job_info.error_code << ")"
+                  << std::endl
+                  << "error-message := " << job_info.error_message
+                  << std::endl
+          ;
       }
 
-      return wait_code;
+      std::cerr << "retrieve the results with:" << std::endl;
+      std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
+      std::cerr << "delete the job with:" << std::endl;
+      std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
+
+      return status;
     }
     else if (command == "cancel")
     {
