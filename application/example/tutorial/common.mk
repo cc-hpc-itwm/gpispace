@@ -142,12 +142,12 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 PNETC += $(addprefix -I,$(SDPA_XML_LIB))
 PNETC += --gen-cxxflags=-O3
 PNETC += $(addprefix --gen-cxxflags=-I,$(CXXINCLUDEPATHS))
-PNETC += $(addprefix --gen-ldflags=-L,$(CXXLIBRARAYPATHS))
+PNETC += $(addprefix --gen-ldflags=-L,$(CXXLIBRARYPATHS))
 PNETC += --force-overwrite-file=true
 PNETC += --Woverwrite-file=false
 PNETC += --Wbackup-file=false
 
-WE_EXEC = LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARAYPATHS))
+WE_EXEC = LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARYPATHS))
 WE_EXEC += $(WE_EXEC_CMD)
 WE_EXEC += --w $(WE_EXEC_WORKER)
 WE_EXEC += $(addprefix --load,$(WE_EXEC_LOAD))

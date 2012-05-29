@@ -1,10 +1,10 @@
 
 ifndef MAIN
-  MAIN = hello_world
+  MAIN = hello_many
 endif
 
 CXXINCLUDEPATHS += $(CURDIR)/include
-CXXLIBRARAYPATHS += $(CURDIR)/lib
+CXXLIBRARYPATHS += $(CURDIR)/lib
 
 DEP += $(wildcard $(CURDIR)/*.xpnet)
 
@@ -15,4 +15,5 @@ include ../common.mk
 ###############################################################################
 
 $(PUT): $(NET)
-	$(PNETPUT) --if $(NET) --of $(PUT) -p in=[]
+	$(PNETPUT) --if $(NET) --of $(PUT) -p in=[] -p in=[]
+
