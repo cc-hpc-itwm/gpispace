@@ -31,12 +31,12 @@ public:
       ifs >> std::noskipws >> sstr.rdbuf();
     }
 
-    const std::string workflow_descritpion (sstr.str());
+    const std::string workflow_description (sstr.str());
     std::string       workflow_result;
     std::string       error_message;
 
     int ec = wfe->execute ( "job-1"
-                          , workflow_descritpion
+                          , workflow_description
                           , wfe::capabilities_t ()
                           , workflow_result
                           , error_message
