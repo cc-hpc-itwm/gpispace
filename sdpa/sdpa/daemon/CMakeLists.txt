@@ -4,7 +4,7 @@ set (hdrs
   GenericDaemon.hpp
   IComm.hpp
   #IWorkflowEngine.hpp
-  JobFSMActions.hpp
+  #JobFSMActions.hpp
   Job.hpp
   JobImpl.hpp
   JobManager.hpp
