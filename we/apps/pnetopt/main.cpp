@@ -30,32 +30,22 @@ class Optimizer {
         L = lua_open();
         luaL_openlibs(L);
 
-        /* Thanks to GCC bugs we can't define several classes in one statement. */
         getGlobalNamespace(L)
             .beginNamespace("pnetopt")
                 .beginClass<PetriNet>("PetriNet")
                     .addMethod("__tostring", &PetriNet::__tostring)
                     .addMethod("transitions", &PetriNet::transitions)
-                .endClass();
-
-        getGlobalNamespace(L)
-            .beginNamespace("pnetopt")
-                .beginClass<Transitions>("Transitions")
+                .endClass()
+                .template beginClass<Transitions>("Transitions")
                     .addMethod("__tostring", &Transitions::__tostring)
                     .addMethod("__len", &Transitions::__len)
                     .addMethod("all", &Transitions::all)
-                .endClass();
-
-        getGlobalNamespace(L)
-            .beginNamespace("pnetopt")
-                .beginClass<TransitionsIterator>("TransitionsIterator")
+                .endClass()
+                .template beginClass<TransitionsIterator>("TransitionsIterator")
                     .addMethod("__tostring", &TransitionsIterator::__tostring)
                     .addMethod("__call", &TransitionsIterator::__call)
-                .endClass();
-
-        getGlobalNamespace(L)
-            .beginNamespace("pnetopt")
-                .beginClass<Transition>("Transition")
+                .endClass()
+                .template beginClass<Transition>("Transition")
                     .addMethod("__tostring", &Transition::__tostring)
                     .addMethod("name", &Transition::name)
                 .endClass();
