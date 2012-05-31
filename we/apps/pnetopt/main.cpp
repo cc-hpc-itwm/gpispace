@@ -2,11 +2,14 @@
 #include <fstream>
 
 #include <boost/program_options.hpp>
+#include <boost/foreach.hpp>
 
 #include <lua.hpp>
 #include "LuaBridge/LuaBridge.h"
 
 #include <we/we.hpp>
+
+#define foreach BOOST_FOREACH
 
 namespace {
 
@@ -40,6 +43,21 @@ class Optimizer {
                 .beginClass<Transitions>("Transitions")
                     .addMethod("__tostring", &Transitions::__tostring)
                     .addMethod("__len", &Transitions::__len)
+                    .addMethod("all", &Transitions::all)
+                .endClass();
+
+        getGlobalNamespace(L)
+            .beginNamespace("pnetopt")
+                .beginClass<TransitionsIterator>("TransitionsIterator")
+                    .addMethod("__tostring", &TransitionsIterator::__tostring)
+                    .addMethod("__call", &TransitionsIterator::__call)
+                .endClass();
+
+        getGlobalNamespace(L)
+            .beginNamespace("pnetopt")
+                .beginClass<Transition>("Transition")
+                    .addMethod("__tostring", &Transition::__tostring)
+                    .addMethod("name", &Transition::name)
                 .endClass();
 
         push(L, PetriNet(pnet));
@@ -60,6 +78,51 @@ class Optimizer {
 
     private:
 
+    class Transition {
+        petri_net::tid_t tid_;
+        const transition_t &transition_;
+
+        public:
+
+        Transition(pnet_t &pnet, typename petri_net::tid_t tid):
+            tid_(tid), transition_(pnet.get_transition(tid))
+        {}
+
+        const char *__tostring() {
+            return "Transition";
+        }
+
+        const std::string &name() {
+            return transition_.name();
+        }
+    };
+
+    class TransitionsIterator {
+        pnet_t &pnet_;
+        typename pnet_t::transition_const_it it_;
+
+        public:
+
+        TransitionsIterator(pnet_t &pnet):
+            pnet_(pnet), it_(pnet.transitions())
+        {}
+
+        const char *__tostring() {
+            return "Transitions Iterator";
+        }
+
+        Transition *__call() {
+            if (it_.has_more()) {
+                // Memory leak here.
+                Transition *result = new Transition(pnet_, *it_);
+                ++it_;
+                return result;
+            } else {
+                return NULL;
+            }
+        };
+    };
+
     class Transitions {
         pnet_t &pnet_;
 
@@ -74,21 +137,26 @@ class Optimizer {
         int __len() {
             return pnet_.get_num_transitions();
         }
+
+        TransitionsIterator all() {
+            return TransitionsIterator(pnet_);
+        }
     };
 
     class PetriNet {
         pnet_t &pnet_;
+        Transitions transitions_;
 
         public:
 
-        PetriNet(pnet_t &pnet): pnet_(pnet) {}
+        PetriNet(pnet_t &pnet): pnet_(pnet), transitions_(pnet) {}
 
         const char *__tostring() {
             return "Petri Net";
         }
 
-        Transitions transitions() {
-            return Transitions(pnet_);
+        Transitions &transitions() {
+            return transitions_;
         }
     };
 };

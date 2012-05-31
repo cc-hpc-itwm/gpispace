@@ -2852,6 +2852,44 @@ public:
   handling of the const and volatile qualifiers happens in UserdataPtr.
 */
 
+
+// pointer
+template <class T>
+struct Stack <T*>
+{
+  static inline void push (lua_State* L, T* const p)
+  {
+    if (p)
+      Detail::UserdataPtr::push (L, p);
+    else
+      lua_pushnil (L);
+  }
+
+  static inline T* const get (lua_State* L, int index)
+  {
+    return Detail::Userdata::get <T> (L, index, false);
+  }
+};
+
+// Strips the const off the right side of *
+template <class T>
+struct Stack <T* const>
+{
+  static inline void push (lua_State* L, T* const p)
+  {
+    if (p)
+      Detail::UserdataPtr::push (L, p);
+    else
+      lua_pushnil (L);
+  }
+
+  static inline T* const get (lua_State* L, int index)
+  {
+    return Detail::Userdata::get <T> (L, index, false);
+  }
+};
+
+#if 0
 // pointer
 template <class T>
 struct Stack <T*>
@@ -2881,6 +2919,7 @@ struct Stack <T* const>
     return Detail::Userdata::get <T> (L, index, false);
   }
 };
+#endif
 
 // pointer to const
 template <class T>
