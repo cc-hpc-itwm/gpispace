@@ -4,33 +4,45 @@
 #include <boost/program_options.hpp>
 
 #include <lua.hpp>
+#include "LuaBridge/LuaBridge.h"
 
 #include <we/we.hpp>
 
 namespace {
 
+using namespace luabridge;
+
 template<class P, class E, class T>
 class Optimizer {
+    lua_State *L;
+
     public:
 
     typedef we::type::transition_t<P, E, T> transition_t;
     typedef petri_net::net<P, transition_t, E, T> pnet_t;
 
+    public:
+
     Optimizer(pnet_t &pnet) {
         L = lua_open();
         luaL_openlibs(L);
 
-        lua_pushlightuserdata(L, &pnet);
+        /* Thanks to GCC bugs we can't define several classes in one statement. */
+        getGlobalNamespace(L)
+            .beginNamespace("pnetopt")
+                .beginClass<PetriNet>("PetriNet")
+                    .addMethod("__tostring", &PetriNet::__tostring)
+                    .addMethod("transitions", &PetriNet::transitions)
+                .endClass();
 
-        if (luaL_newmetatable(L, "pnetopt.net")) {
-            static const struct luaL_Reg metatable[] = {
-                { "__tostring", pnet_tostring },
-                { NULL, NULL }
-            };
-            luaL_register(L, NULL, metatable);
-        }
-        lua_setmetatable(L, -2);
+        getGlobalNamespace(L)
+            .beginNamespace("pnetopt")
+                .beginClass<Transitions>("Transitions")
+                    .addMethod("__tostring", &Transitions::__tostring)
+                    .addMethod("__len", &Transitions::__len)
+                .endClass();
 
+        push(L, PetriNet(pnet));
         lua_setfield(L, LUA_GLOBALSINDEX, "pnet");
     }
 
@@ -48,16 +60,37 @@ class Optimizer {
 
     private:
 
-    lua_State *L;
+    class Transitions {
+        pnet_t &pnet_;
 
-    static int pnet_tostring(lua_State *L) {
-        pnet_t *pnet = (pnet_t *)lua_touserdata(L, -1);
-        assert(pnet != NULL);
+        public:
 
-        lua_pushstring(L, "Petri Net");
+        Transitions(pnet_t &pnet): pnet_(pnet) {}
 
-        return 1;
-    }
+        const char *__tostring() {
+            return "Petri Net Transitions";
+        }
+
+        int __len() {
+            return pnet_.get_num_transitions();
+        }
+    };
+
+    class PetriNet {
+        pnet_t &pnet_;
+
+        public:
+
+        PetriNet(pnet_t &pnet): pnet_(pnet) {}
+
+        const char *__tostring() {
+            return "Petri Net";
+        }
+
+        Transitions transitions() {
+            return Transitions(pnet_);
+        }
+    };
 };
 
 class Visitor: public boost::static_visitor<void> {
