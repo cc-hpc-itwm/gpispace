@@ -60,18 +60,11 @@ namespace we { namespace mgmt { namespace detail {
       return (_extract == _inject && not n.can_fire());
     }
 
-    bool has_enabled (void) const
+    bool can_fire (void) const
     {
       boost::shared_lock<boost::shared_mutex> lock (mutex);
 
       return n.can_fire();
-    }
-
-    std::size_t num_enabled (void) const
-    {
-      boost::shared_lock<boost::shared_mutex> lock (mutex);
-
-      return n.num_can_fire();
     }
 
   private:

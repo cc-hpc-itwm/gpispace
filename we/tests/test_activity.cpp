@@ -152,8 +152,8 @@ int main (int, char **)
               << std::endl;
   }
 
-  std::cout << "has_enabled = " << act.has_enabled() << std::endl;
-  while (act.has_enabled())
+  std::cout << "can_fire = " << act.can_fire() << std::endl;
+  while (act.can_fire())
   {
     activity_t sub = act.extract ();
     sub.inject_input ();

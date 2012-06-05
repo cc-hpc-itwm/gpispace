@@ -22,7 +22,7 @@ struct wfe_exec_context : public we::mgmt::context<>
   {
     act.inject_input ();
 
-    while (act.has_enabled() && (task.state != wfe_task_t::CANCELED))
+    while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
     {
       we::activity_t sub (act.extract ());
       sub.inject_input ();

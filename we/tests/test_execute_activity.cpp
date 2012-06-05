@@ -136,7 +136,7 @@ struct exec_context : public we::mgmt::context<>
     act.inject_input ();
 
     // submit to self
-    while (act.has_enabled())
+    while (act.can_fire())
     {
       std::cout << "***** act (pre-extract):"
                 << std::endl
