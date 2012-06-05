@@ -1,6 +1,6 @@
 // a net, consisting of k independent loops, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include "timer.hpp"
 
 #include <cstdlib>
@@ -130,7 +130,11 @@ typedef node_t transition_t;
 typedef unsigned int edge_t;
 typedef unsigned char token_t;
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 using std::cout;
 using std::endl;

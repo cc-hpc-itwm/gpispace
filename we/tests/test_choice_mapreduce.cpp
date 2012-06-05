@@ -5,7 +5,7 @@
 // everything, the result must be zero, since the accumulator is
 // initialized with -(the wanted result)
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
@@ -146,7 +146,11 @@ static transition_t mk_transition ( const std::string & name
 
 /* ************************************************************************* */
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 /* ************************************************************************* */
 

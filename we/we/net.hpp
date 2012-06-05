@@ -114,10 +114,6 @@ public:
   typedef typename tf_traits::input_t input_t;
 
   typedef typename tf_traits::output_descr_t output_descr_t;
-  typedef typename tf_traits::output_t output_t;
-
-  typedef typename tf_traits::fun_t trans_t;
-  typedef boost::unordered_map<tid_t, trans_t> trans_map_t;
 
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits<token_type> cd_traits;
@@ -164,8 +160,6 @@ private:
   enabled_choice_t enabled_choice_consume;
   enabled_choice_t enabled_choice_read;
 
-  trans_map_t trans;
-
   in_map_t in_map;
 
   adjacent_transition_size_map_type in_to_transition_size_map;
@@ -188,11 +182,6 @@ private:
     ar & BOOST_SERIALIZATION_NVP(enabled);
     ar & BOOST_SERIALIZATION_NVP(enabled_choice_consume);
     ar & BOOST_SERIALIZATION_NVP(enabled_choice_read);
-    // WORK HERE: serialize the functions
-    // AP: we do not need this with the new transitions
-    //     because the function is already encapsulated
-    //
-    //    ar & BOOST_SERIALIZATION_NVP(trans);
     ar & BOOST_SERIALIZATION_NVP(in_map);
  }
 
@@ -458,7 +447,6 @@ public:
     , enabled ()
     , enabled_choice_consume ()
     , enabled_choice_read ()
-    , trans ()
     , in_map ()
     , in_to_transition_size_map ()
     , out_of_transition_size_map ()
@@ -505,11 +493,6 @@ public:
   pid_t add_place (const place_type & place)
   {
     return pmap.add (place);
-  }
-
-  void set_transition_function (const tid_t & tid, const trans_t & f)
-  {
-    trans[tid] = f;
   }
 
   void set_transition_priority (const tid_t & tid, const prio_t & prio)
@@ -741,8 +724,6 @@ public:
 
     tmap.erase (tid);
 
-    trans.erase (tid);
-
     enabled.erase (tid);
     enabled.erase_priority (tid);
     in_map.erase (tid);
@@ -927,16 +908,6 @@ public:
     {}
   };
 
-  output_t run_activity (const activity_t & activity) const
-  {
-    const typename trans_map_t::const_iterator f (trans.find (activity.tid));
-
-    if (f == trans.end())
-      throw exception::no_such ("transition id in run_activity");
-
-    return f->second(activity.input, activity.output_descr);
-  }
-
   template <typename Output>
   void inject_activity_result (Output const & output)
   {
@@ -947,7 +918,7 @@ public:
       put_token (out->second, out->first);
   }
 
-private:
+protected:
   activity_t extract_activity (const tid_t tid)
   {
     input_t input;
@@ -1013,20 +984,6 @@ public:
   activity_t extract_activity_random (Engine & engine)
   {
     return extract_activity (enabled.random (engine));
-  }
-
-  tid_t fire (const tid_t & tid)
-  {
-    const activity_t activity (extract_activity (tid));
-    const output_t output (run_activity (activity));
-    inject_activity_result (output);
-    return tid;
-  }
-
-  template<typename Engine>
-  tid_t fire_random (Engine & engine)
-  {
-    return fire (enabled.random (engine));
   }
 };
 } // namespace petri_net

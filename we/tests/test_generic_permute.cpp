@@ -1,6 +1,6 @@
 // generic permute tokens, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 
 #include <cstdlib>
 
@@ -59,7 +59,11 @@ typedef char edge_right_t;
 
 typedef std::pair<edge_left_t,edge_right_t> edge_t;
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 static edge_right_t edge_descr ( const pnet_t & net
                                , const petri_net::eid_t & eid

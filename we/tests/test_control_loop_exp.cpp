@@ -1,6 +1,6 @@
 // control loop, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
@@ -57,7 +57,11 @@ inline std::size_t operator == (const transition_t & x, const transition_t & y)
   return x.t == y.t;
 }
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 static const token_t max (100000);
 

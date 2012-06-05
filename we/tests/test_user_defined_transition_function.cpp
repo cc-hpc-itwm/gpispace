@@ -1,6 +1,6 @@
 // user defined transition function example, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 
 #include <cstdlib>
 
@@ -51,7 +51,11 @@ typedef unsigned long token_t;
 token_t inc (const token_t &);
 token_t inc (const token_t & token) { return token + 1; }
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 static std::string brack (const std::string & x)
 {

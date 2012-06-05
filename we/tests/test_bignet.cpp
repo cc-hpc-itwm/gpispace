@@ -1,6 +1,6 @@
 // some measurements with the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/type/condition.hpp>
 #include "timer.hpp"
 
@@ -67,7 +67,11 @@ static const unsigned int num_fire (1000);
 static const unsigned int bisize (1000000);
 }
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 using std::cout;
 using std::endl;

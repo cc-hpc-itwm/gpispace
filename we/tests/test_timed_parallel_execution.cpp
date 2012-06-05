@@ -1,6 +1,6 @@
 // demonstrate timed petri nets, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 
 #include <pthread.h>
 
@@ -86,7 +86,11 @@ public:
   petri_net::pid_t all_done;
 };
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef boost::function<void ( const pid_collection_t &
                              , map_t & m

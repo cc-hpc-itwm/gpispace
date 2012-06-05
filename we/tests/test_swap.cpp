@@ -1,6 +1,6 @@
 // how to use named edges to swap two tokens, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 
 #include <cstdlib>
 
@@ -49,7 +49,11 @@ inline std::size_t operator == (const transition_t & x, const transition_t & y)
 typedef unsigned char token_t;
 
 typedef std::pair<unsigned int,std::string> edge_t;
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 namespace Function { namespace Transition
 {
