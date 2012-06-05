@@ -58,6 +58,11 @@ namespace petri_net
       return tid;
     }
 
+    tid_t fire_first ()
+    {
+      return fire (super::enabled_transitions().first());
+    }
+
     template<typename Engine>
     tid_t fire_random (Engine & engine)
     {
