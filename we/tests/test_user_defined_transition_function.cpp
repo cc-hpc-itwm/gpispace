@@ -105,15 +105,13 @@ main ()
     petri_net::pid_t pid_top (n.add_place (place_t ("top")));
     petri_net::pid_t pid_down (n.add_place (place_t ("down")));
     petri_net::tid_t tid_top_down
-      ( n.add_transition ( transition_t ("top_down")
-                         , Function::Transition::PassWithFun<token_t>(inc)
-                         )
-      );
+      (n.add_transition (transition_t ("top_down")));
+    n.set_transition_function
+      (tid_top_down, Function::Transition::PassWithFun<token_t>(inc));
     petri_net::tid_t tid_down_top
-      ( n.add_transition ( transition_t ("down_top")
-                         , Function::Transition::PassWithFun<token_t>(inc)
-                         )
-      );
+      (n.add_transition (transition_t ("down_top")));
+    n.set_transition_function
+      (tid_down_top, Function::Transition::PassWithFun<token_t>(inc));
 
     n.add_edge (edge_t ("top_out"), connection_t (PT, tid_top_down, pid_top));
     n.add_edge (edge_t ("down_in"), connection_t (TP, tid_top_down, pid_down));
@@ -131,15 +129,13 @@ main ()
     petri_net::pid_t pid_top (n.add_place (place_t ("top_pass")));
     petri_net::pid_t pid_down (n.add_place (place_t ("down_pass")));
     petri_net::tid_t tid_top_down
-      ( n.add_transition ( transition_t ("top_down_pass")
-                         , Function::Transition::Pass<token_t>()
-                         )
-      );
+      (n.add_transition (transition_t ("top_down_pass")));
+    n.set_transition_function
+      (tid_top_down, Function::Transition::Pass<token_t>());
     petri_net::tid_t tid_down_top
-      ( n.add_transition ( transition_t ("down_top_pass")
-                         , Function::Transition::Pass<token_t>()
-                         )
-      );
+      (n.add_transition (transition_t ("down_top_pass")));
+    n.set_transition_function
+      (tid_down_top, Function::Transition::Pass<token_t>());
 
     n.add_edge (edge_t ("top_out_pass"), connection_t (PT, tid_top_down, pid_top));
     n.add_edge (edge_t ("down_in_pass"), connection_t (TP, tid_top_down, pid_down));

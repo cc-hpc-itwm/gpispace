@@ -133,7 +133,9 @@ main ()
 
   do
     {
-      petri_net::tid_t tid (n.add_transition (transition_t (transition++), TF(f)));
+      petri_net::tid_t tid (n.add_transition (transition_t (transition++)));
+
+      n.set_transition_function (tid, TF(f));
 
       petri_net::pid_t pid[k];
 

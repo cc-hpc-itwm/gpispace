@@ -522,14 +522,9 @@ public:
     return enabled.get_priority (tid);
   }
 
-  tid_t add_transition
-  ( const transition_type & transition
-  , const trans_t & tf = Function::Transition::Default<token_type>()
-  )
+  tid_t add_transition (const transition_type & transition)
   {
     const tid_t tid (tmap.add (transition));
-
-    trans[tid] = tf;
 
     calculate_enabled (tid);
 

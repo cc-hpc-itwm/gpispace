@@ -270,13 +270,19 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition
                                       )
 {
-  return net.add_transition
-    ( mk_trans ( name
-               , condition::type
-                 ( condition
-                 , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+  const petri_net::tid_t tid
+    ( net.add_transition
+      ( mk_trans ( name
+                 , condition::type
+                   ( condition
+                   , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+                   )
                  )
-               )
+      )
+    );
+
+  net.set_transition_function
+    ( tid
     , TransitionFunction
       ( name
       , expression
@@ -284,6 +290,8 @@ static petri_net::tid_t mk_transition ( pnet_t & net
       , boost::bind(&place::signature<pnet_t>, boost::ref(net), _1)
       )
     );
+
+  return tid;
 }
 
 // ************************************************************************* //

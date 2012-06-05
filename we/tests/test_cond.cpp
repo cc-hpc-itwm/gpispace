@@ -186,11 +186,15 @@ main ()
           ( transition_t ( rem
                          , boost::bind (&pnet_t::get_place, boost::ref(n), _1)
                          )
-          , Function::Transition::MatchWithFun<token_t,petri_net::pid_t>
-            ( & edge_descr<token_input_t>
-            , & edge_descr<place_via_edge_t>
-            , & trans
-            )
+          )
+        );
+
+      n.set_transition_function
+        ( tid
+        , Function::Transition::MatchWithFun<token_t,petri_net::pid_t>
+          ( & edge_descr<token_input_t>
+          , & edge_descr<place_via_edge_t>
+          , & trans
           )
         );
 
