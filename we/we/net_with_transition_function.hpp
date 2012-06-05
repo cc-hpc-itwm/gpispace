@@ -18,10 +18,6 @@ namespace petri_net
     typedef typename tf_traits::fun_t trans_t;
     typedef boost::unordered_map<tid_t, trans_t> trans_map_t;
 
-  public:
-    typedef typename tf_traits::output_t output_t;
-
-  private:
     trans_map_t trans;
 
   public:
@@ -34,14 +30,13 @@ namespace petri_net
     {}
 
     void
-    set_transition_function ( const tid_t & tid
-                            , const trans_t & f
-                            )
+    set_transition_function (const tid_t & tid, const trans_t & f)
     {
       trans[tid] = f;
     }
 
-    output_t run_activity (const typename super::activity_t & activity) const
+    typename super::output_t
+    run_activity (const typename super::activity_t & activity) const
     {
       const typename trans_map_t::const_iterator f (trans.find (activity.tid));
 
@@ -58,7 +53,7 @@ namespace petri_net
     tid_t fire (const tid_t & tid)
     {
       const typename super::activity_t activity (super::extract_activity (tid));
-      const output_t output (run_activity (activity));
+      const typename super::output_t output (run_activity (activity));
       inject_activity_result (output);
       return tid;
     }

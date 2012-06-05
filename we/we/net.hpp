@@ -71,6 +71,7 @@ public:
   typedef typename tf_traits::place_via_edge_t place_via_edge_t;
   typedef typename tf_traits::token_input_t token_input_t;
   typedef typename tf_traits::input_t input_t;
+  typedef typename tf_traits::output_t output_t;
 
   typedef typename tf_traits::output_descr_t output_descr_t;
 
