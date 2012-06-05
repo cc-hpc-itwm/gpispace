@@ -45,6 +45,7 @@ namespace sdpa { namespace events {
           SDPA_EJOBNOTFOUND,
           SDPA_EJOBEXISTS,
           SDPA_EJOBREJECTED,
+          SDPA_EJOBNOTDELETED,
           SDPA_EWORKERNOTREG,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EBUSY,

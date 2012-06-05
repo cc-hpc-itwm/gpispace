@@ -36,22 +36,22 @@
 using namespace std;
 using namespace sdpa::events;
 
-namespace sdpa { namespace daemon {
+namespace sdpa {
+  namespace daemon {
     JobImpl::JobImpl(const sdpa::job_id_t id,
                      const sdpa::job_desc_t desc,
                      const sdpa::daemon::IComm* pHandler,
                      const sdpa::job_id_t &parent)
         : SDPA_INIT_LOGGER("Job")
-                , id_(id)
-                , desc_(desc)
-                , parent_(parent)
-                , b_marked_for_del_(false)
+        , id_(id)
+        , desc_(desc)
+        , parent_(parent)
+        , b_marked_for_del_(false)
         , type_(Job::WORKER)
         , result_()
         , m_error_code(0)
         , m_error_message()
         , walltime_(2592000) // walltime in seconds: one month by default
-          //, pComm(const_cast<IComm*>(pHandler))
     {}
 
     JobImpl::~JobImpl() {
@@ -94,12 +94,12 @@ namespace sdpa { namespace daemon {
     }
 
     // transition from Pending to Cancelled
-        void JobImpl::action_cancel_job_from_pending(const sdpa::events::CancelJobEvent& evt)
-        {
-                DLOG(TRACE, "Process 'action_cancel_job_from_pending'");
-        }
+    void JobImpl::action_cancel_job_from_pending(const sdpa::events::CancelJobEvent& evt)
+    {
+      DLOG(TRACE, "Process 'action_cancel_job_from_pending'");
+    }
 
-        // transition from Cancelling to Cancelled
+    // transition from Cancelling to Cancelled
     void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& evt)
     {
         DLOG(TRACE, "cancelling job " << id());

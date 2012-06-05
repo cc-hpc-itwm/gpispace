@@ -28,35 +28,29 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
 
-namespace sdpa { namespace daemon {
-    class JobImpl : public Job /*, public sdpa::fsm::JobFSMActions*/  {
+namespace sdpa {
+  namespace daemon {
+    class JobImpl : public Job
+    {
     public:
-        typedef boost::unordered_map<sdpa::job_id_t, Job::ptr_t> job_list_t;
+      typedef boost::unordered_map<sdpa::job_id_t, Job::ptr_t> job_list_t;
+      typedef boost::recursive_mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> lock_type;
 
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
+      JobImpl(const sdpa::job_id_t id = JobId(""),
+              const sdpa::job_desc_t desc = "",
+              const sdpa::daemon::IComm* pHandler = NULL,
+              const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
 
-        JobImpl(const sdpa::job_id_t id = JobId(""),
-                        const sdpa::job_desc_t desc = "",
-                const sdpa::daemon::IComm* pHandler = NULL,
-                const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
+      virtual ~JobImpl();
 
-       virtual ~JobImpl();
+      virtual const sdpa::job_id_t& id() const;
+      virtual const sdpa::job_id_t& parent() const;
+      virtual const sdpa::job_desc_t& description() const;
+      virtual const sdpa::job_result_t& result() const { return result_; }
 
-        virtual const sdpa::job_id_t& id() const;
-        virtual const sdpa::job_id_t& parent() const;
-        virtual const sdpa::job_desc_t& description() const;
-        virtual const sdpa::job_result_t& result() const { return result_; }
-
-      int error_code() const
-      {
-        return m_error_code;
-      }
-
-      std::string const & error_message () const
-      {
-        return m_error_message;
-      }
+      int error_code() const {return m_error_code;}
+      std::string const & error_message () const { return m_error_message;}
 
       Job& error_code(int ec)
       {
@@ -70,94 +64,84 @@ namespace sdpa { namespace daemon {
         return *this;
       }
 
-        virtual void set_icomm(IComm* pArgComm) { pComm = pArgComm; }
-        virtual IComm* icomm() { return pComm; }
+      virtual void set_icomm(IComm* pArgComm) { pComm = pArgComm; }
+      virtual IComm* icomm() { return pComm; }
 
-        //virtual sdpa::worker_id_t& worker() { return worker_id_;}
+      virtual bool is_marked_for_deletion();
+      virtual bool mark_for_deletion();
 
-        virtual bool is_marked_for_deletion();
-        virtual bool mark_for_deletion();
+      bool isMasterJob();
+      void setType(const job_type& );
+      virtual job_type type() { return type_;}
 
-        bool isMasterJob();
-        void setType(const job_type& );
-        virtual job_type type() { return type_;}
+      virtual void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
+      virtual sdpa::worker_id_t owner() { return m_owner; }
 
-        virtual void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
-        virtual sdpa::worker_id_t owner() { return m_owner; }
+      virtual unsigned long &walltime() { return walltime_;}
 
-        virtual unsigned long &walltime() { return walltime_;}
+      // job FSM actions
+      virtual void action_run_job();
+      virtual void action_cancel_job(const sdpa::events::CancelJobEvent&);
+      virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&);
+      virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&);
+      virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
+      virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
+      virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
+      virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
 
-        // job FSM actions
-        virtual void action_run_job();
-        virtual void action_cancel_job(const sdpa::events::CancelJobEvent&);
-        virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&);
-        virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&);
-        virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
-        //virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&);
-        virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
-        virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
-        virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
+      virtual void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
 
-        virtual void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
+      virtual std::string print_info()
+      {
+        std::ostringstream os;
+        os<<std::endl;
+        os<<"id: "<<id_<<std::endl;
+        os<<"type: "<<type_<<std::endl;
+        os<<"status: "<<getStatus()<<std::endl;
+        os<<"parent: "<<parent_<<std::endl;
+        os<<"error-code: " << m_error_code << std::endl;
+        os<<"error-message: \"" << m_error_message << "\"" << std::endl;
+        //os<<"description: "<<desc_<<std::endl;
 
-        virtual std::string print_info()
+        return os.str();
+      }
+
+      template <class Archive> void serialize( Archive& ar, const unsigned int version)
+      {
+        ar & boost::serialization::base_object<Job>(*this);
+        ar & id_;
+        ar & desc_;
+        ar & parent_;
+        ar & result_;
+        ar & walltime_;
+        ar & type_;
+        ar & m_owner;
+        if (version > 0)
         {
-                std::ostringstream os;
-                os<<std::endl;
-                os<<"id: "<<id_<<std::endl;
-                os<<"type: "<<type_<<std::endl;
-                os<<"status: "<<getStatus()<<std::endl;
-                os<<"parent: "<<parent_<<std::endl;
-                os<<"error-code: " << m_error_code << std::endl;
-                os<<"error-message: \"" << m_error_message << "\"" << std::endl;
-                //os<<"description: "<<desc_<<std::endl;
-
-                return os.str();
+          ar & m_error_code;
+          ar & m_error_message;
         }
-
-        template <class Archive> void serialize( Archive& ar
-                                               , const unsigned int version
-                                               )
-        {
-                ar & boost::serialization::base_object<Job>(*this);
-                ar & id_;
-                ar & desc_;
-                ar & parent_;
-                ar & result_;
-                ar & walltime_;
-                ar & type_;
-                ar & m_owner;
-                if (version > 0)
-                {
-                  ar & m_error_code;
-                  ar & m_error_message;
-                }
-        }
+      }
 
     protected:
-        SDPA_DECLARE_LOGGER();
+      SDPA_DECLARE_LOGGER();
 
     private:
-        sdpa::job_id_t id_;
-        sdpa::job_desc_t desc_;
-        sdpa::job_id_t parent_;
+      sdpa::job_id_t id_;
+      sdpa::job_desc_t desc_;
+      sdpa::job_id_t parent_;
 
-        bool b_marked_for_del_;
-        job_type type_;
-        sdpa::job_result_t result_;
-        int m_error_code;
-        std::string m_error_message;
+      bool b_marked_for_del_;
+      job_type type_;
+      sdpa::job_result_t result_;
+      int m_error_code;
+      std::string m_error_message;
+      friend class boost::serialization::access;
+      unsigned long walltime_;
 
-        friend class boost::serialization::access;
-        unsigned long walltime_;
-
-        sdpa::worker_id_t m_owner;
-
+      sdpa::worker_id_t m_owner;
     protected:
-
-    public:
-        /*mutable*/ IComm* pComm;
-
+      IComm* pComm;
     };
 }}
 
