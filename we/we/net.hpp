@@ -18,6 +18,7 @@
 #include <we/util/cross.hpp>
 
 #include <petri_net/edge.hpp>
+#include <petri_net/exception.hpp>
 
 #include <fhg/util/show.hpp>
 
@@ -34,33 +35,6 @@
 
 namespace petri_net
 {
-  namespace exception
-  {
-    class generic : public std::runtime_error
-    {
-    public:
-      explicit generic (const std::string& msg)
-        : std::runtime_error ("net: " + msg)
-      {}
-    };
-
-    class transition_not_enabled : public generic
-    {
-    public:
-      explicit transition_not_enabled (const std::string & msg)
-        : generic ("transition_not_enabled: " + msg)
-      {}
-    };
-
-    class no_such : public generic
-    {
-    public:
-      explicit no_such (const std::string & msg)
-        : generic ("no_such: " + msg)
-      {}
-    };
-  }
-
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
