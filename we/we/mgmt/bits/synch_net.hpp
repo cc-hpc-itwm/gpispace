@@ -67,12 +67,13 @@ namespace we { namespace mgmt { namespace detail {
       return n.can_fire();
     }
 
-	std::size_t num_enabled (void) const
-	{
+    std::size_t num_enabled (void) const
+    {
       boost::shared_lock<boost::shared_mutex> lock (mutex);
 
-	  return n.enabled_transitions().size();
-	}
+      return n.num_can_fire();
+    }
+
   private:
 	synch_net (const synch_net & other);
 	synch_net & operator= (const synch_net & other);

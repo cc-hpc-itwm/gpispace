@@ -60,13 +60,13 @@ namespace petri_net
 
     tid_t fire_first ()
     {
-      return fire (super::enabled_transitions().first());
+      return fire (super::enabled_first());
     }
 
     template<typename Engine>
     tid_t fire_random (Engine & engine)
     {
-      return fire (super::enabled_transitions().random (engine));
+      return fire (super::enabled_random (engine));
     }
   };
 } // namespace petri_net

@@ -108,8 +108,10 @@ static std::size_t fac (void)
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  if (n.enabled_transitions().size() != fac())
-    throw std::runtime_error ("n.enabled_transitions().size() != fac()");
+  if (n.num_can_fire() != fac())
+    {
+      throw std::runtime_error ("n.num_can_fire() != fac()");
+    }
 
   const petri_net::tid_t tid (n.fire_random (engine));
 

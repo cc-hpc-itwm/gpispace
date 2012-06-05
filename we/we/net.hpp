@@ -759,11 +759,19 @@ public:
     return m->second;
   }
 
-  const enabled_t & enabled_transitions (void) const
+protected:
+  const tid_t& enabled_first (void) const
   {
-    return enabled;
+    return enabled.first();
   }
 
+  template<typename Engine>
+  const tid_t& enabled_random (Engine& engine) const
+  {
+    return enabled.random (engine);
+  }
+
+public:
   void put_token (const pid_t & pid, const token_type & token)
   {
     token_place_rel.add (token, pid);
@@ -846,6 +854,11 @@ public:
   }
 
   // FIRE
+  std::size_t num_can_fire (void) const
+  {
+    return enabled.size();
+  }
+
   bool can_fire () const
   {
     return not enabled.empty();

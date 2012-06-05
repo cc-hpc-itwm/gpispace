@@ -117,8 +117,10 @@ static void marking (const pnet_t & n)
 
 static void fire (pnet_t & n)
 {
-  if (n.enabled_transitions().size() != 1)
-    throw std::runtime_error ("n.enabled_transitions().size() != 1");
+  if (n.num_can_fire() != 1)
+    {
+      throw std::runtime_error ("n.num_can_fire() != 1");
+    }
 
   n.fire_first();
 }
