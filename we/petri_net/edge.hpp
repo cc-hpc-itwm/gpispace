@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _PETRI_NET_EDGE_HPP
-#define _PETRI_NET_EDGE_HPP
+#ifndef _PETRI_NET_EDGE_HPP_5ab461a6_23a3_4155_998b_edcf5aac0bff
+#define _PETRI_NET_EDGE_HPP_5ab461a6_23a3_4155_998b_edcf5aac0bff
 
 namespace petri_net
 {
@@ -26,4 +26,4 @@ namespace petri_net
   }
 } // namespace petri_net
 
-#endif // _PETRI_NET_EDGE_HPP
+#endif // _PETRI_NET_EDGE_HPP_5ab461a6_23a3_4155_998b_edcf5aac0bff
