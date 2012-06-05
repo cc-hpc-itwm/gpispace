@@ -846,6 +846,11 @@ public:
   }
 
   // FIRE
+  bool can_fire () const
+  {
+    return not enabled.empty();
+  }
+
   bool get_can_fire (const tid_t & tid) const
   {
     return enabled.elem(tid);
