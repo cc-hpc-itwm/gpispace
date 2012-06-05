@@ -109,8 +109,8 @@ static void marking (const pnet_t & n)
 }
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()

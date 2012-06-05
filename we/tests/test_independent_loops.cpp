@@ -174,7 +174,7 @@ main ()
             n.add_edge
               ( e++
               , petri_net::connection_t
-                ( petri_net::PT
+                ( petri_net::edge::PT
                 , n.get_transition_id (node_t (l, i))
                 , n.get_place_id (node_t (l, i))
                 )
@@ -182,7 +182,7 @@ main ()
             n.add_edge
               ( e++
               , petri_net::connection_t
-                ( petri_net::TP
+                ( petri_net::edge::TP
                 , n.get_transition_id (node_t (l, i))
                 , n.get_place_id (node_t (l, (i + 1) % size_loop))
                 )

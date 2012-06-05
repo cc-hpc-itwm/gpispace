@@ -97,9 +97,9 @@ namespace kdm
   }
 
   using petri_net::connection_t;
-  using petri_net::PT;
-  using petri_net::PT_READ;
-  using petri_net::TP;
+  using petri_net::edge::PT;
+  using petri_net::edge::PT_READ;
+  using petri_net::edge::TP;
 
   template<typename Activity>
   struct kdm

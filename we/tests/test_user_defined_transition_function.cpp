@@ -95,8 +95,8 @@ static void fire_random_transition (pnet_t & n, Engine & engine)
 };
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()

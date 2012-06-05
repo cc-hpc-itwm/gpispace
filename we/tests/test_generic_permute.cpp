@@ -151,13 +151,15 @@ main ()
 
       for (std::size_t i (0); i < k; ++i)
         {
-          n.add_edge ( edge_t (edge++, elements[i])
-                     , petri_net::connection_t (petri_net::PT, tid, pid[i])
-                     );
+          n.add_edge
+            ( edge_t (edge++, elements[i])
+            , petri_net::connection_t (petri_net::edge::PT, tid, pid[i])
+            );
 
-          n.add_edge ( edge_t (edge++, perm[i])
-                     , petri_net::connection_t (petri_net::TP, tid, pid[i])
-                     );
+          n.add_edge
+            ( edge_t (edge++, perm[i])
+            , petri_net::connection_t (petri_net::edge::TP, tid, pid[i])
+            );
         }
     }
   while (std::next_permutation (perm, perm + k));

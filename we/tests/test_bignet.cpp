@@ -115,13 +115,13 @@ main ()
               const transition_t rand (r);
 
               n.add_edge ( edge_t(pair_t(p, r), true)
-                         , petri_net::connection_t ( petri_net::PT
+                         , petri_net::connection_t ( petri_net::edge::PT
                                                    , n.get_transition_id (rand)
                                                    , p
                                                    )
                          );
               n.add_edge ( edge_t(pair_t(r, p), false)
-                         , petri_net::connection_t ( petri_net::TP
+                         , petri_net::connection_t ( petri_net::edge::TP
                                                    , n.get_transition_id (rand)
                                                    , p
                                                    )
@@ -150,7 +150,7 @@ main ()
             {
               place_t rand (uniform (engine));
               n.add_edge( edge_t(pair_t(t, rand), false)
-                        , petri_net::connection_t (petri_net::TP, t, rand)
+                        , petri_net::connection_t (petri_net::edge::TP, t, rand)
                         );
             }
           catch (bijection::exception::already_there)

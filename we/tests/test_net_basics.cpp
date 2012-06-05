@@ -84,7 +84,7 @@ static std::string show_place (const pnet_t & n, const petri_net::pid_t & p)
   std::ostringstream s; s << p << brack(n.get_place (p)); return s.str();
 }
 
-static std::string edge (const pnet_t & n, const petri_net::eid_t & e)
+static std::string show_edge (const pnet_t & n, const petri_net::eid_t & e)
 {
   std::ostringstream s; s << e << brack (n.get_edge (e)); return s.str();
 }
@@ -111,7 +111,7 @@ static void print_enabled (const pnet_t & n)
               ; k != i->second.end()
               ; ++k
               )
-            cout << " {" << k->first << " via " << edge (n, k->second) << "}";
+            cout << " {" << k->first << " via " << show_edge (n, k->second) << "}";
 
           cout << endl;
         }
@@ -130,7 +130,7 @@ static void print_enabled (const pnet_t & n)
           ; ++pit
           )
         {
-          cout << " {" << show_place (n, *pit) << " via " << edge (n, pit()) << "}";
+          cout << " {" << show_place (n, *pit) << " via " << show_edge (n, pit()) << "}";
         }
 
       cout << endl;
@@ -155,13 +155,13 @@ static void print_net (const pnet_t & n)
           ; pit.has_more()
           ; ++pit
           )
-        cout << " >>-{" << edge (n, pit()) << "}->> " << show_place (n, *pit) << endl;
+        cout << " >>-{" << show_edge (n, pit()) << "}->> " << show_place (n, *pit) << endl;
 
       for ( petri_net::adj_place_const_it pit (n.in_to_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
-        cout << " <<-{" << edge (n, pit()) << "}-<< " << show_place (n, *pit) << endl;
+        cout << " <<-{" << show_edge (n, pit()) << "}-<< " << show_place (n, *pit) << endl;
     }
 
   cout << "*** by place" << endl;
@@ -174,13 +174,13 @@ static void print_net (const pnet_t & n)
           ; tit.has_more()
           ; ++tit
           )
-        cout << " >>-{" << edge (n, tit()) << "}->> " << trans (n, *tit) << endl;
+        cout << " >>-{" << show_edge (n, tit()) << "}->> " << trans (n, *tit) << endl;
 
       for ( petri_net::adj_transition_const_it tit (n.in_to_place(*p))
           ; tit.has_more()
           ; ++tit
           )
-        cout << " <<-{" << edge (n, tit()) << "}-<< " << trans (n, *tit) << endl;
+        cout << " <<-{" << show_edge (n, tit()) << "}-<< " << trans (n, *tit) << endl;
     }
 
   cout << "*** by edges" << endl;
@@ -191,9 +191,9 @@ static void print_net (const pnet_t & n)
 
       const petri_net::connection_t connection (n.get_edge_info (*e));
 
-      cout << " -- typ: " << ((connection.type == petri_net::PT) ? "PT" : "TP");
+      cout << " -- typ: " << ((connection.type == petri_net::edge::PT) ? "PT" : "TP");
       cout << ", place: " << show_place (n, connection.pid);
-      cout << " " << ((connection.type == petri_net::PT) ? "-->" : "<--") << " ";
+      cout << " " << ((connection.type == petri_net::edge::PT) ? "-->" : "<--") << " ";
       cout << "transition: " << trans (n, connection.tid);
       cout << endl;
     }
@@ -298,7 +298,7 @@ static void add_edge_place_to_transition ( pnet_t & n
   cout << "add_edge_place_to_transition (" << edge << ") => "
        << n.add_edge ( edge
                      , petri_net::connection_t
-                       ( petri_net::PT
+                       ( petri_net::edge::PT
                        , n.get_transition_id (transition_t (transition))
                        , n.get_place_id (place)
                        )
@@ -315,7 +315,7 @@ static void add_edge_transition_to_place ( pnet_t & n
   cout << "add_edge_place_to_transition (" << edge << ") => "
        << n.add_edge ( edge
                      , petri_net::connection_t
-                       ( petri_net::TP
+                       ( petri_net::edge::TP
                        , n.get_transition_id (transition_t (transition))
                        , n.get_place_id (place)
                        )

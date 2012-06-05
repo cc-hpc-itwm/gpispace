@@ -17,6 +17,8 @@
 #include <we/type/id.hpp>
 #include <we/util/cross.hpp>
 
+#include <petri_net/edge.hpp>
+
 #include <fhg/util/show.hpp>
 
 #include <boost/unordered_map.hpp>
@@ -59,27 +61,10 @@ namespace petri_net
     };
   }
 
-  enum edge_type {PT,PT_READ,TP};
-
-  static inline bool is_pt_read (const edge_type & e)
-  {
-    return e == PT_READ;
-  }
-
-  static inline bool is_PT (const edge_type & et)
-  {
-    return (et == PT || et == PT_READ);
-  }
-
-  static inline edge_type pt_read (void)
-  {
-    return PT_READ;
-  }
-
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
-  typedef connection<edge_type, tid_t, pid_t> connection_t;
+  typedef connection<edge::type, tid_t, pid_t> connection_t;
 
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
 // single map<tid_t,(X,Y)>?
@@ -290,7 +275,7 @@ private:
                 const token_via_edge_t & token_via_edge (choice.val());
                 const eid_t & eid (token_via_edge.second);
 
-                if (is_pt_read (get_edge_info (eid).type))
+                if (edge::is_pt_read (get_edge_info (eid).type))
                   {
                     enabled_choice_read[tid].push_back (*choice);
                   }
@@ -329,7 +314,7 @@ private:
                                    , const connection_t & connection
                                    )
   {
-    if (is_PT (connection.type))
+    if (edge::is_PT (connection.type))
       {
         recalculate_enabled (connection.tid, connection.pid, eid);
       }
@@ -517,7 +502,7 @@ public:
   eid_t add_edge (const edge_type & edge, const connection_t & connection)
   {
     const eid_t eid
-      ( (is_PT (connection.type))
+      ( (edge::is_PT (connection.type))
       ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt, connection.tid)
       : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp, connection.tid)
       );
@@ -619,7 +604,7 @@ public:
       {
         if (*pit == pid)
           {
-            return is_pt_read (get_edge_info (pit()).type);
+            return edge::is_pt_read (get_edge_info (pit()).type);
           }
       }
 
@@ -636,7 +621,7 @@ public:
 
     const connection_t connection (it->second);
 
-    if (is_PT (connection.type))
+    if (edge::is_PT (connection.type))
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
         in_to_transition_size_map.erase (connection.tid);
@@ -947,7 +932,7 @@ protected:
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
 
-        assert (!is_pt_read (get_edge_info (eid).type));
+        assert (not edge::is_pt_read (get_edge_info (eid).type));
 
         delete_one_token (pid, token);
       }

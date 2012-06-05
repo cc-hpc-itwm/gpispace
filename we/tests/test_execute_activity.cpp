@@ -12,9 +12,9 @@
 #include <we/mgmt/context.hpp>
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::PT_READ;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::PT_READ;
+using petri_net::edge::TP;
 
 typedef place::type place_t;
 typedef token::type token_t;

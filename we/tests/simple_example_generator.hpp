@@ -74,9 +74,9 @@ namespace we { namespace tests { namespace gen {
         // edges
         {
           using petri_net::connection_t;
-          using petri_net::PT;
-          using petri_net::PT_READ;
-          using petri_net::TP;
+          using petri_net::edge::PT;
+          using petri_net::edge::PT_READ;
+          using petri_net::edge::TP;
 
           edge_type e (0);
           net_subnet.add_edge (e++, connection_t ( PT, tid_incr, pid_input ));
@@ -104,9 +104,9 @@ namespace we { namespace tests { namespace gen {
         // edges
         {
           using petri_net::connection_t;
-          using petri_net::PT;
-          using petri_net::PT_READ;
-          using petri_net::TP;
+          using petri_net::edge::PT;
+          using petri_net::edge::PT_READ;
+          using petri_net::edge::TP;
 
           edge_type e (0);
           net_inner.add_edge (e++, connection_t ( PT, tid_sub, pid_i ));

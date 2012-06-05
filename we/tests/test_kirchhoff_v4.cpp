@@ -248,7 +248,7 @@ static void dot ( std::ostream & s
 
       switch (connection.type)
         {
-        case petri_net::TP:
+        case petri_net::edge::TP:
           s << "t" << fhg::util::show (connection.tid)
             << " -> "
             << "p" << fhg::util::show (connection.pid)
@@ -257,7 +257,7 @@ static void dot ( std::ostream & s
             << endl
             ;
           break;
-        case petri_net::PT:
+        case petri_net::edge::PT:
           s << "p" << fhg::util::show (connection.pid)
             << " -> "
             << "t" << fhg::util::show (connection.tid)
@@ -266,7 +266,7 @@ static void dot ( std::ostream & s
             << endl
             ;
           break;
-        case petri_net::PT_READ:
+        case petri_net::edge::PT_READ:
           if (n.get_place (connection.pid).get_name() == "config")
             s << "p" << fhg::util::show (connection.pid)
               << "t" << fhg::util::show (connection.tid)
@@ -611,9 +611,9 @@ mk_place ( pnet_t & net
 // ************************************************************************* //
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::PT_READ;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::PT_READ;
+using petri_net::edge::TP;
 
 namespace po = boost::program_options;
 
