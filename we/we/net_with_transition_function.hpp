@@ -45,12 +45,14 @@ namespace petri_net
     {
       const typename trans_map_t::const_iterator f (trans.find (activity.tid));
 
-      if (f == trans.end())
-        {
-          throw exception::no_such ("transition id in run_activity");
-        }
-
-      return f->second(activity.input, activity.output_descr);
+      return (f == trans.end())
+        ? Function::Transition::Default<Token>() ( activity.input
+                                                 , activity.output_descr
+                                                 )
+        : f->second ( activity.input
+                    , activity.output_descr
+                    )
+        ;
     }
 
     tid_t fire (const tid_t & tid)
