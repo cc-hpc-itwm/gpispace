@@ -111,9 +111,7 @@ static void fire_random_transition (pnet_t & n, Engine & engine)
   if (n.enabled_transitions().size() != fac())
     throw std::runtime_error ("n.enabled_transitions().size() != fac()");
 
-  petri_net::tid_t tid (n.enabled_transitions().random (engine));
-
-  n.fire (tid);
+  const petri_net::tid_t tid (n.fire_random (engine));
 
   marking (n, tid);
 };

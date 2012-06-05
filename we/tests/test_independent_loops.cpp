@@ -142,10 +142,14 @@ using std::endl;
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  if (n.enabled_transitions().empty())
-    throw std::runtime_error ("no enabled transition");
+  if (not n.can_fire())
+    {
+      throw std::runtime_error ("net cannot fire");
+    }
   else
-    n.fire_random(engine);
+    {
+      n.fire_random (engine);
+    }
 };
 
 int

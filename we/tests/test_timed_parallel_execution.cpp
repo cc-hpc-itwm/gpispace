@@ -502,7 +502,7 @@ static void * manager (void * arg)
   do
     {
       while (!p->output.empty()
-            || (extract > inject && p->net.enabled_transitions().empty())
+            || (extract > inject && not p->net.can_fire())
             // ^comment this clause to get a busy waiting manager
             || (p->activity.size() >= QUEUE_DEPTH_FOR_WORK_QUEUE)
             )
@@ -520,7 +520,7 @@ static void * manager (void * arg)
 
       // the manager puts at most QUEUE_DEPTH_FOR_WORK_QUEUE items into the
       // work queue, it does not block here
-      while (  !p->net.enabled_transitions().empty()
+      while (   p->net.can_fire()
             && (p->activity.size() < QUEUE_DEPTH_FOR_WORK_QUEUE)
             )
         {

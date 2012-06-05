@@ -475,9 +475,9 @@ main (int argc, char ** argv)
 
     Timer_t timer ("fire", NUM_SLICES * MAX_DEPTH + 4 * NUM_SLICES + 1);
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-        net.fire_random(engine);
+        net.fire_random (engine);
 
         if (PRINT_MARKING)
           marking (net);

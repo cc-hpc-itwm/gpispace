@@ -225,13 +225,11 @@ main ()
   marking (net);
 
   {
-    boost::mt19937 engine;
-
     Timer_t timer ("fire", max + 1);
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-        net.fire(net.enabled_transitions().first());
+        net.fire_first ();
         // marking (net);
       }
   }

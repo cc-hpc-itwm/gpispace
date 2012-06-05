@@ -380,12 +380,9 @@ main ()
 
     Timer_t timer ("calculate net");
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-//         if (net.enabled_transitions().elem (tid_join))
-//           net.fire (tid_join);
-//         else
-          net.fire_random(engine);
+        net.fire_random (engine);
         //        marking (net);
       }
   }

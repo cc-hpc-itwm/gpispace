@@ -247,11 +247,9 @@ main ()
 
       for (unsigned int f(0); f < num_fire; ++f)
         {
-          const pnet_t::enabled_t& t (n.enabled_transitions());
-
-          if (!t.empty())
+          if (n.can_fire())
             {
-              n.fire_random(engine);
+              n.fire_random (engine);
 
               ++fired;
             }

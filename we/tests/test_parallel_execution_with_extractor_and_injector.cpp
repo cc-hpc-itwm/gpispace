@@ -472,7 +472,7 @@ public:
 
     const cnt_t i (_inject);
 
-    while (n.enabled_transitions().empty() && i == _inject)
+    while (not n.can_fire() && i == _inject)
       cond_inject.wait (lock);
   }
 
@@ -500,14 +500,14 @@ public:
   {
     boost::lock_guard<boost::mutex> lock (mutex);
 
-    return (_extract == _inject && n.enabled_transitions().empty());
+    return (_extract == _inject && not n.can_fire());
   }
 
-  bool has_enabled (void)
+  bool can_fire (void)
   {
     boost::lock_guard<boost::mutex> lock (mutex);
 
-    return (!n.enabled_transitions().empty());
+    return n.can_fire();
   }
 };
 
@@ -659,7 +659,7 @@ static void * extractor (void * arg)
 
   do
     {
-      while (p->net.has_enabled()) // here: problem when more than one extractor
+      while (p->net.can_fire()) // here: problem when more than one extractor
         {
           const pnet_t::activity_t activity (p->net.extract());
 

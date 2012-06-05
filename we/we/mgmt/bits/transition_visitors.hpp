@@ -49,7 +49,7 @@ namespace we { namespace mgmt { namespace visitor {
     template <typename Place, typename Trans, typename Edge, typename Token>
     bool operator () (const petri_net::net<Place, Trans, Edge, Token> & net) const
     {
-      return ! net.enabled_transitions().empty();
+      return net.can_fire();
     }
 
     template <typename T>

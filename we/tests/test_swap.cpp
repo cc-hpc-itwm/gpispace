@@ -120,7 +120,7 @@ static void fire (pnet_t & n)
   if (n.enabled_transitions().size() != 1)
     throw std::runtime_error ("n.enabled_transitions().size() != 1");
 
-  n.fire (n.enabled_transitions().first());
+  n.fire_first();
 }
 
 using petri_net::connection_t;

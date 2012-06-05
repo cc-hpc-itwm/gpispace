@@ -84,13 +84,11 @@ static void marking (const pnet_t & n)
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  if (!n.enabled_transitions().empty())
+  if (n.can_fire())
     {
-     petri_net::tid_t tid (n.enabled_transitions().random (engine));
+      const petri_net::tid_t tid (n.fire_random (engine));
 
-      cout << "FIRE " << trans (n, tid) << " => ";
-
-      n.fire (tid);
+      cout << "FIRED " << trans (n, tid) << " => ";
     }
 };
 

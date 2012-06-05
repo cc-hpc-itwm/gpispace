@@ -527,9 +527,9 @@ main (int argc, char ** argv)
 
     Timer_t timer ("fire", NUM_VID * NUM_BID);
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-        net.fire_random(engine);
+        net.fire_random (engine);
 
         if (PRINT_MARKING)
           marking (net);

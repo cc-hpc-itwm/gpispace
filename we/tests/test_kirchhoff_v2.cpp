@@ -573,9 +573,9 @@ main (int argc, char ** argv)
 
     Timer_t timer ("fire", OFFSETS * SUBVOLUMES_PER_OFFSET * BUNCHES_PER_PACKAGE * PACKAGES_PER_OFFSET);
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-        net.fire_random (engine); // (net.enabled_transitions().first());
+        net.fire_random (engine);
 
         if (PRINT_MARKING)
           marking (net);

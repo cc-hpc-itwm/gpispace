@@ -228,8 +228,10 @@ static void marking (const pnet_t & n)
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  if (!n.enabled_transitions().empty())
-    n.fire_random (engine);
+  if (n.can_fire())
+    {
+      n.fire_random (engine);
+    }
 };
 
 static void step (pnet_t & n, unsigned long k)

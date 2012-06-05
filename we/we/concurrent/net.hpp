@@ -45,7 +45,7 @@ namespace petri_net
 
       const CNT i (_inject);
 
-      while (  n.enabled_transitions().empty()
+      while (  not n.can_fire()
             && i == _inject
             && _extract != _inject // otherwise: done
             )
@@ -78,14 +78,14 @@ namespace petri_net
     {
       boost::lock_guard<boost::mutex> lock (mutex);
 
-      return (_extract == _inject && n.enabled_transitions().empty());
+      return (_extract == _inject && not n.can_fire());
     }
 
-    bool has_enabled (void)
+    bool can_fire (void)
     {
       boost::lock_guard<boost::mutex> lock (mutex);
 
-      return (!n.enabled_transitions().empty());
+      return n.can_fire();
     }
   };
 
@@ -132,7 +132,7 @@ namespace petri_net
 
       do
         {
-          while (p->shared.has_enabled())
+          while (p->shared.can_fire())
             p->activity.put (p->shared.extract());
 
           p->shared.wait_inject_or_done ();
