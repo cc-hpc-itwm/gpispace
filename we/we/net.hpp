@@ -12,7 +12,6 @@
 #include <we/function/cond.hpp>
 #include <we/function/trans.hpp>
 #include <we/serialize/unordered_map.hpp>
-#include <we/serialize/unordered_set.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/util/cross.hpp>
@@ -20,16 +19,9 @@
 #include <petri_net/edge.hpp>
 #include <petri_net/exception.hpp>
 
-#include <fhg/util/show.hpp>
-
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/optional.hpp>
-
 #include <boost/function.hpp>
-#include <boost/foreach.hpp>
-
 #include <boost/serialization/nvp.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <stack>
 
