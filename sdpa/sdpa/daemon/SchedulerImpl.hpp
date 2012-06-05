@@ -31,121 +31,119 @@
 
 namespace sdpa {
   namespace daemon {
-	class SchedulerImpl : public Scheduler {
+	  class SchedulerImpl : public Scheduler
+	  {
+    public:
+      typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
+	    typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
+	    typedef boost::recursive_mutex mutex_type;
+	    typedef boost::unique_lock<mutex_type> lock_type;
+	    typedef boost::condition_variable_any condition_type;
 
-  public:
+	    SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL, bool bUseRequestModel = true );
+	    virtual ~SchedulerImpl();
 
-	typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
-	typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
-	typedef boost::condition_variable_any condition_type;
+	    virtual void schedule(const sdpa::job_id_t&);
+	    virtual void schedule_local(const sdpa::job_id_t&);
+	    virtual void schedule_remote(const sdpa::job_id_t&);
+	    void delete_job(const sdpa::job_id_t&);
 
-	SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL, bool bUseRequestModel = true );
-	virtual ~SchedulerImpl();
+	    bool schedule_with_constraints( const sdpa::job_id_t& );
+	    bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
+	    bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
+	    void schedule_anywhere( const sdpa::job_id_t& jobId );
 
-	virtual void schedule(const sdpa::job_id_t&);
-	virtual void schedule_local(const sdpa::job_id_t&);
-	virtual void schedule_remote(const sdpa::job_id_t&);
-	void delete_job(const sdpa::job_id_t&);
+	    void reschedule(const sdpa::job_id_t &job);
+	    void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
+	    void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
+	    void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
+	    void reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 
-	bool schedule_with_constraints( const sdpa::job_id_t& );
-	bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
-	bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
-	void schedule_anywhere( const sdpa::job_id_t& jobId );
+	    virtual bool has_job(const sdpa::job_id_t&);
 
-	void reschedule(const sdpa::job_id_t &job);
-	void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
-	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
-	void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
-	void reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
+	    virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
+	    virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
+      virtual const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
-	virtual bool has_job(const sdpa::job_id_t&);
+      virtual void addWorker( const Worker::worker_id_t& workerId,
+			                        const unsigned int& capacity = 10000,
+			                        const capabilities_set_t& cpbset = capabilities_set_t(),
+			                        const unsigned int& agent_rank = 0,
+			                        const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
 
-	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
-	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
-    virtual const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+	    virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+	    void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
-	virtual void addWorker( const Worker::worker_id_t& workerId,
-							const unsigned int& capacity = 10000,
-			                const capabilities_set_t& cpbset = capabilities_set_t(),
-			                const unsigned int& agent_rank = 0,
-			                const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
+	    virtual void getWorkerList(std::list<std::string>&);
+	    virtual Worker::worker_id_t getWorkerId(unsigned int rank);
 
-	virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+	    virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
+	    virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 
-	void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
+	    virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
+	    virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
+	    virtual void getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset);
+	    virtual void getWorkerCapabilities(const sdpa::worker_id_t&, sdpa::capabilities_set_t& cpbset);
 
-	virtual void getWorkerList(std::list<std::string>&);
-	virtual Worker::worker_id_t getWorkerId(unsigned int rank);
+	    virtual const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
+	    virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
-	virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
+	    virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
-	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
+	    virtual void execute(const sdpa::job_id_t& jobId); //just for testing
+	    virtual void check_post_request();
+	    virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
+	    virtual void feedWorkers();
 
-	virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
-	virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
-	virtual void getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset);
-	virtual void getWorkerCapabilities(const sdpa::worker_id_t&, sdpa::capabilities_set_t& cpbset);
+	    void cancelWorkerJobs();
+	    void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);
+	    virtual void forceOldWorkerJobsTermination();
 
-	virtual const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
-	virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
+	    virtual bool useRequestModel() { return m_bUseRequestModel; }
+	    void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
 
-	virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
+	    void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
-	virtual void execute(const sdpa::job_id_t& jobId); //just for testing
-	virtual void check_post_request();
-	virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
-	virtual void feedWorkers();
+    	// thread related functions
+	    virtual void start(IComm*);
+	    virtual void stop();
+	    virtual void run();
 
-	void cancelWorkerJobs();
-	void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);
-	virtual void forceOldWorkerJobsTermination();
+	    template <class Archive>
+	    void serialize(Archive& ar, const unsigned int)
+	    {
+		    ar & boost::serialization::base_object<Scheduler>(*this);
+		    ar & ptr_worker_man_;
+	    }
 
-	virtual bool useRequestModel() { return m_bUseRequestModel; }
-	void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
+	    friend class boost::serialization::access;
 
-	void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
+	    virtual void print();
+	    virtual void removeRecoveryInconsistencies();
+      void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 
-	// thread related functions
-	virtual void start(IComm*);
-	virtual void stop();
-	virtual void run();
+      void printQ() { jobs_to_be_scheduled.print(); }
 
-	template <class Archive>
-	void serialize(Archive& ar, const unsigned int)
-	{
-		ar & boost::serialization::base_object<Scheduler>(*this);
-		ar & ptr_worker_man_;
-	}
+    protected:
+	    JobQueue jobs_to_be_scheduled;
+	    WorkerManager::ptr_t ptr_worker_man_;
 
-	friend class boost::serialization::access;
+	    bool bStopRequested;
+	    boost::thread m_thread_run;
+	    boost::thread m_thread_feed;
 
-	virtual void print();
-	virtual void removeRecoveryInconsistencies();
-    void removeWorkers() { ptr_worker_man_->removeWorkers(); }
+	    mutable sdpa::daemon::IComm* ptr_comm_handler_;
+	    SDPA_DECLARE_LOGGER();
+	    boost::posix_time::time_duration m_timeout;
 
-    void printQ() { jobs_to_be_scheduled.print(); }
+	    bool m_bUseRequestModel; // true -> request model, false -> push model
+	    sdpa::cancellation_list_t cancellation_list_;
 
-protected:
-	JobQueue jobs_to_be_scheduled;
-	WorkerManager::ptr_t ptr_worker_man_;
-
-	bool bStopRequested;
-	boost::thread m_thread_run;
-	boost::thread m_thread_feed;
-
-	mutable sdpa::daemon::IComm* ptr_comm_handler_;
-	SDPA_DECLARE_LOGGER();
-	boost::posix_time::time_duration m_timeout;
-
-	bool m_bUseRequestModel; // true -> request model, false -> push model
-	sdpa::cancellation_list_t cancellation_list_;
-
-	mutable mutex_type mtx_;
-	condition_type cond_feed_workers;
-	condition_type cond_workers_registered;
-  };
-}}
+	    mutable mutex_type mtx_;
+	    condition_type cond_feed_workers;
+	    condition_type cond_workers_registered;
+    };
+  }
+}
 
 #endif
