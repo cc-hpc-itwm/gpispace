@@ -58,7 +58,7 @@ struct exec_context : public we::mgmt::context<>
 int main (int, char **)
 {
   // ************************************ //
-  pnet_t net("the inner net");
+  pnet_t net;
 
   petri_net::pid_t pid_vid (net.add_place (place_t ("vid","long")));
 

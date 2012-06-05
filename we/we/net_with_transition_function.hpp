@@ -21,11 +21,10 @@ namespace petri_net
     trans_map_t trans;
 
   public:
-    net_with_transition_function ( const std::string & _name = "noname"
-                                 , const pid_t & _places = 10
+    net_with_transition_function ( const pid_t & _places = 10
                                  , const tid_t & _transitions = 10
                                  )
-      : super (_name, _places, _transitions)
+      : super (_places, _transitions)
       , trans ()
     {}
 

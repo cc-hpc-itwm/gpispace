@@ -80,7 +80,7 @@ int
 main ()
 {
   {
-    pnet_t n("test_b", nplace, ntrans);
+    pnet_t n (nplace, ntrans);
 
     {
       Timer_t timer ("add places", factor * nplace);

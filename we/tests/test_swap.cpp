@@ -133,7 +133,7 @@ using petri_net::eid_t;
 int
 main (int argc, char **)
 {
-  pnet_t n("test_s", 2,1);
+  pnet_t n (2,1);
 
   petri_net::pid_t pid_A (n.add_place (place_t ("A")));
   petri_net::pid_t pid_B (n.add_place (place_t ("B")));

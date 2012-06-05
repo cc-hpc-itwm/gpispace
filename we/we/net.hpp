@@ -96,7 +96,6 @@ private:
 
   // *********************************************************************** //
 
-  std::string name;
   bijection::bijection<place_type,pid_t> pmap; // place_type <-> internal id
   bijection::bijection<transition_type,tid_t> tmap; // transition_type <-> internal id
   bijection::bijection<edge_type,eid_t> emap; // edge_type <-> internal id
@@ -123,7 +122,6 @@ private:
   template<typename Archive>
   void serialize (Archive & ar, const unsigned int)
   {
-    ar & BOOST_SERIALIZATION_NVP(name);
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
     ar & BOOST_SERIALIZATION_NVP(emap);
@@ -387,9 +385,8 @@ private:
   // *********************************************************************** //
 
 public:
-  net (const std::string & _name = "noname", const pid_t & _places = 10, const tid_t & _transitions = 10)
-    : name (_name)
-    , pmap ("place")
+  net (const pid_t & _places = 10, const tid_t & _transitions = 10)
+    : pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
     , connection_map ()

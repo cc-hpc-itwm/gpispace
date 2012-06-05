@@ -41,7 +41,7 @@ int main (int, char **)
   typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
   // ************************************ //
-  pnet_t net("the inner net");
+  pnet_t net;
 
   petri_net::pid_t pid_vid (net.add_place (place_t ("vid","long")));
 

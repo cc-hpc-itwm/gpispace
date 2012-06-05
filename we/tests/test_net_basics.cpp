@@ -373,7 +373,7 @@ int
 main ()
 {
   boost::mt19937 engine;
-  pnet_t n("test_t", 5,4);
+  pnet_t n(5,4);
 
   add_place (n, "readyL");
   add_place (n, "readyR");
@@ -434,7 +434,7 @@ main ()
 
   cout << "#### DEEP COPIED" << endl;
 
-  pnet_t c("c", n.get_num_places(),n.get_num_transitions());
+  pnet_t c(n.get_num_places(),n.get_num_transitions());
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     c.add_transition (n.get_transition(*t));

@@ -156,7 +156,7 @@ int
 main ()
 {
   {
-    pnet_t n ("test_l", num_loops * size_loop, num_loops * size_loop);
+    pnet_t n (num_loops * size_loop, num_loops * size_loop);
 
     boost::mt19937 engine;
 

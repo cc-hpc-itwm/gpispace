@@ -99,7 +99,7 @@ using petri_net::edge::TP;
 int
 main ()
 {
-  pnet_t n("test_u", 4,4);
+  pnet_t n (4,4);
 
   // a simple loop with up and down
 
