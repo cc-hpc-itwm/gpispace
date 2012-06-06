@@ -35,32 +35,34 @@ typedef std::string encoded_type;
 
 inline const requirement_list_t empty_req_list()
 {
-        static requirement_list_t e_req_list;
-        return e_req_list;
+  static requirement_list_t e_req_list;
+  return e_req_list;
 }
 
 struct IAgent
 {
-    virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() ) = 0;
-    virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
 
-    virtual bool finished(const id_type & id, const result_type & result) = 0;
-    virtual bool failed( const id_type& id
+  virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() ) = 0;
+  virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
+
+  virtual bool finished(const id_type & id, const result_type & result) = 0;
+  virtual bool failed( const id_type& id
                        , const result_type & result
                        , int error_code
                        , std::string const & reason
                        ) = 0;
-    virtual bool cancelled(const id_type & id) = 0;
 
-    virtual bool finished(const id_type & id, const result_type & result, const id_type& ) { return false; }
+  virtual bool cancelled(const id_type & id) = 0;
 
-    virtual ~IAgent () {}
+  virtual bool finished(const id_type & id, const result_type & result, const id_type& ) { return false; }
 
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive&, const unsigned int ){}
+  virtual ~IAgent () {}
 
-    virtual void notifyAppGui(const result_type & result) {};
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive&, const unsigned int ){}
+
+  virtual void notifyAppGui(const result_type & result) {};
 };
 
 #endif //IAGENT_HPP

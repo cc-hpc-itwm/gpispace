@@ -1,6 +1,6 @@
 // how to use named edges to swap two tokens, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 
 #include <cstdlib>
 
@@ -49,7 +49,11 @@ inline std::size_t operator == (const transition_t & x, const transition_t & y)
 typedef unsigned char token_t;
 
 typedef std::pair<unsigned int,std::string> edge_t;
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 namespace Function { namespace Transition
 {
@@ -113,21 +117,23 @@ static void marking (const pnet_t & n)
 
 static void fire (pnet_t & n)
 {
-  if (n.enabled_transitions().size() != 1)
-    throw std::runtime_error ("n.enabled_transitions().size() != 1");
+  if (n.num_can_fire() != 1)
+    {
+      throw std::runtime_error ("n.num_can_fire() != 1");
+    }
 
-  n.fire (n.enabled_transitions().first());
+  n.fire_first();
 }
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 using petri_net::eid_t;
 
 int
 main (int argc, char **)
 {
-  pnet_t n("test_s", 2,1);
+  pnet_t n (2,1);
 
   petri_net::pid_t pid_A (n.add_place (place_t ("A")));
   petri_net::pid_t pid_B (n.add_place (place_t ("B")));

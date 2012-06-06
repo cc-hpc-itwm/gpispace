@@ -603,7 +603,7 @@ namespace we { namespace type {
 
                           const connection_t net_conn (net.get_edge_info (p()));
 
-                          if (petri_net::is_pt_read (net_conn.type))
+                          if (petri_net::edge::is_pt_read (net_conn.type))
                             {
                               is_read = true;
                             }

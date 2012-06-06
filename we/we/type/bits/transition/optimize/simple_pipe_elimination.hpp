@@ -174,7 +174,7 @@ namespace we { namespace type {
 
             const eid_t eid (net.get_eid_in (tid, pid_A));
 
-            if (petri_net::is_pt_read (net.get_edge_info (eid).type))
+            if (petri_net::edge::is_pt_read (net.get_edge_info (eid).type))
               {
                 return fhg::util::Nothing<pid_pair_vec_type>();
               }

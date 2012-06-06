@@ -1,6 +1,6 @@
 // generic permute tokens, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 
 #include <cstdlib>
 
@@ -59,7 +59,11 @@ typedef char edge_right_t;
 
 typedef std::pair<edge_left_t,edge_right_t> edge_t;
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 static edge_right_t edge_descr ( const pnet_t & net
                                , const petri_net::eid_t & eid
@@ -104,12 +108,12 @@ static std::size_t fac (void)
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  if (n.enabled_transitions().size() != fac())
-    throw std::runtime_error ("n.enabled_transitions().size() != fac()");
+  if (n.num_can_fire() != fac())
+    {
+      throw std::runtime_error ("n.num_can_fire() != fac()");
+    }
 
-  petri_net::tid_t tid (n.enabled_transitions().random (engine));
-
-  n.fire (tid);
+  const petri_net::tid_t tid (n.fire_random (engine));
 
   marking (n, tid);
 };
@@ -133,7 +137,9 @@ main ()
 
   do
     {
-      petri_net::tid_t tid (n.add_transition (transition_t (transition++), TF(f)));
+      petri_net::tid_t tid (n.add_transition (transition_t (transition++)));
+
+      n.set_transition_function (tid, TF(f));
 
       petri_net::pid_t pid[k];
 
@@ -145,13 +151,15 @@ main ()
 
       for (std::size_t i (0); i < k; ++i)
         {
-          n.add_edge ( edge_t (edge++, elements[i])
-                     , petri_net::connection_t (petri_net::PT, tid, pid[i])
-                     );
+          n.add_edge
+            ( edge_t (edge++, elements[i])
+            , petri_net::connection_t (petri_net::edge::PT, tid, pid[i])
+            );
 
-          n.add_edge ( edge_t (edge++, perm[i])
-                     , petri_net::connection_t (petri_net::TP, tid, pid[i])
-                     );
+          n.add_edge
+            ( edge_t (edge++, perm[i])
+            , petri_net::connection_t (petri_net::edge::TP, tid, pid[i])
+            );
         }
     }
   while (std::next_permutation (perm, perm + k));

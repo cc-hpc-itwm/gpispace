@@ -5,7 +5,7 @@
 // everything, the result must be zero, since the accumulator is
 // initialized with -(the wanted result)
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
@@ -105,10 +105,10 @@ public:
 
         const package_id_t id (package_id ((*choice).second.first));
         bool all_equal (true);
-          
+
         for (++choice; choice.has_more() && all_equal; ++choice)
           all_equal = (id == package_id ((*choice).second.first));
-      
+
         if (all_equal)
           {
             ++cnt_map["cond_join: accepted"];
@@ -146,7 +146,11 @@ static transition_t mk_transition ( const std::string & name
 
 /* ************************************************************************* */
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 /* ************************************************************************* */
 
@@ -300,8 +304,8 @@ trans_join ( const pnet_t::input_t & input
 /* ************************************************************************* */
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()
@@ -312,32 +316,33 @@ main ()
   petri_net::pid_t pid_output (net.add_place (mk_place ("output")));
   petri_net::pid_t pid_split_input (net.add_place (mk_place ("split input")));
 
-  petri_net::tid_t tid_start
-    ( net.add_transition ( mk_transition ("start")
-                         , boost::bind ( &trans_start
-                                       , boost::ref (pid_split_input)
-                                       , boost::ref (pid_output)
-                                       , _1
-                                       , _2
-                                       )
-                         )
-    );
+  petri_net::tid_t tid_start (net.add_transition (mk_transition ("start")));
+
+  net.set_transition_function ( tid_start
+                              , boost::bind ( &trans_start
+                                            , boost::ref (pid_split_input)
+                                            , boost::ref (pid_output)
+                                            , _1
+                                            , _2
+                                            )
+                              );
 
   net.add_edge (mk_edge ("get input"), connection_t (PT, tid_start, pid_input));
   net.add_edge (mk_edge ("put split input"), connection_t (TP, tid_start, pid_split_input));
   net.add_edge (mk_edge ("put accumulator"), connection_t (TP, tid_start, pid_output));
 
-  petri_net::pid_t tid_split 
-    ( net.add_transition ( mk_transition ("step")
-                         , Function::Transition::Generic<token_t> (trans_split)
-                         )
+  petri_net::pid_t tid_split (net.add_transition (mk_transition ("step")));
+
+  net.set_transition_function
+    ( tid_split
+    , Function::Transition::Generic<token_t> (trans_split)
     );
 
-  petri_net::pid_t tid_join 
-    ( net.add_transition 
-      ( mk_transition ("sum", true)
-      , Function::Transition::Generic<token_t> (trans_join)
-      )
+  petri_net::pid_t tid_join (net.add_transition (mk_transition ("sum", true)));
+
+  net.set_transition_function
+    ( tid_join
+    , Function::Transition::Generic<token_t> (trans_join)
     );
 
   net.add_edge (mk_edge ("get input"), connection_t (PT, tid_split, pid_split_input));
@@ -346,11 +351,12 @@ main ()
     {
       petri_net::pid_t in (net.add_place (mk_place ("in")));
       petri_net::pid_t out (net.add_place (mk_place ("out")));
-      
-      petri_net::tid_t worker 
-        ( net.add_transition ( mk_transition ("work")
-                             , Function::Transition::PassWithFun<token_t>(work_fun)
-                             )
+
+      petri_net::tid_t worker (net.add_transition (mk_transition ("work")));
+
+      net.set_transition_function
+        ( worker
+        , Function::Transition::PassWithFun<token_t>(work_fun)
         );
 
       net.add_edge (mk_edge ("worker get"), connection_t (PT, worker, in));
@@ -374,12 +380,9 @@ main ()
 
     Timer_t timer ("calculate net");
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-//         if (net.enabled_transitions().elem (tid_join))
-//           net.fire (tid_join);
-//         else
-          net.fire_random(engine);
+        net.fire_random (engine);
         //        marking (net);
       }
   }

@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/type/token.hpp>
 #include <we/expr/parse/parser.hpp>
@@ -112,7 +112,11 @@ typedef unsigned int edge_t;
 
 // ************************************************************************* //
 
-typedef petri_net::net<place::type, transition_t, edge_t, token::type> pnet_t;
+typedef petri_net::net_with_transition_function< place::type
+                                               , transition_t
+                                               , edge_t
+                                               , token::type
+                                               > pnet_t;
 
 // ************************************************************************* //
 
@@ -244,7 +248,7 @@ static void dot ( std::ostream & s
 
       switch (connection.type)
         {
-        case petri_net::TP:
+        case petri_net::edge::TP:
           s << "t" << fhg::util::show (connection.tid)
             << " -> "
             << "p" << fhg::util::show (connection.pid)
@@ -253,7 +257,7 @@ static void dot ( std::ostream & s
             << endl
             ;
           break;
-        case petri_net::PT:
+        case petri_net::edge::PT:
           s << "p" << fhg::util::show (connection.pid)
             << " -> "
             << "t" << fhg::util::show (connection.tid)
@@ -262,7 +266,7 @@ static void dot ( std::ostream & s
             << endl
             ;
           break;
-        case petri_net::PT_READ:
+        case petri_net::edge::PT_READ:
           if (n.get_place (connection.pid).get_name() == "config")
             s << "p" << fhg::util::show (connection.pid)
               << "t" << fhg::util::show (connection.tid)
@@ -551,14 +555,20 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition = "true"
                                       )
 {
-  return net.add_transition
-    ( transition_t ( name
-                   , strip(expression)
-                   , condition::type
-                     ( strip (condition)
-                     , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+  const petri_net::tid_t tid
+    ( net.add_transition
+      ( transition_t ( name
+                     , strip(expression)
+                     , condition::type
+                       ( strip (condition)
+                       , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+                       )
                      )
-               )
+      )
+    );
+
+  net.set_transition_function
+    ( tid
     , TransitionFunction
       ( name
       , strip (expression)
@@ -566,6 +576,8 @@ static petri_net::tid_t mk_transition ( pnet_t & net
       , boost::bind(&place::signature<pnet_t>, boost::ref(net), _1)
       )
     );
+
+  return tid;
 }
 
 // ************************************************************************* //
@@ -599,9 +611,9 @@ mk_place ( pnet_t & net
 // ************************************************************************* //
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::PT_READ;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::PT_READ;
+using petri_net::edge::TP;
 
 namespace po = boost::program_options;
 

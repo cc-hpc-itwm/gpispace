@@ -1,6 +1,6 @@
 // a net, consisting of k independent loops, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include "timer.hpp"
 
 #include <cstdlib>
@@ -130,7 +130,11 @@ typedef node_t transition_t;
 typedef unsigned int edge_t;
 typedef unsigned char token_t;
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 using std::cout;
 using std::endl;
@@ -138,17 +142,21 @@ using std::endl;
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  if (n.enabled_transitions().empty())
-    throw std::runtime_error ("no enabled transition");
+  if (not n.can_fire())
+    {
+      throw std::runtime_error ("net cannot fire");
+    }
   else
-    n.fire_random(engine);
+    {
+      n.fire_random (engine);
+    }
 };
 
 int
 main ()
 {
   {
-    pnet_t n ("test_l", num_loops * size_loop, num_loops * size_loop);
+    pnet_t n (num_loops * size_loop, num_loops * size_loop);
 
     boost::mt19937 engine;
 
@@ -170,7 +178,7 @@ main ()
             n.add_edge
               ( e++
               , petri_net::connection_t
-                ( petri_net::PT
+                ( petri_net::edge::PT
                 , n.get_transition_id (node_t (l, i))
                 , n.get_place_id (node_t (l, i))
                 )
@@ -178,7 +186,7 @@ main ()
             n.add_edge
               ( e++
               , petri_net::connection_t
-                ( petri_net::TP
+                ( petri_net::edge::TP
                 , n.get_transition_id (node_t (l, i))
                 , n.get_place_id (node_t (l, (i + 1) % size_loop))
                 )

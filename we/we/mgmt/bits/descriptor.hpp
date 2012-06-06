@@ -377,7 +377,7 @@ namespace we
         bool is_done () const
         {
           lock_t lock(mutex_);
-          return (! activity_.has_enabled()) && (children_.size() == 0);
+          return (! activity_.can_fire()) && (children_.size() == 0);
         }
 
         inline
@@ -391,7 +391,7 @@ namespace we
         bool enabled () const
         {
           lock_t lock(mutex_);
-          return activity_.has_enabled();
+          return activity_.can_fire();
         }
 
         std::ostream & operator << (std::ostream &s) const
@@ -410,8 +410,8 @@ namespace we
           p << "     internal := "
             << activity_.transition().is_internal()
             << std::endl;
-          p << "      enabled := "
-            << activity_.has_enabled()
+          p << "     can_fire := "
+            << activity_.can_fire()
             << std::endl;
           p << "         done := "
             << is_done()

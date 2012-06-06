@@ -94,9 +94,9 @@ namespace we {
         // edges
         {
           using petri_net::connection_t;
-          using petri_net::PT;
-          using petri_net::PT_READ;
-          using petri_net::TP;
+          using petri_net::edge::PT;
+          using petri_net::edge::PT_READ;
+          using petri_net::edge::TP;
 
           edge_type e (0);
           map_reduce_subnet.add_edge (e++, connection_t ( PT, tid_init, pid_input ));
@@ -157,10 +157,10 @@ namespace we {
             const tid_t tid_w = map_reduce_subnet.add_transition (wrk_trans);
 
             // connect work in
-            map_reduce_subnet.add_edge (edge_t("work_in_"+fhg::util::show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
+            map_reduce_subnet.add_edge (edge_t("work_in_"+fhg::util::show(n)), petri_net::connection_t (petri_net::edge::PT, tid_w, pid_wi));
 
             // connect work out
-            map_reduce_subnet.add_edge (edge_t("work_out_" + fhg::util::show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
+            map_reduce_subnet.add_edge (edge_t("work_out_" + fhg::util::show(n)), petri_net::connection_t (petri_net::edge::TP, tid_w, pid_wo));
           }
 
           {
@@ -180,12 +180,12 @@ namespace we {
               cnt++;
             }
             tid_t tid_map = map_reduce_subnet.add_transition ( map_trans );
-            map_reduce_subnet.add_edge (edge_t("map"), petri_net::connection_t (petri_net::PT, tid_map, mr_sn_inp));
+            map_reduce_subnet.add_edge (edge_t("map"), petri_net::connection_t (petri_net::edge::PT, tid_map, mr_sn_inp));
 
             cnt = 0;
             for (typename hull_t::const_iterator i = hull_in.begin(); i != hull_in.end(); ++i)
             {
-              map_reduce_subnet.add_edge (edge_t("map_" + fhg::util::show(cnt)), petri_net::connection_t (petri_net::TP, tid_map, *i));
+              map_reduce_subnet.add_edge (edge_t("map_" + fhg::util::show(cnt)), petri_net::connection_t (petri_net::edge::TP, tid_map, *i));
               cnt++;
             }
           }
@@ -204,12 +204,12 @@ namespace we {
             red_trans.add_connections() ("o", mr_sn_out);
 
             tid_t tid_red = map_reduce_subnet.add_transition ( red_trans );
-            map_reduce_subnet.add_edge (edge_t("red"), petri_net::connection_t (petri_net::TP, tid_red, mr_sn_out));
+            map_reduce_subnet.add_edge (edge_t("red"), petri_net::connection_t (petri_net::edge::TP, tid_red, mr_sn_out));
 
             cnt = 0;
             for (typename hull_t::const_iterator o = hull_out.begin(); o != hull_out.end(); ++o)
             {
-              map_reduce_subnet.add_edge (edge_t("red_" + fhg::util::show(cnt)), petri_net::connection_t (petri_net::PT, tid_red, *o));
+              map_reduce_subnet.add_edge (edge_t("red_" + fhg::util::show(cnt)), petri_net::connection_t (petri_net::edge::PT, tid_red, *o));
               cnt++;
             }
           }
@@ -236,8 +236,8 @@ namespace we {
           //        map_reduce_sub_trans.connect_out (mr_out, mr_sn_out);
 
           tid_t tid_sub = map_reduce.add_transition( map_reduce_sub_trans );
-          map_reduce.add_edge (edge_t("i"), petri_net::connection_t (petri_net::PT, tid_sub, mr_inp));
-          map_reduce.add_edge (edge_t("o"), petri_net::connection_t (petri_net::TP, tid_sub, mr_out));
+          map_reduce.add_edge (edge_t("i"), petri_net::connection_t (petri_net::edge::PT, tid_sub, mr_inp));
+          map_reduce.add_edge (edge_t("o"), petri_net::connection_t (petri_net::edge::TP, tid_sub, mr_out));
 
           // dummy transition
           transition_t map_reduce_trans ("map-reduce", map_reduce, "true", true);

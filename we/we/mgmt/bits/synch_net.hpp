@@ -26,7 +26,7 @@ namespace we { namespace mgmt { namespace detail {
     boost::mt19937 engine;
 
   public:
-    synch_net (NET & _net) 
+    synch_net (NET & _net)
       : n (_net)
       , _extract(0)
       , _inject(0)
@@ -57,22 +57,16 @@ namespace we { namespace mgmt { namespace detail {
     {
       boost::shared_lock<boost::shared_mutex> lock (mutex);
 
-      return (_extract == _inject && n.enabled_transitions().empty());
+      return (_extract == _inject && not n.can_fire());
     }
 
-    bool has_enabled (void) const
+    bool can_fire (void) const
     {
       boost::shared_lock<boost::shared_mutex> lock (mutex);
 
-      return (!n.enabled_transitions().empty());
+      return n.can_fire();
     }
 
-	std::size_t num_enabled (void) const
-	{
-      boost::shared_lock<boost::shared_mutex> lock (mutex);
-
-	  return n.enabled_transitions().size();
-	}
   private:
 	synch_net (const synch_net & other);
 	synch_net & operator= (const synch_net & other);

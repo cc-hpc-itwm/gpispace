@@ -108,7 +108,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             const typename petri_net::connection_t &connection = net.get_edge_info(*it);
 
             switch (connection.type) {
-                case petri_net::PT: {
+                case petri_net::edge::PT: {
                     Place *place = find(places_, connection.pid);
                     Transition *transition = find(transitions_, connection.tid);
 
@@ -117,7 +117,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
                     break;
                 }
-                case petri_net::PT_READ: {
+                case petri_net::edge::PT_READ: {
                     Place *place = find(places_, connection.pid);
                     Transition *transition = find(transitions_, connection.tid);
 
@@ -126,7 +126,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     transition->addOutputPlace(place);
                     break;
                 }
-                case petri_net::TP: {
+                case petri_net::edge::TP: {
                     Transition *transition = find(transitions_, connection.tid);
                     Place *place = find(places_, connection.pid);
 

@@ -1,6 +1,6 @@
 // some measurements with the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/type/condition.hpp>
 #include "timer.hpp"
 
@@ -67,7 +67,11 @@ static const unsigned int num_fire (1000);
 static const unsigned int bisize (1000000);
 }
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 using std::cout;
 using std::endl;
@@ -76,7 +80,7 @@ int
 main ()
 {
   {
-    pnet_t n("test_b", nplace, ntrans);
+    pnet_t n (nplace, ntrans);
 
     {
       Timer_t timer ("add places", factor * nplace);
@@ -111,13 +115,13 @@ main ()
               const transition_t rand (r);
 
               n.add_edge ( edge_t(pair_t(p, r), true)
-                         , petri_net::connection_t ( petri_net::PT
+                         , petri_net::connection_t ( petri_net::edge::PT
                                                    , n.get_transition_id (rand)
                                                    , p
                                                    )
                          );
               n.add_edge ( edge_t(pair_t(r, p), false)
-                         , petri_net::connection_t ( petri_net::TP
+                         , petri_net::connection_t ( petri_net::edge::TP
                                                    , n.get_transition_id (rand)
                                                    , p
                                                    )
@@ -146,7 +150,7 @@ main ()
             {
               place_t rand (uniform (engine));
               n.add_edge( edge_t(pair_t(t, rand), false)
-                        , petri_net::connection_t (petri_net::TP, t, rand)
+                        , petri_net::connection_t (petri_net::edge::TP, t, rand)
                         );
             }
           catch (bijection::exception::already_there)
@@ -243,11 +247,9 @@ main ()
 
       for (unsigned int f(0); f < num_fire; ++f)
         {
-          const pnet_t::enabled_t& t (n.enabled_transitions());
-
-          if (!t.empty())
+          if (n.can_fire())
             {
-              n.fire_random(engine);
+              n.fire_random (engine);
 
               ++fired;
             }

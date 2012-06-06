@@ -38,11 +38,10 @@
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
 
-
 namespace sdpa { namespace daemon {
 	  class GenericDaemonActions {
 	  public:
-            virtual ~GenericDaemonActions() {}
+      virtual ~GenericDaemonActions() {}
 			virtual void action_configure(const sdpa::events::StartUpEvent&)=0;
 			virtual void action_config_ok(const sdpa::events::ConfigOkEvent&)=0;
 			virtual void action_config_nok(const sdpa::events::ConfigNokEvent&)=0;

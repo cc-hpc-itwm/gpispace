@@ -12,74 +12,25 @@
 #include <we/function/cond.hpp>
 #include <we/function/trans.hpp>
 #include <we/serialize/unordered_map.hpp>
-#include <we/serialize/unordered_set.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/util/cross.hpp>
 
-#include <fhg/util/show.hpp>
-
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/optional.hpp>
+#include <petri_net/edge.hpp>
+#include <petri_net/exception.hpp>
 
 #include <boost/function.hpp>
-#include <boost/foreach.hpp>
-
 #include <boost/serialization/nvp.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <stack>
 
 namespace petri_net
 {
-  namespace exception
-  {
-    class generic : public std::runtime_error
-    {
-    public:
-      explicit generic (const std::string& msg)
-        : std::runtime_error ("net: " + msg)
-      {}
-    };
-
-    class transition_not_enabled : public generic
-    {
-    public:
-      explicit transition_not_enabled (const std::string & msg)
-        : generic ("transition_not_enabled: " + msg)
-      {}
-    };
-
-    class no_such : public generic
-    {
-    public:
-      explicit no_such (const std::string & msg)
-        : generic ("no_such: " + msg)
-      {}
-    };
-  }
-
-  enum edge_type {PT,PT_READ,TP};
-
-  static inline bool is_pt_read (const edge_type & e)
-  {
-    return e == PT_READ;
-  }
-
-  static inline bool is_PT (const edge_type & et)
-  {
-    return (et == PT || et == PT_READ);
-  }
-
-  static inline edge_type pt_read (void)
-  {
-    return PT_READ;
-  }
-
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
-  typedef connection<edge_type, tid_t, pid_t> connection_t;
+  typedef connection<edge::type, tid_t, pid_t> connection_t;
 
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
 // single map<tid_t,(X,Y)>?
@@ -112,12 +63,9 @@ public:
   typedef typename tf_traits::place_via_edge_t place_via_edge_t;
   typedef typename tf_traits::token_input_t token_input_t;
   typedef typename tf_traits::input_t input_t;
-
-  typedef typename tf_traits::output_descr_t output_descr_t;
   typedef typename tf_traits::output_t output_t;
 
-  typedef typename tf_traits::fun_t trans_t;
-  typedef boost::unordered_map<tid_t, trans_t> trans_map_t;
+  typedef typename tf_traits::output_descr_t output_descr_t;
 
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits<token_type> cd_traits;
@@ -148,7 +96,6 @@ private:
 
   // *********************************************************************** //
 
-  std::string name;
   bijection::bijection<place_type,pid_t> pmap; // place_type <-> internal id
   bijection::bijection<transition_type,tid_t> tmap; // transition_type <-> internal id
   bijection::bijection<edge_type,eid_t> emap; // edge_type <-> internal id
@@ -164,8 +111,6 @@ private:
   enabled_choice_t enabled_choice_consume;
   enabled_choice_t enabled_choice_read;
 
-  trans_map_t trans;
-
   in_map_t in_map;
 
   adjacent_transition_size_map_type in_to_transition_size_map;
@@ -177,7 +122,6 @@ private:
   template<typename Archive>
   void serialize (Archive & ar, const unsigned int)
   {
-    ar & BOOST_SERIALIZATION_NVP(name);
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
     ar & BOOST_SERIALIZATION_NVP(emap);
@@ -188,11 +132,6 @@ private:
     ar & BOOST_SERIALIZATION_NVP(enabled);
     ar & BOOST_SERIALIZATION_NVP(enabled_choice_consume);
     ar & BOOST_SERIALIZATION_NVP(enabled_choice_read);
-    // WORK HERE: serialize the functions
-    // AP: we do not need this with the new transitions
-    //     because the function is already encapsulated
-    //
-    //    ar & BOOST_SERIALIZATION_NVP(trans);
     ar & BOOST_SERIALIZATION_NVP(in_map);
  }
 
@@ -301,7 +240,7 @@ private:
                 const token_via_edge_t & token_via_edge (choice.val());
                 const eid_t & eid (token_via_edge.second);
 
-                if (is_pt_read (get_edge_info (eid).type))
+                if (edge::is_pt_read (get_edge_info (eid).type))
                   {
                     enabled_choice_read[tid].push_back (*choice);
                   }
@@ -340,7 +279,7 @@ private:
                                    , const connection_t & connection
                                    )
   {
-    if (is_PT (connection.type))
+    if (edge::is_PT (connection.type))
       {
         recalculate_enabled (connection.tid, connection.pid, eid);
       }
@@ -446,9 +385,8 @@ private:
   // *********************************************************************** //
 
 public:
-  net (const std::string & _name = "noname", const pid_t & _places = 10, const tid_t & _transitions = 10)
-    : name (_name)
-    , pmap ("place")
+  net (const pid_t & _places = 10, const tid_t & _transitions = 10)
+    : pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
     , connection_map ()
@@ -458,7 +396,6 @@ public:
     , enabled ()
     , enabled_choice_consume ()
     , enabled_choice_read ()
-    , trans ()
     , in_map ()
     , in_to_transition_size_map ()
     , out_of_transition_size_map ()
@@ -507,11 +444,6 @@ public:
     return pmap.add (place);
   }
 
-  void set_transition_function (const tid_t & tid, const trans_t & f)
-  {
-    trans[tid] = f;
-  }
-
   void set_transition_priority (const tid_t & tid, const prio_t & prio)
   {
     enabled.set_priority (tid, prio);
@@ -522,14 +454,9 @@ public:
     return enabled.get_priority (tid);
   }
 
-  tid_t add_transition
-  ( const transition_type & transition
-  , const trans_t & tf = Function::Transition::Default<token_type>()
-  )
+  tid_t add_transition (const transition_type & transition)
   {
     const tid_t tid (tmap.add (transition));
-
-    trans[tid] = tf;
 
     calculate_enabled (tid);
 
@@ -539,7 +466,7 @@ public:
   eid_t add_edge (const edge_type & edge, const connection_t & connection)
   {
     const eid_t eid
-      ( (is_PT (connection.type))
+      ( (edge::is_PT (connection.type))
       ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt, connection.tid)
       : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp, connection.tid)
       );
@@ -641,7 +568,7 @@ public:
       {
         if (*pit == pid)
           {
-            return is_pt_read (get_edge_info (pit()).type);
+            return edge::is_pt_read (get_edge_info (pit()).type);
           }
       }
 
@@ -658,7 +585,7 @@ public:
 
     const connection_t connection (it->second);
 
-    if (is_PT (connection.type))
+    if (edge::is_PT (connection.type))
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
         in_to_transition_size_map.erase (connection.tid);
@@ -746,8 +673,6 @@ public:
 
     tmap.erase (tid);
 
-    trans.erase (tid);
-
     enabled.erase (tid);
     enabled.erase_priority (tid);
     in_map.erase (tid);
@@ -823,11 +748,19 @@ public:
     return m->second;
   }
 
-  const enabled_t & enabled_transitions (void) const
+protected:
+  const tid_t& enabled_first (void) const
   {
-    return enabled;
+    return enabled.first();
   }
 
+  template<typename Engine>
+  const tid_t& enabled_random (Engine& engine) const
+  {
+    return enabled.random (engine);
+  }
+
+public:
   void put_token (const pid_t & pid, const token_type & token)
   {
     token_place_rel.add (token, pid);
@@ -910,6 +843,16 @@ public:
   }
 
   // FIRE
+  std::size_t num_can_fire (void) const
+  {
+    return enabled.size();
+  }
+
+  bool can_fire () const
+  {
+    return not enabled.empty();
+  }
+
   bool get_can_fire (const tid_t & tid) const
   {
     return enabled.elem(tid);
@@ -932,16 +875,6 @@ public:
     {}
   };
 
-  output_t run_activity (const activity_t & activity) const
-  {
-    const typename trans_map_t::const_iterator f (trans.find (activity.tid));
-
-    if (f == trans.end())
-      throw exception::no_such ("transition id in run_activity");
-
-    return f->second(activity.input, activity.output_descr);
-  }
-
   template <typename Output>
   void inject_activity_result (Output const & output)
   {
@@ -952,7 +885,7 @@ public:
       put_token (out->second, out->first);
   }
 
-private:
+protected:
   activity_t extract_activity (const tid_t tid)
   {
     input_t input;
@@ -981,7 +914,7 @@ private:
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
 
-        assert (!is_pt_read (get_edge_info (eid).type));
+        assert (not edge::is_pt_read (get_edge_info (eid).type));
 
         delete_one_token (pid, token);
       }
@@ -1018,20 +951,6 @@ public:
   activity_t extract_activity_random (Engine & engine)
   {
     return extract_activity (enabled.random (engine));
-  }
-
-  tid_t fire (const tid_t & tid)
-  {
-    const activity_t activity (extract_activity (tid));
-    const output_t output (run_activity (activity));
-    inject_activity_result (output);
-    return tid;
-  }
-
-  template<typename Engine>
-  tid_t fire_random (Engine & engine)
-  {
-    return fire (enabled.random (engine));
   }
 };
 } // namespace petri_net
