@@ -53,9 +53,11 @@ struct my_state_t
 {
   my_state_t ( fs::path const & dir
              , fs::path const & file
+             , std::size_t com_size
              )
     : socket_dir (dir)
     , capi (file.string())
+    , m_com_size (com_size)
   {}
 
   // handler functions
@@ -65,8 +67,69 @@ struct my_state_t
     return 0;
   }
 
+  int get_handle_descriptor( gpi::pc::type::handle_t const & hdl
+                           , gpi::pc::type::handle::descriptor_t & desc
+                           )
+  {
+    gpi::pc::type::handle::list_t handles
+      (capi.list_allocations());
+    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
+    {
+      if (d.id == hdl)
+      {
+        desc = d;
+        return 0;
+      }
+    }
+
+    return -ESRCH;
+  }
+
+  int setup_transfer_buffer ()
+  {
+    // register segment
+    m_shm_com = capi.register_segment ( "gpish"
+                                      , m_com_size
+                                      , gpi::pc::type::segment::F_EXCLUSIVE
+                                      | gpi::pc::type::segment::F_FORCE_UNLINK
+                                      );
+    m_shm_com_hdl = capi.alloc ( m_shm_com
+                               , m_com_size
+                               , "gpish-shm-com"
+                               , gpi::pc::type::handle::F_EXCLUSIVE
+                               );
+    m_shm_com_ptr = (char*)capi.ptr(m_shm_com_hdl);
+
+    m_gpi_com_hdl = capi.alloc ( 1 // GPI
+                               , m_com_size
+                               , "gpish-gpi-com"
+                               , 0
+                               );
+
+    return 0;
+  }
+
+  size_t adjust_size_to_global_alloc(size_t total_size)
+  {
+    size_t nodes = capi.collect_info().nodes;
+    size_t per_node = (total_size / nodes);
+    per_node       += (total_size - nodes*per_node);
+    return per_node;
+  }
+
+  char*  com_buffer() { return m_shm_com_ptr; }
+  size_t com_size() const   { return m_com_size; }
+  gpi::pc::type::handle_t shm_com_hdl() const { return m_shm_com_hdl; }
+  gpi::pc::type::handle_t gpi_com_hdl() const { return m_gpi_com_hdl; }
+
   fs::path socket_dir;
   gpi::pc::client::api_t capi;
+private:
+  std::size_t                 m_com_size;
+  gpi::pc::type::segment_id_t m_shm_com;
+  gpi::pc::type::handle_t     m_shm_com_hdl;
+  char                       *m_shm_com_ptr;
+  gpi::pc::type::handle_t     m_gpi_com_hdl;
 };
 
 typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
@@ -80,11 +143,18 @@ static int interrupt_shell (int)
   return 0;
 }
 
-static void initialize_state (fs::path const & socket_dir, fs::path const & socket_path);
+static void initialize_state ( fs::path const & socket_dir
+                             , fs::path const & socket_path
+                             , std::size_t com_size
+                             );
 static void initialize_shell (int ac, char *av[]);
 
 static void shutdown_state ();
 static void shutdown_shell ();
+
+static void adjust_global_handle_sizes ( shell_t & sh
+                                       , gpi::pc::type::handle::descriptor_t &
+                                       );
 
 // shell functions
 static int cmd_help (shell_t::argv_t const & av, shell_t & sh);
@@ -130,11 +200,23 @@ int main (int ac, char **av)
   fs::path socket_path;
   fs::path config_file
     (std::string(getenv("HOME")) + "/.sdpa/configs/gpi.rc");
+  std::size_t com_size (16 * (1 << 20));
 
   desc.add_options ()
     ("help,h", "this message")
+
     ("socket,s", po::value<fs::path>(&socket_path), "path to the gpi socket")
-    ("config,c", po::value<fs::path>(&config_file)->default_value(config_file), "path to the config file")
+
+    ( "config,c"
+    , po::value<fs::path>(&config_file)->default_value(config_file)
+    , "path to the config file"
+    )
+
+    ( "com-size"
+    , po::value<std::size_t>(&com_size)->default_value(com_size)
+    , "set the size of the communication buffer, if 0, no buffer "
+      "will be used at all"
+    )
     ("list,l", "list available sockets")
     ("version,V", "print version")
     ;
@@ -199,7 +281,7 @@ int main (int ac, char **av)
     }
   }
 
-  initialize_state (socket_dir, socket_path);
+  initialize_state (socket_dir, socket_path, (16 * (1<<20)));
   initialize_shell (ac, av);
 
   shell_t::get().run();
@@ -215,17 +297,19 @@ int main (int ac, char **av)
 
 void initialize_state ( fs::path const & socket_dir
                       , fs::path const & socket_file
+                      , std::size_t com_size
                       )
 {
   if (state) delete state;
   // set up state
-  state = new my_state_t (socket_dir, socket_file);
+  state = new my_state_t (socket_dir, socket_file, com_size);
 
   if (fs::exists (socket_file))
   {
     try
     {
       state->capi.start ();
+      state->setup_transfer_buffer();
     }
     catch (std::exception const & ex)
     {
@@ -258,8 +342,8 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("socket", &cmd_socket, "list available sockets");
   sh.add_command("status", &cmd_status, "print internal status information");
   sh.add_command("gc", &cmd_gc, "garbage collect");
-  sh.add_command("save", &cmd_save, "save an attached segment to a file");
-  sh.add_command("load", &cmd_load, "load a file into a segment");
+  sh.add_command("save", &cmd_save, "save a handle to disk");
+  sh.add_command("load", &cmd_load, "load a file into a handle");
   sh.add_command("set", &cmd_set, "set or list shell environment");
   sh.add_command("unset", &cmd_unset, "unset variables");
 
@@ -378,6 +462,7 @@ int cmd_open (shell_t::argv_t const & av, shell_t & sh)
     try
     {
       sh.state().capi.start ();
+      state->setup_transfer_buffer();
     }
     catch (std::exception const & ex)
     {
@@ -459,168 +544,168 @@ int cmd_set (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-static bool is_handle(std::string const &s)
-{
-  try
-  {
-    boost::lexical_cast<gpi::pc::type::handle_t>(s);
-    return true;
-  } catch (std::exception const &)
-  {
-    return false;
-  }
-}
-
 int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.size() < 3)
+  if (av.size() < 2)
   {
-    std::cerr << "usage: save <segment|handle> <path> [force]" << std::endl;
+    std::cerr << "usage: save handle[+offset] [path]" << std::endl;
     return 1;
   }
 
-  // force = sh.state.env.get<bool>("save.force");
-  bool force (av.size() > 3 && av[3] == "force");
-  const fs::path path (av[2]);
-  if (fs::exists (path) && !force)
+  gpi::pc::type::memory_location_t src;
+  try
   {
-    std::cerr << "the file " << path << " does already exist!" << std::endl;
-    return 1;
+    src = boost::lexical_cast<gpi::pc::type::memory_location_t>(av[1]);
+  }
+  catch (std::exception const &ex)
+  {
+    std::cerr << "invalid source: " << av[1]
+              << ": " << ex.what()
+              << std::endl;
+    return -EINVAL;
   }
 
-  gpi::pc::client::api_t::segment_ptr seg;
-  gpi::pc::type::segment_id_t seg_id(0);
-  std::size_t offset(0);
-  std::size_t amount(0);
-  if (is_handle(av[1]))
+  gpi::pc::type::handle::descriptor_t d;
+  if (sh.state().get_handle_descriptor(src.handle, d) < 0)
   {
-    gpi::pc::type::handle_t hdl
-      (boost::lexical_cast<gpi::pc::type::handle_t>(av[1]));
-    // translate handle to segment
-    gpi::pc::type::handle::list_t handles
-      (sh.state().capi.list_allocations());
-    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
-    {
-      if (d.id == hdl)
-      {
-        seg_id = d.segment;
-        try { seg = sh.state().capi.segments().at(seg_id); } catch (...){}
-        offset = d.offset;
-        amount = d.size;
-        break;
-      }
-    }
-    if (! seg)
-    {
-      std::cerr << "cannot access segment directly: " << seg_id << std::endl;
-      return 2;
-    }
+    std::cerr << "no such handle: " << src.handle << std::endl;
+    return -ESRCH;
+  }
+  adjust_global_handle_sizes (sh, d);
+
+  fs::path file_path;
+  if (av.size() > 2)
+  {
+    file_path = av[2];
   }
   else
   {
-    try
-    {
-      seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t>(av[1]);
-      seg = sh.state().capi.segments().at(seg_id);
-      offset = 0;
-      amount = seg->size();
-    }
-    catch (...)
-    {
-      std::cerr << "invalid segment id or not attached to: " << av[1] << std::endl;
-      return 2;
-    }
+    file_path = boost::lexical_cast<std::string>(src.handle);
   }
 
-  std::ofstream ofs (path.string().c_str());
-  ofs.write (seg->ptr<char>() + offset, amount);
-  ofs.close ();
-  std::cout << "wrote " << amount << " bytes" << std::endl;
+  std::ofstream ofs;
+  ofs.open(file_path.string().c_str(), std::ios::binary | std::ios::trunc);
+  if (!ofs)
+  {
+    std::cerr << "could not open file for writing: " << file_path << std::endl;
+    return -EIO;
+  }
+
+  gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
+  gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
+
+  while (src.offset < d.size)
+  {
+    std::size_t to_write = std::min( sh.state().com_size()
+                                   , d.size - src.offset
+                                   );
+    // copy&wait to gpi_com area
+    sh.state().capi.memcpy(gpi_com_buf, src,         to_write, 0);
+    sh.state().capi.wait(0);
+
+    // copy&wait to shm_com area
+    sh.state().capi.memcpy(shm_com_buf, gpi_com_buf, to_write, 0);
+    sh.state().capi.wait(0);
+
+    ofs.write(sh.state().com_buffer(), to_write);
+
+    src.offset += to_write;
+  }
   return 0;
 }
 
 int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.size() != 3)
+  if (av.size() < 2)
   {
-    std::cerr << "usage: load <segment|handle> <path>" << std::endl;
+    std::cerr << "usage: load <path> [handle[+offset]]" << std::endl;
     return 1;
   }
 
-  const fs::path path (av[2]);
+  const fs::path path (av[1]);
   if (! fs::exists (path))
   {
     std::cerr << "no such file or directory: " << path << std::endl;
-    return 1;
+    return -EIO;
   }
 
-  gpi::pc::client::api_t::segment_ptr seg;
-  gpi::pc::type::segment_id_t seg_id(0);
-  std::size_t offset(0);
-  std::size_t amount(0);
-  if (is_handle(av[1]))
-  {
-    gpi::pc::type::handle_t hdl
-      (boost::lexical_cast<gpi::pc::type::handle_t>(av[1]));
-    // translate handle to segment
-    gpi::pc::type::handle::list_t handles
-      (sh.state().capi.list_allocations());
-    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
-    {
-      if (d.id == hdl)
-      {
-        seg_id = d.segment;
-        try { seg = sh.state().capi.segments().at(seg_id); } catch (...){}
-        offset = d.offset;
-        amount = d.size;
-        break;
-      }
-    }
-    if (! seg)
-    {
-      std::cerr << "cannot access segment directly: " << seg_id << std::endl;
-      return 2;
-    }
-  }
-  else
-  {
-    try
-    {
-      seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t>(av[1]);
-      seg = sh.state().capi.segments().at(seg_id);
-      offset = 0;
-      amount = seg->size();
-    }
-    catch (...)
-    {
-      std::cerr << "invalid segment id or not attached to: " << av[1] << std::endl;
-      return 2;
-    }
-  }
-
-  // TODO check filesize
   std::ifstream ifs;
   ifs.open(path.string().c_str(), std::ios::binary);
   if (!ifs)
   {
     std::cerr << "could not open file for reading: " << path << std::endl;
-    return 3;
+    return -EIO;
   }
 
-  ifs.seekg(0, std::ios::end);
-  std::size_t filesize (ifs.tellg());
-  ifs.seekg(0, std::ios::beg);
+  std::size_t file_size = fs::file_size(path);
 
-  if (filesize > amount)
+  gpi::pc::type::memory_location_t dst;
+  if (av.size() > 2)
   {
-    std::cerr << "warning: the file is larger than the destination: "
-              << filesize << " > " << amount
-              << std::endl;
+    try
+    {
+      dst = boost::lexical_cast<gpi::pc::type::memory_location_t>(av[2]);
+    }
+    catch (std::exception const &ex)
+    {
+      std::cerr << "invalid destination: " << av[1]
+                << ": " << ex.what()
+                << std::endl;
+      return -EINVAL;
+    }
+
+    gpi::pc::type::handle::descriptor_t d;
+    if (sh.state().get_handle_descriptor(dst.handle, d) < 0)
+    {
+      std::cerr << "no such handle: " << dst.handle << std::endl;
+      return -ESRCH;
+    }
+
+    if (file_size > d.size)
+    {
+      std::cerr << "warning: the file is larger than the destination provides: "
+                << file_size << " > " << d.size
+                << std::endl;
+    }
+  }
+  else
+  {
+    dst.handle =
+      sh.state().capi.alloc( 1
+                           , sh.state().adjust_size_to_global_alloc(file_size)
+                           , path.string()
+                           , gpi::pc::type::handle::F_GLOBAL
+                           | gpi::pc::type::handle::F_PERSISTENT
+                           );
+    dst.offset = 0;
   }
 
-  memset (seg->ptr<char>() + offset, 0, amount);
-  ifs.read(seg->ptr<char>() + offset, amount);
-  std::cout << "read " << filesize << " bytes" << std::endl;
+  // read data chunk from file to shm
+
+  std::size_t offset (0);
+  gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
+  gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
+
+  while (offset < file_size)
+  {
+    std::size_t to_read = std::min( sh.state().com_size()
+                                  , file_size - offset
+                                  );
+    ifs.read(sh.state().com_buffer(), to_read);
+    std::size_t read_bytes = ifs.gcount();
+
+    // copy&wait to gpi_com area
+    sh.state().capi.memcpy(gpi_com_buf, shm_com_buf, read_bytes, 0);
+    sh.state().capi.wait(0);
+
+    // copy&wait to actual dst
+    sh.state().capi.memcpy(dst,         gpi_com_buf, read_bytes, 0);
+    sh.state().capi.wait(0);
+
+    offset     += read_bytes;
+    dst.offset += read_bytes;
+  }
+
   return 0;
 }
 
@@ -1044,14 +1129,7 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
         gpi::flag::unset (flags, gpi::pc::type::handle::F_GLOBAL);
         break;
       case 'g':
-        {
-          gpi::flag::set (flags, gpi::pc::type::handle::F_GLOBAL);
-          size_t nodes = sh.state().capi.collect_info().nodes;
-          size_t per_node = (size / nodes);
-          per_node       += (size - per_node*nodes);
-          size = per_node;
-          //          size = (size / num_nodes) + (size - (size/num_nodes)*num_nodes);
-        }
+        gpi::flag::set (flags, gpi::pc::type::handle::F_GLOBAL);
         break;
       case 'p':
         gpi::flag::set (flags, gpi::pc::type::handle::F_PERSISTENT);
@@ -1061,6 +1139,12 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
           return 2;
         }
     }
+  }
+
+  // adjust sizes in case of global allocations
+  if (gpi::flag::is_set(flags, gpi::pc::type::handle::F_GLOBAL))
+  {
+    size = sh.state().adjust_size_to_global_alloc(size);
   }
 
   gpi::pc::type::handle_id_t handle
@@ -1172,16 +1256,6 @@ int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-void adjust_global_handle_sizes ( shell_t & sh
-                                , gpi::pc::type::handle::descriptor_t & desc
-                                )
-{
-  if (gpi::flag::is_set (desc.flags, gpi::pc::type::handle::F_GLOBAL))
-  {
-    desc.size *= sh.state().capi.collect_info().nodes;
-  }
-}
-
 int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
 {
   // TODO: add sort criteria (created, accessed, name, size, etc.)
@@ -1256,3 +1330,14 @@ path_list_t collect_sockets (fs::path const & prefix)
   }
   return paths;
 }
+
+static void adjust_global_handle_sizes ( shell_t & sh
+                                       , gpi::pc::type::handle::descriptor_t & d
+                                       )
+{
+  if (gpi::flag::is_set (d.flags, gpi::pc::type::handle::F_GLOBAL))
+  {
+    d.size *= sh.state().capi.collect_info().nodes;
+  }
+}
+
