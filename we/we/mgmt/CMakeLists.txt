@@ -4,7 +4,6 @@ set (hdrs
   context.hpp
   exception.hpp
   layer.hpp
-  parser.hpp
   )
 
 install(FILES ${hdrs}
