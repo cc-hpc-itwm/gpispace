@@ -132,6 +132,12 @@ private:
   gpi::pc::type::handle_t     m_gpi_com_hdl;
 };
 
+static void print_progress( FILE *fp
+                          , const std::size_t current
+                          , const std::size_t total
+                          , const std::size_t width = 77
+                          );
+
 typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
 
 static my_state_t *state (NULL);
@@ -596,6 +602,8 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 
   while (src.offset < d.size)
   {
+    print_progress(stderr, src.offset, d.size);
+
     std::size_t to_write = std::min( sh.state().com_size()
                                    , d.size - src.offset
                                    );
@@ -611,6 +619,9 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 
     src.offset += to_write;
   }
+  print_progress(stderr, src.offset, d.size);
+  fprintf(stderr, "\n");
+
   return 0;
 }
 
@@ -680,6 +691,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
     dst.offset = 0;
   }
 
+  std::cout << dst << std::endl;
+
   // read data chunk from file to shm
 
   std::size_t offset (0);
@@ -688,6 +701,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   while (offset < file_size)
   {
+    print_progress (stderr, offset, file_size);
+
     std::size_t to_read = std::min( sh.state().com_size()
                                   , file_size - offset
                                   );
@@ -705,6 +720,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
     offset     += read_bytes;
     dst.offset += read_bytes;
   }
+  print_progress (stderr, offset, file_size);
+  fprintf(stderr, "\n");
 
   return 0;
 }
@@ -1341,3 +1358,25 @@ static void adjust_global_handle_sizes ( shell_t & sh
   }
 }
 
+static void print_progress( FILE *fp
+                          , const std::size_t current
+                          , const std::size_t total
+                          , const std::size_t bar_length
+                          )
+{
+  double percent_done = (double)(current) / (double)(total);
+  int    filled_part = round(percent_done * bar_length);
+
+  fprintf(stderr, "%3.0f%% [", percent_done*100);
+  int pos=0;
+  for (; pos < filled_part; ++pos)
+  {
+    fprintf(stderr, "=");
+  }
+  for (; pos < bar_length; ++pos)
+  {
+    fprintf(stderr, " ");
+  }
+  fprintf(stderr, "]\r");
+  fflush(stderr);
+}
