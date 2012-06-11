@@ -648,8 +648,6 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
     return -EIO;
   }
 
-  std::size_t file_size = fs::file_size(path);
-
   gpi::pc::type::memory_location_t dst;
   if (av.size() > 2)
   {
@@ -672,15 +670,19 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
       return -ESRCH;
     }
 
-    if (file_size > d.size)
+    adjust_global_handle_sizes(sh, d);
+    if (dst.offset > d.size)
     {
-      std::cerr << "warning: the file is larger than the destination provides: "
-                << file_size << " > " << d.size
+      std::cerr << "invalid destination: " << dst
+                << ": " << "offset is larger than size"
                 << std::endl;
+      return -EINVAL;
     }
   }
   else
   {
+    std::size_t file_size = fs::file_size(path);
+
     dst.handle =
       sh.state().capi.alloc( 1
                            , sh.state().adjust_size_to_global_alloc(file_size)
@@ -699,13 +701,20 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
 
-  while (offset < file_size)
+  gpi::pc::type::handle::descriptor_t handle_descriptor;
+  sh.state().get_handle_descriptor(dst.handle, handle_descriptor);
+  adjust_global_handle_sizes(sh, handle_descriptor);
+
+  std::size_t total_to_read = handle_descriptor.size - dst.offset;
+
+  while (ifs.good() && (offset < total_to_read))
   {
-    print_progress (stderr, offset, file_size);
+    print_progress (stderr, offset, total_to_read);
 
     std::size_t to_read = std::min( sh.state().com_size()
-                                  , file_size - offset
+                                  , total_to_read - offset
                                   );
+
     ifs.read(sh.state().com_buffer(), to_read);
     std::size_t read_bytes = ifs.gcount();
 
@@ -720,8 +729,16 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
     offset     += read_bytes;
     dst.offset += read_bytes;
   }
-  print_progress (stderr, offset, file_size);
+
+  print_progress (stderr, offset, total_to_read);
   fprintf(stderr, "\n");
+
+  if (offset < total_to_read)
+  {
+    std::cerr << "warning: handle was not completely filled: "
+              << "read " << offset << "/" << total_to_read << " bytes"
+              << std::endl;
+  }
 
   return 0;
 }
