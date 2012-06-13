@@ -83,13 +83,30 @@ public:
   {
     try
     {
-      api->free(m_scr_hdl);
-      api->free(m_shm_hdl);
-      api->unregister_segment(m_shm_id);
+      if (m_scr_hdl)
+        api->free(m_scr_hdl);
     }
     catch (std::exception const &ex)
     {
-      LOG(WARN, "gpi_compat plugin could not clean up GPI allocations");
+      LOG(WARN, "gpi_compat plugin could not clean up scratch handle");
+    }
+    try
+    {
+      if (m_shm_hdl)
+        api->free(m_shm_hdl);
+    }
+    catch (std::exception const &ex)
+    {
+      LOG(WARN, "gpi_compat plugin could not clean up shm handle");
+    }
+    try
+    {
+      if (m_shm_id)
+        api->unregister_segment(m_shm_id);
+    }
+    catch (std::exception const &ex)
+    {
+      LOG(WARN, "gpi_compat plugin could not unregister segment");
     }
 
     m_shm_ptr = 0;
