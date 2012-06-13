@@ -10,6 +10,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/plugin/plugin.hpp>
 
 class GPICompatPluginImpl;
@@ -176,6 +177,11 @@ private:
 
     gpi_info = api->collect_info();
 
+    if (0 == m_shm_size)
+    {
+      return 0;
+    }
+
     // register segment
     m_shm_id = api->register_segment ( m_segment_name
                                      , m_shm_size
@@ -317,6 +323,10 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = 0;
 
+  fhg_assert (0 != gpi_compat->m_scr_size);
+  fhg_assert (0 != gpi_compat->m_scr_hdl);
+  fhg_assert (0 != gpi_compat->m_shm_hdl);
+
   gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
   gpi::pc::type::size_t remaining (size);
 
@@ -385,6 +395,10 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
   }
   static const gpi::pc::type::queue_id_t queue = 1;
 
+  fhg_assert (0 != gpi_compat->m_scr_size);
+  fhg_assert (0 != gpi_compat->m_scr_hdl);
+  fhg_assert (0 != gpi_compat->m_shm_hdl);
+
   gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
   gpi::pc::type::size_t remaining (size);
 
@@ -451,6 +465,10 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
     throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   static const gpi::pc::type::queue_id_t queue = 2;
+
+  fhg_assert (0 != gpi_compat->m_scr_size);
+  fhg_assert (0 != gpi_compat->m_shm_hdl);
+
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(handle, fvmOffset)
           , gpi::pc::type::memory_location_t(gpi_compat->m_shm_hdl, shmemOffset)
@@ -470,6 +488,10 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
     throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
   }
   static const gpi::pc::type::queue_id_t queue = 3;
+
+  fhg_assert (0 != gpi_compat->m_scr_size);
+  fhg_assert (0 != gpi_compat->m_shm_hdl);
+
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(gpi_compat->m_shm_hdl, shmemOffset)
           , gpi::pc::type::memory_location_t(handle, fvmOffset)
