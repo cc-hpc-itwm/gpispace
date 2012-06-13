@@ -30,7 +30,7 @@ public:
     try
     {
       m_shm_size = boost::lexical_cast<fvmSize_t>
-        (fhg_kernel()->get("shm_size", "536870912"));
+        (fhg_kernel()->get<std::size_t>("shm_size", 128U * (1<<20)));
     }
     catch (std::exception const & ex)
     {
@@ -41,7 +41,7 @@ public:
     try
     {
       m_scr_size = boost::lexical_cast<fvmSize_t>
-        (fhg_kernel()->get("com_size", "16777216")); // 16MB
+        (fhg_kernel()->get<std::size_t>("com_size", 16U * (1<<20)));
     }
     catch (std::exception const & ex)
     {
