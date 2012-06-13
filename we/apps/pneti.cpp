@@ -53,6 +53,7 @@ main (int argc, char ** argv)
   desc.add_options()
     ( "help,h", "this message")
     ( "version,V", "print version information")
+    ( "revision", "print revision information")
     ( "input,i"
     , po::value<std::string>(&input)->default_value(input)
     , "input file name, - for stdin"
@@ -85,10 +86,14 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
   {
-    std::cout << fhg::project_version()
-              << " SHA: " << fhg::project_revision()
-              << std::endl
-      ;
+    std::cout << fhg::project_version() << std::endl;
+    return 0;
+  }
+
+  if (vm.count("revision"))
+  {
+    std::cout << fhg::project_revision() << std::endl;
+    return 0;
   }
 
   if (input == "-")
