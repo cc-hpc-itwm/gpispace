@@ -61,6 +61,8 @@ main (int argc, char ** argv)
     ;
 
   po::positional_options_description p;
+  p.add("input", -1);
+
   po::variables_map vm;
   try
   {
