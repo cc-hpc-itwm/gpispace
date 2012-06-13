@@ -80,6 +80,12 @@ namespace fhg
         }
       }
 
+      template <typename T>
+      T get(std::string const & key, T const & dflt) const
+      {
+        return get<T>(key, boost::lexical_cast<std::string>(dflt));
+      }
+
       virtual void start_completed(int) = 0;
 
       virtual int load_plugin (std::string const &path) = 0;
