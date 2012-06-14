@@ -6,10 +6,37 @@
 
 #include <lua.hpp>
 #include "LuaBridge/LuaBridge.h"
+#include "LuaBridge/RefCountedObject.h"
 
 #include <we/we.hpp>
 
 #define foreach BOOST_FOREACH
+
+namespace luabridge {
+
+      template <class T>
+      struct Stack <RefCountedObject<T> >
+      {
+        static void push (lua_State* L, RefCountedObject<T> p)
+        {
+          if (p) {
+          } else {
+            lua_pushnil(L);
+          }
+          lua_pushstring (L, s.toUTF8 ());
+        }
+
+        static juce::String get (lua_State* L, int index)
+        {
+          if (lua_isnil(L, index)) {
+            return RefCountedObject<T>();
+          } else {
+            return RefCo
+          }
+          return juce::String (luaL_checkstring (L, index));
+        }
+      };
+}
 
 namespace {
 
@@ -41,14 +68,15 @@ class Optimizer {
                     .addFunction("__len", &Transitions::__len)
                     .addFunction("all", &Transitions::all)
                 .endClass()
-                .template beginClass<TransitionsIterator>("TransitionsIterator")
-                    .addFunction("__tostring", &TransitionsIterator::__tostring)
-                    .addFunction("__call", &TransitionsIterator::__call)
+                .template beginClass<TransitionIterator>("TransitionIterator")
+                    .addFunction("__tostring", &TransitionIterator::__tostring)
+                    .addFunction("__call", &TransitionIterator::__call)
                 .endClass()
                 .template beginClass<Transition>("Transition")
                     .addFunction("__tostring", &Transition::__tostring)
                     .addFunction("name", &Transition::name)
-                .endClass();
+                .endClass()
+                ;
 
         push(L, PetriNet(pnet));
         lua_setfield(L, LUA_GLOBALSINDEX, "pnet");
@@ -68,70 +96,7 @@ class Optimizer {
 
     private:
 
-    class Transition {
-        petri_net::tid_t tid_;
-        const transition_t &transition_;
-
-        public:
-
-        Transition(pnet_t &pnet, typename petri_net::tid_t tid):
-            tid_(tid), transition_(pnet.get_transition(tid))
-        {}
-
-        const char *__tostring() {
-            return "Transition";
-        }
-
-        const std::string &name() {
-            return transition_.name();
-        }
-    };
-
-    class TransitionsIterator {
-        pnet_t &pnet_;
-        typename pnet_t::transition_const_it it_;
-
-        public:
-
-        TransitionsIterator(pnet_t &pnet):
-            pnet_(pnet), it_(pnet.transitions())
-        {}
-
-        const char *__tostring() {
-            return "Transitions Iterator";
-        }
-
-        Transition *__call() {
-            if (it_.has_more()) {
-                // Memory leak here.
-                Transition *result = new Transition(pnet_, *it_);
-                ++it_;
-                return result;
-            } else {
-                return NULL;
-            }
-        };
-    };
-
-    class Transitions {
-        pnet_t &pnet_;
-
-        public:
-
-        Transitions(pnet_t &pnet): pnet_(pnet) {}
-
-        const char *__tostring() {
-            return "Petri Net Transitions";
-        }
-
-        int __len() {
-            return pnet_.get_num_transitions();
-        }
-
-        TransitionsIterator all() {
-            return TransitionsIterator(pnet_);
-        }
-    };
+    class Transitions;
 
     class PetriNet {
         pnet_t &pnet_;
@@ -139,14 +104,177 @@ class Optimizer {
 
         public:
 
-        PetriNet(pnet_t &pnet): pnet_(pnet), transitions_(pnet) {}
+        PetriNet(pnet_t &pnet): pnet_(pnet), transitions_(*this) {}
 
-        const char *__tostring() {
-            return "Petri Net";
+        pnet_t &pnet() const {
+            return pnet_;
+        }
+
+        const char *__tostring() const {
+            return "PetriNet";
         }
 
         Transitions &transitions() {
             return transitions_;
+        }
+    };
+
+    class TransitionIterator;
+    class Transition;
+
+    class Transitions {
+        PetriNet &petriNet_;
+
+        std::vector<RefCountedObjectPtr<TransitionIterator> > iterators_;
+        boost::unordered_map<petri_net::tid_t, RefCountedObjectPtr<Transition> > transitions_;
+
+        public:
+
+        Transitions(PetriNet &petriNet): petriNet_(petriNet) {}
+
+        PetriNet &petriNet() const {
+            return petriNet_;
+        }
+
+        const char *__tostring() const {
+            return "Transitions";
+        }
+
+        int __len() const {
+            return petriNet_.pnet().get_num_transitions();
+        }
+
+        RefCountedObjectPtr<TransitionIterator> all() {
+            gc();
+
+            RefCountedObjectPtr<TransitionIterator> result(new TransitionIterator(*this));
+            iterators_.push_back(result);
+            return result;
+        };
+
+        RefCountedObjectPtr<Transition> getTransition(petri_net::tid_t tid) {
+            gc();
+
+            RefCountedObjectPtr<Transition> &result = transitions_[tid];
+            if (!result) {
+                result = RefCountedObjectPtr<Transition>(new Transition(*this, tid));
+            }
+            return result;
+        }
+
+        void invalidateIterators() {
+            foreach (RefCountedObjectPtr<TransitionIterator> &iterator, iterators_) {
+                iterator->invalidate();
+            }
+            iterators_.clear();
+        }
+
+        void gc() {
+            // TODO
+        }
+    };
+
+    class TransitionIterator: public RefCountedObjectType<int> {
+        Transitions &transitions_;
+        typename pnet_t::transition_const_it it_;
+        bool valid_;
+
+        public:
+
+        TransitionIterator(Transitions &transitions):
+            transitions_(transitions),
+            it_(transitions.petriNet().pnet().transitions()),
+            valid_(true)
+        {}
+
+        const char *__tostring() {
+            ensure_valid();
+
+            return "TransitionIterator";
+        }
+
+        RefCountedObjectPtr<Transition> __call() {
+            ensure_valid();
+
+            RefCountedObjectPtr<Transition> result;
+            if (it_.has_more()) {
+                result = transitions_.getTransition(*it_);
+                if (!result->valid()) {
+                    valid_ = false;
+                    ensure_valid();
+                }
+                ++it_;
+            }
+            if (!result) {
+                std::cerr << "Returning zero and..." << std::endl;
+            }
+            return result;
+        };
+
+        void ensure_valid() {
+            if (!valid_) {
+//                luaL_error(L, "Accessing invalid transition iterator");
+            }
+        }
+
+        void invalidate() {
+            valid_ = false;
+        }
+    };
+
+    class Transition: public RefCountedObjectType<int> {
+        Transitions &transitions_;
+        petri_net::tid_t tid_;
+        const transition_t *transition_;
+        bool valid_;
+
+        public:
+
+        Transition(Transitions &transitions, typename petri_net::tid_t tid):
+            transitions_(transitions),
+            tid_(tid),
+            valid_(true)
+        {
+            try {
+                transition_ = &transitions_.petriNet().pnet().get_transition(tid);
+            } catch (const bijection::exception::no_such &e) {
+                valid_ = false;
+            }
+        }
+
+        const char *__tostring() {
+            ensure_valid();
+
+            return "Transition";
+        }
+
+        const std::string &name() {
+            ensure_valid();
+
+            return transition_->name();
+        }
+
+        void ensure_valid() {
+            if (valid_) {
+                try {
+                    if (transition_ != &transitions_.petriNet().pnet().get_transition(tid_)) {
+                        valid_ = false;
+                    }
+                } catch (const bijection::exception::no_such &e) {
+                    valid_ = false;
+                }
+            }
+            if (!valid_) {
+//                luaL_error(L, "Accessing a deleted transition.");
+            }
+        }
+
+        bool valid() {
+            return valid_;
+        }
+
+        void invalidate() {
+            valid_ = false;
         }
     };
 };
