@@ -27,6 +27,7 @@ class Optimizer {
 
     public:
 
+    typedef P place_t;
     typedef we::type::transition_t<P, E, T> transition_t;
     typedef petri_net::net<P, transition_t, E, T> pnet_t;
 
@@ -42,7 +43,21 @@ class Optimizer {
             .beginNamespace("pnetopt")
                 .beginClass<PetriNet>("PetriNet")
                     .addFunction("__tostring", &PetriNet::__tostring)
+                    .addFunction("places", &PetriNet::places)
                     .addFunction("transitions", &PetriNet::transitions)
+                .endClass()
+                .template beginClass<Places>("Places")
+                    .addFunction("__tostring", &Places::__tostring)
+                    .addFunction("__len", &Places::__len)
+                    .addFunction("all", &Places::all)
+                .endClass()
+                .template beginClass<PlaceIterator>("PlaceIterator")
+                    .addFunction("__tostring", &PlaceIterator::__tostring)
+                    .addFunction("__call", &PlaceIterator::__call)
+                .endClass()
+                .template beginClass<Place>("Place")
+                    .addFunction("__tostring", &Place::__tostring)
+                    .addFunction("name", &Place::name)
                 .endClass()
                 .template beginClass<Transitions>("Transitions")
                     .addFunction("__tostring", &Transitions::__tostring)
@@ -77,17 +92,22 @@ class Optimizer {
 
     private:
 
+    class Places;
+    class PlaceIterator;
+    class Place;
+
     class Transitions;
     class TransitionIterator;
     class Transition;
 
     class PetriNet {
         pnet_t &pnet_;
+        Places places_;
         Transitions transitions_;
 
         public:
 
-        PetriNet(pnet_t &pnet): pnet_(pnet), transitions_(*this) {}
+        PetriNet(pnet_t &pnet): pnet_(pnet), places_(*this), transitions_(*this) {}
 
         pnet_t &pnet() const {
             return pnet_;
@@ -97,8 +117,117 @@ class Optimizer {
             return "PetriNet";
         }
 
+        Places &places() {
+            return places_;
+        }
+
         Transitions &transitions() {
             return transitions_;
+        }
+    };
+
+    class Places {
+        PetriNet &petriNet_;
+
+        std::vector<RefCountedObjectPtr<PlaceIterator> > iterators_;
+        boost::unordered_map<petri_net::tid_t, RefCountedObjectPtr<Place> > places_;
+
+        public:
+
+        Places(PetriNet &petriNet): petriNet_(petriNet) {}
+
+        PetriNet &petriNet() const {
+            return petriNet_;
+        }
+
+        const char *__tostring() const {
+            return "Places";
+        }
+
+        int __len() const {
+            return petriNet_.pnet().get_num_places();
+        }
+
+        RefCountedObjectPtr<PlaceIterator> all() {
+            RefCountedObjectPtr<PlaceIterator> result(new PlaceIterator(*this));
+            iterators_.push_back(result);
+            return result;
+        };
+
+        RefCountedObjectPtr<Place> getPlace(petri_net::pid_t pid) {
+            RefCountedObjectPtr<Place> &result = places_[pid];
+            if (!result || !result->valid()) {
+                result = RefCountedObjectPtr<Place>(new Place(pid, petriNet().pnet().get_place(pid)));
+            }
+            return result;
+        }
+
+        void invalidateIterators() {
+            foreach (RefCountedObjectPtr<PlaceIterator> &iterator, iterators_) {
+                iterator->invalidate();
+            }
+            iterators_.clear();
+        }
+
+        void invalidatePlace(petri_net::tid_t tid) {
+            RefCountedObjectPtr<Place> &result = places_[tid];
+            if (result) {
+                result->invalidate();
+            }
+            places_.erase(tid);
+        }
+    };
+
+    class PlaceIterator: public RefCountedObjectType<int>, public trench::Invalidatable {
+        Places &places_;
+        typename pnet_t::place_const_it it_;
+
+        public:
+
+        PlaceIterator(Places &places):
+            places_(places),
+            it_(places.petriNet().pnet().places())
+        {}
+
+        const char *__tostring() {
+            ensureValid();
+
+            return "PlaceIterator";
+        }
+
+        RefCountedObjectPtr<Place> __call() {
+            ensureValid();
+
+            RefCountedObjectPtr<Place> result;
+            if (it_.has_more()) {
+                result = places_.getPlace(*it_);
+                ++it_;
+            }
+            return result;
+        };
+    };
+
+    class Place: public RefCountedObjectType<int>, public trench::Invalidatable {
+        petri_net::pid_t pid_;
+        const place_t &place_;
+
+        public:
+
+        Place(typename petri_net::pid_t pid, const place_t &place):
+            pid_(pid),
+            place_(place)
+        {}
+
+        const char *__tostring() {
+            ensureValid();
+
+            return "Place";
+        }
+
+        const std::string &name() {
+            ensureValid();
+
+            return place_.get_name();
         }
     };
 
