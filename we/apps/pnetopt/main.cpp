@@ -8,35 +8,11 @@
 #include "LuaBridge/LuaBridge.h"
 #include "LuaBridge/RefCountedObject.h"
 
+#include "Invalidatable.h"
+
 #include <we/we.hpp>
 
 #define foreach BOOST_FOREACH
-
-namespace luabridge {
-
-      template <class T>
-      struct Stack <RefCountedObject<T> >
-      {
-        static void push (lua_State* L, RefCountedObject<T> p)
-        {
-          if (p) {
-          } else {
-            lua_pushnil(L);
-          }
-          lua_pushstring (L, s.toUTF8 ());
-        }
-
-        static juce::String get (lua_State* L, int index)
-        {
-          if (lua_isnil(L, index)) {
-            return RefCountedObject<T>();
-          } else {
-            return RefCo
-          }
-          return juce::String (luaL_checkstring (L, index));
-        }
-      };
-}
 
 namespace {
 
@@ -44,7 +20,10 @@ using namespace luabridge;
 
 template<class P, class E, class T>
 class Optimizer {
+    class PetriNet;
+
     lua_State *L;
+    PetriNet petriNet_;
 
     public:
 
@@ -53,7 +32,9 @@ class Optimizer {
 
     public:
 
-    Optimizer(pnet_t &pnet) {
+    Optimizer(pnet_t &pnet):
+        petriNet_(pnet)
+    {
         L = lua_open();
         luaL_openlibs(L);
 
@@ -78,7 +59,7 @@ class Optimizer {
                 .endClass()
                 ;
 
-        push(L, PetriNet(pnet));
+        push(L, petriNet_);
         lua_setfield(L, LUA_GLOBALSINDEX, "pnet");
     }
 
@@ -97,6 +78,8 @@ class Optimizer {
     private:
 
     class Transitions;
+    class TransitionIterator;
+    class Transition;
 
     class PetriNet {
         pnet_t &pnet_;
@@ -118,9 +101,6 @@ class Optimizer {
             return transitions_;
         }
     };
-
-    class TransitionIterator;
-    class Transition;
 
     class Transitions {
         PetriNet &petriNet_;
@@ -145,19 +125,15 @@ class Optimizer {
         }
 
         RefCountedObjectPtr<TransitionIterator> all() {
-            gc();
-
             RefCountedObjectPtr<TransitionIterator> result(new TransitionIterator(*this));
             iterators_.push_back(result);
             return result;
         };
 
         RefCountedObjectPtr<Transition> getTransition(petri_net::tid_t tid) {
-            gc();
-
             RefCountedObjectPtr<Transition> &result = transitions_[tid];
-            if (!result) {
-                result = RefCountedObjectPtr<Transition>(new Transition(*this, tid));
+            if (!result || !result->valid()) {
+                result = RefCountedObjectPtr<Transition>(new Transition(tid, petriNet().pnet().get_transition(tid)));
             }
             return result;
         }
@@ -169,112 +145,65 @@ class Optimizer {
             iterators_.clear();
         }
 
-        void gc() {
-            // TODO
+        void invalidateTransition(petri_net::tid_t tid) {
+            RefCountedObjectPtr<Transition> &result = transitions_[tid];
+            if (result) {
+                result->invalidate();
+            }
+            transitions_.erase(tid);
         }
     };
 
-    class TransitionIterator: public RefCountedObjectType<int> {
+    class TransitionIterator: public RefCountedObjectType<int>, public trench::Invalidatable {
         Transitions &transitions_;
         typename pnet_t::transition_const_it it_;
-        bool valid_;
 
         public:
 
         TransitionIterator(Transitions &transitions):
             transitions_(transitions),
-            it_(transitions.petriNet().pnet().transitions()),
-            valid_(true)
+            it_(transitions.petriNet().pnet().transitions())
         {}
 
         const char *__tostring() {
-            ensure_valid();
+            ensureValid();
 
             return "TransitionIterator";
         }
 
         RefCountedObjectPtr<Transition> __call() {
-            ensure_valid();
+            ensureValid();
 
             RefCountedObjectPtr<Transition> result;
             if (it_.has_more()) {
                 result = transitions_.getTransition(*it_);
-                if (!result->valid()) {
-                    valid_ = false;
-                    ensure_valid();
-                }
                 ++it_;
-            }
-            if (!result) {
-                std::cerr << "Returning zero and..." << std::endl;
             }
             return result;
         };
-
-        void ensure_valid() {
-            if (!valid_) {
-//                luaL_error(L, "Accessing invalid transition iterator");
-            }
-        }
-
-        void invalidate() {
-            valid_ = false;
-        }
     };
 
-    class Transition: public RefCountedObjectType<int> {
-        Transitions &transitions_;
+    class Transition: public RefCountedObjectType<int>, public trench::Invalidatable {
         petri_net::tid_t tid_;
-        const transition_t *transition_;
-        bool valid_;
+        const transition_t &transition_;
 
         public:
 
-        Transition(Transitions &transitions, typename petri_net::tid_t tid):
-            transitions_(transitions),
+        Transition(typename petri_net::tid_t tid, const transition_t &transition):
             tid_(tid),
-            valid_(true)
-        {
-            try {
-                transition_ = &transitions_.petriNet().pnet().get_transition(tid);
-            } catch (const bijection::exception::no_such &e) {
-                valid_ = false;
-            }
-        }
+            transition_(transition)
+        {}
 
         const char *__tostring() {
-            ensure_valid();
+            ensureValid();
 
             return "Transition";
         }
 
         const std::string &name() {
-            ensure_valid();
+            ensureValid();
 
-            return transition_->name();
-        }
-
-        void ensure_valid() {
-            if (valid_) {
-                try {
-                    if (transition_ != &transitions_.petriNet().pnet().get_transition(tid_)) {
-                        valid_ = false;
-                    }
-                } catch (const bijection::exception::no_such &e) {
-                    valid_ = false;
-                }
-            }
-            if (!valid_) {
-//                luaL_error(L, "Accessing a deleted transition.");
-            }
-        }
-
-        bool valid() {
-            return valid_;
-        }
-
-        void invalidate() {
-            valid_ = false;
+            return transition_.name();
         }
     };
 };
@@ -379,7 +308,7 @@ int main(int argc, char **argv) {
         Visitor visitor(script);
         visitor(activity.transition());
     } catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "pnetopt: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 
