@@ -197,8 +197,7 @@ void JobManager::resubmitResults(IComm* pComm)
       // create jobCancelledEvent
       sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
                                                                                                   pJob->owner(),
-                                                                                                  pJob->id(),
-                                                                                                  pJob->result() ));
+                                                                                                  pJob->id()));
 
       // send it to the master
       pComm->sendEventToMaster(pEvtJobCancelled);

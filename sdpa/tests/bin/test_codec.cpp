@@ -122,7 +122,7 @@ int main(int, char **)
 
   {
     std::clog << "testing CancelJobAckEvent...";
-    CancelJobAckEvent e("foo", "bar", "job-id-1", "42");
+    CancelJobAckEvent e("foo", "bar", "job-id-1");
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
