@@ -1263,7 +1263,7 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
   job_id_t job_id(workflowId);
 
-  CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id, SDPAEvent::message_id_type()));
+  CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id ));
   sendEventToSelf(pEvtCancelJobAck);
 
   return true;
@@ -1727,7 +1727,7 @@ void GenericDaemon::activityCancelled(const Worker::worker_id_t& worker_id, cons
   else
   {
     DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
-    CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId, SDPAEvent::message_id_type()));
+    CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId));
     sendEventToSelf(pEvtCancelJobAck);
   }
 }
@@ -1942,14 +1942,8 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
       }
       else if( jobStatus.find("Cancelled") != std::string::npos)
       {
-        CancelJobAckEvent::Ptr pEvtCancelJobAck
-          (new CancelJobAckEvent( name()
-                                , subscriber
-                                , pJob->id()
-                                , pJob->result()
-                                ));
-
-               sendEventToMaster(pEvtCancelJobAck);
+        CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
+        sendEventToMaster(pEvtCancelJobAck);
       }
     }
   }

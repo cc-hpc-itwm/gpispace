@@ -337,13 +337,13 @@ namespace sdpa {
       seda::Stage::Ptr ptr_to_master_stage_;
       seda::Stage::Ptr ptr_to_slave_stage_;
       sdpa::util::Config daemon_cfg_;
-      JobManager::ptr_t ptr_job_man_;
 
     protected:
+      JobManager::ptr_t ptr_job_man_;
       Scheduler::ptr_t ptr_scheduler_;
+      IWorkflowEngine* ptr_workflow_engine_;
 
     private:
-      IWorkflowEngine* ptr_workflow_engine_;
 
       unsigned int m_nRank;
       unsigned int m_nCap; // maximum number of external jobs
