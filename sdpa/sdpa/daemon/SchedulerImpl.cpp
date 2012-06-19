@@ -589,9 +589,9 @@ const Worker::worker_id_t& SchedulerImpl::findWorker(const sdpa::job_id_t& job_i
   }
 }
 
-const Worker::worker_id_t& SchedulerImpl::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t& SchedulerImpl::findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
-  return ptr_worker_man_->findAcknowlegedWorker(job_id);
+  return ptr_worker_man_->findSubmOrAckWorker(job_id);
 }
 
 void SchedulerImpl::start(IComm* p)
