@@ -29,31 +29,42 @@ namespace sc = boost::statechart;
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
-	class CancelJobAckEvent : public JobEvent, public sc::event<CancelJobAckEvent>
+        class CancelJobAckEvent : public JobEvent, public sc::event<CancelJobAckEvent>
 #else
-	class CancelJobAckEvent : public JobEvent
+        class CancelJobAckEvent : public JobEvent
 #endif
     {
-	public:
-		typedef sdpa::shared_ptr<CancelJobAckEvent> Ptr;
+        public:
+                typedef sdpa::shared_ptr<CancelJobAckEvent> Ptr;
 
         CancelJobAckEvent()
           : JobEvent("", "", "")
         {}
 
-		CancelJobAckEvent(const address_t &a_from, const address_t &a_to, const sdpa::job_id_t& a_job_id)
+                CancelJobAckEvent(const address_t &a_from, const address_t &a_to, const sdpa::job_id_t& a_job_id)
           :  sdpa::events::JobEvent( a_from, a_to, a_job_id) {
-		}
+                }
 
-		virtual ~CancelJobAckEvent() { }
+                virtual ~CancelJobAckEvent() { }
 
-		std::string str() const { return "CancelJobAckEvent"; }
+                std::string str() const { return "CancelJobAckEvent"; }
 
         virtual void handleBy(EventHandler *handler)
         {
           handler->handleCancelJobAckEvent(this);
         }
-	};
+
+      std::string const & result() const { return m_result; }
+      std::string & result() { return m_result; }
+
+      CancelJobAckEvent * set_result(std::string const &r)
+      {
+        m_result = r;
+        return this;
+      }
+    private:
+      std::string m_result;
+        };
 }}
 
 #endif
