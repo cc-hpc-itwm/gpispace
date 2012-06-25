@@ -53,12 +53,22 @@ void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
-        BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-        {
-          // DLOG(TRACE, "Notify the subscriber "<<subscriber);
-                ptrEvt->to() = pair_subscr_joblist.first;
-                sendEventToMaster(ptrEvt);
-        }
+  sdpa::job_id_t jobId = ptrEvt->job_id();
+
+  BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  {
+    sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;
+
+    for( sdpa::job_id_list_t::iterator it = listSubscrJobs.begin(); it != listSubscrJobs.end(); it++ )
+    if( *it == jobId )
+    {
+      ptrEvt->to() = pair_subscr_joblist.first;
+      sendEventToMaster(ptrEvt);
+
+      SDPA_LOG_INFO("Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
+      break;
+    }
+  }
 }
 
 void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
@@ -254,102 +264,123 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
     }
 }
 
-
-void Orchestrator::cancelNotRunning (sdpa::job_id_t const & job)
+void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
   try
   {
-    Job::ptr_t pJob(jobManager()->findJob(job));
+    sdpa::job_id_t jobId = evt.job_id();
+    Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
 
-    // update the job status to "Cancelled" we don't have an ack
-    sdpa::events::CancelJobAckEvent cae;
-    pJob->CancelJobAck(&cae);
-    scheduler()->delete_job (job);
+    SDPA_LOG_INFO( "Cancelling the pending job "<<jobId<<" ... ");
+
+    sdpa::events::CancelJobEvent cae;
+    pJob->CancelJob(&cae);
+    ptr_scheduler_->delete_job (jobId);
 
     try
     {
-        if(hasWorkflowEngine())
-        {
-                workflowEngine()->cancelled(job);
-                jobManager()->deleteJob(job);
-        }
+      if(hasWorkflowEngine())
+        workflowEngine()->cancelled(jobId);
+
+      if(!isTop())
+        jobManager()->deleteJob(jobId);
     }
     catch (std::exception const & ex)
     {
-      LOG(WARN, "could not cancel job on the workflow engine: " << ex.what());
+      SDPA_LOG_WARN( "the workflow engine could not cancel the jobId "<<jobId<<"! Reason: "<< ex.what());
+
+      if(!isTop())
+      {
+        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the cancelled jobId "<<jobId<<"!");
+        ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
+                                                  , evt.from()
+                                                  , ErrorEvent::SDPA_EUNKNOWN
+                                                  , ex.what()));
+
+        sendEventToMaster(pErrorEvt);
+      }
     }
   }
-  catch(const JobNotFoundException &)
+  catch(const JobNotFoundException &ex1)
   {
-    LOG(WARN, "job_cancelled(" << job << ") failed: no such job");
+    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be cancelled! Exception occurred: "<<ex1.what());
   }
 }
 
 void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
-  assert (pEvt);
-
-  LOG(INFO, "cancelling job " << pEvt->job_id());
+  Job::ptr_t pJob;
 
   try
   {
-    Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
-
-    // change the job status to "Cancelling"
-    pJob->CancelJob(pEvt);
-    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
-
-    if(isTop())
+    pJob = ptr_job_man_->findJob(pEvt->job_id());
+     if( isTop() )
     {
-        // send immediately an acknowledgment to the component that requested the cancellation
-        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+      // send immediately an acknowledgment to the component that requested the cancellation
+      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
 
-        // only if the job was already submitted
+      if(!isSubscriber(pJob->owner()))
         sendEventToMaster(pCancelAckEvt);
+
+      notifySubscribers(pCancelAckEvt);
     }
   }
   catch(const JobNotFoundException &)
   {
     SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
-                                            , pEvt->from()
-                                            , ErrorEvent::SDPA_EJOBNOTFOUND
-                                            , "no such job"
-                                            )
-                             );
-    sendEventToMaster(pErrorEvt);
     return;
   }
 
-  if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
+  if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
   {
-          LOG(TRACE, "Propagate cancel job event downwards.");
-          try
-          {
-                  sdpa::worker_id_t worker_id = scheduler()->findAcknowlegedWorker(pEvt->job_id());
+    try
+    {
+      sdpa::worker_id_t worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
 
-                  SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
-                  CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
-                                                                                                                          , worker_id
-                                                                                                                          , pEvt->job_id()
-                                                                                                                          , pEvt->reason()
-                                                                                ) );
-                  sendEventToSlave(pCancelEvt);
+      SDPA_LOG_DEBUG("Tell the worker "<<worker_id<<" to cancel the job "<<pEvt->job_id());
+      CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
+                                                          , worker_id
+                                                          , pEvt->job_id()
+                                                          , pEvt->reason() ) );
+      sendEventToSlave(pCancelEvt);
+
+      // change the job status to "Cancelling"
+      pJob->CancelJob(pEvt);
+      SDPA_LOG_DEBUG("The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
     catch(const NoWorkerFoundException&)
     {
-        cancelNotRunning(pEvt->job_id());
+      // possible situations:
+      // 1) the job wasn't yet assigned to any worker
+      // 1) is in the pending queue of a certain worker
+      // 1) the job was submitted to an worker but was not yet acknowledged
+      cancelPendingJob(*pEvt);
     }
-    catch(...)
+    catch (std::exception const & ex)
     {
-        SDPA_LOG_ERROR("Unexpected exception occurred!");
+      SDPA_LOG_WARN( "the workflow engine could not cancel the job "<<pEvt->job_id()<<"! Reason: "<< ex.what());
+
+      if(!isTop())
+      {
+        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the cancelled job "<<pEvt->job_id()<<"!");
+        ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
+                                                  , pEvt->from()
+                                                  , ErrorEvent::SDPA_EUNKNOWN
+                                                  , ex.what()));
+
+        sendEventToMaster(pErrorEvt);
+      }
     }
   }
   else // a Cancel message came from the upper level -> forward cancellation request to WE
   {
-      id_type workflowId = pEvt->job_id();
-      reason_type reason("No reason");
-      cancelWorkflow(workflowId, reason);
+    id_type workflowId = pEvt->job_id();
+    reason_type reason("No reason");
+    SDPA_LOG_INFO("Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
+    cancelWorkflow(workflowId, reason);
+    pJob->CancelJob(pEvt);
+    SDPA_LOG_INFO("The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
+
   }
 }
 
@@ -376,28 +407,28 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     // the acknowledgment comes from WE or from a slave and there is no WE
     if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
     {
-        // just send an acknowledgment to the master
-        // send an acknowledgment to the component that requested the cancellation
-        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+      // just send an acknowledgment to the master
+      // send an acknowledgment to the component that requested the cancellation
+      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
-        if(!isTop())
-        {
-            // only if the job was already submitted
-            sendEventToMaster(pCancelAckEvt);
+      if(!isTop())
+      {
+        // only if the job was already submitted
+        sendEventToMaster(pCancelAckEvt);
 
-            try
-            {
-                jobManager()->deleteJob(pEvt->job_id());
-            }
-            catch(const JobNotDeletedException&)
-            {
-                LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
-            }
-        }
-        else
+        try
         {
-                notifySubscribers(pCancelAckEvt);
+          jobManager()->deleteJob(pEvt->job_id());
         }
+        catch(const JobNotDeletedException&)
+        {
+          LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
+        }
+      }
+      else
+      {
+        notifySubscribers(pCancelAckEvt);
+      }
     }
     else // acknowledgment comes from a worker -> inform WE that the activity was canceled
     {
@@ -499,9 +530,6 @@ void Orchestrator::recover( std::istream& is )
       ia.register_type(static_cast<JobFSM*>(NULL));
       // restore the schedule from the archive
       recoverJobManager(ia);
-
-      //SDPA_LOG_INFO("Job manager after recovery: \n");
-      //jobManager()->print();
 
       ia.register_type(static_cast<SchedulerOrch*>(NULL));
       ia.register_type(static_cast<SchedulerImpl*>(NULL));

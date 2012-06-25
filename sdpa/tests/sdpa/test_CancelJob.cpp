@@ -72,9 +72,9 @@ struct MyFixture
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
 			, m_pool (0)
-	    	, m_kvsd (0)
-	    	, m_serv (0)
-	    	, m_thrd (0)
+	    , m_kvsd (0)
+	    , m_serv (0)
+	    , m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
 	{ //initialize and start_agent the finite state machine
 
@@ -128,7 +128,7 @@ struct MyFixture
 		seda::StageRegistry::instance().clear();
 	}
 
-	void start_client_and_cancel_job();
+	void run_client();
 	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
 	string read_workflow(string strFileName)
@@ -150,9 +150,9 @@ struct MyFixture
 
 	int m_nITER;
 	int m_sleep_interval ;
-    std::string m_strWorkflow;
+  std::string m_strWorkflow;
 
-    fhg::com::io_service_pool *m_pool;
+  fhg::com::io_service_pool *m_pool;
 	fhg::com::kvs::server::kvsd *m_kvsd;
 	fhg::com::tcp_server *m_serv;
 	boost::thread *m_thrd;
@@ -167,7 +167,7 @@ struct MyFixture
 	fhg::core::kernel_t *kernel;
 };
 
-void MyFixture::start_client_and_cancel_job()
+void MyFixture::run_client()
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
@@ -178,98 +178,96 @@ void MyFixture::start_client_and_cancel_job()
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
-	for( int k=0; k<m_nITER; k++ )
-	{
-		int nTrials = 0;
-		sdpa::job_id_t job_id_user;
 
-		try {
+  int nTrials = 0;
+  sdpa::job_id_t job_id_user;
 
-			LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
-			job_id_user = ptrCli->submitJob(m_strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+  try {
 
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-		}
+    //LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
+    job_id_user = ptrCli->submitJob(m_strWorkflow);
+  }
+  catch(const sdpa::client::ClientException& cliExc)
+  {
+    if(nTrials++ > NMAXTRIALS)
+    {
+      LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
+      ptrCli->shutdown_network();
+      ptrCli.reset();
+      return;
+    }
+  }
 
-		std::string job_status = ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+  std::string job_status = ptrCli->queryJob(job_id_user);
+  LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-		ptrCli->cancelJob(job_id_user);
+  ptrCli->cancelJob(job_id_user);
 
-		nTrials = 0;
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
-		{
-			try {
-				job_status = ptrCli->queryJob(job_id_user);
-				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+  nTrials = 0;
+  while( job_status.find("Finished") == std::string::npos &&
+       job_status.find("Failed") == std::string::npos &&
+       job_status.find("Cancelled") == std::string::npos)
+  {
+    try {
+      job_status = ptrCli->queryJob(job_id_user);
+      LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-				boost::this_thread::sleep(boost::posix_time::seconds(10));
-			}
-			catch(const sdpa::client::ClientException& cliExc)
-			{
-				if(nTrials++ > NMAXTRIALS)
-				{
-					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
+      boost::this_thread::sleep(boost::posix_time::seconds(10));
+    }
+    catch(const sdpa::client::ClientException& cliExc)
+    {
+      if(nTrials++ > NMAXTRIALS)
+      {
+        LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
 
-					ptrCli->shutdown_network();
-					ptrCli.reset();
-					return;
-				}
+        ptrCli->shutdown_network();
+        ptrCli.reset();
+        return;
+      }
 
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
-			}
-		}
+      boost::this_thread::sleep(boost::posix_time::seconds(3));
+    }
+  }
 
-		nTrials = 0;
+  LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-		try {
-				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-				ptrCli->retrieveResults(job_id_user);
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
+  nTrials = 0;
 
-			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
+  try {
+      LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+      ptrCli->retrieveResults(job_id_user);
+      boost::this_thread::sleep(boost::posix_time::seconds(3));
+  }
+  catch(const sdpa::client::ClientException& cliExc)
+  {
 
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
+    LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
 
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
-		}
+    ptrCli->shutdown_network();
+    ptrCli.reset();
+    return;
 
-		nTrials = 0;
+    boost::this_thread::sleep(boost::posix_time::seconds(3));
+  }
 
-		try {
-			LOG( DEBUG, "User: delete the job "<<job_id_user);
-			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
+  nTrials = 0;
 
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
+  try {
+    LOG( DEBUG, "User: delete the job "<<job_id_user);
+    ptrCli->deleteJob(job_id_user);
+    boost::this_thread::sleep(boost::posix_time::seconds(3));
+  }
+  catch(const sdpa::client::ClientException& cliExc)
+  {
+    LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
 
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
-		}
-	}
+    ptrCli->shutdown_network();
+    ptrCli.reset();
+    return;
+
+    boost::this_thread::sleep(boost::posix_time::seconds(3));
+  }
 
 	ptrCli->shutdown_network();
 	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
@@ -302,7 +300,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWE )
+BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWEDrts )
 {
 	// topology:
 	// O
@@ -312,7 +310,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWE )
 	// drts
 
 
-	LOG( DEBUG, "testCancelJobPath1AgentEmptyWE");
+	LOG( DEBUG, "testCancelJobPath1AgentEmptyWEDrts");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -334,7 +332,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWE )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::start_client_and_cancel_job, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
@@ -380,7 +378,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::start_client_and_cancel_job, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
@@ -394,8 +392,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 	LOG( DEBUG, "The test case testCancelJobPath1AgentRealWE terminated!");
 }
 
-/*
-BOOST_AUTO_TEST_CASE( testCancelJobPath2 )
+BOOST_AUTO_TEST_CASE( testCancelJobPath2Drts )
 {
 	// topology:
 	// O
@@ -407,7 +404,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath2 )
 	// drts
 
 
-	LOG( DEBUG, "***** testCancelJobPath2 *****"<<std::endl);
+	LOG( DEBUG, "***** testCancelJobPath2Drts *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -433,7 +430,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath2 )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( create_drts("drts_00", "agent_00") );
 	boost::thread drts_00_thread = boost::thread( &fhg::core::kernel_t::run, drts_00 );
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::start_client_and_cancel_job, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
@@ -462,7 +459,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsAndDrtsPath3 )
 	//    |
 	//   drts
 
-	LOG( DEBUG, "***** testCancelJobPath3 *****"<<std::endl);
+	LOG( DEBUG, "***** testCancelAgentsAndDrtsPath3 *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -492,7 +489,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsAndDrtsPath3 )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_000( create_drts("drts_000", "agent_000") );
 	boost::thread drts_000_thread = boost::thread(&fhg::core::kernel_t::run, drts_000);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::start_client_and_cancel_job, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
@@ -505,7 +502,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsAndDrtsPath3 )
 	ptrAg0->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	LOG( DEBUG, "The test case testCancelAgentsAndDrtsPath3 terminated!");
 }
 
 BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
@@ -536,7 +533,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
 	sdpa::daemon::Agent::ptr_t ptrAg01 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_01", addrAgent, arrAgMaster, MAX_CAP );
 	ptrAg01->start_agent(false);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::start_client_and_cancel_job, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
@@ -546,7 +543,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
 	ptrAg0->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	LOG( DEBUG, "The test case testCancelAgentsNoDrtsTree terminated!");
 }
 
 BOOST_AUTO_TEST_CASE( testAgentsAndDrtsTree )
@@ -583,7 +580,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrtsTree )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_01( create_drts("drts_01", "agent_01") );
 	boost::thread drts_01_thread = boost::thread(&fhg::core::kernel_t::run, drts_01);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::start_client_and_cancel_job, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
@@ -600,8 +597,237 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrtsTree )
 	ptrAg0->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	LOG( DEBUG, "The test case testAgentsAndDrtsTree terminated!");
 }
-*/
+
+
+BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentNoWE )
+{
+  LOG( DEBUG, "testCancelJobPath1AgentNoWE");
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  typedef void OrchWorkflowEngine;
+
+  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+  threadClient.join();
+
+  LOG( INFO, "The client thread joined the main thread°!" );
+  ptrOrch->shutdown();
+
+  LOG( DEBUG, "The test case testCancelJobPath1AgentNoWE terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWE )
+{
+  LOG( DEBUG, "testCancelJobPath1AgentEmptyWE");
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  typedef void OrchWorkflowEngine;
+
+  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+  threadClient.join();
+
+  LOG( INFO, "The client thread joined the main thread°!" );
+
+  ptrOrch->shutdown();
+
+  LOG( DEBUG, "The test case testCancelJobPath1AgentEmptyWE terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testCancelJobPath2AgentsNoWE )
+{
+  LOG( DEBUG, "testCancelJobPath2AgentsNoWE");
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  typedef void OrchWorkflowEngine;
+
+  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  ptrAg0->start_agent(false);
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+  threadClient.join();
+
+  LOG( INFO, "The client thread joined the main thread°!" );
+  boost::this_thread::sleep(boost::posix_time::seconds(20));
+
+  ptrAg0->shutdown();
+  ptrOrch->shutdown();
+
+  LOG( DEBUG, "The test case testCancelJobPath2AgentsNoWE terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testCancelJobPath2AgentsEmptyWE )
+{
+  LOG( DEBUG, "testCancelJobPath2AgentsEmptyWE");
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  typedef void OrchWorkflowEngine;
+
+  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+
+    sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  ptrAg0->start_agent(false);
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+  threadClient.join();
+
+  LOG( INFO, "The client thread joined the main thread°!" );
+  boost::this_thread::sleep(boost::posix_time::seconds(20));
+
+  ptrAg0->shutdown();
+  ptrOrch->shutdown();
+
+  LOG( DEBUG, "The test case testCancelJobPath2AgentsEmptyWE terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testCancelJobPath3AgentsNoWE )
+{
+  LOG( DEBUG, "testCancelJobPath3AgentsNoWE");
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  typedef void OrchWorkflowEngine;
+
+  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  ptrAg0->start_agent(false);
+
+  sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_1", addrAgent, arrAgent1MasterInfo, MAX_CAP);
+  ptrAg1->start_agent(false);
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+  threadClient.join();
+
+  LOG( INFO, "The client thread joined the main thread°!" );
+
+  ptrAg1->shutdown();
+  ptrAg0->shutdown();
+  ptrOrch->shutdown();
+
+  LOG( DEBUG, "The test case testCancelJobPath3AgentsNoWE terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testCancelJobPath3AgentsEmptyWE )
+{
+  LOG( DEBUG, "testCancelJobPath3AgentsEmptyWE");
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  typedef void OrchWorkflowEngine;
+
+  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  ptrAg0->start_agent(false);
+
+  sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_1", addrAgent, arrAgent1MasterInfo, MAX_CAP);
+  ptrAg1->start_agent(false);
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+  threadClient.join();
+
+  LOG( INFO, "The client thread joined the main thread°!" );
+
+  ptrAg1->shutdown();
+  ptrAg0->shutdown();
+  ptrOrch->shutdown();
+
+  LOG( DEBUG, "The test case testCancelJobPath3AgentsEmptyWE terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testCancelJobPath3AgentsEmptyWEExec )
+{
+  LOG( DEBUG, "testCancelJobPath3AgentsEmptyWEExec");
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  typedef void OrchWorkflowEngine;
+
+  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+
+   sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  ptrAg0->start_agent(false);
+
+  sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_1", addrAgent, arrAgent1MasterInfo, MAX_CAP, true);
+  ptrAg1->start_agent(false);
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+  threadClient.join();
+
+  LOG( INFO, "The client thread joined the main thread°!" );
+
+  ptrAg1->shutdown();
+  ptrAg0->shutdown();
+  ptrOrch->shutdown();
+
+  LOG( DEBUG, "The test case testCancelJobPath3AgentsEmptyWEExec terminated!");
+}
 
 BOOST_AUTO_TEST_SUITE_END()

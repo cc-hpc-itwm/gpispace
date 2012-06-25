@@ -38,11 +38,11 @@ namespace sdpa { namespace events {
 		typedef sdpa::shared_ptr<CancelJobAckEvent> Ptr;
 
         CancelJobAckEvent()
-          : JobEvent("", "", "", message_id_type())
+          : JobEvent("", "", "")
         {}
 
-		CancelJobAckEvent(const address_t &a_from, const address_t &a_to, const sdpa::job_id_t& a_job_id, const message_id_type &mid)
-          :  sdpa::events::JobEvent( a_from, a_to, a_job_id, mid ) {
+		CancelJobAckEvent(const address_t &a_from, const address_t &a_to, const sdpa::job_id_t& a_job_id)
+          :  sdpa::events::JobEvent( a_from, a_to, a_job_id) {
 		}
 
 		virtual ~CancelJobAckEvent() { }

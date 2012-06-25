@@ -22,69 +22,69 @@
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 
 namespace sdpa {
-namespace daemon {
+  namespace daemon {
 
-	template <typename T> struct OrchestratorFactory;
+    template <typename T> struct OrchestratorFactory;
 
-	class Orchestrator : public dsm::DaemonFSM
-	{
-	  public:
-		typedef sdpa::shared_ptr<Orchestrator> ptr_t;
-		SDPA_DECLARE_LOGGER();
+    class Orchestrator : public dsm::DaemonFSM
+    {
+      public:
+      typedef sdpa::shared_ptr<Orchestrator> ptr_t;
+      SDPA_DECLARE_LOGGER();
 
-		Orchestrator( const std::string &name = ""
-		              , const std::string& url = ""
-		              , unsigned int cap = 10000 )
-		: DaemonFSM( name, sdpa::master_info_list_t(), cap /*, NULL*/),
-		  SDPA_INIT_LOGGER(name),
-		  url_(url)
-		{
-		  SDPA_LOG_DEBUG("Orchestrator's constructor called ...");
-		}
+      Orchestrator( const std::string &name = ""
+                    , const std::string& url = ""
+                    , unsigned int cap = 10000 )
+      : DaemonFSM( name, sdpa::master_info_list_t(), cap /*, NULL*/),
+        SDPA_INIT_LOGGER(name),
+        url_(url)
+      {
+        SDPA_LOG_DEBUG("Orchestrator's constructor called ...");
+      }
 
-		virtual ~Orchestrator();
+      virtual ~Orchestrator();
 
-		void action_configure( const sdpa::events::StartUpEvent& );
-		void action_config_ok( const sdpa::events::ConfigOkEvent& );
+      void action_configure( const sdpa::events::StartUpEvent& );
+      void action_config_ok( const sdpa::events::ConfigOkEvent& );
 
-		void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
-		void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
+      void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
+      void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
 
-		void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
-		void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
+      void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
+      void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
 
-		void handleRetrieveJobResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
+      void handleRetrieveJobResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
 
-		const std::string url() const {return url_;}
-		bool isTop() { return true; }
+      const std::string url() const {return url_;}
+      bool isTop() { return true; }
 
-		void cancelNotRunning(sdpa::job_id_t const & job);
+      void cancelPendingJob(const sdpa::events::CancelJobEvent& evt);
 
-		template <class Archive>
-		void serialize(Archive& ar, const unsigned int)
-		{
-		    ar & boost::serialization::base_object<DaemonFSM>(*this);
-		    ar & url_; //boost::serialization::make_nvp("url_", url_);
-		}
+      template <class Archive>
+      void serialize(Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<DaemonFSM>(*this);
+        ar & url_; //boost::serialization::make_nvp("url_", url_);
+      }
 
-		virtual void backup( std::ostream& );
-		virtual void recover( std::istream& );
+      virtual void backup( std::ostream& );
+      virtual void recover( std::istream& );
 
-		friend class boost::serialization::access;
-		template <typename T> friend struct OrchestratorFactory;
+      friend class boost::serialization::access;
+      template <typename T> friend struct OrchestratorFactory;
 
-		template <typename T>
-		void notifySubscribers(const T& ptrEvt);
+      template <typename T>
+      void notifySubscribers(const T& ptrEvt);
 
-	  private:
-		void createScheduler(bool bUseReqModel)
-		{
-		    DLOG(TRACE, "creating orchestrator scheduler...");
-		    Scheduler::ptr_t ptrSched( new SchedulerOrch(this, bUseReqModel) );
-		    ptr_scheduler_ = ptrSched;
-		}
+      private:
+      void createScheduler(bool bUseReqModel)
+      {
+        DLOG(TRACE, "creating orchestrator scheduler...");
+        Scheduler::ptr_t ptrSched( new SchedulerOrch(this, bUseReqModel) );
+        ptr_scheduler_ = ptrSched;
+      }
 
-		std::string url_;
+      std::string url_;
 	  };
 	}
 }

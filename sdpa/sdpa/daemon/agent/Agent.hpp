@@ -49,17 +49,17 @@ namespace sdpa {
           SDPA_LOG_DEBUG("Agent's constructor called ...");
 
           std::ostringstream oss;
-                  oss<<"rank"<<rank;
+          oss<<"rank"<<rank;
 
-                  sdpa::capability_t properCpb(oss.str(), "rank", name);
-                  addCapability(properCpb);
+          sdpa::capability_t properCpb(oss.str(), "rank", name);
+          addCapability(properCpb);
 
          // application gui service
           if(!guiUrl.empty())
           {
-              m_guiService.open ();
-              // attach gui observer
-              SDPA_LOG_INFO("Application GUI service at " << guiUrl << " attached...");
+            m_guiService.open ();
+            // attach gui observer
+            SDPA_LOG_INFO("Application GUI service at " << guiUrl << " attached...");
           }
         }
 
@@ -74,15 +74,11 @@ namespace sdpa {
         void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
         void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
 
-        void cancelNotRunning (sdpa::job_id_t const & job);
+        void cancelPendingJob (const sdpa::events::CancelJobEvent& evt);
 
         bool finished(const id_type & id, const result_type & result);
         bool finished(const id_type & id, const result_type & result, const id_type& );
-        bool failed( const id_type& workflowId
-                   , const result_type & result
-                   , int error_code
-                   , std::string const & reason
-                   );
+        bool failed( const id_type& workflowId, const result_type& result, int error_code, std::string const& reason);
 
         const std::string url() const {return url_;}
 
@@ -101,14 +97,17 @@ namespace sdpa {
         friend class boost::serialization::access;
         template <typename T> friend struct AgentFactory;
 
+        template <typename T>
+        void notifySubscribers(const T& ptrEvt);
+
         void notifyAppGui(const result_type & result);
 
         private:
         void createScheduler(bool bUseReqModel)
         {
-                DLOG(TRACE, "creating agent scheduler...");
-                Scheduler::ptr_t ptrSched( new AgentScheduler(this, bUseReqModel) );
-                ptr_scheduler_ = ptrSched;
+          DLOG(TRACE, "creating agent scheduler...");
+          Scheduler::ptr_t ptrSched( new AgentScheduler(this, bUseReqModel) );
+          ptr_scheduler_ = ptrSched;
         }
 
         std::string url_;
