@@ -84,7 +84,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     if (pEvt->from() != sdpa::daemon::WE)
     {
       // send a JobFinishedAckEvent back to the worker/slave
-      JobFinishedAckEvent::Ptr ptrAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+      JobFinishedAckEvent::Ptr ptrAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
       // send ack to the slave
       SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
@@ -179,11 +179,8 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         // send a JobFinishedAckEvent back to the worker/slave
         JobFailedAckEvent::Ptr evt
             (new JobFailedAckEvent ( name()
-                                                       , pEvt->from()
-                                                       , pEvt->job_id()
-                                                       , pEvt->id()
-                                                       )
-            );
+                                     , pEvt->from()
+                                     , pEvt->job_id() ) );
 
         // send the event to the slave
         sendEventToSlave(evt);

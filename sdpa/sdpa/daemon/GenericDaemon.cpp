@@ -629,6 +629,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
                                                         )
                                         )
                );
+
     throw;
   }
   catch(...)
@@ -640,6 +641,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
                                                       )
                                       )
                );
+
     SDPA_LOG_ERROR("unexpected exception during job-deletion!");
     throw;
   }

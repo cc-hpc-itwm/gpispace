@@ -61,7 +61,6 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent( name()
                                                                           , pEvt->from()
                                                                           , pEvt->job_id()
-                                                                          , pEvt->id()
                                                                          ));
   // send the event to the slave
   sendEventToSlave(pEvtJobFinishedAckEvt);
@@ -285,7 +284,7 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
     }
 
     // delete the job here -> send self a FinishedJobAck
-    JobFinishedAckEvent::Ptr pEvtJobFinishedAck(new JobFinishedAckEvent( name(), name(), job_id, result));
+    JobFinishedAckEvent::Ptr pEvtJobFinishedAck(new JobFinishedAckEvent( name(), name(), job_id ));
     sendEventToSelf(pEvtJobFinishedAck);
     // catch exceptions in the case when forward_to does not exist
     SubmitJobEvent::Ptr pSubJobEvt(new SubmitJobEvent(name(), forward_to, job_id, result, ""));
@@ -341,8 +340,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   // send a JobFailedAckEvent back to the worker/slave
   JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent( name()
                                                                     , pEvt->from()
-                                                                    , pEvt->job_id()
-                                                                    , pEvt->id() ) );
+                                                                    , pEvt->job_id() ));
   // send the event to the slave
   sendEventToSlave(pEvtJobFailedAckEvt);
 
