@@ -328,7 +328,7 @@ int main(int, char **)
 
   {
     std::clog << "testing JobFailedAckEvent...";
-    JobFailedAckEvent e("foo", "bar", "job-id-1", "42");
+    JobFailedAckEvent e("foo", "bar", "job-id-1");
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -388,7 +388,7 @@ int main(int, char **)
 
   {
     std::clog << "testing JobFinishedAckEvent...";
-    JobFinishedAckEvent e("foo", "bar", "job-id-1", "42");
+    JobFinishedAckEvent e("foo", "bar", "job-id-1");
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
