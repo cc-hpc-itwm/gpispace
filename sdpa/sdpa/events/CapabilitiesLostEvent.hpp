@@ -36,19 +36,19 @@ namespace sdpa { namespace events {
 	public:
 		typedef sdpa::shared_ptr<CapabilitiesLostEvent> Ptr;
 
-        CapabilitiesLostEvent() : MgmtEvent(){}
+    CapabilitiesLostEvent() : MgmtEvent(){}
 
 		CapabilitiesLostEvent( const address_t& from , const address_t& to, const sdpa::capabilities_set_t& cpbs = capabilities_set_t() )
           : MgmtEvent(from, to)
           , capabilities_(cpbs)
         {}
 
-          CapabilitiesLostEvent( const address_t& from , const address_t& to, const sdpa::capability_t &cap)
-            : MgmtEvent(from, to)
-            , capabilities_()
-          {
-            capabilities_.insert (cap);
-          }
+    CapabilitiesLostEvent( const address_t& from , const address_t& to, const sdpa::capability_t &cap)
+      : MgmtEvent(from, to)
+      , capabilities_()
+    {
+      capabilities_.insert (cap);
+    }
 
 		virtual ~CapabilitiesLostEvent() { }
 
@@ -57,10 +57,11 @@ namespace sdpa { namespace events {
 
 		std::string str() const { return "CapabilitiesLostEvent"; }
 
-        virtual void handleBy(EventHandler *handler)
-        {
-          handler->handleCapabilitiesLostEvent(this);
-        }
+    virtual void handleBy(EventHandler *handler)
+    {
+      handler->handleCapabilitiesLostEvent(this);
+    }
+
 	private:
 		sdpa::capabilities_set_t capabilities_;
 	};

@@ -46,13 +46,13 @@ namespace sdpa { namespace events {
          :  sdpa::events::JobEvent( a_from, a_to, a_job_id, mid )
         {}
 
-    	virtual ~DeleteJobAckEvent() { }
+    	  virtual ~DeleteJobAckEvent() { }
 
-    	std::string str() const { return "DeleteJobAckEvent"; }
+    	  std::string str() const { return "DeleteJobAckEvent"; }
 
         virtual void handleBy(EventHandler *handler)
         {
-		handler->handleDeleteJobAckEvent(this);
+		      handler->handleDeleteJobAckEvent(this);
         }
     };
 }}
