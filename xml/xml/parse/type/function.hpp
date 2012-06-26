@@ -1046,14 +1046,12 @@ namespace xml
                        << ": "
                        << cpp_util::make::cpp (mod->first, fun->name)
                                                                    << std::endl;
-                stream << "\t@echo -n \""
-                       << cpp_util::make::dep (mod->first, fun->name)
-                       << " \" > $@"                               << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
-                       << " -M $< | sed 's!^"
-                       << fun->name
-                       << "!" << cpp_util::make::stem (mod->first, fun->name)
-                       << "!' >> $@"                               << std::endl;
+                       << " -M -MT '"
+                       << cpp_util::make::dep (mod->first, fun->name)
+                       << " "
+                       << cpp_util::make::obj (mod->first, fun->name)
+                       << "' -MF $@ $<"                            << std::endl;
                 stream << "-include "
                        << cpp_util::make::dep (mod->first, fun->name)
                                                                    << std::endl;
