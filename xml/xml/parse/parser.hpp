@@ -1591,7 +1591,7 @@ namespace xml
 
       if (state.dump_xml_file().size() > 0)
         {
-          const std::string file (state.dump_xml_file());
+          const std::string& file (state.dump_xml_file());
           std::ofstream stream (file.c_str());
 
           if (!stream.good())
