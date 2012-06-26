@@ -26,6 +26,8 @@
 #include <fhg/util/join.hpp>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 
 #include <sstream>
 #include <vector>
@@ -1625,6 +1627,43 @@ namespace xml
           includes::we_header_gen (state, descrs);
 
           type::struct_to_cpp (state, f);
+        }
+
+      if (state.dump_dependencies().size() > 0)
+        {
+          const std::string& file (state.dump_dependencies());
+          std::ofstream stream (file.c_str());
+
+          if (not stream.good())
+            {
+              throw error::could_not_open_file (file);
+            }
+
+          stream << input << ":";
+
+          std::size_t len (input.size() + 1);
+
+          BOOST_FOREACH ( const boost::filesystem::path& path
+                        , state.dependencies()
+                        )
+            {
+              const std::string& dep (path.string());
+
+              if (dep != input)
+                {
+                  if (len + dep.size() > 75)
+                    {
+                      stream << " \\" <<  std::endl;
+                      len = 0;
+                    }
+
+                  len += dep.size();
+
+                  stream << " " << dep;
+                }
+            }
+
+          stream << std::endl;
         }
 
       return f;

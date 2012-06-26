@@ -118,6 +118,7 @@ namespace xml
         bool _Wvirtual_place_not_tunneled;
 
         std::string _dump_xml_file;
+        std::string _dump_dependencies;
         bool _no_inline;
         bool _synthesize_virtual_places;
         bool _force_overwrite_file;
@@ -160,6 +161,7 @@ namespace xml
         std::string _OWvirtual_place_not_tunneled;
 
         std::string _Odump_xml_file;
+        std::string _Odump_dependencies;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
         std::string _Oforce_overwrite_file;
@@ -259,6 +261,7 @@ namespace xml
           , _Wvirtual_place_not_tunneled (true)
 
           , _dump_xml_file ("")
+          , _dump_dependencies ("")
           , _no_inline (false)
           , _synthesize_virtual_places (false)
           , _force_overwrite_file (false)
@@ -300,6 +303,7 @@ namespace xml
           , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
 
           , _Odump_xml_file ("dump-xml-file,d")
+          , _Odump_dependencies ("dump-dependencies,M")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
           , _Oforce_overwrite_file ("force-overwrite-file")
@@ -476,6 +480,11 @@ namespace xml
         const std::string & dump_xml_file (void) const
         {
           return _dump_xml_file;
+        }
+
+        const std::string & dump_dependencies (void) const
+        {
+          return _dump_dependencies;
         }
 
         const std::string& backup_extension (void) const
@@ -694,6 +703,10 @@ namespace xml
             ( _Odump_xml_file.c_str()
             , STRINGVAL(dump_xml_file)
             , "file to dump the folded and pretty xml, empty for no dump"
+            )
+            ( _Odump_dependencies.c_str()
+            , STRINGVAL(dump_dependencies)
+            , "file to dump the dependencies as Make target, empty for no dump"
             )
             ( _Oignore_properties.c_str()
             , BOOLVAL(ignore_properties)
