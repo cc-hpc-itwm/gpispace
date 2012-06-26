@@ -48,6 +48,7 @@ namespace xml
 
       typedef std::vector<std::string> search_path_type;
       typedef std::vector<fs::path> in_progress_type;
+      typedef std::set<fs::path> dependencies_type;
 
       typedef std::vector<std::string> gen_param_type;
 
@@ -84,6 +85,7 @@ namespace xml
         gen_param_type _gen_ldflags;
         gen_param_type _gen_cxxflags;
         in_progress_type _in_progress;
+        dependencies_type _dependencies;
         property::path_type _prop_path;
         context_t _context;
         key_values_t _key_values;
@@ -228,6 +230,7 @@ namespace xml
           , _gen_ldflags ()
           , _gen_cxxflags ()
           , _in_progress ()
+          , _dependencies ()
           , _ignore_properties (false)
           , _Werror (false)
           , _Wall (false)
@@ -444,6 +447,7 @@ namespace xml
         void set_input (const fs::path & path)
         {
           _in_progress.push_back (path);
+          _dependencies.insert (path);
         }
 
         void set_input (const std::string & file)
@@ -457,6 +461,11 @@ namespace xml
             ? fs::path("<stdin>")
             : _in_progress.back()
             ;
+        }
+
+        const dependencies_type& dependencies (void) const
+        {
+          return _dependencies;
         }
 
         const std::string & path_to_cpp (void) const
@@ -612,6 +621,7 @@ namespace xml
                         )
         {
           _in_progress.push_back (path);
+          _dependencies.insert (path);
 
           std::ifstream stream (path.string().c_str());
 
