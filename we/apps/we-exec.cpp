@@ -13,6 +13,8 @@
 
 #include <fhg/util/parse/position.hpp>
 
+#include <fhg/revision.hpp>
+
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
@@ -126,6 +128,7 @@ int main (int argc, char **argv)
 
   desc.add_options()
     ("help,h", "this message")
+    ("version,V", "print version information")
     ("verbose,v", "be verbose")
     ("net", po::value<std::string>(&path_to_act)->default_value("-"), "path to encoded activity or - for stdin")
     ( "mod-path,L"
@@ -155,6 +158,13 @@ int main (int argc, char **argv)
       std::cout << desc << std::endl;
       return EXIT_SUCCESS;
     }
+
+  if (vm.count("version"))
+  {
+    std::cout << fhg::project_info();
+
+    return EXIT_SUCCESS;
+  }
 
   // instantiate daemon and layer
   daemon_type daemon(num_worker);

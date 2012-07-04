@@ -12,6 +12,8 @@
 #include <boost/program_options.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <fhg/revision.hpp>
+
 // ************************************************************************* //
 
 template<typename T>
@@ -38,6 +40,7 @@ main (int argc, char ** argv)
 
   desc.add_options()
     ( "help,h", "this message")
+    ( "version,V", "print version information")
     ( "if,i"
     , po::value<std::string>(&input)->default_value(input)
     , "input file name, - for stdin"
@@ -70,6 +73,13 @@ main (int argc, char ** argv)
 
       return EXIT_SUCCESS;
     }
+
+  if (vm.count("version"))
+  {
+    std::cout << fhg::project_info();
+
+    return EXIT_SUCCESS;
+  }
 
   if (input == "-")
     {

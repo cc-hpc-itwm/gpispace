@@ -12,6 +12,8 @@
 
 #include <fhg/util/starts_with.hpp>
 
+#include <fhg/revision.hpp>
+
 // ************************************************************************* //
 
 namespace detail {
@@ -147,6 +149,7 @@ main (int argc, char ** argv)
 
   desc.add_options()
     ( "help,h", "this message")
+    ( "version,V", "print version information")
     ( "input,i"
     , po::value<std::string>(&input)->default_value("-")
     , "input file name, - for stdin, first positional parameter"
@@ -176,6 +179,13 @@ main (int argc, char ** argv)
       std::cout << argv[0] << ": convert to graphviz format" << std::endl;
 
       std::cout << desc << std::endl;
+      return EXIT_SUCCESS;
+    }
+
+  if (vm.count("version"))
+    {
+      std::cout << fhg::project_info();
+
       return EXIT_SUCCESS;
     }
 
