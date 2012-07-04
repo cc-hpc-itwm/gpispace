@@ -33,7 +33,7 @@ main (int argc, char ** argv)
     , "output file name, - for stdout, second positional parameter"
     )
     ( "xml,x"
-    , po::value<bool>(&xml)->default_value(xml)
+    , po::value<bool>(&xml)->default_value(xml)->implicit_value(true)
     , "write xml instead of text format"
     )
     ;
