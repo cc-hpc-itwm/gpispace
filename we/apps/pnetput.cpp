@@ -38,17 +38,17 @@ main (int argc, char ** argv)
 
   desc.add_options()
     ( "help,h", "this message")
-    ( "if"
+    ( "if,i"
     , po::value<std::string>(&input)->default_value(input)
     , "input file name, - for stdin"
     )
-    ( "of"
+    ( "of,o"
     , po::value<std::string>(&output)->default_value(input)
     , "output file name, - for stdout"
     )
     ( "put,p"
     , po::value<std::vector<std::string> >(&input_spec)
-    , "input token (only literal values are supported right now): port=<value>"
+    , "input token: port=<value>"
     )
     ;
 
