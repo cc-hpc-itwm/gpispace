@@ -778,11 +778,11 @@ namespace xml
 
           output.add_options ()
             ( _Odump_xml_file.c_str()
-            , STRINGVAL(dump_xml_file)
+            , STRINGVAL(dump_xml_file)->implicit_value("/dev/stdout")
             , "file to dump the folded and pretty xml, empty for no dump"
             )
             ( _Odump_dependencies.c_str()
-            , STRINGVAL(dump_dependencies)
+            , STRINGVAL(dump_dependencies)->implicit_value("/dev/stdout")
             , "file to dump the dependencies as Make target, empty for no dump"
             )
             ;
