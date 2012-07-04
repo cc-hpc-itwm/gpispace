@@ -451,7 +451,6 @@ namespace xml
         void set_input (const fs::path & path)
         {
           _in_progress.push_back (path);
-          _dependencies.insert (path);
         }
 
         void set_input (const std::string & file)
@@ -630,7 +629,6 @@ namespace xml
                         )
         {
           _in_progress.push_back (path);
-          _dependencies.insert (path);
 
           std::ifstream stream (path.string().c_str());
 
@@ -655,6 +653,8 @@ namespace xml
                           )
         {
           const fs::path path (expand (file));
+
+          _dependencies.insert (path);
 
           for ( in_progress_type::const_iterator pos (_in_progress.begin())
               ; pos != _in_progress.end()
