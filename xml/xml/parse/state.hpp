@@ -119,6 +119,8 @@ namespace xml
 
         std::string _dump_xml_file;
         std::string _dump_dependencies;
+        std::vector<std::string> _dependencies_target;
+        std::vector<std::string> _dependencies_target_quoted;
         bool _no_inline;
         bool _synthesize_virtual_places;
         bool _force_overwrite_file;
@@ -159,6 +161,8 @@ namespace xml
 
         std::string _Odump_xml_file;
         std::string _Odump_dependencies;
+        std::string _Odependencies_target;
+        std::string _Odependencies_target_quoted;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
         std::string _Oforce_overwrite_file;
@@ -258,6 +262,8 @@ namespace xml
 
           , _dump_xml_file ("")
           , _dump_dependencies ("")
+          , _dependencies_target ()
+          , _dependencies_target_quoted ()
           , _no_inline (false)
           , _synthesize_virtual_places (false)
           , _force_overwrite_file (false)
@@ -298,6 +304,8 @@ namespace xml
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Odump_dependencies ("dump-dependencies,M")
+          , _Odependencies_target ("dependencies-target")
+          , _Odependencies_target_quoted ("dependencies-target-quoted")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
           , _Oforce_overwrite_file ("force-overwrite-file")
@@ -464,25 +472,21 @@ namespace xml
           return _dependencies;
         }
 
-        const std::string & path_to_cpp (void) const
-        {
-          return _path_to_cpp;
-        }
+#define ACCESS(name) const std::string & name (void) const { return _ ## name; }
 
-        const std::string & dump_xml_file (void) const
-        {
-          return _dump_xml_file;
-        }
+        ACCESS(path_to_cpp)
+        ACCESS(dump_xml_file)
+        ACCESS(dump_dependencies)
+        ACCESS(backup_extension)
 
-        const std::string & dump_dependencies (void) const
-        {
-          return _dump_dependencies;
-        }
+#undef ACCESS
 
-        const std::string& backup_extension (void) const
-        {
-          return _backup_extension;
-        }
+#define ACCESS(name) const std::vector<std::string> & name (void) const { return _ ## name; }
+
+        ACCESS(dependencies_target)
+        ACCESS(dependencies_target_quoted)
+
+#undef ACCESS
 
         // ***************************************************************** //
 
@@ -649,6 +653,7 @@ namespace xml
 #define TYPEDVAL(t,x) po::value<t>(&_ ## x)->default_value (_ ## x)
 #define BOOLVAL(x) TYPEDVAL(bool,x)->implicit_value(true)
 #define STRINGVAL(x) TYPEDVAL(std::string,x)
+#define STRINGVECVAL(x) po::value<std::vector<std::string> >(&_ ## x)
 
           po::options_description warnings ("Warnings");
 
@@ -774,16 +779,29 @@ namespace xml
             )
             ;
 
-          po::options_description output ("Other output");
+          po::options_description xml ("XML mirroring");
 
-          output.add_options ()
+          xml.add_options ()
             ( _Odump_xml_file.c_str()
             , STRINGVAL(dump_xml_file)->implicit_value("/dev/stdout")
             , "file to dump the folded and pretty xml, empty for no dump"
             )
+            ;
+
+          po::options_description depend ("Dependency generation");
+
+          depend.add_options ()
             ( _Odump_dependencies.c_str()
             , STRINGVAL(dump_dependencies)->implicit_value("/dev/stdout")
             , "file to dump the dependencies as Make target, empty for no dump"
+            )
+            ( _Odependencies_target.c_str()
+            , STRINGVECVAL(dependencies_target)
+            , "set the target in the dependency file (also as -MT)"
+            )
+            ( _Odependencies_target_quoted.c_str()
+            , STRINGVECVAL(dependencies_target_quoted)
+            , "like -MT but quote special characters (also as -MQ)"
             )
             ;
 
@@ -831,15 +849,72 @@ namespace xml
 #undef BOOLVAL
 #undef STRINGVAL
 
-          desc.add (output);
           desc.add (net);
           _options_optimize.add_options (desc);
 
+          desc.add (xml);
+          desc.add (depend);
           desc.add (generate);
           desc.add (file);
           desc.add (warnings);
         }
       };
+
+      namespace detail
+      {
+        typedef std::pair<std::string, std::string> pair_type;
+
+        inline pair_type mk (const std::string & param)
+        {
+          return std::make_pair (param, std::string());
+        }
+
+        inline pair_type reg_M (const std::string& s)
+        {
+          std::string::const_iterator pos (s.begin());
+          const std::string::const_iterator end (s.end());
+
+          if (pos != end)
+            {
+              switch (*pos)
+                {
+                case '-':
+                  if (++pos != end)
+                    {
+                      switch (*pos)
+                        {
+                        case 'M':
+                          if (++pos == end)
+                            {
+                              return mk ("dump-dependencies");
+                            }
+                          else
+                            {
+                              switch (*pos)
+                                {
+                                case 'M':
+                                case 'F':
+                                case 'G':
+                                  return mk ("dump-dependencies");
+                                case 'T':
+                                  return mk ("dependencies-target");
+                                case 'Q':
+                                  return mk ("dependencies-target-quoted");
+                                default: break;
+                                }
+                            }
+                          break;
+                        default: break;
+                        }
+                    }
+                  break;
+                default: break;
+                }
+            }
+
+          return mk ("");
+        }
+      }
     }
   }
 }

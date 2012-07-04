@@ -53,7 +53,9 @@ main (int argc, char ** argv)
   try
   {
     po::store( po::command_line_parser(argc, argv)
-             . options(desc).positional(p).run()
+             . options(desc).positional(p)
+             . extra_parser (xml::parse::state::detail::reg_M)
+             . run()
              , vm
              );
     po::notify(vm);

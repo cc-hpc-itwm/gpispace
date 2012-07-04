@@ -1571,6 +1571,68 @@ namespace xml
 
     // ********************************************************************* //
 
+    namespace detail
+    {
+      class wrapping_word_stream
+      {
+      private:
+        const std::size_t _max_len;
+        std::size_t _len;
+        std::ostream& _stream;
+      public:
+        wrapping_word_stream ( std::ostream& stream
+                             , const std::size_t max = 75
+                             )
+          : _max_len (max)
+          , _len (0)
+          , _stream (stream)
+        {}
+
+        void put (const std::string& w)
+        {
+          if (_len + w.size() > _max_len)
+            {
+              _stream << " \\" << std::endl << " ";
+              _len = 1;
+            }
+          else
+            {
+              if (_len > 0)
+                {
+                  _stream << " ";
+                }
+              _len += 1;
+            }
+
+          _len += w.size();
+
+          _stream << w;
+        }
+
+        void append (const std::string& s)
+        {
+          _stream << s;
+
+          _len += s.size();
+        }
+      };
+
+      class quote
+      {
+      private:
+        std::string _quoted;
+
+      public:
+        quote (const std::string& s)
+          : _quoted (s)
+        {};
+
+        operator std::string () const { return _quoted; }
+      };
+    }
+
+    // ********************************************************************* //
+
     inline type::function_type
     just_parse (state::type & state, const std::string & input)
     {
@@ -1639,9 +1701,36 @@ namespace xml
               throw error::could_not_open_file (file);
             }
 
-          stream << input << ":";
+          detail::wrapping_word_stream wrapping_stream (stream);
 
-          std::size_t len (input.size() + 1);
+          if (state.dependencies_target().size() > 0)
+            {
+              BOOST_FOREACH ( const std::string& target
+                            , state.dependencies_target()
+                            )
+                {
+                  wrapping_stream.put (target);
+                }
+            }
+
+          if (state.dependencies_target_quoted().size() > 0)
+            {
+              BOOST_FOREACH ( const std::string& target
+                            , state.dependencies_target_quoted()
+                            )
+                {
+                  wrapping_stream.put (detail::quote (target));
+                }
+            }
+
+          if (  (state.dependencies_target().size() == 0)
+             && (state.dependencies_target_quoted().size() == 0)
+             )
+            {
+              wrapping_stream.put (input);
+            }
+
+          wrapping_stream.append (":");
 
           BOOST_FOREACH ( const boost::filesystem::path& path
                         , state.dependencies()
@@ -1651,15 +1740,7 @@ namespace xml
 
               if (dep != input)
                 {
-                  if (len + dep.size() > 75)
-                    {
-                      stream << " \\" <<  std::endl;
-                      len = 0;
-                    }
-
-                  len += dep.size();
-
-                  stream << " " << dep;
+                  wrapping_stream.put (dep);
                 }
             }
 
