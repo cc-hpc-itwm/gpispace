@@ -19,6 +19,8 @@
 #ifndef FHG_UTIL_REVISION_HPP
 #define FHG_UTIL_REVISION_HPP 1
 
+#include <string>
+
 namespace fhg
 {
   extern const char * project_contact ();
@@ -30,6 +32,8 @@ namespace fhg
   extern const char * project_build_compiler ();
   extern const char * project_build_info ();
   extern const char * project_build_count ();
+
+  extern std::string project_info ();
 }
 
 #endif
