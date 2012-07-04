@@ -1900,8 +1900,6 @@ namespace xml
 
         util::check_no_change_fstream stream (state, file);
 
-        state.verbose ("write to " + file.string());
-
         signature::cpp::cpp_header
           (stream, s.sig, s.name, s.path, cpp_util::path::type());
 

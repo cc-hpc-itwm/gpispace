@@ -125,9 +125,6 @@ namespace xml
         std::string _backup_extension;
         bool _do_file_backup;
 
-        std::string _verbose_file;
-        mutable bool _verbose_file_opened;
-        mutable std::ofstream _verbose_stream;
         std::string _path_to_cpp;
 
         std::string _Osearch_path;
@@ -168,7 +165,6 @@ namespace xml
         std::string _Obackup_extension;
         std::string _Odo_file_backup;
 
-        std::string _Overbose_file;
         std::string _Opath_to_cpp;
 
         template<typename W>
@@ -268,8 +264,6 @@ namespace xml
           , _backup_extension ("~")
           , _do_file_backup (true)
 
-          , _verbose_file ("")
-          , _verbose_file_opened (false)
           , _path_to_cpp ("")
 
           , _Osearch_path ("search-path,I")
@@ -310,7 +304,6 @@ namespace xml
           , _Obackup_extension ("backup-extension")
           , _Odo_file_backup ("do-backup")
 
-          , _Overbose_file ("verbose-file,v")
           , _Opath_to_cpp ("path-to-cpp,g")
         {}
 
@@ -523,28 +516,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        void verbose (const std::string & msg) const
-        {
-          if (_verbose_file.size() > 0)
-            {
-              if (!_verbose_file_opened)
-                {
-                  _verbose_stream.open (_verbose_file.c_str());
-
-                  if (!_verbose_stream.good())
-                    {
-                      throw error::could_not_open_file (_verbose_file);
-                    }
-
-                  _verbose_file_opened = true;
-                }
-
-              _verbose_stream << msg << std::endl;
-            }
-        }
-
-        // ***************************************************************** //
-
 #define ACCESST(_t,_x)                                  \
         const _t & _x (void) const { return _ ## _x; }  \
         _t & _x (void){ return _ ## _x; }
@@ -691,10 +662,6 @@ namespace xml
             ( _Ogen_cxxflags.c_str()
             , po::value<gen_param_type>(&_gen_cxxflags)
             , "cxxflags for generated makefile"
-            )
-            ( _Overbose_file.c_str()
-            , STRINGVAL(verbose_file)
-            , "verbose output goes there, empty for no verbose output"
             )
             ( _Opath_to_cpp.c_str()
             , STRINGVAL(path_to_cpp)
