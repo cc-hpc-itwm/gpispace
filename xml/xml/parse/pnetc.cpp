@@ -26,11 +26,11 @@ main (int argc, char ** argv)
     ("help,h", "this message")
     ( "input,i"
     , po::value<std::string>(&input)->default_value(input)
-    , "input file name, - for stdin"
+    , "input file name, - for stdin, first positional parameter"
     )
     ( "output,o"
     , po::value<std::string>(&output)->default_value(output)
-    , "output file name, - for stdout"
+    , "output file name, - for stdout, second positional parameter"
     )
     ( "xml,x"
     , po::value<bool>(&xml)->default_value(xml)
@@ -43,7 +43,7 @@ main (int argc, char ** argv)
   state.add_options (desc);
 
   po::positional_options_description p;
-  p.add("input", -1);
+  p.add("input", 1).add("output",2);
 
   po::variables_map vm;
 
