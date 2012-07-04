@@ -35,30 +35,23 @@ set_source_files_properties(pnetc.cpp OBJECT_DEPENDS ${headerlist_hpp})
 
 add_executable(pnetc pnetc.cpp)
 #add_dependencies(pnetc gen-includes)
-target_link_libraries(
-        pnetc
-        xml_util_mk_fstream
-        ${WE_LIBRARIES}
-        ${Boost_LIBRARIES}
-)
-install (TARGETS pnetc
-  RUNTIME
-  DESTINATION bin
-  COMPONENT runtime)
+target_link_libraries(pnetc fhg-revision)
+target_link_libraries(pnetc xml_util_mk_fstream)
+target_link_libraries(pnetc ${WE_LIBRARIES})
+target_link_libraries(pnetc  ${Boost_LIBRARIES})
+
+install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 
 if (ENABLE_STATIC_BINARIES)
   add_executable(pnetc.static pnetc.cpp ${headerlist_hpp})
-  target_link_libraries(pnetc.static
-                        xml_util_mk_fstream
-                        ${WE_LIBRARIES}
-                        ${Boost_LIBRARIES}
-                       )
+  target_link_libraries(pnetc.static fhg-revision)
+  target_link_libraries(pnetc.static xml_util_mk_fstream)
+  target_link_libraries(pnetc.static ${WE_LIBRARIES})
+  target_link_libraries(pnetc.static ${Boost_LIBRARIES})
+
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
 
-  install (TARGETS pnetc.static
-    RUNTIME
-    DESTINATION bin
-    COMPONENT runtime)
+  install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
 endif (ENABLE_STATIC_BINARIES)
 
 install (FILES ${hdrs} ${headerlist_hpp}

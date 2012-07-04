@@ -9,6 +9,8 @@
 
 #include <we/we.hpp>
 
+#include <fhg/revision.hpp>
+
 // ************************************************************************* //
 
 namespace po = boost::program_options;
@@ -23,7 +25,8 @@ main (int argc, char ** argv)
   po::options_description desc("General");
 
   desc.add_options()
-    ("help,h", "this message")
+    ( "help,h", "this message")
+    ( "version,V", "print version information")
     ( "input,i"
     , po::value<std::string>(&input)->default_value(input)
     , "input file name, - for stdin, first positional parameter"
@@ -66,6 +69,13 @@ main (int argc, char ** argv)
       std::cout << argv[0] << ": the petri net compiler" << std::endl;
 
       std::cout << desc << std::endl;
+
+      return EXIT_SUCCESS;
+    }
+
+  if (vm.count("version"))
+    {
+      std::cout << fhg::project_info();
 
       return EXIT_SUCCESS;
     }
