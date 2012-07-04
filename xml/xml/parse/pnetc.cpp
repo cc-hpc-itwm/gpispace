@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -39,9 +38,9 @@ main (int argc, char ** argv)
     )
     ;
 
-  boost::shared_ptr<xml::parse::state::type> state (new xml::parse::state::type);
+  xml::parse::state::type state;
 
-  state->add_options (desc);
+  state.add_options (desc);
 
   po::positional_options_description p;
   p.add("input", -1);
@@ -80,11 +79,11 @@ main (int argc, char ** argv)
 
   try
   {
-    xml::parse::type::function_type f (xml::parse::frontend (*state, input));
+    xml::parse::type::function_type f (xml::parse::frontend (state, input));
 
-    we::transition_t trans (f.synthesize<we::activity_t> (*state));
+    we::transition_t trans (f.synthesize<we::activity_t> (state));
 
-    we::type::optimize::optimize (trans, state->options_optimize());
+    we::type::optimize::optimize (trans, state.options_optimize());
 
     // WORK HERE: The xml dump from the transition
 #if 0
