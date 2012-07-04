@@ -173,6 +173,8 @@ main (int argc, char ** argv)
 
   if (vm.count("help"))
     {
+      std::cout << argv[0] << ": convert to graphviz format" << std::endl;
+
       std::cout << desc << std::endl;
       return EXIT_SUCCESS;
     }

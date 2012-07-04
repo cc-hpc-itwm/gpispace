@@ -63,7 +63,10 @@ main (int argc, char ** argv)
 
   if (vm.count("help"))
     {
+      std::cout << argv[0] << ": the petri net compiler" << std::endl;
+
       std::cout << desc << std::endl;
+
       return EXIT_SUCCESS;
     }
 

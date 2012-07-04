@@ -149,6 +149,8 @@ main (int argc, char ** argv)
 
   if (vm.count("help"))
     {
+      std::cout << argv[0] << ": get tokens from output ports" << std::endl;
+
       std::cout << desc << std::endl;
 
       return EX_OK;
