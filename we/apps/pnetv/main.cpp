@@ -43,6 +43,13 @@ int main(int argc, char *argv[]) {
     );
     po::notify(variables);
 
+    if (variables.count("version"))
+      {
+        std::cout << fhg::project_info();
+
+        return EXIT_SUCCESS;
+      }
+
     if (variables.count("help") || inputFiles.empty()) {
         std::cout << "usage: pnetv [options] FILE..." << std::endl
                   << std::endl
@@ -69,13 +76,6 @@ int main(int argc, char *argv[]) {
 
         return inputFiles.empty() ? EXIT_INVALID_ARGUMENTS : EXIT_SUCCESS;
     }
-
-    if (variables.count("version"))
-      {
-        std::cout << fhg::project_info();
-
-        return EXIT_SUCCESS;
-      }
 
     int exitCode = EXIT_SUCCESS;
 
