@@ -650,35 +650,9 @@ namespace xml
 #define BOOLVAL(x) TYPEDVAL(bool,x)->implicit_value(true)
 #define STRINGVAL(x) TYPEDVAL(std::string,x)
 
-          desc.add_options ()
-            ( _Osearch_path.c_str()
-            , po::value<search_path_type>(&_search_path)
-            , "search path"
-            )
-            ( _Ogen_ldflags.c_str()
-            , po::value<gen_param_type>(&_gen_ldflags)
-            , "ldflags for generated makefile"
-            )
-            ( _Ogen_cxxflags.c_str()
-            , po::value<gen_param_type>(&_gen_cxxflags)
-            , "cxxflags for generated makefile"
-            )
-            ( _Opath_to_cpp.c_str()
-            , STRINGVAL(path_to_cpp)
-            , "path for cpp output, empty for no cpp output"
-            )
-            ( _Odump_xml_file.c_str()
-            , STRINGVAL(dump_xml_file)
-            , "file to dump the folded and pretty xml, empty for no dump"
-            )
-            ( _Odump_dependencies.c_str()
-            , STRINGVAL(dump_dependencies)
-            , "file to dump the dependencies as Make target, empty for no dump"
-            )
-            ( _Oignore_properties.c_str()
-            , BOOLVAL(ignore_properties)
-            , "when set to true, no properties are parsed"
-            )
+          po::options_description warnings ("Warnings");
+
+          warnings.add_options ()
             ( _OWerror.c_str()
             , BOOLVAL(Werror)
             , "cast warnings to errors"
@@ -781,6 +755,45 @@ namespace xml
             , BOOLVAL(Wvirtual_place_not_tunneled)
             , "warn when a virtual place is not tunneled"
             )
+            ;
+
+          po::options_description generate ("Wrapper generation");
+
+          generate.add_options ()
+            ( _Ogen_ldflags.c_str()
+            , po::value<gen_param_type>(&_gen_ldflags)
+            , "ldflags for generated makefile"
+            )
+            ( _Ogen_cxxflags.c_str()
+            , po::value<gen_param_type>(&_gen_cxxflags)
+            , "cxxflags for generated makefile"
+            )
+            ( _Opath_to_cpp.c_str()
+            , STRINGVAL(path_to_cpp)->implicit_value ("gen")
+            , "path for cpp output, empty for no cpp output"
+            )
+            ;
+
+          po::options_description output ("Other output");
+
+          output.add_options ()
+            ( _Odump_xml_file.c_str()
+            , STRINGVAL(dump_xml_file)
+            , "file to dump the folded and pretty xml, empty for no dump"
+            )
+            ( _Odump_dependencies.c_str()
+            , STRINGVAL(dump_dependencies)
+            , "file to dump the dependencies as Make target, empty for no dump"
+            )
+            ;
+
+          po::options_description net ("Network handling");
+
+          net.add_options ()
+            ( _Oignore_properties.c_str()
+            , BOOLVAL(ignore_properties)
+            , "when set to true, no properties are parsed"
+            )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)
             , "if set, ignore the keyword inline"
@@ -789,6 +802,11 @@ namespace xml
             , BOOLVAL(synthesize_virtual_places)
             , "if set, synthesize virtual places"
             )
+            ;
+
+          po::options_description file ("File handling");
+
+          file.add_options ()
             ( _Oforce_overwrite_file.c_str()
             , BOOLVAL(force_overwrite_file)
             , "force overwrite files"
@@ -802,11 +820,24 @@ namespace xml
             , "make backup copies of files before overwriting"
             )
             ;
+
+          desc.add_options ()
+            ( _Osearch_path.c_str()
+            , po::value<search_path_type>(&_search_path)
+            , "search path"
+            )
+            ;
 #undef TYPEDVAL
 #undef BOOLVAL
 #undef STRINGVAL
 
+          desc.add (output);
+          desc.add (net);
           _options_optimize.add_options (desc);
+
+          desc.add (generate);
+          desc.add (file);
+          desc.add (warnings);
         }
       };
     }

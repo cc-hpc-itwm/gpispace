@@ -20,7 +20,7 @@ main (int argc, char ** argv)
   std::string output ("/dev/stdout");
   bool xml (false);
 
-  po::options_description desc("options");
+  po::options_description desc("General");
 
   desc.add_options()
     ("help,h", "this message")
