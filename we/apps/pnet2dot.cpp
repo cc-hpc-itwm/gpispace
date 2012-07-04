@@ -93,50 +93,48 @@ main (int argc, char ** argv)
 
   we::type::dot::options<pred_t> options;
 
-  po::options_description desc("options");
+  po::options_description desc ("General");
+  po::options_description show ("Show");
+  po::options_description expand ("Expand");
 
-  desc.add_options()
-    ( "help,h", "this message")
-    ( "input,i"
-    , po::value<std::string>(&input)->default_value("-")
-    , "input file name, - for stdin"
-    )
-    ( "output,o"
-    , po::value<std::string>(&output)->default_value("-")
-    , "output file name, - for stdout"
-    )
+#define BOOLVAL(x) po::value<bool>(&x)->default_value(x)->implicit_value(true)
+
+  show.add_options ()
     ( "full-signatures"
-    , po::value<bool>(&options.full)->default_value(options.full)
+    , BOOLVAL(options.full)
     , "whether or not to show full signatures"
     )
-    ( "show-token"
-    , po::value<bool>(&options.show_token)->default_value(options.show_token)
+    ( "token"
+    , BOOLVAL(options.show_token)
     , "whether or not to show the tokens on a place"
     )
-    ( "show-signature"
-    , po::value<bool>(&options.show_signature)->default_value(options.show_signature)
+    ( "signature"
+    , BOOLVAL(options.show_signature)
     , "whether or not to show the place and port signatures"
     )
-    ( "show-priority"
-    , po::value<bool>(&options.show_priority)->default_value(options.show_priority)
+    ( "priority"
+    , BOOLVAL(options.show_priority)
     , "whether or not to show the transition priority"
     )
-    ( "show-intext"
-    , po::value<bool>(&options.show_intext)->default_value(options.show_intext)
+    ( "intext"
+    , BOOLVAL(options.show_intext)
     , "whether or not to show the transition internal/external flag"
     )
-    ( "show-virtual"
-    , po::value<bool>(&options.show_virtual)->default_value(options.show_virtual)
+    ( "virtual"
+    , BOOLVAL(options.show_virtual)
     , "whether or not to show the virtual flag"
     )
-    ( "show-real"
-    , po::value<bool>(&options.show_real)->default_value(options.show_real)
+    ( "real"
+    , BOOLVAL(options.show_real)
     , "whether or not to show the real places, associated with a place"
     )
-    ( "show-tunnel-connection"
-    , po::value<bool>(&options.show_tunnel_connection)->default_value(options.show_tunnel_connection)
+    ( "tunnel-connection"
+    , BOOLVAL(options.show_tunnel_connection)
     , "whether or not to show the tunnel connections"
     )
+    ;
+
+  expand.add_options ()
     ( "not-starts-with"
     , po::value<vec_type>(&not_starts_with)
     , "do not expand transitions that start with a certain prefix"
@@ -147,8 +145,24 @@ main (int argc, char ** argv)
     )
     ;
 
+  desc.add_options()
+    ( "help,h", "this message")
+    ( "input,i"
+    , po::value<std::string>(&input)->default_value("-")
+    , "input file name, - for stdin, first positional parameter"
+    )
+    ( "output,o"
+    , po::value<std::string>(&output)->default_value("-")
+    , "output file name, - for stdout, second positional parameter"
+    )
+    ;
+
+  desc.add (show).add (expand);
+
+#undef BOOLVAL
+
   po::positional_options_description p;
-  p.add("input", -1);
+  p.add("input", 1).add("output", 2);
 
   po::variables_map vm;
   po::store( po::command_line_parser(argc, argv)
