@@ -10,6 +10,8 @@
 #include <jpna/PetriNet.h>
 #include <jpna/Verification.h>
 
+#include <fhg/revision.hpp>
+
 enum {
     EXIT_INVALID_ARGUMENTS = EXIT_FAILURE,
     EXIT_IO_ERROR,
@@ -25,6 +27,7 @@ int main(int argc, char *argv[]) {
     po::options_description options("options");
     options.add_options()
         ( "help,h", "this message")
+        ( "version,V", "print version information")
         ( "input,i"
           , po::value(&inputFiles)
           , "input file name, - for stdin"
@@ -66,6 +69,13 @@ int main(int argc, char *argv[]) {
 
         return inputFiles.empty() ? EXIT_INVALID_ARGUMENTS : EXIT_SUCCESS;
     }
+
+    if (variables.count("version"))
+      {
+        std::cout << fhg::project_info();
+
+        return EXIT_SUCCESS;
+      }
 
     int exitCode = EXIT_SUCCESS;
 
