@@ -1784,11 +1784,14 @@ namespace xml
       if (state.dump_dependencies().size() > 0)
         {
           const std::string& file (state.dump_dependencies());
-          util::check_no_change_fstream stream (state, file);
+          std::ofstream stream (file.c_str());
+
+          if (!stream.good())
+            {
+              throw error::could_not_open_file (file);
+            }
 
           dependencies::mk (state, input, stream);
-
-          stream.commit();
         }
 
       return f;
