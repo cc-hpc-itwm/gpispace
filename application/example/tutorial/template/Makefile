@@ -3,10 +3,11 @@ ifndef MAIN
   MAIN = work_and_wait
 endif
 
-DEP += $(wildcard *.xpnet)
-DEP += ../sequence/use_sequence.xpnet
+###############################################################################
 
 PNETC_OPTS += -I..
+
+###############################################################################
 
 NOT_STARTS_WITH += generate
 NOT_ENDS_WITH += work

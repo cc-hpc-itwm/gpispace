@@ -3,11 +3,11 @@ ifndef MAIN
   MAIN = n_of_m
 endif
 
-DEP += $(wildcard *.xpnet)
-DEP += ../credit/sequence_forward_credit.xpnet
-DEP += ../template/three.xpnet
+###############################################################################
 
 PNETC_OPTS += -I..
+
+###############################################################################
 
 NOT_STARTS_WITH += generate
 #NOT_ENDS_WITH += work

@@ -3,9 +3,9 @@ ifndef MAIN
   MAIN = sum_many
 endif
 
-CXXINCLUDEPATHS += $(CURDIR)/include
+###############################################################################
 
-DEP += $(wildcard *.xpnet)
+CXXINCLUDEPATHS += $(CURDIR)/include
 
 ###############################################################################
 

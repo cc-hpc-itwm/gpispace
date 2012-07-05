@@ -3,10 +3,10 @@ ifndef MAIN
   MAIN = hello_many
 endif
 
+###############################################################################
+
 CXXINCLUDEPATHS += $(CURDIR)/include
 CXXLIBRARYPATHS += $(CURDIR)/lib
-
-DEP += $(wildcard $(CURDIR)/*.xpnet)
 
 ###############################################################################
 

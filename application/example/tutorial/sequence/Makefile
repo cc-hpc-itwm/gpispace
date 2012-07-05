@@ -3,8 +3,6 @@ ifndef MAIN
   MAIN = sequence
 endif
 
-DEP += $(wildcard *.xpnet)
-
 ###############################################################################
 
 #NOT_STARTS_WITH = generate
