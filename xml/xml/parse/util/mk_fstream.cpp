@@ -56,7 +56,7 @@ namespace xml
       }
       void check_no_change_fstream::commit() const
       {
-        if (boost::filesystem::exists (_file))
+        if (boost::filesystem::is_regular_file (_file))
           {
             std::ifstream ifs (_file.string().c_str());
 
