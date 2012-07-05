@@ -16,6 +16,8 @@
 #include <xml/parse/headerlist.hpp>
 #include <xml/parse/headergen.hpp>
 
+#include <xml/parse/util/mk_fstream.hpp>
+
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
@@ -1571,18 +1573,17 @@ namespace xml
 
     // ********************************************************************* //
 
-    namespace detail
+    namespace dependencies
     {
+      template<typename Stream>
       class wrapping_word_stream
       {
       private:
         const std::size_t _max_len;
         mutable std::size_t _len;
-        std::ostream& _stream;
+        Stream& _stream;
       public:
-        wrapping_word_stream ( std::ostream& stream
-                             , const std::size_t max = 75
-                             )
+        wrapping_word_stream (Stream& stream, const std::size_t max = 75)
           : _max_len (max)
           , _len (0)
           , _stream (stream)
@@ -1643,6 +1644,76 @@ namespace xml
 
         operator const std::string& () const { return _quoted; }
       };
+
+      template<typename Stream>
+      void mk ( const state::type& state
+              , const std::string& input
+              , Stream& stream
+              )
+      {
+        wrapping_word_stream<Stream> wrapping_stream (stream);
+
+        if (state.dependencies_target().size() > 0)
+          {
+            BOOST_FOREACH ( const std::string& target
+                          , state.dependencies_target()
+                          )
+              {
+                wrapping_stream.put (target);
+              }
+          }
+
+        if (state.dependencies_target_quoted().size() > 0)
+          {
+            BOOST_FOREACH ( const std::string& target
+                          , state.dependencies_target_quoted()
+                          )
+              {
+                wrapping_stream.put (quote (target));
+              }
+          }
+
+        if (  (state.dependencies_target().size() == 0)
+           && (state.dependencies_target_quoted().size() == 0)
+           )
+          {
+            wrapping_stream.put (input);
+          }
+
+        wrapping_stream.append (":");
+
+        BOOST_FOREACH ( const boost::filesystem::path& path
+                      , state.dependencies()
+                      )
+          {
+            const std::string& dep (path.string());
+
+            if (dep != input)
+              {
+                wrapping_stream.put (dep);
+              }
+          }
+
+        wrapping_stream.newl();
+
+        if (state.dependencies_add_phony_targets())
+          {
+            BOOST_FOREACH ( const boost::filesystem::path& path
+                          , state.dependencies()
+                          )
+              {
+                const std::string& dep (path.string());
+
+                if (dep != input)
+                  {
+                    wrapping_stream.newl();
+                    wrapping_stream.append (dep);
+                    wrapping_stream.append(":");
+                    wrapping_stream.newl();
+                  }
+              }
+          }
+      }
     }
 
     // ********************************************************************* //
@@ -1713,75 +1784,11 @@ namespace xml
       if (state.dump_dependencies().size() > 0)
         {
           const std::string& file (state.dump_dependencies());
-          std::ofstream stream (file.c_str());
+          util::check_no_change_fstream stream (state, file);
 
-          if (not stream.good())
-            {
-              throw error::could_not_open_file (file);
-            }
+          dependencies::mk (state, input, stream);
 
-          detail::wrapping_word_stream wrapping_stream (stream);
-
-          if (state.dependencies_target().size() > 0)
-            {
-              BOOST_FOREACH ( const std::string& target
-                            , state.dependencies_target()
-                            )
-                {
-                  wrapping_stream.put (target);
-                }
-            }
-
-          if (state.dependencies_target_quoted().size() > 0)
-            {
-              BOOST_FOREACH ( const std::string& target
-                            , state.dependencies_target_quoted()
-                            )
-                {
-                  wrapping_stream.put (detail::quote (target));
-                }
-            }
-
-          if (  (state.dependencies_target().size() == 0)
-             && (state.dependencies_target_quoted().size() == 0)
-             )
-            {
-              wrapping_stream.put (input);
-            }
-
-          wrapping_stream.append (":");
-
-          BOOST_FOREACH ( const boost::filesystem::path& path
-                        , state.dependencies()
-                        )
-            {
-              const std::string& dep (path.string());
-
-              if (dep != input)
-                {
-                  wrapping_stream.put (dep);
-                }
-            }
-
-          wrapping_stream.newl();
-
-          if (state.dependencies_add_phony_targets())
-            {
-              BOOST_FOREACH ( const boost::filesystem::path& path
-                            , state.dependencies()
-                            )
-                {
-                  const std::string& dep (path.string());
-
-                  if (dep != input)
-                    {
-                      wrapping_stream.newl();
-                      wrapping_stream.append (dep);
-                      wrapping_stream.append(":");
-                      wrapping_stream.newl();
-                    }
-                }
-            }
+          stream.commit();
         }
 
       return f;
