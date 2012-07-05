@@ -130,6 +130,8 @@ PATH_LIB = $(GEN)/pnetc/op
 WE_EXEC_LIBPATHS += $(PATH_LIB)
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
 
+DEP_XML = $(XML).d
+
 ###############################################################################
 
 PNET2DOT += $(addprefix --not-starts-with ,$(NOT_STARTS_WITH))
@@ -144,8 +146,6 @@ PNETC += --gen-cxxflags=-O3
 PNETC += $(addprefix --gen-cxxflags=-I,$(CXXINCLUDEPATHS))
 PNETC += $(addprefix --gen-ldflags=-L,$(CXXLIBRARYPATHS))
 PNETC += --force-overwrite-file=true
-PNETC += --Woverwrite-file=false
-PNETC += --Wbackup-file=false
 
 WE_EXEC = LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARYPATHS))
 WE_EXEC += $(WE_EXEC_CMD)
@@ -169,16 +169,23 @@ all: net lib run
 
 ###############################################################################
 
-$(NET): $(XML) $(DEP)
-	$(PNETC) $(PNETC_OPTS) $(XML) -o $@
+$(DEP_XML): $(XML)
+	$(PNETC) -i $(XML) -o /dev/null $(PNETC_OPTS) -MT '$(DEP_XML)' -MF $@
 
-$(NET_NOINLINE): $(XML) $(DEP)
-	$(PNETC_NOINLINE) $(PNETC_OPTS) $(XML) -o $@
+-include "$(DEP_XML)"
 
 ###############################################################################
 
-$(GEN): $(XML) $(DEP)
-	$(PNETC) $(PNETC_OPTS) $(XML) -o /dev/null -g $@
+$(NET): $(DEP_XML) $(XML) $(DEP)
+	$(PNETC) -i $(XML) $(PNETC_OPTS) -o $@
+
+$(NET_NOINLINE): $(DEP_XML) $(XML) $(DEP)
+	$(PNETC_NOINLINE) -i $(XML) $(PNETC_OPTS) -o $@
+
+###############################################################################
+
+$(GEN): $(DEP_XML) $(XML) $(DEP)
+	$(PNETC) -i $(XML) -o /dev/null $(PNETC_OPTS) -g $@
 	$(TOUCH) $@
 
 .PHONY: lib
@@ -214,6 +221,8 @@ clean:
 	-$(RM) $(PS)
 	-$(RM) $(PS_NOINLINE)
 	-$(RM) $(OUT)
+	-$(RM) $(DEP_XML)
+	-$(RM) *~
 
 ###############################################################################
 
