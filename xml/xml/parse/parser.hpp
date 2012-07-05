@@ -1577,7 +1577,7 @@ namespace xml
       {
       private:
         const std::size_t _max_len;
-        std::size_t _len;
+        mutable std::size_t _len;
         std::ostream& _stream;
       public:
         wrapping_word_stream ( std::ostream& stream
@@ -1588,32 +1588,32 @@ namespace xml
           , _stream (stream)
         {}
 
-        void put (const std::string& w)
+        void put (const std::string& w) const
         {
           if (_len + w.size() > _max_len)
             {
-              _stream << " \\" << std::endl << " ";
-              _len = 1;
+              _stream << " \\"; newl(); append (" ");
             }
-          else
+          else if (_len > 0)
             {
-              if (_len > 0)
-                {
-                  _stream << " ";
-                }
-              _len += 1;
+              append (" ");
             }
 
-          _len += w.size();
-
-          _stream << w;
+          append (w);
         }
 
-        void append (const std::string& s)
+        void append (const std::string& s) const
         {
           _stream << s;
 
           _len += s.size();
+        }
+
+        void newl () const
+        {
+          _stream << std::endl;
+
+          _len = 0;
         }
       };
 
@@ -1623,8 +1623,7 @@ namespace xml
         std::string _quoted;
 
       public:
-        quote (const std::string& s)
-          : _quoted ()
+        quote (const std::string& s) : _quoted ()
         {
           std::string::const_iterator pos (s.begin());
           const std::string::const_iterator end (s.end());
@@ -1642,7 +1641,7 @@ namespace xml
             }
         };
 
-        operator std::string () const { return _quoted; }
+        operator const std::string& () const { return _quoted; }
       };
     }
 
@@ -1759,7 +1758,7 @@ namespace xml
                 }
             }
 
-          stream << std::endl;
+          wrapping_stream.newl();
         }
 
       return f;
