@@ -119,6 +119,7 @@ namespace xml
 
         std::string _dump_xml_file;
         std::string _dump_dependencies;
+        bool _dump_dependenciesD;
         std::vector<std::string> _dependencies_target;
         std::vector<std::string> _dependencies_target_quoted;
         bool _dependencies_add_phony_targets;
@@ -162,6 +163,7 @@ namespace xml
 
         std::string _Odump_xml_file;
         std::string _Odump_dependencies;
+        std::string _Odump_dependenciesD;
         std::string _Odependencies_target;
         std::string _Odependencies_target_quoted;
         std::string _Odependencies_add_phony_targets;
@@ -264,6 +266,7 @@ namespace xml
 
           , _dump_xml_file ("")
           , _dump_dependencies ("")
+          , _dump_dependenciesD ()
           , _dependencies_target ()
           , _dependencies_target_quoted ()
           , _dependencies_add_phony_targets ()
@@ -307,6 +310,7 @@ namespace xml
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Odump_dependencies ("dump-dependencies,M")
+          , _Odump_dependenciesD ("dump-dependenciesD")
           , _Odependencies_target ("dependencies-target")
           , _Odependencies_target_quoted ("dependencies-target-quoted")
           , _Odependencies_add_phony_targets ("dependencies-add-phony-targets")
@@ -476,7 +480,9 @@ namespace xml
           return _dependencies;
         }
 
-#define ACCESS(name) const std::string & name (void) const { return _ ## name; }
+#define ACCESS(name) \
+        const std::string & name (void) const { return _ ## name; } \
+        std::string & name (void) { return _ ## name; }
 
         ACCESS(path_to_cpp)
         ACCESS(dump_xml_file)
@@ -563,6 +569,7 @@ namespace xml
         ACCESS(do_file_backup)
 
         ACCESS(dependencies_add_phony_targets)
+        ACCESS(dump_dependenciesD)
 
 #undef ACCESS
 #undef ACCESST
@@ -800,7 +807,12 @@ namespace xml
             ( _Odump_dependencies.c_str()
             , STRINGVAL(dump_dependencies)->implicit_value("/dev/stdout")
             , "file to dump the dependencies as Make target, empty for no dump"
-              " (also -M -MM -MF -MG)"
+              " (also as -MM -MF -MG)"
+            )
+            ( _Odump_dependenciesD.c_str()
+            , BOOLVAL(dump_dependenciesD)
+            , "dump the dependencies as Make target to <input>.d"
+              " (also as -MD -MMD)"
             )
             ( _Odependencies_target.c_str()
             , STRINGVECVAL(dependencies_target)
@@ -904,6 +916,22 @@ namespace xml
                               switch (*pos)
                                 {
                                 case 'M':
+                                  if (++pos == end)
+                                    {
+                                      return mk ("dump-dependencies");
+                                    }
+                                  else
+                                    {
+                                      switch (*pos)
+                                        {
+                                        case 'D':
+                                          return mk ("dump-dependenciesD");
+                                        default: break;
+                                        }
+                                    }
+                                  break;
+                                case 'D':
+                                  return mk ("dump-dependenciesD");
                                 case 'F':
                                 case 'G':
                                   return mk ("dump-dependencies");

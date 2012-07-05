@@ -1705,6 +1705,11 @@ namespace xml
           type::struct_to_cpp (state, f);
         }
 
+      if (state.dump_dependenciesD())
+        {
+          state.dump_dependencies() = input + ".d";
+        }
+
       if (state.dump_dependencies().size() > 0)
         {
           const std::string& file (state.dump_dependencies());
