@@ -794,6 +794,7 @@ namespace xml
             ( _Odump_dependencies.c_str()
             , STRINGVAL(dump_dependencies)->implicit_value("/dev/stdout")
             , "file to dump the dependencies as Make target, empty for no dump"
+              " (also -M -MM -MF -MG)"
             )
             ( _Odependencies_target.c_str()
             , STRINGVECVAL(dependencies_target)
