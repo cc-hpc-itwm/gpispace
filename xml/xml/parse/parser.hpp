@@ -1624,8 +1624,23 @@ namespace xml
 
       public:
         quote (const std::string& s)
-          : _quoted (s)
-        {};
+          : _quoted ()
+        {
+          std::string::const_iterator pos (s.begin());
+          const std::string::const_iterator end (s.end());
+
+          while (pos != end)
+            {
+              switch (*pos)
+                {
+                case ' ': _quoted += "\\ "; break;
+                case '$': _quoted += "$$"; break;
+                default: _quoted += *pos; break;
+                }
+
+              ++pos;
+            }
+        };
 
         operator std::string () const { return _quoted; }
       };
