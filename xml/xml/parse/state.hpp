@@ -121,6 +121,7 @@ namespace xml
         std::string _dump_dependencies;
         std::vector<std::string> _dependencies_target;
         std::vector<std::string> _dependencies_target_quoted;
+        bool _dependencies_add_phony_targets;
         bool _no_inline;
         bool _synthesize_virtual_places;
         bool _force_overwrite_file;
@@ -163,6 +164,7 @@ namespace xml
         std::string _Odump_dependencies;
         std::string _Odependencies_target;
         std::string _Odependencies_target_quoted;
+        std::string _Odependencies_add_phony_targets;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
         std::string _Oforce_overwrite_file;
@@ -264,6 +266,7 @@ namespace xml
           , _dump_dependencies ("")
           , _dependencies_target ()
           , _dependencies_target_quoted ()
+          , _dependencies_add_phony_targets ()
           , _no_inline (false)
           , _synthesize_virtual_places (false)
           , _force_overwrite_file (false)
@@ -306,6 +309,7 @@ namespace xml
           , _Odump_dependencies ("dump-dependencies,M")
           , _Odependencies_target ("dependencies-target")
           , _Odependencies_target_quoted ("dependencies-target-quoted")
+          , _Odependencies_add_phony_targets ("dependencies-add-phony-targets")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
           , _Oforce_overwrite_file ("force-overwrite-file")
@@ -558,6 +562,8 @@ namespace xml
         ACCESS(force_overwrite_file)
         ACCESS(do_file_backup)
 
+        ACCESS(dependencies_add_phony_targets)
+
 #undef ACCESS
 #undef ACCESST
 
@@ -804,6 +810,10 @@ namespace xml
             , STRINGVECVAL(dependencies_target_quoted)
             , "like -MT but quote special characters (also as -MQ)"
             )
+            ( _Odependencies_add_phony_targets.c_str()
+            , BOOLVAL(dependencies_add_phony_targets)
+            , "add phony targets for all dependencies (also as -MP)"
+            )
             ;
 
           po::options_description net ("Network handling");
@@ -901,6 +911,8 @@ namespace xml
                                   return mk ("dependencies-target");
                                 case 'Q':
                                   return mk ("dependencies-target-quoted");
+                                case 'P':
+                                  return mk ("dependencies-add-phony-targets");
                                 default: break;
                                 }
                             }

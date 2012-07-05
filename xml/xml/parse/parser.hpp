@@ -1759,6 +1759,24 @@ namespace xml
             }
 
           wrapping_stream.newl();
+
+          if (state.dependencies_add_phony_targets())
+            {
+              BOOST_FOREACH ( const boost::filesystem::path& path
+                            , state.dependencies()
+                            )
+                {
+                  const std::string& dep (path.string());
+
+                  if (dep != input)
+                    {
+                      wrapping_stream.newl();
+                      wrapping_stream.append (dep);
+                      wrapping_stream.append(":");
+                      wrapping_stream.newl();
+                    }
+                }
+            }
         }
 
       return f;
