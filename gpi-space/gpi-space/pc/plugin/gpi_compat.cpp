@@ -147,8 +147,6 @@ public:
         MLOG(ERROR, "could not setup my gpi state: " << ex.what());
         return -EFAULT;
       }
-
-      LOG(INFO, "successfully initialized gpi state");
     }
 
     return 0;
@@ -200,6 +198,9 @@ private:
                            , gpi::pc::type::handle::F_EXCLUSIVE
                            );
     m_shm_ptr = api->ptr(m_shm_hdl);
+
+
+    LOG(INFO, "successfully initialized gpi state");
 
     return 0;
   }
