@@ -1049,7 +1049,7 @@ namespace xml
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
                        << " -MM -MT '"
                        << cpp_util::make::dep (mod->first, fun->name)
-                       << " "
+                       << "' -MT '"
                        << cpp_util::make::obj (mod->first, fun->name)
                        << "' -MF $@ $<"                            << std::endl;
                 stream << "-include "
