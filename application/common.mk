@@ -156,7 +156,7 @@ WE_EXEC += -o /dev/null
 
 ###############################################################################
 
-.PHONY: default ps all run net put
+.PHONY: default ps all run net put gen
 
 default: all
 
@@ -164,6 +164,7 @@ ps: $(PS) $(PS_NOINLINE)
 
 net: $(NET)
 put: $(PUT)
+gen: $(GEN)
 
 all: net lib run
 
