@@ -9,6 +9,11 @@
     <place name="i" type="long"/>
 
     <transition name="step">
+      <properties name="fhg">
+        <properties name="pnetv">
+          <property key="firings_limit" value="1"/>
+        </properties>
+      </properties>
       <defun>
         <inout name="n" type="long"/>
         <out name="i" type="long"/>
