@@ -1,10 +1,4 @@
 
-ifndef SDPA_HOME
- $(error variable SDPA_HOME not set)
-endif
-
-###############################################################################
-
 MAIN = n_of_m
 
 ###############################################################################
@@ -17,27 +11,18 @@ NOT_STARTS_WITH += eat
 ###############################################################################
 
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)/process
-
 CXXLIBRARYPATHS += $(SDPA_HOME)/libexec/sdpa
 
 ###############################################################################
 
-ifndef M
-  M = 25
-endif
-
-ifndef PARALLEL
-  PARALLEL = 5
-endif
-
-ifndef CMD
-  CMD = demo.bin
-endif
-
-PUT_PORT += m=$(M)
-PUT_PORT += parallel=$(PARALLEL)
-PUT_PORT += cmd=\"$(CMD)\"
+PUT_PORT += m=25
+PUT_PORT += parallel=2
+PUT_PORT += cmd=\"demo.bin\"
 
 ###############################################################################
 
-include $(HOME)/sdpa/application/common.mk
+ifndef SDPA_HOME
+ $(error variable SDPA_HOME not set)
+endif
+
+include $(SDPA_HOME)/share/sdpa/make/common.mk
