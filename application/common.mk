@@ -49,6 +49,10 @@ ifndef PNETPUT
   PNETPUT = $(SDPA_BIN)/pnetput
 endif
 
+ifndef PNETV
+  PNETV = $(SDPA_BIN)/pnetv
+endif
+
 ifndef WE_EXEC_CMD
   WE_EXEC_CMD = $(SDPA_BIN)/we-exec
 endif
@@ -80,6 +84,14 @@ ifndef NET_NOINLINE
     $(error variable MAIN undefined but needed to derive variable NET_NOINLINE)
   else
     NET_NOINLINE = $(CURDIR)/$(MAIN).noinline.pnet
+  endif
+endif
+
+ifndef NET_VERIFICATION
+  ifndef NET
+    $(error variable NET undefined but needed to derive variable NET_VERIFICATION)
+  else
+    NET_VERIFICATION = $(NET).verification
   endif
 endif
 
@@ -156,17 +168,16 @@ WE_EXEC += -o /dev/null
 
 ###############################################################################
 
-.PHONY: default ps all run net put gen
+.PHONY: default ps net verify put gen lib run
 
-default: all
+default: run
 
 ps: $(PS) $(PS_NOINLINE)
 
 net: $(NET)
 put: $(PUT)
 gen: $(GEN)
-
-all: net lib run
+verify: $(NET_VERIFICATION)
 
 ###############################################################################
 
@@ -185,11 +196,14 @@ $(NET_NOINLINE): $(DEP_XML) $(XML) $(DEP)
 
 ###############################################################################
 
+$(NET_VERIFICATION): $(NET)
+	$(PNETV) -i $(NET) > $@
+
+###############################################################################
+
 $(GEN): $(DEP_XML) $(XML) $(DEP)
 	$(PNETC) -i $(XML) -o /dev/null $(PNETC_OPTS) -g $@
 	$(TOUCH) $@
-
-.PHONY: lib
 
 lib: $(GEN)
 	$(MAKE) -C $(GEN)
@@ -223,6 +237,7 @@ clean:
 	-$(RM) $(PS_NOINLINE)
 	-$(RM) $(OUT)
 	-$(RM) $(DEP_XML)
+	-$(RM) $(NET_VERIFICATION)
 	-$(RM) *~
 
 ###############################################################################
@@ -230,16 +245,17 @@ clean:
 .PHONY: help
 
 help:
-	@echo "default     'all'"
-	@echo "all         'net' & 'lib' & 'run'"
+	@echo "default     'run'"
 	@echo
 	@echo "net         build pnet from xml"
-	@echo "lib         'gen' & build libs from code in gen"
-	@echo "run         execute workflow"
+	@echo "put         'net' & put tokens into the workflow"
 	@echo
 	@echo "gen         generate code into gen"
-	@echo "put         put tokens into the workflow"
-	@echo "ps          generate postscript"
+	@echo "lib         'gen' & build libs from code in gen"
+	@echo "run         'lib' & 'put' & execute workflow"
+	@echo
+	@echo "verify      'net' & verify the pnet"
+	@echo "ps          'net' & generate postscript"
 	@echo
 	@echo "clean       delete all generated files"
 	@echo
