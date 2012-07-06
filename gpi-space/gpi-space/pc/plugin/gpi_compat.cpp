@@ -53,7 +53,7 @@ public:
     try
     {
       m_initialize_retry_interval =
-        fhg_kernel()->get<useconds_t>("initialize_retry_interval", "500");
+        fhg_kernel()->get<useconds_t>("initialize_retry_interval", "2000000");
     }
     catch (std::exception const &ex)
     {
