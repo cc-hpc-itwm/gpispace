@@ -193,7 +193,9 @@ verify: $(NET_VERIFICATION)
 $(DEP_XML): $(XML)
 	$(PNETC) -i $(XML) -o /dev/null $(PNETC_OPTS) -MT '$(DEP_XML)' -MF $@
 
--include $(DEP_XML)
+ifneq ($(shell test -e $(DEP_XML)),)
+  include $(DEP_XML)
+endif
 
 ###############################################################################
 
