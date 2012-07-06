@@ -35,6 +35,11 @@
     </transition>
 
     <transition name="step">
+      <properties name="fhg">
+        <properties name="pnetv">
+          <property key="firings_limit" value="1"/>
+        </properties>
+      </properties>
       <defun>
         <inout name="state" type="state"/>
         <in name="credit" type="T"/>
