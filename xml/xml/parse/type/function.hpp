@@ -1058,7 +1058,7 @@ namespace xml
                        << cpp_util::make::dep (mod->first, fun->name)
                        << "' -MT '"
                        << cpp_util::make::obj (mod->first, fun->name)
-                       << "' -MF $@ $<"                            << std::endl;
+                       << "' $< > $@"                              << std::endl;
                 stream << "-include "
                        << cpp_util::make::dep (mod->first, fun->name)
                                                                    << std::endl;
@@ -1092,7 +1092,7 @@ namespace xml
                    << cpp_util::make::dep (mod->first)
                    << "' -MT '"
                    << cpp_util::make::obj (mod->first)
-                   << "' -MF $@ $<"                                << std::endl;
+                   << "' $< > $@"                                  << std::endl;
             stream << "-include "
                    << cpp_util::make::dep (mod->first)             << std::endl;
             stream << "DEPENDS += "
