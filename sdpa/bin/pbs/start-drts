@@ -301,9 +301,12 @@ cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f "${config_file}" -g 
 cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
 
 # config values (gpi plugin)
-if [ -n "$gpi_socket" ] ; then
-    cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
+if [ -z "$gpi_socket" ] ; then
+    gpi_socket=$(fhgcfg -f "${config_file}" -g gpi.socket_path -v "/tmp")
+    numa_socket=0
+    gpi_socket="$gpi_socket/S-gpi-space.$(id -u).${numa_socket}"
 fi
+cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
 cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.startmode -v wait)"
 
 if [ -z "$com_size" ] ; then

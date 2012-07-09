@@ -19,6 +19,7 @@ kvs_port=
 log_host=
 log_port=
 verbose=false
+socket_path=
 state_dir=~/.sdpa/state
 config_file="$HOME/.sdpa/configs/sdpa.rc"
 
@@ -42,10 +43,12 @@ usage: $0 [options]
     -L port: log port
     -v: verbose
     -s dir: state-dir
+    -F config file
+    -S socket path
 EOF
 }
 
-while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:" opt; do
+while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
     case $opt in
         h)
             usage
@@ -93,6 +96,12 @@ while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:" opt; do
         s)
             state_dir=$OPTARG
             ;;
+        F)
+            config_file=$OPTARG
+            ;;
+        S)
+            socket_path=$OPTARG
+            ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
             echo "try: $0 -h" >&2
@@ -109,6 +118,10 @@ if [ -z "$gpi_bin_path" ] ; then
     else
         gpi_bin_path=$(fhgcfg -f "${config_file}" -g gpi.priv_dir)
     fi
+fi
+
+if [ -z "$socket_path" ] ; then
+    socket_path=$(fhgcfg -f "${config_file}" -g gpi.socket_path -v "/tmp")
 fi
 
 if [ -z "$gpi_bin_path" ] ; then
@@ -201,13 +214,16 @@ if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
         cmdline="$cmdline --kvs_host $kvs_host"
     fi
     if test -n "$kvs_port" ; then
-        cmdline="$cmdline --kvs_host $kvs_port"
+        cmdline="$cmdline --kvs_port $kvs_port"
     fi
     if test -n "$log_host" ; then
-        cmdline="$cmdline --kvs_host $log_host"
+        cmdline="$cmdline --log_host $log_host"
     fi
     if test -n "$log_port" ; then
-        cmdline="$cmdline --kvs_host $log_port"
+        cmdline="$cmdline --log_host $log_port"
+    fi
+    if test -n "$socket_path" ; then
+        cmdline="$cmdline --socket $socket_path"
     fi
 
     log "executing $cmdline"
