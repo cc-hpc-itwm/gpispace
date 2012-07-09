@@ -184,7 +184,6 @@ while getopts ":hnf:S:m:s:c:C:F:" opt; do
         C)
             new_cap=$(parse_capability "$OPTARG")
             capabilities=( "${capabilities[@]}" $new_cap )
-            echo >&2 $new_cap
             ;;
         F)
             config_file="$OPTARG"
