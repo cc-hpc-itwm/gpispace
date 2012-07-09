@@ -270,6 +270,8 @@ for p in $still_running ; do
 done
 
 # config values (kernel)
+
+cfg="$cfg -n $name"
 lazy=$(fhgcfg -f "${config_file}" -g kernel.lazy -v false)
 if [ x"$lazy" = x"true" ] ; then
     cfg="$cfg -s kernel.load.lazy=1"
