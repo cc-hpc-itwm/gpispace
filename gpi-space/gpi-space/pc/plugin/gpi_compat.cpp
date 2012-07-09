@@ -65,11 +65,12 @@ public:
     }
 
     const std::string my_pid(boost::lexical_cast<std::string>(getpid()));
-    m_segment_name = "fvm-pc-" + my_pid;
-    m_segment_handle_name = "fvm-pc-segment-" + my_pid;
-    m_global_handle_name = "fvm-pc-global-" + my_pid;
-    m_local_handle_name = "fvm-pc-local-" + my_pid;
-    m_scratch_handle_name = "fvm-pc-com-" + my_pid;
+    const std::string name_prefix (fhg_kernel()->get_name () + "-" + my_pid);
+    m_segment_name = name_prefix + "-shm";
+    m_segment_handle_name = name_prefix + "-shm";
+    m_global_handle_name = name_prefix + "-global";
+    m_local_handle_name = name_prefix + "-local";
+    m_scratch_handle_name = name_prefix + "-com";
 
     api = fhg_kernel()->acquire<gpi::GPI>("gpi");
     if (reinitialize_gpi_state() < 0)
