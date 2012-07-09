@@ -223,11 +223,13 @@ int main(int ac, char **av)
   bool keep_going (false);
   std::string state_path;
   std::string pidfile;
+  std::string kernel_name ("fhgkernel");
   bool daemonize (false);
 
   desc.add_options()
     ("help,h", "this message")
     ("verbose,v", "be verbose")
+    ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
     ("state,S", po::value<std::string>(&state_path), "state directory to use")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
@@ -340,6 +342,8 @@ int main(int ac, char **av)
   install_signal_handler();
 
   kernel = new fhg::core::kernel_t (state_path);
+
+  kernel->set_name (kernel_name);
 
   BOOST_FOREACH (std::string const & p, config_vars)
   {
