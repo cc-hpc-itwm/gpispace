@@ -670,7 +670,9 @@ int main (int ac, char *av[])
         exit(EXIT_FAILURE);
       }
       snprintf(buf, sizeof(buf), "%d\n", getpid());
-      if (write(pidfile_fd, buf, strlen(buf)) != strlen(buf))
+
+      const ssize_t written (write (pidfile_fd, buf, strlen (buf)));
+      if (written < 0 || (size_t)written != strlen(buf))
       {
         LOG(ERROR, "could not write pid to file: " << strerror(errno));
         exit(EXIT_FAILURE);

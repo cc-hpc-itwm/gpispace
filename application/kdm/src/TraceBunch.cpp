@@ -510,11 +510,10 @@ int getfile_offset(int _oid, int _pid,int _bid,int _tid,const MigrationJob &_Job
 
    if(dOffVol<=dOffDat)
    {
-     int imin;
-     if((OffVol-Off0Dat)/dOffDat<-.5)
+     int imin ((OffVol-Off0Dat)/dOffDat);
+     if(imin<-.5)
        std::cout<<"get_file_offset: ERROR !!!"<<std::endl;
-     else
-       imin=(OffVol-Off0Dat)/dOffDat;
+
      if( fabs(Off0Dat + imin*dOffDat-OffVol) <= (0.5 * dOffDat) )
        i=imin+1;
      else

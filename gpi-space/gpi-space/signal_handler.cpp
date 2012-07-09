@@ -13,6 +13,7 @@ namespace gpi
 {
   namespace signal
   {
+#if 0
     namespace {
       std::string show (const siginfo_t & info)
       {
@@ -26,6 +27,7 @@ namespace gpi
         return sstr.str();
       }
     }
+#endif
 
     handler_t::handler_t ()
       : m_next_connection_id (0)

@@ -164,7 +164,8 @@ namespace fvm
 
       local_allocation scratch(transfer_size);
       ASSERT_LALLOC(scratch);
-      for (size_t node(0); node < fvmGetNodeCount(); ++node)
+      const size_t num_nodes (fvmGetNodeCount());
+      for (size_t node(0); node < num_nodes; ++node)
       {
         DLOG(DEBUG, "distributing data to node: " << node);
         fvmCommHandle_t comm_handle = fvmPutGlobalData(global, node * transfer_size, transfer_size, 0, scratch);

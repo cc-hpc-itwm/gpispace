@@ -12,7 +12,7 @@
 grid2D::grid2D(){
 }
 grid2D::grid2D(const double& _x0, const double& _y0, const int& _Nx, const int& _Ny, const double& _dx, const double& _dy)
-:x0(_x0),y0(_y0),Nx(_Nx),Ny(_Ny),dx(_dx),dy(_dy)
+:Nx(_Nx),Ny(_Ny),x0(_x0),y0(_y0),dx(_dx),dy(_dy)
 {}
 
 void grid2D::Init(const double& _x0, const double& _y0, const int& _Nx, const int& _Ny, const double& _dx, const double& _dy)

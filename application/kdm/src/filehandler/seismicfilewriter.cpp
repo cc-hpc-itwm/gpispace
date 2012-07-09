@@ -25,12 +25,12 @@ int SeismicFileWriter::Open(const char* Name, FILE_MODE _F_MODE, const short _Nt
   int ierr = 0;
   F_MODE = _F_MODE;
 
-  
+
   //
   FOutput.open(Name, std::ios::binary);
   if (FOutput.fail())
   {
-    
+
     ierr = -1;
     return ierr;
   }
@@ -41,9 +41,9 @@ int SeismicFileWriter::Open(const char* Name, FILE_MODE _F_MODE, const short _Nt
   {
       case SEGY_BIGENDIAN:
       {
-	  
-	  SegYEBCHeader EBCHeader = {};
-	  SegYBHeader BHeader;	
+
+	  SegYEBCHeader EBCHeader;
+	  SegYBHeader BHeader;
 
 	  BHeader.hns = Nt;
 	  BHeader.hdt = _dt;
@@ -51,32 +51,32 @@ int SeismicFileWriter::Open(const char* Name, FILE_MODE _F_MODE, const short _Nt
 	    {
 		swap_bytes((void*)&BHeader.hns, 1, sizeof(short));
 		swap_bytes((void*)&BHeader.hdt, 1, sizeof(short));
-		swap_bytes((void*)&BHeader.format, 1, sizeof(short));	  
+		swap_bytes((void*)&BHeader.format, 1, sizeof(short));
 	    }
 	  FOutput.write((char*) &EBCHeader, sizeof(SegYEBCHeader));
 	  FOutput.write((char*) &BHeader, sizeof(SegYBHeader));
 	  if (FOutput.fail())
 	  {
-	      
+
 	      ierr = -1;
 	      return ierr;
 	  }
-	
+
 	  file_offset = sizeof(SegYEBCHeader) + sizeof(SegYBHeader);
 
 	  break;
       }
       case SU_LITENDIAN:
       {
-	  
-	
+
+
 	  file_offset = 0;
 
 	  break;
       }
       default:
       {
-	  
+
 	  break;
       }
   }
@@ -104,7 +104,7 @@ int SeismicFileWriter::Write(const SegYHeader* Header, const float* Mem)
   //
   if (Mem == NULL)
   {
-      
+
       return -1;
   }
 
@@ -159,26 +159,26 @@ int SeismicFileWriter::Write(const SegYHeader* Header, const float* Mem)
 
 	if (FOutput.fail())
 	{
-	    
+
 	    return -1;
 	}
-	
+
 	break;
-    }  
+    }
     case SU_LITENDIAN:
     {
 	FOutput.write((char*) Header, sizeof(SegYHeader));
 	FOutput.write((char*) Mem, Nt*sizeof(float));
 	if (FOutput.fail())
 	{
-	    
+
 	    return -1;
 	}
       break;
     }
 
     default:
-      
+
       break;
   };
   return 0;
