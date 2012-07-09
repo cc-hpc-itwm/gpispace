@@ -8,6 +8,7 @@
 ###
 # set some default values
 state_dir=~/.sdpa/state
+config_file="~/.sdpa/configs/sdpa.rc"
 logdir=
 gui=
 kvs_url=
@@ -38,10 +39,11 @@ usage: $(basename "$0") [options]
     -P pidfile
     -L logdir
     -s state-dir
+    -F config file
 EOF
 }
 
-while getopts ":hDfdm:g:b:n:k:L:P:s:" opt; do
+while getopts ":hDfdm:g:b:n:k:L:P:s:F:" opt; do
     case $opt in
         h)
             usage
@@ -80,6 +82,9 @@ while getopts ":hDfdm:g:b:n:k:L:P:s:" opt; do
         s)
             state_dir=$OPTARG
             ;;
+        F)
+            config_file=$OPTARG
+            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             exit 1
@@ -94,7 +99,7 @@ fi
 
 if [ -z "$gui" ]
 then
-  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)"
+  gui=$(fhgcfg -f "${config_file}" -g sdpa.gui)
 fi
 
 if [ -z "$logdir" ]
@@ -144,7 +149,7 @@ opts="$opts -u ${bind_addr}"
 opts="$opts -m ${master}"
 opts="$opts -k ${kvs_url}"
 
-stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
+stateful=$(fhgcfg -f "${config_file}" -g sdpa.stateful -v false)
 if [ x"$stateful" = x"true" ] ; then
     if [ ! -d "${state_dir}/agent" ] ; then
         mkdir -p "${state_dir}/agent"

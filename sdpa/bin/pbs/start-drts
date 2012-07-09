@@ -22,6 +22,7 @@ kvs_url=
 count=
 capabilities=""
 state_dir="$HOME/.sdpa/state"
+config_file="$HOME/.sdpa/configs/sdpa.rc"
 logdir=
 shm_size=
 com_size=
@@ -47,6 +48,7 @@ usage: $(basename "$0") [options]
     -D daemonize
     -L logfile
     -s state-dir
+    -F config file
     -M shared memory size
     -B communication buffer size
 EOF
@@ -75,7 +77,7 @@ function to_bg ()
     /bin/kill -CONT "$pid"
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:B:" opt; do
+while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:B:F:" opt; do
     case $opt in
         h)
             usage
@@ -131,6 +133,9 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:B:" opt; do
         s)
             state_dir="$OPTARG"
             ;;
+        F)
+            config_file="$OPTARG"
+            ;;
         n)
             name_prefix="$OPTARG"
             ;;
@@ -157,14 +162,19 @@ else
     exit 4
 fi
 
-if [ -z "$gui" ]
-then
-  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui -v "$GUI_URL")"
+if [ ! -r "${config_file}" ] ; then
+    echo >&2 "config file '${config_file}' does not exist, aborting."
+    exit 4
 fi
 
-gpi_enabled="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.enabled -v true)"
+if [ -z "$gui" ]
+then
+  gui=$(fhgcfg -f "${config_file}" -g sdpa.gui -v "$GUI_URL")
+fi
+
+gpi_enabled=$(fhgcfg -f "${config_file}" -g gpi.enabled -v true)
 if [ $backlog -lt 0 ] ; then
-    backlog=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.backlog -v 1)
+    backlog=$(fhgcfg -f "${config_file}" -g plugin.drts.backlog -v 1)
 fi
 
 if [ -z "$lib_path" ]
@@ -259,17 +269,15 @@ for p in $still_running ; do
     fi
 done
 
-# TODO: get those from the .sdpa/configs/sdpa.rc file, at least parts of it
-
 # config values (kernel)
-lazy="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g kernel.lazy -v false)"
+lazy=$(fhgcfg -f "${config_file}" -g kernel.lazy -v false)
 if [ x"$lazy" = x"true" ] ; then
     cfg="$cfg -s kernel.load.lazy=1"
 else
     cfg="$cfg -s kernel.load.lazy=0"
 fi
 
-stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
+stateful=$(fhgcfg -f "${config_file}" -g sdpa.stateful -v false)
 if [ x"$stateful" = x"true" ] ; then
     cfg="$cfg -S ${state_dir}/state/kernel/$name"
 fi
@@ -281,7 +289,7 @@ cfg="$cfg -s plugin.kvs.host=$kvs_host"
 cfg="$cfg -s plugin.kvs.port=$kvs_port"
 
 # config values (logc plugin)
-logc_port=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.logd.port -v "3456")
+logc_port=$(fhgcfg -f "${config_file}" -g plugin.logd.port -v "3456")
 logc_host=$(head -n 1 "${state_dir}/nodefile")
 cfg="$cfg -s plugin.logc.url=${logc_host}:${logc_port}"
 
@@ -289,21 +297,21 @@ cfg="$cfg -s plugin.logc.url=${logc_host}:${logc_port}"
 cfg="$cfg -s plugin.drts.name=$name"
 cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
-cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.max_reconnect_attempts -v 128)"
+cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f "${config_file}" -g plugin.drts.max_reconnect_attempts -v 128)"
 cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
 
 # config values (gpi plugin)
 if [ -n "$gpi_socket" ] ; then
     cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
 fi
-cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi.startmode -v wait)"
+cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.startmode -v wait)"
 
 if [ -z "$com_size" ] ; then
-    com_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi_compat.com_size -v 16777216)
+    com_size=$(fhgcfg -f "${config_file}" -g plugin.gpi_compat.com_size -v 16777216)
 fi
 
 if [ -z "$shm_size" ] ; then
-    shm_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi_compat.shm_size -v 536870912)
+    shm_size=$(fhgcfg -f "${config_file}" -g plugin.gpi_compat.shm_size -v 536870912)
 fi
 
 # config values (gpi_compat plugin)
@@ -316,7 +324,7 @@ cfg="$cfg -s plugin.gui.url=$gui"
 # config values (wfe plugin)
 cfg="$cfg -s plugin.wfe.library_path=${PC_LIBRARY_PATH}"
 
-plugins="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g kernel.plugins)"
+plugins=$(fhgcfg -f "${config_file}" -g kernel.plugins)
 
 plugin_load_flags=""
 for p in $(echo $plugins | tr ',' ' '); do

@@ -2161,6 +2161,12 @@ if [ "$1" = "-s" ] ; then
     export SDPA_STATE_DIR="$state_dir"
 fi
 
+if [ "$1" = "-c" ] ; then
+    shift
+    config_file="$1"; shift
+    export SDPA_CONFIG="config_file"
+fi
+
 if setup_required ; then
     if setup ; then
         log "I: setup complete"

@@ -20,6 +20,7 @@ log_host=
 log_port=
 verbose=false
 state_dir=~/.sdpa/state
+config_file="$HOME/.sdpa/configs/sdpa.rc"
 
 function usage ()
 {
@@ -46,57 +47,57 @@ EOF
 
 while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:" opt; do
     case $opt in
-	h)
-	    usage
-	    exit 0
-	    ;;
-	d)
-	    gpi_bin_path=$OPTARG
-	    ;;
-	x)
-	    gpi_exe=$OPTARG
-	    ;;
-	g)
-	    debug=true
-	    ;;
-	m)
-	    mem_size=$OPTARG
-	    ;;
-	p)
-	    gpi_port=$OPTARG
-	    ;;
-	P)
-	    pidfile=$OPTARG
-	    ;;
-	f)
-	    force=true
-	    ;;
-	D)
-	    daemonize=true
-	    ;;
-	k)
-	    kvs_host=$OPTARG
-	    ;;
-	K)
-	    kvs_port=$OPTARG
-	    ;;
-	l)
-	    log_host=$OPTARG
-	    ;;
-	L)
-	    log_port=$OPTARG
-	    ;;
-	v)
-	    verbose=true
-	    ;;
-	s)
-	    state_dir=$OPTARG
-	    ;;
-	\?)
-	    echo "invalid option: -$OPTARG" >&2
-	    echo "try: $0 -h" >&2
-	    exit 1
-	    ;;
+        h)
+            usage
+            exit 0
+            ;;
+        d)
+            gpi_bin_path=$OPTARG
+            ;;
+        x)
+            gpi_exe=$OPTARG
+            ;;
+        g)
+            debug=true
+            ;;
+        m)
+            mem_size=$OPTARG
+            ;;
+        p)
+            gpi_port=$OPTARG
+            ;;
+        P)
+            pidfile=$OPTARG
+            ;;
+        f)
+            force=true
+            ;;
+        D)
+            daemonize=true
+            ;;
+        k)
+            kvs_host=$OPTARG
+            ;;
+        K)
+            kvs_port=$OPTARG
+            ;;
+        l)
+            log_host=$OPTARG
+            ;;
+        L)
+            log_port=$OPTARG
+            ;;
+        v)
+            verbose=true
+            ;;
+        s)
+            state_dir=$OPTARG
+            ;;
+        \?)
+            echo "invalid option: -$OPTARG" >&2
+            echo "try: $0 -h" >&2
+            exit 1
+            ;;
     esac
 done
 
@@ -104,9 +105,9 @@ test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
 
 if [ -z "$gpi_bin_path" ] ; then
     if [ -n "$GPI_PRIV_DIR" ] ; then
-	gpi_bin_path="$GPI_PRIV_DIR"
+        gpi_bin_path="$GPI_PRIV_DIR"
     else
-	gpi_bin_path=$(fhgcfg -f "$HOME/.sdpa/configs/sdpa.rc" -g gpi.priv_dir)
+        gpi_bin_path=$(fhgcfg -f "${config_file}" -g gpi.priv_dir)
     fi
 fi
 
@@ -133,8 +134,8 @@ else
     md_inst=$( md5sum "${gpi_bin_path}/${gpi_bin}" | cut -d ' ' -f 1 )
     md_cand=$( md5sum "${gpi_exe}" | cut -d ' ' -f 1 )
     if [ "$md_inst" != "$md_cand" ] ; then
-	log "candidate ${gpi_exe} is different than the one in ${gpi_bin_path}"
-	need_copy=true
+        log "candidate ${gpi_exe} is different than the one in ${gpi_bin_path}"
+        need_copy=true
     fi
 fi
 
@@ -145,68 +146,68 @@ fi
 if [ $need_copy = "true" -a $do_copy = "false" ] ; then
     read -t 5 -n 1 -p "Do you want me to copy \"$gpi_exe\" to \"$gpi_bin_path\"? [y/N] " ans
     case "$ans" in
-	y|Y)
-	    do_copy=true
-	    ;;
-	*)
-	    ;;
+        y|Y)
+            do_copy=true
+            ;;
+        *)
+            ;;
     esac
 fi
 
 if [ $do_copy = "true" ] ; then
     if [ ! -d "$gpi_bin_path" ] ; then
-	tmp=$( mkdir -p "$gpi_bin_path" 2>&1 )
-	if [ $? -ne 0 ] ; then
-	    log "could not create $gpi_bin_path: $tmp"
-	    exit 1
-	fi
+        tmp=$( mkdir -p "$gpi_bin_path" 2>&1 )
+        if [ $? -ne 0 ] ; then
+            log "could not create $gpi_bin_path: $tmp"
+            exit 1
+        fi
     fi
     if [ -w "$gpi_bin_path" ] ; then
-	test -e "${gpi_bin_path}/${gpi_bin}" && {
-	    log "I: creating backup of old ${gpi_bin}"
-	    mv -f "${gpi_bin_path}/${gpi_bin}" "${gpi_bin_path}/${gpi_bin}~"
-	}
-	cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}" && {
-	    log "I: installed new ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
-	} || {
-	    log "W: could not update ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
-	}
-	chmod ug=rx,o= "${gpi_bin_path}/${gpi_bin}"
+        test -e "${gpi_bin_path}/${gpi_bin}" && {
+            log "I: creating backup of old ${gpi_bin}"
+            mv -f "${gpi_bin_path}/${gpi_bin}" "${gpi_bin_path}/${gpi_bin}~"
+        }
+        cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}" && {
+            log "I: installed new ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
+        } || {
+            log "W: could not update ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
+        }
+        chmod ug=rx,o= "${gpi_bin_path}/${gpi_bin}"
     else
-	log "W: privileged path $gpi_bin_path does not exist, or i am not allowed to write to it!"
+        log "W: privileged path $gpi_bin_path does not exist, or i am not allowed to write to it!"
     fi
 fi
 
 if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
     cmdline=
     if $debug ; then
-	cmdline="gdb -ex run --args $cmdline"
+        cmdline="gdb -ex run --args $cmdline"
     fi
     cmdline="$cmdline ${gpi_bin_path}/${gpi_bin}"
 
     if $verbose ; then
-	cmdline="$cmdline --log-level TRACE"
+        cmdline="$cmdline --log-level TRACE"
     fi
     if $daemonize && ! $debug ; then
-	cmdline="$cmdline --daemonize"
+        cmdline="$cmdline --daemonize"
     fi
     if test -n "$mem_size" ; then
-	cmdline="$cmdline --gpi-mem $mem_size"
+        cmdline="$cmdline --gpi-mem $mem_size"
     fi
     if test -n "$pidfile" ; then
-	cmdline="$cmdline --pidfile $pidfile"
+        cmdline="$cmdline --pidfile $pidfile"
     fi
     if test -n "$kvs_host" ; then
-	cmdline="$cmdline --kvs_host $kvs_host"
+        cmdline="$cmdline --kvs_host $kvs_host"
     fi
     if test -n "$kvs_port" ; then
-	cmdline="$cmdline --kvs_host $kvs_port"
+        cmdline="$cmdline --kvs_host $kvs_port"
     fi
     if test -n "$log_host" ; then
-	cmdline="$cmdline --kvs_host $log_host"
+        cmdline="$cmdline --kvs_host $log_host"
     fi
     if test -n "$log_port" ; then
-	cmdline="$cmdline --kvs_host $log_port"
+        cmdline="$cmdline --kvs_host $log_port"
     fi
 
     log "executing $cmdline"
