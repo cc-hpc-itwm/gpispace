@@ -9,9 +9,12 @@ endif
 
 ###############################################################################
 
-include ../common.mk
+PUT_PORT += n=5
 
 ###############################################################################
 
-$(PUT): $(NET)
-	$(PNETPUT) --if $(NET) --of $(PUT) -p n=5
+ifndef SDPA_HOME
+ $(error variable SDPA_HOME not set)
+endif
+
+include $(SDPA_HOME)/share/sdpa/make/common.mk

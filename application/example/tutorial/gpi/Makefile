@@ -15,11 +15,14 @@ NOT_STARTS_WITH += wait
 
 ###############################################################################
 
-include ../common.mk
+PUT_PORT += n=12
+PUT_PORT += c=12
+PUT_PORT += config=[description:=\"gpi-test\"]
 
 ###############################################################################
 
-$(PUT): $(NET)
-	$(PNETPUT) --if $(NET) --of $(PUT) -p n=12 \
-                                           -p c=12 \
-                                           -p config=[description:=\"gpi-test\"]
+ifndef SDPA_HOME
+ $(error variable SDPA_HOME not set)
+endif
+
+include $(SDPA_HOME)/share/sdpa/make/common.mk

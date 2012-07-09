@@ -5,6 +5,11 @@ endif
 
 ###############################################################################
 
+SHELL = /bin/sh
+MAKEFLAGS += -r
+
+###############################################################################
+
 ifndef TEE
   TEE = $(shell which tee)
 endif
@@ -159,10 +164,14 @@ PNETC += $(addprefix --gen-cxxflags=-I,$(CXXINCLUDEPATHS))
 PNETC += $(addprefix --gen-ldflags=-L,$(CXXLIBRARYPATHS))
 PNETC += --force-overwrite-file=true
 
+# does not work for paths that contain spaces
+pathify = $(subst $() ,:,$(1))
+
 WE_EXEC = LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARYPATHS))
+WE_EXEC += $(WE_EXEC_ENV)
 WE_EXEC += $(WE_EXEC_CMD)
 WE_EXEC += --w $(WE_EXEC_WORKER)
-WE_EXEC += $(addprefix --load,$(WE_EXEC_LOAD))
+WE_EXEC += $(addprefix --load ,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L,$(WE_EXEC_LIBPATHS))
 WE_EXEC += -o /dev/null
 
@@ -184,7 +193,9 @@ verify: $(NET_VERIFICATION)
 $(DEP_XML): $(XML)
 	$(PNETC) -i $(XML) -o /dev/null $(PNETC_OPTS) -MT '$(DEP_XML)' -MF $@
 
--include $(DEP_XML)
+ifneq ($(shell test -e $(DEP_XML)),)
+  include $(DEP_XML)
+endif
 
 ###############################################################################
 
@@ -193,6 +204,9 @@ $(NET): $(DEP_XML) $(XML) $(DEP)
 
 $(NET_NOINLINE): $(DEP_XML) $(XML) $(DEP)
 	$(PNETC_NOINLINE) -i $(XML) $(PNETC_OPTS) -o $@
+
+$(PUT): $(NET)
+	$(PNETPUT) --if $(NET) --of $(PUT) $(addprefix -p ,$(PUT_PORT))
 
 ###############################################################################
 
@@ -217,9 +231,6 @@ $(PS_NOINLINE): $(NET_NOINLINE)
 	$(PNET2DOT) --input $^ | $(DOT) -o $@
 
 ###############################################################################
-
-# does not work for paths that contain spaces
-pathify = $(subst $() ,:,$(1))
 
 run: lib $(PUT)
 	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
@@ -282,6 +293,7 @@ showconfig:
 	@echo "XML = $(XML)"
 	@echo "NET = $(NET)"
 	@echo "NET_NOINLINE = $(NET_NOINLINE)"
+	@echo "NET_VERIFICATION = $(NET_VERIFICATION)"
 	@echo "PUT = $(PUT)"
 	@echo "GEN = $(GEN)"
 	@echo "OUT = $(OUT)"
@@ -300,7 +312,3 @@ showconfig:
 	@echo "PNET2DOT = $(PNET2DOT)"
 	@echo "PNETPUT = $(PNETPUT)"
 	@echo "WE_EXEC = $(WE_EXEC)"
-	@echo
-	@echo "PATH_LIB = $(PATH_LIB)"
-	@echo
-	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"

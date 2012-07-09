@@ -17,13 +17,15 @@ NOT_STARTS_WITH += wait
 
 WE_EXEC_WORKER = 5
 
+PUT_PORT += n=$(WE_EXEC_WORKER)
+PUT_PORT += c=$(WE_EXEC_WORKER)
+PUT_PORT += config=[description:=\"test\"]
+
 ###############################################################################
 
-include ../common.mk
+ifndef SDPA_HOME
+ $(error variable SDPA_HOME not set)
+endif
 
-###############################################################################
+include $(SDPA_HOME)/share/sdpa/make/common.mk
 
-$(PUT): $(NET)
-	$(PNETPUT) --if $(NET) --of $(PUT) -p n=$(WE_EXEC_WORKER) \
-                                           -p c=$(WE_EXEC_WORKER) \
-                                           -p config=[description:=\"test\"]

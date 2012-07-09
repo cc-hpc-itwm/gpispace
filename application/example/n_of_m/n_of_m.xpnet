@@ -4,15 +4,9 @@
   <in name="cmd" type="string" place="cmd"/>
   <out name="done" type="control" place="finalized"/>
   <net>
-    <place name="cmd" type="string">
-      <token><value>"/p/herc/itwm/hpc/mr/sdpa/trunk/application/example/n_of_m/a.out"</value></token>
-    </place>
-    <place name="m_in" type="long">
-      <token><value>100</value></token>
-    </place>
-    <place name="parallel_in" type="long">
-      <token><value>10</value></token>
-    </place>
+    <place name="cmd" type="string"/>
+    <place name="m_in" type="long"/>
+    <place name="parallel_in" type="long"/>
 
     <place name="m" type="long"/>
     <place name="m_gen" type="long"/>

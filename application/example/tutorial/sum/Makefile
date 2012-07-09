@@ -9,9 +9,13 @@ CXXINCLUDEPATHS += $(CURDIR)/include
 
 ###############################################################################
 
-include ../common.mk
+PUT_PORT += p=[x:=3,y:=4]
+PUT_PORT += p=[x:=-2,y:=3]
 
 ###############################################################################
 
-$(PUT): $(NET)
-	$(PNETPUT) --if $(NET) --of $(PUT) -p p=[x:=3,y:=4] -p p=[x:=-2,y:=3]
+ifndef SDPA_HOME
+ $(error variable SDPA_HOME not set)
+endif
+
+include $(SDPA_HOME)/share/sdpa/make/common.mk
