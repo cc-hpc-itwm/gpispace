@@ -53,7 +53,7 @@ namespace petri_net
     {
       const typename super::activity_t activity (super::extract_activity (tid));
       const typename super::output_t output (run_activity (activity));
-      inject_activity_result (output);
+      this->inject_activity_result (output);
       return tid;
     }
 
