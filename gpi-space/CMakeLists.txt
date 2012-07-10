@@ -107,10 +107,14 @@ find_package (LibRT REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${LIBRT_INCLUDE_DIR})
 
 find_package (ZMQ ${QUIET_FIND_PACKAGE})
-include_directories (${ZMQ_INCLUDE_DIR})
+if (ZMQ_FOUND)
+  include_directories (${ZMQ_INCLUDE_DIR})
+endif ()
 
 find_package (CZMQ ${QUIET_FIND_PACKAGE})
-include_directories (${CZMQ_INCLUDE_DIR})
+if (CZMQ_FOUND)
+  include_directories (${CZMQ_INCLUDE_DIR})
+endif()
 
 add_subdirectory(gpi-space)
 add_subdirectory(bin)
