@@ -1722,8 +1722,19 @@ function start_gpi ()
         exit 1
     fi
     local gpi_enabled=$(get "gpi.enabled" "true")
+
+    local log_url=$(get "log.server.url")
+    local log_port=$(echo "$log_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
+    if [ -z "$log_port" ] ; then
+        log "E: log url ($log_url) does not contain a port!"
+        return 1
+    fi
+    local log_host=$(echo "$log_url" | cut -d ':' -f 1)
+
+    local kvs_port=$(get "plugin.kvs.port" "2439")
+
     if [ x"$gpi_enabled" == x"true" ] ; then
-        if ! start_proc "gpi-space" "$SDPA_SCRIPT_DIR/start-gpi" "-s" "$state_dir" "-f" "-P" "$state_dir/gpi-space.pid" "-m" $(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}"); then
+        if ! start_proc "gpi-space" "$SDPA_SCRIPT_DIR/start-gpi" "-s" "$state_dir" "-f" "-P" "$state_dir/gpi-space.pid" "-m" $(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}") "-k" $(hostname -s) -K $kvs_port -l $log_host -L $log_port ; then
             log "E: could not start GPI, giving up!"
             return 1
         else
