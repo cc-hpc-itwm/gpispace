@@ -688,6 +688,7 @@ int main (int ac, char *av[])
         exit(EXIT_FAILURE);
       }
       snprintf(buf, sizeof(buf), "%d\n", getpid());
+
       if (write(pidfile_fd, buf, strlen(buf)) != (int)strlen(buf))
       {
         LOG(ERROR, "could not write pid to file: " << strerror(errno));

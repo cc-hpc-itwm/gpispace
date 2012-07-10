@@ -26,13 +26,13 @@ void MigrationFileHandler::Write(const char* FName, const grid3D& G, const MVOL_
   const int Ny(G.getNy());
   const int Nz(G.getNz());
 
-  
+
 
   switch(MODE)
   {
     case SEGY_BIGENDIAN:
     {
-      SegYHeader SegHead = {};
+      SegYHeader SegHead;
 
       float* tmp = new float [Nz];
       SegHead.ns = (short) Nz;
@@ -94,11 +94,11 @@ int MigrationFileHandler::TouchOffsetGather(const MigrationJob& Job, const char*
   FILE* MigFile = fopen(FName, "w");
   if (MigFile == NULL)
   {
-      
+
       return -1;
   }
 
-  
+
 
   unsigned long fileoffset = 0;
 
@@ -108,7 +108,7 @@ int MigrationFileHandler::TouchOffsetGather(const MigrationJob& Job, const char*
   {
       case SEGY_BIGENDIAN:
       {
-	  SegYEBCHeader EBCHeader = {};
+	  SegYEBCHeader EBCHeader;
 	  fwrite((char*) EBCHeader.desc, sizeof(SegYEBCHeader), 1, MigFile);
 
 	  SegYBHeader BHeader;
@@ -130,7 +130,7 @@ int MigrationFileHandler::TouchOffsetGather(const MigrationJob& Job, const char*
 	  break;
       }
       default:
-	  
+
 	  break;
   };
 
@@ -138,7 +138,7 @@ int MigrationFileHandler::TouchOffsetGather(const MigrationJob& Job, const char*
   {
     case SEGY_BIGENDIAN:
     {
-      SegYHeader Header = {};
+      SegYHeader Header;
 
       float* tmp = new float [Job.MigVol.nz];
       Header.ns = (short) Job.MigVol.nz;
@@ -167,7 +167,7 @@ int MigrationFileHandler::TouchOffsetGather(const MigrationJob& Job, const char*
 	    Header.sy = static_cast<int>(P.x[1]);
 	    Header.gx = static_cast<int>(P.x[0]);
 	    Header.gy = static_cast<int>(P.x[1]);
-	    
+
 	    if (endianess != BIGENDIAN)
 	    {
 		swap_bytes((void*)&Header.sx, 1, sizeof(int));
@@ -231,7 +231,7 @@ int MigrationFileHandler::WriteOffsetClass(const char* FName, const grid3D& G, c
   FILE* MigFile = fopen(FName, "rb+");
   if (MigFile == NULL)
   {
-      
+
       return -1;
   }
 
@@ -239,7 +239,7 @@ int MigrationFileHandler::WriteOffsetClass(const char* FName, const grid3D& G, c
   const int Ny(G.getNy());
   const int Nz(G.getNz());
 
-  
+
 
   unsigned long fileoffset = 0;
 
@@ -294,7 +294,7 @@ int MigrationFileHandler::WriteOffsetClass(const char* FName, const grid3D& G, c
   FILE* MigFile = fopen(FName, "rb+");
   if (MigFile == NULL)
   {
-      
+
       return -1;
   }
 
@@ -302,7 +302,7 @@ int MigrationFileHandler::WriteOffsetClass(const char* FName, const grid3D& G, c
   const int Ntoty(G.getNy());
   const int Ntotz(G.getNz());
 
-  
+
   unsigned long fileoffset = 0;
 
   switch(MODE)
@@ -356,7 +356,7 @@ int MigrationFileHandler::WriteOffsetClassForSubVol(const char* FName, const gri
   FILE* MigFile = fopen(FName, "rb+");
   if (MigFile == NULL)
   {
-      
+
       return -1;
   }
 
@@ -364,7 +364,7 @@ int MigrationFileHandler::WriteOffsetClassForSubVol(const char* FName, const gri
   const int Ntoty(G.getNy());
   const int Ntotz(G.getNz());
 
-  
+
   unsigned long fileoffset = 0;
 
   switch(MODE)
@@ -426,10 +426,10 @@ void MigrationFileHandler::WritePart(const char* FName, const grid3D& G,
   const int Ny(G.getNy());
   const int Nz(G.getNz());
 
-  
 
 
-      SegYHeader SegHead = {};
+
+      SegYHeader SegHead;
 
       float* tmp = new float [Nz];
       SegHead.ns = (short) Nz;
@@ -490,7 +490,7 @@ void MigrationFileHandler::WriteCutY(const char* FName, const int& iy, const gri
   {
     case SEGY_BIGENDIAN:
     {
-      SegYHeader SegHead = {};
+      SegYHeader SegHead;
       float* tmp = new float [Nz];
       SegHead.ns = (short) Nz;
       SegHead.dt = (short) (G.getdz() * 1e3);
@@ -543,7 +543,7 @@ void MigrationFileHandler::WriteMoveOut(const char* FName, const int& Nz, const 
   {
     case SEGY_BIGENDIAN:
     {
-      SegYHeader SegHead = {};
+      SegYHeader SegHead;
       float* tmp = new float [Nz];
       SegHead.ns = (short) Nz;
       SegHead.dt = (short) (dz * 1e3);
@@ -585,7 +585,7 @@ int MigrationFileHandler::WriteAngGather(float **Result, const AngleMigrationJob
   std::ofstream Output(FileName, std::ios::binary);
   if (Output.fail())
   {
-      
+
       return -1;
   }
 
@@ -595,7 +595,7 @@ int MigrationFileHandler::WriteAngGather(float **Result, const AngleMigrationJob
   {
       case SEGY_BIGENDIAN:
       {
-	  SegYEBCHeader EBCHeader = {};
+	  SegYEBCHeader EBCHeader;
 	  Output.write( (char*) EBCHeader.desc,  sizeof(SegYEBCHeader));
 
 	  SegYBHeader BHeader;
@@ -615,7 +615,7 @@ int MigrationFileHandler::WriteAngGather(float **Result, const AngleMigrationJob
 	  break;
       }
       default:
-	  
+
 	  break;
   };
 
@@ -639,7 +639,7 @@ int MigrationFileHandler::WriteAngGather(float **Result, const AngleMigrationJob
 		    cdp++;
 		    for (int ipo = 0; ipo < Job.N_GATHER; ipo++)
 		    {
-			SegYHeader Header = {};
+			SegYHeader Header;
 
 			Header.ns =  BoxVolume.NBz*BoxVolume.nz;
 			Header.dt = static_cast<unsigned short>(BoxVolume.dz * 1000);
@@ -716,7 +716,7 @@ int MigrationFileHandler::WriteAngGather(float **Result, const AngleMigrationJob
 				break;
 			    }
 			    default:
-				
+
 				break;
 			};
 
@@ -730,14 +730,14 @@ int MigrationFileHandler::WriteAngGather(float **Result, const AngleMigrationJob
   delete[] buffer;
   if (Output.fail())
   {
-      
+
       return -1;
   }
 
  Output.close();
  if (Output.fail())
  {
-      
+
       return -1;
  }
  return 0;
@@ -803,10 +803,10 @@ int MigrationFileHandler::TouchAngGather(const AngleMigrationJob& Job, const cha
 		     << P_WORLD_0.x[0] << ","
 		     << P_WORLD_0.x[1] << "\"\n";
 	  PropOutput << "SampleRate = " << static_cast<unsigned short>(Job.MigVol.dz * 1000) << "\n";
-	  PropOutput << "SamplesPerTrace = " << Job.MigVol.nz << "\n";          
-	  PropOutput << "TracesPerFrame = " << Job.N_GATHER << "\n";    
-	  PropOutput << "FramesPerVolume = " << Job.MigVol.nx_xlines << "\n";            
-	  PropOutput << "Volumes = " << Job.MigVol.ny_inlines << "\n";         
+	  PropOutput << "SamplesPerTrace = " << Job.MigVol.nz << "\n";
+	  PropOutput << "TracesPerFrame = " << Job.N_GATHER << "\n";
+	  PropOutput << "FramesPerVolume = " << Job.MigVol.nx_xlines << "\n";
+	  PropOutput << "Volumes = " << Job.MigVol.ny_inlines << "\n";
 
 	  PropOutput.close();
 	  break;
@@ -816,7 +816,7 @@ int MigrationFileHandler::TouchAngGather(const AngleMigrationJob& Job, const cha
 	  ierr = Writer.Open(FileName, Job.MigFileMode, Job.MigVol.nz, (unsigned short) (Job.MigVol.dz * 1e3));
 	  if ( ierr != 0 )
 	  {
-	      
+
 	      return -1;
 	  }
 	  break;
@@ -841,7 +841,7 @@ int MigrationFileHandler::TouchAngGather(const AngleMigrationJob& Job, const cha
 	      const int ipo = igather / ( Job.N_AZIMUTH_CLASSES + extra_azimuth_classes);
 	      const int iazimuth = igather % ( Job.N_AZIMUTH_CLASSES + extra_azimuth_classes);
 
-	      SegYHeader Header = {};
+	      SegYHeader Header;
 	      Header.trid = (short) 1;
 
 	      Header.ns =  Job.MigVol.nz;
@@ -901,7 +901,7 @@ int MigrationFileHandler::TouchAngGather(const AngleMigrationJob& Job, const cha
 
 		      }
 		    HeaderOutput.write( (char*) &Header,  sizeof(SegYHeader));
-		    BinaryOutput.write( (char*) buffer, Job.MigVol.nz*sizeof(float));		  
+		    BinaryOutput.write( (char*) buffer, Job.MigVol.nz*sizeof(float));
 		    break;
 		  }
 		  default:
@@ -914,14 +914,14 @@ int MigrationFileHandler::TouchAngGather(const AngleMigrationJob& Job, const cha
   delete[] buffer;
   if ( ierr != 0 )
   {
-      
+
       return -1;
   }
 
    ierr = Writer.Close();
    if (ierr != 0)
    {
-       
+
        return -1;
    }
 
@@ -939,7 +939,7 @@ int MigrationFileHandler::TouchStack(const AngleMigrationJob& Job, const char* F
   std::ofstream Output(FileName, std::ios::binary);
   if (Output.fail())
   {
-      
+
       return -1;
   }
 
@@ -953,7 +953,7 @@ int MigrationFileHandler::TouchStack(const AngleMigrationJob& Job, const char* F
   {
       case SEGY_BIGENDIAN:
       {
-	  SegYEBCHeader EBCHeader = {};
+	  SegYEBCHeader EBCHeader;
 	  Output.write( (char*) EBCHeader.desc,  sizeof(SegYEBCHeader));
 
 	  SegYBHeader BHeader;
@@ -1015,10 +1015,10 @@ int MigrationFileHandler::TouchStack(const AngleMigrationJob& Job, const char* F
 		     << P_WORLD_0.x[0] << ","
 		     << P_WORLD_0.x[1] << "\"\n";
 	  PropOutput << "SampleRate = " << static_cast<unsigned short>(Job.MigVol.dz * 1000) << "\n";
-	  PropOutput << "SamplesPerTrace = " << Job.MigVol.nz << "\n";          
-	  PropOutput << "TracesPerFrame = " << "1" << "\n";    
-	  PropOutput << "FramesPerVolume = " << Job.MigVol.nx_xlines << "\n";            
-	  PropOutput << "Volumes = " << Job.MigVol.ny_inlines << "\n";         
+	  PropOutput << "SamplesPerTrace = " << Job.MigVol.nz << "\n";
+	  PropOutput << "TracesPerFrame = " << "1" << "\n";
+	  PropOutput << "FramesPerVolume = " << Job.MigVol.nx_xlines << "\n";
+	  PropOutput << "Volumes = " << Job.MigVol.ny_inlines << "\n";
 
 
 	  PropOutput.close();
@@ -1026,13 +1026,13 @@ int MigrationFileHandler::TouchStack(const AngleMigrationJob& Job, const char* F
       }
 
       default:
-	  
+
 	  break;
   };
 
   if (Output.fail())
   {
-      
+
       return -1;
   }
 
@@ -1049,7 +1049,7 @@ int MigrationFileHandler::TouchStack(const AngleMigrationJob& Job, const char* F
 	      tracl++;
 	      cdpt++;
 
-	      SegYHeader Header = {};
+	      SegYHeader Header;
 	      Header.trid = (short) 1;
 
 	      Header.ns =  Job.MigVol.nz;
@@ -1129,14 +1129,14 @@ int MigrationFileHandler::TouchStack(const AngleMigrationJob& Job, const char* F
 		      break;
 		  }
 		  default:
-		      
+
 		      break;
 	      };
 
 	      if (Job.MigFileMode == SVF)  // ScreenSeis SVF Format
 	      {
 		  HeaderOutput.write( (char*) &Header,  sizeof(SegYHeader));
-		  Output.write( (char*) buffer, Job.MigVol.nz*sizeof(float));		  
+		  Output.write( (char*) buffer, Job.MigVol.nz*sizeof(float));
 	      }
 	      else
 	      {
@@ -1149,14 +1149,14 @@ int MigrationFileHandler::TouchStack(const AngleMigrationJob& Job, const char* F
   delete[] buffer;
   if (Output.fail())
   {
-      
+
       return -1;
   }
 
    Output.close();
    if (Output.fail())
    {
-       
+
        return -1;
    }
 
@@ -1175,7 +1175,7 @@ int MigrationFileHandler::WriteAngGather(float *Result, const char* FileName, co
     FILE* MigFile = fopen(FileName, "rb+");
     if (MigFile == NULL)
     {
-	
+
 	return -1;
     }
 
@@ -1199,7 +1199,7 @@ int MigrationFileHandler::WriteAngGather(float *Result, const char* FileName, co
 	    break;
 	}
 	default:
-	    
+
 	    break;
     };
 
@@ -1247,7 +1247,7 @@ int MigrationFileHandler::WriteAngGather(float *Result, const char* FileName, co
 			break;
 		    }
 		    default:
-			
+
 			break;
 		};
 
@@ -1282,7 +1282,7 @@ int MigrationFileHandler::WriteWindAngGather(float *Result, const char* FileName
     FILE* MigFile = fopen(FileName, "rb+");
     if (MigFile == NULL)
     {
-	
+
 	return -1;
     }
 
@@ -1306,7 +1306,7 @@ int MigrationFileHandler::WriteWindAngGather(float *Result, const char* FileName
 	    break;
 	}
 	default:
-	    
+
 	    break;
     };
 
@@ -1354,7 +1354,7 @@ int MigrationFileHandler::WriteWindAngGather(float *Result, const char* FileName
 			break;
 		    }
 		    default:
-			
+
 			break;
 		};
 
@@ -1389,7 +1389,7 @@ int MigrationFileHandler::WriteAngGather(float *Result, const AngleMigrationJob&
   FILE* MigFile = fopen(FileName, "rb+");
   if (MigFile == NULL)
   {
-      
+
       return -1;
   }
 
@@ -1412,7 +1412,7 @@ int MigrationFileHandler::WriteAngGather(float *Result, const AngleMigrationJob&
 	  break;
       }
       default:
-	  
+
 	  break;
   };
 
@@ -1456,11 +1456,11 @@ int MigrationFileHandler::WriteAngGather(float *Result, const AngleMigrationJob&
  		      break;
  		  }
  		  default:
- 		      
+
  		      break;
  	      };
-		  
-	      const unsigned long filepos =  (( (iyoffset + iy) * Job.MigVol.nx_xlines + ixoffset + ix ) * Job.N_GATHER + ipo) 
+
+	      const unsigned long filepos =  (( (iyoffset + iy) * Job.MigVol.nx_xlines + ixoffset + ix ) * Job.N_GATHER + ipo)
 		  * ( Job.MigVol.nz * sizeof(float) + headeroffset) + headeroffset +   (Job.MigVol.nz - izoffset - Nztotal)*sizeof(float);
 
 	      fseek(MigFile, fileoffset + filepos, SEEK_SET);
@@ -1479,7 +1479,7 @@ int MigrationFileHandler::TouchRestartAngGather(const char* FName, const BlockVo
     std::ofstream Output(FName, std::ios::binary);
     if (Output.fail())
     {
-	
+
 	return -1;
     }
 
@@ -1500,14 +1500,14 @@ int MigrationFileHandler::TouchRestartAngGather(const char* FName, const BlockVo
 
     if (Output.fail())
     {
-	
+
 	return -1;
     }
 
     Output.close();
     if (Output.fail())
     {
-	
+
 	return -1;
     }
    return 0;
@@ -1521,7 +1521,7 @@ unsigned long MigrationFileHandler::InitialCheckRestartAngGather(const char* FNa
     FILE* RestartFile = fopen(FName, "rb");
     if ( RestartFile == NULL)
     {
-	
+
 	err = WARNING_GE;
 	return FirstEntryToBeCalculated;
     }
@@ -1532,10 +1532,10 @@ unsigned long MigrationFileHandler::InitialCheckRestartAngGather(const char* FNa
     rewind(RestartFile);
     if ( endpos < 0)
       err = FATAL_ERROR_GE;
-    
+
     if ( err != OK_GE)
     {
-	
+
 	return FirstEntryToBeCalculated;
     }
 
@@ -1544,14 +1544,14 @@ unsigned long MigrationFileHandler::InitialCheckRestartAngGather(const char* FNa
     int* Values = new int[TotNofEntries];
     if (Values == NULL)
       {
-	
+
 	err = FATAL_ERROR_GE;
 	return FirstEntryToBeCalculated;
       }
 
     if ( fread( (char*) Values, sizeof(int), TotNofEntries, RestartFile) != TotNofEntries)
       {
-	
+
 	err = FATAL_ERROR_GE;
 	return FirstEntryToBeCalculated;
       }
@@ -1565,16 +1565,16 @@ unsigned long MigrationFileHandler::InitialCheckRestartAngGather(const char* FNa
 
     if ( fclose(RestartFile) != 0)
       {
-	
+
 	err = FATAL_ERROR_GE;
 	return FirstEntryToBeCalculated;
       }
 
     if ( FirstEntryToBeCalculated == TotNofEntries)
       {
-	
-	
-	
+
+
+
 	err = WARNING_GE;
 	return FirstEntryToBeCalculated;
       }
@@ -1587,7 +1587,7 @@ bool MigrationFileHandler::CheckRestartAngGather(const char* FName, const BlockV
     FILE* RestartFile = fopen(FName, "rb");
     if ( RestartFile == NULL)
     {
-	
+
 	return false;
     }
 
@@ -1610,7 +1610,7 @@ int MigrationFileHandler::SetRestartAngGather(const char* FileName, const BlockV
     FILE* RestartFile = fopen(FileName, "rb+");
     if ( RestartFile == NULL)
     {
-	
+
 	return false;
     }
 
@@ -1632,7 +1632,7 @@ bool MigrationFileHandler::CheckAngGather(const AngleMigrationJob& Job, const Bl
   FILE* MigFile = fopen(Job.MigFileName, "rb");
   if ( MigFile == NULL)
   {
-      
+
       return false;
   }
 
@@ -1649,7 +1649,7 @@ bool MigrationFileHandler::CheckAngGather(const AngleMigrationJob& Job, const Bl
 	  break;
       }
       default:
-	  
+
 	  break;
   };
 
@@ -1674,12 +1674,12 @@ bool MigrationFileHandler::CheckAngGather(const AngleMigrationJob& Job, const Bl
 	  break;
       }
       default:
-	  
+
 	  break;
   };
 
   bool ret = true;
-  if ( Header.tracl != traclmax)
+  if (Header.tracl < 0 || (unsigned long)Header.tracl != traclmax)
       ret = false;
 
   fclose(MigFile);

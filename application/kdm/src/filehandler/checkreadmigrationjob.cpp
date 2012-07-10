@@ -854,8 +854,8 @@ bool CheckReadMigrationJob::ReadXML(XMLReader& Reader, char* VarName, int& Var, 
 {
     if (!Reader.getInt(VarName, Var))
     {
-      if (message)
-        ;
+//       if (message)
+//         ;
       return false;
     }
   return true;
@@ -865,8 +865,8 @@ bool CheckReadMigrationJob::ReadXML(XMLReader& Reader, char* VarName, float& Var
 {
   if (!Reader.getFloat(VarName, Var))
     {
-      if (message)
-        ;
+//       if (message)
+//         ;
       return false;
     }
   return true;
@@ -876,8 +876,8 @@ bool CheckReadMigrationJob::ReadXML(XMLReader& Reader, char* VarName, char* Var,
 {
   if (!Reader.getChar(VarName, Var))
     {
-      if (message)
-        ;
+//       if (message)
+//         ;
       return false;
     }
   return true;

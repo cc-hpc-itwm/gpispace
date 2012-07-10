@@ -148,7 +148,7 @@ void TTVMMemHandler::InitVol ( const MigrationJob& MigJob
 	{
 	  for (int iSrcy = 0; iSrcy < NSrfy; iSrcy++)
 	    {
-	      const unsigned long SrcIndex = iSrcx*NSrfy + iSrcy;
+	      const long SrcIndex = iSrcx*NSrfy + iSrcy;
 
               //	      if ( (SrcIndex % PSize) == PRank )
 	      if (SrcIndex % numPart == myPart)
@@ -213,7 +213,7 @@ void TTVMMemHandler::InitVol ( const MigrationJob& MigJob
                   const unsigned long shift
                     (SrcRank * MigJob.globTTbufsizelocal);
 
-//                   std::cout << "Put to off " 
+//                   std::cout << "Put to off "
 //                             << (off + shift)
 //                             << " from " << VMemOff
 //                             << " size " << SizePerFile
@@ -242,7 +242,7 @@ void TTVMMemHandler::InitVol ( const MigrationJob& MigJob
   if (mtid == 0)
     threadcom = 1;
   else
-    while (threadcom != 1);
+    while (threadcom != 1) {};
   //  std::cout << PRank << "," << mtid << " has passed the barrier\n";
 }
 

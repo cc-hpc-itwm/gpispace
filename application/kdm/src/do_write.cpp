@@ -58,7 +58,7 @@ void do_write ( const std::string & filename
 
           if (part == 0)
             {
-              SegYEBCHeader EBCHeader = {};
+              SegYEBCHeader EBCHeader;
               SegYBHeader BHeader;
 
               BHeader.hns = Nsample;
