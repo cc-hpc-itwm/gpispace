@@ -2270,6 +2270,10 @@ case "$1" in
         shift
         restart drts
         ;;
+    boot)
+        shift
+        "${SDPA_SCRIPT_DIR}/start-sdpa" "$@"
+        ;;
     selftest)
         if ! on_master_node ; then
             log "E: not on master node"
