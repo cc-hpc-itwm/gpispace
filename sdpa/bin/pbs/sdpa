@@ -1979,7 +1979,7 @@ function on_valid_host ()
         if grep -q -e "^$host" "$state_dir/nodefile" ; then
             return 0
         else
-            log "W: your hostname ($host) does not match any in $state_dir/nodefile"
+            #log "W: your hostname ($host) does not match any in $state_dir/nodefile"
             return 1
         fi
     else
@@ -2193,9 +2193,10 @@ if [ "$1" = "gui" ] ; then
 fi
 
 if ! on_valid_host ; then
-    log "W: you are executing 'sdpa' on an invalid host!"
-    log "W: this might not be what you want"
-    log "I: please run 'sdpa init' on the master node first!"
+#    log "W: you are executing 'sdpa' on an invalid host!"
+#    log "W: this might not be what you want"
+#    log "I: please run 'sdpa init' on the master node first!"
+    :
 fi
 
 if ! configure ; then
