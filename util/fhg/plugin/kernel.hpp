@@ -93,6 +93,8 @@ namespace fhg
 
       virtual int shutdown () = 0;
       virtual int terminate () = 0;
+
+      virtual std::string const & get_name () const = 0;
     };
   }
 }

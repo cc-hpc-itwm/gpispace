@@ -53,6 +53,7 @@ static bool gpi_startup_done = false;
 static bool stop_requested = false;
 static char pidfile[MAX_PATH_LEN];
 static char api_name[MAX_PATH_LEN];
+static char socket_path[MAX_PATH_LEN];
 static unsigned long long gpi_mem = (1<<26);
 static unsigned short gpi_port = 0;
 static unsigned int gpi_mtu = 0;
@@ -87,8 +88,8 @@ static void long_usage()
   fprintf(stderr, "    --daemonize\n");
   fprintf(stderr, "      fork to background when all checks were ok\n");
   fprintf(stderr, "\n");
-  fprintf(stderr, "    --socket PATH (%s)\n", config.socket);
-  fprintf(stderr, "      listen for process containers on this path\n");
+  fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
+  fprintf(stderr, "      create sockets in this base path\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "KVS options\n");
   fprintf(stderr, "    --kvs-host HOST (%s)\n", config.kvs_host);
@@ -165,6 +166,7 @@ int main (int ac, char *av[])
   bool gpi_clear_caches = false;
   snprintf (pidfile, sizeof(pidfile), "%s", "");
   snprintf (api_name, sizeof(api_name), "%s", "auto");
+  snprintf (socket_path, sizeof(socket_path), "/var/tmp");
 
   initialize_config (&config);
 
@@ -219,14 +221,22 @@ int main (int ac, char *av[])
       ++i;
       if (i < ac)
       {
-        if ((strlen(av[i] + 1) > sizeof(config.socket)))
+        if ( ( (strlen(av[i]) + strlen("/S-gpi-space.XXXXX.XXXX") + 1)
+             > sizeof(config.socket))
+           )
         {
           fprintf(stderr, "%s: path to socket is too large!\n", program_name);
-          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(config.socket));
+          fprintf(stderr, "    at most %lu characters are supported\n"
+                 , sizeof(config.socket) - (strlen("/S-gpi-space.XXXXX.XXXX")+1)
+                 );
           exit(EX_INVAL);
         }
 
-        strncpy(config.socket, av[i], sizeof(config.socket));
+        snprintf ( socket_path
+                 , sizeof(socket_path)
+                 , "%s"
+                 , av[i]
+                 );
         ++i;
       }
       else
@@ -519,6 +529,14 @@ int main (int ac, char *av[])
     }
   }
 
+  snprintf ( config.socket
+           , sizeof(config.socket)
+           , "%s/S-gpi-space.%d.%d"
+           , socket_path
+           , getuid()
+           , gpi_numa_socket
+           );
+
   // initialize gpi api
   if (strcmp(api_name, "auto") == 0 || strcmp(api_name, "real") == 0)
   {
@@ -671,8 +689,7 @@ int main (int ac, char *av[])
       }
       snprintf(buf, sizeof(buf), "%d\n", getpid());
 
-      const ssize_t written (write (pidfile_fd, buf, strlen (buf)));
-      if (written < 0 || (size_t)written != strlen(buf))
+      if (write(pidfile_fd, buf, strlen(buf)) != (int)strlen(buf))
       {
         LOG(ERROR, "could not write pid to file: " << strerror(errno));
         exit(EXIT_FAILURE);
@@ -928,11 +945,6 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
 static void initialize_config (config_t * c)
 {
   memset(c, 0, sizeof(config_t));
-  snprintf( c->socket
-          , sizeof(c->socket), "/var/tmp/S-gpi-space.%d.%d"
-          , getuid()
-          , gpi_numa_socket
-          );
 
   if (gethostname (c->kvs_host, MAX_HOST_LEN) != 0)
   {

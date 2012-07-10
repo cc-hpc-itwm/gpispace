@@ -145,6 +145,9 @@ namespace fhg
 
       void plugin_start_completed(std::string const & name, int);
       void plugin_failed(std::string const &name, int);
+
+      void set_name (std::string const &n);
+      std::string const & get_name () const;
     private:
       void initialize_storage ();
       void check_dependencies (fhg::core::plugin_t::ptr_t const &);
@@ -186,6 +189,7 @@ namespace fhg
       fhg::plugin::Storage *m_storage;
 
       boost::thread m_task_handler;
+      std::string m_name;
     };
   }
 }

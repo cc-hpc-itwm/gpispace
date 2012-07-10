@@ -87,6 +87,9 @@ struct my_state_t
 
   int setup_transfer_buffer ()
   {
+    if (0 == m_com_size)
+      return -1;
+
     // register segment
     m_shm_com = capi.register_segment ( "gpish"
                                       , m_com_size
@@ -287,7 +290,7 @@ int main (int ac, char **av)
     }
   }
 
-  initialize_state (socket_dir, socket_path, (16 * (1<<20)));
+  initialize_state (socket_dir, socket_path, com_size);
   initialize_shell (ac, av);
 
   shell_t::get().run();

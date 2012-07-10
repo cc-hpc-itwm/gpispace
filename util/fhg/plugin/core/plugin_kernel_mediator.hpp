@@ -41,6 +41,8 @@ namespace fhg
 
       int terminate ();
       int shutdown ();
+
+      std::string const & get_name () const;
     private:
       bool has_permission(int) const;
 

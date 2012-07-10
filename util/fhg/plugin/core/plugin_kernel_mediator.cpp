@@ -188,5 +188,10 @@ namespace fhg
         return -EPERM;
       }
     }
+
+    std::string const & PluginKernelMediator::get_name () const
+    {
+      return m_kernel->get_name ();
+    }
   }
 }

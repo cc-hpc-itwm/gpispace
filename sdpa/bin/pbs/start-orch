@@ -13,6 +13,7 @@ kvs_url=
 daemonize=false
 pidfile=
 state_dir="$HOME/.sdpa/state"
+config_file="$HOME/.sdpa/configs/sdpa.rc"
 logdir=
 
 while getopts ":hgn:l:d:k:DP:L:s:" opt; do
@@ -41,6 +42,9 @@ while getopts ":hgn:l:d:k:DP:L:s:" opt; do
         s)
             state_dir=$OPTARG
             ;;
+        F)
+            config_file="$OPTARG"
+            ;;
         h)
             echo "usage: $0 [-h] [-g] [-l interface] [-n name] [-b backup-dir]" >&2
             echo "    -h : print this help" >&2
@@ -51,6 +55,7 @@ while getopts ":hgn:l:d:k:DP:L:s:" opt; do
             echo "    -D : daemonize" >&2
             echo "    -P pidfile: write pid to this file and lock it" >&2
             echo "    -s dir: sdpa state dir to use" >&2
+            echo "    -F config file: path to the sdpa config" >&2
             exit 0
             ;;
         \?)
@@ -89,7 +94,7 @@ fi
 log "Running $name at $bind_addr"
 
 argv="$SDPA_HOME/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
-stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
+stateful=$(fhgcfg -f "${config_file}" -g sdpa.stateful -v false)
 if [ x"$stateful" = x"true" ] ; then
     bkp_dir="${state_dir}/orch"
     mkdir -p "${bkp_dir}"

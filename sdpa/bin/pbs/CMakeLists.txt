@@ -9,6 +9,7 @@ set (scripts
   start-orch
   start-agent
   start-drts
+  start-sdpa
   stop-drts
   stop-agent
   status-agent

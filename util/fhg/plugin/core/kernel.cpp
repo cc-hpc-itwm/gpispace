@@ -559,5 +559,15 @@ namespace fhg
         }
       }
     }
+
+    std::string const & kernel_t::get_name () const
+    {
+      return m_name;
+    }
+
+    void kernel_t::set_name (std::string const &n)
+    {
+      m_name = n;
+    }
   }
 }

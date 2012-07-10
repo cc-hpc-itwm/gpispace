@@ -1,0 +1,314 @@
+#!/bin/bash
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename $0) [options]
+
+  -h: this help
+  -n: dry run
+  -f: node file to use
+  -S: state directory to use
+  -F: config file
+  -m: amount of gpi memory to use
+  -s: default amount of shared memory to use (=0)
+  -c: default amount of communication memory to use (=0)
+  -C: capability specification
+
+        format:
+           <CAP>[:N[xM][,shm[,com]]]
+
+        examples:
+           INIT:1x1,0,0
+              exactly *one* INIT worker
+
+           LOAD:2,16*2**20,4*2**20
+              2 LOAD worker/node
+
+           WRITE:2x4,16*2**20,4*2**20
+              2 WRITE workers/node but on at most 4 nodes
+EOF
+}
+
+# catch CTRL-C and qdel the job
+on_ctrlC()
+{
+        echo >&2 "Canceled..."
+        sdpa stop
+        exit 0
+}
+
+log()
+{
+    echo >&2 "$*"
+}
+
+info()
+{
+    log "I: $*"
+}
+
+warn()
+{
+    log "W: $*"
+}
+
+error()
+{
+    ec=$1; shift
+    log "E: $*"
+    exit $ec
+}
+
+dry_run_p=false
+dry_run()
+{
+    if $dry_run_p ; then
+        log "would run: $@"
+    else
+        "$@"
+    fi
+}
+
+# helper function to execute something remotely
+function rexec ()
+{
+    local node="$1"; shift
+    local err
+    local rc
+    local ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
+    local cmd="ssh $ssh_opts $node $@"
+    err=$($cmd </dev/null 2>&1)
+    rc=$?
+    if [ $rc -ne 0 ] ; then
+        echo $err >&2
+        return $rc
+    else
+        echo $err
+        return 0
+    fi
+}
+
+parse_capability()
+{
+    cap_spec="$1"; shift
+
+    cap_spec_regex='^[^:]+(:[0-9]+(x[0-9]+)?(,[^,]+,[^,]+)?)?$'
+
+    if ! echo "$cap_spec" | grep -q -E "$cap_spec_regex" ; then
+        error 1 "Invalid capability specification: $cap_spec"
+    fi
+
+    num_per_node=1
+    max_nodes=0
+    com_size="$def_com_mem"
+    shm_size="$def_shm_mem"
+
+    capability=$(echo "$cap_spec" | cut -d: -f1)
+    rest=$(echo "$cap_spec" | cut -s -d: -f 2)
+    if [ -n "$rest" ] ; then
+        amount_spec=$(echo "$rest" | cut -d, -f 1)
+        rest=$(echo "$rest" | cut -s -d, -f 2-)
+        num_per_node=$(echo "$amount_spec" | cut -dx -f 1)
+
+        max_nodes=$(echo "$amount_spec" | cut -s -dx -f 2)
+        if [ $num_per_node -eq 0 ] ; then
+            warn "Invalid number of workers per node in capability specification!"
+            warn "          input: $cap_spec"
+            warn "   num_per_node: $num_per_node"
+            error 1 "positive integer expected"
+        fi
+        if [ -z $max_nodes ] ; then
+            max_nodes=0
+        fi
+
+        if [ -n "$rest" ] ; then
+            shm_size=$(echo "$rest" | cut -d, -f 1)
+            com_size=$(echo "$rest" | cut -s -d, -f 2)
+            if [ -z "$com_size" ] ; then
+                com_size="$def_com_size"
+            fi
+        fi
+
+        shm_size=$(( $shm_size ))
+        com_size=$(( $com_size ))
+    fi
+
+    echo "$capability $num_per_node $max_nodes $shm_size $com_size"
+    return 0
+}
+
+# Execute function on_ctrlC() receiving SIGINT signal
+#
+#trap 'on_ctrlC' SIGINT
+
+nodefile="$PBS_NODEFILE"
+config_file="$HOME/.sdpa/configs/sdpa.rc"
+
+# guess memory sizes
+tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
+avl_mem=$(( ($tot_mem * 80) / 100 ))
+gpi_mem=0
+def_shm_mem=0
+def_com_mem=0
+
+if [ ${#@} -eq 0 ] ; then
+    usage
+    exit 0
+fi
+
+while getopts ":hnf:S:m:s:c:C:F:" opt; do
+    case $opt in
+        h)
+            usage
+            exit 0
+            ;;
+        n)
+            dry_run_p=true
+            ;;
+        f)
+            nodefile="$OPTARG"
+            ;;
+        S)
+            state_dir="$OPTARG"
+            ;;
+        m)
+            gpi_mem=$OPTARG
+            ;;
+        s)
+            def_shm_mem=$OPTARG
+            ;;
+        c)
+            def_com_mem=$OPTARG
+            ;;
+        C)
+            new_cap=$(parse_capability "$OPTARG")
+            capabilities=( "${capabilities[@]}" $new_cap )
+            ;;
+        F)
+            config_file="$OPTARG"
+            ;;
+        \?)
+            ;;
+    esac
+done
+
+if [ -z "$nodefile" ] ; then
+    error 1 "nodefile is missing"
+fi
+
+if [ -z "$SDPA_HOME" ] ; then
+    error 2 "SDPA_HOME is not set!"
+fi
+
+if [ "${nodefile:0:1}" != "/" ]; then
+    nodefile="$PWD/$nodefile"
+fi
+
+if [ ! -r "$nodefile" ] ; then
+    error 2 "Could not read nodefile: $nodefile"
+fi
+
+if [ -z "${state_dir}" ] ; then
+    error 1 "state directory not set"
+fi
+
+sdpa=$(which sdpa)
+if [ $? -ne 0 ] ; then
+    error 2 "could not locate 'sdpa' executable!"
+fi
+
+export SDPA_PERFORM_UNATTENDED_SETUP=1
+if [ ! -e "${config_file}" ] ; then
+    info "I: sdpa config does not exist, performing automated SDPA setup"
+
+    dry_run ${sdpa} -c "${config_file}" setup </dev/null || {
+        mv "$HOME/.sdpa/configs/sdpa.rc" "$HOME/.sdpa/configs/sdpa.rc~"
+        error 2 "I was unable to setup the SDPA environment for you."
+    }
+fi
+
+dry_run sdpa -c "${config_file}" init -s "${state_dir}" "$nodefile" </dev/null || {
+    error 2 "could not initialize SDPA!"
+}
+
+# compute memory sizes
+if [ ${gpi_mem} -eq 0 ] ; then
+    gpi_mem=$(( avl_mem * 50 / 100 ))
+fi
+
+info "using nodefile: $nodefile"
+info "using GPI mem: ${gpi_mem} bytes per node"
+info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
+info "using COM mem: ${def_com_mem} bytes per process (by default)"
+
+socket_path=$(fhgcfg -f "${config_file}" -g "gpi.socket_path" -v "/tmp")
+
+# set memory sizes - choose reasonable defaults (depending on local machines)
+dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "true"
+dry_run fhgcfg -f "${config_file}" -a "gpi.memory_size" -v "$gpi_mem"
+dry_run fhgcfg -f "${config_file}" -a "gpi.socket_path" -v "$socket_path"
+
+# set up topology
+dry_run fhgcfg -f "${config_file}" -a "topology.per-node" -v 1
+dry_run fhgcfg -f "${config_file}" -a "topology.with-mediator" -v "false"
+
+scratch_dir=$(fhgcfg -f "${config_file}" -g sdpa.scratch_dir)
+if [ -z "$scratch_dir" ] ; then
+    scratch_dir="$HOME/.sdpa/scratch"
+fi
+
+hosts=( $(cat "$nodefile" | uniq) )
+
+if [ ${#hosts[@]} -eq 0 ] ; then
+    error 2 "hostfile empty"
+fi
+
+master=${hosts[0]}
+num_hosts=${#hosts[@]}
+
+log "starting base sdpa components on $master..."
+
+dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
+dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start gpi
+dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start orch
+dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start agg
+
+# for each capability:
+#    for each host
+#       - check maximum worker limit, break
+#       - start additional workers, up to N
+
+for (( i=0 ; i < ${#capabilities[@]} ; i += 5 )) ; do
+    capability=${capabilities[   $(( i+0 )) ]}
+    num_per_node=${capabilities[ $(( i+1 )) ]}
+    max_nodes=${capabilities[    $(( i+2 )) ]}
+    shm_size=${capabilities[     $(( i+3 )) ]}
+    com_size=${capabilities[     $(( i+4 )) ]}
+
+    info "starting $capability workers ($num_per_node/host, $shm_size SHM, $com_size COM)..."
+
+    num_nodes=0
+    start_drts="${SDPA_HOME}/libexec/sdpa/scripts/start-drts"
+
+    for host in ${hosts[@]} ; do
+        id=1
+
+        for (( j = 0 ; j < $num_per_node ; j += 1 )) ; do
+            dry_run rexec $host "$start_drts" -D -i ${id} -n "$capability" \
+                                              -m aggregator -C "$capability" \
+                                              -s "$state_dir" \
+                                              -F "$config_file" \
+                                              -M "$shm_size" \
+                                              -B "$com_size" &
+            id=$(( id + 1 ))
+        done
+
+        num_nodes=$(( num_nodes + 1 ))
+
+        if [ $num_nodes -eq $max_nodes ] ; then
+            break
+        fi
+        wait
+    done
+done
