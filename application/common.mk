@@ -191,9 +191,9 @@ verify: $(NET_VERIFICATION)
 ###############################################################################
 
 $(DEP_XML): $(XML)
-	$(PNETC) -i $(XML) -o /dev/null $(PNETC_OPTS) -MT '$(DEP_XML)' > $@
+	$(PNETC) -i $(XML) -o /dev/null $(PNETC_OPTS) -MM -MT '$(DEP_XML)' > $@
 
-ifneq ($(shell test -e $(DEP_XML)),)
+ifneq ($(wildcard $(DEP_XML)),)
   include $(DEP_XML)
 endif
 
