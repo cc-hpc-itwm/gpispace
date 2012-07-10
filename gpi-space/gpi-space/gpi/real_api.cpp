@@ -171,6 +171,11 @@ namespace gpi
       return m_mem_size;
     }
 
+    gpi::size_t real_gpi_api_t::max_transfer_size () const
+    {
+      return (1 << 30);
+    }
+
     gpi::size_t real_gpi_api_t::open_dma_requests (const queue_desc_t q) const
     {
       assert (m_startup_done);
@@ -480,7 +485,7 @@ namespace gpi
       assert (m_startup_done);
 
       size_t remaining (amount);
-      const size_t chunk_size (std::numeric_limits<int>::max());
+      const size_t chunk_size (max_transfer_size ());
 
       size_t l_off (local_offset);
       size_t r_off (remote_offset);
@@ -512,8 +517,8 @@ namespace gpi
         }
 
         remaining -= to_transfer;
-        l_off += to_transfer;
-        r_off += to_transfer;
+        l_off     += to_transfer;
+        r_off     += to_transfer;
       }
     }
 
@@ -527,7 +532,7 @@ namespace gpi
       assert (m_startup_done);
 
       size_t remaining (amount);
-      const size_t chunk_size (std::numeric_limits<int>::max());
+      const size_t chunk_size (max_transfer_size ());
 
       size_t l_off (local_offset);
       size_t r_off (remote_offset);
@@ -568,10 +573,9 @@ namespace gpi
         }
 
         remaining -= to_transfer;
-        l_off += to_transfer;
-        r_off += to_transfer;
+        l_off     += to_transfer;
+        r_off     += to_transfer;
       }
-
     }
 
     void real_gpi_api_t::send_dma ( const offset_t local_offset
