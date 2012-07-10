@@ -211,16 +211,16 @@ if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
         cmdline="$cmdline --pidfile $pidfile"
     fi
     if test -n "$kvs_host" ; then
-        cmdline="$cmdline --kvs_host $kvs_host"
+        cmdline="$cmdline --kvs-host $kvs_host"
     fi
     if test -n "$kvs_port" ; then
-        cmdline="$cmdline --kvs_port $kvs_port"
+        cmdline="$cmdline --kvs-port $kvs_port"
     fi
     if test -n "$log_host" ; then
-        cmdline="$cmdline --log_host $log_host"
+        cmdline="$cmdline --log-host $log_host"
     fi
     if test -n "$log_port" ; then
-        cmdline="$cmdline --log_host $log_port"
+        cmdline="$cmdline --log-port $log_port"
     fi
     if test -n "$socket_path" ; then
         cmdline="$cmdline --socket $socket_path"
