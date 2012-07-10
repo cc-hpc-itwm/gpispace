@@ -239,13 +239,15 @@ fi
 
 info "using nodefile: $nodefile"
 info "using GPI mem: ${gpi_mem} bytes per node"
-info "using SHM mem: ${def_shm_mem} bytes per process"
-info "using COM mem: ${def_com_mem} bytes per process"
+info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
+info "using COM mem: ${def_com_mem} bytes per process (by default)"
+
+socket_path=$(fhgcfg -f "${config_file}" -g "gpi.socket_path" -v "/tmp")
 
 # set memory sizes - choose reasonable defaults (depending on local machines)
 dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "true"
 dry_run fhgcfg -f "${config_file}" -a "gpi.memory_size" -v "$gpi_mem"
-dry_run fhgcfg -f "${config_file}" -a "gpi.socket_path" -v "/tmp"
+dry_run fhgcfg -f "${config_file}" -a "gpi.socket_path" -v "$socket_path"
 
 # set up topology
 dry_run fhgcfg -f "${config_file}" -a "topology.per-node" -v 1
