@@ -478,28 +478,45 @@ namespace gpi
                                   )
     {
       assert (m_startup_done);
-      int rc
-        (readDmaGPI ( local_offset
-                    , remote_offset
-                    , amount
-                    , from_node
-                    , queue
-                    )
-        );
 
-      if (rc != 0)
+      size_t remaining (amount);
+      const size_t chunk_size (std::numeric_limits<int>::max());
+
+      size_t l_off (local_offset);
+      size_t r_off (remote_offset);
+
+      while (remaining)
       {
-        throw exception::dma_error
-          ( gpi::error::read_dma_failed()
-          , local_offset
-          , remote_offset
-          , from_node
-          , rank()
-          , amount
-          , queue
+        const size_t to_transfer (std::min (chunk_size, remaining));
+
+        int rc
+          (readDmaGPI ( l_off
+                      , r_off
+                      , to_transfer
+                      , from_node
+                      , queue
+                      )
           );
+
+        if (rc != 0)
+        {
+          throw exception::dma_error
+            ( gpi::error::read_dma_failed()
+            , local_offset
+            , remote_offset
+            , from_node
+            , rank()
+            , amount
+            , queue
+            );
+        }
+
+        remaining -= to_transfer;
+        l_off += to_transfer;
+        r_off += to_transfer;
       }
     }
+
     void real_gpi_api_t::write_dma ( const offset_t local_offset
                               , const offset_t remote_offset
                               , const size_t amount
@@ -508,36 +525,53 @@ namespace gpi
                               )
     {
       assert (m_startup_done);
-      int rc
-        (writeDmaGPI ( local_offset
-                     , remote_offset
-                     , amount
-                     , to_node
-                     , queue
-                     )
-        );
 
-      DLOG( TRACE
-          , "real_api: writeDMA:"
-          << " remote: " << remote_offset
-          << " local: " << local_offset
-          << " amount: " << amount
-          << " to-node: " << to_node
-          << " queue: " << queue
-          );
+      size_t remaining (amount);
+      const size_t chunk_size (std::numeric_limits<int>::max());
 
-      if (rc != 0)
+      size_t l_off (local_offset);
+      size_t r_off (remote_offset);
+
+      while (remaining)
       {
-        throw exception::dma_error
-          ( gpi::error::write_dma_failed()
-          , local_offset
-          , remote_offset
-          , rank()
-          , to_node
-          , amount
-          , queue
+        const size_t to_transfer (std::min (chunk_size, remaining));
+
+        int rc
+          (writeDmaGPI ( l_off
+                       , r_off
+                       , to_transfer
+                       , to_node
+                       , queue
+                       )
           );
+
+        DLOG( TRACE
+            , "real_api: writeDMA:"
+            << " remote: " << remote_offset
+            << " local: " << local_offset
+            << " amount: " << amount
+            << " to-node: " << to_node
+            << " queue: " << queue
+            );
+
+        if (rc != 0)
+        {
+          throw exception::dma_error
+            ( gpi::error::write_dma_failed()
+            , local_offset
+            , remote_offset
+            , rank()
+            , to_node
+            , amount
+            , queue
+            );
+        }
+
+        remaining -= to_transfer;
+        l_off += to_transfer;
+        r_off += to_transfer;
       }
+
     }
 
     void real_gpi_api_t::send_dma ( const offset_t local_offset
