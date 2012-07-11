@@ -30,8 +30,8 @@ add_library(stresstest_mod SHARED stresstest.cpp)
 set_target_properties(stresstest_mod PROPERTIES OUTPUT_NAME stresstest)
 
 set (xmls
-  stress.xml
-  stresstest.xml
+  stress.xpnet
+  stresstest.xpnet
   )
 
 install(TARGETS stresstest_mod

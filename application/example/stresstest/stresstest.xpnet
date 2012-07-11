@@ -123,7 +123,7 @@
     </transition>
 
     <transition name="nre">
-      <include-function href="stress.xml"/>
+      <include-function href="stress.xpnet"/>
       <connect-read port="N" place="M"/>
       <connect-read port="config" place="config"/>
       <connect-out port="done" place="done"/>
