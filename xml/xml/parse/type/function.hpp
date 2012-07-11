@@ -953,6 +953,9 @@ namespace xml
         stream << "  $(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
                                                                    << std::endl;
         stream << "  $(warning !!!)"                               << std::endl;
+        stream << "  $(warning !!! Try to set BOOST_ROOT in the environment!)"
+                                                                   << std::endl;
+        stream << "  $(warning !!!)"                               << std::endl;
         stream << "  BOOST_ROOT = /usr"                            << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
