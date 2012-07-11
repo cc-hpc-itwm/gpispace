@@ -1,26 +1,26 @@
 <defun name="stresstest">
   <properties name="pnetc">
     <properties name="context">
-      <property key="MILLI">1000</property>
-      <property key="SECOND">${MILLI} * 1000</property>
-      <property key="KIBI">2^10</property>
-      <property key="MIBI">2^20</property>
-      <property key="GIBI">2^30</property>
-      <property key="SIZE_OF_LONG">8</property>
+      <property key="MILLI" value="1000"/>
+      <property key="SECOND" value="${MILLI} * 1000"/>
+      <property key="KIBI" value="2^10"/>
+      <property key="MIBI" value="2^20"/>
+      <property key="GIBI" value="2^30"/>
+      <property key="SIZE_OF_LONG" value="8"/>
 
-      <property key="aggregator">5</property>
-      <property key="nre">5</property>
-      <property key="seed">long(1000.0 * pi)</property>
-      <property key="bytes_to_transfer">192 * ${MIBI}</property>
+      <property key="aggregator" value="5"/>
+      <property key="nre" value="5"/>
+      <property key="seed" value="long(1000.0 * pi)"/>
+      <property key="bytes_to_transfer" value="192 * ${MIBI}"/>
 
       <!-- when true, the full shmem segment is verified, not only the data -->
-      <property key="verify_all_mem">false</property>
-      <property key="verify">true</property>
-      <property key="communicate">true</property>
+      <property key="verify_all_mem" value="false"/>
+      <property key="verify" value="true"/>
+      <property key="communicate" value="true"/>
 
-      <property key="num_long_to_transfer">
-         ${bytes_to_transfer} div ${SIZE_OF_LONG}
-      </property>
+      <property key="num_long_to_transfer"
+                value="${bytes_to_transfer} div ${SIZE_OF_LONG}"
+                />
     </properties>
   </properties>
 
