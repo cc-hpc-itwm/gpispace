@@ -538,7 +538,9 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
     }
   }
   else
-    SDPA_LOG_WARN("No configuration file was specified. Using the default configuration.");
+  {
+    SDPA_LOG_INFO("No configuration file was specified. Using the default configuration.");
+  }
 
   m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
   m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
