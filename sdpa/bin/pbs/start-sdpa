@@ -222,13 +222,22 @@ export SDPA_PERFORM_UNATTENDED_SETUP=1
 if [ ! -e "${config_file}" ] ; then
     info "I: sdpa config does not exist, performing automated SDPA setup"
 
-    dry_run ${sdpa} -c "${config_file}" setup </dev/null || {
+    dry_run "${sdpa}" -c "${config_file}" setup </dev/null || {
         mv "$HOME/.sdpa/configs/sdpa.rc" "$HOME/.sdpa/configs/sdpa.rc~"
         error 2 "I was unable to setup the SDPA environment for you."
     }
 fi
 
-dry_run sdpa -c "${config_file}" init -s "${state_dir}" "$nodefile" </dev/null || {
+hosts=( $(cat "$nodefile" | uniq) )
+
+if [ ${#hosts[@]} -eq 0 ] ; then
+    error 1 "hostfile empty"
+fi
+
+master=${hosts[0]}
+num_hosts=${#hosts[@]}
+
+dry_run rexec $master "${sdpa}" -c "${config_file}" init -s "${state_dir}" "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
@@ -257,15 +266,6 @@ scratch_dir=$(fhgcfg -f "${config_file}" -g sdpa.scratch_dir)
 if [ -z "$scratch_dir" ] ; then
     scratch_dir="$HOME/.sdpa/scratch"
 fi
-
-hosts=( $(cat "$nodefile" | uniq) )
-
-if [ ${#hosts[@]} -eq 0 ] ; then
-    error 2 "hostfile empty"
-fi
-
-master=${hosts[0]}
-num_hosts=${#hosts[@]}
 
 log "starting base sdpa components on $master..."
 
