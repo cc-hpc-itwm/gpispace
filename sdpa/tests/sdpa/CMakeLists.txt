@@ -56,7 +56,7 @@ include(pnet_macros)
 get_target_property(PNETPUT_LOCATION pnetput LOCATION)
 
 ###########################################################################################
-pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
+pnet_compile( sdpa-stresstest ${CMAKE_SOURCE_DIR}/application/example/stresstest/stresstest.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
   FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
 )
