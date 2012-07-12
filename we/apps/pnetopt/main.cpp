@@ -4,6 +4,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 #include <lua.hpp>
 #include "LuaBridge/LuaBridge.h"
@@ -66,7 +67,8 @@ class Optimizer {
                     .addFunction("__call", &PlaceIterator::__call)
                 .endClass()
                 .template beginClass<Place>("Place")
-                    .addFunction("__tostring", &Place::__tostring)
+                    .addFunction("__tostring", &Place::name)
+                    .addFunction("id", &Place::id)
                     .addFunction("name", &Place::name)
                 .endClass()
                 .template beginClass<Transitions>("Transitions")
@@ -79,7 +81,7 @@ class Optimizer {
                     .addFunction("__call", &TransitionIterator::__call)
                 .endClass()
                 .template beginClass<Transition>("Transition")
-                    .addFunction("__tostring", &Transition::__tostring)
+                    .addFunction("__tostring", &Transition::name)
                     .addFunction("name", &Transition::name)
                     .addFunction("ports", &Transition::ports)
                 .endClass()
@@ -93,8 +95,9 @@ class Optimizer {
                     .addFunction("__call", &PortIterator::__call)
                 .endClass()
                 .template beginClass<Port>("Port")
-                    .addFunction("__tostring", &Port::__tostring)
+                    .addFunction("__tostring", &Port::name)
                     .addFunction("name", &Port::name)
+                    .addFunction("place", &Port::place)
                 .endClass()
                 ;
 
@@ -108,7 +111,7 @@ class Optimizer {
 
     void operator()(const char *filename) {
         if (luaL_dofile(L, filename) != 0) {
-            std::runtime_error e(lua_tostring(L, -1));
+            std::runtime_error e((boost::format("Lua error: %1%") % lua_tostring(L, -1)).str());
             lua_pop(L, 1);
             throw e;
         }
@@ -259,10 +262,8 @@ class Optimizer {
             place_(place)
         {}
 
-        const char *__tostring() {
-            ensureValid();
-
-            return "Place";
+        petri_net::pid_t id() {
+            return pid_;
         }
 
         const std::string &name() {
@@ -313,7 +314,7 @@ class Optimizer {
             if (!result || !result->valid()) {
                 transitions_.reserve(transitions_.size() + 1);
 
-                result = new Transition(tid, petriNet().pnet().get_transition(tid));
+                result = new Transition(*this, tid, petriNet().pnet().get_transition(tid));
                 transitions_.push_back(result);
             }
             return result;
@@ -365,26 +366,24 @@ class Optimizer {
         };
     };
 
-    class Transition: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+    class Transition: public pnetopt::Invalidatable {
+        Transitions &transitions_;
         petri_net::tid_t tid_;
         const transition_t &transition_;
         std::auto_ptr<Ports> ports_;
 
         public:
 
-        Transition(typename petri_net::tid_t tid, const transition_t &transition):
+        Transition(Transitions &transitions, typename petri_net::tid_t tid, const transition_t &transition):
+            transitions_(transitions),
             tid_(tid),
             transition_(transition),
             ports_(NULL)
         {}
 
+        Transitions &transitions() const { return transitions_; }
+
         const transition_t &transition() const { return transition_; }
-
-        const char *__tostring() {
-            ensureValid();
-
-            return "Transition";
-        }
 
         const std::string &name() {
             ensureValid();
@@ -402,7 +401,7 @@ class Optimizer {
         }
     };
 
-    class Ports: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+    class Ports: public pnetopt::Invalidatable {
         Transition &transition_;
         std::vector<RefCountedObjectPtr<PortIterator> > iterators_;
 
@@ -424,7 +423,7 @@ class Optimizer {
         const char *__tostring() {
             ensureValid();
 
-            return "Transition ports";
+            return "Ports";
         }
 
         int __len() const {
@@ -441,7 +440,7 @@ class Optimizer {
             Port *&result = portId2port_[portId];
             if (!result || !result->valid()) {
                 ports_.reserve(ports_.size() + 1);
-                result = new Port(portId, port);
+                result = new Port(*this, portId, port);
                 ports_.push_back(result);
             }
             return result;
@@ -495,26 +494,47 @@ class Optimizer {
         };
     };
 
-    class Port: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+    class Port: public pnetopt::Invalidatable {
+        Ports &ports_;
         typename transition_t::port_id_t portId_;
         typename transition_t::port_t port_;
 
         public:
 
-        Port(typename transition_t::port_id_t portId, typename transition_t::port_t port):
-            portId_(portId), port_(port)
+        Port(Ports &ports, typename transition_t::port_id_t portId, typename transition_t::port_t port):
+            ports_(ports), portId_(portId), port_(port)
         {}
-
-        const char *__tostring() {
-            ensureValid();
-
-            return "Port";
-        }
 
         const std::string &name() {
             ensureValid();
 
             return port_.name();
+        }
+
+        Place *place() {
+            ensureValid();
+
+            try {
+                return ports_.transition().transitions().petriNet().places().getPlace(ports_.transition().transition().gen_inner_to_outer(portId_).first);
+            } catch (const we::type::exception::not_connected<typename transition_t::port_id_t> &e) {
+                // TODO: why can't I check connectedness without using exceptions?
+                return NULL;
+            }
+        }
+
+        bool isInput() {
+            ensureValid();
+            return port_.is_input();
+        }
+
+        bool isOutput() {
+            ensureValid();
+            return port_.is_output();
+        }
+
+        bool isTunnel() {
+            ensureValid();
+            return port_.is_tunnel();
         }
     };
 };
