@@ -3,7 +3,9 @@ MAIN = stresstest
 ###############################################################################
 
 NOT_STARTS_WITH += generate
-NOT_STARTS_WITH += dup
+NOT_STARTS_WITH += scatter
+NOT_STARTS_WITH += inner
+NOT_STARTS_WITH += wait
 
 ###############################################################################
 
