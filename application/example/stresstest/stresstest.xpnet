@@ -8,8 +8,8 @@
       <property key="GIBI" value="2^30"/>
       <property key="SIZE_OF_LONG" value="8"/>
 
-      <property key="aggregator" value="5"/>
-      <property key="nre" value="5"/>
+      <property key="outer" value="5"/>
+      <property key="inner" value="5"/>
       <property key="seed" value="long(1000.0 * pi)"/>
       <property key="bytes_to_transfer" value="192 * ${MIBI}"/>
 
@@ -25,7 +25,7 @@
   </properties>
 
   <in name="agg" type="long" place="N"/>
-  <in name="nre" type="long" place="M"/>
+  <in name="inner" type="long" place="M"/>
   <in name="sleeptime" type="long" place="sleeptime"/>
   <in name="num_long_to_transfer" type="long" place="num_long"/>
   <in name="seed" type="long" place="seed"/>
@@ -45,8 +45,8 @@
     </struct>
 
     <place name="sleeptime" type="long"><token><value>0 * ${MILLI}</value></token></place>
-    <place name="N" type="long"><token><value>${aggregator}</value></token></place>
-    <place name="M" type="long"><token><value>${nre}</value></token></place>
+    <place name="N" type="long"><token><value>${outer}</value></token></place>
+    <place name="M" type="long"><token><value>${inner}</value></token></place>
     <place name="num_long" type="long"><token><value>${num_long_to_transfer}</value></token></place>
     <place name="seed" type="long"><token><value>${seed}</value></token></place>
     <place name="verify_all_mem" type="bool"><token><value>${verify_all_mem}</value></token></place>
@@ -122,7 +122,7 @@
       <connect-out port="out" place="pending"/>
     </transition>
 
-    <transition name="nre">
+    <transition name="inner">
       <include-function href="stress.xpnet"/>
       <connect-read port="N" place="M"/>
       <connect-read port="config" place="config"/>
