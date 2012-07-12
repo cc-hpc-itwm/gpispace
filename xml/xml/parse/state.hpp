@@ -97,6 +97,8 @@ namespace xml
         bool _Woverwrite_template_name_as;
         bool _Wshadow_struct;
         bool _Wshadow_function;
+        bool _Wshadow_template;
+        bool _Wshadow_specialize;
         bool _Wdefault_construction;
         bool _Wunused_field;
         bool _Wport_not_connected;
@@ -141,6 +143,8 @@ namespace xml
         std::string _OWoverwrite_template_name_as;
         std::string _OWshadow_struct;
         std::string _OWshadow_function;
+        std::string _OWshadow_template;
+        std::string _OWshadow_specialize;
         std::string _OWdefault_construction;
         std::string _OWunused_field;
         std::string _OWport_not_connected;
@@ -244,6 +248,8 @@ namespace xml
           , _Woverwrite_template_name_as (false)
           , _Wshadow_struct (true)
           , _Wshadow_function (true)
+          , _Wshadow_template (true)
+          , _Wshadow_specialize (true)
           , _Wdefault_construction (true)
           , _Wunused_field (true)
           , _Wport_not_connected (true)
@@ -288,6 +294,8 @@ namespace xml
           , _OWoverwrite_template_name_as ("Woverwrite-template-name-as")
           , _OWshadow_struct ("Wshadow-struct")
           , _OWshadow_function ("Wshadow-function")
+          , _OWshadow_template ("Wshadow-template")
+          , _OWshadow_specialize ("Wshadow-specialize")
           , _OWdefault_construction ("Wdefault-construction")
           , _OWunused_field ("Wunused-field")
           , _OWport_not_connected ("Wport-not-connected")
@@ -543,6 +551,8 @@ namespace xml
         ACCESS(Woverwrite_template_name_as)
         ACCESS(Wshadow_struct)
         ACCESS(Wshadow_function)
+        ACCESS(Wshadow_template)
+        ACCESS(Wshadow_specialize)
         ACCESS(Wdefault_construction)
         ACCESS(Wunused_field)
         ACCESS(Wport_not_connected)
@@ -606,6 +616,8 @@ namespace xml
         WARN(inline_many_output_ports)
         WARN(virtual_place_not_tunneled)
         WARN(shadow_function)
+        WARN(shadow_template)
+        WARN(shadow_specialize)
 
 #undef WARN
 
@@ -694,6 +706,14 @@ namespace xml
             ( _OWshadow_function.c_str()
             , BOOLVAL(Wshadow_function)
             , "warn when shadowing a function definition"
+            )
+            ( _OWshadow_template.c_str()
+            , BOOLVAL(Wshadow_template)
+            , "warn when shadowing a template definition"
+            )
+            ( _OWshadow_specialize.c_str()
+            , BOOLVAL(Wshadow_specialize)
+            , "warn when shadowing a specialization"
             )
             ( _OWdefault_construction.c_str()
             , BOOLVAL(Wdefault_construction)

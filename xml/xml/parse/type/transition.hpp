@@ -81,19 +81,29 @@ namespace xml
       private:
         const state::type& _state;
         const functions_type& _functions;
+        const templates_type& _templates;
+        const specializes_type& _specializes;
 
       public:
         transition_distribute_function ( const state::type& state
                                        , const functions_type& functions
+                                       , const templates_type& templates
+                                       , const specializes_type& specializes
                                        )
           : _state (state)
           , _functions (functions)
+          , _templates (templates)
+          , _specializes (specializes)
         {}
 
         void operator () (use_type&) const { return; }
         void operator () (Fun& fun) const
         {
-          fun.distribute_function (_state, _functions);
+          fun.distribute_function ( _state
+                                  , _functions
+                                  , _templates
+                                  , _specializes
+                                  );
         }
       };
 
@@ -333,12 +343,16 @@ namespace xml
 
         void distribute_function ( const state::type& state
                                  , const functions_type& functions
+                                 , const templates_type& templates
+                                 , const specializes_type& specializes
                                  )
         {
           boost::apply_visitor
             ( transition_distribute_function<function_type>
               ( state
               , functions
+              , templates
+              , specializes
               )
             , f
             );

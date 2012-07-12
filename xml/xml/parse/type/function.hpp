@@ -50,6 +50,8 @@ namespace xml
       typedef xml::util::unique<port_type>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
       typedef xml::util::unique<function_type>::elements_type functions_type;
+      typedef xml::util::unique<function_type>::elements_type templates_type;
+      typedef xml::util::unique<specialize_type>::elements_type specializes_type;
 
       // ******************************************************************* //
 
@@ -171,20 +173,30 @@ namespace xml
       private:
         const state::type& _state;
         const functions_type& _functions;
+        const templates_type& _templates;
+        const specializes_type& _specializes;
 
       public:
         function_distribute_function ( const state::type& state
                                      , const functions_type& functions
+                                     , const templates_type& templates
+                                     , const specializes_type& specializes
                                      )
           : _state (state)
           , _functions (functions)
+          , _templates (templates)
+          , _specializes (specializes)
         {}
 
         void operator () (expression_type&) const { return; }
         void operator () (mod_type&) const { return; }
         void operator () (Net& net) const
         {
-          net.distribute_function (_state, _functions);
+          net.distribute_function ( _state
+                                  , _functions
+                                  , _templates
+                                  , _specializes
+                                  );
         }
       };
 
@@ -612,15 +624,25 @@ namespace xml
 
         void distribute_function (const state::type& state)
         {
-          distribute_function (state, functions_type());
+          distribute_function ( state
+                              , functions_type()
+                              , templates_type()
+                              , specializes_type()
+                              );
         }
 
         void distribute_function ( const state::type& state
                                  , const functions_type& functions
+                                 , const templates_type& templates
+                                 , const specializes_type& specializes
                                  )
         {
           boost::apply_visitor
-            ( function_distribute_function<net_type> (state, functions)
+            ( function_distribute_function<net_type> ( state
+                                                     , functions
+                                                     , templates
+                                                     , specializes
+                                                     )
             , f
             );
         }

@@ -174,6 +174,64 @@ namespace xml
 
       // ******************************************************************* //
 
+      class shadow_template : public generic
+      {
+      private:
+        std::string nice ( const ::fhg::util::maybe<std::string>& name
+                         , const boost::filesystem::path& path_early
+                         , const boost::filesystem::path& path_late
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "template " << name << " shadowed "
+            << "in " << path_late
+            << ", first definition was in " << path_early
+            ;
+
+          return s.str();
+        }
+
+      public:
+        shadow_template ( const ::fhg::util::maybe<std::string>& name
+                        , const boost::filesystem::path& path_early
+                        , const boost::filesystem::path& path_late
+                        )
+          : generic (nice (name, path_early, path_late))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class shadow_specialize : public generic
+      {
+      private:
+        std::string nice ( const ::fhg::util::maybe<std::string>& name
+                         , const boost::filesystem::path& path_early
+                         , const boost::filesystem::path& path_late
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "specialization " << name << " shadowed "
+            << "in " << path_late
+            << ", first definition was in " << path_early
+            ;
+
+          return s.str();
+        }
+
+      public:
+        shadow_specialize ( const ::fhg::util::maybe<std::string>& name
+                          , const boost::filesystem::path& path_early
+                          , const boost::filesystem::path& path_late
+                          )
+          : generic (nice (name, path_early, path_late))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class default_construction : public generic
       {
       private:

@@ -31,14 +31,8 @@
         <net>
           <place name="x" type="long"/>
           <place name="y" type="long"/>
-
-<!-- come over this second specialization -->
-    <include-template href="dup.xml"/>
-    <specialize name="dup_long" use="dup">
-      <type-map replace="T" with="long"/>
-    </specialize>
-
           <transition name="dup_inner" inline="true">
+            <!-- outer specialization of outer template is used -->
             <use name="dup_long"/>
             <connect-in port="in" place="x"/>
             <connect-out port="one" place="a"/>

@@ -314,10 +314,7 @@ namespace fhg
         append_key_value (tm.first, "%s", tm.second);
       }
 
-      WSIG(tv,  specialize::open
-          , ITVAL(XMLTYPE(net_type::specializes_type))
-          , specialize
-          )
+      WSIG(tv, specialize::open, ITVAL(XMLTYPE(specializes_type)), specialize)
       {
         push (append ("<<specialize>>"));
       }
@@ -511,15 +508,11 @@ namespace fhg
       {
         FROM(structs) (this, structs);
       }
-      WSIG(tv, net::templates, XMLTYPE(net_type::templates_type), templates)
+      WSIG(tv, net::templates, XMLTYPE(templates_type), templates)
       {
         xs ("template", templates, FROM(function));
       }
-      WSIG( tv
-          , net::specializes
-          , XMLTYPE(net_type::specializes_type)
-          , specializes
-          )
+      WSIG(tv, net::specializes, XMLTYPE(specializes_type), specializes)
       {
         xs ("specialize", specializes, FROM(specialize));
       }

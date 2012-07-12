@@ -1401,10 +1401,9 @@ namespace xml
     {
       type::specialize_type s;
 
-      s.name =
-        required ("specialize_type", node, "name", state.file_in_progress());
-      s.use =
-        required ("specialize_type", node, "use", state.file_in_progress());
+      s.path = state.file_in_progress();
+      s.name = required ("specialize_type", node, "name", s.path);
+      s.use = required ("specialize_type", node, "use", s.path);
 
       for ( xml_node_type * child (node->first_node())
           ; child

@@ -324,7 +324,7 @@ namespace fhg
       {
         SIG(place     , ITVAL(XMLTYPE(places_type)));
         SIG(function  , ITVAL(XMLTYPE(functions_type)));
-        SIG(specialize, ITVAL(XMLTYPE(net_type::specializes_type)));
+        SIG(specialize, ITVAL(XMLTYPE(specializes_type)));
 
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
@@ -604,9 +604,9 @@ namespace fhg
           WEAVEE(type_map::close)();
         }
 
-        FUN(specialize, ITVAL(XMLTYPE(net_type::specializes_type)), spec)
+        FUN(specialize, ITVAL(XMLTYPE(specializes_type)), spec)
         {
-          WEAVE(specialize::open, ITVAL(XMLTYPE(net_type::specializes_type)))(spec);
+          WEAVE(specialize::open, ITVAL(XMLTYPE(specializes_type)))(spec);
           WEAVE(specialize::name, std::string)(spec.name);
           WEAVE(specialize::use, std::string)(spec.use);
           WEAVE(specialize::type_map, XMLTYPE(type_map_type))(spec.type_map);
@@ -736,9 +736,9 @@ namespace fhg
           WEAVE(net::open, XMLTYPE(net_type))(net);
           WEAVE(net::properties, WETYPE(property::type))(net.prop);
           WEAVE(net::structs, XMLTYPE(structs_type))(net.structs);
-          WEAVE(net::templates, XMLTYPE(net_type::templates_type))
+          WEAVE(net::templates, XMLTYPE(templates_type))
             (net.templates());
-          WEAVE(net::specializes, XMLTYPE(net_type::specializes_type))
+          WEAVE(net::specializes, XMLTYPE(specializes_type))
             (net.specializes());
           WEAVE(net::functions, XMLTYPE(functions_type))
             (net.functions());

@@ -117,10 +117,7 @@ namespace fhg
       WSIG(tv, expression_sequence::line, std::string, line);
       WSIG(tv, type_get::open, ITVAL(XMLTYPE(type_get_type)), tg);
       WSIG(tv, type_map::open, ITVAL(XMLTYPE(type_map_type)), tm);
-      WSIG(tv,  specialize::open
-          , ITVAL(XMLTYPE(net_type::specializes_type))
-          , specialize
-          );
+      WSIG(tv, specialize::open, ITVAL(XMLTYPE(specializes_type)), specialize);
       WSIGE(tv, specialize::close);
       WSIG(tv, specialize::name, std::string, name);
       WSIG(tv, specialize::use, std::string, use);
@@ -169,12 +166,8 @@ namespace fhg
       WSIGE(tv, net::close);
       WSIG(tv, net::properties, WETYPE(property::type), prop);
       WSIG(tv, net::structs, XMLTYPE(structs_type), structs);
-      WSIG(tv, net::templates, XMLTYPE(net_type::templates_type), templates);
-      WSIG( tv
-          , net::specializes
-          , XMLTYPE(net_type::specializes_type)
-          , specializes
-          );
+      WSIG(tv, net::templates, XMLTYPE(templates_type), templates);
+      WSIG(tv, net::specializes, XMLTYPE(specializes_type), specializes);
       WSIG(tv, net::functions, XMLTYPE(functions_type), functions);
       WSIG(tv, net::places, XMLTYPE(net_type::places_type), places);
       WSIG( tv
