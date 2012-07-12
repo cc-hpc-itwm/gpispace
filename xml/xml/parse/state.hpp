@@ -180,7 +180,10 @@ namespace xml
         std::string _Opath_to_cpp;
 
         template<typename W>
-        void generic_warn (const W & w, const bool & active) const
+        void generic_warn ( const W & w
+                          , const bool & active
+                          , const std::string & flag
+                          ) const
         {
           if (_Wall || active)
             {
@@ -190,7 +193,7 @@ namespace xml
                 }
               else
                 {
-                  std::cerr << w.what() << std::endl;
+                  std::cerr << w.what() << " [--" << flag << "]" << std::endl;
                 }
             }
         };
@@ -589,10 +592,11 @@ namespace xml
         template<typename T>
         void warn (const struct_shadowed<T> & w) const
         {
-          generic_warn (w, _Wshadow_struct);
+          generic_warn (w, _Wshadow_struct, _OWshadow_struct);
         }
 
-#define WARN(x) void warn (const x & w) const { generic_warn (w, _W ## x); }
+#define WARN(x) \
+        void warn (const x & w) const { generic_warn (w, _W ## x, _OW ## x ); }
 
         WARN(overwrite_function_name_as)
         WARN(overwrite_template_name_as)
