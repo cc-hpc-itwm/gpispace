@@ -11,7 +11,7 @@
     <place name="done_call" type="control"/>
     <place name="done_all" type="control"/>
 
-    <include-template href="lib/dup.xml"/>
+    <include-template href="dup.xml"/>
     <specialize name="dup_long" use="dup">
       <type-map replace="T" with="long"/>
     </specialize>
@@ -24,7 +24,7 @@
     </transition>
 
     <transition name="generate" inline="true">
-      <include-function href="lib/sequence.xml"/>
+      <include-function href="sequence.xml"/>
       <connect-in port="amount" place="produce"/>
       <connect-out port="out" place="id"/>
     </transition>
@@ -59,7 +59,6 @@
       <connect-out port="done" place="done_call"/>
     </transition>
 
-<!--
     <transition name="D">
       <defun>
         <in name="id" type="long"/>
@@ -69,35 +68,8 @@
       <connect-in port="id" place="id"/>
       <connect-out port="done" place="done_call"/>
     </transition>
--->
 
-<!--
-    <transition name="dec">
-      <defun>
-        <in name="w" type="long"/>
-        <in name="trigger" type="control"/>
-        <out name="w" type="long"/>
-        <expression>${w} := ${w} - 1</expression>
-        <condition>${w} :gt: 0</condition>
-      </defun>
-      <connect-in port="w" place="consume"/>
-      <connect-out port="w" place="consume"/>
-      <connect-in port="trigger" place="done_call"/>
-    </transition>
-
-    <transition name="break">
-      <defun>
-        <in name="w" type="long"/>
-        <out name="done" type="control"/>
-        <expression>${done} := []</expression>
-        <condition>${w} :eq: 0</condition>
-      </defun>
-      <connect-in port="w" place="consume"/>
-      <connect-out port="done" place="done_all"/>
-    </transition>
--->
-
-    <include-template href="lib/wait.xml"/>
+    <include-template href="wait.xml"/>
     <specialize name="wait" use="wait">
       <type-map replace="T" with="control"/>
     </specialize>
