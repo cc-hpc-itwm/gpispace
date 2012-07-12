@@ -52,6 +52,19 @@ namespace value
 
                 return control();
               }
+            else if (*pos == '.')
+              {
+                ++pos;
+
+                if (pos.end() || *pos != ']')
+                  {
+                    throw expr::exception::parse::expected ("]", pos());
+                  }
+
+                ++pos;
+
+                return structured_t();
+              }
             else
               {
                 structured_t m;
