@@ -16,7 +16,6 @@
     <place name="id" type="long"/>
     <place name="wait" type="long"/>
 
-    <include-template href="dup.xml"/>
     <specialize name="dup_config" use="dup">
       <type-map replace="T" with="config"/>
     </specialize>
@@ -61,7 +60,6 @@
       <connect-out port="done" place="doneTT"/>
     </transition>
 
-    <include-template href="wait.xml"/>
     <specialize name="wait_control" use="wait">
       <type-map replace="T" with="control"/>
     </specialize>
