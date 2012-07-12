@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <memory> /* std::auto_ptr */
 
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
@@ -16,7 +17,16 @@
 
 namespace {
 
-using namespace luabridge;
+/*
+ * Everything is C++ owned and is never deleted.
+ * Except iterators: nobody refers them anyway, so we can garbage-collect them.
+ *
+ * Another option: everything is Lua-owned and deletes references to itself on destruction.
+ * Doesn't work. For example, a Ports has a reference to Transition which is not used
+ * anymore in Lua. But the Transition can't be deleted, since it will invalidate Ports
+ * object (it can't access anything anymore).
+ *
+ */
 
 template<class P, class E, class T>
 class Optimizer {
@@ -39,7 +49,7 @@ class Optimizer {
         L = lua_open();
         luaL_openlibs(L);
 
-        getGlobalNamespace(L)
+        luabridge::getGlobalNamespace(L)
             .beginNamespace("pnetopt")
                 .beginClass<PetriNet>("PetriNet")
                     .addFunction("__tostring", &PetriNet::__tostring)
@@ -71,10 +81,24 @@ class Optimizer {
                 .template beginClass<Transition>("Transition")
                     .addFunction("__tostring", &Transition::__tostring)
                     .addFunction("name", &Transition::name)
+                    .addFunction("ports", &Transition::ports)
+                .endClass()
+                .template beginClass<Ports>("Ports")
+                    .addFunction("__tostring", &Ports::__tostring)
+                    .addFunction("__len", &Ports::__len)
+                    .addFunction("all", &Ports::all)
+                .endClass()
+                .template beginClass<PortIterator>("PortIterator")
+                    .addFunction("__tostring", &PortIterator::__tostring)
+                    .addFunction("__call", &PortIterator::__call)
+                .endClass()
+                .template beginClass<Port>("Port")
+                    .addFunction("__tostring", &Port::__tostring)
+                    .addFunction("name", &Port::name)
                 .endClass()
                 ;
 
-        push(L, petriNet_);
+        luabridge::push(L, petriNet_);
         lua_setfield(L, LUA_GLOBALSINDEX, "pnet");
     }
 
@@ -99,6 +123,10 @@ class Optimizer {
     class Transitions;
     class TransitionIterator;
     class Transition;
+
+    class Ports;
+    class PortIterator;
+    class Port;
 
     class PetriNet {
         pnet_t &pnet_;
@@ -129,12 +157,20 @@ class Optimizer {
     class Places {
         PetriNet &petriNet_;
 
+        boost::unordered_map<petri_net::pid_t, Place *> pid2place_;
+        std::vector<Place *> places_;
+
         std::vector<RefCountedObjectPtr<PlaceIterator> > iterators_;
-        boost::unordered_map<petri_net::tid_t, RefCountedObjectPtr<Place> > places_;
 
         public:
 
         Places(PetriNet &petriNet): petriNet_(petriNet) {}
+
+        ~Places() {
+            foreach (Place *place, places_) {
+                delete place;
+            }
+        }
 
         PetriNet &petriNet() const {
             return petriNet_;
@@ -148,19 +184,31 @@ class Optimizer {
             return petriNet_.pnet().get_num_places();
         }
 
+        Place *getPlace(petri_net::pid_t pid) {
+            Place *&result = pid2place_[pid];
+            if (!result || !result->valid()) {
+                /* Eliminate possibility of vector throwing an exception. */
+                places_.reserve(places_.size() + 1);
+
+                result = new Place(pid, petriNet().pnet().get_place(pid));
+                places_.push_back(result);
+            }
+            return result;
+        }
+
+        void invalidatePlace(petri_net::pid_t pid) {
+            Place *result = places_[pid];
+            if (result) {
+                result->invalidate();
+            }
+            places_.erase(pid);
+        }
+
         RefCountedObjectPtr<PlaceIterator> all() {
             RefCountedObjectPtr<PlaceIterator> result(new PlaceIterator(*this));
             iterators_.push_back(result);
             return result;
         };
-
-        RefCountedObjectPtr<Place> getPlace(petri_net::pid_t pid) {
-            RefCountedObjectPtr<Place> &result = places_[pid];
-            if (!result || !result->valid()) {
-                result = RefCountedObjectPtr<Place>(new Place(pid, petriNet().pnet().get_place(pid)));
-            }
-            return result;
-        }
 
         void invalidateIterators() {
             foreach (RefCountedObjectPtr<PlaceIterator> &iterator, iterators_) {
@@ -168,17 +216,9 @@ class Optimizer {
             }
             iterators_.clear();
         }
-
-        void invalidatePlace(petri_net::tid_t tid) {
-            RefCountedObjectPtr<Place> &result = places_[tid];
-            if (result) {
-                result->invalidate();
-            }
-            places_.erase(tid);
-        }
     };
 
-    class PlaceIterator: public RefCountedObjectType<int>, public trench::Invalidatable {
+    class PlaceIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
         Places &places_;
         typename pnet_t::place_const_it it_;
 
@@ -195,19 +235,20 @@ class Optimizer {
             return "PlaceIterator";
         }
 
-        RefCountedObjectPtr<Place> __call() {
+        Place *__call() {
             ensureValid();
 
-            RefCountedObjectPtr<Place> result;
             if (it_.has_more()) {
-                result = places_.getPlace(*it_);
+                Place *result = places_.getPlace(*it_);
                 ++it_;
+                return result;
+            } else {
+                return NULL;
             }
-            return result;
         };
     };
 
-    class Place: public RefCountedObjectType<int>, public trench::Invalidatable {
+    class Place: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
         petri_net::pid_t pid_;
         const place_t &place_;
 
@@ -234,18 +275,26 @@ class Optimizer {
     class Transitions {
         PetriNet &petriNet_;
 
+        boost::unordered_map<petri_net::tid_t, Transition *> tid2transition_;
+        std::vector<Transition *> transitions_;
+
         std::vector<RefCountedObjectPtr<TransitionIterator> > iterators_;
-        boost::unordered_map<petri_net::tid_t, RefCountedObjectPtr<Transition> > transitions_;
 
         public:
 
         Transitions(PetriNet &petriNet): petriNet_(petriNet) {}
 
+        ~Transitions() {
+            foreach (Transition *transition, transitions_) {
+                delete transition;
+            }
+        }
+
         PetriNet &petriNet() const {
             return petriNet_;
         }
 
-        const char *__tostring() const {
+        const char *__tostring() {
             return "Transitions";
         }
 
@@ -259,10 +308,13 @@ class Optimizer {
             return result;
         };
 
-        RefCountedObjectPtr<Transition> getTransition(petri_net::tid_t tid) {
-            RefCountedObjectPtr<Transition> &result = transitions_[tid];
+        Transition *getTransition(petri_net::tid_t tid) {
+            Transition *&result = tid2transition_[tid];
             if (!result || !result->valid()) {
-                result = RefCountedObjectPtr<Transition>(new Transition(tid, petriNet().pnet().get_transition(tid)));
+                transitions_.reserve(transitions_.size() + 1);
+
+                result = new Transition(tid, petriNet().pnet().get_transition(tid));
+                transitions_.push_back(result);
             }
             return result;
         }
@@ -275,15 +327,15 @@ class Optimizer {
         }
 
         void invalidateTransition(petri_net::tid_t tid) {
-            RefCountedObjectPtr<Transition> &result = transitions_[tid];
+            Transition *result = tid2transition_[tid];
             if (result) {
                 result->invalidate();
             }
-            transitions_.erase(tid);
+            tid2transition_.erase(tid);
         }
     };
 
-    class TransitionIterator: public RefCountedObjectType<int>, public trench::Invalidatable {
+    class TransitionIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
         Transitions &transitions_;
         typename pnet_t::transition_const_it it_;
 
@@ -300,28 +352,33 @@ class Optimizer {
             return "TransitionIterator";
         }
 
-        RefCountedObjectPtr<Transition> __call() {
+        Transition *__call() {
             ensureValid();
 
-            RefCountedObjectPtr<Transition> result;
             if (it_.has_more()) {
-                result = transitions_.getTransition(*it_);
+                Transition *result = transitions_.getTransition(*it_);
                 ++it_;
+                return result;
+            } else {
+                return NULL;
             }
-            return result;
         };
     };
 
-    class Transition: public RefCountedObjectType<int>, public trench::Invalidatable {
+    class Transition: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
         petri_net::tid_t tid_;
         const transition_t &transition_;
+        std::auto_ptr<Ports> ports_;
 
         public:
 
         Transition(typename petri_net::tid_t tid, const transition_t &transition):
             tid_(tid),
-            transition_(transition)
+            transition_(transition),
+            ports_(NULL)
         {}
+
+        const transition_t &transition() const { return transition_; }
 
         const char *__tostring() {
             ensureValid();
@@ -333,6 +390,131 @@ class Optimizer {
             ensureValid();
 
             return transition_.name();
+        }
+
+        Ports *ports() {
+            ensureValid();
+
+            if (!ports_.get()) {
+                ports_.reset(new Ports(*this));
+            }
+            return ports_.get();
+        }
+    };
+
+    class Ports: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+        Transition &transition_;
+        std::vector<RefCountedObjectPtr<PortIterator> > iterators_;
+
+        boost::unordered_map<typename transition_t::port_id_t, Port *> portId2port_;
+        std::vector<Port *> ports_;
+
+        public:
+
+        Ports(Transition &transition): transition_(transition) {}
+
+        ~Ports() {
+            foreach (Port *port, ports_) {
+                delete port;
+            }
+        }
+
+        Transition &transition() const { return transition_; }
+
+        const char *__tostring() {
+            ensureValid();
+
+            return "Transition ports";
+        }
+
+        int __len() const {
+            return transition_.transition().ports().size();
+        }
+
+        RefCountedObjectPtr<PortIterator> all() {
+            RefCountedObjectPtr<PortIterator> result(new PortIterator(*this));
+            iterators_.push_back(result);
+            return result;
+        };
+
+        Port *getPort(typename transition_t::port_id_t portId, typename transition_t::port_t port) {
+            Port *&result = portId2port_[portId];
+            if (!result || !result->valid()) {
+                ports_.reserve(ports_.size() + 1);
+                result = new Port(portId, port);
+                ports_.push_back(result);
+            }
+            return result;
+        }
+
+        protected:
+
+        virtual void doEnsureValid() {
+            if (!transition_.valid()) {
+                invalidate();
+            }
+        }
+
+        virtual void doInvalidate() {
+            foreach (RefCountedObjectPtr<PortIterator> &iterator, iterators_) {
+                iterator->invalidate();
+            }
+            iterators_.clear();
+        }
+    };
+
+    class PortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+        Ports &ports_;
+        typename transition_t::const_iterator it_;
+        typename transition_t::const_iterator end_;
+
+        public:
+        
+        PortIterator(Ports &ports):
+            ports_(ports),
+            it_(ports_.transition().transition().ports_begin()),
+            end_(ports_.transition().transition().ports_end())
+        {}
+
+        const char *__tostring() {
+            ensureValid();
+
+            return "PortIterator";
+        }
+
+        Port *__call() {
+            ensureValid();
+
+            if (it_ != end_) {
+                Port *result = ports_.getPort(it_->first, it_->second);
+                ++it_;
+                return result;
+            } else {
+                return NULL;
+            }
+        };
+    };
+
+    class Port: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+        typename transition_t::port_id_t portId_;
+        typename transition_t::port_t port_;
+
+        public:
+
+        Port(typename transition_t::port_id_t portId, typename transition_t::port_t port):
+            portId_(portId), port_(port)
+        {}
+
+        const char *__tostring() {
+            ensureValid();
+
+            return "Port";
+        }
+
+        const std::string &name() {
+            ensureValid();
+
+            return port_.name();
         }
     };
 };
