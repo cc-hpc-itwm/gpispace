@@ -1,0 +1,74 @@
+<defun name="inner_template_specialization">
+  <in name="x" type="long" place="x"/>
+  <out name="y" type="long" place="y"/>
+  <net>
+    <include-template href="dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <place name="x" type="long"/>
+    <place name="a" type="long"/>
+    <place name="b" type="long"/>
+    <transition name="dup_outer" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="x"/>
+      <connect-out port="one" place="a"/>
+      <connect-out port="two" place="b"/>
+    </transition>
+    <defun name="sum">
+      <in name="r" type="long"/>
+      <in name="s" type="long"/>
+      <out name="t" type="long"/>
+      <expression>
+        ${t} := ${r} + ${s};
+      </expression>
+    </defun>
+
+    <transition name="inner" inline="true">
+      <defun>
+        <in name="x" type="long" place="x"/>
+        <out name="y" type="long" place="y"/>
+        <net>
+          <place name="x" type="long"/>
+          <place name="y" type="long"/>
+
+<!-- come over this second specialization -->
+    <include-template href="dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+          <transition name="dup_inner" inline="true">
+            <use name="dup_long"/>
+            <connect-in port="in" place="x"/>
+            <connect-out port="one" place="a"/>
+            <connect-out port="two" place="b"/>
+          </transition>
+          <place name="a" type="long"/>
+          <place name="b" type="long"/>
+
+          <transition name="join">
+            <!-- outer function sum is used -->
+            <use name="sum"/>
+            <connect-in port="r" place="a"/>
+            <connect-in port="s" place="b"/>
+            <connect-out port="t" place="y"/>
+          </transition>
+        </net>
+      </defun>
+      <connect-in port="x" place="a"/>
+      <connect-out port="y" place="c"/>
+    </transition>
+
+    <place name="c" type="long"/>
+
+    <transition name="join">
+      <use name="sum"/>
+      <connect-in port="r" place="b"/>
+      <connect-in port="s" place="c"/>
+      <connect-out port="t" place="y"/>
+    </transition>
+
+    <place name="y" type="long"/>
+  </net>
+</defun>
