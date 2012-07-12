@@ -16,7 +16,7 @@
     <place name="O" type="O_t"/>
 
     <transition name="split" inline="true">
-      <include-function href="split.xml"/>
+      <include-function href="split.xpnet"/>
       <connect-in port="I" place="I"/>
       <connect-out port="i" place="i"/>
       <connect-out port="N" place="N"/>
@@ -33,7 +33,7 @@
     </transition>
 
     <transition name="join" inline="true">
-      <include-function href="join.xml"/>
+      <include-function href="join.xpnet"/>
       <connect-in port="o" place="o"/>
       <connect-in port="N" place="N"/>
       <connect-out port="O" place="O"/>

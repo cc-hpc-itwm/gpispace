@@ -1,8 +1,4 @@
 <defun name="join">
-  <struct name="O_t"/>
-  <struct name="o_t"/>
-  <struct name="N_t"/>
-
   <in name="N" type="N_t" place="N"/>
   <in name="o" type="o_t" place="o"/>
   <out name="O" type="O_t" place="O"/>

@@ -1,8 +1,4 @@
 <defun name="split">
-  <struct name="I_t"/>
-  <struct name="i_t"/>
-  <struct name="N_t"/>
-
   <in name="I" type="I_t" place="I"/>
   <out name="i" type="i_t" place="i"/>
   <out name="N" type="N_t" place="N"/>
