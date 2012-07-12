@@ -7,11 +7,6 @@
   <net>
     <place name="Nin" type="long"/>
 
-    <include-template href="dup.xml"/>
-    <specialize name="dup_long" use="dup">
-      <type-map replace="T" with="long"/>
-    </specialize>
-
     <transition name="scatter_N" inline="true">
       <use name="dup_long"/>
       <connect-in port="in" place="Nin"/>
@@ -46,11 +41,6 @@
       <connect-read port="config" place="config"/>
       <connect-out port="done" place="done"/>
     </transition>
-
-    <include-template href="wait.xml"/>
-    <specialize name="wait_control" use="wait">
-      <type-map replace="T" with="control"/>
-    </specialize>
 
     <transition name="wait">
       <use name="wait_control"/>
