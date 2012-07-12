@@ -13,10 +13,6 @@
     <place name="trigger" type="control"/>
     <place name="done" type="control"/>
 
-    <specialize name="dup_control" use="dup">
-      <type-map replace="T" with="control"/>
-    </specialize>
-
     <transition name="dup">
       <use name="dup_control"/>
       <connect-in port="in" place="trigger"/>

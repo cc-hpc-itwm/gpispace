@@ -197,6 +197,12 @@
     <specialize name="dup_volume_in_progress" use="dup">
       <type-map replace="T" with="volume_in_progress"/>
     </specialize>
+    <specialize name="dup_config" use="dup">
+      <type-map replace="T" with="config"/>
+    </specialize>
+    <specialize name="dup_control" use="dup">
+      <type-map replace="T" with="control"/>
+    </specialize>
 
     <place name="update_bunch_state" type="volume_in_progress"/>
 

@@ -16,10 +16,6 @@
     <place name="id" type="long"/>
     <place name="wait" type="long"/>
 
-    <specialize name="dup_config" use="dup">
-      <type-map replace="T" with="config"/>
-    </specialize>
-
     <transition name="dup" inline="true">
       <use name="dup_config"/>
       <connect-in port="in" place="config_in"/>
