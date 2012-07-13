@@ -70,6 +70,12 @@ class Optimizer {
                     .addFunction("__tostring", &Place::name)
                     .addFunction("id", &Place::id)
                     .addFunction("name", &Place::name)
+                    .addFunction("in_connections", &Place::in_connections)
+                    .addFunction("out_connections", &Place::out_connections)
+                .endClass()
+                .template beginClass<AdjacentPortIterator>("AdjacentPortIterator")
+                    .addFunction("__tostring", &AdjacentPortIterator::__tostring)
+                    .addFunction("__call", &AdjacentPortIterator::__call)
                 .endClass()
                 .template beginClass<Transitions>("Transitions")
                     .addFunction("__tostring", &Transitions::__tostring)
@@ -98,6 +104,10 @@ class Optimizer {
                     .addFunction("__tostring", &Port::name)
                     .addFunction("name", &Port::name)
                     .addFunction("place", &Port::place)
+                    .addFunction("transition", &Port::transition)
+                    .addFunction("isInput", &Port::isInput)
+                    .addFunction("isOutput", &Port::isOutput)
+                    .addFunction("isTunnel", &Port::isTunnel)
                 .endClass()
                 ;
 
@@ -122,6 +132,7 @@ class Optimizer {
     class Places;
     class PlaceIterator;
     class Place;
+    class AdjacentPortIterator;
 
     class Transitions;
     class TransitionIterator;
@@ -131,7 +142,10 @@ class Optimizer {
     class PortIterator;
     class Port;
 
-    class PetriNet {
+    /**
+     * A Petri net.
+     */
+    class PetriNet: public pnetopt::Invalidatable {
         pnet_t &pnet_;
         Places places_;
         Transitions transitions_;
@@ -144,7 +158,8 @@ class Optimizer {
             return pnet_;
         }
 
-        const char *__tostring() const {
+        const char *__tostring() {
+            ensureValid();
             return "PetriNet";
         }
 
@@ -155,9 +170,19 @@ class Optimizer {
         Transitions &transitions() {
             return transitions_;
         }
+
+        protected:
+
+        virtual void doInvalidate() {
+            places().invalidate();
+            transitions().invalidate();
+        }
     };
 
-    class Places {
+    /**
+     * All places of a Petri net.
+     */
+    class Places: public pnetopt::Invalidatable {
         PetriNet &petriNet_;
 
         boost::unordered_map<petri_net::pid_t, Place *> pid2place_;
@@ -179,13 +204,23 @@ class Optimizer {
             return petriNet_;
         }
 
-        const char *__tostring() const {
+        const char *__tostring() {
+            ensureValid();
             return "Places";
         }
 
-        int __len() const {
+        int __len() {
+            ensureValid();
             return petriNet_.pnet().get_num_places();
         }
+
+        RefCountedObjectPtr<PlaceIterator> all() {
+            ensureValid();
+
+            RefCountedObjectPtr<PlaceIterator> result(new PlaceIterator(*this));
+            iterators_.push_back(result);
+            return result;
+        };
 
         Place *getPlace(petri_net::pid_t pid) {
             Place *&result = pid2place_[pid];
@@ -193,34 +228,46 @@ class Optimizer {
                 /* Eliminate possibility of vector throwing an exception. */
                 places_.reserve(places_.size() + 1);
 
-                result = new Place(pid, petriNet().pnet().get_place(pid));
+                result = new Place(*this, pid, petriNet().pnet().get_place(pid));
                 places_.push_back(result);
             }
             return result;
         }
 
         void invalidatePlace(petri_net::pid_t pid) {
-            Place *result = places_[pid];
-            if (result) {
-                result->invalidate();
+            Place *place = places_[pid];
+            if (place) {
+                place->invalidate();
             }
             places_.erase(pid);
         }
 
-        RefCountedObjectPtr<PlaceIterator> all() {
-            RefCountedObjectPtr<PlaceIterator> result(new PlaceIterator(*this));
-            iterators_.push_back(result);
-            return result;
-        };
+        void invalidatePlaces() {
+            typedef typename boost::unordered_map<petri_net::pid_t, Place *>::value_type value_type;
+            foreach (const value_type &item, pid2place_) {
+                item.second->invalidate();
+            }
+            pid2place_.clear();
+        }
 
         void invalidateIterators() {
-            foreach (RefCountedObjectPtr<PlaceIterator> &iterator, iterators_) {
+            foreach (const RefCountedObjectPtr<PlaceIterator> &iterator, iterators_) {
                 iterator->invalidate();
             }
             iterators_.clear();
         }
+
+        protected:
+
+        virtual void doInvalidate() {
+            invalidatePlaces();
+            invalidateIterators();
+        }
     };
 
+    /**
+     * Iterator over all places of a Petri net.
+     */
     class PlaceIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
         Places &places_;
         typename pnet_t::place_const_it it_;
@@ -251,18 +298,27 @@ class Optimizer {
         };
     };
 
+    /**
+     * Place.
+     */
     class Place: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+        Places &places_;
         petri_net::pid_t pid_;
         const place_t &place_;
 
+        std::vector<RefCountedObjectPtr<AdjacentPortIterator> > iterators_;
+
         public:
 
-        Place(typename petri_net::pid_t pid, const place_t &place):
-            pid_(pid),
-            place_(place)
+        Place(Places &places, typename petri_net::pid_t pid, const place_t &place):
+            places_(places), pid_(pid), place_(place)
         {}
 
+        Places &places() const { return places_; }
+
         petri_net::pid_t id() {
+            ensureValid();
+
             return pid_;
         }
 
@@ -271,9 +327,90 @@ class Optimizer {
 
             return place_.get_name();
         }
+
+        RefCountedObjectPtr<AdjacentPortIterator> in_connections() {
+            ensureValid();
+
+            RefCountedObjectPtr<AdjacentPortIterator> result(
+                new AdjacentPortIterator(*this, places_.petriNet().pnet().in_to_place(pid_), true));
+            iterators_.push_back(result);
+
+            return result;
+        }
+
+        RefCountedObjectPtr<AdjacentPortIterator> out_connections() {
+            ensureValid();
+
+            RefCountedObjectPtr<AdjacentPortIterator> result(
+                new AdjacentPortIterator(*this, places_.petriNet().pnet().out_of_place(pid_), false));
+            iterators_.push_back(result);
+
+            return result;
+        }
+
+        void invalidateIterators() {
+            foreach (const RefCountedObjectPtr<AdjacentPortIterator> &iterator, iterators_) {
+                iterator->invalidate();
+            }
+            iterators_.clear();
+        }
+
+        protected:
+
+        virtual void doInvalidate() {
+            invalidateIterators();
+        }
     };
 
-    class Transitions {
+
+    /**
+     * Iterator over ports that are connected to a place.
+     */
+    class AdjacentPortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+        Place &place_;
+        typename petri_net::adj_transition_const_it it_;
+        bool lookInOutputPorts_;
+
+        public:
+
+        AdjacentPortIterator(Place &place, const petri_net::adj_transition_const_it &it, bool lookInOutputPorts):
+            place_(place),
+            it_(it),
+            lookInOutputPorts_(lookInOutputPorts)
+        {}
+
+        const char *__tostring() {
+            ensureValid();
+
+            return "AdjacentPortIterator";
+        }
+
+        Port *__call() {
+            ensureValid();
+
+            if (it_.has_more()) {
+                Transition *transition = place_.places().petriNet().transitions().getTransition(*it_);
+
+                typename transition_t::port_id_t portId;
+                if (lookInOutputPorts_) {
+                    portId = transition->transition().output_port_by_pid(place_.id()).first;
+                } else {
+                    portId = transition->transition().input_port_by_pid(place_.id()).first;
+                }
+
+                Port *result = transition->ports()->getPort(portId);
+                ++it_;
+                return result;
+            } else {
+                return NULL;
+            }
+        };
+    };
+
+    /**
+     * All transitions of a Petri net.
+     */
+    class Transitions: public pnetopt::Invalidatable {
         PetriNet &petriNet_;
 
         boost::unordered_map<petri_net::tid_t, Transition *> tid2transition_;
@@ -321,7 +458,7 @@ class Optimizer {
         }
 
         void invalidateIterators() {
-            foreach (RefCountedObjectPtr<TransitionIterator> &iterator, iterators_) {
+            foreach (const RefCountedObjectPtr<TransitionIterator> &iterator, iterators_) {
                 iterator->invalidate();
             }
             iterators_.clear();
@@ -336,6 +473,9 @@ class Optimizer {
         }
     };
 
+    /**
+     * Iterator over all transitions of a Petri net.
+     */
     class TransitionIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
         Transitions &transitions_;
         typename pnet_t::transition_const_it it_;
@@ -366,6 +506,9 @@ class Optimizer {
         };
     };
 
+    /**
+     * Transition.
+     */
     class Transition: public pnetopt::Invalidatable {
         Transitions &transitions_;
         petri_net::tid_t tid_;
@@ -401,6 +544,9 @@ class Optimizer {
         }
     };
 
+    /**
+     * Ports of a transition.
+     */
     class Ports: public pnetopt::Invalidatable {
         Transition &transition_;
         std::vector<RefCountedObjectPtr<PortIterator> > iterators_;
@@ -431,16 +577,18 @@ class Optimizer {
         }
 
         RefCountedObjectPtr<PortIterator> all() {
+            ensureValid();
+
             RefCountedObjectPtr<PortIterator> result(new PortIterator(*this));
             iterators_.push_back(result);
             return result;
         };
 
-        Port *getPort(typename transition_t::port_id_t portId, typename transition_t::port_t port) {
+        Port *getPort(typename transition_t::port_id_t portId) {
             Port *&result = portId2port_[portId];
             if (!result || !result->valid()) {
                 ports_.reserve(ports_.size() + 1);
-                result = new Port(*this, portId, port);
+                result = new Port(*this, portId, transition().transition().get_port(portId));
                 ports_.push_back(result);
             }
             return result;
@@ -455,13 +603,16 @@ class Optimizer {
         }
 
         virtual void doInvalidate() {
-            foreach (RefCountedObjectPtr<PortIterator> &iterator, iterators_) {
+            foreach (const RefCountedObjectPtr<PortIterator> &iterator, iterators_) {
                 iterator->invalidate();
             }
             iterators_.clear();
         }
     };
 
+    /**
+     * Iterator over all ports of a transition.
+     */
     class PortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
         Ports &ports_;
         typename transition_t::const_iterator it_;
@@ -485,7 +636,7 @@ class Optimizer {
             ensureValid();
 
             if (it_ != end_) {
-                Port *result = ports_.getPort(it_->first, it_->second);
+                Port *result = ports_.getPort(it_->first);
                 ++it_;
                 return result;
             } else {
@@ -494,6 +645,9 @@ class Optimizer {
         };
     };
 
+    /**
+     * Port of a transition.
+     */
     class Port: public pnetopt::Invalidatable {
         Ports &ports_;
         typename transition_t::port_id_t portId_;
@@ -505,12 +659,18 @@ class Optimizer {
             ports_(ports), portId_(portId), port_(port)
         {}
 
+        /**
+         * \return Port name.
+         */
         const std::string &name() {
             ensureValid();
 
             return port_.name();
         }
 
+        /**
+         * \return Place connected to this port, or nil if there is no such place.
+         */
         Place *place() {
             ensureValid();
 
@@ -520,6 +680,14 @@ class Optimizer {
                 // TODO: why can't I check connectedness without using exceptions?
                 return NULL;
             }
+        }
+
+        /**
+         * \return Transition this port belongs to.
+         */
+        Transition &transition() {
+            ensureValid();
+            return ports_.transition();
         }
 
         bool isInput() {

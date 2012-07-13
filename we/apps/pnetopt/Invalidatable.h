@@ -17,8 +17,10 @@ class Invalidatable {
     bool valid() const { return valid_; }
 
     void invalidate() {
-        valid_ = false;
-        doInvalidate();
+        if (valid_) {
+            valid_ = false;
+            doInvalidate();
+        }
     }
 
     void ensureValid() {
