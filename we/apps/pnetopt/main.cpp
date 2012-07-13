@@ -70,8 +70,9 @@ class Optimizer {
                     .addFunction("__tostring", &Place::name)
                     .addFunction("id", &Place::id)
                     .addFunction("name", &Place::name)
-                    .addFunction("in_connections", &Place::in_connections)
-                    .addFunction("out_connections", &Place::out_connections)
+                    .addFunction("setName", &Place::setName)
+                    .addFunction("inConnections", &Place::in_connections)
+                    .addFunction("outConnections", &Place::out_connections)
                 .endClass()
                 .template beginClass<AdjacentPortIterator>("AdjacentPortIterator")
                     .addFunction("__tostring", &AdjacentPortIterator::__tostring)
@@ -89,6 +90,7 @@ class Optimizer {
                 .template beginClass<Transition>("Transition")
                     .addFunction("__tostring", &Transition::name)
                     .addFunction("name", &Transition::name)
+                    .addFunction("setName", &Transition::setName)
                     .addFunction("ports", &Transition::ports)
                     .addFunction("subnet", &Transition::subnet)
                 .endClass()
@@ -230,7 +232,8 @@ class Optimizer {
                 /* Eliminate possibility of vector throwing an exception. */
                 places_.reserve(places_.size() + 1);
 
-                result = new Place(*this, pid, petriNet().pnet().get_place(pid));
+                // WTF? How to get a non-const pointer to a place?
+                result = new Place(*this, pid, const_cast<place_t &>(petriNet().pnet().get_place(pid)));
                 places_.push_back(result);
             }
             return result;
@@ -306,13 +309,13 @@ class Optimizer {
     class Place: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
         Places &places_;
         petri_net::pid_t pid_;
-        const place_t &place_;
+        place_t &place_;
 
         std::vector<RefCountedObjectPtr<AdjacentPortIterator> > iterators_;
 
         public:
 
-        Place(Places &places, typename petri_net::pid_t pid, const place_t &place):
+        Place(Places &places, typename petri_net::pid_t pid, place_t &place):
             places_(places), pid_(pid), place_(place)
         {}
 
@@ -327,7 +330,13 @@ class Optimizer {
         const std::string &name() {
             ensureValid();
 
-            return place_.get_name();
+            return place_.name();
+        }
+
+        void setName(const std::string &name) {
+            ensureValid();
+
+            place_.set_name(name);
         }
 
         RefCountedObjectPtr<AdjacentPortIterator> in_connections() {
@@ -536,6 +545,12 @@ class Optimizer {
             ensureValid();
 
             return transition_.name();
+        }
+
+        void setName(const std::string &name) {
+            ensureValid();
+
+            transition_.set_name(name);
         }
 
         Ports *ports() {

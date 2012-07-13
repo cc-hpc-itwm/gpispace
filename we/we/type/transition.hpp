@@ -485,9 +485,9 @@ namespace we { namespace type {
         return name_;
       }
 
-      std::string & name (void)
+      void set_name (const std::string &name)
       {
-        return name_;
+        name_ = name;
       }
 
       bool is_internal (void) const

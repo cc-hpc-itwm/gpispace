@@ -3,10 +3,10 @@ function dump(pnet)
 
 	for p in pnet:places():all() do
 		print("Place `" .. p:name() .. "' with id " .. p:id())
-		for port in p:in_connections() do
+		for port in p:inConnections() do
 			print("incoming connection from port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
 		end
-		for port in p:out_connections() do
+		for port in p:outConnections() do
 			print("outgoing connection to port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
 		end
 	end
@@ -25,6 +25,15 @@ function dump(pnet)
 	end
 end
 
+function transform(pnet)
+	for p in pnet:places():all() do
+		p:setName("Juliette")
+	end
+	for t in pnet:transitions():all() do
+		t:setName("Romeo")
+	end
+end
+
 function apply_recursively(pnet, functor)
 	functor(pnet)
 
@@ -35,4 +44,5 @@ function apply_recursively(pnet, functor)
 	end
 end
 
+apply_recursively(pnet, transform)
 apply_recursively(pnet, dump)
