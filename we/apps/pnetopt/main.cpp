@@ -90,6 +90,7 @@ class Optimizer {
                     .addFunction("__tostring", &Transition::name)
                     .addFunction("name", &Transition::name)
                     .addFunction("ports", &Transition::ports)
+                    .addFunction("subnet", &Transition::subnet)
                 .endClass()
                 .template beginClass<Ports>("Ports")
                     .addFunction("__tostring", &Ports::__tostring)
@@ -451,7 +452,8 @@ class Optimizer {
             if (!result || !result->valid()) {
                 transitions_.reserve(transitions_.size() + 1);
 
-                result = new Transition(*this, tid, petriNet().pnet().get_transition(tid));
+                // WTF? I can't get non-const reference to a transition.
+                result = new Transition(*this, tid, const_cast<transition_t &>(petriNet().pnet().get_transition(tid)));
                 transitions_.push_back(result);
             }
             return result;
@@ -512,12 +514,13 @@ class Optimizer {
     class Transition: public pnetopt::Invalidatable {
         Transitions &transitions_;
         petri_net::tid_t tid_;
-        const transition_t &transition_;
+        transition_t &transition_;
         std::auto_ptr<Ports> ports_;
+        std::auto_ptr<PetriNet> subnet_;
 
         public:
 
-        Transition(Transitions &transitions, typename petri_net::tid_t tid, const transition_t &transition):
+        Transition(Transitions &transitions, typename petri_net::tid_t tid, transition_t &transition):
             transitions_(transitions),
             tid_(tid),
             transition_(transition),
@@ -526,7 +529,7 @@ class Optimizer {
 
         Transitions &transitions() const { return transitions_; }
 
-        const transition_t &transition() const { return transition_; }
+        transition_t &transition() const { return transition_; }
 
         const std::string &name() {
             ensureValid();
@@ -541,6 +544,34 @@ class Optimizer {
                 ports_.reset(new Ports(*this));
             }
             return ports_.get();
+        }
+
+        struct SubnetReturner: public boost::static_visitor<pnet_t *> {
+            pnet_t *operator()(we::type::expression_t &expr) const { return NULL; }
+            pnet_t *operator()(we::type::module_call_t &mod_call) const { return NULL; }
+            pnet_t *operator()(pnet_t &net) const { return &net; } 
+        };
+
+        PetriNet *subnet() {
+            ensureValid();
+
+            if (!subnet_.get()) {
+                if (pnet_t *pnet = boost::apply_visitor(SubnetReturner(), transition().data())) {
+                    subnet_.reset(new PetriNet(*pnet));
+                }
+            }
+            return subnet_.get();
+        }
+
+        protected:
+
+        void doInvalidate() {
+            if (ports_.get()) {
+                ports_->invalidate();
+            }
+            if (subnet_.get()) {
+                subnet_->invalidate();
+            }
         }
     };
 
@@ -677,7 +708,7 @@ class Optimizer {
             try {
                 return ports_.transition().transitions().petriNet().places().getPlace(ports_.transition().transition().gen_inner_to_outer(portId_).first);
             } catch (const we::type::exception::not_connected<typename transition_t::port_id_t> &e) {
-                // TODO: why can't I check connectedness without using exceptions?
+                // WTF? Why can't I check connectedness without using exceptions?
                 return NULL;
             }
         }
@@ -715,23 +746,13 @@ class Visitor: public boost::static_visitor<void> {
     Visitor(const std::string &script): script_(script) {}
 
     const std::string &script() const { return script_; }
-
     void operator()(we::type::expression_t & expr) { return; }
-
     void operator()(we::type::module_call_t & mod_call) { return; }
 
     template<class P, class E, class T>
     void operator()(petri_net::net<P, we::type::transition_t<P, E, T>, E, T> &net) {
         Optimizer<P, E, T> optimizer(net);
         optimizer(script().c_str());
-
-        typedef we::type::transition_t<P, E, T> transition_t;
-        typedef petri_net::net<P, transition_t, E, T> pnet_t;
-
-        for (typename pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            // TODO: introduce pnet_t::transition_it and remove the cast
-            (*this)(const_cast<we::type::transition_t<P, E, T> &>(net.get_transition(*it)));
-        }
     }
 
     template<class P, class E, class T>

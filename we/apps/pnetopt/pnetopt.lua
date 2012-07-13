@@ -1,22 +1,37 @@
-print("Number of places: " .. #pnet:places())
+function dump(pnet)
+	print("Number of places: " .. #pnet:places())
 
-for p in pnet:places():all() do
-	print("Place `" .. p:name() .. "' with id " .. p:id())
-	for port in p:in_connections() do
-		print("incoming connection from port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
+	for p in pnet:places():all() do
+		print("Place `" .. p:name() .. "' with id " .. p:id())
+		for port in p:in_connections() do
+			print("incoming connection from port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
+		end
+		for port in p:out_connections() do
+			print("outgoing connection to port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
+		end
 	end
-	for port in p:out_connections() do
-		print("outgoing connection to port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
+
+	print("Number of transitions: " .. #pnet:transitions())
+	for t in pnet:transitions():all() do
+		print("Transition `" .. t:name() .. "'")
+		for port in t:ports():all() do
+			print("Port `" .. port:name() .. "'"
+			      .. (port:place() and (" connected to place `" .. tostring(port:place()) .. "'") or "")
+			      .. (port:isInput() and ", is input" or "")
+			      .. (port:isOutput() and ", is output" or "")
+			      .. (port:isTunnel() and ", is tunnel" or ""))
+		end
 	end
 end
 
-print("Number of transitions: " .. #pnet:transitions())
-for t in pnet:transitions():all() do
-	print("Transition `" .. t:name() .. "'")
-	for port in t:ports():all() do
-		print("Port `" .. port:name() .. "' connected to place " .. tostring(port:place())
-		      .. (port:isInput() and ", is input" or "")
-		      .. (port:isOutput() and ", is output" or "")
-		      .. (port:isTunnel() and ", is tunnel" or ""))
+function apply_recursively(pnet, functor)
+	functor(pnet)
+
+	for t in pnet:transitions():all() do
+		if t:subnet() then
+			apply_recursively(t:subnet(), functor)
+		end
 	end
 end
+
+apply_recursively(pnet, dump)
