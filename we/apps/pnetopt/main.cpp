@@ -93,6 +93,16 @@ class Optimizer {
                     .addFunction("setName", &Transition::setName)
                     .addFunction("ports", &Transition::ports)
                     .addFunction("subnet", &Transition::subnet)
+                    .addFunction("expression", &Transition::expression)
+                    .addFunction("condition", &Transition::condition)
+                .endClass()
+                .template beginClass<Expression>("Expression")
+                    .addFunction("__tostring", &Expression::__tostring)
+                    .addFunction("isEmpty", &Expression::isEmpty)
+                .endClass()
+                .template beginClass<Condition>("Condition")
+                    .addFunction("__tostring", &Condition::__tostring)
+                    .addFunction("isConstTrue", &Condition::isConstTrue)
                 .endClass()
                 .template beginClass<Ports>("Ports")
                     .addFunction("__tostring", &Ports::__tostring)
@@ -137,6 +147,8 @@ class Optimizer {
     class PlaceIterator;
     class Place;
     class AdjacentPortIterator;
+    class Expression;
+    class Condition;
 
     class Transitions;
     class TransitionIterator;
@@ -527,6 +539,8 @@ class Optimizer {
         transition_t &transition_;
         std::auto_ptr<Ports> ports_;
         std::auto_ptr<PetriNet> subnet_;
+        std::auto_ptr<Expression> expression_;
+        std::auto_ptr<Condition> condition_;
 
         public:
 
@@ -579,6 +593,28 @@ class Optimizer {
             return subnet_.get();
         }
 
+        struct ExpressionReturner: public boost::static_visitor<we::type::expression_t *> {
+            we::type::expression_t *operator()(we::type::expression_t &expr) const { return &expr; }
+            we::type::expression_t *operator()(we::type::module_call_t &mod_call) const { return NULL; }
+            we::type::expression_t *operator()(pnet_t &net) const { return NULL; } 
+        };
+
+        Expression *expression() {
+            if (!expression_.get()) {
+                if (we::type::expression_t *expr = boost::apply_visitor(ExpressionReturner(), transition().data())) {
+                    expression_.reset(new Expression(*expr));
+                }
+            }
+            return expression_.get();
+        }
+
+        Condition *condition() {
+            if (!condition_.get()) {
+                condition_.reset(new Condition(transition().condition()));
+            }
+            return condition_.get();
+        }
+
         protected:
 
         void doInvalidate() {
@@ -588,6 +624,52 @@ class Optimizer {
             if (subnet_.get()) {
                 subnet_->invalidate();
             }
+            if (expression_.get()) {
+                expression_->invalidate();
+            }
+            if (condition_.get()) {
+                condition_->invalidate();
+            }
+        }
+    };
+
+    class Expression: public pnetopt::Invalidatable {
+        we::type::expression_t &expression_;
+
+        public:
+
+        Expression(we::type::expression_t &expression):
+            expression_(expression)
+        {}
+
+        std::string __tostring() {
+            ensureValid();
+            return expression_.expression();
+        }
+
+        bool isEmpty() {
+            ensureValid();
+            return expression_.is_empty();
+        }
+    };
+
+    class Condition: public pnetopt::Invalidatable {
+        const condition::type &condition_;
+
+        public:
+
+        Condition(const condition::type &condition):
+            condition_(condition)
+        {}
+
+        std::string __tostring() {
+            ensureValid();
+            return condition_.expression();
+        }
+
+        bool isConstTrue() {
+            ensureValid();
+            return condition_.is_const_true();
         }
     };
 
@@ -800,7 +882,7 @@ int main(int argc, char **argv) {
 
     std::string input("-");
     std::string output("-");
-    std::string script("pnetopt.lua");
+    std::string script("main.lua");
     bool xml = false;
 
     po::options_description options("options");
