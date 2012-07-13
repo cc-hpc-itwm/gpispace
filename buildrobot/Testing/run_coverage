@@ -21,30 +21,15 @@ check_host() {
     dummy=`rpm -qf /etc/issue`
     case "$dummy" in 
       sles-release*)
-#        export QTDIR=/opt/qt/4.4.3
-        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
-        export PATH=${QTDIR}/bin:$PATH
-        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
-	have_intel=yes
         echo "Is SLES"
         ;;
       openSUSE-release*)
-        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
-        export PATH=${QTDIR}/bin:$PATH
-        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
-	have_intel=yes
         echo "Is SUSE"
       ;;
       centos-release-5*)
-        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
-        export PATH=${QTDIR}/bin:$PATH
-        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
         echo "Is CentOS"
       ;;
       centos-release-6*)
-        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
-        export PATH=${QTDIR}/bin:$PATH
-        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
         echo "Is CentOS"
       ;;
     esac
@@ -65,5 +50,5 @@ unset http_proxy
 
 echo "Running ctest"
 
-$CTEST -V -VV -S ${HOME}/Dashboards/SDPACoverage.cmake,COMPILER_ID=gcc
+$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPACoverage-clang.cmake
 
