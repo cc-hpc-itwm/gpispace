@@ -16,7 +16,8 @@ function dump(pnet)
 		print("Transition `" .. t:name() .. "'")
 		for port in t:ports():all() do
 			print("Port `" .. port:name() .. "'"
-			      .. (port:place() and (" connected to place `" .. tostring(port:place()) .. "'") or "")
+			      .. (port:place() and (", connected to place `" .. tostring(port:place()) .. "'") or "")
+			      .. (port:associatedPlace() and (", associated with `" .. tostring(port:associatedPlace()) .. "'") or "")
 			      .. (port:isInput() and ", is input" or "")
 			      .. (port:isOutput() and ", is output" or "")
 			      .. (port:isTunnel() and ", is tunnel" or ""))

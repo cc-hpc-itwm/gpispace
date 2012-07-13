@@ -104,8 +104,9 @@ class Optimizer {
                 .template beginClass<Port>("Port")
                     .addFunction("__tostring", &Port::name)
                     .addFunction("name", &Port::name)
-                    .addFunction("place", &Port::place)
                     .addFunction("transition", &Port::transition)
+                    .addFunction("place", &Port::place)
+                    .addFunction("associatedPlace", &Port::associatedPlace)
                     .addFunction("isInput", &Port::isInput)
                     .addFunction("isOutput", &Port::isOutput)
                     .addFunction("isTunnel", &Port::isTunnel)
@@ -452,7 +453,7 @@ class Optimizer {
             if (!result || !result->valid()) {
                 transitions_.reserve(transitions_.size() + 1);
 
-                // WTF? I can't get non-const reference to a transition.
+                // WTF? I can't get a non-const reference to a transition.
                 result = new Transition(*this, tid, const_cast<transition_t &>(petriNet().pnet().get_transition(tid)));
                 transitions_.push_back(result);
             }
@@ -709,6 +710,22 @@ class Optimizer {
                 return ports_.transition().transitions().petriNet().places().getPlace(ports_.transition().transition().gen_inner_to_outer(portId_).first);
             } catch (const we::type::exception::not_connected<typename transition_t::port_id_t> &e) {
                 // WTF? Why can't I check connectedness without using exceptions?
+                return NULL;
+            }
+        }
+
+        /**
+         * \return Place from the subnet of the transition which is associated with this port.
+         */
+        Place *associatedPlace() {
+            ensureValid();
+
+            if (port_.has_associated_place()) {
+                PetriNet *subnet = ports_.transition().subnet();
+                assert(subnet != NULL);
+
+                return subnet->places().getPlace(port_.associated_place());
+            } else {
                 return NULL;
             }
         }
