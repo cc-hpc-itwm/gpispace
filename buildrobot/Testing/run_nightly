@@ -21,31 +21,18 @@ check_host() {
     dummy=`rpm -qf /etc/issue`
     case "$dummy" in 
       sles-release*)
-#        export QTDIR=/opt/qt/4.4.3
-        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
-        export PATH=${QTDIR}/bin:$PATH
-	export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 	have_intel=yes
         echo "Is SLES"
         ;;
       openSUSE-release*)
-        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
-        export PATH=${QTDIR}/bin:$PATH
-	export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 	have_intel=yes
         echo "Is SUSE"
       ;;
       centos-release-5*)
-        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
-        export PATH=${QTDIR}/bin:$PATH
-	export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
         echo "Is CentOS"
       ;;
 
       centos-release-6*)
-        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
-        export PATH=${QTDIR}/bin:$PATH
-        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
         echo "Is CentOS"
       ;;
     esac
@@ -66,22 +53,17 @@ unset http_proxy
 
 echo "Running ctest"
 
-$CTEST -V -VV -S ${HOME}/Dashboards/SDPANightly.cmake,COMPILER_ID=gcc
+# compile with clang
+$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly-clang.cmake
+
+# compile with cgcc
+$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly-gcc.cmake
 
 if [ "$have_intel" = "yes" ]; then
   if [ -x /home/toolsLinux/compiler/config.icc1181 ]; then
     echo compile with intel
     # now compile with intel compiler
     . /home/toolsLinux/compiler/config.icc1181
-    $CTEST -V -VV -S ${HOME}/Dashboards/SDPANightly.cmake,COMPILER_ID=intel
+    $CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly-intel.cmake
   fi
-fi
-
-# compile with clang
-EXTERNAL_SOFTWARE=$HOME/external_software/
-CLANG_BIN=${EXTERNAL_SOFTWARE}/clang/2.9/bin
-if [ -x ${CLANG_BIN}/clang ]; then
-  export CC=${CLANG_BIN}/clang
-  export CXX=${CLANG_BIN}/clang++
-  $CTEST -V -VV -S ${HOME}/Dashboards/SDPANightly.cmake,COMPILER_ID=clang
 fi

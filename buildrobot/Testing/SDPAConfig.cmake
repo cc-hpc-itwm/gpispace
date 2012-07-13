@@ -1,10 +1,12 @@
 # -*- mode: cmake; -*-
 
+set(ENV{https_proxy} "http://squid.itwm.fhg.de:3128/")
+
 set(CTEST_ADDITIONAL_SUFFIX "gcc")
 set(ENABLE_GPI_SPACE Yes)
 
 if(NOT COMPILER_ID)
-  set(KDE_CTEST_BUILD_SUFFIX "gcc")
+  set(KDE_CTEST_BUILD_SUFFIX "clang")
 else(NOT COMPILER_ID)
   if( ${COMPILER_ID} MATCHES "gcc")
     set(KDE_CTEST_BUILD_SUFFIX "gcc")
@@ -23,7 +25,10 @@ else(NOT COMPILER_ID)
     endif( ${COMPILER_ID} MATCHES "clang")
   endif( ${COMPILER_ID} MATCHES "gcc")
 endif(NOT COMPILER_ID)
+
 message("Suffix: '${KDE_CTEST_BUILD_SUFFIX}'")
+set(CTEST_BUILD_ARCH "linux")
+set(CTEST_BUILD_NAME "${CTEST_BUILD_ARCH}-${KDE_CTEST_BUILD_SUFFIX}-default")
 
 set(EXTERNAL_SOFTWARE /home/projects/sdpa/external_software)
 
@@ -70,4 +75,9 @@ if( EXISTS ${EXTERNAL_SOFTWARE}/graphviz/2.24 )
   set(GRAPHVIZ_HOME      ${EXTERNAL_SOFTWARE}/graphviz/2.24)
 endif( EXISTS ${EXTERNAL_SOFTWARE}/graphviz/2.24 )
 
-set(CTEST_UPDATE_OPTIONS "--username SVN_hpc_bitter --password nuphFan0")
+# set pathnames for QT
+set(QTDIR "${EXTERNAL_SOFTWARE}/qt/4.7.1")
+set(ENV{QTDIR} ${QTDIR})
+set(ENV{PATH} "${QTDIR}/bin:$ENV{PATH}")
+set(ENV{PKG_CONFIG_PATH} "${QTDIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+set(ENV{BOOST_ROOT} "${BOOST_ROOT}")
