@@ -13,6 +13,7 @@ set(CPACK_COMPONENTS_ALL
   modules
   applications
   examples
+  dependencies
 )
 
 # component display names
@@ -25,10 +26,12 @@ set(CPACK_COMPONENT_CONFIGURATIONS_DISPLAY_NAME "Example configuration files")
 set(CPACK_COMPONENT_MODULES_DISPLAY_NAME "Example modules")
 set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Applications")
 set(CPACK_COMPONENT_EXAMPLES_DISPLAY_NAME "Example XML descriptions")
+set(CPACK_COMPONENT_DEPENDENCIES_DISPLAY_NAME "Dependencies (libraries)")
 
 # comonent dependencies
 set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
 set(CPACK_COMPONENT_EXAMPLES_DEPENDS runtime modules)
+set(CPACK_COMPONENT_DEPENDENCIES_DEPENDS runtime libraries plugins)
 
 # component descriptions
 set(CPACK_COMPONENT_RUNTIME_DESCRIPTION "SDPA runtime programs")
@@ -40,6 +43,7 @@ set(CPACK_COMPONENT_CONFIGURATIONS_DESCRIPTION "Configuration files")
 set(CPACK_COMPONENT_MODULES_DESCRIPTION "Example modules")
 set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "Example applications")
 set(CPACK_COMPONENT_EXAMPLES_DESCRIPTION "Example programs")
+set(CPACK_COMPONENT_DEPENDENCIES_DESCRIPTION "Dependencies (libraries)")
 
 # component groups
 set(CPACK_COMPONENT_RUNTIME_GROUP "SDPA")
@@ -51,6 +55,7 @@ set(CPACK_COMPONENT_CONFIGURATIONS_GROUP "SDPA")
 set(CPACK_COMPONENT_MODULES_GROUP "Examples")
 set(CPACK_COMPONENT_APPLICATIONS_GROUP "Applications")
 set(CPACK_COMPONENT_EXAMPLES_GROUP "Examples")
+set(CPACK_COMPONENT_DEPENDENCIES_GROUP "SDPA")
 
 # group descriptions
 set(CPACK_COMPONENT_GROUP_RUNTIME_DESCRIPTION "The SDPA runtime system")
