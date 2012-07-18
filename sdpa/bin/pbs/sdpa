@@ -959,7 +959,7 @@ function initialize ()
     app_path="${SDPA_APP_PATH}"
     argv="$@"
     OPTIND=1
-    while getopts ":hF:n:s:A:" opt $argv ; do
+    while getopts "hF:n:s:A:" opt $argv ; do
         case $opt in
             h)
                 echo >&2 "usage: init: [-h] [-F hostfile] [-s state-dir] [-A module-dir]"
