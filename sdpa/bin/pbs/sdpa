@@ -956,12 +956,13 @@ function initialize ()
     local hostfile="$PBS_NODEFILE"
     local node_file=
 
+    app_path="${SDPA_APP_PATH}"
     argv="$@"
     OPTIND=1
-    while getopts ":hF:n:s:" opt $argv ; do
+    while getopts ":hF:n:s:A:" opt $argv ; do
         case $opt in
             h)
-                echo >&2 "usage: init: [-h] [-F hostfile] [-s state-dir]"
+                echo >&2 "usage: init: [-h] [-F hostfile] [-s state-dir] [-A module-dir]"
                 return 0
                 ;;
             F)
@@ -972,11 +973,17 @@ function initialize ()
                 state_dir="$OPTARG"
                 shift 2
                 ;;
+            A)
+                app_path="${OPTARG}:${app_path}"
+                shift 2
+                ;;
             \?)
                 shift
                 ;;
         esac
     done
+
+    export SDPA_APP_PATH="${app_path}"
 
     if [ -n "$1" ] ; then
         hostfile="$1"; shift
