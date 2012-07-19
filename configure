@@ -230,6 +230,9 @@ if [ "$1" == "--" ] ; then
 fi
 
 cmake_flags=
+
+cmake_flags="$cmake_flags --no-warn-unused-cli"
+
 if [ -n "$build_rev" ] ; then
     build_rev=$( echo $build_rev | sed -e 's/^v//' )
     cmake_flags="$cmake_flags -DPROJECT_REVISION=$build_rev"
@@ -301,7 +304,7 @@ cmake_flags="$cmake_flags $@"
 cmd="cmake \"$src\" $cmake_flags"
 print_settings
 echo "#"
-echo "# cmake \"$src\" $cmake_flags"
+echo "# cmake $cmake_flags \"$src\""
 read -t 10 -n 1 -p "press any key to continue (Ctrl+C to abort)..."
 echo
-cmake "$src" $cmake_flags
+cmake $cmake_flags "$src"
