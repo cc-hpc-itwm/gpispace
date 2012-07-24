@@ -136,10 +136,14 @@ if (ENABLE_FVM_PC)
 endif()
 message(STATUS "=== [ seda ] ===")
 add_subdirectory(seda)
-message(STATUS "=== [ sdpa ] ===")
-add_subdirectory(sdpa)
 message(STATUS "=== [ util ] ===")
 add_subdirectory(util)
+
+message(STATUS "=== [ fhgkernel ] ===")
+add_subdirectory(fhgkernel)
+
+message(STATUS "=== [ sdpa ] ===")
+add_subdirectory(sdpa)
 
 ## optional components
 if (ENABLE_MONITOR_GUI)
