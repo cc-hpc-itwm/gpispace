@@ -10,7 +10,7 @@ class Invalidatable {
 
     Invalidatable(const char *message): message_(message), valid_(true) {}
 
-    Invalidatable(): message_("Accessing object in invalid state"), valid_(true) {}
+    Invalidatable(): message_("Accessing object in an invalid state"), valid_(true) {}
 
     virtual ~Invalidatable() {}
 

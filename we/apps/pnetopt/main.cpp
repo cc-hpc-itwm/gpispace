@@ -95,6 +95,7 @@ class Optimizer {
                     .addFunction("subnet", &Transition::subnet)
                     .addFunction("expression", &Transition::expression)
                     .addFunction("condition", &Transition::condition)
+                    .addFunction("remove", &Transition::remove)
                 .endClass()
                 .template beginClass<Expression>("Expression")
                     .addFunction("__tostring", &Expression::__tostring)
@@ -600,6 +601,8 @@ class Optimizer {
         };
 
         Expression *expression() {
+            ensureValid();
+
             if (!expression_.get()) {
                 if (we::type::expression_t *expr = boost::apply_visitor(ExpressionReturner(), transition().data())) {
                     expression_.reset(new Expression(*expr));
@@ -609,10 +612,21 @@ class Optimizer {
         }
 
         Condition *condition() {
+            ensureValid();
+
             if (!condition_.get()) {
                 condition_.reset(new Condition(transition().condition()));
             }
             return condition_.get();
+        }
+
+        void remove() {
+            ensureValid();
+
+            transitions().petriNet().pnet().delete_transition(tid_);
+
+            invalidate();
+            transitions().invalidateIterators();
         }
 
         protected:
