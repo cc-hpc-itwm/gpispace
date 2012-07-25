@@ -50,6 +50,7 @@ namespace fhg { namespace log {
 #  define __LOG(logger, level, msg)
 #  define FHGLOG_SETUP(args...)
 #  define FHGLOG_FLUSH()
+#  define FHGLOG_TERM()
 #else
 #  define FHGLOG_FLUSH()                                                \
     do                                                                  \
@@ -82,6 +83,11 @@ namespace fhg { namespace log {
       }                                                                 \
     } while (0)
 
+#  define FHGLOG_TERM()                         \
+    do                                          \
+    {                                           \
+      fhg::log::terminate ();                   \
+    } while (0)
 #ifndef FHGLOG_STRIP_LEVEL
 #  define FHGLOG_STRIP_LEVEL -1
 #endif
