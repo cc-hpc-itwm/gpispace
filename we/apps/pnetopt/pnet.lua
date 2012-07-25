@@ -1,4 +1,8 @@
-function dump(pnet)
+local M = {}
+
+local list = require("list")
+
+function M.dump(pnet)
 	print("Number of places: " .. #pnet:places())
 
 	for p in pnet:places():all() do
@@ -25,12 +29,26 @@ function dump(pnet)
 	end
 end
 
-function apply_recursively(pnet, functor)
+function M.apply_recursively(pnet, functor)
 	functor(pnet)
 
 	for t in pnet:transitions():all() do
 		if t:subnet() then
-			apply_recursively(t:subnet(), functor)
+			M.apply_recursively(t:subnet(), functor)
 		end
 	end
 end
+
+function M.remove_all_places(pnet)
+	for place in list.enumerate(pnet:places():all()) do
+		place:remove()
+	end
+end
+
+function M.remove_all_transitions(pnet)
+	for transition in list.enumerate(pnet:transitions():all()) do
+		transition:remove()
+	end
+end
+
+return M

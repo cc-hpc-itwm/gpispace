@@ -73,6 +73,7 @@ class Optimizer {
                     .addFunction("setName", &Place::setName)
                     .addFunction("inConnections", &Place::in_connections)
                     .addFunction("outConnections", &Place::out_connections)
+                    .addFunction("remove", &Place::remove)
                 .endClass()
                 .template beginClass<AdjacentPortIterator>("AdjacentPortIterator")
                     .addFunction("__tostring", &AdjacentPortIterator::__tostring)
@@ -127,7 +128,7 @@ class Optimizer {
                 ;
 
         luabridge::push(L, petriNet_);
-        lua_setfield(L, LUA_GLOBALSINDEX, "pnet");
+        lua_setfield(L, LUA_GLOBALSINDEX, "net");
     }
 
     ~Optimizer() {
@@ -370,6 +371,17 @@ class Optimizer {
             iterators_.push_back(result);
 
             return result;
+        }
+
+
+        void remove() {
+            ensureValid();
+
+            places().petriNet().pnet().delete_place(pid_);
+            // FIXME: place must be disconnected from all ports. Why this is not done automatically?
+
+            invalidate();
+            places().invalidateIterators();
         }
 
         void invalidateIterators() {
@@ -862,6 +874,15 @@ class Optimizer {
         bool isTunnel() {
             ensureValid();
             return port_.is_tunnel();
+        }
+
+        /**
+         * Disconnects the port from the place.
+         */
+        void disconnect() {
+            ensureValid();
+
+            // FIXME: how to do this?
         }
     };
 };

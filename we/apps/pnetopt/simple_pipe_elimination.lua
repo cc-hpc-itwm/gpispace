@@ -1,4 +1,8 @@
-function find_matching_places(transition) 
+local M = {}
+
+local list = require("list")
+
+function M.find_matching_places(transition) 
 	if #transition:in_ports() ~= #transition:out_ports() then
 		return nil
 	end
@@ -30,10 +34,10 @@ function find_matching_places(transition)
 	return result
 end
 
-function simple_pipe_elimination(net)
+function M.simple_pipe_elimination(net)
 	local modified = false
 
-	for transition in net:transitions():all() do
+	for transition in list.enumerate(net:transitions():all()) do
 		if transition:expression() ~= nil and
 		   transition:expression():isEmpty() and
 		   transition:condition():isConstTrue() then
@@ -44,8 +48,7 @@ function simple_pipe_elimination(net)
 					-- NB: should reassociate ports when necessary
 					merge_places(net, place1, place2)
 				end
-				-- NB: should not break iterator somehow
-				net.delete_transition(transition)
+				transition:remove()
 				modified = true
 			end
 		end
@@ -53,3 +56,5 @@ function simple_pipe_elimination(net)
 
 	return modified
 end
+
+return M
