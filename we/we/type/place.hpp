@@ -59,6 +59,17 @@ namespace place
          )
       : name (_name), signature (_signature), prop (_prop)
     {}
+
+    type & operator= (const type &other)
+    {
+      if (this != &other)
+      {
+        name = other.name;
+        signature = other.signature;
+        prop = other.prop;
+      }
+      return *this;
+    }
   };
 
   inline std::ostream & operator << (std::ostream & s, const type & p)

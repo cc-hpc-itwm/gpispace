@@ -399,7 +399,28 @@ public:
     , in_map ()
     , in_to_transition_size_map ()
     , out_of_transition_size_map ()
-  {};
+  {}
+
+  net & operator= (net const & other)
+  {
+    if (this != &other)
+    {
+      pmap = other.pmap;
+      tmap = other.tmap;
+      emap = other.emap;
+      connection_map = other.connection_map;
+      adj_pt = other.adj_pt;
+      adj_tp = other.adj_tp;
+      token_place_rel = other.token_place_rel;
+      enabled = other.enabled;
+      enabled_choice_consume = other.enabled_choice_consume;
+      enabled_choice_read = other.enabled_choice_read;
+      in_map = other.in_map;
+      //      in_to_transition_size_map = other.in_to_transition_size_map;
+      //      out_of_transition_size_map = other.out_of_transition_size_map;
+    }
+    return *this;
+  }
 
   // numbers of elements
   size_type get_num_places (void) const { return places().size(); }

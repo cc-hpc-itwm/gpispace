@@ -73,6 +73,27 @@ namespace xml
 
         // ***************************************************************** //
 
+        net_type & operator= (net_type const &rhs)
+        {
+          if (this != &rhs)
+          {
+            _places = rhs._places;
+            _transitions = rhs._transitions;
+            _functions = rhs._functions;
+            _templates = rhs._templates;
+            _specializes = rhs._specializes;
+
+            contains_a_module_call = rhs.contains_a_module_call;
+            structs = rhs.structs;
+            path = rhs.path;
+            prop = rhs.prop;
+            structs_resolved = rhs.structs_resolved;
+          }
+          return *this;
+        }
+
+        // ***************************************************************** //
+
         bool get_place (const std::string & name, place_type & place) const
         {
           return _places.by_key (name, place);

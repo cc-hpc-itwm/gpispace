@@ -27,6 +27,7 @@ struct transition_t
 public:
   std::string t;
   mutable Function::Condition::Expression<token_t> cond;
+  std::string cond_s;
 
   friend class boost::serialization::access;
   template<typename Archive>
@@ -38,7 +39,18 @@ public:
 
   transition_t ( const std::string & _t
                , const std::string & _cond
-               ) : t (_t), cond (_cond) {}
+               ) : t (_t), cond (_cond), cond_s (_cond) {}
+
+  transition_t & operator= (transition_t const &rhs)
+  {
+    if (this != &rhs)
+    {
+      t = rhs.t;
+      cond = Function::Condition::Expression<token_t>(rhs.cond_s);
+      cond_s = rhs.cond_s;
+    }
+    return *this;
+  }
 
   bool condition (Function::Condition::Traits<token_t>::choices_t & choices)
     const

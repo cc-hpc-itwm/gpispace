@@ -237,6 +237,15 @@ namespace we
       public:
         type () : map () {}
 
+        type & operator= (type const & other)
+        {
+          if (this != &other)
+          {
+            map = other.map;
+          }
+          return *this;
+        }
+
         const map_type & get_map (void) const { return map; }
 
         // ----------------------------------------------------------------- //

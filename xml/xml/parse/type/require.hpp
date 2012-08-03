@@ -28,6 +28,15 @@ namespace xml
       public:
         requirements_type () : map (0) {}
 
+        requirements_type & operator= (requirements_type const & rhs)
+        {
+          if (this != &rhs)
+          {
+            map = rhs.map;
+          }
+          return *this;
+        }
+
         void set ( const require_key_type & key
                  , const bool & mandatory = true
                  )

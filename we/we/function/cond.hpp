@@ -89,6 +89,18 @@ namespace Function { namespace Condition
       , context ()
     {}
 
+    Expression & operator= (const Expression &rhs)
+    {
+      if (this != &rhs)
+      {
+        expression = rhs.expression;
+        parser = expr::parse::parser (expression);
+        // no  need to  copy  context,  it's only  there  to avoid  construction
+        // overhead
+      }
+      return *this;
+    }
+
     bool operator () (typename Traits<token_type>::choices_t & choices) const
     {
       if (expression == "true")

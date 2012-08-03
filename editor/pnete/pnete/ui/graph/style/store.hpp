@@ -69,6 +69,15 @@ namespace fhg
               {
                 _predicates.push_back (predicate);
               }
+              cached_predicates & operator= (cached_predicates const &rhs)
+              {
+                if (this != &rhs)
+                {
+                  _cache.clear ();
+                  _predicates = rhs._predicates;
+                }
+                return *this;
+              }
 
               void clear_cache () const
               {

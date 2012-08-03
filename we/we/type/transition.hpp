@@ -469,6 +469,29 @@ namespace we { namespace type {
         , m_requirements (other.m_requirements)
       { }
 
+      // transition_t & operator= (transition_t const & other)
+      // {
+      //   if (this != &other)
+      //   {
+      //     name_ = other.name_;
+      //     data_ = other.data_;
+      //     internal_ = other.internal_;
+      //     condition_ = condition::type ( other.condition_.expression()
+      //                                  , boost::bind
+      //                                  ( &detail::translate_place_to_port_name<this_type, pid_t>
+      //                                  , boost::ref(*this)
+      //                                  , _1
+      //                                  ));
+      //     outer_to_inner_ = other.outer_to_inner_;
+      //     inner_to_outer_  = other.inner_to_outer_;
+      //     ports_ = other.ports_;
+      //     port_id_counter_ = other.port_id_counter_;
+      //     prop_ = other.prop_;
+      //     m_requirements = other.m_requirements;
+      //   }
+      //   return *this;
+      // }
+
       template <typename Choices>
       bool condition (Choices & choices) const
       {

@@ -28,6 +28,16 @@ namespace petri_net
       , trans ()
     {}
 
+    net_with_transition_function & operator= (net_with_transition_function const & rhs)
+    {
+      if (this != &rhs)
+      {
+        super::operator= (rhs);
+        trans = rhs.trans;
+      }
+      return *this;
+    }
+
     void
     set_transition_function (const tid_t & tid, const trans_t & f)
     {

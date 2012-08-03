@@ -521,6 +521,29 @@ namespace xml
         function_type () {}
         function_type (const type& _f) : f (_f) {}
 
+        function_type & operator= (function_type const &rhs)
+        {
+          if (this != &rhs)
+          {
+            _in = rhs._in;
+            _out = rhs._out;
+            _tunnel = rhs._tunnel;
+
+            contains_a_module_call = rhs.contains_a_module_call;
+            structs = rhs.structs;
+            name = rhs.name;
+            internal = rhs.internal;
+            cond = rhs.cond;
+            requirements = rhs.requirements;
+            prop = rhs.prop;
+            f = rhs.f;
+            path = rhs.path;
+            structs_resolved = rhs.structs_resolved;
+            was_template = rhs.was_template;
+          }
+          return *this;
+        }
+
         // ***************************************************************** //
 
         void add_expression (const expression_type & e)
