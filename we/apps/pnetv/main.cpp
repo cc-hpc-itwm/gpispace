@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 
     int exitCode = EXIT_SUCCESS;
 
-    foreach(const std::string &filename, inputFiles) {
+    FOREACH(const std::string &filename, inputFiles) {
         boost::ptr_vector<jpna::PetriNet> petriNets;
 
         try {
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
                 jpna::parse(filename.c_str(), petriNets);
             }
 
-            foreach (const jpna::PetriNet &petriNet, petriNets) {
+            FOREACH (const jpna::PetriNet &petriNet, petriNets) {
                 std::cout << petriNet.name() << ": ";
                 std::cout.flush();
                 jpna::VerificationResult result = jpna::verify(petriNet);

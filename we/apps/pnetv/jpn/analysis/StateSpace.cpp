@@ -18,7 +18,7 @@ bool karpMiller(const std::vector<Transition> &transitions, const Marking &initi
         const State *currentState = &states[i];
 
         enabledTransitions.clear();
-        foreach (const Transition &transition, transitions) {
+        FOREACH (const Transition &transition, transitions) {
             if (transition.canFire(currentState->marking())) {
                 if (!enabledTransitions.empty()) {
                     if (enabledTransitions.front()->priority() < transition.priority()) {
@@ -31,7 +31,7 @@ bool karpMiller(const std::vector<Transition> &transitions, const Marking &initi
             }
         }
 
-        foreach (const Transition *transition, enabledTransitions) {
+        FOREACH (const Transition *transition, enabledTransitions) {
             /* Simple partial order reduction taking only O(1) time. */
             if (currentState->previous() && transition->id() < currentState->lastTransition()->id() &&
                 transition->canFire(currentState->previous()->marking()) &&
@@ -56,7 +56,7 @@ bool karpMiller(const std::vector<Transition> &transitions, const Marking &initi
 
             /* State space reduction. */
             bool covered = false;
-            foreach (const State &state, states) {
+            FOREACH (const State &state, states) {
                 if (newMarking <= state.marking()) {
                     covered = true;
                     break;
@@ -85,7 +85,7 @@ bool findLoop(const std::vector<Transition> &transitions, const Marking &initial
         const State *currentState = &states[i];
 
         enabledTransitions.clear();
-        foreach (const Transition &transition, transitions) {
+        FOREACH (const Transition &transition, transitions) {
             if (transition.canFire(currentState->marking())) {
                 if (!enabledTransitions.empty()) {
                     if (enabledTransitions.front()->priority() < transition.priority()) {
@@ -98,7 +98,7 @@ bool findLoop(const std::vector<Transition> &transitions, const Marking &initial
             }
         }
 
-        foreach (const Transition *transition, enabledTransitions) {
+        FOREACH (const Transition *transition, enabledTransitions) {
             /* Simple partial order reduction taking only O(1) time. */
             if (currentState->previous() && transition->id() < currentState->lastTransition()->id() &&
                 transition->canFire(currentState->previous()->marking()) &&
@@ -124,7 +124,7 @@ bool findLoop(const std::vector<Transition> &transitions, const Marking &initial
 
             /* State space reduction. */
             bool covered = false;
-            foreach (const State &state, states) {
+            FOREACH (const State &state, states) {
                 if (newMarking <= state.marking()) {
                     covered = true;
                     break;

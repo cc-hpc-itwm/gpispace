@@ -155,7 +155,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
         boost::apply_visitor(*this, transition.data());
 
-        foreach(const typename transition_t::port_map_t::value_type &item, transition.ports()) {
+        FOREACH(const typename transition_t::port_map_t::value_type &item, transition.ports()) {
             const typename transition_t::port_t &port = item.second;
 
             if (port.has_associated_place()) {

@@ -1,7 +1,10 @@
-#pragma once
+#ifndef PNETV_JPN_FOREACH_HPP
+#define PNETV_JPN_FOREACH_HPP
 
 #include <boost/foreach.hpp>
 
-#define foreach BOOST_FOREACH
+#define FOREACH BOOST_FOREACH
+
+#endif
 
 /* vim:set et sts=4 sw=4: */
