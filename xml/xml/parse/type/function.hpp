@@ -18,6 +18,7 @@
 
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <we/type/literal/valid_name.hpp>
 #include <we/type/property.hpp>
@@ -110,7 +111,14 @@ namespace xml
         {}
 
         void operator () (expression_type &) const { return; }
-        void operator () (mod_type &) const { return; }
+        void operator () (mod_type & mod) const
+        {
+          mod.function += "_specialization_";
+          mod.function += boost::lexical_cast<std::string>
+            (state.unique_specialization_counter());
+
+          return;
+        }
         void operator () (Net & net) const
         {
           net.specialize (map, get, known_structs, state);
