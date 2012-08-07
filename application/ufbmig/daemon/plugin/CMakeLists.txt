@@ -16,6 +16,10 @@ include_directories(${WE_INCLUDE_DIR})
 find_package(SDPA REQUIRED QUIET)
 include_directories(${SDPA_INCLUDE_DIR})
 
+# plugin headers
+find_package(FhgKernel REQUIRED QUIET)
+include_directories(${FhgKernel_INCLUDE_DIR})
+
 # add include directory to sdpa-plugin directory
 include_directories(${CMAKE_SOURCE_DIR}/sdpa/plugins)
 
