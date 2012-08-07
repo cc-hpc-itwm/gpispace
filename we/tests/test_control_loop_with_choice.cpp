@@ -37,6 +37,7 @@ public:
                , const std::string & _cond
                ) : t (_t), cond (_cond), cnd(_cond) {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
   transition_t & operator= (transition_t const &rhs)
   {
     if (this != &rhs)
@@ -47,6 +48,7 @@ public:
     }
     return *this;
   }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
   bool condition (Function::Condition::Traits<token_t>::choices_t & choices)
     const

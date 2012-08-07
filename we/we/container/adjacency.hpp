@@ -41,6 +41,7 @@ namespace adjacency
   public:
     table (const ADJ &, const ROW &, const COL &);
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
     table & operator= (table const & rhs)
     {
       if (this != &rhs)
@@ -51,6 +52,7 @@ namespace adjacency
       }
       return *this;
     }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
     const const_it<COL,ADJ> row_const_it (const ROW &) const;
     const const_it<ROW,ADJ> col_const_it (const COL &) const;

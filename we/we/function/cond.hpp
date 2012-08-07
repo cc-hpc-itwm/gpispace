@@ -89,6 +89,7 @@ namespace Function { namespace Condition
       , context ()
     {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
     Expression & operator= (const Expression &rhs)
     {
       if (this != &rhs)
@@ -100,6 +101,7 @@ namespace Function { namespace Condition
       }
       return *this;
     }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
     bool operator () (typename Traits<token_type>::choices_t & choices) const
     {

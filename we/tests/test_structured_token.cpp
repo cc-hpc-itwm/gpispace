@@ -61,6 +61,7 @@ public:
     return cond (choices);
   }
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
   transition_t & operator= (transition_t const &other)
   {
     if (this != &other)
@@ -71,6 +72,7 @@ public:
     }
     return *this;
   }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
   friend class boost::serialization::access;
   template<typename Archive>

@@ -73,6 +73,7 @@ namespace xml
 
         // ***************************************************************** //
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
         net_type & operator= (net_type const &rhs)
         {
           if (this != &rhs)
@@ -91,6 +92,7 @@ namespace xml
           }
           return *this;
         }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
         // ***************************************************************** //
 

@@ -237,6 +237,7 @@ namespace we
       public:
         type () : map () {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
         type & operator= (type const & other)
         {
           if (this != &other)
@@ -245,6 +246,7 @@ namespace we
           }
           return *this;
         }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
         const map_type & get_map (void) const { return map; }
 

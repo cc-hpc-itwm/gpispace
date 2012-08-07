@@ -28,6 +28,7 @@ namespace xml
       public:
         requirements_type () : map (0) {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
         requirements_type & operator= (requirements_type const & rhs)
         {
           if (this != &rhs)
@@ -36,6 +37,7 @@ namespace xml
           }
           return *this;
         }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
         void set ( const require_key_type & key
                  , const bool & mandatory = true

@@ -521,6 +521,7 @@ namespace xml
         function_type () {}
         function_type (const type& _f) : f (_f) {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
         function_type & operator= (function_type const &rhs)
         {
           if (this != &rhs)
@@ -543,6 +544,7 @@ namespace xml
           }
           return *this;
         }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
         // ***************************************************************** //
 

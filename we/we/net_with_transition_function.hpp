@@ -28,6 +28,7 @@ namespace petri_net
       , trans ()
     {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
     net_with_transition_function & operator= (net_with_transition_function const & rhs)
     {
       if (this != &rhs)
@@ -37,6 +38,7 @@ namespace petri_net
       }
       return *this;
     }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
     void
     set_transition_function (const tid_t & tid, const trans_t & f)

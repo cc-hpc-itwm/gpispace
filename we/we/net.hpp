@@ -401,6 +401,7 @@ public:
     , out_of_transition_size_map ()
   {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
   net & operator= (net const & other)
   {
     if (this != &other)
@@ -416,11 +417,10 @@ public:
       enabled_choice_consume = other.enabled_choice_consume;
       enabled_choice_read = other.enabled_choice_read;
       in_map = other.in_map;
-      //      in_to_transition_size_map = other.in_to_transition_size_map;
-      //      out_of_transition_size_map = other.out_of_transition_size_map;
     }
     return *this;
   }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
   // numbers of elements
   size_type get_num_places (void) const { return places().size(); }

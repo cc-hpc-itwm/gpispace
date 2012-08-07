@@ -69,6 +69,8 @@ namespace fhg
               {
                 _predicates.push_back (predicate);
               }
+
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
               cached_predicates & operator= (cached_predicates const &rhs)
               {
                 if (this != &rhs)
@@ -78,6 +80,7 @@ namespace fhg
                 }
                 return *this;
               }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
               void clear_cache () const
               {

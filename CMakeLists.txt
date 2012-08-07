@@ -88,6 +88,7 @@ if (DEBUG_FHGLOG)
 else (DEBUG_FHGLOG)
   add_definitions("-DNDEBUG_FHGLOG")
 endif (DEBUG_FHGLOG)
+add_definitions("-DBOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND")
 
 if (NOT FHG_ASSERT_MODE)
   if (${CMAKE_BUILD_TYPE} MATCHES "Release")

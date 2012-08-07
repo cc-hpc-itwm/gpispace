@@ -57,6 +57,7 @@ namespace priostore
     }
 
   public:
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
     type & operator= (type const & rhs)
     {
       if (this != &rhs)
@@ -66,6 +67,7 @@ namespace priostore
       }
       return *this;
     }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
     Prio get_priority (const T & x) const
     {
