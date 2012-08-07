@@ -57,8 +57,8 @@ namespace asian
     }
   }
 
-  ::pnetc::type::sums::sums run ( const ::pnetc::type::param::param & param
-                                )
+  inline ::pnetc::type::sums::sums
+  run ( const ::pnetc::type::param::param & param )
   {
     const int nThread (param.nThreads);
 
