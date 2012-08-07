@@ -1,0 +1,23 @@
+<template name="template_with_module_call">
+  <in name="x" type="T" place="x"/>
+  <out name="y" type="T" place="y"/>
+  <net>
+    <place name="x" type="T"/>
+    <place name="y" type="T"/>
+    <transition name="t">
+      <defun>
+        <inout name="x" type="T"/>
+        <module name="template_with_module_call" function="fun (x)">
+          <cinclude href="typeinfo"/>
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "* x is of type: " << typeid(x).name() << std::endl;
+            std::cout << "* x has the value: " << x << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="x" place="x"/>
+      <connect-out port="x" place="y"/>
+    </transition>
+  </net>
+</template>
