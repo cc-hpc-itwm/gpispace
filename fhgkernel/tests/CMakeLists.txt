@@ -13,9 +13,11 @@ fhg_add_test(test_null_storage.cpp
   DESCRIPTION "Tests the null-storage backend"
 )
 
+get_target_property(HELLO_PLUGIN_LOCATION hello-plugin LOCATION)
+get_filename_component(BUILTIN_PLUGINS_PATH ${HELLO_PLUGIN_LOCATION} PATH)
 fhg_add_test(test_kernel.cpp
   LINK_LIBRARIES fhg-plugin
-  ARGS ${CMAKE_BINARY_DIR}/util/fhg/plugin/builtin
+  ARGS ${BUILTIN_PLUGINS_PATH}
   DESCRIPTION "Tests the plugin kernel"
 )
 
