@@ -1,7 +1,6 @@
 # -*- mode: cmake; -*-
 
 include(fhg_test_macros)
-include(fhg_plugin_macros)
 
 fhg_add_test(test_semaphore.cpp
   DESCRIPTION "Tests the semaphore implementation"
