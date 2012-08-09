@@ -73,9 +73,9 @@ struct MyFixture
 			: m_nITER(1)
 			, m_sleep_interval(1000) //microseconds
 			, m_pool (0)
-	    	, m_kvsd (0)
-	    	, m_serv (0)
-	    	, m_thrd (0)
+      , m_kvsd (0)
+      , m_serv (0)
+      , m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
 	{ //initialize and start the finite state machine
 
