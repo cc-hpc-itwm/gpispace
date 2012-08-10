@@ -301,58 +301,6 @@ void GenericDaemon::shutdown( )
 }
 
 /**
- * Send a notification of type T to the masters
- * @param[in] ptrNotEvt: Event to be sent to the master
- */
-template <typename T>
-void GenericDaemon::notifyMasters(const T& ptrNotEvt)
-{
-  lock_type lock(mtx_master_);
-  if(m_arrMasterInfo.empty())
-  {
-    SDPA_LOG_INFO("The master list is empty. No mater to be notified exist!");
-    return;
-  }
-
-  BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-  {
-    if( masterInfo.is_registered() )
-    {
-      ptrNotEvt->to() = masterInfo.name();
-      SDPA_LOG_INFO("Send notification to the master "<<masterInfo.name());
-      sendEventToMaster(ptrNotEvt);
-    }
-  }
-}
-
-/**
- * Send a notification of type T to the workers
- * @param[in] ptrNotEvt: Event to be sent to the workers
- */
-template <typename T>
-void GenericDaemon::notifyWorkers(const T& ptrNotEvt)
-{
-  std::list<std::string> workerList;
-  scheduler()->getWorkerList(workerList);
-
-  if(workerList.empty())
-  {
-    SDPA_LOG_INFO("The worker list is empty. No worker to be notified exist!");
-    return;
-  }
-
-  for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
-  {
-    ptrNotEvt->to() = *iter;
-    SDPA_LOG_INFO("Send notification to the worker "<<*iter);
-    sendEventToMaster(ptrNotEvt);
-  }
-
-  // remove workers
-  scheduler()->removeWorkers();
-}
-
-/**
  * Configure the network
  */
 void GenericDaemon::configure_network( const std::string& daemonUrl /*, const std::string& masterName*/ )
@@ -538,9 +486,7 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
     }
   }
   else
-  {
-    SDPA_LOG_INFO("No configuration file was specified. Using the default configuration.");
-  }
+    SDPA_LOG_WARN("No configuration file was specified. Using the default configuration.");
 
   m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
   m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );

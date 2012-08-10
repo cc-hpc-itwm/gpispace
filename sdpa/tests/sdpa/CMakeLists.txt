@@ -56,7 +56,7 @@ include(pnet_macros)
 get_target_property(PNETPUT_LOCATION pnetput LOCATION)
 
 ###########################################################################################
-pnet_compile( sdpa-stresstest ${CMAKE_SOURCE_DIR}/application/example/stresstest/stresstest.xpnet
+pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
   FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
 )
@@ -227,6 +227,7 @@ foreach (tc_src ${tc_srcs})
   add_test(${tc_name} ${LOC})
   add_dependencies(${tc_name} drts-plugin)
   add_dependencies(${tc_name} fvm-fake-plugin)
+  add_dependencies(${tc_name} sdpa-stresstest)
   add_dependencies(${tc_name} pnet-capabilities-test-wf)
   add_dependencies(${tc_name} pnet-capabilities_no_mandatory-test-wf)
   add_dependencies(${tc_name} pnet-atomic-test-wf)
