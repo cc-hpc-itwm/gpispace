@@ -4,6 +4,8 @@
   <in name="number_store_bunch" type="long" place="number_store_bunch"/>
   <in name="trigger" type="control" place="trigger"/>
   <out name="done" type="control" place="done"/>
+  <tunnel name="store_volume" type="store_volume" place="store_volume"/>
+  <tunnel name="store_bunch" type="store_bunch" place="store_bunch"/>
 
   <net>
 

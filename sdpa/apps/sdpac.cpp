@@ -719,7 +719,7 @@ int main (int argc, char **argv) {
   }
   catch (std::exception const &ex)
   {
-    std::cerr << "failed: " << ex.what() << std::endl;
+    std::cerr << "sdpac: failed: " << ex.what() << std::endl;
     return UNKNOWN_ERROR;
   }
 }

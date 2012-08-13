@@ -4,6 +4,10 @@
   <out name="volume_state" type="volume_state" place="volume_state"/>
   <out name="volume_with_store" type="volume_with_store" place="volume_with_store"/>
   <out name="bunch_with_store" type="bunch_with_store" place="bunch_with_store"/>
+  <tunnel name="assoc" type="map" place="assoc"/>
+  <tunnel name="store_bunch_put" type="store_bunch" place="store_bunch_put"/>
+  <tunnel name="store_bunch_get" type="store_bunch" place="store_bunch_get"/>
+  <tunnel name="store_volume" type="store_volume" place="store_volume"/>
 
   <net>
 

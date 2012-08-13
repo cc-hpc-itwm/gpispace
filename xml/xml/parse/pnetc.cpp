@@ -123,7 +123,7 @@ main (int argc, char ** argv)
   }
   catch (std::exception const & ex)
   {
-    std::cerr << "failed: " << ex.what() << std::endl;
+    std::cerr << "pnetc: failed: " << ex.what() << std::endl;
 
     return EXIT_FAILURE;
   }
