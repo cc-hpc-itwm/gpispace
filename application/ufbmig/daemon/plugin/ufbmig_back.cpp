@@ -10,6 +10,8 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/util/bool.hpp>
+#include <fhg/util/bool_io.hpp>
 
 // plugin interfaces
 #include "sdpactl.hpp"
@@ -134,7 +136,8 @@ class UfBMigBackImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
-    m_control_sdpa = fhg_kernel()->get<bool>("control_sdpa", "0");
+    m_control_sdpa =
+      fhg_kernel()->get<fhg::util::bool_t>("control_sdpa", "true");
 
     m_wf_path_initialize =
       fhg_kernel()->get("wf_init", "ufbmig_init.pnet");
@@ -301,13 +304,38 @@ public:
     m_frontend = f;
   }
 
-  int initialize(std::string const &xml)
+  int prepare ()
   {
-    if (progress)
+    int rc;
+
+    update_progress(0);
+
+    if (m_control_sdpa && sdpa_ctl)
     {
-      progress->initialize ("ufbmig", 100);
+      MLOG(INFO, "(re)starting SDPA...");
+      rc = sdpa_ctl->start();
+    }
+    else
+    {
+      rc = EINVAL;
     }
 
+    update_progress(100);
+
+    // TODO: submit prepare workflow
+
+    fhg_kernel()->schedule ( "update_job_states"
+                           , boost::bind( &ufbmig::Frontend::prepare_backend_done
+                                        , m_frontend
+                                        , rc
+                                        )
+                           , 1
+                           );
+    return rc;
+  }
+
+  int initialize(std::string const &xml)
+  {
     update_progress(0);
 
     if (state::UNINITIALIZED != m_state)
@@ -317,12 +345,6 @@ public:
     }
 
     update_progress(25);
-
-    if (m_control_sdpa && sdpa_ctl)
-    {
-      MLOG(INFO, "(re)starting SDPA...");
-      sdpa_ctl->start();
-    }
 
     update_progress(75);
 

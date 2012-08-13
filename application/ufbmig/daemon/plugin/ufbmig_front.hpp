@@ -10,12 +10,14 @@ namespace ufbmig
   public:
     virtual ~Frontend() {}
 
+    virtual int prepare_backend () = 0;
     virtual int initialize(std::string const &) = 0;
     virtual int update_salt_mask(const char *data, size_t len) = 0;
     virtual int calculate(std::string const &) = 0;
     virtual int finalize() = 0;
     virtual int cancel() = 0;
 
+    virtual void prepare_backend_done (int) = 0;
     virtual void initialize_done (int) = 0;
     virtual void salt_mask_done (int) = 0;
     virtual void calculate_done (int) = 0;

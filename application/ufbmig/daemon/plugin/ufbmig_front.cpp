@@ -217,7 +217,13 @@ public:
     m_transfer_thread = boost::thread (&UfBMigFrontImpl::transfer_thread, this);
     m_message_thread = boost::thread (&UfBMigFrontImpl::message_thread, this);
 
-    send_waiting_for_initialize();
+    // send_waiting_for_initialize();
+    fhg_kernel()->schedule ( "prepare_backend"
+                           , boost::bind( &UfBMigFrontImpl::prepare_backend
+                                        , this
+                                        )
+                           , 1
+                           );
 
     // try to start to observe log events
 
@@ -315,6 +321,30 @@ public:
     m_current_transfer->set_state(transfer::CANCELED);
 
     return m_backend->cancel();
+  }
+
+  int prepare_backend ()
+  {
+    assert (m_backend);
+    return m_backend->prepare ();
+  }
+
+  void prepare_backend_done (int ec)
+  {
+    if (! ec)
+    {
+      LOG (TRACE, "backend prepared");
+      send_waiting_for_initialize ();
+    }
+    else
+    {
+      LOG (ERROR, "backend preparation failed: " << ec);
+      m_backend->stop();
+
+      sleep (5);
+
+      fhg_kernel()->terminate();
+    }
   }
 
   void initialize_done (int ec)
@@ -552,11 +582,12 @@ private:
     {
       try
       {
-        int ec;
         std::string payload;
 
         message_ptr msg
-          ( PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout)
+          ( PSProMigIF::Message::recvMsg( m_server->communication()
+                                        , m_recv_timeout
+                                        )
           , std::ptr_fun(my_free)
           );
         if (! msg)
@@ -574,7 +605,7 @@ private:
           payload = std::string(msg->getCostumPtr(), msg->m_ulCustomDataSize);
         }
 
-        ec = handle_ISIM_command(msg->m_nCommand, payload);
+        handle_ISIM_command(msg->m_nCommand, payload);
       }
       catch (PSProMigIF::StartServer::StartServerException const &ex)
       {
