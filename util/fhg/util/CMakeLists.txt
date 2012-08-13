@@ -21,6 +21,8 @@ set (hdrs
   getenv.hpp
 
   xml.hpp
+  bool.hpp
+  bool_io.hpp
 )
 
 install(FILES ${hdrs}

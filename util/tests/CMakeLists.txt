@@ -20,3 +20,8 @@ fhg_add_test(test_assert.cpp
   COMPILE_FLAGS "-UFHG_ASSERT_MODE -DFHG_ASSERT_MODE=3 -UFHG_ASSERT_REPLACE_LEGACY -DFHG_ASSERT_REPLACE_LEGACY"
   DESCRIPTION "Tests fhg_assert"
   )
+
+fhg_add_test(test_bool.cpp
+  DESCRIPTION "Tests the bool_t wrapper around bool"
+)
+
