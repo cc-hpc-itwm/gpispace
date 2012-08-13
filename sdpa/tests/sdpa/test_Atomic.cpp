@@ -153,9 +153,9 @@ struct MyFixture
 
 	int m_nITER;
 	int m_sleep_interval ;
-    std::string m_strWorkflow;
+  std::string m_strWorkflow;
 
-    fhg::com::io_service_pool *m_pool;
+  fhg::com::io_service_pool *m_pool;
 	fhg::com::kvs::server::kvsd *m_kvsd;
 	fhg::com::tcp_server *m_serv;
 	boost::thread *m_thrd;
@@ -212,9 +212,9 @@ void MyFixture::run_client()
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
 		nTrials = 0;
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
+		while(  job_status.find("Finished") == std::string::npos &&
+			      job_status.find("Failed") == std::string::npos &&
+			      job_status.find("Cancelled") == std::string::npos )
 		{
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
@@ -277,7 +277,7 @@ void MyFixture::run_client()
 
 	ptrCli->shutdown_network();
 	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
+  ptrCli.reset();
 }
 
 
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE( testModiFile )
 	if(!pFile) // file does not exist, create it
 	{
 		pFile = fopen(filename,"w");
-                fprintf(pFile, "%d\n", 0);
+    fprintf(pFile, "%d\n", 0);
 		fclose(pFile);
 	}
 	else
@@ -355,17 +355,21 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	m_strWorkflow = read_workflow("workflows/atomic.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-        const std::string atomic_file ("/var/tmp/atomic_test.txt");
+  const std::string atomic_file ("atomic_test.txt");
 
 	int nInitial (0);
-
-        {
-          ifstream ifs(atomic_file.c_str());
-          if (ifs.good())
-            {
-              ifs>>nInitial;
-            }
-        }
+  {
+    ifstream ifs(atomic_file.c_str());
+    if (ifs.good())
+    {
+        ifs>>nInitial;
+    }
+    else
+    {
+      ofstream ofs(atomic_file.c_str());
+      ofs<<nInitial;
+    }
+  }
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
@@ -373,7 +377,6 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
-
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0", "ATOMIC") );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -398,12 +401,11 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	ptrOrch->shutdown();
 
 	int nCounterVal=0;
-
-        {
-          std::ifstream ifs (atomic_file.c_str());
-          BOOST_CHECK (ifs.good());
-          ifs>>nCounterVal;
-        }
+  {
+    std::ifstream ifs (atomic_file.c_str());
+    BOOST_CHECK (ifs.good());
+    ifs>>nCounterVal;
+  }
 
 	LOG(INFO, "Intial value was "<<nInitial);
 	LOG(INFO, "The counter value now is: "<<nCounterVal);
