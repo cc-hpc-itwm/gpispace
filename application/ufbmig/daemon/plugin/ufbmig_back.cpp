@@ -37,6 +37,7 @@ namespace job
   {
     enum code
       {
+        PREPARE,
         INITIALIZE,
         UPDATE,
         CALCULATE,
@@ -138,6 +139,14 @@ public:
   {
     m_control_sdpa =
       fhg_kernel()->get<fhg::util::bool_t>("control_sdpa", "true");
+
+    m_wf_path_prepare =
+      fhg_kernel ()->get("wf_prepare", "ufbmig_prepare.pnet");
+    if (! fs::exists(m_wf_path_prepare))
+    {
+      MLOG(ERROR, "cannot access PREPARE workflow: " << m_wf_path_prepare);
+      FHG_PLUGIN_FAILED(ENOENT);
+    }
 
     m_wf_path_initialize =
       fhg_kernel()->get("wf_init", "ufbmig_init.pnet");
@@ -306,32 +315,37 @@ public:
 
   int prepare ()
   {
-    int rc;
-
     update_progress(0);
 
     if (m_control_sdpa && sdpa_ctl)
     {
       MLOG(INFO, "(re)starting SDPA...");
-      rc = sdpa_ctl->start();
-    }
-    else
-    {
-      rc = EINVAL;
+
+      int rc = sdpa_ctl->start();
+      if (rc != 0)
+      {
+        MLOG (WARN, "start of SDPA failed: " << rc);
+        return rc;
+      }
     }
 
     update_progress(100);
 
-    // TODO: submit prepare workflow
+    const std::string wf(read_workflow_from_file(m_wf_path_prepare));
 
-    fhg_kernel()->schedule ( "update_job_states"
-                           , boost::bind( &ufbmig::Frontend::prepare_backend_done
-                                        , m_frontend
-                                        , rc
-                                        )
-                           , 1
-                           );
-    return rc;
+    we::activity_t act;
+
+    try
+    {
+      we::util::codec::decode(wf, act);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG (ERROR, "decoding PREPARE workflow failed: " << ex.what());
+      return -EINVAL;
+    }
+
+    return submit_job (we::util::codec::encode(act), job::type::PREPARE);
   }
 
   int initialize(std::string const &xml)
@@ -885,6 +899,10 @@ private:
 
     switch (j.type)
     {
+    case job::type::PREPARE:
+
+      if (m_frontend) m_frontend->prepare_backend_done (ec);
+      break;
     case job::type::INITIALIZE:
       if (0 == ec)
       {
@@ -1161,6 +1179,7 @@ private:
   std::size_t                 m_scratch_size;
 
   // workflow paths
+  std::string m_wf_path_prepare;
   std::string m_wf_path_initialize;
   std::string m_wf_path_mask;
   std::string m_wf_path_calculate;
