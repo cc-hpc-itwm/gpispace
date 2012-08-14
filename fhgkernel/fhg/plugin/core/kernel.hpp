@@ -112,6 +112,8 @@ namespace fhg
     class kernel_t
     {
     public:
+      typedef std::vector<std::string> search_path_t;
+
       explicit
       kernel_t (std::string const &state_path = "");
       ~kernel_t ();
@@ -120,7 +122,12 @@ namespace fhg
       void stop ();
       void reset ();
 
+      void add_search_path (std::string const &);
+      void clear_search_path ();
+      void get_search_path (search_path_t &);
+
       int load_plugin (std::string const & file);
+      int load_plugin_by_name (std::string const & name);
       int unload_plugin (std::string const &name);
 
       fhg::plugin::Storage * storage();
@@ -150,7 +157,7 @@ namespace fhg
       std::string const & get_name () const;
     private:
       void initialize_storage ();
-      void check_dependencies (fhg::core::plugin_t::ptr_t const &);
+      void require_dependencies (fhg::core::plugin_t::ptr_t const &);
       void remove_pending_tasks (std::string const & owner);
       void notify_plugin_load (std::string const & name);
 
@@ -190,6 +197,7 @@ namespace fhg
 
       boost::thread m_task_handler;
       std::string m_name;
+      search_path_t m_search_path;
     };
   }
 }

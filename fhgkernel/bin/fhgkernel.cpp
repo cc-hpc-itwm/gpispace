@@ -225,6 +225,7 @@ int main(int ac, char **av)
   std::string pidfile;
   std::string kernel_name ("fhgkernel");
   bool daemonize (false);
+  fhg::core::kernel_t::search_path_t search_path;
 
   desc.add_options()
     ("help,h", "this message")
@@ -238,6 +239,9 @@ int main(int ac, char **av)
     ( "load,l"
     , po::value<std::vector<std::string> >(&mods_to_load)
     , "modules to load"
+    )
+    ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
+    , "add a path to the search path for plugins"
     )
     ;
 
@@ -342,8 +346,11 @@ int main(int ac, char **av)
   install_signal_handler();
 
   kernel = new fhg::core::kernel_t (state_path);
-
   kernel->set_name (kernel_name);
+  BOOST_FOREACH (std::string const & p, search_path)
+  {
+    kernel->add_search_path (p);
+  }
 
   BOOST_FOREACH (std::string const & p, config_vars)
   {

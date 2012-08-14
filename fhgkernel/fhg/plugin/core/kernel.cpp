@@ -19,6 +19,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
 
 #define START_SUCCESSFUL 0
 #define START_INCOMPLETE 1
@@ -58,6 +61,24 @@ namespace fhg
       }
     }
 
+    void kernel_t::add_search_path (std::string const &path)
+    {
+      m_search_path.push_back (path);
+    }
+
+    void kernel_t::clear_search_path ()
+    {
+      m_search_path.clear ();
+    }
+
+    void kernel_t::get_search_path (search_path_t & search_path)
+    {
+      m_search_path.insert ( search_path.end ()
+                           , m_search_path.begin ()
+                           , m_search_path.end ()
+                           );
+    }
+
     plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
     {
       lock_type plugins_lock (m_mtx_plugins);
@@ -70,6 +91,37 @@ namespace fhg
       {
         return plugin_t::ptr_t();
       }
+    }
+
+    int kernel_t::load_plugin_by_name (std::string const & name)
+    {
+      int ec = ENOENT;
+
+      BOOST_FOREACH (std::string const &dir, m_search_path)
+      {
+        fs::path plugin_path (dir);
+        plugin_path /= name + ".so";
+
+        MLOG (INFO, "trying: " << plugin_path);
+
+        if (fs::exists (plugin_path))
+        {
+          try
+          {
+            ec = load_plugin (plugin_path.string ());
+          }
+          catch (std::exception const &ex)
+          {
+            MLOG ( WARN
+                 , "plugin '" << name
+                 << "' could not be loaded from: " << plugin_path
+                 );
+            ec = EFAULT;
+          }
+        }
+      }
+
+      return ec;
     }
 
     int kernel_t::load_plugin(std::string const & file)
@@ -96,7 +148,7 @@ namespace fhg
         }
       }
 
-      check_dependencies(p);
+      require_dependencies (p);
 
       // create mediator
       // todo: privileged plugin decision...
@@ -329,7 +381,7 @@ namespace fhg
       }
     }
 
-    void kernel_t::check_dependencies (plugin_t::ptr_t const &plugin)
+    void kernel_t::require_dependencies (plugin_t::ptr_t const &plugin)
     {
       std::list<std::string> depends;
       fhg::util::split( plugin->descriptor()->depends
@@ -341,7 +393,10 @@ namespace fhg
       {
         if (! lookup_plugin(dep))
         {
-          throw std::runtime_error("dependency not available: " + dep);
+          if (0 != load_plugin_by_name (dep))
+          {
+            throw std::runtime_error("dependency not available: " + dep);
+          }
         }
       }
     }
