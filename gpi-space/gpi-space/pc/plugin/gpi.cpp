@@ -47,7 +47,7 @@ public:
     else
     {
       std::size_t retries_until_defer_startup
-        (fhg_kernel()->get<std::size_t>("retries_to_defer", "60"));
+        (fhg_kernel()->get<std::size_t>("retries_to_defer", "1"));
       if (0 == retries_until_defer_startup)
         retries_until_defer_startup = 1;
 
@@ -55,9 +55,11 @@ public:
 
       do
       {
+        retries_until_defer_startup--;
+
         connected = try_start();
 
-        if (! connected)
+        if (! connected && retries_until_defer_startup)
         {
           usleep(5000 * 1000);
         }
@@ -65,7 +67,7 @@ public:
         {
           break;
         }
-      } while (retries_until_defer_startup --> 0);
+      } while (true);
 
       if (! connected)
       {
