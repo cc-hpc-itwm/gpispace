@@ -126,8 +126,9 @@ namespace fhg
       void clear_search_path ();
       void get_search_path (search_path_t &);
 
-      int load_plugin (std::string const & file);
+      int load_plugin (std::string const & entity);
       int load_plugin_by_name (std::string const & name);
+      int load_plugin_from_file (std::string const & file);
       int unload_plugin (std::string const &name);
 
       fhg::plugin::Storage * storage();

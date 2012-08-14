@@ -95,6 +95,8 @@ namespace fhg
 
     int kernel_t::load_plugin_by_name (std::string const & name)
     {
+      lock_type load_plugin_lock (m_mtx_load_plugin);
+
       int ec = ENOENT;
 
       BOOST_FOREACH (std::string const &dir, m_search_path)
@@ -102,7 +104,7 @@ namespace fhg
         fs::path plugin_path (dir);
         plugin_path /= name + ".so";
 
-        MLOG (INFO, "trying: " << plugin_path);
+        DMLOG (TRACE, "trying: " << plugin_path);
 
         if (fs::exists (plugin_path))
         {
@@ -124,7 +126,7 @@ namespace fhg
       return ec;
     }
 
-    int kernel_t::load_plugin(std::string const & file)
+    int kernel_t::load_plugin_from_file (std::string const &file)
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
 
@@ -202,6 +204,18 @@ namespace fhg
       }
 
       return rc;
+    }
+
+    int kernel_t::load_plugin(std::string const & entity)
+    {
+      if (fs::exists (entity))
+      {
+        return load_plugin_from_file (entity);
+      }
+      else
+      {
+        return load_plugin_by_name (entity);
+      }
     }
 
     int kernel_t::unload_plugin (kernel_t::plugin_map_t::iterator p)
