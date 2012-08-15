@@ -1,5 +1,16 @@
 include(pnet_macros)
 
+pnet_compile(ufbmig_prepare prepare.xml
+  OUTPUT ufbmig_prepare.pnet
+  GENERATE ufbmig_prepare
+  CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/..
+           -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/sdpa
+           -O3
+  BUILD
+)
+
 pnet_compile(ufbmig_init init.xml
   OUTPUT ufbmig_init.pnet
   GENERATE ufbmig_init
@@ -7,7 +18,7 @@ pnet_compile(ufbmig_init init.xml
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
-	   -I${CMAKE_SOURCE_DIR}/sdpa
+           -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
   BUILD
 )
@@ -20,7 +31,7 @@ pnet_compile(ufbmig_init init.xml
 #            -I${CMAKE_SOURCE_DIR}/fhglog
 #            -I${CMAKE_BINARY_DIR}/fhglog
 #            -I${CMAKE_SOURCE_DIR}/fvm-pc
-# 	   -I${CMAKE_SOURCE_DIR}/sdpa
+#          -I${CMAKE_SOURCE_DIR}/sdpa
 #            -O3
 #   BUILD
 #   INSTALL libexec/apps/ufbmig
@@ -34,8 +45,8 @@ pnet_compile(ufbmig_calc calc.xml
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
-	   -I${CMAKE_SOURCE_DIR}/sdpa/plugin
-	   -I${CMAKE_SOURCE_DIR}/sdpa
+           -I${CMAKE_SOURCE_DIR}/sdpa/plugin
+           -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
 )
 
@@ -46,6 +57,6 @@ pnet_compile(ufbmig_done finalize.xml
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
-	   -I${CMAKE_SOURCE_DIR}/sdpa
+           -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
 )
