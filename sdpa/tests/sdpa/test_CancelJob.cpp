@@ -300,6 +300,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
+/*
 BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWEDrts )
 {
 	// topology:
@@ -345,6 +346,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWEDrts )
 
 	LOG( DEBUG, "The test case testCancelJobPath1AgentEmptyWE terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 {
@@ -600,7 +602,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrtsTree )
 	LOG( DEBUG, "The test case testAgentsAndDrtsTree terminated!");
 }
 
-
+/*
 BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentNoWE )
 {
   LOG( DEBUG, "testCancelJobPath1AgentNoWE");
@@ -829,5 +831,6 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath3AgentsEmptyWEExec )
 
   LOG( DEBUG, "The test case testCancelJobPath3AgentsEmptyWEExec terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
