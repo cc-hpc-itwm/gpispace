@@ -315,6 +315,7 @@ namespace we
           lock_t lock(mutex_);
           activity_.collect_output();
           activity_.set_cancelled (true);
+          activity_.set_finished (false);
         }
 
         std::size_t failure_counter () const
