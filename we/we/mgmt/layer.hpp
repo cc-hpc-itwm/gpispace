@@ -1045,8 +1045,38 @@ namespace we { namespace mgmt {
         }
         else if (desc->came_from_external())
         {
-          DLOG(INFO, "finished (" << desc->name() << ")-" << desc->id() << " external-id := " << desc->from_external_id());
-          ext_finished (desc->from_external_id(), policy::codec::encode (desc->activity()));
+          if (desc->activity ().is_failed ())
+          {
+            DLOG ( INFO
+                 , "failed (" << desc->name() << ")-" << desc->id()
+                 << " external-id := " << desc->from_external_id()
+                 );
+            ext_failed ( desc->from_external_id()
+                       , policy::codec::encode(desc->activity())
+                       , desc->error_code()
+                       , desc->error_message()
+                       );
+          }
+          else if (desc->activity ().is_cancelled ())
+          {
+            DLOG ( INFO
+                 , "cancelled (" << desc->name() << ")-" << desc->id()
+                 << " external-id := " << desc->from_external_id()
+                 );
+            ext_cancelled ( desc->from_external_id()
+                          //, policy::codec::encode (desc->activity())
+                          );
+          }
+          else
+          {
+            DLOG ( INFO
+                 , "finished (" << desc->name() << ")-" << desc->id()
+                 << " external-id := " << desc->from_external_id()
+                 );
+            ext_finished ( desc->from_external_id()
+                         , policy::codec::encode (desc->activity())
+                         );
+          }
         }
         else
         {
