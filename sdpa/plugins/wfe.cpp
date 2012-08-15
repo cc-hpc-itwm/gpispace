@@ -104,6 +104,17 @@ public:
       m_worker.reset();
     }
 
+    {
+      lock_type task_map_lock (m_mutex);
+      while (! m_task_map.empty ())
+      {
+        wfe_task_t *task = m_task_map.begin ()->second;
+        task->state = wfe_task_t::CANCELED;
+        task->error_message = "plugin shutdown";
+        task->done.notify(fhg::error::EXECUTION_CANCELLED);
+      }
+    }
+
     if (m_loader)
     {
       m_loader.reset();

@@ -230,6 +230,16 @@ public:
   FHG_PLUGIN_STOP()
   {
     // cancel running jobs etc.
+    {
+      lock_type job_map_lock (m_job_map_mutex);
+      map_of_jobs_t::iterator job_it (m_jobs.begin ());
+      while (job_it != m_jobs.end ())
+      {
+        m_wfe->cancel (job_it->first);
+        ++job_it;
+      }
+    }
+
     m_shutting_down = true;
 
     if (m_request_thread)
