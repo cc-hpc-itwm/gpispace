@@ -28,12 +28,21 @@ void test_start_stop_kernel ()
 
   // load some plugins
   krnl->load_plugin (hello_plugin.string());
+  BOOST_REQUIRE (krnl->is_plugin_loaded ("hello"));
+
   krnl->load_plugin (world_plugin.string());
+  BOOST_REQUIRE (krnl->is_plugin_loaded ("world"));
+
   krnl->load_plugin (helloworld_plugin.string());
+  BOOST_REQUIRE (krnl->is_plugin_loaded ("helloworld"));
 
   boost::this_thread::sleep (boost::posix_time::seconds(2));
 
   krnl->stop();
+  BOOST_REQUIRE (not krnl->is_plugin_loaded ("hello"));
+  BOOST_REQUIRE (not krnl->is_plugin_loaded ("world"));
+  BOOST_REQUIRE (not krnl->is_plugin_loaded ("helloworld"));
+
   krnl_thread.join();
   krnl->unload_all();
 }

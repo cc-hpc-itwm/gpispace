@@ -130,6 +130,7 @@ namespace fhg
       int load_plugin_by_name (std::string const & name);
       int load_plugin_from_file (std::string const & file);
       int unload_plugin (std::string const &name);
+      bool is_plugin_loaded (std::string const &name);
 
       fhg::plugin::Storage * storage();
       fhg::plugin::Storage * plugin_storage();
@@ -183,10 +184,13 @@ namespace fhg
       mutable mutex_type m_mtx_pending_tasks;
       mutable condition_type m_task_eligible;
       mutable mutex_type m_mtx_config;
+      mutable mutex_type m_mtx_stop;
+      mutable condition_type m_stopped;
 
       std::string m_state_path;
       time_t m_tick_time;
       bool m_stop_requested;
+      bool m_running;
       plugin_map_t m_plugins;
       plugin_map_t m_incomplete_plugins;
 
@@ -194,6 +198,7 @@ namespace fhg
       task_queue_t m_task_queue;
       config_t m_config;
 
+      mutable mutex_type m_mtx_storage;
       fhg::plugin::Storage *m_storage;
 
       boost::thread m_task_handler;

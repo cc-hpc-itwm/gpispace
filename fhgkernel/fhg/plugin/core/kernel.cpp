@@ -39,6 +39,7 @@ namespace fhg
       : m_state_path (state_path)
       , m_tick_time (5 * 100 * 1000)
       , m_stop_requested (false)
+      , m_running (false)
       , m_storage (0)
     {
       initialize_storage ();
@@ -141,10 +142,8 @@ namespace fhg
                                          )
                         );
       {
-        lock_type plugins_lock (m_mtx_plugins);
-        if (m_plugins.find(p->name()) != m_plugins.end())
+        if (is_plugin_loaded (p->name ()))
         {
-          // TODO: print descriptor of other plugin
           throw std::runtime_error
             ("another plugin with the same name is already loaded: " + p->name());
         }
@@ -243,8 +242,6 @@ namespace fhg
 
       int rc = p->second->stop();
 
-      LOG(TRACE, p->first << " plugin unloaded");
-
       for ( plugin_map_t::iterator it (m_plugins.begin())
           ; it != m_plugins.end()
           ; ++it
@@ -256,9 +253,17 @@ namespace fhg
         }
       }
 
+      LOG(TRACE, "plugin '" << p->first << "' unloaded");
+
       m_plugins.erase (p);
 
       return rc;
+    }
+
+    bool kernel_t::is_plugin_loaded (std::string const &name)
+    {
+      lock_type plugins_lock (m_mtx_plugins);
+      return m_plugins.find(name) != m_plugins.end();
     }
 
     static bool is_owner_of_task ( const std::string & p
@@ -466,7 +471,14 @@ namespace fhg
 
     void kernel_t::stop ()
     {
+      lock_type lock (m_mtx_stop);
+      if (! m_running)
+        return;
       m_stop_requested = true;
+      m_stopped.wait (lock);
+      m_running = false;
+
+      unload_all ();
     }
 
     void kernel_t::reset ()
@@ -476,10 +488,6 @@ namespace fhg
 
     fhg::plugin::Storage* kernel_t::storage ()
     {
-      if (!m_storage)
-      {
-        initialize_storage();
-      }
       return m_storage;
     }
 
@@ -490,8 +498,7 @@ namespace fhg
 
     void kernel_t::initialize_storage()
     {
-      if (m_storage)
-        return;
+      assert (0 == m_storage);
 
       if (! m_state_path.empty())
       {
@@ -505,19 +512,21 @@ namespace fhg
         {
           MLOG(ERROR, "could not create file storage: " << ex.what());
           MLOG(WARN, "falling back to null-storage, persistence layer is not available!");
-          m_storage = new fhg::plugin::core::NullStorage;
         }
       }
-      else
+
+      if (0 == m_storage)
       {
         m_storage = new fhg::plugin::core::NullStorage;
       }
 
       int ec = m_storage->add_storage("plugin");
-      if (ec)
+      if (0 != ec)
       {
-        throw std::runtime_error
-          (std::string("could not initialize `plugin' storage: ") + strerror(-ec));
+        delete m_storage;
+        MLOG(ERROR, "could not create 'plugin' storage area: " << strerror(ec));
+        MLOG(WARN, "falling back to null-storage, persistence layer is not available!");
+        m_storage = new fhg::plugin::core::NullStorage;
       }
     }
 
@@ -527,6 +536,9 @@ namespace fhg
       struct timeval tv_diff;
       struct timeval tv_end;
 
+      assert (! m_running);
+
+      m_running = true;
       m_task_handler = boost::thread (&kernel_t::task_handler, this);
 
       const bool daemonize
@@ -578,6 +590,12 @@ namespace fhg
 
       m_task_handler.interrupt();
       m_task_handler.join();
+
+      {
+        lock_type lock (m_mtx_stop);
+        m_stopped.notify_all ();
+        m_running = false;
+      }
 
       return 0;
     }
