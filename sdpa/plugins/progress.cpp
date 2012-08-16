@@ -86,7 +86,7 @@ public:
 
     if (max)
     {
-      *max = m_kvs->get<size_t>(get_key_for_maximum (name), 1);
+      *max = m_kvs->get<size_t>(get_key_for_maximum (name), 100);
     }
 
     return 0;
