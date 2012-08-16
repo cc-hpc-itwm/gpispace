@@ -74,3 +74,31 @@ fhg_add_plugin(ufbmig_test ufbmig_test.cpp
   COMPONENT plugins
   INSTALL
 )
+
+fhg_add_plugin(isim_dummy isim_dummy.cpp
+  EXPORTS ISIM
+  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+  HEADERS isim.hpp
+  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
+  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
+  COMPONENT plugins
+  INSTALL
+)
+
+fhg_add_plugin(isim isim.cpp
+  EXPORTS ISIM
+  LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
+                 ${HWLOC_SHARED_LIBRARY}
+                 ${LIBIRC_LIBRARY}
+                 ${LOG4CPP_LIBRARY}
+                 ${Boost_SERIALIZATION_SHARED_LIBRARY}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+  HEADERS isim.hpp
+  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
+  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
+  COMPONENT plugins
+  INSTALL
+)
