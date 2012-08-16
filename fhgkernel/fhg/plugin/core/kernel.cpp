@@ -159,7 +159,7 @@ namespace fhg
       mediator_ptr m
         (new PluginKernelMediator( p
                                  , this
-                                 , "control" == p->name()
+                                 , true // TODO: "control" == p->name()
                                  )
         );
 
