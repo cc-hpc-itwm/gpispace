@@ -1,6 +1,8 @@
 #ifndef FHG_PLUGIN_PLUGIN_KERNEL_MEDIATOR_HPP
 #define FHG_PLUGIN_PLUGIN_KERNEL_MEDIATOR_HPP 1
 
+#include <set>
+
 #include <fhg/plugin/kernel.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 
@@ -44,12 +46,13 @@ namespace fhg
 
       std::string const & get_name () const;
     private:
+      bool is_privileged () const;
       bool has_permission(int) const;
 
       fhg::core::plugin_t::ptr_t m_plugin;
       fhg::core::kernel_t *m_kernel;
       fhg::plugin::Storage *m_storage;
-      bool m_privileged;
+      std::set <int> m_permissions;
     };
   }
 }

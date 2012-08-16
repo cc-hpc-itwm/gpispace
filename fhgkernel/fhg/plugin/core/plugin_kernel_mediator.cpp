@@ -13,8 +13,14 @@ namespace fhg
     {
       enum code
         {
+          PRIVILEGED = 0,
+
           SHUTDOWN  = 50,
           TERMINATE = 100,
+
+          PLUGIN_MANAGEMENT = 200,
+          PLUGIN_LOAD = 201,
+          PLUGIN_UNLOAD = 202,
         };
     };
 
@@ -25,10 +31,14 @@ namespace fhg
       : m_plugin(p)
       , m_kernel(k)
       , m_storage (0)
-      , m_privileged(privileged)
     {
       assert (m_plugin);
       assert (m_kernel);
+
+      if (privileged)
+      {
+        m_permissions.insert (permission::PRIVILEGED);
+      }
     }
 
     int PluginKernelMediator::start ()
@@ -116,9 +126,21 @@ namespace fhg
       m_kernel->plugin_start_completed(m_plugin->name(), ec);
     }
 
+    bool PluginKernelMediator::is_privileged () const
+    {
+      return m_permissions.find (0) != m_permissions.end ();
+    }
+
+    bool PluginKernelMediator::has_permission (int p) const
+    {
+      return is_privileged () || m_permissions.find (p) != m_permissions.end ();
+    }
+
     int PluginKernelMediator::load_plugin (std::string const &path)
     {
-      if (m_privileged)
+      if (  has_permission (permission::PLUGIN_MANAGEMENT)
+         || has_permission (permission::PLUGIN_LOAD)
+         )
       {
         try
         {
@@ -136,14 +158,11 @@ namespace fhg
       }
     }
 
-    bool PluginKernelMediator::has_permission (int) const
-    {
-      return true;
-    }
-
     int PluginKernelMediator::unload_plugin (std::string const &name)
     {
-      if (m_privileged)
+      if (  has_permission (permission::PLUGIN_MANAGEMENT)
+         || has_permission (permission::PLUGIN_UNLOAD)
+         )
       {
         try
         {
@@ -163,7 +182,7 @@ namespace fhg
 
     int PluginKernelMediator::shutdown ()
     {
-      if (has_permission(permission::SHUTDOWN))
+      if (has_permission (permission::SHUTDOWN))
       {
         LOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
         m_kernel->stop();
