@@ -364,8 +364,6 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	ptrAgent0.reset();
 	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
 
-	boost::this_thread::sleep(boost::posix_time::seconds(1));
-
 	// now try to recover the system
 	sdpa::daemon::Agent::ptr_t ptrRecAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
 
@@ -467,8 +465,6 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 	ptrAgent0.reset();
 	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
 
-	//boost::this_thread::sleep(boost::posix_time::seconds(1));
-
 	// now try to recover the system
 	sdpa::daemon::Agent::ptr_t ptrRecAgent0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
 
@@ -518,8 +514,6 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	ptrAgent->shutdown(strBackupAgent);
 	ptrAgent.reset();
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	// now try to recover the system
 	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
