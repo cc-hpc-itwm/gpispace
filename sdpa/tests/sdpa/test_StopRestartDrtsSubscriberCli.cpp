@@ -337,7 +337,6 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-
 BOOST_AUTO_TEST_CASE( testStopRestartDrtsSubscr_EmptyWE)
 {
         LOG( DEBUG, "testStopRestartDrtsSubscr_EmptyWE");
@@ -365,13 +364,10 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsSubscr_EmptyWE)
 
         boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
-
         MLOG (INFO, "************ stopping drts_0");
         drts_0->stop();
         drts_0_thread.join();
         MLOG (INFO, "************ stopped drts_0");
-
-        boost::this_thread::sleep(boost::posix_time::seconds(3));
 
         // create new drts
         sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
@@ -422,13 +418,10 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsSubscr_RealWE)
 
         boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
-
         MLOG (INFO, "************ stopping drts_0");
         drts_0->stop();
         drts_0_thread.join();
         MLOG (INFO, "************ stopped drts_0");
-
-        boost::this_thread::sleep(boost::posix_time::seconds(3));
 
         // create new drts
         sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );

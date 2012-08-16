@@ -404,7 +404,6 @@ BOOST_AUTO_TEST_CASE( testStop_AgentWithDrts_push)
 	LOG( DEBUG, "The test case testStop_AgentWithDrts_push terminated!");
 }
 
-/*
 BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 {
 	LOG( DEBUG, "testStop_AgentNoWE_push");
@@ -553,6 +552,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	LOG( DEBUG, "The test case testStop_AgentRealWE_push terminated!");
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Req)
 {
 	LOG( DEBUG, "testStop_2AgentsAndDrts_Req");

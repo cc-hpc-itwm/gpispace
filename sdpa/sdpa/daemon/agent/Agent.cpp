@@ -55,7 +55,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  DMLOG(TRACE, "handleJobFinished(" << pEvt->job_id() << ")");
+  SDPA_LOG_INFO("Called handleJobFinished for the job " << pEvt->job_id());
 
   // send a JobFinishedAckEvent back to the worker/slave
   JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent( name()
@@ -162,6 +162,8 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 {
   //put the job into the state Finished
   JobId id(wfid);
+  SDPA_LOG_INFO( "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" finished!");
+
   Job::ptr_t pJob;
   try {
     pJob = jobManager()->findJob(id);
@@ -238,6 +240,8 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
 {
   //put the job into the state Finished
   JobId job_id(wfid);
+  SDPA_LOG_INFO( "The workflow engine has notified the agent "<<name()<<" that the job "<<job_id.str()<<" finished!");
+
   Job::ptr_t pJob;
   try {
     pJob = jobManager()->findJob(job_id);
@@ -459,8 +463,10 @@ bool Agent::failed( const id_type& wfid
                   , std::string const & reason
                   )
 {
-  //put the job into the state Failed
   JobId id(wfid);
+  SDPA_LOG_INFO( "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" failed!");
+  //put the job into the state Failed
+
   Job::ptr_t pJob;
   try {
     pJob = jobManager()->findJob(id);
