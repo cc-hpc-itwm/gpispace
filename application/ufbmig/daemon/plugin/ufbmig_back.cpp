@@ -56,7 +56,7 @@ namespace job
 
   static bool is_done(info_t const &info)
   {
-    return info.state < sdpa::status::RUNNING;
+    return info.state < sdpa::status::PENDING;
   }
 
   static int state_to_result_code (int state)
@@ -71,6 +71,9 @@ namespace job
   {
     switch (type)
     {
+    case job::type::PREPARE:
+      return "PREPARE";
+      break;
     case job::type::INITIALIZE:
       return "INITIALIZE";
       break;
@@ -491,12 +494,6 @@ public:
     {
       MLOG(WARN, "finalizing from invalid state: " << m_state);
       MLOG(WARN, "this will probably result in failed executions");
-    }
-
-    if (! fs::exists(m_file_with_config))
-    {
-      MLOG(INFO, "no config file found, finalize not possible!");
-      return -EINVAL;
     }
 
     MLOG(INFO, "submitting FINALIZE workflow");
