@@ -112,6 +112,8 @@ namespace fhg
           try
           {
             ec = load_plugin (plugin_path.string ());
+            if (0 == ec)
+              break;
           }
           catch (std::exception const &ex)
           {
