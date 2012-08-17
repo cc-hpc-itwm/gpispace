@@ -548,60 +548,6 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
 	LOG( DEBUG, "The test case testCancelAgentsNoDrtsTree terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( testAgentsAndDrtsTree )
-{
-	LOG( DEBUG, "***** testAgentsAndDrtsTree *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAg0->start_agent(false);
-
-	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_00", addrAgent, arrAgMaster, MAX_CAP );
-	ptrAg00->start_agent(false);
-
-	sdpa::daemon::Agent::ptr_t ptrAg01 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_01", addrAgent, arrAgMaster, MAX_CAP );
-	ptrAg01->start_agent(false);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( create_drts("drts_00", "agent_00") );
-	boost::thread drts_00_thread = boost::thread(&fhg::core::kernel_t::run, drts_00);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_01( create_drts("drts_01", "agent_01") );
-	boost::thread drts_01_thread = boost::thread(&fhg::core::kernel_t::run, drts_01);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
-
-	drts_00->stop();
-	drts_00_thread.join();
-
-	drts_01->stop();
-	drts_01_thread.join();
-
-	ptrAg00->shutdown();
-	ptrAg01->shutdown();
-
-	ptrAg0->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testAgentsAndDrtsTree terminated!");
-}
-
 /*
 BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentNoWE )
 {
