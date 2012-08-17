@@ -13,6 +13,10 @@ set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -W")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wall")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wextra")
 
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-warning-option")
+endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wnon-virtual-dtor")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-system-headers")
 
@@ -27,7 +31,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-deprecated-writable-strings")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unneeded-internal-declaration")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-overloaded-virtual")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-warning-option")
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
