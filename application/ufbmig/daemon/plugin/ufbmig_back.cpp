@@ -353,17 +353,15 @@ public:
 
   int initialize(std::string const &xml)
   {
-    update_progress(0);
-
     if (state::UNINITIALIZED != m_state)
     {
       MLOG(ERROR, "state mismatch: cannot initialize again in state: " << m_state);
       return -EINVAL;
     }
 
-    update_progress(25);
+    reset_progress ();
 
-    update_progress(75);
+    update_progress (75);
 
     MLOG(INFO, "submitting INITIALIZE workflow");
 
@@ -403,6 +401,8 @@ public:
       MLOG(WARN, "cannot update salt mask currently, invalid state: " << m_state);
       return -EAGAIN;
     }
+
+    reset_progress ();
 
     MLOG(TRACE, "writing new salt mask");
 
@@ -452,6 +452,8 @@ public:
       return -EAGAIN;
     }
 
+    reset_progress ();
+
     MLOG(INFO, "submitting CALCULATE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_calculate));
@@ -495,6 +497,8 @@ public:
       MLOG(WARN, "finalizing from invalid state: " << m_state);
       MLOG(WARN, "this will probably result in failed executions");
     }
+
+    reset_progress ();
 
     MLOG(INFO, "submitting FINALIZE workflow");
 
@@ -704,21 +708,37 @@ public:
     return -ENOSYS;
   }
 private:
-  void update_progress ()
+  void reset_progress ()
   {
     if (progress)
+    {
+      progress->initialize ("ufbmig", 100);
+    }
+    if (m_frontend)
+      m_frontend->update_progress (0);
+  }
+
+  void update_progress ()
+  {
+    if (progress && m_frontend)
     {
       size_t value; size_t max;
       if (0 == progress->current ("ufbmig", &value, &max))
       {
         int perc = (int)( (float)value / (float)max * 100.);
-        update_progress(perc);
+
+        m_frontend->update_progress(perc);
       }
     }
   }
 
   void update_progress (int v)
   {
+    if (progress)
+    {
+      progress->set ("ufbmig", v);
+    }
+
     if (m_frontend)
       m_frontend->update_progress(v);
   }
