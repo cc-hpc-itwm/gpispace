@@ -138,7 +138,9 @@ namespace fhg
       bool load_force (boost::lexical_cast<bool>(get("kernel.load.force", "0")));
       bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "1")));
 
-      plugin_t::ptr_t p (plugin_t::create( file
+      std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
+
+      plugin_t::ptr_t p (plugin_t::create( full_path_to_file
                                          , load_force
                                          , (load_lazy?RTLD_LAZY:RTLD_NOW)
                                          )
@@ -177,7 +179,10 @@ namespace fhg
           m_plugins.insert (std::make_pair(p->name(), m));
         }
 
-        MLOG(TRACE, p->name() << " plugin loaded");
+        MLOG( TRACE
+            , p->name() << " plugin loaded "
+            << "(from: " << full_path_to_file << ")"
+            );
 
         for ( plugin_map_t::iterator it (m_plugins.begin())
             ; it != m_plugins.end()
