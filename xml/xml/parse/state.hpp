@@ -80,8 +80,6 @@ namespace xml
         typedef expr::eval::context context_t;
 
       private:
-        mutable unsigned long _specialization_counter;
-
         ::xml::parse::type::requirements_type _requirements;
         search_path_type _search_path;
         gen_param_type _gen_ldflags;
@@ -241,8 +239,7 @@ namespace xml
 
       public:
         type (void)
-          : _specialization_counter (0)
-          , _search_path ()
+          : _search_path ()
           , _gen_ldflags ()
           , _gen_cxxflags ()
           , _in_progress ()
@@ -350,11 +347,6 @@ namespace xml
         const gen_param_type& gen_cxxflags (void) const
         {
           return _gen_cxxflags;
-        }
-
-        unsigned long unique_specialization_counter (void) const
-        {
-          return _specialization_counter++;
         }
 
         // ***************************************************************** //
