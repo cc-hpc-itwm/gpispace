@@ -131,64 +131,6 @@ static void initialize_specialization_0 ( void *
   put (output, "config", config);
 }
 
-static void initialize_specialization_2 ( void *
-                       , const we::loader::input_t & input
-                       , we::loader::output_t & output
-                       )
-{
-  const long & num_long (get<long>(input, "num_long"));
-
-  const size_t size (num_long * sizeof (long));
-
-  if (size % fvmGetNodeCount() != 0)
-    {
-      throw std::runtime_error ("BUMMER: size % fvmGetNodeCount() != 0");
-    }
-
-  if (size > fvmGetShmemSize())
-    {
-      throw std::runtime_error ("BUMMER: size > fvmGetShmemSize()");
-    }
-
-  const fvmAllocHandle_t handle (fvmGlobalAlloc (size / fvmGetNodeCount()));
-  const fvmAllocHandle_t scratch (fvmGlobalAlloc (size));
-
-  if (size > 0 && !handle)
-    {
-      throw std::runtime_error ("BUMMER: alloc (handle) returned 0");
-    }
-
-  if (size > 0 && !scratch)
-    {
-      throw std::runtime_error ("BUMMER: alloc (scratch) returned 0");
-    }
-
-  const long & seed (get<long>(input, "seed"));
-  const bool & _verify (get<bool>(input, "verify"));
-
-  if (_verify)
-    {
-      generate ((long *)fvmGetShmemPtr(), num_long, seed);
-
-      waitComm (fvmPutGlobalData (handle, 0, size, 0, scratch));
-    }
-
-  value::structured_t config;
-
-  config["handle"] = static_cast<long>(handle);
-  config["scratch"] = static_cast<long>(scratch);
-  config["sleeptime"] = get<long>(input, "sleeptime");
-  config["num_long"] = num_long;
-  config["seed"] = seed;
-  config["verify_all_mem"] = get<bool>(input, "verify_all_mem");
-  config["verify"] = _verify;
-  config["communicate"] = get<bool>(input, "communicate");
-
-  MLOG (INFO, "initialize: config " << config);
-
-  put (output, "config", config);
-}
-
 // ************************************************************************* //
 
 static void run_specialization_0 ( void *
@@ -362,39 +304,12 @@ static void finalize_specialization_0 ( void *
 
 // ************************************************************************* //
 
-static void finalize_specialization_2 ( void *
-                     , const we::loader::input_t & input
-                     , we::loader::output_t & output
-                     )
-{
-  MLOG (INFO, "finalize: call_cnt = " << call_cnt);
-
-  const fvmAllocHandle_t & handle (get<long> (input, "config", "handle"));
-  const fvmAllocHandle_t & scratch  (get<long> (input, "config", "scratch"));
-
-  if (handle)
-    {
-      fvmGlobalFree (handle);
-    }
-
-  if (scratch)
-    {
-      fvmGlobalFree (scratch);
-    }
-
-  put (output, "trigger", control());
-}
-
-// ************************************************************************* //
-
 WE_MOD_INITIALIZE_START (stresstest);
 {
   WE_REGISTER_FUN (initialize_specialization_0);
-  WE_REGISTER_FUN (initialize_specialization_2);
   WE_REGISTER_FUN (run_specialization_0);
   WE_REGISTER_FUN (run_specialization_2);
   WE_REGISTER_FUN (finalize_specialization_0);
-  WE_REGISTER_FUN (finalize_specialization_2);
 }
 WE_MOD_INITIALIZE_END (stresstest);
 
