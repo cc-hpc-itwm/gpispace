@@ -120,6 +120,7 @@ namespace fhg
             MLOG ( WARN
                  , "plugin '" << name
                  << "' could not be loaded from: " << plugin_path
+                 << " : " << ex.what ()
                  );
             ec = EFAULT;
           }
