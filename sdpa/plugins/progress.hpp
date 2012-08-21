@@ -12,7 +12,10 @@ namespace progress
     virtual ~Progress() {}
 
     virtual int set (const std::string &name, size_t value) = 0;
-    virtual int reset (const std::string &name, size_t max) = 0;
+    virtual int reset ( const std::string &name
+                      , const std::string &phase
+                      , size_t max
+                      ) = 0;
     virtual int get ( const std::string &name
                     , size_t *value
                     , size_t *max

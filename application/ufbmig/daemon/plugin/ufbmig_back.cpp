@@ -359,7 +359,7 @@ public:
       return -EINVAL;
     }
 
-    reset_progress ();
+    reset_progress ("initialize");
 
     update_progress (75);
 
@@ -402,7 +402,7 @@ public:
       return -EAGAIN;
     }
 
-    reset_progress ();
+    reset_progress ("update");
 
     MLOG(TRACE, "writing new salt mask");
 
@@ -452,7 +452,7 @@ public:
       return -EAGAIN;
     }
 
-    reset_progress ();
+    reset_progress ("migrate");
 
     MLOG(INFO, "submitting CALCULATE workflow");
 
@@ -498,7 +498,7 @@ public:
       MLOG(WARN, "this will probably result in failed executions");
     }
 
-    reset_progress ();
+    reset_progress ("finalize");
 
     MLOG(INFO, "submitting FINALIZE workflow");
 
@@ -708,11 +708,11 @@ public:
     return -ENOSYS;
   }
 private:
-  void reset_progress ()
+  void reset_progress (std::string const &phase)
   {
     if (progress)
     {
-      progress->reset ("ufbmig", 100);
+      progress->reset ("ufbmig", phase, 100);
     }
     if (m_frontend)
       m_frontend->update_progress (0);

@@ -61,16 +61,20 @@ public:
     }
     else
     {
-      return -EINVAL;
+      return -ESRCH;
     }
   }
 
-  int reset (std::string const &name, size_t max)
+  int reset ( std::string const &name
+            , std::string const &phase
+            , size_t max
+            )
   {
     assert (not name.empty());
 
     m_kvs->put ( get_key_for_current (name), 0);
     m_kvs->put ( get_key_for_maximum (name), max);
+    m_kvs->put ( get_key_for_phase   (name), phase);
 
     return 0;
   }
@@ -139,6 +143,11 @@ private:
     return m_prefix + "." + name + "." + "maximum";
   }
 
+  std::string get_key_for_phase (std::string const &name) const
+  {
+    return m_prefix + "." + name + "." + "phase";
+  }
+
   kvs::KeyValueStore *m_kvs;
   std::string m_prefix;
 };
@@ -178,11 +187,12 @@ size_t get_progress(const char *name)
    @param max the expected maximum value
 */
 int progress_reset ( const char *name
+                   , const char *phase
                    , size_t max
                    )
 {
   assert (global_progress);
-  return global_progress->reset (name, max);
+  return global_progress->reset (name, phase, max);
 }
 
 /**

@@ -26,6 +26,7 @@ extern "C"
      @param max the expected maximum value
    */
   int progress_reset ( const char *name
+                     , const char *phase
                      , size_t max
                      );
 
