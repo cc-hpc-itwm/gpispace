@@ -723,7 +723,7 @@ private:
     if (progress && m_frontend)
     {
       size_t value; size_t max;
-      if (0 == progress->current ("ufbmig", &value, &max))
+      if (0 == progress->get ("ufbmig", &value, &max))
       {
         int perc = (int)( (float)value / (float)max * 100.);
 

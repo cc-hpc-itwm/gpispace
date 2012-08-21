@@ -3,13 +3,18 @@
 
 #include <stddef.h>
 
+#ifdef __GNUC__
+#  define DEPRECATE_API(msg) __attribute__((deprecated))
+#else
+#  define DEPRECATE_API(msg)
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-  size_t set_progress(const char *name, size_t value);
-  size_t get_progress(const char *name);
+  size_t set_progress(const char *name, size_t value) DEPRECATE_API ("please use progress_reset(name, max) and progress_tick(name) instead");
+  size_t get_progress(const char *name) DEPRECATE_API ("please use progress_reset(name, max) and progress_tick(name) instead");
 
   /**
      Resets a progress counter.
@@ -31,7 +36,7 @@ extern "C"
      @param value store the current value in *value
      @return -ESRCH when not found, -EINVAL when not a progress counter
    */
-  int progress_current (const char *name, size_t * value);
+  int progress_get (const char *name, size_t * value);
 
   /**
      Count one tick on the given progress counter.
@@ -52,7 +57,7 @@ extern "C"
      @param name the name of the progress counter
      @return -EINVAL when not a counter
    */
-  int progress_n_tick (const char *name, int inc);
+  int progress_tick_n (const char *name, int inc);
 
   /**
      Set a progress counter to its maximum value.
