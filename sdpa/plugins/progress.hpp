@@ -12,7 +12,7 @@ namespace progress
     virtual ~Progress() {}
 
     virtual int set (const std::string &name, size_t value) = 0;
-    virtual int initialize (const std::string &name, size_t max) = 0;
+    virtual int reset (const std::string &name, size_t max) = 0;
     virtual int current (const std::string &name, size_t *value, size_t *max) const = 0;
     virtual int finalize (const std::string &name) = 0;
     virtual int tick (const std::string &name, size_t step) = 0;

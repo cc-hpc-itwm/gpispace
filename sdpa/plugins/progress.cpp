@@ -65,7 +65,7 @@ public:
     }
   }
 
-  int initialize (std::string const &name, size_t max)
+  int reset (std::string const &name, size_t max)
   {
     assert (not name.empty());
 
@@ -109,9 +109,12 @@ public:
   {
     assert (not name.empty());
 
-    if (step > (size_t)std::numeric_limits<int>::max())
+    size_t cur, max;
+    current (name, &cur, &max);
+
+    if (max && (cur + step) > max)
     {
-      return -EOVERFLOW;
+      m_kvs->put (get_key_for_current (name), max);
     }
     else
     {
@@ -163,6 +166,75 @@ size_t get_progress(const char *name)
   {
     return 0;
   }
+}
+
+/**
+   Resets a progress counter.
+
+   The current value will be set to 0 and the maximum number of expected steps
+   will be set to 'max'.
+
+   @param name the name of the progress counter
+   @param max the expected maximum value
+*/
+int progress_reset ( const char *name
+                   , size_t max
+                   )
+{
+  assert (global_progress);
+  return global_progress->reset (name, max);
+}
+
+/**
+   Get the current value of the progress counter.
+
+   @param name the name of the progress counter
+   @param value store the current value in *value
+   @return -ESRCH when not found, -EINVAL when not a progress counter
+*/
+int progress_current (const char *name, size_t * value)
+{
+  assert (global_progress);
+  return global_progress->current (name, value, 0);
+}
+
+/**
+   Count one tick on the given progress counter.
+
+   The current value of the counter will be increased by one.
+
+   @param name the name of the progress counter
+   @return -EINVAL when not a counter
+*/
+int progress_tick (const char *name)
+{
+  return progress_n_tick (name, 1);
+}
+
+/**
+   Count 'inc' ticks on the given progress counter.
+
+   The current  value of the counter  will be increased by  'inc'. The counter
+   does not check for overflow, it may happen that it over-counts.
+
+   @param name the name of the progress counter
+   @return -EINVAL when not a counter
+*/
+int progress_n_tick (const char *name, int inc)
+{
+  assert (global_progress);
+  return global_progress->tick (name, inc);
+}
+
+/**
+   Set a progress counter to its maximum value.
+
+   @return -EINVAL when not a counter
+*/
+int progress_finalize (const char *name)
+{
+  assert (global_progress);
+  return global_progress->finalize (name);
 }
 
 

@@ -90,7 +90,7 @@
                        )
                      );
 
-            set_progress("ufbmig", (progress_counter++) % 100); // 50 of 100
+            progress_tick ("ufbmig");
           ]]></code>
         </module>
       </defun>

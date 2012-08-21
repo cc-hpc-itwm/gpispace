@@ -12,7 +12,7 @@ extern "C"
   size_t get_progress(const char *name);
 
   /**
-     Initializes a progress counter.
+     Resets a progress counter.
 
      The current value will be set to 0 and the maximum number of expected steps
      will be set to 'max'.
@@ -20,9 +20,9 @@ extern "C"
      @param name the name of the progress counter
      @param max the expected maximum value
    */
-  int progress_initialize ( const char *name
-                          , size_t max
-                          );
+  int progress_reset ( const char *name
+                     , size_t max
+                     );
 
   /**
      Get the current value of the progress counter.

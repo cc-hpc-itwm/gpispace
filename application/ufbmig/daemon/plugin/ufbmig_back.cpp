@@ -712,7 +712,7 @@ private:
   {
     if (progress)
     {
-      progress->initialize ("ufbmig", 100);
+      progress->reset ("ufbmig", 100);
     }
     if (m_frontend)
       m_frontend->update_progress (0);
