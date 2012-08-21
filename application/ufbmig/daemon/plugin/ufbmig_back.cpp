@@ -725,6 +725,9 @@ private:
       size_t value; size_t max;
       if (0 == progress->get ("ufbmig", &value, &max))
       {
+        if (value > max)
+          value = max;
+
         int perc = (int)( (float)value / (float)max * 100.);
 
         m_frontend->update_progress(perc);
