@@ -45,7 +45,7 @@ public:
     assert (not name.empty());
 
     size_t cur_value, max_value;
-    if (0 == current(name, &cur_value, &max_value))
+    if (0 == get (name, &cur_value, &max_value))
     {
       if (value <= max_value)
       {
@@ -75,7 +75,7 @@ public:
     return 0;
   }
 
-  int current (std::string const &name, size_t *value, size_t *max) const
+  int get (std::string const &name, size_t *value, size_t *max) const
   {
     assert (not name.empty());
 
@@ -97,7 +97,7 @@ public:
     assert (not name.empty());
 
     size_t max;
-    if (0 == current (name, 0, &max))
+    if (0 == get (name, 0, &max))
     {
       return set (name, max);
     }
@@ -105,12 +105,12 @@ public:
     return -ESRCH;
   }
 
-  int tick (std::string const &name, size_t step)
+  int tick (std::string const &name, int step)
   {
     assert (not name.empty());
 
     size_t cur, max;
-    current (name, &cur, &max);
+    get (name, &cur, &max);
 
     if (max && (cur + step) > max)
     {
@@ -158,7 +158,7 @@ size_t set_progress(const char *name, size_t value)
 size_t get_progress(const char *name)
 {
   size_t value; size_t max;
-  if (0 == global_progress->current(name, &value, &max))
+  if (0 == global_progress->get (name, &value, &max))
   {
     return (int)( (float)value / max) * 100;
   }
@@ -195,7 +195,7 @@ int progress_reset ( const char *name
 int progress_current (const char *name, size_t * value)
 {
   assert (global_progress);
-  return global_progress->current (name, value, 0);
+  return global_progress->get (name, value, 0);
 }
 
 /**
