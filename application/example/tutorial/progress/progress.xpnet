@@ -8,6 +8,18 @@
     <place name="n" type="long"/>
     <place name="done" type="control"/>
 
+    <place name="application" type="string">
+      <token>
+        <value type="string">"progress"</value>
+      </token>
+    </place>
+
+    <place name="phase" type="string">
+      <token>
+        <value type="string">"work"</value>
+      </token>
+    </place>
+
     <include-template href="template/dup.xpnet"/>
     <specialize name="dup_long" use="dup">
       <type-map replace="T" with="long"/>
@@ -18,19 +30,48 @@
       <type-map replace="T" with="long"/>
     </specialize>
 
-    <place name="n_copy" type="long"/>
+    <place name="n_init" type="long"/>
     <place name="wait" type="long"/>
 
     <transition name="dup">
       <use name="dup_long"/>
       <connect-in port="x" place="n"/>
-      <connect-out port="a" place="n_copy"/>
+      <connect-out port="a" place="n_init"/>
       <connect-out port="b" place="wait"/>
     </transition>
 
+    <transition name="init">
+      <defun>
+        <in name="ticks" type="long" />
+        <in name="app" type="string" />
+        <in name="phase" type="string" />
+        <out name="ticks" type="long" />
+
+        <module name="progress_example" function="ticks initialize (ticks, app, phase)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhg/plugins/progress.h"/>
+
+          <code><![CDATA[
+          MLOG (INFO, "initializing progress counter");
+
+          progress_reset (app.c_str (), phase.c_str (), ticks);
+
+          return ticks;
+          ]]></code>
+        </module>
+      </defun>
+
+      <connect-read port="app" place="application" />
+      <connect-in port="phase" place="phase" />
+      <connect-in port="ticks" place="n_init" />
+      <connect-out port="ticks" place="n_work" />
+    </transition>
+
+    <place name="n_work" type="long" />
+
     <transition name="generate" inline="true">
       <include-function href="sequence/sequence_forward.xpnet"/>
-      <connect-in port="n" place="n_copy"/>
+      <connect-in port="n" place="n_work"/>
       <connect-out port="i" place="i"/>
     </transition>
 
@@ -43,11 +84,61 @@
       <connect-out port="o" place="o"/>
     </transition>
 
+    <place name="wait_in" type="long" />
+
+    <transition name="tick">
+      <defun>
+        <in name="trigger" type="long" />
+        <in name="app" type="string" />
+        <out name="trigger" type="long" />
+
+        <module name="progress_example" function="trigger (trigger, app)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhg/plugins/progress.h"/>
+
+          <code><![CDATA[
+          MLOG (INFO, "tick: " << trigger);
+
+          progress_tick (app.c_str ());
+          ]]></code>
+        </module>
+      </defun>
+
+      <connect-read port="app" place="application" />
+      <connect-in port="trigger" place="o" />
+      <connect-out port="trigger" place="wait_in" />
+    </transition>
+
+    <place name="done_wait" type="control" />
+
     <transition name="wait" inline="true">
       <use name="wait_long"/>
-      <connect-in port="object" place="o"/>
-      <connect-out port="done" place="done"/>
+      <connect-in port="object" place="wait_in"/>
+      <connect-out port="done" place="done_wait"/>
       <place-map virtual="num" real="wait"/>
+    </transition>
+
+    <transition name="finalize">
+      <defun>
+        <in name="trigger" type="control" />
+        <in name="app" type="string" />
+        <out name="trigger" type="control" />
+
+        <module name="progress_example" function="trigger finalize (trigger, app)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhg/plugins/progress.h"/>
+
+          <code><![CDATA[
+          MLOG (INFO, "tick: " << trigger);
+
+          progress_finalize (app.c_str ());
+          ]]></code>
+        </module>
+      </defun>
+
+      <connect-in port="app" place="application" />
+      <connect-in port="trigger" place="done_wait" />
+      <connect-out port="trigger" place="done" />
     </transition>
 
   </net>
