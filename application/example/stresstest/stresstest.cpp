@@ -73,7 +73,7 @@ using we::loader::get;
 
 // ************************************************************************* //
 
-static void initialize_specialization_0 ( void *
+static void initialize ( void *
                        , const we::loader::input_t & input
                        , we::loader::output_t & output
                        )
@@ -133,7 +133,7 @@ static void initialize_specialization_0 ( void *
 
 // ************************************************************************* //
 
-static void run_specialization_0 ( void *
+static void run ( void *
                 , const we::loader::input_t & input
                 , we::loader::output_t & output
                 )
@@ -206,80 +206,7 @@ static void run_specialization_0 ( void *
 
 // ************************************************************************* //
 
-static void run_specialization_2 ( void *
-                , const we::loader::input_t & input
-                , we::loader::output_t & output
-                )
-{
-  ++call_cnt;
-
-  const fvmAllocHandle_t & handle (get<long> (input, "config", "handle"));
-  const fvmAllocHandle_t & scratch  (get<long> (input, "config", "scratch"));
-  const long & sleeptime (get<long> (input, "config", "sleeptime"));
-  const long & seed (get<long>(input, "config", "seed"));
-  const long & num_long (get<long>(input, "config", "num_long"));
-  const bool & verify_all_mem (get<bool>(input, "config", "verify_all_mem"));
-  const bool & _verify (get<bool>(input, "config", "verify"));
-  const bool & _communicate (get<bool>(input, "config", "communicate"));
-
-  const size_t size (num_long * sizeof (long));
-
-  const int rank (fvmGetRank());
-
-  if (verify_all_mem)
-    {
-      memset (fvmGetShmemPtr(), rank, fvmGetShmemSize());
-    }
-  else if (_verify)
-    {
-      memset (fvmGetShmemPtr(), rank, size);
-    }
-
-  if (_communicate)
-    {
-      waitComm (fvmGetGlobalData (handle, 0, size, 0, scratch));
-    }
-
-  if (_verify)
-    {
-      verify ((long *)fvmGetShmemPtr(), num_long, seed);
-    }
-
-  if (verify_all_mem && fvmGetShmemSize() > size)
-    {
-      MLOG ( INFO
-           , "verifiying mem behind data ("
-           << fvmGetShmemSize() - size
-           << " bytes)"
-           << " to contain the value " << rank
-           );
-
-      char * a ((char *)fvmGetShmemPtr() + size);
-
-      for (size_t i (size); i < fvmGetShmemSize(); ++i, ++a)
-        {
-          if (*a != rank)
-            {
-              std::ostringstream s;
-
-              s << "BUMMER! memory behind data corrupted: "
-                << " expected in slot " << i << " the value " << rank
-                << " but got the value " << *a
-                ;
-
-              throw std::runtime_error (s.str());
-            }
-        }
-    }
-
-  usleep (sleeptime);
-
-  put (output, "done", control());
-}
-
-// ************************************************************************* //
-
-static void finalize_specialization_0 ( void *
+static void finalize ( void *
                      , const we::loader::input_t & input
                      , we::loader::output_t & output
                      )
@@ -306,10 +233,9 @@ static void finalize_specialization_0 ( void *
 
 WE_MOD_INITIALIZE_START (stresstest);
 {
-  WE_REGISTER_FUN (initialize_specialization_0);
-  WE_REGISTER_FUN (run_specialization_0);
-  WE_REGISTER_FUN (run_specialization_2);
-  WE_REGISTER_FUN (finalize_specialization_0);
+  WE_REGISTER_FUN (initialize);
+  WE_REGISTER_FUN (run);
+  WE_REGISTER_FUN (finalize);
 }
 WE_MOD_INITIALIZE_END (stresstest);
 
