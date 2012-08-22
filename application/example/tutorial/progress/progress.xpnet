@@ -87,6 +87,8 @@
     <place name="wait_in" type="long" />
 
     <transition name="tick">
+      <require key="PROGRESS" mandatory="false" />
+
       <defun>
         <in name="trigger" type="long" />
         <in name="app" type="string" />
@@ -114,6 +116,8 @@
     <place name="done_wait" type="control" />
 
     <transition name="wait" inline="true">
+      <require key="WORK" mandatory="false" />
+
       <use name="wait_long"/>
       <connect-in port="object" place="wait_in"/>
       <connect-out port="done" place="done_wait"/>

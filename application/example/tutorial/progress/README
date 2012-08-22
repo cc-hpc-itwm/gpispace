@@ -9,3 +9,6 @@ if you also want to view the progress bar, you will need the key value store:
 	$ sdpa start kvs
 	$ fhgkernel -L $SDPA_HOME/libexec/fhg/plugins progress wfe_eval -s plugin.wfe.library_path="$PWD/gen/pnetc/op" < progress.pnet.put
 	$ ./progress.sh progress-example
+
+start sdpa with:
+	$ $SDPA_HOME/libexec/sdpa/scripts/start-sdpa -S ~/.sdpa/state -C PROGRESS:1x1 -C WORK:4
