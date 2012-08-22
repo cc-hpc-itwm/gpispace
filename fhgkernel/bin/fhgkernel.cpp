@@ -371,7 +371,9 @@ int main(int ac, char **av)
   {
     try
     {
-      kernel->load_plugin (p);
+      int ec = kernel->load_plugin (p);
+      if (ec != 0)
+        throw std::runtime_error (strerror (ec));
     }
     catch (std::exception const &ex)
     {
