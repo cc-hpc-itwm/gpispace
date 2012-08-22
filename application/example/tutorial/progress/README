@@ -1,0 +1,11 @@
+Progress Example
+================
+
+compile as usual, but run it like this:
+	$ fhgkernel -L $SDPA_HOME/libexec/fhg/plugins kvs_dummy progress wfe_eval -s plugin.wfe.library_path="$PWD/gen/pnetc/op" < progress.pnet.put
+
+if you also want to view the progress bar, you will need the key value store:
+
+	$ sdpa start kvs
+	$ fhgkernel -L $SDPA_HOME/libexec/fhg/plugins progress wfe_eval -s plugin.wfe.library_path="$PWD/gen/pnetc/op" < progress.pnet.put
+	$ ./progress.sh progress-example
