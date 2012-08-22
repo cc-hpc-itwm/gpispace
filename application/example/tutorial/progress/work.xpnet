@@ -9,6 +9,7 @@
     <place name="o" type="long"/>
 
     <transition name="step_1">
+      <require key="WORK" mandatory="true" />
       <defun>
         <inout name="v" type="long"/>
         <module name="work" function="step_1 (v)">
@@ -25,6 +26,7 @@
     <place name="s1" type="long"/>
 
     <transition name="step_2">
+      <require key="WORK" mandatory="true" />
       <defun>
         <inout name="v" type="long"/>
         <module name="work" function="step_2 (v)">
