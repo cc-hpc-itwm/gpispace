@@ -2,6 +2,8 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/util/bool_io.hpp>
+
 #include <fhgcom/kvs/kvsc.hpp>
 
 class KeyValueStorePlugin : FHG_PLUGIN
@@ -12,6 +14,10 @@ public:
   {
     m_host = fhg_kernel()->get("host", "localhost");
     m_port = fhg_kernel()->get("port", "2439");
+    m_ping_interval =
+      fhg_kernel ()->get<unsigned int> ("ping", 10);
+    m_terminate_on_connection_failure =
+      fhg_kernel ()->get<fhg::util::bool_t> ("terminate", "true");
 
     MLOG( INFO
         , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
@@ -60,12 +66,31 @@ public:
     return fhg::com::kvs::inc(k, step);
   }
 
+  bool       ping () const
+  {
+    try
+    {
+      return fhg::com::kvs::ping ();
+    }
+    catch (std::exception const &)
+    {
+      return false;
+    }
+  }
 private:
   void async_start ()
   {
     try
     {
       fhg::com::kvs::global::get_kvs_info().start();
+
+      if (m_ping_interval)
+        fhg_kernel ()->schedule ( "kvs_ping"
+                                , boost::bind ( &KeyValueStorePlugin::kvs_ping
+                                              , this
+                                              )
+                                , m_ping_interval
+                                );
     }
     catch (std::exception const & ex)
     {
@@ -81,8 +106,30 @@ private:
     }
   }
 
-  std::string m_host;
-  std::string m_port;
+  void kvs_ping ()
+  {
+    if (! this->ping ())
+    {
+      if (m_terminate_on_connection_failure)
+      {
+        MLOG (WARN, "lost connection to KVS, terminating...");
+        fhg_kernel ()->shutdown ();
+        return;
+      }
+    }
+
+    fhg_kernel ()->schedule ( "kvs_ping"
+                            , boost::bind ( &KeyValueStorePlugin::kvs_ping
+                                          , this
+                                          )
+                            , m_ping_interval
+                            );
+  }
+
+  std::string  m_host;
+  std::string  m_port;
+  unsigned int m_ping_interval;
+  bool         m_terminate_on_connection_failure;
 };
 
 
