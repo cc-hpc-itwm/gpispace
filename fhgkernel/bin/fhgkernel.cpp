@@ -135,6 +135,11 @@ void sigchild_hdlr(int sig_num, siginfo_t * info, void * ucontext)
     kernel->schedule("kernel", "wait_on_child", &handle_sig_child);
 }
 
+void sigint_hdlr(int sig_num, siginfo_t *info, void *ucontext)
+{
+  shutdown_kernel ();
+}
+
 void install_signal_handler()
 {
   struct sigaction sigact;
@@ -187,6 +192,17 @@ void install_signal_handler()
   {
     fprintf(stderr, "error setting signal handler for %d (%s)\n",
            SIGTERM, strsignal(SIGTERM));
+
+    exit(EXIT_FAILURE);
+  }
+
+  sigact.sa_sigaction = sigint_hdlr;
+  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+
+  if (sigaction(SIGINT, &sigact, (struct sigaction *)NULL) != 0)
+  {
+    fprintf(stderr, "error setting signal handler for %d (%s)\n",
+           SIGINT, strsignal(SIGINT));
 
     exit(EXIT_FAILURE);
   }
