@@ -167,6 +167,13 @@ namespace fhg
             return fhg::com::kvs::message::error ();
           }
 
+          fhg::com::kvs::message::type
+          operator () (fhg::com::kvs::message::msg_ping const & m)
+          {
+            DLOG(TRACE, "ping ()");
+            return fhg::com::kvs::message::error ();
+          }
+
           template <typename T>
           fhg::com::kvs::message::type
           operator () (T const &)

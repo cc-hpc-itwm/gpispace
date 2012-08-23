@@ -186,6 +186,19 @@ namespace fhg
                     );
             DLOG(TRACE, "term("<< code << ", " << reason << ") := " << m);
           }
+
+          bool ping ()
+          {
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::msg_ping()
+                    , m
+                    );
+            DLOG(TRACE, "ping() := " << m);
+            return boost::get<fhg::com::kvs::message::error*> (&m) != 0;
+          }
         private:
           mutable boost::recursive_mutex mtx_;
           mutable tcp_client kvs_;
@@ -359,6 +372,12 @@ namespace fhg
       }
 
       typedef fhg::com::kvs::message::list::map_type values_type;
+
+      inline
+      bool ping ()
+      {
+        return global_kvs ().ping ();
+      }
 
       inline
       void put (values_type const & e)
