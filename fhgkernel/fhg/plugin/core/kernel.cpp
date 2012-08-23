@@ -479,14 +479,11 @@ namespace fhg
 
     void kernel_t::stop ()
     {
-      lock_type lock (m_mtx_stop);
       if (! m_running)
+      {
         return;
+      }
       m_stop_requested = true;
-      m_stopped.wait (lock);
-      m_running = false;
-
-      unload_all ();
     }
 
     void kernel_t::reset ()
@@ -599,11 +596,9 @@ namespace fhg
       m_task_handler.interrupt();
       m_task_handler.join();
 
-      {
-        lock_type lock (m_mtx_stop);
-        m_stopped.notify_all ();
-        m_running = false;
-      }
+      unload_all ();
+
+      m_running = false;
 
       return 0;
     }
