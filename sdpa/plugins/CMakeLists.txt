@@ -21,6 +21,18 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp
   COMPONENT plugins
 )
 
+fhg_add_plugin(kvsd kvsd.cpp
+  EXPORTS KVSD
+  LINK_LIBRARIES ${FhgCom_LIBRARY}
+                 ${Boost_SERIALIZATION_SHARED_LIBRARY}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
+  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
+  COMPONENT plugins
+)
+
 fhg_add_plugin(kvs kvs.cpp
   EXPORTS KVS
   LINK_LIBRARIES ${FhgCom_LIBRARY}

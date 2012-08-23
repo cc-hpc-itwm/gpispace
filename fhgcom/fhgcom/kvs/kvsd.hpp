@@ -341,6 +341,8 @@ namespace fhg
 
           void save (std::string const & file) const
           {
+            if (file.empty ()) return;
+
             std::ofstream ofs (file.c_str());
             if (ofs)
             {
