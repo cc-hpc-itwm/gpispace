@@ -135,6 +135,8 @@ public:
     m_message_thread.interrupt();
     m_message_thread.join ();
 
+    m_backend->stop ();
+
     FHG_PLUGIN_STOPPED();
   }
 
