@@ -8,20 +8,20 @@
 
     <transition name="read_config" inline="true">
       <defun>
-	<in name="config" type="config"/>
-	<out name="config" type="config"/>
-	<module name="ufbmig_update_salt_mask" function="read_config_two (config)">
-	  <cinclude href="fhglog/fhglog.hpp"/>
+        <in name="config" type="config"/>
+        <out name="config" type="config"/>
+        <module name="ufbmig_update_salt_mask" function="read_config_two (config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
-	  <cinclude href="util/rw.hpp"/>
+          <cinclude href="util/rw.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="InterMig/intermigjob.h"/>
           <cinclude href="InterMig/SDPA/src/modules.h"/>
           <cinclude href="InterMig/SDPA/simulation/src/velocityhandler.h"/>
-	  <code><![CDATA[
-	  MLOG (INFO, "read_config_two with config " << config);
-	  ]]></code>
-	</module>
+          <code><![CDATA[
+          MLOG (INFO, "read_config_two with config " << config);
+          ]]></code>
+        </module>
       </defun>
       <connect-in port="config" place="config_in"/>
       <connect-out port="config" place="config_read"/>
@@ -146,7 +146,7 @@
                       , 0
                       , config.size.alloc.compressed_mask
                       , config.handle.shmem.free
-                      , static_cast<fvmAllocHandle_t> (config.handle.scratch.compressed_mask)
+                      , 0
                     )
                   );
 
@@ -156,11 +156,11 @@
                  MyHandler.PreloadSaltMask(Job,
                                            n,
                                            config.handle.data.coarse_vel,
-                                           config.handle.scratch.coarse_vel,
+                                           config.handle.scratch.coarse_vel, // not valid anymore
                                            config.handle.data.coarse_mask,
-                                           config.handle.scratch.coarse_mask,
+                                           config.handle.scratch.coarse_mask, // not valid anymore
                                            config.handle.data.fine_any,
-                                           config.handle.scratch.fine_any,
+                                           config.handle.scratch.fine_any, // not valid anymore
                                            config.handle.shmem.free + config.size.alloc.compressed_mask,
                                            static_cast<char*>(fvmGetShmemPtr()) + config.handle.shmem.free ,
                                            config.size.alloc.compressed_mask
@@ -230,17 +230,17 @@
 
     <transition name="finalize">
       <defun>
- 	<in name="config" type="config"/>
+        <in name="config" type="config"/>
         <in name="m" type="long"/>
         <in name="eaten" type="control"/>
         <out name="void" type="control"/>
-	<module name="ufbmig_update_salt_mask" function="void finalize_two (config, m, eaten)">
-	  <cinclude href="fhglog/fhglog.hpp"/>
-	  <cinclude href="util/rw.hpp"/>
+        <module name="ufbmig_update_salt_mask" function="void finalize_two (config, m, eaten)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/rw.hpp"/>
           <cinclude href="InterMig/SDPA/src/modules.h"/>
           <cinclude href="InterMig/SDPA/simulation/src/velocityhandler.h"/>
-	  <code><![CDATA[
-	  MLOG (INFO, "finalize ");
+          <code><![CDATA[
+          MLOG (INFO, "finalize ");
 
           InterMigJob Job;
           sli_property_handler SLIHandler;
@@ -259,8 +259,8 @@
           MLOG (INFO, "Call MyHandler.WriteToFile " );
           int ierr = MyHandler.WriteToFile( Job.VelFile );
           return control();
-	  ]]></code>
-	</module>
+          ]]></code>
+        </module>
 <!--        <expression>
           ${finalized} := []
         </expression> -->

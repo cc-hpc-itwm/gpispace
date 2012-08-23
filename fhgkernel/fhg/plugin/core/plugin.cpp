@@ -221,7 +221,9 @@ namespace fhg
       handle = dlopen(filename.c_str(), RTLD_GLOBAL | flags);
       if (!handle)
       {
-        throw std::runtime_error("dlopen() failed: " + filename + dlerror());
+        std::string msg ("dlopen () failed: ");
+        msg += dlerror ();
+        throw std::runtime_error(msg);
       }
 
       dlerror();

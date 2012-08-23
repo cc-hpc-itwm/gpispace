@@ -40,7 +40,7 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="string"/>
-	  <cinclude href="plugins/progress.h"/>
+          <cinclude href="plugins/progress.h"/>
           <code><![CDATA[
             // use a demo progress thingy
             static int progress_counter = 0;
@@ -86,11 +86,11 @@
                        , interval.offset
                        , interval.used
                        , 0
-                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
+                       , 0
                        )
                      );
 
-            set_progress("ufbmig", (progress_counter++) % 100); // 50 of 100
+            progress_tick ("ufbmig");
           ]]></code>
         </module>
       </defun>

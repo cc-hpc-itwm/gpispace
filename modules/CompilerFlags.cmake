@@ -13,6 +13,12 @@ set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -W")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wall")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wextra")
 
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-warning-option")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-parentheses")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-constant-logical-operand")
+endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wnon-virtual-dtor")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-system-headers")
 

@@ -1,3 +1,5 @@
+#include "isim.hpp"
+#include "ufbmig_msg_types.hpp"
 #include "ufbmig_front.hpp"
 #include "ufbmig_back.hpp"
 
@@ -14,11 +16,6 @@
 #include <iostream>
 #include <functional>
 
-#include "ServerCommunication.h"
-#include "Server.h"
-#include "Message.h"
-#include "ServerSettings.hpp"
-
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
@@ -26,69 +23,9 @@
 #include "observable.hpp"
 #include "observer.hpp"
 
-static const std::string SERVER_APP_NAME("Interactive Migration");
-static const std::string SERVER_APP_VERS("1.0.0");
-
 typedef boost::recursive_mutex mutex_type;
 typedef boost::unique_lock<mutex_type> lock_type;
 typedef boost::condition_variable_any condition_type;
-
-typedef boost::shared_ptr<PSProMigIF::Message> PSProMessagePtr;
-
-static void my_free(void *ptr)
-{
-  free(ptr);
-}
-
-namespace client { namespace command {
-    // sent by the GUI to us
-    enum code
-      {
-        INITIALIZE             = 0,
-        MIGRATE                = 1,
-        MIGRATE_WITH_SALT_MASK = 2,
-        SALT_MASK              = 3,
-        ABORT                  = 4,
-        FINALIZE               = 5,
-
-        NUM_COMMANDS
-      };
-  }
-}
-
-namespace server { namespace command {
-    // we might send those
-    enum code
-      {
-        WAITING_FOR_INITIALIZE = 0,
-
-        INITIALIZING = 1,
-        INITIALIZE_SUCCESS = 2,
-        INITIALIZE_FAILURE = 3,
-
-        MIGRATING = 4,
-        MIGRATE_SUCCESS = 5,
-        MIGRATE_FAILURE = 6,
-
-        FINALIZING = 7,
-        FINALIZE_SUCCESS = 8,
-        FINALIZE_FAILURE = 9,
-
-        PROCESSING_SALT_MASK = 10,
-        PROCESS_SALT_MASK_SUCCESS = 11,
-        PROCESS_SALT_MASK_FAILURE = 12,
-
-        ABORT_ACCEPTED = 13,
-        ABORT_REFUSED = 14,
-
-        MIGRATE_META_DATA = 15,
-        MIGRATE_DATA = 16,
-
-        PROGRESS = 1000,
-        LOGOUTPUT = 1001,
-      };
-  }
-}
 
 namespace transfer
 {
@@ -141,13 +78,11 @@ public:
   {
     m_migrate_xml_buffer.clear();
 
-    std::string def_timeout = fhg_kernel()->get("timeout_default", "-1");
-    m_conn_timeout = fhg_kernel()->get<int>("timeout_connect", def_timeout);
-    m_send_timeout = fhg_kernel()->get<int>("timeout_send", def_timeout);
-    m_recv_timeout = fhg_kernel()->get<int>("timeout_recv", def_timeout);
+    m_send_timeout = fhg_kernel()->get<int>("send_timeout", -1);
+    m_recv_timeout = fhg_kernel()->get<int>("recv_timeout", -1);
 
     MLOG( TRACE
-        ,  "timeouts: connect = " << m_conn_timeout
+        ,  "timeouts:"
         << " send = " << m_send_timeout
         << " recv = " << m_recv_timeout
         );
@@ -155,63 +90,15 @@ public:
     m_chunk_size = fhg_kernel()->get<std::size_t>("chunk_size", "4194304");
     DMLOG(TRACE, "using chunk size for GUI messages of: " << m_chunk_size);
 
-    PSProMigIF::StartupInfo info;
-    info.m_nConnectToTimeout = m_conn_timeout;
-    info.m_nWaitForConnectionTimeout = m_conn_timeout;
-    info.m_uPort =
-      fhg_kernel()->get<unsigned short>("port_server", "55555");
-    info.m_uDaemonPort =
-      fhg_kernel()->get<unsigned short>("port_daemon", "26698");
-    info.m_uFileEnginePort =
-      fhg_kernel()->get<unsigned short>("port_file_engine", "26699");
-    info.m_uRemotePort = info.m_uPort;
-    info.m_uRemoteDaemonPort = info.m_uDaemonPort;
-    info.m_uRemoteFileEnginePort = info.m_uFileEnginePort;
-
-    try
-    {
-      // start server communication
-      PSProMigIF::StartServer::registerInstance
-        ( SERVER_APP_NAME
-        , new PSProMigIF::ServerHelper(SERVER_APP_VERS)
-      );
-
-      m_server = PSProMigIF::StartServer::getInstance(SERVER_APP_NAME);
-      m_server->handleExceptionsByLibrary(false);
-      m_server->init(info);
-      m_server->addCommunication (new PSProMigIF::ServerCommunicationListen);
-
-      //MLOG(TRACE, "UfBMig frontend starting on port " << info.m_uPort);
-
-      // start server control object
-      m_server->start(false); // false == do not kill running apps
-
-      MLOG(INFO, "UfBMig frontend running on port " << info.m_uPort);
-    }
-    catch (PSProMigIF::StartServer::StartServerException const &ex)
-    {
-      LOG(ERROR, "could not start server connection: " << ex.what());
-      FHG_PLUGIN_FAILED(ETIMEDOUT);
-      // TODO:
-      //   mark plugin as incomplete, try to start connection again...
-    }
-    catch (PSProMigIF::ServerStateControlError)
-    {
-      LOG(ERROR, "could not start server connection due to an unknown reason");
-      FHG_PLUGIN_FAILED(EFAULT);
-    }
-    catch (...)
-    {
-      LOG(ERROR, "could not start server connection due to an unknown reason");
-      FHG_PLUGIN_FAILED(EFAULT);
-    }
-
     m_current_transfer = transfer::request_ptr_t(new transfer::request_t());
     m_current_transfer->set_state(transfer::CANCELED);
 
     m_backend = fhg_kernel()->acquire<ufbmig::Backend>("ufbmig_back");
     assert (m_backend);
     m_backend->registerFrontend(this);
+
+    m_isim = fhg_kernel()->acquire<isim::ISIM>("isim");
+    assert (m_isim);
 
     m_stop_requested = false;
     m_transfer_thread = boost::thread (&UfBMigFrontImpl::transfer_thread, this);
@@ -240,7 +127,6 @@ public:
   {
     stop_to_observe();
 
-    //m_server->stop(); // FIXME: deadlock!
     m_stop_requested = true;
 
     m_transfer_thread.interrupt();
@@ -430,197 +316,196 @@ public:
     send_progress(value);
   }
 private:
-  PSProMessagePtr create_pspro_error_message ( int cmd
-                                             , int ec
-                                             )
+  isim::msg_t *create_error_msg ( int cmd
+                                , int ec
+                                )
   {
     if (ec < 0)
       ec = -ec;
-
     std::string error (strerror(ec));
-    return create_pspro_message(cmd, error.c_str(), error.size());
+
+    return create_msg (cmd, error.c_str (), error.size () + 1);
   }
 
-  PSProMessagePtr create_pspro_message( int cmd
-                                      , const void *data = 0
-                                      , size_t len = 0
-                                      )
+  isim::msg_t *create_msg ( int cmd
+                          , const void *data
+                          , size_t size
+                          )
   {
-    assert ((len && data != NULL) || !len);
-
-    PSProMessagePtr msg(create_new_pspro_message(cmd, len));
-    memcpy( msg->getCostumPtr(), data, len);
-    return msg;
-  }
-
-  PSProMessagePtr create_new_pspro_message (int cmd, size_t len)
-  {
-    PSProMessagePtr msg
-      (PSProMigIF::Message::generateMsg(len), std::ptr_fun(my_free));
-    msg->m_nCommand = cmd;
+    isim::msg_t *msg = isim::msg_new (cmd, size);
+    memcpy (msg_data (msg), data, size);
     return msg;
   }
 
   int send_waiting_for_initialize()
   {
-    m_server->idle();
-    return send_to_gui(create_pspro_message(server::command::WAITING_FOR_INITIALIZE));
+    m_isim->idle ();
+    isim::msg_t *msg = isim::msg_new (server::command::WAITING_FOR_INITIALIZE);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_initializing()
   {
-    m_server->busy();
-    return send_to_gui(create_pspro_message(server::command::INITIALIZING));
+    m_isim->busy();
+    isim::msg_t *msg = isim::msg_new (server::command::INITIALIZING);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_initialize_success()
   {
-    m_server->idle();
-    return send_to_gui(create_pspro_message(server::command::INITIALIZE_SUCCESS));
+    m_isim->idle ();
+    isim::msg_t *msg = isim::msg_new (server::command::INITIALIZE_SUCCESS);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_initialize_failure(int ec)
   {
-    m_server->idle();
-    return send_to_gui(create_pspro_error_message( server::command::INITIALIZE_FAILURE
-                                                 , ec
-                                                 )
-                      );
+    m_isim->idle();
+    isim::msg_t *msg =
+      create_error_msg (server::command::INITIALIZE_FAILURE, ec);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_processing_salt_mask()
   {
-    m_server->busy();
-    return send_to_gui(create_pspro_message(server::command::PROCESSING_SALT_MASK));
+    m_isim->busy();
+    isim::msg_t *msg = isim::msg_new (server::command::PROCESSING_SALT_MASK);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_process_salt_mask_success()
   {
-    m_server->idle();
-    return send_to_gui(create_pspro_message(server::command::PROCESS_SALT_MASK_SUCCESS));
+    m_isim->idle();
+    isim::msg_t *msg =
+      isim::msg_new (server::command::PROCESS_SALT_MASK_SUCCESS);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_process_salt_mask_failure(int ec)
   {
-    m_server->idle();
-    return send_to_gui(create_pspro_error_message( server::command::PROCESS_SALT_MASK_FAILURE
-                                                 , ec
-                                                 )
-                      );
+    m_isim->idle();
+    isim::msg_t *msg =
+      create_error_msg (server::command::PROCESS_SALT_MASK_FAILURE, ec);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_migrating()
   {
-    m_server->busy();
-    return send_to_gui(create_pspro_message(server::command::MIGRATING));
+    m_isim->busy();
+    isim::msg_t *msg =
+      isim::msg_new (server::command::MIGRATING);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_migrate_success()
   {
-    m_server->idle();
-    return send_to_gui (create_pspro_message(server::command::MIGRATE_SUCCESS));
+    m_isim->idle();
+    isim::msg_t *msg =
+      isim::msg_new (server::command::MIGRATE_SUCCESS);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_migrate_failure(int ec)
   {
-    m_server->idle();
-    return send_to_gui(create_pspro_error_message(server::command::MIGRATE_FAILURE, ec));
+    m_isim->idle();
+    isim::msg_t *msg =
+      create_error_msg (server::command::MIGRATE_FAILURE, ec);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_finalizing()
   {
-    m_server->busy();
-    return send_to_gui(create_pspro_message(server::command::FINALIZING));
+    m_isim->busy();
+    isim::msg_t *msg =
+      isim::msg_new (server::command::FINALIZING);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_finalize_success()
   {
-    m_server->idle();
-    int ec;
-    ec = send_to_gui(create_pspro_message(server::command::FINALIZE_SUCCESS));
-    ec = send_waiting_for_initialize();
-    return ec;
+    m_isim->idle();
+    isim::msg_t *msg =
+      isim::msg_new (server::command::FINALIZE_SUCCESS);
+    m_isim->send (&msg, m_send_timeout);
+    return send_waiting_for_initialize ();
   }
 
-  int send_finalize_failure(int err)
+  int send_finalize_failure(int ec)
   {
-    m_server->idle();
-    int ec;
-    ec = send_to_gui(create_pspro_error_message(server::command::FINALIZE_FAILURE, err));
-    ec = send_waiting_for_initialize();
-    return ec;
+    m_isim->idle();
+    isim::msg_t *msg =
+      create_error_msg (server::command::FINALIZE_FAILURE, ec);
+    m_isim->send (&msg, m_send_timeout);
+    return send_waiting_for_initialize ();
   }
 
   int send_progress(int p)
   {
-    return send_to_gui(create_pspro_message(server::command::PROGRESS, &p, sizeof(p)));
+    isim::msg_t *msg = create_msg (server::command::PROGRESS, &p, sizeof(p));
+    return m_isim->send (&msg, m_send_timeout);
   }
 
-  int send_logoutput(std::string const &msg)
+  int send_logoutput(std::string const &text)
   {
-    return send_to_gui(create_pspro_message(server::command::LOGOUTPUT, msg.c_str(), msg.size()+1));
+    isim::msg_t *msg = create_msg (server::command::LOGOUTPUT
+                                  , text.c_str ()
+                                  , text.size () + 1
+                                  );
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_abort_accepted()
   {
-    return send_to_gui(create_pspro_message(server::command::ABORT_ACCEPTED));
+    isim::msg_t *msg =
+      isim::msg_new (server::command::ABORT_ACCEPTED);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_abort_refused(int ec)
   {
-    return send_to_gui(create_pspro_error_message(server::command::ABORT_REFUSED, ec));
+    isim::msg_t *msg = create_error_msg (server::command::ABORT_REFUSED, ec);
+    return m_isim->send (&msg, m_send_timeout);
   }
 
   void message_thread ()
   {
-    typedef PSProMessagePtr message_ptr;
-
     MLOG(TRACE, "waiting for messages...");
 
     size_t fail_counter = 0;
     while (!m_stop_requested && fail_counter < 1)
     {
-      try
-      {
-        std::string payload;
+      std::string payload;
 
-        message_ptr msg
-          ( PSProMigIF::Message::recvMsg( m_server->communication()
-                                        , m_recv_timeout
-                                        )
-          , std::ptr_fun(my_free)
-          );
-        if (! msg)
-        {
-          ++fail_counter;
-          continue;
-        }
-        else
-        {
-          fail_counter = 0;
-        }
-
-        if (msg->m_ulCustomDataSize)
-        {
-          payload = std::string(msg->getCostumPtr(), msg->m_ulCustomDataSize);
-        }
-
-        handle_ISIM_command(msg->m_nCommand, payload);
-      }
-      catch (PSProMigIF::StartServer::StartServerException const &ex)
+      isim::msg_t *msg = m_isim->recv (m_recv_timeout);
+      if (! msg)
       {
-        LOG(ERROR, "could not receive message: " << ex.what());
+        ++fail_counter;
+        continue;
       }
-      catch (...)
+      else
       {
-        MLOG(ERROR, "error during message receive!");
+        fail_counter = 0;
       }
+
+      if (isim::msg_size (msg) > 0)
+      {
+        payload = std::string( (char*)isim::msg_data (msg)
+                             , isim::msg_size (msg)
+                             );
+      }
+
+      handle_ISIM_command(isim::msg_type (msg), payload);
+
+      isim::msg_destroy (&msg);
     }
 
     if (fail_counter)
     {
       int ec = errno;
-      MLOG(ERROR, "terminating, since there were " << fail_counter << " failures while receiving messages from the GUI: " << strerror(ec));
+      MLOG ( ERROR
+           , "terminating, since there were " << fail_counter << " failures"
+           << " while receiving messages from the GUI: " << strerror(ec)
+           );
       m_backend->stop();
 
       sleep (5);
@@ -778,21 +663,22 @@ private:
 
     std::vector<char> buffer (sz, 0);
 
-    PSProMessagePtr
-      msg (create_new_pspro_message(server::command::MIGRATE_META_DATA, sz));
+    isim::msg_t *msg = isim::msg_new (server::command::MIGRATE_META_DATA, sz);
     size_t num_read;
-    ec = m_backend->read (fd, msg->getCostumPtr(), sz, num_read);
+    ec = m_backend->read (fd, (char*)isim::msg_data (msg), sz, num_read);
     if (0 == ec)
     {
-      ec = send_to_gui(msg);
+      ec = m_isim->send (&msg, m_send_timeout);
       if (0 != ec)
       {
         MLOG(ERROR, "could not send meta data to GUI: " << strerror(-ec));
+        isim::msg_destroy (&msg);
       }
     }
     else
     {
       MLOG(WARN, "reading meta data failed: " << strerror(-ec));
+      isim::msg_destroy (&msg);
     }
 
     m_backend->close (fd);
@@ -831,23 +717,25 @@ private:
       size_t transfer_size = std::min (remaining, m_chunk_size);
       size_t message_size = sizeof(offset) + transfer_size;
 
-      PSProMessagePtr
-        msg (create_new_pspro_message(server::command::MIGRATE_DATA, message_size));
-      memcpy(msg->getCostumPtr(), &offset, sizeof(offset));
+      isim::msg_t *msg = isim::msg_new ( server::command::MIGRATE_DATA
+                                       , message_size
+                                       );
+      memcpy (isim::msg_data (msg), &offset, sizeof(offset));
 
       size_t num_read;
       ec = m_backend->read ( fd
-                           , msg->getCostumPtr()+sizeof(offset)
+                           , (char*)isim::msg_data (msg)+sizeof(offset)
                            , transfer_size
                            , num_read
                            );
 
       if (0 == ec)
       {
-        ec = send_to_gui(msg);
+        ec = m_isim->send (&msg, m_send_timeout);
         if (0 != ec)
         {
           MLOG(ERROR, "could not send data chunk to GUI: " << strerror(-ec));
+          isim::msg_destroy (&msg);
           break;
         }
 
@@ -856,6 +744,7 @@ private:
       }
       else
       {
+        isim::msg_destroy (&msg);
         break;
       }
     }
@@ -869,26 +758,12 @@ private:
     return ec;
   }
 
-  int send_to_gui(PSProMessagePtr msg)
-  {
-    try
-    {
-      msg->sendMsg(m_server->communication(), m_send_timeout);
-    }
-    catch (std::exception const &ex)
-    {
-      return -EIO;
-    }
-    return 0;
-  }
-
   bool m_stop_requested;
-  int m_conn_timeout;
   int m_send_timeout;
   int m_recv_timeout;
   size_t m_chunk_size;
 
-  PSProMigIF::StartServer* m_server;
+  isim::ISIM      *m_isim;
   ufbmig::Backend *m_backend;
 
   transfer::request_queue_t m_transfer_requests;
@@ -907,6 +782,6 @@ EXPORT_FHG_PLUGIN( ufbmig_front
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "ufbmig_back"
+                 , "isim,ufbmig_back"
                  , ""
                  );

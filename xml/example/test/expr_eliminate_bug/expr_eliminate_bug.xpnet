@@ -1,0 +1,27 @@
+<defun name="expr_eliminate_bug">
+  <in name="n" type="long" place="n"/>
+  <out name="i" type="long" place="i"/>
+  <net>
+    <place name="n" type="long"/>
+    <place name="i" type="long"/>
+    <transition name="step">
+      <defun>
+        <inout name="n" type="long"/>
+        <out name="i" type="long"/>
+        <expression>
+          ${i} := ${n};
+          ${n} := ${n} + 1;
+        </expression>
+      </defun>
+      <connect-inout port="n" place="n"/>
+      <connect-out port="i" place="i"/>
+    </transition>
+    <transition name="break">
+      <defun>
+        <in name="n" type="long"/>
+        <expression/>
+      </defun>
+      <connect-in port="n" place="n"/>
+    </transition>
+  </net>
+</defun>

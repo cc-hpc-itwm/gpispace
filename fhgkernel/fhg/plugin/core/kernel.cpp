@@ -112,12 +112,15 @@ namespace fhg
           try
           {
             ec = load_plugin (plugin_path.string ());
+            if (0 == ec)
+              break;
           }
           catch (std::exception const &ex)
           {
             MLOG ( WARN
                  , "plugin '" << name
                  << "' could not be loaded from: " << plugin_path
+                 << " : " << ex.what ()
                  );
             ec = EFAULT;
           }
@@ -136,7 +139,9 @@ namespace fhg
       bool load_force (boost::lexical_cast<bool>(get("kernel.load.force", "0")));
       bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "1")));
 
-      plugin_t::ptr_t p (plugin_t::create( file
+      std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
+
+      plugin_t::ptr_t p (plugin_t::create( full_path_to_file
                                          , load_force
                                          , (load_lazy?RTLD_LAZY:RTLD_NOW)
                                          )
@@ -157,7 +162,7 @@ namespace fhg
       mediator_ptr m
         (new PluginKernelMediator( p
                                  , this
-                                 , "control" == p->name()
+                                 , true // TODO: "control" == p->name()
                                  )
         );
 
@@ -175,7 +180,10 @@ namespace fhg
           m_plugins.insert (std::make_pair(p->name(), m));
         }
 
-        MLOG(TRACE, p->name() << " plugin loaded");
+        MLOG( TRACE
+            , p->name() << " plugin loaded "
+            << "(from: " << full_path_to_file << ")"
+            );
 
         for ( plugin_map_t::iterator it (m_plugins.begin())
             ; it != m_plugins.end()
@@ -471,14 +479,11 @@ namespace fhg
 
     void kernel_t::stop ()
     {
-      lock_type lock (m_mtx_stop);
       if (! m_running)
+      {
         return;
+      }
       m_stop_requested = true;
-      m_stopped.wait (lock);
-      m_running = false;
-
-      unload_all ();
     }
 
     void kernel_t::reset ()
@@ -591,11 +596,9 @@ namespace fhg
       m_task_handler.interrupt();
       m_task_handler.join();
 
-      {
-        lock_type lock (m_mtx_stop);
-        m_stopped.notify_all ();
-        m_running = false;
-      }
+      unload_all ();
+
+      m_running = false;
 
       return 0;
     }

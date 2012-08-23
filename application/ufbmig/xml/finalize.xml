@@ -12,17 +12,17 @@
 
     <transition name="read_config" inline="true">
       <defun>
-	<in name="filename" type="string"/>
-	<out name="config" type="config"/>
-	<module name="ufbmig_done" function="read_config (filename, config)">
-	  <cinclude href="fhglog/fhglog.hpp"/>
-	  <cinclude href="util/rw.hpp"/>
-	  <code><![CDATA[
-	  MLOG (INFO, "reading config from file " << filename);
+        <in name="filename" type="string"/>
+        <out name="config" type="config"/>
+        <module name="ufbmig_done" function="read_config (filename, config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/rw.hpp"/>
+          <code><![CDATA[
+          MLOG (INFO, "reading config from file " << filename);
 
-	  ::ufbmig::util::serialize::read (filename, config);
-	  ]]></code>
-	</module>
+          ::ufbmig::util::serialize::read (filename, config);
+          ]]></code>
+        </module>
       </defun>
       <connect-in port="filename" place="file_with_config"/>
       <connect-out port="config" place="config"/>
@@ -47,10 +47,6 @@
             vmem::free (config.handle.data.output_meta);
             vmem::free (config.handle.data.update);
             vmem::free (config.handle.data.input);
-
-            vmem::free (config.handle.scratch.update);
-            vmem::free (config.handle.scratch.output);
-            vmem::free (config.handle.scratch.output_meta);
 
             return control();
           ]]></code>

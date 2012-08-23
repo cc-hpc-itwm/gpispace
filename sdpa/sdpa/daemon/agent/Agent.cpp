@@ -55,7 +55,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  SDPA_LOG_INFO("Called handleJobFinished for the job " << pEvt->job_id());
+  DMLOG (TRACE, "Called handleJobFinished for the job " << pEvt->job_id());
 
   // send a JobFinishedAckEvent back to the worker/slave
   JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent( name()
@@ -162,7 +162,9 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 {
   //put the job into the state Finished
   JobId id(wfid);
-  SDPA_LOG_INFO( "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" finished!");
+  DMLOG ( TRACE,
+        "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" finished!"
+        );
 
   Job::ptr_t pJob;
   try {
@@ -197,7 +199,7 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 
     if(!isSubscriber(pJob->owner()))
     {
-      SDPA_LOG_INFO("Post a JobFinished event to the master "<<pJob->owner());
+      DMLOG (TRACE, "Post a JobFinished event to the master "<<pJob->owner());
       sendEventToMaster(pEvtJobFinished);
     }
 
@@ -240,7 +242,9 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
 {
   //put the job into the state Finished
   JobId job_id(wfid);
-  SDPA_LOG_INFO( "The workflow engine has notified the agent "<<name()<<" that the job "<<job_id.str()<<" finished!");
+  DMLOG ( TRACE,
+        "The workflow engine has notified the agent "<<name()<<" that the job "<<job_id.str()<<" finished!"
+        );
 
   Job::ptr_t pJob;
   try {
@@ -326,7 +330,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  SDPA_LOG_INFO("handleJobFailed(" << pEvt->job_id() << ")");
+  DMLOG (TRACE, "handleJobFailed(" << pEvt->job_id() << ")");
 
   // if the event comes from the workflow engine (e.g. submission failed,
   // see the scheduler
@@ -464,7 +468,8 @@ bool Agent::failed( const id_type& wfid
                   )
 {
   JobId id(wfid);
-  SDPA_LOG_INFO( "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" failed!");
+  DMLOG ( TRACE, "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" failed!"
+        );
   //put the job into the state Failed
 
   Job::ptr_t pJob;
@@ -547,7 +552,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
     sdpa::job_id_t jobId = evt.job_id();
     Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
 
-    SDPA_LOG_INFO( "Cancelling the pending job "<<jobId<<" ... ");
+    DMLOG (TRACE, "Cancelling the pending job "<<jobId<<" ... ");
 
     sdpa::events::CancelJobEvent cae;
     pJob->CancelJob(&cae);
@@ -598,7 +603,7 @@ void Agent::notifySubscribers(const T& ptrEvt)
       ptrEvt->to() = pair_subscr_joblist.first;
       sendEventToMaster(ptrEvt);
 
-      SDPA_LOG_INFO("Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
+      DMLOG (TRACE, "Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;
     }
   }
@@ -673,11 +678,10 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
   {
     id_type workflowId = pEvt->job_id();
     reason_type reason("No reason");
-    SDPA_LOG_INFO("Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
+    DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
     cancelWorkflow(workflowId, reason);
     pJob->CancelJob(pEvt);
-    SDPA_LOG_INFO("The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
-
+    DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
   }
 }
 

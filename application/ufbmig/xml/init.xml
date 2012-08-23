@@ -87,18 +87,6 @@
             config.handle.data.input
               = vmem::alloc (config.size.alloc.input, "data.input");
 
-            config.handle.scratch.update
-              = vmem::alloc (config.size.alloc.update, "scratch.update");
-            config.handle.scratch.output
-              = vmem::alloc (config.size.alloc.output, "scratch.output");
-            config.handle.scratch.output_meta
-              = vmem::alloc (config.size.alloc.output_meta, "scratch.output_meta");
-
-            config.handle.scratch.fine_any = 0L;
-            config.handle.scratch.coarse_mask = 0L;
-            config.handle.scratch.coarse_vel = 0L;
-            config.handle.scratch.input = 0L;
-
             // ************************************************************* //
 
             LOG (INFO, "The config is: " << config);
@@ -113,18 +101,18 @@
 
     <transition name="write_config" inline="true">
       <defun>
-	<in name="filename" type="string"/>
-	<in name="config" type="config"/>
-	<out name="config" type="config"/>
-	<module name="ufbmig_init" function="write_config (filename, config)">
-	  <cinclude href="fhglog/fhglog.hpp"/>
-	  <cinclude href="util/rw.hpp"/>
-	  <code><![CDATA[
-	  MLOG (INFO, "writing config to file " << filename);
+        <in name="filename" type="string"/>
+        <in name="config" type="config"/>
+        <out name="config" type="config"/>
+        <module name="ufbmig_init" function="write_config (filename, config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/rw.hpp"/>
+          <code><![CDATA[
+          MLOG (INFO, "writing config to file " << filename);
 
-	  ::ufbmig::util::serialize::write (filename, config);
-	  ]]></code>
-	</module>
+          ::ufbmig::util::serialize::write (filename, config);
+          ]]></code>
+        </module>
       </defun>
       <connect-in port="filename" place="file_with_config"/>
       <connect-in port="config" place="config"/>

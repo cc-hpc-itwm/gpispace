@@ -127,11 +127,11 @@ namespace fhg
 
     void peer_t::stop()
     {
-      lock_type lock(mutex_);
-
-      io_service_.stop();
+//      lock_type lock(mutex_);
 
       if (stopped_) return;
+
+      io_service_.stop();
 
       DLOG(TRACE, "stopping peer " << name());
 

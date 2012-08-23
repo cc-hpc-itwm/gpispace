@@ -34,6 +34,17 @@ fhg_add_plugin(kvs kvs.cpp
   COMPONENT plugins
 )
 
+fhg_add_plugin(kvs_dummy kvs_dummy.cpp
+  EXPORTS KVS
+  LINK_LIBRARIES ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADERS kvs.hpp
+  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
+  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
+  COMPONENT plugins
+)
+
 fhg_add_plugin(wfe wfe.cpp observable.cpp
   EXPORTS WFE
   LINK_LIBRARIES ${FhgCom_LIBRARY}
