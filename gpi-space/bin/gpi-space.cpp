@@ -833,7 +833,7 @@ static int configure_kvs (const config_t *cfg)
   {
     fhg::com::kvs::global::get_kvs_info().init( cfg->kvs_host
                                               , boost::lexical_cast<std::string>(cfg->kvs_port)
-                                              , boost::posix_time::seconds(cfg->kvs_retry_count)
+                                              , boost::posix_time::seconds(1)
                                               , cfg->kvs_retry_count
                                               );
 
@@ -954,7 +954,7 @@ static void initialize_config (config_t * c)
              );
   }
   c->kvs_port = 2439;
-  c->kvs_retry_count = 8;
+  c->kvs_retry_count = 2;
 
   if (gethostname (c->log_host, MAX_HOST_LEN) != 0)
   {
