@@ -36,7 +36,7 @@ void Orchestrator::action_configure(const StartUpEvent &se)
   GenericDaemon::action_configure (se);
 
   // should be overriden by the orchestrator, aggregator and NRE
-  SDPA_LOG_INFO("Configuring myeself (orchestrator)...");
+  SDPA_LOG_INFO("Configuring myself (orchestrator)...");
 }
 
 void Orchestrator::action_config_ok(const ConfigOkEvent& e)
@@ -65,7 +65,7 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
       ptrEvt->to() = pair_subscr_joblist.first;
       sendEventToMaster(ptrEvt);
 
-      SDPA_LOG_INFO("Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
+      DMLOG (TRACE, "Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;
     }
   }
@@ -87,7 +87,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       JobFinishedAckEvent::Ptr ptrAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
       // send ack to the slave
-      SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
+      DMLOG (TRACE, "Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
       sendEventToSlave(ptrAckEvt);
     }
 
@@ -268,7 +268,7 @@ void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
     sdpa::job_id_t jobId = evt.job_id();
     Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
 
-    SDPA_LOG_INFO( "Cancelling the pending job "<<jobId<<" ... ");
+    DMLOG (TRACE, "Cancelling the pending job "<<jobId<<" ... ");
 
     sdpa::events::CancelJobEvent cae;
     pJob->CancelJob(&cae);
@@ -373,11 +373,10 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   {
     id_type workflowId = pEvt->job_id();
     reason_type reason("No reason");
-    SDPA_LOG_INFO("Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
+    DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
     cancelWorkflow(workflowId, reason);
     pJob->CancelJob(pEvt);
-    SDPA_LOG_INFO("The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
-
+    DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
   }
 }
 
@@ -483,9 +482,9 @@ void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* 
     }
     catch(const JobNotFoundException&)
     {
-        SDPA_LOG_INFO("The job "<<pEvt->job_id()<<" was not found by the JobManager");
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "no such job") );
-        sendEventToMaster(pErrorEvt);
+      MLOG (WARN, "The job "<<pEvt->job_id()<<" was not found by the JobManager");
+      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "no such job") );
+      sendEventToMaster(pErrorEvt);
     }
 }
 
@@ -510,10 +509,10 @@ void Orchestrator::backup( std::ostream& os )
         oa << ptr_workflow_engine_;*/
         oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
     }
-    catch(exception &e)
+    catch(exception const &ex)
     {
-        SDPA_LOG_INFO("Exception occurred: "<< e.what());
-        return;
+      MLOG (ERROR, "could not backup orchestrator: " << ex.what ());
+      return;
     }
 }
 
@@ -544,8 +543,8 @@ void Orchestrator::recover( std::istream& is )
       ia >> ptr_workflow_engine_;*/
       ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
   }
-  catch(exception &e)
+  catch(exception const &ex)
   {
-      SDPA_LOG_INFO("Exception occurred: "<< e.what());
+    MLOG (ERROR, "could not recover orchestrator: " << ex.what ());
   }
 }

@@ -738,7 +738,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   }
   catch(const JobNotFoundException&)
   {
-    SDPA_LOG_INFO("Receive new job from "<<e.from() << " with job-id: " << e.job_id());
+    DMLOG (TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
   }
 
   JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
