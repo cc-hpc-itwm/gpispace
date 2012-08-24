@@ -299,6 +299,11 @@ namespace fhg
         append (flag);
       }
 
+      WSIG(tv, link::open, ITVAL(XMLTYPE(links_type)), link)
+      {
+        append (link);
+      }
+
       WSIG(tv, expression_sequence::line, std::string, line)
       {
         append (line);
@@ -469,6 +474,10 @@ namespace fhg
       WSIG(tv, mod::cxxflags, XMLTYPE(flags_type), cxxflags)
       {
         xs ("cxxflag", cxxflags, FROM(cxxflag));
+      }
+      WSIG(tv, mod::links, XMLTYPE(flags_type), links)
+      {
+        xs ("link", links, FROM(link));
       }
       WSIG(tv, mod::code, MAYBE(std::string), code)
       {
