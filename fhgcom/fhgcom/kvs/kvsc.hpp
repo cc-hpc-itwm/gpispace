@@ -192,12 +192,19 @@ namespace fhg
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::msg_ping()
-                    , m
-                    );
-            DLOG(TRACE, "ping() := " << m);
-            return boost::get<fhg::com::kvs::message::error*> (&m) != 0;
+            try
+            {
+              request ( kvs_
+                      , fhg::com::kvs::message::msg_ping()
+                      , m
+                      );
+              DLOG(TRACE, "ping() := " << m);
+              return true;
+            }
+            catch (std::exception const &)
+            {
+              return false;
+            }
           }
         private:
           mutable boost::recursive_mutex mtx_;
