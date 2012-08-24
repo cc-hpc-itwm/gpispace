@@ -72,8 +72,9 @@ public:
     {
       return fhg::com::kvs::ping ();
     }
-    catch (std::exception const &)
+    catch (std::exception const &ex)
     {
+      LOG (WARN, "kvs ping failed: " << ex.what ());
       return false;
     }
   }
