@@ -236,10 +236,6 @@ public:
     {
       MLOG(WARN, "could not acquire gpi::GPI plugin");
     }
-    else
-    {
-      reinitialize_gpi_state ();
-    }
 
     if (m_control_sdpa)
     {
