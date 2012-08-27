@@ -56,6 +56,7 @@ public:
   FHG_PLUGIN_STOP()
   {
     m_io_pool->stop ();
+    m_thread.join ();
     m_kvsd->save ();
 
     if (m_server) { delete m_server; m_server = 0; }
