@@ -44,7 +44,10 @@ public:
     int state (0);
     for (;;)
     {
-      state = status(id);
+      int rc; std::string err;
+
+      state = status (id, rc, err);
+
       if (state < 0)
       {
         break;
@@ -96,7 +99,7 @@ public:
     return -EFAULT;
   }
 
-  int status (std::string const &id)
+  int status (std::string const &id, int & ec, std::string & msg)
   {
     using namespace sdpa::events;
 
@@ -112,7 +115,10 @@ public:
     {
       if (JobStatusReplyEvent* job_status = dynamic_cast<JobStatusReplyEvent*>(rep.get()))
       {
-        return sdpa::status::read(job_status->status());
+        int rc = sdpa::status::read (job_status->status());
+        ec = job_status->error_code ();
+        msg = job_status->error_message ();
+        return rc;
       }
       else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
       {

@@ -17,12 +17,13 @@ namespace ufbmig
     virtual int finalize() = 0;
     virtual int cancel() = 0;
 
-    virtual void prepare_backend_done (int) = 0;
-    virtual void initialize_done (int) = 0;
-    virtual void salt_mask_done (int) = 0;
-    virtual void calculate_done (int) = 0;
-    virtual void finalize_done (int) = 0;
-    virtual void update_progress(int) = 0;
+    virtual void prepare_backend_done (int, std::string const & msg) = 0;
+    virtual void initialize_done (int, std::string const & msg) = 0;
+    virtual void salt_mask_done (int, std::string const & msg) = 0;
+    virtual void calculate_done (int, std::string const &msg) = 0;
+    virtual void finalize_done (int, std::string const & msg) = 0;
+
+    virtual void update_progress (int) = 0;
   };
 }
 
