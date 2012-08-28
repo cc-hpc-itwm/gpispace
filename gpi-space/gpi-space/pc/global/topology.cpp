@@ -305,13 +305,14 @@ namespace gpi
 
       void topology_t::stop ()
       {
-        lock_type lock(m_mutex);
-        if (! m_peer_thread)
         {
-          return;
+          lock_type lock(m_mutex);
+          if (! m_peer_thread || m_shutting_down)
+          {
+            return;
+          }
+          m_shutting_down = true;
         }
-
-        m_shutting_down = true;
         m_peer->stop();
         m_peer_thread->join();
         m_peer.reset();
