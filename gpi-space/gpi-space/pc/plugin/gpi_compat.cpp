@@ -162,7 +162,15 @@ public:
       ec = reinitialize_gpi_state ();
       if (ec == -EAGAIN)
       {
-        usleep (m_initialize_retry_interval);
+        if (m_was_connected)
+        {
+          ec = -ECONNRESET;
+          break;
+        }
+        else
+        {
+          usleep (m_initialize_retry_interval);
+        }
       }
     }
     while (ec == -EAGAIN);
@@ -203,6 +211,8 @@ private:
 
     LOG(INFO, "successfully initialized gpi state");
 
+    m_was_connected = true;
+
     return 0;
   }
 
@@ -236,6 +246,7 @@ public:
 
 private:
   useconds_t                         m_initialize_retry_interval;
+  bool                               m_was_connected;
 };
 
 int fvmConnect()
@@ -248,13 +259,19 @@ int fvmLeave()
   return 0;
 }
 
-fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name)
+static void require_gpi_state (std::string const & fun_name)
 {
-  int ec = gpi_compat->ensure_gpi_state();
+  int ec = gpi_compat->ensure_gpi_state ();
   if (ec < 0)
   {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
+    throw std::runtime_error
+      (fun_name + ": could not ensure gpi state: " + strerror (-ec));
   }
+}
+
+fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name)
+{
+  require_gpi_state ("fvmGlobalAlloc");
 
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size
@@ -271,22 +288,16 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 
 int fvmGlobalFree(fvmAllocHandle_t ptr)
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmGlobalFree");
+
   gpi_compat->api->free(ptr);
   return 0;
 }
 
 fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size, const char *name)
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmLocalAlloc");
+
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size
                                 , name
@@ -301,11 +312,7 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
 
 int fvmLocalFree(fvmAllocHandle_t ptr)
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmLocalFree");
 
   gpi_compat->api->free (ptr);
   return 0;
@@ -317,11 +324,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
                                  const fvmShmemOffset_t shmemOffset,
                                  const fvmAllocHandle_t)
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmGetGlobalData");
 
   static const gpi::pc::type::queue_id_t queue = 0;
 
@@ -390,11 +393,8 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
                                  const fvmShmemOffset_t shmemOffset,
                                  const fvmAllocHandle_t)
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmPutGlobalData");
+
   static const gpi::pc::type::queue_id_t queue = 1;
 
   fhg_assert (0 != gpi_compat->m_scr_size);
@@ -461,11 +461,8 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
                                 const fvmSize_t size,
                                 const fvmShmemOffset_t shmemOffset)
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmPutLocalData");
+
   static const gpi::pc::type::queue_id_t queue = 2;
 
   fhg_assert (0 != gpi_compat->m_scr_size);
@@ -484,11 +481,8 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
                                 const fvmSize_t size,
                                 const fvmShmemOffset_t shmemOffset)
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmGetLocalData");
+
   static const gpi::pc::type::queue_id_t queue = 3;
 
   fhg_assert (0 != gpi_compat->m_scr_size);
@@ -505,11 +499,8 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 // wait on communication between fvm and pc
 fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("waitComm");
+
   try
   {
     gpi::pc::type::size_t num_finished
@@ -530,11 +521,8 @@ const char *fvmGetShmemName()
 
 void *fvmGetShmemPtr()
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmGetShmemPtr");
+
   return gpi_compat->m_shm_ptr;
 }
 
@@ -545,21 +533,15 @@ fvmSize_t fvmGetShmemSize()
 
 int fvmGetRank()
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmGetRank");
+
   return gpi_compat->gpi_info.rank;
 }
 
 int fvmGetNodeCount()
 {
-  int ec = gpi_compat->ensure_gpi_state();
-  if (ec < 0)
-  {
-    throw std::runtime_error(std::string("Could not initialize GPI state: ") + strerror (-ec));
-  }
+  require_gpi_state ("fvmGetNodeCount");
+
   return gpi_compat->gpi_info.nodes;
 }
 
