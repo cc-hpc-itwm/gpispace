@@ -434,6 +434,12 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
   //    update view (different views)
   //    respect filtering etc.
   //    maximum number of events (circular buffer like)
+
+  if (m_log_events.size () > (1<<12))
+  {
+    clearLogging ();
+  }
+
   m_log_events.push_back (evt);
 
   int row (ui->m_log_table->rowCount ());
@@ -520,9 +526,9 @@ MonitorWindow::event (QEvent *e)
 
 void MonitorWindow::clearLogging ()
 {
-	m_log_events.clear ();
-	ui->m_log_table->clearContents ();
-	ui->m_log_table->setRowCount (0);
+        m_log_events.clear ();
+        ui->m_log_table->clearContents ();
+        ui->m_log_table->setRowCount (0);
 }
 
 void MonitorWindow::toggleFollowLogging (bool follow)
