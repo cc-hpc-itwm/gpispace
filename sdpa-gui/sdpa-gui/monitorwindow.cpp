@@ -393,6 +393,7 @@ void MonitorWindow::clearActivityLog()
 {
   lock_type struct_lock(m_task_struct_mutex);
 
+  delete m_scene; delete m_component_scene;
   m_scene = new fhg::taskview::TaskScene(this);
   m_component_scene = new QGraphicsScene();
 
