@@ -53,7 +53,12 @@ if [ $? -ne 0 ] ; then
 fi
 
 while true ; do
-    current=$(${fhgkvsc} -f -g "progress.${app_name}.current" -v 0)
+    cur_phase=$(${fhgkvsc} -f -g "progress.${app_name}.phase" -v "n/a" 2>/dev/null)
+    if [ "$cur_phase" != "$phase" ] ; then
+        current=$maximum
+    else
+        current=$(${fhgkvsc} -f -g "progress.${app_name}.current" -v 0)
+    fi
     echo -n "$app_name ($phase): "
     show_progress $current $maximum '\r'
     if [ $current -eq $maximum ] ; then
