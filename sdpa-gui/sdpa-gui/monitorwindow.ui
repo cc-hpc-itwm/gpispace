@@ -673,7 +673,7 @@
              <item>
               <widget class="QCheckBox" name="follow_logging_cb">
                <property name="toolTip">
-                <string>Automatically scroll the view</string>
+                <string>Follow the stream of log events and automatically scroll the view, drop events otherwise</string>
                </property>
                <property name="text">
                 <string>follow</string>
