@@ -436,7 +436,7 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
   //    respect filtering etc.
   //    maximum number of events (circular buffer like)
 
-  if (m_log_events.size () > (1<<12))
+  if (m_log_events.size () > (1 << 15))
   {
     clearLogging ();
   }
