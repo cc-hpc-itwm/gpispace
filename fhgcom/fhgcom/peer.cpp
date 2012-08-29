@@ -744,8 +744,8 @@ namespace fhg
 
       DLOG(TRACE, "got user message from: " << m->header.src);
 
+      lock_type lock (mutex_);
       {
-        lock_type lock (mutex_);
         if (m_to_recv.empty())
         {
           // TODO: maybe add a flag to the message indicating whether it should be delivered
@@ -762,7 +762,10 @@ namespace fhg
           delete m;
 
           using namespace boost::system;
+
+          lock.unlock ();
           to_recv.handler(errc::make_error_code (errc::success));
+          lock.lock ();
         }
       }
     }
@@ -786,7 +789,11 @@ namespace fhg
         {
           to_send_t & to_send = cd.o_queue.front();
           using namespace boost::system;
+
+          lock.unlock ();
           to_send.handler (errc::make_error_code(errc::operation_canceled));
+          lock.lock ();
+
           cd.o_queue.pop_front();
         }
 
@@ -800,7 +807,11 @@ namespace fhg
           using namespace boost::system;
           to_recv.message->header.src = c->remote_address();
           to_recv.message->header.dst = c->local_address();
+
+          lock.unlock ();
           to_recv.handler (errc::make_error_code(errc::operation_canceled));
+          lock.lock ();
+
           tmp.pop_front();
         }
 
