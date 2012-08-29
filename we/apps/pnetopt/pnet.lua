@@ -9,9 +9,13 @@ function M.dump(pnet)
 		print("Place `" .. p:name() .. "' with id " .. p:id())
 		for port in p:inConnections() do
 			print("incoming connection from port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
+			assert(port:place())
+			assert(port:place() == p)
 		end
 		for port in p:outConnections() do
 			print("outgoing connection to port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
+			assert(port:place())
+			assert(port:place() == p)
 		end
 	end
 
@@ -24,7 +28,8 @@ function M.dump(pnet)
 			      .. (port:associatedPlace() and (", associated with `" .. tostring(port:associatedPlace()) .. "'") or "")
 			      .. (port:isInput() and ", is input" or "")
 			      .. (port:isOutput() and ", is output" or "")
-			      .. (port:isTunnel() and ", is tunnel" or ""))
+			      .. (port:isTunnel() and ", is tunnel" or "")
+			)
 		end
 	end
 end
@@ -40,15 +45,23 @@ function M.apply_recursively(pnet, functor)
 end
 
 function M.remove_all_places(pnet)
-	for place in list.enumerate(pnet:places():all()) do
+	for place in list.clone(pnet:places():all()) do
 		place:remove()
 	end
 end
 
 function M.remove_all_transitions(pnet)
-	for transition in list.enumerate(pnet:transitions():all()) do
+	for transition in list.clone(pnet:transitions():all()) do
 		transition:remove()
 	end
+end
+
+function M.input_ports(transition)
+	return list.filter(transition.ports().all(), function(port) return port:isInput() end)
+end
+
+function M.output_ports(transition)
+	return list.filter(transition.ports().all(), function(port) return port:isOutput() end)
 end
 
 return M

@@ -3,7 +3,7 @@ local M = {}
 local list = require("list")
 
 function M.find_matching_places(transition) 
-	if #transition:in_ports() ~= #transition:out_ports() then
+	if list.count(pnet.input_ports(transition)) ~= list.count(pnet.output_ports(transition)) then
 		return nil
 	end
 
@@ -37,7 +37,7 @@ end
 function M.simple_pipe_elimination(net)
 	local modified = false
 
-	for transition in list.enumerate(net:transitions():all()) do
+	for transition in list.clone(net:transitions():all()) do
 		if transition:expression() ~= nil and
 		   transition:expression():isEmpty() and
 		   transition:condition():isConstTrue() then

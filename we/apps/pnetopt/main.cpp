@@ -5,6 +5,7 @@
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/noncopyable.hpp>
 
 #include <lua.hpp>
 #include "LuaBridge/LuaBridge.h"
@@ -52,7 +53,7 @@ class Optimizer {
 
         luabridge::getGlobalNamespace(L)
             .beginNamespace("pnetopt")
-                .beginClass<PetriNet>("PetriNet")
+                .template beginClass<PetriNet>("PetriNet")
                     .addFunction("__tostring", &PetriNet::__tostring)
                     .addFunction("places", &PetriNet::places)
                     .addFunction("transitions", &PetriNet::transitions)
@@ -68,6 +69,7 @@ class Optimizer {
                 .endClass()
                 .template beginClass<Place>("Place")
                     .addFunction("__tostring", &Place::name)
+                    .addFunction("__eq", &Place::__eq)
                     .addFunction("id", &Place::id)
                     .addFunction("name", &Place::name)
                     .addFunction("setName", &Place::setName)
@@ -127,7 +129,7 @@ class Optimizer {
                 .endClass()
                 ;
 
-        luabridge::push(L, petriNet_);
+        luabridge::push(L, &petriNet_);
         lua_setfield(L, LUA_GLOBALSINDEX, "net");
     }
 
@@ -163,7 +165,7 @@ class Optimizer {
     /**
      * A Petri net.
      */
-    class PetriNet: public pnetopt::Invalidatable {
+    class PetriNet: public pnetopt::Invalidatable, boost::noncopyable {
         pnet_t &pnet_;
         Places places_;
         Transitions transitions_;
@@ -200,7 +202,7 @@ class Optimizer {
     /**
      * All places of a Petri net.
      */
-    class Places: public pnetopt::Invalidatable {
+    class Places: public pnetopt::Invalidatable, boost::noncopyable {
         PetriNet &petriNet_;
 
         boost::unordered_map<petri_net::pid_t, Place *> pid2place_;
@@ -287,7 +289,7 @@ class Optimizer {
     /**
      * Iterator over all places of a Petri net.
      */
-    class PlaceIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+    class PlaceIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Places &places_;
         typename pnet_t::place_const_it it_;
 
@@ -320,7 +322,7 @@ class Optimizer {
     /**
      * Place.
      */
-    class Place: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+    class Place: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Places &places_;
         petri_net::pid_t pid_;
         place_t &place_;
@@ -334,6 +336,10 @@ class Optimizer {
         {}
 
         Places &places() const { return places_; }
+
+        bool __eq(Place *place) const {
+            return this == place;
+        }
 
         petri_net::pid_t id() {
             ensureValid();
@@ -373,12 +379,30 @@ class Optimizer {
             return result;
         }
 
-
         void remove() {
             ensureValid();
 
+            // Disconnect the place from all the ports it is connected to.
+            //
+            // delete_place() won't do it properly.
+            
+            std::vector<Port *> portsToDisconnect;
+            
+            RefCountedObjectPtr<AdjacentPortIterator> i = in_connections();
+            while (Port *port = i->__call()) {
+                portsToDisconnect.push_back(port);
+            }
+
+            i = out_connections();
+            while (Port *port = i->__call()) {
+                portsToDisconnect.push_back(port);
+            }
+
+            foreach (Port *port, portsToDisconnect) {
+                port->disconnect();
+            }
+
             places().petriNet().pnet().delete_place(pid_);
-            // FIXME: place must be disconnected from all ports. Why this is not done automatically?
 
             invalidate();
             places().invalidateIterators();
@@ -402,7 +426,7 @@ class Optimizer {
     /**
      * Iterator over ports that are connected to a place.
      */
-    class AdjacentPortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+    class AdjacentPortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Place &place_;
         typename petri_net::adj_transition_const_it it_;
         bool lookInOutputPorts_;
@@ -446,7 +470,7 @@ class Optimizer {
     /**
      * All transitions of a Petri net.
      */
-    class Transitions: public pnetopt::Invalidatable {
+    class Transitions: public pnetopt::Invalidatable, boost::noncopyable {
         PetriNet &petriNet_;
 
         boost::unordered_map<petri_net::tid_t, Transition *> tid2transition_;
@@ -513,7 +537,7 @@ class Optimizer {
     /**
      * Iterator over all transitions of a Petri net.
      */
-    class TransitionIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+    class TransitionIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Transitions &transitions_;
         typename pnet_t::transition_const_it it_;
 
@@ -546,7 +570,7 @@ class Optimizer {
     /**
      * Transition.
      */
-    class Transition: public pnetopt::Invalidatable {
+    class Transition: public pnetopt::Invalidatable, boost::noncopyable {
         Transitions &transitions_;
         petri_net::tid_t tid_;
         transition_t &transition_;
@@ -579,6 +603,8 @@ class Optimizer {
 
             transition_.set_name(name);
         }
+
+        petri_net::tid_t id() const { return tid_; }
 
         Ports *ports() {
             ensureValid();
@@ -659,7 +685,7 @@ class Optimizer {
         }
     };
 
-    class Expression: public pnetopt::Invalidatable {
+    class Expression: public pnetopt::Invalidatable, boost::noncopyable {
         we::type::expression_t &expression_;
 
         public:
@@ -679,7 +705,7 @@ class Optimizer {
         }
     };
 
-    class Condition: public pnetopt::Invalidatable {
+    class Condition: public pnetopt::Invalidatable, boost::noncopyable {
         const condition::type &condition_;
 
         public:
@@ -702,7 +728,7 @@ class Optimizer {
     /**
      * Ports of a transition.
      */
-    class Ports: public pnetopt::Invalidatable {
+    class Ports: public pnetopt::Invalidatable, boost::noncopyable {
         Transition &transition_;
         std::vector<RefCountedObjectPtr<PortIterator> > iterators_;
 
@@ -768,7 +794,7 @@ class Optimizer {
     /**
      * Iterator over all ports of a transition.
      */
-    class PortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable {
+    class PortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Ports &ports_;
         typename transition_t::const_iterator it_;
         typename transition_t::const_iterator end_;
@@ -803,7 +829,7 @@ class Optimizer {
     /**
      * Port of a transition.
      */
-    class Port: public pnetopt::Invalidatable {
+    class Port: public pnetopt::Invalidatable, boost::noncopyable {
         Ports &ports_;
         typename transition_t::port_id_t portId_;
         typename transition_t::port_t port_;
@@ -830,11 +856,16 @@ class Optimizer {
             ensureValid();
 
             try {
-                return ports_.transition().transitions().petriNet().places().getPlace(ports_.transition().transition().gen_inner_to_outer(portId_).first);
+                if (isInput()) {
+                    return ports_.transition().transitions().petriNet().places().getPlace(ports_.transition().transition().gen_outer_to_inner(portId_).first);
+                }
+                if (isOutput()) {
+                    return ports_.transition().transitions().petriNet().places().getPlace(ports_.transition().transition().gen_inner_to_outer(portId_).first);
+                }
             } catch (const we::type::exception::not_connected<typename transition_t::port_id_t> &e) {
                 // WTF? Why can't I check connectedness without using exceptions?
-                return NULL;
             }
+            return NULL;
         }
 
         /**
@@ -882,7 +913,25 @@ class Optimizer {
         void disconnect() {
             ensureValid();
 
-            // FIXME: how to do this?
+            if (Place *place = this->place()) {
+                // Presumably, we should remove an edge between the place and the transition.
+                if (isInput()) {
+                    ports_.transition().transitions().petriNet().pnet().delete_edge(
+                        ports_.transition().transitions().petriNet().pnet().get_eid_in(ports_.transition().id(), place->id()));
+                }
+                if (isOutput()) {
+                    ports_.transition().transitions().petriNet().pnet().delete_edge(
+                        ports_.transition().transitions().petriNet().pnet().get_eid_out(ports_.transition().id(), place->id()));
+                }
+
+                // Now we must disconnect the place on the transition's side.
+                ports_.transition().transition().disconnect_inner_from_outer(portId_);
+
+                // And don't forget to invalidate adjacency iterators of the disconnected place.
+                place->invalidateIterators();
+
+                // TODO: That's all?
+            }
         }
     };
 };

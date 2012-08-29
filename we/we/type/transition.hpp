@@ -576,6 +576,36 @@ namespace we { namespace type {
         }
       }
 
+      template <typename Outer>
+      void disconnect_outer_from_inner ( const Outer outer
+                                       )
+      {
+      	outer_to_inner_t::iterator i = outer_to_inner_.find (outer);
+        if (i == outer_to_inner_.end())
+        {
+          throw exception::not_connected<Outer>("already disconnected", outer);
+        }
+        else
+        {
+          outer_to_inner_.erase(i);
+        }
+      }
+
+      template <typename Inner>
+      void disconnect_inner_from_outer ( const Inner inner
+                                       )
+      {
+      	inner_to_outer_t::iterator i = inner_to_outer_.find (inner);
+        if (i == inner_to_outer_.end())
+        {
+          throw exception::not_connected<Inner>("already disconnected", inner);
+        }
+        else
+        {
+          inner_to_outer_.erase(i);
+        }
+      }
+
       template <typename Inner, typename Outer>
       void re_connect_inner_to_outer ( const Inner inner
                                      , const Outer outer
