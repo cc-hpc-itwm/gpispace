@@ -486,13 +486,15 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
     }
   }
   else
-    SDPA_LOG_WARN("No configuration file was specified. Using the default configuration.");
+  {
+    LOG (DEBUG, "No configuration file was specified. Using the default configuration.");
+  }
 
   m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
   m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
 
   try {
-    SDPA_LOG_INFO("Try to configure the network now ... ");
+    SDPA_LOG_DEBUG("Try to configure the network now ... ");
     configure_network( url() /*, masterName()*/ );
     m_bConfigOk = true;
   }
@@ -507,7 +509,7 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
   // check if the system should be recovered
   // should be overriden by the orchestrator, aggregator and NRE
-  SDPA_LOG_INFO("The configuration phase succeeded!");
+  SDPA_LOG_DEBUG("The configuration phase succeeded!");
   setRequestsAllowed(true);
 }
 
@@ -526,7 +528,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 {
-  LOG( INFO, e.from() << " requesting to delete job " << e.job_id() );
+  LOG( DEBUG, e.from() << " requesting to delete job " << e.job_id() );
 
   try{
     Job::ptr_t pJob = jobManager()->findJob(e.job_id());
@@ -705,7 +707,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   if( e.from() != sdpa::daemon::WE  && jobManager()->countMasterJobs() > capacity() )
   {
     //generate a reject event
-    SDPA_LOG_INFO("Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
+    SDPA_LOG_WARN("Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
     //send job rejected error event back to the master
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name(),
                                               e.from(),
@@ -910,7 +912,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
             if(masterInfo.getConsecRegAttempts()< cfg().get<unsigned int>("max_consecutive_reg_attempts", 360) )
             {
               const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-              SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+              DMLOG (TRACE, "Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
               boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
               requestRegistration(masterInfo);
             }

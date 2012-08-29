@@ -155,8 +155,7 @@ int main (int argc, char **argv)
             break;
 
         case NO_BKP:
-
-            LOG( WARN, "No backup folder and no backup file were specified! No backup for the agent will be available!");
+            MLOG (INFO, "No backup folder and no backup file were specified! No backup for the agent will be available!");
             bDoBackup = false;
             break;
 

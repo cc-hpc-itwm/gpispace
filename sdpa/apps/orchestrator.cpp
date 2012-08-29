@@ -142,7 +142,7 @@ int main (int argc, char **argv)
 
         case NO_BKP:
 
-                        LOG( WARN, "No backup folder and no backup file were specified! No backup for the orchestrator will be available!");
+                        MLOG (INFO, "No backup folder and no backup file were specified! No backup for the orchestrator will be available!");
                         bDoBackup = false;
                         break;
 
