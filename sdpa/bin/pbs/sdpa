@@ -1937,7 +1937,6 @@ function submit ()
         read -t 15 -n 1 -p "Do you want me to start it? [Y/n] " do_start
         case "$do_start" in
             n|N)
-                return 1
                 ;;
             *)
                 echo
