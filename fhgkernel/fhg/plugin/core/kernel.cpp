@@ -665,7 +665,7 @@ namespace fhg
         task_info_t task = m_task_queue.get();
         try
         {
-          LOG(TRACE, "executing task " << task.owner << "::" << task.name);
+          DMLOG(TRACE, "executing task " << task.owner << "::" << task.name);
           task.execute();
         }
         catch (std::exception const & ex)
