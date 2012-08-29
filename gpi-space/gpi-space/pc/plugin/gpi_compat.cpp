@@ -28,6 +28,8 @@ public:
   {
     gpi_compat = this;
 
+    clear_my_gpi_state ();
+
     try
     {
       m_shm_size = boost::lexical_cast<fvmSize_t>
