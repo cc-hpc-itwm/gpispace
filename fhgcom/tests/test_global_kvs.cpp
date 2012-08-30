@@ -9,6 +9,7 @@
 #include <fhgcom/tcp_server.hpp>
 
 #include <boost/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
@@ -114,4 +115,17 @@ BOOST_AUTO_TEST_CASE ( no_server_test )
   {
     // ok
   }
+}
+
+BOOST_AUTO_TEST_CASE (boost_ptime_comparison)
+{
+  using namespace boost::posix_time;
+
+  ptime def (min_date_time);
+  ptime now = microsec_clock::universal_time ();
+  ptime exp = now + microsec (500);
+
+  BOOST_REQUIRE (now > def);
+  BOOST_REQUIRE (now < exp);
+  BOOST_REQUIRE (def == min_date_time);
 }
