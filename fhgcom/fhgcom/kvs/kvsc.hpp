@@ -66,11 +66,26 @@ namespace fhg
 
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::put( e )
+                    , fhg::com::kvs::message::put (e).set_expiry (0)
                     , m
                     );
             DLOG(TRACE, "put(...) := " << m);
           }
+
+          void timed_put ( fhg::com::kvs::message::put::map_type const & e
+                         , size_t expiry
+                         )
+          {
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::put (e).set_expiry (expiry)
+                    , m
+                    );
+            DLOG(TRACE, "put(...) := " << m);
+          }
+
           template <typename Val>
           void put (key_type const & k, Val v)
           {
@@ -78,7 +93,20 @@ namespace fhg
 
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::put( k, v )
+                    , fhg::com::kvs::message::put (k, v).set_expiry (0)
+                    , m
+                    );
+            DLOG(TRACE, "put(" << k << ", " << v << ") := " << m);
+          }
+
+          template <typename Val>
+          void timed_put (key_type const & k, Val v, size_t expiry)
+          {
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::put (k, v).set_expiry (expiry)
                     , m
                     );
             DLOG(TRACE, "put(" << k << ", " << v << ") := " << m);
@@ -389,14 +417,27 @@ namespace fhg
       inline
       void put (values_type const & e)
       {
-        return global_kvs().put(e);
+        global_kvs ().put (e);
+      }
+
+      inline
+      void timed_put (values_type const & e, size_t expiry)
+      {
+        global_kvs ().timed_put (e, expiry);
       }
 
       template <typename Key, typename Val>
       inline
       void put (Key k, Val v)
       {
-        return global_kvs().put(k,v);
+        global_kvs ().put (k, v);
+      }
+
+      template <typename Key, typename Val>
+      inline
+      void timed_put (Key k, Val v, size_t expiry)
+      {
+        global_kvs ().timed_put (k, v, expiry);
       }
 
       template <typename Key>

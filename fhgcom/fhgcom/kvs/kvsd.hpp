@@ -10,6 +10,7 @@
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fhgcom/kvs/exception.hpp>
 #include <fhgcom/kvs/message/type.hpp>
@@ -21,6 +22,7 @@
 #include <fstream>
 
 #include <boost/serialization/map.hpp>
+#include <boost/date_time/posix_time/time_serialize.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -46,7 +48,10 @@ namespace fhg
           operator () (fhg::com::kvs::message::put const & m)
           {
             DLOG(TRACE, "put (" << m.entries().begin()->first << ") := " << m.entries().begin()->second);
-            store_.put (m.entries());
+            store_.put ( m.entries()
+                       , boost::posix_time::microsec_clock::universal_time ()
+                       + boost::posix_time::microsec (m.expiry () * 1000)
+                       );
             return fhg::com::kvs::message::error (); // no_error
           }
 
@@ -191,11 +196,67 @@ namespace fhg
       {
         class kvsd : public session_manager<session>
         {
+        private:
+          template <typename T>
+          struct entry_t
+          {
+            entry_t ()
+            {}
+
+            entry_t ( T const &value
+                    , boost::posix_time::ptime exp = boost::posix_time::min_date_time
+                    )
+              : m_value (value)
+              , m_expiry (exp)
+            {}
+
+            entry_t (entry_t const &other)
+              : m_value (other.m_value)
+              , m_expiry (other.m_expiry)
+            {}
+
+            entry_t & operator= (entry_t const &rhs)
+            {
+              m_value = rhs.m_value;
+              m_expiry = rhs.m_expiry;
+              return *this;
+            }
+
+            bool is_expired () const
+            {
+              if (m_expiry > boost::posix_time::min_date_time)
+              {
+                boost::posix_time::ptime now =
+                  boost::posix_time::microsec_clock::universal_time ();
+                return m_expiry < now;
+              }
+              return false;
+            }
+
+            T const & value () const { return m_value; }
+            void set_value (T const &v) { m_value = v; }
+
+            boost::posix_time::ptime const & expiry () const { return m_expiry; }
+            void set_expiry (boost::posix_time::ptime e) { m_expiry = e; }
+          private:
+            friend class boost::serialization::access;
+            template<typename Archive>
+            void serialize (Archive & ar, const unsigned int /* version */ )
+            {
+              ar & BOOST_SERIALIZATION_NVP ( m_value );
+              ar & BOOST_SERIALIZATION_NVP ( m_expiry );
+            }
+
+            T m_value;
+            boost::posix_time::ptime m_expiry;
+          };
+
         public:
           typedef std::size_t size_type;
           typedef std::string key_type;
           typedef std::string value_type;
-          typedef boost::unordered_map<key_type, value_type> store_type;
+          typedef entry_t<value_type> entry_type;
+          typedef boost::unordered_map<key_type, entry_type> store_type;
           typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
           explicit
@@ -243,7 +304,9 @@ namespace fhg
             return write_through_enabled_;
           }
 
-          void put (fhg::com::kvs::message::put::map_type const & m)
+          void put ( fhg::com::kvs::message::put::map_type const & m
+                   , boost::posix_time::ptime expiry = boost::posix_time::min_date_time
+                   )
           {
             lock_t lock(mutex_);
             for ( fhg::com::kvs::message::put::map_type::const_iterator e (m.begin())
@@ -251,17 +314,21 @@ namespace fhg
                 ; ++e
                 )
             {
-              store_[ e->first ] = e->second;
+              store_[ e->first ] = entry_type (e->second, expiry);
             }
 
             write_through ();
           }
 
           template <typename Val>
-          void put (key_type const & k, Val v)
+          void put ( key_type const & k, Val v
+                   , boost::posix_time::ptime expiry = boost::posix_time::min_date_time
+                   )
           {
             lock_t lock(mutex_);
-            store_[ k ] = boost::lexical_cast<value_type>(v);
+            store_[ k ] = entry_type ( boost::lexical_cast<value_type>(v)
+                                     , expiry
+                                     );
 
             write_through ();
           }
@@ -271,16 +338,29 @@ namespace fhg
                   ) const
           {
             lock_t lock(mutex_);
+
+            std::list <std::string> to_delete;
             for (store_type::const_iterator e (store_.begin()); e != store_.end(); ++e)
             {
               if (e->first.substr(0, k.size()) == k)
-                m[e->first] = e->second;
+              {
+                if (not e->second.is_expired ())
+                  m[e->first] = e->second.value ();
+                else
+                  to_delete.push_back (e->first);
+              }
+            }
+
+            while (not to_delete.empty ())
+            {
+              const_cast<kvsd*>(this)->del (to_delete.front ());
+              to_delete.pop_front ();
             }
           }
 
-          store_type::mapped_type inc ( key_type const & k
-                                      , int step
-                                      )
+          value_type inc ( key_type const & k
+                         , int step
+                         )
           {
             lock_t lock(mutex_);
 
@@ -289,20 +369,22 @@ namespace fhg
             store_type::iterator it (store_.find(k));
             if (it != store_.end())
             {
-              value = boost::lexical_cast<int>(it->second);
+              value = boost::lexical_cast<int> (it->second.value ());
             }
             else
             {
               it = store_.insert ( it
-                                 , store_type::value_type (k, "0")
+                                 , store_type::value_type ( k
+                                                          , entry_type ("0")
+                                                          )
                                  );
             }
 
             value += step;
 
-            it->second = boost::lexical_cast<std::string>(value);
+            it->second = entry_type (boost::lexical_cast<std::string> (value));
 
-            return it->second;
+            return it->second.value ();
           }
 
           void clear (std::string const & /*regexp*/)
@@ -356,7 +438,7 @@ namespace fhg
               boost::archive::xml_oarchive ar(ofs);
 
               lock_t lock(mutex_);
-              std::map<std::string, std::string> tmp_map_ (store_.begin(), store_.end());
+              std::map<key_type, entry_type> tmp_map_ (store_.begin(), store_.end());
               ar << boost::serialization::make_nvp("kvsd", tmp_map_);
 
               LOG(INFO, "saved " << store_.size() << " entries");
@@ -378,7 +460,7 @@ namespace fhg
             if (ifs)
             {
               boost::archive::xml_iarchive ar(ifs);
-              std::map<std::string, std::string> tmp_map_;
+              std::map<key_type, entry_type> tmp_map_;
               ar >> boost::serialization::make_nvp("kvsd", tmp_map_);
 
               lock_t lock(mutex_);
@@ -393,15 +475,25 @@ namespace fhg
             }
           }
 
-          void entries (std::map<std::string, std::string> & m)
+          void entries (std::map<std::string, std::string> & m) const
           {
             lock_t lock(mutex_);
+            std::list <std::string> to_delete;
             for ( store_type::const_iterator e (store_.begin())
                 ; e != store_.end()
                 ; ++e
                 )
             {
-              m[e->first] = e->second;
+              if (not e->second.is_expired ())
+                m[e->first] = e->second.value ();
+              else
+                to_delete.push_back (e->first);
+            }
+
+            while (not to_delete.empty ())
+            {
+              const_cast<kvsd*>(this)->del (to_delete.front ());
+              to_delete.pop_front ();
             }
           }
         protected:
