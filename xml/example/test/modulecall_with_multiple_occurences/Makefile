@@ -8,5 +8,3 @@ ifndef SDPA_HOME
 endif
 
 include $(SDPA_HOME)/share/sdpa/make/common.mk
-
-CXXINCLUDEPATHS += $(CURDIR)
