@@ -15,6 +15,7 @@ set (hdrs
   value.hpp
   atomic.hpp
   term.hpp
+  ping.hpp
 )
 
 install(FILES ${hdrs}

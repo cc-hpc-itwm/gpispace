@@ -8,6 +8,7 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/thread/queue.hpp>
+#include <fhg/error_codes.hpp>
 
 #include <cstdio>
 #include <cstring>
@@ -135,6 +136,8 @@ public:
     m_message_thread.interrupt();
     m_message_thread.join ();
 
+    m_backend->stop ();
+
     FHG_PLUGIN_STOPPED();
   }
 
@@ -215,7 +218,7 @@ public:
     return m_backend->prepare ();
   }
 
-  void prepare_backend_done (int ec)
+  void prepare_backend_done (int ec, std::string const &msg)
   {
     if (! ec)
     {
@@ -224,7 +227,7 @@ public:
     }
     else
     {
-      LOG (ERROR, "backend preparation failed: " << ec);
+      LOG (ERROR, "backend preparation failed: " << ec << ": " << msg);
       m_backend->stop();
 
       sleep (5);
@@ -233,7 +236,7 @@ public:
     }
   }
 
-  void initialize_done (int ec)
+  void initialize_done (int ec, std::string const &msg)
   {
     if (! ec)
     {
@@ -242,12 +245,12 @@ public:
     }
     else
     {
-      LOG(WARN, "initialize failed: " << ec);
-      send_initialize_failure(ec);
+      LOG(WARN, "initialize failed: " << ec << ": " << msg);
+      send_initialize_failure (ec, msg);
     }
   }
 
-  void salt_mask_done (int ec)
+  void salt_mask_done (int ec, std::string const &msg)
   {
     if (0 == ec)
     {
@@ -264,8 +267,8 @@ public:
     }
     else
     {
-      LOG(WARN, "salt mask failed: " << ec);
-      send_process_salt_mask_failure(ec);
+      LOG(WARN, "salt mask failed: " << ec << ": " << msg);
+      send_process_salt_mask_failure (ec, msg);
 
       // work around strange protocol
       if (! m_migrate_xml_buffer.empty())
@@ -275,7 +278,7 @@ public:
     }
   }
 
-  void calculate_done (int ec)
+  void calculate_done (int ec, std::string const &msg)
   {
     if (! ec)
     {
@@ -292,12 +295,12 @@ public:
     }
     else
     {
-      LOG(WARN, "migration failed: " << ec);
-      send_migrate_failure(ec);
+      LOG(WARN, "migration failed: " << ec << ": " << msg);
+      send_migrate_failure (ec, msg);
     }
   }
 
-  void finalize_done (int ec)
+  void finalize_done (int ec, std::string const &msg)
   {
     if (! ec)
     {
@@ -306,8 +309,8 @@ public:
     }
     else
     {
-      LOG(WARN, "finalize failed: " << ec);
-      send_finalize_failure(ec);
+      LOG(WARN, "finalize failed: " << ec << ": " << msg);
+      send_finalize_failure (ec, msg);
     }
   }
 
@@ -318,12 +321,21 @@ public:
 private:
   isim::msg_t *create_error_msg ( int cmd
                                 , int ec
+                                , std::string const & msg
                                 )
   {
+    std::stringstream sstr;
     if (ec < 0)
-      ec = -ec;
-    std::string error (strerror(ec));
+    {
+      sstr << strerror (-ec);
+    }
+    else
+    {
+      sstr << fhg::error::show (ec);
+    }
+    sstr << " [" << ec << "]: " << msg;
 
+    std::string error (sstr.str ());
     return create_msg (cmd, error.c_str (), error.size () + 1);
   }
 
@@ -358,11 +370,11 @@ private:
     return m_isim->send (&msg, m_send_timeout);
   }
 
-  int send_initialize_failure(int ec)
+  int send_initialize_failure (int ec, std::string const &err)
   {
     m_isim->idle();
     isim::msg_t *msg =
-      create_error_msg (server::command::INITIALIZE_FAILURE, ec);
+      create_error_msg (server::command::INITIALIZE_FAILURE, ec, err);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -381,11 +393,11 @@ private:
     return m_isim->send (&msg, m_send_timeout);
   }
 
-  int send_process_salt_mask_failure(int ec)
+  int send_process_salt_mask_failure (int ec, std::string const &err)
   {
     m_isim->idle();
     isim::msg_t *msg =
-      create_error_msg (server::command::PROCESS_SALT_MASK_FAILURE, ec);
+      create_error_msg (server::command::PROCESS_SALT_MASK_FAILURE, ec, err);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -405,11 +417,11 @@ private:
     return m_isim->send (&msg, m_send_timeout);
   }
 
-  int send_migrate_failure(int ec)
+  int send_migrate_failure (int ec, std::string const &err)
   {
     m_isim->idle();
     isim::msg_t *msg =
-      create_error_msg (server::command::MIGRATE_FAILURE, ec);
+      create_error_msg (server::command::MIGRATE_FAILURE, ec, err);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -430,11 +442,11 @@ private:
     return send_waiting_for_initialize ();
   }
 
-  int send_finalize_failure(int ec)
+  int send_finalize_failure (int ec, std::string const &err)
   {
     m_isim->idle();
     isim::msg_t *msg =
-      create_error_msg (server::command::FINALIZE_FAILURE, ec);
+      create_error_msg (server::command::FINALIZE_FAILURE, ec, err);
     m_isim->send (&msg, m_send_timeout);
     return send_waiting_for_initialize ();
   }
@@ -463,7 +475,10 @@ private:
 
   int send_abort_refused(int ec)
   {
-    isim::msg_t *msg = create_error_msg (server::command::ABORT_REFUSED, ec);
+    isim::msg_t *msg = create_error_msg ( server::command::ABORT_REFUSED
+                                        , ec
+                                        , "abort refused"
+                                        );
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -529,7 +544,7 @@ private:
       ec = initialize(payload);
       if (0 != ec)
       {
-        send_initialize_failure(ec);
+        send_initialize_failure(ec, "submission failed");
       }
       break;
     case client::command::MIGRATE:
@@ -537,7 +552,7 @@ private:
       ec = calculate(payload);
       if (0 != ec)
       {
-        send_migrate_failure(ec);
+        send_migrate_failure(ec, "submission failed");
       }
       break;
     case client::command::MIGRATE_WITH_SALT_MASK:
@@ -550,7 +565,7 @@ private:
       ec = update_salt_mask(payload.c_str(), payload.size());
       if (0 != ec)
       {
-        send_process_salt_mask_failure(ec);
+        send_process_salt_mask_failure(ec, "submission failed");
       }
       break;
     case client::command::ABORT:
@@ -570,7 +585,7 @@ private:
       ec = finalize();
       if (0 != ec)
       {
-        send_finalize_failure(ec);
+        send_finalize_failure(ec, "submission failed");
       }
       break;
     default:

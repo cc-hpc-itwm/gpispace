@@ -51,6 +51,7 @@ namespace job
     std::string id;
     int         state;
     int         error;
+    std::string error_message;
     std::string result;
   };
 
@@ -235,10 +236,6 @@ public:
     if (0 == gpi_api)
     {
       MLOG(WARN, "could not acquire gpi::GPI plugin");
-    }
-    else
-    {
-      reinitialize_gpi_state ();
     }
 
     if (m_control_sdpa)
@@ -896,8 +893,9 @@ private:
   int handle_completed_job (job::info_t const &j)
   {
     LOG( INFO
-       , "job returned: " << job::type_to_name(j.type) << " "
+       , "job '" << job::type_to_name(j.type) << "' returned: "
        << sdpa::status::show(j.state)
+       << ": ec := " << j.error << " msg := " << j.error_message
        );
 
     update_progress(100);
@@ -921,7 +919,7 @@ private:
     {
     case job::type::PREPARE:
 
-      if (m_frontend) m_frontend->prepare_backend_done (ec);
+      if (m_frontend) m_frontend->prepare_backend_done (ec, j.error_message);
       break;
     case job::type::INITIALIZE:
       if (0 == ec)
@@ -930,7 +928,7 @@ private:
         ec = handle_initialize_result(result);
       }
 
-      if (m_frontend) m_frontend->initialize_done(ec);
+      if (m_frontend) m_frontend->initialize_done(ec, j.error_message);
       break;
     case job::type::UPDATE:
       if (0 == ec)
@@ -939,7 +937,7 @@ private:
       }
       m_state = state::INITIALIZED;
 
-      if (m_frontend) m_frontend->salt_mask_done(ec);
+      if (m_frontend) m_frontend->salt_mask_done(ec, j.error_message);
       break;
     case job::type::CALCULATE:
       if (0 == ec)
@@ -948,7 +946,7 @@ private:
       }
       m_state = state::INITIALIZED;
 
-      if (m_frontend) m_frontend->calculate_done(ec);
+      if (m_frontend) m_frontend->calculate_done(ec, j.error_message);
       break;
     case job::type::FINALIZE:
       if (0 == ec)
@@ -957,7 +955,7 @@ private:
       }
       m_state = state::UNINITIALIZED;
 
-      if (m_frontend) m_frontend->finalize_done(ec);
+      if (m_frontend) m_frontend->finalize_done(ec, j.error_message);
       break;
     default:
       return -EINVAL;
@@ -977,10 +975,16 @@ private:
         ; ++j
         )
     {
-      j->state = sdpa_c->status(j->id);
+      j->state = sdpa_c->status(j->id, j->error, j->error_message);
       if (job::is_done(*j))
       {
-        j->error = job::state_to_result_code(j->state);
+        if (j->state == sdpa::status::CANCELED)
+          j->error = -ECANCELED;
+        if (j->state == sdpa::status::FINISHED)
+          j->error = 0;
+        if (j->state == sdpa::status::FAILED && j->error == 0)
+          j->error = -EFAULT;
+
         sdpa_c->result(j->id, j->result);
         sdpa_c->remove(j->id);
         handle_completed_job (*j);
@@ -1045,7 +1049,8 @@ private:
       clear_my_gpi_state();
 
       m_state = state::UNINITIALIZED;
-      if (m_frontend) m_frontend->finalize_done(0);
+      if (m_frontend)
+        m_frontend->finalize_done (0, "");
 
       if (! gpi_api->connect())
       {

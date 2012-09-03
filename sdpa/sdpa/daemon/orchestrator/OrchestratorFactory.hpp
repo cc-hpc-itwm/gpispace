@@ -43,8 +43,10 @@ namespace daemon {
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
 				pOrch->createWorkflowEngine<T>();
 
-				seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", orchestrator::MAX_Q_SIZE));
-				seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pOrch, 1) );
+//				seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", orchestrator::MAX_Q_SIZE));
+//				seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pOrch, 1) );
+
+				seda::Stage::Ptr daemon_stage (new seda::Stage(name, pOrch, 1));
 
 				pOrch->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);
@@ -63,8 +65,10 @@ namespace daemon {
 				LOG( DEBUG, "Create Orchestrator "<<name<<" with no workflow engine" );
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
 
-				seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", orchestrator::MAX_Q_SIZE));
-				seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pOrch, 1) );
+//				seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", orchestrator::MAX_Q_SIZE));
+//				seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pOrch, 1) );
+
+				seda::Stage::Ptr daemon_stage (new seda::Stage(name, pOrch, 1));
 
 				pOrch->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);

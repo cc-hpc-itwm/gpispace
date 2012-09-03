@@ -11,6 +11,8 @@ namespace example
     virtual ~HelloWorld () {}
 
     virtual void say(std::ostream & os) const = 0;
+
+    virtual bool is_done () const = 0;
   };
 }
 

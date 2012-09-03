@@ -1,6 +1,0 @@
-#!/bin/bash
-
-SDPA_LIBEXEC=${1:?}; shift
-
-`which sed`                                   \
-  "s|@SDPA_LIBEXEC@|${SDPA_LIBEXEC}|g         "

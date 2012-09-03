@@ -98,6 +98,9 @@ namespace fhg
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
 
+      if (is_plugin_loaded (name))
+        return 0;
+
       int ec = ENOENT;
 
       BOOST_FOREACH (std::string const &dir, m_search_path)
@@ -178,6 +181,7 @@ namespace fhg
         {
           lock_type plugins_lock (m_mtx_plugins);
           m_plugins.insert (std::make_pair(p->name(), m));
+          m_load_order.push_back (p->name ());
         }
 
         MLOG( TRACE
@@ -199,6 +203,7 @@ namespace fhg
       {
         lock_type plugins_lock (m_mtx_incomplete_plugins);
         m_incomplete_plugins.insert (std::make_pair(p->name(), m));
+        m_load_order.push_back (p->name ());
 
         MLOG(TRACE, "start of " << p->name() << " incomplete");
       }
@@ -264,6 +269,7 @@ namespace fhg
       LOG(TRACE, "plugin '" << p->first << "' unloaded");
 
       m_plugins.erase (p);
+      m_load_order.remove (p->first);
 
       return rc;
     }
@@ -445,6 +451,24 @@ namespace fhg
 
         while (! m_plugins.empty())
         {
+          std::string plugin_name = m_load_order.back ();
+
+          plugin_names_t::reverse_iterator it = m_load_order.rbegin ();
+          plugin_names_t::reverse_iterator end = m_load_order.rend ();
+
+          for (; it != end ; ++it)
+          {
+            std::string plugin_to_unload = *it;
+            plugin_map_t::iterator plugin_it =
+              m_plugins.find (plugin_to_unload);
+            assert (plugin_it != m_plugins.end ());
+
+            if (unload_plugin (plugin_it) < 0)
+              continue;
+            else
+              break;
+          }
+          /*
           for ( plugin_map_t::iterator it (m_plugins.begin())
               ; it != m_plugins.end()
               ; ++it
@@ -455,6 +479,7 @@ namespace fhg
             else
               break;
           }
+          */
         }
       }
     }
@@ -640,7 +665,7 @@ namespace fhg
         task_info_t task = m_task_queue.get();
         try
         {
-          LOG(TRACE, "executing task " << task.owner << "::" << task.name);
+          DMLOG(TRACE, "executing task " << task.owner << "::" << task.name);
           task.execute();
         }
         catch (std::exception const & ex)

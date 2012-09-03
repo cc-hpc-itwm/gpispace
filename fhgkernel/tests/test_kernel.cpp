@@ -2,6 +2,9 @@
 
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
+#include <fhglog/fhglog.hpp>
+
+#include <fhg/plugin/builtin/helloworld.hpp>
 
 #include <vector>
 #include <boost/filesystem.hpp>
@@ -36,14 +39,46 @@ void test_start_stop_kernel ()
   krnl->load_plugin (helloworld_plugin.string());
   BOOST_REQUIRE (krnl->is_plugin_loaded ("helloworld"));
 
-  boost::this_thread::sleep (boost::posix_time::seconds(2));
+  {
+    example::HelloWorld *hw = dynamic_cast<example::HelloWorld*>
+      (krnl->lookup_plugin ("helloworld")->get_plugin ());
+    while (not hw->is_done ())
+      sleep (1);
+  }
 
   krnl->stop();
+
+  krnl_thread.join();
+
   BOOST_REQUIRE (not krnl->is_plugin_loaded ("hello"));
   BOOST_REQUIRE (not krnl->is_plugin_loaded ("world"));
   BOOST_REQUIRE (not krnl->is_plugin_loaded ("helloworld"));
 
+  krnl->unload_all();
+}
+
+void test_load_unload_plugin ()
+{
+  kernel_ptr_t krnl(new fhg::core::kernel_t);
+
+  boost::thread krnl_thread
+    (boost::bind (&fhg::core::kernel_t::run, krnl));
+
+  krnl->load_plugin (hello_plugin.string());
+  BOOST_REQUIRE (krnl->is_plugin_loaded ("hello"));
+
+  krnl->unload_plugin ("hello");
+  BOOST_REQUIRE (not krnl->is_plugin_loaded ("hello"));
+
+  krnl->load_plugin (hello_plugin.string());
+  BOOST_REQUIRE (krnl->is_plugin_loaded ("hello"));
+
+  krnl->stop();
+
   krnl_thread.join();
+
+  BOOST_REQUIRE (not krnl->is_plugin_loaded ("hello"));
+
   krnl->unload_all();
 }
 
@@ -57,10 +92,20 @@ void test_restart_kernel ()
 
     // load some plugins
     krnl->load_plugin (hello_plugin.string());
-    krnl->load_plugin (world_plugin.string());
-    krnl->load_plugin (helloworld_plugin.string());
+    BOOST_REQUIRE (krnl->is_plugin_loaded ("hello"));
 
-    boost::this_thread::sleep (boost::posix_time::seconds(2));
+    krnl->load_plugin (world_plugin.string());
+    BOOST_REQUIRE (krnl->is_plugin_loaded ("world"));
+
+    krnl->load_plugin (helloworld_plugin.string());
+    BOOST_REQUIRE (krnl->is_plugin_loaded ("helloworld"));
+
+    {
+      example::HelloWorld *hw = dynamic_cast<example::HelloWorld*>
+        (krnl->lookup_plugin ("helloworld")->get_plugin ());
+      while (not hw->is_done ())
+        sleep (1);
+    }
 
     krnl->stop();
     krnl_thread.join();
@@ -68,15 +113,27 @@ void test_restart_kernel ()
   }
 
   {
+    krnl->reset ();
+
     boost::thread krnl_thread
       (boost::bind (&fhg::core::kernel_t::run, krnl));
 
     // load some plugins
     krnl->load_plugin (hello_plugin.string());
-    krnl->load_plugin (world_plugin.string());
-    krnl->load_plugin (helloworld_plugin.string());
+    BOOST_REQUIRE (krnl->is_plugin_loaded ("hello"));
 
-    boost::this_thread::sleep (boost::posix_time::seconds(2));
+    krnl->load_plugin (world_plugin.string());
+    BOOST_REQUIRE (krnl->is_plugin_loaded ("world"));
+
+    krnl->load_plugin (helloworld_plugin.string());
+    BOOST_REQUIRE (krnl->is_plugin_loaded ("helloworld"));
+
+    {
+      example::HelloWorld *hw = dynamic_cast<example::HelloWorld*>
+        (krnl->lookup_plugin ("helloworld")->get_plugin ());
+      while (not hw->is_done ())
+        sleep (1);
+    }
 
     krnl->stop();
     krnl_thread.join();
@@ -87,6 +144,8 @@ void test_restart_kernel ()
 test_suite*
 init_unit_test_suite (int ac, char *av[])
 {
+  FHGLOG_SETUP (ac, av);
+
   if (ac <= 1)
   {
     throw boost::unit_test::framework::setup_error
@@ -100,8 +159,9 @@ init_unit_test_suite (int ac, char *av[])
 
   {
     test_suite* ts1 = BOOST_TEST_SUITE( "plugin_kernel" );
-    ts1->add( BOOST_TEST_CASE(&test_start_stop_kernel));
-    ts1->add( BOOST_TEST_CASE(&test_restart_kernel));
+    //    ts1->add (BOOST_TEST_CASE(&test_start_stop_kernel));
+    ts1->add (BOOST_TEST_CASE(&test_restart_kernel));
+    //ts1->add (BOOST_TEST_CASE (&test_load_unload_plugin));
 
     framework::master_test_suite().add( ts1 );
   }

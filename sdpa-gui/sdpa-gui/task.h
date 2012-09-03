@@ -14,6 +14,8 @@ public:
       , QString const & id
       , QGraphicsItem * parent = 0
       );
+  virtual ~Task () {}
+
   QRectF boundingRect() const;
   void paint( QPainter *painter
             , const QStyleOptionGraphicsItem *option
@@ -21,6 +23,7 @@ public:
             );
 
   void update_task_state (int state);
+
  protected:
   void advance(int step);
 

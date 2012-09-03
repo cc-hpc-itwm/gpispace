@@ -48,6 +48,8 @@ public:
     m_hello = fhg_kernel()->acquire<example::Hello>("hello");
     m_world = fhg_kernel()->acquire<example::World>("world");
 
+    m_num_iterations = fhg_kernel ()->get<size_t> ("num_iter", 2);
+
     if ((statistics = fhg_kernel()->acquire<stats::Statistics>("stats")) != 0)
     {
       count = real_count;
@@ -80,12 +82,15 @@ public:
     say (std::cout);
     stop_timer("helloworld.say");
 
-    fhg_kernel()->schedule( "say"
-                          , boost::bind( &HelloWorldImpl::do_it
-                                       , this
-                                       )
-                          , 1
-                          );
+    if (m_num_iterations --> 0)
+    {
+      fhg_kernel()->schedule( "say"
+                            , boost::bind( &HelloWorldImpl::do_it
+                                         , this
+                                         )
+                            , 1
+                            );
+    }
   }
 
   void say (std::ostream &os) const
@@ -94,9 +99,15 @@ public:
     os << m_hello->text() << ", " << m_world->text() << "!" << std::endl;
   }
 
+  bool is_done () const
+  {
+    return 0 == m_num_iterations;
+  }
 private:
   example::Hello *m_hello;
   example::World *m_world;
+
+  size_t m_num_iterations;
 };
 
 EXPORT_FHG_PLUGIN( helloworld

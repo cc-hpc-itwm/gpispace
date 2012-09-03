@@ -42,8 +42,6 @@
           <cinclude href="string"/>
           <cinclude href="plugins/progress.h"/>
           <code><![CDATA[
-            // use a demo progress thingy
-            static int progress_counter = 0;
             LOG (INFO, "RUN " << ready_package);
 
             char * update_descr = static_cast<char *> (fvmGetShmemPtr());

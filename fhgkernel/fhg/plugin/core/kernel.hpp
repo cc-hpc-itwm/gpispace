@@ -113,6 +113,7 @@ namespace fhg
     {
     public:
       typedef std::vector<std::string> search_path_t;
+      typedef std::list<std::string> plugin_names_t;
 
       explicit
       kernel_t (std::string const &state_path = "");
@@ -191,8 +192,9 @@ namespace fhg
       time_t m_tick_time;
       bool m_stop_requested;
       bool m_running;
-      plugin_map_t m_plugins;
-      plugin_map_t m_incomplete_plugins;
+      plugin_map_t   m_plugins;
+      plugin_map_t   m_incomplete_plugins;
+      plugin_names_t m_load_order;
 
       task_list_t m_pending_tasks;
       task_queue_t m_task_queue;

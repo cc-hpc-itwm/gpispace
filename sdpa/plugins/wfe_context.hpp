@@ -35,7 +35,17 @@ struct wfe_exec_context : public we::mgmt::context<>
 
   void handle_internally ( we::activity_t & act, const mod_t & mod)
   {
-    module::call ( loader, act, mod );
+    try
+    {
+      module::call (loader, act, mod);
+    }
+    catch (std::exception const &ex)
+    {
+      throw std::runtime_error
+        ( "call to '" + mod.module () + "::" + mod.function () + "'"
+        + " failed: " + ex.what ()
+        );
+    }
   }
 
   void handle_internally ( we::activity_t & , const expr_t &)

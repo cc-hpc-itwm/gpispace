@@ -85,7 +85,7 @@ int main (int argc, char **argv)
                 else
                 {
                         LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
-                        fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
+                        fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(5), 1);
                 }
         }
 
@@ -142,7 +142,7 @@ int main (int argc, char **argv)
 
         case NO_BKP:
 
-                        LOG( WARN, "No backup folder and no backup file were specified! No backup for the orchestrator will be available!");
+                        MLOG (INFO, "No backup folder and no backup file were specified! No backup for the orchestrator will be available!");
                         bDoBackup = false;
                         break;
 
