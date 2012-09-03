@@ -17,6 +17,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-warning-option")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-parentheses")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-constant-logical-operand")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-format-zero-length")
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wnon-virtual-dtor")

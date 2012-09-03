@@ -16,13 +16,14 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
 
 add_executable(gen-includes includes.cpp)
 target_link_libraries(gen-includes ${Boost_LIBRARIES})
+target_link_libraries(gen-includes fhg-revision)
 get_target_property(GEN_INCLUDE_EXE gen-includes LOCATION)
 
 set (headerlist_hpp
     ${CMAKE_CURRENT_BINARY_DIR}/headerlist.hpp
     )
 add_custom_command(OUTPUT ${headerlist_hpp}
-  COMMAND ${GEN_INCLUDE_EXE} > ${headerlist_hpp}
+  COMMAND ${GEN_INCLUDE_EXE} -o ${headerlist_hpp}
   DEPENDS gen-includes
   COMMENT "generating internal pnetc headerlist"
   )

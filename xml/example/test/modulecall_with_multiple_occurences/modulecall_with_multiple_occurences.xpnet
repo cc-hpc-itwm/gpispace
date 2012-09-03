@@ -1,0 +1,31 @@
+<defun name="modulecall_with_multiple_occurences">
+  <net>
+    <defun name="modcall">
+      <module name="mod" function="fun"/>
+    </defun>
+    <transition name="a">
+      <use name="modcall"/>
+    </transition>
+    <transition name="b">
+      <use name="modcall"/>
+    </transition>
+    <transition name="c">
+      <defun>
+        <module name="m" function="f">
+          <code><![CDATA[
+            // this is implementation 1
+          ]]></code>
+        </module>
+      </defun>
+    </transition>
+    <transition name="d">
+      <defun>
+        <module name="m" function="f">
+          <code><![CDATA[
+            // this is implementation 2
+          ]]></code>
+        </module>
+      </defun>
+    </transition>
+  </net>
+</defun>
