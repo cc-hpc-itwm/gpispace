@@ -1104,7 +1104,7 @@ namespace xml
                        << cpp_util::make::cpp (mod->first, fun->name)
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
-                       << " -MM -MT '"
+                       << " -MM -MP -MT '"
                        << cpp_util::make::dep (mod->first, fun->name)
                        << "' -MT '"
                        << cpp_util::make::obj (mod->first, fun->name)
@@ -1138,7 +1138,7 @@ namespace xml
                    << ": "
                    << obj_cpp                                      << std::endl;
             stream << "\t$(CXX) $(CXXFLAGS)"
-                   << " -MM -MT '"
+                   << " -MM -MP -MT '"
                    << cpp_util::make::dep (mod->first)
                    << "' -MT '"
                    << cpp_util::make::obj (mod->first)
