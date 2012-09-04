@@ -48,10 +48,17 @@ namespace fhg
           operator () (fhg::com::kvs::message::put const & m)
           {
             DLOG(TRACE, "put (" << m.entries().begin()->first << ") := " << m.entries().begin()->second);
-            store_.put ( m.entries()
-                       , boost::posix_time::microsec_clock::universal_time ()
-                       + boost::posix_time::microsec (m.expiry () * 1000)
-                       );
+
+            boost::posix_time::ptime expiry
+              = ( m.expiry ()
+
+                ? boost::posix_time::microsec_clock::universal_time ()
+                + boost::posix_time::microsec (m.expiry () * 1000)
+
+                : boost::posix_time::min_date_time
+                );
+
+            store_.put (m.entries(), expiry);
             return fhg::com::kvs::message::error (); // no_error
           }
 
