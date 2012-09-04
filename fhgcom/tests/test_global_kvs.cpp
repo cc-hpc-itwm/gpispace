@@ -89,6 +89,36 @@ BOOST_AUTO_TEST_CASE ( put_get_int_test )
   kvs::del ("test_global_int_kvs");
 }
 
+BOOST_AUTO_TEST_CASE ( put_get_timed_valid_test )
+{
+  using namespace fhg::com;
+
+  int val;
+
+  kvs::timed_put ("test", 42, 5000); // 5 seconds
+  val = kvs::get<int> ("test");
+  BOOST_CHECK_EQUAL (val, 42);
+  kvs::del ("test");
+}
+
+BOOST_AUTO_TEST_CASE ( put_get_timed_expired_test )
+{
+  using namespace fhg::com;
+
+  kvs::timed_put ("test", 42, 10); // 10 ms
+  usleep (50);
+
+  try
+  {
+    kvs::get<int> ("test");
+    kvs::del ("test");
+  }
+  catch (...)
+  {
+    // ok
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
