@@ -61,6 +61,11 @@ struct F
     delete m_serv;
     delete m_kvsd;
     delete m_pool;
+
+    delete *fhg::com::kvs::global::get_kvs_info_ptr ();
+    *fhg::com::kvs::global::get_kvs_info_ptr () = 0;
+
+    FHGLOG_TERM ();
   }
 
   fhg::com::io_service_pool *m_pool;
