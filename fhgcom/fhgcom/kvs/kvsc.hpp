@@ -377,8 +377,15 @@ namespace fhg
 
         static kvs_data & get_kvs_info ()
         {
+          return **get_kvs_info_ptr ();
+        }
+
+        static kvs_data **get_kvs_info_ptr ()
+        {
           static kvs_data * d (new kvs_data);
-          return *d;
+          if (d == 0)
+            d = new kvs_data;
+          return &d;
         }
       };
 
