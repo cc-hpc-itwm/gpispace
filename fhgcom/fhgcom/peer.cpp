@@ -40,6 +40,7 @@ namespace fhg
       , io_service_()
       , io_service_work_(new boost::asio::io_service::work(io_service_))
       , acceptor_(io_service_)
+      , m_renew_kvs_entries_timer (io_service_)
       , connections_()
     {
       if (name.find ('.') != std::string::npos)
@@ -127,7 +128,7 @@ namespace fhg
 
     void peer_t::stop()
     {
-//      lock_type lock(mutex_);
+      lock_type lock(mutex_);
 
       if (stopped_) return;
 
@@ -182,8 +183,6 @@ namespace fhg
         using namespace boost::system;
         to_recv.handler (errc::make_error_code(errc::operation_canceled));
       }
-
-      io_service_.stop();
 
       stopped_ = true;
     }
@@ -507,10 +506,14 @@ namespace fhg
           handle_error (cd.connection, ec);
           while (! cd.o_queue.empty())
           {
-            to_send_t & to_send = cd.o_queue.front();
             using namespace boost::system;
-            to_send.handler (errc::make_error_code(errc::connection_refused));
+
+            to_send_t to_send = cd.o_queue.front();
             cd.o_queue.pop_front();
+
+            lock.unlock ();
+            to_send.handler (errc::make_error_code(errc::connection_refused));
+            lock.lock ();
           }
         }
       }
@@ -522,18 +525,30 @@ namespace fhg
 
       if (connections_.find (a) == connections_.end())
       {
-          LOG(WARN, "could not send message to " << a << " connection already closed: " << ec);
-          return;
+        LOG_IF( WARN
+              , ec
+              , "could not send message to " << a
+              << " connection already closed: "
+              << ec << " msg: " << ec.message ()
+              );
+        return;
       }
 
       connection_data_t & cd = connections_.at (a);
-      assert (! cd.o_queue.empty());
+      if (cd.o_queue.empty ())
+      {
+        MLOG_IF ( WARN
+                , cd.send_in_progress
+                , "inconsistent output queue: " << ec << " msg: " << ec.message ()
+                );
+        return;
+      }
 
       cd.o_queue.front().handler (ec);
+      cd.o_queue.pop_front();
 
       LOG_IF(WARN, ec, "message delivery to " << a << " failed: " << ec);
 
-      cd.o_queue.pop_front();
       if (! ec)
       {
         if (! cd.o_queue.empty())
@@ -580,40 +595,55 @@ namespace fhg
                                                 )
                                   );
       }
+      catch (std::out_of_range const &)
+      {
+        // ignore, connection has been closed before we could start it
+      }
       catch (std::exception const & ex)
       {
-        LOG(WARN, "could not start sender to " << a << ": connection data disappeared");
+        LOG (ERROR, "could not start sender to " << a << ": " << ex.what ());
       }
+    }
+
+    void peer_t::renew_kvs_entries ()
+    {
+      boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
+
+      std::string prefix ("p2p.peer");
+      prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
+
+      kvs::values_type values;
+      values[prefix + "." + "location" + "." + "host"] =
+        boost::lexical_cast<std::string>(endpoint.address());
+      values[prefix + "." + "location" + "." + "port"] =
+        boost::lexical_cast<std::string>(endpoint.port());
+      values[prefix + "." + "name"] = name_;
+
+      if (  (endpoint.address() == boost::asio::ip::address_v4::any())
+         || (endpoint.address() == boost::asio::ip::address_v6::any())
+           )
+      {
+        const std::string h(boost::asio::ip::host_name());
+        DMLOG( TRACE
+            , "endpoint is any address, changing registration host to: " << h
+            );
+        values[prefix + "." + "location" + "." + "host"] = h;
+      }
+
+      kvs::timed_put (values, 60 * 20 * 1000u);
+
+      m_renew_kvs_entries_timer.expires_from_now
+        (boost::posix_time::seconds (60 * 15));
+
+      m_renew_kvs_entries_timer.async_wait
+        (boost::bind (&peer_t::renew_kvs_entries, this));
     }
 
     void peer_t::update_my_location ()
     {
       try
       {
-        boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
-
-        std::string prefix ("p2p.peer");
-        prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
-
-        kvs::values_type values;
-        values[prefix + "." + "location" + "." + "host"] =
-          boost::lexical_cast<std::string>(endpoint.address());
-        values[prefix + "." + "location" + "." + "port"] =
-          boost::lexical_cast<std::string>(endpoint.port());
-        values[prefix + "." + "name"] = name_;
-
-        if (  (endpoint.address() == boost::asio::ip::address_v4::any())
-           || (endpoint.address() == boost::asio::ip::address_v6::any())
-           )
-        {
-          const std::string h(boost::asio::ip::host_name());
-          LOG( INFO
-             , "endpoint is any address, changing registration host to: " << h
-             );
-          values[prefix + "." + "location" + "." + "host"] = h;
-        }
-
-        kvs::put (values);
+        renew_kvs_entries ();
 
         started_.notify (boost::system::error_code());
       }
@@ -638,7 +668,7 @@ namespace fhg
 
       if (ec)
       {
-        LOG(WARN, "accept() failed: " << ec);
+        LOG (WARN, "accept() failed: " << ec << " := " << ec.message ());
       }
       else
       {
@@ -780,6 +810,9 @@ namespace fhg
       {
         connection_data_t & cd = connections_[c->remote_address()];
 
+        // deactivate asynchronous sender
+        cd.send_in_progress = false;
+
         DLOG_IF( WARN
                , ec && (ec.value() != boost::asio::error::eof)
                , "error on connection to " << cd.name << " - closing it: cat=" << ec.category().name() << " val=" << ec.value() << " txt=" << ec.message()
@@ -787,14 +820,14 @@ namespace fhg
 
         while (! cd.o_queue.empty())
         {
-          to_send_t & to_send = cd.o_queue.front();
+          to_send_t to_send = cd.o_queue.front();
+          cd.o_queue.pop_front();
+
           using namespace boost::system;
 
           lock.unlock ();
           to_send.handler (errc::make_error_code(errc::operation_canceled));
           lock.lock ();
-
-          cd.o_queue.pop_front();
         }
 
         // the handler might async recv again...
@@ -803,7 +836,9 @@ namespace fhg
 
         while (! tmp.empty())
         {
-          to_recv_t & to_recv = tmp.front();
+          to_recv_t to_recv = tmp.front();
+          tmp.pop_front();
+
           using namespace boost::system;
           to_recv.message->header.src = c->remote_address();
           to_recv.message->header.dst = c->local_address();
@@ -811,22 +846,28 @@ namespace fhg
           lock.unlock ();
           to_recv.handler (errc::make_error_code(errc::operation_canceled));
           lock.lock ();
-
-          tmp.pop_front();
         }
 
         connections_.erase(c->remote_address());
       }
-      else if (ec != 0)
-      {
-        LOG_IF ( ERROR
-               , (c->remote_address () != p2p::address_t() && (ec.value() != boost::asio::error::eof))
-               , "error on a connection i don't know anything about, remote: " << c->remote_address() << " error: " << ec
-               );
-      }
       else
       {
-        LOG(ERROR, "strange, ec == 0 in handle_error");
+        if (backlog_.find (c) != backlog_.end ())
+        {
+          backlog_.erase (c);
+        }
+        else
+        {
+          /*
+          LOG_IF ( ERROR
+                 , (c->remote_address () != p2p::address_t() && (ec.value() != boost::asio::error::eof))
+                 , "error on a connection i don't know anything about, remote: " << c->remote_address()
+                 << " error: " << ec << " msg: " << ec.message ()
+                 );
+          */
+          c->stop ();
+          c.reset ();
+        }
       }
     }
   }

@@ -101,21 +101,30 @@ namespace fhg
         completion_handler_t handler;
         boost::posix_time::time_duration timeout;
 
-        std::vector<boost::asio::const_buffer> to_buffers() const
+        std::vector<boost::asio::const_buffer> const & to_buffers() const
         {
           assert (message != 0);
           assert (message->data.size() == message->header.length);
 
-          std::vector<boost::asio::const_buffer> v;
-          v.push_back (boost::asio::buffer (&message->header, sizeof(message_t::header_t)));
-          v.push_back (boost::asio::buffer ( message->data));
-          return v;
+          if (m_buf.empty ())
+          {
+            m_buf.push_back (boost::asio::buffer ( &message->header
+                                                 , sizeof(message_t::header_t)
+                                                 )
+                            );
+            m_buf.push_back (boost::asio::buffer (message->data));
+          }
+
+          return m_buf;
         }
+
+      private:
+        mutable std::vector<boost::asio::const_buffer> m_buf;
       };
 
       void start_read ();
       void start_send ();
-      void start_send (to_send_t);
+      void start_send (to_send_t const &);
 
       void handle_read_header ( const boost::system::error_code & ec
                               , std::size_t bytes_transferred
