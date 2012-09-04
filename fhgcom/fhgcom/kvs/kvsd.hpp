@@ -416,13 +416,14 @@ namespace fhg
             do
             {
               changed = false;
-              for (store_type::iterator it (store_.begin()); it != store_.end() && !changed; ++it)
+              for (store_type::iterator it (store_.begin()); it != store_.end(); ++it)
               {
                 if (it->first.substr(0, k.size()) == k)
                 {
                   //                  store_.quick_erase (it);
                   store_.erase (it);
                   changed = true;
+                  break;
                 }
               }
             } while (changed);
