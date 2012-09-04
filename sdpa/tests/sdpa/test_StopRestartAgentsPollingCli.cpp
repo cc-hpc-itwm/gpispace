@@ -149,9 +149,9 @@ struct MyFixture
 
 	int m_nITER;
 	int m_sleep_interval ;
-    std::string m_strWorkflow;
+  std::string m_strWorkflow;
 
-    fhg::com::io_service_pool *m_pool;
+  fhg::com::io_service_pool *m_pool;
 	fhg::com::kvs::server::kvsd *m_kvsd;
 	fhg::com::tcp_server *m_serv;
 	boost::thread *m_thrd;
@@ -212,7 +212,7 @@ void MyFixture::run_client_polling()
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-				boost::this_thread::sleep(boost::posix_time::seconds(10));
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -237,7 +237,7 @@ void MyFixture::run_client_polling()
 		try {
 				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 				ptrCli->retrieveResults(job_id_user);
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
+				//boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -246,9 +246,8 @@ void MyFixture::run_client_polling()
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 
 		nTrials = 0;
@@ -256,7 +255,6 @@ void MyFixture::run_client_polling()
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -264,15 +262,13 @@ void MyFixture::run_client_polling()
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 	}
 
 	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
+  ptrCli.reset();
 }
 
 sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )

@@ -303,7 +303,7 @@ main (int argc, char ** argv)
   petri_net::pid_t pid_in_progress (net.add_place (place::type("in_progress")));
 
   petri_net::pid_t pid_credit_in_progress
-    (CAP_IN_PROGRESS ? net.add_place (place::type("credit_in_progress")) :-1);
+    (CAP_IN_PROGRESS ? net.add_place (place::type("credit_in_progress")) : 0);
 
   petri_net::tid_t tid_init
     ( mk_transition

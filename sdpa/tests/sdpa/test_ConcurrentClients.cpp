@@ -59,7 +59,7 @@ static const std::string kvs_host () { static std::string s("localhost"); return
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
 const int NMAXTRIALS = 10000;
-const int NMAXTHRDS  = 3;
+const int NMAXTHRDS  = 2;
 const int MAX_CAP 	 = 100;
 
 namespace po = boost::program_options;
@@ -153,9 +153,9 @@ struct MyFixture
 
 	int m_nITER;
 	int m_sleep_interval ;
-    std::string m_strWorkflow;
+  std::string m_strWorkflow;
 
-    fhg::com::io_service_pool *m_pool;
+  fhg::com::io_service_pool *m_pool;
 	fhg::com::kvs::server::kvsd *m_kvsd;
 	fhg::com::tcp_server *m_serv;
 	boost::thread *m_thrd;
