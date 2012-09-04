@@ -40,6 +40,7 @@ namespace fhg
       , io_service_()
       , io_service_work_(new boost::asio::io_service::work(io_service_))
       , acceptor_(io_service_)
+      , m_renew_kvs_entries_timer (io_service_)
       , connections_()
     {
       if (name.find ('.') != std::string::npos)
@@ -586,34 +587,45 @@ namespace fhg
       }
     }
 
+    void peer_t::renew_kvs_entries ()
+    {
+      boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
+
+      std::string prefix ("p2p.peer");
+      prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
+
+      kvs::values_type values;
+      values[prefix + "." + "location" + "." + "host"] =
+        boost::lexical_cast<std::string>(endpoint.address());
+      values[prefix + "." + "location" + "." + "port"] =
+        boost::lexical_cast<std::string>(endpoint.port());
+      values[prefix + "." + "name"] = name_;
+
+      if (  (endpoint.address() == boost::asio::ip::address_v4::any())
+         || (endpoint.address() == boost::asio::ip::address_v6::any())
+           )
+      {
+        const std::string h(boost::asio::ip::host_name());
+        DMLOG( TRACE
+            , "endpoint is any address, changing registration host to: " << h
+            );
+        values[prefix + "." + "location" + "." + "host"] = h;
+      }
+
+      kvs::timed_put (values, 60 * 20 * 1000u);
+
+      m_renew_kvs_entries_timer.expires_from_now
+        (boost::posix_time::seconds (60 * 15));
+
+      m_renew_kvs_entries_timer.async_wait
+        (boost::bind (&peer_t::renew_kvs_entries, this));
+    }
+
     void peer_t::update_my_location ()
     {
       try
       {
-        boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
-
-        std::string prefix ("p2p.peer");
-        prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
-
-        kvs::values_type values;
-        values[prefix + "." + "location" + "." + "host"] =
-          boost::lexical_cast<std::string>(endpoint.address());
-        values[prefix + "." + "location" + "." + "port"] =
-          boost::lexical_cast<std::string>(endpoint.port());
-        values[prefix + "." + "name"] = name_;
-
-        if (  (endpoint.address() == boost::asio::ip::address_v4::any())
-           || (endpoint.address() == boost::asio::ip::address_v6::any())
-           )
-        {
-          const std::string h(boost::asio::ip::host_name());
-          LOG( INFO
-             , "endpoint is any address, changing registration host to: " << h
-             );
-          values[prefix + "." + "location" + "." + "host"] = h;
-        }
-
-        kvs::put (values);
+        renew_kvs_entries ();
 
         started_.notify (boost::system::error_code());
       }
