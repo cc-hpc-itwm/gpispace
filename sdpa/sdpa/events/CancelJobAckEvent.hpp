@@ -44,7 +44,10 @@ namespace sdpa { namespace events {
 
       virtual ~CancelJobAckEvent() { }
 
-      std::string str() const { return "CancelJobAckEvent"; }
+      std::string str() const
+      {
+        return "CancelJobAckEvent(" + job_id ().str () + ")";
+      }
 
       virtual void handleBy(EventHandler *handler)
       {

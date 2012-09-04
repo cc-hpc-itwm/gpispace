@@ -42,17 +42,21 @@ namespace sdpa { namespace events {
         DeleteJobAckEvent(const address_t& a_from
                         , const address_t& a_to
                         , const sdpa::job_id_t& a_job_id
-						, const message_id_type &mid)
+                                                , const message_id_type &mid)
          :  sdpa::events::JobEvent( a_from, a_to, a_job_id, mid )
         {}
 
-    	  virtual ~DeleteJobAckEvent() { }
+          virtual ~DeleteJobAckEvent() { }
 
-    	  std::string str() const { return "DeleteJobAckEvent"; }
+      std::string str() const
+      {
+        return "DeleteJobAckEvent(" + job_id ().str () + ")";
+      }
+
 
         virtual void handleBy(EventHandler *handler)
         {
-		      handler->handleDeleteJobAckEvent(this);
+                      handler->handleDeleteJobAckEvent(this);
         }
     };
 }}

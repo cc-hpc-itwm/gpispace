@@ -57,8 +57,7 @@ namespace sdpa { namespace events {
 
       std::string str() const
       {
-        static std::string s("CancelJobEvent");
-        return s;
+        return "CancelJobEvent(" + job_id ().str () + ")";
       }
 
       std::string const & reason () const

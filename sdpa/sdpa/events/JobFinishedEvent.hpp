@@ -50,7 +50,7 @@ namespace sdpa { namespace events {
 
       virtual ~JobFinishedEvent() { }
 
-      std::string str() const { return "JobFinishedEvent"; }
+    std::string str() const { return "JobFinishedEvent(" + job_id ().str () + ")"; }
 
       virtual void handleBy(EventHandler *handler)
       {

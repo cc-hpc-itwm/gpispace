@@ -50,7 +50,10 @@ namespace sdpa { namespace events {
 
       virtual ~JobStatusReplyEvent() { }
 
-      std::string str() const { return "JobStatusReplyEvent"; }
+      std::string str() const
+      {
+        return "JobStatusReplyEvent(" + job_id ().str () + ")";
+      }
 
       const status_t &status() const { return status_; }
       status_t &status() { return status_; }

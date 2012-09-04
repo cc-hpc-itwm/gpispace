@@ -49,7 +49,7 @@ namespace sdpa { namespace events {
       virtual ~SubmitJobAckEvent() {
       }
 
-      std::string str() const { return "SubmitJobAckEvent"; }
+    std::string str() const { return "SubmitJobAckEvent(" + job_id ().str () + ")"; }
 
       virtual void handleBy(EventHandler *handler)
       {

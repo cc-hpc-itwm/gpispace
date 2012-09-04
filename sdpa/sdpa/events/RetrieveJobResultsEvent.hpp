@@ -48,7 +48,10 @@ namespace sdpa { namespace events {
 
       virtual ~RetrieveJobResultsEvent() { }
 
-      std::string str() const { return "RetrieveJobResultsEvent"; }
+      std::string str() const
+      {
+        return "RetrieveJobResultsEvent(" + job_id ().str () + ")";
+      }
 
       virtual void handleBy(EventHandler *handler)
       {
