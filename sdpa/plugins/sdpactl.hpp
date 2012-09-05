@@ -11,6 +11,8 @@ namespace sdpa
     virtual int start () = 0;
     virtual int restart () = 0;
     virtual int stop () = 0;
+    virtual int status () = 0;
+    virtual int status (const char * comp) = 0;
   };
 }
 

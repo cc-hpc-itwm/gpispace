@@ -9,6 +9,7 @@
 #include "Server.h"
 #include "Message.h"
 #include "ServerSettings.hpp"
+#include "ServerStateControlServer.h"
 
 #include <fhg/assert.hpp>
 #include <fhglog/minimal.hpp>
@@ -70,6 +71,88 @@ typedef boost::recursive_mutex mutex_type;
 typedef boost::unique_lock<mutex_type> lock_type;
 typedef boost::condition_variable_any condition_type;
 
+class ISIM_Real;
+namespace detail
+{
+  using namespace PSProMigIF;
+
+  class ISIMServer;
+
+  class ISIMServerHelper : public StartServerHelper
+  {
+  public:
+    ISIMServerHelper (std::string const &vsn, ISIM_Real *isim)
+      : StartServerHelper (vsn)
+      , m_isim (isim)
+    {}
+
+    StartServer *create ();
+
+    ServerStateControl *createStateControl ()
+    {
+      return new ServerStateControlServer ();
+    }
+  private:
+    ISIM_Real *m_isim;
+  };
+
+  class ISIMServer : public StartServer
+  {
+    friend class ISIMServerHelper;
+
+  protected:
+    ISIMServer (const std::string& vsn, ISIM_Real *isim)
+      : StartServer (vsn)
+      , m_isim (isim)
+    {}
+
+    virtual ~ISIMServer ()
+    {}
+
+    void startRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "startRoutine ()");
+    }
+
+    void stopRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "stopRoutine ()");
+    }
+
+    void disconnectRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "disconnectRoutine ()");
+    }
+
+    void reconnectRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "reconnectRoutine ()");
+    }
+
+    void idleRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "idleRoutine ()");
+    }
+
+    void busyRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "busyRoutine ()");
+    }
+
+    void crashRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "crashRoutine ()");
+    }
+  private:
+    ISIM_Real *m_isim;
+  };
+
+  StartServer *ISIMServerHelper::create ()
+  {
+    return new ISIMServer (version (), m_isim);
+  }
+}
+
 class ISIM_Real : FHG_PLUGIN
                 , public isim::ISIM
 {
@@ -104,8 +187,8 @@ public:
       // start server communication
       PSProMigIF::StartServer::registerInstance
         ( m_server_app_name
-        , new PSProMigIF::ServerHelper(m_server_app_vers)
-      );
+        , new detail::ISIMServerHelper (m_server_app_vers, this)
+        );
 
       m_server = PSProMigIF::StartServer::getInstance(m_server_app_name);
       m_server->handleExceptionsByLibrary(false);
@@ -142,6 +225,11 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    if (m_server)
+    {
+      close (m_server->communication ()->socket ()->getFd ());
+    }
+
     FHG_PLUGIN_STOPPED();
   }
 

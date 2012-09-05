@@ -206,6 +206,7 @@ namespace fhg
       boost::thread m_task_handler;
       std::string m_name;
       search_path_t m_search_path;
+      search_path_t m_failed_path_cache;
     };
   }
 }

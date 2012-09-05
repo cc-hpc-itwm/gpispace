@@ -10,6 +10,7 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/error_codes.hpp>
 #include <fhg/util/bool.hpp>
 #include <fhg/util/bool_io.hpp>
 
@@ -325,11 +326,17 @@ public:
       if (rc != 0)
       {
         MLOG (WARN, "start of SDPA failed: " << rc);
-        return rc;
+        return fhg::error::SDPA_NOT_STARTABLE;
+      }
+
+      if (0 != sdpa_ctl->status ("gpi"))
+      {
+        MLOG (ERROR, "gpi failed to start, giving up");
+        return fhg::error::GPI_UNAVAILABLE;
       }
     }
 
-    update_progress(100);
+    update_progress(50);
 
     const std::string wf(read_workflow_from_file(m_wf_path_prepare));
 
@@ -345,20 +352,20 @@ public:
       return -EINVAL;
     }
 
+    update_progress(100);
+
     return submit_job (we::util::codec::encode(act), job::type::PREPARE);
   }
 
-  int initialize(std::string const &xml)
+  int initialize (std::string const &xml)
   {
     if (state::UNINITIALIZED != m_state)
     {
       MLOG(ERROR, "state mismatch: cannot initialize again in state: " << m_state);
-      return -EINVAL;
+      return -EPROTO;
     }
 
     reset_progress ("initialize");
-
-    update_progress (75);
 
     MLOG(INFO, "submitting INITIALIZE workflow");
 
@@ -409,7 +416,7 @@ public:
       salt_mask_stream.close();
     }
 
-    MLOG(INFO, "submitting SALTMASK workflow");
+    MLOG (INFO, "submitting SALTMASK workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_mask));
 
