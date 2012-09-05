@@ -838,6 +838,6 @@ EXPORT_FHG_PLUGIN( ufbmig_front
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "isim,ufbmig_back"
+                 , "isim,ufbmig_back,logd"
                  , ""
                  );

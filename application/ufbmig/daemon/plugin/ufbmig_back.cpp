@@ -224,13 +224,14 @@ public:
     if (0 == sdpa_c)
     {
       MLOG(ERROR, "could not acquire sdpa::Client plugin");
-      FHG_PLUGIN_FAILED(EAGAIN);
+      FHG_PLUGIN_FAILED (ESRCH);
     }
 
     progress = fhg_kernel()->acquire<progress::Progress>("progress");
     if (0 == progress)
     {
-      MLOG(WARN, "could not acquire progress::Progress plugin");
+      MLOG (ERROR, "could not acquire progress::Progress plugin");
+      FHG_PLUGIN_FAILED (ESRCH);
     }
 
     gpi_api = fhg_kernel()->acquire<gpi::GPI>("gpi");
@@ -714,17 +715,14 @@ public:
 private:
   void reset_progress (std::string const &phase)
   {
-    if (progress)
-    {
-      progress->reset ("ufbmig", phase, 100);
-    }
+    progress->reset ("ufbmig", phase, 100);
     if (m_frontend)
       m_frontend->update_progress (0);
   }
 
   void update_progress ()
   {
-    if (progress && m_frontend)
+    if (m_frontend)
     {
       size_t value; size_t max;
       if (0 == progress->get ("ufbmig", &value, &max))
@@ -741,10 +739,7 @@ private:
 
   void update_progress (int v)
   {
-    if (progress)
-    {
-      progress->set ("ufbmig", v);
-    }
+    progress->set ("ufbmig", v);
 
     if (m_frontend)
       m_frontend->update_progress(v);
@@ -1230,6 +1225,6 @@ EXPORT_FHG_PLUGIN( ufbmig_back
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "sdpactl,sdpac"
+                 , "sdpactl,sdpac,progress,gpi"
                  , ""
                  );
