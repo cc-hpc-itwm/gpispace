@@ -113,6 +113,7 @@ static void shutdown_kernel ()
 }
 
 static void handle_sig_pipe() {}
+
 static void handle_sig_child()
 {
   waitpid(-1, 0, WNOHANG);
@@ -125,6 +126,7 @@ void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 
 void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
+  LOG (WARN, "got SIGPIPE");
   if (kernel)
     kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
 }
@@ -208,6 +210,7 @@ void install_signal_handler()
   }
 
   sigact.sa_sigaction = sigchild_hdlr;
+  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
   if (sigaction(SIGCHLD, &sigact, (struct sigaction *)NULL) != 0)
   {
     fprintf(stderr, "error setting signal handler for %d (%s)\n",
@@ -217,6 +220,7 @@ void install_signal_handler()
   }
 
   sigact.sa_sigaction = sigpipe_hdlr;
+  sigact.sa_flags = SA_SIGINFO;
   if (sigaction(SIGPIPE, &sigact, (struct sigaction *)NULL) != 0)
   {
     fprintf(stderr, "error setting signal handler for %d (%s)\n",
