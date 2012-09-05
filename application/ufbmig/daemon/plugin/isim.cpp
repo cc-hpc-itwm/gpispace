@@ -15,6 +15,14 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
+#include <stdexcept>
+
+
+static void unexpected_handler ()
+{
+	MLOG (ERROR, "something really really bad happened");
+}
+
 namespace isim
 {
   struct _msg_t
@@ -93,6 +101,8 @@ public:
 
   FHG_PLUGIN_START()
   {
+    std::set_unexpected (&unexpected_handler);
+
     m_server_app_name =
       fhg_kernel ()->get ("app_name", "Interactive Migration");
     m_server_app_vers =
