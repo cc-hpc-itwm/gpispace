@@ -21,48 +21,6 @@ namespace isim
   {
     PSProMigIF::Message *pspro_msg;
   };
-
-  msg_t *msg_new (int type, size_t size)
-  {
-    msg_t *msg = (msg_t*) (malloc (sizeof (msg_t)));
-    assert (msg);
-
-    msg->pspro_msg  = PSProMigIF::Message::generateMsg (size);
-    assert (msg->pspro_msg);
-
-    msg->pspro_msg->m_nCommand = type;
-    return msg;
-  }
-
-  void msg_destroy (msg_t **p_msg)
-  {
-    assert (p_msg);
-    if (*p_msg)
-    {
-      msg_t *msg = *p_msg;
-      free (msg->pspro_msg);
-      free (msg);
-      *p_msg = 0;
-    }
-  }
-
-  int msg_type (msg_t *msg)
-  {
-    assert (msg);
-    return msg->pspro_msg->m_nCommand;
-  }
-
-  void *msg_data (msg_t *msg)
-  {
-    assert (msg);
-    return msg->pspro_msg->getCostumPtr ();
-  }
-
-  size_t msg_size (msg_t *msg)
-  {
-    assert (msg);
-    return msg->pspro_msg->m_ulCustomDataSize;
-  }
 }
 
 using namespace isim;
@@ -286,6 +244,48 @@ public:
     assert (m_server);
 
     m_server->idle ();
+  }
+
+  msg_t *msg_new (int type, size_t size)
+  {
+    msg_t *msg = (msg_t*) (malloc (sizeof (msg_t)));
+    assert (msg);
+
+    msg->pspro_msg  = PSProMigIF::Message::generateMsg (size);
+    assert (msg->pspro_msg);
+
+    msg->pspro_msg->m_nCommand = type;
+    return msg;
+  }
+
+  void msg_destroy (msg_t **p_msg)
+  {
+    assert (p_msg);
+    if (*p_msg)
+    {
+      msg_t *msg = *p_msg;
+      free (msg->pspro_msg);
+      free (msg);
+      *p_msg = 0;
+    }
+  }
+
+  int msg_type (msg_t *msg)
+  {
+    assert (msg);
+    return msg->pspro_msg->m_nCommand;
+  }
+
+  void *msg_data (msg_t *msg)
+  {
+    assert (msg);
+    return msg->pspro_msg->getCostumPtr ();
+  }
+
+  size_t msg_size (msg_t *msg)
+  {
+    assert (msg);
+    return msg->pspro_msg->m_ulCustomDataSize;
   }
 private:
   mutable mutex_type m_mtx_server;
