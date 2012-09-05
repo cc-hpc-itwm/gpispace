@@ -92,9 +92,9 @@ public:
     return 0;
   }
 
+  void stop () {}
   void idle () {}
   void busy () {}
-
 
   msg_t *msg_new (int type, size_t size)
   {

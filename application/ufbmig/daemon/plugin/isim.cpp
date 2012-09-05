@@ -67,40 +67,13 @@ namespace detail
     virtual ~ISIMServer ()
     {}
 
-    void startRoutine(void) throw (StartServerException)
-    {
-      MLOG (INFO, "startRoutine ()");
-    }
-
-    void stopRoutine(void) throw (StartServerException)
-    {
-      MLOG (INFO, "stopRoutine ()");
-    }
-
-    void disconnectRoutine(void) throw (StartServerException)
-    {
-      MLOG (INFO, "disconnectRoutine ()");
-    }
-
-    void reconnectRoutine(void) throw (StartServerException)
-    {
-      MLOG (INFO, "reconnectRoutine ()");
-    }
-
-    void idleRoutine(void) throw (StartServerException)
-    {
-      MLOG (INFO, "idleRoutine ()");
-    }
-
-    void busyRoutine(void) throw (StartServerException)
-    {
-      MLOG (INFO, "busyRoutine ()");
-    }
-
-    void crashRoutine(void) throw (StartServerException)
-    {
-      MLOG (INFO, "crashRoutine ()");
-    }
+    void startRoutine(void) throw (StartServerException);
+    void stopRoutine(void) throw (StartServerException);
+    void disconnectRoutine(void) throw (StartServerException);
+    void reconnectRoutine(void) throw (StartServerException);
+    void idleRoutine(void) throw (StartServerException);
+    void busyRoutine(void) throw (StartServerException);
+    void crashRoutine(void) throw (StartServerException);
   private:
     ISIM_Real *m_isim;
   };
@@ -232,6 +205,14 @@ public:
     return 0;
   }
 
+  void stop ()
+  {
+    if (m_server)
+    {
+      close (m_server->communication ()->socket ()->getFd ());
+    }
+  }
+
   void idle ()
   {
     assert (m_server);
@@ -296,6 +277,31 @@ private:
   std::string m_server_app_name;
   std::string m_server_app_vers;
 };
+
+namespace detail
+{
+    void ISIMServer::startRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "startRoutine ()");
+    }
+
+    void ISIMServer::stopRoutine(void) throw (StartServerException)
+    {
+      MLOG (INFO, "stopRoutine ()");
+
+      m_isim->stop ();
+    }
+
+    void ISIMServer::disconnectRoutine(void) throw (StartServerException) { }
+
+    void ISIMServer::reconnectRoutine(void) throw (StartServerException) { }
+
+    void ISIMServer::idleRoutine(void) throw (StartServerException) { }
+
+    void ISIMServer::busyRoutine(void) throw (StartServerException) { }
+
+    void ISIMServer::crashRoutine(void) throw (StartServerException) { }
+}
 
 EXPORT_FHG_PLUGIN( isim
                  , ISIM_Real

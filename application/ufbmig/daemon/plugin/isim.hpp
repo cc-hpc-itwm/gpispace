@@ -14,6 +14,7 @@ namespace isim
 
     virtual msg_t *recv (int timeout) = 0;
     virtual int    send (msg_t **msg, int timeout) = 0;
+    virtual void   stop () = 0;
 
     virtual void idle () = 0;
     virtual void busy () = 0;

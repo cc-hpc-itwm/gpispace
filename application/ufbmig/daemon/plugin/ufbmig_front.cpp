@@ -139,6 +139,8 @@ public:
     m_transfer_thread.interrupt();
     m_transfer_thread.join ();
 
+    m_isim->stop ();
+
     m_message_thread.interrupt();
     m_message_thread.join ();
 
