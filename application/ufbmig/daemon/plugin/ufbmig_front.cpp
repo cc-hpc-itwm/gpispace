@@ -113,6 +113,8 @@ public:
 
     send_logoutput ("Preparing backend...");
 
+    m_isim->busy ();
+
     fhg_kernel()->schedule ( "prepare_backend"
                            , boost::bind( &UfBMigFrontImpl::prepare_backend
                                         , this
@@ -238,6 +240,8 @@ public:
 
   void prepare_backend_done (int ec, std::string const &msg)
   {
+    m_isim->idle ();
+
     if (! ec)
     {
       LOG (TRACE, "backend prepared");
