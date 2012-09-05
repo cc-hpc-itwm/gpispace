@@ -40,7 +40,7 @@ namespace transfer
 
   struct request_t
   {
-    typedef boost::function<void (void)> callback_fun_t;
+    typedef boost::function<void (int, std::string const &)> callback_fun_t;
 
     request_t ()
       : m_state(0)
@@ -54,7 +54,12 @@ namespace transfer
       lock_type lck(m_mtx); m_callback=f;
     }
 
-    void completed() { m_callback(); }
+    void done ( int ec = 0
+              , std::string const &msg = "success"
+              )
+    {
+      m_callback(ec, msg);
+    }
   private:
     mutable mutex_type m_mtx;
 
@@ -81,6 +86,7 @@ public:
 
     m_send_timeout = fhg_kernel()->get<int>("send_timeout", -1);
     m_recv_timeout = fhg_kernel()->get<int>("recv_timeout", -1);
+    m_prep_timeout = fhg_kernel ()->get<int>("prep_timeout", 50); // in ticks!
 
     MLOG( TRACE
         ,  "timeouts:"
@@ -110,7 +116,7 @@ public:
                            , boost::bind( &UfBMigFrontImpl::prepare_backend
                                         , this
                                         )
-                           , 1
+                           , m_prep_timeout
                            );
 
     // try to start to observe log events
@@ -215,7 +221,12 @@ public:
   int prepare_backend ()
   {
     assert (m_backend);
-    return m_backend->prepare ();
+    int rc = m_backend->prepare ();
+    if (rc != 0)
+    {
+      prepare_backend_done (rc, "Preparation failed!");
+    }
+    return rc;
   }
 
   void prepare_backend_done (int ec, std::string const &msg)
@@ -227,7 +238,13 @@ public:
     }
     else
     {
-      LOG (ERROR, "backend preparation failed: " << ec << ": " << msg);
+      isim::msg_t *msg =
+        create_error_msg ( server::command::LOGOUTPUT
+                         , ec
+                         , "Backend preparation failed"
+                         );
+      m_isim->send (&msg, m_send_timeout);
+
       m_backend->stop();
 
       sleep (5);
@@ -278,6 +295,20 @@ public:
     }
   }
 
+  void migrate_done (int ec, std::string const &msg)
+  {
+    if (! ec)
+    {
+      LOG(TRACE, "migration sucessful");
+      send_migrate_success ();
+    }
+    else
+    {
+      LOG(WARN, "migration failed: " << ec << ": " << msg);
+      send_migrate_failure (ec, msg);
+    }
+  }
+
   void calculate_done (int ec, std::string const &msg)
   {
     if (! ec)
@@ -287,16 +318,17 @@ public:
       m_transfer_requests.clear ();
       m_current_transfer->set_state(transfer::CANCELED);
       transfer::request_ptr_t transfer(new transfer::request_t());
-      transfer->set_callback (boost::bind( &UfBMigFrontImpl::send_migrate_success
-                                         , this
-                                         )
+      transfer->set_callback ( boost::bind( &UfBMigFrontImpl::migrate_done
+                                          , this
+                                          , _1
+                                          , _2
+                                          )
                              );
       m_transfer_requests.put(transfer);
     }
     else
     {
-      LOG(WARN, "migration failed: " << ec << ": " << msg);
-      send_migrate_failure (ec, msg);
+      migrate_done (ec, msg);
     }
   }
 
@@ -459,7 +491,7 @@ private:
 
   int send_logoutput(std::string const &text)
   {
-    isim::msg_t *msg = create_msg (server::command::LOGOUTPUT
+    isim::msg_t *msg = create_msg ( server::command::LOGOUTPUT
                                   , text.c_str ()
                                   , text.size () + 1
                                   );
@@ -544,7 +576,7 @@ private:
       ec = initialize(payload);
       if (0 != ec)
       {
-        send_initialize_failure(ec, "submission failed");
+        send_initialize_failure (ec, "submission failed");
       }
       break;
     case client::command::MIGRATE:
@@ -552,7 +584,7 @@ private:
       ec = calculate(payload);
       if (0 != ec)
       {
-        send_migrate_failure(ec, "submission failed");
+        migrate_done (ec, "submission failed");
       }
       break;
     case client::command::MIGRATE_WITH_SALT_MASK:
@@ -612,6 +644,8 @@ private:
 
       m_current_transfer->set_state(transfer::RUNNING);
 
+      send_logoutput ("transfering output...");
+
       MLOG(INFO, "transfering data to GUI");
 
       // transfer meta data
@@ -619,18 +653,24 @@ private:
       if (0 != ec)
       {
         MLOG(WARN, "Could not transfer output meta data to GUI: " << strerror(-ec));
+
+        m_current_transfer->done (ec, "could not transfer meta-data");
+
         continue;
       }
 
-      ec = transfer_output_data_to_gui(m_current_transfer);
+      ec = transfer_output_data_to_gui (m_current_transfer);
       if (0 != ec)
       {
         MLOG(WARN, "Could not transfer output to GUI: " << strerror(-ec));
+
+        m_current_transfer->done (ec, "could not transfer data");
+
         continue;
       }
 
       m_current_transfer->set_state(transfer::FINISHED);
-      m_current_transfer->completed();
+      m_current_transfer->done ();
 
       MLOG(INFO, "transfer complete");
     }
@@ -776,6 +816,7 @@ private:
   bool m_stop_requested;
   int m_send_timeout;
   int m_recv_timeout;
+  int m_prep_timeout;
   size_t m_chunk_size;
 
   isim::ISIM      *m_isim;
