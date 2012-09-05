@@ -61,14 +61,6 @@ namespace job
     return info.state < sdpa::status::PENDING;
   }
 
-  static int state_to_result_code (int state)
-  {
-    if (sdpa::status::FINISHED == state) return 0;
-    if (sdpa::status::CANCELED == state) return -ECANCELED;
-    if (sdpa::status::FAILED   == state) return -EFAULT;
-    else                                 return -EFAULT;
-  }
-
   static std::string type_to_name (int type)
   {
     switch (type)
