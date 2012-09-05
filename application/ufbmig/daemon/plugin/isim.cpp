@@ -20,7 +20,7 @@
 
 static void unexpected_handler ()
 {
-	MLOG (ERROR, "something really really bad happened");
+        MLOG (ERROR, "something really really bad happened");
 }
 
 namespace isim
@@ -234,7 +234,7 @@ public:
   {
     assert (m_server);
 
-    m_server->idle ();
+    m_server->busy ();
   }
 
   msg_t *msg_new (int type, size_t size)
