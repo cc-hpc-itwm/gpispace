@@ -45,11 +45,10 @@ namespace helper
   static int do_start (void* time_to_sleep)
   {
     int ec = 0;
-    ec += do_run ("sdpa start gpi");
-    ec += do_run ("sdpa start orch");
-    ec += do_run ("sdpa start agg");
-    ec += do_run ("sdpa start nre");
-    ec += do_run ("sdpa start drts");
+    ec += do_run ("sdpa start gpi")  ? 1 : 0;
+    ec += do_run ("sdpa start orch") ? 2 : 0;
+    ec += do_run ("sdpa start agg")  ? 4 : 0;
+    ec += do_run ("sdpa start drts") ? 8 : 0;
     if (time_to_sleep)
     {
       sleep(*(int*)(time_to_sleep));
@@ -60,12 +59,11 @@ namespace helper
   static int do_stop (void*)
   {
     int ec = 0;
-    ec += do_run ("sdpa stop drts");
-    ec += do_run ("sdpa stop nre");
-    ec += do_run ("sdpa stop agg");
-    ec += do_run ("sdpa stop orch");
-    ec += do_run ("sdpa stop gpi");
-    ec += do_run ("sdpa stop kvs");
+    ec += do_run ("sdpa stop drts") ?  1 : 0;
+    ec += do_run ("sdpa stop agg")  ?  2 : 0;
+    ec += do_run ("sdpa stop orch") ?  4 : 0;
+    ec += do_run ("sdpa stop gpi")  ?  8 : 0;
+    ec += do_run ("sdpa stop kvs")  ? 16 : 0;
     return ec;
   }
 
