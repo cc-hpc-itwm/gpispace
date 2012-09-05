@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <dlfcn.h>
 #include <cstring>
+#include <algorithm>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/assert.hpp>
@@ -144,6 +145,20 @@ namespace fhg
 
       std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
 
+      if (m_failed_path_cache.end () != std::find ( m_failed_path_cache.begin ()
+                                                  , m_failed_path_cache.end ()
+                                                  , full_path_to_file
+                                                  )
+         )
+      {
+        MLOG ( TRACE
+             , "avoiding another attempt to load from '"
+             << full_path_to_file
+             << "'"
+             );
+        return -EFAULT;
+      }
+
       plugin_t::ptr_t p (plugin_t::create( full_path_to_file
                                          , load_force
                                          , (load_lazy?RTLD_LAZY:RTLD_NOW)
@@ -210,6 +225,8 @@ namespace fhg
       else
       {
         m->stop();
+
+        m_failed_path_cache.push_back (full_path_to_file);
 
         throw std::runtime_error
           ("plugin " + p->name() + " failed to start: " + std::string(strerror(-rc)));
@@ -569,6 +586,7 @@ namespace fhg
       assert (! m_running);
 
       m_running = true;
+      m_failed_path_cache.clear ();
       m_task_handler = boost::thread (&kernel_t::task_handler, this);
 
       const bool daemonize
