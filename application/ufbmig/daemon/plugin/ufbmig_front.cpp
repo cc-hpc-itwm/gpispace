@@ -111,7 +111,6 @@ public:
     m_transfer_thread = boost::thread (&UfBMigFrontImpl::transfer_thread, this);
     m_message_thread = boost::thread (&UfBMigFrontImpl::message_thread, this);
 
-    // send_waiting_for_initialize();
     fhg_kernel()->schedule ( "prepare_backend"
                            , boost::bind( &UfBMigFrontImpl::prepare_backend
                                         , this
@@ -223,11 +222,15 @@ public:
   int prepare_backend ()
   {
     assert (m_backend);
+
+    send_logoutput ("Preparing backend...");
+
     int rc = m_backend->prepare ();
     if (rc != 0)
     {
       prepare_backend_done (rc, "Preparation failed!");
     }
+
     return rc;
   }
 
