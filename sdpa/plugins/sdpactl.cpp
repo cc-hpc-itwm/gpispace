@@ -22,14 +22,34 @@ namespace helper
     }
   }
 
+  static int do_run (const char *cmd)
+  {
+    int ec = 0;
+
+    ec = system (cmd);
+
+    if (WIFEXITED(ec))
+    {
+      return WEXITSTATUS(ec);
+    }
+    else if (WIFSIGNALED(ec))
+    {
+      return 42;
+    }
+    else
+    {
+      return 127;
+    }
+  }
+
   static int do_start (void* time_to_sleep)
   {
     int ec = 0;
-    ec += system("sdpa start gpi");
-    ec += system("sdpa start orch");
-    ec += system("sdpa start agg");
-    ec += system("sdpa start nre");
-    ec += system("sdpa start drts");
+    ec += do_run ("sdpa start gpi");
+    ec += do_run ("sdpa start orch");
+    ec += do_run ("sdpa start agg");
+    ec += do_run ("sdpa start nre");
+    ec += do_run ("sdpa start drts");
     if (time_to_sleep)
     {
       sleep(*(int*)(time_to_sleep));
@@ -40,12 +60,12 @@ namespace helper
   static int do_stop (void*)
   {
     int ec = 0;
-    ec += system("sdpa stop drts");
-    ec += system("sdpa stop nre");
-    ec += system("sdpa stop agg");
-    ec += system("sdpa stop orch");
-    ec += system("sdpa stop gpi");
-    ec += system("sdpa stop kvs");
+    ec += do_run ("sdpa stop drts");
+    ec += do_run ("sdpa stop nre");
+    ec += do_run ("sdpa stop agg");
+    ec += do_run ("sdpa stop orch");
+    ec += do_run ("sdpa stop gpi");
+    ec += do_run ("sdpa stop kvs");
     return ec;
   }
 
@@ -68,7 +88,7 @@ namespace helper
       cmd += (const char *)(p);
     }
 
-    ec += system (cmd.c_str ());
+    ec += do_run (cmd.c_str ());
 
     return ec;
   }
@@ -92,7 +112,7 @@ namespace helper
     {
       int ec = errno;
       MLOG(ERROR, "could not fork: " << strerror(ec));
-      return ec;
+      return -ec;
     }
     else
     {
@@ -109,7 +129,7 @@ namespace helper
       }
       else
       {
-        return EFAULT;
+        return 127;
       }
     }
   }
