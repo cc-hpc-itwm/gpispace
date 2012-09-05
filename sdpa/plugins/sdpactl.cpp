@@ -57,6 +57,22 @@ namespace helper
     return ec;
   }
 
+  static int do_status (void *p)
+  {
+    int ec = 0;
+
+    std::string cmd ("sdpa status");
+    if (p)
+    {
+      cmd += " ";
+      cmd += (const char *)(p);
+    }
+
+    ec += system (cmd.c_str ());
+
+    return ec;
+  }
+
   static int run_in_child (ChildFunction fun, void* arg)
   {
     pid_t child = fork ();
@@ -134,6 +150,20 @@ public:
   {
     return helper::run_in_child ( &helper::do_stop
                                 , 0
+                                );
+  }
+
+  int status ()
+  {
+    return helper::run_in_child ( &helper::do_status
+                                , 0
+                                );
+  }
+
+  int status (const char * comp)
+  {
+    return helper::run_in_child ( &helper::do_status
+                                , (void*)comp
                                 );
   }
 private:
