@@ -31,6 +31,9 @@ namespace fhg
       , WORKER_UNAVAILABLE      = 201
       , CAPABILITY_MISMATCH     = 202
 
+      , SDPA_NOT_STARTABLE      = 300
+      , GPI_UNAVAILABLE         = 301
+
       , UNEXPECTED_ERROR        = 666
       , UNASSIGNED_ERROR        = 667
       };
@@ -80,6 +83,11 @@ namespace fhg
         return "no worker available";
       case CAPABILITY_MISMATCH:
         return "a required capability was not met";
+
+      case SDPA_NOT_STARTABLE:
+        return "sdpa could not be started";
+      case GPI_UNAVAILABLE:
+        return "gpi is unavailable";
 
       case UNEXPECTED_ERROR:
         return "unexpected error";
