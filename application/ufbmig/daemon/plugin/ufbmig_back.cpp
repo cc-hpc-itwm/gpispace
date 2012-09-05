@@ -309,7 +309,7 @@ public:
 
   int prepare ()
   {
-    update_progress(0);
+    reset_progress ("prepare");
 
     if (m_control_sdpa && sdpa_ctl)
     {
@@ -329,7 +329,7 @@ public:
       }
     }
 
-    update_progress(50);
+    update_progress (50);
 
     const std::string wf(read_workflow_from_file(m_wf_path_prepare));
 
@@ -345,7 +345,7 @@ public:
       return -EINVAL;
     }
 
-    update_progress(100);
+    update_progress (75);
 
     return submit_job (we::util::codec::encode(act), job::type::PREPARE);
   }
