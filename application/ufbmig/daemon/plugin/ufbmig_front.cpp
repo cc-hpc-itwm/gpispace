@@ -376,29 +376,29 @@ private:
                           , size_t size
                           )
   {
-    isim::msg_t *msg = isim::msg_new (cmd, size);
-    memcpy (msg_data (msg), data, size);
+    isim::msg_t *msg = m_isim->msg_new (cmd, size);
+    memcpy (m_isim->msg_data (msg), data, size);
     return msg;
   }
 
   int send_waiting_for_initialize()
   {
     m_isim->idle ();
-    isim::msg_t *msg = isim::msg_new (server::command::WAITING_FOR_INITIALIZE);
+    isim::msg_t *msg = m_isim->msg_new (server::command::WAITING_FOR_INITIALIZE);
     return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_initializing()
   {
     m_isim->busy();
-    isim::msg_t *msg = isim::msg_new (server::command::INITIALIZING);
+    isim::msg_t *msg = m_isim->msg_new (server::command::INITIALIZING);
     return m_isim->send (&msg, m_send_timeout);
   }
 
   int send_initialize_success()
   {
     m_isim->idle ();
-    isim::msg_t *msg = isim::msg_new (server::command::INITIALIZE_SUCCESS);
+    isim::msg_t *msg = m_isim->msg_new (server::command::INITIALIZE_SUCCESS);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -413,7 +413,7 @@ private:
   int send_processing_salt_mask()
   {
     m_isim->busy();
-    isim::msg_t *msg = isim::msg_new (server::command::PROCESSING_SALT_MASK);
+    isim::msg_t *msg = m_isim->msg_new (server::command::PROCESSING_SALT_MASK);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -421,7 +421,7 @@ private:
   {
     m_isim->idle();
     isim::msg_t *msg =
-      isim::msg_new (server::command::PROCESS_SALT_MASK_SUCCESS);
+      m_isim->msg_new (server::command::PROCESS_SALT_MASK_SUCCESS);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -437,7 +437,7 @@ private:
   {
     m_isim->busy();
     isim::msg_t *msg =
-      isim::msg_new (server::command::MIGRATING);
+      m_isim->msg_new (server::command::MIGRATING);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -445,7 +445,7 @@ private:
   {
     m_isim->idle();
     isim::msg_t *msg =
-      isim::msg_new (server::command::MIGRATE_SUCCESS);
+      m_isim->msg_new (server::command::MIGRATE_SUCCESS);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -461,7 +461,7 @@ private:
   {
     m_isim->busy();
     isim::msg_t *msg =
-      isim::msg_new (server::command::FINALIZING);
+      m_isim->msg_new (server::command::FINALIZING);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -469,7 +469,7 @@ private:
   {
     m_isim->idle();
     isim::msg_t *msg =
-      isim::msg_new (server::command::FINALIZE_SUCCESS);
+      m_isim->msg_new (server::command::FINALIZE_SUCCESS);
     m_isim->send (&msg, m_send_timeout);
     return send_waiting_for_initialize ();
   }
@@ -501,7 +501,7 @@ private:
   int send_abort_accepted()
   {
     isim::msg_t *msg =
-      isim::msg_new (server::command::ABORT_ACCEPTED);
+      m_isim->msg_new (server::command::ABORT_ACCEPTED);
     return m_isim->send (&msg, m_send_timeout);
   }
 
@@ -534,16 +534,16 @@ private:
         fail_counter = 0;
       }
 
-      if (isim::msg_size (msg) > 0)
+      if (m_isim->msg_size (msg) > 0)
       {
-        payload = std::string( (char*)isim::msg_data (msg)
-                             , isim::msg_size (msg)
+        payload = std::string( (char*)m_isim->msg_data (msg)
+                             , m_isim->msg_size (msg)
                              );
       }
 
-      handle_ISIM_command(isim::msg_type (msg), payload);
+      handle_ISIM_command(m_isim->msg_type (msg), payload);
 
-      isim::msg_destroy (&msg);
+      m_isim->msg_destroy (&msg);
     }
 
     if (fail_counter)
@@ -718,22 +718,21 @@ private:
 
     std::vector<char> buffer (sz, 0);
 
-    isim::msg_t *msg = isim::msg_new (server::command::MIGRATE_META_DATA, sz);
+    isim::msg_t *msg = m_isim->msg_new (server::command::MIGRATE_META_DATA, sz);
     size_t num_read;
-    ec = m_backend->read (fd, (char*)isim::msg_data (msg), sz, num_read);
+    ec = m_backend->read (fd, (char*)m_isim->msg_data (msg), sz, num_read);
     if (0 == ec)
     {
       ec = m_isim->send (&msg, m_send_timeout);
       if (0 != ec)
       {
         MLOG(ERROR, "could not send meta data to GUI: " << strerror(-ec));
-        isim::msg_destroy (&msg);
       }
     }
     else
     {
       MLOG(WARN, "reading meta data failed: " << strerror(-ec));
-      isim::msg_destroy (&msg);
+      m_isim->msg_destroy (&msg);
     }
 
     m_backend->close (fd);
@@ -772,14 +771,14 @@ private:
       size_t transfer_size = std::min (remaining, m_chunk_size);
       size_t message_size = sizeof(offset) + transfer_size;
 
-      isim::msg_t *msg = isim::msg_new ( server::command::MIGRATE_DATA
+      isim::msg_t *msg = m_isim->msg_new ( server::command::MIGRATE_DATA
                                        , message_size
                                        );
-      memcpy (isim::msg_data (msg), &offset, sizeof(offset));
+      memcpy (m_isim->msg_data (msg), &offset, sizeof(offset));
 
       size_t num_read;
       ec = m_backend->read ( fd
-                           , (char*)isim::msg_data (msg)+sizeof(offset)
+                           , (char*)m_isim->msg_data (msg)+sizeof(offset)
                            , transfer_size
                            , num_read
                            );
@@ -790,7 +789,6 @@ private:
         if (0 != ec)
         {
           MLOG(ERROR, "could not send data chunk to GUI: " << strerror(-ec));
-          isim::msg_destroy (&msg);
           break;
         }
 
@@ -799,7 +797,7 @@ private:
       }
       else
       {
-        isim::msg_destroy (&msg);
+        m_isim->msg_destroy (&msg);
         break;
       }
     }
