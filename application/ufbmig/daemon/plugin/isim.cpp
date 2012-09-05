@@ -290,15 +290,10 @@ private:
 
 namespace detail
 {
-    void ISIMServer::startRoutine(void) throw (StartServerException)
-    {
-      MLOG (INFO, "startRoutine ()");
-    }
+    void ISIMServer::startRoutine(void) throw (StartServerException) { }
 
     void ISIMServer::stopRoutine(void) throw (StartServerException)
     {
-      MLOG (INFO, "stopRoutine ()");
-
       m_isim->stop ();
     }
 
