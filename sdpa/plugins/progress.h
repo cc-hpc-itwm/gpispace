@@ -13,7 +13,7 @@
 extern "C"
 {
 #endif
-  size_t set_progress(const char *name, size_t value) DEPRECATE_API ("please use progress_reset(name, max) and progress_tick(name) instead");
+  size_t set_progress(const char *name, size_t value) DEPRECATE_API ("please use progress_reset(name, phase, max) and progress_tick(name) instead");
   size_t get_progress(const char *name) DEPRECATE_API ("please use progress_reset(name, max) and progress_tick(name) instead");
 
   /**
