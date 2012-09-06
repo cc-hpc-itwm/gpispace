@@ -47,8 +47,8 @@ char const* const state_names[] = {     "SDPA::Pending"
                                         , "SDPA::Running"
                                         , "SDPA::Finished"
                                         , "SDPA::Failed"
-                                        , "SDPA::Cancelling"
-                                        , "SDPA::Cancelled"
+                                        , "SDPA::Canceling"
+                                        , "SDPA::Canceled"
 };
 
 namespace sdpa {
