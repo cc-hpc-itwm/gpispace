@@ -888,7 +888,7 @@ private:
   {
     LOG( INFO
        , "job '" << job::type_to_name(j.type) << "' returned: "
-       << sdpa::status::show(j.state)
+       << sdpa::status::show(j.state) << " [" << j.state << "]"
        << ": ec := " << j.error << " msg := " << j.error_message
        );
 
@@ -978,6 +978,11 @@ private:
           j->error = 0;
         if (j->state == sdpa::status::FAILED && j->error == 0)
           j->error = -EFAULT;
+        if (j->state < 0)
+        {
+          j->error = j->state;
+          j->state = sdpa::status::FAILED;
+        }
 
         sdpa_c->result(j->id, j->result);
         sdpa_c->remove(j->id);

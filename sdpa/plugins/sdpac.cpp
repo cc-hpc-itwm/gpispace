@@ -96,7 +96,7 @@ public:
       }
     }
 
-    return -EFAULT;
+    return -EIO;
   }
 
   int status (std::string const &id, int & ec, std::string & msg)
@@ -129,7 +129,7 @@ public:
       }
     }
 
-    return -EFAULT;
+    return -EIO;
   }
 
   int cancel (std::string const &id)
@@ -249,7 +249,7 @@ private:
     if (ec)
     {
       MLOG(WARN, "could not send " << evt->str() << " to " << evt->to());
-      return -ESRCH;
+      return -EIO;
     }
 
     return 0;
