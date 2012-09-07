@@ -181,6 +181,7 @@ set (tc_srcs
   test_JobId.cpp
   test_Scheduler.cpp
   test_LoadBalancer.cpp
+  test_MapReduce.cpp
 #  test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp
