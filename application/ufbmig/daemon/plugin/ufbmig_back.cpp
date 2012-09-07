@@ -311,11 +311,26 @@ public:
   {
     reset_progress ("prepare");
 
+    update_progress (10);
+
     if (m_control_sdpa && sdpa_ctl)
     {
-      MLOG(INFO, "(re)starting SDPA...");
+      MLOG (INFO, "(re)starting SDPA...");
 
-      int rc = sdpa_ctl->start();
+      int rc = 0;
+
+      rc += sdpa_ctl->start ("gpi")  ? 1 : 0;
+      update_progress (20);
+
+      rc += sdpa_ctl->start ("orch") ? 2 : 0;
+      update_progress (40);
+
+      rc += sdpa_ctl->start ("agg")  ? 4 : 0;
+      update_progress (60);
+
+      rc += sdpa_ctl->start ("drts") ? 8 : 0;
+      update_progress (80);
+
       if (rc != 0)
       {
         MLOG (WARN, "start of SDPA failed: " << rc);
@@ -328,8 +343,6 @@ public:
         return fhg::error::GPI_UNAVAILABLE;
       }
     }
-
-    update_progress (50);
 
     const std::string wf(read_workflow_from_file(m_wf_path_prepare));
 
@@ -345,7 +358,7 @@ public:
       return -EINVAL;
     }
 
-    update_progress (75);
+    update_progress (95);
 
     return submit_job (we::util::codec::encode(act), job::type::PREPARE);
   }
