@@ -126,7 +126,6 @@ void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 
 void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
-  LOG (WARN, "got SIGPIPE");
   if (kernel)
     kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
 }
