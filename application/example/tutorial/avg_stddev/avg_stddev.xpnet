@@ -1,0 +1,260 @@
+<defun name="avg_stddev">
+  <struct name="sums">
+    <field name="sum" type="double"/>
+    <field name="sqsum" type="double"/>
+    <field name="count" type="long"/>
+  </struct>
+  <struct name="range_file">
+    <field name="begin" type="long"/>
+    <field name="end" type="long"/>
+  </struct>
+  <struct name="configuration">
+    <field name="name_file" type="string"/>
+    <field name="size_file" type="long"/>
+    <field name="size_chunk" type="long"/>
+    <field name="size_buffer" type="long"/>
+    <field name="num_buffer" type="long"/>
+  </struct>
+  <in name="name_file" type="string" place="name_file"/>
+  <in name="size_file" type="long" place="size_file"/>
+  <in name="size_chunk" type="long" place="size_chunk"/>
+  <in name="size_buffer" type="long" place="size_buffer"/>
+  <in name="num_buffer" type="long" place="num_buffer"/>
+  <out name="avg" type="double" place="avg"/>
+  <out name="stddev" type="double" place="stddev"/>
+  <net>
+    <place name="name_file" type="string"/>
+    <place name="size_file" type="long"/>
+    <place name="size_chunk" type="long"/>
+    <place name="size_buffer" type="long"/>
+    <place name="num_buffer" type="long"/>
+    <place name="sums" type="sums"/>
+
+    <transition name="init">
+      <defun>
+        <in name="name_file" type="string"/>
+        <in name="size_file" type="long"/>
+        <in name="size_chunk" type="long"/>
+        <in name="size_buffer" type="long"/>
+        <in name="num_buffer" type="long"/>
+        <out name="num_chunks" type="long"/>
+        <out name="accu" type="sums"/>
+        <out name="offset" type="long"/>
+        <out name="configuration" type="configuration"/>
+        <expression>
+          ${num_chunks} := (${size_file} + ${size_chunk} - 1) div ${size_chunk};
+          ${accu.sum} := 0.0;
+          ${accu.sqsum} := 0.0;
+          ${accu.count} := 0;
+          ${offset} := 0;
+          ${configuration.name_file} := ${name_file};
+          ${configuration.size_file} := ${size_file};
+          ${configuration.size_chunk} := ${size_chunk};
+          ${configuration.size_buffer} := ${size_buffer};
+          ${configuration.num_buffer} := ${num_buffer};
+        </expression>
+      </defun>
+      <connect-in port="name_file" place="name_file"/>
+      <connect-in port="size_file" place="size_file"/>
+      <connect-in port="size_chunk" place="size_chunk"/>
+      <connect-in port="size_buffer" place="size_buffer"/>
+      <connect-in port="num_buffer" place="num_buffer"/>
+      <connect-out port="num_chunks" place="num_chunks"/>
+      <connect-out port="accu" place="accu"/>
+      <connect-out port="offset" place="offset"/>
+      <connect-out port="configuration" place="configuration"/>
+    </transition>
+
+    <place name="accu" type="sums"/>
+    <place name="offset" type="long"/>
+    <place name="num_chunks" type="long"/>
+    <place name="configuration" type="configuration"/>
+
+    <transition name="produce_new_range">
+      <defun>
+        <in name="configuration" type="configuration"/>
+        <inout name="offset" type="long"/>
+        <out name="range_file" type="range_file"/>
+        <expression>
+          ${range_file.begin} := ${offset};
+          ${range_file.end} := min ( ${configuration.size_chunk} + ${offset}
+                                   , ${configuration.size_file}
+                                   );
+           ${offset} := ${range_file.end};
+        </expression>
+      </defun>
+      <connect-read port="configuration" place="configuration"/>
+      <connect-inout port="offset" place="offset"/>
+      <connect-out port="range_file" place="range_file"/>
+      <condition>
+        ${offset} :lt: ${configuration.size_file}
+      </condition>
+    </transition>
+
+    <transition name="stop_producing_new_ranges">
+      <defun>
+        <in name="configuration" type="configuration"/>
+        <in name="offset" type="long"/>
+        <expression/>
+      </defun>
+      <connect-read port="configuration" place="configuration"/>
+      <connect-in port="offset" place="offset"/>
+      <condition>
+        ${offset} :ge: ${configuration.size_file}
+      </condition>
+    </transition>
+
+    <place name="range_file" type="range_file"/>
+
+    <transition name="work">
+      <defun>
+        <in name="configuration" type="configuration"/>
+        <in name="range_file" type="range_file"/>
+        <out name="sum" type="sums"/>
+        <module name="avg_stddev"
+                function="sum work (configuration, range_file)"
+        >
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="reader.hpp"/>
+          <cinclude href="boost/thread.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "work on range [" << range_file.begin
+                    << ".." << range_file.end << ")"
+                );
+
+            ::pnetc::type::sums::sums sum;
+
+            sum.sum = 0.0;
+            sum.sqsum = 0.0;
+            sum.count = 0;
+
+            typedef reader<double> reader_type;
+            typedef reader_type::queue_type queue_type;
+            typedef reader_type::buffer_type buffer_type;
+
+            queue_type queue_empty;
+            queue_type queue_full;
+
+            boost::thread* thread_reader
+              (new boost::thread (reader_type ( queue_empty
+                                              , queue_full
+                                              , configuration.name_file
+                                              , range_file.begin
+                                              , range_file.end
+                                              )
+                                 )
+              );
+
+            const std::size_t elem_per_buffer ( configuration.size_buffer
+                                              / sizeof (double)
+                                              );
+
+            double* buf (new double[configuration.num_buffer * elem_per_buffer]);
+            double* begin (buf);
+            double* end (buf + configuration.num_buffer * elem_per_buffer);
+
+            while (begin < end)
+              {
+                const std::size_t count
+                  (std::min ( elem_per_buffer
+                            , static_cast<std::size_t>(end - begin)
+                            )
+                  );
+
+                queue_empty.put (buffer_type (begin, count));
+
+                begin += count;
+              }
+
+            buffer_type buffer;
+
+            do
+              {
+                buffer = queue_full.get();
+
+                for (std::size_t i (0); i < buffer.count(); ++i)
+                  {
+                    const double v (buffer.begin()[i]);
+
+                    sum.sum += v;
+                    sum.sqsum += v*v;
+                  }
+
+                sum.count += buffer.count();
+
+                queue_empty.put (buffer);
+             }
+            while (buffer.count() > 0);
+
+            delete thread_reader;
+
+            delete[] buf;
+
+            return sum;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="configuration" place="configuration"/>
+      <connect-in port="range_file" place="range_file"/>
+      <connect-out port="sum" place="partial_sum"/>
+    </transition>
+
+    <place name="partial_sum" type="sums"/>
+
+    <transition name="accumulate">
+      <defun>
+        <inout name="accu" type="sums"/>
+        <in name="s" type="sums"/>
+        <inout name="num_chunks" type="long"/>
+        <expression>
+          ${accu.sum} := ${accu.sum} + ${s.sum};
+          ${accu.sqsum} := ${accu.sqsum} + ${s.sqsum};
+          ${accu.count} := ${accu.count} + ${s.count};
+          ${num_chunks} := ${num_chunks} - 1;
+        </expression>
+      </defun>
+      <connect-inout port="accu" place="accu"/>
+      <connect-in port="s" place="partial_sum"/>
+      <connect-inout port="num_chunks" place="num_chunks"/>
+      <condition>
+        ${num_chunks} :gt: 0
+      </condition>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <inout name="accu" type="sums"/>
+        <in name="num_chunks" type="long"/>
+        <in name="configuration" type="configuration"/>
+        <expression/>
+      </defun>
+      <connect-in port="accu" place="accu"/>
+      <connect-in port="num_chunks" place="num_chunks"/>
+      <connect-in port="configuration" place="configuration"/>
+      <connect-out port="accu" place="sums"/>
+      <condition>
+        ${num_chunks} :le: 0
+      </condition>
+    </transition>
+
+    <transition name="calc_result">
+      <defun>
+        <in name="sums" type="sums"/>
+        <out name="avg" type="double"/>
+        <out name="stddev" type="double"/>
+        <expression>
+          ${N} := double (${sums.count});
+          ${avg} := ${sums.sum} / ${N};
+          ${stddev} := sqrt (${sums.sqsum} / ${N} - ${avg} * ${avg});
+        </expression>
+      </defun>
+      <connect-in port="sums" place="sums"/>
+      <connect-out port="avg" place="avg"/>
+      <connect-out port="stddev" place="stddev"/>
+    </transition>
+
+    <place name="avg" type="double"/>
+    <place name="stddev" type="double"/>
+
+  </net>
+</defun>
