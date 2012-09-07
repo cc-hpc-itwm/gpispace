@@ -2166,22 +2166,30 @@ if [ "$1" = "version" ] ; then
     exit $?
 fi
 
-if [ "$1" = "setup" ] ; then
-    shift
-    setup $@
-    exit $?
-fi
-
 if [ "$1" = "-s" ] ; then
     shift
     state_dir="$1"; shift
+    if [ -z "$state_dir" ] ; then
+        log "E: empty state dir"
+        exit 1
+    fi
     export SDPA_STATE_DIR="$state_dir"
 fi
 
 if [ "$1" = "-c" ] ; then
     shift
     config_file="$1"; shift
+    if [ -z "$config_file" ] ; then
+        log "E: empty config file"
+        exit 1
+    fi
     export SDPA_CONFIG="config_file"
+fi
+
+if [ "$1" = "setup" ] ; then
+    shift
+    setup $@
+    exit $?
 fi
 
 if setup_required ; then
