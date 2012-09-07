@@ -295,32 +295,14 @@ function setup_state ()
             ;;
     esac
 
-    local data_dir="$HOME/.sdpa/data"
-    if ! test -d "$data_dir" ; then
-        if ! mkdir -p "$data_dir" ; then
-            log "E: failed to create data directory: $data_dir"
-            return 1
-        fi
-    fi
-
     return 0
 }
 
 function setup_kvs ()
 {
-    local kvs_data_dir="$HOME/.sdpa/data"
-    if ! test -d "$kvs_data_dir" ; then
-        if ! mkdir -p "$kvs_data_dir" ; then
-            log "E: failed to create kvs data directory: $kvs_data_dir"
-            return 1
-        fi
-    fi
-    local kvs_store="$kvs_data_dir/kvs.dat"
-
-    put "kvs.store" "$kvs_store"
     put "plugin.kvs.port" $(get "plugin.kvs.port" "${DEFAULT_KVS_PORT:?}")
 
-    log "I: kvs configured to store data in $kvs_store"
+    log "I: kvs setup"
 
     return 0
 }
@@ -783,6 +765,7 @@ function setup_client ()
 {
     log "I: setting up sdpa commandline client"
     if ! test -e "$HOME/.sdpa/configs/sdpac.rc" ; then
+        mkdir -p "$HOME/.sdpa/configs"
         touch "$HOME/.sdpa/configs/sdpac.rc"
     fi
 }
@@ -794,62 +777,54 @@ $(sdpac --version 2>/dev/null)
 
 Initiating the  setup routine of  SDPA. In case  of errors or  questions, please
 contact 'Alexander Petry <petry@itwm.fhg.de>'.
-
 EOF
-if is_unattended ; then
-    log "I: performing automatic setup"
-fi
 
-if ! test -e "$config_file" ; then
-    mkdir -p $(dirname "$config_file") 2>/dev/null
-    touch "$config_file"
-fi
+    if is_unattended ; then
+        log "I: performing automatic setup"
+    fi
 
-local real_config_file="$config_file"
-local temp_config_file="${config_file}~"
+    if ! test -e "$config_file" ; then
+        mkdir -p $(dirname "$config_file") 2>/dev/null
+        touch "$config_file"
+    fi
 
-local old_trap=$(trap -p EXIT)
-trap -- "rm -f $temp_config_file" EXIT
+    local real_config_file="$config_file"
+    local temp_config_file="${config_file}~"
 
-local parts=$1
-if [ -z "$parts" ] ; then
-    parts="state kvs scratch logging temp gui plugins gpi topology client"
-else
-    shift
-fi
+    local old_trap=$(trap -p EXIT)
+    trap -- "rm -f $temp_config_file" EXIT
 
-if test -f "$real_config_file" ; then
-    cp "$real_config_file" "$temp_config_file"
-fi
-config_file="$temp_config_file"
+    local parts=$1
+    if [ -z "$parts" ] ; then
+        parts="state kvs scratch logging temp gui plugins gpi topology client"
+    else
+        shift
+    fi
 
-local p
-for p in $parts ; do
-    setup_$p $@ || { log "E: setup_$p failed!" ; return 1 ; }
-done
+    if test -f "$real_config_file" ; then
+        cp "$real_config_file" "$temp_config_file"
+    fi
+    config_file="$temp_config_file"
 
-put "config.version" "$CONFIG_VERSION"
-put "config.modified" "$(date)"
-put "config.sdpa_version" "$(sdpac --dumpversion 2>/dev/null)"
-put "config.sdpa_revision" "$(sdpac --revision 2>/dev/null)"
+    local p
+    for p in $parts ; do
+        setup_$p $@ || { log "E: setup_$p failed!" ; return 1 ; }
+    done
 
-cp "$real_config_file" "${real_config_file}.bak"
-mv "$temp_config_file" "$real_config_file"
+    put "config.version" "$CONFIG_VERSION"
+    put "config.modified" "$(date)"
+    put "config.sdpa_version" "$(sdpac --dumpversion 2>/dev/null)"
+    put "config.sdpa_revision" "$(sdpac --revision 2>/dev/null)"
+
+    cp "$real_config_file" "${real_config_file}.bak"
+    mv "$temp_config_file" "$real_config_file"
 
     # putting config in place
-config_file="$real_config_file"
-eval $old_trap
+    config_file="$real_config_file"
+    eval $old_trap
 
-if test -L "$HOME/.sdpa/configs/gpi.rc" ; then
-    :
-elif test -f "$HOME/.sdpa/configs/gpi.rc" ; then
-    mv "$HOME/.sdpa/configs/gpi.rc" "$HOME/.sdpa/configs/gpi.rc.bak"
-    log "I: created a backup of your old gpi.rc"
-fi
-ln -sf "$config_file" "$HOME/.sdpa/configs/gpi.rc"
-
-echo
-log "I: setup complete."
+    echo
+    log "I: setup complete."
 }
 
 function generate_environment ()
@@ -1228,7 +1203,7 @@ function start_agent ()
         node=localhost
     fi
 
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -F "${config_file}" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         echo "$name" >&2
@@ -1659,7 +1634,7 @@ function start_drts_on_node ()
         master="nre-$node"
     fi
 
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -s "$state_dir" -D -m "$master" -c "$per_node" $@ 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -F "${config_file}" -s "$state_dir" -D -m "$master" -c "$per_node" $@ 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         return 0
