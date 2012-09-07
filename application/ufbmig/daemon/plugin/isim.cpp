@@ -358,18 +358,24 @@ private:
 
     msg = 0;
 
-    lock_type lck(m_msg_o_q_mtx);
-
     while (! m_stop_requested)
     {
-      while (m_msg_o_q.empty ())
       {
-        m_msg_o_avail.wait (lck);
+        lock_type lck(m_msg_o_q_mtx);
+        while (m_msg_o_q.empty ())
+        {
+          m_msg_o_avail.wait (lck);
+          if (m_stop_requested)
+            break;
+        }
+        if (not m_stop_requested)
+        {
+          msg = m_msg_o_q.front (); m_msg_o_q.pop_front ();
+        }
       }
 
-      if (not m_stop_requested)
+      if (msg)
       {
-        msg = m_msg_o_q.front (); m_msg_o_q.pop_front ();
         try
         {
           msg->pspro_msg->sendMsg ( m_server->communication ()
@@ -387,7 +393,7 @@ private:
     while (not m_msg_o_q.empty ())
     {
       msg = m_msg_o_q.front (); m_msg_o_q.pop_front ();
-      delete msg;
+      msg_destroy (&msg);
     }
   }
 
