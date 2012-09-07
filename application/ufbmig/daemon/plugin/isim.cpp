@@ -3,6 +3,9 @@
 #include <list>
 #include <boost/thread.hpp>
 
+#include <sys/types.h>    // setsockopt
+#include <sys/socket.h>   // setsockopt
+
 #include <stdio.h> // broken includes in pspro*
 
 #include "ServerCommunication.h"
@@ -161,6 +164,11 @@ public:
       FHG_PLUGIN_FAILED(EFAULT);
     }
 
+    {
+      int sock_fd = m_server->communication ()->socket ()->getFd ();
+      struct linger linger_value = { 0, 0 };
+      setsockopt (sock_fd, SOL_SOCKET, SO_LINGER, &linger_value, sizeof (struct linger));
+    }
     FHG_PLUGIN_STARTED();
   }
 
