@@ -20,7 +20,8 @@
   <in name="size_chunk" type="long" place="size_chunk"/>
   <in name="size_buffer" type="long" place="size_buffer"/>
   <in name="num_buffer" type="long" place="num_buffer"/>
-  <out name="sums" type="sums" place="sums"/>
+  <out name="avg" type="double" place="avg"/>
+  <out name="stddev" type="double" place="stddev"/>
   <net>
     <place name="name_file" type="string"/>
     <place name="size_file" type="long"/>
@@ -235,6 +236,25 @@
         ${num_chunks} :le: 0
       </condition>
     </transition>
+
+    <transition name="calc_result">
+      <defun>
+        <in name="sums" type="sums"/>
+        <out name="avg" type="double"/>
+        <out name="stddev" type="double"/>
+        <expression>
+          ${N} := double (${sums.count});
+          ${avg} := ${sums.sum} / ${N};
+          ${stddev} := sqrt (${sums.sqsum} / ${N} - ${avg} * ${avg});
+        </expression>
+      </defun>
+      <connect-in port="sums" place="sums"/>
+      <connect-out port="avg" place="avg"/>
+      <connect-out port="stddev" place="stddev"/>
+    </transition>
+
+    <place name="avg" type="double"/>
+    <place name="stddev" type="double"/>
 
   </net>
 </defun>
