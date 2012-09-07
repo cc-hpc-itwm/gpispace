@@ -180,193 +180,192 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
             split(pToken);
           else
             std::cout<<"Invalid token color"<<std::endl;
+    }
 
-        }
-
-        void accumulate( const Token::ptr_t& pRedToken, const Token::ptr_t& pBlueToken, const Token::ptr_t& pYellowToken, bool bClear = false )
-        {
-          size_t nBlockDim = pRedToken->block_1().size1();
-          if(bClear)
-          {
-            pYellowToken->block_1() = matrix_t(nBlockDim, nBlockDim);
-          }
-
-          axpy_prod( pBlueToken->block_1(), pRedToken->block_1(), pYellowToken->block_1(), bClear); // C += A * B
-        }
-
-        void propagate( const direction_t& dir, const Token::ptr_t& pToken )
-        {
-          if(dir == RIGHT)
-            propagateRight(pToken);
-          else
-            if( dir == DOWN )
-              propagateDown(pToken);
-            else
-              SDPA_LOG_FATAL("Invalid propagation direction!");
-        }
-
-        void propagateRight( const Token::ptr_t& pBlueToken )
-        {
-          lock_type lock(mtx_);
-          int rank = pIAgent_->rank();
-
-          int i = rank / m_nTorusDim;
-          int j = rank % m_nTorusDim;
-
-          int rankRight = i*m_nTorusDim+(j+1)%m_nTorusDim;
-
-          try {
-            id_type newActId = fct_id_gen_();
-            m_mapActIds[newActId] = pBlueToken->activityId();
-            pBlueToken->activityId() = newActId;
-            pBlueToken->incVisitedNodes();
-          }
-          catch(boost::bad_function_call& ex)
-          {
-            SDPA_LOG_ERROR("Bad function call exception occurred!");
-            return;
-          }
-
-          std::ostringstream oss;
-          oss<<"rank"<<rankRight;
-          requirement_t req(oss.str(), true);
-          requirement_list_t reqList;
-          reqList.push_back(req);
-
-          pIAgent_->submit(pBlueToken->activityId(), pBlueToken->encode(), reqList);
-        }
-
-        void propagateDown( const Token::ptr_t& pRedToken )
-        {
-          lock_type lock(mtx_);
-          int rank = pIAgent_->rank();
-
-          SDPA_LOG_INFO("The number of agents is: "<<m_nTorusDim*m_nTorusDim);
-
-          int i  = rank/m_nTorusDim;
-          int j  = rank%m_nTorusDim;
-
-          int rankBottom = ((i+1)%m_nTorusDim)*m_nTorusDim+j;
-
-          try {
-            id_type newActId = fct_id_gen_();
-            m_mapActIds[newActId] = pRedToken->activityId();
-            pRedToken->activityId() = newActId;
-            pRedToken->incVisitedNodes();
-          }
-          catch(boost::bad_function_call& ex)
-          {
-            SDPA_LOG_ERROR("Bad function call exception occurred!");
-            return;
-          }
-
-          std::ostringstream oss;
-          oss<<"rank"<<rankBottom;
-          requirement_t req(oss.str(), true);
-          requirement_list_t reqList;
-          reqList.push_back(req);
-
-          pIAgent_->submit(pRedToken->activityId(), pRedToken->encode(), reqList);
-        }
-
-        /**
-         * Cancel a workflow asynchronously.
-         * This method is to be invoked by the SDPA.
-         * The GWES will notifiy the SPDA about the
-         * completion of the cancelling process by calling the
-         * callback method Gwes2Sdpa::cancelled.
-         */
-        bool cancel( const id_type& wfid, const reason_type& reason )
-        {
-          lock_type lock(mtx_);
-          SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
-          return true;
-        }
-
-         // thread related functions
-      void start()
+    void accumulate( const Token::ptr_t& pRedToken, const Token::ptr_t& pBlueToken, const Token::ptr_t& pYellowToken, bool bClear = false )
+    {
+      size_t nBlockDim = pRedToken->block_1().size1();
+      if(bClear)
       {
-        bStopRequested = false;
-        if(!pIAgent_)
-        {
-          SDPA_LOG_ERROR("The Workfow engine cannot be started. Invalid communication handler. ");
-          return;
-        }
-
-        m_thread = boost::thread(boost::bind(&TorusWorkflowEngineAgent::run, this));
-        SDPA_LOG_DEBUG("EmptyWE thread started ...");
+        pYellowToken->block_1() = matrix_t(nBlockDim, nBlockDim);
       }
 
-      void stop()
+      axpy_prod( pBlueToken->block_1(), pRedToken->block_1(), pYellowToken->block_1(), bClear); // C += A * B
+    }
+
+    void propagate( const direction_t& dir, const Token::ptr_t& pToken )
+    {
+      if(dir == RIGHT)
+        propagateRight(pToken);
+      else
+        if( dir == DOWN )
+          propagateDown(pToken);
+        else
+          SDPA_LOG_FATAL("Invalid propagation direction!");
+    }
+
+    void propagateRight( const Token::ptr_t& pBlueToken )
+    {
+      lock_type lock(mtx_);
+      int rank = pIAgent_->rank();
+
+      int i = rank / m_nTorusDim;
+      int j = rank % m_nTorusDim;
+
+      int rankRight = i*m_nTorusDim+(j+1)%m_nTorusDim;
+
+      try {
+        id_type newActId = fct_id_gen_();
+        m_mapActIds[newActId] = pBlueToken->activityId();
+        pBlueToken->activityId() = newActId;
+        pBlueToken->incVisitedNodes();
+      }
+      catch(boost::bad_function_call& ex)
       {
-        bStopRequested = true;
-        m_thread.interrupt();
-        DLOG(TRACE, "EmptyWE thread before join ...");
-        m_thread.join();
-        DLOG(TRACE, "EmptyWE thread joined ...");
+        SDPA_LOG_ERROR("Bad function call exception occurred!");
+        return;
       }
 
-      void run()
+      std::ostringstream oss;
+      oss<<"rank"<<rankRight;
+      requirement_t req(oss.str(), true);
+      requirement_list_t reqList;
+      reqList.push_back(req);
+
+      pIAgent_->submit(pBlueToken->activityId(), pBlueToken->encode(), reqList);
+    }
+
+    void propagateDown( const Token::ptr_t& pRedToken )
+    {
+      lock_type lock(mtx_);
+      int rank = pIAgent_->rank();
+
+      SDPA_LOG_INFO("The number of agents is: "<<m_nTorusDim*m_nTorusDim);
+
+      int i  = rank/m_nTorusDim;
+      int j  = rank%m_nTorusDim;
+
+      int rankBottom = ((i+1)%m_nTorusDim)*m_nTorusDim+j;
+
+      try {
+        id_type newActId = fct_id_gen_();
+        m_mapActIds[newActId] = pRedToken->activityId();
+        pRedToken->activityId() = newActId;
+        pRedToken->incVisitedNodes();
+      }
+      catch(boost::bad_function_call& ex)
       {
-        //lock_type lock(mtx_stop);
-        while(!bStopRequested)
+        SDPA_LOG_ERROR("Bad function call exception occurred!");
+        return;
+      }
+
+      std::ostringstream oss;
+      oss<<"rank"<<rankBottom;
+      requirement_t req(oss.str(), true);
+      requirement_list_t reqList;
+      reqList.push_back(req);
+
+      pIAgent_->submit(pRedToken->activityId(), pRedToken->encode(), reqList);
+    }
+
+    /**
+     * Cancel a workflow asynchronously.
+     * This method is to be invoked by the SDPA.
+     * The GWES will notifiy the SPDA about the
+     * completion of the cancelling process by calling the
+     * callback method Gwes2Sdpa::cancelled.
+     */
+    bool cancel( const id_type& wfid, const reason_type& reason )
+    {
+      lock_type lock(mtx_);
+      SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
+      return true;
+    }
+
+       // thread related functions
+    void start()
+    {
+      bStopRequested = false;
+      if(!pIAgent_)
+      {
+        SDPA_LOG_ERROR("The Workfow engine cannot be started. Invalid communication handler. ");
+        return;
+      }
+
+      m_thread = boost::thread(boost::bind(&TorusWorkflowEngineAgent::run, this));
+      SDPA_LOG_DEBUG("EmptyWE thread started ...");
+    }
+
+    void stop()
+    {
+      bStopRequested = true;
+      m_thread.interrupt();
+      DLOG(TRACE, "EmptyWE thread before join ...");
+      m_thread.join();
+      DLOG(TRACE, "EmptyWE thread joined ...");
+    }
+
+    void run()
+    {
+      //lock_type lock(mtx_stop);
+      while(!bStopRequested)
+      {
+        //cond_stop.wait(lock);
+        Token::ptr_t pBlueToken, pRedToken;
+
+        // consume always 2 tokens
+        if(!queueBlueTokens.empty() && !queueRedTokens.empty() )
         {
-          //cond_stop.wait(lock);
-          Token::ptr_t pBlueToken, pRedToken;
+          pBlueToken = queueBlueTokens.pop();
+          SDPA_LOG_DEBUG("Popped-up a BLUE token ...");
 
-          // consume always 2 tokens
-          if(!queueBlueTokens.empty() && !queueRedTokens.empty() )
+          if( pBlueToken->nVisitedNodes() < m_nTorusDim )
+            propagate(RIGHT, pBlueToken);
+
+          pRedToken  = queueRedTokens.pop();
+          SDPA_LOG_DEBUG("Popped-up a RED token ...");
+
+          if( pRedToken->nVisitedNodes() < m_nTorusDim )
+            propagate(DOWN, pRedToken);
+
+          Token::ptr_t pYellowToken = mapActId2YellowTokenPtr[m_wfid];
+
+          if( pRedToken->nVisitedNodes() == 1 && pBlueToken->nVisitedNodes() == 1 )
           {
-            pBlueToken = queueBlueTokens.pop();
-            SDPA_LOG_DEBUG("Popped-up a BLUE token ...");
-
-            if( pBlueToken->nVisitedNodes() < m_nTorusDim )
-              propagate(RIGHT, pBlueToken);
-
-            pRedToken  = queueRedTokens.pop();
-            SDPA_LOG_DEBUG("Popped-up a RED token ...");
-
-            if( pRedToken->nVisitedNodes() < m_nTorusDim )
-              propagate(DOWN, pRedToken);
-
-            Token::ptr_t pYellowToken = mapActId2YellowTokenPtr[m_wfid];
-
-            if( pRedToken->nVisitedNodes() == 1 && pBlueToken->nVisitedNodes() == 1 )
-            {
-              accumulate( pRedToken, pBlueToken, pYellowToken, true ); // C += A * B
-              continue;
-            }
-            else if( pRedToken->owner() != pIAgent_->name() && pBlueToken->owner() != pIAgent_->name() ) // propagation finished
-            {
-              accumulate( pRedToken, pBlueToken, pYellowToken );
-              continue;
-            }
-
-            // care master
-            if( pRedToken->nVisitedNodes() == m_nTorusDim && pBlueToken->nVisitedNodes() == m_nTorusDim )
-            {
-              SDPA_LOG_INFO("The number of visited nodes is blue:" <<pBlueToken->nVisitedNodes()<<", red:"<<pRedToken->nVisitedNodes());
-
-              SDPA_LOG_DEBUG("Inform the orchestrator that the job "<<m_wfid<<" finished! Product: ");
-              print(pYellowToken->block_1());
-
-              pIAgent_->finished( pBlueToken->activityId(), "");
-              pIAgent_->finished( pRedToken->activityId(), "" );
-
-              pIAgent_->finished( m_wfid, pYellowToken->encode() );
-
-              mapActId2YellowTokenPtr.erase(m_wfid);
-            }
+            accumulate( pRedToken, pBlueToken, pYellowToken, true ); // C += A * B
+            continue;
           }
-          else
-            boost::this_thread::sleep(boost::posix_time::seconds(1));
-        }
-      }
+          else if( pRedToken->owner() != pIAgent_->name() && pBlueToken->owner() != pIAgent_->name() ) // propagation finished
+          {
+            accumulate( pRedToken, pBlueToken, pYellowToken );
+            continue;
+          }
 
-      bool fill_in_info ( const id_type & id, activity_information_t &) const
-      {
-        return false;
+          // care master
+          if( pRedToken->nVisitedNodes() == m_nTorusDim && pBlueToken->nVisitedNodes() == m_nTorusDim )
+          {
+            SDPA_LOG_INFO("The number of visited nodes is blue:" <<pBlueToken->nVisitedNodes()<<", red:"<<pRedToken->nVisitedNodes());
+
+            SDPA_LOG_DEBUG("Inform the orchestrator that the job "<<m_wfid<<" finished! Product: ");
+            print(pYellowToken->block_1());
+
+            pIAgent_->finished( pBlueToken->activityId(), "");
+            pIAgent_->finished( pRedToken->activityId(), "" );
+
+            pIAgent_->finished( m_wfid, pYellowToken->encode() );
+
+            mapActId2YellowTokenPtr.erase(m_wfid);
+          }
+        }
+        else
+          boost::this_thread::sleep(boost::posix_time::seconds(1));
       }
+    }
+
+    bool fill_in_info ( const id_type & id, activity_information_t &) const
+    {
+      return false;
+    }
 
   public:
     mutable GenericDaemon *pIAgent_;
