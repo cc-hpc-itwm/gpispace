@@ -302,18 +302,19 @@ namespace detail
 
     void ISIMServer::stopRoutine(void) throw (StartServerException)
     {
+      MLOG (INFO, "got stop request");
       m_isim->stop ();
     }
 
-    void ISIMServer::disconnectRoutine(void) throw (StartServerException) { }
+    void ISIMServer::disconnectRoutine(void) throw (StartServerException) {}
 
-    void ISIMServer::reconnectRoutine(void) throw (StartServerException) { }
+    void ISIMServer::reconnectRoutine(void) throw (StartServerException) {}
 
-    void ISIMServer::idleRoutine(void) throw (StartServerException) { }
+    void ISIMServer::idleRoutine(void) throw (StartServerException) {}
 
-    void ISIMServer::busyRoutine(void) throw (StartServerException) { }
+    void ISIMServer::busyRoutine(void) throw (StartServerException) {}
 
-    void ISIMServer::crashRoutine(void) throw (StartServerException) { }
+    void ISIMServer::crashRoutine(void) throw (StartServerException) {}
 }
 
 EXPORT_FHG_PLUGIN( isim
