@@ -140,14 +140,13 @@ public:
     m_stop_requested = true;
 
     m_isim->stop ();
+    m_backend->stop ();
 
     m_transfer_thread.interrupt();
     m_transfer_thread.join ();
 
     m_message_thread.interrupt();
     m_message_thread.join ();
-
-    m_backend->stop ();
 
     FHG_PLUGIN_STOPPED();
   }
@@ -616,7 +615,7 @@ private:
       ec = cancel ();
       if (0 == ec)
       {
-        send_abort_accepted();
+//        send_abort_accepted();
       }
       else
       {
