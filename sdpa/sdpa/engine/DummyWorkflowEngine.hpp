@@ -120,26 +120,26 @@ class DummyWorkflowEngine : public IWorkflowEngine {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-  bool finished(const id_type& activityId, const result_type & /* result */)
+    bool finished(const id_type& activityId, const result_type & /* result */)
     {
-        SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
 
-                if(pIAgent_)
-                {
-                        // find the corresponding workflow_id
-                        id_type workflowId = map_Act2Wf_Ids_[activityId];
+      if(pIAgent_)
+      {
+          // find the corresponding workflow_id
+          id_type workflowId = map_Act2Wf_Ids_[activityId];
 
-                        result_type wf_result;
-                        pIAgent_->finished(workflowId, wf_result);
+          result_type wf_result;
+          pIAgent_->finished(workflowId, wf_result);
 
-                        //delete the entry corresp to activityId;
-                        lock_type lock(mtx_);
-                        map_Act2Wf_Ids_.erase(activityId);
+          //delete the entry corresp to activityId;
+          lock_type lock(mtx_);
+          map_Act2Wf_Ids_.erase(activityId);
 
-                        return true;
-                }
-                else
-                        return false;
+          return true;
+      }
+      else
+        return false;
     }
 
     /**
@@ -151,34 +151,34 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     */
     bool cancelled(const id_type& activityId)
     {
-                SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
 
-                /**
-                * Notify the SDPA that a workflow has been canceled (state
-                * transition from * to terminated.
-                */
+      /**
+      * Notify the SDPA that a workflow has been canceled (state
+      * transition from * to terminated.
+      */
 
-                if(pIAgent_)
-                {
-                        // find the corresponding workflow_id
-                        id_type workflowId = map_Act2Wf_Ids_[activityId];
-                        lock_type lock(mtx_);
-                        map_Act2Wf_Ids_.erase(activityId);
+      if(pIAgent_)
+      {
+        // find the corresponding workflow_id
+        id_type workflowId = map_Act2Wf_Ids_[activityId];
+        lock_type lock(mtx_);
+        map_Act2Wf_Ids_.erase(activityId);
 
-                        // check if there are any activities left for that workflow
-                        bool bAllActFinished = true;
-                        for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
-                                if( it->second == workflowId )
-                                        bAllActFinished = false;
+        // check if there are any activities left for that workflow
+        bool bAllActFinished = true;
+        for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
+                if( it->second == workflowId )
+                        bAllActFinished = false;
 
-                        // if no activity left, declare the workflow cancelled
-                        if(bAllActFinished)
-                                pIAgent_->cancelled(workflowId);
+        // if no activity left, declare the workflow cancelled
+        if(bAllActFinished)
+                pIAgent_->cancelled(workflowId);
 
-                        return true;
-                }
-                else
-                        return false;
+        return true;
+      }
+      else
+        return false;
     }
 
 
@@ -191,81 +191,81 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     */
     void submit(const id_type& wfid, const encoded_type& wf_desc)
     {
-                // GWES is supposed to parse the workflow and generate a suite of
-                // sub-workflows or activities that are sent to SDPA
-                // GWES assigns an unique workflow_id which will be used as a job_id
-                // on SDPA side
-                SDPA_LOG_DEBUG("Submit new workflow, wfid = "<<wfid);
+      // GWES is supposed to parse the workflow and generate a suite of
+      // sub-workflows or activities that are sent to SDPA
+      // GWES assigns an unique workflow_id which will be used as a job_id
+      // on SDPA side
+      SDPA_LOG_DEBUG("Submit new workflow, wfid = "<<wfid);
 
-                //create several activities out of it
-                // assign new id
-                sdpa::JobId id;
-                //id_type act_id = id.str();
-                id_type act_id;
-                try {
-                        act_id  = fct_id_gen_();
-                }
-                catch(boost::bad_function_call& ex) {
-                        SDPA_LOG_ERROR("Bad function call excecption occurred!");
-                }
+      //create several activities out of it
+      // assign new id
+      sdpa::JobId id;
+      //id_type act_id = id.str();
+      id_type act_id;
+      try {
+        act_id  = fct_id_gen_();
+      }
+      catch(boost::bad_function_call& ex) {
+        SDPA_LOG_ERROR("Bad function call excecption occurred!");
+      }
 
-                // either you assign here an id or it be assigned by daemon
-                lock_type lock(mtx_);
-                map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
+      // either you assign here an id or it be assigned by daemon
+      lock_type lock(mtx_);
+      map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
 
-                // ship the same activity/workflow description
-                encoded_type act_desc = wf_desc;
-                if(pIAgent_)
-                {
-                        SDPA_LOG_DEBUG("Submit new activity ...");
-                        pIAgent_->submit(act_id, act_desc);
-                }
+      // ship the same activity/workflow description
+      encoded_type act_desc = wf_desc;
+      if(pIAgent_)
+      {
+        SDPA_LOG_DEBUG("Submit new activity ...");
+        pIAgent_->submit(act_id, act_desc);
+      }
     }
 
     /**
-     * Cancel a workflow asynchronously.
-     * This method is to be invoked by the SDPA.
-     * The GWES will notifiy the SPDA about the
-     * completion of the cancelling process by calling the
-     * callback method Gwes2Sdpa::cancelled.
-     */
-  bool cancel(const id_type& wfid, const reason_type& /* reason */)
-        {
-                SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
+    * Cancel a workflow asynchronously.
+    * This method is to be invoked by the SDPA.
+    * The GWES will notifiy the SPDA about the
+    * completion of the cancelling process by calling the
+    * callback method Gwes2Sdpa::cancelled.
+    */
+    bool cancel(const id_type& wfid, const reason_type& /* reason */)
+    {
+      SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
-                lock_type lock(mtx_);
-                if(pIAgent_)
-                {
-                        SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
-
-                        for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
-                                if( it->second == wfid )
-                                {
-                                        id_type activityId = it->first;
-                                        reason_type reason;
-                                        pIAgent_->cancel(activityId, reason);
-                                }
-                }
-
-                return true;
-    }
-
-      bool fill_in_info ( const id_type & id, activity_information_t &) const
+      lock_type lock(mtx_);
+      if(pIAgent_)
       {
-          DLOG(TRACE, "fill_in_info (" << id << ")");
-          return false;
+        SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
+
+        for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
+          if( it->second == wfid )
+          {
+            id_type activityId = it->first;
+            reason_type reason;
+            pIAgent_->cancel(activityId, reason);
+          }
       }
 
+      return true;
+    }
+
+    bool fill_in_info ( const id_type & id, activity_information_t &) const
+    {
+      DLOG(TRACE, "fill_in_info (" << id << ")");
+      return false;
+    }
+
     template <class Archive>
-        void serialize(Archive& ar, const unsigned int)
-        {
-        ar & boost::serialization::base_object<IWorkflowEngine>(*this);
-                ar & map_Act2Wf_Ids_;
-        }
+    void serialize(Archive& ar, const unsigned int)
+    {
+      ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+      ar & map_Act2Wf_Ids_;
+    }
 
     void print() {
-        for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
-                std::cout<<it->second<<" -> "<<it->first<<std::endl;
+      for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
+        std::cout<<it->second<<" -> "<<it->first<<std::endl;
     }
 
     void print_statistics (std::ostream &) const

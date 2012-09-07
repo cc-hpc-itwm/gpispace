@@ -558,10 +558,9 @@ private:
 
     if (fail_counter)
     {
-      int ec = errno;
       MLOG ( ERROR
-           , "terminating, since there were " << fail_counter << " failures"
-           << " while receiving messages from the GUI: " << strerror(ec)
+           , "terminating, since there were " << fail_counter << " failure(s)"
+           << " while receiving messages from the GUI"
            );
       m_backend->stop();
 

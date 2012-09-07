@@ -10,7 +10,14 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
-typedef int (*ChildFunction)(const char*);
+struct child_arg_t
+{
+  const char *comp;
+  const char *state;
+  const char *config;
+};
+
+typedef int (*ChildFunction)(child_arg_t *);
 
 namespace helper
 {
@@ -22,11 +29,11 @@ namespace helper
     }
   }
 
-  static int do_run (const char *cmd)
+  static int do_run (std::string const &cmd)
   {
     int ec = 0;
 
-    ec = system (cmd);
+    ec = system (cmd.c_str ());
 
     if (WIFEXITED(ec))
     {
@@ -42,65 +49,151 @@ namespace helper
     }
   }
 
-  static int do_start (const char *comp)
+  static int do_start (child_arg_t *arg)
   {
+    const char *comp = arg->comp;
     int ec = 0;
+
+    std::string cmd;
+
+    cmd = "sdpa";
+    if (arg->state)
+    {
+      cmd += " -s "; cmd += arg->state;
+    }
+    if (arg->config)
+    {
+      cmd += " -c "; cmd += arg->config;
+    }
+    cmd += " start";
 
     if (0 == comp)
     {
-      ec += do_run ("sdpa start gpi")  ? 1 : 0;
-      ec += do_run ("sdpa start orch") ? 2 : 0;
-      ec += do_run ("sdpa start agg")  ? 4 : 0;
-      ec += do_run ("sdpa start drts") ? 8 : 0;
+      std::string tmp;
+
+      tmp = cmd + " gpi";
+      ec += do_run (tmp)  ? 1 : 0;
+
+      tmp = cmd + " orch";
+      ec += do_run (tmp)  ? 2 : 0;
+
+      tmp = cmd + " agg";
+      ec += do_run (tmp)  ? 4 : 0;
+
+      tmp = cmd + " drts";
+      ec += do_run (tmp)  ? 8 : 0;
     }
     else
     {
-      std::string cmd ("sdpa start ");
-      cmd += comp;
+      std::string tmp;
 
-      ec += do_run (cmd.c_str ());
+      tmp  = cmd + " ";
+      tmp += comp;
+
+      ec += do_run (tmp);
     }
     return ec;
   }
 
-  static int do_stop (const char *comp)
+  static int do_stop (child_arg_t *arg)
   {
+    const char *comp = arg->comp;
     int ec = 0;
+
+    std::string cmd;
+
+    cmd = "sdpa";
+    if (arg->state)
+    {
+      cmd += " -s "; cmd += arg->state;
+    }
+    if (arg->config)
+    {
+      cmd += " -c "; cmd += arg->config;
+    }
+    cmd += " stop";
+
     if (0 == comp)
     {
-      ec += do_run ("sdpa stop drts") ?  1 : 0;
-      ec += do_run ("sdpa stop agg")  ?  2 : 0;
-      ec += do_run ("sdpa stop orch") ?  4 : 0;
-      ec += do_run ("sdpa stop gpi")  ?  8 : 0;
-      ec += do_run ("sdpa stop kvs")  ? 16 : 0;
+      std::string tmp;
+
+      tmp = cmd + " drts";
+      ec += do_run (tmp)  ? 8 : 0;
+
+      tmp = cmd + " agg";
+      ec += do_run (tmp)  ? 4 : 0;
+
+      tmp = cmd + " orch";
+      ec += do_run (tmp)  ? 2 : 0;
+
+      tmp = cmd + " gpi";
+      ec += do_run (tmp)  ? 1 : 0;
+
+      tmp = cmd + " kvs";
+      ec += do_run (tmp)  ?16 : 0;
     }
     else
     {
-      std::string cmd ("sdpa stop ");
-      cmd += comp;
+      std::string tmp;
 
-      ec += do_run (cmd.c_str ());
+      tmp  = cmd + " ";
+      tmp += comp;
+
+      ec += do_run (tmp);
     }
     return ec;
   }
 
-  static int do_status (const char *comp)
+  static int do_status (child_arg_t *arg)
   {
+    const char *comp = arg->comp;
     int ec = 0;
 
-    std::string cmd ("sdpa status");
-    if (comp)
+    std::string cmd;
+
+    cmd = "sdpa";
+    if (arg->state)
     {
-      cmd += " ";
-      cmd += (const char *)(comp);
+      cmd += " -s "; cmd += arg->state;
     }
+    if (arg->config)
+    {
+      cmd += " -c "; cmd += arg->config;
+    }
+    cmd += " status";
 
-    ec += do_run (cmd.c_str ());
+    if (0 == comp)
+    {
+      std::string tmp;
 
+      tmp = cmd + " gpi";
+      ec += do_run (tmp)  ? 1 : 0;
+
+      tmp = cmd + " orch";
+      ec += do_run (tmp)  ? 2 : 0;
+
+      tmp = cmd + " agg";
+      ec += do_run (tmp)  ? 4 : 0;
+
+      tmp = cmd + " drts";
+      ec += do_run (tmp)  ? 8 : 0;
+
+      tmp = cmd + " kvs";
+      ec += do_run (tmp)  ?16 : 0;
+    }
+    else
+    {
+      std::string tmp;
+
+      tmp  = cmd + " ";
+      tmp += comp;
+
+      ec += do_run (tmp);
+    }
     return ec;
   }
 
-  static int run_in_child (ChildFunction fun, const char* arg)
+  static int run_in_child (ChildFunction fun, child_arg_t *arg)
   {
     pid_t child = fork ();
     if (child == 0)
@@ -108,7 +201,7 @@ namespace helper
       close_fds ();
       int ec = 0;
 
-      ec += fun(arg);
+      ec += fun (arg);
 
       _exit (ec);
 
@@ -151,6 +244,18 @@ public:
     m_time_to_sleep_after_startup =
       fhg_kernel()->get<int>("time_to_sleep", "5");
 
+    m_state = fhg_kernel ()->get ("state", "");
+    if (m_state.size ())
+    {
+      MLOG (INFO, "using state directory: " << m_state);
+    }
+
+    m_config = fhg_kernel ()->get ("config", "");
+    if (m_config.size ())
+    {
+      MLOG (INFO, "using config file: " << m_config);
+    }
+
     FHG_PLUGIN_STARTED();
   }
 
@@ -166,7 +271,13 @@ public:
 
   int start (const char *comp)
   {
-    int rc = helper::run_in_child (&helper::do_start, comp);
+    struct child_arg_t arg =
+      { comp
+      , m_state.size () ? m_state.c_str () : 0
+      , m_config.size () ? m_config.c_str () : 0
+      };
+
+    int rc = helper::run_in_child (&helper::do_start, &arg);
     sleep (m_time_to_sleep_after_startup);
     return rc;
   }
@@ -178,7 +289,13 @@ public:
 
   int stop (const char *comp)
   {
-    return helper::run_in_child (&helper::do_stop, comp);
+    struct child_arg_t arg =
+      { comp
+      , m_state.size () ? m_state.c_str () : 0
+      , m_config.size () ? m_config.c_str () : 0
+      };
+
+    return helper::run_in_child (&helper::do_stop, &arg);
   }
 
   int restart ()
@@ -204,10 +321,18 @@ public:
 
   int status (const char * comp)
   {
-    return helper::run_in_child (&helper::do_status, comp);
+    struct child_arg_t arg =
+      { comp
+      , m_state.size () ? m_state.c_str () : 0
+      , m_config.size () ? m_config.c_str () : 0
+      };
+
+    return helper::run_in_child (&helper::do_status, &arg);
   }
 private:
   int m_time_to_sleep_after_startup;
+  std::string m_state;
+  std::string m_config;
 };
 
 EXPORT_FHG_PLUGIN( sdpactl

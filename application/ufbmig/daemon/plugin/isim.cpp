@@ -20,10 +20,9 @@
 
 #include <stdexcept>
 
-
 static void unexpected_handler ()
 {
-        MLOG (ERROR, "something really really bad happened");
+        MLOG (ERROR, "something really, really bad happened, this is usually when the port could not be bound");
 }
 
 namespace isim
@@ -31,6 +30,7 @@ namespace isim
   struct _msg_t
   {
     PSProMigIF::Message *pspro_msg;
+    int timeout;
   };
 }
 
@@ -98,6 +98,7 @@ namespace detail
 class ISIM_Real : FHG_PLUGIN
                 , public isim::ISIM
 {
+  typedef std::list <msg_t *> msg_queue_t;
 public:
   ISIM_Real () {}
   ~ISIM_Real () {}
@@ -169,15 +170,17 @@ public:
       struct linger linger_value = { 0, 0 };
       setsockopt (sock_fd, SOL_SOCKET, SO_LINGER, &linger_value, sizeof (struct linger));
     }
+
+    m_stop_requested = false;
+    m_recv_thread = boost::thread (&ISIM_Real::recv_thread, this);
+    m_send_thread = boost::thread (&ISIM_Real::send_thread, this);
+
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
-    if (m_server)
-    {
-      close (m_server->communication ()->socket ()->getFd ());
-    }
+    this->stop ();
 
     FHG_PLUGIN_STOPPED();
   }
@@ -186,49 +189,84 @@ public:
 
   msg_t *recv (int timeout)
   {
-    PSProMigIF::Message *pspro_msg =
-      PSProMigIF::Message::recvMsg( m_server->communication()
-                                  , timeout
-                                  );
-    if (pspro_msg)
+    msg_t *msg = 0;
+    if (timeout == -1) // wait until all eternity
     {
-      msg_t *msg = (msg_t *)malloc (sizeof (msg_t));
-      msg->pspro_msg = pspro_msg;
-      return msg;
+      lock_type lck (m_msg_i_q_mtx);
+      while (m_msg_i_q.empty () && !m_stop_requested)
+      {
+        m_msg_i_avail.wait (lck);
+      }
+
+      if (not m_msg_i_q.empty ()) // stop requested
+      {
+        msg = m_msg_i_q.front (); m_msg_i_q.pop_front ();
+      }
+    }
+    else if (timeout == 0) // probe
+    {
+      lock_type lck (m_msg_i_q_mtx);
+      if (not m_msg_i_q.empty ())
+      {
+        msg = m_msg_i_q.front (); m_msg_i_q.pop_front ();
+      }
     }
     else
     {
-      return 0;
+      lock_type lck (m_msg_i_q_mtx);
+      boost::system_time const wait_until =
+        boost::get_system_time()
+        + boost::posix_time::milliseconds (timeout);
+      if (m_msg_i_avail.timed_wait (lck, wait_until))
+      {
+        if (not m_msg_i_q.empty ()) // stop requested
+        {
+          msg = m_msg_i_q.front (); m_msg_i_q.pop_front ();
+        }
+      }
     }
+
+    return msg;
   }
 
   int send (msg_t **p_msg, int timeout)
   {
     assert (p_msg);
 
-    try
-    {
-      msg_t *msg = *p_msg;
-      msg->pspro_msg->sendMsg ( m_server->communication ()
-                              , timeout
-                              );
-      msg_destroy (p_msg);
-    }
-    catch (std::exception const &ex)
+    if (m_stop_requested)
     {
       msg_destroy (p_msg);
       return -EIO;
     }
+    else
+    {
+      lock_type lck (m_msg_o_q_mtx);
 
-    return 0;
+      msg_t *msg = *p_msg;
+      msg->timeout = timeout;
+
+      m_msg_o_q.push_back (msg);
+      m_msg_o_avail.notify_one ();
+      *p_msg = 0;
+      return 0;
+    }
   }
 
   void stop ()
   {
+    m_stop_requested = true;
+
     if (m_server)
     {
       close (m_server->communication ()->socket ()->getFd ());
     }
+
+    // notify any waiting processes
+    m_msg_i_avail.notify_all ();
+    m_msg_i_avail.notify_all ();
+
+    m_send_thread.interrupt ();
+    m_recv_thread.interrupt ();
   }
 
   void idle ()
@@ -250,6 +288,7 @@ public:
     msg_t *msg = (msg_t*) (malloc (sizeof (msg_t)));
     assert (msg);
 
+    msg->timeout = -1;
     msg->pspro_msg  = PSProMigIF::Message::generateMsg (size);
     assert (msg->pspro_msg);
 
@@ -287,6 +326,71 @@ public:
     return msg->pspro_msg->m_ulCustomDataSize;
   }
 private:
+  void recv_thread ()
+  {
+    while (! m_stop_requested)
+    {
+      PSProMigIF::Message *pspro_msg =
+        PSProMigIF::Message::recvMsg( m_server->communication()
+                                    , -1
+                                    );
+      if (pspro_msg)
+      {
+        msg_t *msg = (msg_t *)malloc (sizeof (msg_t));
+        msg->pspro_msg = pspro_msg;
+
+        lock_type (m_msg_i_q_mtx);
+        m_msg_i_q.push_back (msg);
+        m_msg_i_avail.notify_one ();
+      }
+      else
+      {
+        lock_type (m_msg_i_q_mtx);
+        m_msg_i_avail.notify_all ();
+        break;
+      }
+    }
+  }
+
+  void send_thread ()
+  {
+    msg_t *msg;
+
+    msg = 0;
+
+    lock_type lck(m_msg_o_q_mtx);
+
+    while (! m_stop_requested)
+    {
+      while (m_msg_o_q.empty ())
+      {
+        m_msg_o_avail.wait (lck);
+      }
+
+      if (not m_stop_requested)
+      {
+        msg = m_msg_o_q.front (); m_msg_o_q.pop_front ();
+        try
+        {
+          msg->pspro_msg->sendMsg ( m_server->communication ()
+                                  , msg->timeout
+                                  );
+        }
+        catch (std::exception const &ex)
+        {
+          MLOG (ERROR, "could not receive: " << ex.what ());
+        }
+        msg_destroy (&msg);
+      }
+    }
+
+    while (not m_msg_o_q.empty ())
+    {
+      msg = m_msg_o_q.front (); m_msg_o_q.pop_front ();
+      delete msg;
+    }
+  }
+
   mutable mutex_type m_mtx_server;
 
   int m_conn_timeout;
@@ -294,6 +398,18 @@ private:
 
   std::string m_server_app_name;
   std::string m_server_app_vers;
+
+  bool                   m_stop_requested;
+
+  mutable mutex_type     m_msg_i_q_mtx;
+  msg_queue_t            m_msg_i_q;
+  boost::thread          m_recv_thread;
+  mutable condition_type m_msg_i_avail;
+
+  mutable mutex_type     m_msg_o_q_mtx;
+  msg_queue_t            m_msg_o_q;
+  boost::thread          m_send_thread;
+  mutable condition_type m_msg_o_avail;
 };
 
 namespace detail
