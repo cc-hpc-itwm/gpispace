@@ -22,7 +22,7 @@
 
 static void unexpected_handler ()
 {
-        MLOG (ERROR, "something really really bad happened");
+        MLOG (ERROR, "something really, really bad happened, this is usually when the port could not be bound");
 }
 
 namespace isim
