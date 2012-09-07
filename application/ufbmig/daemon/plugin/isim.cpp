@@ -193,7 +193,7 @@ public:
     if (timeout == -1) // wait until all eternity
     {
       lock_type lck (m_msg_i_q_mtx);
-      while (m_msg_i_q.empty ())
+      while (m_msg_i_q.empty () && !m_stop_requested)
       {
         m_msg_i_avail.wait (lck);
       }
@@ -246,6 +246,7 @@ public:
       msg->timeout = timeout;
 
       m_msg_o_q.push_back (msg);
+      m_msg_o_avail.notify_one ();
       *p_msg = 0;
       return 0;
     }
@@ -266,9 +267,6 @@ public:
 
     m_send_thread.interrupt ();
     m_recv_thread.interrupt ();
-
-    m_send_thread.join ();
-    m_recv_thread.join ();
   }
 
   void idle ()
@@ -358,6 +356,8 @@ private:
   {
     msg_t *msg;
 
+    msg = 0;
+
     lock_type lck(m_msg_o_q_mtx);
 
     while (! m_stop_requested)
@@ -369,17 +369,18 @@ private:
 
       if (not m_stop_requested)
       {
+        msg = m_msg_o_q.front (); m_msg_o_q.pop_front ();
         try
         {
           msg->pspro_msg->sendMsg ( m_server->communication ()
                                   , msg->timeout
                                   );
-          msg_destroy (&msg);
         }
         catch (std::exception const &ex)
         {
-          msg_destroy (&msg);
+          MLOG (ERROR, "could not receive: " << ex.what ());
         }
+        msg_destroy (&msg);
       }
     }
 
