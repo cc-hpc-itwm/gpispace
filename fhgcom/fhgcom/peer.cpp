@@ -130,8 +130,6 @@ namespace fhg
     {
       lock_type lock(mutex_);
 
-      if (stopped_) return;
-
       io_service_.stop();
 
       DLOG(TRACE, "stopping peer " << name());

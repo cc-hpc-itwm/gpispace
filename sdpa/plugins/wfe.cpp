@@ -112,11 +112,14 @@ public:
         task->state = wfe_task_t::CANCELED;
         task->error_message = "plugin shutdown";
         task->done.notify(fhg::error::EXECUTION_CANCELLED);
+
+        m_task_map.erase (task->id);
       }
     }
 
     if (m_loader)
     {
+      m_loader->unload_autoloaded();
       m_loader.reset();
     }
     FHG_PLUGIN_STOPPED();

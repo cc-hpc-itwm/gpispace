@@ -1,4 +1,4 @@
-#include <sys/types.h> // fok
+#include <sys/types.h> // fork
 #include <unistd.h> // fork
 #include <sys/wait.h> // waitpid
 #include <stdlib.h> // system
@@ -10,7 +10,7 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
-typedef int (*ChildFunction)(void*);
+typedef int (*ChildFunction)(const char*);
 
 namespace helper
 {
@@ -22,42 +22,85 @@ namespace helper
     }
   }
 
-  static int do_start (void* time_to_sleep)
+  static int do_run (const char *cmd)
   {
     int ec = 0;
-    ec += system("sdpa start gpi");
-    ec += system("sdpa start orch");
-    ec += system("sdpa start agg");
-    ec += system("sdpa start nre");
-    ec += system("sdpa start drts");
-    if (time_to_sleep)
+
+    ec = system (cmd);
+
+    if (WIFEXITED(ec))
     {
-      sleep(*(int*)(time_to_sleep));
+      return WEXITSTATUS(ec);
+    }
+    else if (WIFSIGNALED(ec))
+    {
+      return 42;
+    }
+    else
+    {
+      return 127;
+    }
+  }
+
+  static int do_start (const char *comp)
+  {
+    int ec = 0;
+
+    if (0 == comp)
+    {
+      ec += do_run ("sdpa start gpi")  ? 1 : 0;
+      ec += do_run ("sdpa start orch") ? 2 : 0;
+      ec += do_run ("sdpa start agg")  ? 4 : 0;
+      ec += do_run ("sdpa start drts") ? 8 : 0;
+    }
+    else
+    {
+      std::string cmd ("sdpa start ");
+      cmd += comp;
+
+      ec += do_run (cmd.c_str ());
     }
     return ec;
   }
 
-  static int do_stop (void*)
+  static int do_stop (const char *comp)
   {
     int ec = 0;
-    ec += system("sdpa stop drts");
-    ec += system("sdpa stop nre");
-    ec += system("sdpa stop agg");
-    ec += system("sdpa stop orch");
-    ec += system("sdpa stop gpi");
-    ec += system("sdpa stop kvs");
+    if (0 == comp)
+    {
+      ec += do_run ("sdpa stop drts") ?  1 : 0;
+      ec += do_run ("sdpa stop agg")  ?  2 : 0;
+      ec += do_run ("sdpa stop orch") ?  4 : 0;
+      ec += do_run ("sdpa stop gpi")  ?  8 : 0;
+      ec += do_run ("sdpa stop kvs")  ? 16 : 0;
+    }
+    else
+    {
+      std::string cmd ("sdpa stop ");
+      cmd += comp;
+
+      ec += do_run (cmd.c_str ());
+    }
     return ec;
   }
 
-  static int do_restart (void* p)
+  static int do_status (const char *comp)
   {
     int ec = 0;
-    ec += do_stop (p);
-    ec += do_start (p);
+
+    std::string cmd ("sdpa status");
+    if (comp)
+    {
+      cmd += " ";
+      cmd += (const char *)(comp);
+    }
+
+    ec += do_run (cmd.c_str ());
+
     return ec;
   }
 
-  static int run_in_child (ChildFunction fun, void* arg)
+  static int run_in_child (ChildFunction fun, const char* arg)
   {
     pid_t child = fork ();
     if (child == 0)
@@ -76,7 +119,7 @@ namespace helper
     {
       int ec = errno;
       MLOG(ERROR, "could not fork: " << strerror(ec));
-      return ec;
+      return -ec;
     }
     else
     {
@@ -93,7 +136,7 @@ namespace helper
       }
       else
       {
-        return EFAULT;
+        return 127;
       }
     }
   }
@@ -118,23 +161,50 @@ public:
 
   int start ()
   {
-    return helper::run_in_child ( &helper::do_start
-                                , &m_time_to_sleep_after_startup
-                                );
+    return start (0);
   }
 
-  int restart ()
+  int start (const char *comp)
   {
-    return helper::run_in_child ( &helper::do_restart
-                                , &m_time_to_sleep_after_startup
-                                );
+    int rc = helper::run_in_child (&helper::do_start, comp);
+    sleep (m_time_to_sleep_after_startup);
+    return rc;
   }
 
   int stop ()
   {
-    return helper::run_in_child ( &helper::do_stop
-                                , 0
-                                );
+    return stop (0);
+  }
+
+  int stop (const char *comp)
+  {
+    return helper::run_in_child (&helper::do_stop, comp);
+  }
+
+  int restart ()
+  {
+    return restart (0);
+  }
+
+  int restart (const char *comp)
+  {
+    int rc = 0;
+
+    rc += start (comp);
+    sleep (m_time_to_sleep_after_startup);
+    rc += stop (comp);
+
+    return rc;
+  }
+
+  int status ()
+  {
+    return status (0);
+  }
+
+  int status (const char * comp)
+  {
+    return helper::run_in_child (&helper::do_status, comp);
   }
 private:
   int m_time_to_sleep_after_startup;

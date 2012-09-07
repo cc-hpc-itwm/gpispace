@@ -10,6 +10,7 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/error_codes.hpp>
 #include <fhg/util/bool.hpp>
 #include <fhg/util/bool_io.hpp>
 
@@ -58,14 +59,6 @@ namespace job
   static bool is_done(info_t const &info)
   {
     return info.state < sdpa::status::PENDING;
-  }
-
-  static int state_to_result_code (int state)
-  {
-    if (sdpa::status::FINISHED == state) return 0;
-    if (sdpa::status::CANCELED == state) return -ECANCELED;
-    if (sdpa::status::FAILED   == state) return -EFAULT;
-    else                                 return -EFAULT;
   }
 
   static std::string type_to_name (int type)
@@ -223,13 +216,14 @@ public:
     if (0 == sdpa_c)
     {
       MLOG(ERROR, "could not acquire sdpa::Client plugin");
-      FHG_PLUGIN_FAILED(EAGAIN);
+      FHG_PLUGIN_FAILED (ESRCH);
     }
 
     progress = fhg_kernel()->acquire<progress::Progress>("progress");
     if (0 == progress)
     {
-      MLOG(WARN, "could not acquire progress::Progress plugin");
+      MLOG (ERROR, "could not acquire progress::Progress plugin");
+      FHG_PLUGIN_FAILED (ESRCH);
     }
 
     gpi_api = fhg_kernel()->acquire<gpi::GPI>("gpi");
@@ -315,7 +309,7 @@ public:
 
   int prepare ()
   {
-    update_progress(0);
+    reset_progress ("prepare");
 
     if (m_control_sdpa && sdpa_ctl)
     {
@@ -325,11 +319,17 @@ public:
       if (rc != 0)
       {
         MLOG (WARN, "start of SDPA failed: " << rc);
-        return rc;
+        return fhg::error::SDPA_NOT_STARTABLE;
+      }
+
+      if (0 != sdpa_ctl->status ("gpi"))
+      {
+        MLOG (ERROR, "gpi failed to start, giving up");
+        return fhg::error::GPI_UNAVAILABLE;
       }
     }
 
-    update_progress(100);
+    update_progress (50);
 
     const std::string wf(read_workflow_from_file(m_wf_path_prepare));
 
@@ -345,20 +345,20 @@ public:
       return -EINVAL;
     }
 
+    update_progress (75);
+
     return submit_job (we::util::codec::encode(act), job::type::PREPARE);
   }
 
-  int initialize(std::string const &xml)
+  int initialize (std::string const &xml)
   {
     if (state::UNINITIALIZED != m_state)
     {
       MLOG(ERROR, "state mismatch: cannot initialize again in state: " << m_state);
-      return -EINVAL;
+      return -EPROTO;
     }
 
     reset_progress ("initialize");
-
-    update_progress (75);
 
     MLOG(INFO, "submitting INITIALIZE workflow");
 
@@ -409,7 +409,7 @@ public:
       salt_mask_stream.close();
     }
 
-    MLOG(INFO, "submitting SALTMASK workflow");
+    MLOG (INFO, "submitting SALTMASK workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_mask));
 
@@ -707,17 +707,14 @@ public:
 private:
   void reset_progress (std::string const &phase)
   {
-    if (progress)
-    {
-      progress->reset ("ufbmig", phase, 100);
-    }
+    progress->reset ("ufbmig", phase, 100);
     if (m_frontend)
       m_frontend->update_progress (0);
   }
 
   void update_progress ()
   {
-    if (progress && m_frontend)
+    if (m_frontend)
     {
       size_t value; size_t max;
       if (0 == progress->get ("ufbmig", &value, &max))
@@ -734,10 +731,7 @@ private:
 
   void update_progress (int v)
   {
-    if (progress)
-    {
-      progress->set ("ufbmig", v);
-    }
+    progress->set ("ufbmig", v);
 
     if (m_frontend)
       m_frontend->update_progress(v);
@@ -894,7 +888,7 @@ private:
   {
     LOG( INFO
        , "job '" << job::type_to_name(j.type) << "' returned: "
-       << sdpa::status::show(j.state)
+       << sdpa::status::show(j.state) << " [" << j.state << "]"
        << ": ec := " << j.error << " msg := " << j.error_message
        );
 
@@ -984,6 +978,11 @@ private:
           j->error = 0;
         if (j->state == sdpa::status::FAILED && j->error == 0)
           j->error = -EFAULT;
+        if (j->state < 0)
+        {
+          j->error = j->state;
+          j->state = sdpa::status::FAILED;
+        }
 
         sdpa_c->result(j->id, j->result);
         sdpa_c->remove(j->id);
@@ -1223,6 +1222,6 @@ EXPORT_FHG_PLUGIN( ufbmig_back
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "sdpactl,sdpac"
+                 , "sdpactl,sdpac,progress,gpi"
                  , ""
                  );

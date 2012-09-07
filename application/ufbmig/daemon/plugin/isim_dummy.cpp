@@ -17,58 +17,6 @@ namespace isim
     size_t size;
     void  *data;
   };
-
-  msg_t *msg_new (int type, size_t size)
-  {
-    msg_t *msg = (msg_t*) (malloc (sizeof (msg_t)));
-    assert (msg);
-
-    if (size)
-    {
-      msg->data  = malloc (size);
-      assert (msg->data);
-    }
-    else
-    {
-      msg->data = 0;
-    }
-
-    msg->type = type;
-    msg->size = size;
-
-    return msg;
-  }
-
-  void msg_destroy (msg_t **p_msg)
-  {
-    assert (p_msg);
-    if (*p_msg)
-    {
-      msg_t *msg = *p_msg;
-      if (msg->data)
-        free (msg->data);
-      free (msg);
-      *p_msg = 0;
-    }
-  }
-
-  int msg_type (msg_t *msg)
-  {
-    assert (msg);
-    return msg->type;
-  }
-
-  void *msg_data (msg_t *msg)
-  {
-    assert (msg);
-    return msg->data;
-  }
-
-  size_t msg_size (msg_t *msg)
-  {
-    assert (msg);
-    return msg->size;
-  }
 }
 
 using namespace isim;
@@ -144,9 +92,61 @@ public:
     return 0;
   }
 
+  void stop () {}
   void idle () {}
   void busy () {}
 
+  msg_t *msg_new (int type, size_t size)
+  {
+    msg_t *msg = (msg_t*) (malloc (sizeof (msg_t)));
+    assert (msg);
+
+    if (size)
+    {
+      msg->data  = malloc (size);
+      assert (msg->data);
+    }
+    else
+    {
+      msg->data = 0;
+    }
+
+    msg->type = type;
+    msg->size = size;
+
+    return msg;
+  }
+
+  void msg_destroy (msg_t **p_msg)
+  {
+    assert (p_msg);
+    if (*p_msg)
+    {
+      msg_t *msg = *p_msg;
+      if (msg->data)
+        free (msg->data);
+      free (msg);
+      *p_msg = 0;
+    }
+  }
+
+  int msg_type (msg_t *msg)
+  {
+    assert (msg);
+    return msg->type;
+  }
+
+  void *msg_data (msg_t *msg)
+  {
+    assert (msg);
+    return msg->data;
+  }
+
+  size_t msg_size (msg_t *msg)
+  {
+    assert (msg);
+    return msg->size;
+  }
 private:
   void reply_with (msg_t *msg)
   {
@@ -176,7 +176,7 @@ private:
     case INITIALIZE_SUCCESS:
       MLOG (INFO, "ufbmig initialized!");
       {
-        msg_t *reply = msg_new (client::command::MIGRATE);
+        msg_t *reply = msg_new (client::command::MIGRATE, 0);
         reply_with (reply);
       }
       break;
@@ -189,7 +189,7 @@ private:
     case MIGRATE_SUCCESS:
       MLOG (INFO, "ufbmig migrated!");
       {
-        msg_t *reply = msg_new (client::command::FINALIZE);
+        msg_t *reply = msg_new (client::command::FINALIZE, 0);
         reply_with (reply);
       }
       break;

@@ -63,7 +63,10 @@ namespace sdpa {
 
       virtual ~JobFailedEvent() {}
 
-      std::string str() const { return "JobFailedEvent"; }
+      std::string str() const
+      {
+        return "JobFailedEvent(" + job_id ().str () + ")";
+      }
 
       virtual void handleBy(EventHandler *handler)
       {

@@ -229,6 +229,7 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    /*
     // cancel running jobs etc.
     {
       lock_type job_map_lock (m_job_map_mutex);
@@ -239,6 +240,7 @@ public:
         ++job_it;
       }
     }
+    */
 
     m_shutting_down = true;
 
