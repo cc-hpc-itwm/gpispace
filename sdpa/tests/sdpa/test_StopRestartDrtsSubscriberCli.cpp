@@ -69,100 +69,100 @@ namespace po = boost::program_options;
 
 struct MyFixture
 {
-        MyFixture()
-                        : m_nITER(1)
-                        , m_sleep_interval(1000) //microseconds
-                        , m_pool (0)
-                , m_kvsd (0)
-                , m_serv (0)
-                , m_thrd (0)
-                        , m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-        { //initialize and start the finite state machine
+    MyFixture()
+                    : m_nITER(1)
+                    , m_sleep_interval(1000) //microseconds
+                    , m_pool (0)
+            , m_kvsd (0)
+            , m_serv (0)
+            , m_thrd (0)
+                    , m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+    { //initialize and start the finite state machine
 
-                FHGLOG_SETUP();
+        FHGLOG_SETUP();
 
-                LOG(DEBUG, "Fixture's constructor called ...");
+        LOG(DEBUG, "Fixture's constructor called ...");
 
-                m_pool = new fhg::com::io_service_pool(1);
-                m_kvsd = new fhg::com::kvs::server::kvsd ("");
-                m_serv = new fhg::com::tcp_server ( *m_pool
-                                                                                  , *m_kvsd
-                                                                                  , kvs_host ()
-                                                                                  , kvs_port ()
-                                                                                  , true
-                                                                                  );
-                m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-                                                                                                , m_pool
-                                                                                                )
-                                                                   );
+        m_pool = new fhg::com::io_service_pool(1);
+        m_kvsd = new fhg::com::kvs::server::kvsd ("");
+        m_serv = new fhg::com::tcp_server ( *m_pool
+                                            , *m_kvsd
+                                            , kvs_host ()
+                                            , kvs_port ()
+                                            , true
+                                            );
+        m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
+                                                , m_pool
+                                                )
+                                    );
 
-                m_serv->start();
+        m_serv->start();
 
-                LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
+        LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
 
-                fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-                                                                                                  , boost::lexical_cast<std::string>(m_serv->port())
-                                                                                                  , boost::posix_time::seconds(10)
-                                                                                                  , 3
-                                                                                                  );
+        fhg::com::kvs::global::get_kvs_info().init( kvs_host()
+                                                    , boost::lexical_cast<std::string>(m_serv->port())
+                                                    , boost::posix_time::seconds(10)
+                                                    , 3
+                                                    );
 
-                m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-        }
+        m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+    }
 
-        ~MyFixture()
-        {
-                LOG(DEBUG, "Fixture's destructor called ...");
+    ~MyFixture()
+    {
+      LOG(DEBUG, "Fixture's destructor called ...");
 
-                m_serv->stop ();
-                m_pool->stop ();
-                m_thrd->join ();
+      m_serv->stop ();
+      m_pool->stop ();
+      m_thrd->join ();
 
-                delete m_thrd;
-                delete m_serv;
-                delete m_kvsd;
-                delete m_pool;
+      delete m_thrd;
+      delete m_serv;
+      delete m_kvsd;
+      delete m_pool;
 
-                seda::StageRegistry::instance().stopAll();
-                seda::StageRegistry::instance().clear();
-        }
+      seda::StageRegistry::instance().stopAll();
+      seda::StageRegistry::instance().clear();
+    }
 
-        void run_client_subscriber();
-        int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli );
+    void run_client_subscriber();
+    int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli );
 
-        sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
+    sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
-        string read_workflow(string strFileName)
-        {
-                ifstream f(strFileName.c_str());
-                ostringstream os;
-                os.str("");
+    string read_workflow(string strFileName)
+    {
+      ifstream f(strFileName.c_str());
+      ostringstream os;
+      os.str("");
 
-                if( f.is_open() )
-                {
-                        char c;
-                        while (f.get(c)) os<<c;
-                        f.close();
-                }else
-                        cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
+      if( f.is_open() )
+      {
+        char c;
+        while (f.get(c)) os<<c;
+        f.close();
+      }else
+        cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
 
-                return os.str();
-        }
+      return os.str();
+    }
 
-        int m_nITER;
-        int m_sleep_interval ;
+    int m_nITER;
+    int m_sleep_interval ;
     std::string m_strWorkflow;
 
     fhg::com::io_service_pool *m_pool;
-        fhg::com::kvs::server::kvsd *m_kvsd;
-        fhg::com::tcp_server *m_serv;
-        boost::thread *m_thrd;
+    fhg::com::kvs::server::kvsd *m_kvsd;
+    fhg::com::tcp_server *m_serv;
+    boost::thread *m_thrd;
 
-        sdpa::master_info_list_t m_arrAggMasterInfo;
+    sdpa::master_info_list_t m_arrAggMasterInfo;
 
-        std::string strBackupOrch;
-        std::string strBackupAgent;
+    std::string strBackupOrch;
+    std::string strBackupAgent;
 
-        boost::thread m_threadClient;
+    boost::thread m_threadClient;
 };
 
 
@@ -280,9 +280,10 @@ void MyFixture::run_client_subscriber()
 
           ptrCli->shutdown_network();
           ptrCli.reset();
-          boost::this_thread::sleep(boost::posix_time::seconds(1));
           return;
         }
+
+         boost::this_thread::sleep(boost::posix_time::seconds(1));
       }
 
       LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
@@ -307,7 +308,6 @@ void MyFixture::run_client_subscriber()
 
     ptrCli->shutdown_network();
     boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
 }
 
 sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )

@@ -49,61 +49,57 @@ typedef map_t::value_type id_pair;
 typedef boost::function<id_type()> Function_t;
 static std::string id_gen() { return id_generator::instance().next(); }
 
-enum we_status {
-                FINISHED,
-                FAILED,
-                CANCELLED
-        };
+enum we_status { FINISHED, FAILED, CANCELLED };
 
 class EmptyWorkflowEngine;
 
 class we_result_t
 {
 public:
-        we_result_t(const sdpa::job_id_t& jid, const result_type& res, const we_status& st  )
-        {
-                jobId = jid;
-                status = st;
-                result = res;
+    we_result_t(const sdpa::job_id_t& jid, const result_type& res, const we_status& st  )
+    {
+      jobId = jid;
+      status = st;
+      result = res;
 
-        }
+    }
 
-        we_result_t(const we_result_t& res  )
-        {
-                jobId  = res.jobId;
-                status = res.status;
-                result = res.result;
+    we_result_t(const we_result_t& res  )
+    {
+      jobId  = res.jobId;
+      status = res.status;
+      result = res.result;
 
-        }
+    }
 
-        we_result_t& operator=(const we_result_t& res  )
-        {
-                if( &res != this)
-                {
-                        jobId  = res.jobId;
-                        status = res.status;
-                        result = res.result;
-                }
+    we_result_t& operator=(const we_result_t& res  )
+    {
+      if( &res != this)
+      {
+              jobId  = res.jobId;
+              status = res.status;
+              result = res.result;
+      }
 
-                return *this;
-        }
+      return *this;
+    }
 
-        friend class EmptyWorkflowEngine;
+    friend class EmptyWorkflowEngine;
 
     template <class Archive>
-        void serialize(Archive& ar, const unsigned int)
-        {
-                ar & boost::serialization::base_object<IWorkflowEngine>(*this);
-                ar & jobId;
-                ar & status;
-                ar & result;
-        }
+    void serialize(Archive& ar, const unsigned int)
+    {
+      ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+      ar & jobId;
+      ar & status;
+      ar & result;
+    }
 
 
    public:
-        sdpa::job_id_t jobId;
-        we_status status;
-        result_type result;
+    sdpa::job_id_t jobId;
+    we_status status;
+    result_type result;
 };
 
 class EmptyWorkflowEngine : public IWorkflowEngine {
@@ -136,12 +132,12 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 
     void connect(GenericDaemon* pGenericDaemon )
     {
-        pGenericDaemon_ = pGenericDaemon;
+      pGenericDaemon_ = pGenericDaemon;
     }
 
     void set_id_generator ( Function_t f = id_gen )
     {
-        fct_id_gen_ = f;
+      fct_id_gen_ = f;
     }
 
     /**
@@ -157,24 +153,24 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
                , std::string const & reason
                )
     {
-        SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
 
-                if(pGenericDaemon_)
-                {
-                        // find the corresponding workflow_id
-                        const id_type workflowId = map_Act2Wf_Ids_[activityId];
+      if(pGenericDaemon_)
+      {
+        // find the corresponding workflow_id
+        const id_type workflowId = map_Act2Wf_Ids_[activityId];
 
-                        //pGenericDaemon_->failed(workflowId, result);
-                        we_result_t resP(workflowId, result, FAILED);
-                        qResults.push(resP);
+        //pGenericDaemon_->failed(workflowId, result);
+        we_result_t resP(workflowId, result, FAILED);
+        qResults.push(resP);
 
-                        lock_type lock(mtx_);
-                        map_Act2Wf_Ids_.erase(activityId);
+        lock_type lock(mtx_);
+        map_Act2Wf_Ids_.erase(activityId);
 
-                        return true;
-                }
-                else
-                        return false;
+        return true;
+      }
+      else
+        return false;
     }
 
     /**
@@ -184,27 +180,27 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-        bool finished(const id_type& activityId, const result_type& result )
+    bool finished(const id_type& activityId, const result_type& result )
     {
-        SDPA_LOG_DEBUG("The activity " << activityId<<" has finished!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" has finished!");
 
-                if(pGenericDaemon_)
-                {
-                        // find the corresponding workflow_id
-                        const id_type workflowId = map_Act2Wf_Ids_[activityId];
+      if(pGenericDaemon_)
+      {
+        // find the corresponding workflow_id
+        const id_type workflowId = map_Act2Wf_Ids_[activityId];
 
-                        //pGenericDaemon_->finished(workflowId, result);
-                        we_result_t resP(workflowId, result, FINISHED);
-                        qResults.push(resP);
+        //pGenericDaemon_->finished(workflowId, result);
+        we_result_t resP(workflowId, result, FINISHED);
+        qResults.push(resP);
 
-                        //delete the entry corresp to activityId;
-                        lock_type lock(mtx_);
-                        map_Act2Wf_Ids_.erase(activityId);
+        //delete the entry corresp to activityId;
+        lock_type lock(mtx_);
+        map_Act2Wf_Ids_.erase(activityId);
 
-                        return true;
-                }
-                else
-                        return false;
+        return true;
+      }
+      else
+        return false;
     }
 
     /**
@@ -216,39 +212,39 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     */
     bool cancelled(const id_type& activityId)
     {
-                SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
 
-                /**
-                * Notify the SDPA that a workflow has been canceled (state
-                * transition from * to terminated.
-                */
+      /**
+      * Notify the SDPA that a workflow has been canceled (state
+      * transition from * to terminated.
+      */
 
-                if(pGenericDaemon_)
-                {
-                        // find the corresponding workflow_id
-                        const id_type workflowId = map_Act2Wf_Ids_[activityId];
-                        lock_type lock(mtx_);
-                        map_Act2Wf_Ids_.erase(activityId);
+      if(pGenericDaemon_)
+      {
+        // find the corresponding workflow_id
+        const id_type workflowId = map_Act2Wf_Ids_[activityId];
+        lock_type lock(mtx_);
+        map_Act2Wf_Ids_.erase(activityId);
 
-                        // check if there are any activities left for that workflow
-                        bool bAllActFinished = true;
-                        for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
-                                if( it->second == workflowId )
-                                        bAllActFinished = false;
+        // check if there are any activities left for that workflow
+        bool bAllActFinished = true;
+        for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
+          if( it->second == workflowId )
+            bAllActFinished = false;
 
-                        // if no activity left, declare the workflow cancelled
-                        if(bAllActFinished)
-                        {
-                                //pGenericDaemon_->cancelled(workflowId);
-                                result_type result;
-                                const we_result_t resP(workflowId, result, CANCELLED);
-                                qResults.push(resP);
-                        }
+        // if no activity left, declare the workflow cancelled
+        if(bAllActFinished)
+        {
+          //pGenericDaemon_->cancelled(workflowId);
+          result_type result;
+          const we_result_t resP(workflowId, result, CANCELLED);
+          qResults.push(resP);
+        }
 
-                        return true;
-                }
-                else
-                        return false;
+        return true;
+      }
+      else
+        return false;
     }
 
 
@@ -261,35 +257,35 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     */
     void submit(const id_type& wfid, const encoded_type& wf_desc)
     {
-                // GWES is supposed to parse the workflow and generate a suite of
-                // sub-workflows or activities that are sent to SDPA
-                // GWES assigns an unique workflow_id which will be used as a job_id
-                // on SDPA side
-                SDPA_LOG_DEBUG("Submit new workflow, wfid = "<<wfid);
+      // GWES is supposed to parse the workflow and generate a suite of
+      // sub-workflows or activities that are sent to SDPA
+      // GWES assigns an unique workflow_id which will be used as a job_id
+      // on SDPA side
+      SDPA_LOG_DEBUG("Submit new workflow, wfid = "<<wfid);
 
-                //create several activities out of it
+      //create several activities out of it
 
-                // assign new id
-                sdpa::JobId id;
-                //id_type act_id = id.str();
-                id_type act_id;
-                try {
-                        act_id  = fct_id_gen_();
-                }
-                catch(boost::bad_function_call& ex) {
-                        SDPA_LOG_ERROR("Bad function call excecption occurred!");
-                }
+      // assign new id
+      sdpa::JobId id;
+      //id_type act_id = id.str();
+      id_type act_id;
+      try {
+        act_id  = fct_id_gen_();
+      }
+      catch(boost::bad_function_call& ex) {
+        SDPA_LOG_ERROR("Bad function call excecption occurred!");
+      }
 
-                // either you assign here an id or it be assigned by daemon
-                lock_type lock(mtx_);
-                map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
+      // either you assign here an id or it be assigned by daemon
+      lock_type lock(mtx_);
+      map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
 
-                // ship the same activity/workflow description
-                if(pGenericDaemon_)
-                {
-                        SDPA_LOG_DEBUG("Submit to the agent "<<pGenericDaemon_->name()<<" new activity \""<<act_id<<"\"");
-                        pGenericDaemon_->submit(act_id, wf_desc, empty_req_list());
-                }
+      // ship the same activity/workflow description
+      if(pGenericDaemon_)
+      {
+        SDPA_LOG_DEBUG("Submit to the agent "<<pGenericDaemon_->name()<<" new activity \""<<act_id<<"\"");
+        pGenericDaemon_->submit(act_id, wf_desc, empty_req_list());
+      }
     }
 
     /**
@@ -300,72 +296,73 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
      * callback method Gwes2Sdpa::cancelled.
      */
     bool cancel(const id_type& wfid, const reason_type& reason)
-        {
-                SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
+    {
+      SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
-                lock_type lock(mtx_);
-                if(pGenericDaemon_)
-                {
-                        SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
+      lock_type lock(mtx_);
+      if(pGenericDaemon_)
+      {
+        SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
 
-                        for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
-                                if( it->second == wfid )
-                                {
-                                        id_type activityId = it->first;
-                                        pGenericDaemon_->cancel(activityId, reason);
-                                }
-                }
+        for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
+          if( it->second == wfid )
+          {
+            id_type activityId = it->first;
+            pGenericDaemon_->cancel(activityId, reason);
+          }
+      }
 
-                return true;
+      return true;
     }
 
-      bool fill_in_info ( const id_type & id, activity_information_t &) const
+    bool fill_in_info ( const id_type & id, activity_information_t &) const
+    {
+      DLOG(TRACE, "fill_in_info (" << id << ")");
+      return false;
+    }
+
+    // thread related functions
+    void start()
+    {
+      bStopRequested = false;
+
+      if(!pGenericDaemon_)
       {
-          DLOG(TRACE, "fill_in_info (" << id << ")");
-          return false;
+        SDPA_LOG_ERROR("The Workfow engine cannot be started. Invalid communication handler. ");
+        return;
       }
 
-      // thread related functions
-      void start()
+      m_thread = boost::thread(boost::bind(&EmptyWorkflowEngine::run, this));
+
+      SDPA_LOG_DEBUG("EmptyWE thread started ...");
+    }
+
+    void stop()
+    {
+      bStopRequested = true;
+      m_thread.interrupt();
+      DLOG(TRACE, "EmptyWE thread before join ...");
+      m_thread.join();
+
+      DLOG(TRACE, "EmptyWE thread joined ...");
+    }
+
+    void run()
+    {
+      lock_type lock(mtx_stop);
+      while(!bStopRequested)
       {
-           bStopRequested = false;
-                        if(!pGenericDaemon_)
-                        {
-                                SDPA_LOG_ERROR("The Workfow engine cannot be started. Invalid communication handler. ");
-                                return;
-                        }
+        //cond_stop.wait(lock);
+        we_result_t we_result = qResults.pop_and_wait();
 
-                        m_thread = boost::thread(boost::bind(&EmptyWorkflowEngine::run, this));
-
-                        SDPA_LOG_DEBUG("EmptyWE thread started ...");
-      }
-
-      void stop()
-      {
-                        bStopRequested = true;
-                        m_thread.interrupt();
-                        DLOG(TRACE, "EmptyWE thread before join ...");
-                        m_thread.join();
-
-                        DLOG(TRACE, "EmptyWE thread joined ...");
-      }
-
-      void run()
-      {
-          lock_type lock(mtx_stop);
-          while(!bStopRequested)
-          {
-            //cond_stop.wait(lock);
-            we_result_t we_result = qResults.pop_and_wait();
-
-            switch(we_result.status)
-            {
-            case FINISHED:
+        switch(we_result.status)
+        {
+          case FINISHED:
               SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" successfully finished!");
               pGenericDaemon_->finished(we_result.jobId, we_result.result);
               break;
 
-            case FAILED:
+          case FAILED:
               SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" failed!");
               pGenericDaemon_->failed( we_result.jobId
                                      , we_result.result
@@ -374,24 +371,24 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
                                      );
               break;
 
-            case CANCELLED:
+          case CANCELLED:
               SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" was cancelled!");
               pGenericDaemon_->cancelled(we_result.jobId);
               break;
 
-            default:
+          default:
               SDPA_LOG_ERROR("Invalid status for the the job "<<we_result.jobId.str()<<"!");
-            }
-          }
+        }
       }
+    }
 
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int)
-      {
-          ar & boost::serialization::base_object<IWorkflowEngine>(*this);
-          ar & map_Act2Wf_Ids_;
-          ar & qResults;
-      }
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int)
+    {
+      ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+      ar & map_Act2Wf_Ids_;
+      ar & qResults;
+    }
 
   public:
     mutable GenericDaemon *pGenericDaemon_;
