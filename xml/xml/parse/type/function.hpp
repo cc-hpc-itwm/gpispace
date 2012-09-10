@@ -1109,9 +1109,13 @@ namespace xml
                        << "' -MT '"
                        << cpp_util::make::obj (mod->first, fun->name)
                        << "' $< > $@"                              << std::endl;
-                stream << "-include "
+                stream << "ifneq \"$(wildcard "
+                       << cpp_util::make::dep (mod->first, fun->name)
+                       << ")\" \"\""                        << std::endl;
+                stream << "  include "
                        << cpp_util::make::dep (mod->first, fun->name)
                                                                    << std::endl;
+                stream << "endif"                                  << std::endl;
                 stream << "DEPENDS += "
                        << cpp_util::make::dep (mod->first, fun->name)
                                                                    << std::endl;
@@ -1143,8 +1147,12 @@ namespace xml
                    << "' -MT '"
                    << cpp_util::make::obj (mod->first)
                    << "' $< > $@"                                  << std::endl;
-            stream << "-include "
+            stream << "ifneq \"$(wildcard "
+                   << cpp_util::make::dep (mod->first)
+                   << ")\" \"\""                            << std::endl;
+            stream << "  include "
                    << cpp_util::make::dep (mod->first)             << std::endl;
+            stream << "endif"                                      << std::endl;
             stream << "DEPENDS += "
                    << cpp_util::make::dep (mod->first)             << std::endl;
 
