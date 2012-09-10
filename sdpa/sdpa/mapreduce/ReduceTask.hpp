@@ -35,6 +35,8 @@
 
 #include <list>
 
+#include <stdexcept>
+
 using namespace sdpa;
 using namespace std;
 
@@ -78,7 +80,7 @@ public:
 
   void run()
   {
-    throw std::exception("Method not implemented!");
+    throw std::runtime_error("Method not implemented!");
   }
 
   void accumulate(InValueT v)
