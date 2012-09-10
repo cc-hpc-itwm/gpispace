@@ -665,6 +665,8 @@ private:
 
         m_current_transfer->done (ec, "could not transfer meta-data");
 
+        send_logoutput ("data transfer failed");
+
         continue;
       }
 
@@ -675,11 +677,15 @@ private:
 
         m_current_transfer->done (ec, "could not transfer data");
 
+        send_logoutput ("data transfer failed");
+
         continue;
       }
 
       m_current_transfer->set_state(transfer::FINISHED);
       m_current_transfer->done ();
+
+      send_logoutput ("data transfer complete.");
 
       MLOG(INFO, "transfer complete");
     }
