@@ -180,7 +180,7 @@ PNETV += $(PNETV_OPTS)
 # does not work for paths that contain spaces
 pathify = $(subst $() ,:,$(1))
 
-ifneq ($(CXXLIBRARYPATHS),)
+ifneq "$(CXXLIBRARYPATHS)" ""
   WE_EXEC = LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARYPATHS))
 endif
 WE_EXEC += $(WE_EXEC_ENV)
@@ -209,7 +209,7 @@ verify: $(NET_VERIFICATION)
 $(DEP_XML): $(XML)
 	$(PNETC) -i $(XML) -o /dev/null -MM -MP -MT '$(DEP_XML)' > $@
 
-ifneq ($(wildcard $(DEP_XML)),)
+ifneq "$(wildcard $(DEP_XML))" ""
   include $(DEP_XML)
 endif
 
