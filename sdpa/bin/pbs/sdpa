@@ -1707,6 +1707,10 @@ function start_gpi ()
     local kvs_port=$(get "plugin.kvs.port" "2439")
 
     if [ x"$gpi_enabled" == x"true" ] ; then
+        if ! status_kvs ; then
+            start_kvs
+        fi
+
         if ! start_proc "gpi-space" "$SDPA_SCRIPT_DIR/start-gpi" "-s" "$state_dir" -F "${config_file}" "-f" "-P" "$state_dir/gpi-space.pid" "-m" $(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}") "-k" $(hostname -s) -K $kvs_port -l $log_host -L $log_port ; then
             log "E: could not start GPI, giving up!"
             return 1
