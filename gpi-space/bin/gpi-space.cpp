@@ -909,17 +909,32 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
           std::cerr << "list of attached processes:" << std::endl;
           std::cerr << "    implement me" << std::endl;
           break;
+        case 's':
+          {
+            std::string gpish_cmd ("gpish");
+            gpish_cmd += " -s ";
+            gpish_cmd += cfg->socket;
+
+            int rc = system (gpish_cmd.c_str ());
+            if (rc != 0)
+              std::cerr << "shell failed: " << rc << std::endl;
+          }
+          break;
         case 'h':
         case '?':
           std::cerr << "list of supported commands:"             << std::endl;
           std::cerr                                              << std::endl;
           std::cerr << "    h|? - print this help"               << std::endl;
+          std::cerr << "      s - spawn a gpish"                 << std::endl;
           std::cerr << "      q - quit"                          << std::endl;
+
+          /*
           std::cerr << "      p - list all attached processes"   << std::endl;
           std::cerr << "d [num] - detach process #num or first"  << std::endl;
           std::cerr << "      s - print statistics"              << std::endl;
           std::cerr << "      a - list allocations"              << std::endl;
           std::cerr << "f [num] - remove an allocation (or all)" << std::endl;
+          */
           break;
         default:
           std::cerr << "command not understood, please use \"h\"" << std::endl;
