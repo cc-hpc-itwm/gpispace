@@ -9,6 +9,16 @@
     <transition name="b">
       <use name="modcall"/>
     </transition>
+    <transition name="e">
+      <defun name="modcall">
+        <module name="mod" function="fun"/>
+      </defun>
+    </transition>
+    <transition name="f">
+      <defun name="modcall">
+        <module name="mod" function="fun"/>
+      </defun>
+    </transition>
     <transition name="c">
       <defun>
         <module name="m" function="f">

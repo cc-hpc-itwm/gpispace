@@ -49,6 +49,22 @@ namespace xml
 
         // ***************************************************************** //
 
+        bool operator == (const mod_type& other) const
+        {
+          return port_return == other.port_return
+            && port_arg == other.port_arg
+            && code == other.code
+            && cincludes == other.cincludes
+            && ldflags == other.ldflags
+            && cxxflags == other.cxxflags
+            && links == other.links
+            ;
+        }
+
+        friend std::size_t hash_value (const mod_type&);
+
+        // ***************************************************************** //
+
         template<typename Fun>
         void sanity_check (const Fun & fun) const
         {
@@ -184,6 +200,15 @@ namespace xml
             }
         }
       };
+
+      typedef boost::unordered_map<std::string, mod_type> mc_by_function_type;
+      typedef boost::unordered_map<std::string, mc_by_function_type> mcs_type;
+
+      inline std::size_t hash_value (const mod_type& m)
+      {
+        boost::hash<std::string> hasher;
+        return hasher (m.name);
+      }
 
       namespace dump
       {

@@ -1496,6 +1496,37 @@ namespace xml
 
       // ******************************************************************* //
 
+      class duplicate_external_function : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const std::string & mod
+                         , const boost::filesystem::path & file1
+                         , const boost::filesystem::path & file2
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "the external function " << name
+            << " in module " << mod
+            << " has different definitions"
+            << " in " << file1 << " and in " << file2
+            ;
+
+          return s.str();
+        }
+      public:
+        duplicate_external_function ( const std::string & name
+                                    , const std::string & mod
+                                    , const boost::filesystem::path & file1
+                                    , const boost::filesystem::path & file2
+                                    )
+          : generic (nice (name, mod, file1, file2))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class weparse : public generic
       {
       public:

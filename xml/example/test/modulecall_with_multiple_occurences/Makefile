@@ -8,3 +8,5 @@ ifndef SDPA_HOME
 endif
 
 include $(SDPA_HOME)/share/sdpa/make/common.mk
+
+PNETC_OPTS += --Windependent-transition 0
