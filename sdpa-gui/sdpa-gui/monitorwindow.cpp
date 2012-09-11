@@ -10,6 +10,7 @@
 #include <QHBoxLayout>
 #include <QDoubleSpinBox>
 #include <QSlider>
+#include <QFileDialog>
 
 #include <boost/lexical_cast.hpp>
 #include <list>
@@ -564,4 +565,27 @@ void MonitorWindow::changeTaskViewZoom(int to)
   m_component_view->scale (factor, factor);
 
   m_current_scale = target;
+}
+
+void MonitorWindow::save ()
+{
+  QString fname = QFileDialog::getSaveFileName ( this
+                                               , "Save log messages"
+                                               , m_logfile
+                                               );
+
+  if (fname.isEmpty ())
+    return;
+
+  try
+  {
+    std::ofstream ofs (fname.toStdString ().c_str ());
+    boost::archive::text_oarchive oa (ofs);
+    oa & m_log_events;
+    m_logfile = fname;
+  }
+  catch (std::exception const & ex)
+  {
+    QMessageBox::critical (this, "Could not save file", ex.what ());
+  }
 }

@@ -917,6 +917,12 @@
    </hints>
   </connection>
   <connection>
+   <sender>actionSave</sender>
+   <signal>activated()</signal>
+   <receiver>MonitorWindow</receiver>
+   <slot>save()</slot>
+  </connection>
+  <connection>
    <sender>clear_log_button</sender>
    <signal>clicked()</signal>
    <receiver>actionClear_Logs</receiver>
@@ -1120,5 +1126,6 @@
   <slot>toggleFollowTaskView(bool)</slot>
   <slot>changeTaskViewZoom(int)</slot>
   <slot>changeTaskViewZoom(double)</slot>
+  <slot>save()</slot>
  </slots>
 </ui>
