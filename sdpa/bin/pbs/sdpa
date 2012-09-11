@@ -900,7 +900,7 @@ function generate_environment ()
     app_directories=( ${app_directories[@]} "$HOME/.sdpa/modules" )
 
     for app_dir in ${app_directories[@]} ; do
-        for f in $(find "$app_dir" -type f -name "*.so" ) ; do
+        for f in $(find "$app_dir" -type f -name "*.so" 2>/dev/null) ; do
             mod_dir=$(dirname "$f")
             prepend_to_path PC_LIBRARY_PATH "$mod_dir"
             prepend_to_path LD_LIBRARY_PATH "$mod_dir"
