@@ -761,15 +761,6 @@ to adjust the amount.
     fi
 }
 
-function setup_client ()
-{
-    log "I: setting up sdpa commandline client"
-    if ! test -e "$HOME/.sdpa/configs/sdpac.rc" ; then
-        mkdir -p "$HOME/.sdpa/configs"
-        touch "$HOME/.sdpa/configs/sdpac.rc"
-    fi
-}
-
 function setup ()
 {
     cat <<EOF
@@ -796,7 +787,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="state kvs scratch logging temp gui plugins gpi topology client"
+        parts="state kvs scratch logging temp gui plugins gpi topology"
     else
         shift
     fi
