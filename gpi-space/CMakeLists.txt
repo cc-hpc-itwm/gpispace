@@ -13,7 +13,7 @@ OPTION(ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the 
 set(PROJECT_DESCRIPTION "GPI-Space interface")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")
-set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>")
+set(PROJECT_CONTACT     "GPISpace Developer Team <sdpa-dev@itwm.fraunhofer.de>")
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 

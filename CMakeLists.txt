@@ -10,7 +10,7 @@ set(PROJECT_DESCRIPTION "GPI-Space - productive parallel programming and efficie
 set(PROJECT_DESCRIPTION_SUMMARY "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description summary")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
 set(PROJECT_COPYRIGHT   "Copyright 2009-2012 Fraunhofer ITWM" CACHE STRING "Copyright")
-set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
+set(PROJECT_CONTACT     "SDPA Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(DISABLE_FHGLOG "Disable FHGLog completely" NO)
