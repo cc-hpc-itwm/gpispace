@@ -1216,6 +1216,7 @@ namespace xml
       inline bool find_module_calls ( const state::type &
                                     , function_type &
                                     , fun_info_map &
+                                    , mcs_type &
                                     );
 
       namespace visitor
@@ -1228,22 +1229,25 @@ namespace xml
           const NET & net;
           const TRANS & trans;
           fun_info_map & m;
+          mcs_type& mcs;
 
         public:
           transition_find_module_calls ( const state::type & _state
                                        , const NET & _net
                                        , const TRANS & _trans
                                        , fun_info_map & _m
+                                       , mcs_type& _mcs
                                        )
             : state (_state)
             , net (_net)
             , trans (_trans)
             , m (_m)
+            , mcs (_mcs)
           {}
 
           bool operator () (function_type & f) const
           {
-            return xml::parse::type::find_module_calls (state, f, m);
+            return xml::parse::type::find_module_calls (state, f, m, mcs);
           }
 
           bool operator () (use_type & u) const
@@ -1256,7 +1260,7 @@ namespace xml
                   (u.name, trans.name, trans.path);
               }
 
-            return xml::parse::type::find_module_calls (state, fun, m);
+            return xml::parse::type::find_module_calls (state, fun, m, mcs);
           }
         };
       }
@@ -1265,6 +1269,7 @@ namespace xml
       inline bool find_module_calls ( const state::type & state
                                     , NET & n
                                     , fun_info_map & m
+                                    , mcs_type& mcs
                                     )
       {
         n.contains_a_module_call = false;
@@ -1277,9 +1282,8 @@ namespace xml
           {
             n.contains_a_module_call
               |= boost::apply_visitor
-              ( visitor::transition_find_module_calls< NET
-                                                     , transition_type
-                                                     > (state, n, *pos, m)
+              ( visitor::transition_find_module_calls
+                 <NET, transition_type> (state, n, *pos, m, mcs)
               , pos->f
               );
           }
@@ -1670,15 +1674,18 @@ namespace xml
           const state::type & state;
           const function_type & f;
           fun_info_map & m;
+          mcs_type& mcs;
 
         public:
           find_module_calls ( const state::type & _state
                             , const function_type & _f
                             , fun_info_map & _m
+                            , mcs_type& _mcs
                             )
             : state (_state)
             , f (_f)
             , m (_m)
+            , mcs (_mcs)
           {}
 
           bool operator () (expression_type &) const
@@ -1688,11 +1695,44 @@ namespace xml
 
           bool operator () (NET & n) const
           {
-            return xml::parse::type::find_module_calls<NET> (state, n, m);
+            return xml::parse::type::find_module_calls<NET> (state, n, m, mcs);
           }
 
           bool operator () (mod_type & mod) const
           {
+            const mcs_type::const_iterator old_map (mcs.find (mod.name));
+
+            if (old_map != mcs.end())
+              {
+                const mc_by_function_type::const_iterator old_mc
+                  (old_map->second.find (mod.function));
+
+                if (old_mc != old_map->second.end())
+                  {
+                    if (old_mc->second == mod)
+                      {
+                        state.warn ( warning::duplicate_external_function
+                                     ( mod.function
+                                     , mod.name
+                                     , old_mc->second.path
+                                     , mod.path
+                                     )
+                                   );
+                      }
+                    else
+                      {
+                        throw error::duplicate_external_function
+                          ( mod.function
+                          , mod.name
+                          , old_mc->second.path
+                          , mod.path
+                          );
+                      }
+                  }
+              }
+
+            mcs[mod.name][mod.function] = mod;
+
 #define STRANGE(msg) THROW_STRANGE(  msg << " in module "     \
                                   << mod.name << " function " \
                                   << mod.function             \
@@ -1832,19 +1872,7 @@ namespace xml
                                            , mod.path
                                            );
 
-              if (m[mod.name].find (fun_info) == m[mod.name].end())
-                {
-                  m[mod.name].insert (fun_info);
-                }
-              else
-                {
-                  state.warn ( warning::duplicate_external_function
-                               ( mod.function
-                               , mod.name
-                               , state.file_in_progress()
-                               )
-                             );
-                }
+              m[mod.name].insert (fun_info);
             }
 
             {
@@ -1940,9 +1968,20 @@ namespace xml
                                     , fun_info_map & m
                                     )
       {
+        mcs_type mcs;
+
+        return find_module_calls (state, f, m, mcs);
+      }
+
+      inline bool find_module_calls ( const state::type & state
+                                    , function_type & f
+                                    , fun_info_map & m
+                                    , mcs_type& mcs
+                                    )
+      {
         f.contains_a_module_call
           = boost::apply_visitor
-          ( visitor::find_module_calls<net_type>(state, f, m)
+          ( visitor::find_module_calls<net_type>(state, f, m, mcs)
           , f.f
           );
 
