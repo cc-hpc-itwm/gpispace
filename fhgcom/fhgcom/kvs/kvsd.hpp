@@ -173,7 +173,12 @@ namespace fhg
             DLOG(TRACE, "term (" << m.code() << ", " << m.reason() << ")");
             if (15 == m.code())
             {
-              MLOG(INFO, "termination requested by client: code := " << m.code());
+              MLOG ( INFO
+                   , "termination requested by client:"
+                   << " code := " << m.code()
+                   << " reason := " << m.reason ()
+                   << " uid := " << m.uid ()
+                   );
               kill (getpid(), SIGTERM);
             }
             return fhg::com::kvs::message::error ();
