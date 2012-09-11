@@ -182,6 +182,12 @@ if [ $do_copy = "true" ] ; then
         }
         cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}" && {
             log "I: installed new ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
+
+            # AP:  in rare cases,  it can  happen that  the filesystem  cache is
+            # corrupted by starting GPI too  fast after updating the binary. So,
+            # give the filesystem some time  to transfer the binary. Not sure if
+            # this helps, though - maybe a sync() or would be better
+            sleep 2
         } || {
             log "W: could not update ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
         }
