@@ -17,6 +17,7 @@ using boost::lambda::var;
 #include "peer.hpp"
 #include "kvs/kvsc.hpp"
 #include <fhg/util/thread/event.hpp>
+#include <fhg/util/random.hpp>
 
 namespace fhg
 {
@@ -24,6 +25,11 @@ namespace fhg
   {
     static void dummy_handler (boost::system::error_code const &)
     {}
+
+    static void default_kvs_error_handler (boost::system::error_code const &)
+    {
+      MLOG (ERROR, "could not contact KVS...");
+    }
 
     peer_t::peer_t ( std::string const & name
                    , host_t const & host
@@ -42,6 +48,7 @@ namespace fhg
       , acceptor_(io_service_)
       , m_renew_kvs_entries_timer (io_service_)
       , connections_()
+      , m_kvs_error_handler (default_kvs_error_handler)
     {
       if (name.find ('.') != std::string::npos)
       {
@@ -64,6 +71,18 @@ namespace fhg
     std::string peer_t::hostname()
     {
       return boost::asio::ip::host_name();
+    }
+
+    peer_t::handler_t peer_t::set_kvs_error_handler (handler_t h)
+    {
+      handler_t old = m_kvs_error_handler;
+      m_kvs_error_handler = h;
+      return old;
+    }
+
+    peer_t::handler_t peer_t::get_kvs_error_handler () const
+    {
+      return m_kvs_error_handler;
     }
 
     void peer_t::run ()
@@ -628,10 +647,19 @@ namespace fhg
         values[prefix + "." + "location" + "." + "host"] = h;
       }
 
-      kvs::timed_put (values, 60 * 20 * 1000u);
+      try
+      {
+        kvs::timed_put (values, 2 * 60 * 1000u);
+      }
+      catch (std::exception const &ex)
+      {
+        using namespace boost::system;
+
+        m_kvs_error_handler (errc::make_error_code (errc::connection_refused));
+      }
 
       m_renew_kvs_entries_timer.expires_from_now
-        (boost::posix_time::seconds (60 * 15));
+        (boost::posix_time::seconds (fhg::util::random::rand_in (60, 90)));
 
       m_renew_kvs_entries_timer.async_wait
         (boost::bind (&peer_t::renew_kvs_entries, this));
