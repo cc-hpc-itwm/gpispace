@@ -22,6 +22,7 @@ namespace ufbmig
     virtual void salt_mask_done (int, std::string const & msg) = 0;
     virtual void calculate_done (int, std::string const &msg) = 0;
     virtual void finalize_done (int, std::string const & msg) = 0;
+    virtual int  send_logoutput (std::string const &msg) = 0;
 
     virtual void update_progress (int) = 0;
   };
