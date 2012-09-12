@@ -10,6 +10,12 @@ namespace sdpa
 {
   namespace com
   {
+    static void kvs_error_handler (boost::system::error_code const &)
+    {
+      MLOG (ERROR, "could not contact KVS, terminating");
+      kill (getpid (), SIGTERM);
+    }
+
     NetworkStrategy::NetworkStrategy ( std::string const & next_stage
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
@@ -64,6 +70,7 @@ namespace sdpa
                                          )
                    );
       m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, m_peer)));
+      m_peer->set_kvs_error_handler (kvs_error_handler);
       m_peer->start ();
       m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
     }
