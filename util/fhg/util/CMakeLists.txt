@@ -23,6 +23,8 @@ set (hdrs
   xml.hpp
   bool.hpp
   bool_io.hpp
+
+  random.hpp
 )
 
 install(FILES ${hdrs}
