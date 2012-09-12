@@ -116,7 +116,8 @@ function_type =
    | element net { net_type }),
   element condition { xsd:string }*,
   attribute name { xsd:ID }?,
-  attribute internal { xsd:boolean }?
+  attribute internal { xsd:boolean }?,
+  attribute typename { xsd:ID }?
 transition_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,

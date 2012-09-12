@@ -215,6 +215,7 @@
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:ID" use="optional"/>
     <xsd:attribute name="internal" type="xsd:boolean" use="optional"/>
+    <xsd:attribute name="typename" type="xsd:ID" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="transition_type">
