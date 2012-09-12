@@ -593,7 +593,7 @@ private:
       ec = calculate(payload);
       if (0 != ec)
       {
-        migrate_done (ec, "submission failed");
+        migrate_done (ec, "calculate failed");
       }
       break;
     case client::command::MIGRATE_WITH_SALT_MASK:
@@ -606,7 +606,7 @@ private:
       ec = update_salt_mask(payload.c_str(), payload.size());
       if (0 != ec)
       {
-        send_process_salt_mask_failure(ec, "submission failed");
+        send_process_salt_mask_failure(ec, "update salt mask failed");
       }
       break;
     case client::command::ABORT:
@@ -628,7 +628,7 @@ private:
       ec = finalize();
       if (0 != ec)
       {
-        send_finalize_failure(ec, "submission failed");
+        send_finalize_failure(ec, "finalize failed");
       }
       break;
     default:
