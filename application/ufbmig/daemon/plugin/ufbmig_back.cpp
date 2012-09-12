@@ -136,6 +136,8 @@ public:
   {
     m_control_sdpa =
       fhg_kernel()->get<fhg::util::bool_t>("control_sdpa", "true");
+    m_check_interval =
+      fhg_kernel ()->get<std::size_t>("check_interval", "3600");
 
     m_wf_path_prepare =
       fhg_kernel ()->get("wf_prepare", "ufbmig_prepare.pnet");
@@ -360,6 +362,13 @@ public:
 
     update_progress (95);
 
+    fhg_kernel()->schedule ( "check_worker"
+                           , boost::bind( &UfBMigBackImpl::check_worker
+                                        , this
+                                        )
+                           , m_check_interval
+                           );
+
     return submit_job (we::util::codec::encode(act), job::type::PREPARE);
   }
 
@@ -409,7 +418,7 @@ public:
     if (state::INITIALIZED != m_state)
     {
       MLOG(WARN, "cannot update salt mask currently, invalid state: " << m_state);
-      return -EAGAIN;
+      return -EPROTO;
     }
 
     reset_progress ("update");
@@ -459,7 +468,7 @@ public:
     if (state::INITIALIZED != m_state)
     {
       MLOG(WARN, "cannot calculate right now, invalid state: " << m_state);
-      return -EAGAIN;
+      return -EPROTO;
     }
 
     reset_progress ("migrate");
@@ -972,6 +981,34 @@ private:
     return ec;
   }
 
+  void check_worker ()
+  {
+    MLOG (INFO, "checking worker status...");
+    int ec = 0;
+    ec += sdpa_ctl->status ("orch");
+    ec += sdpa_ctl->status ("agg");
+    ec += sdpa_ctl->status ("drts");
+    ec += sdpa_ctl->status ("gpi");
+
+    if (0 != ec)
+    {
+      MLOG (ERROR, "worker check failed: " << ec);
+      if (m_frontend)
+        m_frontend->send_logoutput ("worker check failed, terminating...");
+
+      sdpa_ctl->stop();
+    }
+    else
+    {
+      fhg_kernel()->schedule ( "check_worker"
+                             , boost::bind( &UfBMigBackImpl::check_worker
+                                          , this
+                                          )
+                             , m_check_interval
+                             );
+    }
+  }
+
   void update_job_states ()
   {
     lock_type lock (m_job_list_mutex);
@@ -1206,6 +1243,7 @@ private:
   int m_state;
 
   std::size_t             m_chunk_size;
+  std::size_t             m_check_interval;
 
   // shared memory
   gpi::pc::type::segment_id_t m_transfer_segment;
