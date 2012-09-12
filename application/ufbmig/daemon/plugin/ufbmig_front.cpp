@@ -614,10 +614,12 @@ private:
       ec = cancel ();
       if (0 == ec)
       {
-//        send_abort_accepted();
+        send_logoutput ("aborting...");
+        send_abort_accepted();
       }
       else
       {
+        send_logoutput ("nothing to abort");
         send_abort_refused(ec);
       }
       break;
