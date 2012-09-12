@@ -555,12 +555,13 @@ public:
         if (! job::is_done(j))
           sdpa_c->cancel(j.id);
       }
+      return 0;
     }
     else
     {
       MLOG(INFO, "nothing to cancel!");
+      return -ESRCH;
     }
-    return 0;
   }
 
   int stop ()
