@@ -95,15 +95,26 @@ private:
     }
     catch (std::exception const & ex)
     {
-      LOG(ERROR, "could not connect to KVS: " << ex.what());
-      LOG(INFO, "HINT: try setting plugin.kvs.host and/or plugin.kvs.port");
+      MLOG_EVERY_N (ERROR, 5, "could not connect to KVS: " << ex.what());
+      MLOG_ONCE ( INFO
+                , "HINT: make sure that the KVS is actually started and/or"
+                << " check the plugin.kvs.host and plugin.kvs.port settings"
+                );
 
-      fhg_kernel()->schedule ( "kvs_connect"
-                             , boost::bind ( &KeyValueStorePlugin::async_start
-                                           , this
-                                           )
-                             , 10
-                             );
+      if (m_terminate_on_connection_failure)
+      {
+        fhg_kernel ()->shutdown ();
+        return;
+      }
+      else
+      {
+        fhg_kernel()->schedule ( "kvs_connect"
+                               , boost::bind ( &KeyValueStorePlugin::async_start
+                                             , this
+                                             )
+                               , 10
+                               );
+      }
     }
   }
 
