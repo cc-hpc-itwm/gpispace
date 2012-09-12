@@ -101,6 +101,11 @@ namespace fhg
       return m_storage;
     }
 
+    size_t PluginKernelMediator::tick_time () const
+    {
+      return m_kernel->tick_time ();
+    }
+
     void PluginKernelMediator::schedule( std::string const &name
                                        , fhg::plugin::task_t task
                                        )
