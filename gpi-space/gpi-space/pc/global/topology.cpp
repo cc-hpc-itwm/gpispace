@@ -22,6 +22,12 @@ namespace gpi
     {
       namespace detail
       {
+        static void kvs_error_handler (boost::system::error_code const &)
+        {
+          MLOG (ERROR, "could not contact KVS, terminating");
+          kill (getpid (), SIGTERM);
+        }
+
         static std::string rank_to_name (const gpi::rank_t rnk)
         {
           if (rnk == (gpi::rank_t)-1)
@@ -181,6 +187,8 @@ namespace gpi
                                , cookie
                                )
           );
+        m_peer->set_kvs_error_handler (detail::kvs_error_handler);
+
         m_peer_thread.reset
           (new boost::thread(boost::bind( &fhg::com::peer_t::run
                                         , m_peer
