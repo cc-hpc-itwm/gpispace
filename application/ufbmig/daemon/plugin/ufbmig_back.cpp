@@ -137,7 +137,8 @@ public:
     m_control_sdpa =
       fhg_kernel()->get<fhg::util::bool_t>("control_sdpa", "true");
     m_check_interval =
-      fhg_kernel ()->get<std::size_t>("check_interval", "3600");
+      fhg_kernel ()->get<std::size_t>("check_interval", 1800);
+    // (10**6) / fhg_kernel ()->tick_time () * 360 // seconds
 
     m_wf_path_prepare =
       fhg_kernel ()->get("wf_prepare", "ufbmig_prepare.pnet");
@@ -362,12 +363,13 @@ public:
 
     update_progress (95);
 
-    fhg_kernel()->schedule ( "check_worker"
-                           , boost::bind( &UfBMigBackImpl::check_worker
-                                        , this
-                                        )
-                           , m_check_interval
-                           );
+    if (m_check_interval)
+      fhg_kernel()->schedule ( "check_worker"
+                             , boost::bind( &UfBMigBackImpl::check_worker
+                                          , this
+                                          )
+                             , m_check_interval
+                             );
 
     return submit_job (we::util::codec::encode(act), job::type::PREPARE);
   }
