@@ -27,6 +27,7 @@ namespace fhg
 
       fhg::plugin::Storage *storage();
 
+      size_t tick_time () const;
       void schedule(std::string const &, fhg::plugin::task_t);
       void schedule(std::string const &, fhg::plugin::task_t, size_t ticks);
 

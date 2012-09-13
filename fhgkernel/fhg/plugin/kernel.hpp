@@ -61,6 +61,7 @@ namespace fhg
 
       virtual Storage *storage() = 0;
 
+      virtual size_t tick_time () const = 0;
       virtual void schedule(std::string const & name, task_t) = 0;
       virtual void schedule(std::string const & name, task_t, size_t ticks) = 0;
 

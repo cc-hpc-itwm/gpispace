@@ -101,6 +101,8 @@ namespace fhg
 
       if (is_plugin_loaded (name))
         return 0;
+      if (m_stop_requested)
+        return ECANCELED;
 
       int ec = ENOENT;
 
@@ -137,6 +139,9 @@ namespace fhg
     int kernel_t::load_plugin_from_file (std::string const &file)
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
+
+      if (m_stop_requested)
+        return ECANCELED;
 
       int rc = 0;
 
@@ -521,11 +526,11 @@ namespace fhg
 
     void kernel_t::stop ()
     {
+      m_stop_requested = true;
       if (! m_running)
       {
         return;
       }
-      m_stop_requested = true;
     }
 
     void kernel_t::reset ()
