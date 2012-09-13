@@ -1,6 +1,8 @@
 #include "NetworkStrategy.hpp"
 #include <fhg/assert.hpp>
 
+#include <csignal>
+
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
