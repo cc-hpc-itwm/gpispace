@@ -57,9 +57,12 @@ namespace we { namespace type {
 
           void add_options (po::options_description & desc)
           {
-#define VAL(x) po::value<bool>(&_ ## x)->default_value (_ ## x)
+#define VAL(x) po::value<bool>(&_ ## x)->default_value (_ ## x) \
+                                       ->implicit_value(true)
 
-            desc.add_options ()
+            po::options_description optimize ("Optimization");
+
+            optimize.add_options ()
               ( _Onot.c_str()
               , VAL(not)
               , "disable all optimizations"
@@ -77,6 +80,8 @@ namespace we { namespace type {
               , "simplify expression sequences, e.g. dead code elimination"
               )
               ;
+
+            desc.add (optimize);
 #undef VAL
           }
         };

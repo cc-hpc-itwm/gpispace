@@ -9,6 +9,7 @@
 #include <fhgcom/tcp_server.hpp>
 
 #include <boost/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
@@ -88,6 +89,36 @@ BOOST_AUTO_TEST_CASE ( put_get_int_test )
   kvs::del ("test_global_int_kvs");
 }
 
+BOOST_AUTO_TEST_CASE ( put_get_timed_valid_test )
+{
+  using namespace fhg::com;
+
+  int val;
+
+  kvs::timed_put ("test", 42, 5000); // 5 seconds
+  val = kvs::get<int> ("test");
+  BOOST_CHECK_EQUAL (val, 42);
+  kvs::del ("test");
+}
+
+BOOST_AUTO_TEST_CASE ( put_get_timed_expired_test )
+{
+  using namespace fhg::com;
+
+  kvs::timed_put ("test", 42, 10); // 10 ms
+  usleep (50);
+
+  try
+  {
+    kvs::get<int> ("test");
+    kvs::del ("test");
+  }
+  catch (...)
+  {
+    // ok
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -114,4 +145,17 @@ BOOST_AUTO_TEST_CASE ( no_server_test )
   {
     // ok
   }
+}
+
+BOOST_AUTO_TEST_CASE (boost_ptime_comparison)
+{
+  using namespace boost::posix_time;
+
+  ptime def (min_date_time);
+  ptime now = microsec_clock::universal_time ();
+  ptime exp = now + microsec (500);
+
+  BOOST_REQUIRE (now > def);
+  BOOST_REQUIRE (now < exp);
+  BOOST_REQUIRE (def == min_date_time);
 }

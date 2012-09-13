@@ -54,6 +54,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext/smc)
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
@@ -67,6 +68,9 @@ endif(CMAKE_USE_PTHREADS_INIT)
 
 find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
+
+find_package(FhgKernel REQUIRED QUIET)
+include_directories(${FhgKernel_INCLUDE_DIR})
 
 # seda library
 find_package(SEDA REQUIRED QUIET)

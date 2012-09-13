@@ -30,15 +30,15 @@ add_library(stresstest_mod SHARED stresstest.cpp)
 set_target_properties(stresstest_mod PROPERTIES OUTPUT_NAME stresstest)
 
 set (xmls
-  stress.xml
-  stresstest.xml
+  stress.xpnet
+  stresstest.xpnet
   )
 
 install(TARGETS stresstest_mod
   LIBRARY
-  DESTINATION libexec/sdpa
+  DESTINATION libexec/sdpa/apps/stresstest/modules
   COMPONENT modules)
 
 install(FILES ${xmls}
-  DESTINATION share/sdpa/xml/stresstest
+  DESTINATION libexec/sdpa/apps/stresstest
   COMPONENT examples)

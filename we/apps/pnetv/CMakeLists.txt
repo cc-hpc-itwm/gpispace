@@ -6,6 +6,7 @@ add_executable(pnetv ${PNETV_SOURCES})
 
 include_directories(".")
 
+target_link_libraries(pnetv fhg-revision)
 target_link_libraries(pnetv pnetv-jpna)
 target_link_libraries(pnetv pnetv-jpn)
 target_link_libraries(pnetv ${WE_LIBRARIES})

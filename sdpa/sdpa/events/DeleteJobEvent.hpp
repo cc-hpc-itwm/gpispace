@@ -28,32 +28,35 @@ namespace sc = boost::statechart;
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
-	class DeleteJobEvent : public JobEvent, public sc::event<DeleteJobEvent>
+        class DeleteJobEvent : public JobEvent, public sc::event<DeleteJobEvent>
 #else
-	class DeleteJobEvent : public JobEvent
+        class DeleteJobEvent : public JobEvent
 #endif
     {
-	public:
-		typedef sdpa::shared_ptr<DeleteJobEvent> Ptr;
+        public:
+                typedef sdpa::shared_ptr<DeleteJobEvent> Ptr;
 
         DeleteJobEvent()
           : JobEvent("","","")
         {}
 
-		DeleteJobEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id)
+                DeleteJobEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id)
           :  sdpa::events::JobEvent( from, to, job_id ) {
-		}
+                }
 
-		virtual ~DeleteJobEvent() {
-		}
+                virtual ~DeleteJobEvent() {
+                }
 
-		std::string str() const { return "DeleteJobEvent"; }
+      std::string str() const
+      {
+        return "DeleteJobEvent(" + job_id ().str () + ")";
+      }
 
         virtual void handleBy(EventHandler *handler)
         {
-        	handler->handleDeleteJobEvent(this);
+                handler->handleDeleteJobEvent(this);
         }
-	};
+        };
 }}
 
 #endif

@@ -1,0 +1,8 @@
+#ifndef FHG_ASSERT_CONFIG_HPP
+#define FHG_ASSERT_CONFIG_HPP
+
+#include <fhg/assert_modes.hpp>
+
+#define FHG_ASSERT_MODE @FHG_ASSERT_MODE@
+
+#endif

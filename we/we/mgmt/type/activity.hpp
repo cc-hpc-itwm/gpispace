@@ -365,12 +365,12 @@ namespace we { namespace mgmt { namespace type {
     }
 
     bool
-    has_enabled (void) const
+    can_fire (void) const
     {
-      static const we::mgmt::visitor::has_enabled visitor_has_enabled;
+      static const we::mgmt::visitor::can_fire visitor_can_fire;
 
       shared_lock_t lock(mutex_);
-      return boost::apply_visitor (visitor_has_enabled,  transition().data());
+      return boost::apply_visitor (visitor_can_fire, transition().data());
     }
 
     const input_t & pending_input() const

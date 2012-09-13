@@ -1,7 +1,7 @@
 // demonstrate timed petri nets, mirko.rahn@itwm.fraunhofer.de
 // use separate extractor and injector
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/concurrent/net.hpp>
 #include "timer.hpp"
 
@@ -139,7 +139,11 @@ public:
   petri_net::pid_t all_done;
 };
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef boost::function<void ( const pid_collection_t &
                              , map_t & m
@@ -320,8 +324,8 @@ static void * worker (void * arg)
 // ************************************************************************* //
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()

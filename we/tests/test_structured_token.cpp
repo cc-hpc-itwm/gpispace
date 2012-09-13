@@ -1,6 +1,6 @@
 // structured token, expression transition, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/type/token.hpp>
 #include <we/expr/parse/parser.hpp>
@@ -61,6 +61,19 @@ public:
     return cond (choices);
   }
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+  transition_t & operator= (transition_t const &other)
+  {
+    if (this != &other)
+    {
+      t = other.t;
+      name = other.name;
+      cond = other.cond;
+    }
+    return *this;
+  }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+
   friend class boost::serialization::access;
   template<typename Archive>
   void serialize (Archive & ar, const unsigned int)
@@ -92,7 +105,11 @@ static transition_t mk_trans ( const std::string & name
   return transition_t (t++, name, cond);
 }
 
-typedef petri_net::net<place::type, transition_t, edge_t, token::type> pnet_t;
+typedef petri_net::net_with_transition_function< place::type
+                                               , transition_t
+                                               , edge_t
+                                               , token::type
+                                               > pnet_t;
 
 // ************************************************************************* //
 
@@ -193,13 +210,19 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition
                                       )
 {
-  return net.add_transition
-    ( mk_trans ( name
-               , condition::type
-                 ( condition
-                 , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+  const petri_net::tid_t tid
+    ( net.add_transition
+      ( mk_trans ( name
+                 , condition::type
+                   ( condition
+                   , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+                   )
                  )
-               )
+      )
+    );
+
+  net.set_transition_function
+    ( tid
     , TransitionFunction
       ( name
       , expression
@@ -207,14 +230,16 @@ static petri_net::tid_t mk_transition ( pnet_t & net
       , boost::bind(&place::signature<pnet_t>, boost::ref(net), _1)
       )
     );
+
+  return tid;
 }
 
 // ************************************************************************* //
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::PT_READ;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::PT_READ;
+using petri_net::edge::TP;
 
 namespace po = boost::program_options;
 
@@ -277,6 +302,9 @@ main (int argc, char ** argv)
   petri_net::pid_t pid_done (net.add_place (place::type("done")));
   petri_net::pid_t pid_in_progress (net.add_place (place::type("in_progress")));
 
+  petri_net::pid_t pid_credit_in_progress
+    (CAP_IN_PROGRESS ? net.add_place (place::type("credit_in_progress")) : 0);
+
   petri_net::tid_t tid_init
     ( mk_transition
       ( net
@@ -328,7 +356,11 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "join"
-      , "${joined} := ${joined} + 1"
+      , std::string ("${joined} := ${joined} + 1")
+      + ( CAP_IN_PROGRESS
+        ? std::string ("; ${credit_in_progress} := []")
+        : std::string ("")
+        )
       , "true"
       )
     );
@@ -367,6 +399,12 @@ main (int argc, char ** argv)
   net.add_edge ( mk_edge ("put in_progress")
                , connection_t (TP, tid_split, pid_in_progress)
                );
+  if (CAP_IN_PROGRESS)
+    {
+      net.add_edge ( mk_edge ("get credit_in_progress")
+                   , connection_t (PT, tid_split, pid_credit_in_progress)
+                   );
+    }
 
   net.add_edge ( mk_edge ("get slice_in")
                , connection_t (PT, tid_tag, pid_slice_in)
@@ -408,6 +446,13 @@ main (int argc, char ** argv)
                , connection_t (PT, tid_join, pid_in_progress)
                );
 
+  if (CAP_IN_PROGRESS)
+    {
+      net.add_edge ( mk_edge ("put credit_in_progress")
+                   , connection_t (TP, tid_join, pid_credit_in_progress)
+                   );
+    }
+
   net.add_edge ( mk_edge ("get splitted")
                , connection_t (PT, tid_finalize, pid_splitted)
                );
@@ -424,15 +469,17 @@ main (int argc, char ** argv)
                , connection_t (TP, tid_finalize, pid_done)
                );
 
-  if (CAP_IN_PROGRESS > 0)
-    net.set_capacity (pid_in_progress, CAP_IN_PROGRESS);
-
   // type safe!
   token::put (net, pid_splitted, literal::type(0L));
   token::put (net, pid_joined, literal::type(0L));
   token::put (net, pid_NUM_SLICES, literal::type(NUM_SLICES));
   token::put (net, pid_MAX_DEPTH, literal::type(MAX_DEPTH));
   token::put (net, pid_start);
+
+  while (CAP_IN_PROGRESS --> 0)
+    {
+      token::put (net, pid_credit_in_progress, literal::type(control()));
+    }
 
   marking (net);
 
@@ -441,9 +488,9 @@ main (int argc, char ** argv)
 
     Timer_t timer ("fire", NUM_SLICES * MAX_DEPTH + 4 * NUM_SLICES + 1);
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-        net.fire_random(engine);
+        net.fire_random (engine);
 
         if (PRINT_MARKING)
           marking (net);

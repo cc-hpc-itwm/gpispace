@@ -13,7 +13,7 @@ OPTION(ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the 
 set(PROJECT_DESCRIPTION "GPI-Space interface")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")
-set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>")
+set(PROJECT_CONTACT     "GPISpace Developer Team <sdpa-dev@itwm.fraunhofer.de>")
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
@@ -21,14 +21,16 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV
 include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+#set (QUIET_FIND_PACKAGE QUIET)
+
 if(ENABLE_REAL_GPI)
-  find_package (IBVerbs REQUIRED)
-  include_directories(${IBVerbs_INCLUDE_DIR})
+  find_package (IBVerbs REQUIRED ${QUIET_FIND_PACKAGE})
+  include_directories(${IBverbs_INCLUDE_DIR})
 
   set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
   set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
   set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
-  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
+  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBverbs_LIBRARY})
 
   # check if we can actually use the GPI version in ext
   set(CMAKE_REQUIRED_INCLUDES ${GPI_INCLUDE_DIR})
@@ -89,20 +91,33 @@ include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
-find_package (FhgLog REQUIRED)
+find_package (FhgLog REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${FhgLog_INCLUDE_DIR})
 
-find_package (FhgCom REQUIRED)
+find_package (FhgCom REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${FhgCom_INCLUDE_DIR})
 
-find_package (UTIL REQUIRED)
+find_package (UTIL REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${UTIL_INCLUDE_DIR})
 
-find_package (MMGR REQUIRED)
+find_package (FhgKernel REQUIRED ${QUIET_FIND_PACKAGE})
+include_directories(${FhgKernel_INCLUDE_DIR})
+
+find_package (MMGR REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${MMGR_INCLUDE_DIR})
 
-find_package (LibRT REQUIRED)
+find_package (LibRT REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${LIBRT_INCLUDE_DIR})
+
+find_package (ZMQ ${QUIET_FIND_PACKAGE})
+if (ZMQ_FOUND)
+  include_directories (${ZMQ_INCLUDE_DIR})
+endif ()
+
+find_package (CZMQ ${QUIET_FIND_PACKAGE})
+if (CZMQ_FOUND)
+  include_directories (${CZMQ_INCLUDE_DIR})
+endif()
 
 add_subdirectory(gpi-space)
 add_subdirectory(bin)

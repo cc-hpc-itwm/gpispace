@@ -22,7 +22,7 @@ struct wfe_exec_context : public we::mgmt::context<>
   {
     act.inject_input ();
 
-    while (act.has_enabled() && (task.state != wfe_task_t::CANCELED))
+    while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
     {
       we::activity_t sub (act.extract ());
       sub.inject_input ();
@@ -35,7 +35,17 @@ struct wfe_exec_context : public we::mgmt::context<>
 
   void handle_internally ( we::activity_t & act, const mod_t & mod)
   {
-    module::call ( loader, act, mod );
+    try
+    {
+      module::call (loader, act, mod);
+    }
+    catch (std::exception const &ex)
+    {
+      throw std::runtime_error
+        ( "call to '" + mod.module () + "::" + mod.function () + "'"
+        + " failed: " + ex.what ()
+        );
+    }
   }
 
   void handle_internally ( we::activity_t & , const expr_t &)

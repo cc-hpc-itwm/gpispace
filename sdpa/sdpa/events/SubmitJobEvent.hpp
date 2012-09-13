@@ -51,10 +51,10 @@ namespace sdpa { namespace events {
           , const sdpa::job_id_t& a_parent_id)
         : sdpa::events::JobEvent( a_from, a_to, a_job_id ), desc_(a_description), parent_(a_parent_id)
         { }
-        
+
       virtual ~SubmitJobEvent() { }
 
-      std::string str() const { return "SubmitJobEvent"; }
+    std::string str() const { return "SubmitJobEvent(" + job_id ().str () + ")"; }
 
       const sdpa::job_desc_t & description() const {return desc_;}
       sdpa::job_desc_t & description() {return desc_;}
@@ -64,7 +64,7 @@ namespace sdpa { namespace events {
 
       virtual void handleBy(EventHandler *handler)
       {
-    	  handler->handleSubmitJobEvent(this);
+          handler->handleSubmitJobEvent(this);
       }
     private:
       sdpa::job_desc_t desc_;

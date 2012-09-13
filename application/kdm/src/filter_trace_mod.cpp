@@ -473,7 +473,7 @@ static void execW ( void * state
                                         )
                       );
 
-  if (written != size)
+  if (written != (std::size_t)size)
     {
       throw std::runtime_error ("written != size");
     }

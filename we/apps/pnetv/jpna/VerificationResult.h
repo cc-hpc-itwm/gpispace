@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <vector>
+#include <fhg/assert.hpp>
 
 #include <jpn/common/Printable.h>
 

@@ -172,14 +172,9 @@ namespace we { namespace type {
                 pred_out.insert (*t);
               }
 
-            if (net.get_capacity (pid_A) != net.get_capacity (pid_B))
-              {
-                return fhg::util::Nothing<pid_pair_vec_type>();
-              }
-
             const eid_t eid (net.get_eid_in (tid, pid_A));
 
-            if (petri_net::is_pt_read (net.get_edge_info (eid).type))
+            if (petri_net::edge::is_pt_read (net.get_edge_info (eid).type))
               {
                 return fhg::util::Nothing<pid_pair_vec_type>();
               }
@@ -269,9 +264,7 @@ namespace we { namespace type {
             const tid_t & tid (stack.top());
             const transition_t trans (net.get_transition (tid));
 
-            if ( (  boost::apply_visitor (content::visitor (), trans.data())
-                  == content::expression
-                  )
+            if (  content::is_expression (trans)
                && boost::get<expression_t> (trans.data()).is_empty()
                && trans.condition().is_const_true()
                )

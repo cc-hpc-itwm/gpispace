@@ -7,6 +7,7 @@
 #include <boost/functional/hash.hpp>
 #endif
 
+#include <fhg/assert.hpp>
 #include <jpn/common/Unreachable.h>
 
 namespace jpn {
@@ -35,7 +36,7 @@ class ExtendedInteger {
 
     Kind kind_; ///< Kind of the integer.
     T value_; ///< Value, valid only for normal integer.
-    
+
     public:
 
     /**

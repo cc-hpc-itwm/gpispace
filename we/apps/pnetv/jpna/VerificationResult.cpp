@@ -25,27 +25,27 @@ void VerificationResult::print(std::ostream &out) const {
     if (result() != TERMINATES) {
         out << ", init:{";
 
-	bool comma = false;
-	foreach (const Transition *transition, init()) {
-	    if (comma) {
+        bool comma = false;
+        FOREACH (const Transition *transition, init()) {
+            if (comma) {
                 out << ", ";
             } else {
                 comma = true;
             }
             out << "`" << transition->name() << "'";
-	}
-	out << "}, loop:{";
+        }
+        out << "}, loop:{";
 
-	comma = false;
-	foreach (const Transition *transition, loop()) {
-	    if (comma) {
+        comma = false;
+        FOREACH (const Transition *transition, loop()) {
+            if (comma) {
                 out << ", ";
             } else {
                 comma = true;
             }
             out << "`" << transition->name() << "'";
-	}
-	out << "}";
+        }
+        out << "}";
     }
     out << ")";
 }

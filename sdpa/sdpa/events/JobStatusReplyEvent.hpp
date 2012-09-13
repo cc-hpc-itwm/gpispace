@@ -50,17 +50,27 @@ namespace sdpa { namespace events {
 
       virtual ~JobStatusReplyEvent() { }
 
-      std::string str() const { return "JobStatusReplyEvent"; }
+      std::string str() const
+      {
+        return "JobStatusReplyEvent(" + job_id ().str () + ")";
+      }
 
       const status_t &status() const { return status_; }
       status_t &status() { return status_; }
 
+      int error_code () const { return m_error_code; }
+      int & error_code () { return m_error_code; }
+      std::string const & error_message() const { return m_error_message; }
+      std::string & error_message() { return m_error_message; }
+
       virtual void handleBy(EventHandler *handler)
       {
-	handler->handleJobStatusReplyEvent(this);
+        handler->handleJobStatusReplyEvent(this);
       }
     private:
       status_t status_;
+      int m_error_code;
+      std::string m_error_message;
   };
 }}
 

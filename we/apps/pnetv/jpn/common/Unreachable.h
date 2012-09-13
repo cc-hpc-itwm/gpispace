@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <fhg/assert.hpp>
 
 namespace jpn {
 

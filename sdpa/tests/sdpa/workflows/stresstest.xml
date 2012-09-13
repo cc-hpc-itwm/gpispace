@@ -1,35 +1,38 @@
 <defun name="stresstest">
   <properties name="pnetc">
     <properties name="context">
-      <property key="MILLI">1000</property>
-      <property key="SECOND">${MILLI} * 1000</property>
-      <property key="KIBI">2^10</property>
-      <property key="MIBI">2^20</property>
-      <property key="GIBI">2^30</property>
-      <property key="SIZE_OF_LONG">8</property>
+      <property key="MILLI" value="1000"/>
+      <property key="SECOND" value="${MILLI} * 1000"/>
+      <property key="KIBI" value="2^10"/>
+      <property key="MIBI" value="2^20"/>
+      <property key="GIBI" value="2^30"/>
+      <property key="SIZE_OF_LONG" value="8"/>
 
-      <property key="aggregator">1</property>
-      <property key="nre">1</property>
-      <property key="seed">long(1000.0 * pi)</property>
-      <property key="bytes_to_transfer">1 * ${MIBI}</property>
+      <property key="outer" value="5"/>
+      <property key="inner" value="5"/>
+      <property key="seed" value="long(1000.0 * pi)"/>
+      <property key="bytes_to_transfer" value="${MIBI}"/>
+      <!-- use "192 * ${MIBI}" -->
 
       <!-- when true, the full shmem segment is verified, not only the data -->
-      <property key="verify_all_mem">false</property>
-      <property key="verify">false</property>
-      <property key="communicate">false</property>
+      <property key="verify_all_mem" value="false"/>
+      <property key="verify" value="true"/>
+      <property key="communicate" value="true"/>
 
-      <property key="num_long_to_transfer">
-         ${bytes_to_transfer} div ${SIZE_OF_LONG}
-      </property>
+      <property key="num_long_to_transfer"
+                value="${bytes_to_transfer} div ${SIZE_OF_LONG}"
+                />
     </properties>
   </properties>
 
-  <in name="agg" type="long" place="N"/>
-  <in name="nre" type="long" place="M"/>
+  <in name="outer" type="long" place="N"/>
+  <in name="inner" type="long" place="M"/>
   <in name="sleeptime" type="long" place="sleeptime"/>
   <in name="num_long_to_transfer" type="long" place="num_long"/>
   <in name="seed" type="long" place="seed"/>
   <in name="verify_all_mem" type="bool" place="verify_all_mem"/>
+  <in name="communicate" type="bool" place="communicate"/>
+  <in name="verify" type="bool" place="verify"/>
   <out name="out" type="control" place="out"/>
 
   <net>
@@ -45,8 +48,8 @@
     </struct>
 
     <place name="sleeptime" type="long"><token><value>0 * ${MILLI}</value></token></place>
-    <place name="N" type="long"><token><value>${aggregator}</value></token></place>
-    <place name="M" type="long"><token><value>${nre}</value></token></place>
+    <place name="N" type="long"><token><value>${outer}</value></token></place>
+    <place name="M" type="long"><token><value>${inner}</value></token></place>
     <place name="num_long" type="long"><token><value>${num_long_to_transfer}</value></token></place>
     <place name="seed" type="long"><token><value>${seed}</value></token></place>
     <place name="verify_all_mem" type="bool"><token><value>${verify_all_mem}</value></token></place>
@@ -62,24 +65,16 @@
 
     <place name="config" type="config"/>
 
-    <place name="trigger_initialize" type="control"/>
-    <place name="trigger_finalize" type="control"/>
+    <include-template href="dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
 
-    <transition name="init">
-      <defun>
-        <in name="N" type="long"/>
-        <out name="N" type="long"/>
-        <out name="wait" type="long"/>
-        <out name="trigger" type="control"/>
-        <expression>
-          ${wait} := ${N};
-          ${trigger} := [];
-        </expression>
-      </defun>
-      <connect-in port="N" place="N"/>
-      <connect-out port="N" place="Nstep"/>
-      <connect-out port="wait" place="wait"/>
-      <connect-out port="trigger" place="trigger_initialize"/>
+    <transition name="scatter_N" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="N"/>
+      <connect-out port="one" place="Nstep"/>
+      <connect-out port="two" place="wait"/>
     </transition>
 
     <transition name="initialize">
@@ -94,7 +89,6 @@
         <out name="config" type="config"/>
         <module name="stresstest" function="initialize"/>
       </defun>
-      <connect-in port="trigger" place="trigger_initialize"/>
       <connect-in port="sleeptime" place="sleeptime"/>
       <connect-in port="seed" place="seed"/>
       <connect-in port="num_long" place="num_long"/>
@@ -111,10 +105,12 @@
         <out name="trigger" type="control"/>
         <module name="stresstest" function="finalize"/>
       </defun>
-      <connect-in port="trigger" place="trigger_finalize"/>
-      <connect-in port="config" place="config"/>
-      <connect-out port="trigger" place="out"/>
+      <connect-in port="trigger" place="all_done"/>
+      <connect-read port="config" place="config"/>
+      <connect-out port="trigger" place="finalized"/>
     </transition>
+
+    <place name="finalized" type="control"/>
 
     <transition name="generate" inline="true">
       <include-function href="sequence.xml"/>
@@ -122,42 +118,44 @@
       <connect-out port="out" place="pending"/>
     </transition>
 
-    <transition name="nre">
-      <include-function href="stress.xml"/>
+    <transition name="inner">
+      <include-function href="stress.xpnet"/>
       <connect-read port="N" place="M"/>
       <connect-read port="config" place="config"/>
       <connect-out port="done" place="done"/>
       <connect-in port="trigger" place="pending"/>
     </transition>
 
-    <transition name="dec" priority="1">
-      <defun>
-        <in name="trigger" type="control"/>
-        <in name="wait" type="long"/>
-        <out name="wait" type="long"/>
-        <expression>
-          ${wait} := ${wait} - 1
-        </expression>
-        <condition>${wait} :gt: 0</condition>
-      </defun>
+    <include-template href="wait.xml"/>
+    <specialize name="wait_control" use="wait">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait_control"/>
       <connect-in port="trigger" place="done"/>
-      <connect-in port="wait" place="wait"/>
-      <connect-out port="wait" place="wait"/>
+      <connect-out port="done" place="all_done"/>
+      <place-map real="wait" virtual="wait"/>
     </transition>
 
-    <transition name="done">
+    <place name="all_done" type="control"/>
+
+    <transition name="cleanup">
       <defun>
         <in name="wait" type="long"/>
         <in name="M" type="long"/>
+        <in name="config" type="config"/>
+        <in name="trigger" type="control"/>
         <out name="done" type="control"/>
         <expression>
           ${done} := []
         </expression>
-        <condition>${wait} :eq: 0</condition>
       </defun>
       <connect-in port="wait" place="wait"/>
       <connect-in port="M" place="M"/>
-      <connect-out port="done" place="trigger_finalize"/>
+      <connect-in port="config" place="config"/>
+      <connect-in port="trigger" place="finalized"/>
+      <connect-out port="done" place="out"/>
     </transition>
   </net>
 </defun>

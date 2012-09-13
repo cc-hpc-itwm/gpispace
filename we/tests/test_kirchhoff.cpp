@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/type/token.hpp>
 #include <we/expr/parse/parser.hpp>
@@ -110,7 +110,11 @@ static transition_t mk_trans ( const std::string & name
   return transition_t (t++, name, cond);
 }
 
-typedef petri_net::net<place::type, transition_t, edge_t, token::type> pnet_t;
+typedef petri_net::net_with_transition_function< place::type
+                                               , transition_t
+                                               , edge_t
+                                               , token::type
+                                               > pnet_t;
 
 // ************************************************************************* //
 
@@ -270,13 +274,19 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition
                                       )
 {
-  return net.add_transition
-    ( mk_trans ( name
-               , condition::type
-                 ( condition
-                 , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+  const petri_net::tid_t tid
+    ( net.add_transition
+      ( mk_trans ( name
+                 , condition::type
+                   ( condition
+                   , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+                   )
                  )
-               )
+      )
+    );
+
+  net.set_transition_function
+    ( tid
     , TransitionFunction
       ( name
       , expression
@@ -284,14 +294,16 @@ static petri_net::tid_t mk_transition ( pnet_t & net
       , boost::bind(&place::signature<pnet_t>, boost::ref(net), _1)
       )
     );
+
+  return tid;
 }
 
 // ************************************************************************* //
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::PT_READ;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::PT_READ;
+using petri_net::edge::TP;
 
 namespace po = boost::program_options;
 
@@ -515,9 +527,9 @@ main (int argc, char ** argv)
 
     Timer_t timer ("fire", NUM_VID * NUM_BID);
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-        net.fire_random(engine);
+        net.fire_random (engine);
 
         if (PRINT_MARKING)
           marking (net);

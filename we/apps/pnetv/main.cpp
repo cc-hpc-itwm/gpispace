@@ -10,6 +10,8 @@
 #include <jpna/PetriNet.h>
 #include <jpna/Verification.h>
 
+#include <fhg/revision.hpp>
+
 enum {
     EXIT_INVALID_ARGUMENTS = EXIT_FAILURE,
     EXIT_IO_ERROR,
@@ -25,6 +27,7 @@ int main(int argc, char *argv[]) {
     po::options_description options("options");
     options.add_options()
         ( "help,h", "this message")
+        ( "version,V", "print version information")
         ( "input,i"
           , po::value(&inputFiles)
           , "input file name, - for stdin"
@@ -39,6 +42,13 @@ int main(int argc, char *argv[]) {
         , variables
     );
     po::notify(variables);
+
+    if (variables.count("version"))
+      {
+        std::cout << fhg::project_info();
+
+        return EXIT_SUCCESS;
+      }
 
     if (variables.count("help") || inputFiles.empty()) {
         std::cout << "usage: pnetv [options] FILE..." << std::endl
@@ -69,7 +79,7 @@ int main(int argc, char *argv[]) {
 
     int exitCode = EXIT_SUCCESS;
 
-    foreach(const std::string &filename, inputFiles) {
+    FOREACH(const std::string &filename, inputFiles) {
         boost::ptr_vector<jpna::PetriNet> petriNets;
 
         try {
@@ -79,7 +89,7 @@ int main(int argc, char *argv[]) {
                 jpna::parse(filename.c_str(), petriNets);
             }
 
-            foreach (const jpna::PetriNet &petriNet, petriNets) {
+            FOREACH (const jpna::PetriNet &petriNet, petriNets) {
                 std::cout << petriNet.name() << ": ";
                 std::cout.flush();
                 jpna::VerificationResult result = jpna::verify(petriNet);

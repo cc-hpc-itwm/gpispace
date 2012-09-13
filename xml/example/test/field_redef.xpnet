@@ -1,0 +1,7 @@
+<defun name="duplicate_field_in_struct_is_getting_ignored">
+  <struct name="foo">
+    <field name="bar" type="control"/>
+    <field name="bar" type="long"/>
+  </struct>
+  <expression/>
+</defun>

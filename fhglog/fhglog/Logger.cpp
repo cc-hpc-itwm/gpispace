@@ -37,6 +37,18 @@ namespace state
       return logger->second;
     }
 
+    void terminate ()
+    {
+      logger_map_t::iterator logger (m_loggers.begin());
+      logger_map_t::iterator end (m_loggers.end());
+
+      while (logger != end)
+      {
+        logger->second->flush();
+        ++logger;
+      }
+    }
+
     ~state_t ()
     {
       lock_type lock(m_mutex);
@@ -57,6 +69,24 @@ namespace state
     if (! static_state)
       static_state = state_ptr (new state_t);
     return static_state;
+  }
+
+  void clear ()
+  {
+    delete static_state;
+    static_state = 0;
+  }
+}
+
+namespace fhg
+{
+  namespace log
+  {
+    void terminate ()
+    {
+      state::get ()->terminate ();
+      state::clear ();
+    }
   }
 }
 

@@ -97,7 +97,7 @@
                        , interval.offset
                        , interval.used
                        , 0
-                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
+                       , 0
                        )
                      );
 

@@ -1,0 +1,36 @@
+<defun name="use_sequence">
+
+  <in name="n" type="long" place="n"/>
+  <out name="o" type="long" place="o"/>
+
+  <net>
+
+    <place name="n" type="long"/>
+    <place name="o" type="long"/>
+
+<!--    <transition name="generate"> -->
+    <transition name="generate" inline="true">
+      <include-function href="sequence_forward.xpnet"/>
+      <connect-in port="n" place="n"/>
+      <connect-out port="i" place="i"/>
+    </transition>
+
+    <place name="i" type="long"/>
+
+    <transition name="work">
+      <defun>
+        <inout name="i" type="long"/>
+        <module name="use_sequence" function="work (i)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "WORK " << i << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="i" place="i"/>
+      <connect-out port="i" place="o"/>
+    </transition>
+
+  </net>
+
+</defun>

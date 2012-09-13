@@ -1,0 +1,110 @@
+<template name="work_n_of_m">
+
+  <in name="i" type="long_with_credit" place="i"/>
+  <out name="o" type="long_with_credit" place="o"/>
+  <tunnel name="n" type="long" place="n"/>
+  <tunnel name="config" type="T" place="config"/>
+
+  <net>
+
+    <place name="i" type="long_with_credit"/>
+    <place name="o" type="long_with_credit"/>
+    <place name="n" type="long" virtual="true"/>
+    <place name="config" type="T" virtual="true"/>
+
+    <transition name="work">
+      <defun>
+        <in name="v" type="long_with_credit"/>
+        <out name="wl" type="with_length"/>
+        <in name="n" type="long"/>
+        <in name="config" type="T"/>
+        <module name="work" function="wl work (v, n, config)">
+          <cinclude href="iostream"/>
+          <cinclude href="stdlib.h"/>
+          <code><![CDATA[
+            srand (v.id);
+
+            ::pnetc::type::with_length::with_length wl;
+
+            wl.v  = v;
+            wl.length = rand () % 20;
+
+            std::cout << "### work " << v.id << " of [0.." << n << ")"
+                      << ", credit " << v.credit
+                      << " => length " << wl.length
+                      << ", sleep " << n-v.id <<  " seconds"
+                      << std::endl
+                      ;
+
+            sleep (n-v.id);
+
+            return wl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-read port="n" place="n"/>
+      <connect-in port="v" place="i"/>
+      <connect-out port="wl" place="ready_to_write"/>
+    </transition>
+
+    <place name="ready_to_write" type="with_length"/>
+
+    <transition name="select">
+      <defun>
+        <in name="ready" type="with_length"/>
+        <out name="with_offset" type="with_offset"/>
+        <inout name="offset" type="long"/>
+        <inout name="id" type="long"/>
+        <expression>
+          ${with_offset.wl} := ${ready};
+          ${with_offset.offset} := ${offset};
+          ${offset} := ${offset} + ${ready.length};
+          ${id} := ${id} + 1;
+        </expression>
+<!--        <condition>
+          ${ready.v.id} :eq: ${id}
+        </condition>
+-->
+     </defun>
+      <connect-inout port="offset" place="offset"/>
+      <connect-inout port="id" place="id"/>
+      <connect-in port="ready" place="ready_to_write"/>
+      <connect-out port="with_offset" place="with_offset"/>
+    </transition>
+
+    <place name="with_offset" type="with_offset"/>
+    <place name="offset" type="long"><token><value>0</value></token></place>
+    <place name="id" type="long"><token><value>0</value></token></place>
+
+    <transition name="write">
+      <defun>
+        <in name="wo" type="with_offset"/>
+        <out name="v" type="long_with_credit"/>
+        <in name="n" type="long"/>
+        <in name="config" type="T"/>
+        <module name="work" function="v write (wo, n, config)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "### write " << wo.wl.v.id << " of [0.." << n << ")"
+                      << ", credit " << wo.wl.v.credit
+                      << ", length " << wo.wl.length
+                      << ", offset " << wo.offset
+                      << std::endl
+                      ;
+
+            sleep (3);
+
+            return wo.wl.v;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-read port="n" place="n"/>
+      <connect-in port="wo" place="with_offset"/>
+      <connect-out port="v" place="o"/>
+    </transition>
+
+  </net>
+
+</template>

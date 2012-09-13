@@ -197,6 +197,12 @@
     <specialize name="dup_volume_in_progress" use="dup">
       <type-map replace="T" with="volume_in_progress"/>
     </specialize>
+    <specialize name="dup_config" use="dup">
+      <type-map replace="T" with="config"/>
+    </specialize>
+    <specialize name="dup_control" use="dup">
+      <type-map replace="T" with="control"/>
+    </specialize>
 
     <place name="update_bunch_state" type="volume_in_progress"/>
 
@@ -205,6 +211,7 @@
     <transition name="update_volume_state">
       <defun>
         <in name="processed" type="volume_in_progress"/>
+        <in name="credit_volume_done" type="control"/>
         <out name="processed" type="volume_in_progress"/>
         <in name="state" type="volume_state"/>
         <out name="state" type="volume_state"/>
@@ -217,10 +224,14 @@
       <connect-in port="state" place="volume_state"/>
       <connect-out port="state" place="check_volume_done"/>
       <connect-out port="processed" place="wait_update_bunch_state"/>
+      <connect-in port="credit_volume_done" place="credit_volume_done"/>
     </transition>
 
-    <place name="wait_update_bunch_state" type="volume_in_progress" capacity="1"/>
-    <place name="check_volume_done" type="volume_state" capacity="1"/>
+    <place name="wait_update_bunch_state" type="volume_in_progress"/>
+    <place name="check_volume_done" type="volume_state"/>
+    <place name="credit_volume_done" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <!-- ****************************************************************** -->
 
@@ -274,7 +285,9 @@
         <in name="processed" type="volume_in_progress"/>
         <out name="processed" type="volume_in_progress"/>
         <out name="state" type="volume_state"/>
+        <out name="credit_volume_done" type="control"/>
         <expression>
+          ${credit_volume_done} := []
         </expression>
         <condition>
           ${state.bunches.left} :le: 0
@@ -284,6 +297,7 @@
       <connect-out port="state" place="volume_done"/>
       <connect-in port="processed" place="wait_update_bunch_state"/>
       <connect-out port="processed" place="update_bunch_state"/>
+      <connect-out port="credit_volume_done" place="credit_volume_done"/>
     </transition>
 
     <transition name="not_volume_done">
@@ -292,7 +306,9 @@
         <in name="processed" type="volume_in_progress"/>
         <out name="processed" type="volume_in_progress"/>
         <out name="state" type="volume_state"/>
+        <out name="credit_volume_done" type="control"/>
         <expression>
+          ${credit_volume_done} := []
         </expression>
         <condition>
           ${state.bunches.left} :gt: 0
@@ -302,6 +318,7 @@
       <connect-out port="state" place="volume_state"/>
       <connect-in port="processed" place="wait_update_bunch_state"/>
       <connect-out port="processed" place="update_bunch_state"/>
+      <connect-out port="credit_volume_done" place="credit_volume_done"/>
     </transition>
 
     <place name="volume_done" type="volume_state"/>

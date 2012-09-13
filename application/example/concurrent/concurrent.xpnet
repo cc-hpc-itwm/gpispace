@@ -1,0 +1,94 @@
+<defun name="concurrent">
+  <in name="N" type="long" place="N"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+    <place name="N" type="long"/>
+    <place name="produce" type="long"/>
+    <place name="consume" type="long"/>
+    <place name="id" type="long"/>
+    <place name="done" type="control"/>
+    <place name="done_call" type="control"/>
+    <place name="done_all" type="control"/>
+
+    <include-template href="dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="dup" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="N"/>
+      <connect-out port="one" place="produce"/>
+      <connect-out port="two" place="consume"/>
+    </transition>
+
+    <transition name="generate" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="produce"/>
+      <connect-out port="out" place="id"/>
+    </transition>
+
+    <transition name="A">
+      <defun>
+        <in name="id" type="long"/>
+        <out name="done" type="control"/>
+        <module name="concurrent" function="A"/>
+      </defun>
+      <connect-in port="id" place="id"/>
+      <connect-out port="done" place="done_call"/>
+    </transition>
+
+    <transition name="B">
+      <defun>
+        <in name="id" type="long"/>
+        <out name="done" type="control"/>
+        <module name="concurrent" function="B"/>
+      </defun>
+      <connect-in port="id" place="id"/>
+      <connect-out port="done" place="done_call"/>
+    </transition>
+
+    <transition name="C">
+      <defun>
+        <in name="id" type="long"/>
+        <out name="done" type="control"/>
+        <module name="concurrent" function="C"/>
+      </defun>
+      <connect-in port="id" place="id"/>
+      <connect-out port="done" place="done_call"/>
+    </transition>
+
+    <transition name="D">
+      <defun>
+        <in name="id" type="long"/>
+        <out name="done" type="control"/>
+        <module name="concurrent" function="D"/>
+      </defun>
+      <connect-in port="id" place="id"/>
+      <connect-out port="done" place="done_call"/>
+    </transition>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait" use="wait">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait"/>
+      <place-map virtual="wait" real="consume"/>
+      <connect-in port="trigger" place="done_call"/>
+      <connect-out port="done" place="done_all"/>
+    </transition>
+
+    <transition name="finalize">
+      <defun>
+        <in name="trigger" type="control"/>
+        <out name="done" type="control"/>
+        <module name="concurrent" function="finalize"/>
+      </defun>
+      <connect-in port="trigger" place="done_all"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

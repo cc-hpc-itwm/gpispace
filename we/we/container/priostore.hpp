@@ -57,6 +57,18 @@ namespace priostore
     }
 
   public:
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+    type & operator= (type const & rhs)
+    {
+      if (this != &rhs)
+      {
+        prio_map = rhs.prio_map;
+        get_prio = rhs.get_prio;
+      }
+      return *this;
+    }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+
     Prio get_priority (const T & x) const
     {
       typename get_prio_t::const_iterator pos (get_prio.find (x));
@@ -102,7 +114,7 @@ namespace priostore
 
     bool elem (const T & x) const
     {
-      typename prio_map_t::const_iterator pos 
+      typename prio_map_t::const_iterator pos
         (prio_map.find (get_priority (x)));
 
       return (pos != prio_map.end()) ? pos->second.elem (x) : false;

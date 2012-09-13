@@ -1,0 +1,22 @@
+<defun name="capacity_bug">
+  <in name="i" type="control" place="i"/>
+  <out name="o" type="control" place="o"/>
+  <net>
+    <place name="c" type="control"><token><value/></token></place>
+    <place name="credit" type="control"><token><value/></token></place>
+    <place name="i" type="control"/>
+    <place name="o" type="control"/>
+    <transition name="t">
+      <defun>
+        <inout name="c" type="control"/>
+        <inout name="t" type="control"/>
+        <inout name="credit" type="control"/>
+        <expression/>
+      </defun>
+      <connect-inout port="c" place="c"/>
+      <connect-inout port="credit" place="credit"/>
+      <connect-out port="t" place="o"/>
+      <connect-in port="t" place="i"/>
+    </transition>
+  </net>
+</defun>

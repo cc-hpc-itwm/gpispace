@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/archive/text_oarchive.hpp>

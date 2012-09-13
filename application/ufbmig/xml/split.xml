@@ -38,7 +38,7 @@
                        , interval.offset
                        , interval.used
                        , 0
-                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
+                       , 0
                        )
                      );
 
@@ -51,7 +51,7 @@
                        , interval.offset
                        , interval.used
                        , 0
-                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
+                       , 0
                        )
                      );
 
@@ -134,37 +134,50 @@
       <defun>
         <in name="intervals" type="intervals"/>
         <out name="intervals" type="intervals"/>
+        <in name="credit_intervals" type="control"/>
         <expression/>
       </defun>
       <connect-in port="intervals" place="pre_intervals"/>
       <connect-out port="intervals" place="intervals"/>
+      <connect-in port="credit_intervals" place="credit_intervals"/>
     </transition>
 
-    <place name="intervals" type="intervals" capacity="1"/>
+    <place name="intervals" type="intervals"/>
+    <place name="credit_intervals" type="control">
+      <token><value>[]</value></token>
+    </place>
     <place name="wait" type="long" virtual="true"/>
 
     <transition name="empty">
       <defun>
         <in name="intervals" type="intervals"/>
-        <expression/>
+        <out name="credit_intervals" type="control"/>
+        <expression>
+          ${credit_intervals} := []
+        </expression>
         <condition>
           stack_empty (${intervals.sizes})
         </condition>
       </defun>
       <connect-in port="intervals" place="intervals"/>
+      <connect-out port="credit_intervals" place="credit_intervals"/>
     </transition>
 
     <transition name="not_empty">
       <defun>
         <in name="intervals" type="intervals"/>
         <out name="intervals" type="intervals"/>
-        <expression/>
+        <out name="credit_intervals" type="control"/>
+        <expression>
+          ${credit_intervals} := []
+        </expression>
         <condition>
           !stack_empty (${intervals.sizes})
         </condition>
       </defun>
       <connect-in port="intervals" place="intervals"/>
       <connect-out port="intervals" place="nonempty_intervals"/>
+      <connect-out port="credit_intervals" place="credit_intervals"/>
     </transition>
 
     <place name="nonempty_intervals" type="intervals"/>

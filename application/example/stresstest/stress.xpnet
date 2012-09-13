@@ -1,0 +1,73 @@
+<defun>
+  <in name="N" type="long" place="Nin"/>
+  <in name="config" type="config" place="config"/>
+  <in name="trigger" type="long" place="id"/>
+  <out name="done" type="control" place="out"/>
+
+  <net>
+    <place name="Nin" type="long"/>
+
+    <transition name="scatter_N" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="Nin"/>
+      <connect-out port="one" place="N"/>
+      <connect-out port="two" place="wait"/>
+    </transition>
+
+    <place name="id" type="long"/>
+    <place name="N" type="long"/>
+    <place name="wait" type="long"/>
+    <place name="pending" type="long"/>
+    <place name="config" type="config"/>
+    <place name="done" type="control"/>
+    <place name="out" type="control"/>
+
+    <transition name="generate" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in place="N" port="amount"/>
+      <connect-out port="out" place="pending"/>
+    </transition>
+
+    <transition name="run">
+      <defun>
+        <in name="id" type="long"/>
+        <in name="i" type="long"/>
+        <in name="config" type="config"/>
+        <out name="done" type="control"/>
+        <module name="stresstest" function="run"/>
+      </defun>
+      <connect-in port="i" place="pending"/>
+      <connect-read port="id" place="id"/>
+      <connect-read port="config" place="config"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+    <transition name="wait">
+      <use name="wait_control"/>
+      <connect-in port="trigger" place="done"/>
+      <connect-out port="done" place="all_done"/>
+      <place-map real="wait" virtual="wait"/>
+    </transition>
+
+    <place name="all_done" type="control"/>
+
+    <transition name="cleanup">
+      <defun>
+        <in name="wait" type="long"/>
+        <in name="config" type="config"/>
+        <in name="id" type="long"/>
+        <in name="trigger" type="control"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+        <condition>${wait} :eq: 0</condition>
+      </defun>
+      <connect-in port="wait" place="wait"/>
+      <connect-in port="config" place="config"/>
+      <connect-in port="id" place="id"/>
+      <connect-in port="trigger" place="all_done"/>
+      <connect-out port="done" place="out"/>
+    </transition>
+  </net>
+</defun>

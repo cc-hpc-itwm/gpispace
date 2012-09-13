@@ -6,12 +6,14 @@ set (simple_targets
      pnetget
      pnetput
      pnet2dot
+     pneti
     )
 
 foreach (target ${simple_targets})
 
   add_executable (${target} "${target}.cpp")
 
+  target_link_libraries(${target} fhg-revision)
   target_link_libraries(${target} ${WE_LIBRARIES})
   target_link_libraries(${target} ${FhgLog_LIBRARY})
   target_link_libraries(${target} ${Boost_LIBRARIES})

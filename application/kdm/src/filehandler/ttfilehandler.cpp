@@ -45,7 +45,7 @@ TTFileHandler::~TTFileHandler()
     clear();
 }
 void TTFileHandler::clear()
-{    
+{
   if (Src00 != NULL)
   {
 #if (defined(__ALTIVEC__) || defined(__SPU__))
@@ -76,7 +76,7 @@ void TTFileHandler::clear()
     Rcv10=NULL;
     Rcv01=NULL;
     Rcv11=NULL;
-  }  
+  }
 }
 void TTFileHandler::TTFileHandleralloc(const int Nx, const int Ny, const int Nz)
 {
@@ -130,7 +130,7 @@ bool TTFileHandler::ReadRT(const char* NameBase, const int& ix, const int& iy, f
   char* buffertmp = new char[Nx*Ny*(sizeof(SegYHeader) + Nz*N_SIGNALS*sizeof(float))];
   Input.read((char*) buffertmp, Nx*Ny*(sizeof(SegYHeader) + Nz*N_SIGNALS*sizeof(float)));
   memcpy((void*) &Header, buffertmp, sizeof(SegYHeader));
-  
+
   for (int i = 0; i < Nx; i++)
     for (int j = 0; j < Ny; j++)
     {
@@ -181,7 +181,7 @@ bool TTFileHandler::ReadRT(const char* NameBase, const int& ix, const int& iy, f
 // //         buffer[i][j][iz] = buffer_tmp[Nz-iz-1];
 //     }
 
-  Input.close();  
+  Input.close();
   delete[] buffertmp;
   return true;
 };
@@ -213,7 +213,7 @@ bool TTFileHandler::ReadRT(const char* NameBase, const int& ix, const int& iy, f
 	{
 	  Input.read((char*) &Header, sizeof(SegYHeader));
 	  Input.read((char*) (&(buffer[(i*Ny+j)*Nz*N_SIGNALS])), Nz*N_SIGNALS*sizeof(float));
-	  
+
 /*        if (endianess != LITENDIAN)
   	{
   	  swap_bytes((void*)&Header.sx, 1, sizeof(int));
@@ -224,7 +224,7 @@ bool TTFileHandler::ReadRT(const char* NameBase, const int& ix, const int& iy, f
   	  swap_bytes((void*)&Header.selev, 1, sizeof(int));
   	  swap_bytes((void*)&Header.gelev, 1, sizeof(int));
   	  swap_bytes((void*)&Header.scalel, 1, sizeof(short));
- 
+
   	  swap_bytes((void*)&(buffer[(i*Ny+j)*Nz*N_SIGNALS]), Nz*N_SIGNALS, sizeof(float));
   	}
 
@@ -242,11 +242,11 @@ bool TTFileHandler::ReadRT(const char* NameBase, const int& ix, const int& iy, f
 	Header.sy = sy_MOD;
 	Header.gx = gx_MOD;
 	Header.gy = gy_MOD;        */
- 
+
 	}
     }
 
-  Input.close();  
+  Input.close();
   return true;
 };
 
@@ -277,7 +277,7 @@ bool TTFileHandler::ReadRT(const MigrationJob& MigJob, const char* NameBase, con
 	{
 	  Input.read((char*) &Header, sizeof(SegYHeader));
 	  Input.read((char*) (&(buffer[(i*Ny+j)*Nz*N_SIGNALS])), Nz*N_SIGNALS*sizeof(float));
-	  
+
         if (endianess != LITENDIAN)
   	{
   	  swap_bytes((void*)&Header.sx, 1, sizeof(int));
@@ -288,7 +288,7 @@ bool TTFileHandler::ReadRT(const MigrationJob& MigJob, const char* NameBase, con
   	  swap_bytes((void*)&Header.selev, 1, sizeof(int));
   	  swap_bytes((void*)&Header.gelev, 1, sizeof(int));
   	  swap_bytes((void*)&Header.scalel, 1, sizeof(short));
- 
+
   	  swap_bytes((void*)&(buffer[(i*Ny+j)*Nz*N_SIGNALS]), Nz*N_SIGNALS, sizeof(float));
   	}
 
@@ -306,17 +306,17 @@ bool TTFileHandler::ReadRT(const MigrationJob& MigJob, const char* NameBase, con
 	Header.sx = sx_MOD;
 	Header.sy = sy_MOD;
 	Header.gx = gx_MOD;
-	Header.gy = gy_MOD; 
+	Header.gy = gy_MOD;
         */
         Header.sx = static_cast<int>(roundf(sx_MOD));
 	Header.sy = static_cast<int>(roundf(sy_MOD));
 	Header.gx = static_cast<int>(roundf(gx_MOD));
-	Header.gy = static_cast<int>(roundf(gy_MOD));       
- 
+	Header.gy = static_cast<int>(roundf(gy_MOD));
+
 	}
     }
 
-  Input.close();  
+  Input.close();
   return true;
 };
 
@@ -993,7 +993,7 @@ bool TTFileHandler::Analyse(const char* NameBase, grid3D& GVol, grid2D& GSrc)
       std::cerr << "Error in TTFileHandler::Analyse: Failed to open file " << FileName << std::endl;
       return false;
     }
-  
+
   point3D<int> N;
   point3D<float> X0;
   point3D<float> dx;
@@ -1007,14 +1007,14 @@ bool TTFileHandler::Analyse(const char* NameBase, grid3D& GVol, grid2D& GSrc)
 
   X0[0] = Header.gx;
   X0[1] = Header.gy;
-  N[2] = Header.ns; 
+  N[2] = Header.ns;
   dx[2] = Header.dt;
   X0[2] = -(N[2]-1) * dx[2];
 
   float* buffer = new float[N[2]*N_SIGNALS];
   InputFile.read((char*) buffer, N[2] * N_SIGNALS * sizeof(float));
   InputFile.read((char*) &Header, sizeof(SegYHeader));
-  
+
   dx[1] = Header.gy - X0[1];
   N[1] = 1;
   while ( Header.gy == X0[1] + N[1] * dx[1])
@@ -1054,8 +1054,8 @@ bool TTFileHandler::Analyse(const char* NameBase, grid3D& GVol, grid2D& GSrc)
   dxSrf = Header.sx - X0Srf;
   dySrf = Header.sy - Y0Srf;
   InputFile.close();
-  
-  NSrfx = 0; 
+
+  NSrfx = 0;
   NSrfy = 0;
   sprintf(FileName,"%s_%d_%d.dat", NameBase, NSrfx, NSrfy);
   InputFile.open(FileName, std::ios::binary);
@@ -1126,12 +1126,12 @@ void TTFileHandler::WriteRcvSegY(const point3D<float>& Srcpos, const ReceiverGri
   }
   else
       sprintf(filename, "LZ_%d_%d.dat", SrcX, SrcY);
-  
-  
+
+
   std::ofstream outfile(filename, std::ios::binary);
   if (outfile.fail()) {
-    
-    return; 
+
+    return;
   }
 
   int Nx = RcvGrid.getNx();
@@ -1143,7 +1143,7 @@ void TTFileHandler::WriteRcvSegY(const point3D<float>& Srcpos, const ReceiverGri
 
   float* buffer = new float[Nz*N_SIGNALS];
 
-  SegYHeader Header = {};
+  SegYHeader Header;
 
   Header.ns = Nz * N_SIGNALS;
   Header.dt = (int) (dx[2] * 1000);
@@ -1228,7 +1228,7 @@ int TTFileHandler::SetDirectory(const char* DirName, const char* PreFix)
 
 	if ( len > 198 )
 	{
-	    
+
 	    ierr = 1;
 	}
 	else
@@ -1241,7 +1241,7 @@ int TTFileHandler::SetDirectory(const char* DirName, const char* PreFix)
 	    else
 		sprintf(PreFileName, "%s/", DirName);
 	}
-	
+
     }
     return ierr;
 }

@@ -1,5 +1,6 @@
+configure_file(assert_config.hpp.in assert_config.hpp @ONLY)
+
 add_subdirectory(util)
-add_subdirectory(plugin)
 
 execute_process(COMMAND hostname -f
                 OUTPUT_VARIABLE FHG_BUILD_HOST
@@ -28,16 +29,36 @@ execute_process(COMMAND date
 execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version
                 COMMAND head -n 1
                 OUTPUT_VARIABLE FHG_BUILD_COMPILER
-		OUTPUT_STRIP_TRAILING_WHITESPACE
+                OUTPUT_STRIP_TRAILING_WHITESPACE
                )
-set(FHG_BUILD_INFO "${FHG_BUILD_KERNEL} ${FHG_BUILDL_CPU} ${FHG_BUILD_USER}@${FHG_BUILD_HOST} Build #${PROJECT_BUILD}")
-set(FHG_BUILD_COUNT ${PROJECT_BUILD})
+
+execute_process(COMMAND cat ${CMAKE_BINARY_DIR}/build.counter
+                OUTPUT_VARIABLE FHG_BUILD_COUNT
+                ERROR_QUIET
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+if ("${FHG_BUILD_COUNT}" STREQUAL "")
+  set(FHG_BUILD_COUNT "0")
+endif ()
+MATH(EXPR FHG_BUILD_COUNT "${FHG_BUILD_COUNT}+1")
+set(FHG_BUILD_INFO "${FHG_BUILD_KERNEL} ${FHG_BUILDL_CPU} ${FHG_BUILD_USER}@${FHG_BUILD_HOST} Build #${FHG_BUILD_COUNT}")
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp @ONLY)
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
 
+#add_custom_target(increment-build-counter ALL
+#  COMMAND echo "${FHG_BUILD_COUNT}" > "${CMAKE_BINARY_DIR}/build.counter"
+#  COMMENT "Incrementing build counter to ${FHG_BUILD_COUNT}"
+#  VERBATIM
+#  )
+
 install (FILES revision.hpp
+               assert.hpp
+               assert_modes.hpp
+               assert_helper.hpp
+               assertion_failed.hpp
+               error_codes.hpp
   DESTINATION include/fhg
   COMPONENT headers
   )

@@ -1,0 +1,47 @@
+<defun name="work">
+
+  <in name="i" type="long" place="i"/>
+  <out name="o" type="long" place="o"/>
+
+  <net>
+
+    <place name="i" type="long"/>
+    <place name="o" type="long"/>
+
+    <transition name="step_1">
+      <require key="WORK" mandatory="true" />
+      <defun>
+        <inout name="v" type="long"/>
+        <module name="work" function="step_1 (v)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "### step-1 " << v << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="v" place="i"/>
+      <connect-out port="v" place="s1"/>
+    </transition>
+
+    <place name="s1" type="long"/>
+
+    <transition name="step_2">
+      <require key="WORK" mandatory="true" />
+      <defun>
+        <inout name="v" type="long"/>
+        <module name="work" function="step_2 (v)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "### step-2 " << v << std::endl;
+
+            sleep (1);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="v" place="s1"/>
+      <connect-out port="v" place="o"/>
+    </transition>
+
+  </net>
+
+</defun>

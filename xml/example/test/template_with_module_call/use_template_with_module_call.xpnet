@@ -1,0 +1,51 @@
+<defun name="use_template_with_module_call">
+  <in name="x" type="control" place="x"/>
+  <out name="x" type="control" place="y"/>
+  <net>
+    <place name="x" type="control"/>
+    <place name="y" type="control"/>
+
+    <include-template href="template_with_module_call.xpnet"/>
+    <specialize name="template_with_module_call_string"
+                use="template_with_module_call"
+                >
+      <type-map replace="T" with="string"/>
+    </specialize>
+    <specialize name="template_with_module_call_long"
+                use="template_with_module_call"
+                >
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <place name="s1" type="string"><token><value>"Beep"</value></token></place>
+    <place name="s2" type="string"/>
+
+    <transition name="use_string" inline="true">
+      <use name="template_with_module_call_string"/>
+      <connect-in port="x" place="s1"/>
+      <connect-out port="y" place="s2"/>
+    </transition>
+
+    <place name="l1" type="long"><token><value>23</value></token></place>
+    <place name="l2" type="long"/>
+
+    <transition name="use_long" inline="true">
+      <use name="template_with_module_call_long"/>
+      <connect-in port="x" place="l1"/>
+      <connect-out port="y" place="l2"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <inout name="trigger" type="control"/>
+        <in name="s" type="string"/>
+        <in name="l" type="long"/>
+        <expression/>
+      </defun>
+      <connect-in port="trigger" place="x"/>
+      <connect-out port="trigger" place="y"/>
+      <connect-in port="s" place="s2"/>
+      <connect-in port="l" place="l2"/>
+    </transition>
+  </net>
+</defun>

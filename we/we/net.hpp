@@ -3,7 +3,7 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
-#include <cassert>
+#include <fhg/assert.hpp>
 
 #include <we/container/adjacency.hpp>
 #include <we/container/bijection.hpp>
@@ -12,110 +12,25 @@
 #include <we/function/cond.hpp>
 #include <we/function/trans.hpp>
 #include <we/serialize/unordered_map.hpp>
-#include <we/serialize/unordered_set.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/util/cross.hpp>
 
-#include <fhg/util/show.hpp>
-
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/optional.hpp>
+#include <petri_net/edge.hpp>
+#include <petri_net/exception.hpp>
 
 #include <boost/function.hpp>
-#include <boost/foreach.hpp>
-
 #include <boost/serialization/nvp.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <stack>
 
 namespace petri_net
 {
-  namespace exception
-  {
-    class generic : public std::runtime_error
-    {
-    public:
-      explicit generic (const std::string& msg)
-        : std::runtime_error ("net: " + msg)
-      {}
-    };
-
-    class transition_not_enabled : public generic
-    {
-    public:
-      explicit transition_not_enabled (const std::string & msg)
-        : generic ("transition_not_enabled: " + msg)
-      {}
-    };
-
-    class capacity_exceeded : public generic
-    {
-    public:
-      explicit capacity_exceeded ()
-        : generic ("capacity exceeded")
-      {}
-    };
-
-    class no_such : public generic
-    {
-    public:
-      explicit no_such (const std::string & msg)
-        : generic ("no_such: " + msg)
-      {}
-    };
-  }
-
-  enum edge_type {PT,PT_READ,TP};
-
-  static inline bool is_pt_read (const edge_type & e)
-  {
-    return e == PT_READ;
-  }
-
-  static inline bool is_PT (const edge_type & et)
-  {
-    return (et == PT || et == PT_READ);
-  }
-
-  static inline edge_type pt_read (void)
-  {
-    return PT_READ;
-  }
-
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
-  typedef connection<edge_type, tid_t, pid_t> connection_t;
-
-  namespace detail
-  {
-    struct capacity_and_placeholder_type
-    {
-    private:
-      capacity_t _left;
-      capacity_t _used;
-    public:
-      capacity_and_placeholder_type () : _left (0), _used (0) {}
-      explicit capacity_and_placeholder_type (const capacity_t& cap)
-        : _left (cap)
-        , _used (0)
-      {}
-      const capacity_t& left () const { return _left; }
-      capacity_t capacity () const { return _left + _used; }
-      void extract () { assert (_left > 0); --_left; ++_used; }
-      void put () { if (_used > 0) { --_used; ++_left; } }
-
-      friend class boost::serialization::access;
-      template<typename Archive>
-      void serialize (Archive & ar, const unsigned int)
-      {
-        ar & BOOST_SERIALIZATION_NVP(_left);
-        ar & BOOST_SERIALIZATION_NVP(_used);
-      }
-    };
-  }
+  typedef connection<edge::type, tid_t, pid_t> connection_t;
 
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
 // single map<tid_t,(X,Y)>?
@@ -148,12 +63,9 @@ public:
   typedef typename tf_traits::place_via_edge_t place_via_edge_t;
   typedef typename tf_traits::token_input_t token_input_t;
   typedef typename tf_traits::input_t input_t;
-
-  typedef typename tf_traits::output_descr_t output_descr_t;
   typedef typename tf_traits::output_t output_t;
 
-  typedef typename tf_traits::fun_t trans_t;
-  typedef boost::unordered_map<tid_t, trans_t> trans_map_t;
+  typedef typename tf_traits::output_descr_t output_descr_t;
 
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits<token_type> cd_traits;
@@ -172,23 +84,18 @@ private:
   typedef boost::unordered_map<eid_t, connection_t> connection_map_t;
   typedef typename multirel::multirel<token_type,pid_t> token_place_rel_t;
 
-  typedef boost::unordered_set<tid_t> set_of_tid_t;
-  typedef set_of_tid_t in_enabled_t;
-  typedef set_of_tid_t out_enabled_t;
-
   typedef typename cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
   typedef boost::unordered_map<tid_t, choice_vec_t> enabled_choice_t;
+  typedef typename enabled_choice_t::iterator choice_iterator_t;
 
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
-  typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
 
-  typedef boost::unordered_map< pid_t
-                              , detail::capacity_and_placeholder_type
-                              > capacity_map_t;
+  typedef boost::unordered_map< tid_t
+                              , std::size_t
+                              > adjacent_transition_size_map_type;
 
   // *********************************************************************** //
 
-  std::string name;
   bijection::bijection<place_type,pid_t> pmap; // place_type <-> internal id
   bijection::bijection<transition_type,tid_t> tmap; // transition_type <-> internal id
   bijection::bijection<edge_type,eid_t> emap; // edge_type <-> internal id
@@ -204,14 +111,10 @@ private:
   enabled_choice_t enabled_choice_consume;
   enabled_choice_t enabled_choice_read;
 
-  trans_map_t trans;
-
-  capacity_map_t capacity_map;
-
   in_map_t in_map;
-  out_map_t out_map;
-  in_enabled_t in_enabled;
-  out_enabled_t out_enabled;
+
+  adjacent_transition_size_map_type in_to_transition_size_map;
+  adjacent_transition_size_map_type out_of_transition_size_map;
 
   // *********************************************************************** //
 
@@ -219,7 +122,6 @@ private:
   template<typename Archive>
   void serialize (Archive & ar, const unsigned int)
   {
-    ar & BOOST_SERIALIZATION_NVP(name);
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
     ar & BOOST_SERIALIZATION_NVP(emap);
@@ -230,16 +132,53 @@ private:
     ar & BOOST_SERIALIZATION_NVP(enabled);
     ar & BOOST_SERIALIZATION_NVP(enabled_choice_consume);
     ar & BOOST_SERIALIZATION_NVP(enabled_choice_read);
-    // WORK HERE: serialize the functions
-    // AP: we do not need this with the new transitions
-    //     because the function is already encapsulated
-    //
-    //    ar & BOOST_SERIALIZATION_NVP(trans);
-    ar & BOOST_SERIALIZATION_NVP(capacity_map);
     ar & BOOST_SERIALIZATION_NVP(in_map);
-    ar & BOOST_SERIALIZATION_NVP(out_map);
-    ar & BOOST_SERIALIZATION_NVP(in_enabled);
-    ar & BOOST_SERIALIZATION_NVP(out_enabled);
+ }
+
+  // *********************************************************************** //
+
+  std::size_t adjacent_size
+  ( adjacent_transition_size_map_type& m
+  , boost::function<adj_place_const_it (const tid_t&)> f
+  , const tid_t& tid
+  ) const
+  {
+    const adjacent_transition_size_map_type::const_iterator pos (m.find (tid));
+
+    if (pos == m.end())
+      {
+        const std::size_t s (f (tid).size());
+
+        m[tid] = s;
+
+        return s;
+      }
+
+    return pos->second;
+  }
+
+  std::size_t in_to_transition_size (const tid_t& tid)
+  {
+    return adjacent_size
+      ( in_to_transition_size_map
+      , boost::bind ( &net<Place,Transition,Edge,Token>::in_to_transition
+                    , this
+                    , _1
+                    )
+      , tid
+      );
+  }
+
+  std::size_t out_of_transition_size (const tid_t& tid)
+  {
+    return adjacent_size
+      ( out_of_transition_size_map
+      , boost::bind ( &net<Place,Transition,Edge,Token>::out_of_transition
+                    , this
+                    , _1
+                    )
+      , tid
+      );
   }
 
   // *********************************************************************** //
@@ -249,6 +188,7 @@ private:
                      , const ROW & r
                      , const COL & c
                      , adjacency::table<ROW,COL,eid_t> & m
+                     , const tid_t& tid
                      )
   {
     if (m.get_adjacent (r, c) != eid_invalid)
@@ -258,74 +198,58 @@ private:
 
     m.set_adjacent (r, c, eid);
 
+    in_to_transition_size_map.erase (tid);
+    out_of_transition_size_map.erase (tid);
+
     return eid;
   }
 
-  template<typename MAP>
-  const typename MAP::mapped_type & get_fun ( const MAP & map
-                                            , const tid_t & tid
-                                            ) const
+  // *********************************************************************** //
+
+  void update_set_of_tid_in (const tid_t & tid, const bool can_fire)
   {
-    const typename MAP::const_iterator f (map.find (tid));
-
-    if (f == map.end())
-      throw exception::no_such ("transition id in get_fun");
-
-    return f->second;
-  }
-
-  void update_set_of_tid ( const tid_t & tid
-                         , const bool can_fire
-                         , set_of_tid_t & a
-                         , set_of_tid_t & b
-                         )
-  {
-    if (can_fire)
+    if (not can_fire)
       {
-        a.insert (tid);
-
-        if (b.find (tid) != b.end())
-          {
-            choices_t cs (choices(tid));
-
-            // call the global condition function here, that sets the
-            // cross product either to the end or to some valid choice
-
-            if (get_transition (tid).condition (cs))
-              {
-                enabled.insert (tid);
-
-                enabled_choice_consume[tid].clear();
-                enabled_choice_read[tid].clear();
-
-                for ( typename cross::iterator<pid_in_map_t> choice (*cs)
-                    ; choice.has_more()
-                    ; ++choice
-                    )
-                  {
-                    const token_via_edge_t & token_via_edge (choice.val());
-                    const eid_t & eid (token_via_edge.second);
-
-                    if (is_pt_read (get_edge_info (eid).type))
-                      {
-                        enabled_choice_read[tid].push_back (*choice);
-                      }
-                    else
-                      {
-                        enabled_choice_consume[tid].push_back (*choice);
-                      }
-                  }
-              }
-            else
-              {
-                enabled.erase (tid);
-              }
-          }
+        enabled.erase (tid);
       }
     else
       {
-        a.erase (tid);
-        enabled.erase (tid);
+        enabled.insert (tid);
+
+        choices_t cs (get_pid_in_map(tid));
+
+        // call the global condition function here, that sets the
+        // cross product either to the end or to some valid choice
+
+        if (not get_transition (tid).condition (cs))
+          {
+            enabled.erase (tid);
+          }
+        else
+          {
+            enabled.insert (tid);
+
+            enabled_choice_consume[tid].clear();
+            enabled_choice_read[tid].clear();
+
+            for ( typename cross::iterator<pid_in_map_t> choice (*cs)
+                ; choice.has_more()
+                ; ++choice
+                )
+              {
+                const token_via_edge_t & token_via_edge (choice.val());
+                const eid_t & eid (token_via_edge.second);
+
+                if (edge::is_pt_read (get_edge_info (eid).type))
+                  {
+                    enabled_choice_read[tid].push_back (*choice);
+                  }
+                else
+                  {
+                    enabled_choice_consume[tid].push_back (*choice);
+                  }
+              }
+          }
       }
   }
 
@@ -348,28 +272,16 @@ private:
   void recalculate_enabled_by_place (const pid_t & pid)
   {
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      recalculate_in_enabled (*t, pid, t());
-
-    recalculate_out_enabled_by_place (pid);
-  }
-
-  void recalculate_out_enabled_by_place (const pid_t & pid)
-  {
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
+      recalculate_enabled (*t, pid, t());
   }
 
   void recalculate_enabled_by_edge ( const eid_t & eid
                                    , const connection_t & connection
                                    )
   {
-    if (is_PT (connection.type))
+    if (edge::is_PT (connection.type))
       {
-        recalculate_in_enabled (connection.tid, connection.pid, eid);
-      }
-    else
-      {
-        update_out_enabled (connection.tid, connection.pid, eid);
+        recalculate_enabled (connection.tid, connection.pid, eid);
       }
   }
 
@@ -378,23 +290,21 @@ private:
     recalculate_enabled_by_edge (eid, get_edge_info (eid));
   }
 
-  void recalculate_in_enabled ( const tid_t & tid
-                              , const pid_t & pid
-                              , const eid_t & eid
-                              )
+  void recalculate_enabled ( const tid_t & tid
+                           , const pid_t & pid
+                           , const eid_t & eid
+                           )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
 
     recalculate_pid_in_map (pid_in_map, pid, eid);
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
-                      , in_enabled
-                      , out_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == in_to_transition_size(tid)
+                         );
   }
 
-  void calculate_in_enabled (const tid_t & tid)
+  void calculate_enabled (const tid_t & tid)
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     adj_place_const_it pit (in_to_transition (tid));
@@ -402,35 +312,31 @@ private:
     for (; pit.has_more(); ++pit)
       recalculate_pid_in_map (pid_in_map, *pit, pit());
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == pit.size()
-                      , in_enabled
-                      , out_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == pit.size()
+                         );
   }
 
-  void update_in_enabled_put_token ( const tid_t & tid
-                                   , const pid_t & pid
-                                   , const eid_t & eid
-                                   , const token_type & token
-                                   )
+  void update_enabled_put_token ( const tid_t & tid
+                                , const pid_t & pid
+                                , const eid_t & eid
+                                , const token_type & token
+                                )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
 
     vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
-                      , in_enabled
-                      , out_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == in_to_transition_size(tid)
+                         );
   }
 
-  void update_in_enabled_del_one_token ( const tid_t & tid
-                                       , const pid_t & pid
-                                       , const token_type & token
-                                       )
+  void update_enabled_del_one_token ( const tid_t & tid
+                                    , const pid_t & pid
+                                    , const token_type & token
+                                    )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
@@ -445,17 +351,15 @@ private:
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
-                      , in_enabled
-                      , out_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == in_to_transition_size(tid)
+                         );
   }
 
-  void update_in_enabled_del_all_token ( const tid_t & tid
-                                       , const pid_t & pid
-                                       , const token_type & token
-                                       )
+  void update_enabled_del_all_token ( const tid_t & tid
+                                    , const pid_t & pid
+                                    , const token_type & token
+                                    )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
@@ -473,72 +377,16 @@ private:
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
-    update_set_of_tid ( tid
-                      , pid_in_map.size() == in_to_transition(tid).size()
-                      , in_enabled
-                      , out_enabled
-                      );
-  }
-
-  bool capacity_exceeded (const pid_t & pid) const
-  {
-    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
-
-    return cap != capacity_map.end() && num_token (pid) >= cap->second.left();
-  }
-
-  void update_output_descr ( output_descr_t & output_descr
-                           , const pid_t & pid
-                           , const eid_t & eid
-                           )
-  {
-    if (capacity_exceeded (pid))
-      {
-        output_descr.erase (pid);
-      }
-    else
-      {
-        output_descr[pid] = eid;
-      }
-  }
-
-  void calculate_out_enabled (const tid_t & tid)
-  {
-    output_descr_t & output_descr (out_map[tid]);
-    adj_place_const_it pit (out_of_transition (tid));
-
-    for (; pit.has_more(); ++pit)
-      update_output_descr (output_descr, *pit, pit());
-
-    update_set_of_tid ( tid
-                      , output_descr.size() == pit.size()
-                      , out_enabled
-                      , in_enabled
-                      );
-  }
-
-  void update_out_enabled ( const tid_t & tid
-                          , const pid_t & pid
-                          , const eid_t & eid
-                          )
-  {
-    output_descr_t & output_descr (out_map[tid]);
-
-    update_output_descr (output_descr, pid, eid);
-
-    update_set_of_tid ( tid
-                      , output_descr.size() == out_of_transition(tid).size()
-                      , out_enabled
-                      , in_enabled
-                      );
+    update_set_of_tid_in ( tid
+                         , pid_in_map.size() == in_to_transition_size(tid)
+                         );
   }
 
   // *********************************************************************** //
 
 public:
-  net (const std::string & _name = "noname", const pid_t & _places = 10, const tid_t & _transitions = 10)
-    : name (_name)
-    , pmap ("place")
+  net (const pid_t & _places = 10, const tid_t & _transitions = 10)
+    : pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
     , connection_map ()
@@ -548,24 +396,36 @@ public:
     , enabled ()
     , enabled_choice_consume ()
     , enabled_choice_read ()
-    , trans ()
-    , capacity_map ()
     , in_map ()
-    , out_map ()
-    , in_enabled ()
-    , out_enabled ()
-  {};
+    , in_to_transition_size_map ()
+    , out_of_transition_size_map ()
+  {}
+
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+  net & operator= (net const & other)
+  {
+    if (this != &other)
+    {
+      pmap = other.pmap;
+      tmap = other.tmap;
+      emap = other.emap;
+      connection_map = other.connection_map;
+      adj_pt = other.adj_pt;
+      adj_tp = other.adj_tp;
+      token_place_rel = other.token_place_rel;
+      enabled = other.enabled;
+      enabled_choice_consume = other.enabled_choice_consume;
+      enabled_choice_read = other.enabled_choice_read;
+      in_map = other.in_map;
+    }
+    return *this;
+  }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
   // numbers of elements
   size_type get_num_places (void) const { return places().size(); }
   size_type get_num_transitions (void) const { return transitions().size(); }
   size_type get_num_edges (void) const { return edges().size(); }
-
-  // condition+transition function accessores
-  const trans_t & get_trans (const tid_t & tid) const
-  {
-    return get_fun (trans, tid);
-  }
 
   // get id
   const pid_t & get_place_id (const place_type & place) const
@@ -605,35 +465,6 @@ public:
     return pmap.add (place);
   }
 
-  void set_capacity (const pid_t & pid, const capacity_t & cap)
-  {
-    capacity_map[pid] = detail::capacity_and_placeholder_type (cap);
-
-    recalculate_out_enabled_by_place (pid);
-  }
-
-  void clear_capacity (const pid_t & pid)
-  {
-    capacity_map.erase (pid);
-
-    recalculate_out_enabled_by_place (pid);
-  }
-
-  boost::optional<capacity_t> get_capacity (const pid_t & pid) const
-  {
-    const capacity_map_t::const_iterator pos (capacity_map.find (pid));
-
-    return (pos == capacity_map.end())
-      ? boost::none
-      : boost::optional<capacity_t> (pos->second.capacity())
-      ;
-  }
-
-  void set_transition_function (const tid_t & tid, const trans_t & f)
-  {
-    trans[tid] = f;
-  }
-
   void set_transition_priority (const tid_t & tid, const prio_t & prio)
   {
     enabled.set_priority (tid, prio);
@@ -644,17 +475,11 @@ public:
     return enabled.get_priority (tid);
   }
 
-  tid_t add_transition
-  ( const transition_type & transition
-  , const trans_t & tf = Function::Transition::Default<token_type>()
-  )
+  tid_t add_transition (const transition_type & transition)
   {
     const tid_t tid (tmap.add (transition));
 
-    trans[tid] = tf;
-
-    calculate_in_enabled (tid);
-    calculate_out_enabled (tid);
+    calculate_enabled (tid);
 
     return tid;
   }
@@ -662,9 +487,9 @@ public:
   eid_t add_edge (const edge_type & edge, const connection_t & connection)
   {
     const eid_t eid
-      ( (is_PT (connection.type))
-      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt)
-      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp)
+      ( (edge::is_PT (connection.type))
+      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt, connection.tid)
+      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp, connection.tid)
       );
 
     connection_map[eid] = connection;
@@ -764,7 +589,7 @@ public:
       {
         if (*pit == pid)
           {
-            return is_pt_read (get_edge_info (pit()).type);
+            return edge::is_pt_read (get_edge_info (pit()).type);
           }
       }
 
@@ -781,33 +606,25 @@ public:
 
     const connection_t connection (it->second);
 
-    if (is_PT (connection.type))
+    if (edge::is_PT (connection.type))
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
+        in_to_transition_size_map.erase (connection.tid);
+        out_of_transition_size_map.erase (connection.tid);
 
         in_map[connection.tid].erase (connection.pid);
 
-        update_set_of_tid
+        update_set_of_tid_in
           ( connection.tid
           ,  in_map[connection.tid].size()
-          == in_to_transition(connection.tid).size()
-          , in_enabled
-          , out_enabled
+          == in_to_transition_size(connection.tid)
           );
       }
     else
       {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
-
-        out_map[connection.tid].erase (connection.pid);
-
-        update_set_of_tid
-          ( connection.tid
-          ,  out_map[connection.tid].size()
-          == out_of_transition(connection.tid).size()
-          , out_enabled
-          , in_enabled
-          );
+        in_to_transition_size_map.erase (connection.tid);
+        out_of_transition_size_map.erase (connection.tid);
       }
 
     connection_map.erase (it);
@@ -877,16 +694,13 @@ public:
 
     tmap.erase (tid);
 
-    trans.erase (tid);
-
-    in_enabled.erase (tid);
-    out_enabled.erase (tid);
     enabled.erase (tid);
     enabled.erase_priority (tid);
     in_map.erase (tid);
-    out_map.erase (tid);
     enabled_choice_consume.erase (tid);
     enabled_choice_read.erase (tid);
+    in_to_transition_size_map.erase (tid);
+    out_of_transition_size_map.erase (tid);
 
     return tid;
   }
@@ -955,41 +769,25 @@ public:
     return m->second;
   }
 
-  const output_descr_t & get_output_descr (const tid_t & tid) const
+protected:
+  const tid_t& enabled_first (void) const
   {
-    const typename out_map_t::const_iterator m (out_map.find (tid));
-
-    if (m == out_map.end())
-      throw exception::no_such ("transition in out_map");
-
-    return m->second;
+    return enabled.first();
   }
 
-  const enabled_t & enabled_transitions (void) const
+  template<typename Engine>
+  const tid_t& enabled_random (Engine& engine) const
   {
-    return enabled;
+    return enabled.random (engine);
   }
 
+public:
   void put_token (const pid_t & pid, const token_type & token)
   {
-    capacity_map_t::iterator cap (capacity_map.find (pid));
-
-    if (cap != capacity_map.end())
-      {
-        cap->second.put();
-
-        if (num_token (pid) >= cap->second.left())
-          {
-            throw exception::capacity_exceeded ();
-          }
-      }
-
     token_place_rel.add (token, pid);
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_in_enabled_put_token (*t, pid, t(), token);
-
-    recalculate_out_enabled_by_place (pid);
+      update_enabled_put_token (*t, pid, t(), token);
   }
 
   void put_token (const pid_t & pid)
@@ -1017,9 +815,7 @@ public:
     const std::size_t ret (token_place_rel.delete_one (token, pid));
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_in_enabled_del_one_token (*t, pid, token);
-
-    recalculate_out_enabled_by_place (pid);
+      update_enabled_del_one_token (*t, pid, token);
 
     return ret;
   }
@@ -1029,9 +825,7 @@ public:
     const std::size_t ret (token_place_rel.delete_all (token, pid));
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_in_enabled_del_all_token (*t, pid, token);
-
-    recalculate_out_enabled_by_place (pid);
+      update_enabled_del_all_token (*t, pid, token);
 
     return ret;
   }
@@ -1070,14 +864,19 @@ public:
   }
 
   // FIRE
+  std::size_t num_can_fire (void) const
+  {
+    return enabled.size();
+  }
+
+  bool can_fire () const
+  {
+    return not enabled.empty();
+  }
+
   bool get_can_fire (const tid_t & tid) const
   {
     return enabled.elem(tid);
-  }
-
-  choices_t choices (const tid_t & tid) const
-  {
-    return choices_t (get_pid_in_map (tid));
   }
 
   struct activity_t
@@ -1088,19 +887,14 @@ public:
     const output_descr_t output_descr;
 
     activity_t ( const tid_t _tid
-               , const input_t _input
-               , const output_descr_t _output_descr
+               , const input_t& _input
+               , const output_descr_t& _output_descr
                )
       : tid (_tid)
       , input (_input)
       , output_descr (_output_descr)
     {}
   };
-
-  output_t run_activity (const activity_t & activity) const
-  {
-    return get_fun(trans, activity.tid)(activity.input, activity.output_descr);
-  }
 
   template <typename Output>
   void inject_activity_result (Output const & output)
@@ -1112,31 +906,13 @@ public:
       put_token (out->second, out->first);
   }
 
+protected:
   activity_t extract_activity (const tid_t tid)
   {
-    if (!get_can_fire (tid))
-      throw exception::transition_not_enabled ("during call of fire");
-
-    // before! constructing the input, as this consumes tokens
-    output_descr_t output_descr (get_output_descr(tid));
-
-    BOOST_FOREACH (const typename output_descr_t::value_type& val, output_descr)
-      {
-        capacity_map_t::iterator cap (capacity_map.find (val.first));
-
-        if (cap != capacity_map.end())
-          {
-            cap->second.extract();
-
-            recalculate_out_enabled_by_place (val.first);
-          }
-      }
-
     input_t input;
-    const typename enabled_choice_t::iterator choice_consume
-      (enabled_choice_consume.find(tid));
-    const typename enabled_choice_t::iterator choice_read
-      (enabled_choice_read.find(tid));
+
+    const choice_iterator_t choice_consume (enabled_choice_consume.find(tid));
+    const choice_iterator_t choice_read (enabled_choice_read.find(tid));
 
     assert (  (choice_consume != enabled_choice_consume.end())
            || (choice_read != enabled_choice_read.end())
@@ -1159,7 +935,7 @@ public:
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
 
-        assert (!is_pt_read (get_edge_info (eid).type));
+        assert (not edge::is_pt_read (get_edge_info (eid).type));
 
         delete_one_token (pid, token);
       }
@@ -1178,27 +954,24 @@ public:
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
       }
 
+    output_descr_t output_descr;
+
+    for ( adj_place_const_it pit (out_of_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      {
+        output_descr[*pit] = pit();
+      }
+
     return activity_t (tid, input, output_descr);
   }
 
+public:
   template<typename Engine>
   activity_t extract_activity_random (Engine & engine)
   {
     return extract_activity (enabled.random (engine));
-  }
-
-  tid_t fire (const tid_t & tid)
-  {
-    const activity_t activity (extract_activity (tid));
-    const output_t output (run_activity (activity));
-    inject_activity_result (output);
-    return tid;
-  }
-
-  template<typename Engine>
-  tid_t fire_random (Engine & engine)
-  {
-    return fire (enabled.random (engine));
   }
 };
 } // namespace petri_net

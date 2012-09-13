@@ -48,13 +48,13 @@ namespace daemon {
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
       pAgent->createWorkflowEngine<T>();
 
-      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
-      seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );
-      // seda::Stage::Ptr daemon_stage (new seda::Stage( name
-      //                                               , pAgent
-      //                                               , 1
-      //                                               )
-      //                               );
+//      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
+//      seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );
+      seda::Stage::Ptr daemon_stage (new seda::Stage( name
+                                                    , pAgent
+                                                    , 1
+                                                    )
+                                    );
 
       pAgent->setStage(daemon_stage);
       seda::StageRegistry::instance().insert(daemon_stage);
@@ -77,8 +77,14 @@ namespace daemon {
       LOG( DEBUG, "Create Agent "<<name<<" with no workflow engine" );
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
 
-      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
-      seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );
+//      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
+//      seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );
+
+      seda::Stage::Ptr daemon_stage (new seda::Stage( name
+                                                    , pAgent
+                                                    , 1
+                                                    )
+                                    );
 
       pAgent->setStage(daemon_stage);
       seda::StageRegistry::instance().insert(daemon_stage);

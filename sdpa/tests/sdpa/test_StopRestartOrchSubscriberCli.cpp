@@ -73,9 +73,9 @@ struct MyFixture
 			: m_nITER(1)
 			, m_sleep_interval(1000) //microseconds
 			, m_pool (0)
-	    	, m_kvsd (0)
-	    	, m_serv (0)
-	    	, m_thrd (0)
+      , m_kvsd (0)
+      , m_serv (0)
+      , m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
 	{ //initialize and start the finite state machine
 
@@ -315,19 +315,18 @@ void MyFixture::run_client_subscriber()
 
 				ptrCli->shutdown_network();
 				ptrCli.reset();
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 				return;
 			}
 		}
 
 		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
 
-
 		int exit_code = subscribe_and_wait( job_id_user, ptrCli );
 
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -335,15 +334,14 @@ void MyFixture::run_client_subscriber()
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 	}
 
 	ptrCli->shutdown_network();
 	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
+  ptrCli.reset();
 }
 
 sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )

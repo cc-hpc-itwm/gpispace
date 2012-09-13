@@ -12,20 +12,6 @@
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
 
-namespace detail
-{
-  int translate_job_status_from_string_to_enum(std::string const &s)
-  {
-    if (s == "SDPA::Pending")   return sdpa::status::PENDING;
-    if (s == "SDPA::Running")   return sdpa::status::RUNNING;
-    if (s == "SDPA::Finished")  return sdpa::status::FINISHED;
-    if (s == "SDPA::Failed")    return sdpa::status::FAILED;
-    if (s == "SDPA::Cancelled") return sdpa::status::CANCELED;
-    if (s == "SDPA::Suspended") return sdpa::status::SUSPENDED;
-    else                        return sdpa::status::UNKNOWN;
-  }
-}
-
 class SDPACImpl : FHG_PLUGIN
                 , public sdpa::Client
 {
@@ -58,7 +44,10 @@ public:
     int state (0);
     for (;;)
     {
-      state = status(id);
+      int rc; std::string err;
+
+      state = status (id, rc, err);
+
       if (state < 0)
       {
         break;
@@ -107,10 +96,10 @@ public:
       }
     }
 
-    return -EFAULT;
+    return -EIO;
   }
 
-  int status (std::string const &id)
+  int status (std::string const &id, int & ec, std::string & msg)
   {
     using namespace sdpa::events;
 
@@ -126,7 +115,10 @@ public:
     {
       if (JobStatusReplyEvent* job_status = dynamic_cast<JobStatusReplyEvent*>(rep.get()))
       {
-        return detail::translate_job_status_from_string_to_enum(job_status->status());
+        int rc = sdpa::status::read (job_status->status());
+        ec = job_status->error_code ();
+        msg = job_status->error_message ();
+        return rc;
       }
       else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
       {
@@ -137,7 +129,7 @@ public:
       }
     }
 
-    return -EFAULT;
+    return -EIO;
   }
 
   int cancel (std::string const &id)
@@ -257,7 +249,7 @@ private:
     if (ec)
     {
       MLOG(WARN, "could not send " << evt->str() << " to " << evt->to());
-      return -ESRCH;
+      return -EIO;
     }
 
     return 0;

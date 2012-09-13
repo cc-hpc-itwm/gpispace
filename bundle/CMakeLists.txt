@@ -31,4 +31,4 @@ install(CODE "
                            ${APPS} \${PLUGINS}
   )
 
-  " COMPONENT runtime)
+  " COMPONENT dependencies)

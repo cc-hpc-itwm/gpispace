@@ -102,7 +102,7 @@ namespace fhg
         {
           enum
             { first = transition::last + 1
-            , open, close, name, type, is_virtual, capacity, token, properties
+            , open, close, name, type, is_virtual, token, properties
             , last
             };
         }
@@ -170,10 +170,19 @@ namespace fhg
             };
         }
 
-        namespace structs
+        namespace link
         {
           enum
             { first = cxxflag::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        namespace structs
+        {
+          enum
+            { first = link::last + 1
             , open, close
             , last
             };
@@ -274,7 +283,7 @@ namespace fhg
         {
           enum
             { first = expression::last + 1
-            , open, close, name, fun, cincludes, ldflags, cxxflags, code
+            , open, close, name, fun, cincludes, ldflags, cxxflags, links, code
             , last
             };
         }
@@ -324,7 +333,7 @@ namespace fhg
       {
         SIG(place     , ITVAL(XMLTYPE(places_type)));
         SIG(function  , ITVAL(XMLTYPE(functions_type)));
-        SIG(specialize, ITVAL(XMLTYPE(net_type::specializes_type)));
+        SIG(specialize, ITVAL(XMLTYPE(specializes_type)));
 
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
@@ -334,6 +343,7 @@ namespace fhg
         SIG(connection, ITVAL(XMLTYPE(connections_type)));
         SIG(ldflag    , ITVAL(XMLTYPE(flags_type)));
         SIG(cxxflag   , ITVAL(XMLTYPE(flags_type)));
+        SIG(link      , ITVAL(XMLTYPE(links_type)));
         SIG(port      , ITVAL(XMLTYPE(ports_type)));
         SIG(require   , ITVAL(XMLTYPE(requirements_type)));
         SIG(_struct   , ITVAL(XMLTYPE(structs_type)));
@@ -409,6 +419,7 @@ namespace fhg
               WEAVE(mod::cincludes, XMLTYPE(cincludes_type))(mod.cincludes);
               WEAVE(mod::ldflags, XMLTYPE(flags_type))(mod.ldflags);
               WEAVE(mod::cxxflags, XMLTYPE(flags_type))(mod.cxxflags);
+              WEAVE(mod::links, XMLTYPE(links_type))(mod.links);
               WEAVE(mod::code, MAYBE(std::string))(mod.code);
               WEAVEE(mod::close)();
             }
@@ -554,6 +565,12 @@ namespace fhg
           WEAVEE(cxxflag::close)();
         }
 
+        FUN(link, ITVAL(XMLTYPE(links_type)), link)
+        {
+          WEAVE(link::open, ITVAL(XMLTYPE(links_type)))(link);
+          WEAVEE(link::close)();
+        }
+
         FUN(expression_sequence, std::string, lines)
         {
           WEAVE(expression_sequence::open, std::string)(lines);
@@ -604,9 +621,9 @@ namespace fhg
           WEAVEE(type_map::close)();
         }
 
-        FUN(specialize, ITVAL(XMLTYPE(net_type::specializes_type)), spec)
+        FUN(specialize, ITVAL(XMLTYPE(specializes_type)), spec)
         {
-          WEAVE(specialize::open, ITVAL(XMLTYPE(net_type::specializes_type)))(spec);
+          WEAVE(specialize::open, ITVAL(XMLTYPE(specializes_type)))(spec);
           WEAVE(specialize::name, std::string)(spec.name);
           WEAVE(specialize::use, std::string)(spec.use);
           WEAVE(specialize::type_map, XMLTYPE(type_map_type))(spec.type_map);
@@ -671,8 +688,6 @@ namespace fhg
           WEAVE(place::name, std::string)(place.name);
           WEAVE(place::type, std::string)(place.type);
           WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());
-          WEAVE(place::capacity, MAYBE(petri_net::capacity_t))
-            (place.capacity);
           WEAVE(place::properties, WETYPE(property::type))(place.prop);
 
           for ( XMLTYPE(tokens_type::const_iterator) tok (place.tokens.begin())
@@ -738,9 +753,9 @@ namespace fhg
           WEAVE(net::open, XMLTYPE(net_type))(net);
           WEAVE(net::properties, WETYPE(property::type))(net.prop);
           WEAVE(net::structs, XMLTYPE(structs_type))(net.structs);
-          WEAVE(net::templates, XMLTYPE(net_type::templates_type))
+          WEAVE(net::templates, XMLTYPE(templates_type))
             (net.templates());
-          WEAVE(net::specializes, XMLTYPE(net_type::specializes_type))
+          WEAVE(net::specializes, XMLTYPE(specializes_type))
             (net.specializes());
           WEAVE(net::functions, XMLTYPE(functions_type))
             (net.functions());

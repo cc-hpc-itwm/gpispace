@@ -1,6 +1,6 @@
 // control loop, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
@@ -39,6 +39,18 @@ public:
                , const std::string & _cond
                ) : t (_t), cond (_cond) {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+  transition_t & operator= (transition_t const &rhs)
+  {
+    if (this != &rhs)
+    {
+      t = rhs.t;
+      cond = rhs.cond;
+    }
+    return *this;
+  }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+
   bool condition (Function::Condition::Traits<token_t>::choices_t & choices)
     const
   {
@@ -57,7 +69,11 @@ inline std::size_t operator == (const transition_t & x, const transition_t & y)
   return x.t == y.t;
 }
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 static const token_t max (100000);
 
@@ -105,8 +121,8 @@ static void marking (const pnet_t & n)
 }
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()
@@ -121,7 +137,7 @@ main ()
     ( net.add_transition
       ( transition_t
         ( "step"
-        , "${" + fhg::util::show (pid_value) + "}" + " < " + fhg::util::show (max)
+        , "${_" + fhg::util::show (pid_value) + "}" + " < " + fhg::util::show (max)
         )
       )
     );
@@ -129,7 +145,7 @@ main ()
     ( net.add_transition
       ( transition_t
         ( "break"
-        , "${" + fhg::util::show(pid_value) + "}" + " >= " + fhg::util::show (max)
+        , "${_" + fhg::util::show(pid_value) + "}" + " >= " + fhg::util::show (max)
         )
       )
     );
@@ -168,8 +184,10 @@ main ()
   {
     Timer_t timer ("fire", max + 1);
 
-    while (!net.enabled_transitions().empty())
-      net.fire(net.enabled_transitions().first());
+    while (net.can_fire())
+      {
+        net.fire_first();
+      }
   }
 
   marking (net);

@@ -1,6 +1,6 @@
 // demonstrate usage of condition functions, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/util/cross.hpp>
 
 #include <iostream>
@@ -57,7 +57,7 @@ public:
   {}
 
   bool
-  condition (Function::Condition::Traits<token_t>::choices_t & choices) const 
+  condition (Function::Condition::Traits<token_t>::choices_t & choices) const
   {
     for ( ; choices.has_more(); ++choices)
       {
@@ -95,7 +95,11 @@ inline bool operator == (const transition_t & x, const transition_t & y)
 
 // ************************************************************************* //
 
-typedef petri_net::net<place_t,transition_t,edge_t,token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 // ************************************************************************* //
 
@@ -155,8 +159,8 @@ static void marking (const pnet_t & n)
 using petri_net::tid_t;
 using petri_net::eid_t;
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()
@@ -172,8 +176,6 @@ main ()
 
       pid[rem] = n.add_place (place_t (p++,rem));
 
-      n.set_capacity(pid[rem], branch_factor * (branch_factor + 1));
-
       for (token_second_t t (0); t < branch_factor; ++t)
         for (token_second_t i (0); i < branch_factor; ++i)
           n.put_token (pid[rem], token_t(c++,i));
@@ -188,11 +190,15 @@ main ()
           ( transition_t ( rem
                          , boost::bind (&pnet_t::get_place, boost::ref(n), _1)
                          )
-          , Function::Transition::MatchWithFun<token_t,petri_net::pid_t>
-            ( & edge_descr<token_input_t>
-            , & edge_descr<place_via_edge_t>
-            , & trans
-            )
+          )
+        );
+
+      n.set_transition_function
+        ( tid
+        , Function::Transition::MatchWithFun<token_t,petri_net::pid_t>
+          ( & edge_descr<token_input_t>
+          , & edge_descr<place_via_edge_t>
+          , & trans
           )
         );
 

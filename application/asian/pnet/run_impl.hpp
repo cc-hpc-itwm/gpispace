@@ -1,6 +1,7 @@
 #include <limits>
 
-#include <pnetc/op/asian/run.hpp>
+//#include <pnetc/op/asian/run.hpp>
+
 #include <sstream>
 #include <process/process.hpp>
 
@@ -57,8 +58,8 @@ namespace asian
     }
   }
 
-  ::pnetc::type::sums::sums run ( const ::pnetc::type::param::param & param
-                                )
+  inline ::pnetc::type::sums::sums
+  run ( const ::pnetc::type::param::param & param )
   {
     const int nThread (param.nThreads);
 

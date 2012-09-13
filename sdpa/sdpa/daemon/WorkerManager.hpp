@@ -29,108 +29,107 @@
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 
-typedef std::list<std::pair<sdpa::worker_id_t, int> > job_pref_list_t;
-
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-      typedef sdpa::shared_ptr<WorkerManager> ptr_t;
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-      typedef boost::condition_variable_any condition_type;
+    typedef sdpa::shared_ptr<WorkerManager> ptr_t;
+    typedef boost::recursive_mutex mutex_type;
+    typedef boost::unique_lock<mutex_type> lock_type;
+    typedef boost::condition_variable_any condition_type;
 
-      typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
+    typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
+    typedef boost::unordered_map<sdpa::job_id_t, sdpa::job_pref_list_t> mapJob2PrefWorkersList_t;
 
-      WorkerManager();
-      virtual ~WorkerManager();
+    WorkerManager();
+    virtual ~WorkerManager();
 
-      Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
-      const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
-      const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+    Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
+    const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+    const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
-      void addWorker( const Worker::worker_id_t& workerId,
-    		  	  	  unsigned int capacity,
-    		          const capabilities_set_t& cpbset = capabilities_set_t(),
-    		          const unsigned int& agent_rank = 0,
-    		          const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
+    void addWorker( const Worker::worker_id_t& workerId,
+                unsigned int capacity,
+                const capabilities_set_t& cpbset = capabilities_set_t(),
+                const unsigned int& agent_rank = 0,
+                const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
 
-      void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
-      void removeWorkers();
+    void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+    void removeWorkers();
 
-      bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
-      virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
-      virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
+    bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
+    virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
+    virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
+    const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
+    const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
-      const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
+    worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
+    Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
+    void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
-      const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
+    const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
+    void dispatchJob(const sdpa::job_id_t& jobId);
+    void delete_job(const sdpa::job_id_t& jobId);
+    void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
-      worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
-      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
-      void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
+    size_t numberOfWorkers() { return worker_map_.size(); }
+    void getWorkerList(std::list<std::string>& workerList);
+    void getWorkerListNotFull(sdpa::worker_id_list_t& workerList);
 
-      const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
-      void dispatchJob(const sdpa::job_id_t& jobId);
-      void delete_job(const sdpa::job_id_t& jobId);
-      void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
+    void balanceWorkers();
+    void cancelWorkerJobs(sdpa::daemon::Scheduler*);
+    void forceOldWorkerJobsTermination();
+    virtual Worker::worker_id_t getWorkerId(unsigned int r);
+    void deteleJobPreferences(const sdpa::job_id_t& jobId);
 
-      size_t numberOfWorkers() { return worker_map_.size(); }
-      void getWorkerList(std::list<std::string>& workerList);
-      void getWorkerListNotFull(sdpa::worker_id_list_t& workerList);
+    bool has_job(const sdpa::job_id_t& job_id);
 
-      void balanceWorkers();
-      void cancelWorkerJobs(sdpa::daemon::Scheduler*);
-      void forceOldWorkerJobsTermination();
-      virtual Worker::worker_id_t getWorkerId(unsigned int r);
+    //only for testing purposes!
+    friend class sdpa::tests::DaemonFSMTest_SMC;
+    friend class sdpa::tests::DaemonFSMTest_BSC;
 
-      bool has_job(const sdpa::job_id_t& job_id);
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int)
+    {
+      ar & worker_map_;
+    }
 
-      //only for testing purposes!
-      friend class sdpa::tests::DaemonFSMTest_SMC;
-      friend class sdpa::tests::DaemonFSMTest_BSC;
+    friend class boost::serialization::access;
 
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int)
+    void print()
+    {
+      if(!common_queue_.empty())
       {
-          ar & worker_map_;
+        SDPA_LOG_DEBUG("The content of the common queue is: ");
+        common_queue_.print();
       }
+      else
+        SDPA_LOG_DEBUG("No job without preferences available!");
 
-      friend class boost::serialization::access;
-
-      void print()
+      if( worker_map_.begin() == worker_map_.end() )
       {
-          if(!common_queue_.empty())
-          {
-        	  SDPA_LOG_DEBUG("The content of the common queue is: ");
-        	  common_queue_.print();
-          }
-          else
-        	  SDPA_LOG_DEBUG("No job without preferences available!");
-
-          if( worker_map_.begin() == worker_map_.end() )
-          {
-        	  SDPA_LOG_DEBUG("The worker manager has NO worker! ");
-          }
-          else
-          {
-              SDPA_LOG_DEBUG("The worker manager has workers! ");
-              for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
-                (*it).second->print();
-          }
+        SDPA_LOG_DEBUG("The worker manager has NO worker! ");
       }
+      else
+      {
+        SDPA_LOG_DEBUG("The worker manager has workers! ");
+        for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
+          (*it).second->print();
+      }
+    }
 
 protected:
-      worker_map_t  worker_map_;
+    worker_map_t  worker_map_;
 
-      SDPA_DECLARE_LOGGER();
-      worker_map_t::iterator iter_last_worker_;
+    SDPA_DECLARE_LOGGER();
+    worker_map_t::iterator iter_last_worker_;
 
-      Worker::JobQueue common_queue_;
+    Worker::JobQueue common_queue_;
 
-      mutable mutex_type mtx_;
+    mutable mutex_type mtx_;
+    mapJob2PrefWorkersList_t m_mapJob2PrefWorkersList;
   };
 }}
 

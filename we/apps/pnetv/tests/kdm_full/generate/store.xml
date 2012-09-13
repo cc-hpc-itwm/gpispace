@@ -19,11 +19,6 @@
     <place name="config_bunch" type="config"/>
     <place name="config_volume" type="config"/>
 
-    <include-template href="dup.xml"/>
-    <specialize name="dup_config" use="dup">
-      <type-map replace="T" with="config"/>
-    </specialize>
-
     <transition name="dup_config" inline="true">
       <use name="dup_config"/>
       <connect-in port="in" place="config"/>

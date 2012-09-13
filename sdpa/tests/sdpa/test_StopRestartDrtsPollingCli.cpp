@@ -200,6 +200,8 @@ void MyFixture::run_client_polling()
 				ptrCli.reset();
 				return;
 			}
+
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 		}
 
 		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
@@ -212,7 +214,7 @@ void MyFixture::run_client_polling()
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-				boost::this_thread::sleep(boost::posix_time::seconds(10));
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -226,7 +228,7 @@ void MyFixture::run_client_polling()
 					return;
 				}
 
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 		}while( job_status.find("Finished") == std::string::npos &&
 				   job_status.find("Failed") == std::string::npos &&
@@ -237,7 +239,6 @@ void MyFixture::run_client_polling()
 		try {
 				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 				ptrCli->retrieveResults(job_id_user);
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -247,8 +248,6 @@ void MyFixture::run_client_polling()
 			ptrCli->shutdown_network();
 			ptrCli.reset();
 			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 
 		nTrials = 0;
@@ -256,7 +255,7 @@ void MyFixture::run_client_polling()
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
+			//boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -264,15 +263,13 @@ void MyFixture::run_client_polling()
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 	}
 
 	ptrCli->shutdown_network();
 	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
 }
 
 sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
@@ -386,16 +383,12 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrts_RealWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
 	boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
 
-	// wait foŕ a while
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
+	threadClient.join();
+  LOG( INFO, "The client thread joined the main thread!" );
 
 	// and stop!!!
 	drts_new->stop();
 	drts_new_thread.join();
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
 
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();

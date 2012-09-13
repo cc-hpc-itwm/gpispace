@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 namespace gpi
 {

@@ -55,6 +55,8 @@ namespace fhg
       void stop ();
       void run ();
 
+      handler_t set_kvs_error_handler (handler_t);
+      handler_t get_kvs_error_handler () const;
 
       void async_send ( const message_t * m
                       , handler_t h
@@ -125,6 +127,7 @@ namespace fhg
       void accept_new ();
       void handle_accept (const boost::system::error_code &);
       void update_my_location ();
+      void renew_kvs_entries ();
       void connection_established (const p2p::address_t, boost::system::error_code const &);
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       void start_sender (const p2p::address_t);
@@ -145,6 +148,7 @@ namespace fhg
       boost::asio::io_service io_service_;
       boost::shared_ptr<boost::asio::io_service::work> io_service_work_;
       boost::asio::ip::tcp::acceptor acceptor_;
+      boost::asio::deadline_timer m_renew_kvs_entries_timer;
 
       typedef boost::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
       reverse_lookup_cache_t reverse_lookup_cache_;
@@ -159,6 +163,8 @@ namespace fhg
 
       std::list<to_recv_t> m_to_recv;
       std::list<const message_t *> m_pending;
+
+      handler_t m_kvs_error_handler;
     };
   }
 }

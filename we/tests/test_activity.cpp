@@ -11,9 +11,9 @@
 #include <we/mgmt/context.hpp>
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::PT_READ;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::PT_READ;
+using petri_net::edge::TP;
 
 typedef place::type place_t;
 typedef token::type token_t;
@@ -58,7 +58,7 @@ struct exec_context : public we::mgmt::context<>
 int main (int, char **)
 {
   // ************************************ //
-  pnet_t net("the inner net");
+  pnet_t net;
 
   petri_net::pid_t pid_vid (net.add_place (place_t ("vid","long")));
 
@@ -152,8 +152,8 @@ int main (int, char **)
               << std::endl;
   }
 
-  std::cout << "has_enabled = " << act.has_enabled() << std::endl;
-  while (act.has_enabled())
+  std::cout << "can_fire = " << act.can_fire() << std::endl;
+  while (act.can_fire())
   {
     activity_t sub = act.extract ();
     sub.inject_input ();

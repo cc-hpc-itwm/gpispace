@@ -61,7 +61,7 @@ namespace we { namespace type {
 
             if (is_read)
               {
-                connection.type = petri_net::pt_read();
+                connection.type = petri_net::edge::pt_read();
               }
 
             net.add_edge (edge, connection);
@@ -121,27 +121,6 @@ namespace we { namespace type {
             net.modify_transition (tid_trans_in_B, trans_in_B);
 
             stack.pop();
-          }
-
-        // capacities
-        typedef petri_net::capacity_t capacity_t;
-
-        boost::optional<capacity_t> cap_A (net.get_capacity (pid_A));
-        boost::optional<capacity_t> cap_B (net.get_capacity (pid_B));
-
-        if (cap_A)
-          {
-            if (cap_B)
-              {
-                net.set_capacity (pid_A, std::min (*cap_A, *cap_B));
-              }
-          }
-        else
-          {
-            if (cap_B)
-              {
-                net.set_capacity (pid_A, *cap_B);
-              }
           }
 
         // take the better name

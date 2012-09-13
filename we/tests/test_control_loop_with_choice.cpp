@@ -1,6 +1,6 @@
 // control loop with multi-token condition, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
@@ -37,6 +37,19 @@ public:
                , const std::string & _cond
                ) : t (_t), cond (_cond), cnd(_cond) {}
 
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+  transition_t & operator= (transition_t const &rhs)
+  {
+    if (this != &rhs)
+    {
+      t = rhs.t;
+      cond = rhs.cond;
+      cnd = rhs.cnd;
+    }
+    return *this;
+  }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+
   bool condition (Function::Condition::Traits<token_t>::choices_t & choices)
     const
   {
@@ -59,7 +72,11 @@ inline std::size_t operator == (const transition_t & x, const transition_t & y)
 typedef unsigned short edge_cnt_t;
 typedef std::pair<edge_cnt_t,std::string> edge_t;
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 static token_t max (100000);
 
@@ -111,8 +128,8 @@ static void marking (const pnet_t & n)
 }
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()
@@ -127,7 +144,7 @@ main ()
     ( net.add_transition
       ( transition_t
         ( "step"
-        , "${" + fhg::util::show (pid_state) + "}" + " < ${" + fhg::util::show (pid_max) + "}"
+        , "${_" + fhg::util::show (pid_state) + "}" + " < ${_" + fhg::util::show (pid_max) + "}"
         )
       )
     );
@@ -135,7 +152,7 @@ main ()
     ( net.add_transition
       ( transition_t
         ( "break"
-        , "${" + fhg::util::show (pid_state) + "}" + " >= ${" + fhg::util::show (pid_max) + "}"
+        , "${_" + fhg::util::show (pid_state) + "}" + " >= ${_" + fhg::util::show (pid_max) + "}"
         )
       )
     );
@@ -176,9 +193,9 @@ main ()
   {
     Timer_t timer ("fire", max + 1);
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-        net.fire(net.enabled_transitions().first());
+        net.fire_first();
         ++f;
       }
   }

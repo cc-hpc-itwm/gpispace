@@ -1,4 +1,5 @@
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include "connection.hpp"
 
@@ -179,7 +180,7 @@ namespace fhg
       }
     }
 
-    void connection_t::start_send (connection_t::to_send_t s)
+    void connection_t::start_send (connection_t::to_send_t const & s)
     {
       bool send_in_progress = !to_send_.empty();
       to_send_.push_back (s);
@@ -190,6 +191,9 @@ namespace fhg
     void connection_t::start_send ()
     {
       assert (to_send_.size() > 0);
+
+      if (to_send_.empty ())
+        return;
 
       const to_send_t & d (to_send_.front());
 
@@ -224,7 +228,7 @@ namespace fhg
         }
 
         if (! to_send_.empty())
-          start_send();
+          start_send ();
       }
       else
       {

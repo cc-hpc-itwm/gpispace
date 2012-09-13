@@ -13,3 +13,7 @@ option(WITH_APPLICATION_UFBMIG "Compile UfbMig Application" OFF)
 if (WITH_APPLICATION_UFBMIG)
    add_subdirectory(ufbmig)
 endif()
+
+install ( FILES common.mk
+          DESTINATION share/sdpa/make
+        )

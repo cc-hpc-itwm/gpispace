@@ -4,11 +4,15 @@
 #include <fhg/util/parse/position.hpp>
 #include <we/type/literal.hpp>
 #include <we/util/token.hpp>
+#include <we/type/value/read.hpp>
 
 #include <iostream>
 #include <fstream>
 
 #include <boost/program_options.hpp>
+#include <boost/unordered_map.hpp>
+
+#include <fhg/revision.hpp>
 
 // ************************************************************************* //
 
@@ -36,17 +40,18 @@ main (int argc, char ** argv)
 
   desc.add_options()
     ( "help,h", "this message")
-    ( "if"
+    ( "version,V", "print version information")
+    ( "if,i"
     , po::value<std::string>(&input)->default_value(input)
     , "input file name, - for stdin"
     )
-    ( "of"
+    ( "of,o"
     , po::value<std::string>(&output)->default_value(input)
     , "output file name, - for stdout"
     )
     ( "put,p"
     , po::value<std::vector<std::string> >(&input_spec)
-    , "input token (only literal values are supported right now): port=<value>"
+    , "input token: port=<value>"
     )
     ;
 
@@ -62,10 +67,19 @@ main (int argc, char ** argv)
 
   if (vm.count("help"))
     {
+      std::cout << argv[0] << ": put tokens on input ports" << std::endl;
+
       std::cout << desc << std::endl;
 
       return EXIT_SUCCESS;
     }
+
+  if (vm.count("version"))
+  {
+    std::cout << fhg::project_info();
+
+    return EXIT_SUCCESS;
+  }
 
   if (input == "-")
     {
@@ -97,6 +111,10 @@ main (int argc, char ** argv)
     return 1;
   }
 
+  typedef boost::unordered_map<std::string,value::type> port_values_type;
+
+  port_values_type port_values;
+
   for ( std::vector<std::string>::const_iterator inp (input_spec.begin())
       ; inp != input_spec.end()
       ; ++inp
@@ -109,14 +127,28 @@ main (int argc, char ** argv)
       const std::string value
         ( inp->substr (inp->find('=')+1) );
 
-      literal::type tokval;
       std::size_t k (0);
       std::string::const_iterator begin (value.begin());
-
       fhg::util::parse::position pos (k, begin, value.end());
-      literal::read (tokval, pos);
+      const value::type val (value::read (pos));
 
-      we::util::token::put (act, port_name, tokval);
+      if (not we::type::content::is_subnet (act.transition()))
+        {
+          const port_values_type::const_iterator pos
+            (port_values.find (port_name));
+
+          if (pos != port_values.end())
+            {
+              std::cerr << "WARNING! On port " << port_name
+                        << " the put of value " << val
+                        << " overwrites the put of value " << pos->second
+                        << std::endl;
+            }
+
+          port_values[port_name] = val;
+        }
+
+      we::util::token::put (act, port_name, val);
     }
     catch (std::exception const & ex)
     {

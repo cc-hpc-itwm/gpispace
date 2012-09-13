@@ -11,6 +11,8 @@
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
 
+#include <fhg/revision.hpp>
+
 // ************************************************************************* //
 
 template<typename T>
@@ -116,6 +118,7 @@ main (int argc, char ** argv)
 
   desc.add_options()
     ( "help,h", "this message")
+    ( "version,V", "print version information")
     ( "port,p", po::value<std::vector<std::string> >(&ports), "port to retrieve tokens from" )
     ( "type,t", po::value<std::string>(&type)->default_value(type), "input/output port")
     ( "input,i"
@@ -149,10 +152,20 @@ main (int argc, char ** argv)
 
   if (vm.count("help"))
     {
+      std::cout << argv[0] << ": get tokens from output ports" << std::endl;
+
       std::cout << desc << std::endl;
 
       return EX_OK;
     }
+
+  if (vm.count("version"))
+  {
+    std::cout << fhg::project_info();
+
+    return EXIT_SUCCESS;
+  }
+
 
   if (input == "-")
     {

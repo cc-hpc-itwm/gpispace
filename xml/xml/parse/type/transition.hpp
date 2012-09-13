@@ -81,19 +81,29 @@ namespace xml
       private:
         const state::type& _state;
         const functions_type& _functions;
+        const templates_type& _templates;
+        const specializes_type& _specializes;
 
       public:
         transition_distribute_function ( const state::type& state
                                        , const functions_type& functions
+                                       , const templates_type& templates
+                                       , const specializes_type& specializes
                                        )
           : _state (state)
           , _functions (functions)
+          , _templates (templates)
+          , _specializes (specializes)
         {}
 
         void operator () (use_type&) const { return; }
         void operator () (Fun& fun) const
         {
-          fun.distribute_function (_state, _functions);
+          fun.distribute_function ( _state
+                                  , _functions
+                                  , _templates
+                                  , _specializes
+                                  );
         }
       };
 
@@ -333,12 +343,16 @@ namespace xml
 
         void distribute_function ( const state::type& state
                                  , const functions_type& functions
+                                 , const templates_type& templates
+                                 , const specializes_type& specializes
                                  )
         {
           boost::apply_visitor
             ( transition_distribute_function<function_type>
               ( state
               , functions
+              , templates
+              , specializes
               )
             , f
             );
@@ -437,9 +451,9 @@ namespace xml
       // ******************************************************************* //
 
       using petri_net::connection_t;
-      using petri_net::PT;
-      using petri_net::PT_READ;
-      using petri_net::TP;
+      using petri_net::edge::PT;
+      using petri_net::edge::PT_READ;
+      using petri_net::edge::TP;
 
       template< typename Activity
               , typename Net
@@ -938,45 +952,8 @@ namespace xml
               {
                 const pid_t pid (get_pid (pids, connect->place));
 
-                if (boost::apply_visitor (function_is_net(), fun.f))
-                  {
-                    const boost::optional<petri_net::capacity_t>
-                      mcap (we_net.get_capacity (pid));
-
-                    if (mcap)
-                      {
-                        bool okay (false);
-
-                        port_type port_out;
-
-                        if (fun.get_port_out (connect->port, port_out))
-                          {
-                            if (port_out.place.isJust())
-                              {
-                                const Net & net (boost::get<Net> (fun.f));
-
-                                place_type place;
-
-                                if (  net.get_place (*port_out.place, place)
-                                   && place.capacity.isJust()
-                                   )
-                                  {
-                                    okay = (*mcap == *place.capacity);
-                                  }
-                              }
-                          }
-
-                        if (!okay)
-                          {
-                            throw error::capacity_on_net_output<Trans, Fun>
-                              (trans, fun, connect->place, *mcap);
-                          }
-                      }
-                  }
-
                 we_net.add_edge (e++, connection_t (TP, tid, pid));
               }
-
           } // not unfold
 
         return;

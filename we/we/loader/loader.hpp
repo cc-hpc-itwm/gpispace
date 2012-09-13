@@ -18,6 +18,7 @@
 
 #include <fhglog/fhglog.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/util/show.hpp>
 
 namespace we {
@@ -29,6 +30,7 @@ namespace we {
       typedef shared_ptr<Module> module_ptr_t;
       typedef shared_ptr<loader> ptr_t;
       typedef std::list<boost::filesystem::path> search_path_t;
+      typedef std::list<std::string> module_names_t;
 
       static ptr_t create() { return ptr_t(new loader()); }
 
@@ -101,6 +103,7 @@ namespace we {
         else
         {
           LOG(INFO, "loaded module " << module_name << " from " << path);
+          module_load_order_.push_front (module_name);
           ++module_counter_;
           return mod;
         }
@@ -175,17 +178,21 @@ namespace we {
         boost::unique_lock<boost::recursive_mutex> lock(mtx_);
 
         size_t count (0);
-        module_table_t::iterator m(module_table_.begin());
-        while (m != module_table_.end())
+
+        module_names_t::iterator it = module_load_order_.begin ();
+        module_names_t::iterator end = module_load_order_.end ();
+        while (it != end)
         {
-          if (m->first.find("mod-") == 0)
+          const std::string module_name = *it;
+          if (module_name.find ("mod-") != 0)
           {
-            ++m;
+            it = module_load_order_.erase (it);
+            unload (module_name);
+            ++count;
           }
           else
           {
-            m = unload (m);
-            ++count;
+            ++it;
           }
         }
         return count;
@@ -246,8 +253,12 @@ namespace we {
       void unload_all()
       {
         boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        while (! module_table_.empty()) {
-          unload(module_table_.begin());
+        while (! module_load_order_.empty ())
+        {
+          const std::string module_name = module_load_order_.front ();
+          module_load_order_.pop_front ();
+
+          unload (module_name);
         }
       }
 
@@ -259,6 +270,7 @@ namespace we {
       }
 
       module_table_t module_table_;
+      module_names_t module_load_order_;
       unsigned long module_counter_;
       search_path_t search_path_;
       mutable boost::recursive_mutex mtx_;

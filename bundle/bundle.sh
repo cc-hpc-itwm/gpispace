@@ -54,7 +54,7 @@ function is_filtered_by ()
 {
     for ((p=0 ; p < ${#exclude[@]}; ++p)) ; do
         if echo $(basename "$1") | grep -q "${exclude[$p]}" ; then
-	    return $p
+            return $p
         fi
     done
     return ${#exclude[@]}
@@ -72,17 +72,17 @@ function bundle_dependencies ()
     for dep_and_path in $(ldd "$file" | grep '=>' | grep '/' | awk '{printf("%s:%s\n", $1, $3)}') ; do
         dep=$(echo "$dep_and_path" | cut -d: -f 1)
         pth=$(echo "$dep_and_path" | cut -d: -f 2)
-	is_filtered_by "$dep"
-	res_pattern=$?
+        is_filtered_by "$dep"
+        res_pattern=$?
         if [ $res_pattern -lt ${#exclude[@]} ] ; then
             debug $(printf "%${indent}s" "") "$file >- $pth  (filtered by pattern: '${exclude[$res_pattern]}')"
             continue
-	else
+        else
             debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
         path="$pth"
         if [ -n "$path" ] ; then
-            if ! test -e "$dst/$dep" || $force ; then
+            if test "$path" -nt "$dst/$dep" || $force ; then
                 debug $(printf "%$((indent + 2))s" "") cp "$path" "$dst/$dep"
                 dry_run cp "$path" "$dst/$dep"
                 bundle_dependencies "$path" "$dst" $(( lvl + 1 ))
@@ -123,9 +123,9 @@ while getopts ":hvnkfp:x:o:" opt ; do
             exclude=( ${exclude[@]} $OPTARG )
             shiftcount=$(( shiftcount + 2 ))
             ;;
-	o)
-	    dst=$OPTARG
-	    ;;
+        o)
+            dst=$OPTARG
+            ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
             echo "try: $(basename $0) -h" >&2
@@ -138,11 +138,11 @@ shift $shiftcount
 
 case "$dst" in
     /*)
-	:
-	;;
+        :
+        ;;
     *)
-	dst="$prefix/$dst"
-	;;
+        dst="$prefix/$dst"
+        ;;
 esac
 
 dry_run mkdir -p "$dst"

@@ -18,6 +18,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
 
@@ -643,7 +644,10 @@ namespace gpi
             (boost::get<proto::error::error_t>(rply));
           if (result.code != proto::error::success)
           {
-            LOG(ERROR, "could not unregister segment: " << result.code << ": " << result.detail);
+            LOG( ERROR
+               , "could not unregister segment " << id << ": "
+               << result.code << ": " << result.detail
+               );
           }
         }
         catch (std::exception const & ex)

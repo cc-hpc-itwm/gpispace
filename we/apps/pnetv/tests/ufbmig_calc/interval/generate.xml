@@ -2,6 +2,7 @@
 
   <in name="config" type="config" place="config"/>
   <out name="interval" type="interval" place="interval"/>
+  <tunnel name="trigger" type="control" place="trigger"/>
 
   <net>
 

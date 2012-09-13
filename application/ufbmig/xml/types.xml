@@ -39,16 +39,6 @@
         <field name="update" type="long"/>
         <field name="input" type="long"/>
       </struct>
-
-      <struct name="scratch">
-        <field name="fine_any" type="long"/>
-        <field name="coarse_mask" type="long"/>
-        <field name="coarse_vel" type="long"/>
-        <field name="output" type="long"/>
-        <field name="output_meta" type="long"/>
-        <field name="update" type="long"/>
-        <field name="input" type="long"/>
-      </struct>
     </struct>
   </struct>
 

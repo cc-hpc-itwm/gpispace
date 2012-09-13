@@ -1,6 +1,6 @@
 // demonstrate timed petri nets, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 
 #include <pthread.h>
 
@@ -86,7 +86,11 @@ public:
   petri_net::pid_t all_done;
 };
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef boost::function<void ( const pid_collection_t &
                              , map_t & m
@@ -498,7 +502,7 @@ static void * manager (void * arg)
   do
     {
       while (!p->output.empty()
-            || (extract > inject && p->net.enabled_transitions().empty())
+            || (extract > inject && not p->net.can_fire())
             // ^comment this clause to get a busy waiting manager
             || (p->activity.size() >= QUEUE_DEPTH_FOR_WORK_QUEUE)
             )
@@ -516,7 +520,7 @@ static void * manager (void * arg)
 
       // the manager puts at most QUEUE_DEPTH_FOR_WORK_QUEUE items into the
       // work queue, it does not block here
-      while (  !p->net.enabled_transitions().empty()
+      while (   p->net.can_fire()
             && (p->activity.size() < QUEUE_DEPTH_FOR_WORK_QUEUE)
             )
         {
@@ -565,8 +569,8 @@ static void * manager (void * arg)
 // ************************************************************************* //
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()

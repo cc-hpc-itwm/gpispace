@@ -295,32 +295,14 @@ function setup_state ()
             ;;
     esac
 
-    local data_dir="$HOME/.sdpa/data"
-    if ! test -d "$data_dir" ; then
-        if ! mkdir -p "$data_dir" ; then
-            log "E: failed to create data directory: $data_dir"
-            return 1
-        fi
-    fi
-
     return 0
 }
 
 function setup_kvs ()
 {
-    local kvs_data_dir="$HOME/.sdpa/data"
-    if ! test -d "$kvs_data_dir" ; then
-        if ! mkdir -p "$kvs_data_dir" ; then
-            log "E: failed to create kvs data directory: $kvs_data_dir"
-            return 1
-        fi
-    fi
-    local kvs_store="$kvs_data_dir/kvs.dat"
-
-    put "kvs.store" "$kvs_store"
     put "plugin.kvs.port" $(get "plugin.kvs.port" "${DEFAULT_KVS_PORT:?}")
 
-    log "I: kvs configured to store data in $kvs_store"
+    log "I: kvs setup"
 
     return 0
 }
@@ -764,7 +746,7 @@ to adjust the amount.
     put "gpi.processes" $(get gpi.processes "default")
 
     local sdpa_temp_dir=$(get "sdpa.temp_dir")
-    local gpi_socket_path=$(get gpi.socket_path "$sdpa_temp_dir/gpi-space")
+    local gpi_socket_path=$(get gpi.socket_path "/var/tmp")
     put "gpi.socket_path" "$gpi_socket_path"
     if ! test -d "$gpi_socket_path" ; then
         if ! mkdir -p "$gpi_socket_path" ; then
@@ -777,16 +759,6 @@ to adjust the amount.
             fi
         fi
     fi
-
-    put "gpi.socket_name" $(get gpi.socket_name "control")
-}
-
-function setup_client ()
-{
-    log "I: setting up sdpa commandline client"
-    if ! test -e "$HOME/.sdpa/configs/sdpac.rc" ; then
-        touch "$HOME/.sdpa/configs/sdpac.rc"
-    fi
 }
 
 function setup ()
@@ -796,62 +768,54 @@ $(sdpac --version 2>/dev/null)
 
 Initiating the  setup routine of  SDPA. In case  of errors or  questions, please
 contact 'Alexander Petry <petry@itwm.fhg.de>'.
-
 EOF
-if is_unattended ; then
-    log "I: performing automatic setup"
-fi
 
-if ! test -e "$config_file" ; then
-    mkdir -p $(dirname "$config_file") 2>/dev/null
-    touch "$config_file"
-fi
+    if is_unattended ; then
+        log "I: performing automatic setup"
+    fi
 
-local real_config_file="$config_file"
-local temp_config_file="${config_file}~"
+    if ! test -e "$config_file" ; then
+        mkdir -p $(dirname "$config_file") 2>/dev/null
+        touch "$config_file"
+    fi
 
-local old_trap=$(trap -p EXIT)
-trap -- "rm -f $temp_config_file" EXIT
+    local real_config_file="$config_file"
+    local temp_config_file="${config_file}~"
 
-local parts=$1
-if [ -z "$parts" ] ; then
-    parts="state kvs scratch logging temp gui plugins gpi topology client"
-else
-    shift
-fi
+    local old_trap=$(trap -p EXIT)
+    trap -- "rm -f $temp_config_file" EXIT
 
-if test -f "$real_config_file" ; then
-    cp "$real_config_file" "$temp_config_file"
-fi
-config_file="$temp_config_file"
+    local parts=$1
+    if [ -z "$parts" ] ; then
+        parts="state kvs scratch logging temp gui plugins gpi topology"
+    else
+        shift
+    fi
 
-local p
-for p in $parts ; do
-    setup_$p $@ || { log "E: setup_$p failed!" ; return 1 ; }
-done
+    if test -f "$real_config_file" ; then
+        cp "$real_config_file" "$temp_config_file"
+    fi
+    config_file="$temp_config_file"
 
-put "config.version" "$CONFIG_VERSION"
-put "config.modified" "$(date)"
-put "config.sdpa_version" "$(sdpac --dumpversion 2>/dev/null)"
-put "config.sdpa_revision" "$(sdpac --revision 2>/dev/null)"
+    local p
+    for p in $parts ; do
+        setup_$p $@ || { log "E: setup_$p failed!" ; return 1 ; }
+    done
 
-cp "$real_config_file" "${real_config_file}.bak"
-mv "$temp_config_file" "$real_config_file"
+    put "config.version" "$CONFIG_VERSION"
+    put "config.modified" "$(date)"
+    put "config.sdpa_version" "$(sdpac --dumpversion 2>/dev/null)"
+    put "config.sdpa_revision" "$(sdpac --revision 2>/dev/null)"
+
+    cp "$real_config_file" "${real_config_file}.bak"
+    mv "$temp_config_file" "$real_config_file"
 
     # putting config in place
-config_file="$real_config_file"
-eval $old_trap
+    config_file="$real_config_file"
+    eval $old_trap
 
-if test -L "$HOME/.sdpa/configs/gpi.rc" ; then
-    :
-elif test -f "$HOME/.sdpa/configs/gpi.rc" ; then
-    mv "$HOME/.sdpa/configs/gpi.rc" "$HOME/.sdpa/configs/gpi.rc.bak"
-    log "I: created a backup of your old gpi.rc"
-fi
-ln -sf "$config_file" "$HOME/.sdpa/configs/gpi.rc"
-
-echo
-log "I: setup complete."
+    echo
+    log "I: setup complete."
 }
 
 function generate_environment ()
@@ -936,7 +900,7 @@ function generate_environment ()
     app_directories=( ${app_directories[@]} "$HOME/.sdpa/modules" )
 
     for app_dir in ${app_directories[@]} ; do
-        for f in $(find "$app_dir" -type f -name "*.so" ) ; do
+        for f in $(find "$app_dir" -type f -name "*.so" 2>/dev/null) ; do
             mod_dir=$(dirname "$f")
             prepend_to_path PC_LIBRARY_PATH "$mod_dir"
             prepend_to_path LD_LIBRARY_PATH "$mod_dir"
@@ -958,12 +922,13 @@ function initialize ()
     local hostfile="$PBS_NODEFILE"
     local node_file=
 
+    app_path="${SDPA_APP_PATH}"
     argv="$@"
     OPTIND=1
-    while getopts ":hF:n:s:" opt $argv ; do
+    while getopts "hF:n:s:A:" opt $argv ; do
         case $opt in
             h)
-                echo >&2 "usage: init: [-h] [-F hostfile] [-s state-dir]"
+                echo >&2 "usage: init: [-h] [-F hostfile] [-s state-dir] [-A module-dir]"
                 return 0
                 ;;
             F)
@@ -974,11 +939,17 @@ function initialize ()
                 state_dir="$OPTARG"
                 shift 2
                 ;;
+            A)
+                app_path="${OPTARG}:${app_path}"
+                shift 2
+                ;;
             \?)
                 shift
                 ;;
         esac
     done
+
+    export SDPA_APP_PATH="${app_path}"
 
     if [ -n "$1" ] ; then
         hostfile="$1"; shift
@@ -1223,7 +1194,7 @@ function start_agent ()
         node=localhost
     fi
 
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -F "${config_file}" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         echo "$name" >&2
@@ -1654,7 +1625,7 @@ function start_drts_on_node ()
         master="nre-$node"
     fi
 
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -s "$state_dir" -D -m "$master" -c "$per_node" $@ 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -F "${config_file}" -s "$state_dir" -D -m "$master" -c "$per_node" $@ 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         return 0
@@ -1712,17 +1683,7 @@ function start_gui ()
     fi
     local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
 
-    local cmd="$SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port"
-    if [ "$gui_host" != "$(hostname -f)" ] ; then
-        log "W: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
-        cmd="ssh -X $gui_host $cmd"
-    fi
-
-    if [ "$log_host" != "$gui_host" ] ; then
-        log "E: cannot start gui on different hosts: $log_host vs. $gui_host"
-        return 1
-    fi
-
+    local cmd="ssh -X $gui_host LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port -r $SDPA_HOME"
     log "I: starting gui with $cmd ..."
     $cmd &
 }
@@ -1734,8 +1695,23 @@ function start_gpi ()
         exit 1
     fi
     local gpi_enabled=$(get "gpi.enabled" "true")
+
+    local log_url=$(get "log.server.url")
+    local log_port=$(echo "$log_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
+    if [ -z "$log_port" ] ; then
+        log "E: log url ($log_url) does not contain a port!"
+        return 1
+    fi
+    local log_host=$(echo "$log_url" | cut -d ':' -f 1)
+
+    local kvs_port=$(get "plugin.kvs.port" "2439")
+
     if [ x"$gpi_enabled" == x"true" ] ; then
-        if ! start_proc "gpi-space" "$SDPA_SCRIPT_DIR/start-gpi" "-s" "$state_dir" "-f" "-P" "$state_dir/gpi-space.pid" "-m" $(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}"); then
+        if ! status_kvs ; then
+            start_kvs
+        fi
+
+        if ! start_proc "gpi-space" "$SDPA_SCRIPT_DIR/start-gpi" "-s" "$state_dir" -F "${config_file}" "-f" "-P" "$state_dir/gpi-space.pid" "-m" $(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}") "-k" $(hostname -s) -K $kvs_port -l $log_host -L $log_port ; then
             log "E: could not start GPI, giving up!"
             return 1
         else
@@ -1931,7 +1907,6 @@ function submit ()
         read -t 15 -n 1 -p "Do you want me to start it? [Y/n] " do_start
         case "$do_start" in
             n|N)
-                return 1
                 ;;
             *)
                 echo
@@ -1991,7 +1966,7 @@ function on_valid_host ()
         if grep -q -e "^$host" "$state_dir/nodefile" ; then
             return 0
         else
-            log "W: your hostname ($host) does not match any in $state_dir/nodefile"
+            #log "W: your hostname ($host) does not match any in $state_dir/nodefile"
             return 1
         fi
     else
@@ -2161,16 +2136,30 @@ if [ "$1" = "version" ] ; then
     exit $?
 fi
 
+if [ "$1" = "-s" ] ; then
+    shift
+    state_dir="$1"; shift
+    if [ -z "$state_dir" ] ; then
+        log "E: empty state dir"
+        exit 1
+    fi
+    export SDPA_STATE_DIR="$state_dir"
+fi
+
+if [ "$1" = "-c" ] ; then
+    shift
+    config_file="$1"; shift
+    if [ -z "$config_file" ] ; then
+        log "E: empty config file"
+        exit 1
+    fi
+    export SDPA_CONFIG="config_file"
+fi
+
 if [ "$1" = "setup" ] ; then
     shift
     setup $@
     exit $?
-fi
-
-if [ "$1" = "-s" ] ; then
-    shift
-    state_dir="$1"; shift
-    export SDPA_STATE_DIR="$state_dir"
 fi
 
 if setup_required ; then
@@ -2199,9 +2188,10 @@ if [ "$1" = "gui" ] ; then
 fi
 
 if ! on_valid_host ; then
-    log "W: you are executing 'sdpa' on an invalid host!"
-    log "W: this might not be what you want"
-    log "I: please run 'sdpa init' on the master node first!"
+#    log "W: you are executing 'sdpa' on an invalid host!"
+#    log "W: this might not be what you want"
+#    log "I: please run 'sdpa init' on the master node first!"
+    :
 fi
 
 if ! configure ; then
@@ -2275,6 +2265,10 @@ case "$1" in
         fi
         shift
         restart drts
+        ;;
+    boot)
+        shift
+        "${SDPA_SCRIPT_DIR}/start-sdpa" "$@"
         ;;
     selftest)
         if ! on_master_node ; then

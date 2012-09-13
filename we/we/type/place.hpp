@@ -59,6 +59,19 @@ namespace place
          )
       : name (_name), signature (_signature), prop (_prop)
     {}
+
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+    type & operator= (const type &other)
+    {
+      if (this != &other)
+      {
+        name = other.name;
+        signature = other.signature;
+        prop = other.prop;
+      }
+      return *this;
+    }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
   };
 
   inline std::ostream & operator << (std::ostream & s, const type & p)

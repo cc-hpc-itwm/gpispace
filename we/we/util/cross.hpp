@@ -5,9 +5,10 @@
 
 #include <we/util/it.hpp>
 
+#include <numeric>
 #include <vector>
 
-#include <cassert>
+#include <fhg/assert.hpp>
 
 #include <boost/random.hpp>
 
@@ -54,11 +55,26 @@ namespace cross
     {
       return pos->second[*state % pos->second.size()];
     }
-    ret_t operator * (void) const
-    {
-      return ret_t (pos->first, pos->second[*state % pos->second.size()]);
-    }
+    ret_t operator * (void) const { return ret_t (key(), val()); }
   };
+
+  namespace pred
+  {
+    template<typename MAP>
+    bool second_empty (const typename MAP::const_iterator::value_type& v)
+    {
+      return v.second.empty();
+    }
+  }
+
+  namespace binop
+  {
+    template<typename T, typename MAP>
+    T product (T x, const typename MAP::const_iterator::value_type& v)
+    {
+      return x * v.second.size();
+    }
+  }
 
   template<typename MAP>
   class cross
@@ -94,65 +110,61 @@ namespace cross
         }
     }
 
-    void rewind (void)
+    bool determine_has_more (void) const
     {
-      pos.clear();
-
-      _has_more = (map.begin() != map.end());
-
-      pos_t::const_iterator s (shift.begin());
-
-      for (it_t m (map.begin()); m != map.end(); ++m, ++s)
-        {
-          assert (s != shift.end());
-
-          pos.push_back (*s);
-
-          _has_more &= (!m->second.empty());
-        }
+      return
+        (not map.empty())
+        &&
+        (  std::find_if (map.begin(), map.end(), pred::second_empty<MAP>)
+        == map.end()
+        )
+        ;
     }
 
   public:
     explicit cross (const MAP & _map)
       : map (_map)
-      , shift (map.size())
-    {
-      std::fill (shift.begin(), shift.end(), 0);
-
-      rewind();
-    }
+      , pos (map.size(), 0)
+      , shift (map.size(), 0)
+      , _has_more (determine_has_more())
+    {}
 
     // const and non-const version since the compiler chooses the
     // non-template function first
     cross (const MAP & _map, const pos_t & _shift)
       : map (_map)
+      , pos (_shift)
       , shift (_shift)
+      , _has_more (determine_has_more())
     {
       assert (shift.size() == map.size());
-
-      rewind();
     }
 
     cross (const MAP & _map, pos_t & _shift)
       : map (_map)
+      , pos (_shift)
       , shift (_shift)
+      , _has_more (determine_has_more())
     {
       assert (shift.size() == map.size());
-
-      rewind();
     }
 
     template<typename Engine>
     cross (const MAP & _map, Engine & engine)
       : map (_map)
+      , pos (map.size())
+      , shift (map.size())
+      , _has_more (determine_has_more())
     {
-      for (it_t m (map.begin()); m != map.end(); ++m)
+      pos_t::iterator s (shift.begin());
+      pos_t::iterator p (pos.begin());
+
+      for (it_t m (map.begin()), end (map.end()); m != end; ++m)
         {
           boost::uniform_int<> dist (0, m->second.size() - 1);
-          shift.push_back (dist (engine));
+          *s = dist (engine);
+          *p++ = *s++;
         }
-
-      rewind();
     }
 
     bool has_more (void) const { return _has_more; }
@@ -160,14 +172,10 @@ namespace cross
 
     unsigned long size (void) const
     {
-      unsigned long size (1);
-
-      for (it_t pos (map.begin()); pos != map.end(); ++pos)
-	{
-	  size *= pos->second.size();
-	}
-
-      return size;
+      return std::accumulate ( map.begin(), map.end()
+                             , 1UL
+                             , binop::product<unsigned long, MAP>
+                             );
     }
 
     iterator<MAP> operator * (void) const { return iterator<MAP> (map, pos); }

@@ -10,6 +10,7 @@
 #include <QHBoxLayout>
 #include <QDoubleSpinBox>
 #include <QSlider>
+#include <QFileDialog>
 
 #include <boost/lexical_cast.hpp>
 #include <list>
@@ -393,6 +394,7 @@ void MonitorWindow::clearActivityLog()
 {
   lock_type struct_lock(m_task_struct_mutex);
 
+  delete m_scene; delete m_component_scene;
   m_scene = new fhg::taskview::TaskScene(this);
   m_component_scene = new QGraphicsScene();
 
@@ -421,6 +423,10 @@ static const int TABLE_COL_MESSAGE = 3;
 
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
 {
+  if (not m_follow_logging)
+  {
+    return;
+  }
 
   if ( evt.severity() < ui->m_level_filter_selector->currentIndex ()
      && ui->m_drop_filtered->isChecked()
@@ -434,6 +440,12 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
   //    update view (different views)
   //    respect filtering etc.
   //    maximum number of events (circular buffer like)
+
+  if (m_log_events.size () > (1 << 15))
+  {
+    clearLogging ();
+  }
+
   m_log_events.push_back (evt);
 
   int row (ui->m_log_table->rowCount ());
@@ -520,9 +532,9 @@ MonitorWindow::event (QEvent *e)
 
 void MonitorWindow::clearLogging ()
 {
-	m_log_events.clear ();
-	ui->m_log_table->clearContents ();
-	ui->m_log_table->setRowCount (0);
+        m_log_events.clear ();
+        ui->m_log_table->clearContents ();
+        ui->m_log_table->setRowCount (0);
 }
 
 void MonitorWindow::toggleFollowLogging (bool follow)
@@ -553,4 +565,27 @@ void MonitorWindow::changeTaskViewZoom(int to)
   m_component_view->scale (factor, factor);
 
   m_current_scale = target;
+}
+
+void MonitorWindow::save ()
+{
+  QString fname = QFileDialog::getSaveFileName ( this
+                                               , "Save log messages"
+                                               , m_logfile
+                                               );
+
+  if (fname.isEmpty ())
+    return;
+
+  try
+  {
+    std::ofstream ofs (fname.toStdString ().c_str ());
+    boost::archive::text_oarchive oa (ofs);
+    oa & m_log_events;
+    m_logfile = fname;
+  }
+  catch (std::exception const & ex)
+  {
+    QMessageBox::critical (this, "Could not save file", ex.what ());
+  }
 }

@@ -30,6 +30,7 @@ namespace xml
       typedef std::list<std::string> port_args_type;
       typedef std::list<std::string> cincludes_type;
       typedef std::list<std::string> flags_type;
+      typedef std::list<std::string> links_type;
 
       struct mod_type
       {
@@ -43,6 +44,24 @@ namespace xml
         cincludes_type cincludes;
         flags_type ldflags;
         flags_type cxxflags;
+        links_type links;
+        boost::filesystem::path path;
+
+        // ***************************************************************** //
+
+        bool operator == (const mod_type& other) const
+        {
+          return port_return == other.port_return
+            && port_arg == other.port_arg
+            && code == other.code
+            && cincludes == other.cincludes
+            && ldflags == other.ldflags
+            && cxxflags == other.cxxflags
+            && links == other.links
+            ;
+        }
+
+        friend std::size_t hash_value (const mod_type&);
 
         // ***************************************************************** //
 
@@ -182,6 +201,15 @@ namespace xml
         }
       };
 
+      typedef boost::unordered_map<std::string, mod_type> mc_by_function_type;
+      typedef boost::unordered_map<std::string, mc_by_function_type> mcs_type;
+
+      inline std::size_t hash_value (const mod_type& m)
+      {
+        boost::hash<std::string> hasher;
+        return hasher (m.name);
+      }
+
       namespace dump
       {
         inline std::string dump_fun (const mod_type & m)
@@ -244,6 +272,13 @@ namespace xml
             {
               s.open ("cxx");
               s.attr ("flag", flag);
+              s.close ();
+            }
+
+          BOOST_FOREACH (links_type::value_type const& link, m.links)
+            {
+              s.open ("link");
+              s.attr ("href", link);
               s.close ();
             }
 

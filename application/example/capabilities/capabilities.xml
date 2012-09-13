@@ -63,7 +63,7 @@
 	<in name="id" type="long" />
 	<in name="t" type="long" />
 	<out name="done" type="control" />
-	<module name="capabilities_test" function="A (id,t)">
+	<module name="capabilities_test" function="done A (id,t)">
           <cinclude href="fhglog/minimal.hpp"/>
 	  <cinclude href="unistd.h"/>
 	  <code><![CDATA[
@@ -72,6 +72,8 @@
 	  usleep ((useconds_t)t);
 
 	  LOG(INFO, "<<< finished A(" << id << ", " << t << ")");
+
+	  return control();
 	  ]]></code>
 	</module>
       </defun>
@@ -113,7 +115,7 @@
 	<in name="id" type="long" />
 	<in name="t" type="long" />
 	<out name="done" type="control" />
-	<module name="capabilities_test" function="B(id, t)">
+	<module name="capabilities_test" function="done B(id, t)">
           <cinclude href="fhglog/minimal.hpp" />
 	  <cinclude href="unistd.h" />
           <code><![CDATA[
@@ -122,6 +124,8 @@
 	  usleep ((useconds_t)t);
 
 	  LOG(INFO, "<<< finished B(" << id << ", " << t << ")");
+
+	  return control();
 	  ]]></code>
 	</module>
       </defun>

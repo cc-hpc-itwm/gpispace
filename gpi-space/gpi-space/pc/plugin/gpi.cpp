@@ -46,7 +46,30 @@ public:
     }
     else
     {
-      if (! try_start())
+      std::size_t retries_until_defer_startup
+        (fhg_kernel()->get<std::size_t>("retries_to_defer", "1"));
+      if (0 == retries_until_defer_startup)
+        retries_until_defer_startup = 1;
+
+      bool connected = false;
+
+      do
+      {
+        retries_until_defer_startup--;
+
+        connected = try_start();
+
+        if (! connected && retries_until_defer_startup)
+        {
+          usleep(5000 * 1000);
+        }
+        else
+        {
+          break;
+        }
+      } while (true);
+
+      if (! connected)
       {
         fhg_kernel()->schedule( "connect"
                               , boost::bind ( &GpiPluginImpl::restart_loop

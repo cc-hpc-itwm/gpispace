@@ -20,6 +20,7 @@ set (hdrs
   ClientEvents.hpp
   exceptions.hpp
   types.hpp
+  job_info.hpp
   )
 
 #change this later, either use MSM or SMC, when nothing is set

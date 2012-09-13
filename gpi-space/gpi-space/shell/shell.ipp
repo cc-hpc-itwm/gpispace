@@ -9,6 +9,7 @@
 #include <readline/history.h>
 
 #include <boost/algorithm/string.hpp>
+#include <fhg/assert.hpp>
 
 namespace gpi
 {

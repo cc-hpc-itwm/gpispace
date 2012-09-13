@@ -60,9 +60,7 @@ namespace xml
 
       public:
         typedef xml::util::unique<place_type>::elements_type places_type;
-        typedef xml::util::unique<function_type>::elements_type templates_type;
         typedef xml::util::unique<transition_type>::elements_type transitions_type;
-        typedef xml::util::unique<specialize_type>::elements_type specializes_type;
 
         bool contains_a_module_call;
         structs_type structs;
@@ -72,6 +70,29 @@ namespace xml
         we::type::property::type prop;
 
         xml::parse::struct_t::set_type structs_resolved;
+
+        // ***************************************************************** //
+
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+        net_type & operator= (net_type const &rhs)
+        {
+          if (this != &rhs)
+          {
+            _places = rhs._places;
+            _transitions = rhs._transitions;
+            _functions = rhs._functions;
+            _templates = rhs._templates;
+            _specializes = rhs._specializes;
+
+            contains_a_module_call = rhs.contains_a_module_call;
+            structs = rhs.structs;
+            path = rhs.path;
+            prop = rhs.prop;
+            structs_resolved = rhs.structs_resolved;
+          }
+          return *this;
+        }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
         // ***************************************************************** //
 
@@ -369,13 +390,30 @@ namespace xml
 
         void distribute_function ( const state::type& state
                                  , const functions_type& functions_above
+                                 , const templates_type& templates_above
+                                 , const specializes_type& specializes_above
                                  )
         {
           functions_type funs (functions());
 
           BOOST_FOREACH (function_type& fun, funs)
             {
-              fun.distribute_function (state, functions());
+              fun.distribute_function ( state
+                                      , functions()
+                                      , templates()
+                                      , specializes()
+                                      );
+            }
+
+          templates_type tmpls (templates());
+
+          BOOST_FOREACH (function_type& tmpl, tmpls)
+            {
+              tmpl.distribute_function ( state
+                                       , functions()
+                                       , templates()
+                                       , specializes()
+                                       );
             }
 
           BOOST_FOREACH (const function_type& fun, functions_above)
@@ -392,9 +430,41 @@ namespace xml
                 }
             }
 
+          BOOST_FOREACH (const function_type& tmpl, templates_above)
+            {
+              function_type tmpl_local;
+
+              if (!_templates.push (tmpl, tmpl_local))
+                {
+                  state.warn ( warning::shadow_template ( tmpl.name
+                                                        , tmpl.path
+                                                        , tmpl_local.path
+                                                        )
+                             );
+                }
+            }
+
+          BOOST_FOREACH (const specialize_type& spec, specializes_above)
+            {
+              specialize_type spec_local;
+
+              if (!_specializes.push (spec, spec_local))
+                {
+                  state.warn ( warning::shadow_specialize ( spec.name
+                                                          , spec.path
+                                                          , spec_local.path
+                                                          )
+                             );
+                }
+            }
+
           BOOST_FOREACH (transition_type& transition, transitions())
             {
-              transition.distribute_function (state, functions());
+              transition.distribute_function ( state
+                                             , functions()
+                                             , templates()
+                                             , specializes()
+                                             );
             }
         }
 
@@ -666,11 +736,6 @@ namespace xml
                                                        )
                                        )
                     );
-
-                  if (place->capacity.isJust())
-                    {
-                      we_net.set_capacity (pid, *place->capacity);
-                    }
 
                   pid_of_place[place->name] = pid;
                 }

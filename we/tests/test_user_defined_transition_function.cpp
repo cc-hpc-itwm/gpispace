@@ -1,6 +1,6 @@
 // user defined transition function example, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 
 #include <cstdlib>
 
@@ -51,7 +51,11 @@ typedef unsigned long token_t;
 token_t inc (const token_t &);
 token_t inc (const token_t & token) { return token + 1; }
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 static std::string brack (const std::string & x)
 {
@@ -80,24 +84,22 @@ static void marking (const pnet_t & n)
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  if (!n.enabled_transitions().empty())
+  if (n.can_fire())
     {
-     petri_net::tid_t tid (n.enabled_transitions().random (engine));
+      const petri_net::tid_t tid (n.fire_random (engine));
 
-      cout << "FIRE " << trans (n, tid) << " => ";
-
-      n.fire (tid);
+      cout << "FIRED " << trans (n, tid) << " => ";
     }
 };
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()
 {
-  pnet_t n("test_u", 4,4);
+  pnet_t n (4,4);
 
   // a simple loop with up and down
 
@@ -105,15 +107,13 @@ main ()
     petri_net::pid_t pid_top (n.add_place (place_t ("top")));
     petri_net::pid_t pid_down (n.add_place (place_t ("down")));
     petri_net::tid_t tid_top_down
-      ( n.add_transition ( transition_t ("top_down")
-                         , Function::Transition::PassWithFun<token_t>(inc)
-                         )
-      );
+      (n.add_transition (transition_t ("top_down")));
+    n.set_transition_function
+      (tid_top_down, Function::Transition::PassWithFun<token_t>(inc));
     petri_net::tid_t tid_down_top
-      ( n.add_transition ( transition_t ("down_top")
-                         , Function::Transition::PassWithFun<token_t>(inc)
-                         )
-      );
+      (n.add_transition (transition_t ("down_top")));
+    n.set_transition_function
+      (tid_down_top, Function::Transition::PassWithFun<token_t>(inc));
 
     n.add_edge (edge_t ("top_out"), connection_t (PT, tid_top_down, pid_top));
     n.add_edge (edge_t ("down_in"), connection_t (TP, tid_top_down, pid_down));
@@ -131,15 +131,13 @@ main ()
     petri_net::pid_t pid_top (n.add_place (place_t ("top_pass")));
     petri_net::pid_t pid_down (n.add_place (place_t ("down_pass")));
     petri_net::tid_t tid_top_down
-      ( n.add_transition ( transition_t ("top_down_pass")
-                         , Function::Transition::Pass<token_t>()
-                         )
-      );
+      (n.add_transition (transition_t ("top_down_pass")));
+    n.set_transition_function
+      (tid_top_down, Function::Transition::Pass<token_t>());
     petri_net::tid_t tid_down_top
-      ( n.add_transition ( transition_t ("down_top_pass")
-                         , Function::Transition::Pass<token_t>()
-                         )
-      );
+      (n.add_transition (transition_t ("down_top_pass")));
+    n.set_transition_function
+      (tid_down_top, Function::Transition::Pass<token_t>());
 
     n.add_edge (edge_t ("top_out_pass"), connection_t (PT, tid_top_down, pid_top));
     n.add_edge (edge_t ("down_in_pass"), connection_t (TP, tid_top_down, pid_down));

@@ -64,7 +64,11 @@ namespace we
       virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
 
       virtual bool finished(const id_type & id, const result_type & result) = 0;
-      virtual bool failed(const id_type & id, const result_type & result) = 0;
+      virtual bool failed( const id_type & id
+                         , const result_type & result
+                         , const int error_code
+                         , const std::string & reason
+                         ) = 0;
       virtual bool cancelled(const id_type & id) = 0;
 
       virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;

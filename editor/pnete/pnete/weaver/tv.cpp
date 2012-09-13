@@ -221,10 +221,6 @@ namespace fhg
       {
         append_maybe_bool ("virtual", is_virtual);
       }
-      WSIG(tv, place::capacity, MAYBE(petri_net::capacity_t), capacity)
-      {
-        append_maybe_key_value ("capacity", "%i", capacity);
-      }
       WSIG(tv, place::token, ITVAL(XMLTYPE(tokens_type)), token)
       {
         push (append ("token"));
@@ -303,6 +299,11 @@ namespace fhg
         append (flag);
       }
 
+      WSIG(tv, link::open, ITVAL(XMLTYPE(links_type)), link)
+      {
+        append (link);
+      }
+
       WSIG(tv, expression_sequence::line, std::string, line)
       {
         append (line);
@@ -318,10 +319,7 @@ namespace fhg
         append_key_value (tm.first, "%s", tm.second);
       }
 
-      WSIG(tv,  specialize::open
-          , ITVAL(XMLTYPE(net_type::specializes_type))
-          , specialize
-          )
+      WSIG(tv, specialize::open, ITVAL(XMLTYPE(specializes_type)), specialize)
       {
         push (append ("<<specialize>>"));
       }
@@ -477,6 +475,10 @@ namespace fhg
       {
         xs ("cxxflag", cxxflags, FROM(cxxflag));
       }
+      WSIG(tv, mod::links, XMLTYPE(flags_type), links)
+      {
+        xs ("link", links, FROM(link));
+      }
       WSIG(tv, mod::code, MAYBE(std::string), code)
       {
         if (code)
@@ -515,15 +517,11 @@ namespace fhg
       {
         FROM(structs) (this, structs);
       }
-      WSIG(tv, net::templates, XMLTYPE(net_type::templates_type), templates)
+      WSIG(tv, net::templates, XMLTYPE(templates_type), templates)
       {
         xs ("template", templates, FROM(function));
       }
-      WSIG( tv
-          , net::specializes
-          , XMLTYPE(net_type::specializes_type)
-          , specializes
-          )
+      WSIG(tv, net::specializes, XMLTYPE(specializes_type), specializes)
       {
         xs ("specialize", specializes, FROM(specialize));
       }

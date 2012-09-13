@@ -7,6 +7,8 @@
 
 #include <fhg/revision.hpp>
 
+#include <sstream>
+
 namespace fhg
 {
   const char * project_contact ()
@@ -52,5 +54,24 @@ namespace fhg
   const char * project_build_count ()
   {
     return "@FHG_BUILD_COUNT@";
+  }
+
+  std::string project_info ()
+  {
+    std::ostringstream s;
+
+    s << std::endl << project_summary()
+      << std::endl
+      << std::endl << "version:  " << project_version()
+      << std::endl << "revision: " << project_revision()
+      << std::endl << "built:    " << project_build_time()
+      << std::endl << "using:    " << project_build_compiler()
+      << std::endl << "contact:  " <<  project_contact()
+      << std::endl
+      << std::endl << project_copyright() << std::endl
+      << std::endl
+      ;
+
+    return s.str();
   }
 }

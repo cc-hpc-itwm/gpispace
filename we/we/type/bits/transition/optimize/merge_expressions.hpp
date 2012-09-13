@@ -137,7 +137,7 @@ namespace we { namespace type {
           {
             const connection_t & connection (net.get_edge_info (p()));
 
-            if (petri_net::is_pt_read (connection.type))
+            if (petri_net::edge::is_pt_read (connection.type))
               {
                 if (net.in_to_place (*p).empty())
                   {
@@ -182,9 +182,7 @@ namespace we { namespace type {
                     const petri_net::tid_t & tid_pred (*t);
                     const transition_t & trans (net.get_transition (tid_pred));
 
-                    if (  boost::apply_visitor (content::visitor(), trans.data())
-                       != content::expression
-                       )
+                    if (not content::is_expression (trans))
                       {
                         return fhg::util::Nothing<trans_info>();
                       }
@@ -495,9 +493,7 @@ namespace we { namespace type {
             const tid_t & tid_trans (stack.top());
             transition_t trans (net.get_transition (tid_trans));
 
-            if (  (  boost::apply_visitor (content::visitor (), trans.data())
-                  == content::expression
-                  )
+            if (  content::is_expression (trans)
                && trans.condition().is_const_true()
                )
               {

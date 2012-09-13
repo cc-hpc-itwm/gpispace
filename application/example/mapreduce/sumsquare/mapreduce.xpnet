@@ -1,0 +1,37 @@
+<defun name="mapreduce">
+  <in name="I" type="long" place="I"/>
+  <out name="O" type="long" place="O"/>
+  <net>
+    <place name="I" type="long"/>
+    <place name="i" type="long"/>
+    <place name="N" type="long"/>
+    <place name="o" type="long"/>
+    <place name="O" type="long"/>
+
+    <transition name="split" inline="true">
+      <include-function href="split.xpnet"/>
+      <connect-in port="I" place="I"/>
+      <connect-out port="i" place="i"/>
+      <connect-out port="N" place="N"/>
+    </transition>
+
+    <transition name="work">
+      <defun>
+        <in name="i" type="long"/>
+        <out name="o" type="long"/>
+        <expression>
+          ${o} := ${i}^2
+        </expression>
+      </defun>
+      <connect-in port="i" place="i"/>
+      <connect-out port="o" place="o"/>
+    </transition>
+
+    <transition name="join" inline="true">
+      <include-function href="join.xpnet"/>
+      <connect-in port="o" place="o"/>
+      <connect-in port="N" place="N"/>
+      <connect-out port="O" place="O"/>
+    </transition>
+  </net>
+</defun>

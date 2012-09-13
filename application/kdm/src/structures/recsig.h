@@ -26,18 +26,18 @@
 class RecSig {
 
 // public methods
- public: 
+ public:
     RecSig():arrtime(INVALID_SIGT), Px(0.0f), Py(0.0f), Pz(0.0f), Amp(-1){};
     RecSig(const float& _t, const float& _v,
-	   const float& _Px, const float& _Py, const float& _Pz, 
+	   const float& _Px, const float& _Py, const float& _Pz,
 	   const float& _A, const Spherical& _StartDir)
-	:arrtime(_t),v(_v),Px(_Px),Py(_Py),Pz(_Pz),Amp(_A),StartDir(_StartDir){};
+      :arrtime(_t),Px(_Px),Py(_Py),Pz(_Pz),v(_v),Amp(_A),StartDir(_StartDir){};
     RecSig(const float& _t, const float& _v,
-	   const float& _Px, const float& _Py, const float& _Pz, 
-	   const float& _dPxdx, const float& _dPydx, const float& _dPzdx, 
-	   const float& _dPxdy, const float& _dPydy, const float& _dPzdy, 
+	   const float& _Px, const float& _Py, const float& _Pz,
+	   const float& _dPxdx, const float& _dPydx, const float& _dPzdx,
+	   const float& _dPxdy, const float& _dPydy, const float& _dPzdy,
 	   const float& _A, const Spherical& _StartDir, const point3D<float> & _StartDirVector)
-	:arrtime(_t),v(_v),Px(_Px),Py(_Py),Pz(_Pz),dPxdx(_dPxdx),dPydx(_dPydx),dPzdx(_dPzdx),dPxdy(_dPxdy),dPydy(_dPydy),dPzdy(_dPzdy),Amp(_A),StartDir(_StartDir),StartDirVector(_StartDirVector){};
+      :arrtime(_t),Px(_Px),Py(_Py),Pz(_Pz),dPxdx(_dPxdx),dPydx(_dPydx),dPzdx(_dPzdx),dPxdy(_dPxdy),dPydy(_dPydy),dPzdy(_dPzdy),v(_v),Amp(_A),StartDir(_StartDir),StartDirVector(_StartDirVector){};
     ~RecSig(){};
 
     inline float GetT() const {return arrtime;};
@@ -50,13 +50,13 @@ class RecSig {
     inline float Getdpxdy() const {return dPxdy;};
     inline float Getdpydy() const {return dPydy;};
     inline float Getdpzdy() const {return dPzdy;};
-    inline float Getv() const {return v;};  
+    inline float Getv() const {return v;};
     inline float GetAmp() const {return Amp;};
     inline Spherical GetStartDir() const {return StartDir;};
     inline point3D<float> GetStartDirVector() const {return StartDirVector;};
 
 // public attributes
- public: 
+ public:
 
 // privat methods
  private:

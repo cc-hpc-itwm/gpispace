@@ -7,12 +7,9 @@
 
 #include <stdexcept>
 
-#include <vector>
-
 #include <boost/serialization/nvp.hpp>
-#include <boost/serialization/vector.hpp>
 
-#include <boost/optional.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace adjacency
 {
@@ -20,8 +17,7 @@ namespace adjacency
   struct IT
   {
   public:
-    typedef std::pair<L,R> pair_t;
-    typedef std::vector<pair_t> vec_t;
+    typedef boost::unordered_map<L,R> vec_t;
     typedef typename vec_t::const_iterator type;
   };
 
@@ -44,6 +40,20 @@ namespace adjacency
   {
   public:
     table (const ADJ &, const ROW &, const COL &);
+
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+    table & operator= (table const & rhs)
+    {
+      if (this != &rhs)
+      {
+        invalid = rhs.invalid;
+        row_tab = rhs.row_tab;
+        col_tab = rhs.col_tab;
+      }
+      return *this;
+    }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+
     const const_it<COL,ADJ> row_const_it (const ROW &) const;
     const const_it<ROW,ADJ> col_const_it (const COL &) const;
     const ADJ get_adjacent (const ROW &, const COL &) const;
@@ -53,22 +63,14 @@ namespace adjacency
   private:
     ADJ invalid;
 
-    typedef std::pair<ROW,ADJ> row_adj_t;
-    typedef std::pair<COL,ADJ> col_adj_t;
+    typedef boost::unordered_map<ROW,ADJ> row_adj_tab_t;
+    typedef boost::unordered_map<COL,ADJ> col_adj_tab_t;
 
-    typedef std::vector<row_adj_t> row_adj_vec_t;
-    typedef std::vector<col_adj_t> col_adj_vec_t;
+    typedef boost::unordered_map<ROW,col_adj_tab_t> row_tab_t;
+    typedef boost::unordered_map<COL,row_adj_tab_t> col_tab_t;
 
-    typedef std::vector<col_adj_vec_t> row_tab_t;
-    typedef std::vector<row_adj_vec_t> col_tab_t;
-
-    row_tab_t row_tab; // size >= 1
-    col_tab_t col_tab; // size >= 1
-
-    template<typename T, typename MAT> void adjust_size (const T &, MAT &);
-
-    template<typename IT, typename M, typename A, typename B>
-    const boost::optional<IT> find (M &, const A &, const B &) const;
+    row_tab_t row_tab;
+    col_tab_t col_tab;
 
     friend class boost::serialization::access;
     template<typename Archive> void serialize (Archive & ar, const unsigned int)

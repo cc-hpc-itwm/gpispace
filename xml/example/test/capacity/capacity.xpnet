@@ -33,7 +33,10 @@
     </transition>
 
     <place name="a" type="long"/>
-    <place name="b" type="long" capacity="1"/>
+    <place name="b" type="long"/>
+    <place name="credit_b" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <place name="wa" type="string">
       <token><value>"WAIT-A"</value></token>
@@ -42,11 +45,23 @@
       <token><value>"WAIT-B"</value></token>
     </place>
 
+    <place name="a_in" type="long"/>
+    <transition name="select_a">
+      <defun>
+        <inout name="a" type="long"/>
+        <in name="credit" type="control"/>
+        <expression/>
+      </defun>
+      <connect-in port="a" place="a"/>
+      <connect-out port="a" place="a_in"/>
+      <connect-in port="credit" place="credit_b"/>
+    </transition>
+
     <transition name="waita">
       <use name="wait"/>
       <connect-read port="d" place="wa"/>
       <connect-read port="s" place="sa"/>
-      <connect-in port="k" place="a"/>
+      <connect-in port="k" place="a_in"/>
       <connect-out port="k" place="b"/>
     </transition>
 
@@ -55,7 +70,22 @@
       <connect-read port="d" place="wb"/>
       <connect-read port="s" place="sb"/>
       <connect-in port="k" place="b"/>
-      <connect-out port="k" place="r"/>
+      <connect-out port="k" place="r_out"/>
+    </transition>
+
+    <place name="r_out" type="long"/>
+
+    <transition name="credit_back">
+      <defun>
+        <inout name="r" type="long"/>
+        <out name="credit" type="control"/>
+        <expression>
+          ${credit} := []
+        </expression>
+      </defun>
+      <connect-in port="r" place="r_out"/>
+      <connect-out port="r" place="r"/>
+      <connect-out port="credit" place="credit_b"/>
     </transition>
 
   </net>

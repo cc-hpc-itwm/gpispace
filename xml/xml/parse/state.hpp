@@ -48,6 +48,7 @@ namespace xml
 
       typedef std::vector<std::string> search_path_type;
       typedef std::vector<fs::path> in_progress_type;
+      typedef std::set<fs::path> dependencies_type;
 
       typedef std::vector<std::string> gen_param_type;
 
@@ -84,6 +85,7 @@ namespace xml
         gen_param_type _gen_ldflags;
         gen_param_type _gen_cxxflags;
         in_progress_type _in_progress;
+        dependencies_type _dependencies;
         property::path_type _prop_path;
         context_t _context;
         key_values_t _key_values;
@@ -95,6 +97,8 @@ namespace xml
         bool _Woverwrite_template_name_as;
         bool _Wshadow_struct;
         bool _Wshadow_function;
+        bool _Wshadow_template;
+        bool _Wshadow_specialize;
         bool _Wdefault_construction;
         bool _Wunused_field;
         bool _Wport_not_connected;
@@ -116,15 +120,17 @@ namespace xml
         bool _Wvirtual_place_not_tunneled;
 
         std::string _dump_xml_file;
+        std::string _dump_dependencies;
+        bool _dump_dependenciesD;
+        std::vector<std::string> _dependencies_target;
+        std::vector<std::string> _dependencies_target_quoted;
+        bool _dependencies_add_phony_targets;
         bool _no_inline;
         bool _synthesize_virtual_places;
         bool _force_overwrite_file;
         std::string _backup_extension;
         bool _do_file_backup;
 
-        std::string _verbose_file;
-        mutable bool _verbose_file_opened;
-        mutable std::ofstream _verbose_stream;
         std::string _path_to_cpp;
 
         std::string _Osearch_path;
@@ -137,6 +143,8 @@ namespace xml
         std::string _OWoverwrite_template_name_as;
         std::string _OWshadow_struct;
         std::string _OWshadow_function;
+        std::string _OWshadow_template;
+        std::string _OWshadow_specialize;
         std::string _OWdefault_construction;
         std::string _OWunused_field;
         std::string _OWport_not_connected;
@@ -158,17 +166,24 @@ namespace xml
         std::string _OWvirtual_place_not_tunneled;
 
         std::string _Odump_xml_file;
+        std::string _Odump_dependencies;
+        std::string _Odump_dependenciesD;
+        std::string _Odependencies_target;
+        std::string _Odependencies_target_quoted;
+        std::string _Odependencies_add_phony_targets;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
         std::string _Oforce_overwrite_file;
         std::string _Obackup_extension;
         std::string _Odo_file_backup;
 
-        std::string _Overbose_file;
         std::string _Opath_to_cpp;
 
         template<typename W>
-        void generic_warn (const W & w, const bool & active) const
+        void generic_warn ( const W & w
+                          , const bool & active
+                          , const std::string & flag
+                          ) const
         {
           if (_Wall || active)
             {
@@ -178,7 +193,7 @@ namespace xml
                 }
               else
                 {
-                  std::cerr << w.what() << std::endl;
+                  std::cerr << w.what() << " [--" << flag << "]" << std::endl;
                 }
             }
         };
@@ -228,6 +243,7 @@ namespace xml
           , _gen_ldflags ()
           , _gen_cxxflags ()
           , _in_progress ()
+          , _dependencies ()
           , _ignore_properties (false)
           , _Werror (false)
           , _Wall (false)
@@ -235,12 +251,14 @@ namespace xml
           , _Woverwrite_template_name_as (false)
           , _Wshadow_struct (true)
           , _Wshadow_function (true)
+          , _Wshadow_template (true)
+          , _Wshadow_specialize (true)
           , _Wdefault_construction (true)
           , _Wunused_field (true)
           , _Wport_not_connected (true)
           , _Wunexpected_element (true)
           , _Woverwrite_function_name_trans (false)
-          , _Woverwrite_function_internal_trans (false)
+          , _Woverwrite_function_internal_trans (true)
           , _Wproperty_overwritten (true)
           , _Wtype_map_duplicate (true)
           , _Wtype_get_duplicate (true)
@@ -256,14 +274,17 @@ namespace xml
           , _Wvirtual_place_not_tunneled (true)
 
           , _dump_xml_file ("")
+          , _dump_dependencies ("")
+          , _dump_dependenciesD ()
+          , _dependencies_target ()
+          , _dependencies_target_quoted ()
+          , _dependencies_add_phony_targets ()
           , _no_inline (false)
           , _synthesize_virtual_places (false)
           , _force_overwrite_file (false)
           , _backup_extension ("~")
           , _do_file_backup (true)
 
-          , _verbose_file ("")
-          , _verbose_file_opened (false)
           , _path_to_cpp ("")
 
           , _Osearch_path ("search-path,I")
@@ -276,6 +297,8 @@ namespace xml
           , _OWoverwrite_template_name_as ("Woverwrite-template-name-as")
           , _OWshadow_struct ("Wshadow-struct")
           , _OWshadow_function ("Wshadow-function")
+          , _OWshadow_template ("Wshadow-template")
+          , _OWshadow_specialize ("Wshadow-specialize")
           , _OWdefault_construction ("Wdefault-construction")
           , _OWunused_field ("Wunused-field")
           , _OWport_not_connected ("Wport-not-connected")
@@ -297,13 +320,17 @@ namespace xml
           , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
 
           , _Odump_xml_file ("dump-xml-file,d")
+          , _Odump_dependencies ("dump-dependencies,M")
+          , _Odump_dependenciesD ("dump-dependenciesD")
+          , _Odependencies_target ("dependencies-target")
+          , _Odependencies_target_quoted ("dependencies-target-quoted")
+          , _Odependencies_add_phony_targets ("dependencies-add-phony-targets")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
           , _Oforce_overwrite_file ("force-overwrite-file")
           , _Obackup_extension ("backup-extension")
           , _Odo_file_backup ("do-backup")
 
-          , _Overbose_file ("verbose-file,v")
           , _Opath_to_cpp ("path-to-cpp,g")
         {}
 
@@ -459,20 +486,28 @@ namespace xml
             ;
         }
 
-        const std::string & path_to_cpp (void) const
+        const dependencies_type& dependencies (void) const
         {
-          return _path_to_cpp;
+          return _dependencies;
         }
 
-        const std::string & dump_xml_file (void) const
-        {
-          return _dump_xml_file;
-        }
+#define ACCESS(name) \
+        const std::string & name (void) const { return _ ## name; } \
+        std::string & name (void) { return _ ## name; }
 
-        const std::string& backup_extension (void) const
-        {
-          return _backup_extension;
-        }
+        ACCESS(path_to_cpp)
+        ACCESS(dump_xml_file)
+        ACCESS(dump_dependencies)
+        ACCESS(backup_extension)
+
+#undef ACCESS
+
+#define ACCESS(name) const std::vector<std::string> & name (void) const { return _ ## name; }
+
+        ACCESS(dependencies_target)
+        ACCESS(dependencies_target_quoted)
+
+#undef ACCESS
 
         // ***************************************************************** //
 
@@ -506,28 +541,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        void verbose (const std::string & msg) const
-        {
-          if (_verbose_file.size() > 0)
-            {
-              if (!_verbose_file_opened)
-                {
-                  _verbose_stream.open (_verbose_file.c_str());
-
-                  if (!_verbose_stream.good())
-                    {
-                      throw error::could_not_open_file (_verbose_file);
-                    }
-
-                  _verbose_file_opened = true;
-                }
-
-              _verbose_stream << msg << std::endl;
-            }
-        }
-
-        // ***************************************************************** //
-
 #define ACCESST(_t,_x)                                  \
         const _t & _x (void) const { return _ ## _x; }  \
         _t & _x (void){ return _ ## _x; }
@@ -541,6 +554,8 @@ namespace xml
         ACCESS(Woverwrite_template_name_as)
         ACCESS(Wshadow_struct)
         ACCESS(Wshadow_function)
+        ACCESS(Wshadow_template)
+        ACCESS(Wshadow_specialize)
         ACCESS(Wdefault_construction)
         ACCESS(Wunused_field)
         ACCESS(Wport_not_connected)
@@ -566,6 +581,9 @@ namespace xml
         ACCESS(force_overwrite_file)
         ACCESS(do_file_backup)
 
+        ACCESS(dependencies_add_phony_targets)
+        ACCESS(dump_dependenciesD)
+
 #undef ACCESS
 #undef ACCESST
 
@@ -574,10 +592,11 @@ namespace xml
         template<typename T>
         void warn (const struct_shadowed<T> & w) const
         {
-          generic_warn (w, _Wshadow_struct);
+          generic_warn (w, _Wshadow_struct, _OWshadow_struct);
         }
 
-#define WARN(x) void warn (const x & w) const { generic_warn (w, _W ## x); }
+#define WARN(x) \
+        void warn (const x & w) const { generic_warn (w, _W ## x, _OW ## x ); }
 
         WARN(overwrite_function_name_as)
         WARN(overwrite_template_name_as)
@@ -601,6 +620,8 @@ namespace xml
         WARN(inline_many_output_ports)
         WARN(virtual_place_not_tunneled)
         WARN(shadow_function)
+        WARN(shadow_template)
+        WARN(shadow_specialize)
 
 #undef WARN
 
@@ -637,6 +658,8 @@ namespace xml
         {
           const fs::path path (expand (file));
 
+          _dependencies.insert (path);
+
           for ( in_progress_type::const_iterator pos (_in_progress.begin())
               ; pos != _in_progress.end()
               ; ++pos
@@ -657,38 +680,13 @@ namespace xml
         void add_options (po::options_description & desc)
         {
 #define TYPEDVAL(t,x) po::value<t>(&_ ## x)->default_value (_ ## x)
-#define BOOLVAL(x) TYPEDVAL(bool,x)
+#define BOOLVAL(x) TYPEDVAL(bool,x)->implicit_value(true)
 #define STRINGVAL(x) TYPEDVAL(std::string,x)
+#define STRINGVECVAL(x) po::value<std::vector<std::string> >(&_ ## x)
 
-          desc.add_options ()
-            ( _Osearch_path.c_str()
-            , po::value<search_path_type>(&_search_path)
-            , "search path"
-            )
-            ( _Ogen_ldflags.c_str()
-            , po::value<gen_param_type>(&_gen_ldflags)
-            , "ldflags for generated makefile"
-            )
-            ( _Ogen_cxxflags.c_str()
-            , po::value<gen_param_type>(&_gen_cxxflags)
-            , "cxxflags for generated makefile"
-            )
-            ( _Overbose_file.c_str()
-            , STRINGVAL(verbose_file)
-            , "verbose output goes there, empty for no verbose output"
-            )
-            ( _Opath_to_cpp.c_str()
-            , STRINGVAL(path_to_cpp)
-            , "path for cpp output, empty for no cpp output"
-            )
-            ( _Odump_xml_file.c_str()
-            , STRINGVAL(dump_xml_file)
-            , "file to dump the folded and pretty xml, empty for no dump"
-            )
-            ( _Oignore_properties.c_str()
-            , BOOLVAL(ignore_properties)
-            , "when set to true, no properties are parsed"
-            )
+          po::options_description warnings ("Warnings");
+
+          warnings.add_options ()
             ( _OWerror.c_str()
             , BOOLVAL(Werror)
             , "cast warnings to errors"
@@ -712,6 +710,14 @@ namespace xml
             ( _OWshadow_function.c_str()
             , BOOLVAL(Wshadow_function)
             , "warn when shadowing a function definition"
+            )
+            ( _OWshadow_template.c_str()
+            , BOOLVAL(Wshadow_template)
+            , "warn when shadowing a template definition"
+            )
+            ( _OWshadow_specialize.c_str()
+            , BOOLVAL(Wshadow_specialize)
+            , "warn when shadowing a specialization"
             )
             ( _OWdefault_construction.c_str()
             , BOOLVAL(Wdefault_construction)
@@ -791,6 +797,68 @@ namespace xml
             , BOOLVAL(Wvirtual_place_not_tunneled)
             , "warn when a virtual place is not tunneled"
             )
+            ;
+
+          po::options_description generate ("Wrapper generation");
+
+          generate.add_options ()
+            ( _Ogen_ldflags.c_str()
+            , po::value<gen_param_type>(&_gen_ldflags)
+            , "ldflags for generated makefile"
+            )
+            ( _Ogen_cxxflags.c_str()
+            , po::value<gen_param_type>(&_gen_cxxflags)
+            , "cxxflags for generated makefile"
+            )
+            ( _Opath_to_cpp.c_str()
+            , STRINGVAL(path_to_cpp)->implicit_value ("gen")
+            , "path for cpp output, empty for no cpp output"
+            )
+            ;
+
+          po::options_description xml ("XML mirroring");
+
+          xml.add_options ()
+            ( _Odump_xml_file.c_str()
+            , STRINGVAL(dump_xml_file)->implicit_value("/dev/stdout")
+            , "file to dump the folded and pretty xml, empty for no dump"
+            )
+            ;
+
+          po::options_description depend ("Dependency generation");
+
+          depend.add_options ()
+            ( _Odump_dependencies.c_str()
+            , STRINGVAL(dump_dependencies)->implicit_value("/dev/stdout")
+            , "file to dump the dependencies as Make target, empty for no dump"
+              " (also as -MM -MF -MG)"
+            )
+            ( _Odump_dependenciesD.c_str()
+            , BOOLVAL(dump_dependenciesD)
+            , "dump the dependencies as Make target to <input>.d"
+              " (also as -MD -MMD)"
+            )
+            ( _Odependencies_target.c_str()
+            , STRINGVECVAL(dependencies_target)
+            , "set the target in the dependency file (also as -MT)"
+            )
+            ( _Odependencies_target_quoted.c_str()
+            , STRINGVECVAL(dependencies_target_quoted)
+            , "like -MT but quote special characters (also as -MQ)"
+            )
+            ( _Odependencies_add_phony_targets.c_str()
+            , BOOLVAL(dependencies_add_phony_targets)
+            , "add phony targets for all dependencies (also as -MP)"
+            )
+            ;
+
+          po::options_description net ("Network handling");
+
+          net.add_options ()
+            ( _Oignore_properties.c_str()
+            , BOOLVAL(ignore_properties)
+            , "when set to true, no properties are parsed"
+            )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)
             , "if set, ignore the keyword inline"
@@ -799,6 +867,11 @@ namespace xml
             , BOOLVAL(synthesize_virtual_places)
             , "if set, synthesize virtual places"
             )
+            ;
+
+          po::options_description file ("File handling");
+
+          file.add_options ()
             ( _Oforce_overwrite_file.c_str()
             , BOOLVAL(force_overwrite_file)
             , "force overwrite files"
@@ -812,13 +885,101 @@ namespace xml
             , "make backup copies of files before overwriting"
             )
             ;
+
+          desc.add_options ()
+            ( _Osearch_path.c_str()
+            , po::value<search_path_type>(&_search_path)
+            , "search path"
+            )
+            ;
 #undef TYPEDVAL
 #undef BOOLVAL
 #undef STRINGVAL
 
+          desc.add (net);
           _options_optimize.add_options (desc);
+
+          desc.add (xml);
+          desc.add (depend);
+          desc.add (generate);
+          desc.add (file);
+          desc.add (warnings);
         }
       };
+
+      namespace detail
+      {
+        typedef std::pair<std::string, std::string> pair_type;
+
+        inline pair_type mk (const std::string & param)
+        {
+          return std::make_pair (param, std::string());
+        }
+
+        inline pair_type reg_M (const std::string& s)
+        {
+          std::string::const_iterator pos (s.begin());
+          const std::string::const_iterator end (s.end());
+
+          if (pos != end)
+            {
+              switch (*pos)
+                {
+                case '-':
+                  if (++pos != end)
+                    {
+                      switch (*pos)
+                        {
+                        case 'M':
+                          if (++pos == end)
+                            {
+                              return mk ("dump-dependencies");
+                            }
+                          else
+                            {
+                              switch (*pos)
+                                {
+                                case 'M':
+                                  if (++pos == end)
+                                    {
+                                      return mk ("dump-dependencies");
+                                    }
+                                  else
+                                    {
+                                      switch (*pos)
+                                        {
+                                        case 'D':
+                                          return mk ("dump-dependenciesD");
+                                        default: break;
+                                        }
+                                    }
+                                  break;
+                                case 'D':
+                                  return mk ("dump-dependenciesD");
+                                case 'F':
+                                case 'G':
+                                  return mk ("dump-dependencies");
+                                case 'T':
+                                  return mk ("dependencies-target");
+                                case 'Q':
+                                  return mk ("dependencies-target-quoted");
+                                case 'P':
+                                  return mk ("dependencies-add-phony-targets");
+                                default: break;
+                                }
+                            }
+                          break;
+                        default: break;
+                        }
+                    }
+                  break;
+                default: break;
+                }
+            }
+
+          return mk ("");
+        }
+      }
     }
   }
 }

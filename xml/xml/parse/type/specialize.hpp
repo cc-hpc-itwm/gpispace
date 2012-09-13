@@ -25,6 +25,7 @@ namespace xml
         std::string use;
         type_map_type type_map;
         type_get_type type_get;
+        boost::filesystem::path path;
       };
 
       inline void

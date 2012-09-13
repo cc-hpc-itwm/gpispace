@@ -28,128 +28,128 @@ static const int EX_STILL_RUNNING = 4;
 
 int main (int argc, char **argv)
 {
-	string orchName;
-	string orchUrl;
-	string kvsUrl;
+        string orchName;
+        string orchUrl;
+        string kvsUrl;
         string pidfile;
         bool daemonize = false;
 
-	bool bDoBackup = false;
-	std::string backup_file;
-	std::string backup_folder;
+        bool bDoBackup = false;
+        std::string backup_file;
+        std::string backup_folder;
 
-	FHGLOG_SETUP();
+        FHGLOG_SETUP();
 
-	po::options_description desc("Allowed options");
-	desc.add_options()
-	   ("help,h", "Display this message")
-	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
-	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-	   ("backup_folder,d", po::value<std::string>(&backup_folder), "Orchestrator's backup folder")
-	   ("backup_file,f", po::value<std::string>(&backup_file), "Orchestrator's backup file")
-	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
+        po::options_description desc("Allowed options");
+        desc.add_options()
+           ("help,h", "Display this message")
+           ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
+           ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
+           ("backup_folder,d", po::value<std::string>(&backup_folder), "Orchestrator's backup folder")
+           ("backup_file,f", po::value<std::string>(&backup_file), "Orchestrator's backup file")
+           ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
            ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
            ("daemonize", "daemonize after all checks were successful")
- 	   //("use-push-model", "use push model instead of request model")
-	   ;
+           //("use-push-model", "use push model instead of request model")
+           ;
 
-	po::variables_map vm;
-	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
-	po::notify(vm);
+        po::variables_map vm;
+        po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
+        po::notify(vm);
 
-	if (vm.count("help"))
-	{
-		std::cerr << "usage: orchestrator [options] ...." << std::endl;
-		std::cerr << desc << std::endl;
-		return 0;
-	}
+        if (vm.count("help"))
+        {
+                std::cerr << "usage: orchestrator [options] ...." << std::endl;
+                std::cerr << desc << std::endl;
+                return 0;
+        }
 
-	if( !vm.count("kvs_url") )
-	{
-		LOG(ERROR, "The url of the kvs daemon was not specified!");
-		return -1;
-	}
-	else
-	{
-		boost::char_separator<char> sep(":");
-		boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+        if( !vm.count("kvs_url") )
+        {
+                LOG(ERROR, "The url of the kvs daemon was not specified!");
+                return -1;
+        }
+        else
+        {
+                boost::char_separator<char> sep(":");
+                boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
 
-		vector< string > vec;
-		vec.assign(tok.begin(),tok.end());
+                vector< string > vec;
+                vec.assign(tok.begin(),tok.end());
 
-		if( vec.size() != 2 )
-		{
-			LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
-			return -1;
-		}
-		else
-		{
-			LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
-			fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
-		}
-	}
+                if( vec.size() != 2 )
+                {
+                        LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
+                        return -1;
+                }
+                else
+                {
+                        LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
+                        fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(5), 1);
+                }
+        }
 
-	int bkpOpt = NO_BKP;
-	if( vm.count("backup_file") )
-		bkpOpt *= FILE_DEF;
+        int bkpOpt = NO_BKP;
+        if( vm.count("backup_file") )
+                bkpOpt *= FILE_DEF;
 
-	if( vm.count("backup_folder") )
-		bkpOpt *= FLD_DEF;
+        if( vm.count("backup_folder") )
+                bkpOpt *= FLD_DEF;
         if (vm.count ("daemonize"))
           daemonize = true;
 
-	bfs::path bkp_path(backup_folder);
-	boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
+        bfs::path bkp_path(backup_folder);
+        boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
 
-	switch(bkpOpt)
-	{
-	case FLD_DEF:
-			backup_file = orchName + ".bak";
-			LOG( WARN, "Backup file not specified! Backup the orchestrator by default into "<<backup_file);
-			// check if the folder exists
-			if( !bfs::is_directory(st) )             // true - is directory
-			{
-				LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
-				bDoBackup = false;
-			}
-			else
-			{
-				LOG(INFO, "Backup the aggregator into the file "<<backup_folder<<"/"<<backup_file );
-				bDoBackup = true;
-			}
-			break;
+        switch(bkpOpt)
+        {
+        case FLD_DEF:
+                        backup_file = orchName + ".bak";
+                        LOG( WARN, "Backup file not specified! Backup the orchestrator by default into "<<backup_file);
+                        // check if the folder exists
+                        if( !bfs::is_directory(st) )             // true - is directory
+                        {
+                                LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
+                                bDoBackup = false;
+                        }
+                        else
+                        {
+                                LOG(INFO, "Backup the orchestrator into the file "<<backup_folder<<"/"<<backup_file );
+                                bDoBackup = true;
+                        }
+                        break;
 
-	case FILE_DEF:
-			LOG( WARN, "Backup folder not specified! No backup file will be created!");
-			bDoBackup = false;
-			break;
+        case FILE_DEF:
+                        LOG( INFO, "Backup folder not specified! No backup file will be created!");
+                        bDoBackup = false;
+                        break;
 
-	case FLDANDFILE_DEF:
-			LOG(INFO, "The backup folder is set to "<<backup_folder );
+        case FLDANDFILE_DEF:
+                        LOG(INFO, "The backup folder is set to "<<backup_folder );
 
-			// check if the folder exists
-			if( !bfs::is_directory(st) )             // true - is directory
-			{
-				LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
-				bDoBackup = false;
-			}
-			else
-			{
-				LOG(INFO, "Backup the orchestrator into the file "<<backup_folder<<"/"<<backup_file );
-				bDoBackup = true;
-			}
-			break;
+                        // check if the folder exists
+                        if( !bfs::is_directory(st) )             // true - is directory
+                        {
+                                LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
+                                bDoBackup = false;
+                        }
+                        else
+                        {
+                                LOG(INFO, "Backup the orchestrator into the file "<<backup_folder<<"/"<<backup_file );
+                                bDoBackup = true;
+                        }
+                        break;
 
-	case NO_BKP:
+        case NO_BKP:
 
-			LOG( WARN, "No backup folder and no backup file were specified! No backup for the orchestrator will be available!");
-			bDoBackup = false;
-			break;
+                        MLOG (INFO, "No backup folder and no backup file were specified! No backup for the orchestrator will be available!");
+                        bDoBackup = false;
+                        break;
 
-	default:
-			LOG(ERROR, "Bad luck, This should not happen!");
-			bDoBackup = false;
-	}
+        default:
+                        LOG(ERROR, "Bad luck, This should not happen!");
+                        bDoBackup = false;
+        }
 
         int pidfile_fd = -1;
 
@@ -204,56 +204,56 @@ int main (int argc, char **argv)
           fsync(pidfile_fd);
         }
 
-	LOG(INFO, "Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl);
+        LOG(INFO, "Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl);
 
-	try {
-		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( orchName, orchUrl, MAX_CAP  );
+        try {
+                sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( orchName, orchUrl, MAX_CAP  );
 
-		bool bUseRequestModel = false; //(vm.count("use-push-model") == 0);
+                bool bUseRequestModel = false; //(vm.count("use-push-model") == 0);
 
-		if(bDoBackup)
-		{
-			ptrOrch->start_agent(bUseRequestModel, bkp_path/backup_file);
-		}
-		else
-			ptrOrch->start_agent(bUseRequestModel);
+                if(bDoBackup)
+                {
+                        ptrOrch->start_agent(bUseRequestModel, bkp_path/backup_file);
+                }
+                else
+                        ptrOrch->start_agent(bUseRequestModel);
 
-		LOG(DEBUG, "waiting for signals...");
-		sigset_t waitset;
-		int sig(0);
-		int result(0);
+                LOG(DEBUG, "waiting for signals...");
+                sigset_t waitset;
+                int sig(0);
+                int result(0);
 
-		sigfillset(&waitset);
-		sigprocmask(SIG_BLOCK, &waitset, NULL);
+                sigfillset(&waitset);
+                sigprocmask(SIG_BLOCK, &waitset, NULL);
 
-		bool signal_ignored = true;
-		while (signal_ignored)
-		{
-			result = sigwait(&waitset, &sig);
-			if (result == 0)
-			{
-				LOG(DEBUG, "got signal: " << sig);
-				switch (sig)
-				{
-				case SIGTERM:
-				case SIGINT:
-					signal_ignored = false;
-					break;
-				default:
-					LOG(INFO, "ignoring signal: " << sig);
-					break;
-				}
-			}
-			else
-			{
-				LOG(ERROR, "error while waiting for signal: " << result);
-			}
-		}
+                bool signal_ignored = true;
+                while (signal_ignored)
+                {
+                        result = sigwait(&waitset, &sig);
+                        if (result == 0)
+                        {
+                                LOG(DEBUG, "got signal: " << sig);
+                                switch (sig)
+                                {
+                                case SIGTERM:
+                                case SIGINT:
+                                        signal_ignored = false;
+                                        break;
+                                default:
+                                        LOG(INFO, "ignoring signal: " << sig);
+                                        break;
+                                }
+                        }
+                        else
+                        {
+                                LOG(ERROR, "error while waiting for signal: " << result);
+                        }
+                }
 
-		LOG(INFO, "terminating...");
+                LOG(INFO, "terminating...");
 
-		ptrOrch->shutdown();
-	} catch( std::exception& ) {
-			std::cout<<"Could not start the Orchestrator!"<<std::endl;
-		}
+                ptrOrch->shutdown();
+        } catch( std::exception& ) {
+                        std::cout<<"Could not start the Orchestrator!"<<std::endl;
+                }
 }

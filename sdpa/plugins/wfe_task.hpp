@@ -32,6 +32,7 @@ struct wfe_task_t
   std::string result;
   fhg::util::thread::event<int> done;
   meta_data_t meta;
+  std::string error_message;
 
   time_type enqueue_time;
   time_type dequeue_time;

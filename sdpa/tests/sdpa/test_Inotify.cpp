@@ -158,9 +158,9 @@ struct MyFixture
 
 	int m_nITER;
 	int m_sleep_interval ;
-    std::string m_strWorkflow;
+  std::string m_strWorkflow;
 
-    fhg::com::io_service_pool *m_pool;
+  fhg::com::io_service_pool *m_pool;
 	fhg::com::kvs::server::kvsd *m_kvsd;
 	fhg::com::tcp_server *m_serv;
 	boost::thread *m_thrd;
@@ -227,11 +227,12 @@ void MyFixture::run_client()
 
 				boost::this_thread::sleep(boost::posix_time::seconds(3));
 
-				//touch the concerned file now!!!!
-
-				ostringstream oss;
-				oss<<"/usr/bin/touch /var/tmp/inotify_test.txt";
-				system(oss.str().c_str());
+				char* file("inotify_test.txt");
+				std::ifstream ifs("file");
+				if(!ifs.good())
+        {
+          ofstream ofs(file);
+        }
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -356,7 +357,8 @@ BOOST_AUTO_TEST_CASE( testInotifyExecution )
 	drts->unload_all();
 
 	ptrAgent->shutdown();
-        sleep (1);
+
+	sleep (1);
 	ptrOrch->shutdown();
 
 	LOG( DEBUG, "The test case test_INotify terminated!");

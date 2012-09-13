@@ -1,4 +1,7 @@
 #include "NetworkStrategy.hpp"
+#include <fhg/assert.hpp>
+
+#include <csignal>
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
@@ -9,6 +12,12 @@ namespace sdpa
 {
   namespace com
   {
+    static void kvs_error_handler (boost::system::error_code const &)
+    {
+      MLOG (ERROR, "could not contact KVS, terminating");
+      kill (getpid (), SIGTERM);
+    }
+
     NetworkStrategy::NetworkStrategy ( std::string const & next_stage
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
@@ -33,17 +42,17 @@ namespace sdpa
       // convert event to fhg::com::message_t
       if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
       {
-    	  DLOG(TRACE, "sending event: " << sdpa_event->str());
+          DLOG(TRACE, "sending event: " << sdpa_event->str());
 
-    	  fhg::com::message_t msg;
-    	  msg.header.dst = m_peer->resolve_name (sdpa_event->to());
-    	  msg.header.src = m_peer->address();
+          fhg::com::message_t msg;
+          msg.header.dst = m_peer->resolve_name (sdpa_event->to());
+          msg.header.src = m_peer->address();
 
-    	  const std::string encoded_evt (codec.encode(sdpa_event));
-    	  msg.data.assign (encoded_evt.begin(), encoded_evt.end());
-    	  msg.header.length = msg.data.size();
+          const std::string encoded_evt (codec.encode(sdpa_event));
+          msg.data.assign (encoded_evt.begin(), encoded_evt.end());
+          msg.header.length = msg.data.size();
 
-    	  m_peer->async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
+          m_peer->async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
       }
       else
       {
@@ -63,6 +72,7 @@ namespace sdpa
                                          )
                    );
       m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, m_peer)));
+      m_peer->set_kvs_error_handler (kvs_error_handler);
       m_peer->start ();
       m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
     }
@@ -88,13 +98,13 @@ namespace sdpa
 
         if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
         {
-        	//sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
-        	sdpa::events::ErrorEvent::Ptr ptrErrEvt( new sdpa::events::ErrorEvent(	sdpa_event->to(),
-        																			sdpa_event->from(),
-        																			sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE,
-        																			sdpa_event->str()));
-        	if (ptrErrEvt)
-        		super::perform (ptrErrEvt);
+                //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
+                sdpa::events::ErrorEvent::Ptr ptrErrEvt( new sdpa::events::ErrorEvent(  sdpa_event->to(),
+                                                                                                                                                                sdpa_event->from(),
+                                                                                                                                                                sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE,
+                                                                                                                                                                sdpa_event->str()));
+                if (ptrErrEvt)
+                        super::perform (ptrErrEvt);
         }
       }
     }
@@ -139,7 +149,7 @@ namespace sdpa
         }
         else
         {
-        	LOG(TRACE, m_peer->name() << " is shutting down");
+                LOG(TRACE, m_peer->name() << " is shutting down");
         }
       }
     }

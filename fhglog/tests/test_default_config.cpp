@@ -41,5 +41,7 @@ int main(int ac, char *av[])
     getLogger().log(LogEvent(LogLevel((LogLevel::Level)level), __FILE__, FHGLOG_FUNCTION, __LINE__, msg.str()));
   }
 
+  FHGLOG_TERM ();
+
   return 0;
 }

@@ -1,1 +1,2 @@
-#configure_file(stresstest.pnet ${CMAKE_CURRENT_BINARY_DIR}/stresstest.pnet COPYONLY)
+configure_file(file1.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/file1.txt COPYONLY)
+configure_file(file2.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/file2.txt COPYONLY)

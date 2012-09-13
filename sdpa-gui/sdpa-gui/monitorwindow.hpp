@@ -51,6 +51,7 @@ public slots:
     void toggleFollowLogging(bool checked);
     void toggleFollowTaskView(bool checked);
     void levelFilterChanged (int lvl);
+    void save ();
     // portfolio related slots
   void ClearTable() { m_portfolio_->ClearTable(); }
   void SubmitPortfolio() { m_portfolio_->SubmitPortfolio(); }
@@ -107,6 +108,8 @@ private:
   typedef std::map<std::string, task_list_t> component_to_task_list_t;
   component_to_task_map_t m_tasks_grid;
   component_to_task_list_t m_tasks_list;
+
+  QString m_logfile;
 };
 
 #endif // MONITORWINDOW_HPP

@@ -14,6 +14,7 @@
 #include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
 
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 
 namespace xml
 {
@@ -28,6 +29,10 @@ namespace xml
       public:
         generic (const std::string & msg)
           : std::runtime_error ("ERROR: " + msg)
+        {}
+
+        generic (const boost::format& bf)
+          : std::runtime_error ("ERROR: " + bf.str())
         {}
 
         generic (const std::string & msg, const std::string & pre)
@@ -363,6 +368,18 @@ namespace xml
       public:
         struct_redefined (const T & early, const T & late)
           : generic (nice (early, late))
+        {}
+      };
+
+      class struct_field_redefined : public generic
+      {
+      public:
+        struct_field_redefined ( const std::string& name
+                               , const boost::filesystem::path& path
+                               )
+          : generic ( boost::format ("struct field '%1%' redefined in %2%")
+                    % name % path
+                    )
         {}
       };
 
@@ -1210,40 +1227,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename TRANS, typename FUN>
-      class capacity_on_net_output : public generic
-      {
-      private:
-        std::string nice ( const TRANS & trans
-                         , const FUN & fun
-                         , const std::string & place
-                         , const petri_net::capacity_t & capacity
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "try to synthesize transition " << trans.name
-            << " in " << trans.path
-            << " with function of type net "
-            << " from " << fun.path
-            << " with out-connection to place " << place
-            << " which has a capacity of " << capacity
-            ;
-
-          return s.str();
-        }
-      public:
-        capacity_on_net_output ( const TRANS & trans
-                               , const FUN & fun
-                               , const std::string & place
-                               , const petri_net::capacity_t & capacity
-                               )
-          : generic (nice (trans, fun, place, capacity))
-        {}
-      };
-
-      // ******************************************************************* //
-
       class invalid_prefix : public generic
       {
       private:
@@ -1508,6 +1491,37 @@ namespace xml
       public:
         could_not_create_directory (const boost::filesystem::path & path)
           : generic (nice (path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class duplicate_external_function : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const std::string & mod
+                         , const boost::filesystem::path & file1
+                         , const boost::filesystem::path & file2
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "the external function " << name
+            << " in module " << mod
+            << " has different definitions"
+            << " in " << file1 << " and in " << file2
+            ;
+
+          return s.str();
+        }
+      public:
+        duplicate_external_function ( const std::string & name
+                                    , const std::string & mod
+                                    , const boost::filesystem::path & file1
+                                    , const boost::filesystem::path & file2
+                                    )
+          : generic (nice (name, mod, file1, file2))
         {}
       };
 

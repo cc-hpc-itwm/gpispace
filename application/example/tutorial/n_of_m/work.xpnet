@@ -1,0 +1,39 @@
+<template name="work_n_of_m">
+
+  <in name="i" type="long_with_credit" place="i"/>
+  <out name="o" type="long_with_credit" place="o"/>
+  <tunnel name="n" type="long" place="n"/>
+  <tunnel name="config" type="T" place="config"/>
+
+  <net>
+
+    <place name="i" type="long_with_credit"/>
+    <place name="o" type="long_with_credit"/>
+    <place name="n" type="long" virtual="true"/>
+    <place name="config" type="T" virtual="true"/>
+
+    <transition name="work">
+      <defun>
+        <inout name="v" type="long_with_credit"/>
+        <in name="n" type="long"/>
+        <in name="config" type="T"/>
+        <module name="work" function="work (v, n, config)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "### work " << v.id << " of [0.." << n << ")"
+                      << ", credit " << v.credit
+                      << ", config " << config
+                      << std::endl
+                      ;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-read port="n" place="n"/>
+      <connect-in port="v" place="i"/>
+      <connect-out port="v" place="o"/>
+    </transition>
+
+  </net>
+
+</template>

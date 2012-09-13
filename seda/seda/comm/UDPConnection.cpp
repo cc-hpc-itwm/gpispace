@@ -326,12 +326,12 @@ namespace seda { namespace comm {
       recv_waiting_mgr(T *count)
         : cnt(count)
       {
-        *cnt++;
+        *cnt += 1;
       }
 
       ~recv_waiting_mgr()
       {
-        *cnt--;
+        *cnt -= 1;
       }
     private:
       T *cnt;

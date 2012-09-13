@@ -13,6 +13,8 @@
 
 #include <fhg/util/parse/position.hpp>
 
+#include <fhg/revision.hpp>
+
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
@@ -35,7 +37,7 @@ struct wfe_exec_context : public we::mgmt::context<>
   {
     act.inject_input ();
 
-    while (act.has_enabled())
+    while (act.can_fire())
     {
       we::activity_t sub (act.extract ());
       sub.inject_input ();
@@ -87,10 +89,13 @@ int main (int argc, char **argv)
   std::string mod_path;
   std::vector<std::string> mods_to_load;
   std::vector<std::string> input_spec;
-  std::size_t num_worker = 8;
+  std::size_t num_worker (1);
+  std::string output ("-");
+  bool show_dots (false);
 
   desc.add_options()
     ("help,h", "this message")
+    ("version,V", "print version information")
     ("verbose,v", "be verbose")
     ("net", po::value<std::string>(&path_to_act)->default_value("-"), "path to encoded activity or - for stdin")
     ( "mod-path,L"
@@ -98,10 +103,11 @@ int main (int argc, char **argv)
         (fhg::util::getenv("PC_LIBRARY_PATH", "."))
     , "where can modules be located"
     )
-    ("worker", po::value<std::size_t>(&num_worker)->default_value(8), "number of workers")
+    ("worker", po::value<std::size_t>(&num_worker)->default_value(num_worker), "number of workers (ignored)")
     ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
     ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity: port=<value>")
-    ;
+    ("output,o", po::value<std::string>(&output)->default_value(output), "output stream")
+    ("show-dots,d", po::value<bool>(&show_dots)->default_value(show_dots), "show dots while waiting for progress (ignored)")    ;
 
   po::positional_options_description p;
   p.add("input", -1);
@@ -118,6 +124,13 @@ int main (int argc, char **argv)
       std::cout << desc << std::endl;
       return EXIT_SUCCESS;
     }
+
+  if (vm.count("version"))
+  {
+    std::cout << fhg::project_info();
+
+    return EXIT_SUCCESS;
+  }
 
   we::loader::loader loader;
   wfe_exec_context context (loader);
@@ -191,7 +204,15 @@ int main (int argc, char **argv)
     act.execute (context);
     act.collect_output ();
 
-    std::cout << we::util::codec::encode (act) << std::endl;
+    if (output == "-")
+      {
+        std::cout << we::util::codec::encode (act) << std::endl;
+      }
+    else
+      {
+        std::ofstream stream (output.c_str());
+        stream << we::util::codec::encode (act) << std::endl;
+      }
   }
   catch (std::exception const & ex)
   {

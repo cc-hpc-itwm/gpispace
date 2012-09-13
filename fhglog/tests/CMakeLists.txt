@@ -20,6 +20,7 @@ set (tc_srcs
    test_synch_appender.cpp
    test_threaded.cpp
    test_thread_safety.cpp
+   test_once.cpp
 )
 
 list(SORT tc_srcs)

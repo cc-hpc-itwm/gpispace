@@ -123,7 +123,7 @@ set(command ${PNETPUT_LOCATION}
        --if  "${ATOMIC_PNET_LOCATION}"
        -p n_A=${TESTS_N_ATOMIC_TASKS}L
        -p n_B=${TESTS_N_ATOMIC_TASKS}L
-       -p shared_file=\\"/var/tmp/atomic_test.txt\\"
+       -p shared_file=\\"atomic_test.txt\\"
        --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
    )
 
@@ -147,7 +147,7 @@ pnet_compile(inotify-test-wf ${CMAKE_SOURCE_DIR}/application/example/inotify/ino
 )
 
 get_target_property(INOTIFY_PNET_LOCATION pnet-inotify-test-wf LOCATION)
-set(command ${PNETPUT_LOCATION} --if  "${INOTIFY_PNET_LOCATION}" -p N=5L -p watched_file=\\"/var/tmp/inotify_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet")
+set(command ${PNETPUT_LOCATION} --if  "${INOTIFY_PNET_LOCATION}" -p N=5L -p watched_file=\\"inotify_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet")
 
 add_custom_command(TARGET pnet-inotify-test-wf
                    POST_BUILD
@@ -181,6 +181,7 @@ set (tc_srcs
   test_JobId.cpp
   test_Scheduler.cpp
   test_LoadBalancer.cpp
+  test_MapReduce.cpp
 #  test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp
@@ -225,7 +226,9 @@ foreach (tc_src ${tc_srcs})
                         )
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
+  add_dependencies(${tc_name} drts-plugin)
   add_dependencies(${tc_name} fvm-fake-plugin)
+  add_dependencies(${tc_name} sdpa-stresstest)
   add_dependencies(${tc_name} pnet-capabilities-test-wf)
   add_dependencies(${tc_name} pnet-capabilities_no_mandatory-test-wf)
   add_dependencies(${tc_name} pnet-atomic-test-wf)

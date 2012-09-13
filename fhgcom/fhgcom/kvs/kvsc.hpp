@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <fhg/assert.hpp>
 #include <fhglog/fhglog.hpp>
 
 #include <fhgcom/peer_info.hpp>
@@ -65,11 +66,26 @@ namespace fhg
 
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::put( e )
+                    , fhg::com::kvs::message::put (e).set_expiry (0)
                     , m
                     );
             DLOG(TRACE, "put(...) := " << m);
           }
+
+          void timed_put ( fhg::com::kvs::message::put::map_type const & e
+                         , size_t expiry
+                         )
+          {
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::put (e).set_expiry (expiry)
+                    , m
+                    );
+            DLOG(TRACE, "put(...) := " << m);
+          }
+
           template <typename Val>
           void put (key_type const & k, Val v)
           {
@@ -77,7 +93,20 @@ namespace fhg
 
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::put( k, v )
+                    , fhg::com::kvs::message::put (k, v).set_expiry (0)
+                    , m
+                    );
+            DLOG(TRACE, "put(" << k << ", " << v << ") := " << m);
+          }
+
+          template <typename Val>
+          void timed_put (key_type const & k, Val v, size_t expiry)
+          {
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::put (k, v).set_expiry (expiry)
                     , m
                     );
             DLOG(TRACE, "put(" << k << ", " << v << ") := " << m);
@@ -184,6 +213,26 @@ namespace fhg
                     , m
                     );
             DLOG(TRACE, "term("<< code << ", " << reason << ") := " << m);
+          }
+
+          bool ping ()
+          {
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            try
+            {
+              request ( kvs_
+                      , fhg::com::kvs::message::msg_ping()
+                      , m
+                      );
+              DLOG(TRACE, "ping() := " << m);
+              return true;
+            }
+            catch (std::exception const &)
+            {
+              return false;
+            }
           }
         private:
           mutable boost::recursive_mutex mtx_;
@@ -328,8 +377,15 @@ namespace fhg
 
         static kvs_data & get_kvs_info ()
         {
+          return **get_kvs_info_ptr ();
+        }
+
+        static kvs_data **get_kvs_info_ptr ()
+        {
           static kvs_data * d (new kvs_data);
-          return *d;
+          if (d == 0)
+            d = new kvs_data;
+          return &d;
         }
       };
 
@@ -360,16 +416,35 @@ namespace fhg
       typedef fhg::com::kvs::message::list::map_type values_type;
 
       inline
+      bool ping ()
+      {
+        return global_kvs ().ping ();
+      }
+
+      inline
       void put (values_type const & e)
       {
-        return global_kvs().put(e);
+        global_kvs ().put (e);
+      }
+
+      inline
+      void timed_put (values_type const & e, size_t expiry)
+      {
+        global_kvs ().timed_put (e, expiry);
       }
 
       template <typename Key, typename Val>
       inline
       void put (Key k, Val v)
       {
-        return global_kvs().put(k,v);
+        global_kvs ().put (k, v);
+      }
+
+      template <typename Key, typename Val>
+      inline
+      void timed_put (Key k, Val v, size_t expiry)
+      {
+        global_kvs ().timed_put (k, v, expiry);
       }
 
       template <typename Key>

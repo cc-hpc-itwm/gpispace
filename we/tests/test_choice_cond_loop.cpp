@@ -1,6 +1,6 @@
 // control loop with multi-token condition, mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/net_with_transition_function.hpp>
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
@@ -27,6 +27,7 @@ struct transition_t
 public:
   std::string t;
   mutable Function::Condition::Expression<token_t> cond;
+  std::string cond_s;
 
   friend class boost::serialization::access;
   template<typename Archive>
@@ -38,7 +39,20 @@ public:
 
   transition_t ( const std::string & _t
                , const std::string & _cond
-               ) : t (_t), cond (_cond) {}
+               ) : t (_t), cond (_cond), cond_s (_cond) {}
+
+#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+  transition_t & operator= (transition_t const &rhs)
+  {
+    if (this != &rhs)
+    {
+      t = rhs.t;
+      cond = Function::Condition::Expression<token_t>(rhs.cond_s);
+      cond_s = rhs.cond_s;
+    }
+    return *this;
+  }
+#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
   bool condition (Function::Condition::Traits<token_t>::choices_t & choices)
     const
@@ -61,12 +75,14 @@ inline std::size_t operator == (const transition_t & x, const transition_t & y)
 typedef unsigned short edge_cnt_t;
 typedef std::pair<edge_cnt_t,std::string> edge_t;
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net_with_transition_function< place_t
+                                               , transition_t
+                                               , edge_t
+                                               , token_t
+                                               > pnet_t;
 
 static token_t max (100000);
-static unsigned int capacity_value (3);
 
-typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
 
 static pnet_t::output_t trans_step
@@ -79,24 +95,32 @@ static pnet_t::output_t trans_step
 {
   pnet_t::output_t output;
 
-  map_t m;
-
   for ( pnet_t::input_t::const_iterator it (input.begin())
       ; it != input.end()
       ; ++it
       )
-    m[Function::Transition::get_pid<token_t>(*it)]
-      = Function::Transition::get_token<token_t>(*it);
+    {
+      const token_t val (Function::Transition::get_token<token_t>(*it));
+      const petri_net::pid_t pid (Function::Transition::get_pid<token_t>(*it));
 
-  output.push_back (top_t (m[pid_max], pid_max));
-  output.push_back (top_t (m[pid_state] + 1, pid_state));
-  output.push_back (top_t (m[pid_state], pid_value));
+      if (pid == pid_max)
+        {
+          output.push_back (top_t (val, pid_max));
+        }
+      else if (pid == pid_state)
+        {
+          output.push_back (top_t (val, pid_value));
+          output.push_back (top_t (val + 1, pid_state));
+        }
+    }
 
   return output;
 }
 
 static pnet_t::output_t trans_sum
-( const pnet_t::input_t & input
+( const petri_net::pid_t pid_credit
+, const petri_net::pid_t pid_sum
+, const pnet_t::input_t & input
 , const pnet_t::output_descr_t & output_descr
 )
 {
@@ -110,11 +134,8 @@ static pnet_t::output_t trans_sum
 
   pnet_t::output_t output;
 
-  for ( pnet_t::output_descr_t::const_iterator it (output_descr.begin())
-          ; it != output_descr.end()
-          ; ++it
-      )
-    output.push_back (top_t (sum, Function::Transition::get_pid<token_t>(*it)));
+  output.push_back (top_t (sum, pid_sum));
+  output.push_back (top_t (0L, pid_credit));
 
   return output;
 }
@@ -134,8 +155,8 @@ static void marking (const pnet_t & n)
 }
 
 using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::TP;
+using petri_net::edge::PT;
+using petri_net::edge::TP;
 
 int
 main ()
@@ -147,11 +168,13 @@ main ()
   petri_net::pid_t pid_value (net.add_place ("value"));
   petri_net::pid_t pid_sum (net.add_place ("sum"));
 
+  petri_net::pid_t pid_credit_value (net.add_place ("credit_value"));
+
   petri_net::pid_t tid_step
     ( net.add_transition
       ( transition_t
         ( "step"
-        , "${" + fhg::util::show (pid_state) + "} < ${" + fhg::util::show (pid_max) + "}"
+        , "${_" + fhg::util::show (pid_state) + "} < ${_" + fhg::util::show (pid_max) + "}"
         )
       )
     );
@@ -172,10 +195,12 @@ main ()
   net.add_edge (edge_t (e++, "get max"), connection_t (PT, tid_step, pid_max));
   net.add_edge (edge_t (e++, "set max"), connection_t (TP, tid_step, pid_max));
   net.add_edge (edge_t (e++, "set val"), connection_t (TP, tid_step, pid_value));
+  net.add_edge (edge_t (e++, "get credit"), connection_t (PT, tid_step, pid_credit_value));
 
   net.add_edge (edge_t (e++, "get val"), connection_t (PT, tid_sum, pid_value));
   net.add_edge (edge_t (e++, "get sum"), connection_t (PT, tid_sum, pid_sum));
   net.add_edge (edge_t (e++, "set sum"), connection_t (TP, tid_sum, pid_sum));
+  net.add_edge (edge_t (e++, "set credit"), connection_t (TP, tid_sum, pid_credit_value));
 
   net.set_transition_function
     ( tid_step
@@ -192,26 +217,33 @@ main ()
 
   net.set_transition_function
     ( tid_sum
-    , Function::Transition::Generic<token_t> (trans_sum)
+    , Function::Transition::Generic<token_t>
+      ( boost::bind ( &trans_sum
+                    , pid_credit_value
+                    , pid_sum
+                    , _1
+                    , _2
+                    )
+      )
     );
-
-  net.set_capacity (pid_value, capacity_value);
 
   net.put_token (pid_state, 0L);
   net.put_token (pid_state, 0L);
   net.put_token (pid_sum, 0L);
   net.put_token (pid_max, max);
 
+  net.put_token (pid_credit_value, 0L);
+  net.put_token (pid_credit_value, 0L);
+  net.put_token (pid_credit_value, 0L);
+
   marking (net);
 
   {
-    boost::mt19937 engine;
-
     Timer_t timer ("fire", max + 1);
 
-    while (!net.enabled_transitions().empty())
+    while (net.can_fire())
       {
-        net.fire(net.enabled_transitions().first());
+        net.fire_first ();
         // marking (net);
       }
   }

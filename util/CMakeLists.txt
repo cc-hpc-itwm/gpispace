@@ -45,6 +45,9 @@ include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
+find_package(FhgLog REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
+
 # Reflect the package structure
 add_subdirectory(fhg)
 add_subdirectory(rewrite)

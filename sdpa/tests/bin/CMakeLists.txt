@@ -2,7 +2,7 @@
 set (tc_srcs
   test_codec.cpp
   test_notification.cpp
-
+  test_job_states.cpp
   test_network_strategy.cpp
   )
 list(SORT tc_srcs)
@@ -17,7 +17,7 @@ foreach (tc_src ${tc_srcs})
   target_link_libraries(${tc_name} sdpa-daemon)
 
 if (USE_SMC_SC)
-  	target_link_libraries(${tc_name} sdpa-jobFSM_SMC)
+        target_link_libraries(${tc_name} sdpa-jobFSM_SMC)
 endif (USE_SMC_SC)
 
   target_link_libraries(${tc_name}

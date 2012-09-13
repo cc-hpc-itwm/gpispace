@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdint.h>
 
+#include <fhg/error_codes.hpp>
+
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/type/requirement.hpp>
@@ -28,7 +30,7 @@ struct daemon_t
   {
     std::cout << "submitted id = " << id << std::endl;
     layer.print_statistics (std::cerr);
-    layer.failed (id, enc);
+    layer.failed (id, enc, fhg::error::UNEXPECTED_ERROR, "test_layer_cancel");
   }
 
   bool cancel (const id_type & id, const std::string &)
@@ -44,9 +46,17 @@ struct daemon_t
     return false;
   }
 
-  bool failed (const id_type & id, const std::string &)
+  bool failed( const id_type & id
+             , const std::string & /* result */
+             , const int error_code
+             , const std::string & reason
+             )
   {
-    std::cout << "failed id = " << id << std::endl;
+    std::cout << "failed"
+              << " id = " << id
+              << " ec = " << error_code
+              << " em = " << reason
+              << std::endl;
     return false;
   }
 

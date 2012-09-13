@@ -20,6 +20,7 @@
 #include <fhgcom/kvs/message/clear.hpp>
 #include <fhgcom/kvs/message/atomic.hpp>
 #include <fhgcom/kvs/message/term.hpp>
+#include <fhgcom/kvs/message/ping.hpp>
 
 namespace fhg
 {
@@ -40,6 +41,7 @@ namespace fhg
                               , clear
                               , msg_inc
                               , msg_term
+                              , msg_ping
                               > type;
       }
     }

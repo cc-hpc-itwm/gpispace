@@ -9,6 +9,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/assert.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -21,6 +22,12 @@ namespace gpi
     {
       namespace detail
       {
+        static void kvs_error_handler (boost::system::error_code const &)
+        {
+          MLOG (ERROR, "could not contact KVS, terminating");
+          kill (getpid (), SIGTERM);
+        }
+
         static std::string rank_to_name (const gpi::rank_t rnk)
         {
           if (rnk == (gpi::rank_t)-1)
@@ -180,6 +187,8 @@ namespace gpi
                                , cookie
                                )
           );
+        m_peer->set_kvs_error_handler (detail::kvs_error_handler);
+
         m_peer_thread.reset
           (new boost::thread(boost::bind( &fhg::com::peer_t::run
                                         , m_peer
@@ -304,13 +313,14 @@ namespace gpi
 
       void topology_t::stop ()
       {
-        lock_type lock(m_mutex);
-        if (! m_peer_thread)
         {
-          return;
+          lock_type lock(m_mutex);
+          if (! m_peer_thread || m_shutting_down)
+          {
+            return;
+          }
+          m_shutting_down = true;
         }
-
-        m_shutting_down = true;
         m_peer->stop();
         m_peer_thread->join();
         m_peer.reset();
@@ -495,10 +505,10 @@ namespace gpi
             offset_t offset (boost::lexical_cast<offset_t>(av[2]));
             size_t   size (boost::lexical_cast<size_t>(av[3]));
             std::string name
-			  (boost::algorithm::trim_copy_if( av[4]
-			                                 , boost::is_any_of("\"")
-											 )
-			  ); // TODO unquote
+                          (boost::algorithm::trim_copy_if( av[4]
+                                                         , boost::is_any_of("\"")
+                                                                                         )
+                          ); // TODO unquote
 
             int res
               (global::memory_manager().remote_alloc( 1

@@ -41,12 +41,10 @@ static const std::size_t MAX_PARALLEL_JOBS = 1024;
 
 JobManager::JobManager(const std::string& name)
 	: SDPA_INIT_LOGGER(name)
+{}
+
+JobManager::~JobManager()
 {
-
-}
-
-JobManager::~JobManager(){
-
 	if( job_map_.size())
 	{
 		SDPA_LOG_WARN( "there are still entries left in the job-map: " << job_map_.size() );
@@ -60,93 +58,93 @@ JobManager::~JobManager(){
 //helpers
 Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
 {
-    lock_type lock(mtx_);
-    job_map_t::iterator it = job_map_.find( job_id );
-    if( it != job_map_.end() )
-      return it->second;
-    else
-      throw JobNotFoundException( job_id );
+  lock_type lock(mtx_);
+  job_map_t::iterator it = job_map_.find( job_id );
+  if( it != job_map_.end() )
+    return it->second;
+  else
+    throw JobNotFoundException( job_id );
 }
 
 void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
 {
-    lock_type lock(mtx_);
-    job_map_t::iterator it;
-    bool bsucc = false;
+  lock_type lock(mtx_);
+  job_map_t::iterator it;
+  bool bsucc = false;
 
-    pair<job_map_t::iterator, bool> ret_pair(it, bsucc);
-    pair<sdpa::job_id_t, Job::ptr_t> job_pair(job_id, pJob);
+  pair<job_map_t::iterator, bool> ret_pair(it, bsucc);
+  pair<sdpa::job_id_t, Job::ptr_t> job_pair(job_id, pJob);
 
-    ret_pair =  job_map_.insert(job_pair);
+  ret_pair =  job_map_.insert(job_pair);
 
-    if(! ret_pair.second)
-      throw JobNotAddedException(job_id);
+  if(! ret_pair.second)
+    throw JobNotAddedException(job_id);
 }
 
 void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
 {
-    lock_type lock(mtx_);
+  lock_type lock(mtx_);
 
-    // delete the requirements of this job
-    requirements_map_t::size_type rc = job_requirements_.erase(job_id);
+  // delete the requirements of this job
+  requirements_map_t::size_type rc = job_requirements_.erase(job_id);
 
-    if(rc)
-    {
-      DLOG(TRACE, "Erased the requirements of the job "<<job_id.str());
-    }
+  if(rc)
+  {
+    DLOG(TRACE, "Erased the requirements of the job "<<job_id.str());
+  }
 
-    job_map_t::size_type ret = job_map_.erase(job_id);
-    if( ! ret )
-    {
-        throw JobNotDeletedException(job_id);
-    }
-    else
-    {
-      DLOG(TRACE, "Erased the job "<<job_id.str()<<" from job map");
-    }
+  job_map_t::size_type ret = job_map_.erase(job_id);
+  if( !ret )
+  {
+    throw JobNotDeletedException(job_id);
+  }
+  else
+  {
+    DLOG(TRACE, "Erased the job "<<job_id.str()<<" from job map");
+  }
 
-    free_slot_.notify_one();
+  free_slot_.notify_one();
 }
 
 std::string JobManager::print() const
 {
-    lock_type lock(mtx_);
-    std::ostringstream os;
+  lock_type lock(mtx_);
+  std::ostringstream os;
 
-    SDPA_LOG_DEBUG("Begin dumping the JobManager...");
+  SDPA_LOG_DEBUG("Begin dumping the JobManager...");
 
-    if( job_map_.begin() == job_map_.end() )
-    	os<<"The JobManager is empty!";
-    else
-    {
-        os<<"The list of jobs still owned by the JobManager:"<<std::endl;
-        for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
-          SDPA_LOG_INFO(it->second->print_info());
-    }
+  if( job_map_.begin() == job_map_.end() )
+    os<<"The JobManager is empty!";
+  else
+  {
+    os<<"The list of jobs still owned by the JobManager:"<<std::endl;
+    for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
+      SDPA_LOG_INFO(it->second->print_info());
+  }
 
-    SDPA_LOG_DEBUG("End dumping the JobManager...");
+  SDPA_LOG_DEBUG("End dumping the JobManager...");
 
-    return os.str();
+  return os.str();
 }
 
 const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements)
 {
-    lock_type lock(mtx_);
-    if( job_requirements_.empty() )
-            throw NoJobRequirements(jobId);
+  lock_type lock(mtx_);
+  if( job_requirements_.empty() )
+    throw NoJobRequirements(jobId);
 
-    DLOG(TRACE, "Locate the preferences of the job "<<jobId.str());
-    requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
-    if( it_req == job_requirements_.end() )
-            throw NoJobRequirements(jobId);
+  DLOG(TRACE, "Locate the preferences of the job "<<jobId.str());
+  requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
+  if( it_req == job_requirements_.end() )
+    throw NoJobRequirements(jobId);
 
-    return it_req->second;;
+  return it_req->second;;
 }
 
 void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const requirement_list_t& job_req_list) throw (JobNotFoundException)
 {
-    lock_type lock(mtx_);
-    job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
+  lock_type lock(mtx_);
+  job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 
 bool JobManager::slotAvailable () const
@@ -162,66 +160,64 @@ void JobManager::waitForFreeSlot ()
 
 void JobManager::resubmitResults(IComm* pComm)
 {
-    lock_type lock(mtx_);
-    SDPA_LOG_INFO("Re-submit to the master the results of the jobs that are either finished, failed or cancelled!");
+  lock_type lock(mtx_);
+  SDPA_LOG_INFO("Re-submit to the master the results of the jobs that are either finished, failed or cancelled!");
 
-    for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
+  for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
+  {
+    sdpa::daemon::Job::ptr_t pJob = it->second;
+
+    std::string job_status = pJob->getStatus();
+    SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");
+
+    if( pJob->isMasterJob() && job_status.find("Finished") != std::string::npos )
     {
-        sdpa::daemon::Job* pJob = it->second.get();
+      // create jobFinishedEvent
+      sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
+                                                                                              pJob->owner(),
+                                                                                              pJob->id(),
+                                                                                              pJob->result() ));
 
-        std::string job_status = pJob->getStatus();
-        SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");
-
-        if( pJob->isMasterJob() && job_status.find("Finished") != std::string::npos )
-        {
-        	// create jobFinishedEvent
-        	sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
-        																							pJob->owner(),
-        																							pJob->id(),
-        																							pJob->result() ));
-
-        	// send it to the master
-        	pComm->sendEventToMaster(pEvtJobFinished);
-        }
-        else if( pJob->isMasterJob() && job_status.find("Failed") != std::string::npos )
-        {
-        	// create jobFailedEvent
-        	sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent( pComm->name(),
-        																						pJob->owner(),
-        																						pJob->id(),
-        																						pJob->result() ));
-
-        	// send it to the master
-        	pComm->sendEventToMaster(pEvtJobFailed);
-        }
-        else if( pJob->isMasterJob() && job_status.find("Cancelled") != std::string::npos)
-        {
-        	// create jobCancelledEvent
-        	sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
-        																								pJob->owner(),
-        																								pJob->id(),
-        																								pJob->result() ));
-
-        	// send it to the master
-        	pComm->sendEventToMaster(pEvtJobCancelled);
-        }
-        else
-        {
-        	sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( 	pComm->name(),
-        			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	pJob->owner(),
-        			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	pJob->id(),
-        			 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	""));
-
-        	// There is a problem with this if uncommented
-        	pComm->sendEventToMaster(pSubmitJobAckEvt);
-        }
-
+      // send it to the master
+      pComm->sendEventToMaster(pEvtJobFinished);
     }
+    else if( pJob->isMasterJob() && job_status.find("Failed") != std::string::npos )
+    {
+      // create jobFailedEvent
+      sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
+                                                                                        pJob->owner(),
+                                                                                        pJob->id(),
+                                                                                        pJob->result() ));
+
+      // send it to the master
+      pComm->sendEventToMaster(pEvtJobFailed);
+    }
+    else if( pJob->isMasterJob() && job_status.find("Cancelled") != std::string::npos)
+    {
+      // create jobCancelledEvent
+      sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
+                                                                                                  pJob->owner(),
+                                                                                                  pJob->id()));
+
+      // send it to the master
+      pComm->sendEventToMaster(pEvtJobCancelled);
+    }
+    else
+    {
+      sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
+                                                                                                pJob->owner(),
+                                                                                                pJob->id(),
+                                                                                                ""));
+
+      // There is a problem with this if uncommented
+      pComm->sendEventToMaster(pSubmitJobAckEvt);
+    }
+  }
 }
 
 sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 {
-	lock_type lock(mtx_);
+  lock_type lock(mtx_);
 	sdpa::job_id_list_t listJobsNotCompleted;
 
 	for ( job_map_t::iterator it = job_map_.begin(); it != job_map_.end(); ++it )

@@ -1420,6 +1420,22 @@ namespace we { namespace type {
           return subnet;
         }
       };
+
+      template <typename P, typename E, typename T>
+      bool is_expression (const transition_t<P, E, T> & t)
+      {
+        return boost::apply_visitor (visitor(), t.data()) == expression;
+      }
+      template <typename P, typename E, typename T>
+      bool is_modcall (const transition_t<P, E, T> & t)
+      {
+        return boost::apply_visitor (visitor(), t.data()) == modcall;
+      }
+      template <typename P, typename E, typename T>
+      bool is_subnet (const transition_t<P, E, T> & t)
+      {
+        return boost::apply_visitor (visitor(), t.data()) == subnet;
+      }
     }
   }
 }

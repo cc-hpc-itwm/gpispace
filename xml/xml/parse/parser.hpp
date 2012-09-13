@@ -16,6 +16,8 @@
 #include <xml/parse/headerlist.hpp>
 #include <xml/parse/headergen.hpp>
 
+#include <xml/parse/util/mk_fstream.hpp>
+
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
@@ -26,6 +28,8 @@
 #include <fhg/util/join.hpp>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 
 #include <sstream>
 #include <vector>
@@ -588,6 +592,8 @@ namespace xml
         , state.file_in_progress()
         );
 
+      mod.path = state.file_in_progress();
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
@@ -618,6 +624,15 @@ namespace xml
                     (required ("mod_type", child, "flag", state.file_in_progress()));
 
                   mod.cxxflags.push_back (flag);
+                }
+              else if (child_name == "link")
+                {
+                  mod.links.push_back ( required ( "mod_type"
+                                                 , child
+                                                 , "href"
+                                                 , state.file_in_progress()
+                                                 )
+                                      );
                 }
               else if (child_name == "code")
                 {
@@ -832,10 +847,6 @@ namespace xml
                         , state.file_in_progress()
                         )
         , required ("place_type", node, "type", state.file_in_progress())
-        , fhg::util::fmap<std::string, petri_net::capacity_t>
-          ( &fhg::util::reader<petri_net::capacity_t>::read
-          , optional (node, "capacity")
-          )
         , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
                                              , optional (node, "virtual")
                                              )
@@ -1136,6 +1147,11 @@ namespace xml
                                         )
                              );
 
+      if (boost::apply_visitor (signature::visitor::has_field (name), sig))
+        {
+          throw error::struct_field_redefined (name, state.file_in_progress());
+        }
+
       boost::apply_visitor ( signature::visitor::add_field (name, type)
                            , sig
                            );
@@ -1385,10 +1401,9 @@ namespace xml
     {
       type::specialize_type s;
 
-      s.name =
-        required ("specialize_type", node, "name", state.file_in_progress());
-      s.use =
-        required ("specialize_type", node, "use", state.file_in_progress());
+      s.path = state.file_in_progress();
+      s.name = required ("specialize_type", node, "name", s.path);
+      s.use = required ("specialize_type", node, "use", s.path);
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1557,6 +1572,151 @@ namespace xml
 
     // ********************************************************************* //
 
+    namespace dependencies
+    {
+      template<typename Stream>
+      class wrapping_word_stream
+      {
+      private:
+        const std::size_t _max_len;
+        mutable std::size_t _len;
+        Stream& _stream;
+      public:
+        wrapping_word_stream (Stream& stream, const std::size_t max = 75)
+          : _max_len (max)
+          , _len (0)
+          , _stream (stream)
+        {}
+
+        void put (const std::string& w) const
+        {
+          if (_len + w.size() > _max_len)
+            {
+              _stream << " \\"; newl(); append (" ");
+            }
+          else if (_len > 0)
+            {
+              append (" ");
+            }
+
+          append (w);
+        }
+
+        void append (const std::string& s) const
+        {
+          _stream << s;
+
+          _len += s.size();
+        }
+
+        void newl () const
+        {
+          _stream << std::endl;
+
+          _len = 0;
+        }
+      };
+
+      class quote
+      {
+      private:
+        std::string _quoted;
+
+      public:
+        quote (const std::string& s) : _quoted ()
+        {
+          std::string::const_iterator pos (s.begin());
+          const std::string::const_iterator end (s.end());
+
+          while (pos != end)
+            {
+              switch (*pos)
+                {
+                case ' ': _quoted += "\\ "; break;
+                case '$': _quoted += "$$"; break;
+                default: _quoted += *pos; break;
+                }
+
+              ++pos;
+            }
+        };
+
+        operator const std::string& () const { return _quoted; }
+      };
+
+      template<typename Stream>
+      void mk ( const state::type& state
+              , const std::string& input
+              , Stream& stream
+              )
+      {
+        wrapping_word_stream<Stream> wrapping_stream (stream);
+
+        if (state.dependencies_target().size() > 0)
+          {
+            BOOST_FOREACH ( const std::string& target
+                          , state.dependencies_target()
+                          )
+              {
+                wrapping_stream.put (target);
+              }
+          }
+
+        if (state.dependencies_target_quoted().size() > 0)
+          {
+            BOOST_FOREACH ( const std::string& target
+                          , state.dependencies_target_quoted()
+                          )
+              {
+                wrapping_stream.put (quote (target));
+              }
+          }
+
+        if (  (state.dependencies_target().size() == 0)
+           && (state.dependencies_target_quoted().size() == 0)
+           )
+          {
+            wrapping_stream.put (input);
+          }
+
+        wrapping_stream.append (":");
+
+        BOOST_FOREACH ( const boost::filesystem::path& path
+                      , state.dependencies()
+                      )
+          {
+            const std::string& dep (path.string());
+
+            if (dep != input)
+              {
+                wrapping_stream.put (dep);
+              }
+          }
+
+        wrapping_stream.newl();
+
+        if (state.dependencies_add_phony_targets())
+          {
+            BOOST_FOREACH ( const boost::filesystem::path& path
+                          , state.dependencies()
+                          )
+              {
+                const std::string& dep (path.string());
+
+                if (dep != input)
+                  {
+                    wrapping_stream.newl();
+                    wrapping_stream.append (dep);
+                    wrapping_stream.append(":");
+                    wrapping_stream.newl();
+                  }
+              }
+          }
+      }
+    }
+
+    // ********************************************************************* //
+
     inline type::function_type
     just_parse (state::type & state, const std::string & input)
     {
@@ -1577,7 +1737,7 @@ namespace xml
 
       if (state.dump_xml_file().size() > 0)
         {
-          const std::string file (state.dump_xml_file());
+          const std::string& file (state.dump_xml_file());
           std::ofstream stream (file.c_str());
 
           if (!stream.good())
@@ -1613,6 +1773,24 @@ namespace xml
           includes::we_header_gen (state, descrs);
 
           type::struct_to_cpp (state, f);
+        }
+
+      if (state.dump_dependenciesD())
+        {
+          state.dump_dependencies() = input + ".d";
+        }
+
+      if (state.dump_dependencies().size() > 0)
+        {
+          const std::string& file (state.dump_dependencies());
+          std::ofstream stream (file.c_str());
+
+          if (!stream.good())
+            {
+              throw error::could_not_open_file (file);
+            }
+
+          dependencies::mk (state, input, stream);
         }
 
       return f;

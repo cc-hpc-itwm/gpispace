@@ -39,12 +39,18 @@ bool Worker::has_job( const sdpa::job_id_t& job_id )
 	return false;
 }
 
-bool Worker::is_job_acknowleged( const sdpa::job_id_t& job_id )
+bool Worker::isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id )
 {
-	if( acknowledged_.find(job_id) != acknowledged_.end() )
-		return true;
-	return false;
+  lock_type lock(mtx_);
+  if( submitted_.find(job_id) != submitted_.end() )
+    return true;
+
+  if( acknowledged_.find(job_id) != acknowledged_.end() )
+    return true;
+
+  return false;
 }
+
 
 void Worker::update()
 {

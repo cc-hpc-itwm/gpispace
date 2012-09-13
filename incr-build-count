@@ -1,0 +1,17 @@
+#!/bin/bash
+counter="${1}"
+if [ -z "$counter" ] ; then
+   counter="build/build.counter"
+fi
+if [ "$counter" = "-h" ] ; then
+   echo >&2 "usage: incr-build-counter [-h] <path-to-counter>"
+   echo >&2 "    default counter: build/build.counter"
+   exit 0
+fi
+value=$(cat "${counter}" 2>/dev/null)
+if [ -z "$value" ] ; then
+  value=0
+fi
+value=$(( value + 1 ))
+echo "${value}" > "$counter"
+echo >&2 "incremented build counter to: ${value}"

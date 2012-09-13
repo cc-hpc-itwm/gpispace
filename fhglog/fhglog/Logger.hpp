@@ -81,6 +81,8 @@ namespace fhg { namespace log {
       typedef std::list<Appender::ptr_t> appender_list_t;
       appender_list_t appenders_;
   };
+
+    void terminate ();
 }}
 
 #endif

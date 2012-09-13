@@ -10,31 +10,31 @@
 
     <transition name="read_config" inline="true">
       <defun>
-	<in name="filename" type="string"/>
-	<in name="mask" type="string"/>
-	<out name="config" type="config"/>
-	<module name="ufbmig_update_salt_mask" function="config read_config_one (filename, mask)">
-	  <cinclude href="fhglog/fhglog.hpp"/>
+        <in name="filename" type="string"/>
+        <in name="mask" type="string"/>
+        <out name="config" type="config"/>
+        <module name="ufbmig_update_salt_mask" function="config read_config_one (filename, mask)">
+          <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
-	  <cinclude href="util/rw.hpp"/>
+          <cinclude href="util/rw.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="InterMig/intermigjob.h"/>
           <cinclude href="InterMig/SDPA/src/modules.h"/>
           <cinclude href="InterMig/SDPA/simulation/src/velocityhandler.h"/>
-	  <code><![CDATA[
-	  MLOG (INFO, "reading config from file " << filename);
+          <code><![CDATA[
+          MLOG (INFO, "reading config from file " << filename);
 
           namespace vmem = ::ufbmig::util::memory::global;
           ::pnetc::type::config::config config;
-	  ::ufbmig::util::serialize::read (filename, config);
+          ::ufbmig::util::serialize::read (filename, config);
 
           {
-	     MLOG (INFO, "reading mask from file " << mask);
+             MLOG (INFO, "reading mask from file " << mask);
              Velocityhandler MyHandler;
              const int ParallelJobs = config.num.nodes;
              const long TransferSize = MyHandler.DeterminSaltMaskSize( mask );
 
-	     MLOG (INFO, "TransferSize =  " << TransferSize);
+             MLOG (INFO, "TransferSize =  " << TransferSize);
              if ( TransferSize > config.size.alloc.compressed_mask)
              {
 
@@ -56,7 +56,7 @@
                          , 0
                          , config.size.alloc.compressed_mask
                          , config.handle.shmem.free
-                         , static_cast<fvmAllocHandle_t> (config.handle.scratch.compressed_mask)
+                         , 0
                        )
                      );
             }
@@ -99,8 +99,8 @@
 
          MLOG(INFO, "read_config done");
          return config;
-	  ]]></code>
-	</module>
+          ]]></code>
+        </module>
       </defun>
       <connect-in port="filename" place="file_with_config"/>
       <connect-in port="mask" place="file_with_mask"/>
@@ -226,7 +226,7 @@
                       , 0
                       , config.size.alloc.compressed_mask
                       , config.handle.shmem.free
-                      , static_cast<fvmAllocHandle_t> (config.handle.scratch.compressed_mask)
+                      , 0
                     )
                   );
 
@@ -310,17 +310,17 @@
 
     <transition name="finalize">
       <defun>
- 	<in name="config" type="config"/>
+        <in name="config" type="config"/>
         <in name="m" type="long"/>
         <in name="eaten" type="control"/>
         <out name="config" type="config"/>
-	<module name="ufbmig_update_salt_mask" function="finalize_one (config, m, eaten)">
-	  <cinclude href="fhglog/fhglog.hpp"/>
-	  <cinclude href="util/rw.hpp"/>
+        <module name="ufbmig_update_salt_mask" function="finalize_one (config, m, eaten)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/rw.hpp"/>
           <cinclude href="InterMig/SDPA/src/modules.h"/>
           <cinclude href="InterMig/SDPA/simulation/src/velocityhandler.h"/>
-	  <code><![CDATA[
-	  MLOG (INFO, "finalize ");
+          <code><![CDATA[
+          MLOG (INFO, "finalize ");
 
           InterMigJob Job;
           sli_property_handler SLIHandler;
@@ -338,8 +338,8 @@
 
           MLOG (INFO, "Call MyHandler.WriteToFile " );
           int ierr = MyHandler.WriteToFile( Job.VelFile );
-	  ]]></code>
-	</module>
+          ]]></code>
+        </module>
 <!--        <expression>
           ${finalized} := []
         </expression> -->

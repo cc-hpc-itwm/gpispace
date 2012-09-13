@@ -1,14 +1,26 @@
 #include <TravTimeTab.hpp>
 
 TravTimeTab::TravTimeTab()
-    :SrcRcv(NULL),SrcRcvLocal(NULL),coeff(NULL),coeffxy(NULL),coeffz(NULL),izfc_vec(NULL)
+    :coeff(NULL)
+    ,coeffxy(NULL)
+    ,coeffz(NULL)
+    ,SrcRcv(NULL)
+    ,SrcRcvLocal(NULL)
+    ,izfc_vec(NULL)
 {
 
 }
 
 TravTimeTab::TravTimeTab(const MigrationJob& MigJob)
-    :pTTData(NULL),SrcRcv(NULL),SrcRcvLocal(NULL),SrcRcvdx(NULL),SrcRcvdy(NULL),izfc_vec(NULL),
-     coeff(NULL),coeffxy(NULL),coeffz(NULL)
+    :coeff(NULL)
+    ,coeffxy(NULL)
+    ,coeffz(NULL)
+    ,SrcRcv(NULL)
+    ,SrcRcvLocal(NULL)
+    ,SrcRcvdx(NULL)
+    ,SrcRcvdy(NULL)
+    ,izfc_vec(NULL)
+    ,pTTData(NULL)
 {
 
   //TTFile.Analyse(MigJob.RTFileName, GVol, GSrc);
@@ -72,9 +84,17 @@ TravTimeTab::TravTimeTab ( const MigrationJob & MigJob
                          , int NThreads
                          , char * _VMem
                          )
-    :pTTData(NULL),SrcRcv(NULL),SrcRcvLocal(NULL),SrcRcvdx(NULL),SrcRcvdy(NULL),izfc_vec(NULL),
-     coeff(NULL),coeffxy(NULL),coeffz(NULL)
-    , TTVMMem(MigJob,NThreads,_VMem)
+    :TTVMMem(MigJob,NThreads,_VMem)
+    ,coeff(NULL)
+    ,coeffxy(NULL)
+    ,coeffz(NULL)
+    ,SrcRcv(NULL)
+    ,SrcRcvLocal(NULL)
+    ,SrcRcvdx(NULL)
+    ,SrcRcvdy(NULL)
+    ,izfc_vec(NULL)
+    ,pTTData(NULL)
+
 {
 
   //TTFile.Analyse(MigJob.RTFileName, GVol, GSrc);
@@ -136,8 +156,15 @@ TravTimeTab::TravTimeTab ( const MigrationJob & MigJob
 
 
 TravTimeTab::TravTimeTab(volatile char * _pTTData, const MigrationJob& MigJob)
-    :pTTData(_pTTData),SrcRcv(NULL),SrcRcvLocal(NULL),SrcRcvdx(NULL),SrcRcvdy(NULL),izfc_vec(NULL),
-     coeff(NULL),coeffxy(NULL),coeffz(NULL)
+    :coeff(NULL)
+    ,coeffxy(NULL)
+    ,coeffz(NULL)
+    ,SrcRcv(NULL)
+    ,SrcRcvLocal(NULL)
+    ,SrcRcvdx(NULL)
+    ,SrcRcvdy(NULL)
+    ,izfc_vec(NULL)
+    ,pTTData(_pTTData)
 {
 
   //TTFile.Analyse(MigJob.RTFileName, GVol, GSrc);

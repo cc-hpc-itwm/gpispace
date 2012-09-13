@@ -3,7 +3,7 @@ include(car_cdr_macros)
 
 macro(FHG_ADD_TEST)
   PARSE_ARGUMENTS(TEST
-    "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION"
+    "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS"
     "QUIET;STANDALONE"
     ${ARGN}
     )
@@ -26,6 +26,9 @@ macro(FHG_ADD_TEST)
   endif()
 
   add_executable(${tc_name} ${TEST_SOURCE} ${TEST_ADDITIONAL_SOURCES})
+  if (TEST_COMPILE_FLAGS)
+    set_target_properties(${tc_name} PROPERTIES COMPILE_FLAGS ${TEST_COMPILE_FLAGS})
+  endif()
   target_link_libraries(${tc_name} ${TEST_LINK_LIBRARIES})
   get_target_property(TC_LOC ${tc_name} LOCATION)
   add_test (${tc_name} ${TC_LOC} ${TEST_ARGS})

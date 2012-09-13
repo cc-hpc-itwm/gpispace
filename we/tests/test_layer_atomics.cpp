@@ -41,7 +41,11 @@ struct daemon_t
     return false;
   }
 
-  bool failed (const id_type &, const std::string &)
+  bool failed( const id_type & id
+             , const std::string & result
+             , const int error_code
+             , const std::string & reason
+             )
   {
     return false;
   }

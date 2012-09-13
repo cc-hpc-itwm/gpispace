@@ -1,0 +1,188 @@
+#!/bin/bash
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename $0) [options]
+
+  -h: this help
+  -f: node file to use
+  -I: number of I/O workers per node
+  -C: number of CALC workers per node
+  -s: amount of shared memory to use
+  -c: amount of communication memory to use
+  -m: amount of gpi memory to use
+EOF
+}
+
+# catch CTRL-C and qdel the job
+on_ctrlC()
+{
+	echo >&2 "Canceled..."
+        sdpa stop
+	exit 0
+}
+
+
+# Execute function on_ctrlC() receiving SIGINT signal
+#
+trap 'on_ctrlC' SIGINT
+
+num_io_worker_per_node=1
+num_calc_worker_per_node=1
+nodefile="$PBS_NODEFILE"
+
+# guess memory sizes
+tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
+com_mem=$(( 64 * 1024 * 1024 ))
+avl_mem=$(( ($tot_mem * 80) / 100 - $com_mem ))
+gpi_mem=$(( ($avl_mem * 30) / 100 ))
+shm_mem=$(( $avl_mem - $gpi_mem ))
+
+while getopts ":hf:I:C:s:c:m:" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	f)
+	    nodefile="$OPTARG"
+	    ;;
+	I)
+	    num_io_per_node="$OPTARG"
+	    ;;
+	C)
+	    num_calc_per_node="$OPTARG"
+	    ;;
+	s)
+	    shm_mem=$OPTARG
+	    ;;
+	c)
+	    com_mem=$OPTARG
+	    ;;
+	m)
+	    gpi_mem=$OPTARG
+	    ;;
+	\?)
+	    ;;
+    esac
+done
+
+if [ -z "$nodefile" ] ; then
+  usage
+  exit 1
+fi
+
+if [ -z "$SDPA_HOME" ] ; then
+  echo >&2 "SDPA_HOME is not set!"
+  exit 2
+fi
+
+if [ "${nodefile:0:1}" != "/" ]; then
+    nodefile="$PWD/$nodefile"
+fi
+
+echo >&2 "using nodefile $nodefile"
+echo >&2 "using $gpi_mem GPI memory per node"
+echo >&2 "using $shm_mem shared-memory per process"
+echo >&2 "using $com_mem communication buffer size per process"
+
+sdpa=$(which sdpa)
+if [ $? -ne 0 ] ; then
+    echo "could not locate 'sdpa' executable!" >&2
+    exit 1
+fi
+
+export SDPA_PERFORM_UNATTENDED_SETUP=1
+if [ ! -e "$HOME/.sdpa/configs/sdpa.rc" ] ; then
+    echo "I: sdpa config does not exist, performing automated SDPA setup" >&2
+
+    ${sdpa} setup </dev/null || {
+	echo "E: I was unable to setup the SDPA environment for you." >&2
+	mv "$HOME/.sdpa/configs/sdpa.rc" "$HOME/.sdpa/configs/sdpa.rc~"
+	exit ${EX_UNAVAILABLE:?}
+    }
+fi
+
+sdpa init "$nodefile" </dev/null || {
+    echo "could not initialize SDPA!" >&2
+    exit 1
+}
+
+source $HOME/.sdpa/state/sdpa.env
+
+# set memory sizes - choose reasonable defaults (depending on local machines)
+fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "gpi.enabled" -v "true"
+fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "gpi.memory_size" -v "$gpi_mem"
+fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "gpi.socket_path" -v "/var/tmp"
+fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "plugin.gpi_compat.com_size" -v "$com_mem"
+fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "plugin.gpi_compat.shm_size" -v "$shm_mem"
+
+# set up topology
+fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "topology.per-node" -v 1
+fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "topology.with-mediator" -v "false"
+
+log "starting sdpa..."
+scratch_dir=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.scratch_dir)
+if [ -z "$scratch_dir" ] ; then
+    scratch_dir="$HOME/.sdpa/scratch"
+fi
+
+sdpa start kvs
+sdpa start gpi
+sdpa start orch
+sdpa start agg
+
+# helper function to execute something remotely
+function rexec ()
+{
+    local node="$1"; shift
+    local err
+    local rc
+    local ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
+    local cmd="ssh $ssh_opts $node $@"
+    err=$($cmd </dev/null 2>&1)
+    rc=$?
+    if [ $rc -ne 0 ] ; then
+        echo $err >&2
+        return $rc
+    else
+        echo $err
+        return 0
+    fi
+}
+
+
+# start worker process according to config
+hosts=$(cat "$nodefile" | uniq)
+master=$(cat "$nodefile" | head -n 1)
+num_hosts=$(cat "$nodefile" | uniq | wc -l)
+
+rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "init" -m aggregator -C "init" -M 4 -B 4 &
+rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "finalize" -m aggregator -C "finalize" -M 4 -B 4 &
+
+for host in $hosts ; do
+	wait
+
+	echo >&2 "I: starting workers on host: $host"
+	count=0
+	for i in $(seq 1 ${num_calc_per_node}) ; do
+        	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "calc" -m aggregator -C "CPU" &
+		count=$(( count + 1 ))
+		if [ $count -gt 6 ] ; then
+			count=0
+			wait
+		fi
+	done
+	wait
+
+	for i in $(seq 1 ${num_io_per_node}) ; do
+        	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "load" -m aggregator -C "LOAD" &
+	done
+	wait
+
+	for i in $(seq 1 ${num_io_per_node}) ; do
+        	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "write" -m aggregator -C "WRITE" &
+	done
+done
+wait

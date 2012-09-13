@@ -552,8 +552,11 @@ string CMarkupSTL::x_GetToken( const CMarkupSTL::TokenPos& token ) const
 	// Build the substring from those indexes and return it
 	if ( token.nL > token.nR )
 		return "";
-	return m_strDoc.substr( token.nL,
-		token.nR - token.nL + ((token.nR<m_strDoc.size())? 1:0) );
+	return m_strDoc.substr
+          ( token.nL
+          , token.nR
+          - token.nL + ((token.nR < 0 || (std::string::size_type)token.nR < m_strDoc.size())? 1:0)
+          );
 }
 
 int CMarkupSTL::x_FindElem( int iPosParent, int iPos, const char* szPath )
@@ -746,7 +749,10 @@ string CMarkupSTL::x_GetAttrib( int iPos, const char* szAttrib ) const
 	TokenPos token( m_strDoc.c_str() );
 	token.nNext = m_aPos[iPos].nStartL + 1;
 	if ( szAttrib && x_FindAttrib( token, szAttrib ) )
-		return x_TextFromDoc( token.nL, token.nR - ((token.nR<m_strDoc.size())?0:1) );
+		return x_TextFromDoc
+                  ( token.nL
+                  , token.nR - ((token.nR < 0 || (std::string::size_type)token.nR < m_strDoc.size() )?0:1)
+                  );
 	return "";
 }
 

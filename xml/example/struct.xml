@@ -73,7 +73,7 @@
 <token/>
 </place>
 
-<place name="place_pixel" type="pixel" capacity="2">
+<place name="place_pixel" type="pixel">
 <token>
   <field name="color"><value>0xeeeeee</value></field>
   <field name="point">

@@ -10,6 +10,9 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/error_codes.hpp>
+#include <fhg/util/bool.hpp>
+#include <fhg/util/bool_io.hpp>
 
 // plugin interfaces
 #include "sdpactl.hpp"
@@ -35,6 +38,7 @@ namespace job
   {
     enum code
       {
+        PREPARE,
         INITIALIZE,
         UPDATE,
         CALCULATE,
@@ -48,26 +52,22 @@ namespace job
     std::string id;
     int         state;
     int         error;
+    std::string error_message;
     std::string result;
   };
 
   static bool is_done(info_t const &info)
   {
-    return info.state > sdpa::status::RUNNING;
-  }
-
-  static int state_to_result_code (int state)
-  {
-    if (sdpa::status::FINISHED == state) return 0;
-    if (sdpa::status::CANCELED == state) return -ECANCELED;
-    if (sdpa::status::FAILED   == state) return -EFAULT;
-    else                                 return -EFAULT;
+    return info.state < sdpa::status::PENDING;
   }
 
   static std::string type_to_name (int type)
   {
     switch (type)
     {
+    case job::type::PREPARE:
+      return "PREPARE";
+      break;
     case job::type::INITIALIZE:
       return "INITIALIZE";
       break;
@@ -83,17 +83,6 @@ namespace job
     default:
       return "UNKNOWN";
     }
-  }
-
-  std::string status_to_string(int s)
-  {
-    if (s == sdpa::status::PENDING)   return "Pending";
-    if (s == sdpa::status::RUNNING)   return "Running";
-    if (s == sdpa::status::FINISHED)  return "Finished";
-    if (s == sdpa::status::FAILED)    return "Failed";
-    if (s == sdpa::status::CANCELED)  return "Cancelled";
-    if (s == sdpa::status::SUSPENDED) return "Suspended";
-    else                              return "Unknown";
   }
 }
 
@@ -145,7 +134,19 @@ class UfBMigBackImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
-    m_control_sdpa = fhg_kernel()->get<bool>("control_sdpa", "0");
+    m_control_sdpa =
+      fhg_kernel()->get<fhg::util::bool_t>("control_sdpa", "true");
+    m_check_interval =
+      fhg_kernel ()->get<std::size_t>("check_interval", 1800);
+    // (10**6) / fhg_kernel ()->tick_time () * 360 // seconds
+
+    m_wf_path_prepare =
+      fhg_kernel ()->get("wf_prepare", "ufbmig_prepare.pnet");
+    if (! fs::exists(m_wf_path_prepare))
+    {
+      MLOG(ERROR, "cannot access PREPARE workflow: " << m_wf_path_prepare);
+      FHG_PLUGIN_FAILED(ENOENT);
+    }
 
     m_wf_path_initialize =
       fhg_kernel()->get("wf_init", "ufbmig_init.pnet");
@@ -218,23 +219,20 @@ public:
     if (0 == sdpa_c)
     {
       MLOG(ERROR, "could not acquire sdpa::Client plugin");
-      FHG_PLUGIN_FAILED(EAGAIN);
+      FHG_PLUGIN_FAILED (ESRCH);
     }
 
     progress = fhg_kernel()->acquire<progress::Progress>("progress");
     if (0 == progress)
     {
-      MLOG(WARN, "could not acquire progress::Progress plugin");
+      MLOG (ERROR, "could not acquire progress::Progress plugin");
+      FHG_PLUGIN_FAILED (ESRCH);
     }
 
     gpi_api = fhg_kernel()->acquire<gpi::GPI>("gpi");
     if (0 == gpi_api)
     {
       MLOG(WARN, "could not acquire gpi::GPI plugin");
-    }
-    else
-    {
-      reinitialize_gpi_state ();
     }
 
     if (m_control_sdpa)
@@ -312,30 +310,79 @@ public:
     m_frontend = f;
   }
 
-  int initialize(std::string const &xml)
+  int prepare ()
   {
-    if (progress)
-    {
-      progress->initialize ("ufbmig", 100);
-    }
+    reset_progress ("prepare");
 
-    update_progress(0);
-
-    if (state::UNINITIALIZED != m_state)
-    {
-      MLOG(ERROR, "state mismatch: cannot initialize again in state: " << m_state);
-      return -EINVAL;
-    }
-
-    update_progress(25);
+    update_progress (10);
 
     if (m_control_sdpa && sdpa_ctl)
     {
-      MLOG(INFO, "(re)starting SDPA...");
-      sdpa_ctl->start();
+      MLOG (INFO, "(re)starting SDPA...");
+
+      int rc = 0;
+
+      rc += sdpa_ctl->start ("gpi")  ? 1 : 0;
+      update_progress (20);
+
+      rc += sdpa_ctl->start ("orch") ? 2 : 0;
+      update_progress (40);
+
+      rc += sdpa_ctl->start ("agg")  ? 4 : 0;
+      update_progress (60);
+
+      rc += sdpa_ctl->start ("drts") ? 8 : 0;
+      update_progress (80);
+
+      if (rc != 0)
+      {
+        MLOG (WARN, "start of SDPA failed: " << rc);
+        return fhg::error::SDPA_NOT_STARTABLE;
+      }
+
+      if (0 != sdpa_ctl->status ("gpi"))
+      {
+        MLOG (ERROR, "gpi failed to start, giving up");
+        return fhg::error::GPI_UNAVAILABLE;
+      }
     }
 
-    update_progress(75);
+    const std::string wf(read_workflow_from_file(m_wf_path_prepare));
+
+    we::activity_t act;
+
+    try
+    {
+      we::util::codec::decode(wf, act);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG (ERROR, "decoding PREPARE workflow failed: " << ex.what());
+      return -EINVAL;
+    }
+
+    update_progress (95);
+
+    if (m_check_interval)
+      fhg_kernel()->schedule ( "check_worker"
+                             , boost::bind( &UfBMigBackImpl::check_worker
+                                          , this
+                                          )
+                             , m_check_interval
+                             );
+
+    return submit_job (we::util::codec::encode(act), job::type::PREPARE);
+  }
+
+  int initialize (std::string const &xml)
+  {
+    if (state::UNINITIALIZED != m_state)
+    {
+      MLOG(ERROR, "state mismatch: cannot initialize again in state: " << m_state);
+      return -EPROTO;
+    }
+
+    reset_progress ("initialize");
 
     MLOG(INFO, "submitting INITIALIZE workflow");
 
@@ -373,8 +420,10 @@ public:
     if (state::INITIALIZED != m_state)
     {
       MLOG(WARN, "cannot update salt mask currently, invalid state: " << m_state);
-      return -EAGAIN;
+      return -EPROTO;
     }
+
+    reset_progress ("update");
 
     MLOG(TRACE, "writing new salt mask");
 
@@ -384,7 +433,7 @@ public:
       salt_mask_stream.close();
     }
 
-    MLOG(INFO, "submitting SALTMASK workflow");
+    MLOG (INFO, "submitting SALTMASK workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_mask));
 
@@ -421,8 +470,10 @@ public:
     if (state::INITIALIZED != m_state)
     {
       MLOG(WARN, "cannot calculate right now, invalid state: " << m_state);
-      return -EAGAIN;
+      return -EPROTO;
     }
+
+    reset_progress ("migrate");
 
     MLOG(INFO, "submitting CALCULATE workflow");
 
@@ -468,11 +519,7 @@ public:
       MLOG(WARN, "this will probably result in failed executions");
     }
 
-    if (! fs::exists(m_file_with_config))
-    {
-      MLOG(INFO, "no config file found, finalize not possible!");
-      return -EINVAL;
-    }
+    reset_progress ("finalize");
 
     MLOG(INFO, "submitting FINALIZE workflow");
 
@@ -519,12 +566,13 @@ public:
         if (! job::is_done(j))
           sdpa_c->cancel(j.id);
       }
+      return 0;
     }
     else
     {
       MLOG(INFO, "nothing to cancel!");
+      return -ESRCH;
     }
-    return 0;
   }
 
   int stop ()
@@ -542,7 +590,6 @@ public:
 
   int open (std::string const & name)
   {
-    gpi::pc::type::handle_t handle = 0;
     size_t size = 0;
     int ec = 0;
 
@@ -683,21 +730,34 @@ public:
     return -ENOSYS;
   }
 private:
+  void reset_progress (std::string const &phase)
+  {
+    progress->reset ("ufbmig", phase, 100);
+    if (m_frontend)
+      m_frontend->update_progress (0);
+  }
+
   void update_progress ()
   {
-    if (progress)
+    if (m_frontend)
     {
       size_t value; size_t max;
-      if (0 == progress->current ("ufbmig", &value, &max))
+      if (0 == progress->get ("ufbmig", &value, &max))
       {
+        if (value > max)
+          value = max;
+
         int perc = (int)( (float)value / (float)max * 100.);
-        update_progress(perc);
+
+        m_frontend->update_progress(perc);
       }
     }
   }
 
   void update_progress (int v)
   {
+    progress->set ("ufbmig", v);
+
     if (m_frontend)
       m_frontend->update_progress(v);
   }
@@ -852,8 +912,9 @@ private:
   int handle_completed_job (job::info_t const &j)
   {
     LOG( INFO
-       , "job returned: " << job::type_to_name(j.type) << " "
-       << job::status_to_string(j.state)
+       , "job '" << job::type_to_name(j.type) << "' returned: "
+       << sdpa::status::show(j.state) << " [" << j.state << "]"
+       << ": ec := " << j.error << " msg := " << j.error_message
        );
 
     update_progress(100);
@@ -875,6 +936,10 @@ private:
 
     switch (j.type)
     {
+    case job::type::PREPARE:
+
+      if (m_frontend) m_frontend->prepare_backend_done (ec, j.error_message);
+      break;
     case job::type::INITIALIZE:
       if (0 == ec)
       {
@@ -882,7 +947,7 @@ private:
         ec = handle_initialize_result(result);
       }
 
-      if (m_frontend) m_frontend->initialize_done(ec);
+      if (m_frontend) m_frontend->initialize_done(ec, j.error_message);
       break;
     case job::type::UPDATE:
       if (0 == ec)
@@ -891,7 +956,7 @@ private:
       }
       m_state = state::INITIALIZED;
 
-      if (m_frontend) m_frontend->salt_mask_done(ec);
+      if (m_frontend) m_frontend->salt_mask_done(ec, j.error_message);
       break;
     case job::type::CALCULATE:
       if (0 == ec)
@@ -900,7 +965,7 @@ private:
       }
       m_state = state::INITIALIZED;
 
-      if (m_frontend) m_frontend->calculate_done(ec);
+      if (m_frontend) m_frontend->calculate_done(ec, j.error_message);
       break;
     case job::type::FINALIZE:
       if (0 == ec)
@@ -909,13 +974,41 @@ private:
       }
       m_state = state::UNINITIALIZED;
 
-      if (m_frontend) m_frontend->finalize_done(ec);
+      if (m_frontend) m_frontend->finalize_done(ec, j.error_message);
       break;
     default:
       return -EINVAL;
     }
 
     return ec;
+  }
+
+  void check_worker ()
+  {
+    MLOG (INFO, "checking worker status...");
+    int ec = 0;
+    ec += sdpa_ctl->status ("orch");
+    ec += sdpa_ctl->status ("agg");
+    ec += sdpa_ctl->status ("drts");
+    ec += sdpa_ctl->status ("gpi");
+
+    if (0 != ec)
+    {
+      MLOG (ERROR, "worker check failed: " << ec);
+      if (m_frontend)
+        m_frontend->send_logoutput ("worker check failed, terminating...");
+
+      sdpa_ctl->stop();
+    }
+    else
+    {
+      fhg_kernel()->schedule ( "check_worker"
+                             , boost::bind( &UfBMigBackImpl::check_worker
+                                          , this
+                                          )
+                             , m_check_interval
+                             );
+    }
   }
 
   void update_job_states ()
@@ -929,10 +1022,21 @@ private:
         ; ++j
         )
     {
-      j->state = sdpa_c->status(j->id);
+      j->state = sdpa_c->status(j->id, j->error, j->error_message);
       if (job::is_done(*j))
       {
-        j->error = job::state_to_result_code(j->state);
+        if (j->state == sdpa::status::CANCELED)
+          j->error = -ECANCELED;
+        if (j->state == sdpa::status::FINISHED)
+          j->error = 0;
+        if (j->state == sdpa::status::FAILED && j->error == 0)
+          j->error = -EFAULT;
+        if (j->state < 0)
+        {
+          j->error = j->state;
+          j->state = sdpa::status::FAILED;
+        }
+
         sdpa_c->result(j->id, j->result);
         sdpa_c->remove(j->id);
         handle_completed_job (*j);
@@ -997,7 +1101,8 @@ private:
       clear_my_gpi_state();
 
       m_state = state::UNINITIALIZED;
-      if (m_frontend) m_frontend->finalize_done(0);
+      if (m_frontend)
+        m_frontend->finalize_done (0, "");
 
       if (! gpi_api->connect())
       {
@@ -1140,6 +1245,7 @@ private:
   int m_state;
 
   std::size_t             m_chunk_size;
+  std::size_t             m_check_interval;
 
   // shared memory
   gpi::pc::type::segment_id_t m_transfer_segment;
@@ -1151,6 +1257,7 @@ private:
   std::size_t                 m_scratch_size;
 
   // workflow paths
+  std::string m_wf_path_prepare;
   std::string m_wf_path_initialize;
   std::string m_wf_path_mask;
   std::string m_wf_path_calculate;
@@ -1169,6 +1276,6 @@ EXPORT_FHG_PLUGIN( ufbmig_back
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "sdpactl,sdpac"
+                 , "sdpactl,sdpac,progress,gpi"
                  , ""
                  );

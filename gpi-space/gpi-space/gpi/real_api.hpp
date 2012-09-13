@@ -33,6 +33,7 @@ namespace gpi
       gpi::port_t port () const;
       gpi::size_t number_of_nodes () const;
       gpi::size_t memory_size () const;
+      gpi::size_t max_transfer_size () const;
 
       gpi::size_t open_dma_requests (const queue_desc_t) const;
       bool max_dma_requests_reached (const queue_desc_t) const;
