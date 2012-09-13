@@ -118,6 +118,7 @@ namespace xml
         bool _Wproperty_unknown;
         bool _Winline_many_output_ports;
         bool _Wvirtual_place_not_tunneled;
+        bool _Wduplicate_template_parameter;
 
         std::string _dump_xml_file;
         std::string _dump_dependencies;
@@ -164,6 +165,7 @@ namespace xml
         std::string _OWproperty_unknown;
         std::string _OWinline_many_output_ports;
         std::string _OWvirtual_place_not_tunneled;
+        std::string _OWduplicate_template_parameter;
 
         std::string _Odump_xml_file;
         std::string _Odump_dependencies;
@@ -272,6 +274,7 @@ namespace xml
           , _Wproperty_unknown (true)
           , _Winline_many_output_ports (true)
           , _Wvirtual_place_not_tunneled (true)
+          , _Wduplicate_template_parameter (true)
 
           , _dump_xml_file ("")
           , _dump_dependencies ("")
@@ -318,6 +321,7 @@ namespace xml
           , _OWproperty_unknown ("Wproperty-unknown")
           , _OWinline_many_output_ports ("Winline-many-output-ports")
           , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
+          , _OWduplicate_template_parameter ("Wduplicate-template-parameter")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Odump_dependencies ("dump-dependencies,M")
@@ -575,6 +579,7 @@ namespace xml
         ACCESS(Wproperty_unknown)
         ACCESS(Winline_many_output_ports)
         ACCESS(Wvirtual_place_not_tunneled)
+        ACCESS(Wduplicate_template_parameter)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
@@ -622,6 +627,7 @@ namespace xml
         WARN(shadow_function)
         WARN(shadow_template)
         WARN(shadow_specialize)
+        WARN(duplicate_template_parameter)
 
 #undef WARN
 
@@ -796,6 +802,10 @@ namespace xml
             ( _OWvirtual_place_not_tunneled.c_str()
             , BOOLVAL(Wvirtual_place_not_tunneled)
             , "warn when a virtual place is not tunneled"
+            )
+            ( _OWduplicate_template_parameter.c_str()
+            , BOOLVAL(Wduplicate_template_parameter)
+            , "warn when a template paramater is duplicated"
             )
             ;
 

@@ -554,19 +554,7 @@ namespace xml
         // ***************************************************************** //
 
         const typenames_type& typenames () const { return _typenames; }
-
-        void insert_typename (const std::string& tn, const state::type& state)
-        {
-          const typenames_type::const_iterator pos (_typenames.find (tn));
-
-          if (pos != _typenames.end())
-            {
-              //! \todo state::warning::
-              std::cerr << "duplicate typename" << std::endl;
-            }
-
-          _typenames.insert (tn);
-        }
+        void insert_typename (const std::string& tn) { _typenames.insert (tn); }
 
         // ***************************************************************** //
 

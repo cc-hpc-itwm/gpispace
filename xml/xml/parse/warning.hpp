@@ -712,17 +712,6 @@ namespace xml
 
       class virtual_place_not_tunneled : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const boost::filesystem::path & file
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "the virtual place " << name << " is not tunneled in " << file;
-
-          return s.str();
-        }
       public:
         virtual_place_not_tunneled ( const std::string& name
                                    , const boost::filesystem::path& file
@@ -731,6 +720,25 @@ namespace xml
                                       " is not tunneled in %2%."
                                     )
                     % name
+                    % file
+                    )
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class duplicate_template_parameter : public generic
+      {
+      public:
+        duplicate_template_parameter ( const fhg::util::maybe<std::string> name
+                                     , const std::string& tn
+                                     , const boost::filesystem::path& file
+                                     )
+          : generic ( boost::format ( "duplicate typename %2%"
+                                      " in the definition of %1% in %3%"
+                                    )
+                    % (name ? *name : "<<noname>>")
+                    % tn
                     % file
                     )
         {}
