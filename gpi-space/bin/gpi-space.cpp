@@ -821,6 +821,8 @@ static int configure_logging (const config_t *cfg)
   {
     setenv("FHGLOG_level", log_level, true);
   }
+  setenv ("FHGLOG_to_console", "stderr", true);
+
   FHGLOG_SETUP();
 
   return 0;
@@ -877,7 +879,7 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
        << " rank = " << rank
        << " socket = " << cfg->socket
        );
-    return -EFAULT;
+    return EX_INVAL;
   }
 
   LOG(INFO, "started GPI interface on rank " << rank << " at " << cfg->socket);
