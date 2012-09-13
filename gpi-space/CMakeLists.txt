@@ -21,16 +21,16 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV
 include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set (QUIET_FIND_PACKAGE QUIET)
+#set (QUIET_FIND_PACKAGE QUIET)
 
 if(ENABLE_REAL_GPI)
   find_package (IBVerbs REQUIRED ${QUIET_FIND_PACKAGE})
-  include_directories(${IBVerbs_INCLUDE_DIR})
+  include_directories(${IBverbs_INCLUDE_DIR})
 
   set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
   set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
   set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
-  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
+  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBverbs_LIBRARY})
 
   # check if we can actually use the GPI version in ext
   set(CMAKE_REQUIRED_INCLUDES ${GPI_INCLUDE_DIR})
