@@ -20,7 +20,6 @@
 
 #include <gpi-space/version.hpp>
 #include <gpi-space/signal_handler.hpp>
-#include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
@@ -207,8 +206,11 @@ int main (int ac, char **av)
   po::options_description desc("options");
 
   fs::path socket_path;
-  fs::path config_file
-    (std::string(getenv("HOME")) + "/.sdpa/configs/gpi.rc");
+  typedef std::vector <fs::path> dir_list_t;
+  dir_list_t socket_search_dir;
+  socket_search_dir.push_back ("/tmp");
+  socket_search_dir.push_back ("/var/tmp");
+
   std::size_t com_size (16 * (1 << 20));
 
   desc.add_options ()
@@ -216,9 +218,9 @@ int main (int ac, char **av)
 
     ("socket,s", po::value<fs::path>(&socket_path), "path to the gpi socket")
 
-    ( "config,c"
-    , po::value<fs::path>(&config_file)->default_value(config_file)
-    , "path to the config file"
+    ( "socket-dir,d"
+    , po::value<dir_list_t>(&socket_search_dir)
+    , "path to possible socket directories"
     )
 
     ( "com-size"
@@ -256,38 +258,47 @@ int main (int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  gpi_space::parser::config_parser_t cfg_parser;
-  if (fs::exists (config_file))
-  {
-    gpi_space::parser::parse (config_file.string(), boost::ref(cfg_parser));
-  }
-
   if (vm.count ("list"))
   {
-    std::cout
-      << collect_sockets(cfg_parser.get("gpi.socket_path", "/var/tmp"));
+    for ( dir_list_t::iterator it = socket_search_dir.begin ()
+        ; it != socket_search_dir.end ()
+        ; ++it
+        )
+    {
+      std::cout
+        << collect_sockets(*it);
+    }
     return EXIT_SUCCESS;
   }
 
-  std::string socket_dir (cfg_parser.get("gpi.socket_path", "/var/tmp"));
+  fs::path socket_dir;
 
   if (socket_path.empty())
   {
-    path_list_t sockets (collect_sockets(socket_dir));
-    if (sockets.empty())
+    for ( dir_list_t::iterator it = socket_search_dir.begin ()
+        ; it != socket_search_dir.end ()
+        ; ++it
+        )
     {
-      std::cerr << "no sockets available in " << socket_dir << std::endl;
+      socket_dir = *it;
+      path_list_t sockets (collect_sockets(*it));
+
+      if (sockets.size ())
+      {
+        if (sockets.size () > 1)
+        {
+          std::cerr << "There are multiple sockets available: " << std::endl;
+          std::cerr << sockets;
+          std::cerr << std::endl;
+        }
+        socket_path = *sockets.begin ();
+        break;
+      }
     }
-    else if (sockets.size () > 1)
-    {
-      std::cerr << "There are multiple sockets available: " << std::endl;
-      std::cerr << std::endl;
-      std::cerr << sockets;
-    }
-    else
-    {
-      socket_path = *sockets.begin();
-    }
+  }
+  else
+  {
+    socket_dir = socket_path.parent_path ();
   }
 
   initialize_state (socket_dir, socket_path, com_size);
@@ -338,7 +349,7 @@ void initialize_shell (int ac, char *av[])
   if (interactive)
     prompt = "gpish> ";
   fs::path histfile (getenv("HOME"));
-  histfile /= ".sdpa/configs/.history";
+  histfile /= ".gpish_history";
 
   shell_t & sh (shell_t::create (av[0], prompt, histfile.string(), *state));
 
@@ -784,13 +795,16 @@ int cmd_socket (shell_t::argv_t const & av, shell_t & sh)
         )
     {
       std::cout << "sockets in " << *dir << ":" << std::endl;
-      std::cout << collect_sockets(sh.state().socket_dir);
+      std::cout << collect_sockets (*dir);
       std::cout << std::endl;
+      sh.state ().socket_dir = *dir;
     }
   }
   else
   {
+    std::cout << "sockets in " << sh.state().socket_dir << ":" << std::endl;
     std::cout << collect_sockets(sh.state().socket_dir);
+    std::cout << std::endl;
   }
   return 0;
 }
