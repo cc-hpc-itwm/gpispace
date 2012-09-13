@@ -568,24 +568,35 @@ namespace xml
                 }
               else if (child_name == "template-parameter")
                 {
-                  const std::string tn (required ( "template-parameter"
-                                                 , child
-                                                 , "type"
-                                                 , state.file_in_progress()
-                                                 )
-                                       );
-
-                  if (f.typenames().find (tn) != f.typenames().end())
+                  if (std::string (node->name()) != "template")
                     {
-                      state.warn ( warning::duplicate_template_parameter
+                      state.warn ( warning::ignore_template_parameter
                                    ( f.name
-                                   , tn
                                    , state.file_in_progress()
                                    )
                                  );
                     }
+                  else
+                    {
+                      const std::string tn (required ( "template-parameter"
+                                                     , child
+                                                     , "type"
+                                                     , state.file_in_progress()
+                                                     )
+                                           );
 
-                  f.insert_typename (tn);
+                      if (f.typenames().find (tn) != f.typenames().end())
+                        {
+                          state.warn ( warning::duplicate_template_parameter
+                                       ( f.name
+                                       , tn
+                                       , state.file_in_progress()
+                                       )
+                                     );
+                        }
+
+                      f.insert_typename (tn);
+                    }
                 }
               else
                 {
