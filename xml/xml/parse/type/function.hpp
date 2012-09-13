@@ -490,6 +490,10 @@ namespace xml
 
         // ***************************************************************** //
 
+        typedef boost::unordered_set<std::string> typenames_type;
+
+        typenames_type _typenames;
+
       public:
         typedef boost::variant < expression_type
                                , mod_type
@@ -541,10 +545,28 @@ namespace xml
             path = rhs.path;
             structs_resolved = rhs.structs_resolved;
             was_template = rhs.was_template;
+            _typenames = rhs._typenames;
           }
           return *this;
         }
 #endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+
+        // ***************************************************************** //
+
+        const typenames_type& typenames () const { return _typenames; }
+
+        void insert_typename (const std::string& tn, const state::type& state)
+        {
+          const typenames_type::const_iterator pos (_typenames.find (tn));
+
+          if (pos != _typenames.end())
+            {
+              //! \todo state::warning::
+              std::cerr << "duplicate typename" << std::endl;
+            }
+
+          _typenames.insert (tn);
+        }
 
         // ***************************************************************** //
 
@@ -2192,6 +2214,13 @@ namespace xml
                                         , const function_type & f
                                         )
         {
+          BOOST_FOREACH (const std::string& tn, f.typenames())
+            {
+              s.open ("template-parameter");
+              s.attr ("type", tn);
+              s.close();
+            }
+
           dumps (s, f.structs.begin(), f.structs.end());
 
           xml::parse::type::dump::dump (s, f.requirements);

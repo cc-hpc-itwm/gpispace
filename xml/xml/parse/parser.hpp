@@ -566,6 +566,16 @@ namespace xml
                 {
                   require_type (f.requirements, child, state);
                 }
+              else if (child_name == "template-parameter")
+                {
+                  f.insert_typename ( required ("template-parameter"
+                                               , child
+                                               , "type"
+                                               , state.file_in_progress()
+                                               )
+                                    , state
+                                    );
+                }
               else
                 {
                   state.warn

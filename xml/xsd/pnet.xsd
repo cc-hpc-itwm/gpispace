@@ -148,6 +148,10 @@
     <xsd:attribute name="mandatory" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
+  <xsd:complexType name="template_parameter_type">
+    <xsd:attribute name="type" type="xsd:ID" use="required"/>
+  </xsd:complexType>
+
   <xsd:complexType name="place_type">
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
@@ -191,6 +195,7 @@
 
   <xsd:complexType name="function_type">
     <xsd:sequence>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="template-parameter" type="template_parameter_type"/>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="properties" type="property_map_type"/>
         <xsd:element name="include-properties" type="properties_include_type"/>
@@ -215,7 +220,6 @@
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:ID" use="optional"/>
     <xsd:attribute name="internal" type="xsd:boolean" use="optional"/>
-    <xsd:attribute name="typename" type="xsd:ID" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="transition_type">
