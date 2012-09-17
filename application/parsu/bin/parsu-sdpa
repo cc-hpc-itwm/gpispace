@@ -18,9 +18,9 @@ EOF
 # catch CTRL-C and qdel the job
 on_ctrlC()
 {
-	echo >&2 "Canceled..."
-        sdpa stop
-	exit 0
+    echo >&2 "Canceled..."
+    sdpa stop
+    exit 0
 }
 
 
@@ -41,41 +41,41 @@ shm_mem=$(( $avl_mem - $gpi_mem ))
 
 while getopts ":hf:I:C:s:c:m:" opt; do
     case $opt in
-	h)
-	    usage
-	    exit 0
-	    ;;
-	f)
-	    nodefile="$OPTARG"
-	    ;;
-	I)
-	    num_io_per_node="$OPTARG"
-	    ;;
-	C)
-	    num_calc_per_node="$OPTARG"
-	    ;;
-	s)
-	    shm_mem=$OPTARG
-	    ;;
-	c)
-	    com_mem=$OPTARG
-	    ;;
-	m)
-	    gpi_mem=$OPTARG
-	    ;;
-	\?)
-	    ;;
+        h)
+            usage
+            exit 0
+            ;;
+        f)
+            nodefile="$OPTARG"
+            ;;
+        I)
+            num_io_per_node="$OPTARG"
+            ;;
+        C)
+            num_calc_per_node="$OPTARG"
+            ;;
+        s)
+            shm_mem=$OPTARG
+            ;;
+        c)
+            com_mem=$OPTARG
+            ;;
+        m)
+            gpi_mem=$OPTARG
+            ;;
+        \?)
+            ;;
     esac
 done
 
 if [ -z "$nodefile" ] ; then
-  usage
-  exit 1
+    usage
+    exit 1
 fi
 
 if [ -z "$SDPA_HOME" ] ; then
-  echo >&2 "SDPA_HOME is not set!"
-  exit 2
+    echo >&2 "SDPA_HOME is not set!"
+    exit 2
 fi
 
 if [ "${nodefile:0:1}" != "/" ]; then
@@ -98,9 +98,9 @@ if [ ! -e "$HOME/.sdpa/configs/sdpa.rc" ] ; then
     echo "I: sdpa config does not exist, performing automated SDPA setup" >&2
 
     ${sdpa} setup </dev/null || {
-	echo "E: I was unable to setup the SDPA environment for you." >&2
-	mv "$HOME/.sdpa/configs/sdpa.rc" "$HOME/.sdpa/configs/sdpa.rc~"
-	exit ${EX_UNAVAILABLE:?}
+        echo "E: I was unable to setup the SDPA environment for you." >&2
+        mv "$HOME/.sdpa/configs/sdpa.rc" "$HOME/.sdpa/configs/sdpa.rc~"
+        exit ${EX_UNAVAILABLE:?}
     }
 fi
 
@@ -164,27 +164,27 @@ rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "init" -
 rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "finalize" -m aggregator -C "finalize" -M 4 -B 4 &
 
 for host in $hosts ; do
-	wait
+    wait
 
-	echo >&2 "I: starting workers on host: $host"
-	count=0
-	for i in $(seq 1 ${num_calc_per_node}) ; do
-        	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "calc" -m aggregator -C "CPU" &
-		count=$(( count + 1 ))
-		if [ $count -gt 6 ] ; then
-			count=0
-			wait
-		fi
-	done
-	wait
+    echo >&2 "I: starting workers on host: $host"
+    count=0
+    for i in $(seq 1 ${num_calc_per_node}) ; do
+        rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "calc" -m aggregator -C "CPU" &
+        count=$(( count + 1 ))
+        if [ $count -gt 6 ] ; then
+            count=0
+            wait
+        fi
+    done
+    wait
 
-	for i in $(seq 1 ${num_io_per_node}) ; do
-        	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "load" -m aggregator -C "LOAD" &
-	done
-	wait
+    for i in $(seq 1 ${num_io_per_node}) ; do
+        rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "load" -m aggregator -C "LOAD" &
+    done
+    wait
 
-	for i in $(seq 1 ${num_io_per_node}) ; do
-        	rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "write" -m aggregator -C "WRITE" &
-	done
+    for i in $(seq 1 ${num_io_per_node}) ; do
+        rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "write" -m aggregator -C "WRITE" &
+    done
 done
 wait
