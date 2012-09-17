@@ -1,6 +1,7 @@
 #!/bin/bash
 
-diff_dir="@PARSU_DIFF_DIR@"
+#diff_dir="@PARSU_DIFF_DIR@"
+diff_dir=$(dirname $(dirname $(which "$0")))/diff
 
 tmp_dir=${PARSU_TMP_DIR:-${TMPDIR}}
 
@@ -62,12 +63,12 @@ abspath ()
 {
   p="$1"
   case "$p" in
-	/*)
-	  REPLY="$p"
-	  ;;
-	*)
-	  REPLY="`pwd`/$p"
-	  ;;
+        /*)
+          REPLY="$p"
+          ;;
+        *)
+          REPLY="`pwd`/$p"
+          ;;
   esac
   return 0
 }
