@@ -104,6 +104,8 @@ if [ ! -e "$HOME/.sdpa/configs/sdpa.rc" ] ; then
     }
 fi
 
+export SDPA_APP_PATH=$(dirname $(dirname $(which "$0")))
+
 sdpa init "$nodefile" </dev/null || {
     echo "could not initialize SDPA!" >&2
     exit 1
