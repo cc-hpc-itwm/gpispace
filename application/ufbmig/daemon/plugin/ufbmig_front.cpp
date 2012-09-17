@@ -733,8 +733,6 @@ private:
 
     DMLOG(TRACE, "transfering meta data with size " << sz);
 
-    std::vector<char> buffer (sz, 0);
-
     isim::msg_t *msg = m_isim->msg_new (server::command::MIGRATE_META_DATA, sz);
     size_t num_read;
     ec = m_backend->read (fd, (char*)m_isim->msg_data (msg), sz, num_read);
