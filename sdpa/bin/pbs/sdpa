@@ -746,7 +746,7 @@ to adjust the amount.
     put "gpi.processes" $(get gpi.processes "default")
 
     local sdpa_temp_dir=$(get "sdpa.temp_dir")
-    local gpi_socket_path=$(get gpi.socket_path "/var/tmp")
+    local gpi_socket_path=$(get gpi.socket_path "${sdpa_temp_dir}")
     put "gpi.socket_path" "$gpi_socket_path"
     if ! test -d "$gpi_socket_path" ; then
         if ! mkdir -p "$gpi_socket_path" ; then
@@ -757,6 +757,11 @@ to adjust the amount.
                 log "E: failed to adjust mode on $gpi_socket_path"
                 return 1
             fi
+        fi
+    else
+        if ! test -w "${gpi_socket_path}" ; then
+            log "E: cannot write to gpi socket path: ${gpi_socket_path}"
+            return 1
         fi
     fi
 }
@@ -1683,7 +1688,7 @@ function start_gui ()
     fi
     local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
 
-    local cmd="ssh -X $gui_host LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port -r $SDPA_HOME"
+    local cmd="ssh -X $gui_host /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port -r $SDPA_HOME"
     log "I: starting gui with $cmd ..."
     $cmd &
 }
