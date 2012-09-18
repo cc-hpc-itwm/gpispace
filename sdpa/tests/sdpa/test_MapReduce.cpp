@@ -44,8 +44,11 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem.hpp>
 
-#include <sdpa/engine/MasterMapReduceWorkflowEngine.hpp>
-#include <sdpa/engine/WorkerMapReduceWorkflowEngine.hpp>
+#include <sdpa/engine/MasterWorkflowEngine.hpp>
+#include <sdpa/engine/MapperWorkflowEngine.hpp>
+#include <sdpa/engine/ReducerWorkflowEngine.hpp>
+#include <sdpa/engine/CollectorWorkflowEngine.hpp>
+
 #include <boost/thread.hpp>
 
 //plugin
@@ -446,8 +449,7 @@ void MyFixture::run_client_subscriber(const std::string& strWorkflow )
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-
-BOOST_AUTO_TEST_CASE( testWordCount )
+BOOST_AUTO_TEST_CASE( testMapTaskEncoding )
 {
   LOG( DEBUG, "***** testWordCount *****"<<std::endl);
   //guiUrl
@@ -464,43 +466,207 @@ BOOST_AUTO_TEST_CASE( testWordCount )
   // cases to distinguish: 1) files are stored locally, on some given nodes
   //                       2) are stored on a (distributed) file system
 
-  MasterMapReduceWorkflowEngine::map_FileName2Node_t mapFileName2Node;
-  mapFileName2Node.insert(MasterMapReduceWorkflowEngine::map_FileName2Node_t::value_type("file1.txt", "node1"));
-  mapFileName2Node.insert(MasterMapReduceWorkflowEngine::map_FileName2Node_t::value_type("file2.txt", "node2"));
+  WordCountMapper::TaskT mapTask1("file1.txt", "node1");
 
-  std::stringstream sstr;
-  boost::archive::text_oarchive ar(sstr);
-  ar << mapFileName2Node;
-  std::string strWorkflow = sstr.str();
+  LOG(INFO, "Before serialization, the map task looks as follows: ");
+  mapTask1.print();
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
+  std::string strWorkflow = mapTask1.encode();
+
+  WordCountMapper::TaskT mapTask2;
+  mapTask2.decode(strWorkflow);
+
+  LOG(INFO, "After de-serialization, the map task looks as follows: ");
+  mapTask2.print();
+}
+
+BOOST_AUTO_TEST_CASE( testMapperEncoding )
+{
+  LOG( DEBUG, "***** testWordCount *****"<<std::endl);
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  boost::filesystem::path file("mapreduce.out");
+  if(boost::filesystem::exists(file))
+    boost::filesystem::remove(file);
+
+  // one should have a Partitioner
+  // cases to distinguish: 1) files are stored locally, on some given nodes
+  //                       2) are stored on a (distributed) file system
+
+  WordCountMapper::TaskT mapTask1("file1.txt", "node1");
+  WordCountMapper::TaskT mapTask2("file2.txt", "node2");
+
+  WordCountMapper wcMapper;
+  wcMapper.addTask(mapTask1.inKey(), mapTask1);
+  wcMapper.addTask(mapTask2.inKey(), mapTask2);
+
+  std::string strWorkflow = wcMapper.encode();
+
+  WordCountMapper mapper;
+  mapper.decode(strWorkflow);
+
+  LOG(INFO, "After de-serialization, the mapper looks as follows: ");
+  mapper.print();
+}
+
+BOOST_AUTO_TEST_CASE( test2Mappers2Reducers )
+{
+  LOG( DEBUG, "***** testWordCount *****"<<std::endl);
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  boost::filesystem::path file("mapreduce.out");
+  if(boost::filesystem::exists(file))
+    boost::filesystem::remove(file);
+
+  // one should have a Partitioner
+  // cases to distinguish: 1) files are stored locally, on some given nodes
+  //                       2) are stored on a (distributed) file system
+
+  MapTask<std::string, std::string, std::string, std::string> mapTask;
+
+  mapTask.emit("file0.txt", "mapper0");
+  mapTask.emit("file1.txt", "mapper1");
+
+  std::string strWorkflow = mapTask.encode();
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<MasterWorkflowEngine>::create("orchestrator_0", addrAgent, MAX_CAP );
   ptrOrch->start_agent(false);
 
-  sdpa::master_info_list_t arrInfo0(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<MasterMapReduceWorkflowEngine>::create("agent_0", addrAgent, arrInfo0, MAX_CAP );
-  ptrAgent0->start_agent(false);
+  sdpa::master_info_list_t arrInfoOrch(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrMapper0 = sdpa::daemon::AgentFactory<MapperWorkflowEngine>::create("mapper0", addrAgent, arrInfoOrch, MAX_CAP);
+  ptrMapper0->addCapability(sdpa::capability_t("node=mapper0", "node", "mapper0"));
+  ptrMapper0->start_agent(false);
 
-  sdpa::master_info_list_t arrInfo1(1, MasterInfo("agent_0"));
-  sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<WorkerMapReduceWorkflowEngine>::create("agent_1", addrAgent, arrInfo1, MAX_CAP, true );
-  sdpa::capability_t properCpbName1("node=node1", "node", "agent_1");
-  ptrAgent1->addCapability(properCpbName1);
-  ptrAgent1->start_agent(false);
+  sdpa::daemon::Agent::ptr_t ptrMapper1 = sdpa::daemon::AgentFactory<MapperWorkflowEngine>::create("mapper1", addrAgent, arrInfoOrch, MAX_CAP);
+  ptrMapper1->addCapability( sdpa::capability_t("node=mapper1", "node", "mapper1"));
+  ptrMapper1->start_agent(false);
 
-  sdpa::master_info_list_t arrInfo2(1, MasterInfo("agent_0"));
-  sdpa::daemon::Agent::ptr_t ptrAgent2 = sdpa::daemon::AgentFactory<WorkerMapReduceWorkflowEngine>::create("agent_2", addrAgent, arrInfo2, MAX_CAP, true );
-  sdpa::capability_t properCpbName2("node=node2", "node", "agent_2");
-  ptrAgent2->addCapability(properCpbName2);
-  ptrAgent2->start_agent(false);
+  sdpa::master_info_list_t arrInfoMappers;
+  MasterInfo m1("mapper0");
+  MasterInfo m2("mapper1");
+  arrInfoMappers.push_back(m1);
+  arrInfoMappers.push_back(m2);
 
-  boost::this_thread::sleep(boost::posix_time::seconds(1));
+  sdpa::daemon::Agent::ptr_t ptrReducer0 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer0", addrAgent, arrInfoMappers, MAX_CAP );
+  ptrReducer0->addCapability( sdpa::capability_t("node=reducer0", "node", "reducer0"));
+  ptrReducer0->start_agent(false);
+
+  sdpa::daemon::Agent::ptr_t ptrReducer1 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer1", addrAgent, arrInfoMappers, MAX_CAP);
+  ptrReducer1->addCapability(sdpa::capability_t("node=reducer1", "node", "reducer1"));
+  ptrReducer1->start_agent(false);
+
+  sdpa::master_info_list_t arrInfoReducers;
+  MasterInfo m5("reducer0");
+  MasterInfo m6("reducer1");
+  arrInfoReducers.push_back(m5);
+  arrInfoReducers.push_back(m6);
+
+  sdpa::daemon::Agent::ptr_t ptrCollector = sdpa::daemon::AgentFactory<CollectorWorkflowEngine>::create("collector", addrAgent, arrInfoReducers, MAX_CAP );
+  ptrCollector->start_agent(false);
+
+  boost::this_thread::sleep(boost::posix_time::seconds(2));
   boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this, strWorkflow));
 
   threadClient.join();
   LOG( INFO, "The client thread joined the main thread!" );
 
-  ptrAgent2->shutdown();
-  ptrAgent1->shutdown();
-  ptrAgent0->shutdown();
+  //boost::this_thread::sleep(boost::posix_time::seconds(2));
+  ptrCollector->shutdown(); // first should wait to finish!!!
+  ptrReducer1->shutdown();
+  ptrReducer0->shutdown();
+  ptrMapper1->shutdown();
+  ptrMapper0->shutdown();
+  ptrOrch->shutdown();
+
+  LOG( DEBUG, "The test case testWordCount terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( test2Mappers3Reducers )
+{
+  LOG( DEBUG, "***** testWordCount *****"<<std::endl);
+  //guiUrl
+  string guiUrl     = "";
+  string workerUrl  = "127.0.0.1:5500";
+  string addrOrch   = "127.0.0.1";
+  string addrAgent  = "127.0.0.1";
+
+  boost::filesystem::path file("mapreduce.out");
+  if(boost::filesystem::exists(file))
+    boost::filesystem::remove(file);
+
+  // one should have a Partitioner
+  // cases to distinguish: 1) files are stored locally, on some given nodes
+  //                       2) are stored on a (distributed) file system
+
+  MapTask<std::string, std::string, std::string, std::string> mapTask;
+
+  mapTask.emit("file0.txt", "mapper0");
+  mapTask.emit("file1.txt", "mapper1");
+
+  std::string strWorkflow = mapTask.encode();
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<MasterWorkflowEngine>::create("orchestrator_0", addrAgent, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  sdpa::master_info_list_t arrInfoOrch(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrMapper0 = sdpa::daemon::AgentFactory<MapperWorkflowEngine>::create("mapper0", addrAgent, arrInfoOrch, MAX_CAP);
+  ptrMapper0->addCapability(sdpa::capability_t("node=mapper0", "node", "mapper0"));
+  ptrMapper0->start_agent(false);
+
+  sdpa::daemon::Agent::ptr_t ptrMapper1 = sdpa::daemon::AgentFactory<MapperWorkflowEngine>::create("mapper1", addrAgent, arrInfoOrch, MAX_CAP);
+  ptrMapper1->addCapability( sdpa::capability_t("node=mapper1", "node", "mapper1"));
+  ptrMapper1->start_agent(false);
+
+  sdpa::master_info_list_t arrInfoMappers;
+  MasterInfo m1("mapper0");
+  MasterInfo m2("mapper1");
+  arrInfoMappers.push_back(m1);
+  arrInfoMappers.push_back(m2);
+
+  sdpa::daemon::Agent::ptr_t ptrReducer0 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer0", addrAgent, arrInfoMappers, MAX_CAP );
+  ptrReducer0->addCapability( sdpa::capability_t("node=reducer0", "node", "reducer0"));
+  ptrReducer0->start_agent(false);
+
+  sdpa::daemon::Agent::ptr_t ptrReducer1 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer1", addrAgent, arrInfoMappers, MAX_CAP);
+  ptrReducer1->addCapability(sdpa::capability_t("node=reducer1", "node", "reducer1"));
+  ptrReducer1->start_agent(false);
+
+  sdpa::daemon::Agent::ptr_t ptrReducer2 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer2", addrAgent, arrInfoMappers, MAX_CAP);
+  ptrReducer2->addCapability(sdpa::capability_t("node=reducer2", "node", "reducer2"));
+  ptrReducer2->start_agent(false);
+
+  sdpa::master_info_list_t arrInfoReducers;
+  MasterInfo m5("reducer0");
+  MasterInfo m6("reducer1");
+  MasterInfo m7("reducer2");
+  arrInfoReducers.push_back(m5);
+  arrInfoReducers.push_back(m6);
+  arrInfoReducers.push_back(m7);
+
+  sdpa::daemon::Agent::ptr_t ptrCollector = sdpa::daemon::AgentFactory<CollectorWorkflowEngine>::create("collector", addrAgent, arrInfoReducers, MAX_CAP );
+  ptrCollector->start_agent(false);
+
+  boost::this_thread::sleep(boost::posix_time::seconds(3));
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this, strWorkflow));
+
+  threadClient.join();
+  LOG( INFO, "The client thread joined the main thread!" );
+
+  //boost::this_thread::sleep(boost::posix_time::seconds(2));
+  ptrCollector->shutdown(); // first should wait to finish!!!
+  ptrReducer2->shutdown();
+  ptrReducer1->shutdown();
+  ptrReducer0->shutdown();
+  ptrMapper1->shutdown();
+  ptrMapper0->shutdown();
   ptrOrch->shutdown();
 
   LOG( DEBUG, "The test case testWordCount terminated!");
