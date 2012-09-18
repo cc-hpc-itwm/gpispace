@@ -74,7 +74,7 @@ namespace sdpa {
 	    virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 	    void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
-	    virtual void getWorkerList(std::list<std::string>&);
+	    virtual void getWorkerList(sdpa::worker_id_list_t&);
 	    virtual Worker::worker_id_t getWorkerId(unsigned int rank);
 
 	    virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);

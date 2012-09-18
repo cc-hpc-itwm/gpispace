@@ -989,7 +989,7 @@ bool SchedulerImpl::has_job(const sdpa::job_id_t& job_id)
   return ptr_worker_man_->has_job(job_id);
 }
 
-void SchedulerImpl::getWorkerList(std::list<std::string>& workerList)
+void SchedulerImpl::getWorkerList(sdpa::worker_id_list_t& workerList)
 {
   ptr_worker_man_->getWorkerList(workerList);
 }
