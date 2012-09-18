@@ -55,6 +55,11 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
   sdpa::job_id_t jobId = ptrEvt->job_id();
 
+  if(!m_listSubscribers.size())
+  {
+    SDPA_LOG_INFO("No subscriber found for the job "<<jobId<<"!");
+  }
+
   BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;
@@ -94,14 +99,14 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     //put the job into the state Finished or Cancelled
     Job::ptr_t pJob;
     try {
-        pJob = jobManager()->findJob(pEvt->job_id());
-        pJob->JobFinished(pEvt);
-        SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+      pJob = jobManager()->findJob(pEvt->job_id());
+      pJob->JobFinished(pEvt);
+      SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
     }
     catch(JobNotFoundException const &)
     {
-        SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
-        return;
+      SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
+      return;
     }
 
     // It's an worker who has sent the message
@@ -135,21 +140,21 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
             catch(const JobNotDeletedException& ex)
             {
                 SDPA_LOG_WARN( "Could not delete the job " << act_id
-                                                                                                                   << " from worker "
-                                                                                                                   << worker_id
-                                                                                                                   << "queues: "
-                                                                                                                   << ex.what() );
+                                                           << " from worker "
+                                                           << worker_id
+                                                           << "queues: "
+                                                           << ex.what() );
             }
 
             if( hasWorkflowEngine() )
             {
                 try {
                     //delete it also from job_map_
-                    jobManager()->deleteJob(act_id);
+                  jobManager()->deleteJob(act_id);
                 }
                 catch(JobNotDeletedException const &)
                 {
-                    SDPA_LOG_WARN("The JobManager could not delete the job "<< act_id);
+                  SDPA_LOG_WARN("The JobManager could not delete the job "<< act_id);
                 }
             }
 
@@ -159,8 +164,9 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     }
     else
     {
-        JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
-        notifySubscribers(ptrEvtJobFinished);
+      SDPA_LOG_INFO("Notify the subscribers that the job "<<pEvt->job_id()<<" has finished!");
+      JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
+      notifySubscribers(ptrEvtJobFinished);
     }
 }
 
