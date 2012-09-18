@@ -75,7 +75,7 @@ namespace sdpa { namespace daemon {
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
     size_t numberOfWorkers() { return worker_map_.size(); }
-    void getWorkerList(std::list<std::string>& workerList);
+    void getWorkerList(sdpa::worker_id_list_t& workerList);
     void getWorkerListNotFull(sdpa::worker_id_list_t& workerList);
 
     void balanceWorkers();
