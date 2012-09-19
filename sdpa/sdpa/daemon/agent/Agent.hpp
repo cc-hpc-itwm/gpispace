@@ -38,7 +38,7 @@ namespace sdpa {
               const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
               unsigned int cap = 10000,
               bool bCanRunTasksLocally = false,
-              unsigned int rank = 0,
+              int rank = -1,
               const std::string& guiUrl = "")
         : DaemonFSM( name, arrMasterNames, cap, rank ),
           SDPA_INIT_LOGGER(name),
@@ -48,11 +48,14 @@ namespace sdpa {
         {
           SDPA_LOG_DEBUG("Agent's constructor called ...");
 
-          std::ostringstream oss;
-          oss<<"rank"<<rank;
+          if(rank>=0)
+          {
+            std::ostringstream oss;
+            oss<<"rank"<<rank;
 
-          sdpa::capability_t properCpb(oss.str(), "rank", name);
-          addCapability(properCpb);
+            sdpa::capability_t properCpb(oss.str(), "rank", name);
+            addCapability(properCpb);
+          }
 
          // application gui service
           if(!guiUrl.empty())

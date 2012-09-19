@@ -51,7 +51,7 @@ namespace daemon {
 
 	 virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException) = 0;
 
-	 virtual void getWorkerList(std::list<std::string>&) = 0;
+	 virtual void getWorkerList(worker_id_list_t&) = 0;
 	 virtual Worker::worker_id_t getWorkerId(unsigned int rank) = 0;
 
 	 virtual void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&) = 0;
