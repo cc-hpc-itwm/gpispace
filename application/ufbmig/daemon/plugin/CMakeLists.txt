@@ -85,7 +85,7 @@ fhg_add_plugin(isim_dummy isim_dummy.cpp
                  ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
-  HEADERS isim.hpp
+  HEADERS isim.hpp reactor.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
