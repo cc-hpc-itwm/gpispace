@@ -24,6 +24,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp
 fhg_add_plugin(kvsd kvsd.cpp
   EXPORTS KVSD
   LINK_LIBRARIES ${FhgCom_LIBRARY}
+                 ${FhgLog_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
