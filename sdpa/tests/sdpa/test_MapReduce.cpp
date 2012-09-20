@@ -451,7 +451,7 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testMapTaskEncoding )
 {
-  LOG( DEBUG, "***** testWordCount *****"<<std::endl);
+  LOG( DEBUG, "***** testMapReduce *****"<<std::endl);
   //guiUrl
   string guiUrl     = "";
   string workerUrl  = "127.0.0.1:5500";
@@ -482,14 +482,14 @@ BOOST_AUTO_TEST_CASE( testMapTaskEncoding )
 
 BOOST_AUTO_TEST_CASE( testMapperEncoding )
 {
-  LOG( DEBUG, "***** testWordCount *****"<<std::endl);
+  LOG( DEBUG, "***** testMapReduce *****"<<std::endl);
   //guiUrl
   string guiUrl     = "";
   string workerUrl  = "127.0.0.1:5500";
   string addrOrch   = "127.0.0.1";
   string addrAgent  = "127.0.0.1";
 
-  boost::filesystem::path file("mapreduce.out");
+  boost::filesystem::path file("reducer.out");
   if(boost::filesystem::exists(file))
     boost::filesystem::remove(file);
 
@@ -515,14 +515,14 @@ BOOST_AUTO_TEST_CASE( testMapperEncoding )
 
 BOOST_AUTO_TEST_CASE( test2Mappers2Reducers )
 {
-  LOG( DEBUG, "***** testWordCount *****"<<std::endl);
+  LOG( DEBUG, "***** testMapReduce *****"<<std::endl);
   //guiUrl
   string guiUrl     = "";
   string workerUrl  = "127.0.0.1:5500";
   string addrOrch   = "127.0.0.1";
   string addrAgent  = "127.0.0.1";
 
-  boost::filesystem::path file("mapreduce.out");
+  boost::filesystem::path file("reducer.out");
   if(boost::filesystem::exists(file))
     boost::filesystem::remove(file);
 
@@ -586,19 +586,19 @@ BOOST_AUTO_TEST_CASE( test2Mappers2Reducers )
   ptrMapper0->shutdown();
   ptrOrch->shutdown();
 
-  LOG( DEBUG, "The test case testWordCount terminated!");
+  LOG( DEBUG, "The test case testMapReduce terminated!");
 }
 
 BOOST_AUTO_TEST_CASE( test2Mappers3Reducers )
 {
-  LOG( DEBUG, "***** testWordCount *****"<<std::endl);
+  LOG( DEBUG, "***** testMapReduce *****"<<std::endl);
   //guiUrl
   string guiUrl     = "";
   string workerUrl  = "127.0.0.1:5500";
   string addrOrch   = "127.0.0.1";
   string addrAgent  = "127.0.0.1";
 
-  boost::filesystem::path file("mapreduce.out");
+  boost::filesystem::path file("reducer.out");
   if(boost::filesystem::exists(file))
     boost::filesystem::remove(file);
 
@@ -669,7 +669,7 @@ BOOST_AUTO_TEST_CASE( test2Mappers3Reducers )
   ptrMapper0->shutdown();
   ptrOrch->shutdown();
 
-  LOG( DEBUG, "The test case testWordCount terminated!");
+  LOG( DEBUG, "The test case testMapReduce terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
