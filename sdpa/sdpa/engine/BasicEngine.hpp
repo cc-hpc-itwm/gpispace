@@ -20,7 +20,10 @@
 
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
-//#include <boost/bimap.hpp>
+
+#include <boost/bimap.hpp>
+#include <boost/bimap/multiset_of.hpp>
+
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_io.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -56,7 +59,10 @@ class BasicEngine : public IWorkflowEngine
     typedef std::string internal_id_type;
 
     //typedef boost::bimap<id_type, id_type> BimapAct2WfT;
-    typedef map<id_type, id_type> MapAct2WfT;
+    typedef boost::bimap<boost::bimaps::multiset_of<std::string>, boost::bimaps::multiset_of<std::string> > BimapAct2WfT;
+    typedef BimapAct2WfT::value_type PairAct2WfT;
+
+    //typedef map<id_type, id_type> MapAct2WfT;
 
     typedef boost::tuple<id_type, encoded_type, requirement_list_t> Tuple;
     typedef SynchronizedQueue<std::list<Tuple> > TaskQueueT;
@@ -78,14 +84,14 @@ class BasicEngine : public IWorkflowEngine
 
    void connect( GenericDaemon* pIAgent )
    {
-	   pIAgent_ = pIAgent;
+     pIAgent_ = pIAgent;
    }
 
     virtual bool is_real() { return false; }
 
     void submit(const id_type & id, const encoded_type & ) {}
 
-	    /**
+      /**
      * Cancel a workflow asynchronously.
      * This method is to be invoked by the SDPA.
      * The WE will notifiy the SPDA about the
@@ -98,7 +104,7 @@ class BasicEngine : public IWorkflowEngine
       SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
       return true;
     }
-	   /**
+     /**
      * Notify the WE that an activity has been canceled
      * (state transition from * to terminated).
      * This method is to be invoked by the SDPA.
@@ -112,7 +118,7 @@ class BasicEngine : public IWorkflowEngine
       return false;
     }
 
-	  bool finished(const id_type& activityId, const result_type& strResult )
+    bool finished(const id_type& activityId, const result_type& strResult )
     {
       lock_type lock(mtx_);
       SDPA_LOG_INFO("The activity " << activityId<<" finished!" );
@@ -143,7 +149,7 @@ class BasicEngine : public IWorkflowEngine
     }
 
 
-	   /**
+     /**
      * Notify the WE that an activity has failed
      * (state transition from "running" to "failed").
      * This method is to be invoked by the SDPA.
@@ -167,14 +173,14 @@ class BasicEngine : public IWorkflowEngine
     void addActivity(const id_type& newActId, const id_type& wfid)
     {
       lock_type lock(mtx_id_);
-      mapActId2WfId_.insert(MapAct2WfT::value_type(newActId, wfid));
+      bimapActId2WfId_.insert(PairAct2WfT(newActId, wfid));
       //should throw an exception if the activity already exists
     }
 
     void deleteActivity(const id_type& newActId)
     {
       lock_type lock(mtx_id_);
-      mapActId2WfId_.erase(newActId);
+      bimapActId2WfId_.left.erase(newActId);
       //should throw an exception if the activity was not found
     }
 
@@ -182,40 +188,58 @@ class BasicEngine : public IWorkflowEngine
     {
       lock_type lock(mtx_id_);
 
-      MapAct2WfT::iterator it = mapActId2WfId_.find(actId);
-      if(it!=mapActId2WfId_.end())
+      BimapAct2WfT::left_iterator it = bimapActId2WfId_.left.find(actId);
+      if( it != bimapActId2WfId_.left.end() )
         return it->second;
 
       return "";
     }
 
+    list_values_t getWorkflowIdList(const id_type& actId)
+    {
+      lock_type lock(mtx_id_);
+
+      list_values_t listValues;
+      for( BimapAct2WfT::left_iterator it = bimapActId2WfId_.left.begin(); it != bimapActId2WfId_.left.end(); it++)
+      if( it->first == actId )
+        listValues.push_back(it->second);
+
+      return listValues;
+    }
+
     bool workflowExist(const id_type& wfid)
     {
       lock_type lock(mtx_id_);
-      BOOST_FOREACH(MapAct2WfT::value_type& pairActId2WfId, mapActId2WfId_)
-        if( pairActId2WfId.second == wfid )
-          return true;
+
+      BimapAct2WfT::right_iterator it = bimapActId2WfId_.right.find(wfid);
+      if( it != bimapActId2WfId_.right.end() )
+        return true;
 
       return false;
     }
 
     template <typename T>
-    void enqueueTask( const id_type& wfid, const T& task, const worker_id_t& assgnWorker = "")
+    void enqueueTask( const id_type& wfid, const T& task, const worker_id_t& assgnWorker = "", const id_type& actId = "")
     {
-    	requirement_list_t reqList;
+      requirement_list_t reqList;
+      id_type newActId;
 
-    	if(!assgnWorker.empty())
-    	{
-    		ostringstream oss;
-    		oss<<"node="<<assgnWorker;
-    		reqList.push_back(requirement_t(oss.str(), true));
-    	}
+      if(!assgnWorker.empty())
+      {
+        ostringstream oss;
+        oss<<"node="<<assgnWorker;
+        reqList.push_back(requirement_t(oss.str(), true));
+      }
 
-    	id_type newActId = id_generator::instance().next();
+      if(!actId.empty())
+        newActId = actId;
+      else
+        newActId = id_generator::instance().next();
+
       addActivity(newActId, wfid);
 
-    	std::string taskEnc(task.encode());
-    	queueTasks_.push(boost::make_tuple(newActId, taskEnc, reqList)); // no requirements !!!!!!
+      std::string taskEnc(task.encode());
+      queueTasks_.push(boost::make_tuple(newActId, taskEnc, reqList)); // no requirements !!!!!!
     }
 
     // thread related functions
@@ -269,8 +293,7 @@ class BasicEngine : public IWorkflowEngine
   private:
 
     boost::thread m_thread;
-    //BimapAct2WfT bmActId2WfId_;
-    MapAct2WfT mapActId2WfId_;
+    BimapAct2WfT bimapActId2WfId_;
 };
 
 

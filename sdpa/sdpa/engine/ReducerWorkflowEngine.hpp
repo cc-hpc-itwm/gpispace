@@ -37,9 +37,41 @@ class ReducerWorkflowEngine : public BasicEngine
     ReducerWorkflowEngine( GenericDaemon* pIAgent = NULL, Function_t f = Function_t() )
     : SDPA_INIT_LOGGER(pIAgent->name()+": ReducerWE"),
       BasicEngine(pIAgent, f),
-      nCntEndSuite_(0)
+      nCntEndSuite_(0),
+      newActId_(id_generator::instance().next())
     {
       SDPA_LOG_DEBUG("Reducer workflow engine created ...");
+    }
+
+    bool finished(const id_type& activityId, const result_type& strResult )
+    {
+      lock_type lock(mtx_);
+      SDPA_LOG_INFO("The activity " << activityId<<" finished!" );
+
+      // determine to which workflow the activity <activityId> belongs
+      SDPA_LOG_INFO("Get the workflow id corresponding to the activity " <<activityId<<" ..." );
+      list_values_t listWfIds = getWorkflowIdList(activityId);
+
+      SDPA_LOG_INFO("Delete the activity " <<activityId<<"!" );
+      deleteActivity(activityId);
+
+      /*if(wfid.empty())
+      {
+         SDPA_LOG_WARN("No workflow corresponding to the activity "<<activityId<<" was found!" );
+         return false;
+      }*/
+
+      //SDPA_LOG_INFO("Check if the workflow " <<wfid<<" is completed ..." );
+
+      //if(!workflowExist(wfid))
+      BOOST_FOREACH(const id_type& wfid, listWfIds)
+      {
+        // store the output on some file and pass the file name as result
+        SDPA_LOG_INFO( "Finished to compute all the map tasks! Tell the master that the workflow "<<wfid<<" finished!");
+        pIAgent_->finished( wfid, "" );
+      }
+
+      return false;
     }
 
 
@@ -60,9 +92,16 @@ class ReducerWorkflowEngine : public BasicEngine
       {
           mapTask.decode(wf_desc);
 
+          SDPA_LOG_INFO("Got new map task from "<<mapTask.inValue());
+
+          // should group somehow the tasks using a common tag, how?
           Combiner<WordCountMapper, WordCountReducer>::shuffle(&mapTask, reducer_);
 
           // accumulate and check if it's final
+          // when all END marking tasks arrived from all masters -> perform the
+          // effective reduce operation
+          // if all END_SUITE notifications were received from the masters
+          // do the reduction and send down a END_SUITE notification
           nCntEndSuite_++;
           if( nCntEndSuite_ == pIAgent_->numberOfMasterAgents() )
           {
@@ -71,14 +110,19 @@ class ReducerWorkflowEngine : public BasicEngine
             reducer_.collect(mapTask);
             //reducer_.print();
 
-            enqueueTask(wfid, mapTask);
+            enqueueTask(wfid, mapTask, "", newActId_);
 
+            // reset the counter
+            nCntEndSuite_ = 0;
+            reducer_.clear();
             // clean the reducer  !!!
             // delete pReducer;
             // deleteReducer(wfid);
           }
           else
-             pIAgent_->finished( wfid, "");
+          {
+            addActivity(newActId_, wfid);
+          }
       }
       catch(const std::exception& exc)
       {
@@ -94,6 +138,7 @@ class ReducerWorkflowEngine : public BasicEngine
   private:
     WordCountReducer reducer_;
     int nCntEndSuite_;
+    id_type newActId_;
 };
 
 

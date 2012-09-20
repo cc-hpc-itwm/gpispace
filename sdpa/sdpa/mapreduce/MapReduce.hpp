@@ -107,6 +107,8 @@ public:
     // to be specialized
   }
 
+  void clear() { mapOfTasks_.clear(); }
+
   std::string encode()
   {
     std::stringstream osstr;

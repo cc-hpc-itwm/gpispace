@@ -1,8 +1,6 @@
 add_subdirectory(plugin)
 
 set (hdrs
-  MasterMapReduceWorkflowEngine.hpp
-  WorkerMapReduceWorkflowEngine.hpp
 )
 
 install (FILES ${hdrs}
