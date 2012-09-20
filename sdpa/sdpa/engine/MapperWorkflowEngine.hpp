@@ -112,7 +112,6 @@ class MapperWorkflowEngine : public BasicEngine
 
         SDPA_LOG_INFO("Generate a lot of new map activities!");
         generateMapActivities(wfid, mapTask);
-          //pIAgent_->finished( wfid, "");
       }
       catch(const std::exception& exc)
       {
