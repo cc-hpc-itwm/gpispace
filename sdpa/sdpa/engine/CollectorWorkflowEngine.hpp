@@ -88,58 +88,6 @@ class CollectorWorkflowEngine : public BasicEngine
     }
 
 
-    /*
-    void run()
-    {
-      while(!bStopRequested)
-      {
-        //wait until the last result comes from the workers !
-        Tuple t= queueTasks_.pop_and_wait();
-        //pIAgent_->submit(boost::get<0>(t), boost::get<1>(t), boost::get<2>(t));
-
-        // accumulate the stops and from where
-        // if it's an EWF task, store it
-        id_type wfid(boost::get<0>(t));
-        WordCountMapper::TaskT mapTask;
-        std::string wf_desc(boost::get<1>(t));
-
-        try
-        {
-          mapTask.decode(wf_desc);
-
-          if(mapTask.inKey() == "END_SUITE")
-          {
-            nCntEndSuite_++;
-            if( nCntEndSuite_ == pIAgent_->numberOfMasterAgents() ) //
-            {
-              SDPA_LOG_INFO("All reduce tasks were computed!");
-
-              WordCountMapper::TaskT mapTask;
-              reducer_.collect(mapTask);
-
-              std::string output_filename("reducer.out");
-              mapTask.print(output_filename);
-            }
-          }
-          else
-          {
-             Combiner<WordCountMapper, WordCountReducer>::shuffle(&mapTask, reducer_);
-          }
-
-          //pIAgent_->finished( wfid, mapTask.inKey() );
-        }
-        catch(const std::exception& exc)
-        {
-           SDPA_LOG_ERROR("Error occurred when trying to decode the description of the workflow "<<wfid<<", submitted by "<<pIAgent_->name());
-
-           SDPA_LOG_ERROR("Notify the agent "<<pIAgent_->name()<<" that the job "<<wfid<<" failed!");
-           int errc = -1;
-           std::string reason(exc.what());
-           pIAgent_->failed( wfid, "", errc, reason);
-        }
-      }
-    }
-    */
   private:
     WordCountReducer reducer_;
     int nCntEndSuite_;

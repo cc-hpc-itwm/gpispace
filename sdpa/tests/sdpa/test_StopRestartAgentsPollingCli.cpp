@@ -230,7 +230,7 @@ void MyFixture::run_client_polling()
 			}
 		}while( job_status.find("Finished") == std::string::npos &&
 				   job_status.find("Failed") == std::string::npos &&
-				   job_status.find("Cancelled") == std::string::npos);
+				   job_status.find("Canceled") == std::string::npos);
 
 		nTrials = 0;
 
