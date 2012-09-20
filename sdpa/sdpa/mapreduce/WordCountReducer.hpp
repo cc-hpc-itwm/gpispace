@@ -26,16 +26,30 @@ typedef ReduceTask< std::string, unsigned int, unsigned int> WordCountReduceTask
 template <>
 inline void ReduceTask< std::string, unsigned int, unsigned int>::run()
 {
+  listOutValues_.clear();
   unsigned int sum = 0;
   BOOST_FOREACH(const unsigned int& val, listInValues())
   {
     sum += val;
   }
 
-  //listOutValues().push_back(sum);
   emit(sum);
 }
 
 typedef MapReduce<WordCountReduceTask> WordCountReducer;
+
+// collect the reduced pairs from pReducer_ into the mapTask
+template<>
+template <typename M>
+void WordCountReducer::collect(M& mapTask)
+{
+    BOOST_FOREACH(WordCountReducer::MapOfTasksT::value_type& pairKeyTask, mapOfTasks())
+    {
+      TaskT& reduceTask(pairKeyTask.second);
+      reduceTask.run();
+      typename M::OutValueT outVal(reduceTask.listOutValues().front());
+      mapTask.emit(pairKeyTask.first, outVal);
+    }
+}
 
 #endif //WORD_COUNT_REDUCER_HPP

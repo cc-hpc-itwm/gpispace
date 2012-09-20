@@ -1,6 +1,7 @@
 #!/bin/bash
 
-optwo_dir="@PARSU_OPTWO_DIR@"
+#optwo_dir="@PARSU_OPTWO_DIR@"
+optwo_dir=$(dirname $(dirname $(which "$0")))/op2
 
 tmp_dir=${PARSU_TMP_DIR:-${TMPDIR}}
 
@@ -69,12 +70,12 @@ abspath ()
 {
   p="$1"
   case "$p" in
-	/*)
-	  REPLY="$p"
-	  ;;
-	*)
-	  REPLY="`pwd`/$p"
-	  ;;
+        /*)
+          REPLY="$p"
+          ;;
+        *)
+          REPLY="`pwd`/$p"
+          ;;
   esac
   return 0
 }

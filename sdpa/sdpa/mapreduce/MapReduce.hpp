@@ -32,7 +32,9 @@ public:
   typedef std::map<InKeyT, T> MapOfTasksT;
   typedef std::map<InKeyT, InValueT> MapKeyValueT;
 
-  MapReduce(const MapKeyValueT& inputMapKeyVal = MapKeyValueT())
+  MapReduce(const InKeyT& inKey = InKeyT(), const InValueT& inVal = InValueT(), const MapKeyValueT& inputMapKeyVal = MapKeyValueT())
+  : inKey_(inKey),
+    inVal_(inVal)
   {
     BOOST_FOREACH(const typename MapKeyValueT::value_type& pairKeyVal, inputMapKeyVal)
     {
@@ -67,6 +69,7 @@ public:
   {
     BOOST_FOREACH(typename MapOfTasksT::value_type& pairInKeyTask, mapOfTasks_)
     {
+      std::cout<<"Task to be assigned to the worker "<<pairInKeyTask.first<<std::endl;
       pairInKeyTask.second.print();
     }
   }
@@ -80,7 +83,48 @@ public:
 
   MapOfTasksT& mapOfTasks() { return mapOfTasks_; }
 
+  std::string hash(const InKeyT& key, const std::vector<std::string>& workerIdList )
+  {
+    // to be specialized
+    return "";
+  }
+
+  void partitionate(const TaskT& mapTask, std::vector<std::string>& workerIdList )
+  {
+    // to be specialized
+  }
+
+
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int /* file_version */)
+  {
+    ar & mapOfTasks_;
+  }
+
+  template <typename M>
+  void collect(M& )
+  {
+    // to be specialized
+  }
+
+  std::string encode()
+  {
+    std::stringstream osstr;
+    boost::archive::text_oarchive ar(osstr);
+    ar << *this;
+    return osstr.str();
+  }
+
+  void decode(const std::string& strWorkflow)
+  {
+    std::stringstream sstr(strWorkflow);
+    boost::archive::text_iarchive ar(sstr);
+    ar >> *this;
+  }
+
 private:
+  InKeyT inKey_;
+  InValueT inVal_;
   MapOfTasksT mapOfTasks_;
 };
 

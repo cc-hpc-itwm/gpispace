@@ -33,10 +33,10 @@
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
 
+#include <stdexcept>
 #include <list>
 #include <map>
 
-using namespace sdpa;
 using namespace std;
 
 template <typename InKey, typename InValue, typename OutKey, typename OutValue>
@@ -71,7 +71,7 @@ public:
   // run will produce outKeyValueMap_ !
   // example in word count inKey_ = filename, inValue_ = node
   // outKeyValueMap_ will be a map of <word, count> pairs
-  void run() {}
+  void run() { throw std::runtime_error("Method not implemented!"); }
 
   void emit(OutKeyT key, OutValueT val)
   {
@@ -82,6 +82,7 @@ public:
   InValueT inValue() { return inValue_; }
 
   OutKeyValueMapT& outKeyValueMap() { return outKeyValueMap_; }
+  const OutKeyValueMapT& outKeyValueMap() const { return outKeyValueMap_; }
 
   void clear() { outKeyValueMap_.clear(); }
 
@@ -96,7 +97,40 @@ public:
      std::cout<<"**************************************************"<<std::endl;
   }
 
-  void print(const std::string& strFileName) {}
+  void print(const std::string& strFileName)
+  {
+    std::ofstream ofs;
+    ofs.open( strFileName.c_str(), ios::out); // | ios::app );
+
+    ofs<<"*******************MapTask***********************"<<std::endl;
+    ofs<<"inKey="<<inKey()<<std::endl;
+    ofs<<"inValue="<<inValue()<<std::endl;
+
+    BOOST_FOREACH(OutKeyValPairT pair, outKeyValueMap_)
+      ofs<<"("<<pair.first<<", "<<pair.second<<")"<<std::endl;
+    ofs<<"**************************************************"<<std::endl;
+
+    ofs.close();
+  }
+
+  std::string encode() const
+  {
+    std::stringstream osstr;
+    boost::archive::text_oarchive ar(osstr);
+    ar << inKey_;
+    ar << inValue_;
+    ar << outKeyValueMap_;
+    return osstr.str();
+  }
+
+  void decode(const std::string& strWorkflow)
+  {
+    std::stringstream sstr(strWorkflow);
+    boost::archive::text_iarchive ar(sstr);
+    ar >> inKey_;
+    ar >> inValue_;
+    ar >> outKeyValueMap_;
+  }
 
 private:
   InKeyT inKey_;

@@ -733,8 +733,6 @@ private:
 
     DMLOG(TRACE, "transfering meta data with size " << sz);
 
-    std::vector<char> buffer (sz, 0);
-
     isim::msg_t *msg = m_isim->msg_new (server::command::MIGRATE_META_DATA, sz);
     size_t num_read;
     ec = m_backend->read (fd, (char*)m_isim->msg_data (msg), sz, num_read);
@@ -789,8 +787,8 @@ private:
       size_t message_size = sizeof(offset) + transfer_size;
 
       isim::msg_t *msg = m_isim->msg_new ( server::command::MIGRATE_DATA
-                                       , message_size
-                                       );
+                                         , message_size
+                                         );
       memcpy (m_isim->msg_data (msg), &offset, sizeof(offset));
 
       size_t num_read;
@@ -799,6 +797,8 @@ private:
                            , transfer_size
                            , num_read
                            );
+
+      assert (num_read == transfer_size);
 
       if (0 == ec)
       {
@@ -809,8 +809,8 @@ private:
           break;
         }
 
-        offset += transfer_size;
-        remaining -= transfer_size;
+        offset += num_read;
+        remaining -= num_read;
       }
       else
       {

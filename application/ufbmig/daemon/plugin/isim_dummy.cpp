@@ -1,4 +1,5 @@
 #include "isim.hpp"
+#include "reactor.hpp"
 #include "ufbmig_msg_types.hpp"
 
 #include <list>
@@ -28,9 +29,13 @@ typedef std::list <msg_t *> msg_queue_t;
 
 class ISIM_Dummy : FHG_PLUGIN
                  , public isim::ISIM
+                 , public isim::Reactor
 {
 public:
-  ISIM_Dummy () {}
+  ISIM_Dummy ()
+    : m_msg_reactor (0)
+  {}
+
   ~ISIM_Dummy () {}
 
   FHG_PLUGIN_START()
@@ -85,7 +90,18 @@ public:
 
     MLOG (TRACE, "sending message: " << msg_type (msg));
 
-    react_on_message (msg);
+    if (m_msg_reactor)
+    {
+      msg_t *reply = m_msg_reactor (msg);
+      if (reply)
+      {
+        reply_with (reply);
+      }
+    }
+    else
+    {
+      react_on_message (msg);
+    }
 
     msg_destroy (p_msg);
 
@@ -95,6 +111,11 @@ public:
   void stop () {}
   void idle () {}
   void busy () {}
+
+  void set_reactor (isim::MessageReactor r)
+  {
+    m_msg_reactor = r;
+  }
 
   msg_t *msg_new (int type, size_t size)
   {
@@ -242,6 +263,8 @@ private:
   mutable mutex_type m_mtx_msg_queue;
   mutable condition_type m_msg_available;
   msg_queue_t m_msg_queue;
+
+  isim::MessageReactor m_msg_reactor;
 };
 
 EXPORT_FHG_PLUGIN( isim
