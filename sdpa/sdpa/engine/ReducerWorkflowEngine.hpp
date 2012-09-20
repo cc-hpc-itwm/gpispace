@@ -55,15 +55,6 @@ class ReducerWorkflowEngine : public BasicEngine
       SDPA_LOG_INFO("Delete the activity " <<activityId<<"!" );
       deleteActivity(activityId);
 
-      /*if(wfid.empty())
-      {
-         SDPA_LOG_WARN("No workflow corresponding to the activity "<<activityId<<" was found!" );
-         return false;
-      }*/
-
-      //SDPA_LOG_INFO("Check if the workflow " <<wfid<<" is completed ..." );
-
-      //if(!workflowExist(wfid))
       BOOST_FOREACH(const id_type& wfid, listWfIds)
       {
         // store the output on some file and pass the file name as result
@@ -73,7 +64,6 @@ class ReducerWorkflowEngine : public BasicEngine
 
       return false;
     }
-
 
     /**
     * Submit a workflow to the WE.
