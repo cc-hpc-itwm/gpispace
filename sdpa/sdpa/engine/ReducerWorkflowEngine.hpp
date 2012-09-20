@@ -37,8 +37,7 @@ class ReducerWorkflowEngine : public BasicEngine
     ReducerWorkflowEngine( GenericDaemon* pIAgent = NULL, Function_t f = Function_t() )
     : SDPA_INIT_LOGGER(pIAgent->name()+": ReducerWE"),
       BasicEngine(pIAgent, f),
-      nCntEndSuite_(0),
-      nDoneResults_(0)
+      nCntEndSuite_(0)
     {
       SDPA_LOG_DEBUG("Reducer workflow engine created ...");
     }
@@ -64,10 +63,6 @@ class ReducerWorkflowEngine : public BasicEngine
           Combiner<WordCountMapper, WordCountReducer>::shuffle(&mapTask, reducer_);
 
           // accumulate and check if it's final
-          // when all END marking tasks arrived from all masters -> perform the
-          // effective reduce operation
-          // if all END_SUITE notifications were received from the masters
-          // do the reduction and send down a END_SUITE notification
           nCntEndSuite_++;
           if( nCntEndSuite_ == pIAgent_->numberOfMasterAgents() )
           {
@@ -99,7 +94,6 @@ class ReducerWorkflowEngine : public BasicEngine
   private:
     WordCountReducer reducer_;
     int nCntEndSuite_;
-    int nDoneResults_;
 };
 
 

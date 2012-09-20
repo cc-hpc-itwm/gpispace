@@ -216,13 +216,13 @@ void MyFixture::run_client()
 		nTrials = 0;
 		while( job_status.find("Finished") == std::string::npos &&
 			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
+			   job_status.find("Canceled") == std::string::npos)
 		{
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-				boost::this_thread::sleep(boost::posix_time::seconds(10));
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -244,7 +244,6 @@ void MyFixture::run_client()
 		try {
 				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 				ptrCli->retrieveResults(job_id_user);
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -265,7 +264,6 @@ void MyFixture::run_client()
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -283,8 +281,7 @@ void MyFixture::run_client()
 	}
 
 	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
+  ptrCli.reset();
 }
 
 sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
