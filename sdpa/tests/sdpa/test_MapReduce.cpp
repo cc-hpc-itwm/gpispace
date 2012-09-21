@@ -542,11 +542,11 @@ BOOST_AUTO_TEST_CASE( test2Mappers2Reducers )
 
   sdpa::master_info_list_t arrInfoOrch(1, MasterInfo("orchestrator_0"));
   sdpa::daemon::Agent::ptr_t ptrMapper0 = sdpa::daemon::AgentFactory<MapperWorkflowEngine>::create("mapper0", addrAgent, arrInfoOrch, MAX_CAP);
-  ptrMapper0->addCapability(sdpa::capability_t("node=mapper0", "node", "mapper0"));
+  ptrMapper0->addCapability(sdpa::capability_t("mapper", "node", "mapper0"));
   ptrMapper0->start_agent(false);
 
   sdpa::daemon::Agent::ptr_t ptrMapper1 = sdpa::daemon::AgentFactory<MapperWorkflowEngine>::create("mapper1", addrAgent, arrInfoOrch, MAX_CAP);
-  ptrMapper1->addCapability( sdpa::capability_t("node=mapper1", "node", "mapper1"));
+  ptrMapper1->addCapability( sdpa::capability_t("mapper", "node", "mapper1"));
   ptrMapper1->start_agent(false);
 
   sdpa::master_info_list_t arrInfoMappers;
@@ -556,11 +556,11 @@ BOOST_AUTO_TEST_CASE( test2Mappers2Reducers )
   arrInfoMappers.push_back(m2);
 
   sdpa::daemon::Agent::ptr_t ptrReducer0 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer0", addrAgent, arrInfoMappers, MAX_CAP );
-  ptrReducer0->addCapability( sdpa::capability_t("node=reducer0", "node", "reducer0"));
+  ptrReducer0->addCapability( sdpa::capability_t("reducer0", "node", "reducer0"));
   ptrReducer0->start_agent(false);
 
   sdpa::daemon::Agent::ptr_t ptrReducer1 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer1", addrAgent, arrInfoMappers, MAX_CAP);
-  ptrReducer1->addCapability(sdpa::capability_t("node=reducer1", "node", "reducer1"));
+  ptrReducer1->addCapability(sdpa::capability_t("reducer1", "node", "reducer1"));
   ptrReducer1->start_agent(false);
 
   sdpa::master_info_list_t arrInfoReducers;
@@ -618,11 +618,11 @@ BOOST_AUTO_TEST_CASE( test2Mappers3Reducers )
 
   sdpa::master_info_list_t arrInfoOrch(1, MasterInfo("orchestrator_0"));
   sdpa::daemon::Agent::ptr_t ptrMapper0 = sdpa::daemon::AgentFactory<MapperWorkflowEngine>::create("mapper0", addrAgent, arrInfoOrch, MAX_CAP);
-  ptrMapper0->addCapability(sdpa::capability_t("node=mapper0", "node", "mapper0"));
+  ptrMapper0->addCapability(sdpa::capability_t("mapper", "node", "mapper0"));
   ptrMapper0->start_agent(false);
 
   sdpa::daemon::Agent::ptr_t ptrMapper1 = sdpa::daemon::AgentFactory<MapperWorkflowEngine>::create("mapper1", addrAgent, arrInfoOrch, MAX_CAP);
-  ptrMapper1->addCapability( sdpa::capability_t("node=mapper1", "node", "mapper1"));
+  ptrMapper1->addCapability( sdpa::capability_t("mapper", "node", "mapper1"));
   ptrMapper1->start_agent(false);
 
   sdpa::master_info_list_t arrInfoMappers;
@@ -632,15 +632,15 @@ BOOST_AUTO_TEST_CASE( test2Mappers3Reducers )
   arrInfoMappers.push_back(m2);
 
   sdpa::daemon::Agent::ptr_t ptrReducer0 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer0", addrAgent, arrInfoMappers, MAX_CAP );
-  ptrReducer0->addCapability( sdpa::capability_t("node=reducer0", "node", "reducer0"));
+  ptrReducer0->addCapability( sdpa::capability_t("reducer0", "node", "reducer0"));
   ptrReducer0->start_agent(false);
 
   sdpa::daemon::Agent::ptr_t ptrReducer1 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer1", addrAgent, arrInfoMappers, MAX_CAP);
-  ptrReducer1->addCapability(sdpa::capability_t("node=reducer1", "node", "reducer1"));
+  ptrReducer1->addCapability(sdpa::capability_t("reducer1", "node", "reducer1"));
   ptrReducer1->start_agent(false);
 
   sdpa::daemon::Agent::ptr_t ptrReducer2 = sdpa::daemon::AgentFactory<ReducerWorkflowEngine>::create("reducer2", addrAgent, arrInfoMappers, MAX_CAP);
-  ptrReducer2->addCapability(sdpa::capability_t("node=reducer2", "node", "reducer2"));
+  ptrReducer2->addCapability(sdpa::capability_t("reducer2", "node", "reducer2"));
   ptrReducer2->start_agent(false);
 
   sdpa::master_info_list_t arrInfoReducers;

@@ -63,22 +63,17 @@ class MapperWorkflowEngine : public BasicEngine
       // small letters: [97..122]
       // non-alphanumeric chars
 
-      // you should call shuffle first, i.o. to eliminate multiple occurrences
-      // of the same word within the list of pairs [<word,count>]
 
-      // should define a hashing function within the MapTask !
-      // define a map of mappers (buckets)
       // InKey -> the key is the workflow id
       // InValue -> the worker id where to be scheduled (non-mandatory requirement -> for fault-tolerance) )
-
-      WordCountMapper wcMapper(wfid); // the mapper is associated to the workflow wfid
+      WordCountMapper wcMapper(wfid); // the mapper is associated to the workflow wfid -> it seems to be correct
 
       if(nWorkers)
       {
         wcMapper.partitionate(mapTask, workerIdList);
 
         // print here the mapper
-        //wcMapper.print();
+        // wcMapper.print();
 
         // now, assign it effectively!
         BOOST_FOREACH(WordCountMapper::MapOfTasksT::value_type& pairWorkerTask, wcMapper.mapOfTasks())
@@ -89,13 +84,6 @@ class MapperWorkflowEngine : public BasicEngine
       }
     }
 
-    /**
-    * Submit a workflow to the WE.
-    * This method is to be invoked by the SDPA.
-    * The WE will initiate and start the workflow
-    * asynchronously and notifiy the SPDA about status transitions
-    * using the callback methods of the Gwes2Sdpa handler.
-    */
     void submit(const id_type& wfid, const encoded_type& wf_desc)
     {
       lock_type lock(mtx_);
@@ -112,7 +100,6 @@ class MapperWorkflowEngine : public BasicEngine
 
         SDPA_LOG_INFO("Generate a lot of new map activities!");
         generateMapActivities(wfid, mapTask);
-          //pIAgent_->finished( wfid, "");
       }
       catch(const std::exception& exc)
       {
