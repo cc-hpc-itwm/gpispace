@@ -80,13 +80,13 @@ inline std::string WordCountMapper::hash(const std::string& key, const std::vect
   * thare are to be assigned to it
  */
 template <>
-inline void WordCountMapper::partitionate(const WordCountMapper::TaskT& mapTask, std::vector<std::string>& workerIdList )
+inline void WordCountMapper::partitionate(WordCountMapper::TaskT& mapTask, std::vector<std::string>& workerIdList )
 {
   // initialize the array of map tasks
-  BOOST_FOREACH(const std::string& workerId, workerIdList)
+  BOOST_FOREACH(const std::string& destWorkerId, workerIdList)
   {
-    TaskT task(workerId);
-    addTask(workerId, task);
+    TaskT task(destWorkerId, mapTask.inValue());
+    addTask(destWorkerId, task);
   }
 
   // now, just distribute the list of pairs [<word, count>] from mapTask

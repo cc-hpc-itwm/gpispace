@@ -23,7 +23,7 @@
 template <typename Mapper, typename Reducer>
 struct Combiner
 {
-  static void shuffle( typename Mapper::TaskT* pWcMapTask, Reducer& reducer)
+  /*static void shuffle( typename Mapper::TaskT* pWcMapTask, Reducer& reducer)
   {
     BOOST_FOREACH(typename Mapper::TaskT::OutKeyValueMapT::value_type& pairWC, pWcMapTask->outKeyValueMap())
     {
@@ -40,6 +40,29 @@ struct Combiner
         reducer.addTask(pairWC.first, reduceTask);
       }
     }
+
+     reducer.updateCounter();
+  }*/
+
+  static void shuffle( typename Mapper::TaskT* pWcMapTask, Reducer* pReducer)
+  {
+    BOOST_FOREACH(typename Mapper::TaskT::OutKeyValueMapT::value_type& pairWC, pWcMapTask->outKeyValueMap())
+    {
+      bool bFound = pReducer->find(pairWC.first);
+
+      if(bFound)
+      {
+        typename Reducer::TaskT& reduceTask = (*pReducer)[pairWC.first];
+        reduceTask.accumulate(pairWC.second);
+      }
+      else
+      {
+        typename Reducer::TaskT reduceTask(pairWC.first, pairWC.second);
+        pReducer->addTask(pairWC.first, reduceTask);
+      }
+    }
+
+     pReducer->updateCounter();
   }
 };
 

@@ -45,7 +45,8 @@ void WordCountReducer::collect(M& mapTask)
 {
     BOOST_FOREACH(WordCountReducer::MapOfTasksT::value_type& pairKeyTask, mapOfTasks())
     {
-      TaskT& reduceTask(pairKeyTask.second);
+      id_type tag(mapTask.inValue());
+      TaskT reduceTask = pairKeyTask.second;
       reduceTask.run();
       typename M::OutValueT outVal(reduceTask.listOutValues().front());
       mapTask.emit(pairKeyTask.first, outVal);

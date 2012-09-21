@@ -34,7 +34,8 @@ public:
 
   MapReduce(const InKeyT& inKey = InKeyT(), const InValueT& inVal = InValueT(), const MapKeyValueT& inputMapKeyVal = MapKeyValueT())
   : inKey_(inKey),
-    inVal_(inVal)
+    inVal_(inVal),
+    nCounter_(0)
   {
     BOOST_FOREACH(const typename MapKeyValueT::value_type& pairKeyVal, inputMapKeyVal)
     {
@@ -89,7 +90,7 @@ public:
     return "";
   }
 
-  void partitionate(const TaskT& mapTask, std::vector<std::string>& workerIdList )
+  void partitionate(TaskT& mapTask, std::vector<std::string>& workerIdList )
   {
     // to be specialized
   }
@@ -107,7 +108,19 @@ public:
     // to be specialized
   }
 
-  void clear() { mapOfTasks_.clear(); }
+  void clear()
+  {
+    mapOfTasks_.clear();
+    resetCounter();
+  }
+
+  void updateCounter() { nCounter_++; }
+  void resetCounter() { nCounter_ = 0; }
+
+  bool reachedBound(const int N ) { return nCounter_ == N; }
+
+  void setId(const std::string& id) { id_ = id; }
+  std::string id() { return id_; }
 
   std::string encode()
   {
@@ -128,6 +141,8 @@ private:
   InKeyT inKey_;
   InValueT inVal_;
   MapOfTasksT mapOfTasks_;
+  int nCounter_;
+  std::string id_;
 };
 
 
