@@ -33,12 +33,12 @@ class ReducerWorkflowEngine : public BasicEngine
     SDPA_DECLARE_LOGGER();
 
   public:
+    typedef std::map<id_type, WordCountReducer*> MapTag2ReducerT;
+    typedef MapTag2ReducerT::value_type PairTagReducerT;
 
     ReducerWorkflowEngine( GenericDaemon* pIAgent = NULL, Function_t f = Function_t() )
     : SDPA_INIT_LOGGER(pIAgent->name()+": ReducerWE"),
-      BasicEngine(pIAgent, f),
-      nCntEndSuite_(0),
-      newActId_(id_generator::instance().next())
+      BasicEngine(pIAgent, f)
     {
       SDPA_LOG_DEBUG("Reducer workflow engine created ...");
     }
@@ -59,59 +59,53 @@ class ReducerWorkflowEngine : public BasicEngine
       {
         // store the output on some file and pass the file name as result
         SDPA_LOG_INFO( "Finished to compute all the map tasks! Tell the master that the workflow "<<wfid<<" finished!");
-        pIAgent_->finished( wfid, "" );
+        pIAgent_->finished( wfid, strResult);
       }
 
       return false;
     }
 
-    /**
-    * Submit a workflow to the WE.
-    * This method is to be invoked by the SDPA.
-    * The WE will initiate and start the workflow
-    * asynchronously and notifiy the SPDA about status transitions
-    * using the callback methods of the Gwes2Sdpa handler.
-    */
     void submit(const id_type& wfid, const encoded_type& wf_desc)
     {
       lock_type lock(mtx_);
 
-      WordCountMapper::TaskT mapTask;
+      WordCountMapper::TaskT fromMapperTask;
 
       try
       {
-          mapTask.decode(wf_desc);
+          fromMapperTask.decode(wf_desc);
 
-          SDPA_LOG_INFO("Got new map task from "<<mapTask.inValue());
+          SDPA_LOG_INFO("Got new map map task tagged as: "<<fromMapperTask.inValue());
 
-          // should group somehow the tasks using a common tag, how?
-          Combiner<WordCountMapper, WordCountReducer>::shuffle(&mapTask, reducer_);
+          WordCountReducer* pReducer;
+          id_type tag(fromMapperTask.inValue());
+          MapTag2ReducerT::iterator it = mapTag2Reducer_.find(tag);
+          if( it == mapTag2Reducer_.end() )
+          {
+            // no entry for that tag exist
+            // therefore, create a new reducer
+            pReducer = new WordCountReducer;
+            mapTag2Reducer_.insert(PairTagReducerT(tag, pReducer));
+            pReducer->setId(id_generator::instance().next());
+          }
+          else
+            pReducer = it->second;
 
-          // accumulate and check if it's final
-          // when all END marking tasks arrived from all masters -> perform the
-          // effective reduce operation
-          // if all END_SUITE notifications were received from the masters
-          // do the reduction and send down a END_SUITE notification
-          nCntEndSuite_++;
-          if( nCntEndSuite_ == pIAgent_->numberOfMasterAgents() )
+          Combiner<WordCountMapper, WordCountReducer>::shuffle(&fromMapperTask, pReducer);
+
+          if( pReducer->reachedBound( pIAgent_->numberOfMasterAgents() ))
           {
             // build a new map task, out of the reducer associated to this workflow
-            WordCountMapper::TaskT mapTask;
-            reducer_.collect(mapTask);
+            WordCountMapper::TaskT toCollMapTask(fromMapperTask.inKey(), fromMapperTask.inValue());
+            pReducer->collect(toCollMapTask);
             //reducer_.print();
 
-            enqueueTask(wfid, mapTask, "", newActId_);
-
-            // reset the counter
-            nCntEndSuite_ = 0;
-            reducer_.clear();
-            // clean the reducer  !!!
-            // delete pReducer;
-            // deleteReducer(wfid);
+            enqueueTask(wfid, toCollMapTask, "", pReducer->id());
+            remove(tag);
           }
           else
           {
-            addActivity(newActId_, wfid);
+            addActivity(pReducer->id(), wfid);
           }
       }
       catch(const std::exception& exc)
@@ -125,11 +119,23 @@ class ReducerWorkflowEngine : public BasicEngine
       }
     }
 
-  private:
-    WordCountReducer reducer_;
-    int nCntEndSuite_;
-    id_type newActId_;
-};
+    void remove(const id_type& tag)
+    {
+      try {
+        WordCountReducer* pReducer = mapTag2Reducer_[tag];
+        pReducer->clear();
+        mapTag2Reducer_[tag]=NULL;
+        delete pReducer;
+        mapTag2Reducer_.erase(tag);
+      }
+      catch(std::exception& exc)
+      {
+        SDPA_LOG_ERROR("Exception occurred when trying to remove the tag "<<tag<<": "<<exc.what());
+      }
+    }
 
+  private:
+    MapTag2ReducerT mapTag2Reducer_;
+};
 
 #endif //MASTER_AGENT_MAPREDUCE_WORKFLOW_ENGINE_HPP

@@ -48,52 +48,16 @@ class MasterWorkflowEngine : public BasicEngine
       // the mapper contain an arry of
       BOOST_FOREACH(const UserMapTask::OutKeyValPairT& pairKeyTask, mapTask.outKeyValueMap())
       {
-        WordCountMapper::TaskT newMapTask(pairKeyTask.first, pairKeyTask.second);
-        enqueueTask(wfid, newMapTask, pairKeyTask.second);
+        id_type tag = wfid;
+        worker_id_t destWorkerId(pairKeyTask.second);
+        WordCountMapper::TaskT newMapTask(pairKeyTask.first, tag);
+        enqueueTask(wfid, newMapTask, "mapper");
       }
     }
 
-    bool finished(const id_type& activityId, const result_type& strResult )
-    {
-      lock_type lock(mtx_);
-      SDPA_LOG_INFO("The activity " << activityId<<" finished!" );
-
-      // determine to which workflow the activity <activityId> belongs
-      SDPA_LOG_INFO("Get the workflow id corresponding to the activity " <<activityId<<" ..." );
-      id_type wfid = getWorkflowId(activityId);
-
-      SDPA_LOG_INFO("Delete the activity " <<activityId<<"!" );
-      deleteActivity(activityId);
-
-      if(wfid.empty())
-      {
-         SDPA_LOG_FATAL("No workflow corresponding to the activity "<<activityId<<" was found!" );
-         return false;
-      }
-
-      SDPA_LOG_INFO("Check if the workflow " <<wfid<<" is completed ..." );
-
-      if(!workflowExist(wfid))
-      {
-        // store the output on some file and pass the file name as result
-        SDPA_LOG_INFO( "Finished to compute all the tasks! Tell the master that the workflow "<<wfid<<" finished!");
-        pIAgent_->finished( wfid, "" );
-      }
-
-      return false;
-    }
-
-    /**
-    * Submit a workflow to the WE.
-    * This method is to be invoked by the SDPA.
-    * The WE will initiate and start the workflow
-    * asynchronously and notifiy the SPDA about status transitions
-    * using the callback methods of the Gwes2Sdpa handler.
-    */
     void submit(const id_type& wfid, const encoded_type& wf_desc)
     {
       lock_type lock(mtx_);
-      // WE is supposed to parse the workflow and generate a suite of sub-workflows or activities that are sent to SDPA
       // WE assigns an unique workflow_id which will be used as a job_id on SDPA side
       SDPA_LOG_INFO("The agent submitted a new workflow, wfid = "<<wfid);
 
@@ -119,7 +83,7 @@ class MasterWorkflowEngine : public BasicEngine
          SDPA_LOG_ERROR("Notify the agent "<<pIAgent_->name()<<" that the job "<<wfid<<" failed!");
          int errc = -1;
          std::string reason(exc.what());
-         pIAgent_->failed( wfid, "" , errc, reason );
+         pIAgent_->failed( wfid, "", errc, reason );
       }
     }
 };

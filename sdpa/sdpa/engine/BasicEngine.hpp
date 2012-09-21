@@ -91,26 +91,14 @@ class BasicEngine : public IWorkflowEngine
 
     void submit(const id_type & id, const encoded_type & ) {}
 
-      /**
-     * Cancel a workflow asynchronously.
-     * This method is to be invoked by the SDPA.
-     * The WE will notifiy the SPDA about the
-     * completion of the cancelling process by calling the
-     * callback method Gwes2Sdpa::cancelled.
-     */
+
     bool cancel( const id_type& wfid, const reason_type& reason )
     {
       lock_type lock(mtx_);
       SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
       return true;
     }
-     /**
-     * Notify the WE that an activity has been canceled
-     * (state transition from * to terminated).
-     * This method is to be invoked by the SDPA.
-     * This is a callback listener method to monitor activities submitted
-     * to the SDPA using the method Gwes2Sdpa.submit().
-    */
+
     bool cancelled(const id_type& activityId)
     {
       lock_type lock(mtx_);
@@ -148,14 +136,6 @@ class BasicEngine : public IWorkflowEngine
       return false;
     }
 
-
-     /**
-     * Notify the WE that an activity has failed
-     * (state transition from "running" to "failed").
-     * This method is to be invoked by the SDPA.
-     * This is a callback listener method to monitor activities submitted
-     * to the SDPA using the method Gwes2Sdpa.submit().
-    */
     bool failed(  const id_type & activityId,
                   const result_type& result,
                   const int error_code,
@@ -219,16 +199,16 @@ class BasicEngine : public IWorkflowEngine
     }
 
     template <typename T>
-    void enqueueTask( const id_type& wfid, const T& task, const worker_id_t& assgnWorker = "", const id_type& actId = "")
+    void enqueueTask( const id_type& wfid, const T& task, const worker_id_t& strReq = "", const id_type& actId = "")
     {
+      lock_type lock(mtx_id_);
+
       requirement_list_t reqList;
       id_type newActId;
 
-      if(!assgnWorker.empty())
+      if(!strReq.empty())
       {
-        ostringstream oss;
-        oss<<"node="<<assgnWorker;
-        reqList.push_back(requirement_t(oss.str(), true));
+        reqList.push_back(requirement_t(strReq, true));
       }
 
       if(!actId.empty())
