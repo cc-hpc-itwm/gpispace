@@ -5,7 +5,7 @@ local list = require("list")
 function M.dump(pnet)
 	print("Number of places: " .. #pnet:places())
 
-	for p in pnet:places():all() do
+	for p in pnet:places()() do
 		print("Place `" .. p:name() .. "' with id " .. p:id())
 		for port in p:inConnections() do
 			print("incoming connection from port `" .. tostring(port) .. "' of the transition `" .. tostring(port:transition()) .. "'")
@@ -20,9 +20,9 @@ function M.dump(pnet)
 	end
 
 	print("Number of transitions: " .. #pnet:transitions())
-	for t in pnet:transitions():all() do
+	for t in pnet:transitions() do
 		print("Transition `" .. t:name() .. "'")
-		for port in t:ports():all() do
+		for port in t:ports() do
 			print("Port `" .. port:name() .. "'"
 			      .. (port:place() and (", connected to place `" .. tostring(port:place()) .. "'") or "")
 			      .. (port:associatedPlace() and (", associated with `" .. tostring(port:associatedPlace()) .. "'") or "")

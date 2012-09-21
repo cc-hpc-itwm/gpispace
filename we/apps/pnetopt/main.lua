@@ -8,6 +8,10 @@ end
 print(#net:transitions())
 for t in net:transitions() do
 	print(t)
+	
+	for port in t:ports() do
+		print(port)
+	end
 end
 
 --local pnet = require("pnet")

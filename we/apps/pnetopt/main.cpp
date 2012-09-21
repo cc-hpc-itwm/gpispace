@@ -25,12 +25,6 @@ namespace {
 /*
  * Everything is C++ owned and is never deleted.
  * Except iterators: nobody refers them anyway, so we can garbage-collect them.
- *
- * Another option: everything is Lua-owned and deletes references to itself on destruction.
- * Doesn't work. For example, a Ports has a reference to Transition which is not used
- * anymore in Lua. But the Transition can't be deleted, since it will invalidate Ports
- * object (it can't access anything anymore).
- *
  */
 
 template<class P, class E, class T>
@@ -42,6 +36,9 @@ class Optimizer {
     typedef we::type::transition_t<P, E, T> transition_t;
 
     typedef petri_net::net<P, transition_t, E, T> pnet_t;
+
+    typedef typename transition_t::port_id_t port_id_t;
+    typedef typename transition_t::port_t port_t;
 
     lua_State *L;
 
@@ -77,12 +74,26 @@ class Optimizer {
                     .addFunction("__tostring", &Transition::name)
                     .addFunction("name", &Transition::name)
                     .addFunction("setName", &Transition::setName)
+                    .addFunction("ports", &Transition::portIterator)
                 .endClass()
                 .template beginClass<TransitionIterator>("TransitionIterator")
                     .addFunction("__tostring", &TransitionIterator::toString)
                     .addFunction("__call", &TransitionIterator::call)
                     .addFunction("__len", &TransitionIterator::size)
-                .endClass();
+                .endClass()
+                .template beginClass<Port>("Port")
+                    .addFunction("__tostring", &Port::name)
+                    .addFunction("name", &Port::name)
+                    .addFunction("isInput", &Port::isInput)
+                    .addFunction("isOutput", &Port::isOutput)
+                    .addFunction("isTunnel", &Port::isTunnel)
+                .endClass()
+                .template beginClass<PortIterator>("PortIterator")
+                    .addFunction("__tostring", &PortIterator::toString)
+                    .addFunction("__call", &PortIterator::call)
+                    .addFunction("__len", &PortIterator::size)
+                .endClass()
+        ;
 
 #if 0
                 .template beginClass<PetriNet>("PetriNet")
@@ -192,6 +203,7 @@ class Optimizer {
     typedef RefCountedObjectPtr<TransitionIterator> TransitionIteratorPtr;
 
     class PetriNet: public boost::noncopyable {
+        /** Petri net reference. */
         pnet_t &pnet_;
 
         /** All the ever created places, both valid and invalid. */
@@ -303,8 +315,13 @@ class Optimizer {
     };
 
     class Place: public boost::noncopyable, public pnetopt::Invalidatable {
+        /** Parent Petri net. */
         PetriNet *petriNet_;
+
+        /** Place id. */
         pid_t pid_;
+
+        /** Reference to the place. */
         place_t &place_;
 
         public:
@@ -313,11 +330,6 @@ class Optimizer {
             petriNet_(petriNet), pid_(pid), place_(place)
         {}
 
-        const std::string &toString() {
-            ensureValid();
-            return place_.name;
-        }
-
         const std::string &name() {
             ensureValid();
             return place_.name();
@@ -325,25 +337,76 @@ class Optimizer {
 
         void setName(const std::string &name) {
             ensureValid();
-
             place_.set_name(name);
         }
     };
 
+    class Port;
+    typedef boost::unordered_map<tid_t, Port *> IdPortMap;
+    typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPortMap>, IdPortMap> Ports;
+    typedef pnetopt::LuaIterator<Ports> PortIterator;
+    typedef RefCountedObjectPtr<PortIterator> PortIteratorPtr;
+
     class Transition: public boost::noncopyable, public pnetopt::Invalidatable {
+        /** Parent Petri net. */
         PetriNet *petriNet_;
+
+        /** Transition id. */
         tid_t tid_;
+
+        /** Reference to the transition. */
         transition_t &transition_;
+
+        /** Map of a port id to a valid port with this id. */
+        IdPortMap id2port_;
+
+        /** All ever created ports, both valid and invalid. */
+        std::vector<Port *> ports_;
+
+        /** Iterators over the id2port_ container. */
+        std::vector<PortIteratorPtr> portIterators_;
 
         public:
 
         Transition(PetriNet *petriNet, tid_t tid, transition_t &transition):
             petriNet_(petriNet), tid_(tid), transition_(transition)
-        {}
+        {
+            for (typename transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
+                getPort(i->first);
+            }
+        }
 
-        const std::string &toString() {
-            ensureValid();
-            return transition_.name;
+        Port *getPort(port_id_t portId) {
+            Port *&result = id2port_[portId];
+
+            if (!result) {
+                port_t &port = transition_.get_port(portId);
+
+                ports_.reserve(ports_.size() + 1);
+                result = new Port(this, portId, port);
+                ports_.push_back(result);
+            }
+
+            result->ensureValid();
+            
+            return result;
+        }
+
+        Ports ports() const {
+            return pnetopt::rangeAdaptor(id2port_ | boost::adaptors::map_values, id2port_);
+        }
+
+        PortIteratorPtr portIterator() {
+            PortIteratorPtr result(new PortIterator(ports()));
+            portIterators_.push_back(result);
+            return result;
+        }
+
+        void invalidatePortIterators() {
+            foreach(PortIteratorPtr &iterator, portIterators_) {
+                iterator->invalidate();
+            }
+            portIterators_.clear();
         }
 
         const std::string &name() {
@@ -357,6 +420,42 @@ class Optimizer {
         }
     };
 
+    class Port: public pnetopt::Invalidatable, boost::noncopyable {
+        /** Parent transition. */
+        Transition *transition_;
+
+        /** Port id. */
+        port_id_t portId_;
+
+        /** Reference to the port. */
+        port_t &port_;
+
+        public:
+
+        Port(Transition *transition, port_id_t portId, port_t &port):
+            transition_(transition), portId_(portId), port_(port)
+        {}
+
+        const std::string &name() {
+            ensureValid();
+            return port_.name();
+        }
+
+        bool isInput() {
+            ensureValid();
+            return port_.is_input();
+        }
+
+        bool isOutput() {
+            ensureValid();
+            return port_.is_output();
+        }
+
+        bool isTunnel() {
+            ensureValid();
+            return port_.is_tunnel();
+        }
+    };
 
 #if 0
     class Places;
