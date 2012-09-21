@@ -2,16 +2,19 @@
 #include <fstream>
 #include <memory> /* std::auto_ptr */
 
-#include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/program_options.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <lua.hpp>
 #include "LuaBridge/LuaBridge.h"
 #include "LuaBridge/RefCountedObject.h"
 
 #include "Invalidatable.h"
+#include "LuaIterator.h"
+#include "RangeAdaptor.h"
 
 #include <we/we.hpp>
 
@@ -32,16 +35,18 @@ namespace {
 
 template<class P, class E, class T>
 class Optimizer {
-    class PetriNet;
+    typedef petri_net::pid_t pid_t;
+    typedef P place_t;
+
+    typedef petri_net::tid_t tid_t;
+    typedef we::type::transition_t<P, E, T> transition_t;
+
+    typedef petri_net::net<P, transition_t, E, T> pnet_t;
 
     lua_State *L;
+
+    class PetriNet;
     PetriNet petriNet_;
-
-    public:
-
-    typedef P place_t;
-    typedef we::type::transition_t<P, E, T> transition_t;
-    typedef petri_net::net<P, transition_t, E, T> pnet_t;
 
     public:
 
@@ -53,6 +58,33 @@ class Optimizer {
 
         luabridge::getGlobalNamespace(L)
             .beginNamespace("pnetopt")
+                .template beginClass<PetriNet>("PetriNet")
+                    .addFunction("__tostring", &PetriNet::toString)
+                    .addFunction("places", &PetriNet::placeIterator)
+                    .addFunction("transitions", &PetriNet::transitionIterator)
+                .endClass()
+                .template beginClass<Place>("Place")
+                    .addFunction("__tostring", &Place::name)
+                    .addFunction("name", &Place::name)
+                    .addFunction("setName", &Place::setName)
+                .endClass()
+                .template beginClass<PlaceIterator>("PlaceIterator")
+                    .addFunction("__tostring", &PlaceIterator::toString)
+                    .addFunction("__call", &PlaceIterator::call)
+                    .addFunction("__len", &PlaceIterator::size)
+                .endClass()
+                .template beginClass<Transition>("Transition")
+                    .addFunction("__tostring", &Transition::name)
+                    .addFunction("name", &Transition::name)
+                    .addFunction("setName", &Transition::setName)
+                .endClass()
+                .template beginClass<TransitionIterator>("TransitionIterator")
+                    .addFunction("__tostring", &TransitionIterator::toString)
+                    .addFunction("__call", &TransitionIterator::call)
+                    .addFunction("__len", &TransitionIterator::size)
+                .endClass();
+
+#if 0
                 .template beginClass<PetriNet>("PetriNet")
                     .addFunction("__tostring", &PetriNet::__tostring)
                     .addFunction("places", &PetriNet::places)
@@ -128,7 +160,7 @@ class Optimizer {
                     .addFunction("isTunnel", &Port::isTunnel)
                 .endClass()
                 ;
-
+#endif
         luabridge::push(L, &petriNet_);
         lua_setfield(L, LUA_GLOBALSINDEX, "net");
     }
@@ -147,6 +179,186 @@ class Optimizer {
 
     private:
 
+    class Place;
+    typedef boost::unordered_map<pid_t, Place *> IdPlaceMap;
+    typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPlaceMap>, IdPlaceMap> Places;
+    typedef pnetopt::LuaIterator<Places> PlaceIterator;
+    typedef RefCountedObjectPtr<PlaceIterator> PlaceIteratorPtr;
+
+    class Transition;
+    typedef boost::unordered_map<tid_t, Transition *> IdTransitionMap;
+    typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdTransitionMap>, IdTransitionMap> Transitions;
+    typedef pnetopt::LuaIterator<Transitions> TransitionIterator;
+    typedef RefCountedObjectPtr<TransitionIterator> TransitionIteratorPtr;
+
+    class PetriNet: public boost::noncopyable {
+        pnet_t &pnet_;
+
+        /** All the ever created places, both valid and invalid. */
+        std::vector<Place *> places_;
+
+        /** Map of an id to a valid place. */
+        IdPlaceMap id2place_;
+
+        /** Iterators over the id2place_ container. */
+        std::vector<PlaceIteratorPtr> placeIterators_;
+
+        /** All the ever created transitions, both valid and invalid. */
+        std::vector<Transition *> transitions_;
+
+        /** Map of an id to a valid transition. */
+        IdTransitionMap id2transition_;
+
+        /** Iterators over the id2transition_ container. */
+        std::vector<TransitionIteratorPtr> transitionIterators_;
+
+        public:
+
+        PetriNet(pnet_t &pnet):
+            pnet_(pnet)
+        {
+            for (typename pnet_t::place_const_it it = pnet_.places(); it.has_more(); ++it) {
+                getPlace(*it);
+            }
+            for (typename pnet_t::transition_const_it it = pnet_.transitions(); it.has_more(); ++it) {
+                getTransition(*it);
+            }
+        }
+
+        ~PetriNet() {
+            foreach(Place *place, places_) {
+                delete place;
+            }
+        }
+
+        const char *toString() const {
+            return "PetriNet";
+        }
+
+        Place *getPlace(pid_t pid) {
+            Place *&result = id2place_[pid];
+
+            if (!result) {
+                place_t &place = const_cast<place_t &>(pnet_.get_place(pid));
+
+                places_.reserve(places_.size() + 1);
+                result = new Place(this, pid, place);
+                places_.push_back(result);
+            }
+
+            result->ensureValid();
+            
+            return result;
+        }
+
+        Places places() const {
+            return pnetopt::rangeAdaptor(id2place_ | boost::adaptors::map_values, id2place_);
+        }
+
+        PlaceIteratorPtr placeIterator() {
+            PlaceIteratorPtr result(new PlaceIterator(places()));
+            placeIterators_.push_back(result);
+            return result;
+        }
+
+        void invalidatePlaceIterators() {
+            foreach(PlaceIteratorPtr &iterator, placeIterators_) {
+                iterator->invalidate();
+            }
+            placeIterators_.clear();
+        }
+
+        Transition *getTransition(pid_t tid) {
+            Transition *&result = id2transition_[tid];
+
+            if (!result) {
+                transition_t &transition = const_cast<transition_t &>(pnet_.get_transition(tid));
+
+                transitions_.reserve(transitions_.size() + 1);
+                result = new Transition(this, tid, transition);
+                transitions_.push_back(result);
+            }
+
+            result->ensureValid();
+            
+            return result;
+        }
+
+        Transitions transitions() const {
+            return pnetopt::rangeAdaptor(id2transition_ | boost::adaptors::map_values, id2transition_);
+        }
+
+        TransitionIteratorPtr transitionIterator() {
+            TransitionIteratorPtr result(new TransitionIterator(transitions()));
+            transitionIterators_.push_back(result);
+            return result;
+        }
+
+        void invalidateTransitionIterators() {
+            foreach(TransitionIteratorPtr &iterator, transitionIterators_) {
+                iterator->invalidate();
+            }
+            transitionIterators_.clear();
+        }
+    };
+
+    class Place: public boost::noncopyable, public pnetopt::Invalidatable {
+        PetriNet *petriNet_;
+        pid_t pid_;
+        place_t &place_;
+
+        public:
+
+        Place(PetriNet *petriNet, pid_t pid, place_t &place):
+            petriNet_(petriNet), pid_(pid), place_(place)
+        {}
+
+        const std::string &toString() {
+            ensureValid();
+            return place_.name;
+        }
+
+        const std::string &name() {
+            ensureValid();
+            return place_.name();
+        }
+
+        void setName(const std::string &name) {
+            ensureValid();
+
+            place_.set_name(name);
+        }
+    };
+
+    class Transition: public boost::noncopyable, public pnetopt::Invalidatable {
+        PetriNet *petriNet_;
+        tid_t tid_;
+        transition_t &transition_;
+
+        public:
+
+        Transition(PetriNet *petriNet, tid_t tid, transition_t &transition):
+            petriNet_(petriNet), tid_(tid), transition_(transition)
+        {}
+
+        const std::string &toString() {
+            ensureValid();
+            return transition_.name;
+        }
+
+        const std::string &name() {
+            ensureValid();
+            return transition_.name();
+        }
+
+        void setName(const std::string &name) {
+            ensureValid();
+            transition_.set_name(name);
+        }
+    };
+
+
+#if 0
     class Places;
     class PlaceIterator;
     class Place;
@@ -934,6 +1146,7 @@ class Optimizer {
             }
         }
     };
+#endif
 };
 
 class Visitor: public boost::static_visitor<void> {
