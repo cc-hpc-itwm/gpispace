@@ -72,35 +72,8 @@ inline std::string WordCountMapper::hash(const std::string& key, const std::vect
     i = (key[0] - 'A')%nWorkers;
   }
 
-  // it is guaranteed that at least one worker is selcted -> workerIdList[0]
+  // it is guaranteed that at least one worker is selected -> workerIdList[0]
   return workerIdList[i];
-}
-
- /* create a map structure, mapping the workerId to the tasks
-  * thare are to be assigned to it
- */
-template <>
-inline void WordCountMapper::partitionate(WordCountMapper::TaskT& mapTask, std::vector<std::string>& workerIdList )
-{
-  // initialize the array of map tasks
-  BOOST_FOREACH(const std::string& destWorkerId, workerIdList)
-  {
-    TaskT task(destWorkerId, mapTask.inValue());
-    addTask(destWorkerId, task);
-  }
-
-  // now, just distribute the list of pairs [<word, count>] from mapTask
-  // across the ẃorkers (create the corresponding buckets (tasks to be assigned)
-  BOOST_FOREACH(const WordCountMapper::TaskT::OutKeyValPairT& pairKeyVal, mapTask.outKeyValueMap() )
-  {
-    size_t nWorkers = workerIdList.size();
-
-    // map <word, count> -> bucket
-    InKeyT key = pairKeyVal.first;
-    std::string workerId = hash(key, workerIdList);
-
-    mapOfTasks_[workerId].emit(key, pairKeyVal.second);
-  }
 }
 
 #endif //WORD_COUNT_MAPPER_HPP
