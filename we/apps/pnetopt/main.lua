@@ -3,6 +3,11 @@ print(net)
 print("Number of places: " .. #net:places())
 for p in net:places() do
 	print("Place " .. p:name())
+
+	for port in p:connectedPorts() do
+		print("Connected to the port " .. port:name() .. " of the transition " .. port:transition():name())
+		assert(port:connectedPlace())
+	end
 end
 
 print("Number of transitions: " .. #net:transitions())

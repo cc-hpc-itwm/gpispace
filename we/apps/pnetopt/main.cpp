@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <memory> /* std::auto_ptr */
@@ -64,11 +65,17 @@ class Optimizer {
                     .addFunction("__tostring", &Place::name)
                     .addFunction("name", &Place::name)
                     .addFunction("setName", &Place::setName)
+                    .addFunction("connectedPorts", &Place::connectedPortsIterator)
                 .endClass()
                 .template beginClass<PlaceIterator>("PlaceIterator")
                     .addFunction("__tostring", &PlaceIterator::toString)
                     .addFunction("__call", &PlaceIterator::call)
                     .addFunction("__len", &PlaceIterator::size)
+                .endClass()
+                .template beginClass<ConnectedPortsIterator>("ConnectedPortsIterator")
+                    .addFunction("__tostring", &ConnectedPortsIterator::toString)
+                    .addFunction("__call", &ConnectedPortsIterator::call)
+                    .addFunction("__len", &ConnectedPortsIterator::size)
                 .endClass()
                 .template beginClass<Transition>("Transition")
                     .addFunction("__tostring", &Transition::name)
@@ -76,23 +83,27 @@ class Optimizer {
                     .addFunction("setName", &Transition::setName)
                     .addFunction("ports", &Transition::portIterator)
                 .endClass()
-                .template beginClass<TransitionIterator>("TransitionIterator")
-                    .addFunction("__tostring", &TransitionIterator::toString)
-                    .addFunction("__call", &TransitionIterator::call)
-                    .addFunction("__len", &TransitionIterator::size)
+                .template beginClass<TransitionsIterator>("TransitionsIterator")
+                    .addFunction("__tostring", &TransitionsIterator::toString)
+                    .addFunction("__call", &TransitionsIterator::call)
+                    .addFunction("__len", &TransitionsIterator::size)
                 .endClass()
                 .template beginClass<Port>("Port")
                     .addFunction("__tostring", &Port::name)
+                    .addFunction("transition", &Port::transition)
                     .addFunction("name", &Port::name)
                     .addFunction("isInput", &Port::isInput)
                     .addFunction("isOutput", &Port::isOutput)
                     .addFunction("isTunnel", &Port::isTunnel)
+                    .addFunction("isRead", &Port::isRead)
                     .addFunction("connectedPlace", &Port::connectedPlace)
+                    .addFunction("connect", &Port::connect)
+                    .addFunction("disconnect", &Port::disconnect)
                 .endClass()
-                .template beginClass<PortIterator>("PortIterator")
-                    .addFunction("__tostring", &PortIterator::toString)
-                    .addFunction("__call", &PortIterator::call)
-                    .addFunction("__len", &PortIterator::size)
+                .template beginClass<PortsIterator>("PortsIterator")
+                    .addFunction("__tostring", &PortsIterator::toString)
+                    .addFunction("__call", &PortsIterator::call)
+                    .addFunction("__len", &PortsIterator::size)
                 .endClass()
         ;
 
@@ -121,18 +132,18 @@ class Optimizer {
                     .addFunction("outConnections", &Place::out_connections)
                     .addFunction("remove", &Place::remove)
                 .endClass()
-                .template beginClass<AdjacentPortIterator>("AdjacentPortIterator")
-                    .addFunction("__tostring", &AdjacentPortIterator::__tostring)
-                    .addFunction("__call", &AdjacentPortIterator::__call)
+                .template beginClass<AdjacentPortsIterator>("AdjacentPortsIterator")
+                    .addFunction("__tostring", &AdjacentPortsIterator::__tostring)
+                    .addFunction("__call", &AdjacentPortsIterator::__call)
                 .endClass()
                 .template beginClass<Transitions>("Transitions")
                     .addFunction("__tostring", &Transitions::__tostring)
                     .addFunction("__len", &Transitions::__len)
                     .addFunction("all", &Transitions::all)
                 .endClass()
-                .template beginClass<TransitionIterator>("TransitionIterator")
-                    .addFunction("__tostring", &TransitionIterator::__tostring)
-                    .addFunction("__call", &TransitionIterator::__call)
+                .template beginClass<TransitionsIterator>("TransitionsIterator")
+                    .addFunction("__tostring", &TransitionsIterator::__tostring)
+                    .addFunction("__call", &TransitionsIterator::__call)
                 .endClass()
                 .template beginClass<Transition>("Transition")
                     .addFunction("__tostring", &Transition::name)
@@ -157,9 +168,9 @@ class Optimizer {
                     .addFunction("__len", &Ports::__len)
                     .addFunction("all", &Ports::all)
                 .endClass()
-                .template beginClass<PortIterator>("PortIterator")
-                    .addFunction("__tostring", &PortIterator::__tostring)
-                    .addFunction("__call", &PortIterator::__call)
+                .template beginClass<PortsIterator>("PortsIterator")
+                    .addFunction("__tostring", &PortsIterator::__tostring)
+                    .addFunction("__call", &PortsIterator::__call)
                 .endClass()
                 .template beginClass<Port>("Port")
                     .addFunction("__tostring", &Port::name)
@@ -200,8 +211,8 @@ class Optimizer {
     class Transition;
     typedef boost::unordered_map<tid_t, Transition *> IdTransitionMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdTransitionMap>, IdTransitionMap> Transitions;
-    typedef pnetopt::LuaIterator<Transitions> TransitionIterator;
-    typedef RefCountedObjectPtr<TransitionIterator> TransitionIteratorPtr;
+    typedef pnetopt::LuaIterator<Transitions> TransitionsIterator;
+    typedef RefCountedObjectPtr<TransitionsIterator> TransitionsIteratorPtr;
 
     class PetriNet: public boost::noncopyable {
         /** Petri net reference. */
@@ -223,7 +234,7 @@ class Optimizer {
         IdTransitionMap id2transition_;
 
         /** Iterators over the id2transition_ container. */
-        std::vector<TransitionIteratorPtr> transitionIterators_;
+        std::vector<TransitionsIteratorPtr> transitionIterators_;
 
         public:
 
@@ -237,6 +248,8 @@ class Optimizer {
                 getTransition(*it);
             }
         }
+
+        pnet_t &pnet() const { return pnet_; }
 
         ~PetriNet() {
             foreach(Place *place, places_) {
@@ -301,19 +314,24 @@ class Optimizer {
             return pnetopt::rangeAdaptor(id2transition_ | boost::adaptors::map_values, id2transition_);
         }
 
-        TransitionIteratorPtr transitionIterator() {
-            TransitionIteratorPtr result(new TransitionIterator(transitions()));
+        TransitionsIteratorPtr transitionIterator() {
+            TransitionsIteratorPtr result(new TransitionsIterator(transitions()));
             transitionIterators_.push_back(result);
             return result;
         }
 
-        void invalidateTransitionIterators() {
-            foreach(TransitionIteratorPtr &iterator, transitionIterators_) {
+        void invalidateTransitionsIterators() {
+            foreach(TransitionsIteratorPtr &iterator, transitionIterators_) {
                 iterator->invalidate();
             }
             transitionIterators_.clear();
         }
     };
+
+    class Port;
+    typedef std::vector<Port *> ConnectedPorts;
+    typedef pnetopt::LuaIterator<ConnectedPorts> ConnectedPortsIterator;
+    typedef RefCountedObjectPtr<ConnectedPortsIterator> ConnectedPortsIteratorPtr;
 
     class Place: public boost::noncopyable, public pnetopt::Invalidatable {
         /** Parent Petri net. */
@@ -325,13 +343,21 @@ class Optimizer {
         /** Reference to the place. */
         place_t &place_;
 
+        /** Ports to which this place is connected. */
+        ConnectedPorts connectedPorts_;
+
+        /** Valid iterators for the connectedPorts_ container. */
+        std::vector<ConnectedPortsIteratorPtr> connectedPortsIterators_;
+
         public:
 
         Place(PetriNet *petriNet, pid_t pid, place_t &place):
             petriNet_(petriNet), pid_(pid), place_(place)
         {}
 
-        const std::string &name() {
+        pid_t id() const { return pid_; }
+
+        const std::string &name() const {
             ensureValid();
             return place_.name();
         }
@@ -340,13 +366,38 @@ class Optimizer {
             ensureValid();
             place_.set_name(name);
         }
+
+        void addConnectedPort(Port *port) {
+            connectedPorts_.push_back(port);
+            invalidateConnectedPortsIterators();
+        }
+
+        void removeConnectedPort(Port *port) {
+            connectedPorts_.erase(std::remove(connectedPorts_.begin(), connectedPorts_.end(), port), connectedPorts_.end());
+            invalidateConnectedPortsIterators();
+        }
+
+        const ConnectedPorts &connectedPorts() const { return connectedPorts_; }
+
+        ConnectedPortsIteratorPtr connectedPortsIterator() {
+            ConnectedPortsIteratorPtr result(new ConnectedPortsIterator(connectedPorts()));
+            connectedPortsIterators_.push_back(result);
+            return result;
+        }
+
+        void invalidateConnectedPortsIterators() {
+            foreach(ConnectedPortsIteratorPtr &iterator, connectedPortsIterators_) {
+                iterator->invalidate();
+            }
+            connectedPortsIterators_.clear();
+        }
     };
 
     class Port;
     typedef boost::unordered_map<tid_t, Port *> IdPortMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPortMap>, IdPortMap> Ports;
-    typedef pnetopt::LuaIterator<Ports> PortIterator;
-    typedef RefCountedObjectPtr<PortIterator> PortIteratorPtr;
+    typedef pnetopt::LuaIterator<Ports> PortsIterator;
+    typedef RefCountedObjectPtr<PortsIterator> PortsIteratorPtr;
 
     class Transition: public boost::noncopyable, public pnetopt::Invalidatable {
         /** Parent Petri net. */
@@ -365,7 +416,7 @@ class Optimizer {
         std::vector<Port *> ports_;
 
         /** Iterators over the id2port_ container. */
-        std::vector<PortIteratorPtr> portIterators_;
+        std::vector<PortsIteratorPtr> portIterators_;
 
         public:
 
@@ -389,6 +440,12 @@ class Optimizer {
             }
         }
 
+        PetriNet *petriNet() const { return petriNet_; }
+
+        tid_t id() const { return tid_; }
+
+        transition_t &transition() const { return transition_; }
+
         Port *getPort(port_id_t portId) {
             Port *&result = id2port_[portId];
 
@@ -409,20 +466,20 @@ class Optimizer {
             return pnetopt::rangeAdaptor(id2port_ | boost::adaptors::map_values, id2port_);
         }
 
-        PortIteratorPtr portIterator() {
-            PortIteratorPtr result(new PortIterator(ports()));
+        PortsIteratorPtr portIterator() {
+            PortsIteratorPtr result(new PortsIterator(ports()));
             portIterators_.push_back(result);
             return result;
         }
 
-        void invalidatePortIterators() {
-            foreach(PortIteratorPtr &iterator, portIterators_) {
+        void invalidatePortsIterators() {
+            foreach(PortsIteratorPtr &iterator, portIterators_) {
                 iterator->invalidate();
             }
             portIterators_.clear();
         }
 
-        const std::string &name() {
+        const std::string &name() const {
             ensureValid();
             return transition_.name();
         }
@@ -434,6 +491,8 @@ class Optimizer {
     };
 
     class Port: public pnetopt::Invalidatable, boost::noncopyable {
+        friend class Transition;
+
         /** Parent transition. */
         Transition *transition_;
 
@@ -452,34 +511,107 @@ class Optimizer {
             transition_(transition), portId_(portId), port_(port), connectedPlace_(NULL)
         {}
 
-        const std::string &name() {
+        Transition *transition() const {
+            ensureValid();
+            return transition_;
+        }
+
+        PetriNet *petriNet() const { return transition()->petriNet(); }
+
+        port_id_t id() const { return portId_; }
+
+        const std::string &name() const {
             ensureValid();
             return port_.name();
         }
 
-        bool isInput() {
+        bool isInput() const {
             ensureValid();
             return port_.is_input();
         }
 
-        bool isOutput() {
+        bool isOutput() const {
             ensureValid();
             return port_.is_output();
         }
 
-        bool isTunnel() {
+        bool isTunnel() const {
             ensureValid();
             return port_.is_tunnel();
         }
 
-        Place *connectedPlace() {
+        bool isRead() const {
+            ensureValid();
+            return port_.direction() == we::type::PORT_READ;
+        }
+
+        Place *connectedPlace() const {
             ensureValid();
             return connectedPlace_;
         }
 
         void setConnectedPlace(Place *place) {
             ensureValid();
+            if (place == connectedPlace_) {
+                return;
+            }
+            if (connectedPlace_) {
+                connectedPlace_->removeConnectedPort(this);
+            }
             connectedPlace_ = place;
+            if (connectedPlace_) {
+                connectedPlace_->addConnectedPort(this);
+            }
+        }
+
+        void connect(Place *place) {
+            ensureValid();
+
+            // TODO: I'm not sure how to handle tunnels yet.
+            assert(!isTunnel());
+
+            if (place == connectedPlace_) {
+                return;
+            }
+
+            if (connectedPlace_) {
+                /* We must remove an edge. */
+                if (isInput()) {
+                    petriNet()->pnet().delete_edge(petriNet()->pnet().get_eid_in(transition()->id(), connectedPlace_->id()));
+                }
+                if (isOutput()) {
+                    petriNet()->pnet().delete_edge(petriNet()->pnet().get_eid_out(transition()->id(), connectedPlace_->id()));
+                }
+
+                /* Now we must disconnect the place on the transition's side. */
+                if (isInput()) {
+                    transition()->transition().disconnect_outer_from_inner(connectedPlace_->id());
+                }
+                if (isOutput()) {
+                    transition()->transition().disconnect_inner_from_outer(id());
+                }
+            }
+
+            setConnectedPlace(connectedPlace_);
+
+            if (connectedPlace_) {
+                /* We must add an edge. */
+                petri_net::edge_type edgeType = isRead() ? petri_net::PT_READ : (isInput() ? petri_net::PT : petri_net::TP);
+                petriNet()->pnet().add_edge(100500, petri_net::connection_t(edgeType, transition()->id(), connectedPlace_->id()));
+
+                /* Now we must connect the place on the transition's side. */
+                if (isInput()) {
+                    transition()->transition().connect_outer_to_inner(connectedPlace_->id(), id(), we::type::property::type());
+                }
+                if (isOutput()) {
+                    transition()->transition().connect_inner_to_outer(id(), connectedPlace_->id(), we::type::property::type());
+                }
+            }
+        }
+
+        void disconnect() {
+            ensureValid();
+            connect(NULL);
         }
     };
 
@@ -487,16 +619,16 @@ class Optimizer {
     class Places;
     class PlaceIterator;
     class Place;
-    class AdjacentPortIterator;
+    class AdjacentPortsIterator;
     class Expression;
     class Condition;
 
     class Transitions;
-    class TransitionIterator;
+    class TransitionsIterator;
     class Transition;
 
     class Ports;
-    class PortIterator;
+    class PortsIterator;
     class Port;
 
     /**
@@ -664,7 +796,7 @@ class Optimizer {
         petri_net::pid_t pid_;
         place_t &place_;
 
-        std::vector<RefCountedObjectPtr<AdjacentPortIterator> > iterators_;
+        std::vector<RefCountedObjectPtr<AdjacentPortsIterator> > iterators_;
 
         public:
 
@@ -696,21 +828,21 @@ class Optimizer {
             place_.set_name(name);
         }
 
-        RefCountedObjectPtr<AdjacentPortIterator> in_connections() {
+        RefCountedObjectPtr<AdjacentPortsIterator> in_connections() {
             ensureValid();
 
-            RefCountedObjectPtr<AdjacentPortIterator> result(
-                new AdjacentPortIterator(*this, places_.petriNet().pnet().in_to_place(pid_), true));
+            RefCountedObjectPtr<AdjacentPortsIterator> result(
+                new AdjacentPortsIterator(*this, places_.petriNet().pnet().in_to_place(pid_), true));
             iterators_.push_back(result);
 
             return result;
         }
 
-        RefCountedObjectPtr<AdjacentPortIterator> out_connections() {
+        RefCountedObjectPtr<AdjacentPortsIterator> out_connections() {
             ensureValid();
 
-            RefCountedObjectPtr<AdjacentPortIterator> result(
-                new AdjacentPortIterator(*this, places_.petriNet().pnet().out_of_place(pid_), false));
+            RefCountedObjectPtr<AdjacentPortsIterator> result(
+                new AdjacentPortsIterator(*this, places_.petriNet().pnet().out_of_place(pid_), false));
             iterators_.push_back(result);
 
             return result;
@@ -725,7 +857,7 @@ class Optimizer {
             
             std::vector<Port *> portsToDisconnect;
             
-            RefCountedObjectPtr<AdjacentPortIterator> i = in_connections();
+            RefCountedObjectPtr<AdjacentPortsIterator> i = in_connections();
             while (Port *port = i->__call()) {
                 portsToDisconnect.push_back(port);
             }
@@ -746,7 +878,7 @@ class Optimizer {
         }
 
         void invalidateIterators() {
-            foreach (const RefCountedObjectPtr<AdjacentPortIterator> &iterator, iterators_) {
+            foreach (const RefCountedObjectPtr<AdjacentPortsIterator> &iterator, iterators_) {
                 iterator->invalidate();
             }
             iterators_.clear();
@@ -763,14 +895,14 @@ class Optimizer {
     /**
      * Iterator over ports that are connected to a place.
      */
-    class AdjacentPortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
+    class AdjacentPortsIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Place &place_;
         typename petri_net::adj_transition_const_it it_;
         bool lookInOutputPorts_;
 
         public:
 
-        AdjacentPortIterator(Place &place, const petri_net::adj_transition_const_it &it, bool lookInOutputPorts):
+        AdjacentPortsIterator(Place &place, const petri_net::adj_transition_const_it &it, bool lookInOutputPorts):
             place_(place),
             it_(it),
             lookInOutputPorts_(lookInOutputPorts)
@@ -779,7 +911,7 @@ class Optimizer {
         const char *__tostring() {
             ensureValid();
 
-            return "AdjacentPortIterator";
+            return "AdjacentPortsIterator";
         }
 
         Port *__call() {
@@ -813,7 +945,7 @@ class Optimizer {
         boost::unordered_map<petri_net::tid_t, Transition *> tid2transition_;
         std::vector<Transition *> transitions_;
 
-        std::vector<RefCountedObjectPtr<TransitionIterator> > iterators_;
+        std::vector<RefCountedObjectPtr<TransitionsIterator> > iterators_;
 
         public:
 
@@ -837,8 +969,8 @@ class Optimizer {
             return petriNet_.pnet().get_num_transitions();
         }
 
-        RefCountedObjectPtr<TransitionIterator> all() {
-            RefCountedObjectPtr<TransitionIterator> result(new TransitionIterator(*this));
+        RefCountedObjectPtr<TransitionsIterator> all() {
+            RefCountedObjectPtr<TransitionsIterator> result(new TransitionsIterator(*this));
             iterators_.push_back(result);
             return result;
         };
@@ -856,7 +988,7 @@ class Optimizer {
         }
 
         void invalidateIterators() {
-            foreach (const RefCountedObjectPtr<TransitionIterator> &iterator, iterators_) {
+            foreach (const RefCountedObjectPtr<TransitionsIterator> &iterator, iterators_) {
                 iterator->invalidate();
             }
             iterators_.clear();
@@ -874,13 +1006,13 @@ class Optimizer {
     /**
      * Iterator over all transitions of a Petri net.
      */
-    class TransitionIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
+    class TransitionsIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Transitions &transitions_;
         typename pnet_t::transition_const_it it_;
 
         public:
 
-        TransitionIterator(Transitions &transitions):
+        TransitionsIterator(Transitions &transitions):
             transitions_(transitions),
             it_(transitions.petriNet().pnet().transitions())
         {}
@@ -888,7 +1020,7 @@ class Optimizer {
         const char *__tostring() {
             ensureValid();
 
-            return "TransitionIterator";
+            return "TransitionsIterator";
         }
 
         Transition *__call() {
@@ -1067,7 +1199,7 @@ class Optimizer {
      */
     class Ports: public pnetopt::Invalidatable, boost::noncopyable {
         Transition &transition_;
-        std::vector<RefCountedObjectPtr<PortIterator> > iterators_;
+        std::vector<RefCountedObjectPtr<PortsIterator> > iterators_;
 
         boost::unordered_map<typename transition_t::port_id_t, Port *> portId2port_;
         std::vector<Port *> ports_;
@@ -1094,10 +1226,10 @@ class Optimizer {
             return transition_.transition().ports().size();
         }
 
-        RefCountedObjectPtr<PortIterator> all() {
+        RefCountedObjectPtr<PortsIterator> all() {
             ensureValid();
 
-            RefCountedObjectPtr<PortIterator> result(new PortIterator(*this));
+            RefCountedObjectPtr<PortsIterator> result(new PortsIterator(*this));
             iterators_.push_back(result);
             return result;
         };
@@ -1121,7 +1253,7 @@ class Optimizer {
         }
 
         virtual void doInvalidate() {
-            foreach (const RefCountedObjectPtr<PortIterator> &iterator, iterators_) {
+            foreach (const RefCountedObjectPtr<PortsIterator> &iterator, iterators_) {
                 iterator->invalidate();
             }
             iterators_.clear();
@@ -1131,14 +1263,14 @@ class Optimizer {
     /**
      * Iterator over all ports of a transition.
      */
-    class PortIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
+    class PortsIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Ports &ports_;
         typename transition_t::const_iterator it_;
         typename transition_t::const_iterator end_;
 
         public:
         
-        PortIterator(Ports &ports):
+        PortsIterator(Ports &ports):
             ports_(ports),
             it_(ports_.transition().transition().ports_begin()),
             end_(ports_.transition().transition().ports_end())
@@ -1147,7 +1279,7 @@ class Optimizer {
         const char *__tostring() {
             ensureValid();
 
-            return "PortIterator";
+            return "PortsIterator";
         }
 
         Port *__call() {

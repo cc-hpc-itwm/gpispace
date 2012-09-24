@@ -21,9 +21,6 @@ function M.find_matching_places(transition)
 		   #in_port:place():out_edges() > 1 then
 			return nil
 		end
-		if in_port:place():capacity() ~= out_port:place():capacity() then
-			return nil
-		end
 		if in_port:is_read() then
 			return nil
 		end

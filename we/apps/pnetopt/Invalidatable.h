@@ -23,8 +23,7 @@ class Invalidatable {
         }
     }
 
-    void ensureValid() {
-        doEnsureValid();
+    void ensureValid() const {
         if (!valid()) {
             throw std::runtime_error(message_);
         }
@@ -32,7 +31,6 @@ class Invalidatable {
 
     protected:
 
-    virtual void doEnsureValid() {}
     virtual void doInvalidate() {}
 };
 
