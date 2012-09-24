@@ -1,3 +1,7 @@
+local pnet = require("pnet")
+local spe  = require("simple_pipe_elimination")
+local list = require("list")
+
 print(net)
 
 print("Number of places: " .. #net:places())
@@ -23,16 +27,26 @@ for t in net:transitions() do
 	end
 end
 
+print("Removing all places...")
+
+for p in list.clone(net:places()) do
+	p:remove()
+end
+
+print("Disconnecting all ports...")
+
 for t in net:transitions() do
 	for port in t:ports() do
 		port:disconnect()
 	end
 end
 
+for t in list.clone(net:transitions()) do
+	t:remove()
+end
+
 print("We are finished!")
 
---local pnet = require("pnet")
---local spe  = require("simple_pipe_elimination")
 
 -- pnet.apply_recursively(net, spe.simple_pipe_elimination)
 -- pnet.apply_recursively(net, pnet.remove_all_transitions)

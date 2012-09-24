@@ -1,16 +1,17 @@
 #pragma once
 
+#include <typeinfo>
+
+#include <boost/format.hpp>
+
 namespace pnetopt {
 
 class Invalidatable {
-    const char *message_;
     bool valid_;
 
     public:
 
-    Invalidatable(const char *message): message_(message), valid_(true) {}
-
-    Invalidatable(): message_("Accessing object in an invalid state"), valid_(true) {}
+    Invalidatable(): valid_(true) {}
 
     virtual ~Invalidatable() {}
 
@@ -25,7 +26,7 @@ class Invalidatable {
 
     void ensureValid() const {
         if (!valid()) {
-            throw std::runtime_error(message_);
+            throw std::runtime_error((boost::format("accessing an invalidated instance of %1%") % typeid(*this).name()).str());
         }
     }
 

@@ -58,7 +58,7 @@ class Optimizer {
             .beginNamespace("pnetopt")
                 .template beginClass<PetriNet>("PetriNet")
                     .addFunction("__tostring", &PetriNet::toString)
-                    .addFunction("places", &PetriNet::placeIterator)
+                    .addFunction("places", &PetriNet::placesIterator)
                     .addFunction("transitions", &PetriNet::transitionIterator)
                 .endClass()
                 .template beginClass<Place>("Place")
@@ -66,11 +66,12 @@ class Optimizer {
                     .addFunction("name", &Place::name)
                     .addFunction("setName", &Place::setName)
                     .addFunction("connectedPorts", &Place::connectedPortsIterator)
+                    .addFunction("remove", &Place::remove)
                 .endClass()
-                .template beginClass<PlaceIterator>("PlaceIterator")
-                    .addFunction("__tostring", &PlaceIterator::toString)
-                    .addFunction("__call", &PlaceIterator::call)
-                    .addFunction("__len", &PlaceIterator::size)
+                .template beginClass<PlacesIterator>("PlacesIterator")
+                    .addFunction("__tostring", &PlacesIterator::toString)
+                    .addFunction("__call", &PlacesIterator::call)
+                    .addFunction("__len", &PlacesIterator::size)
                 .endClass()
                 .template beginClass<ConnectedPortsIterator>("ConnectedPortsIterator")
                     .addFunction("__tostring", &ConnectedPortsIterator::toString)
@@ -118,9 +119,9 @@ class Optimizer {
                     .addFunction("__len", &Places::__len)
                     .addFunction("all", &Places::all)
                 .endClass()
-                .template beginClass<PlaceIterator>("PlaceIterator")
-                    .addFunction("__tostring", &PlaceIterator::__tostring)
-                    .addFunction("__call", &PlaceIterator::__call)
+                .template beginClass<PlacesIterator>("PlacesIterator")
+                    .addFunction("__tostring", &PlacesIterator::__tostring)
+                    .addFunction("__call", &PlacesIterator::__call)
                 .endClass()
                 .template beginClass<Place>("Place")
                     .addFunction("__tostring", &Place::name)
@@ -205,8 +206,8 @@ class Optimizer {
     class Place;
     typedef boost::unordered_map<pid_t, Place *> IdPlaceMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPlaceMap>, IdPlaceMap> Places;
-    typedef pnetopt::LuaIterator<Places> PlaceIterator;
-    typedef RefCountedObjectPtr<PlaceIterator> PlaceIteratorPtr;
+    typedef pnetopt::LuaIterator<Places> PlacesIterator;
+    typedef RefCountedObjectPtr<PlacesIterator> PlacesIteratorPtr;
 
     class Transition;
     typedef boost::unordered_map<tid_t, Transition *> IdTransitionMap;
@@ -225,7 +226,7 @@ class Optimizer {
         IdPlaceMap id2place_;
 
         /** Iterators over the id2place_ container. */
-        std::vector<PlaceIteratorPtr> placeIterators_;
+        std::vector<PlacesIteratorPtr> placesIterators_;
 
         /** All the ever created transitions, both valid and invalid. */
         std::vector<Transition *> transitions_;
@@ -270,6 +271,8 @@ class Optimizer {
                 places_.reserve(places_.size() + 1);
                 result = new Place(this, pid, place);
                 places_.push_back(result);
+
+                invalidatePlacesIterators();
             }
 
             result->ensureValid();
@@ -277,21 +280,28 @@ class Optimizer {
             return result;
         }
 
+        void removePlace(Place *place) {
+            assert(id2place_[place->id()] == place);
+
+            id2place_.erase(place->id());
+            invalidatePlacesIterators();
+        }
+
         Places places() const {
             return pnetopt::rangeAdaptor(id2place_ | boost::adaptors::map_values, id2place_);
         }
 
-        PlaceIteratorPtr placeIterator() {
-            PlaceIteratorPtr result(new PlaceIterator(places()));
-            placeIterators_.push_back(result);
+        PlacesIteratorPtr placesIterator() {
+            PlacesIteratorPtr result(new PlacesIterator(places()));
+            placesIterators_.push_back(result);
             return result;
         }
 
-        void invalidatePlaceIterators() {
-            foreach(PlaceIteratorPtr &iterator, placeIterators_) {
+        void invalidatePlacesIterators() {
+            foreach(PlacesIteratorPtr &iterator, placesIterators_) {
                 iterator->invalidate();
             }
-            placeIterators_.clear();
+            placesIterators_.clear();
         }
 
         Transition *getTransition(pid_t tid) {
@@ -303,6 +313,8 @@ class Optimizer {
                 transitions_.reserve(transitions_.size() + 1);
                 result = new Transition(this, tid, transition);
                 transitions_.push_back(result);
+
+                invalidateTransitionsIterators();
             }
 
             result->ensureValid();
@@ -355,6 +367,8 @@ class Optimizer {
             petriNet_(petriNet), pid_(pid), place_(place)
         {}
 
+        PetriNet *petriNet() const { return petriNet_; }
+
         pid_t id() const { return pid_; }
 
         const std::string &name() const {
@@ -390,6 +404,28 @@ class Optimizer {
                 iterator->invalidate();
             }
             connectedPortsIterators_.clear();
+        }
+
+        void remove() {
+            ensureValid();
+
+            /* Avoid problems with iterators and square complexity. */
+            ConnectedPorts portsToDisconnect;
+            portsToDisconnect.swap(connectedPorts_);
+
+            foreach (Port *port, portsToDisconnect) {
+                assert(port->connectedPlace() == this);
+                port->disconnect();
+            }
+
+            petriNet()->pnet().delete_place(pid_);
+            petriNet()->removePlace(this);
+
+            invalidate();
+        }
+
+        void doInvalidate() {
+            invalidateConnectedPortsIterators();
         }
     };
 
@@ -617,7 +653,7 @@ class Optimizer {
 
 #if 0
     class Places;
-    class PlaceIterator;
+    class PlacesIterator;
     class Place;
     class AdjacentPortsIterator;
     class Expression;
@@ -677,7 +713,7 @@ class Optimizer {
         boost::unordered_map<petri_net::pid_t, Place *> pid2place_;
         std::vector<Place *> places_;
 
-        std::vector<RefCountedObjectPtr<PlaceIterator> > iterators_;
+        std::vector<RefCountedObjectPtr<PlacesIterator> > iterators_;
 
         public:
 
@@ -703,10 +739,10 @@ class Optimizer {
             return petriNet_.pnet().get_num_places();
         }
 
-        RefCountedObjectPtr<PlaceIterator> all() {
+        RefCountedObjectPtr<PlacesIterator> all() {
             ensureValid();
 
-            RefCountedObjectPtr<PlaceIterator> result(new PlaceIterator(*this));
+            RefCountedObjectPtr<PlacesIterator> result(new PlacesIterator(*this));
             iterators_.push_back(result);
             return result;
         };
@@ -741,7 +777,7 @@ class Optimizer {
         }
 
         void invalidateIterators() {
-            foreach (const RefCountedObjectPtr<PlaceIterator> &iterator, iterators_) {
+            foreach (const RefCountedObjectPtr<PlacesIterator> &iterator, iterators_) {
                 iterator->invalidate();
             }
             iterators_.clear();
@@ -758,13 +794,13 @@ class Optimizer {
     /**
      * Iterator over all places of a Petri net.
      */
-    class PlaceIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
+    class PlacesIterator: public RefCountedObjectType<int>, public pnetopt::Invalidatable, boost::noncopyable {
         Places &places_;
         typename pnet_t::place_const_it it_;
 
         public:
 
-        PlaceIterator(Places &places):
+        PlacesIterator(Places &places):
             places_(places),
             it_(places.petriNet().pnet().places())
         {}
@@ -772,7 +808,7 @@ class Optimizer {
         const char *__tostring() {
             ensureValid();
 
-            return "PlaceIterator";
+            return "PlacesIterator";
         }
 
         Place *__call() {
