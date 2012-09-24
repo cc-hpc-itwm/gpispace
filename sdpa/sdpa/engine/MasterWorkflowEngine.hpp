@@ -19,14 +19,13 @@
 #define MASTER_WORKFLOW_ENGINE_HPP 1
 
 #include <sdpa/engine/BasicEngine.hpp>
-#include <sdpa/mapreduce/WordCountMapper.hpp>
-#include <sdpa/mapreduce/WordCountReducer.hpp>
-#include <sdpa/mapreduce/Combiner.hpp>
+#include <sdpa/mapreduce/MapTask.hpp>
 
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
 
+template <typename Mapper>
 class MasterWorkflowEngine : public BasicEngine
 {
   private:
@@ -50,7 +49,7 @@ class MasterWorkflowEngine : public BasicEngine
       {
         id_type tag = wfid;
         worker_id_t destWorkerId(pairKeyTask.second);
-        WordCountMapper::TaskT newMapTask(pairKeyTask.first, tag);
+        typename Mapper::TaskT newMapTask(pairKeyTask.first, tag);
         enqueueTask(wfid, newMapTask, "mapper");
       }
     }
@@ -58,6 +57,7 @@ class MasterWorkflowEngine : public BasicEngine
     void submit(const id_type& wfid, const encoded_type& wf_desc)
     {
       lock_type lock(mtx_);
+      // WE is supposed to parse the workflow and generate a suite of sub-workflows or activities that are sent to SDPA
       // WE assigns an unique workflow_id which will be used as a job_id on SDPA side
       SDPA_LOG_INFO("The agent submitted a new workflow, wfid = "<<wfid);
 
