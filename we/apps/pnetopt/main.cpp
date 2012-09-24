@@ -87,6 +87,7 @@ class Optimizer {
                     .addFunction("isInput", &Port::isInput)
                     .addFunction("isOutput", &Port::isOutput)
                     .addFunction("isTunnel", &Port::isTunnel)
+                    .addFunction("connectedPlace", &Port::connectedPlace)
                 .endClass()
                 .template beginClass<PortIterator>("PortIterator")
                     .addFunction("__tostring", &PortIterator::toString)
@@ -374,6 +375,18 @@ class Optimizer {
             for (typename transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
                 getPort(i->first);
             }
+            for (typename transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
+                port_id_t portId = i->first;
+                pid_t placeId = i->second.first;
+
+                getPort(portId)->setConnectedPlace(petriNet->getPlace(placeId));
+            }
+            for (typename transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
+                pid_t placeId = i->first;
+                port_id_t portId = i->second.first;
+
+                getPort(portId)->setConnectedPlace(petriNet->getPlace(placeId));
+            }
         }
 
         Port *getPort(port_id_t portId) {
@@ -430,10 +443,13 @@ class Optimizer {
         /** Reference to the port. */
         port_t &port_;
 
+        /** Place connected to the port. */
+        Place *connectedPlace_;
+
         public:
 
         Port(Transition *transition, port_id_t portId, port_t &port):
-            transition_(transition), portId_(portId), port_(port)
+            transition_(transition), portId_(portId), port_(port), connectedPlace_(NULL)
         {}
 
         const std::string &name() {
@@ -454,6 +470,16 @@ class Optimizer {
         bool isTunnel() {
             ensureValid();
             return port_.is_tunnel();
+        }
+
+        Place *connectedPlace() {
+            ensureValid();
+            return connectedPlace_;
+        }
+
+        void setConnectedPlace(Place *place) {
+            ensureValid();
+            connectedPlace_ = place;
         }
     };
 

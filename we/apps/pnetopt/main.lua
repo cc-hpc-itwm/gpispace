@@ -1,16 +1,20 @@
 print(net)
 
-print(#net:places())
+print("Number of places: " .. #net:places())
 for p in net:places() do
-	print(p)
+	print("Place " .. p:name())
 end
 
-print(#net:transitions())
+print("Number of transitions: " .. #net:transitions())
 for t in net:transitions() do
-	print(t)
+	print("Transition " .. t:name())
 	
 	for port in t:ports() do
-		print(port)
+		print("Port `" .. port:name() .. "'"
+			.. (port:connectedPlace() and (", connected to place " .. port:connectedPlace():name()) or "")
+			.. (port:isInput() and ", is input" or "")
+			.. (port:isOutput() and ", is output" or "")
+			.. (port:isTunnel() and ", is tunnel" or ""))
 	end
 end
 
