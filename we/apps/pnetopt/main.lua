@@ -41,6 +41,8 @@ for t in net:transitions() do
 	end
 end
 
+print("Removing all places...")
+
 for t in list.clone(net:transitions()) do
 	t:remove()
 end

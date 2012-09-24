@@ -83,6 +83,7 @@ class Optimizer {
                     .addFunction("name", &Transition::name)
                     .addFunction("setName", &Transition::setName)
                     .addFunction("ports", &Transition::portIterator)
+                    .addFunction("remove", &Transition::remove)
                 .endClass()
                 .template beginClass<TransitionsIterator>("TransitionsIterator")
                     .addFunction("__tostring", &TransitionsIterator::toString)
@@ -322,6 +323,13 @@ class Optimizer {
             return result;
         }
 
+        void removeTransition(Transition *transition) {
+            assert(id2transition_[transition->id()] == transition);
+
+            id2transition_.erase(transition->id());
+            invalidateTransitionsIterators();
+        }
+
         Transitions transitions() const {
             return pnetopt::rangeAdaptor(id2transition_ | boost::adaptors::map_values, id2transition_);
         }
@@ -524,6 +532,23 @@ class Optimizer {
             ensureValid();
             transition_.set_name(name);
         }
+
+        void remove() {
+            ensureValid();
+
+            foreach (Port *port, ports()) {
+                port->disconnect();
+            }
+
+            petriNet()->pnet().delete_transition(tid_);
+            petriNet()->removeTransition(this);
+
+            invalidate();
+        }
+
+        void doInvalidate() {
+            invalidatePortsIterators();
+        }
     };
 
     class Port: public pnetopt::Invalidatable, boost::noncopyable {
@@ -600,6 +625,7 @@ class Optimizer {
             }
         }
 
+        // TODO: f*cking IN_OUT ports must be represented as two different ports.
         void connect(Place *place) {
             ensureValid();
 
