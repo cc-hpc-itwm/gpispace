@@ -23,6 +23,14 @@ for t in net:transitions() do
 	end
 end
 
+for t in net:transitions() do
+	for port in t:ports() do
+		port:disconnect()
+	end
+end
+
+print("We are finished!")
+
 --local pnet = require("pnet")
 --local spe  = require("simple_pipe_elimination")
 

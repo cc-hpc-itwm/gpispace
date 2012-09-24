@@ -592,7 +592,7 @@ class Optimizer {
                 }
             }
 
-            setConnectedPlace(connectedPlace_);
+            setConnectedPlace(place);
 
             if (connectedPlace_) {
                 /* We must add an edge. */
