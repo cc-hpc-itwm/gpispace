@@ -58,11 +58,8 @@ class BasicEngine : public IWorkflowEngine
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef std::string internal_id_type;
 
-    //typedef boost::bimap<id_type, id_type> BimapAct2WfT;
     typedef boost::bimap<boost::bimaps::multiset_of<std::string>, boost::bimaps::multiset_of<std::string> > BimapAct2WfT;
     typedef BimapAct2WfT::value_type PairAct2WfT;
-
-    //typedef map<id_type, id_type> MapAct2WfT;
 
     typedef boost::tuple<id_type, encoded_type, requirement_list_t> Tuple;
     typedef SynchronizedQueue<std::list<Tuple> > TaskQueueT;
@@ -82,15 +79,14 @@ class BasicEngine : public IWorkflowEngine
       stop();
     }
 
-   void connect( GenericDaemon* pIAgent )
-   {
-     pIAgent_ = pIAgent;
-   }
+    void connect( GenericDaemon* pIAgent )
+    {
+	    pIAgent_ = pIAgent;
+    }
 
     virtual bool is_real() { return false; }
 
-    void submit(const id_type & id, const encoded_type & ) {}
-
+    void submit(const id_type&, const encoded_type & ) {}
 
     bool cancel( const id_type& wfid, const reason_type& reason )
     {
@@ -149,7 +145,6 @@ class BasicEngine : public IWorkflowEngine
     }
 
     // id management
-
     void addActivity(const id_type& newActId, const id_type& wfid)
     {
       lock_type lock(mtx_id_);
@@ -161,7 +156,6 @@ class BasicEngine : public IWorkflowEngine
     {
       lock_type lock(mtx_id_);
       bimapActId2WfId_.left.erase(newActId);
-      //should throw an exception if the activity was not found
     }
 
     id_type getWorkflowId(const id_type& actId)
@@ -203,23 +197,24 @@ class BasicEngine : public IWorkflowEngine
     {
       lock_type lock(mtx_id_);
 
-      requirement_list_t reqList;
-      id_type newActId;
+    	requirement_list_t reqList;
+    	id_type newActId;
 
-      if(!strReq.empty())
-      {
+    	if(!strReq.empty())
+    	{
         reqList.push_back(requirement_t(strReq, true));
-      }
+    	}
 
-      if(!actId.empty())
-        newActId = actId;
-      else
-        newActId = id_generator::instance().next();
+    	if(!actId.empty())
+    	  newActId = actId;
+    	else
+    	  newActId = id_generator::instance().next();
 
       addActivity(newActId, wfid);
 
-      std::string taskEnc(task.encode());
-      queueTasks_.push(boost::make_tuple(newActId, taskEnc, reqList)); // no requirements !!!!!!
+    	std::string taskEnc(task.encode());
+
+    	queueTasks_.push(boost::make_tuple(newActId, taskEnc, reqList));
     }
 
     // thread related functions
