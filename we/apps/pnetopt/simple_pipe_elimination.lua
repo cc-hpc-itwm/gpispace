@@ -13,8 +13,8 @@ function M.find_matching_places(transition)
 		local out_port = transition:out_ports()[port_name]
 
 		if out_port == nil or
-		   in_port:place() == nil or
-		   out_port:place() == nil then
+		   in_port:connectedPlace() == nil or
+		   out_port:connectedPlace() == nil then
 			return nil
 		end
 		if #out_port:place():in_edges() > 1 and
@@ -34,8 +34,9 @@ end
 function M.simple_pipe_elimination(net)
 	local modified = false
 
-	for transition in list.clone(net:transitions():all()) do
-		if transition:expression() ~= nil and
+	for transition in list.clone(net:transitions()) do
+		if transition:valid() and
+		   transition:expression() ~= nil and
 		   transition:expression():isEmpty() and
 		   transition:condition():isConstTrue() then
 			local matching_places = find_matching_places(transition)

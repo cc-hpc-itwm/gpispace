@@ -56,42 +56,55 @@ class Optimizer {
 
         luabridge::getGlobalNamespace(L)
             .beginNamespace("pnetopt")
-                .template beginClass<PetriNet>("PetriNet")
+                .template beginClass<pnetopt::Invalidatable>("Invalidatable")
+                    .addFunction("valid", &pnetopt::Invalidatable::valid)
+                .endClass()
+                .template deriveClass<PetriNet, pnetopt::Invalidatable>("PetriNet")
                     .addFunction("__tostring", &PetriNet::toString)
                     .addFunction("places", &PetriNet::placesIterator)
                     .addFunction("transitions", &PetriNet::transitionIterator)
                 .endClass()
-                .template beginClass<Place>("Place")
+                .template deriveClass<Place, pnetopt::Invalidatable>("Place")
                     .addFunction("__tostring", &Place::name)
                     .addFunction("name", &Place::name)
                     .addFunction("setName", &Place::setName)
                     .addFunction("connectedPorts", &Place::connectedPortsIterator)
                     .addFunction("remove", &Place::remove)
                 .endClass()
-                .template beginClass<PlacesIterator>("PlacesIterator")
+                .template deriveClass<PlacesIterator, pnetopt::Invalidatable>("PlacesIterator")
                     .addFunction("__tostring", &PlacesIterator::toString)
                     .addFunction("__call", &PlacesIterator::call)
                     .addFunction("__len", &PlacesIterator::size)
                 .endClass()
-                .template beginClass<ConnectedPortsIterator>("ConnectedPortsIterator")
+                .template deriveClass<ConnectedPortsIterator, pnetopt::Invalidatable>("ConnectedPortsIterator")
                     .addFunction("__tostring", &ConnectedPortsIterator::toString)
                     .addFunction("__call", &ConnectedPortsIterator::call)
                     .addFunction("__len", &ConnectedPortsIterator::size)
                 .endClass()
-                .template beginClass<Transition>("Transition")
+                .template deriveClass<Expression, pnetopt::Invalidatable>("Expression")
+                    .addFunction("__tostring", &Expression::toString)
+                    .addFunction("isEmpty", &Expression::isEmpty)
+                .endClass()
+                .template deriveClass<Condition, pnetopt::Invalidatable>("Condition")
+                    .addFunction("__tostring", &Condition::toString)
+                    .addFunction("isConstTrue", &Condition::isConstTrue)
+                .endClass()
+                .template deriveClass<Transition, pnetopt::Invalidatable>("Transition")
                     .addFunction("__tostring", &Transition::name)
                     .addFunction("name", &Transition::name)
                     .addFunction("setName", &Transition::setName)
                     .addFunction("ports", &Transition::portIterator)
                     .addFunction("subnet", &Transition::subnet)
+                    .addFunction("expression", &Transition::expression)
+                    .addFunction("condition", &Transition::condition)
                     .addFunction("remove", &Transition::remove)
                 .endClass()
-                .template beginClass<TransitionsIterator>("TransitionsIterator")
+                .template deriveClass<TransitionsIterator, pnetopt::Invalidatable>("TransitionsIterator")
                     .addFunction("__tostring", &TransitionsIterator::toString)
                     .addFunction("__call", &TransitionsIterator::call)
                     .addFunction("__len", &TransitionsIterator::size)
                 .endClass()
-                .template beginClass<Port>("Port")
+                .template deriveClass<Port, pnetopt::Invalidatable>("Port")
                     .addFunction("__tostring", &Port::name)
                     .addFunction("transition", &Port::transition)
                     .addFunction("name", &Port::name)
@@ -103,90 +116,12 @@ class Optimizer {
                     .addFunction("connect", &Port::connect)
                     .addFunction("disconnect", &Port::disconnect)
                 .endClass()
-                .template beginClass<PortsIterator>("PortsIterator")
+                .template deriveClass<PortsIterator, pnetopt::Invalidatable>("PortsIterator")
                     .addFunction("__tostring", &PortsIterator::toString)
                     .addFunction("__call", &PortsIterator::call)
                     .addFunction("__len", &PortsIterator::size)
                 .endClass()
         ;
-
-#if 0
-                .template beginClass<PetriNet>("PetriNet")
-                    .addFunction("__tostring", &PetriNet::__tostring)
-                    .addFunction("places", &PetriNet::places)
-                    .addFunction("transitions", &PetriNet::transitions)
-                .endClass()
-                .template beginClass<Places>("Places")
-                    .addFunction("__tostring", &Places::__tostring)
-                    .addFunction("__len", &Places::__len)
-                    .addFunction("all", &Places::all)
-                .endClass()
-                .template beginClass<PlacesIterator>("PlacesIterator")
-                    .addFunction("__tostring", &PlacesIterator::__tostring)
-                    .addFunction("__call", &PlacesIterator::__call)
-                .endClass()
-                .template beginClass<Place>("Place")
-                    .addFunction("__tostring", &Place::name)
-                    .addFunction("__eq", &Place::__eq)
-                    .addFunction("id", &Place::id)
-                    .addFunction("name", &Place::name)
-                    .addFunction("setName", &Place::setName)
-                    .addFunction("inConnections", &Place::in_connections)
-                    .addFunction("outConnections", &Place::out_connections)
-                    .addFunction("remove", &Place::remove)
-                .endClass()
-                .template beginClass<AdjacentPortsIterator>("AdjacentPortsIterator")
-                    .addFunction("__tostring", &AdjacentPortsIterator::__tostring)
-                    .addFunction("__call", &AdjacentPortsIterator::__call)
-                .endClass()
-                .template beginClass<Transitions>("Transitions")
-                    .addFunction("__tostring", &Transitions::__tostring)
-                    .addFunction("__len", &Transitions::__len)
-                    .addFunction("all", &Transitions::all)
-                .endClass()
-                .template beginClass<TransitionsIterator>("TransitionsIterator")
-                    .addFunction("__tostring", &TransitionsIterator::__tostring)
-                    .addFunction("__call", &TransitionsIterator::__call)
-                .endClass()
-                .template beginClass<Transition>("Transition")
-                    .addFunction("__tostring", &Transition::name)
-                    .addFunction("name", &Transition::name)
-                    .addFunction("setName", &Transition::setName)
-                    .addFunction("ports", &Transition::ports)
-                    .addFunction("subnet", &Transition::subnet)
-                    .addFunction("expression", &Transition::expression)
-                    .addFunction("condition", &Transition::condition)
-                    .addFunction("remove", &Transition::remove)
-                .endClass()
-                .template beginClass<Expression>("Expression")
-                    .addFunction("__tostring", &Expression::__tostring)
-                    .addFunction("isEmpty", &Expression::isEmpty)
-                .endClass()
-                .template beginClass<Condition>("Condition")
-                    .addFunction("__tostring", &Condition::__tostring)
-                    .addFunction("isConstTrue", &Condition::isConstTrue)
-                .endClass()
-                .template beginClass<Ports>("Ports")
-                    .addFunction("__tostring", &Ports::__tostring)
-                    .addFunction("__len", &Ports::__len)
-                    .addFunction("all", &Ports::all)
-                .endClass()
-                .template beginClass<PortsIterator>("PortsIterator")
-                    .addFunction("__tostring", &PortsIterator::__tostring)
-                    .addFunction("__call", &PortsIterator::__call)
-                .endClass()
-                .template beginClass<Port>("Port")
-                    .addFunction("__tostring", &Port::name)
-                    .addFunction("name", &Port::name)
-                    .addFunction("transition", &Port::transition)
-                    .addFunction("place", &Port::place)
-                    .addFunction("associatedPlace", &Port::associatedPlace)
-                    .addFunction("isInput", &Port::isInput)
-                    .addFunction("isOutput", &Port::isOutput)
-                    .addFunction("isTunnel", &Port::isTunnel)
-                .endClass()
-                ;
-#endif
         luabridge::push(L, &petriNet_);
         lua_setfield(L, LUA_GLOBALSINDEX, "net");
     }
@@ -217,7 +152,7 @@ class Optimizer {
     typedef pnetopt::LuaIterator<Transitions> TransitionsIterator;
     typedef RefCountedObjectPtr<TransitionsIterator> TransitionsIteratorPtr;
 
-    class PetriNet: public boost::noncopyable, public pnetopt::Invalidatable {
+    class PetriNet: public pnetopt::Invalidatable, boost::noncopyable {
         /** Petri net reference. */
         pnet_t &pnet_;
 
@@ -371,7 +306,7 @@ class Optimizer {
     typedef pnetopt::LuaIterator<ConnectedPorts> ConnectedPortsIterator;
     typedef RefCountedObjectPtr<ConnectedPortsIterator> ConnectedPortsIteratorPtr;
 
-    class Place: public boost::noncopyable, public pnetopt::Invalidatable {
+    class Place: public pnetopt::Invalidatable, boost::noncopyable {
         /** Parent Petri net. */
         PetriNet *petriNet_;
 
@@ -457,6 +392,46 @@ class Optimizer {
         }
     };
 
+    class Expression: public pnetopt::Invalidatable, boost::noncopyable {
+        we::type::expression_t &expression_;
+
+        public:
+
+        Expression(we::type::expression_t &expression):
+            expression_(expression)
+        {}
+
+        const std::string &toString() const {
+            ensureValid();
+            return expression_.expression();
+        }
+
+        bool isEmpty() const {
+            ensureValid();
+            return expression_.is_empty();
+        }
+    };
+
+    class Condition: public pnetopt::Invalidatable, boost::noncopyable {
+        const condition::type &condition_;
+
+        public:
+
+        Condition(const condition::type &condition):
+            condition_(condition)
+        {}
+
+        const std::string &toString() const {
+            ensureValid();
+            return condition_.expression();
+        }
+
+        bool isConstTrue() const {
+            ensureValid();
+            return condition_.is_const_true();
+        }
+    };
+
     class Port;
     enum PortDirection { INPUT, OUTPUT, TUNNEL };
     typedef boost::unordered_map<std::pair<tid_t, PortDirection>, Port *> IdPortMap;
@@ -464,7 +439,7 @@ class Optimizer {
     typedef pnetopt::LuaIterator<Ports> PortsIterator;
     typedef RefCountedObjectPtr<PortsIterator> PortsIteratorPtr;
 
-    class Transition: public boost::noncopyable, public pnetopt::Invalidatable {
+    class Transition: public pnetopt::Invalidatable, boost::noncopyable {
         /** Parent Petri net. */
         PetriNet *petriNet_;
 
@@ -485,6 +460,12 @@ class Optimizer {
 
         /** Pointer to the subnet, if any. */
         std::auto_ptr<PetriNet> subnet_;
+
+        /** Expression, if any. */
+        std::auto_ptr<Expression> expression_;
+
+        /** Condition, if any. */
+        std::auto_ptr<Condition> condition_;
 
         public:
 
@@ -586,6 +567,32 @@ class Optimizer {
             return subnet_.get();
         }
 
+        struct ExpressionReturner: public boost::static_visitor<we::type::expression_t *> {
+            we::type::expression_t *operator()(we::type::expression_t &expr) const { return &expr; }
+            we::type::expression_t *operator()(we::type::module_call_t &mod_call) const { return NULL; }
+            we::type::expression_t *operator()(pnet_t &net) const { return NULL; } 
+        };
+
+        Expression *expression() {
+            ensureValid();
+
+            if (!expression_.get()) {
+                if (we::type::expression_t *expr = boost::apply_visitor(ExpressionReturner(), transition().data())) {
+                    expression_.reset(new Expression(*expr));
+                }
+            }
+            return expression_.get();
+        }
+
+        Condition *condition() {
+            ensureValid();
+
+            if (!condition_.get()) {
+                condition_.reset(new Condition(transition().condition()));
+            }
+            return condition_.get();
+        }
+
         void remove() {
             ensureValid();
 
@@ -601,8 +608,15 @@ class Optimizer {
 
         void doInvalidate() {
             invalidatePortsIterators();
+
             if (subnet_.get()) {
                 subnet_->invalidate();
+            }
+            if (expression_.get()) {
+                expression_->invalidate();
+            }
+            if (condition_.get()) {
+                condition_->invalidate();
             }
         }
     };
