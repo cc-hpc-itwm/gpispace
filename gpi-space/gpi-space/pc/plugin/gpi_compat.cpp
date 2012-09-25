@@ -276,7 +276,7 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name)
   require_gpi_state ("fvmGlobalAlloc");
 
   return gpi_compat->api->alloc ( 1 // GPI
-                                , size
+                                , size * gpi_compat->gpi_info.nodes
                                 , name
                                 , gpi::pc::type::handle::F_GLOBAL
                                 | gpi::pc::type::handle::F_PERSISTENT

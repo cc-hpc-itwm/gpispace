@@ -61,6 +61,7 @@ namespace gpi
         remote_alloc ( const gpi::pc::type::handle_t hdl
                      , const gpi::pc::type::offset_t offset
                      , const gpi::pc::type::size_t size
+                     , const gpi::pc::type::size_t local_size
                      , const std::string & name
                      );
 
@@ -125,6 +126,11 @@ namespace gpi
                                     , const gpi::pc::type::offset_t b
                                     ) const = 0;
         virtual void *ptr() = 0;
+
+        virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
+                                                     , const gpi::pc::type::flags_t flags
+                                                     ) const = 0;
+
         /*
          hook functions that may be overriden
          */
@@ -139,6 +145,8 @@ namespace gpi
                                     > handle_descriptor_map_t;
 
         void update_descriptor_from_mmgr ();
+
+        void internal_alloc (gpi::pc::type::handle::descriptor_t &);
 
         mutable mutex_type m_mutex;
         gpi::pc::type::segment::descriptor_t m_descriptor;

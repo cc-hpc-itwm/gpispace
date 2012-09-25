@@ -111,14 +111,6 @@ struct my_state_t
     return 0;
   }
 
-  size_t adjust_size_to_global_alloc(size_t total_size)
-  {
-    size_t nodes = capi.collect_info().nodes;
-    size_t per_node = (total_size / nodes);
-    per_node       += (total_size - nodes*per_node);
-    return per_node;
-  }
-
   char*  com_buffer() { return m_shm_com_ptr; }
   size_t com_size() const   { return m_com_size; }
   gpi::pc::type::handle_t shm_com_hdl() const { return m_shm_com_hdl; }
@@ -159,10 +151,6 @@ static void initialize_shell (int ac, char *av[]);
 
 static void shutdown_state ();
 static void shutdown_shell ();
-
-static void adjust_global_handle_sizes ( shell_t & sh
-                                       , gpi::pc::type::handle::descriptor_t &
-                                       );
 
 // shell functions
 static int cmd_help (shell_t::argv_t const & av, shell_t & sh);
@@ -591,7 +579,6 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     std::cerr << "no such handle: " << src.handle << std::endl;
     return -ESRCH;
   }
-  adjust_global_handle_sizes (sh, d);
 
   fs::path file_path;
   if (av.size() > 2)
@@ -684,7 +671,6 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
       return -ESRCH;
     }
 
-    adjust_global_handle_sizes(sh, d);
     if (dst.offset > d.size)
     {
       std::cerr << "invalid destination: " << dst
@@ -699,7 +685,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
     dst.handle =
       sh.state().capi.alloc( 1
-                           , sh.state().adjust_size_to_global_alloc(file_size)
+                           , file_size
                            , path.string()
                            , gpi::pc::type::handle::F_GLOBAL
                            | gpi::pc::type::handle::F_PERSISTENT
@@ -717,7 +703,6 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   gpi::pc::type::handle::descriptor_t handle_descriptor;
   sh.state().get_handle_descriptor(dst.handle, handle_descriptor);
-  adjust_global_handle_sizes(sh, handle_descriptor);
 
   std::size_t total_to_read = handle_descriptor.size - dst.offset;
 
@@ -1192,12 +1177,6 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
     }
   }
 
-  // adjust sizes in case of global allocations
-  if (gpi::flag::is_set(flags, gpi::pc::type::handle::F_GLOBAL))
-  {
-    size = sh.state().adjust_size_to_global_alloc(size);
-  }
-
   gpi::pc::type::handle_id_t handle
     (sh.state().capi.alloc (seg_id, size, desc, flags));
   if (gpi::pc::type::handle::is_null (handle))
@@ -1322,9 +1301,6 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
     std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
     gpi::pc::type::handle::list_t handles (sh.state().capi.list_allocations());
     std::sort (handles.begin(), handles.end());
-    std::for_each ( handles.begin(), handles.end()
-                  , boost::bind(adjust_global_handle_sizes, sh, _1)
-                  );
     std::cout << handles;
   }
   else
@@ -1380,16 +1356,6 @@ path_list_t collect_sockets (fs::path const & prefix)
     }
   }
   return paths;
-}
-
-static void adjust_global_handle_sizes ( shell_t & sh
-                                       , gpi::pc::type::handle::descriptor_t & d
-                                       )
-{
-  if (gpi::flag::is_set (d.flags, gpi::pc::type::handle::F_GLOBAL))
-  {
-    d.size *= sh.state().capi.collect_info().nodes;
-  }
 }
 
 static void print_progress( FILE *fp

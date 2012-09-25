@@ -46,10 +46,10 @@ namespace gpi
         process_signal_t process_attached;
         process_signal_t process_detached;
 
-		static manager_t & get()
-		{
-		  static manager_t m;
-		  return m;
+                static manager_t & get()
+                {
+                  static manager_t m;
+                  return m;
         }
 
         ~manager_t ();
@@ -78,7 +78,8 @@ namespace gpi
         remote_alloc ( const gpi::pc::type::segment_id_t
                      , const gpi::pc::type::handle_t
                      , const gpi::pc::type::offset_t
-                     , const gpi::pc::type::size_t
+                     , const gpi::pc::type::size_t size
+                     , const gpi::pc::type::size_t local_size
                      , const std::string & name
                      );
 
@@ -160,10 +161,10 @@ namespace gpi
   {
   namespace global
   {
-	inline
+        inline
     gpi::pc::memory::manager_t & memory_manager()
     {
-	  return gpi::pc::memory::manager_t::get();
+          return gpi::pc::memory::manager_t::get();
     }
   }
   }

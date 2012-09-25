@@ -137,6 +137,8 @@ namespace gpi
                        ) const
       {
         lock_type lock (m_mutex);
+
+
         handle_descriptor_map_t::const_iterator hdl_it
             (m_handles.find(location.handle));
         if (hdl_it == m_handles.end())
@@ -144,10 +146,8 @@ namespace gpi
         if (0 == amount)
           throw std::runtime_error ("is_local(): empty region");
 
-        const gpi::pc::type::offset_t start
-          (location.offset);
-        const gpi::pc::type::offset_t end
-          (start + (amount - 1));
+        const gpi::pc::type::offset_t start = location.offset;
+        const gpi::pc::type::offset_t end   = start + amount;
         return is_range_local (hdl_it->second, start, end);
       }
 
@@ -195,6 +195,7 @@ namespace gpi
       area_t::remote_alloc ( const gpi::pc::type::handle_t hdl_id
                            , const gpi::pc::type::offset_t offset
                            , const gpi::pc::type::size_t size
+                           , const gpi::pc::type::size_t local_size
                            , const std::string & name
                            )
       {
@@ -202,102 +203,30 @@ namespace gpi
         hdl.segment = m_descriptor.id;
         hdl.id = hdl_id;
         hdl.size = size;
+        hdl.local_size = local_size;
         hdl.name = name;
         hdl.offset = offset;
         hdl.creator = (gpi::pc::type::process_id_t)(-1);
         hdl.flags = type::handle::F_GLOBAL | type::handle::F_PERSISTENT;
 
-        Arena_t arena = translate_grow_direction(grow_direction(hdl.flags));
+        internal_alloc (hdl);
 
-        AllocReturn_t alloc_return
-            (dtmmgr_alloc (&m_mmgr, hdl_id, arena, size));
-
-        DLOG( TRACE
-            , "ALLOC:"
-            << " handle = " << hdl.id
-            << " arena = " << arena
-            << " size = " << size
-            << " return = " << alloc_return
-            );
-
-        switch (alloc_return)
+        if (hdl.offset != offset)
         {
-        case ALLOC_SUCCESS:
-          {
-            Offset_t actual_offset (0);
-            dtmmgr_offset_size ( m_mmgr
-                               , hdl.id
-                               , arena
-                               , &actual_offset
-                               , NULL
-                               );
-            if (actual_offset != offset)
-            {
-              LOG(ERROR, "remote_alloc failed: expected-offset = " << offset << " actual-offset = " << actual_offset);
-              dtmmgr_free (&m_mmgr, hdl.id, arena);
-              throw std::runtime_error("offset mismatch");
-            }
-            else
-            {
-              update_descriptor_from_mmgr ();
-              m_handles [hdl.id] = hdl;
-            }
-          }
-          break;
-        case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
-          LOG( WARN
-             , "not enough contiguous memory available:"
-             << " requested_size = " << size
-             << " segment = " << m_descriptor.id
-             << " avail = " << m_descriptor.avail
-             );
-          // TODO:
-          //    defrag (size);
-          //        release locks (? how)
-          //          block all accesses to this area
-          //              // memcpy/allocs should return EAGAIN
-          //          wait for transactions to finish
-          //          real_defrag
-          //        reacquire locks
-          throw std::runtime_error
-              ("not enough contiguous memory, defrag not yet implemented");
-          break;
-        case ALLOC_INSUFFICIENT_MEMORY:
-          LOG( ERROR
-             , "not enough memory:"
-             << " requested_size=" << size
-             << " segment=" << m_descriptor.id
-             << " avail=" << m_descriptor.avail
-             );
-          throw std::runtime_error ("out of memory");
-          break;
-        case ALLOC_DUPLICATE_HANDLE:
-          LOG( ERROR
-             ,  "duplicate handle:"
-             << " handle = " << hdl.id
-             << " segment " << m_descriptor.id
-             );
-          throw std::runtime_error ("duplicate handle");
-          break;
-        case ALLOC_FAILURE:
-          LOG( ERROR
-             , "internal error during allocation:"
-             << " requested_size = " << size
-             << " handle = " << hdl.id
-             << " segment = " << m_descriptor.id
-             );
-          throw std::runtime_error ("allocation failed");
-          break;
-        default:
-          LOG( ERROR
-             ,  "unexpected error during allocation:"
-             << " requested_size = " << size
-             << " handle = " << hdl.id
-             << " segment = " << m_descriptor.id
-             << " error = " << alloc_return
-             );
-          throw std::runtime_error ("unexpected return code");
-          break;
+          LOG ( ERROR
+              , "remote_alloc failed: expected-offset = " << offset
+              << " actual-offset = " << hdl.offset
+              );
+          dtmmgr_free ( &m_mmgr
+                      , hdl.id
+                      , translate_grow_direction (grow_direction (hdl.flags))
+                      );
+          throw std::runtime_error("offset mismatch");
+        }
+        else
+        {
+          update_descriptor_from_mmgr ();
+          m_handles [hdl.id] = hdl;
         }
 
         return 0;
@@ -312,37 +241,65 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        // avoid generation of handle if alloc would definitely fail
-        if (m_descriptor.avail < size)
+        gpi::pc::type::handle::descriptor_t hdl;
+        hdl.segment = m_descriptor.id;
+        hdl.size = size;
+        // get distribution scheme
+        hdl.local_size = get_local_size (size, flags);
+        hdl.name = name;
+        hdl.creator = proc_id;
+        hdl.flags = flags;
+        hdl.id = handle_generator_t::get ().next (m_descriptor.type);
+
+        internal_alloc (hdl);
+
+        update_descriptor_from_mmgr ();
+        m_handles [hdl.id] = hdl;
+
+        return hdl.id;
+      }
+
+      void area_t::defrag (const gpi::pc::type::size_t)
+      {
+        throw std::runtime_error ("defrag is not yet implemented");
+      }
+
+      void area_t::update_descriptor_from_mmgr()
+      {
+        m_descriptor.avail = dtmmgr_memfree (m_mmgr);
+        m_descriptor.allocs =
+            dtmmgr_numhandle (m_mmgr, ARENA_UP)
+          + dtmmgr_numhandle (m_mmgr, ARENA_DOWN);
+        // dtmmgr_numalloc -> total allocs
+        // dtmmgr_numfree -> total frees
+        m_descriptor.ts.touch();
+      }
+
+      void area_t::internal_alloc (gpi::pc::type::handle::descriptor_t &hdl)
+      {
+        if (m_descriptor.avail < hdl.local_size)
         {
           LOG( ERROR
              , "not enough memory:"
-             << " requested_size = " << size
+             << " total size = " << hdl.size
+             << " local size = " << hdl.local_size
              << " segment = " << m_descriptor.id
              << " avail = " << m_descriptor.avail
              );
           throw std::runtime_error ("out of memory");
         }
 
-        gpi::pc::type::handle::descriptor_t hdl;
-        hdl.segment = m_descriptor.id;
-        hdl.id =
-            handle_generator_t::get().next(m_descriptor.type);
-        hdl.size = size;
-        hdl.name = name;
-        hdl.creator = proc_id;
-        hdl.flags = flags;
-
-        Arena_t arena = translate_grow_direction(grow_direction(flags));
+        Arena_t arena = translate_grow_direction (grow_direction(hdl.flags));
 
         AllocReturn_t alloc_return
-            (dtmmgr_alloc (&m_mmgr, hdl.id, arena, size));
+            (dtmmgr_alloc (&m_mmgr, hdl.id, arena, hdl.local_size));
 
         DLOG( TRACE
             , "ALLOC:"
             << " handle = " << hdl.id
             << " arena = " << arena
-            << " size = " << size
+            << " size = " << hdl.size
+            << " local = " << hdl.local_size
             << " return = " << alloc_return
             );
 
@@ -368,21 +325,17 @@ namespace gpi
               dtmmgr_free (&m_mmgr, hdl.id, arena);
               throw;
             }
-
-            update_descriptor_from_mmgr ();
-            m_handles [hdl.id] = hdl;
-            return hdl.id;
           }
           break;
         case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
           LOG( WARN
              , "not enough contiguous memory available:"
-             << " requested_size = " << size
+             << " requested_size = " << hdl.local_size
              << " segment = " << m_descriptor.id
              << " avail = " << m_descriptor.avail
              );
           // TODO:
-          //    defrag (size);
+          //    defrag (local_size);
           //        release locks (? how)
           //          block all accesses to this area
           //              // memcpy/allocs should return EAGAIN
@@ -395,7 +348,7 @@ namespace gpi
         case ALLOC_INSUFFICIENT_MEMORY:
           LOG( ERROR
              , "not enough memory:"
-             << " requested_size=" << size
+             << " requested_size=" << hdl.local_size
              << " segment=" << m_descriptor.id
              << " avail=" << m_descriptor.avail
              );
@@ -412,7 +365,7 @@ namespace gpi
         case ALLOC_FAILURE:
           LOG( ERROR
              , "internal error during allocation:"
-             << " requested_size = " << size
+             << " requested_size = " << hdl.local_size
              << " handle = " << hdl.id
              << " segment = " << m_descriptor.id
              );
@@ -421,7 +374,7 @@ namespace gpi
         default:
           LOG( ERROR
              ,  "unexpected error during allocation:"
-             << " requested_size = " << size
+             << " requested_size = " << hdl.local_size
              << " handle = " << hdl.id
              << " segment = " << m_descriptor.id
              << " error = " << alloc_return
@@ -429,24 +382,6 @@ namespace gpi
           throw std::runtime_error ("unexpected return code");
           break;
         }
-
-        return hdl.id;
-      }
-
-      void area_t::defrag (const gpi::pc::type::size_t)
-      {
-        throw std::runtime_error ("defrag is not yet implemented");
-      }
-
-      void area_t::update_descriptor_from_mmgr()
-      {
-        m_descriptor.avail = dtmmgr_memfree (m_mmgr);
-        m_descriptor.allocs =
-            dtmmgr_numhandle (m_mmgr, ARENA_UP)
-          + dtmmgr_numhandle (m_mmgr, ARENA_DOWN);
-        // dtmmgr_numalloc -> total allocs
-        // dtmmgr_numfree -> total frees
-        m_descriptor.ts.touch();
       }
 
       void area_t::free (const gpi::pc::type::handle_t hdl)

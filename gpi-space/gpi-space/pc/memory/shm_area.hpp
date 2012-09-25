@@ -49,6 +49,10 @@ namespace gpi
                             , const gpi::pc::type::offset_t a
                             , const gpi::pc::type::offset_t b
                             ) const;
+        gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
+                                             , const gpi::pc::type::flags_t flgs
+                                             ) const;
+
 
         static bool unlink_after_open (const gpi::pc::type::flags_t);
         static bool unlink_after_close (const gpi::pc::type::flags_t);
