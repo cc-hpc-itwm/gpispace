@@ -217,8 +217,16 @@ namespace gpi
                                  , const gpi::pc::type::offset_t b
                                  ) const
       {
-        return ((hdl.offset + a) < size())
-          && ((hdl.offset + b) < size());
+        return ((hdl.offset + a) <  size())
+          &&   ((hdl.offset + b) <= size());
+      }
+
+      gpi::pc::type::size_t
+      shm_area_t::get_local_size ( const gpi::pc::type::size_t sz
+                                 , const gpi::pc::type::flags_t
+                                 ) const
+      {
+        return sz;
       }
     }
   }

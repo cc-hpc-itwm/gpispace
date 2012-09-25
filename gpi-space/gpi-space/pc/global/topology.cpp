@@ -270,9 +270,11 @@ namespace gpi
         return result;
       }
 
-      int topology_t::alloc ( const gpi::pc::type::handle_t hdl
+      int topology_t::alloc ( const gpi::pc::type::segment_id_t seg
+                            , const gpi::pc::type::handle_t hdl
                             , const gpi::pc::type::offset_t offset
                             , const gpi::pc::type::size_t size
+                            , const gpi::pc::type::size_t local_size
                             , const std::string & name
                             )
       {
@@ -286,9 +288,11 @@ namespace gpi
         try
         {
           rank_result_t res (all_reduce(  detail::command_t("ALLOC")
+                                       << seg
                                        << hdl
                                        << offset
                                        << size
+                                       << local_size
                                        << name
                                        , reduce::max_result
                                        , rank_result_t(m_rank, 0) // my result
@@ -496,25 +500,28 @@ namespace gpi
                                   );
           if (av.empty())
           {
-            LOG(ERROR, "ignoring empty command");
+            LOG (ERROR, "ignoring empty command");
           }
           else if (av[0] == "ALLOC")
           {
             using namespace gpi::pc::type;
-            handle_t hdl (boost::lexical_cast<handle_t>(av[1]));
-            offset_t offset (boost::lexical_cast<offset_t>(av[2]));
-            size_t   size (boost::lexical_cast<size_t>(av[3]));
+            segment_id_t seg (boost::lexical_cast<handle_t>(av[1]));
+            handle_t hdl (boost::lexical_cast<handle_t>(av[2]));
+            offset_t offset (boost::lexical_cast<offset_t>(av[3]));
+            size_t   size (boost::lexical_cast<size_t>(av[4]));
+            size_t local_size (boost::lexical_cast<size_t>(av[5]));
             std::string name
-                          (boost::algorithm::trim_copy_if( av[4]
-                                                         , boost::is_any_of("\"")
-                                                                                         )
-                          ); // TODO unquote
+              (boost::algorithm::trim_copy_if( av[6]
+                                             , boost::is_any_of("\"")
+                                             )
+              ); // TODO unquote and join (av[4]...)
 
             int res
-              (global::memory_manager().remote_alloc( 1
+              (global::memory_manager().remote_alloc( seg
                                                     , hdl
                                                     , offset
                                                     , size
+                                                    , local_size
                                                     , name
                                                     )
               );

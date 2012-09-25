@@ -294,7 +294,12 @@ namespace gpi
                        )
       {
 //        check_permissions (permission::alloc_t (proc_id, seg_id));
-        return global::memory_manager().alloc (proc_id, seg_id , size , name , flags);
+        return global::memory_manager().alloc ( proc_id
+                                              , seg_id
+                                              , size
+                                              , name
+                                              , flags
+                                              );
       }
 
       void

@@ -75,9 +75,11 @@ namespace gpi
         void establish ();
 
         // initiate a global alloc
-        int alloc ( const gpi::pc::type::handle_t
+        int alloc ( const gpi::pc::type::segment_id_t segment
+                  , const gpi::pc::type::handle_t
                   , const gpi::pc::type::offset_t
-                  , const gpi::pc::type::size_t
+                  , const gpi::pc::type::size_t size
+                  , const gpi::pc::type::size_t local_size
                   , const std::string & name
                   );
 
