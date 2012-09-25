@@ -131,9 +131,8 @@ namespace gpi
                                 ) const
       {
         DLOG ( TRACE
-             , "checking range: " << "hdl=" << hdl
-             << " begin=" << begin
-             << " end=" << end
+             , "checking range: " << "hdl=[" << hdl << "]"
+             << " range = [" << begin << ", " << end << ")"
              );
 
         gpi::pc::type::id_t     my_rank = gpi::api::gpi_api_t::get ().rank ();
@@ -148,7 +147,9 @@ namespace gpi
         if (my_end > hdl.size)
           my_end = hdl.size;
 
-        return my_begin <= begin && end < my_end;
+        const bool is_local = my_begin <= begin && end <= my_end;
+
+        return is_local;
       }
 
       gpi::pc::type::size_t

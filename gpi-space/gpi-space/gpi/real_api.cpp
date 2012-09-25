@@ -232,7 +232,7 @@ namespace gpi
       gpi::error_vector_t v (number_of_nodes());
       for (std::size_t i (0); i < number_of_nodes(); ++i)
       {
-        v.set (i, (gpi_err_vec[i] == 1));
+        v.set (i, (gpi_err_vec[i] != 0));
       }
       return v;
     }
@@ -402,7 +402,7 @@ namespace gpi
         max_rank  = (size_t)(tmp);
       }
 
-      LOG(DEBUG, "running GPI check...");
+      LOG( TRACE, "running GPI check...");
       int rc (0);
       for (rank_t nd (0); nd < max_rank; ++nd)
       {
@@ -494,6 +494,15 @@ namespace gpi
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
 
+        DLOG( TRACE
+            , "real_api: readDMA:"
+            << " remote: " << r_off
+            << " local: " << l_off
+            << " amount: " << to_transfer
+            << " node: " << from_node
+            << " queue: " << queue
+            );
+
         int rc
           (readDmaGPI ( l_off
                       , r_off
@@ -541,6 +550,15 @@ namespace gpi
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
 
+        DLOG( TRACE
+            , "real_api: writeDMA:"
+            << " remote: " << r_off
+            << " local: " << l_off
+            << " amount: " << to_transfer
+            << " node: " << to_node
+            << " queue: " << queue
+            );
+
         int rc
           (writeDmaGPI ( l_off
                        , r_off
@@ -549,15 +567,6 @@ namespace gpi
                        , queue
                        )
           );
-
-        DLOG( TRACE
-            , "real_api: writeDMA:"
-            << " remote: " << remote_offset
-            << " local: " << local_offset
-            << " amount: " << amount
-            << " to-node: " << to_node
-            << " queue: " << queue
-            );
 
         if (rc != 0)
         {
@@ -642,6 +651,11 @@ namespace gpi
         (waitDmaGPI(queue));
       if (rc < 0)
       {
+        MLOG ( ERROR
+             , "waitDMA failed on queue " << queue << ": " << rc
+             << " ev := " << get_error_vector (queue)
+             );
+
         throw exception::dma_error
           ( gpi::error::wait_dma_failed()
           , 0
