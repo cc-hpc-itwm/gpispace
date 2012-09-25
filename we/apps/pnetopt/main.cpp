@@ -438,7 +438,8 @@ class Optimizer {
     };
 
     class Port;
-    typedef boost::unordered_map<tid_t, Port *> IdPortMap;
+    enum PortDirection { INPUT, OUTPUT, TUNNEL };
+    typedef boost::unordered_map<std::pair<tid_t, PortDirection>, Port *> IdPortMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPortMap>, IdPortMap> Ports;
     typedef pnetopt::LuaIterator<Ports> PortsIterator;
     typedef RefCountedObjectPtr<PortsIterator> PortsIteratorPtr;
@@ -468,19 +469,29 @@ class Optimizer {
             petriNet_(petriNet), tid_(tid), transition_(transition)
         {
             for (typename transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
-                getPort(i->first);
+                port_id_t portId = i->first;
+                port_t &port = transition_.get_port(portId);
+                if (port.is_input()) {
+                    getPort(portId, INPUT);
+                }
+                if (port.is_output()) {
+                    getPort(portId, OUTPUT);
+                }
+                if (port.is_tunnel()) {
+                    getPort(portId, TUNNEL);
+                }
             }
             for (typename transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
                 port_id_t portId = i->first;
                 pid_t placeId = i->second.first;
 
-                getPort(portId)->setConnectedPlace(petriNet->getPlace(placeId));
+                getPort(portId, OUTPUT)->setConnectedPlace(petriNet->getPlace(placeId));
             }
             for (typename transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
                 pid_t placeId = i->first;
                 port_id_t portId = i->second.first;
 
-                getPort(portId)->setConnectedPlace(petriNet->getPlace(placeId));
+                getPort(portId, INPUT)->setConnectedPlace(petriNet->getPlace(placeId));
             }
         }
 
@@ -490,14 +501,14 @@ class Optimizer {
 
         transition_t &transition() const { return transition_; }
 
-        Port *getPort(port_id_t portId) {
-            Port *&result = id2port_[portId];
+        Port *getPort(port_id_t portId, PortDirection direction) {
+            Port *&result = id2port_[std::make_pair(portId, direction)];
 
             if (!result) {
                 port_t &port = transition_.get_port(portId);
 
                 ports_.reserve(ports_.size() + 1);
-                result = new Port(this, portId, port);
+                result = new Port(this, portId, port, direction);
                 ports_.push_back(result);
             }
 
@@ -563,14 +574,21 @@ class Optimizer {
         /** Reference to the port. */
         port_t &port_;
 
+        /** Direction of this port. */
+        PortDirection direction_;
+
         /** Place connected to the port. */
         Place *connectedPlace_;
 
         public:
 
-        Port(Transition *transition, port_id_t portId, port_t &port):
-            transition_(transition), portId_(portId), port_(port), connectedPlace_(NULL)
-        {}
+        Port(Transition *transition, port_id_t portId, port_t &port, PortDirection direction):
+            transition_(transition), portId_(portId), port_(port), direction_(direction), connectedPlace_(NULL)
+        {
+            assert(!(direction == INPUT) || port_.is_input());
+            assert(!(direction == OUTPUT) || port_.is_output());
+            assert(!(direction == TUNNEL) || port_.is_tunnel());
+        }
 
         Transition *transition() const {
             ensureValid();
@@ -588,17 +606,17 @@ class Optimizer {
 
         bool isInput() const {
             ensureValid();
-            return port_.is_input();
+            return direction_ == INPUT;
         }
 
         bool isOutput() const {
             ensureValid();
-            return port_.is_output();
+            return direction_ == OUTPUT;
         }
 
         bool isTunnel() const {
             ensureValid();
-            return port_.is_tunnel();
+            return direction_ == TUNNEL;
         }
 
         bool isRead() const {
@@ -625,16 +643,15 @@ class Optimizer {
             }
         }
 
-        // TODO: f*cking IN_OUT ports must be represented as two different ports.
         void connect(Place *place) {
             ensureValid();
-
-            // TODO: I'm not sure how to handle tunnels yet.
-            assert(!isTunnel());
 
             if (place == connectedPlace_) {
                 return;
             }
+
+            // TODO: I'm not sure how to handle tunnels yet.
+            assert(!isTunnel());
 
             if (connectedPlace_) {
                 /* We must remove an edge. */
