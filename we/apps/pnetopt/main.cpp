@@ -83,6 +83,7 @@ class Optimizer {
                     .addFunction("name", &Transition::name)
                     .addFunction("setName", &Transition::setName)
                     .addFunction("ports", &Transition::portIterator)
+                    .addFunction("subnet", &Transition::subnet)
                     .addFunction("remove", &Transition::remove)
                 .endClass()
                 .template beginClass<TransitionsIterator>("TransitionsIterator")
@@ -216,7 +217,7 @@ class Optimizer {
     typedef pnetopt::LuaIterator<Transitions> TransitionsIterator;
     typedef RefCountedObjectPtr<TransitionsIterator> TransitionsIteratorPtr;
 
-    class PetriNet: public boost::noncopyable {
+    class PetriNet: public boost::noncopyable, public pnetopt::Invalidatable {
         /** Petri net reference. */
         pnet_t &pnet_;
 
@@ -260,6 +261,8 @@ class Optimizer {
         }
 
         const char *toString() const {
+            ensureValid();
+
             return "PetriNet";
         }
 
@@ -293,6 +296,8 @@ class Optimizer {
         }
 
         PlacesIteratorPtr placesIterator() {
+            ensureValid();
+
             PlacesIteratorPtr result(new PlacesIterator(places()));
             placesIterators_.push_back(result);
             return result;
@@ -335,6 +340,8 @@ class Optimizer {
         }
 
         TransitionsIteratorPtr transitionIterator() {
+            ensureValid();
+
             TransitionsIteratorPtr result(new TransitionsIterator(transitions()));
             transitionIterators_.push_back(result);
             return result;
@@ -345,6 +352,17 @@ class Optimizer {
                 iterator->invalidate();
             }
             transitionIterators_.clear();
+        }
+
+        void doInvalidate() {
+            foreach (Place *place, places()) {
+                place->invalidate();
+            }
+            foreach (Transition *transition, transitions()) {
+                transition->invalidate();
+            }
+            invalidatePlacesIterators();
+            invalidateTransitionsIterators();
         }
     };
 
@@ -402,6 +420,8 @@ class Optimizer {
         const ConnectedPorts &connectedPorts() const { return connectedPorts_; }
 
         ConnectedPortsIteratorPtr connectedPortsIterator() {
+            ensureValid();
+
             ConnectedPortsIteratorPtr result(new ConnectedPortsIterator(connectedPorts()));
             connectedPortsIterators_.push_back(result);
             return result;
@@ -463,6 +483,9 @@ class Optimizer {
         /** Iterators over the id2port_ container. */
         std::vector<PortsIteratorPtr> portIterators_;
 
+        /** Pointer to the subnet, if any. */
+        std::auto_ptr<PetriNet> subnet_;
+
         public:
 
         Transition(PetriNet *petriNet, tid_t tid, transition_t &transition):
@@ -522,6 +545,8 @@ class Optimizer {
         }
 
         PortsIteratorPtr portIterator() {
+            ensureValid();
+
             PortsIteratorPtr result(new PortsIterator(ports()));
             portIterators_.push_back(result);
             return result;
@@ -544,6 +569,23 @@ class Optimizer {
             transition_.set_name(name);
         }
 
+        struct SubnetReturner: public boost::static_visitor<pnet_t *> {
+            pnet_t *operator()(we::type::expression_t &expr) const { return NULL; }
+            pnet_t *operator()(we::type::module_call_t &mod_call) const { return NULL; }
+            pnet_t *operator()(pnet_t &net) const { return &net; } 
+        };
+
+        PetriNet *subnet() {
+            ensureValid();
+
+            if (!subnet_.get()) {
+                if (pnet_t *pnet = boost::apply_visitor(SubnetReturner(), transition().data())) {
+                    subnet_.reset(new PetriNet(*pnet));
+                }
+            }
+            return subnet_.get();
+        }
+
         void remove() {
             ensureValid();
 
@@ -559,6 +601,9 @@ class Optimizer {
 
         void doInvalidate() {
             invalidatePortsIterators();
+            if (subnet_.get()) {
+                subnet_->invalidate();
+            }
         }
     };
 
