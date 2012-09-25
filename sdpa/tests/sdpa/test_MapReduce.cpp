@@ -157,6 +157,50 @@ struct MyFixture
 	fhg::core::kernel_t *kernel;
 };
 
+string read_wordcount_file(const string& strFileName)
+{
+  MapTask<std::string, std::string, std::string, std::string> mapTask;
+  ifstream ifs;
+  ofstream ofs;
+  std::string strWorkflow("");
+
+  ifs.open(strFileName.c_str(), ifstream::in);
+  if(!ifs.fail())
+  {
+    string strLine;
+
+    while( getline( ifs, strLine ) )
+    {
+      boost::char_separator<char> sep(" ");
+      boost::tokenizer<boost::char_separator<char> > tok(strLine, sep);
+
+      vector< string > vec;
+      vec.assign(tok.begin(),tok.end());
+
+      if( vec.size() != 2 )
+      {
+        LOG(ERROR, "Invalid line in file "<<strFileName<<". Please specify on each line a filename followed by the node name");
+        return "";
+      }
+      else
+      {
+        mapTask.emit(vec[0], vec[1]);
+      }
+    }
+
+    mapTask.print();
+    strWorkflow = mapTask.encode();
+  }
+  else
+  {
+    cout<<"Error, the file "<<strFileName<<" does not exist!"<<endl;
+  }
+
+  ifs.close();
+
+  return strWorkflow;
+}
+
 void MyFixture::run_client(const std::string& strWorkflow )
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
@@ -525,16 +569,7 @@ BOOST_AUTO_TEST_CASE( test2Mappers3Reducers )
   string addrOrch   = "127.0.0.1";
   string addrAgent  = "127.0.0.1";
 
-  // one should have a Partitioner
-  // cases to distinguish: 1) files are stored locally, on some given nodes
-  //                       2) are stored on a (distributed) file system
-
-  MapTask<std::string, std::string, std::string, std::string> mapTask;
-
-  mapTask.emit("file0.txt", "mapper0");
-  mapTask.emit("file1.txt", "mapper1");
-
-  std::string strWorkflow(mapTask.encode());
+  std::string strWorkflow = read_wordcount_file("wordcount_test.txt");
 
   sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<MasterWorkflowEngine<WordCountMapper> >::create("orchestrator_0", addrAgent, MAX_CAP );
   ptrOrch->start_agent(false);
