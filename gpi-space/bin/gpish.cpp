@@ -706,37 +706,40 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   std::size_t total_to_read = handle_descriptor.size - dst.offset;
 
-  while (ifs.good() && (offset < total_to_read))
+  if (total_to_read)
   {
+    while (ifs.good() && (offset < total_to_read))
+    {
+      print_progress (stderr, offset, total_to_read);
+
+      std::size_t to_read = std::min( sh.state().com_size()
+                                    , total_to_read - offset
+                                    );
+
+      ifs.read(sh.state().com_buffer(), to_read);
+      std::size_t read_bytes = ifs.gcount();
+
+      // copy&wait to gpi_com area
+      sh.state().capi.memcpy(gpi_com_buf, shm_com_buf, read_bytes, 0);
+      sh.state().capi.wait(0);
+
+      // copy&wait to actual dst
+      sh.state().capi.memcpy(dst,         gpi_com_buf, read_bytes, 0);
+      sh.state().capi.wait(0);
+
+      offset     += read_bytes;
+      dst.offset += read_bytes;
+    }
+
     print_progress (stderr, offset, total_to_read);
+    fprintf(stderr, "\n");
 
-    std::size_t to_read = std::min( sh.state().com_size()
-                                  , total_to_read - offset
-                                  );
-
-    ifs.read(sh.state().com_buffer(), to_read);
-    std::size_t read_bytes = ifs.gcount();
-
-    // copy&wait to gpi_com area
-    sh.state().capi.memcpy(gpi_com_buf, shm_com_buf, read_bytes, 0);
-    sh.state().capi.wait(0);
-
-    // copy&wait to actual dst
-    sh.state().capi.memcpy(dst,         gpi_com_buf, read_bytes, 0);
-    sh.state().capi.wait(0);
-
-    offset     += read_bytes;
-    dst.offset += read_bytes;
-  }
-
-  print_progress (stderr, offset, total_to_read);
-  fprintf(stderr, "\n");
-
-  if (offset < total_to_read)
-  {
-    std::cerr << "warning: handle was not completely filled: "
-              << "read " << offset << "/" << total_to_read << " bytes"
-              << std::endl;
+    if (offset < total_to_read)
+    {
+      std::cerr << "warning: handle was not completely filled: "
+                << "read " << offset << "/" << total_to_read << " bytes"
+                << std::endl;
+    }
   }
 
   return 0;

@@ -143,8 +143,8 @@ namespace gpi
             (m_handles.find(location.handle));
         if (hdl_it == m_handles.end())
           throw std::runtime_error ("is_local(): no such handle");
-        if (0 == amount)
-          throw std::runtime_error ("is_local(): empty region");
+        //        if (0 == amount)
+        //          throw std::runtime_error ("is_local(): empty region");
 
         const gpi::pc::type::offset_t start = location.offset;
         const gpi::pc::type::offset_t end   = start + amount;
@@ -574,7 +574,7 @@ namespace gpi
             ("pointer_to(): no such handle: " + boost::lexical_cast<std::string>(loc.handle));
 
         return reinterpret_cast<char*>(ptr())
-          + (hdl_it->second.offset + (loc.offset % hdl_it->second.size));
+          + (hdl_it->second.offset + (loc.offset % hdl_it->second.local_size));
       }
     }
   }

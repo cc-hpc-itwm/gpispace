@@ -505,7 +505,7 @@ namespace gpi
           else if (av[0] == "ALLOC")
           {
             using namespace gpi::pc::type;
-            segment_id_t seg (boost::lexical_cast<handle_t>(av[1]));
+            segment_id_t seg (boost::lexical_cast<segment_id_t>(av[1]));
             handle_t hdl (boost::lexical_cast<handle_t>(av[2]));
             offset_t offset (boost::lexical_cast<offset_t>(av[3]));
             size_t   size (boost::lexical_cast<size_t>(av[4]));

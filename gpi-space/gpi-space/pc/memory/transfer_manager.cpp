@@ -53,7 +53,22 @@ namespace gpi
               );
           throw std::invalid_argument ("no such queue");
         }
-        return m_queues[queue]->wait ();
+        else
+        {
+          try
+          {
+            return m_queues[queue]->wait ();
+          }
+          catch (std::exception const & ex)
+          {
+            MLOG ( ERROR
+                 , "marking queue " << queue << " permanently as failed!"
+                 );
+            m_queues [queue]->disable ();
+
+            throw;
+          }
+        }
       }
 
       void
