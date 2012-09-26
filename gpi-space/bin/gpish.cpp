@@ -643,7 +643,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size() < 2)
   {
-    std::cerr << "usage: load <path> [handle[+offset]]" << std::endl;
+    std::cerr << "usage: load <path> [segment | [handle[+offset]]]" << std::endl;
     return 1;
   }
 
@@ -663,41 +663,50 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   }
 
   gpi::pc::type::memory_location_t dst;
+  int target_segment = 1;
   if (av.size() > 2)
   {
     try
     {
       dst = boost::lexical_cast<gpi::pc::type::memory_location_t>(av[2]);
-    }
-    catch (std::exception const &ex)
-    {
-      std::cerr << "invalid destination: " << av[1]
-                << ": " << ex.what()
-                << std::endl;
-      return -EINVAL;
-    }
 
-    gpi::pc::type::handle::descriptor_t d;
-    if (sh.state().get_handle_descriptor(dst.handle, d) < 0)
-    {
-      std::cerr << "no such handle: " << dst.handle << std::endl;
-      return -ESRCH;
-    }
+      gpi::pc::type::handle::descriptor_t d;
+      if (sh.state().get_handle_descriptor(dst.handle, d) < 0)
+      {
+        std::cerr << "no such handle: " << dst.handle << std::endl;
+        return -ESRCH;
+      }
 
-    if (dst.offset > d.size)
+      if (dst.offset > d.size)
+      {
+        std::cerr << "invalid destination: " << dst
+                  << ": " << "offset is larger than size"
+                  << std::endl;
+        return -EINVAL;
+      }
+    }
+    catch (std::exception const &ex1)
     {
-      std::cerr << "invalid destination: " << dst
-                << ": " << "offset is larger than size"
-                << std::endl;
-      return -EINVAL;
+      try
+      {
+        target_segment = boost::lexical_cast<int> (av [2]);
+      }
+      catch (std::exception const &ex2)
+      {
+        std::cerr << "invalid destination: '" << av[2] << "'"
+                  << " is neither a handle, nor a segment"
+                  << std::endl;
+        return -EINVAL;
+      }
     }
   }
-  else
+
+  if (0 == dst.handle)
   {
     std::size_t file_size = fs::file_size(path);
 
     dst.handle =
-      sh.state().capi.alloc( 1
+      sh.state().capi.alloc( target_segment
                            , file_size
                            , path.string()
                            , gpi::pc::type::handle::F_GLOBAL
