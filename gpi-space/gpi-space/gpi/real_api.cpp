@@ -648,7 +648,7 @@ namespace gpi
     {
       assert (m_startup_done);
       int rc
-        (waitDmaGPI(queue));
+        (waitDma2GPI(queue));
       if (rc < 0)
       {
         MLOG ( ERROR
