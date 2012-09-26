@@ -1137,7 +1137,7 @@ private:
     size_t remaining_bytes = len;
 
     num_read = 0;
-    while (remaining_bytes && (s->read_pointer != s->handle.size))
+    while (remaining_bytes && (s->read_pointer < s->handle.size))
     {
       size_t transfer_size =
         std::min ( m_chunk_size
