@@ -200,7 +200,7 @@ int main (int ac, char **av)
   socket_search_dir.push_back ("/tmp");
   socket_search_dir.push_back ("/var/tmp");
 
-  std::size_t com_size (16 * (1 << 20));
+  std::size_t com_size (4 * 1024 * 1024);
 
   desc.add_options ()
     ("help,h", "this message")
