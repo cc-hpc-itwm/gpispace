@@ -12,9 +12,11 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-//#include <sdpa/engine/RealWorkflowEngine.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
+
+#include <sdpa/engine/MasterWorkflowEngine.hpp>
+#include <sdpa/mapreduce/WordCountMapper.hpp>
 
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
@@ -203,7 +205,7 @@ int main (int argc, char **argv)
     LOG(INFO, "Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl);
 
     try {
-      sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( orchName, orchUrl, MAX_CAP  );
+      sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<MasterWorkflowEngine<WordCountMapper> >::create( orchName, orchUrl, MAX_CAP  );
 
       bool bUseRequestModel = false; //(vm.count("use-push-model") == 0);
 

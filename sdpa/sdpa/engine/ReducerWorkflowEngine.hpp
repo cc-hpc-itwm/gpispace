@@ -19,22 +19,21 @@
 #define REDUCER_WORKFLOW_ENGINE_HPP 1
 
 #include <sdpa/engine/BasicEngine.hpp>
-#include <sdpa/mapreduce/WordCountMapper.hpp>
-#include <sdpa/mapreduce/WordCountReducer.hpp>
 #include <sdpa/mapreduce/Combiner.hpp>
 
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
 
+template <typename Mapper, typename Reducer>
 class ReducerWorkflowEngine : public BasicEngine
 {
   private:
     SDPA_DECLARE_LOGGER();
 
   public:
-    typedef std::map<id_type, WordCountReducer*> MapTag2ReducerT;
-    typedef MapTag2ReducerT::value_type PairTagReducerT;
+    typedef std::map<id_type, Reducer*> MapTag2ReducerT;
+    typedef typename MapTag2ReducerT::value_type PairTagReducerT;
 
     ReducerWorkflowEngine( GenericDaemon* pIAgent = NULL, Function_t f = Function_t() )
     : SDPA_INIT_LOGGER(pIAgent->name()+": ReducerWE"),
@@ -65,48 +64,57 @@ class ReducerWorkflowEngine : public BasicEngine
       return false;
     }
 
+    Reducer* getReducer(const id_type& tag)
+    {
+      lock_type lock(mtx_);
+      Reducer* pReducer;
+      typename MapTag2ReducerT::iterator it = mapTag2Reducer_.find(tag);
+      if( it == mapTag2Reducer_.end() )
+      {
+        // no entry for that tag exist
+        // therefore, create a new reducer
+        pReducer = new Reducer;
+        PairTagReducerT pair(tag, pReducer);
+        mapTag2Reducer_.insert(pair);
+        pReducer->setId(id_generator::instance().next());
+      }
+      else
+        pReducer = it->second;
+
+      return pReducer;
+    }
+
     void submit(const id_type& wfid, const encoded_type& wf_desc)
     {
       lock_type lock(mtx_);
 
-      WordCountMapper::TaskT fromMapperTask;
+      typename Mapper::TaskT fromMapperTask;
 
       try
       {
-          fromMapperTask.decode(wf_desc);
+        fromMapperTask.decode(wf_desc);
 
-          SDPA_LOG_INFO("Got new map map task tagged as: "<<fromMapperTask.inValue());
+        SDPA_LOG_INFO("Got new map map task tagged as: "<<fromMapperTask.inValue());
 
-          WordCountReducer* pReducer;
-          id_type tag(fromMapperTask.inValue());
-          MapTag2ReducerT::iterator it = mapTag2Reducer_.find(tag);
-          if( it == mapTag2Reducer_.end() )
-          {
-            // no entry for that tag exist
-            // therefore, create a new reducer
-            pReducer = new WordCountReducer;
-            mapTag2Reducer_.insert(PairTagReducerT(tag, pReducer));
-            pReducer->setId(id_generator::instance().next());
-          }
-          else
-            pReducer = it->second;
+        id_type tag = fromMapperTask.inValue();
+        Reducer* pReducer = getReducer(tag);
 
-          Combiner<WordCountMapper, WordCountReducer>::shuffle(&fromMapperTask, pReducer);
+        Combiner<Mapper, Reducer>::shuffle(&fromMapperTask, pReducer);
 
-          if( pReducer->reachedBound( pIAgent_->numberOfMasterAgents() ))
-          {
-            // build a new map task, out of the reducer associated to this workflow
-            WordCountMapper::TaskT toCollMapTask(fromMapperTask.inKey(), fromMapperTask.inValue());
-            pReducer->collect(toCollMapTask);
-            //reducer_.print();
+        if( pReducer->isBoundReached( pIAgent_->numberOfMasterAgents() ))
+        {
+          // build a new map task, out of the reducer associated to this workflow
+          typename Mapper::TaskT toCollMapTask(fromMapperTask.inKey(), fromMapperTask.inValue());
+          pReducer->collect(toCollMapTask);
+          //reducer_.print();
 
-            enqueueTask(wfid, toCollMapTask, "", pReducer->id());
-            remove(tag);
-          }
-          else
-          {
-            addActivity(pReducer->id(), wfid);
-          }
+          enqueueTask(wfid, toCollMapTask, "", pReducer->id());
+          remove(tag);
+        }
+        else
+        {
+          addActivity(pReducer->id(), wfid);
+        }
       }
       catch(const std::exception& exc)
       {
@@ -122,7 +130,7 @@ class ReducerWorkflowEngine : public BasicEngine
     void remove(const id_type& tag)
     {
       try {
-        WordCountReducer* pReducer = mapTag2Reducer_[tag];
+        Reducer* pReducer = mapTag2Reducer_[tag];
         pReducer->clear();
         mapTag2Reducer_[tag]=NULL;
         delete pReducer;

@@ -18,15 +18,13 @@
 #ifndef MAPPER_WORKFLOW_ENGINE_HPP
 #define MAPPER_WORKFLOW_ENGINE_HPP 1
 
-#include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/mapreduce/WordCountMapper.hpp>
-#include <sdpa/mapreduce/WordCountReducer.hpp>
-#include <sdpa/mapreduce/Combiner.hpp>
+#include <sdpa/engine/BasicEngine.hpp>
 
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
 
+template <typename Mapper>
 class MapperWorkflowEngine : public BasicEngine
 {
   private:
@@ -44,14 +42,13 @@ class MapperWorkflowEngine : public BasicEngine
     // Attention: it is assumed that the workflow description is an
     // encoded string which represents the serialization of a
     // map of type [(filename, resident node)]
-    void generateMapActivities(const id_type& wfid, WordCountMapper::TaskT& mapTask)
+    void generateMapActivities(const id_type& wfid, typename Mapper::TaskT& mapTask)
     {
       mapTask.run(); // generate here list of [<word, count>] pairs !(count=1)
 
       // the map task contains now in outKeyValueMap_ a lot of pairs <word, count> ...
       // should partition the resulted list of pairs
       // and assign them to the predefined reducers
-      // partition the words alphabetically
       // for any reducer define a bucket e.g. bucket_1 <-> agent_1 : letters [A..E]
       // bucḱet_2 <-> agent_2 : [F..M], etc
 
@@ -59,14 +56,10 @@ class MapperWorkflowEngine : public BasicEngine
       pIAgent_->scheduler()->getWorkerList(workerIdList);
       size_t nWorkers = workerIdList.size();
 
-      // capital letters: [65..90]
-      // small letters: [97..122]
-      // non-alphanumeric chars
-
-
       // InKey -> the key is the workflow id
-      // InValue -> the worker id where to be scheduled (non-mandatory requirement -> for fault-tolerance) )
-      WordCountMapper wcMapper(wfid); // the mapper is associated to the workflow wfid -> it seems to be correct
+      // InValue -> the worker id where to be scheduled
+
+      Mapper wcMapper(wfid); // the mapper is associated to the workflow wfid
 
       if(nWorkers)
       {
@@ -76,7 +69,7 @@ class MapperWorkflowEngine : public BasicEngine
         // wcMapper.print();
 
         // now, assign it effectively!
-        BOOST_FOREACH(WordCountMapper::MapOfTasksT::value_type& pairWorkerTask, wcMapper.mapOfTasks())
+        BOOST_FOREACH(typename Mapper::MapOfTasksT::value_type& pairWorkerTask, wcMapper.mapOfTasks())
         {
           sdpa::worker_id_t workerId(pairWorkerTask.first);
           enqueueTask(wfid, pairWorkerTask.second, workerId);
@@ -94,7 +87,7 @@ class MapperWorkflowEngine : public BasicEngine
       // It is assumed that the workflow description
       // is an encoded map of files to nodes !
 
-      WordCountMapper::TaskT mapTask;
+      typename Mapper::TaskT mapTask;
       try {
         mapTask.decode(wf_desc);
 

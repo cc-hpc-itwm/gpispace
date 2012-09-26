@@ -42,7 +42,7 @@ void Marking::print(std::ostream &out) const {
 
 #ifndef NDEBUG
 void Marking::check() const {
-    foreach (const PlaceMarking &placeMarking, placeMarkings_) {
+    FOREACH (const PlaceMarking &placeMarking, placeMarkings_) {
         assert(placeMarking.count() != 0);
     }
 
