@@ -1065,11 +1065,11 @@ private:
     m_scratch_handle = gpi_api->alloc ( 1
                                       , m_scratch_size
                                       , "ufbmigd transfer space"
-                                      , gpi::pc::type::handle::F_GLOBAL
+                                      , 0
                                       );
     if (0 == m_scratch_handle)
     {
-      MLOG(ERROR, "could not allocate global GPI memory!");
+      MLOG(ERROR, "could not allocate GPI memory!");
       return -EAGAIN;
     }
 
