@@ -19,6 +19,7 @@ namespace gpi
                                          )
         : m_id (id)
         , m_paused (false)
+        , m_enabled (true)
         , m_blocking_tasks (*queue_to_pool)
       {
         m_thread = boost::make_shared<boost::thread>
@@ -51,7 +52,7 @@ namespace gpi
           }
           else if (task->has_finished())
           {
-            DLOG(TRACE, "transfer done: " << task->get_name());
+            DLOG (TRACE, "transfer done: " << task->get_name());
           }
           else
           {
@@ -66,14 +67,21 @@ namespace gpi
       void
       transfer_queue_t::enqueue (const memory_transfer_t &t)
       {
-        wait_until_unpaused ();
-        enqueue(split(t));
+        enqueue (split (t));
       }
 
       void
       transfer_queue_t::enqueue (const task_list_t & tasks)
       {
         static const std::size_t delegate_threshold(0);
+
+        if (is_disabled ())
+        {
+          throw std::runtime_error
+            ("queue permanently disabled due to previous errors");
+        }
+
+        wait_until_unpaused ();
 
         BOOST_FOREACH(task_ptr task, tasks)
         {
@@ -120,10 +128,11 @@ namespace gpi
       void do_wait_on_queue (const std::size_t q)
       {
         DLOG(TRACE, "gpi::wait_dma(" << q << ")");
-        std::size_t s(gpi::api::gpi_api_t::get().wait_dma(q));
+
+        std::size_t s(gpi::api::gpi_api_t::get().wait_dma (q));
+
         DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
       }
-
 
       static
       void do_read_dma_gpi ( const gpi::pc::type::offset_t local_offset
@@ -143,12 +152,12 @@ namespace gpi
 
         gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
 
-//         if (api.rank() == from_node)
+//         if (api.rank() == to_node)
 //         {
-//           DLOG(INFO, "readDMA from local node to local node");
+//           LOG(WARN, "readDMA to local node from local node - seems not to be supported!");
 //         }
 
-        if (api.max_dma_requests_reached(queue))
+        if (api.max_dma_requests_reached (queue))
         {
           do_wait_on_queue(queue);
         }
@@ -169,7 +178,7 @@ namespace gpi
       {
         while (amount)
         {
-          const std::size_t rank(offset / per_node_size);
+          const std::size_t rank (offset / per_node_size);
           const std::size_t max_offset_on_rank ((rank + 1) * per_node_size);
           const std::size_t size(std::min ( std::min(per_node_size, amount)
                                           , max_offset_on_rank - offset
@@ -194,9 +203,9 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t dst_hdl
           (t.dst_area->descriptor(t.dst_location.handle));
 
-        do_rdma( dst_hdl.offset + (t.dst_location.offset % dst_hdl.size)
+        do_rdma( dst_hdl.offset + t.dst_location.offset
                , src_hdl.offset , t.src_location.offset
-               , src_hdl.size
+               , src_hdl.local_size
                , t.amount
                , t.queue
                , &do_read_dma_gpi
@@ -223,7 +232,7 @@ namespace gpi
 
 //         if (api.rank() == to_node)
 //         {
-//           LOG(INFO, "writeDMA to local node from local node");
+//           LOG(WARN, "writeDMA to local node from local node - seems not to be supported!");
 //         }
 
         if (api.max_dma_requests_reached(queue))
@@ -242,9 +251,9 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t dst_hdl
           (t.dst_area->descriptor(t.dst_location.handle));
 
-        do_rdma( src_hdl.offset + (t.src_location.offset % src_hdl.size)
+        do_rdma( src_hdl.offset + t.src_location.offset
                , dst_hdl.offset , t.dst_location.offset
-               , dst_hdl.size
+               , dst_hdl.local_size
                , t.amount
                , t.queue
                , &do_write_dma_gpi
@@ -287,9 +296,11 @@ namespace gpi
       {
         task_list.push_back
           (boost::make_shared<task_t>
-            ("readDMA", boost::bind( &do_read_dma
-                                   , t
-                                   )));
+          ( "readDMA " + boost::lexical_cast<std::string> (t)
+          , boost::bind( &do_read_dma
+                       , t
+                       )
+          ));
       }
 
       static
@@ -299,9 +310,11 @@ namespace gpi
       {
         task_list.push_back
           (boost::make_shared<task_t>
-            ("writeDMA", boost::bind( &do_write_dma
-                                    , t
-                                    )));
+          ( "writeDMA " + boost::lexical_cast<std::string> (t)
+          , boost::bind( &do_write_dma
+                       , t
+                       )
+          ));
       }
 
       transfer_queue_t::task_list_t
@@ -346,6 +359,7 @@ namespace gpi
         }
         else
         {
+          LOG (ERROR, "illegal memory transfer (diagonal copy): " << t);
           throw std::runtime_error
             ( "illegal memory transfer requested:"
             " I have no idea how to transfer data between those segments, sorry!"
@@ -385,29 +399,64 @@ namespace gpi
         return m_paused;
       }
 
+      void
+      transfer_queue_t::disable ()
+      {
+        lock_type lock (m_mutex);
+        m_enabled = false;
+      }
+
+      void
+      transfer_queue_t::enable ()
+      {
+        lock_type lock (m_mutex);
+        m_enabled = true;
+        m_resume_condition.notify_all();
+      }
+
+      bool
+      transfer_queue_t::is_disabled () const
+      {
+        return not m_enabled;
+      }
+
       std::size_t
       transfer_queue_t::wait ()
       {
+        if (is_disabled ())
+        {
+          throw std::runtime_error
+            ("queue permanently disabled due to previous errors");
+        }
+
         task_ptr wtask (boost::make_shared<task_t>
                        ("wait_on_queue", boost::bind( &do_wait_on_queue
                                                     , m_id
                                                     )
                        )
                        );
+
         m_task_queue.push (wtask);
+
         wtask->wait ();
+
+        if (wtask->has_failed ())
+        {
+          throw std::runtime_error
+            ("wait failed: " + wtask->get_error_message ());
+        }
 
         task_set_t wait_on_tasks;
         {
           lock_type lock (m_mutex);
-          m_dispatched.swap(wait_on_tasks);
+          m_dispatched.swap (wait_on_tasks);
         }
 
-        std::size_t res(wait_on_tasks.size());
+        std::size_t res (wait_on_tasks.size());
         while (! wait_on_tasks.empty())
         {
           task_ptr task(*wait_on_tasks.begin());
-          wait_on_tasks.erase(wait_on_tasks.begin());
+          wait_on_tasks.erase (wait_on_tasks.begin());
           task->wait();
 
           // TODO: WORK HERE:  this failure should be propagated  to the correct
@@ -418,6 +467,11 @@ namespace gpi
                , "transfer " << task->get_name()
                << " failed: " << task->get_error_message()
                );
+
+            throw std::runtime_error
+              ( "task failed: " + task->get_name ()
+              + ": " + task->get_error_message ()
+              );
           }
         }
         return res;

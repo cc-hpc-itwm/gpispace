@@ -50,6 +50,11 @@ namespace gpi
 
         void *ptr ();
 
+        gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
+                                             , const gpi::pc::type::flags_t flags
+                                             ) const;
+
+
         void * m_ptr;
         gpi::pc::type::size_t m_total_memsize;
         gpi::pc::type::offset_t m_min_local_offset;

@@ -807,19 +807,7 @@ private:
     {
       if (desc.name == name)
       {
-        // TODO: we need a 'total-size' field to keep track of that
         found = desc;
-        if (desc.flags & gpi::pc::type::handle::F_GLOBAL)
-        {
-          try
-          {
-            found.size *= gpi_api->collect_info().nodes;
-          }
-          catch (std::exception const &ex)
-          {
-            return -EIO;
-          }
-        }
         break;
       }
     }
@@ -1065,11 +1053,11 @@ private:
     m_scratch_handle = gpi_api->alloc ( 1
                                       , m_scratch_size
                                       , "ufbmigd transfer space"
-                                      , gpi::pc::type::handle::F_GLOBAL
+                                      , 0
                                       );
     if (0 == m_scratch_handle)
     {
-      MLOG(ERROR, "could not allocate global GPI memory!");
+      MLOG(ERROR, "could not allocate GPI memory!");
       return -EAGAIN;
     }
 
@@ -1149,7 +1137,7 @@ private:
     size_t remaining_bytes = len;
 
     num_read = 0;
-    while (remaining_bytes && (s->read_pointer != s->handle.size))
+    while (remaining_bytes && (s->read_pointer < s->handle.size))
     {
       size_t transfer_size =
         std::min ( m_chunk_size
