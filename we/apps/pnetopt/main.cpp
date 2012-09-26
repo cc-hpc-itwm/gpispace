@@ -116,6 +116,7 @@ class Optimizer {
                     .addFunction("connectedPlace", &Port::connectedPlace)
                     .addFunction("connect", &Port::connect)
                     .addFunction("disconnect", &Port::disconnect)
+                    .addFunction("associatedPlace", &Port::associatedPlace)
                 .endClass()
                 .template deriveClass<PortsIterator, pnetopt::Invalidatable>("PortsIterator")
                     .addFunction("__tostring", &PortsIterator::toString)
@@ -640,10 +641,14 @@ class Optimizer {
         /** Place connected to the port. */
         Place *connectedPlace_;
 
+        /** Place (in the subnet) associated with this port. */
+        Place *associatedPlace_;
+
         public:
 
         Port(Transition *transition, port_id_t portId, port_t &port, PortDirection direction):
-            transition_(transition), portId_(portId), port_(port), direction_(direction), connectedPlace_(NULL)
+            transition_(transition), portId_(portId), port_(port), direction_(direction),
+            connectedPlace_(NULL), associatedPlace_(NULL)
         {
             assert(!(direction == INPUT) || port_.is_input());
             assert(!(direction == OUTPUT) || port_.is_output());
@@ -760,6 +765,17 @@ class Optimizer {
         void disconnect() {
             ensureValid();
             connect(NULL);
+        }
+
+        Place *associatedPlace() {
+            ensureValid();
+
+            if (!associatedPlace_ && port_.has_associated_place()) {
+                assert(transition()->subnet());
+                associatedPlace_ = transition()->subnet()->getPlace(port_.associated_place());
+            }
+
+            return associatedPlace_;
         }
     };
 };

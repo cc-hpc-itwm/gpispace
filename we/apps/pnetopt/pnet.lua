@@ -23,6 +23,7 @@ function M.dump(pnet)
 		for port in t:ports() do
 			print("Port " .. port:name()
 			      .. (port:connectedPlace() and (", connected to place `" .. port:connectedPlace():name() .. "'") or "")
+			      .. (port:associatedPlace() and (", associated with place `" .. port:associatedPlace():name() .. "'") or "")
 			      .. (port:isInput() and ", is input" or "")
 			      .. (port:isOutput() and ", is output" or "")
 			      .. (port:isTunnel() and ", is tunnel" or "")
