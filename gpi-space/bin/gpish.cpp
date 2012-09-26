@@ -15,6 +15,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
+#include <boost/timer.hpp>
 
 #include <fhglog/minimal.hpp>
 
@@ -598,8 +599,13 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     return -EIO;
   }
 
+  boost::timer timer;
+
   gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
+
+  const std::size_t total_to_write =
+    (src.offset < d.size) ? d.size - src.offset : 0;
 
   while (src.offset < d.size)
   {
@@ -620,8 +626,15 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 
     src.offset += to_write;
   }
+
   print_progress(stderr, src.offset, d.size);
   fprintf(stderr, "\n");
+
+  double elapsed = timer.elapsed ();
+  if (elapsed == 0.0)
+    elapsed = 1e-15;
+  std::cerr << (((double)total_to_write/1024/1024) / elapsed) << " MiB/s"
+            << std::endl;
 
   return 0;
 }
@@ -694,6 +707,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   }
 
   std::cout << dst << std::endl;
+  boost::timer timer;
 
   // read data chunk from file to shm
 
@@ -740,6 +754,12 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
                 << "read " << offset << "/" << total_to_read << " bytes"
                 << std::endl;
     }
+
+    double elapsed = timer.elapsed ();
+    if (elapsed == 0.0)
+      elapsed = 1e-15;
+    std::cerr << (((double)total_to_read/1024/1024) / elapsed) << " MiB/s"
+              << std::endl;
   }
 
   return 0;
