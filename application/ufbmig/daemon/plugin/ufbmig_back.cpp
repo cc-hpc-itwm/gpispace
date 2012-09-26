@@ -807,19 +807,7 @@ private:
     {
       if (desc.name == name)
       {
-        // TODO: we need a 'total-size' field to keep track of that
         found = desc;
-        if (desc.flags & gpi::pc::type::handle::F_GLOBAL)
-        {
-          try
-          {
-            found.size *= gpi_api->collect_info().nodes;
-          }
-          catch (std::exception const &ex)
-          {
-            return -EIO;
-          }
-        }
         break;
       }
     }
