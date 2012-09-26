@@ -704,9 +704,10 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
                            | gpi::pc::type::handle::F_PERSISTENT
                            );
     dst.offset = 0;
+
+    std::cout << dst.handle << std::endl;
   }
 
-  std::cout << dst << std::endl;
   boost::timer timer;
 
   // read data chunk from file to shm
