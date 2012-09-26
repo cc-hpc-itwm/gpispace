@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstdlib> /* random() */
 #include <iostream>
 #include <fstream>
 #include <memory> /* std::auto_ptr */
@@ -132,7 +133,7 @@ class Optimizer {
 
     void operator()(const char *filename) {
         if (luaL_dofile(L, filename) != 0) {
-            std::runtime_error e((boost::format("Lua error: %1%") % lua_tostring(L, -1)).str());
+            std::runtime_error e((boost::format("%1% (Lua error)") % lua_tostring(L, -1)).str());
             lua_pop(L, 1);
             throw e;
         }
@@ -461,10 +462,10 @@ class Optimizer {
         /** Pointer to the subnet, if any. */
         std::auto_ptr<PetriNet> subnet_;
 
-        /** Expression, if any. */
+        /** Pointer to the expression, if any. */
         std::auto_ptr<Expression> expression_;
 
-        /** Condition, if any. */
+        /** Condition. */
         std::auto_ptr<Condition> condition_;
 
         public:
@@ -735,7 +736,16 @@ class Optimizer {
             if (connectedPlace_) {
                 /* We must add an edge. */
                 petri_net::edge_type edgeType = isRead() ? petri_net::PT_READ : (isInput() ? petri_net::PT : petri_net::TP);
-                petriNet()->pnet().add_edge(100500, petri_net::connection_t(edgeType, transition()->id(), connectedPlace_->id()));
+
+                bool tryAgain;
+                do {
+                    tryAgain = false;
+                    try {
+                        petriNet()->pnet().add_edge(random(), petri_net::connection_t(edgeType, transition()->id(), connectedPlace_->id()));
+                    } catch (const bijection::exception::already_there &) {
+                        tryAgain = true;
+                    }
+                } while (tryAgain);
 
                 /* Now we must connect the place on the transition's side. */
                 if (isInput()) {
@@ -844,7 +854,7 @@ int main(int argc, char **argv) {
         Visitor visitor(script);
         visitor(activity.transition());
     } catch (const std::exception &e) {
-        std::cerr << "pnetopt: " << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -853,7 +863,7 @@ int main(int argc, char **argv) {
     } else {
         std::ofstream out(output.c_str());
         if (!out) {
-            std::cerr << "failed to open " << input << "for writing" << std::endl;
+            std::cerr << "failed to open " << input << " for writing" << std::endl;
             return EXIT_FAILURE;
         }
         out << (xml ? we::util::xml_codec::encode(activity) : we::util::text_codec::encode(activity));

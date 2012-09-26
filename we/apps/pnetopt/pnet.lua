@@ -2,6 +2,10 @@ local M = {}
 
 local list = require("list")
 
+--- Dumps contents of a Petri net to stdout.
+--
+-- @param pnet		Petri net.
+--
 function M.dump(pnet)
 	print("Number of places: " .. #pnet:places())
 
@@ -27,6 +31,11 @@ function M.dump(pnet)
 	end
 end
 
+--- Applies a functor to a Petri net and to all its subnets.
+--
+-- @param pnet		Petri net.
+-- @param functor	Functor to apply.
+--
 function M.apply_recursively(pnet, functor)
 	functor(pnet)
 
@@ -37,24 +46,58 @@ function M.apply_recursively(pnet, functor)
 	end
 end
 
+--- Removes all places in a Petri net.
+--
+-- @param pnet		Petri net.
+--
 function M.remove_all_places(pnet)
 	for place in list.clone(pnet:places()) do
 		place:remove()
 	end
 end
 
+--- Removes all transitions in a Petri net.
+--
+-- @param pnet		Petri net.
+--
 function M.remove_all_transitions(pnet)
 	for transition in list.clone(pnet:transitions()) do
 		transition:remove()
 	end
 end
 
-function M.input_ports(transition)
-	return list.filter(transition.ports(), function(port) return port:isInput() end)
+--- Takes only input ports from a given list.
+--
+-- @param ports		Port list iterator.
+--
+-- @return An iterator to the filtered list.
+--
+function M.input_ports(ports)
+	return list.filter(ports, function(port) return port:isInput() end)
 end
 
-function M.output_ports(transition)
-	return list.filter(transition.ports(), function(port) return port:isOutput() end)
+--- Takes only output ports from a given list.
+--
+-- @param ports		Port list iterator.
+--
+-- @return An iterator to the filtered list.
+--
+function M.output_ports(ports)
+	return list.filter(ports, function(port) return port:isOutput() end)
+end
+
+--- Translates a port list to a table, where a key is a port name, and a value is the port with the name.
+--
+-- @param ports		Port list iterator.
+--
+-- @return Table mapping port names to ports.
+--
+function M.name_port_map(ports)
+	local result = {}
+	for port in ports do
+		result[port:name()] = port
+	end
+	return result
 end
 
 return M

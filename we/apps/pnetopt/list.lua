@@ -2,6 +2,12 @@ local M = {}
 
 M.append = table.insert
 
+--- Translates a list iterator to a list.
+--
+-- @param iterator	A list iterator.
+--
+-- @return A list (Lua table) consisting of all the elements given by the iterator.
+--
 function M.list(iterator)
 	local result = {}
 	for item in iterator do
@@ -10,6 +16,12 @@ function M.list(iterator)
 	return result
 end
 
+--- Creates an iterator for a list represented as a table.
+--
+-- @param	A list (Lua table).
+--
+-- @return An iterator for this list.
+--
 function M.iterator(list)
 	local co = coroutine.create(function()
 		for index,item in ipairs(list) do
@@ -23,10 +35,23 @@ function M.iterator(list)
 	end
 end
 
+--- Creates an independent copy of an iterator.
+--
+-- @param iterator Iterator.
+--
+-- @return An iterator over a list created from the input iterator.
+--
 function M.clone(iterator)
 	return M.iterator(M.list(iterator))
 end
 
+--- Filters elements matching a predicate.
+--
+-- @param iterator Iterator.
+-- @param predicate Predicate.
+--
+-- @return An iterator returning only those elements returned by the input iterator which match the predicate.
+--
 function M.filter(iterator, predicate)
 	local co = coroutine.create(function()
 		for item in iterator do
@@ -42,9 +67,15 @@ function M.filter(iterator, predicate)
 	end
 end
 
+--- Counts the number of elements returned by an iterator.
+--
+-- @param iterator Iterator.
+--
+-- @return The amount of elements the iterator will return before returning Nil.
+--
 function M.count(iterator)
 	local result = 0
-	while iterator() ~= Nil do
+	while iterator() ~= nil do
 		result = result + 1
 	end
 	return result
