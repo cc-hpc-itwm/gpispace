@@ -4,6 +4,8 @@ local pnet = require("pnet")
 local list = require("list")
 
 local function find_matching_places(transition) 
+	-- Mappings from port names to ports.
+	--
 	local input_ports = pnet.name_port_map(pnet.input_ports(transition:ports()))
 	local output_ports = pnet.name_port_map(pnet.output_ports(transition:ports()))
 
@@ -26,14 +28,44 @@ local function find_matching_places(transition)
 			return nil
 		end
 
-		if list.count(pnet.input_ports(output_port:connectedPlace():connectedPorts())) > 1 or
-		   list.count(pnet.output_ports(input_port:connectedPlace():connectedPorts())) > 1 then
+		result[input_port:connectedPlace()] = output_port:connectedPlace()
+	end
+
+	-- Input places are input places only for me.
+	-- Output places are output places only for me.
+	--
+	for input_place,output_place in pairs(result) do
+		if list.count(pnet.input_ports(input_place:connectedPorts())) + list.count(pnet.output_ports(input_place:associatedPorts())) > 1 or
+		   list.count(pnet.output_ports(output_place:connectedPorts())) + list.count(pnet.input_ports(output_place:associatedPorts())) > 1 then
 			return nil
 		end
+	end
 
-		-- Anything else?
+	-- There is at most one transition that takes token from my output places
+	-- or
+	-- there is at most one transition that puts tokens into my input places.
+	--
+	-- Associations with ports count too.
+	--
+	local consumers = {}
+	local producers = {}
+	for input_place,output_place in pairs(result) do
+		for port in pnet.output_ports(input_place:connectedPorts()) do
+			producers[port:transition()] = 1
+		end
+		for port in pnet.input_ports(input_place:associatedPorts()) do
+			producers["associated ports"] = 1
+		end
 
-		result[input_port:connectedPlace()] = output_port:connectedPlace()
+		for port in pnet.input_ports(output_place:connectedPorts()) do
+			consumers[port:transition()] = 1
+		end
+		for port in pnet.output_ports(output_place:associatedPorts()) do
+			consumers["associated ports"] = 1
+		end
+	end
+	if #consumers > 1 and #producers > 1 then
+		return nil
 	end
 
 	return result
@@ -42,6 +74,10 @@ end
 local function merge_places(net, first, second)
 	for port in list.clone(first:connectedPorts()) do
 		port:connect(second)
+	end
+
+	for port in list.clone(first:associatedPorts()) do
+		port:associate(second)
 	end
 
 	local first_has_prefix = first:name():byte(1) == '_'

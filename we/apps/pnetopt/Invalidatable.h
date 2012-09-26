@@ -30,6 +30,10 @@ class Invalidatable {
         }
     }
 
+    bool equals(const Invalidatable *other) const {
+        return this == other;
+    }
+
     protected:
 
     virtual void doInvalidate() {}

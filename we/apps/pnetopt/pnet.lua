@@ -10,10 +10,14 @@ function M.dump(pnet)
 	print("Number of places: " .. #pnet:places())
 
 	for p in pnet:places() do
-		print("Place `" .. p:name())
+		print("Place " .. p:name())
 		for port in p:connectedPorts() do
 			print("connected to the port " .. port:name() .. " of the transition " .. port:transition():name())
-			assert(port:connectedPlace())
+			assert(p == port:connectedPlace())
+		end
+		for port in p:associatedPorts() do
+			print("associated with the port " .. port:name() .. " of the transition " .. port:transition():name())
+			assert(p == port:associatedPlace())
 		end
 	end
 

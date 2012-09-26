@@ -55,42 +55,53 @@ class Optimizer {
         L = lua_open();
         luaL_openlibs(L);
 
+        // TODO: why without reregistering __eq each time it doesn't work?
+
         luabridge::getGlobalNamespace(L)
             .beginNamespace("pnetopt")
                 .template beginClass<pnetopt::Invalidatable>("Invalidatable")
                     .addFunction("valid", &pnetopt::Invalidatable::valid)
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                 .endClass()
                 .template deriveClass<PetriNet, pnetopt::Invalidatable>("PetriNet")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PetriNet::toString)
                     .addFunction("places", &PetriNet::placesIterator)
                     .addFunction("transitions", &PetriNet::transitionIterator)
                 .endClass()
                 .template deriveClass<Place, pnetopt::Invalidatable>("Place")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Place::name)
                     .addFunction("name", &Place::name)
                     .addFunction("setName", &Place::setName)
                     .addFunction("connectedPorts", &Place::connectedPortsIterator)
+                    .addFunction("associatedPorts", &Place::associatedPortsIterator)
                     .addFunction("remove", &Place::remove)
                 .endClass()
                 .template deriveClass<PlacesIterator, pnetopt::Invalidatable>("PlacesIterator")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PlacesIterator::toString)
                     .addFunction("__call", &PlacesIterator::call)
                     .addFunction("__len", &PlacesIterator::size)
                 .endClass()
                 .template deriveClass<ConnectedPortsIterator, pnetopt::Invalidatable>("ConnectedPortsIterator")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &ConnectedPortsIterator::toString)
                     .addFunction("__call", &ConnectedPortsIterator::call)
                     .addFunction("__len", &ConnectedPortsIterator::size)
                 .endClass()
                 .template deriveClass<Expression, pnetopt::Invalidatable>("Expression")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Expression::toString)
                     .addFunction("isEmpty", &Expression::isEmpty)
                 .endClass()
                 .template deriveClass<Condition, pnetopt::Invalidatable>("Condition")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Condition::toString)
                     .addFunction("isConstTrue", &Condition::isConstTrue)
                 .endClass()
                 .template deriveClass<Transition, pnetopt::Invalidatable>("Transition")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Transition::name)
                     .addFunction("name", &Transition::name)
                     .addFunction("setName", &Transition::setName)
@@ -101,11 +112,13 @@ class Optimizer {
                     .addFunction("remove", &Transition::remove)
                 .endClass()
                 .template deriveClass<TransitionsIterator, pnetopt::Invalidatable>("TransitionsIterator")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &TransitionsIterator::toString)
                     .addFunction("__call", &TransitionsIterator::call)
                     .addFunction("__len", &TransitionsIterator::size)
                 .endClass()
                 .template deriveClass<Port, pnetopt::Invalidatable>("Port")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Port::name)
                     .addFunction("transition", &Port::transition)
                     .addFunction("name", &Port::name)
@@ -117,8 +130,11 @@ class Optimizer {
                     .addFunction("connect", &Port::connect)
                     .addFunction("disconnect", &Port::disconnect)
                     .addFunction("associatedPlace", &Port::associatedPlace)
+                    .addFunction("associate", &Port::associate)
+                    .addFunction("unassociate", &Port::unassociate)
                 .endClass()
                 .template deriveClass<PortsIterator, pnetopt::Invalidatable>("PortsIterator")
+                    .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PortsIterator::toString)
                     .addFunction("__call", &PortsIterator::call)
                     .addFunction("__len", &PortsIterator::size)
@@ -308,6 +324,10 @@ class Optimizer {
     typedef pnetopt::LuaIterator<ConnectedPorts> ConnectedPortsIterator;
     typedef RefCountedObjectPtr<ConnectedPortsIterator> ConnectedPortsIteratorPtr;
 
+    typedef std::vector<Port *> AssociatedPorts;
+    typedef pnetopt::LuaIterator<AssociatedPorts> AssociatedPortsIterator;
+    typedef RefCountedObjectPtr<AssociatedPortsIterator> AssociatedPortsIteratorPtr;
+
     class Place: public pnetopt::Invalidatable, boost::noncopyable {
         /** Parent Petri net. */
         PetriNet *petriNet_;
@@ -321,8 +341,14 @@ class Optimizer {
         /** Ports to which this place is connected. */
         ConnectedPorts connectedPorts_;
 
-        /** Valid iterators for the connectedPorts_ container. */
+        /** Valid iterators over the connectedPorts_ container. */
         std::vector<ConnectedPortsIteratorPtr> connectedPortsIterators_;
+
+        /** Ports with which this place is associated. */
+        AssociatedPorts associatedPorts_;
+
+        /** Valid iterators over the associatedPorts_ container. */
+        std::vector<ConnectedPortsIteratorPtr> associatedPortsIterators_;
 
         public:
 
@@ -344,6 +370,8 @@ class Optimizer {
             place_.set_name(name);
         }
 
+        const ConnectedPorts &connectedPorts() const { return connectedPorts_; }
+
         void addConnectedPort(Port *port) {
             connectedPorts_.push_back(port);
             invalidateConnectedPortsIterators();
@@ -353,8 +381,6 @@ class Optimizer {
             connectedPorts_.erase(std::remove(connectedPorts_.begin(), connectedPorts_.end(), port), connectedPorts_.end());
             invalidateConnectedPortsIterators();
         }
-
-        const ConnectedPorts &connectedPorts() const { return connectedPorts_; }
 
         ConnectedPortsIteratorPtr connectedPortsIterator() {
             ensureValid();
@@ -371,6 +397,33 @@ class Optimizer {
             connectedPortsIterators_.clear();
         }
 
+        const AssociatedPorts &associatedPorts() const { return associatedPorts_; }
+
+        void addAssociatedPort(Port *port) {
+            associatedPorts_.push_back(port);
+            invalidateAssociatedPortsIterators();
+        }
+
+        void removeAssociatedPort(Port *port) {
+            associatedPorts_.erase(std::remove(associatedPorts_.begin(), associatedPorts_.end(), port), associatedPorts_.end());
+            invalidateAssociatedPortsIterators();
+        }
+
+        AssociatedPortsIteratorPtr associatedPortsIterator() {
+            ensureValid();
+
+            AssociatedPortsIteratorPtr result(new AssociatedPortsIterator(associatedPorts()));
+            associatedPortsIterators_.push_back(result);
+            return result;
+        }
+
+        void invalidateAssociatedPortsIterators() {
+            foreach(AssociatedPortsIteratorPtr &iterator, associatedPortsIterators_) {
+                iterator->invalidate();
+            }
+            associatedPortsIterators_.clear();
+        }
+
         void remove() {
             ensureValid();
 
@@ -383,6 +436,14 @@ class Optimizer {
                 port->disconnect();
             }
 
+            AssociatedPorts portsToDeassociate;
+            portsToDeassociate.swap(associatedPorts_);
+
+            foreach (Port *port, portsToDeassociate) {
+                assert(port->associatedPlace() == this);
+                port->unassociate();
+            }
+
             petriNet()->pnet().delete_place(pid_);
             petriNet()->removePlace(this);
 
@@ -391,6 +452,7 @@ class Optimizer {
 
         void doInvalidate() {
             invalidateConnectedPortsIterators();
+            invalidateAssociatedPortsIterators();
         }
     };
 
@@ -564,6 +626,11 @@ class Optimizer {
             if (!subnet_.get()) {
                 if (pnet_t *pnet = boost::apply_visitor(SubnetReturner(), transition().data())) {
                     subnet_.reset(new PetriNet(*pnet));
+
+                    /* Find associated places and add backward references to the respective ports. */
+                    foreach (Port *port, ports()) {
+                        port->associatedPlace();
+                    }
                 }
             }
             return subnet_.get();
@@ -772,10 +839,50 @@ class Optimizer {
 
             if (!associatedPlace_ && port_.has_associated_place()) {
                 assert(transition()->subnet());
-                associatedPlace_ = transition()->subnet()->getPlace(port_.associated_place());
+                setAssociatedPlace(transition()->subnet()->getPlace(port_.associated_place()));
             }
 
             return associatedPlace_;
+        }
+
+        void setAssociatedPlace(Place *place) {
+            ensureValid();
+
+            if (place == associatedPlace_) {
+                return;
+            }
+            if (place != NULL && place->petriNet() != transition()->subnet()) {
+                throw std::runtime_error((boost::format("trying to associate a port %1% with a place %2% not from a direct subnet") % name() % place->name()).str());
+            }
+            if (associatedPlace_) {
+                associatedPlace_->removeAssociatedPort(this);
+            }
+            associatedPlace_ = place;
+            if (associatedPlace_) {
+                associatedPlace_->addAssociatedPort(this);
+            }
+        }
+
+        void associate(Place *place) {
+            ensureValid();
+
+            /* Note: it is important to call associatedPlace() here. */
+            if (place == associatedPlace()) {
+                return;
+            }
+
+            setAssociatedPlace(place);
+
+            if (place) {
+                port_.associated_place() = place->id();
+            } else {
+                port_.associated_place() = port_t::pid_traits::invalid();
+            }
+        }
+
+        void unassociate() {
+            ensureValid();
+            associate(NULL);
         }
     };
 };
