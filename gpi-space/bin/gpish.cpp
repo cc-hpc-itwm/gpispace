@@ -676,14 +676,6 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
         std::cerr << "no such handle: " << dst.handle << std::endl;
         return -ESRCH;
       }
-
-      if (dst.offset > d.size)
-      {
-        std::cerr << "invalid destination: " << dst
-                  << ": " << "offset is larger than size"
-                  << std::endl;
-        return -EINVAL;
-      }
     }
     catch (std::exception const &ex1)
     {
