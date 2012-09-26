@@ -130,7 +130,7 @@ private:
 static void print_progress( FILE *fp
                           , const std::size_t current
                           , const std::size_t total
-                          , const std::size_t width = 77
+                          , const std::size_t width = 73
                           );
 
 typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
@@ -1394,7 +1394,7 @@ static void print_progress( FILE *fp
   size_t pos=0;
   for (; pos < filled_part; ++pos)
   {
-    fprintf(stderr, "=");
+    fprintf (stderr, "=");
   }
   for (; pos < bar_length; ++pos)
   {
