@@ -27,15 +27,15 @@ namespace gpi
 
         // signals
         typedef boost::signals2::signal
-            <void (const gpi::pc::type::segment_id_t)>
-               memory_signal_t;
+        <void (const gpi::pc::type::segment_id_t)>
+        memory_signal_t;
         typedef boost::signals2::signal
-            <void (const gpi::pc::type::handle_t)>
-               handle_signal_t;
-        typedef boost::signals2::signal
-            <void (const gpi::pc::type::segment_id_t,
-                   const gpi::pc::type::process_id_t
-                  )> process_signal_t;
+        <void (const gpi::pc::type::handle_t)>
+        handle_signal_t;
+        typedef boost::signals2::signal  <void ( const gpi::pc::type::segment_id_t
+                                               , const gpi::pc::type::process_id_t
+                                               )
+                                         > process_signal_t;
 
         memory_signal_t memory_added;
         memory_signal_t memory_removed;
@@ -46,10 +46,10 @@ namespace gpi
         process_signal_t process_attached;
         process_signal_t process_detached;
 
-                static manager_t & get()
-                {
-                  static manager_t m;
-                  return m;
+        static manager_t & get()
+        {
+          static manager_t m;
+          return m;
         }
 
         ~manager_t ();
@@ -154,14 +154,14 @@ namespace gpi
 {
   namespace pc
   {
-  namespace global
-  {
-        inline
-    gpi::pc::memory::manager_t & memory_manager()
+    namespace global
     {
-          return gpi::pc::memory::manager_t::get();
+      inline
+      gpi::pc::memory::manager_t & memory_manager()
+      {
+        return gpi::pc::memory::manager_t::get();
+      }
     }
-  }
   }
 }
 
