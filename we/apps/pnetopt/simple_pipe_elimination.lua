@@ -3,7 +3,7 @@ local M = {}
 local pnet = require("pnet")
 local list = require("list")
 
-local function find_matching_places(transition) 
+local function find_matching_places(transition)
 	-- Mappings from port names to ports.
 	--
 	local input_ports = pnet.name_port_map(pnet.input_ports(transition:ports()))
@@ -32,11 +32,9 @@ local function find_matching_places(transition)
 	end
 
 	-- Input places are input places only for me.
-	-- Output places are output places only for me.
 	--
 	for input_place,output_place in pairs(result) do
-		if list.count(pnet.input_ports(input_place:connectedPorts())) + list.count(pnet.output_ports(input_place:associatedPorts())) > 1 or
-		   list.count(pnet.output_ports(output_place:connectedPorts())) + list.count(pnet.input_ports(output_place:associatedPorts())) > 1 then
+		if list.count(pnet.input_ports(input_place:connectedPorts())) + list.count(pnet.output_ports(input_place:associatedPorts())) > 1 then
 			return nil
 		end
 	end

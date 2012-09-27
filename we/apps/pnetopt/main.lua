@@ -2,7 +2,7 @@ local pnet = require("pnet")
 local spe  = require("simple_pipe_elimination")
 local list = require("list")
 
-if true then
+if false then
 	pnet.apply_recursively(net, pnet.dump)
 
 	print("Removing places...")
