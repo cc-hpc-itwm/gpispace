@@ -116,11 +116,7 @@ namespace gpi
           os << "FLAGS";
           os << " ";
 
-          // OFFSET
-          os.width (12);
-          os << "OFFSET";
-          os << " ";
-
+          // SIZE
           os.width (12);
           os << "SIZE";
           os << " ";
@@ -173,12 +169,6 @@ namespace gpi
           os.fill ('0');
           os << d.flags;
           os.fill (' ');
-          os << " ";
-
-          // OFFSET
-          os.flags (std::ios::right | std::ios::dec);
-          os.width (12);
-          os << d.offset;
           os << " ";
 
           // SIZE
