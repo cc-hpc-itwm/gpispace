@@ -7,6 +7,10 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
+#include <boost/shared_ptr.hpp>
+#include <set>
+#include <list>
+
 namespace gpi
 {
   namespace pc
@@ -61,6 +65,10 @@ namespace gpi
         boost::exception_ptr m_error;
         std::size_t m_eta;
       };
+
+      typedef boost::shared_ptr<task_t> task_ptr;
+      typedef std::set<task_ptr>        task_set_t;
+      typedef std::list<task_ptr>       task_list_t;
     }
   }
 }

@@ -19,10 +19,6 @@ namespace gpi
       class transfer_queue_t
       {
       public:
-        typedef boost::shared_ptr<task_t> task_ptr;
-        typedef std::set<task_ptr> task_set_t;
-        typedef std::list<task_ptr> task_list_t;
-
         explicit
         transfer_queue_t (const std::size_t id, task_queue_t *async);
         ~transfer_queue_t ();

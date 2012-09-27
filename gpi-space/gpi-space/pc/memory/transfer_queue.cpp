@@ -262,7 +262,7 @@ namespace gpi
 
       static
       void fill_memcpy_list( const memory_transfer_t &t
-                           , transfer_queue_t::task_list_t & task_list
+                           , task_list_t & task_list
                            )
       {
         DLOG(TRACE, "transfering data locally (memcpy)");
@@ -291,7 +291,7 @@ namespace gpi
 
       static
       void fill_read_dma_list( const memory_transfer_t &t
-                             , transfer_queue_t::task_list_t & task_list
+                             , task_list_t & task_list
                              )
       {
         task_list.push_back
@@ -305,7 +305,7 @@ namespace gpi
 
       static
       void fill_write_dma_list( const memory_transfer_t &t
-                              , transfer_queue_t::task_list_t & task_list
+                              , task_list_t & task_list
                               )
       {
         task_list.push_back
@@ -317,7 +317,7 @@ namespace gpi
           ));
       }
 
-      transfer_queue_t::task_list_t
+      task_list_t
       transfer_queue_t::split(const memory_transfer_t &t)
       {
         task_list_t task_list;
