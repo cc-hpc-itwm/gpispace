@@ -31,10 +31,15 @@ local function find_matching_places(transition)
 		result[input_port:connectedPlace()] = output_port:connectedPlace()
 	end
 
-	-- Input places are input places only for me.
+	-- If the input place gives tokens not only to me, then
+	--
+	-- (1) the output place can't take tokens from anybody except me;
+	-- (2) the output place can't be associated to an output port.
 	--
 	for input_place,output_place in pairs(result) do
-		if list.count(pnet.input_ports(input_place:connectedPorts())) + list.count(pnet.output_ports(input_place:associatedPorts())) > 1 then
+		if list.count(pnet.input_ports(input_place:connectedPorts())) + list.count(pnet.output_ports(input_place:associatedPorts())) > 1 and
+		   (list.count(pnet.output_ports(output_place:connectedPorts())) + list.count(pnet.input_ports(output_place:associatedPorts())) > 1 or
+		    list.count(pnet.output_ports(output_place:associatedPorts())) > 0) then
 			return nil
 		end
 	end
