@@ -4,6 +4,8 @@
 
 #include <pnete/ui/editor_window.hpp>
 
+#include <fhg/revision.hpp>
+
 #include <QSettings>
 #include <QApplication>
 
@@ -18,8 +20,11 @@ namespace fhg
       void init ()
       {
         QApplication::setApplicationName ("pnete");
-        //! \todo Get SVN revision.
-        QApplication::setApplicationVersion ("0.1");
+        QApplication::setApplicationVersion
+          ( QString (fhg::project_version())
+          .append (" - ")
+          .append (fhg::project_revision())
+          );
         QApplication::setOrganizationDomain ("itwm.fhg.de");
         QApplication::setOrganizationName ("Fraunhofer ITWM");
       }
