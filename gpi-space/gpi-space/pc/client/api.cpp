@@ -570,7 +570,7 @@ namespace gpi
         }
 
         // open segment
-        segment_ptr seg (new gpi::pc::segment::segment_t(desc->name, desc->size, id));
+        segment_ptr seg (new gpi::pc::segment::segment_t(desc->name, desc->local_size, id));
         try
         {
           seg->open();

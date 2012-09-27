@@ -53,7 +53,7 @@ namespace gpi
       {
         try
         {
-          shm_area_t::close(m_ptr, descriptor().size);
+          shm_area_t::close (m_ptr, descriptor().local_size);
           m_ptr = 0;
           if (unlink_after_close (descriptor().flags))
           {

@@ -118,7 +118,7 @@ namespace gpi
 
       gpi::pc::type::size_t area_t::size () const
       {
-        return m_descriptor.size;
+        return m_descriptor.local_size;
       }
 
       int area_t::type () const

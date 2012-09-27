@@ -1,5 +1,4 @@
 #include "transfer_queue.hpp"
-#include "gpi_area.hpp"
 
 #include <fhglog/minimal.hpp>
 
