@@ -17,14 +17,9 @@ namespace gpi
     namespace memory
     {
       manager_t::manager_t ()
-        : m_ident (gpi::api::gpi_api_t::get().rank())
-        , m_segment_counter ()
-        , m_transfer_mgr (gpi::api::gpi_api_t::get().number_of_queues())
-      {
-        handle_generator_t::create (m_ident);
-
-        add_gpi_memory ();
-      }
+        : m_ident (0)
+        , m_segment_counter (0)
+      {}
 
       manager_t::~manager_t ()
       {
@@ -40,6 +35,19 @@ namespace gpi
               );
         }
         handle_generator_t::destroy ();
+      }
+
+      void
+      manager_t::start ( gpi::pc::type::id_t ident
+                       , gpi::pc::type::size_t num_queues
+                       )
+      {
+        m_ident = ident;
+        m_transfer_mgr.start (num_queues);
+
+        handle_generator_t::create (m_ident);
+
+        add_gpi_memory ();
       }
 
       void

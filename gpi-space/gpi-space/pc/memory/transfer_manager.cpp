@@ -281,9 +281,16 @@ namespace gpi
         }
       }
 
-      transfer_manager_t::transfer_manager_t ( const std::size_t number_of_queues
-                                             , const std::size_t memcpy_pool_size
-                                             )
+      transfer_manager_t::transfer_manager_t ()
+      {}
+
+      transfer_manager_t::~transfer_manager_t()
+      {}
+
+      void
+      transfer_manager_t::start ( const std::size_t number_of_queues
+                                , const std::size_t memcpy_pool_size
+                                )
       {
         for (std::size_t i(0); i < number_of_queues; ++i)
         {
@@ -295,9 +302,6 @@ namespace gpi
           , std::max(std::size_t(1), memcpy_pool_size)
           );
       }
-
-      transfer_manager_t::~transfer_manager_t()
-      {}
 
       void
       transfer_manager_t::transfer (memory_transfer_t const &t)

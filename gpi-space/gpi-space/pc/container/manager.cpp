@@ -108,7 +108,12 @@ namespace gpi
       }
 
       void manager_t::initialize_memory_manager ()
-      {}
+      {
+        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+        global::memory_manager ().start ( gpi_api.rank ()
+                                        , gpi_api.number_of_queues()
+                                        );
+      }
 
       void manager_t::initialize_topology ()
       {

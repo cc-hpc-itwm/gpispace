@@ -54,6 +54,9 @@ namespace gpi
 
         ~manager_t ();
 
+        void
+        start (gpi::pc::type::id_t ident, gpi::pc::type::size_t num_queues);
+
         void clear ();
 
         gpi::pc::type::segment_id_t
