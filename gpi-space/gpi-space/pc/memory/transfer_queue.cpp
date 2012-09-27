@@ -317,7 +317,7 @@ namespace gpi
       }
 
       task_list_t
-      transfer_queue_t::split(const memory_transfer_t &t)
+      transfer_queue_t::split (const memory_transfer_t &t)
       {
         task_list_t task_list;
 
@@ -336,7 +336,7 @@ namespace gpi
 
         if (src_is_local && dst_is_local)
         {
-          fill_memcpy_list(t, task_list);
+          fill_memcpy_list (t, task_list);
         }
         else if (t.dst_area->type() == t.src_area->type())
         {
@@ -364,6 +364,7 @@ namespace gpi
             " I have no idea how to transfer data between those segments, sorry!"
             );
         }
+
         return task_list;
       }
 
