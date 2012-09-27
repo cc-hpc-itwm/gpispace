@@ -12,6 +12,7 @@
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/time_stamp.hpp>
+#include <gpi-space/pc/type/segment_type.hpp>
 
 namespace gpi
 {
@@ -21,15 +22,6 @@ namespace gpi
     {
       namespace segment
       {
-        enum segment_type
-          {
-            // maximum of 4 bits available --> see handle_t
-            SEG_INVAL = 0,
-            SEG_GPI = 1,
-            SEG_SHM = 2,
-          };
-
-
         enum flags_type
           {
             F_NONE         = 0x00,
