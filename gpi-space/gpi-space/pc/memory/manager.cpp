@@ -19,7 +19,7 @@ namespace gpi
       manager_t::manager_t ()
         : m_ident (gpi::api::gpi_api_t::get().rank())
         , m_segment_counter ()
-        , m_transfer_mgr(gpi::api::gpi_api_t::get().number_of_queues())
+        , m_transfer_mgr (gpi::api::gpi_api_t::get().number_of_queues())
       {
         handle_generator_t::create (m_ident);
 
@@ -457,11 +457,12 @@ namespace gpi
              << t
              );
 
+        t.dst_area->check_bounds (dst, amount);
+        t.src_area->check_bounds (src, amount);
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
-        check_boundaries(dst, src, amount);
 
         // TODO: increase refcount in handles, set access/modification times
-        m_transfer_mgr.transfer(t);
+        m_transfer_mgr.transfer (t);
         return queue;
       }
 
@@ -472,16 +473,6 @@ namespace gpi
       {
         DLOG(TRACE, "wait_on_queue(" << queue << ") by process " << proc_id);
         return m_transfer_mgr.wait_on_queue (queue);
-      }
-
-      void
-      manager_t::check_boundaries ( const gpi::pc::type::memory_location_t &dst
-                                  , const gpi::pc::type::memory_location_t &src
-                                  , const gpi::pc::type::size_t amount
-                                  ) const
-      {
-        get_area_by_handle (dst.handle)->check_bounds (dst, amount);
-        get_area_by_handle (src.handle)->check_bounds (src, amount);
       }
     }
   }

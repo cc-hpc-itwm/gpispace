@@ -138,11 +138,6 @@ namespace gpi
         void del_handle (const gpi::pc::type::handle_t);
         void unregister_memory (const gpi::pc::type::segment_id_t);
 
-        void check_boundaries ( gpi::pc::type::memory_location_t const & dst
-                              , gpi::pc::type::memory_location_t const & src
-                              , const gpi::pc::type::size_t amount
-                              ) const;
-
         mutable mutex_type m_mutex;
         gpi::pc::type::id_t m_ident;
         gpi::pc::type::counter_t m_segment_counter;
