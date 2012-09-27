@@ -3,11 +3,8 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/assert.hpp>
 
-#include <gpi-space/gpi/api.hpp>
-
 #include "memory_transfer_t.hpp"
 #include "handle_generator.hpp"
-#include "shm_area.hpp"
 
 namespace gpi
 {
@@ -64,18 +61,9 @@ namespace gpi
 
       gpi::pc::type::segment_id_t
       manager_t::register_memory ( const gpi::pc::type::process_id_t creator
-                                 , const std::string & name
-                                 , const gpi::pc::type::size_t size
-                                 , const gpi::pc::type::flags_t flags
+                                 , const area_ptr &area
                                  )
       {
-        area_ptr area (new shm_area_t ( creator
-                                      , name
-                                      , size
-                                      , flags
-                                      )
-                      );
-
         add_area (area);
         attach_process (creator, area->get_id ());
 

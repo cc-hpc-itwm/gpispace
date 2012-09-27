@@ -10,6 +10,7 @@
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 #include <gpi-space/pc/memory/gpi_area.hpp>
+#include <gpi-space/pc/memory/shm_area.hpp>
 
 namespace gpi
 {
@@ -261,9 +262,14 @@ namespace gpi
                                                               , const gpi::pc::type::flags_t flags
                                                               )
       {
-        gpi::pc::type::segment_id_t seg_id
-          (global::memory_manager().register_memory (pc_id, name, sz, flags));
-        return seg_id;
+        memory::manager_t::area_ptr area
+          (new memory::shm_area_t ( pc_id
+                                  , name
+                                  , sz
+                                  , flags
+                                  )
+          );
+        return global::memory_manager().register_memory (pc_id, area);
       }
 
       void manager_t::unregister_segment ( const gpi::pc::type::process_id_t proc_id
