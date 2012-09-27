@@ -8,6 +8,8 @@
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/memory/manager.hpp>
+#include <gpi-space/pc/memory/gpi_area.hpp>
 
 namespace gpi
 {
@@ -111,8 +113,21 @@ namespace gpi
       {
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
         global::memory_manager ().start ( gpi_api.rank ()
-                                        , gpi_api.number_of_queues()
+                                        , gpi_api.number_of_queues ()
                                         );
+
+        memory::manager_t::area_ptr area
+          (new memory::gpi_area_t ( 0
+                                  , "GPI"
+                                  , gpi_api.memory_size ()
+                                  , gpi::pc::type::segment::F_PERSISTENT
+                                  | gpi::pc::type::segment::F_NOUNLINK
+                                  , gpi_api.dma_ptr ()
+                                  )
+          );
+        area->set_id (1);
+
+        global::memory_manager ().add_area (area);
       }
 
       void manager_t::initialize_topology ()

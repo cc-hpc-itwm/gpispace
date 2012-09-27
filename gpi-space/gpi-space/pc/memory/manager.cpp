@@ -8,7 +8,6 @@
 #include "memory_transfer_t.hpp"
 #include "handle_generator.hpp"
 #include "shm_area.hpp"
-#include "gpi_area.hpp"
 
 namespace gpi
 {
@@ -46,8 +45,6 @@ namespace gpi
         m_transfer_mgr.start (num_queues);
 
         handle_generator_t::create (m_ident);
-
-        add_gpi_memory ();
       }
 
       void
@@ -209,24 +206,6 @@ namespace gpi
           detach_process (proc_id, segments.front());
           segments.pop_front();
         }
-      }
-
-      void
-      manager_t::add_gpi_memory ()
-      {
-        area_ptr area
-            (new gpi_area_t
-             ( 0, "GPI"
-             , gpi::api::gpi_api_t::get().memory_size ()
-             , gpi::pc::type::segment::F_PERSISTENT
-             | gpi::pc::type::segment::F_NOUNLINK
-             , gpi::api::gpi_api_t::get().dma_ptr ()
-             )
-            );
-
-        area->set_id (1);
-
-        add_area (area);
       }
 
       void

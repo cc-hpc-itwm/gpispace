@@ -132,7 +132,6 @@ namespace gpi
 
         manager_t ();
 
-        void add_gpi_memory ();
         area_ptr get_area (const gpi::pc::type::segment_id_t);
         area_ptr get_area (const gpi::pc::type::segment_id_t) const;
         area_ptr get_area_by_handle (const gpi::pc::type::handle_t);
