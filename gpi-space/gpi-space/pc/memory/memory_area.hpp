@@ -50,6 +50,9 @@ namespace gpi
         void garbage_collect ();
         void garbage_collect (const gpi::pc::type::process_id_t pid);
 
+        void                set_id (const gpi::pc::type::id_t id);
+        gpi::pc::type::id_t get_id () const;
+
         gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::process_id_t proc_id
               , const gpi::pc::type::size_t size
@@ -102,7 +105,6 @@ namespace gpi
         void *pointer_to (const gpi::pc::type::memory_location_t & loc);
       protected:
         area_t ( const gpi::pc::type::segment::segment_type type
-               , const gpi::pc::type::id_t id
                , const gpi::pc::type::process_id_t creator
                , const std::string & name
                , const gpi::pc::type::size_t size

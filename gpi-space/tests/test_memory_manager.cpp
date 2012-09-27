@@ -45,9 +45,13 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 {
   gpi::pc::segment::segment_t segm ("memory_area_alloc_free_test", 2048);
   segm.create ();
-  gpi::pc::memory::shm_area_t area ( 2, 0, "memory_area_alloc_free_test"
-                                   , 2048, 0
+  gpi::pc::memory::shm_area_t area ( 0
+                                   , "memory_area_alloc_free_test"
+                                   , 2048
+                                   , 0
                                    );
+  area.set_id (2);
+
   BOOST_CHECK_EQUAL (2048U, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048U, area.descriptor().avail);
 

@@ -82,14 +82,12 @@ namespace gpi
         }
       }
 
-      shm_area_t::shm_area_t ( const gpi::pc::type::id_t id
-                             , const gpi::pc::type::process_id_t creator
+      shm_area_t::shm_area_t ( const gpi::pc::type::process_id_t creator
                              , const std::string & name
                              , const gpi::pc::type::size_t size
                              , const gpi::pc::type::flags_t flags
                              )
         : area_t ( gpi::pc::type::segment::SEG_SHM
-                 , id
                  , creator
                  , name
                  , size

@@ -117,6 +117,8 @@ namespace gpi
         wait_on_queue ( const gpi::pc::type::process_id_t proc_id
                       , const gpi::pc::type::queue_id_t queue
                       );
+
+        void add_area (area_ptr const &area);
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;

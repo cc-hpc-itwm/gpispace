@@ -14,8 +14,7 @@ namespace gpi
       public:
         static const int area_type = 1;
 
-        gpi_area_t ( const gpi::pc::type::id_t id
-                   , const gpi::pc::type::process_id_t creator
+        gpi_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & name
                    , const gpi::pc::type::size_t per_node_size
                    , const gpi::pc::type::flags_t flags

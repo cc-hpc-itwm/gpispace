@@ -33,20 +33,19 @@ namespace gpi
       /***************************************************/
 
       area_t::area_t ( const gpi::pc::type::segment::segment_type type
-                     , const gpi::pc::type::id_t id
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::flags_t flags
                      )
-          : m_descriptor ( id
-                         , type
-                         , creator
-                         , name
-                         , size
-                         , flags
-                         )
-          , m_mmgr (NULL)
+        : m_descriptor ( (gpi::pc::type::id_t (-1))
+                       , type
+                       , creator
+                       , name
+                       , size
+                       , flags
+                       )
+        , m_mmgr (NULL)
       {
         dtmmgr_init (&m_mmgr, size, 1);
       }
@@ -60,6 +59,16 @@ namespace gpi
                << " handles = " << m_handles.size()
                );
         dtmmgr_finalize (&m_mmgr);
+      }
+
+      void area_t::set_id (const gpi::pc::type::id_t id)
+      {
+        m_descriptor.id = id;
+      }
+
+      gpi::pc::type::id_t area_t::get_id () const
+      {
+        return m_descriptor.id;
       }
 
       void area_t::garbage_collect ()

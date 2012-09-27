@@ -12,15 +12,13 @@ namespace gpi
   {
     namespace memory
     {
-      gpi_area_t::gpi_area_t ( const gpi::pc::type::id_t id
-                             , const gpi::pc::type::process_id_t creator
+      gpi_area_t::gpi_area_t ( const gpi::pc::type::process_id_t creator
                              , const std::string & name
                              , const gpi::pc::type::size_t size
                              , const gpi::pc::type::flags_t flags
                              , void * dma_ptr
                              )
           : area_t ( gpi::pc::type::segment::SEG_GPI
-                   , id
                    , creator
                    , name
                    , size

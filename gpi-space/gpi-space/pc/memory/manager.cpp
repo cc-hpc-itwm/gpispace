@@ -18,7 +18,7 @@ namespace gpi
     {
       manager_t::manager_t ()
         : m_ident (0)
-        , m_segment_counter (0)
+        , m_segment_counter (15) // default counter value for user segments
       {}
 
       manager_t::~manager_t ()
@@ -72,28 +72,17 @@ namespace gpi
                                  , const gpi::pc::type::flags_t flags
                                  )
       {
-        gpi::pc::type::segment_id_t id (m_segment_counter.inc());
+        area_ptr area (new shm_area_t ( creator
+                                      , name
+                                      , size
+                                      , flags
+                                      )
+                      );
 
-        {
-          lock_type lock (m_mutex);
-          area_ptr area (new shm_area_t ( id
-                                        , creator
-                                        , name
-                                        , size
-                                        , flags
-                                        )
-                         );
-          m_areas[id] = area;
-          CLOG( TRACE
-              , "gpi.memory"
-              , "memory segment registered: " << area->descriptor ()
-              );
-        }
-        memory_added (id);
+        add_area (area);
+        attach_process (creator, area->get_id ());
 
-        attach_process (creator, id);
-
-        return id;
+        return area->get_id ();
       }
 
       void
@@ -225,19 +214,9 @@ namespace gpi
       void
       manager_t::add_gpi_memory ()
       {
-        lock_type lock (m_mutex);
-
-        gpi::pc::type::segment_id_t id (m_segment_counter.inc());
-
-        if (m_areas.find(id) != m_areas.end())
-        {
-          throw std::runtime_error
-              ("cannot add another gpi segment: id already in use!");
-        }
-
         area_ptr area
             (new gpi_area_t
-             ( id, 0, "GPI"
+             ( 0, "GPI"
              , gpi::api::gpi_api_t::get().memory_size ()
              , gpi::pc::type::segment::F_PERSISTENT
              | gpi::pc::type::segment::F_NOUNLINK
@@ -245,11 +224,34 @@ namespace gpi
              )
             );
 
-        m_areas[id] = area;
+        area->set_id (1);
 
-        LOG(TRACE, "GPI memory registered:" << area->descriptor ());
+        add_area (area);
+      }
 
-        memory_added (id);
+      void
+      manager_t::add_area (manager_t::area_ptr const &area)
+      {
+        lock_type lock (m_mutex);
+
+        if (area->get_id () == (gpi::pc::type::id_t (-1)))
+        {
+          area->set_id (m_segment_counter.inc());
+        }
+        else
+        {
+          if (m_areas.find (area->get_id ()) != m_areas.end())
+          {
+            throw std::runtime_error
+              ("cannot add another gpi segment: id already in use!");
+          }
+        }
+
+        m_areas [area->get_id ()] = area;
+
+        LOG(TRACE, "memory registered:" << area->descriptor ());
+
+        memory_added (area->get_id ());
       }
 
       manager_t::area_ptr
