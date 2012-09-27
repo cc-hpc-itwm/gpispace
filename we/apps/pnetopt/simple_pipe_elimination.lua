@@ -44,52 +44,61 @@ local function find_matching_places(transition)
 		end
 	end
 
-	-- There is at most one transition that takes token from my output places
-	-- or
-	-- there is at most one transition that puts tokens into my input places.
+	-- A mistiming problem is possible if we propagate more than one token at a time.
 	--
-	-- Associations with ports count too.
-	--
-	local consumers = {}
-	local producers = {}
-	for input_place,output_place in pairs(result) do
-		for port in pnet.output_ports(input_place:connectedPorts()) do
-			producers[port:transition()] = 1
-		end
-		for port in pnet.input_ports(input_place:associatedPorts()) do
-			producers["associated ports"] = 1
-		end
+	if (list.table_size(result) > 1) then
+		-- There is at most one transition that takes token from my output places
+		-- or
+		-- there is at most one transition that puts tokens into my input places.
+		--
+		-- Associations with ports count too.
+		--
+		local consumers = {}
+		local producers = {}
+		for input_place,output_place in pairs(result) do
+			for port in pnet.output_ports(input_place:connectedPorts()) do
+				producers[port:transition()] = 1
+			end
+			for port in pnet.input_ports(input_place:associatedPorts()) do
+				producers["associated ports"] = 1
+			end
 
-		for port in pnet.input_ports(output_place:connectedPorts()) do
-			consumers[port:transition()] = 1
+			for port in pnet.input_ports(output_place:connectedPorts()) do
+				consumers[port:transition()] = 1
+			end
+			for port in pnet.output_ports(output_place:associatedPorts()) do
+				consumers["associated ports"] = 1
+			end
 		end
-		for port in pnet.output_ports(output_place:associatedPorts()) do
-			consumers["associated ports"] = 1
+		if list.table_size(consumers) > 1 and list.table_size(producers) > 1 then
+			return nil
 		end
-	end
-	if #consumers > 1 and #producers > 1 then
-		return nil
 	end
 
 	return result
 end
 
 local function merge_places(net, first, second)
-	for port in list.clone(first:connectedPorts()) do
-		port:connect(second)
-	end
-
-	for port in list.clone(first:associatedPorts()) do
-		port:associate(second)
-	end
-
+	--
+	-- Choose the place to keep and the place to remove.
+	--
 	local first_has_prefix = first:name():byte(1) == '_'
 	local second_has_prefix = second:name():byte(1) == '_'
 
 	if second_has_prefix and not first_has_prefix or
 	   first_has_prefix == second_has_prefix and first:name():len() < second:name():len()
 	then
-		second:setName(first:name())
+		first,second = second,first
+	end
+
+	--
+	-- Reconnect and reassociate ports.
+	--
+	for port in list.clone(first:connectedPorts()) do
+		port:connect(second)
+	end
+	for port in list.clone(first:associatedPorts()) do
+		port:associate(second)
 	end
 
 	first:remove()

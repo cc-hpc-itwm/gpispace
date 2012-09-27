@@ -81,4 +81,20 @@ function M.count(iterator)
 	return result
 end
 
+--- Returns the number of key-value pairs in the table.
+--
+-- (Weird, but #table returns only the size of the "array part" of the table.)
+--
+-- @param table
+--
+-- @return The number of key-value pairs in the table.
+--
+function M.table_size(table)
+	local size = 0
+	for key,value in pairs(table) do
+		size = size + 1
+	end
+	return size
+end
+
 return M
