@@ -15,6 +15,73 @@ namespace gpi
   {
     namespace memory
     {
+      namespace detail
+      {
+        static void* open ( std::string const & path
+                          , const gpi::pc::type::size_t size
+                          , const int open_flags
+                          , const mode_t open_mode = 0
+                          )
+        {
+          int err (0);
+          int fd (-1);
+          void *ptr (0);
+
+          fd = shm_open (path.c_str(), open_flags, open_mode);
+          if (fd < 0)
+          {
+            std::string err (strerror(errno));
+            throw std::runtime_error ("open: " + err);
+          }
+
+          int prot (0);
+          if (open_flags & O_RDONLY)
+            prot = PROT_READ;
+          else if (open_flags & O_WRONLY)
+            prot = PROT_WRITE;
+          else if (open_flags & O_RDWR)
+            prot = PROT_READ | PROT_WRITE;
+
+          ptr = mmap ( NULL
+                     , size
+                     , prot
+                     , MAP_SHARED
+                     , fd
+                     , 0
+                     );
+          if (MAP_FAILED == ptr)
+          {
+            std::string err (strerror(errno));
+            ::close (fd);
+            throw std::runtime_error ("mmap: " + err);
+          }
+
+          ::close (fd);
+          return ptr;
+        }
+
+        static void close (void *ptr, const gpi::pc::type::size_t sz)
+        {
+          if (ptr)
+          {
+            if (munmap(ptr, sz) < 0)
+            {
+              std::string err (strerror(errno));
+              throw std::runtime_error ("munmap: " + err);
+            }
+          }
+        }
+
+        static void unlink (std::string const &p)
+        {
+          if (shm_unlink (p.c_str()) < 0)
+          {
+            std::string err (strerror(errno));
+            throw std::runtime_error ("unlink: " + err);
+          }
+        }
+      }
+
       shm_area_t::shm_area_t ( const gpi::pc::type::id_t id
                              , const gpi::pc::type::process_id_t creator
                              , const std::string & name
@@ -39,13 +106,14 @@ namespace gpi
           m_path = name;
         else
           m_path = "/" + name;
-        m_ptr = shm_area_t::open ( m_path
-                                 , size
-                                 , O_RDWR // TODO: pass via flags
-                                 );
+        m_ptr = detail::open ( m_path
+                             , size
+                             , O_RDWR // TODO: pass via flags
+                             , 0
+                             );
         if (unlink_after_open (flags))
         {
-          shm_area_t::unlink (m_path);
+          detail::unlink (m_path);
         }
       }
 
@@ -53,11 +121,11 @@ namespace gpi
       {
         try
         {
-          shm_area_t::close (m_ptr, descriptor().local_size);
+          detail::close (m_ptr, descriptor().local_size);
           m_ptr = 0;
           if (unlink_after_close (descriptor().flags))
           {
-            shm_area_t::unlink (m_path);
+            detail::unlink (m_path);
           }
         }
         catch (std::exception const & ex)
@@ -143,72 +211,6 @@ namespace gpi
         if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
           return false;
         return true;
-      }
-
-      void* shm_area_t::open ( std::string const & path
-                             , const gpi::pc::type::size_t size
-                             , const int open_flags
-                             , const mode_t open_mode
-                             )
-      {
-        int err (0);
-        int fd (-1);
-        void *ptr (0);
-
-        fd = shm_open (path.c_str(), open_flags, open_mode);
-        if (fd < 0)
-        {
-          std::string err (strerror(errno));
-          throw std::runtime_error ("open: " + err);
-        }
-
-        int prot (0);
-        if (open_flags & O_RDONLY)
-          prot = PROT_READ;
-        else if (open_flags & O_WRONLY)
-          prot = PROT_WRITE;
-        else if (open_flags & O_RDWR)
-          prot = PROT_READ | PROT_WRITE;
-
-        ptr = mmap ( NULL
-                   , size
-                   , prot
-                   , MAP_SHARED
-                   , fd
-                   , 0
-                   );
-        if (MAP_FAILED == ptr)
-        {
-          std::string err (strerror(errno));
-          ::close (fd);
-          throw std::runtime_error ("mmap: " + err);
-        }
-
-        ::close (fd);
-        return ptr;
-      }
-
-      void shm_area_t::close ( void *ptr
-                             , const gpi::pc::type::size_t sz
-                             )
-      {
-        if (ptr)
-        {
-          if (munmap(ptr, sz) < 0)
-          {
-            std::string err (strerror(errno));
-            throw std::runtime_error ("munmap: " + err);
-          }
-        }
-      }
-
-      void shm_area_t::unlink (std::string const & p)
-      {
-        if (shm_unlink (p.c_str()) < 0)
-        {
-          std::string err (strerror(errno));
-          throw std::runtime_error ("unlink: " + err);
-        }
       }
 
       bool

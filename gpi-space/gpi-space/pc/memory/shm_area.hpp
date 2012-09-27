@@ -22,14 +22,6 @@ namespace gpi
                    );
 
         ~shm_area_t ();
-
-        static void* open ( std::string const & path
-                          , const gpi::pc::type::size_t size
-                          , const int open_flags
-                          , const mode_t open_mode = 0
-                          );
-        static void close (void *, const gpi::pc::type::size_t);
-        static void unlink (std::string const &);
       protected:
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
         grow_direction_t grow_direction (const gpi::pc::type::flags_t) const;
