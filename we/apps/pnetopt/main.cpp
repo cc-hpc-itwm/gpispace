@@ -25,8 +25,8 @@
 namespace {
 
 /*
- * Everything is C++ owned and is never deleted.
- * Except iterators: nobody refers them anyway, so we can garbage-collect them.
+ * Everything is C++-owned and is never deleted.
+ * Except iterators: nobody refers them anyway, so we can apply reference counting to them.
  */
 
 template<class P, class E, class T>
@@ -60,8 +60,8 @@ class Optimizer {
         luabridge::getGlobalNamespace(L)
             .beginNamespace("pnetopt")
                 .template beginClass<pnetopt::Invalidatable>("Invalidatable")
-                    .addFunction("valid", &pnetopt::Invalidatable::valid)
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
+                    .addFunction("valid", &pnetopt::Invalidatable::valid)
                 .endClass()
                 .template deriveClass<PetriNet, pnetopt::Invalidatable>("PetriNet")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)

@@ -1,8 +1,13 @@
+find_package(Lua51)
+
+if(NOT LUA51_FOUND)
+	return()
+endif()
+
 set(PNETOPT_SOURCES
 	main.cpp
 )
 
-find_package(Lua51 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 
 add_executable(pnetopt ${PNETOPT_SOURCES})
