@@ -35,9 +35,13 @@ namespace gpi
         //   there might still be requests queued,
         //   use flush to remove them
         void pause ();
-
         // unpause the queue
         void resume ();
+        bool is_paused () const;
+
+        void disable ();
+        void enable ();
+        bool is_disabled () const;
 
         // issue a "wait" on the queue
         //
@@ -53,8 +57,6 @@ namespace gpi
 
         // wait until all queues are empty
         void flush ();
-
-        bool is_paused () const;
       private:
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -69,6 +71,8 @@ namespace gpi
         mutable condition_type m_resume_condition;
         std::size_t m_id;
         bool m_paused;
+        bool m_enabled;
+
         task_queue_t & m_blocking_tasks;
         task_queue_t m_task_queue;
         thread_ptr m_thread;

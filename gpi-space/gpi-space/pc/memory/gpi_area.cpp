@@ -84,50 +84,34 @@ namespace gpi
                                , const gpi::pc::type::size_t   amount
                                ) const
       {
-        if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+        if (! (start < hdl.size && (start + amount) <= hdl.size))
         {
-          // handle size is actually #nodes*hdl.size
-          const gpi::pc::type::size_t global_size
-              ( gpi::api::gpi_api_t::get().number_of_nodes ()
-              * hdl.size
+          CLOG( ERROR
+              , "gpi.memory"
+              , "out-of-bounds access:"
+              << " hdl=" << hdl
+              << " size=" << hdl.size
+              << " range=["<<start << ", " << start + amount << "]"
               );
-          if (! (start < global_size && (start + amount ) <= global_size))
-          {
-            CLOG( ERROR
-               , "gpi.memory"
-               , "out-of-bounds access:"
-               << " hdl=" << hdl
-               << " size=" << hdl.size
-               << " globalsize=" << global_size
-               << " range=["<<start << ", " << start+amount << "]"
-               );
-            throw std::invalid_argument
-                ("out-of-bounds: access to global handle outside boundaries");
-          }
-        }
-        else
-        {
-          if (! (start < hdl.size && (start + amount) <= hdl.size))
-          {
-            CLOG( ERROR
-               , "gpi.memory"
-               , "out-of-bounds access:"
-               << " hdl=" << hdl
-               << " size=" << hdl.size
-               << " range=["<<start << ", " << start + amount << "]"
-               );
-            throw std::invalid_argument
-                ("out-of-bounds: access to local handle outside boundaries");
-          }
+          throw std::invalid_argument
+            ("out-of-bounds: access to handle outside boundaries");
         }
       }
 
       void
       gpi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+        if (  gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL)
+           && hdl.creator != (gpi::pc::type::process_id_t)(-1)
+           )
         {
-          gpi::pc::global::topology().alloc(hdl.id, hdl.offset, hdl.size, hdl.name);
+          gpi::pc::global::topology().alloc ( descriptor ().id
+                                            , hdl.id
+                                            , hdl.offset
+                                            , hdl.size
+                                            , hdl.local_size
+                                            , hdl.name
+                                            );
         }
       }
 
@@ -140,54 +124,50 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::offset_t
-      gpi_area_t::handle_to_global_offset ( const gpi::pc::type::offset_t hdl_offset
-                                          , const gpi::pc::type::size_t per_node_size
-                                          ) const
-      {
-        gpi::pc::type::offset_t global_offset (0);
-        gpi::pc::type::offset_t tmp (hdl_offset);
-        while (tmp >= per_node_size)
-        {
-          tmp -= per_node_size;
-          global_offset += this->size();
-        }
-        return global_offset + tmp;
-      }
-
-      typedef std::pair<gpi::pc::type::id_t, gpi::pc::type::id_t> rank_range_t;
-      static
-      rank_range_t
-      handle_subscript_to_nodes ( const gpi::pc::type::handle::descriptor_t &hdl
-                                , const gpi::pc::type::offset_t begin
-                                , const gpi::pc::type::offset_t end
-                                )
-      {
-        const gpi::pc::type::id_t
-            slice_start_rank (begin / hdl.size);
-        const gpi::pc::type::id_t
-            slice_end_rank ( (end) / hdl.size);
-        return rank_range_t (slice_start_rank, slice_end_rank);
-      }
-
       bool
       gpi_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &hdl
                                 , const gpi::pc::type::offset_t begin
                                 , const gpi::pc::type::offset_t end
                                 ) const
       {
-        DLOG(TRACE, "checking range: " << "hdl=" << hdl << " begin=" << begin << " end=" << end);
-        if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+        DLOG ( TRACE
+             , "checking range: " << "hdl=[" << hdl << "]"
+             << " range = [" << begin << ", " << end << ")"
+             );
+
+        gpi::pc::type::id_t     my_rank = gpi::api::gpi_api_t::get ().rank ();
+
+        if (not gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+          my_rank = 0;
+
+        // my part of the handle is within [my_begin, my_end)
+        gpi::pc::type::offset_t my_begin =  my_rank      * hdl.local_size;
+        gpi::pc::type::offset_t my_end   = (my_rank + 1) * hdl.local_size;
+
+        if (my_end > hdl.size)
+          my_end = hdl.size;
+
+        const bool is_local = my_begin <= begin && end <= my_end;
+
+        return is_local;
+      }
+
+      gpi::pc::type::size_t
+      gpi_area_t::get_local_size ( const gpi::pc::type::size_t size
+                                 , const gpi::pc::type::flags_t flgs
+                                 ) const
+      {
+        if (gpi::flag::is_set (flgs, gpi::pc::type::handle::F_GLOBAL))
         {
-          rank_range_t ranks (handle_subscript_to_nodes (hdl, begin, end));
-          const gpi::pc::type::id_t my_rank (gpi::api::gpi_api_t::get().rank());
-          return (ranks.first  == my_rank)
-              && (ranks.second == my_rank);
+          // static distribution scheme with overhead
+          const size_t num_nodes =
+            gpi::api::gpi_api_t::get ().number_of_nodes ();
+          size_t overhead = (0 != (size % num_nodes)) ? 1 : 0;
+          return (size / num_nodes + overhead);
         }
         else
         {
-          return ((hdl.offset + begin) < size())
-              && ((hdl.offset + end)   < size());
+          return size;
         }
       }
     }

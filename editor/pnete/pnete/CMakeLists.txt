@@ -27,6 +27,7 @@ target_link_libraries ( pnete
                         "${LIB_PREFIX}weaver"
                         ${WE_LIBRARIES}
                         ${FhgLog_LIBRARY}
+                        ${UTIL_LIBRARIES}
                         ${Boost_LIBRARIES}
                         ${QT_LIBRARIES}
                       )

@@ -918,8 +918,14 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
             gpish_cmd += cfg->socket;
 
             int rc = system (gpish_cmd.c_str ());
-            if (rc != 0)
-              std::cerr << "shell failed: " << rc << std::endl;
+            if (rc == -1)
+            {
+              std::cerr << "shell failed: " << strerror (errno) << std::endl;
+            }
+            else if (rc > 0)
+            {
+              std::cerr << "shell failed: " << WEXITSTATUS (rc) << std::endl;
+            }
           }
           break;
         case 'h':

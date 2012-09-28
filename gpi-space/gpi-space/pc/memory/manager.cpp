@@ -313,13 +313,14 @@ namespace gpi
                               , const gpi::pc::type::handle_t hdl
                               , const gpi::pc::type::offset_t offset
                               , const gpi::pc::type::size_t size
+                              , const gpi::pc::type::size_t local_size
                               , const std::string & name
                               )
       {
         try
         {
           area_ptr area (get_area (seg_id));
-          area->remote_alloc (hdl, offset, size, name);
+          area->remote_alloc (hdl, offset, size, local_size, name);
           add_handle (hdl, seg_id);
           handle_allocated (hdl);
 
@@ -327,6 +328,7 @@ namespace gpi
               , "remote memory allocated:"
               << " segment " << seg_id
               << " size " << size
+              << " local " << local_size
               << " handle " << hdl
               );
         }

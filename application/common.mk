@@ -26,6 +26,14 @@ ifndef TOUCH
   TOUCH = $(shell which touch)
 endif
 
+ifndef MKDIR
+  MKDIR = $(shell which mkdir)
+endif
+
+ifndef CP
+  CP = $(shell which cp)
+endif
+
 ###############################################################################
 
 ifndef SDPA_INCLUDE
@@ -38,6 +46,10 @@ endif
 
 ifndef SDPA_XML_LIB
   SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
+endif
+
+ifndef SDPA_LIBEXEC
+  SDPA_LIBEXEC = $(SDPA_HOME)/libexec
 endif
 
 ###############################################################################
@@ -154,6 +166,7 @@ DEP += $(CURDIR)/Makefile
 PATH_LIB += $(GEN)/pnetc/op
 WE_EXEC_LIBPATHS += $(PATH_LIB)
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
+LIB_DESTDIR = $(SDPA_LIBEXEC)/$(MAIN)
 
 ###############################################################################
 
@@ -255,6 +268,16 @@ exec: $(PUT)
 
 ###############################################################################
 
+.PHONY: install
+
+$(LIB_DESTDIR):
+	$(MKDIR) -p "$(LIB_DESTDIR)"
+
+install: lib $(LIB_DESTDIR)
+	@$(CP) -v $(PATH_LIB)/*.so $(LIB_DESTDIR)
+
+###############################################################################
+
 .PHONY: clean
 
 clean:
@@ -290,6 +313,8 @@ help:
 	@echo "clean       delete all generated files"
 	@echo
 	@echo "showconfig  show the actual configuration"
+	@echo
+	@echo "install     install module(s) to SDPA_LIBEXEC/$(MAIN)"
 
 ###############################################################################
 
@@ -308,12 +333,15 @@ showconfig:
 	@echo "DOT   = $(DOT)"
 	@echo "RM    = $(RM)"
 	@echo "TOUCH = $(TOUCH)"
+	@echo "MKDIR = $(MKDIR)"
+	@echo "CP    = $(CP)"
 	@echo
 	@echo "*** GPI-Space paths:"
 	@echo
 	@echo "SDPA_INCLUDE = $(SDPA_INCLUDE)"
 	@echo "SDPA_BIN     = $(SDPA_BIN)"
 	@echo "SDPA_XML_LIB = $(SDPA_XML_LIB)"
+	@echo "SDPA_LIBEXEC = $(SDPA_LIBEXEC)"
 	@echo
 	@echo "*** Files:"
 	@echo
@@ -333,6 +361,7 @@ showconfig:
 	@echo "DEP              = $(DEP)"
 	@echo "PATH_LIB         = $(PATH_LIB)"
 	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
+	@echo "LIB_DESTDIR      = $(LIB_DESTDIR)"
 	@echo
 	@echo "CXXINCLUDEPATHS  = $(CXXINCLUDEPATHS)"
 	@echo "CXXLIBRARYPATHS  = $(CXXLIBRARYPATHS)"

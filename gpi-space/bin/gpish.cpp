@@ -15,6 +15,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
+#include <boost/timer.hpp>
 
 #include <fhglog/minimal.hpp>
 
@@ -111,14 +112,6 @@ struct my_state_t
     return 0;
   }
 
-  size_t adjust_size_to_global_alloc(size_t total_size)
-  {
-    size_t nodes = capi.collect_info().nodes;
-    size_t per_node = (total_size / nodes);
-    per_node       += (total_size - nodes*per_node);
-    return per_node;
-  }
-
   char*  com_buffer() { return m_shm_com_ptr; }
   size_t com_size() const   { return m_com_size; }
   gpi::pc::type::handle_t shm_com_hdl() const { return m_shm_com_hdl; }
@@ -137,7 +130,7 @@ private:
 static void print_progress( FILE *fp
                           , const std::size_t current
                           , const std::size_t total
-                          , const std::size_t width = 77
+                          , const std::size_t width = 73
                           );
 
 typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
@@ -159,10 +152,6 @@ static void initialize_shell (int ac, char *av[]);
 
 static void shutdown_state ();
 static void shutdown_shell ();
-
-static void adjust_global_handle_sizes ( shell_t & sh
-                                       , gpi::pc::type::handle::descriptor_t &
-                                       );
 
 // shell functions
 static int cmd_help (shell_t::argv_t const & av, shell_t & sh);
@@ -211,7 +200,7 @@ int main (int ac, char **av)
   socket_search_dir.push_back ("/tmp");
   socket_search_dir.push_back ("/var/tmp");
 
-  std::size_t com_size (16 * (1 << 20));
+  std::size_t com_size (4 * 1024 * 1024);
 
   desc.add_options ()
     ("help,h", "this message")
@@ -591,7 +580,6 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     std::cerr << "no such handle: " << src.handle << std::endl;
     return -ESRCH;
   }
-  adjust_global_handle_sizes (sh, d);
 
   fs::path file_path;
   if (av.size() > 2)
@@ -611,8 +599,13 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     return -EIO;
   }
 
+  boost::timer timer;
+
   gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
+
+  const std::size_t total_to_write =
+    (src.offset < d.size) ? d.size - src.offset : 0;
 
   while (src.offset < d.size)
   {
@@ -633,8 +626,15 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 
     src.offset += to_write;
   }
+
   print_progress(stderr, src.offset, d.size);
   fprintf(stderr, "\n");
+
+  double elapsed = timer.elapsed ();
+  if (elapsed == 0.0)
+    elapsed = 1e-15;
+  std::cerr << (((double)total_to_write/1024/1024) / elapsed) << " MiB/s"
+            << std::endl;
 
   return 0;
 }
@@ -643,7 +643,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size() < 2)
   {
-    std::cerr << "usage: load <path> [handle[+offset]]" << std::endl;
+    std::cerr << "usage: load <path> [segment | [handle[+offset]]]" << std::endl;
     return 1;
   }
 
@@ -663,51 +663,53 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   }
 
   gpi::pc::type::memory_location_t dst;
+  int target_segment = 1;
   if (av.size() > 2)
   {
     try
     {
       dst = boost::lexical_cast<gpi::pc::type::memory_location_t>(av[2]);
-    }
-    catch (std::exception const &ex)
-    {
-      std::cerr << "invalid destination: " << av[1]
-                << ": " << ex.what()
-                << std::endl;
-      return -EINVAL;
-    }
 
-    gpi::pc::type::handle::descriptor_t d;
-    if (sh.state().get_handle_descriptor(dst.handle, d) < 0)
-    {
-      std::cerr << "no such handle: " << dst.handle << std::endl;
-      return -ESRCH;
+      gpi::pc::type::handle::descriptor_t d;
+      if (sh.state().get_handle_descriptor(dst.handle, d) < 0)
+      {
+        std::cerr << "no such handle: " << dst.handle << std::endl;
+        return -ESRCH;
+      }
     }
-
-    adjust_global_handle_sizes(sh, d);
-    if (dst.offset > d.size)
+    catch (std::exception const &ex1)
     {
-      std::cerr << "invalid destination: " << dst
-                << ": " << "offset is larger than size"
-                << std::endl;
-      return -EINVAL;
+      try
+      {
+        target_segment = boost::lexical_cast<int> (av [2]);
+      }
+      catch (std::exception const &ex2)
+      {
+        std::cerr << "invalid destination: '" << av[2] << "'"
+                  << " is neither a handle, nor a segment"
+                  << std::endl;
+        return -EINVAL;
+      }
     }
   }
-  else
+
+  if (0 == dst.handle)
   {
     std::size_t file_size = fs::file_size(path);
 
     dst.handle =
-      sh.state().capi.alloc( 1
-                           , sh.state().adjust_size_to_global_alloc(file_size)
+      sh.state().capi.alloc( target_segment
+                           , file_size
                            , path.string()
                            , gpi::pc::type::handle::F_GLOBAL
                            | gpi::pc::type::handle::F_PERSISTENT
                            );
     dst.offset = 0;
+
+    std::cout << dst.handle << std::endl;
   }
 
-  std::cout << dst << std::endl;
+  boost::timer timer;
 
   // read data chunk from file to shm
 
@@ -717,40 +719,48 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   gpi::pc::type::handle::descriptor_t handle_descriptor;
   sh.state().get_handle_descriptor(dst.handle, handle_descriptor);
-  adjust_global_handle_sizes(sh, handle_descriptor);
 
   std::size_t total_to_read = handle_descriptor.size - dst.offset;
 
-  while (ifs.good() && (offset < total_to_read))
+  if (total_to_read)
   {
+    while (ifs.good() && (offset < total_to_read))
+    {
+      print_progress (stderr, offset, total_to_read);
+
+      std::size_t to_read = std::min( sh.state().com_size()
+                                    , total_to_read - offset
+                                    );
+
+      ifs.read(sh.state().com_buffer(), to_read);
+      std::size_t read_bytes = ifs.gcount();
+
+      // copy&wait to gpi_com area
+      sh.state().capi.memcpy(gpi_com_buf, shm_com_buf, read_bytes, 0);
+      sh.state().capi.wait(0);
+
+      // copy&wait to actual dst
+      sh.state().capi.memcpy(dst,         gpi_com_buf, read_bytes, 0);
+      sh.state().capi.wait(0);
+
+      offset     += read_bytes;
+      dst.offset += read_bytes;
+    }
+
     print_progress (stderr, offset, total_to_read);
+    fprintf(stderr, "\n");
 
-    std::size_t to_read = std::min( sh.state().com_size()
-                                  , total_to_read - offset
-                                  );
+    if (offset < total_to_read)
+    {
+      std::cerr << "warning: handle was not completely filled: "
+                << "read " << offset << "/" << total_to_read << " bytes"
+                << std::endl;
+    }
 
-    ifs.read(sh.state().com_buffer(), to_read);
-    std::size_t read_bytes = ifs.gcount();
-
-    // copy&wait to gpi_com area
-    sh.state().capi.memcpy(gpi_com_buf, shm_com_buf, read_bytes, 0);
-    sh.state().capi.wait(0);
-
-    // copy&wait to actual dst
-    sh.state().capi.memcpy(dst,         gpi_com_buf, read_bytes, 0);
-    sh.state().capi.wait(0);
-
-    offset     += read_bytes;
-    dst.offset += read_bytes;
-  }
-
-  print_progress (stderr, offset, total_to_read);
-  fprintf(stderr, "\n");
-
-  if (offset < total_to_read)
-  {
-    std::cerr << "warning: handle was not completely filled: "
-              << "read " << offset << "/" << total_to_read << " bytes"
+    double elapsed = timer.elapsed ();
+    if (elapsed == 0.0)
+      elapsed = 1e-15;
+    std::cerr << (((double)total_to_read/1024/1024) / elapsed) << " MiB/s"
               << std::endl;
   }
 
@@ -1192,12 +1202,6 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
     }
   }
 
-  // adjust sizes in case of global allocations
-  if (gpi::flag::is_set(flags, gpi::pc::type::handle::F_GLOBAL))
-  {
-    size = sh.state().adjust_size_to_global_alloc(size);
-  }
-
   gpi::pc::type::handle_id_t handle
     (sh.state().capi.alloc (seg_id, size, desc, flags));
   if (gpi::pc::type::handle::is_null (handle))
@@ -1322,9 +1326,6 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
     std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
     gpi::pc::type::handle::list_t handles (sh.state().capi.list_allocations());
     std::sort (handles.begin(), handles.end());
-    std::for_each ( handles.begin(), handles.end()
-                  , boost::bind(adjust_global_handle_sizes, sh, _1)
-                  );
     std::cout << handles;
   }
   else
@@ -1382,16 +1383,6 @@ path_list_t collect_sockets (fs::path const & prefix)
   return paths;
 }
 
-static void adjust_global_handle_sizes ( shell_t & sh
-                                       , gpi::pc::type::handle::descriptor_t & d
-                                       )
-{
-  if (gpi::flag::is_set (d.flags, gpi::pc::type::handle::F_GLOBAL))
-  {
-    d.size *= sh.state().capi.collect_info().nodes;
-  }
-}
-
 static void print_progress( FILE *fp
                           , const std::size_t current
                           , const std::size_t total
@@ -1405,7 +1396,7 @@ static void print_progress( FILE *fp
   size_t pos=0;
   for (; pos < filled_part; ++pos)
   {
-    fprintf(stderr, "=");
+    fprintf (stderr, "=");
   }
   for (; pos < bar_length; ++pos)
   {
