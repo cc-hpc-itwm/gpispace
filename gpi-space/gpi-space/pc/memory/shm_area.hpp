@@ -33,6 +33,14 @@ namespace gpi
 
         void alloc_hook (const gpi::pc::type::handle::descriptor_t &){}
         void  free_hook (const gpi::pc::type::handle::descriptor_t &){}
+
+        int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                                        , const gpi::pc::type::memory_location_t dst
+                                        , area_t & dst_area
+                                        , gpi::pc::type::size_t amount
+                                        , gpi::pc::type::size_t queue
+                                        , task_list_t & tasks
+                                        );
       private:
         void *ptr ();
 

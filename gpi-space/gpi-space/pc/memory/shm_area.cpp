@@ -228,6 +228,26 @@ namespace gpi
       {
         return sz;
       }
+
+      int
+      shm_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                                              , const gpi::pc::type::memory_location_t dst
+                                              , area_t & dst_area
+                                              , gpi::pc::type::size_t amount
+                                              , gpi::pc::type::size_t queue
+                                              , task_list_t & tasks
+                                              )
+      {
+        LOG ( ERROR
+            , "specific transfer not implemented: "
+            << amount << " bytes: "
+            << dst
+            << " <- "
+            << src
+            );
+        throw std::runtime_error
+          ("get_specific_transfer_tasks not implemented on shm_area");
+      }
     }
   }
 }

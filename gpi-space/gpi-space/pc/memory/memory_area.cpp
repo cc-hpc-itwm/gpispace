@@ -5,6 +5,9 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/assert.hpp>
 
+#include <boost/make_shared.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
 
@@ -584,6 +587,112 @@ namespace gpi
 
         return reinterpret_cast<char*>(ptr())
           + (hdl_it->second.offset + (loc.offset % hdl_it->second.local_size));
+      }
+
+      namespace detail
+      {
+        static int get_memcpy_tasks ( const gpi::pc::type::memory_location_t src
+                                    , area_t & src_area
+                                    , const gpi::pc::type::memory_location_t dst
+                                    , area_t & dst_area
+                                    , gpi::pc::type::size_t amount
+                                    , task_list_t & tasks
+                                    )
+        {
+          const std::size_t chunk_size = amount;
+
+          std::size_t remaining = amount;
+          std::size_t offset = 0;
+
+          while (remaining)
+          {
+            std::size_t sz (std::min (remaining, chunk_size));
+            tasks.push_back
+              (boost::make_shared<task_t>
+              ( "memcpy "
+              + boost::lexical_cast<std::string> (dst)
+              + " <- "
+              + boost::lexical_cast<std::string> (src)
+              + " "
+              + boost::lexical_cast<std::string> (sz)
+
+              , boost::bind ( std::memcpy
+                            , (char*)(dst_area.pointer_to (dst)) + offset
+                            , (char*)(src_area.pointer_to (src)) + offset
+                            , sz
+                            )
+              ));
+
+            remaining -= sz;
+            offset    += sz;
+          }
+
+          return 0;
+        }
+      }
+
+      int
+      area_t::get_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                                 , const gpi::pc::type::memory_location_t dst
+                                 , area_t & dst_area
+                                 , gpi::pc::type::size_t amount
+                                 , gpi::pc::type::size_t queue
+                                 , task_list_t & tasks
+                                 )
+      {
+        const bool src_is_local
+          (         is_local (gpi::pc::type::memory_region_t( src
+                                                            , amount
+                                                            )
+                             )
+          );
+        const bool dst_is_local
+          (dst_area.is_local (gpi::pc::type::memory_region_t( dst
+                                                            , amount
+                                                            )
+                             )
+          );
+
+        // vertical copy (memcpy)
+        if (src_is_local && dst_is_local)
+        {
+          return detail::get_memcpy_tasks ( src
+                                          , *this
+                                          , dst
+                                          , dst_area
+                                          , amount
+                                          , tasks
+                                          );
+        }
+        // horizontal copy (same type)
+        else if (type () == dst_area.type ())
+        {
+          return get_specific_transfer_tasks ( src
+                                             , dst
+                                             , dst_area
+                                             , amount
+                                             , queue
+                                             , tasks
+                                             );
+        }
+        // diagonal copy (non-local different types)
+        else
+        {
+          LOG ( ERROR
+              , "illegal memory transfer (diagonal copy): "
+              << amount << " bytes: "
+              << dst
+              << " <- "
+              << src
+              );
+
+          throw std::runtime_error
+            ( "illegal memory transfer requested: "
+            "I have no idea how to transfer data between those segments, sorry!"
+            );
+        }
+
+        return 0;
       }
     }
   }

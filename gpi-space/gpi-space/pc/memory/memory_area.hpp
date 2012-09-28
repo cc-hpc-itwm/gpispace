@@ -15,6 +15,7 @@
 #include <gpi-space/pc/type/memory_location.hpp>
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
+#include <gpi-space/pc/memory/task.hpp>
 
 namespace gpi
 {
@@ -103,6 +104,14 @@ namespace gpi
                           ) const;
 
         void *pointer_to (const gpi::pc::type::memory_location_t & loc);
+
+        int get_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                               , const gpi::pc::type::memory_location_t dst
+                               , area_t & dst_area
+                               , gpi::pc::type::size_t amount
+                               , gpi::pc::type::size_t queue
+                               , task_list_t & tasks
+                               );
       protected:
         area_t ( const gpi::pc::type::segment::segment_type type
                , const gpi::pc::type::process_id_t creator
@@ -132,6 +141,14 @@ namespace gpi
         virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                                      , const gpi::pc::type::flags_t flags
                                                      ) const = 0;
+
+        virtual int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                                                , const gpi::pc::type::memory_location_t dst
+                                                , area_t & dst_area
+                                                , gpi::pc::type::size_t amount
+                                                , gpi::pc::type::size_t queue
+                                                , task_list_t & tasks
+                                                ) = 0;
 
         /*
          hook functions that may be overriden

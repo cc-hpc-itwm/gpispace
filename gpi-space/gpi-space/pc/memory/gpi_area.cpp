@@ -6,6 +6,8 @@
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 
+#include <boost/make_shared.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -167,6 +169,184 @@ namespace gpi
         {
           return size;
         }
+      }
+
+      namespace helper
+      {
+        static
+        void do_read_dma_gpi ( const gpi::pc::type::offset_t local_offset
+                             , const gpi::pc::type::offset_t remote_offset
+                             , const gpi::pc::type::size_t amount
+                             , const gpi::pc::type::rank_t from_node
+                             , const gpi::pc::type::queue_id_t queue
+                             )
+        {
+          DLOG( TRACE, "read_dma:"
+              << " loc-offset = " << local_offset
+              << " rem-offset = " << remote_offset
+              << " #bytes = " << amount
+              << " from = " << from_node
+              << " via = " << queue
+              );
+
+          gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
+
+          api.read_dma (local_offset, remote_offset, amount, from_node, queue);
+        }
+
+        template <typename DMAFun>
+        static
+        void do_rdma( gpi::pc::type::size_t local_offset
+                    , const gpi::pc::type::size_t remote_base
+                    , gpi::pc::type::size_t offset
+                    , const gpi::pc::type::size_t per_node_size
+                    , gpi::pc::type::size_t amount
+                    , const gpi::pc::type::queue_id_t queue
+                    , DMAFun rdma
+                    )
+        {
+          while (amount)
+          {
+            const std::size_t rank (offset / per_node_size);
+            const std::size_t max_offset_on_rank ((rank + 1) * per_node_size);
+            const std::size_t size (std::min ( std::min (per_node_size, amount)
+                                             , max_offset_on_rank - offset
+                                             )
+                                   );
+            const std::size_t remote_offset ( remote_base
+                                            + (offset % per_node_size)
+                                            );
+
+            rdma (local_offset, remote_offset, size, rank, queue);
+
+            local_offset += size;
+            offset += size;
+            amount -= size;
+          }
+        }
+
+        static
+        void do_read_dma ( const gpi::pc::type::handle::descriptor_t & src_hdl
+                         , const gpi::pc::type::size_t src_offset
+                         , const gpi::pc::type::handle::descriptor_t & dst_hdl
+                         , const gpi::pc::type::size_t dst_offset
+                         , const gpi::pc::type::size_t amount
+                         , const gpi::pc::type::size_t queue
+                         )
+        {
+          do_rdma( dst_hdl.offset + dst_offset
+                 , src_hdl.offset , src_offset
+                 , src_hdl.local_size
+                 , amount
+                 , queue
+                 , &do_read_dma_gpi
+                 );
+        }
+
+        static
+        void do_write_dma_gpi ( const gpi::pc::type::offset_t local_offset
+                              , const gpi::pc::type::offset_t remote_offset
+                              , const gpi::pc::type::size_t amount
+                              , const gpi::pc::type::rank_t to_node
+                              , const gpi::pc::type::queue_id_t queue
+                              )
+        {
+          DLOG( TRACE, "write_dma:"
+              << " loc-offset = " << local_offset
+              << " rem-offset = " << remote_offset
+              << " #bytes = " << amount
+              << " to = " << to_node
+              << " via = " << queue
+              );
+
+          gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
+
+          api.write_dma (local_offset, remote_offset, amount, to_node, queue);
+        }
+
+        static
+        void do_write_dma ( const gpi::pc::type::handle::descriptor_t & src_hdl
+                          , const gpi::pc::type::size_t src_offset
+                          , const gpi::pc::type::handle::descriptor_t & dst_hdl
+                          , const gpi::pc::type::size_t dst_offset
+                          , const gpi::pc::type::size_t amount
+                          , const gpi::pc::type::size_t queue
+                          )
+        {
+          do_rdma( src_hdl.offset + src_offset
+                 , dst_hdl.offset , dst_offset
+                 , dst_hdl.local_size
+                 , amount
+                 , queue
+                 , &do_write_dma_gpi
+                 );
+        }
+      }
+
+      int
+      gpi_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                                              , const gpi::pc::type::memory_location_t dst
+                                              , area_t & dst_area
+                                              , gpi::pc::type::size_t amount
+                                              , gpi::pc::type::size_t queue
+                                              , task_list_t & tasks
+                                              )
+      {
+        assert (type () == dst_area.type ());
+
+        if (is_local (gpi::pc::type::memory_region_t (src, amount)))
+        {
+          // write dma
+          tasks.push_back
+            (boost::make_shared<task_t>
+            ( "writeDMA "
+            + boost::lexical_cast<std::string> (dst)
+            + " <- "
+            + boost::lexical_cast<std::string> (src)
+            + " "
+            + boost::lexical_cast<std::string> (amount)
+
+            , boost::bind ( &helper::do_write_dma
+                          , this->descriptor (src.handle)
+                          , src.offset
+                          , dst_area.descriptor (dst.handle)
+                          , dst.offset
+                          , amount
+                          , queue
+                          )
+            ));
+        }
+        else if (dst_area.is_local (gpi::pc::type::memory_region_t (dst, amount)))
+        {
+          // read dma
+          tasks.push_back
+            (boost::make_shared<task_t>
+            ( "readDMA "
+            + boost::lexical_cast<std::string> (dst)
+            + " <- "
+            + boost::lexical_cast<std::string> (src)
+            + " "
+            + boost::lexical_cast<std::string> (amount)
+
+            , boost::bind ( &helper::do_read_dma
+                          , this->descriptor     (src.handle)
+                          , src.offset
+                          , dst_area.descriptor (dst.handle)
+                          , dst.offset
+                          , amount
+                          , queue
+                          )
+            ));
+        }
+        else
+        {
+          throw std::runtime_error
+            ( "illegal memory transfer requested:"
+            " source and destination cannot both be remote!"
+            );
+        }
+
+        return 0;
       }
     }
   }
