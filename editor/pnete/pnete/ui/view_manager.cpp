@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QString>
 #include <QWidget>
+#include <QUndoView>
 
 #include <pnete/ui/editor_window.hpp>
 #include <pnete/ui/document_view.hpp>
@@ -224,6 +225,16 @@ namespace fhg
       QAction* view_manager::action_save_current_file()
       {
         return _action_save_current_file;
+      }
+
+      QUndoView* view_manager::create_undo_view (QWidget* parent) const
+      {
+        return new QUndoView (undo_group(), parent);
+      }
+
+      QUndoGroup* view_manager::undo_group() const
+      {
+        return _undo_group;
       }
     }
   }

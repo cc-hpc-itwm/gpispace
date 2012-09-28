@@ -12,6 +12,7 @@
 
 class QAction;
 class QWidget;
+class QUndoView;
 
 namespace fhg
 {
@@ -51,6 +52,9 @@ namespace fhg
         void create_widget (data::proxy::type &);
         void current_widget_close();
         void save_file();
+
+        QUndoView* create_undo_view (QWidget* parent = NULL) const;
+        QUndoGroup* undo_group() const;
 
       signals:
         // net_view
