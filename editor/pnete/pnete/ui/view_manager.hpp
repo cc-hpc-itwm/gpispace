@@ -4,6 +4,7 @@
 #define _PNETE_UI_VIEW_MANAGER_HPP 1
 
 #include <QObject>
+#include <QUndoGroup>
 
 #include <pnete/data/proxy.hpp>
 
@@ -63,6 +64,8 @@ namespace fhg
         void add_on_top_of_current_widget (document_view* w);
 
         QAction* _action_save_current_file;
+
+        QUndoGroup* _undo_group;
       };
     }
   }

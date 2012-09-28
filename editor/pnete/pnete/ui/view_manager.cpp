@@ -31,6 +31,7 @@ namespace fhg
         , _editor_window (parent)
         , _accessed_widgets()
         , _action_save_current_file (new QAction (tr ("save"), this))
+        , _undo_group (new QUndoGroup (this))
       {
         _action_save_current_file->setShortcuts (QKeySequence::Save);
         _action_save_current_file->setEnabled (false);
@@ -84,6 +85,9 @@ namespace fhg
         }
 
         _accessed_widgets.push (current_view);
+
+        data::proxy::root (current_view->widget()->proxy())->change_manager()
+          .setActive(true);
 
         //! \todo enable and disable actions
 
@@ -169,6 +173,8 @@ namespace fhg
       }
       void view_manager::create_widget (data::proxy::type& proxy)
       {
+        _undo_group->addStack (&data::proxy::root (proxy)->change_manager());
+
         add_on_top_of_current_widget
           (data::proxy::document_view_factory (proxy));
 
