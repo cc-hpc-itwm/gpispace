@@ -85,23 +85,23 @@ namespace gpi
         }
         else
         {
-          task_ptr wtask (boost::make_shared<task_t>
-                         ("wait_on_queue", boost::bind( &helper::do_wait_on_queue
-                                                      , queue
-                                                      )
-                         )
-                         );
-          m_queues [queue]->enqueue (wtask);
-          wtask->wait ();
-
-          if (wtask->has_failed ())
-          {
-            throw std::runtime_error
-              ("wait failed: " + wtask->get_error_message ());
-          }
-
           try
           {
+            task_ptr wtask (boost::make_shared<task_t>
+                           ("wait_on_queue", boost::bind( &helper::do_wait_on_queue
+                                                        , queue
+                                                        )
+                           )
+                           );
+            m_queues [queue]->enqueue (wtask);
+            wtask->wait ();
+
+            if (wtask->has_failed ())
+            {
+              throw std::runtime_error
+                ("wait failed: " + wtask->get_error_message ());
+            }
+
             // account for the wait task  before, but since another thread could
             // already  have consumed  his and  our  wait task,  we just  always
             // decrement  by  one  if  we  got  more  than  1  finished  task  -
