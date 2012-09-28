@@ -119,15 +119,76 @@ namespace fhg
           );
       }
 
-      void change_manager_t::delete_transition
-      ( const QObject* origin
-      , const ::xml::parse::type::transition_type& trans
-      , ::xml::parse::type::net_type& net
-      )
+
+      namespace action
+      {
+        class remove_transition : public QUndoCommand
+        {
+        public:
+          remove_transition
+            ( change_manager_t& change_manager
+            , const QObject* origin
+            , ::xml::parse::type::transition_type& transition
+            , ::xml::parse::type::net_type& net
+            )
+            : QUndoCommand (QObject::tr ("remove_transition_action"))
+            , _change_manager (change_manager)
+            , _origin (origin)
+            , _transition (&transition)
+            , _transition_copy (transition)
+            , _net (net)
+          { }
+
+          virtual void undo()
+          {
+            _transition = &detail::push_transition (_transition_copy, _net);
+
+            _change_manager.emit_transition_added
+              (_origin, *_transition, _net);
+          }
+
+          virtual void redo()
+          {
+            _change_manager.emit_transition_deleted
+              (_origin, *_transition, _net);
+
+            _net.erase_transition (*_transition);
+            _transition = NULL;
+            _origin = NULL;
+          }
+        private:
+          change_manager_t& _change_manager;
+          const QObject* _origin;
+          ::xml::parse::type::transition_type* _transition;
+          const ::xml::parse::type::transition_type _transition_copy;
+          ::xml::parse::type::net_type& _net;
+        };
+      }
+
+      void change_manager_t::emit_transition_deleted
+        ( const QObject* origin
+        , const ::xml::parse::type::transition_type& trans
+        , ::xml::parse::type::net_type& net
+        )
       {
         emit signal_delete_transition (origin, trans, net);
+      }
+      void change_manager_t::emit_transition_added
+        ( const QObject* origin
+        , ::xml::parse::type::transition_type& trans
+        , ::xml::parse::type::net_type& net
+        )
+      {
+        emit signal_add_transition (origin, trans, net);
+      }
 
-        net.erase_transition (trans);
+      void change_manager_t::delete_transition
+        ( const QObject* origin
+        , ::xml::parse::type::transition_type& trans
+        , ::xml::parse::type::net_type& net
+        )
+      {
+        push (new action::remove_transition (*this, origin, trans, net));
       }
 
       void change_manager_t::add_transition
