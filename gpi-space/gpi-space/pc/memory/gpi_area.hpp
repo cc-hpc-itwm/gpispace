@@ -13,7 +13,7 @@ namespace gpi
       class gpi_area_t : public area_t
       {
       public:
-        static const int area_type = gpi::pc::type::segment::SEG_GPI;
+        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GPI;
 
         gpi_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & name
@@ -25,8 +25,6 @@ namespace gpi
         ~gpi_area_t ();
 
       protected:
-        int get_type_id () const;
-
         void check_bounds ( const gpi::pc::type::handle::descriptor_t &
                           , const gpi::pc::type::offset_t start
                           , const gpi::pc::type::size_t   amount

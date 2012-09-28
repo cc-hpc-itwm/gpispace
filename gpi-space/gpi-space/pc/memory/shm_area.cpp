@@ -87,7 +87,7 @@ namespace gpi
                              , const gpi::pc::type::size_t size
                              , const gpi::pc::type::flags_t flags
                              )
-        : area_t ( gpi::pc::type::segment::SEG_SHM
+        : area_t ( shm_area_t::area_type
                  , creator
                  , name
                  , size

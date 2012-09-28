@@ -20,13 +20,13 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              , void * dma_ptr
                              )
-          : area_t ( gpi::pc::type::segment::SEG_GPI
-                   , creator
-                   , name
-                   , size
-                   , flags
-                   )
-          , m_ptr (dma_ptr)
+        : area_t ( gpi_area_t::area_type
+                 , creator
+                 , name
+                 , size
+                 , flags
+                 )
+        , m_ptr (dma_ptr)
       {
         // total memory size is required for boundary checks
         m_total_memsize = gpi::api::gpi_api_t::get().number_of_nodes () * size;
@@ -71,11 +71,6 @@ namespace gpi
       gpi_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
       {
         return false;
-      }
-
-      int gpi_area_t::get_type_id () const
-      {
-        return area_type;
       }
 
       void

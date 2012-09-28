@@ -13,7 +13,7 @@ namespace gpi
       class shm_area_t : public virtual area_t
       {
       public:
-        static const int area_type = gpi::pc::type::segment::SEG_SHM;
+        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SHM;
 
         shm_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & name // == path
