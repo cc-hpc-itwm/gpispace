@@ -38,7 +38,7 @@ namespace fhg
         }
 
         static ::xml::parse::type::place_type&
-        push_place ( ::xml::parse::type::place_type& place
+        push_place ( ::xml::parse::type::place_type place
                    , ::xml::parse::type::net_type& net
                    )
         {
@@ -55,7 +55,7 @@ namespace fhg
         }
 
         static ::xml::parse::type::transition_type&
-        push_transition ( ::xml::parse::type::transition_type& transition
+        push_transition ( ::xml::parse::type::transition_type transition
                         , ::xml::parse::type::net_type& net
                         )
         {
