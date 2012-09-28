@@ -3,7 +3,7 @@
 #ifndef _PNETE_DATA_CHANGE_MANAGER_HPP
 #define _PNETE_DATA_CHANGE_MANAGER_HPP 1
 
-#include <QObject>
+#include <QUndoStack>
 
 #include <xml/parse/types.hpp>
 
@@ -15,7 +15,7 @@ namespace fhg
     {
       namespace internal { class type; }
 
-      class change_manager_t : public QObject
+      class change_manager_t : public QUndoStack
       {
         Q_OBJECT;
 
