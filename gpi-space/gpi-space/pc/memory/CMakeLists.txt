@@ -6,6 +6,7 @@ set (hdrs
   manager.hpp
   gpi_area.hpp
   shm_area.hpp
+  sfs_area.hpp
   memory_transfer_t.hpp
   thread_pool.hpp
   task.hpp
@@ -20,6 +21,7 @@ set (srcs
   manager.cpp
   gpi_area.cpp
   shm_area.cpp
+  sfs_area.cpp
   memory_transfer_t.cpp
   thread_pool.cpp
   task.cpp
