@@ -63,16 +63,6 @@ namespace gpi
 
           gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
 
-          //         if (api.rank() == to_node)
-          //         {
-          //           LOG(WARN, "readDMA to local node from local node - seems not to be supported!");
-          //         }
-
-          if (api.max_dma_requests_reached (queue))
-          {
-            do_wait_on_queue(queue);
-          }
-
           api.read_dma (local_offset, remote_offset, amount, from_node, queue);
         }
 
@@ -140,16 +130,6 @@ namespace gpi
               );
 
           gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
-
-          //         if (api.rank() == to_node)
-          //         {
-          //           LOG(WARN, "writeDMA to local node from local node - seems not to be supported!");
-          //         }
-
-          if (api.max_dma_requests_reached(queue))
-          {
-            do_wait_on_queue(queue);
-          }
 
           api.write_dma (local_offset, remote_offset, amount, to_node, queue);
         }

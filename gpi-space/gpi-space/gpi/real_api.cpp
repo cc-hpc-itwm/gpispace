@@ -494,6 +494,11 @@ namespace gpi
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
 
+        if (max_dma_requests_reached (queue))
+        {
+          wait_dma (queue);
+        }
+
         DLOG( TRACE
             , "real_api: readDMA:"
             << " remote: " << r_off
@@ -549,6 +554,11 @@ namespace gpi
       while (remaining)
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
+
+        if (max_dma_requests_reached (queue))
+        {
+          wait_dma (queue);
+        }
 
         DLOG( TRACE
             , "real_api: writeDMA:"
