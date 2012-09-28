@@ -14,6 +14,16 @@ namespace gpi
     {
       namespace helper
       {
+        static
+        void do_wait_on_queue (const std::size_t q)
+        {
+          DLOG(TRACE, "gpi::wait_dma(" << q << ")");
+
+          std::size_t s(gpi::api::gpi_api_t::get().wait_dma (q));
+
+          DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
+        }
+
         static void do_memcpy ( memory_transfer_t t
                               , const std::size_t chunk
                               , const std::size_t shift
@@ -33,16 +43,6 @@ namespace gpi
                      , (char*)(t.src_area->pointer_to(t.src_location)) + shift
                      , chunk
                      );
-        }
-
-        static
-        void do_wait_on_queue (const std::size_t q)
-        {
-          DLOG(TRACE, "gpi::wait_dma(" << q << ")");
-
-          std::size_t s(gpi::api::gpi_api_t::get().wait_dma (q));
-
-          DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
         }
 
         static
