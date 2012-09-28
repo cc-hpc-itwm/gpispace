@@ -102,7 +102,17 @@ namespace gpi
 
           try
           {
-            return m_queues[queue]->wait ();
+            // account for the wait task  before, but since another thread could
+            // already  have consumed  his and  our  wait task,  we just  always
+            // decrement  by  one  if  we  got  more  than  1  finished  task  -
+            // specification just  means, ok the  tasks have finished,  but it's
+            // not specific about the exact number to return - quite ugly
+
+            const size_t tasks_finished (m_queues[queue]->wait ());
+            if (tasks_finished)
+              return tasks_finished - 1;
+            else
+              return tasks_finished;
           }
           catch (std::exception const & ex)
           {
