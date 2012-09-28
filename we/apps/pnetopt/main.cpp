@@ -766,6 +766,7 @@ class Optimizer {
             if (place == connectedPlace_) {
                 return;
             }
+            assert(place == NULL || place->petriNet() == petriNet());
             if (connectedPlace_) {
                 connectedPlace_->removeConnectedPort(this);
             }
@@ -784,6 +785,10 @@ class Optimizer {
 
             // TODO: I'm not sure how to handle tunnels yet.
             assert(!isTunnel());
+
+            if (place != NULL && place->petriNet() != petriNet()) {
+                throw std::runtime_error((boost::format("trying to connect a port %1% to a place %2% from a different Petri net") % name() % place->name()).str());
+            }
 
             if (connectedPlace_) {
                 /* We must remove an edge. */
@@ -851,9 +856,7 @@ class Optimizer {
             if (place == associatedPlace_) {
                 return;
             }
-            if (place != NULL && place->petriNet() != transition()->subnet()) {
-                throw std::runtime_error((boost::format("trying to associate a port %1% with a place %2% not from a direct subnet") % name() % place->name()).str());
-            }
+            assert(place == NULL || place->petriNet() == transition()->subnet());
             if (associatedPlace_) {
                 associatedPlace_->removeAssociatedPort(this);
             }
@@ -869,6 +872,10 @@ class Optimizer {
             /* Note: it is important to call associatedPlace() here. */
             if (place == associatedPlace()) {
                 return;
+            }
+
+            if (place != NULL && place->petriNet() != transition()->subnet()) {
+                throw std::runtime_error((boost::format("trying to associate a port %1% with a place %2% not from a direct subnet") % name() % place->name()).str());
             }
 
             setAssociatedPlace(place);
