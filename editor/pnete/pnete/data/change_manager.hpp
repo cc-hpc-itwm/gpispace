@@ -3,7 +3,7 @@
 #ifndef _PNETE_DATA_CHANGE_MANAGER_HPP
 #define _PNETE_DATA_CHANGE_MANAGER_HPP 1
 
-#include <QObject>
+#include <QUndoStack>
 
 #include <xml/parse/types.hpp>
 
@@ -13,9 +13,13 @@ namespace fhg
   {
     namespace data
     {
+      namespace action
+      {
+        class remove_transition;
+      }
       namespace internal { class type; }
 
-      class change_manager_t : public QObject
+      class change_manager_t : public QUndoStack
       {
         Q_OBJECT;
 
@@ -35,7 +39,7 @@ namespace fhg
                             , const QString&
                             );
         void delete_transition ( const QObject*
-                               , const ::xml::parse::type::transition_type&
+                               , ::xml::parse::type::transition_type&
                                , ::xml::parse::type::net_type&
                                );
 
@@ -79,6 +83,19 @@ namespace fhg
                               );
 
       private:
+        void emit_transition_deleted
+          ( const QObject* origin
+          , const ::xml::parse::type::transition_type& trans
+          , ::xml::parse::type::net_type& net
+          );
+        void emit_transition_added
+          ( const QObject* origin
+          , ::xml::parse::type::transition_type& trans
+          , ::xml::parse::type::net_type& net
+          );
+
+        friend class action::remove_transition;
+
         internal::type& _internal;
       };
     }
