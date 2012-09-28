@@ -1,6 +1,7 @@
 #ifndef GPI_SPACE_PC_MEMORY_GPI_AREA_HPP
 #define GPI_SPACE_PC_MEMORY_GPI_AREA_HPP
 
+#include <gpi-space/pc/type/segment_type.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 
 namespace gpi
@@ -12,7 +13,7 @@ namespace gpi
       class gpi_area_t : public area_t
       {
       public:
-        static const int area_type = 1;
+        static const int area_type = gpi::pc::type::segment::SEG_GPI;
 
         gpi_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & name
