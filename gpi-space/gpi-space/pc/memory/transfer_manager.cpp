@@ -173,7 +173,7 @@ namespace gpi
                            , sz
                            , shift
                            )
-              , 0 /* estimated time (FIXME: something is broken when we set this to sz) */
+              , sz
               ));
             remaining -= sz;
             shift += sz;
