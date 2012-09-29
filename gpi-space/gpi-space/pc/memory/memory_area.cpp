@@ -616,7 +616,7 @@ namespace gpi
               + " "
               + boost::lexical_cast<std::string> (sz)
 
-              , boost::bind ( std::memcpy
+              , boost::bind ( std::memmove
                             , (char*)(dst_area.pointer_to (dst)) + offset
                             , (char*)(src_area.pointer_to (src)) + offset
                             , sz
