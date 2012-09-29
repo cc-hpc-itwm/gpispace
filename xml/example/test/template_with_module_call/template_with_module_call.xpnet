@@ -1,4 +1,5 @@
 <template name="template_with_module_call">
+  <template-parameter type="T"/>
   <in name="x" type="T" place="x"/>
   <out name="y" type="T" place="y"/>
   <net>

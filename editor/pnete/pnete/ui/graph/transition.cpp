@@ -81,6 +81,10 @@ namespace fhg
           {
             return _transition;
           }
+          ::xml::parse::type::transition_type& item::transition()
+          {
+            return _transition;
+          }
           ::xml::parse::type::net_type& item::net ()
           {
             return _net;

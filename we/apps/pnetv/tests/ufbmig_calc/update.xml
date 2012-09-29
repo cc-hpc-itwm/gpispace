@@ -1,5 +1,9 @@
 <defun>
-
+  <properties name="pnetc">
+    <properties name="warning">
+      <property key="inline-many-output-ports" value="off"/>
+    </properties>
+  </properties>
   <struct name="interval_tagged_with_id">
     <field name="interval" type="interval"/>
     <field name="id" type="long"/>

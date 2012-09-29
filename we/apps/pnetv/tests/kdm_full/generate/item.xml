@@ -1,4 +1,9 @@
 <defun>
+  <properties name="pnetc">
+    <properties name="warning">
+      <property key="inline-many-output-ports" value="off"/>
+    </properties>
+  </properties>
 
   <in name="config" type="config" place="config"/>
   <out name="volume_state" type="volume_state" place="volume_state"/>

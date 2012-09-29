@@ -566,6 +566,38 @@ namespace xml
                 {
                   require_type (f.requirements, child, state);
                 }
+              else if (child_name == "template-parameter")
+                {
+                  if (std::string (node->name()) != "template")
+                    {
+                      state.warn ( warning::ignore_template_parameter
+                                   ( f.name
+                                   , state.file_in_progress()
+                                   )
+                                 );
+                    }
+                  else
+                    {
+                      const std::string tn (required ( "template-parameter"
+                                                     , child
+                                                     , "type"
+                                                     , state.file_in_progress()
+                                                     )
+                                           );
+
+                      if (f.typenames().find (tn) != f.typenames().end())
+                        {
+                          state.warn ( warning::duplicate_template_parameter
+                                       ( f.name
+                                       , tn
+                                       , state.file_in_progress()
+                                       )
+                                     );
+                        }
+
+                      f.insert_typename (tn);
+                    }
+                }
               else
                 {
                   state.warn

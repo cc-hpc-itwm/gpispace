@@ -41,6 +41,7 @@ namespace fhg
                           );
 
             const ::xml::parse::type::transition_type& transition() const;
+            ::xml::parse::type::transition_type& transition();
             ::xml::parse::type::net_type& net();
 
             virtual QPainterPath shape() const;

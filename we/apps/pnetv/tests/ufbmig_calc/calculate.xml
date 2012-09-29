@@ -1,4 +1,9 @@
 <defun>
+  <properties name="pnetc">
+    <properties name="warning">
+      <property key="inline-many-output-ports" value="off"/>
+    </properties>
+  </properties>
   <in name="empty_interval" type="interval" place="empty_interval"/>
   <in name="loaded_package" type="assigned_package" place="loaded_package"/>
   <out name="processed_interval" type="interval" place="processed_interval"/>

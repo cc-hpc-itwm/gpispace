@@ -4,6 +4,7 @@
 #define _PNETE_UI_VIEW_MANAGER_HPP 1
 
 #include <QObject>
+#include <QUndoGroup>
 
 #include <pnete/data/proxy.hpp>
 
@@ -11,6 +12,7 @@
 
 class QAction;
 class QWidget;
+class QUndoView;
 
 namespace fhg
 {
@@ -51,6 +53,9 @@ namespace fhg
         void current_widget_close();
         void save_file();
 
+        QUndoView* create_undo_view (QWidget* parent = NULL) const;
+        QUndoGroup* undo_group() const;
+
       signals:
         // net_view
         void zoomed (int);
@@ -63,6 +68,8 @@ namespace fhg
         void add_on_top_of_current_widget (document_view* w);
 
         QAction* _action_save_current_file;
+
+        QUndoGroup* _undo_group;
       };
     }
   }

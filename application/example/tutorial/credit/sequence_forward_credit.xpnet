@@ -1,4 +1,5 @@
 <template name="sequence_forward_credit">
+  <template-parameter type="T"/>
 
   <struct name="WITH_CREDIT">
     <field name="id" type="long"/>

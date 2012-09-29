@@ -62,10 +62,9 @@
           ${offset} := ${offset} + ${ready.length};
           ${id} := ${id} + 1;
         </expression>
-<!--        <condition>
+        <condition>
           ${ready.v.id} :eq: ${id}
         </condition>
--->
      </defun>
       <connect-inout port="offset" place="offset"/>
       <connect-inout port="id" place="id"/>

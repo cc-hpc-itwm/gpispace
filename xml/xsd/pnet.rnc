@@ -78,6 +78,7 @@ use_type = attribute name { xsd:ID }
 require_type =
   attribute key { xsd:string },
   attribute mandatory { xsd:boolean }?
+template_parameter_type = attribute type { xsd:ID }
 place_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
@@ -102,6 +103,7 @@ place_map_type =
   attribute virtual { xsd:string },
   attribute real { xsd:ID }
 function_type =
+  element template-parameter { template_parameter_type }*,
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   (element struct { struct_type }
