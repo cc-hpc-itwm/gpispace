@@ -13,6 +13,7 @@ set(tc_srcs
   test_handle_generator.cpp
   test_memory_manager.cpp
   test_task.cpp
+  test_sfs_area.cpp
 )
 
 foreach (tc_src ${tc_srcs})
