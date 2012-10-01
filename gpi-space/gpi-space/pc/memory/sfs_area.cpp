@@ -3,8 +3,6 @@
 #include <fhglog/minimal.hpp>
 #include <boost/make_shared.hpp>
 
-#include <gpi-space/pc/global/topology.hpp>
-
 namespace gpi
 {
   namespace pc
@@ -13,9 +11,10 @@ namespace gpi
     {
       sfs_area_t::sfs_area_t ( const gpi::pc::type::process_id_t creator
                              , const std::string & path
-                             , const gpi::pc::type::size_t size
+                             , const gpi::pc::type::size_t size        // total
                              , const gpi::pc::type::flags_t flags
                              , const std::string & meta_data
+                             , gpi::pc::global::itopology_t & topology
                              )
         : area_t ( sfs_area_t::area_type
                  , creator
@@ -29,6 +28,7 @@ namespace gpi
         , m_size (size)
         , m_min_local_offset (0)
         , m_max_local_offset (size)
+        , m_topology (topology)
       {
         CLOG( TRACE
             , "gpi.memory"
@@ -43,7 +43,7 @@ namespace gpi
       }
 
       sfs_area_t::~sfs_area_t ()
-      { }
+      {}
 
       area_t::grow_direction_t
       sfs_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
@@ -97,13 +97,13 @@ namespace gpi
            && hdl.creator != (gpi::pc::type::process_id_t)(-1)
            )
         {
-          gpi::pc::global::topology().alloc ( descriptor ().id
-                                            , hdl.id
-                                            , hdl.offset
-                                            , hdl.size
-                                            , hdl.local_size
-                                            , hdl.name
-                                            );
+          m_topology.alloc ( descriptor ().id
+                           , hdl.id
+                           , hdl.offset
+                           , hdl.size
+                           , hdl.local_size
+                           , hdl.name
+                           );
         }
       }
 
@@ -112,7 +112,7 @@ namespace gpi
       {
         if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
         {
-          gpi::pc::global::topology().free(hdl.id);
+          m_topology.free(hdl.id);
         }
       }
 

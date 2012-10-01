@@ -2,6 +2,8 @@
 #define GPI_SPACE_PC_MEMORY_SFS_AREA_HPP
 
 #include <gpi-space/pc/type/segment_type.hpp>
+
+#include <gpi-space/pc/global/itopology.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 
 namespace gpi
@@ -17,9 +19,10 @@ namespace gpi
 
         sfs_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & path
-                   , const gpi::pc::type::size_t size
+                   , const gpi::pc::type::size_t size        // total
                    , const gpi::pc::type::flags_t flags
                    , const std::string & meta_data
+                   , gpi::pc::global::itopology_t & topology
                    );
 
         ~sfs_area_t ();
@@ -70,6 +73,8 @@ namespace gpi
         gpi::pc::type::size_t   m_size;
         gpi::pc::type::offset_t m_min_local_offset;
         gpi::pc::type::offset_t m_max_local_offset;
+
+        gpi::pc::global::itopology_t & m_topology;
       };
     }
   }
