@@ -9,7 +9,7 @@ local function find_matching_places(transition)
 	local input_ports = pnet.name_port_map(pnet.input_ports(transition:ports()))
 	local output_ports = pnet.name_port_map(pnet.output_ports(transition:ports()))
 
-	if #input_ports ~= #output_ports then
+	if list.table_size(input_ports) ~= list.table_size(output_ports) then
 		return nil
 	end
 
