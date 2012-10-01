@@ -78,7 +78,7 @@ local function find_matching_places(transition)
 	return result
 end
 
-local function merge_places(net, first, second)
+local function merge_places(first, second)
 	--
 	-- Choose the place to keep and the place to remove.
 	--
@@ -118,7 +118,7 @@ function M.simple_pipe_elimination(net)
 
 			if matching_places ~= nil then
 				for first,second in pairs(matching_places) do
-					merge_places(net, first, second)
+					merge_places(first, second)
 				end
 				transition:remove()
 				modified = true
