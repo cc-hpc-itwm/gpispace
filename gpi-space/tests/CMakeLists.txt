@@ -1,5 +1,9 @@
 # -*- mode: cmake; -*-
 
+set (helper_src
+  dummy_topology.cpp
+  )
+
 set(tc_srcs
   test_config.cpp
   test_signal_handler.cpp
@@ -16,7 +20,7 @@ foreach (tc_src ${tc_srcs})
   string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
   message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
-  add_executable(${tc_name} ${tc_src})
+  add_executable(${tc_name} ${tc_src} ${helper_src})
   target_link_libraries(${tc_name} gpi-space-pc-segment)
   target_link_libraries(${tc_name} gpi-space-pc-memory)
   target_link_libraries(${tc_name} gpi-space-static)
