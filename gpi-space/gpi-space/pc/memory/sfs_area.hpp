@@ -54,11 +54,6 @@ namespace gpi
                             , const gpi::pc::type::size_t   range_size
                             ) const;
 
-        gpi::pc::type::offset_t
-        handle_to_global_offset ( const gpi::pc::type::offset_t
-                                , const gpi::pc::type::size_t per_node_size
-                                ) const;
-
         void *ptr ();
 
         gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
