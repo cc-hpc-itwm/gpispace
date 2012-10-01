@@ -713,7 +713,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   // read data chunk from file to shm
 
-  std::size_t offset (0);
+  std::size_t read_count = 0;
   gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
 
@@ -724,12 +724,12 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   if (total_to_read)
   {
-    while (ifs.good() && (offset < total_to_read))
+    while (ifs.good() && (read_count < total_to_read))
     {
-      print_progress (stderr, offset, total_to_read);
+      print_progress (stderr, read_count, total_to_read);
 
       std::size_t to_read = std::min( sh.state().com_size()
-                                    , total_to_read - offset
+                                    , total_to_read - read_count
                                     );
 
       ifs.read(sh.state().com_buffer(), to_read);
@@ -743,24 +743,24 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
       sh.state().capi.memcpy(dst,         gpi_com_buf, read_bytes, 0);
       sh.state().capi.wait(0);
 
-      offset     += read_bytes;
+      read_count += read_bytes;
       dst.offset += read_bytes;
     }
 
-    print_progress (stderr, offset, total_to_read);
+    print_progress (stderr, read_count, total_to_read);
     fprintf(stderr, "\n");
 
-    if (offset < total_to_read)
+    if (read_count < total_to_read)
     {
       std::cerr << "warning: handle was not completely filled: "
-                << "read " << offset << "/" << total_to_read << " bytes"
+                << "read " << read_count << "/" << total_to_read << " bytes"
                 << std::endl;
     }
 
     double elapsed = timer.elapsed ();
     if (elapsed == 0.0)
       elapsed = 1e-15;
-    std::cerr << (((double)total_to_read/1024/1024) / elapsed) << " MiB/s"
+    std::cerr << (((double)read_count/1024/1024) / elapsed) << " MiB/s"
               << std::endl;
   }
 
