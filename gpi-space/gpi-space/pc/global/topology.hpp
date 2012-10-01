@@ -18,6 +18,8 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <gpi-space/pc/global/itopology.hpp>
+
 #include <gpi-space/types.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle.hpp>
@@ -29,6 +31,7 @@ namespace gpi
     namespace global
     {
       class topology_t : boost::noncopyable
+                       , public itopology_t
       {
       public:
         typedef fhg::com::port_t port_t;
@@ -84,7 +87,7 @@ namespace gpi
                   );
 
         int free (const gpi::pc::type::handle_t);
-
+      private:
         void cast (const gpi::rank_t rnk, const std::string & data);
         void cast (const gpi::rank_t rnk, const char *data, const std::size_t len);
 
@@ -106,7 +109,7 @@ namespace gpi
         //       -> return: No, Yes (just for sanity)
         //    shutdown-requested()
         //       -> return: nil
-      private:
+
         struct child_t
         {
           child_t ()
