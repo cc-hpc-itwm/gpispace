@@ -1,6 +1,8 @@
 #ifndef GPI_SPACE_PC_MEMORY_SFS_AREA_HPP
 #define GPI_SPACE_PC_MEMORY_SFS_AREA_HPP
 
+#include <boost/filesystem.hpp>
+
 #include <gpi-space/pc/type/segment_type.hpp>
 
 #include <gpi-space/pc/global/itopology.hpp>
@@ -15,18 +17,25 @@ namespace gpi
       class sfs_area_t : public area_t
       {
       public:
+        typedef boost::filesystem::path path_t;
+
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SFS;
+        static const int SFS_VERSION = 0x0001;
+
+        // cleanup a file segment
+        static void cleanup (path_t const & path);
 
         sfs_area_t ( const gpi::pc::type::process_id_t creator
-                   , const std::string & path
+                   , const path_t & path
                    , const gpi::pc::type::size_t size        // total
                    , const gpi::pc::type::flags_t flags
-                   , const std::string & meta_data
                    , gpi::pc::global::itopology_t & topology
                    );
 
         ~sfs_area_t ();
 
+        int open (boost::system::error_code & ec);
+        int close (boost::system::error_code & ec);
       protected:
         int get_type_id () const;
 
@@ -60,14 +69,15 @@ namespace gpi
                                              , const gpi::pc::type::flags_t flags
                                              ) const;
 
+        bool initialize ( path_t const & path
+                        , const gpi::pc::type::size_t size
+                        , boost::system::error_code &ec
+                        );
 
         void * m_ptr;
-        std::string m_path;
-        std::string m_meta;
+        path_t m_path;
 
         gpi::pc::type::size_t   m_size;
-        gpi::pc::type::offset_t m_min_local_offset;
-        gpi::pc::type::offset_t m_max_local_offset;
 
         gpi::pc::global::itopology_t & m_topology;
       };

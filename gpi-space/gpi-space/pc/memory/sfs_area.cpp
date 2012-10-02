@@ -1,7 +1,18 @@
 #include "sfs_area.hpp"
 
+#include <cerrno>
+#include <sys/mman.h> // mmap
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <cstring> // strerror
+
 #include <fhglog/minimal.hpp>
-#include <boost/make_shared.hpp>
+
+#include <boost/system/system_error.hpp>
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
 
 namespace gpi
 {
@@ -9,53 +20,232 @@ namespace gpi
   {
     namespace memory
     {
+      namespace detail
+      {
+        static sfs_area_t::path_t meta_path (sfs_area_t::path_t const &p)
+        {
+          return p / "meta";
+        }
+
+        static sfs_area_t::path_t data_path (sfs_area_t::path_t const &p)
+        {
+          return p / "data";
+        }
+
+        static sfs_area_t::path_t version_path (sfs_area_t::path_t const &p)
+        {
+          return p / "version";
+        }
+      }
+
       sfs_area_t::sfs_area_t ( const gpi::pc::type::process_id_t creator
-                             , const std::string & path
+                             , const sfs_area_t::path_t & path
                              , const gpi::pc::type::size_t size        // total
                              , const gpi::pc::type::flags_t flags
-                             , const std::string & meta_data
                              , gpi::pc::global::itopology_t & topology
                              )
         : area_t ( sfs_area_t::area_type
                  , creator
-                 , path
+                 , path.string ()
                  , size
                  , flags
                  )
         , m_ptr (0)
         , m_path (path)
-        , m_meta (meta_data)
         , m_size (size)
-        , m_min_local_offset (0)
-        , m_max_local_offset (size)
         , m_topology (topology)
       {
-        CLOG( TRACE
-            , "gpi.memory"
-            , "SFS memory created:"
-            <<" size: " << size
-            <<" range:"
-            <<" ["
-            << m_min_local_offset << "," << m_max_local_offset
-            << "]"
-            << " path: " << m_path
-            );
+        boost::system::error_code ec;
+        int rc = this->open (ec);
+        if (rc < 0)
+        {
+          throw boost::system::system_error (ec, "open sfs segment failed: " );
+        }
       }
 
       sfs_area_t::~sfs_area_t ()
-      {}
+      {
+        boost::system::error_code ec;
+        this->close (ec);
+      }
+
+      void sfs_area_t::cleanup (sfs_area_t::path_t const &path)
+      {
+        fs::remove_all (path);
+      }
+
+      int sfs_area_t::open (boost::system::error_code &ec)
+      {
+        /* steps:
+
+           - check if path exists and whether it's a directory or not
+
+           - if it doesn't exist: create files
+
+           - locate required files: meta, data, version
+
+           - read the version file, check version number
+
+           - open meta file, consistency check
+           - open data file, consistency check
+           - map memory
+        */
+        if (! fs::exists (m_path))
+        {
+          if (! initialize (m_path, m_size, ec))
+          {
+            return -1;
+          }
+        }
+
+        // try to open existing file
+        path_t data_path = detail::data_path (m_path);
+        int fd = ::open ( data_path.string ().c_str ()
+                        , O_RDWR
+                        );
+        if (fd < 0)
+        {
+          ec.assign (errno, boost::system::system_category ());
+          return -1;
+        }
+
+        m_ptr = mmap ( (void*)0
+                     , m_size
+                     , PROT_READ + PROT_WRITE
+                     , MAP_SHARED
+                     , fd
+                     , 0
+                     );
+        if (m_ptr == MAP_FAILED)
+        {
+          ::close (fd);
+          m_ptr = 0;
+          ec.assign (errno, boost::system::system_category ());
+          return -1;
+        }
+
+        ::close (fd);
+
+        CLOG( TRACE
+            , "gpi.memory"
+            , "SFS memory created:"
+            << " path: " << m_path
+            << " size: " << m_size
+            << " mapped-to: " << m_ptr
+            );
+
+        return 0;
+      }
+
+      int sfs_area_t::close (boost::system::error_code &ec)
+      {
+        if (m_ptr)
+        {
+          munmap (m_ptr, m_size);
+          m_ptr = 0;
+        }
+
+        /*
+          steps:
+
+          - check that no ongoing memory transfers are accessing this area
+          - unmap memory
+          - depending on the flags, remove the directory again
+         */
+        return 0;
+      }
+
+      bool sfs_area_t::initialize ( path_t const & path
+                                  , gpi::pc::type::size_t size
+                                  , boost::system::error_code &ec
+                                  )
+      {
+        int rc = 0;
+        int fd = -1;
+
+        if (! fs::create_directories (path, ec))
+          return false;
+
+        // create data file
+        fs::path data_path = detail::data_path (path);
+        fd = ::open ( data_path.string ().c_str ()
+                    , O_CREAT | O_EXCL | O_RDWR
+                    , 0600 // TODO: pass in permissions
+                    );
+        if (fd < 0)
+        {
+          ec.assign (errno, boost::system::system_category ());
+          return false;
+        }
+
+        rc = ::ftruncate (fd, size);
+        if (rc < 0)
+        {
+          ec.assign (errno, boost::system::system_category ());
+          ::close (fd);
+          return false;
+        }
+        ::close (fd);
+
+        // create meta data
+        fs::path meta_path = detail::meta_path (path);
+        fd = ::open ( meta_path.string ().c_str ()
+                    , O_CREAT | O_EXCL | O_RDWR
+                    , 0600
+                    );
+        if (fd < 0)
+        {
+          ec.assign (errno, boost::system::system_category ());
+          return false;
+        }
+        ::close (fd);
+
+        fs::path version_path = detail::version_path (path);
+        fd = ::open ( version_path.string ().c_str ()
+                    , O_CREAT | O_EXCL | O_RDWR
+                    , 0600
+                    );
+        if (fd < 0)
+        {
+          ec.assign (errno, boost::system::system_category ());
+          return false;
+        }
+
+        char buf [32];
+        snprintf (buf, sizeof (buf), "SFS version %lu\n", SFS_VERSION);
+        size_t remaining = strlen (buf);
+        size_t offset = 0;
+        while (remaining)
+        {
+          rc = write (fd, buf + offset, remaining);
+          if (rc < 0)
+          {
+            if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
+            {
+              continue;
+            }
+            else
+            {
+              ec.assign (errno, boost::system::system_category ());
+              ::close (fd);
+              return false;
+            }
+          }
+
+          remaining -= rc;
+          offset    += rc;
+        }
+        ::close (fd); fd = -1;
+
+        ec.clear ();
+        return true;
+      }
 
       area_t::grow_direction_t
       sfs_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::type::handle::F_GLOBAL))
-        {
-          return GROW_UP;
-        }
-        else
-        {
-          return GROW_DOWN;
-        }
+        // we do not support multiple arenas in this memory type
+        return GROW_UP;
       }
 
       void *

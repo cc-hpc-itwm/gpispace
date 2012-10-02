@@ -2,31 +2,41 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sys/types.h> // pid_t
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>    // getpid, unlink
+#include <cstring>
 
 #include <fhglog/fhglog.hpp>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/sfs_area.hpp>
+#include <gpi-space/pc/memory/handle_generator.hpp>
 #include "dummy_topology.hpp"
 
-struct SetupLogging
+namespace fs = boost::filesystem;
+
+static fs::path path_to_shared_file;
+
+struct Setup
 {
-  SetupLogging ()
+  Setup ()
   {
     FHGLOG_SETUP ();
-    BOOST_TEST_MESSAGE ("setup logging");
+
+    gpi::pc::memory::handle_generator_t::create (42);
   }
 
-  ~SetupLogging ()
-  {}
+  ~Setup ()
+  {
+    gpi::pc::memory::handle_generator_t::destroy ();
+  }
 };
 
-BOOST_GLOBAL_FIXTURE (SetupLogging);
-
-static std::string path_to_shared_file;
+BOOST_GLOBAL_FIXTURE (Setup);
 
 struct F
 {
@@ -39,7 +49,7 @@ struct F
 
   ~F ()
   {
-    unlink (path_to_shared_file.c_str ());
+    //    gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
     BOOST_TEST_MESSAGE ("fixture teardown");
   }
 };
@@ -51,12 +61,51 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
   using namespace gpi::pc::memory;
   using namespace gpi::pc::segment;
   using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
 
-  sfs_area_t area (0, "/tmp/sfs_area.sfs", 4096, 0, "", topology);
+  const gpi::pc::type::size_t size = 4096;
+  const char *text = "hello world!\n";
 
-  BOOST_CHECK_EQUAL (4096U, area.descriptor().local_size);
+  sfs_area_t area ( 0
+                  , path_to_shared_file
+                  , size
+                  , 0
+                  , topology
+                  );
+  area.set_id (2);
+
+  BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+
+  MLOG (INFO, "allocating " << size << " bytes");
+
+  handle_t handle = area.alloc (1, size, "test", 0);
+
+  MLOG (INFO, "allocated handle := " << handle);
+
+  void *ptr = area.pointer_to (memory_location_t (handle, 0));
+
+  memcpy (ptr, text, strlen (text));
+
+  area.free (handle);
+
+  boost::system::error_code ec;
+  area.close (ec);
+
+  int fd = open ( ((path_to_shared_file / "data").string ().c_str ())
+                , O_RDONLY
+                );
+  BOOST_REQUIRE (fd >= 0);
+
+  char buf [size];
+  read (fd, buf, size);
+  close (fd);
+
+  int eq = strncmp (text, buf, strlen (text));
+  BOOST_CHECK_EQUAL (0, eq);
+
+  gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
