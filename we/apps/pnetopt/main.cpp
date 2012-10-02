@@ -45,12 +45,12 @@ class Optimizer {
     lua_State *L;
 
     class PetriNet;
-    PetriNet petriNet_;
+    std::auto_ptr<PetriNet> petriNet_;
 
     public:
 
     Optimizer(pnet_t &pnet):
-        petriNet_(pnet)
+        petriNet_(new PetriNet(pnet))
     {
         L = lua_open();
         luaL_openlibs(L);
@@ -140,7 +140,7 @@ class Optimizer {
                     .addFunction("__len", &PortsIterator::size)
                 .endClass()
         ;
-        luabridge::push(L, &petriNet_);
+        luabridge::push(L, petriNet_.get());
         lua_setfield(L, LUA_GLOBALSINDEX, "net");
     }
 
