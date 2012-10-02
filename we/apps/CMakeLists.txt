@@ -46,4 +46,5 @@ foreach (target ${simple_targets})
   endif (ENABLE_STATIC_BINARIES)
 endforeach (target ${simple_targets})
 
+add_subdirectory(pnetopt)
 add_subdirectory(pnetv)
