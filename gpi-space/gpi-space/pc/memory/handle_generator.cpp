@@ -22,22 +22,23 @@ namespace gpi
           {
             hdl = 0;
           }
-          else if (gpi::pc::type::segment::SEG_GPI == type)
+          else if (gpi::pc::type::segment::SEG_SHM == type)
           {
-            hdl.type = gpi::pc::type::segment::SEG_GPI;
+            hdl.type = type;
+
+            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::local_count_bits>(counter);
+            hdl.shm.cntr = counter;
+          }
+          else
+          {
+            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::typec_bits>(type);
+            hdl.type = type;
 
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::ident_bits>(node);
             hdl.gpi.ident = node;
 
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::global_count_bits>(counter);
             hdl.gpi.cntr = counter;
-          }
-          else
-          {
-            hdl.type = type;
-
-            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::local_count_bits>(counter);
-            hdl.shm.cntr = counter;
           }
 
           return hdl;
