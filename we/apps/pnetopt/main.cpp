@@ -812,7 +812,7 @@ class Optimizer {
 
             if (connectedPlace_) {
                 /* We must add an edge. */
-                petri_net::edge_type edgeType = isRead() ? petri_net::PT_READ : (isInput() ? petri_net::PT : petri_net::TP);
+                petri_net::edge::type edgeType = isRead() ? petri_net::edge::PT_READ : (isInput() ? petri_net::edge::PT : petri_net::edge::TP);
 
                 bool tryAgain;
                 do {
