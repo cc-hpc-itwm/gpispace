@@ -44,13 +44,13 @@ class Optimizer {
 
     lua_State *L;
 
-    class PetriNet;
-    std::auto_ptr<PetriNet> petriNet_;
+    class Transition;
+    std::auto_ptr<Transition> transition_;
 
     public:
 
-    Optimizer(pnet_t &pnet):
-        petriNet_(new PetriNet(pnet))
+    Optimizer(transition_t &transition):
+        transition_(new Transition(NULL, -1, transition))
     {
         L = lua_open();
         luaL_openlibs(L);
@@ -140,8 +140,8 @@ class Optimizer {
                     .addFunction("__len", &PortsIterator::size)
                 .endClass()
         ;
-        luabridge::push(L, petriNet_.get());
-        lua_setfield(L, LUA_GLOBALSINDEX, "net");
+        luabridge::push(L, transition_.get());
+        lua_setfield(L, LUA_GLOBALSINDEX, "transition");
     }
 
     ~Optimizer() {
@@ -553,11 +553,17 @@ class Optimizer {
                 port_id_t portId = i->first;
                 pid_t placeId = i->second.first;
 
+                /* Top-level transition cannot have connections. */
+                assert(petriNet != NULL);
+
                 getPort(portId, OUTPUT)->setConnectedPlace(petriNet->getPlace(placeId));
             }
             for (typename transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
                 pid_t placeId = i->first;
                 port_id_t portId = i->second.first;
+
+                /* Top-level transition cannot have connections. */
+                assert(petriNet != NULL);
 
                 getPort(portId, INPUT)->setConnectedPlace(petriNet->getPlace(placeId));
             }
@@ -664,6 +670,10 @@ class Optimizer {
 
         void remove() {
             ensureValid();
+
+            if (petriNet() == NULL) {
+                throw std::runtime_error("cannot remove a top-level transition");
+            }
 
             foreach (Port *port, ports()) {
                 port->disconnect();
@@ -894,30 +904,13 @@ class Optimizer {
     };
 };
 
-class Visitor: public boost::static_visitor<void> {
-    std::string script_;
-
-    public:
-
-    Visitor(const std::string &script): script_(script) {}
-
-    const std::string &script() const { return script_; }
-    void operator()(we::type::expression_t & expr) { return; }
-    void operator()(we::type::module_call_t & mod_call) { return; }
-
-    template<class P, class E, class T>
-    void operator()(petri_net::net<P, we::type::transition_t<P, E, T>, E, T> &net) {
-        Optimizer<P, E, T> optimizer(net);
-        optimizer(script().c_str());
-    }
-
-    template<class P, class E, class T>
-    void operator()(we::type::transition_t<P, E, T> &transition) {
-        boost::apply_visitor(*this, transition.data());
-    }
-};
-
 } // anonymous namespace
+
+template<class P, class E, class T>
+void optimize(we::type::transition_t<P, E, T> &transition, const char *script) {
+    Optimizer<P, E, T> optimizer(transition);
+    optimizer(script);
+}
 
 int main(int argc, char **argv) {
     namespace po = boost::program_options;
@@ -981,8 +974,7 @@ int main(int argc, char **argv) {
     }
 
     try {
-        Visitor visitor(script);
-        visitor(activity.transition());
+        optimize(activity.transition(), script.c_str());
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
