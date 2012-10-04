@@ -185,6 +185,11 @@ namespace xml
           return *place;
         }
 
+        void erase_place (const place_type& t)
+        {
+          _places.erase (t);
+        }
+
         transition_type& push_transition (const transition_type & t)
         {
           transition_type old;
