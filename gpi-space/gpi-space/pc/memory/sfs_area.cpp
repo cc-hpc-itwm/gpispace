@@ -5,12 +5,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <cstring> // strerror
 
 #include <fhglog/minimal.hpp>
 
 #include <boost/system/system_error.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -52,6 +54,7 @@ namespace gpi
                  )
         , m_ptr (0)
         , m_path (path)
+        , m_version (SFS_VERSION)
         , m_size (size)
         , m_topology (topology)
       {
@@ -98,33 +101,90 @@ namespace gpi
           }
         }
 
-        // try to open existing file
-        path_t data_path = detail::data_path (m_path);
-        int fd = ::open ( data_path.string ().c_str ()
-                        , O_RDWR
-                        );
-        if (fd < 0)
+        // read version information
         {
-          ec.assign (errno, boost::system::system_category ());
-          return -1;
+          path_t vers_path = detail::version_path (m_path);
+          FILE *vers_file = fopen (vers_path.string ().c_str (), "r");
+          if (vers_file == NULL)
+          {
+            ec.assign (errno, boost::system::system_category ());
+            return -1;
+          }
+          int version = -1;
+          int rc = fscanf (vers_file, "SFS version %d\n", &version);
+          if (rc != 1)
+          {
+            ec.assign (EIO, boost::system::system_category ());
+            MLOG (ERROR, "could not read version information");
+            fclose (vers_file);
+            return -1;
+          }
+
+          if (version > SFS_VERSION)
+          {
+            MLOG ( ERROR
+                 , "the file segment was created by a newer version:"
+                 << " found: " << version
+                 << " wanted: " << SFS_VERSION
+                 );
+            fclose (vers_file);
+            return -1;
+          }
+          else if (version < SFS_VERSION)
+          {
+            m_version = version;
+            MLOG ( WARN
+                 , "the file segment was created by an older version:"
+                 << " found: " << version
+                 << " wanted: " << SFS_VERSION
+                 );
+          }
+
+          fclose (vers_file);
         }
 
-        m_ptr = mmap ( (void*)0
-                     , m_size
-                     , PROT_READ + PROT_WRITE
-                     , MAP_SHARED
-                     , fd
-                     , 0
-                     );
-        if (m_ptr == MAP_FAILED)
         {
+          // try to open existing file
+          path_t data_path = detail::data_path (m_path);
+          int fd = ::open ( data_path.string ().c_str ()
+                          , O_RDWR
+                          );
+          if (fd < 0)
+          {
+            ec.assign (errno, boost::system::system_category ());
+            return -1;
+          }
+
+          m_ptr = mmap ( (void*)0
+                       , m_size
+                       , PROT_READ + PROT_WRITE
+                       , MAP_SHARED
+                       , fd
+                       , 0
+                       );
+          if (m_ptr == MAP_FAILED)
+          {
+            ::close (fd);
+            m_ptr = 0;
+            ec.assign (errno, boost::system::system_category ());
+            return -1;
+          }
+
           ::close (fd);
-          m_ptr = 0;
-          ec.assign (errno, boost::system::system_category ());
-          return -1;
         }
 
-        ::close (fd);
+        {
+          // try to recover
+          path_t meta_path = detail::meta_path (m_path);
+          int fd = ::open ( meta_path.string ().c_str ()
+                          , O_RDONLY
+                          );
+          if (fd >= 0)
+          {
+            MLOG (TRACE, "ignoring recovery information: not yet implemented");
+            ::close (fd);
+          }
+        }
 
         CLOG( TRACE
             , "gpi.memory"
@@ -139,12 +199,6 @@ namespace gpi
 
       int sfs_area_t::close (boost::system::error_code &ec)
       {
-        if (m_ptr)
-        {
-          munmap (m_ptr, m_size);
-          m_ptr = 0;
-        }
-
         /*
           steps:
 
@@ -152,6 +206,46 @@ namespace gpi
           - unmap memory
           - depending on the flags, remove the directory again
          */
+
+        if (m_ptr)
+        {
+          munmap (m_ptr, m_size);
+          m_ptr = 0;
+
+          if (gpi::flag::is_set ( descriptor ().flags
+                                , gpi::pc::type::segment::F_PERSISTENT
+                                )
+             )
+          {
+            return save_state (ec);
+          }
+          else
+          {
+            cleanup (m_path);
+            return 0;
+          }
+        }
+        else
+        {
+          return 0;
+        }
+      }
+
+      int sfs_area_t::save_state (boost::system::error_code &ec)
+      {
+        // create meta data
+        fs::path meta_path = detail::meta_path (m_path);
+        int fd = ::open ( meta_path.string ().c_str ()
+                        , O_CREAT | O_EXCL | O_RDWR
+                        , 0600
+                        );
+        if (fd < 0)
+        {
+          ec.assign (errno, boost::system::system_category ());
+          return -1;
+        }
+        ::close (fd);
+
         return 0;
       }
 
@@ -160,82 +254,46 @@ namespace gpi
                                   , boost::system::error_code &ec
                                   )
       {
-        int rc = 0;
-        int fd = -1;
-
         if (! fs::create_directories (path, ec))
           return false;
 
-        // create data file
-        fs::path data_path = detail::data_path (path);
-        fd = ::open ( data_path.string ().c_str ()
-                    , O_CREAT | O_EXCL | O_RDWR
-                    , 0600 // TODO: pass in permissions
-                    );
-        if (fd < 0)
         {
-          ec.assign (errno, boost::system::system_category ());
-          return false;
-        }
-
-        rc = ::ftruncate (fd, size);
-        if (rc < 0)
-        {
-          ec.assign (errno, boost::system::system_category ());
-          ::close (fd);
-          return false;
-        }
-        ::close (fd);
-
-        // create meta data
-        fs::path meta_path = detail::meta_path (path);
-        fd = ::open ( meta_path.string ().c_str ()
-                    , O_CREAT | O_EXCL | O_RDWR
-                    , 0600
-                    );
-        if (fd < 0)
-        {
-          ec.assign (errno, boost::system::system_category ());
-          return false;
-        }
-        ::close (fd);
-
-        fs::path version_path = detail::version_path (path);
-        fd = ::open ( version_path.string ().c_str ()
-                    , O_CREAT | O_EXCL | O_RDWR
-                    , 0600
-                    );
-        if (fd < 0)
-        {
-          ec.assign (errno, boost::system::system_category ());
-          return false;
-        }
-
-        char buf [32];
-        snprintf (buf, sizeof (buf), "SFS version %lu\n", SFS_VERSION);
-        size_t remaining = strlen (buf);
-        size_t offset = 0;
-        while (remaining)
-        {
-          rc = write (fd, buf + offset, remaining);
-          if (rc < 0)
+          // write version information
+          fs::path version_path = detail::version_path (path);
+          fs::ofstream ofs (version_path);
+          if (! ofs)
           {
-            if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
-            {
-              continue;
-            }
-            else
-            {
-              ec.assign (errno, boost::system::system_category ());
-              ::close (fd);
-              return false;
-            }
+            ec.assign (errno, boost::system::system_category ());
+            cleanup (path);
           }
 
-          remaining -= rc;
-          offset    += rc;
+          ofs << "SFS version " << SFS_VERSION << std::endl;
         }
-        ::close (fd); fd = -1;
+
+        {
+          // create data file
+          fs::path data_path = detail::data_path (path);
+          int fd = ::open ( data_path.string ().c_str ()
+                          , O_CREAT | O_EXCL | O_RDWR
+                          , 0600 // TODO: pass in permissions
+                          );
+          if (fd < 0)
+          {
+            ec.assign (errno, boost::system::system_category ());
+            cleanup (path);
+            return false;
+          }
+
+          int rc = ::ftruncate (fd, size);
+          if (rc < 0)
+          {
+            ec.assign (errno, boost::system::system_category ());
+            ::close (fd);
+            cleanup (path);
+            return false;
+          }
+          ::close (fd);
+        }
 
         ec.clear ();
         return true;

@@ -34,6 +34,7 @@ namespace gpi
 
         ~sfs_area_t ();
 
+        int save_state (boost::system::error_code &ec);
         int open (boost::system::error_code & ec);
         int close (boost::system::error_code & ec);
       protected:
@@ -76,6 +77,7 @@ namespace gpi
 
         void * m_ptr;
         path_t m_path;
+        int    m_version;
 
         gpi::pc::type::size_t   m_size;
 

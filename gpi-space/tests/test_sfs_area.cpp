@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <unistd.h>    // getpid, unlink
 #include <cstring>
+#include <fstream>
 
 #include <fhglog/fhglog.hpp>
 
@@ -49,7 +50,7 @@ struct F
 
   ~F ()
   {
-    //    gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
+    gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
     BOOST_TEST_MESSAGE ("fixture teardown");
   }
 };
@@ -71,18 +72,14 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
   sfs_area_t area ( 0
                   , path_to_shared_file
                   , size
-                  , 0
+                  , gpi::pc::type::segment::F_PERSISTENT
                   , topology
                   );
   area.set_id (2);
 
   BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
-  MLOG (INFO, "allocating " << size << " bytes");
-
   handle_t handle = area.alloc (1, size, "test", 0);
-
-  MLOG (INFO, "allocated handle := " << handle);
 
   void *ptr = area.pointer_to (memory_location_t (handle, 0));
 
@@ -104,8 +101,193 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
 
   int eq = strncmp (text, buf, strlen (text));
   BOOST_CHECK_EQUAL (0, eq);
+}
 
-  gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
+BOOST_AUTO_TEST_CASE (old_segment_version)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = 4096;
+  const char *text = "hello world!\n";
+
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+    area.set_id (2);
+  }
+
+  {
+    std::ofstream ofs ((path_to_shared_file / "version").string ().c_str ());
+    ofs << "SFS version 0" << std::endl;
+  }
+
+  try
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+    area.set_id (2);
+  }
+  catch (std::exception const &ex)
+  {
+    // ok
+  }
+}
+
+BOOST_AUTO_TEST_CASE (too_new_segment_version)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = 4096;
+  const char *text = "hello world!\n";
+
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+  }
+
+  {
+    std::ofstream ofs ((path_to_shared_file / "version").string ().c_str ());
+    ofs << "SFS version " << (sfs_area_t::SFS_VERSION + 1) << std::endl;
+  }
+
+  try
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+    BOOST_CHECK_MESSAGE (false, "succeeded to open a newer sfs area version!");
+  }
+  catch (std::exception const &ex)
+  {
+    // ok
+  }
+}
+
+BOOST_AUTO_TEST_CASE (garbage_segment_version)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = 4096;
+  const char *text = "hello world!\n";
+
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+  }
+
+  {
+    std::ofstream ofs ((path_to_shared_file / "version").string ().c_str ());
+    ofs << "garbage" << std::endl;
+  }
+
+  try
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+    BOOST_CHECK_MESSAGE
+      (false, "succeeded to open an sfs area with an invalid version!");
+  }
+  catch (std::exception const &ex)
+  {
+    // ok
+  }
+}
+
+BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = 4096;
+  const char *text = "hello world!\n";
+
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+    area.set_id (2);
+
+    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+
+    handle_t handle = area.alloc (1, size, "test", 0);
+
+    void *ptr = area.pointer_to (memory_location_t (handle, 0));
+
+    memcpy (ptr, text, strlen (text));
+    area.free (handle);
+
+    boost::system::error_code ec;
+    area.close (ec);
+  }
+
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+    area.set_id (2);
+
+    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+
+    handle_t handle = area.alloc (1, size, "test", 0);
+
+    void *ptr = area.pointer_to (memory_location_t (handle, 0));
+
+    int eq = strncmp (text, (char*)ptr, strlen (text));
+    BOOST_CHECK_EQUAL (0, eq);
+
+    area.free (handle);
+
+    boost::system::error_code ec;
+    area.close (ec);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
