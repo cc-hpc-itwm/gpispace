@@ -23,7 +23,7 @@ namespace fhg
           item::item
           ( place_type& place
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
-          , item* parent
+          , graph::item* parent
           )
             : connectable::item ( connectable::direction::BOTH
                                 , type_map

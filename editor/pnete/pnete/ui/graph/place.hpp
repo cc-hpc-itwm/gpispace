@@ -41,7 +41,7 @@ namespace fhg
             ( place_type& place
             , boost::optional< ::xml::parse::type::type_map_type&> type_map
             = boost::none
-            , item* parent = NULL
+            , graph::item* parent = NULL
             );
 
             const place_type& place () const;
