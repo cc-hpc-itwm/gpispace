@@ -7,6 +7,9 @@
 
 #include <xml/parse/types.hpp>
 
+#include <boost/function_types/function_type.hpp>
+#include <boost/function_types/parameter_types.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -83,16 +86,37 @@ namespace fhg
                               );
 
       private:
-        void emit_transition_deleted
-          ( const QObject* origin
-          , const ::xml::parse::type::transition_type& trans
-          , ::xml::parse::type::net_type& net
-          );
-        void emit_transition_added
-          ( const QObject* origin
-          , ::xml::parse::type::transition_type& trans
-          , ::xml::parse::type::net_type& net
-          );
+#define ARG_TYPE(function_type,n)                                       \
+  boost::mpl::at_c<boost::function_types::parameter_types<function_type>,n>::type
+
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2)
+                                 , typename ARG_TYPE(Fun,3));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2)
+                                 , typename ARG_TYPE(Fun,3)
+                                 , typename ARG_TYPE(Fun,4));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2)
+                                 , typename ARG_TYPE(Fun,3)
+                                 , typename ARG_TYPE(Fun,4)
+                                 , typename ARG_TYPE(Fun,5));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2)
+                                 , typename ARG_TYPE(Fun,3)
+                                 , typename ARG_TYPE(Fun,4)
+                                 , typename ARG_TYPE(Fun,5)
+                                 , typename ARG_TYPE(Fun,6));
+#undef ARG_TYPE
 
         friend class action::remove_transition;
 

@@ -143,14 +143,22 @@ namespace fhg
           {
             _transition = &detail::push_transition (_transition_copy, _net);
 
-            _change_manager.emit_transition_added
-              (_origin, *_transition, _net);
+            _change_manager.emit_signal
+              ( &change_manager_t::signal_add_transition
+              , _origin
+              , *_transition
+              , _net
+              );
           }
 
           virtual void redo()
           {
-            _change_manager.emit_transition_deleted
-              (_origin, *_transition, _net);
+            _change_manager.emit_signal
+              ( &change_manager_t::signal_delete_transition
+              , _origin
+              , *_transition
+              , _net
+              );
 
             _net.erase_transition (*_transition);
             _transition = NULL;
@@ -163,23 +171,6 @@ namespace fhg
           const ::xml::parse::type::transition_type _transition_copy;
           ::xml::parse::type::net_type& _net;
         };
-      }
-
-      void change_manager_t::emit_transition_deleted
-        ( const QObject* origin
-        , const ::xml::parse::type::transition_type& trans
-        , ::xml::parse::type::net_type& net
-        )
-      {
-        emit signal_delete_transition (origin, trans, net);
-      }
-      void change_manager_t::emit_transition_added
-        ( const QObject* origin
-        , ::xml::parse::type::transition_type& trans
-        , ::xml::parse::type::net_type& net
-        )
-      {
-        emit signal_add_transition (origin, trans, net);
       }
 
       void change_manager_t::delete_transition
@@ -229,6 +220,58 @@ namespace fhg
 
         emit signal_add_place (origin, detail::push_place (place, net), net);
       }
+
+      //! \todo This surely can be done cleaner with variadic templates.
+
+#define ARG_TYPE(function_type,n)                                       \
+  boost::mpl::at_c<boost::function_types::parameter_types<function_type>,n>::type
+
+      template<typename Fun>
+      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1)
+      {
+        emit (this->*fun) (arg1);
+      }
+      template<typename Fun>
+      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
+                                                 , typename ARG_TYPE(Fun,2) arg2)
+      {
+        emit (this->*fun) (arg1, arg2);
+      }
+      template<typename Fun>
+      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
+                                                 , typename ARG_TYPE(Fun,2) arg2
+                                                 , typename ARG_TYPE(Fun,3) arg3)
+      {
+        emit (this->*fun) (arg1, arg2, arg3);
+      }
+      template<typename Fun>
+      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
+                                                 , typename ARG_TYPE(Fun,2) arg2
+                                                 , typename ARG_TYPE(Fun,3) arg3
+                                                 , typename ARG_TYPE(Fun,4) arg4)
+      {
+        emit (this->*fun) (arg1, arg2, arg3, arg4);
+      }
+      template<typename Fun>
+      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
+                                                 , typename ARG_TYPE(Fun,2) arg2
+                                                 , typename ARG_TYPE(Fun,3) arg3
+                                                 , typename ARG_TYPE(Fun,4) arg4
+                                                 , typename ARG_TYPE(Fun,5) arg5)
+      {
+        emit (this->*fun) (arg1, arg2, arg3, arg4, arg5);
+      }
+      template<typename Fun>
+      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
+                                                 , typename ARG_TYPE(Fun,2) arg2
+                                                 , typename ARG_TYPE(Fun,3) arg3
+                                                 , typename ARG_TYPE(Fun,4) arg4
+                                                 , typename ARG_TYPE(Fun,5) arg5
+                                                 , typename ARG_TYPE(Fun,6) arg6)
+      {
+        emit (this->*fun) (arg1, arg2, arg3, arg4, arg5, arg6);
+      }
+#undef ARG_TYPE
     }
   }
 }
