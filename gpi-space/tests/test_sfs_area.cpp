@@ -290,4 +290,68 @@ BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
   }
 }
 
+BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = (1L << 35); // 32 GB
+  const char *text = "hello world!\n";
+
+  try
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+  }
+  catch (std::exception const &ex)
+  {
+    BOOST_CHECK_MESSAGE ( false
+                        , "could not allocate sfs segment of size: " << size
+                        << ": " << ex.what ()
+                        << " - please check 'ulimit -v'"
+                        );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (create_huge_sfs_segment)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = (1L << 40); // 1 TB
+  const char *text = "hello world!\n";
+
+  try
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    , topology
+                    );
+    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+  }
+  catch (std::exception const &ex)
+  {
+    BOOST_CHECK_MESSAGE ( false
+                        , "could not allocate sfs segment of size: " << size
+                        << ": " << ex.what ()
+                        << " - please check 'ulimit -v'"
+                        );
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

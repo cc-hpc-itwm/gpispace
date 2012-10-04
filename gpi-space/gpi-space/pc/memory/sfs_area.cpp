@@ -164,9 +164,9 @@ namespace gpi
                        );
           if (m_ptr == MAP_FAILED)
           {
+            ec.assign (errno, boost::system::system_category ());
             ::close (fd);
             m_ptr = 0;
-            ec.assign (errno, boost::system::system_category ());
             return -1;
           }
 
