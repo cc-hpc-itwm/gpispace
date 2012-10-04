@@ -98,7 +98,11 @@ namespace fhg
           fun.name.clear();
         }
 
-        emit signal_set_function_name (origin, fun, name);
+        emit_signal ( &change_manager_t::signal_set_function_name
+                    , origin
+                    , fun
+                    , name
+                    );
       }
 
       void change_manager_t::set_expression
@@ -109,14 +113,18 @@ namespace fhg
       {
         expression.set (text.toStdString());
 
-        emit signal_set_expression (origin, expression, text);
+        emit_signal ( &change_manager_t::signal_set_expression
+                    , origin
+                    , expression
+                    , text
+                    );
 
-        emit signal_set_expression_parse_result
-          ( origin
-          , expression
-          , QString::fromStdString
-            (expr::parse::parse_result (text.toStdString()))
-          );
+        emit_signal ( &change_manager_t::signal_set_expression_parse_result
+                    , origin
+                    , expression
+                    , QString::fromStdString
+                      (expr::parse::parse_result (text.toStdString()))
+                    );
       }
 
 
@@ -193,8 +201,11 @@ namespace fhg
         transition.f = fun;
         transition.name = fun.name ? *fun.name : "transition";
 
-        emit signal_add_transition
-          (origin, detail::push_transition (transition, net), net);
+        emit_signal ( &change_manager_t::signal_add_transition
+                    , origin
+                    , detail::push_transition (transition, net)
+                    , net
+                    );
       }
 
       void change_manager_t::add_transition
@@ -206,8 +217,11 @@ namespace fhg
 
         transition.name = "transition";
 
-        emit signal_add_transition
-          (origin, detail::push_transition (transition, net), net);
+        emit_signal ( &change_manager_t::signal_add_transition
+                    , origin
+                    , detail::push_transition (transition, net)
+                    , net
+                    );
       }
       void change_manager_t::add_place
       ( const QObject* origin
@@ -218,7 +232,11 @@ namespace fhg
 
         place.name = "place";
 
-        emit signal_add_place (origin, detail::push_place (place, net), net);
+        emit_signal ( &change_manager_t::signal_add_place
+                    , origin
+                    , detail::push_place (place, net)
+                    , net
+                    );
       }
 
       //! \todo This surely can be done cleaner with variadic templates.
