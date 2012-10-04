@@ -39,12 +39,15 @@ namespace fhg
           public:
             item
             ( place_type& place
+            , ::xml::parse::type::net_type& net
             , boost::optional< ::xml::parse::type::type_map_type&> type_map
             = boost::none
             , graph::item* parent = NULL
             );
 
-            const place_type& place () const;
+            const place_type& place() const;
+            place_type& place();
+            ::xml::parse::type::net_type& net();
 
             const std::string& name() const;
             const std::string& we_type() const;
@@ -66,6 +69,7 @@ namespace fhg
 
           private:
             place_type& _place;
+            ::xml::parse::type::net_type& _net;
 
             QStaticText _content;
 

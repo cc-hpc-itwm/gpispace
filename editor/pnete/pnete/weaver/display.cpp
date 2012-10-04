@@ -374,7 +374,9 @@ namespace fhg
       {
         ui::graph::place::item* place_item
           ( new ui::graph::place::item
-            (const_cast<ITVAL(XMLTYPE(net_type::places_type))&> (place))
+            ( const_cast<ITVAL(XMLTYPE(net_type::places_type))&> (place)
+            , _net
+            )
           );
         weaver::place wp (place_item, _place_item_by_name);
         _scene->addItem (place_item);

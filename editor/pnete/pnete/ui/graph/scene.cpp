@@ -270,7 +270,7 @@ namespace fhg
           {
             if (is_my_net (n))
               {
-                place::item* place (new place::item (p));
+                place::item* place (new place::item (p, n));
 
                 addItem (place);
 

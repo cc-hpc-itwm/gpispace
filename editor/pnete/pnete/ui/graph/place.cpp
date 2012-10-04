@@ -22,6 +22,7 @@ namespace fhg
         {
           item::item
           ( place_type& place
+          , ::xml::parse::type::net_type& net
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , graph::item* parent
           )
@@ -31,14 +32,23 @@ namespace fhg
                                 , &place.prop
                                 )
             , _place (place)
+            , _net (net)
             , _content()
           {
             refresh_content();
           }
 
-          const place_type& item::place () const
+          const place_type& item::place() const
           {
             return _place;
+          }
+          place_type& item::place()
+          {
+            return _place;
+          }
+          ::xml::parse::type::net_type& item::net()
+          {
+            return _net;
           }
 
           const std::string& item::we_type() const
