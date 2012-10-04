@@ -19,6 +19,7 @@ namespace fhg
       namespace action
       {
         class remove_transition;
+        class remove_place;
       }
       namespace internal { class type; }
 
@@ -45,6 +46,10 @@ namespace fhg
                                , ::xml::parse::type::transition_type&
                                , ::xml::parse::type::net_type&
                                );
+        void delete_place ( const QObject*
+                          , ::xml::parse::type::place_type&
+                          , ::xml::parse::type::net_type&
+                          );
 
         void add_transition ( const QObject*
                             , ::xml::parse::type::net_type&
@@ -80,6 +85,11 @@ namespace fhg
                                    , ::xml::parse::type::transition_type&
                                    , ::xml::parse::type::net_type&
                                    );
+        void
+        signal_delete_place ( const QObject*
+                            , const ::xml::parse::type::place_type&
+                            , const ::xml::parse::type::net_type&
+                            );
         void signal_add_place ( const QObject*
                               , ::xml::parse::type::place_type&
                               , ::xml::parse::type::net_type&
@@ -119,6 +129,7 @@ namespace fhg
 #undef ARG_TYPE
 
         friend class action::remove_transition;
+        friend class action::remove_place;
 
         internal::type& _internal;
       };

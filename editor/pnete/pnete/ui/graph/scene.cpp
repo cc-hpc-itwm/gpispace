@@ -83,6 +83,21 @@ namespace fhg
                     , Qt::DirectConnection
                     );
             connect ( &change_manager()
+                    , SIGNAL ( signal_delete_place
+                               ( const QObject*
+                               , const ::xml::parse::type::place_type&
+                               , const ::xml::parse::type::net_type&
+                               )
+                             )
+                    , SLOT ( slot_delete_place
+                             ( const QObject*
+                             , const ::xml::parse::type::place_type&
+                             , const ::xml::parse::type::net_type&
+                             )
+                           )
+                    , Qt::DirectConnection
+                    );
+            connect ( &change_manager()
                     , SIGNAL ( signal_add_place
                                ( const QObject*
                                , ::xml::parse::type::place_type&
@@ -201,6 +216,34 @@ namespace fhg
                     }
                     break;
                   case item::place_graph_type:
+                    {
+                      QMenu menu;
+
+                      QAction* action_delete (menu.addAction (tr("Delete")));
+
+                      QAction* triggered (menu.exec(event->screenPos()));
+
+                      if (triggered == action_delete)
+                        {
+                          slot_delete_place (i);
+                        }
+                      else if (!triggered)
+                        {
+                          //! \todo see QTBUG-21943
+                          QPoint p ( event->widget()
+                                   ->mapFromGlobal(event->screenPos())
+                                   );
+                          QMouseEvent mouseEvent( QEvent::MouseMove
+                                                , p
+                                                , Qt::NoButton
+                                                , Qt::NoButton
+                                                , event->modifiers()
+                                                );
+                          QApplication::sendEvent(event->widget(), &mouseEvent);
+                        }
+
+                      event->accept();
+                    }
                     break;
                   default:
                     break;
@@ -561,6 +604,50 @@ namespace fhg
                                                );
 
             transition_item->deleteLater();
+          }
+
+          void type::slot_delete_place
+          ( const QObject* origin
+          , const ::xml::parse::type::place_type& place
+          , const ::xml::parse::type::net_type& net
+          )
+          {
+            if (origin != this && is_my_net (net))
+              {
+                foreach (QGraphicsItem* child, items())
+                  {
+                    if ( place::item* place_item
+                       = qgraphicsitem_cast<place::item*> (child)
+                       )
+                      {
+                        if (&place == &place_item->place())
+                          {
+                            removeItem (place_item);
+                            place_item->deleteLater();
+                          }
+                      }
+                  }
+              }
+          }
+          void type::slot_delete_place (graph::item* graph_item)
+          {
+            place::item* place_item
+              (qgraphicsitem_cast<place::item*> (graph_item));
+
+            if (!place_item)
+              {
+                throw std::runtime_error
+                  ("STRANGE: delete_place for something else!?");
+              }
+
+            removeItem (place_item);
+
+            change_manager().delete_place ( this
+                                          , place_item->place()
+                                          , place_item->net()
+                                          );
+
+            place_item->deleteLater();
           }
 
           bool type::is_my_net (const ::xml::parse::type::net_type& n)

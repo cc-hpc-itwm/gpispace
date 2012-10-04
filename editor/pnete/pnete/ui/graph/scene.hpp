@@ -71,6 +71,15 @@ namespace fhg
                                 , ::xml::parse::type::place_type&
                                 , ::xml::parse::type::net_type&
                                 );
+
+            void slot_delete_place (graph::item*);
+            void
+            slot_delete_place ( const QObject*
+                              , const ::xml::parse::type::place_type&
+                              , const ::xml::parse::type::net_type&
+                              );
+
+
             void slot_add_struct ();
 
             void auto_layout();

@@ -179,6 +179,56 @@ namespace fhg
           const ::xml::parse::type::transition_type _transition_copy;
           ::xml::parse::type::net_type& _net;
         };
+
+        class remove_place : public QUndoCommand
+        {
+        public:
+          remove_place
+            ( change_manager_t& change_manager
+            , const QObject* origin
+            , ::xml::parse::type::place_type& place
+            , ::xml::parse::type::net_type& net
+            )
+            : QUndoCommand (QObject::tr ("remove_place_action"))
+            , _change_manager (change_manager)
+            , _origin (origin)
+            , _place (&place)
+            , _place_copy (place)
+            , _net (net)
+          { }
+
+          virtual void undo()
+          {
+            _place = &detail::push_place (_place_copy, _net);
+
+            _change_manager.emit_signal
+              ( &change_manager_t::signal_add_place
+              , _origin
+              , *_place
+              , _net
+              );
+          }
+
+          virtual void redo()
+          {
+            _change_manager.emit_signal
+              ( &change_manager_t::signal_delete_place
+              , _origin
+              , *_place
+              , _net
+              );
+
+            _net.erase_place (*_place);
+            _place = NULL;
+            _origin = NULL;
+          }
+        private:
+          change_manager_t& _change_manager;
+          const QObject* _origin;
+          ::xml::parse::type::place_type* _place;
+          const ::xml::parse::type::place_type _place_copy;
+          ::xml::parse::type::net_type& _net;
+        };
       }
 
       void change_manager_t::delete_transition
@@ -188,6 +238,15 @@ namespace fhg
         )
       {
         push (new action::remove_transition (*this, origin, trans, net));
+      }
+
+      void change_manager_t::delete_place
+        ( const QObject* origin
+        , ::xml::parse::type::place_type& trans
+        , ::xml::parse::type::net_type& net
+        )
+      {
+        push (new action::remove_place (*this, origin, trans, net));
       }
 
       void change_manager_t::add_transition
