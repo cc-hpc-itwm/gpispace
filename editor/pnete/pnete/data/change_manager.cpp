@@ -15,6 +15,15 @@ namespace fhg
   {
     namespace data
     {
+      change_manager_t::change_manager_t (internal::type & i)
+        : _internal (i)
+      {}
+
+      internal::type& change_manager_t::internal () const
+      {
+        return _internal;
+      }
+
       namespace detail
       {
         static std::string inc (const std::string& s)
@@ -36,22 +45,27 @@ namespace fhg
             + boost::lexical_cast<std::string> (num + 1)
             ;
         }
+      }
 
+      // ## editing methods ##########################################
+      // - net -------------------------------------------------------
+      namespace detail
+      {
         static ::xml::parse::type::place_type&
         push_place ( ::xml::parse::type::place_type place
                    , ::xml::parse::type::net_type& net
                    )
         {
           try
-            {
-              return net.push_place (place);
-            }
+          {
+            return net.push_place (place);
+          }
           catch (const ::xml::parse::error::duplicate_place&)
-            {
-              place.name = detail::inc (place.name);
+          {
+            place.name = detail::inc (place.name);
 
-              return push_place (place, net);
-            }
+            return push_place (place, net);
+          }
         }
 
         static ::xml::parse::type::transition_type&
@@ -60,34 +74,96 @@ namespace fhg
                         )
         {
           try
-            {
-              return net.push_transition (transition);
-            }
+          {
+            return net.push_transition (transition);
+          }
           catch (const ::xml::parse::error::duplicate_transition
-                       < ::xml::parse::type::transition_type>&
+                < ::xml::parse::type::transition_type>&
                 )
-            {
-              transition.name = detail::inc (transition.name);
+          {
+            transition.name = detail::inc (transition.name);
 
-              return push_transition (transition, net);
-            }
+            return push_transition (transition, net);
+          }
         }
       }
 
-      change_manager_t::change_manager_t (internal::type & i)
-        : _internal (i)
-      {}
-
-      internal::type& change_manager_t::internal () const
-      {
-        return _internal;
-      }
-
-      void change_manager_t::set_function_name
+      // -- transition -----------------------------------------------
+      void change_manager_t::add_transition
       ( const QObject* origin
       , ::xml::parse::type::function_type& fun
-      , const QString& name
+      , ::xml::parse::type::net_type& net
       )
+      {
+        ::xml::parse::type::transition_type transition;
+
+        transition.f = fun;
+        transition.name = fun.name ? *fun.name : "transition";
+
+        emit_signal ( &change_manager_t::signal_add_transition
+                    , origin
+                    , detail::push_transition (transition, net)
+                    , net
+                    );
+      }
+
+      void change_manager_t::add_transition
+      ( const QObject* origin
+      , ::xml::parse::type::net_type& net
+      )
+      {
+        ::xml::parse::type::transition_type transition;
+
+        transition.name = "transition";
+
+        emit_signal ( &change_manager_t::signal_add_transition
+                    , origin
+                    , detail::push_transition (transition, net)
+                    , net
+                    );
+      }
+
+      void change_manager_t::delete_transition
+        ( const QObject* origin
+        , ::xml::parse::type::transition_type& trans
+        , ::xml::parse::type::net_type& net
+        )
+      {
+        push (new action::remove_transition (*this, origin, trans, net));
+      }
+
+      // -- place ----------------------------------------------------
+      void change_manager_t::add_place
+      ( const QObject* origin
+      , ::xml::parse::type::net_type& net
+      )
+      {
+        ::xml::parse::type::place_type place;
+
+        place.name = "place";
+
+        emit_signal ( &change_manager_t::signal_add_place
+                    , origin
+                    , detail::push_place (place, net)
+                    , net
+                    );
+      }
+
+      void change_manager_t::delete_place
+        ( const QObject* origin
+        , ::xml::parse::type::place_type& trans
+        , ::xml::parse::type::net_type& net
+        )
+      {
+        push (new action::remove_place (*this, origin, trans, net));
+      }
+
+      // - function --------------------------------------------------
+      void change_manager_t::set_function_name
+        ( const QObject* origin
+        , ::xml::parse::type::function_type& fun
+        , const QString& name
+        )
       {
         if (!name.isEmpty())
         {
@@ -105,11 +181,12 @@ namespace fhg
                     );
       }
 
+      // - expression ------------------------------------------------
       void change_manager_t::set_expression
-      ( const QObject* origin
-      , ::xml::parse::type::expression_type& expression
-      , const QString& text
-      )
+        ( const QObject* origin
+        , ::xml::parse::type::expression_type& expression
+        , const QString& text
+        )
       {
         expression.set (text.toStdString());
 
@@ -127,9 +204,11 @@ namespace fhg
                     );
       }
 
-
       namespace action
       {
+        // ## editing actions ########################################
+        // - net -----------------------------------------------------
+        // -- transition ---------------------------------------------
         class remove_transition : public QUndoCommand
         {
         public:
@@ -180,6 +259,7 @@ namespace fhg
           ::xml::parse::type::net_type& _net;
         };
 
+        // -- place --------------------------------------------------
         class remove_place : public QUndoCommand
         {
         public:
@@ -229,74 +309,11 @@ namespace fhg
           const ::xml::parse::type::place_type _place_copy;
           ::xml::parse::type::net_type& _net;
         };
+
+        // - function ------------------------------------------------
+        // - expression ----------------------------------------------
       }
 
-      void change_manager_t::delete_transition
-        ( const QObject* origin
-        , ::xml::parse::type::transition_type& trans
-        , ::xml::parse::type::net_type& net
-        )
-      {
-        push (new action::remove_transition (*this, origin, trans, net));
-      }
-
-      void change_manager_t::delete_place
-        ( const QObject* origin
-        , ::xml::parse::type::place_type& trans
-        , ::xml::parse::type::net_type& net
-        )
-      {
-        push (new action::remove_place (*this, origin, trans, net));
-      }
-
-      void change_manager_t::add_transition
-      ( const QObject* origin
-      , ::xml::parse::type::function_type& fun
-      , ::xml::parse::type::net_type& net
-      )
-      {
-        ::xml::parse::type::transition_type transition;
-
-        transition.f = fun;
-        transition.name = fun.name ? *fun.name : "transition";
-
-        emit_signal ( &change_manager_t::signal_add_transition
-                    , origin
-                    , detail::push_transition (transition, net)
-                    , net
-                    );
-      }
-
-      void change_manager_t::add_transition
-      ( const QObject* origin
-      , ::xml::parse::type::net_type& net
-      )
-      {
-        ::xml::parse::type::transition_type transition;
-
-        transition.name = "transition";
-
-        emit_signal ( &change_manager_t::signal_add_transition
-                    , origin
-                    , detail::push_transition (transition, net)
-                    , net
-                    );
-      }
-      void change_manager_t::add_place
-      ( const QObject* origin
-      , ::xml::parse::type::net_type& net
-      )
-      {
-        ::xml::parse::type::place_type place;
-
-        place.name = "place";
-
-        emit_signal ( &change_manager_t::signal_add_place
-                    , origin
-                    , detail::push_place (place, net)
-                    , net
-                    );
-      }
 
       //! \todo This surely can be done cleaner with variadic templates.
 

@@ -18,8 +18,14 @@ namespace fhg
     {
       namespace action
       {
+        // ## editing action forward declarations ####################
+        // - net -----------------------------------------------------
+        // -- transition ---------------------------------------------
         class remove_transition;
+        // -- place --------------------------------------------------
         class remove_place;
+        // - function ------------------------------------------------
+        // - expression ----------------------------------------------
       }
       namespace internal { class type; }
 
@@ -30,27 +36,12 @@ namespace fhg
       public:
         change_manager_t (internal::type &);
 
-        internal::type& internal () const;
+        internal::type& internal() const;
 
-      public:
+        // ## editing methods ########################################
+        // - net -----------------------------------------------------
 
-        void set_function_name ( const QObject*
-                               , ::xml::parse::type::function_type&
-                               , const QString&
-                               );
-        void set_expression ( const QObject*
-                            , ::xml::parse::type::expression_type&
-                            , const QString&
-                            );
-        void delete_transition ( const QObject*
-                               , ::xml::parse::type::transition_type&
-                               , ::xml::parse::type::net_type&
-                               );
-        void delete_place ( const QObject*
-                          , ::xml::parse::type::place_type&
-                          , ::xml::parse::type::net_type&
-                          );
-
+        // -- transition ---------------------------------------------
         void add_transition ( const QObject*
                             , ::xml::parse::type::net_type&
                             );
@@ -58,44 +49,88 @@ namespace fhg
                             , ::xml::parse::type::function_type&
                             , ::xml::parse::type::net_type&
                             );
+
+        void delete_transition ( const QObject*
+                               , ::xml::parse::type::transition_type&
+                               , ::xml::parse::type::net_type&
+                               );
+
+        // -- place --------------------------------------------------
         void add_place ( const QObject*
                        , ::xml::parse::type::net_type&
                        );
 
+        void delete_place ( const QObject*
+                          , ::xml::parse::type::place_type&
+                          , ::xml::parse::type::net_type&
+                          );
+
+        // - function ------------------------------------------------
+        void set_function_name ( const QObject*
+                               , ::xml::parse::type::function_type&
+                               , const QString&
+                               );
+
+        // - expression ----------------------------------------------
+        void set_expression ( const QObject*
+                            , ::xml::parse::type::expression_type&
+                            , const QString&
+                            );
+
       signals:
-        void signal_set_expression ( const QObject*
-                                   , const ::xml::parse::type::expression_type&
-                                   , const QString&
-                                   );
-        void signal_set_expression_parse_result
-             ( const QObject*
-             , const ::xml::parse::type::expression_type&
-             , const QString&
-             );
-        void signal_set_function_name ( const QObject*
-                                      , const ::xml::parse::type::function_type&
-                                      , const QString&
-                                      );
-        void
-        signal_delete_transition ( const QObject*
-                                 , const ::xml::parse::type::transition_type&
-                                 , const ::xml::parse::type::net_type&
-                                 );
+
+        // ## signals after edit  ####################################
+        // - net -----------------------------------------------------
+
+        // -- transition ---------------------------------------------
         void signal_add_transition ( const QObject*
                                    , ::xml::parse::type::transition_type&
                                    , ::xml::parse::type::net_type&
                                    );
-        void
-        signal_delete_place ( const QObject*
-                            , const ::xml::parse::type::place_type&
-                            , const ::xml::parse::type::net_type&
-                            );
+        void signal_delete_transition ( const QObject*
+                                      , const ::xml::parse::type::transition_type&
+                                      , const ::xml::parse::type::net_type&
+                                      );
+
+        // -- place --------------------------------------------------
         void signal_add_place ( const QObject*
                               , ::xml::parse::type::place_type&
                               , ::xml::parse::type::net_type&
                               );
 
+        void
+        signal_delete_place ( const QObject*
+                            , const ::xml::parse::type::place_type&
+                            , const ::xml::parse::type::net_type&
+                            );
+
+        // - function ------------------------------------------------
+        void signal_set_function_name ( const QObject*
+                                      , const ::xml::parse::type::function_type&
+                                      , const QString&
+                                      );
+
+        // - expression ----------------------------------------------
+        void signal_set_expression ( const QObject*
+                                   , const ::xml::parse::type::expression_type&
+                                   , const QString&
+                                   );
+        void signal_set_expression_parse_result ( const QObject*
+                                                , const ::xml::parse::type::expression_type&
+                                                , const QString&
+                                                );
+
       private:
+
+        // ## friend classes  ########################################
+        // - net -----------------------------------------------------
+        // -- transition ---------------------------------------------
+        friend class action::remove_transition;
+        // -- place --------------------------------------------------
+        friend class action::remove_place;
+        // - function ------------------------------------------------
+        // - expression ----------------------------------------------
+
 #define ARG_TYPE(function_type,n)                                       \
   boost::mpl::at_c<boost::function_types::parameter_types<function_type>,n>::type
 
@@ -127,9 +162,6 @@ namespace fhg
                                  , typename ARG_TYPE(Fun,5)
                                  , typename ARG_TYPE(Fun,6));
 #undef ARG_TYPE
-
-        friend class action::remove_transition;
-        friend class action::remove_place;
 
         internal::type& _internal;
       };
