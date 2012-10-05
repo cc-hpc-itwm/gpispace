@@ -342,7 +342,7 @@ namespace fhg
             return c;
           }
 
-          void type::create_connection (connectable::item* item)
+          void type::create_connection (connectable_item* item)
           {
             if (_pending_connection)
               {
@@ -364,8 +364,8 @@ namespace fhg
             update (_pending_connection->boundingRect());
           }
 
-          void type::create_connection ( connectable::item* from
-                                       , connectable::item* to
+          void type::create_connection ( connectable_item* from
+                                       , connectable_item* to
                                        , bool only_reading
                                        )
           {
@@ -424,11 +424,11 @@ namespace fhg
 
             foreach (QGraphicsItem* item, items(event->scenePos()))
               {
-                //! \note No, just casting to connectable::item* does NOT work. Qt!
+                //! \note No, just casting to connectable_item* does NOT work. Qt!
                 port::item* as_port (qgraphicsitem_cast<port::item*> (item));
                 place_item* as_place (qgraphicsitem_cast<place_item*> (item));
 
-                connectable::item* ci (as_port);
+                connectable_item* ci (as_port);
                 if (!ci)
                   {
                     ci = as_place;

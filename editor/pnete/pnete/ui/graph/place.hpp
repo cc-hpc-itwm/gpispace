@@ -30,7 +30,7 @@ namespace fhg
       {
         typedef ITVAL(XMLTYPE(net_type::places_type)) place_type;
 
-        class place_item : public graph::connectable::item
+        class place_item : public graph::connectable_item
         {
           Q_OBJECT;
 

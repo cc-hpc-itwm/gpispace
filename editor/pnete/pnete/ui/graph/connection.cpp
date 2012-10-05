@@ -36,11 +36,11 @@ namespace fhg
             end (NULL);
           }
 
-          connectable::item* item::start() const
+          connectable_item* item::start() const
           {
             return _start;
           }
-          connectable::item* item::start (connectable::item* start_)
+          connectable_item* item::start (connectable_item* start_)
           {
             if (_start)
               {
@@ -53,11 +53,11 @@ namespace fhg
               }
             return _start;
           }
-          connectable::item* item::end() const
+          connectable_item* item::end() const
           {
             return _end;
           }
-          connectable::item* item::end (connectable::item* end_)
+          connectable_item* item::end (connectable_item* end_)
           {
             if (_end)
               {
@@ -71,7 +71,7 @@ namespace fhg
             return _end;
           }
 
-          connectable::item* item::non_free_side() const
+          connectable_item* item::non_free_side() const
           {
             if (_start && _end)
               {
@@ -87,7 +87,7 @@ namespace fhg
               }
             return _start ? _start : _end;
           }
-          connectable::item* item::free_side(connectable::item* item)
+          connectable_item* item::free_side(connectable_item* item)
           {
             if (_start && _end)
               {

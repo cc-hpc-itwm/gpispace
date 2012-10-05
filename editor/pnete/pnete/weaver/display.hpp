@@ -35,7 +35,7 @@ namespace fhg
     namespace weaver
     {
       typedef boost::unordered_map< std::string
-                                  , ui::graph::connectable::item*
+                                  , ui::graph::connectable_item*
                                   > item_by_name_type;
 
       typedef XMLTYPE(function_with_mapping_type) function_with_mapping_type;

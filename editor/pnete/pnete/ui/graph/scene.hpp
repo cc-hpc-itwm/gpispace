@@ -26,9 +26,9 @@ namespace fhg
       namespace graph
       {
         class item;
+        class connectable_item;
         namespace connection { class item; }
         namespace transition { class item; }
-        namespace connectable { class item; }
 
         namespace scene
         {
@@ -44,9 +44,9 @@ namespace fhg
 
             const QPointF& mouse_position() const;
 
-            void create_connection (connectable::item* item);
-            void create_connection ( connectable::item* from
-                                   , connectable::item* to
+            void create_connection (connectable_item* item);
+            void create_connection ( connectable_item* from
+                                   , connectable_item* to
                                    , bool only_reading
                                    );
 

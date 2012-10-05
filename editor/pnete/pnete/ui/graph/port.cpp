@@ -83,7 +83,7 @@ namespace fhg
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , transition::item* parent
           )
-            : connectable::item (direction, type_map, parent, &port.prop)
+            : connectable_item (direction, type_map, parent, &port.prop)
             , _port (port)
             , _orientation ()
             , _length (size::port::width())
@@ -158,7 +158,7 @@ namespace fhg
 
           void item::setPos_no_collision_detection (const QPointF& new_position)
           {
-            connectable::item::setPos (new_position);
+            connectable_item::setPos (new_position);
           }
 
           void item::setPos (const QPointF& new_position)
@@ -166,7 +166,7 @@ namespace fhg
             const QPointF old_position (pos());
             const orientation::type old_orientation (orientation());
 
-            connectable::item::setPos (fitting_position (new_position));
+            connectable_item::setPos (fitting_position (new_position));
 
             // do not move, when now colliding with a different port
             foreach (QGraphicsItem* collidingItem, collidingItems())
@@ -176,7 +176,7 @@ namespace fhg
                    )
                   {
                     orientation (old_orientation);
-                    connectable::item::setPos (old_position);
+                    connectable_item::setPos (old_position);
 
                     return;
                   }
@@ -188,7 +188,7 @@ namespace fhg
                     if (parentItem() != transition)
                       {
                         orientation (old_orientation);
-                        connectable::item::setPos (old_position);
+                        connectable_item::setPos (old_position);
 
                         return;
                       }
@@ -196,11 +196,11 @@ namespace fhg
               }
           }
 
-          bool item::is_connectable_with (const connectable::item* item) const
+          bool item::is_connectable_with (const connectable_item* item) const
           {
             //! \note Only allow one connection on ports.
             return _connections.isEmpty()
-              && connectable::item::is_connectable_with (item);
+              && connectable_item::is_connectable_with (item);
           }
 
           static qreal quad (const qreal x)
@@ -279,7 +279,7 @@ namespace fhg
           }
           const std::string& item::we_type() const
           {
-            return connectable::item::we_type (port().type);
+            return connectable_item::we_type (port().type);
           }
 
           const orientation::type&

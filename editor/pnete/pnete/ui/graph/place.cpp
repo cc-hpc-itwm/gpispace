@@ -24,7 +24,7 @@ namespace fhg
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , graph::item* parent
           )
-          : connectable::item ( connectable::direction::BOTH
+          : connectable_item ( connectable::direction::BOTH
                               , type_map
                               , parent
                               , &place.prop
@@ -51,7 +51,7 @@ namespace fhg
 
         const std::string& place_item::we_type() const
         {
-          return connectable::item::we_type (place().type);
+          return connectable_item::we_type (place().type);
         }
 
         const std::string& place_item::name() const
@@ -138,7 +138,7 @@ namespace fhg
 //               }
 //             else
 //               {
-//                 connectable::item::mouseMoveEvent (event);
+//                 connectable_item::mouseMoveEvent (event);
 //               }
 //           }
 //           void place_item::mousePressEvent (QGraphicsSceneMouseEvent* event)
@@ -151,7 +151,7 @@ namespace fhg
 //                 return;
 //               }
 
-//             connectable::item::mousePressEvent (event);
+//             connectable_item::mousePressEvent (event);
 //           }
       }
     }

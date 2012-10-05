@@ -34,44 +34,44 @@ namespace fhg
               , BOTH = IN | OUT
               };
           }
+        }
 
-          class item : public graph::item
-          {
-            Q_OBJECT;
+        class connectable_item : public graph::item
+        {
+          Q_OBJECT;
 
-          public:
-            item
-            ( direction::type direction
+        public:
+          connectable_item
+            ( connectable::direction::type direction
             , boost::optional< ::xml::parse::type::type_map_type&>
             = boost::none
             , graph::item* parent = NULL
             , ::we::type::property::type* property = NULL
             );
 
-            void add_connection (connection::item* c);
-            void remove_connection (connection::item * c);
+          void add_connection (connection::item* c);
+          void remove_connection (connection::item * c);
 
-            virtual bool is_connectable_with (const item*) const;
+          virtual bool is_connectable_with (const connectable_item*) const;
 
-            void erase_connections (scene::type*);
-            const QSet<connection::item*>& connections() const;
-            const direction::type& direction() const;
-            const direction::type& direction (const direction::type&);
+          void erase_connections (scene::type*);
+          const QSet<connection::item*>& connections() const;
+          const connectable::direction::type& direction() const;
+          const connectable::direction::type& direction (const connectable::direction::type&);
 
-            virtual const std::string& we_type() const = 0;
+          virtual const std::string& we_type() const = 0;
 
-//             virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+//        virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
-            virtual QLinkedList<graph::item*> childs() const;
+          virtual QLinkedList<graph::item*> childs() const;
 
-          protected:
-            QSet<connection::item*> _connections;
-            direction::type _direction;
-            boost::optional< ::xml::parse::type::type_map_type&> _type_map;
+        protected:
+          QSet<connection::item*> _connections;
+          connectable::direction::type _direction;
+          boost::optional< ::xml::parse::type::type_map_type&> _type_map;
 
-            const std::string& we_type (const std::string&) const;
-          };
-        }
+          const std::string& we_type (const std::string&) const;
+        };
       }
     }
   }

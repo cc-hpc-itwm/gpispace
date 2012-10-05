@@ -36,13 +36,13 @@ namespace fhg
             item (bool read = false);
             ~item();
 
-            connectable::item* start() const;
-            connectable::item* start (connectable::item*);
-            connectable::item* end() const;
-            connectable::item* end (connectable::item*);
+            connectable_item* start() const;
+            connectable_item* start (connectable_item*);
+            connectable_item* end() const;
+            connectable_item* end (connectable_item*);
 
-            connectable::item* non_free_side() const;
-            connectable::item* free_side(connectable::item*);
+            connectable_item* non_free_side() const;
+            connectable_item* free_side(connectable_item*);
 
             const QList<QPointF>& fixed_points() const;
             const QList<QPointF>& fixed_points (const QList<QPointF>&);
@@ -59,8 +59,8 @@ namespace fhg
             virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
 
           private:
-            connectable::item* _start;
-            connectable::item* _end;
+            connectable_item* _start;
+            connectable_item* _end;
 
             QList<QPointF> _fixed_points;
 

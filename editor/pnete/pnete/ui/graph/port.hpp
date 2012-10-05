@@ -33,7 +33,7 @@ namespace fhg
 
         namespace port
         {
-          class item : public connectable::item
+          class item : public connectable_item
           {
             Q_OBJECT;
 
@@ -57,7 +57,7 @@ namespace fhg
             const orientation::type& orientation() const;
             const orientation::type& orientation(const orientation::type&);
 
-            virtual bool is_connectable_with (const connectable::item*) const;
+            virtual bool is_connectable_with (const connectable_item*) const;
 
             enum { Type = port_graph_type };
             virtual int type() const { return Type; }
