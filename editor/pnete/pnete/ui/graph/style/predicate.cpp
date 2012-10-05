@@ -83,7 +83,7 @@ namespace fhg
               const std::string& name (const graph::item * gi)
               {
                 return
-                  qgraphicsitem_cast<const graph::transition::item*> (gi)->name();
+                  qgraphicsitem_cast<const graph::transition_item*> (gi)->name();
               }
 //               const bool internal (const graph::item *);
 //               const bool inline (const graph::item *);

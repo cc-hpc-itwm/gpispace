@@ -29,7 +29,7 @@ namespace fhg
     {
       namespace graph
       {
-        namespace transition { class item; }
+        class transition_item;
 
         namespace port
         {
@@ -44,7 +44,7 @@ namespace fhg
                  , connectable::direction::type direction
                  , boost::optional< ::xml::parse::type::type_map_type&> type_map
                  = boost::none
-                 , transition::item* parent = NULL
+                 , transition_item* parent = NULL
                  );
 
             const qreal& length() const;
@@ -99,7 +99,7 @@ namespace fhg
                    , connectable::direction::type direction
                    , boost::optional< ::xml::parse::type::type_map_type&> type_map
                    = boost::none
-                   , transition::item* parent = NULL
+                   , transition_item* parent = NULL
                    )
                 : port::item (port, direction, type_map, parent)
               {}

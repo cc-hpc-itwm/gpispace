@@ -123,7 +123,7 @@ namespace fhg
 
       transition::transition ( data::internal::type* root
                              , ui::graph::scene::type* scene
-                             , ui::graph::transition::item* transition
+                             , ui::graph::transition_item* transition
                              , XMLTYPE(net_type)& net
                              , item_by_name_type& place_item_by_name
                              )
@@ -388,8 +388,8 @@ namespace fhg
           , transition
           )
       {
-        ui::graph::transition::item* trans
-          ( new ui::graph::transition::item
+        ui::graph::transition_item* trans
+          ( new ui::graph::transition_item
             ( const_cast< ITVAL(XMLTYPE(net_type::transitions_type))& >
               (transition)
             , _net

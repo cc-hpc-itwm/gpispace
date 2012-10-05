@@ -81,7 +81,7 @@ namespace fhg
           ( port_type& port
           , connectable::direction::type direction
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
-          , transition::item* parent
+          , transition_item* parent
           )
             : connectable_item (direction, type_map, parent, &port.prop)
             , _port (port)
@@ -181,8 +181,8 @@ namespace fhg
                     return;
                   }
 
-                if ( transition::item* transition
-                   = qgraphicsitem_cast<transition::item*> (collidingItem)
+                if ( transition_item* transition
+                   = qgraphicsitem_cast<transition_item*> (collidingItem)
                    )
                   {
                     if (parentItem() != transition)
@@ -210,8 +210,8 @@ namespace fhg
 
           QPointF item::fitting_position (QPointF position)
           {
-            if ( const transition::item* transition
-               = qgraphicsitem_cast<const transition::item*> (parentItem())
+            if ( const transition_item* transition
+               = qgraphicsitem_cast<const transition_item*> (parentItem())
                )
               {
                 const QPointF minimum_distance

@@ -28,7 +28,7 @@ namespace fhg
       namespace graph
       {
         class place_item;
-        namespace transition { class item; }
+        class transition_item;
         namespace scene { class type; }
       }
     }
@@ -121,7 +121,7 @@ namespace fhg
       public:
         explicit transition ( data::internal::type*
                             , ui::graph::scene::type*
-                            , ui::graph::transition::item*
+                            , ui::graph::transition_item*
                             , XMLTYPE(net_type)&
                             , item_by_name_type&
                             );
@@ -131,7 +131,7 @@ namespace fhg
 
       private:
         ui::graph::scene::type* _scene;
-        ui::graph::transition::item* _transition;
+        ui::graph::transition_item* _transition;
         ui::graph::connectable::direction::type _current_port_direction;
         XMLTYPE(net_type)& _net;
 

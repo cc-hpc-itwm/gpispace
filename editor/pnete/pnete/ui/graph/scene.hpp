@@ -27,8 +27,8 @@ namespace fhg
       {
         class item;
         class connectable_item;
+        class transition_item;
         namespace connection { class item; }
-        namespace transition { class item; }
 
         namespace scene
         {
@@ -93,7 +93,7 @@ namespace fhg
             virtual void keyPressEvent (QKeyEvent* event);
 
           private:
-            void remove_transition_item (transition::item*);
+            void remove_transition_item (transition_item*);
             bool is_my_net (const ::xml::parse::type::net_type&);
 
             connection::item* create_connection (bool only_reading = false);

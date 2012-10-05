@@ -278,7 +278,7 @@ namespace fhg
           {
             if (is_my_net (n))
               {
-                transition::item* trans (new transition::item (t, n));
+                transition_item* trans (new transition_item (t, n));
 
                 addItem (trans);
 
@@ -560,20 +560,20 @@ namespace fhg
               {
                 foreach (QGraphicsItem* child, items())
                   {
-                    if ( transition::item* transition_item
-                       = qgraphicsitem_cast<transition::item*> (child)
+                    if ( transition_item* item
+                       = qgraphicsitem_cast<transition_item*> (child)
                        )
                       {
-                        if (&trans == &transition_item->transition())
+                        if (&trans == &item->transition())
                           {
-                            remove_transition_item (transition_item);
-                            transition_item->deleteLater();
+                            remove_transition_item (item);
+                            item->deleteLater();
                           }
                       }
                   }
               }
           }
-          void type::remove_transition_item (transition::item* transition_item)
+          void type::remove_transition_item (transition_item* transition_item)
           {
             foreach (QGraphicsItem* child, transition_item->childItems())
               {
@@ -587,8 +587,8 @@ namespace fhg
           }
           void type::slot_delete_transition (graph::item* graph_item)
           {
-            transition::item* transition_item
-              (qgraphicsitem_cast<transition::item*> (graph_item));
+            transition_item* transition_item
+              (qgraphicsitem_cast<transition_item*> (graph_item));
 
             if (!transition_item)
               {
