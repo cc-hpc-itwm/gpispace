@@ -25,6 +25,7 @@ namespace gpi
         enum flags_type
           {
             F_NONE         = 0x00,
+
             F_PERSISTENT   = 0x01, // leave segment in gpi after process death
             F_EXCLUSIVE    = 0x02, // no mapping possible from other processes
             F_NOUNLINK     = 0x04, // do not unlink segment after gpi termination
@@ -32,6 +33,7 @@ namespace gpi
             F_FORCE_UNLINK = 0x10, // force recreation of the segment
             F_SPECIAL      = 0x20, // special segment (used internally to identify local/global segments)
             F_ATTACHED     = 0x40, // special flag indicating if the process container is attached
+            F_NOMMAP       = 0x80, // do not mmap, rather use seek/read/write if possible
           };
 
         struct descriptor_t
