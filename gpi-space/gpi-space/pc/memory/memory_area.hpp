@@ -113,6 +113,18 @@ namespace gpi
          */
         void *pointer_to (const gpi::pc::type::memory_location_t & loc);
 
+        virtual gpi::pc::type::size_t
+        read_from ( gpi::pc::type::memory_location_t loc
+                  , void *buffer
+                  , gpi::pc::type::size_t amount
+                  );
+
+        virtual gpi::pc::type::size_t
+        write_to ( gpi::pc::type::memory_location_t loc
+                 , const void *buffer
+                 , gpi::pc::type::size_t amount
+                 );
+
         int get_transfer_tasks ( const gpi::pc::type::memory_location_t src
                                , const gpi::pc::type::memory_location_t dst
                                , area_t & dst_area

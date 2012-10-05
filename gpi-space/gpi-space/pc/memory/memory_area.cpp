@@ -630,6 +630,26 @@ namespace gpi
         }
       }
 
+      gpi::pc::type::size_t
+      area_t::read_from ( gpi::pc::type::memory_location_t loc
+                        , void *buffer
+                        , gpi::pc::type::size_t amount
+                        )
+      {
+        throw std::runtime_error
+          (std::string ("not yet implemented: ") + __FUNCTION__);
+      }
+
+      gpi::pc::type::size_t
+      area_t::write_to ( gpi::pc::type::memory_location_t loc
+                       , const void *buffer
+                       , gpi::pc::type::size_t amount
+                       )
+      {
+        throw std::runtime_error
+          (std::string ("not yet implemented: ") + __FUNCTION__);
+      }
+
       int
       area_t::get_transfer_tasks ( const gpi::pc::type::memory_location_t src
                                  , const gpi::pc::type::memory_location_t dst
