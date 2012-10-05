@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/data/change_manager.hpp>
-#include <pnete/data/internal.hpp>
 
 #include <we/expr/parse/parser.hpp>
 
@@ -15,14 +14,8 @@ namespace fhg
   {
     namespace data
     {
-      change_manager_t::change_manager_t (internal_type & i)
-        : _internal (i)
+      change_manager_t::change_manager_t()
       {}
-
-      internal_type& change_manager_t::internal () const
-      {
-        return _internal;
-      }
 
       namespace detail
       {
