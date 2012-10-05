@@ -29,7 +29,7 @@ namespace fhg
       {
         class place_item;
         class transition_item;
-        namespace scene { class type; }
+        class scene_type;
       }
     }
     namespace weaver
@@ -67,7 +67,7 @@ namespace fhg
           ports_type() : in (NULL), out (NULL) {}
         } _ports;
 
-        ui::graph::scene::type* _scene;
+        ui::graph::scene_type* _scene;
         data::internal::type* _root;
       };
 
@@ -82,7 +82,7 @@ namespace fhg
       {
       public:
         explicit net ( data::internal::type*
-                     , ui::graph::scene::type* scene
+                     , ui::graph::scene_type* scene
                      , XMLTYPE(net_type)& net
                      , XMLTYPE(ports_type)& in
                      , XMLTYPE(ports_type)& out
@@ -92,7 +92,7 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene::type* _scene;
+        ui::graph::scene_type* _scene;
 
         XMLTYPE(net_type)& _net;
         XMLTYPE(ports_type)& _in;
@@ -120,7 +120,7 @@ namespace fhg
       {
       public:
         explicit transition ( data::internal::type*
-                            , ui::graph::scene::type*
+                            , ui::graph::scene_type*
                             , ui::graph::transition_item*
                             , XMLTYPE(net_type)&
                             , item_by_name_type&
@@ -130,7 +130,7 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene::type* _scene;
+        ui::graph::scene_type* _scene;
         ui::graph::transition_item* _transition;
         ui::graph::connectable::direction::type _current_port_direction;
         XMLTYPE(net_type)& _net;
@@ -178,7 +178,7 @@ namespace fhg
       class connection
       {
       public:
-        explicit connection ( ui::graph::scene::type*
+        explicit connection ( ui::graph::scene_type*
                             , item_by_name_type& place_item_by_name
                             , item_by_name_type& port_item_by_name
                             , const ui::graph::connectable::direction::type& direction
@@ -189,7 +189,7 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene::type* _scene;
+        ui::graph::scene_type* _scene;
         item_by_name_type& _place_item_by_name;
         item_by_name_type& _port_item_by_name;
         const ui::graph::connectable::direction::type _direction;
@@ -222,7 +222,7 @@ namespace fhg
       class port_toplevel
       {
       public:
-        explicit port_toplevel ( ui::graph::scene::type*
+        explicit port_toplevel ( ui::graph::scene_type*
                                , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                );
@@ -231,7 +231,7 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene::type* _scene;
+        ui::graph::scene_type* _scene;
         item_by_name_type& _place_item_by_name;
         std::string _name;
         const ui::graph::connectable::direction::type _direction;

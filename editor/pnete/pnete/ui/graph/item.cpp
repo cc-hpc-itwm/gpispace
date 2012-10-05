@@ -51,14 +51,13 @@ namespace fhg
           setAcceptedMouseButtons (Qt::LeftButton);
         }
 
-        scene::type* base_item::scene() const
+        scene_type* base_item::scene() const
         {
           QGraphicsScene* sc (QGraphicsItem::scene());
 
-          return sc
-            ? fhg::util::throwing_qobject_cast<scene::type*> (sc)
-            : 0
-            ;
+          return sc ? fhg::util::throwing_qobject_cast<scene_type*> (sc)
+                    : NULL
+                    ;
         }
 
         void base_item::setPos (const QPointF& new_pos)

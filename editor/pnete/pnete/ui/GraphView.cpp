@@ -26,7 +26,7 @@ namespace fhg
   {
     namespace ui
     {
-      GraphView::GraphView (graph::scene::type* scene, QWidget* parent)
+      GraphView::GraphView (graph::scene_type* scene, QWidget* parent)
       : QGraphicsView (scene, parent)
       , _currentScale (size::zoom::default_value())
       {
@@ -44,9 +44,9 @@ namespace fhg
                      );
       }
 
-      graph::scene::type* GraphView::scene() const
+      graph::scene_type* GraphView::scene() const
       {
-        return qobject_cast<graph::scene::type*> (QGraphicsView::scene());
+        return qobject_cast<graph::scene_type*> (QGraphicsView::scene());
       }
 
       void GraphView::focusInEvent (QFocusEvent* event)

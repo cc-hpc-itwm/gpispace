@@ -89,7 +89,7 @@ namespace fhg
           return childs;
         }
 
-        void connectable_item::erase_connections (scene::type* scene)
+        void connectable_item::erase_connections (scene_type* scene)
         {
           foreach (connection_item* connection, connections())
           {

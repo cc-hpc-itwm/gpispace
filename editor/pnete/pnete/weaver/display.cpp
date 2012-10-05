@@ -83,7 +83,7 @@ namespace fhg
       }
       WSIG(function, net::open, XMLTYPE(net_type), net)
       {
-        _scene = new ui::graph::scene::type
+        _scene = new ui::graph::scene_type
           ( const_cast< XMLTYPE(net_type) &> (net)
           , _root->change_manager()
           );
@@ -122,7 +122,7 @@ namespace fhg
 
 
       transition::transition ( data::internal::type* root
-                             , ui::graph::scene::type* scene
+                             , ui::graph::scene_type* scene
                              , ui::graph::transition_item* transition
                              , XMLTYPE(net_type)& net
                              , item_by_name_type& place_item_by_name
@@ -274,7 +274,7 @@ namespace fhg
           }
       }
 
-      connection::connection ( ui::graph::scene::type* scene
+      connection::connection ( ui::graph::scene_type* scene
                              , item_by_name_type& place_item_by_name
                              , item_by_name_type& port_item_by_name
                              , const ui::graph::connectable::direction::type& direction
@@ -332,7 +332,7 @@ namespace fhg
       }
 
       net::net ( data::internal::type* root
-               , ui::graph::scene::type* scene
+               , ui::graph::scene_type* scene
                , XMLTYPE(net_type)& net
                , XMLTYPE(ports_type)& in
                , XMLTYPE(ports_type)& out
@@ -443,7 +443,7 @@ namespace fhg
       }
 
       port_toplevel::port_toplevel
-      ( ui::graph::scene::type* scene
+      ( ui::graph::scene_type* scene
         , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
         )

@@ -30,87 +30,84 @@ namespace fhg
         class connection_item;
         class transition_item;
 
-        namespace scene
+        class scene_type : public QGraphicsScene
         {
-          class type : public QGraphicsScene
-          {
-            Q_OBJECT;
+          Q_OBJECT;
+          
+        public:
+          explicit scene_type ( ::xml::parse::type::net_type& net
+                              , data::change_manager_t& change_manager
+                              , QObject* parent = NULL
+                              );
+          
+          const QPointF& mouse_position() const;
 
-          public:
-            explicit type ( ::xml::parse::type::net_type& net
-                          , data::change_manager_t& change_manager
-                          , QObject* parent = NULL
-                          );
+          void create_connection (connectable_item* item);
+          void create_connection ( connectable_item* from
+                                 , connectable_item* to
+                                 , bool only_reading
+                                 );
 
-            const QPointF& mouse_position() const;
+          ::xml::parse::type::net_type& net();
+          data::change_manager_t& change_manager();
 
-            void create_connection (connectable_item* item);
-            void create_connection ( connectable_item* from
-                                   , connectable_item* to
-                                   , bool only_reading
+        public slots:
+          void slot_delete_transition (base_item*);
+          void
+          slot_delete_transition ( const QObject*
+                                 , const ::xml::parse::type::transition_type&
+                                 , const ::xml::parse::type::net_type&
+                                 );
+
+          void slot_add_transition ();
+          void slot_add_transition ( const QObject*
+                                   , ::xml::parse::type::transition_type&
+                                   , ::xml::parse::type::net_type&
                                    );
-
-            ::xml::parse::type::net_type& net();
-            data::change_manager_t& change_manager();
-
-          public slots:
-            void slot_delete_transition (base_item*);
-            void
-            slot_delete_transition ( const QObject*
-                                   , const ::xml::parse::type::transition_type&
-                                   , const ::xml::parse::type::net_type&
-                                   );
-
-            void slot_add_transition ();
-            void slot_add_transition ( const QObject*
-                                     , ::xml::parse::type::transition_type&
-                                     , ::xml::parse::type::net_type&
-                                     );
-            void slot_add_place ();
-            void slot_add_place ( const QObject*
-                                , ::xml::parse::type::place_type&
-                                , ::xml::parse::type::net_type&
-                                );
-
-            void slot_delete_place (base_item*);
-            void
-            slot_delete_place ( const QObject*
-                              , const ::xml::parse::type::place_type&
-                              , const ::xml::parse::type::net_type&
+          void slot_add_place ();
+          void slot_add_place ( const QObject*
+                              , ::xml::parse::type::place_type&
+                              , ::xml::parse::type::net_type&
                               );
 
+          void slot_delete_place (base_item*);
+          void
+          slot_delete_place ( const QObject*
+                            , const ::xml::parse::type::place_type&
+                            , const ::xml::parse::type::net_type&
+                            );
 
-            void slot_add_struct ();
 
-            void auto_layout();
+          void slot_add_struct ();
 
-          signals:
+          void auto_layout();
 
-          protected:
-            virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
-            virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
-            virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
-            virtual void keyPressEvent (QKeyEvent* event);
+        signals:
 
-          private:
-            void remove_transition_item (transition_item*);
-            bool is_my_net (const ::xml::parse::type::net_type&);
+        protected:
+          virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
+          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
+          virtual void keyPressEvent (QKeyEvent* event);
 
-            connection_item* create_connection (bool only_reading = false);
-            void remove_pending_connection();
+        private:
+          void remove_transition_item (transition_item*);
+          bool is_my_net (const ::xml::parse::type::net_type&);
 
-            void init_menu_context();
+          connection_item* create_connection (bool only_reading = false);
+          void remove_pending_connection();
 
-            connection_item* _pending_connection;
-            QPointF _mouse_position;
+          void init_menu_context();
 
-            QMenu _menu_new;
-            QMenu _menu_context;
+          connection_item* _pending_connection;
+          QPointF _mouse_position;
 
-            ::xml::parse::type::net_type& _net;
-            data::change_manager_t& _change_manager;
-          };
-        }
+          QMenu _menu_new;
+          QMenu _menu_context;
+
+          ::xml::parse::type::net_type& _net;
+          data::change_manager_t& _change_manager;
+        };
       }
     }
   }

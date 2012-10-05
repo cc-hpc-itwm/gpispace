@@ -49,7 +49,7 @@ namespace fhg
                     , ::we::type::property::type* property = NULL
                     );
 
-          scene::type* scene() const;
+          scene_type* scene() const;
 
           void set_just_pos_but_not_in_property (const QPointF&);
           void set_just_pos_but_not_in_property (qreal, qreal);

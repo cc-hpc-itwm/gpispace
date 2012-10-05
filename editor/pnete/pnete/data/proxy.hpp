@@ -19,7 +19,7 @@ namespace fhg
 
       namespace graph
       {
-        namespace scene { class type; }
+        class scene_type;
       }
     }
 
@@ -133,7 +133,7 @@ namespace fhg
 
         typedef proxy_base<data::expression_type> expression_proxy;
         typedef proxy_base<data::mod_type> mod_proxy;
-        typedef proxy_base<data::net_type, ui::graph::scene::type> net_proxy;
+        typedef proxy_base<data::net_type, ui::graph::scene_type> net_proxy;
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
