@@ -45,12 +45,7 @@ namespace fhg
             + boost::lexical_cast<std::string> (num + 1)
             ;
         }
-      }
 
-      // ## editing methods ##########################################
-      // - net -------------------------------------------------------
-      namespace detail
-      {
         static ::xml::parse::type::place_type&
         push_place ( ::xml::parse::type::place_type place
                    , ::xml::parse::type::net_type& net
@@ -87,6 +82,119 @@ namespace fhg
           }
         }
       }
+
+      namespace action
+      {
+        // ## editing actions ########################################
+        // - net -----------------------------------------------------
+        // -- transition ---------------------------------------------
+        class remove_transition : public QUndoCommand
+        {
+        public:
+          remove_transition
+            ( change_manager_t& change_manager
+            , const QObject* origin
+            , ::xml::parse::type::transition_type& transition
+            , ::xml::parse::type::net_type& net
+            )
+            : QUndoCommand (QObject::tr ("remove_transition_action"))
+            , _change_manager (change_manager)
+            , _origin (origin)
+            , _transition (&transition)
+            , _transition_copy (transition)
+            , _net (net)
+          { }
+
+          virtual void undo()
+          {
+            _transition = &detail::push_transition (_transition_copy, _net);
+
+            _change_manager.emit_signal
+              ( &change_manager_t::signal_add_transition
+              , _origin
+              , *_transition
+              , _net
+              );
+          }
+
+          virtual void redo()
+          {
+            _change_manager.emit_signal
+              ( &change_manager_t::signal_delete_transition
+              , _origin
+              , *_transition
+              , _net
+              );
+
+            _net.erase_transition (*_transition);
+            _transition = NULL;
+            _origin = NULL;
+          }
+        private:
+          change_manager_t& _change_manager;
+          const QObject* _origin;
+          ::xml::parse::type::transition_type* _transition;
+          const ::xml::parse::type::transition_type _transition_copy;
+          ::xml::parse::type::net_type& _net;
+        };
+
+        // -- place --------------------------------------------------
+        class remove_place : public QUndoCommand
+        {
+        public:
+          remove_place
+            ( change_manager_t& change_manager
+            , const QObject* origin
+            , ::xml::parse::type::place_type& place
+            , ::xml::parse::type::net_type& net
+            )
+            : QUndoCommand (QObject::tr ("remove_place_action"))
+            , _change_manager (change_manager)
+            , _origin (origin)
+            , _place (&place)
+            , _place_copy (place)
+            , _net (net)
+          { }
+
+          virtual void undo()
+          {
+            _place = &detail::push_place (_place_copy, _net);
+
+            _change_manager.emit_signal
+              ( &change_manager_t::signal_add_place
+              , _origin
+              , *_place
+              , _net
+              );
+          }
+
+          virtual void redo()
+          {
+            _change_manager.emit_signal
+              ( &change_manager_t::signal_delete_place
+              , _origin
+              , *_place
+              , _net
+              );
+
+            _net.erase_place (*_place);
+            _place = NULL;
+            _origin = NULL;
+          }
+        private:
+          change_manager_t& _change_manager;
+          const QObject* _origin;
+          ::xml::parse::type::place_type* _place;
+          const ::xml::parse::type::place_type _place_copy;
+          ::xml::parse::type::net_type& _net;
+        };
+
+        // - function ------------------------------------------------
+        // - expression ----------------------------------------------
+      }
+
+      // ## editing methods ##########################################
+      // - net -------------------------------------------------------
 
       // -- transition -----------------------------------------------
       void change_manager_t::add_transition
@@ -204,115 +312,6 @@ namespace fhg
                     );
       }
 
-      namespace action
-      {
-        // ## editing actions ########################################
-        // - net -----------------------------------------------------
-        // -- transition ---------------------------------------------
-        class remove_transition : public QUndoCommand
-        {
-        public:
-          remove_transition
-            ( change_manager_t& change_manager
-            , const QObject* origin
-            , ::xml::parse::type::transition_type& transition
-            , ::xml::parse::type::net_type& net
-            )
-            : QUndoCommand (QObject::tr ("remove_transition_action"))
-            , _change_manager (change_manager)
-            , _origin (origin)
-            , _transition (&transition)
-            , _transition_copy (transition)
-            , _net (net)
-          { }
-
-          virtual void undo()
-          {
-            _transition = &detail::push_transition (_transition_copy, _net);
-
-            _change_manager.emit_signal
-              ( &change_manager_t::signal_add_transition
-              , _origin
-              , *_transition
-              , _net
-              );
-          }
-
-          virtual void redo()
-          {
-            _change_manager.emit_signal
-              ( &change_manager_t::signal_delete_transition
-              , _origin
-              , *_transition
-              , _net
-              );
-
-            _net.erase_transition (*_transition);
-            _transition = NULL;
-            _origin = NULL;
-          }
-        private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
-          ::xml::parse::type::transition_type* _transition;
-          const ::xml::parse::type::transition_type _transition_copy;
-          ::xml::parse::type::net_type& _net;
-        };
-
-        // -- place --------------------------------------------------
-        class remove_place : public QUndoCommand
-        {
-        public:
-          remove_place
-            ( change_manager_t& change_manager
-            , const QObject* origin
-            , ::xml::parse::type::place_type& place
-            , ::xml::parse::type::net_type& net
-            )
-            : QUndoCommand (QObject::tr ("remove_place_action"))
-            , _change_manager (change_manager)
-            , _origin (origin)
-            , _place (&place)
-            , _place_copy (place)
-            , _net (net)
-          { }
-
-          virtual void undo()
-          {
-            _place = &detail::push_place (_place_copy, _net);
-
-            _change_manager.emit_signal
-              ( &change_manager_t::signal_add_place
-              , _origin
-              , *_place
-              , _net
-              );
-          }
-
-          virtual void redo()
-          {
-            _change_manager.emit_signal
-              ( &change_manager_t::signal_delete_place
-              , _origin
-              , *_place
-              , _net
-              );
-
-            _net.erase_place (*_place);
-            _place = NULL;
-            _origin = NULL;
-          }
-        private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
-          ::xml::parse::type::place_type* _place;
-          const ::xml::parse::type::place_type _place_copy;
-          ::xml::parse::type::net_type& _net;
-        };
-
-        // - function ------------------------------------------------
-        // - expression ----------------------------------------------
-      }
 
 
       //! \todo This surely can be done cleaner with variadic templates.
