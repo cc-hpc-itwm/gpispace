@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
   }
 }
 
-BOOST_AUTO_TEST_CASE (create_huge_sfs_segment)
+BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
 {
   using namespace gpi::pc::memory;
   using namespace gpi::pc::segment;
@@ -343,6 +343,91 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment)
                     , topology
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+  }
+  catch (std::exception const &ex)
+  {
+    BOOST_CHECK_MESSAGE ( false
+                        , "could not allocate sfs segment of size: " << size
+                        << ": " << ex.what ()
+                        << " - please check 'ulimit -v'"
+                        );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = (1L << 40); // 1 TB
+  const char *text = "hello world!\n";
+
+  try
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    + gpi::pc::type::segment::F_NOMMAP
+                    , topology
+                    );
+    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+  }
+  catch (std::exception const &ex)
+  {
+    BOOST_CHECK_MESSAGE ( false
+                        , "could not allocate sfs segment of size: " << size
+                        << ": " << ex.what ()
+                        << " - please check 'ulimit -v'"
+                        );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (test_read)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = (1L << 20); // 1 MB
+  const char *text = "hello world!\n";
+
+  try
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::type::segment::F_PERSISTENT
+                    + gpi::pc::type::segment::F_NOMMAP
+                    , topology
+                    );
+    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+    area.set_id (2);
+
+    handle_t handle = area.alloc (1, size, "test", 0);
+
+    area.write_to ( memory_location_t (handle, 0)
+                  , text
+                  , strlen (text)
+                  );
+
+    char buf [size];
+    area.read_from ( memory_location_t (handle, 0)
+                   , &buf[0]
+                   , size
+                   );
+
+    int check = strncmp (text, buf, strlen (text));
+    BOOST_CHECK_EQUAL (0, check);
+
+    area.free (handle);
   }
   catch (std::exception const &ex)
   {
