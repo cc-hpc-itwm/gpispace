@@ -19,30 +19,28 @@ namespace fhg
 
       namespace util
       {
-        namespace action
+        //! \note An action forwarding QAction::triggered() to
+        //! action::signal_triggered(graph::base_item*).
+        class action : public QAction
         {
-          class type : public QAction
-          {
-            Q_OBJECT;
+          Q_OBJECT;
 
-          private:
-            graph::base_item* _x;
+        public:
+          action (graph::base_item*, QObject* = NULL);
+          action (graph::base_item*, const QString&, QObject* = NULL);
+          action (graph::base_item*, const QIcon&, const QString&, QObject* = NULL);
 
-          public:
-            type (graph::base_item*, QObject* = NULL);
-            type (graph::base_item*, const QString&, QObject* = NULL);
-            type (graph::base_item*, const QIcon&, const QString&, QObject* = NULL);
+        private slots:
+          void slot_triggered ();
 
-          private slots:
-            void slot_triggered ();
+        signals:
+          void signal_triggered (graph::base_item*);
 
-          signals:
-            void signal_triggered (graph::base_item*);
+        private:
+          void re_connect();
 
-          private:
-            void re_connect();
-          };
-        }
+          graph::base_item* _x;
+        };
       }
     }
   }
