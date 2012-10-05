@@ -139,9 +139,12 @@ namespace gpi
       }
 
       void*
-      shm_area_t::ptr ()
+      shm_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
-        return m_ptr;
+        return
+          (m_ptr && off < descriptor().local_size)
+          ? ((char*)m_ptr + off)
+          : 0;
       }
 
       bool

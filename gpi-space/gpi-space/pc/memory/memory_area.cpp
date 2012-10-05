@@ -585,8 +585,7 @@ namespace gpi
           throw std::runtime_error
             ("pointer_to(): no such handle: " + boost::lexical_cast<std::string>(loc.handle));
 
-        return reinterpret_cast<char*>(ptr())
-          + (hdl_it->second.offset + (loc.offset % hdl_it->second.local_size));
+        return raw_ptr (hdl_it->second.offset + (loc.offset % hdl_it->second.local_size));
       }
 
       namespace detail

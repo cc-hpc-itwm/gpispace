@@ -346,9 +346,9 @@ namespace gpi
       }
 
       void *
-      sfs_area_t::ptr ()
+      sfs_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
-        return m_ptr;
+        return m_ptr && off < m_size ? (char*)m_ptr + off : 0;
       }
 
       bool

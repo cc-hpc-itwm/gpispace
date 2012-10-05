@@ -64,7 +64,7 @@ namespace gpi
                             , const gpi::pc::type::size_t   range_size
                             ) const;
 
-        void *ptr ();
+        void *raw_ptr (gpi::pc::type::offset_t off);
 
         gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                              , const gpi::pc::type::flags_t flags

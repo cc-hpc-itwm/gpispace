@@ -43,7 +43,7 @@ namespace gpi
                                         , task_list_t & tasks
                                         );
       private:
-        void *ptr ();
+        void *raw_ptr (gpi::pc::type::offset_t off);
 
         bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t a

@@ -62,9 +62,9 @@ namespace gpi
       }
 
       void *
-      gpi_area_t::ptr ()
+      gpi_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
-        return m_ptr;
+        return m_ptr ? ((char*)m_ptr + off) : (char*)0;
       }
 
       bool

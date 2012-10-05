@@ -103,6 +103,14 @@ namespace gpi
                           , const gpi::pc::type::size_t size
                           ) const;
 
+        /**
+           Return a raw pointer to the given memory location, if possible.
+
+           It may return NULL in the following cases:
+
+           - the location is out of bounds
+           - the implementation does not support raw pointers.
+         */
         void *pointer_to (const gpi::pc::type::memory_location_t & loc);
 
         int get_transfer_tasks ( const gpi::pc::type::memory_location_t src
@@ -136,7 +144,7 @@ namespace gpi
                                     , const gpi::pc::type::offset_t a
                                     , const gpi::pc::type::offset_t b
                                     ) const = 0;
-        virtual void *ptr() = 0;
+        virtual void *raw_ptr (gpi::pc::type::offset_t off) = 0;
 
         virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                                      , const gpi::pc::type::flags_t flags
