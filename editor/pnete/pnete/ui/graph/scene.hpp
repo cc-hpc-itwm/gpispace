@@ -25,7 +25,7 @@ namespace fhg
     {
       namespace graph
       {
-        class item;
+        class base_item;
         class connectable_item;
         class connection_item;
         class transition_item;
@@ -54,7 +54,7 @@ namespace fhg
             data::change_manager_t& change_manager();
 
           public slots:
-            void slot_delete_transition (graph::item*);
+            void slot_delete_transition (base_item*);
             void
             slot_delete_transition ( const QObject*
                                    , const ::xml::parse::type::transition_type&
@@ -72,7 +72,7 @@ namespace fhg
                                 , ::xml::parse::type::net_type&
                                 );
 
-            void slot_delete_place (graph::item*);
+            void slot_delete_place (base_item*);
             void
             slot_delete_place ( const QObject*
                               , const ::xml::parse::type::place_type&

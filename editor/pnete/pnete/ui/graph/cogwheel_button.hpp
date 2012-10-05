@@ -18,7 +18,7 @@ namespace fhg
       {
         class transition_item;
 
-        class cogwheel_button : public item
+        class cogwheel_button : public base_item
         {
         public:
           cogwheel_button (transition_item* linked_transition);

@@ -161,12 +161,12 @@ namespace fhg
       class property
       {
       public:
-        explicit property (ui::graph::item*);
+        explicit property (ui::graph::base_item*);
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        ui::graph::item* _item;
+        ui::graph::base_item* _item;
         WETYPE(property::path_type) _path;
       };
 

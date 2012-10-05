@@ -36,7 +36,7 @@ namespace fhg
           }
         }
 
-        class connectable_item : public graph::item
+        class connectable_item : public base_item
         {
           Q_OBJECT;
 
@@ -45,7 +45,7 @@ namespace fhg
             ( connectable::direction::type direction
             , boost::optional< ::xml::parse::type::type_map_type&>
             = boost::none
-            , graph::item* parent = NULL
+            , base_item* parent = NULL
             , ::we::type::property::type* property = NULL
             );
 
@@ -63,7 +63,7 @@ namespace fhg
 
 //        virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
-          virtual QLinkedList<graph::item*> childs() const;
+          virtual QLinkedList<base_item*> childs() const;
 
         protected:
           QSet<connection_item*> _connections;

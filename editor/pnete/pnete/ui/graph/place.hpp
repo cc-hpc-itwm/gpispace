@@ -30,7 +30,7 @@ namespace fhg
       {
         typedef ITVAL(XMLTYPE(net_type::places_type)) place_type;
 
-        class place_item : public graph::connectable_item
+        class place_item : public connectable_item
         {
           Q_OBJECT;
 
@@ -40,7 +40,7 @@ namespace fhg
             , ::xml::parse::type::net_type& net
             , boost::optional< ::xml::parse::type::type_map_type&> type_map
             = boost::none
-            , graph::item* parent = NULL
+            , base_item* parent = NULL
             );
 
           const place_type& place() const;

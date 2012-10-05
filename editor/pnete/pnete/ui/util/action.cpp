@@ -14,19 +14,19 @@ namespace fhg
       {
         namespace action
         {
-          type::type (graph::item* x, QObject* object)
+          type::type (graph::base_item* x, QObject* object)
             : QAction (object)
             , _x (x)
           {
             re_connect();
           }
-          type::type (graph::item* x, const QString& text, QObject* parent)
+          type::type (graph::base_item* x, const QString& text, QObject* parent)
             : QAction (text, parent)
             , _x (x)
           {
             re_connect();
           }
-          type::type ( graph::item* x
+          type::type ( graph::base_item* x
                      , const QIcon& icon
                      , const QString& text
                      , QObject* parent

@@ -15,7 +15,7 @@ namespace fhg
   {
     namespace ui
     {
-      namespace graph { class item; }
+      namespace graph { class base_item; }
 
       namespace util
       {
@@ -26,18 +26,18 @@ namespace fhg
             Q_OBJECT;
 
           private:
-            graph::item* _x;
+            graph::base_item* _x;
 
           public:
-            type (graph::item*, QObject* = NULL);
-            type (graph::item*, const QString&, QObject* = NULL);
-            type (graph::item*, const QIcon&, const QString&, QObject* = NULL);
+            type (graph::base_item*, QObject* = NULL);
+            type (graph::base_item*, const QString&, QObject* = NULL);
+            type (graph::base_item*, const QIcon&, const QString&, QObject* = NULL);
 
           private slots:
             void slot_triggered ();
 
           signals:
-            void signal_triggered (graph::item*);
+            void signal_triggered (graph::base_item*);
 
           private:
             void re_connect();

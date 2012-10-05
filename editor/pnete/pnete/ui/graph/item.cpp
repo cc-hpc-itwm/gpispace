@@ -37,7 +37,7 @@ namespace fhg
           }
         }
 
-        item::item ( item* parent
+        base_item::base_item ( base_item* parent
                    , ::we::type::property::type* property
                    )
           : QGraphicsItem (parent)
@@ -51,7 +51,7 @@ namespace fhg
           setAcceptedMouseButtons (Qt::LeftButton);
         }
 
-        scene::type* item::scene() const
+        scene::type* base_item::scene() const
         {
           QGraphicsScene* sc (QGraphicsItem::scene());
 
@@ -61,7 +61,7 @@ namespace fhg
             ;
         }
 
-        void item::setPos (const QPointF& new_pos)
+        void base_item::setPos (const QPointF& new_pos)
         {
           QPointF snapped (style::raster::snap (new_pos));
 
@@ -70,56 +70,56 @@ namespace fhg
 
           set_just_pos_but_not_in_property (snapped);
         }
-        void item::set_just_pos_but_not_in_property (qreal x, qreal y)
+        void base_item::set_just_pos_but_not_in_property (qreal x, qreal y)
         {
           set_just_pos_but_not_in_property (QPointF (x, y));
         }
-        void item::set_just_pos_but_not_in_property (const QPointF& new_pos)
+        void base_item::set_just_pos_but_not_in_property (const QPointF& new_pos)
         {
           //! \todo update more clever
-          foreach (item* child, childs())
+          foreach (base_item* child, childs())
             {
               child->setVisible (false);
             }
 
           QGraphicsItem::setPos (new_pos);
 
-          foreach (item* child, childs())
+          foreach (base_item* child, childs())
             {
               child->setVisible (true);
             }
         }
 
         //! \todo remove me
-        style::type& item::access_style ()
+        style::type& base_item::access_style ()
         {
           return _style;
         }
 
-        void item::clear_style_cache ()
+        void base_item::clear_style_cache ()
         {
           _style.clear_cache();
 
           foreach (QGraphicsItem* child, childItems())
             {
-              if (item* child_item = qgraphicsitem_cast<item*> (child))
+              if (base_item* child_item = qgraphicsitem_cast<base_item*> (child))
                 {
                   child_item->clear_style_cache();
                 }
             }
         }
 
-        void item::mode_push (const mode::type& mode)
+        void base_item::mode_push (const mode::type& mode)
         {
           _mode.push (mode);
           update ();
         }
-        void item::mode_pop ()
+        void base_item::mode_pop ()
         {
           _mode.pop();
           update ();
         }
-        const mode::type& item::mode() const
+        const mode::type& base_item::mode() const
         {
           if (_mode.empty())
             {
@@ -129,15 +129,15 @@ namespace fhg
           return _mode.top();
         }
 
-        void item::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
+        void base_item::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
         {
           mode_push (mode::HIGHLIGHT);
         }
-        void item::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
+        void base_item::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
         {
           mode_pop();
         }
-        void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
+        void base_item::mousePressEvent (QGraphicsSceneMouseEvent* event)
         {
           if (event->modifiers() == Qt::ControlModifier)
             {
@@ -145,14 +145,14 @@ namespace fhg
               _move_start = event->pos();
             }
         }
-        void item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
+        void base_item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
         {
           if (mode() == mode::MOVE)
             {
               mode_pop();
             }
         }
-        void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
+        void base_item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
         {
           if (mode() == mode::MOVE)
             {
@@ -160,13 +160,13 @@ namespace fhg
             }
         }
 
-        QLinkedList<item*> item::childs () const
+        QLinkedList<base_item*> base_item::childs () const
         {
-          QLinkedList<item*> childs;
+          QLinkedList<base_item*> childs;
 
           foreach (QGraphicsItem* childItem, childItems())
             {
-              if (item* child = qgraphicsitem_cast<item *> (childItem))
+              if (base_item* child = qgraphicsitem_cast<base_item *> (childItem))
                 {
                   childs << child << child->childs();
                 }
@@ -175,7 +175,7 @@ namespace fhg
           return childs;
         }
 
-        QRectF item::boundingRect () const
+        QRectF base_item::boundingRect () const
         {
           return shape().controlPointRect();
         }

@@ -28,7 +28,7 @@ namespace fhg
         static boost::optional<const QColor&>
         color_if_name ( const QString& name
                       , const QColor& color
-                      , const graph::item* i
+                      , const base_item* i
                       )
         {
           if (style::predicate::is_transition (i))
@@ -47,9 +47,9 @@ namespace fhg
 
         transition_item::transition_item ( ::xml::parse::type::transition_type& transition
                                          , ::xml::parse::type::net_type& net
-                                         , graph::item* parent
+                                         , base_item* parent
                                          )
-          : graph::item (parent, &transition.prop)
+          : base_item (parent, &transition.prop)
           , _size (size::transition::width(), size::transition::height())
           , _transition (transition)
           , _net (net)
@@ -92,7 +92,7 @@ namespace fhg
         {
           const QPointF old_position (pos());
 
-          graph::item::setPos (new_position);
+          base_item::setPos (new_position);
 
           foreach (QGraphicsItem* collidingItem, collidingItems())
           {
@@ -101,7 +101,7 @@ namespace fhg
                || qgraphicsitem_cast<top_level_port_item*> (collidingItem)
                )
             {
-              graph::item::setPos (old_position);
+              base_item::setPos (old_position);
 
               return;
             }
@@ -112,7 +112,7 @@ namespace fhg
             {
               if (port->parentItem() != this)
               {
-                graph::item::setPos (old_position);
+                base_item::setPos (old_position);
 
                 return;
               }

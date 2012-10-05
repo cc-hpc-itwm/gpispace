@@ -22,7 +22,7 @@ namespace fhg
           ( place_type& place
           , ::xml::parse::type::net_type& net
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
-          , graph::item* parent
+          , base_item* parent
           )
           : connectable_item ( connectable::direction::BOTH
                               , type_map
@@ -112,7 +112,7 @@ namespace fhg
         {
           const QPointF old_position (pos());
 
-          graph::item::setPos (new_position);
+          base_item::setPos (new_position);
 
           foreach (QGraphicsItem* collidingItem, collidingItems())
           {
@@ -121,7 +121,7 @@ namespace fhg
                || qgraphicsitem_cast<top_level_port_item*> (collidingItem)
                )
             {
-              graph::item::setPos (old_position);
+              base_item::setPos (old_position);
 
               return;
             }

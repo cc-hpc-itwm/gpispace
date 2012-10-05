@@ -41,7 +41,7 @@ namespace fhg
         }
 
         static boost::optional<const qreal&>
-        thicker_if_name (const std::string type, const graph::item* gi)
+        thicker_if_name (const std::string type, const base_item* gi)
         {
           static const qreal v (4.0);
 
@@ -61,7 +61,7 @@ namespace fhg
         static boost::optional<const QColor&>
         color_if_type ( const std::string& type
                       , const QColor& color
-                      , const graph::item* gi
+                      , const base_item* gi
                       )
         {
           if (style::predicate::is_port (gi))

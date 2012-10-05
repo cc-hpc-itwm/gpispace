@@ -28,14 +28,14 @@ namespace fhg
     {
       namespace graph
       {
-        class transition_item : public graph::item
+        class transition_item : public base_item
         {
           Q_OBJECT;
 
         public:
           explicit transition_item ( ::xml::parse::type::transition_type& transition
                                    , ::xml::parse::type::net_type& net
-                                   , graph::item* parent = NULL
+                                   , base_item* parent = NULL
                                    );
 
           const ::xml::parse::type::transition_type& transition() const;

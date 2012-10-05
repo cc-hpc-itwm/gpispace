@@ -22,19 +22,19 @@ namespace fhg
             predicate::predicate (const function_type& function)
               : _function (function)
             {}
-            bool predicate::operator () (const graph::item* gi) const
+            bool predicate::operator () (const base_item* gi) const
             {
               return _function (gi);
             }
 
 #define IS_A(_n,_f) \
-        bool is_##_n (const graph::item* gi) { return gi->type() == _f; }
+        bool is_##_n (const base_item* gi) { return gi->type() == _f; }
 
-            IS_A(connection,graph::item::connection_graph_type)
-            IS_A(transition,graph::item::transition_graph_type)
-            IS_A(port,graph::item::port_graph_type)
-            IS_A(place,graph::item::place_graph_type)
-            IS_A(top_level_port,graph::item::top_level_port_graph_type)
+            IS_A(connection,base_item::connection_graph_type)
+            IS_A(transition,base_item::transition_graph_type)
+            IS_A(port,base_item::port_graph_type)
+            IS_A(place,base_item::place_graph_type)
+            IS_A(top_level_port,base_item::top_level_port_graph_type)
 
 #undef IS_A
 
@@ -66,12 +66,12 @@ namespace fhg
 
             namespace port
             {
-              const std::string& name (const graph::item * gi)
+              const std::string& name (const base_item * gi)
               {
                 return
                   qgraphicsitem_cast<const graph::port_item*> (gi)->name();
               }
-              const std::string& type (const graph::item * gi)
+              const std::string& type (const base_item * gi)
               {
                 return
                   qgraphicsitem_cast<const graph::port_item*> (gi)->we_type();
@@ -80,23 +80,23 @@ namespace fhg
 
             namespace transition
             {
-              const std::string& name (const graph::item * gi)
+              const std::string& name (const base_item * gi)
               {
                 return
                   qgraphicsitem_cast<const graph::transition_item*> (gi)->name();
               }
-//               const bool internal (const graph::item *);
-//               const bool inline (const graph::item *);
-//               const bool is_expression (const graph::item *);
-//               const bool is_module_call (const graph::item *);
-//               const bool is_subnet (const graph::item *);
+//               const bool internal (const base_item *);
+//               const bool inline (const base_item *);
+//               const bool is_expression (const base_item *);
+//               const bool is_module_call (const base_item *);
+//               const bool is_subnet (const base_item *);
             }
 
             namespace place
             {
-//               const std::string& name (const graph::item *);
-//               const std::string& type (const graph::item *);
-//               const bool is_virtual (const graph::item *);
+//               const std::string& name (const base_item *);
+//               const std::string& type (const base_item *);
+//               const bool is_virtual (const base_item *);
             }
 
             namespace connection

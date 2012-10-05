@@ -152,14 +152,14 @@ namespace fhg
 
           void type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
           {
-            if (item* i = qgraphicsitem_cast<item*> (itemAt (event->scenePos())))
+            if (base_item* i = qgraphicsitem_cast<base_item*> (itemAt (event->scenePos())))
               {
                 switch (i->type())
                   {
-                  case item::connection_graph_type:
+                  case base_item::connection_graph_type:
                     break;
-                  case item::port_graph_type:
-                  case item::top_level_port_graph_type:
+                  case base_item::port_graph_type:
+                  case base_item::top_level_port_graph_type:
                     {
                       QMenu menu;
 
@@ -176,7 +176,7 @@ namespace fhg
                       event->accept();
                     }
                     break;
-                  case item::transition_graph_type:
+                  case base_item::transition_graph_type:
                     {
                       QMenu menu;
 
@@ -215,7 +215,7 @@ namespace fhg
                       event->accept();
                     }
                     break;
-                  case item::place_graph_type:
+                  case base_item::place_graph_type:
                     {
                       QMenu menu;
 
@@ -472,7 +472,7 @@ namespace fhg
 
           void type::auto_layout()
           {
-            typedef boost::unordered_map< item*
+            typedef boost::unordered_map< base_item*
                                         , graphviz::node_type
                                         > nodes_map_type;
             nodes_map_type nodes;
@@ -484,16 +484,16 @@ namespace fhg
 
             foreach (QGraphicsItem* i, items())
               {
-                if ( (  i->type() == item::port_graph_type
-                     || i->type() == item::transition_graph_type
-                     || i->type() == item::place_graph_type
-                     || i->type() == item::top_level_port_graph_type
+                if ( (  i->type() == base_item::port_graph_type
+                     || i->type() == base_item::transition_graph_type
+                     || i->type() == base_item::place_graph_type
+                     || i->type() == base_item::top_level_port_graph_type
                      )
                    && i->parentItem() == NULL
                    )
                   {
                     nodes.insert ( nodes_map_type::value_type
-                                   ( qgraphicsitem_cast<item*> (i)
+                                   ( qgraphicsitem_cast<base_item*> (i)
                                    , graph.add_node (i)
                                    )
                                  );
@@ -518,9 +518,9 @@ namespace fhg
                     end = end->parentItem() ? end->parentItem() : end;
 
                     nodes_map_type::iterator start_node
-                      (nodes.find (qgraphicsitem_cast<item*> (start)));
+                      (nodes.find (qgraphicsitem_cast<base_item*> (start)));
                     nodes_map_type::iterator end_node
-                      (nodes.find (qgraphicsitem_cast<item*> (end)));
+                      (nodes.find (qgraphicsitem_cast<base_item*> (end)));
 
                     if (start_node != nodes.end() && end_node != nodes.end())
                       {
@@ -585,7 +585,7 @@ namespace fhg
 
             removeItem (transition_item);
           }
-          void type::slot_delete_transition (graph::item* graph_item)
+          void type::slot_delete_transition (base_item* graph_item)
           {
             transition_item* transition_item
               (qgraphicsitem_cast<transition_item*> (graph_item));
@@ -629,7 +629,7 @@ namespace fhg
                   }
               }
           }
-          void type::slot_delete_place (graph::item* graph_item)
+          void type::slot_delete_place (base_item* graph_item)
           {
             place_item* place_item
               (qgraphicsitem_cast<place_item*> (graph_item));

@@ -20,7 +20,7 @@ namespace fhg
       namespace graph
       {
         connection_item::connection_item (bool read)
-          : graph::item()
+          : base_item()
           , _start (NULL)
           , _end (NULL)
           , _fixed_points()

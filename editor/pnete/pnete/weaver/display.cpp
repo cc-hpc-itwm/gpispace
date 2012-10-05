@@ -226,7 +226,7 @@ namespace fhg
         FROM (properties) (&wp, props);
       }
 
-      property::property (ui::graph::item* item)
+      property::property (ui::graph::base_item* item)
         : _item (item)
         , _path ()
       {}

@@ -16,10 +16,10 @@ namespace fhg
         connectable_item::connectable_item
           ( connectable::direction::type direction
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
-          , graph::item* parent
+          , base_item* parent
           , ::we::type::property::type* property
           )
-          : graph::item (parent, property)
+          : base_item (parent, property)
           , _connections ()
           , _direction (direction)
           , _type_map (type_map)
@@ -77,9 +77,9 @@ namespace fhg
           return unmapped;
         }
 
-        QLinkedList<graph::item*> connectable_item::childs() const
+        QLinkedList<base_item*> connectable_item::childs() const
         {
-          QLinkedList<graph::item*> childs;
+          QLinkedList<base_item*> childs;
 
           foreach (connection_item* connection, connections())
           {
