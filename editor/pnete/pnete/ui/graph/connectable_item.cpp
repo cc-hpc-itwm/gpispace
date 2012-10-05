@@ -25,7 +25,7 @@ namespace fhg
           , _type_map (type_map)
         {}
 
-        void connectable_item::add_connection (connection::item* c)
+        void connectable_item::add_connection (connection_item* c)
         {
           if (_connections.contains (c))
           {
@@ -33,7 +33,7 @@ namespace fhg
           }
           _connections.insert (c);
         }
-        void connectable_item::remove_connection (connection::item* c)
+        void connectable_item::remove_connection (connection_item* c)
         {
           if (!_connections.contains (c))
           {
@@ -47,7 +47,7 @@ namespace fhg
           return i->we_type() == we_type() && i->direction() != direction();
         }
 
-        const QSet<connection::item*>& connectable_item::connections() const
+        const QSet<connection_item*>& connectable_item::connections() const
         {
           return _connections;
         }
@@ -81,7 +81,7 @@ namespace fhg
         {
           QLinkedList<graph::item*> childs;
 
-          foreach (connection::item* connection, connections())
+          foreach (connection_item* connection, connections())
           {
             childs << connection;
           }
@@ -91,7 +91,7 @@ namespace fhg
 
         void connectable_item::erase_connections (scene::type* scene)
         {
-          foreach (connection::item* connection, connections())
+          foreach (connection_item* connection, connections())
           {
             scene->removeItem (connection);
 

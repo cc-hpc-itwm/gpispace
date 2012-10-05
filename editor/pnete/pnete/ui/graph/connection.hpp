@@ -26,47 +26,44 @@ namespace fhg
       {
         class connectable_item;
 
-        namespace connection
+        class connection_item : public graph::item
         {
-          class item : public graph::item
-          {
-            Q_OBJECT;
+          Q_OBJECT;
+          
+        public:
+          connection_item (bool read = false);
+          ~connection_item();
 
-          public:
-            item (bool read = false);
-            ~item();
+          connectable_item* start() const;
+          connectable_item* start (connectable_item*);
+          connectable_item* end() const;
+          connectable_item* end (connectable_item*);
 
-            connectable_item* start() const;
-            connectable_item* start (connectable_item*);
-            connectable_item* end() const;
-            connectable_item* end (connectable_item*);
+          connectable_item* non_free_side() const;
+          connectable_item* free_side(connectable_item*);
 
-            connectable_item* non_free_side() const;
-            connectable_item* free_side(connectable_item*);
+          const QList<QPointF>& fixed_points() const;
+          const QList<QPointF>& fixed_points (const QList<QPointF>&);
 
-            const QList<QPointF>& fixed_points() const;
-            const QList<QPointF>& fixed_points (const QList<QPointF>&);
+          const bool& read() const;
+          const bool& read (const bool&);
 
-            const bool& read() const;
-            const bool& read (const bool&);
+          virtual QPainterPath shape() const;
+          virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-            virtual QPainterPath shape() const;
-            virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+          enum { Type = connection_graph_type };
+          virtual int type() const { return Type; }
 
-            enum { Type = connection_graph_type };
-            virtual int type() const { return Type; }
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
 
-            virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
+        private:
+          connectable_item* _start;
+          connectable_item* _end;
 
-          private:
-            connectable_item* _start;
-            connectable_item* _end;
+          QList<QPointF> _fixed_points;
 
-            QList<QPointF> _fixed_points;
-
-            bool _read;
-          };
-        }
+          bool _read;
+        };
       }
     }
   }

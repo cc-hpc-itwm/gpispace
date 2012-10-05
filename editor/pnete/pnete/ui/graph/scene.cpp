@@ -334,9 +334,9 @@ namespace fhg
             return _mouse_position;
           }
 
-          connection::item* type::create_connection (bool only_reading)
+          connection_item* type::create_connection (bool only_reading)
           {
-            connection::item * c (new connection::item (only_reading));
+            connection_item * c (new connection_item (only_reading));
             addItem (c);
             c->setPos (QPointF (0.0, 0.0));
             return c;
@@ -374,7 +374,7 @@ namespace fhg
                 throw std::runtime_error
                   ("tried hard-connecting non-connectable items.");
               }
-            connection::item* c (create_connection (only_reading));
+            connection_item* c (create_connection (only_reading));
             c->start (from);
             c->end (to);
             update (c->boundingRect());
@@ -500,15 +500,15 @@ namespace fhg
                   }
               }
 
-            typedef boost::unordered_map< connection::item*
+            typedef boost::unordered_map< connection_item*
                                         , graphviz::edge_type
                                         > edges_map_type;
             edges_map_type edges;
 
             foreach (QGraphicsItem* i, items())
               {
-                if ( connection::item* c
-                   = qgraphicsitem_cast<connection::item*> (i)
+                if ( connection_item* c
+                   = qgraphicsitem_cast<connection_item*> (i)
                    )
                   {
                     QGraphicsItem* start (c->start());

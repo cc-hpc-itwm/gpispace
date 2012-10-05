@@ -21,7 +21,7 @@ namespace fhg
     {
       namespace graph
       {
-        namespace connection { class item; }
+        class connection_item;
         namespace scene { class type; }
 
         namespace connectable
@@ -49,13 +49,13 @@ namespace fhg
             , ::we::type::property::type* property = NULL
             );
 
-          void add_connection (connection::item* c);
-          void remove_connection (connection::item * c);
+          void add_connection (connection_item* c);
+          void remove_connection (connection_item * c);
 
           virtual bool is_connectable_with (const connectable_item*) const;
 
           void erase_connections (scene::type*);
-          const QSet<connection::item*>& connections() const;
+          const QSet<connection_item*>& connections() const;
           const connectable::direction::type& direction() const;
           const connectable::direction::type& direction (const connectable::direction::type&);
 
@@ -66,7 +66,7 @@ namespace fhg
           virtual QLinkedList<graph::item*> childs() const;
 
         protected:
-          QSet<connection::item*> _connections;
+          QSet<connection_item*> _connections;
           connectable::direction::type _direction;
           boost::optional< ::xml::parse::type::type_map_type&> _type_map;
 

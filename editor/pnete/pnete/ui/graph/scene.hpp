@@ -27,8 +27,8 @@ namespace fhg
       {
         class item;
         class connectable_item;
+        class connection_item;
         class transition_item;
-        namespace connection { class item; }
 
         namespace scene
         {
@@ -96,12 +96,12 @@ namespace fhg
             void remove_transition_item (transition_item*);
             bool is_my_net (const ::xml::parse::type::net_type&);
 
-            connection::item* create_connection (bool only_reading = false);
+            connection_item* create_connection (bool only_reading = false);
             void remove_pending_connection();
 
             void init_menu_context();
 
-            connection::item* _pending_connection;
+            connection_item* _pending_connection;
             QPointF _mouse_position;
 
             QMenu _menu_new;
