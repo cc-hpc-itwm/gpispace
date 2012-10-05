@@ -20,7 +20,7 @@ namespace fhg
   {
     namespace data
     {
-      namespace internal { class type; }
+      class internal_type;
     }
 
     namespace ui
@@ -44,7 +44,7 @@ namespace fhg
       {
       public:
         explicit function ( function_with_mapping_type
-                          , data::internal::type*
+                          , data::internal_type*
                           );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -68,7 +68,7 @@ namespace fhg
         } _ports;
 
         ui::graph::scene_type* _scene;
-        data::internal::type* _root;
+        data::internal_type* _root;
       };
 
       WSIG(function, expression::open, XMLTYPE(expression_type), exp);
@@ -81,7 +81,7 @@ namespace fhg
       class net
       {
       public:
-        explicit net ( data::internal::type*
+        explicit net ( data::internal_type*
                      , ui::graph::scene_type* scene
                      , XMLTYPE(net_type)& net
                      , XMLTYPE(ports_type)& in
@@ -99,7 +99,7 @@ namespace fhg
         XMLTYPE(ports_type)& _out;
 
         item_by_name_type _place_item_by_name;
-        data::internal::type* _root;
+        data::internal_type* _root;
       };
 
       WSIG( net
@@ -119,7 +119,7 @@ namespace fhg
       class transition
       {
       public:
-        explicit transition ( data::internal::type*
+        explicit transition ( data::internal_type*
                             , ui::graph::scene_type*
                             , ui::graph::transition_item*
                             , XMLTYPE(net_type)&
@@ -138,7 +138,7 @@ namespace fhg
         item_by_name_type& _place_item_by_name;
         item_by_name_type _port_in_item_by_name;
         item_by_name_type _port_out_item_by_name;
-        data::internal::type* _root;
+        data::internal_type* _root;
 
         boost::optional< ::xml::parse::type::type_map_type&> _type_map;
 

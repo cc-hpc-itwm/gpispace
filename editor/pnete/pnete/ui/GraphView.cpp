@@ -99,7 +99,7 @@ namespace fhg
 
           foreach (const QString& path, paths)
             {
-              data::internal::type* data
+              data::internal_type* data
                 (data::manager::instance().load (path));
 
               scene()->change_manager()

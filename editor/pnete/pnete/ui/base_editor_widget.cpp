@@ -22,7 +22,7 @@ namespace fhg
       {}
 
       data::proxy::type& base_editor_widget::proxy () const { return _proxy; }
-      data::internal::type* base_editor_widget::root () const
+      data::internal_type* base_editor_widget::root () const
       {
         return data::proxy::root (proxy());
       }

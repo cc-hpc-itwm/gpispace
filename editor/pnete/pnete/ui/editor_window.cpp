@@ -356,19 +356,19 @@ namespace fhg
       void editor_window::slot_new_expression()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::type::expression)
+                       . create(data::internal_type::expression)
                        );
       }
       void editor_window::slot_new_module_call()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::type::module_call)
+                       . create(data::internal_type::module_call)
                        );
       }
       void editor_window::slot_new_net()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::type::net)
+                       . create(data::internal_type::net)
                        );
       }
 
@@ -385,7 +385,7 @@ namespace fhg
         open (filename);
       }
 
-      void editor_window::create_windows (data::internal::type* data)
+      void editor_window::create_windows (data::internal_type* data)
       {
         _view_manager->create_widget (data->root_proxy());
         _structure_view->append (data);
