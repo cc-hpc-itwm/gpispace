@@ -372,8 +372,8 @@ namespace fhg
       }
       WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
       {
-        ui::graph::place::item* place_item
-          ( new ui::graph::place::item
+        ui::graph::place_item* place_item
+          ( new ui::graph::place_item
             ( const_cast<ITVAL(XMLTYPE(net_type::places_type))&> (place)
             , _net
             )
@@ -424,7 +424,7 @@ namespace fhg
         FROM (properties) (&wp, props);
       }
 
-      place::place ( ui::graph::place::item* place
+      place::place ( ui::graph::place_item* place
                    , item_by_name_type& place_item_by_name
                    )
         : _place (place)

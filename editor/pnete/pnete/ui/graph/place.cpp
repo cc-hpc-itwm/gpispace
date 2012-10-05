@@ -18,119 +18,117 @@ namespace fhg
     {
       namespace graph
       {
-        namespace place
-        {
-          item::item
+        place_item::place_item
           ( place_type& place
           , ::xml::parse::type::net_type& net
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , graph::item* parent
           )
-            : connectable::item ( connectable::direction::BOTH
-                                , type_map
-                                , parent
-                                , &place.prop
-                                )
-            , _place (place)
-            , _net (net)
-            , _content()
-          {
-            refresh_content();
-          }
+          : connectable::item ( connectable::direction::BOTH
+                              , type_map
+                              , parent
+                              , &place.prop
+                              )
+          , _place (place)
+          , _net (net)
+          , _content()
+        {
+          refresh_content();
+        }
 
-          const place_type& item::place() const
-          {
-            return _place;
-          }
-          place_type& item::place()
-          {
-            return _place;
-          }
-          ::xml::parse::type::net_type& item::net()
-          {
-            return _net;
-          }
+        const place_type& place_item::place() const
+        {
+          return _place;
+        }
+        place_type& place_item::place()
+        {
+          return _place;
+        }
+        ::xml::parse::type::net_type& place_item::net()
+        {
+          return _net;
+        }
 
-          const std::string& item::we_type() const
-          {
-            return connectable::item::we_type (place().type);
-          }
+        const std::string& place_item::we_type() const
+        {
+          return connectable::item::we_type (place().type);
+        }
 
-          const std::string& item::name() const
-          {
-            return place().name;
-          }
+        const std::string& place_item::name() const
+        {
+          return place().name;
+        }
 
-          void item::refresh_content()
-          {
-            _content.setText ( QString::fromStdString (name())
-                             + " :: "
-                             + QString::fromStdString (we_type())
-                             );
-          }
+        void place_item::refresh_content()
+        {
+          _content.setText ( QString::fromStdString (name())
+                           + " :: "
+                           + QString::fromStdString (we_type())
+                           );
+        }
 
-          const QStaticText& item::content() const
-          {
-            return _content;
-          }
-          QSizeF item::content_size() const
-          {
-            return content().size();
-          }
-          QPointF item::content_pos() const
-          {
-            const QSizeF half_size (content_size() / 2.0);
+        const QStaticText& place_item::content() const
+        {
+          return _content;
+        }
+        QSizeF place_item::content_size() const
+        {
+          return content().size();
+        }
+        QPointF place_item::content_pos() const
+        {
+          const QSizeF half_size (content_size() / 2.0);
 
-            return QPointF (-half_size.width(), -half_size.height());
-          }
+          return QPointF (-half_size.width(), -half_size.height());
+        }
 
-          QPainterPath item::shape () const
-          {
-            QPainterPath path;
-            const qreal d (3.0);
+        QPainterPath place_item::shape () const
+        {
+          QPainterPath path;
+          const qreal d (3.0);
 
-            path.addRoundRect ( QRectF
-                                ( content_pos() - QPointF (d, d)
-                                , content_size() + QSizeF (2*d, 2*d)
-                                )
-                              , 2*d
-                              , 2*d
-                              );
-
-            return path;
-          }
-
-          void item::paint ( QPainter* painter
-                            , const QStyleOptionGraphicsItem* option
-                            , QWidget* widget
+          path.addRoundRect ( QRectF
+                            ( content_pos() - QPointF (d, d)
+                            , content_size() + QSizeF (2*d, 2*d)
                             )
+                            , 2*d
+                            , 2*d
+                            );
+
+          return path;
+        }
+
+        void place_item::paint ( QPainter* painter
+                               , const QStyleOptionGraphicsItem* option
+                               , QWidget* widget
+                               )
+        {
+          style::draw_shape (this, painter);
+
+          painter->drawStaticText (content_pos(), content());
+        }
+
+        void place_item::setPos (const QPointF& new_position)
+        {
+          const QPointF old_position (pos());
+
+          graph::item::setPos (new_position);
+
+          foreach (QGraphicsItem* collidingItem, collidingItems())
           {
-            style::draw_shape (this, painter);
+            if (  qgraphicsitem_cast<place_item*> (collidingItem)
+               || qgraphicsitem_cast<transition::item*> (collidingItem)
+               || qgraphicsitem_cast<port::top_level::item*> (collidingItem)
+               )
+            {
+              graph::item::setPos (old_position);
 
-            painter->drawStaticText (content_pos(), content());
+              return;
+            }
           }
+        }
 
-          void item::setPos (const QPointF& new_position)
-          {
-            const QPointF old_position (pos());
-
-            graph::item::setPos (new_position);
-
-            foreach (QGraphicsItem* collidingItem, collidingItems())
-              {
-                if (  qgraphicsitem_cast<item*> (collidingItem)
-                   || qgraphicsitem_cast<transition::item*> (collidingItem)
-                   || qgraphicsitem_cast<port::top_level::item*> (collidingItem)
-                   )
-                  {
-                    graph::item::setPos (old_position);
-
-                    return;
-                  }
-              }
-          }
-
-//           void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
+//           void place_item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
 //           {
 //             if (mode() == style::mode::DRAG)
 //               {
@@ -143,7 +141,7 @@ namespace fhg
 //                 connectable::item::mouseMoveEvent (event);
 //               }
 //           }
-//           void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
+//           void place_item::mousePressEvent (QGraphicsSceneMouseEvent* event)
 //           {
 //             if (event->modifiers() == Qt::ControlModifier)
 //               {
@@ -155,8 +153,8 @@ namespace fhg
 
 //             connectable::item::mousePressEvent (event);
 //           }
-        }
       }
     }
   }
 }
+

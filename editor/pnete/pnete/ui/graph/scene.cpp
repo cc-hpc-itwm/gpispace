@@ -313,7 +313,7 @@ namespace fhg
           {
             if (is_my_net (n))
               {
-                place::item* place (new place::item (p, n));
+                place_item* place (new place_item (p, n));
 
                 addItem (place);
 
@@ -426,7 +426,7 @@ namespace fhg
               {
                 //! \note No, just casting to connectable::item* does NOT work. Qt!
                 port::item* as_port (qgraphicsitem_cast<port::item*> (item));
-                place::item* as_place (qgraphicsitem_cast<place::item*> (item));
+                place_item* as_place (qgraphicsitem_cast<place_item*> (item));
 
                 connectable::item* ci (as_port);
                 if (!ci)
@@ -616,14 +616,14 @@ namespace fhg
               {
                 foreach (QGraphicsItem* child, items())
                   {
-                    if ( place::item* place_item
-                       = qgraphicsitem_cast<place::item*> (child)
+                    if ( place_item* item
+                       = qgraphicsitem_cast<place_item*> (child)
                        )
                       {
-                        if (&place == &place_item->place())
+                        if (&place == &item->place())
                           {
-                            removeItem (place_item);
-                            place_item->deleteLater();
+                            removeItem (item);
+                            item->deleteLater();
                           }
                       }
                   }
@@ -631,8 +631,8 @@ namespace fhg
           }
           void type::slot_delete_place (graph::item* graph_item)
           {
-            place::item* place_item
-              (qgraphicsitem_cast<place::item*> (graph_item));
+            place_item* place_item
+              (qgraphicsitem_cast<place_item*> (graph_item));
 
             if (!place_item)
               {

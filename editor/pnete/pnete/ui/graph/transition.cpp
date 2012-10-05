@@ -99,7 +99,7 @@ namespace fhg
             foreach (QGraphicsItem* collidingItem, collidingItems())
               {
                 if (  qgraphicsitem_cast<item*> (collidingItem)
-                   || qgraphicsitem_cast<place::item*> (collidingItem)
+                   || qgraphicsitem_cast<place_item*> (collidingItem)
                    || qgraphicsitem_cast<port::top_level::item*> (collidingItem)
                    )
                   {
