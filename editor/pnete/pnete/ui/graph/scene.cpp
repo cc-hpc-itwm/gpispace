@@ -38,7 +38,7 @@ namespace fhg
       namespace graph
       {
         scene_type::scene_type ( ::xml::parse::type::net_type & n
-                               , data::change_manager_t& cm
+                               , data::internal_type* internal
                                , QObject* parent
                                )
           : QGraphicsScene (parent)
@@ -46,7 +46,7 @@ namespace fhg
           , _mouse_position (QPointF (0.0, 0.0))
           , _menu_context()
           , _net (n)
-          , _change_manager (cm)
+          , _internal (internal)
         {
           init_menu_context();
 
@@ -260,7 +260,7 @@ namespace fhg
         }
         data::change_manager_t& scene_type::change_manager()
         {
-          return _change_manager;
+          return _internal->change_manager();
         }
 
 
@@ -282,7 +282,7 @@ namespace fhg
 
             weaver::item_by_name_type place_by_name;
 
-            weaver::transition wt ( &change_manager().internal()
+            weaver::transition wt ( _internal
                                   , this
                                   , trans
                                   , n

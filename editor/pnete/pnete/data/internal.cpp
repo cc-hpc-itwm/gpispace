@@ -34,20 +34,20 @@ namespace fhg
       internal_type::internal_type (const kind& kind_)
         : _state ()
         , _function (detail::make_function (kind_))
-        , _change_manager (*this)
+        , _change_manager()
         , _root_proxy (*create_proxy())
       {}
-      
+
       internal_type::internal_type (const QString& filename)
         : _state ()
         , _function (::xml::parse::just_parse ( _state
                                               , filename.toStdString()
                                               )
                     )
-        , _change_manager (*this)
+        , _change_manager()
         , _root_proxy (*create_proxy())
       {}
-      
+
       proxy::type* internal_type::create_proxy()
       {
         return weaver::function

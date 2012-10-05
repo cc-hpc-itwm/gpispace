@@ -16,8 +16,6 @@ namespace fhg
   {
     namespace data
     {
-      class internal_type;
-
       namespace action
       {
         // ## editing action forward declarations ####################
@@ -35,9 +33,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        change_manager_t (internal_type &);
-
-        internal_type& internal() const;
+        change_manager_t();
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------
@@ -164,7 +160,6 @@ namespace fhg
                                  , typename ARG_TYPE(Fun,6));
 #undef ARG_TYPE
 
-        internal_type& _internal;
       };
     }
   }
