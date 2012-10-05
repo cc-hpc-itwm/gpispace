@@ -19,7 +19,11 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace data { class change_manager_t; }
+    namespace data
+    {
+      class change_manager_t;
+      class internal_type;
+    }
 
     namespace ui
     {
@@ -36,7 +40,7 @@ namespace fhg
           
         public:
           explicit scene_type ( ::xml::parse::type::net_type& net
-                              , data::change_manager_t& change_manager
+                              , data::internal_type* internal
                               , QObject* parent = NULL
                               );
           
@@ -106,7 +110,7 @@ namespace fhg
           QMenu _menu_context;
 
           ::xml::parse::type::net_type& _net;
-          data::change_manager_t& _change_manager;
+          data::internal_type* _internal;
         };
       }
     }
