@@ -37,6 +37,7 @@ namespace gpi
         int save_state (boost::system::error_code &ec);
         int open (boost::system::error_code & ec);
         int close (boost::system::error_code & ec);
+
       protected:
         int get_type_id () const;
 
@@ -70,12 +71,25 @@ namespace gpi
                                              , const gpi::pc::type::flags_t flags
                                              ) const;
 
+        gpi::pc::type::size_t
+        read_from_impl ( gpi::pc::type::offset_t off
+                       , void *buffer
+                       , gpi::pc::type::size_t amount
+                       );
+
+        gpi::pc::type::size_t
+        write_to_impl ( gpi::pc::type::offset_t off
+                      , const void *buffer
+                      , gpi::pc::type::size_t amount
+                      );
+
         bool initialize ( path_t const & path
                         , const gpi::pc::type::size_t size
                         , boost::system::error_code &ec
                         );
 
         void * m_ptr;
+        int    m_fd;
         path_t m_path;
         int    m_version;
 

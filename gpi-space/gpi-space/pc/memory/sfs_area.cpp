@@ -53,6 +53,7 @@ namespace gpi
                  , flags
                  )
         , m_ptr (0)
+        , m_fd (-1)
         , m_path (path)
         , m_version (SFS_VERSION)
         , m_size (size)
@@ -194,22 +195,29 @@ namespace gpi
             m_size = file_size;
           }
 
-          m_ptr = mmap ( (void*)0
-                       , m_size
-                       , PROT_READ + PROT_WRITE
-                       , MAP_SHARED
-                       , fd
-                       , 0
-                       );
-          if (m_ptr == MAP_FAILED)
+          if (not gpi::flag::is_set ( descriptor ().flags
+                                    , gpi::pc::type::segment::F_NOMMAP
+                                    )
+             )
           {
-            ec.assign (errno, boost::system::system_category ());
-            ::close (fd);
-            m_ptr = 0;
-            return -1;
+            m_ptr = mmap ( (void*)0
+                         , m_size
+                         , PROT_READ + PROT_WRITE
+                         , MAP_SHARED
+                         , fd
+                         , 0
+                         );
+            if (m_ptr == MAP_FAILED)
+            {
+              ec.assign (errno, boost::system::system_category ());
+              ::close (fd);
+              m_ptr = 0;
+              return -1;
+            }
           }
 
-          ::close (fd);
+          // we need the fd for read/write support
+          m_fd = fd;
         }
 
         {
@@ -225,8 +233,7 @@ namespace gpi
           }
         }
 
-        CLOG( TRACE
-            , "gpi.memory"
+        MLOG( INFO
             , "SFS memory created:"
             << " path: " << m_path
             << " size: " << m_size
@@ -245,10 +252,14 @@ namespace gpi
           - unmap memory
           - depending on the flags, remove the directory again
          */
+        if (m_fd)
+        {
+          ::close (m_fd); m_fd = -1;
+        }
 
         if (m_ptr)
         {
-          munmap (m_ptr, m_size);
+          //          munmap (m_ptr, m_size);
           m_ptr = 0;
 
           if (gpi::flag::is_set ( descriptor ().flags
@@ -429,7 +440,43 @@ namespace gpi
                                               , task_list_t & tasks
                                               )
       {
+        // TODO: implement locking  or an fd pool on which we  can wait and some
+        //       kind of  a buffer pool that can  be used to read  data into for
+        //       now we can only transfer data between sfs_areas by the means of
+        //       a shm segment
         throw std::runtime_error ("not yet implemented");
+      }
+
+      gpi::pc::type::size_t
+      sfs_area_t::read_from_impl ( gpi::pc::type::offset_t offset
+                                 , void *buffer
+                                 , gpi::pc::type::size_t amount
+                                 )
+      {
+        // TODO: implement locking or an fd pool on which we can wait
+        ::lseek (m_fd, offset, SEEK_SET);
+        ssize_t read_rc = ::read (m_fd, buffer, amount);
+        if (read_rc < 0)
+        {
+          throw std::runtime_error ("could not read");
+        }
+        return (gpi::pc::type::size_t)(read_rc);
+      }
+
+      gpi::pc::type::size_t
+      sfs_area_t::write_to_impl ( gpi::pc::type::offset_t offset
+                                , const void *buffer
+                                , gpi::pc::type::size_t amount
+                                )
+      {
+        // TODO: implement locking or an fd pool on which we can wait
+        ::lseek (m_fd, offset, SEEK_SET);
+        ssize_t write_rc = ::write (m_fd, buffer, amount);
+        if (write_rc < 0)
+        {
+          throw std::runtime_error ("could not write");
+        }
+        return (gpi::pc::type::size_t)(write_rc);
       }
     }
   }
