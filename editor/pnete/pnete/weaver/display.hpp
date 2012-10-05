@@ -205,13 +205,13 @@ namespace fhg
       class port
       {
       public:
-        explicit port (ui::graph::port::item*, item_by_name_type&);
+        explicit port (ui::graph::port_item*, item_by_name_type&);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        ui::graph::port::item* _port;
+        ui::graph::port_item* _port;
 
         item_by_name_type& _port_item_by_name;
       };
@@ -235,7 +235,7 @@ namespace fhg
         item_by_name_type& _place_item_by_name;
         std::string _name;
         const ui::graph::connectable::direction::type _direction;
-        ui::graph::port::item* _port_item;
+        ui::graph::port_item* _port_item;
       };
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);

@@ -118,7 +118,7 @@ namespace fhg
           {
             if (  qgraphicsitem_cast<place_item*> (collidingItem)
                || qgraphicsitem_cast<transition_item*> (collidingItem)
-               || qgraphicsitem_cast<port::top_level::item*> (collidingItem)
+               || qgraphicsitem_cast<top_level_port_item*> (collidingItem)
                )
             {
               graph::item::setPos (old_position);

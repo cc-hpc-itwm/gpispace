@@ -166,8 +166,8 @@ namespace fhg
       }
       WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        ui::graph::port::item* port_item
-          ( new ui::graph::port::item
+        ui::graph::port_item* port_item
+          ( new ui::graph::port_item
           ( const_cast<ITVAL(XMLTYPE(ports_type))&> (port)
             , _current_port_direction
             , _type_map
@@ -406,7 +406,7 @@ namespace fhg
       }
 
 
-      port::port ( ui::graph::port::item* port
+      port::port ( ui::graph::port_item* port
                  , item_by_name_type& port_item_by_name
                  )
         : _port (port)
@@ -456,7 +456,7 @@ namespace fhg
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        _port_item = new ui::graph::port::top_level::item
+        _port_item = new ui::graph::top_level_port_item
           ( const_cast<ITVAL(XMLTYPE(ports_type))&> (port)
           , _direction
           );

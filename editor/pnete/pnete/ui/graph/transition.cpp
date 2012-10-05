@@ -98,7 +98,7 @@ namespace fhg
           {
             if (  qgraphicsitem_cast<transition_item*> (collidingItem)
                || qgraphicsitem_cast<place_item*> (collidingItem)
-               || qgraphicsitem_cast<port::top_level::item*> (collidingItem)
+               || qgraphicsitem_cast<top_level_port_item*> (collidingItem)
                )
             {
               graph::item::setPos (old_position);
@@ -106,8 +106,8 @@ namespace fhg
               return;
             }
 
-            if ( port::item* port
-               = qgraphicsitem_cast<port::item*> (collidingItem)
+            if ( port_item* port
+               = qgraphicsitem_cast<port_item*> (collidingItem)
                )
             {
               if (port->parentItem() != this)
@@ -146,7 +146,7 @@ namespace fhg
 
           foreach (QGraphicsItem* child, childItems())
           {
-            if (port::item* p = qgraphicsitem_cast<port::item*> (child))
+            if (port_item* p = qgraphicsitem_cast<port_item*> (child))
             {
               if (p->direction() == connectable::direction::IN)
               {

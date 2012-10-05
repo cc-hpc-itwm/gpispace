@@ -425,7 +425,7 @@ namespace fhg
             foreach (QGraphicsItem* item, items(event->scenePos()))
               {
                 //! \note No, just casting to connectable_item* does NOT work. Qt!
-                port::item* as_port (qgraphicsitem_cast<port::item*> (item));
+                port_item* as_port (qgraphicsitem_cast<port_item*> (item));
                 place_item* as_place (qgraphicsitem_cast<place_item*> (item));
 
                 connectable_item* ci (as_port);
@@ -440,7 +440,7 @@ namespace fhg
 
                 if (ci->is_connectable_with (_pending_connection->non_free_side()))
                   {
-                    if (qobject_cast<port::item*> (ci) && as_port)
+                    if (qobject_cast<port_item*> (ci) && as_port)
                       {
                         //! \todo insert place and connect with that place in between.
                       }
@@ -577,7 +577,7 @@ namespace fhg
           {
             foreach (QGraphicsItem* child, transition_item->childItems())
               {
-                if (port::item* port = qgraphicsitem_cast<port::item*> (child))
+                if (port_item* port = qgraphicsitem_cast<port_item*> (child))
                   {
                     port->erase_connections (this);
                   }
