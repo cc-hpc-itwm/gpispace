@@ -259,11 +259,11 @@ namespace fhg
 
       void change_manager_t::delete_place
         ( const QObject* origin
-        , ::xml::parse::type::place_type& trans
+        , ::xml::parse::type::place_type& place
         , ::xml::parse::type::net_type& net
         )
       {
-        push (new action::remove_place (*this, origin, trans, net));
+        push (new action::remove_place (*this, origin, place, net));
       }
 
       // - function --------------------------------------------------
