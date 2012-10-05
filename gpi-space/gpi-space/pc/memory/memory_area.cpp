@@ -574,8 +574,8 @@ namespace gpi
         return m_descriptor.nref;
       }
 
-      void *
-      area_t::pointer_to (gpi::pc::type::memory_location_t const &loc)
+      gpi::pc::type::offset_t
+      area_t::location_to_offset (gpi::pc::type::memory_location_t loc)
       {
         lock_type lock (m_mutex);
 
@@ -583,51 +583,68 @@ namespace gpi
             (m_handles.find(loc.handle));
         if (hdl_it == m_handles.end())
           throw std::runtime_error
-            ("pointer_to(): no such handle: " + boost::lexical_cast<std::string>(loc.handle));
+            ( "location_to_offset(): no such handle: "
+            + boost::lexical_cast<std::string>(loc.handle)
+            );
 
-        return raw_ptr (hdl_it->second.offset + (loc.offset % hdl_it->second.local_size));
+        return hdl_it->second.offset + (loc.offset % hdl_it->second.local_size);
+      }
+
+      void *
+      area_t::pointer_to (gpi::pc::type::memory_location_t const &loc)
+      {
+        return raw_ptr (location_to_offset (loc));
       }
 
       namespace detail
       {
-        static int get_memcpy_tasks ( const gpi::pc::type::memory_location_t src
-                                    , area_t & src_area
-                                    , const gpi::pc::type::memory_location_t dst
-                                    , area_t & dst_area
-                                    , gpi::pc::type::size_t amount
-                                    , task_list_t & tasks
-                                    )
+        struct writer
         {
-          const std::size_t chunk_size = amount;
+          writer ( area_t & a
+                 , gpi::pc::type::memory_location_t loc
+                 , const void *buffer
+                 , gpi::pc::type::size_t amount
+                 )
+            : m_area (a)
+            , m_location (loc)
+            , m_buffer (buffer)
+            , m_amount (amount)
+          {}
 
-          std::size_t remaining = amount;
-          std::size_t offset = 0;
-
-          while (remaining)
+          void operator () ()
           {
-            std::size_t sz (std::min (remaining, chunk_size));
-            tasks.push_back
-              (boost::make_shared<task_t>
-              ( "memcpy "
-              + boost::lexical_cast<std::string> (dst)
-              + " <- "
-              + boost::lexical_cast<std::string> (src)
-              + " "
-              + boost::lexical_cast<std::string> (sz)
-
-              , boost::bind ( std::memmove
-                            , (char*)(dst_area.pointer_to (dst)) + offset
-                            , (char*)(src_area.pointer_to (src)) + offset
-                            , sz
-                            )
-              ));
-
-            remaining -= sz;
-            offset    += sz;
+            m_area.write_to (m_location, m_buffer, m_amount);
           }
+        private:
+          area_t & m_area;
+          gpi::pc::type::memory_location_t m_location;
+          const void * m_buffer;
+          gpi::pc::type::size_t m_amount;
+        };
 
-          return 0;
-        }
+        struct reader
+        {
+          reader ( area_t & a
+                 , gpi::pc::type::memory_location_t loc
+                 , void *buffer
+                 , gpi::pc::type::size_t amount
+                 )
+            : m_area (a)
+            , m_location (loc)
+            , m_buffer (buffer)
+            , m_amount (amount)
+          {}
+
+          void operator () ()
+          {
+            m_area.read_from (m_location, m_buffer, m_amount);
+          }
+        private:
+          area_t & m_area;
+          gpi::pc::type::memory_location_t m_location;
+          void * m_buffer;
+          gpi::pc::type::size_t m_amount;
+        };
       }
 
       gpi::pc::type::size_t
@@ -636,8 +653,18 @@ namespace gpi
                         , gpi::pc::type::size_t amount
                         )
       {
-        throw std::runtime_error
-          (std::string ("not yet implemented: ") + __FUNCTION__);
+        if (is_local (gpi::pc::type::memory_region_t (loc, amount)))
+        {
+          return read_from_impl ( location_to_offset (loc)
+                                , buffer
+                                , amount
+                                );
+        }
+        else
+        {
+          throw std::runtime_error
+            (std::string ("could not read non-local region"));
+        }
       }
 
       gpi::pc::type::size_t
@@ -646,8 +673,38 @@ namespace gpi
                        , gpi::pc::type::size_t amount
                        )
       {
-        throw std::runtime_error
-          (std::string ("not yet implemented: ") + __FUNCTION__);
+        if (is_local (gpi::pc::type::memory_region_t (loc, amount)))
+        {
+          return write_to_impl ( location_to_offset (loc)
+                               , buffer
+                               , amount
+                               );
+        }
+        else
+        {
+          throw std::runtime_error
+            (std::string ("could not read non-local region"));
+        }
+      }
+
+      gpi::pc::type::size_t
+      area_t::read_from_impl ( gpi::pc::type::offset_t offset
+                             , void *buffer
+                             , gpi::pc::type::size_t amount
+                             )
+      {
+        std::memmove (buffer, raw_ptr (offset), amount);
+        return amount;
+      }
+
+      gpi::pc::type::size_t
+      area_t::write_to_impl ( gpi::pc::type::offset_t offset
+                            , const void *buffer
+                            , gpi::pc::type::size_t amount
+                            )
+      {
+        std::memmove (raw_ptr (offset), buffer, amount);
+        return amount;
       }
 
       int
@@ -672,19 +729,64 @@ namespace gpi
                              )
           );
 
-        // vertical copy (memcpy)
+        // vertical copy (memcpy/read/write)
         if (src_is_local && dst_is_local)
         {
-          return detail::get_memcpy_tasks ( src
-                                          , *this
-                                          , dst
-                                          , dst_area
-                                          , amount
-                                          , tasks
-                                          );
+          void *src_ptr = pointer_to (src);
+          void *dst_ptr = dst_area.pointer_to (dst);
+
+          if (src_ptr)
+          {
+            tasks.push_back
+              (boost::make_shared<task_t>
+              ( "write_to: "
+              + boost::lexical_cast<std::string> (dst)
+              + " <- "
+              + boost::lexical_cast<std::string> (src)
+              + " "
+              + boost::lexical_cast<std::string> (amount)
+
+              , detail::writer ( dst_area
+                               , dst
+                               , src_ptr
+                               , amount
+                               )
+              ));
+            return 0;
+          }
+          else if (dst_ptr)
+          {
+            tasks.push_back
+              (boost::make_shared<task_t>
+              ( "read_from: "
+              + boost::lexical_cast<std::string> (dst)
+              + " <- "
+              + boost::lexical_cast<std::string> (src)
+              + " "
+              + boost::lexical_cast<std::string> (amount)
+
+              , detail::reader ( *this
+                               , src
+                               , dst_ptr
+                               , amount
+                               )
+              ));
+            return 0;
+          }
+          else
+          {
+            MLOG ( WARN
+                 , "both segments are local, but none of them has raw memory"
+                 );
+          }
         }
+
+        // only reached when:
+        //    - non-local segments
+        //    - no raw memory available
+
         // horizontal copy (same type)
-        else if (type () == dst_area.type ())
+        if (type () == dst_area.type ())
         {
           return get_specific_transfer_tasks ( src
                                              , dst

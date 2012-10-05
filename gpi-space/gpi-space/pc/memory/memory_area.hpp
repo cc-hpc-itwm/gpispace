@@ -113,13 +113,13 @@ namespace gpi
          */
         void *pointer_to (const gpi::pc::type::memory_location_t & loc);
 
-        virtual gpi::pc::type::size_t
+        gpi::pc::type::size_t
         read_from ( gpi::pc::type::memory_location_t loc
                   , void *buffer
                   , gpi::pc::type::size_t amount
                   );
 
-        virtual gpi::pc::type::size_t
+        gpi::pc::type::size_t
         write_to ( gpi::pc::type::memory_location_t loc
                  , const void *buffer
                  , gpi::pc::type::size_t amount
@@ -139,6 +139,8 @@ namespace gpi
                , const gpi::pc::type::size_t size
                , const gpi::pc::type::flags_t flags
                );
+
+        gpi::pc::type::offset_t location_to_offset (gpi::pc::type::memory_location_t loc);
 
         /* hook functions that need to be overridded by specific segments */
         virtual
@@ -169,6 +171,18 @@ namespace gpi
                                                 , gpi::pc::type::size_t queue
                                                 , task_list_t & tasks
                                                 ) = 0;
+
+        virtual gpi::pc::type::size_t
+        read_from_impl ( gpi::pc::type::offset_t offset
+                       , void *buffer
+                       , gpi::pc::type::size_t amount
+                       );
+
+        virtual gpi::pc::type::size_t
+        write_to_impl ( gpi::pc::type::offset_t offset
+                      , const void *buffer
+                      , gpi::pc::type::size_t amount
+                      );
 
         /*
          hook functions that may be overriden
