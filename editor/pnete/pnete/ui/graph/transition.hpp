@@ -28,53 +28,50 @@ namespace fhg
     {
       namespace graph
       {
-        namespace transition
+        class transition_item : public base_item
         {
-          class item : public graph::item
-          {
-            Q_OBJECT;
+          Q_OBJECT;
 
-          public:
-            explicit item ( ::xml::parse::type::transition_type& transition
-                          , ::xml::parse::type::net_type& net
-                          , graph::item* parent = NULL
-                          );
+        public:
+          explicit transition_item ( ::xml::parse::type::transition_type& transition
+                                   , ::xml::parse::type::net_type& net
+                                   , base_item* parent = NULL
+                                   );
 
-            const ::xml::parse::type::transition_type& transition() const;
-            ::xml::parse::type::transition_type& transition();
-            ::xml::parse::type::net_type& net();
+          const ::xml::parse::type::transition_type& transition() const;
+          ::xml::parse::type::transition_type& transition();
+          ::xml::parse::type::net_type& net();
 
-            virtual QPainterPath shape() const;
-            QRectF rectangle() const;
+          virtual QPainterPath shape() const;
+          QRectF rectangle() const;
 
-            const std::string& name() const;
+          const std::string& name() const;
 
-            void repositionChildrenAndResize();
+          void repositionChildrenAndResize();
 
-            void set_proxy (data::proxy::type*);
-            data::proxy::type* proxy () const;
+          void set_proxy (data::proxy::type*);
+          data::proxy::type* proxy () const;
 
-            enum { Type = transition_graph_type };
-            virtual int type() const { return Type; }
+          enum { Type = transition_graph_type };
+          virtual int type() const { return Type; }
 
-            virtual void setPos (const QPointF&);
+          virtual void setPos (const QPointF&);
 
-          public slots:
-          private slots:
+        protected:
+          virtual void paint ( QPainter *painter
+                             , const QStyleOptionGraphicsItem *option
+                             , QWidget *widget
+                             );
 
-          protected:
-            virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+        private:
+          //! \todo size verstellbar
+          QSizeF _size;
 
-          private:
-            //! \todo size verstellbar
-            QSizeF _size;
+          ::xml::parse::type::transition_type& _transition;
+          ::xml::parse::type::net_type& _net;
 
-            ::xml::parse::type::transition_type& _transition;
-            ::xml::parse::type::net_type& _net;
-
-            data::proxy::type* _proxy;
-          };
-        }
+          data::proxy::type* _proxy;
+        };
       }
     }
   }

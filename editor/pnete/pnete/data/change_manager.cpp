@@ -15,11 +15,11 @@ namespace fhg
   {
     namespace data
     {
-      change_manager_t::change_manager_t (internal::type & i)
+      change_manager_t::change_manager_t (internal_type & i)
         : _internal (i)
       {}
 
-      internal::type& change_manager_t::internal () const
+      internal_type& change_manager_t::internal () const
       {
         return _internal;
       }

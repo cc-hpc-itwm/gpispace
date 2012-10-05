@@ -20,22 +20,22 @@ namespace fhg
   {
     namespace data
     {
-      namespace internal { class type; }
+      class internal_type;
     }
 
     namespace ui
     {
       namespace graph
       {
-        namespace place { class item; }
-        namespace transition { class item; }
-        namespace scene { class type; }
+        class place_item;
+        class transition_item;
+        class scene_type;
       }
     }
     namespace weaver
     {
       typedef boost::unordered_map< std::string
-                                  , ui::graph::connectable::item*
+                                  , ui::graph::connectable_item*
                                   > item_by_name_type;
 
       typedef XMLTYPE(function_with_mapping_type) function_with_mapping_type;
@@ -44,7 +44,7 @@ namespace fhg
       {
       public:
         explicit function ( function_with_mapping_type
-                          , data::internal::type*
+                          , data::internal_type*
                           );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -67,8 +67,8 @@ namespace fhg
           ports_type() : in (NULL), out (NULL) {}
         } _ports;
 
-        ui::graph::scene::type* _scene;
-        data::internal::type* _root;
+        ui::graph::scene_type* _scene;
+        data::internal_type* _root;
       };
 
       WSIG(function, expression::open, XMLTYPE(expression_type), exp);
@@ -81,8 +81,8 @@ namespace fhg
       class net
       {
       public:
-        explicit net ( data::internal::type*
-                     , ui::graph::scene::type* scene
+        explicit net ( data::internal_type*
+                     , ui::graph::scene_type* scene
                      , XMLTYPE(net_type)& net
                      , XMLTYPE(ports_type)& in
                      , XMLTYPE(ports_type)& out
@@ -92,14 +92,14 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene::type* _scene;
+        ui::graph::scene_type* _scene;
 
         XMLTYPE(net_type)& _net;
         XMLTYPE(ports_type)& _in;
         XMLTYPE(ports_type)& _out;
 
         item_by_name_type _place_item_by_name;
-        data::internal::type* _root;
+        data::internal_type* _root;
       };
 
       WSIG( net
@@ -119,9 +119,9 @@ namespace fhg
       class transition
       {
       public:
-        explicit transition ( data::internal::type*
-                            , ui::graph::scene::type*
-                            , ui::graph::transition::item*
+        explicit transition ( data::internal_type*
+                            , ui::graph::scene_type*
+                            , ui::graph::transition_item*
                             , XMLTYPE(net_type)&
                             , item_by_name_type&
                             );
@@ -130,15 +130,15 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene::type* _scene;
-        ui::graph::transition::item* _transition;
+        ui::graph::scene_type* _scene;
+        ui::graph::transition_item* _transition;
         ui::graph::connectable::direction::type _current_port_direction;
         XMLTYPE(net_type)& _net;
 
         item_by_name_type& _place_item_by_name;
         item_by_name_type _port_in_item_by_name;
         item_by_name_type _port_out_item_by_name;
-        data::internal::type* _root;
+        data::internal_type* _root;
 
         boost::optional< ::xml::parse::type::type_map_type&> _type_map;
 
@@ -161,12 +161,12 @@ namespace fhg
       class property
       {
       public:
-        explicit property (ui::graph::item*);
+        explicit property (ui::graph::base_item*);
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        ui::graph::item* _item;
+        ui::graph::base_item* _item;
         WETYPE(property::path_type) _path;
       };
 
@@ -178,7 +178,7 @@ namespace fhg
       class connection
       {
       public:
-        explicit connection ( ui::graph::scene::type*
+        explicit connection ( ui::graph::scene_type*
                             , item_by_name_type& place_item_by_name
                             , item_by_name_type& port_item_by_name
                             , const ui::graph::connectable::direction::type& direction
@@ -189,7 +189,7 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene::type* _scene;
+        ui::graph::scene_type* _scene;
         item_by_name_type& _place_item_by_name;
         item_by_name_type& _port_item_by_name;
         const ui::graph::connectable::direction::type _direction;
@@ -205,13 +205,13 @@ namespace fhg
       class port
       {
       public:
-        explicit port (ui::graph::port::item*, item_by_name_type&);
+        explicit port (ui::graph::port_item*, item_by_name_type&);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        ui::graph::port::item* _port;
+        ui::graph::port_item* _port;
 
         item_by_name_type& _port_item_by_name;
       };
@@ -222,7 +222,7 @@ namespace fhg
       class port_toplevel
       {
       public:
-        explicit port_toplevel ( ui::graph::scene::type*
+        explicit port_toplevel ( ui::graph::scene_type*
                                , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                );
@@ -231,11 +231,11 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene::type* _scene;
+        ui::graph::scene_type* _scene;
         item_by_name_type& _place_item_by_name;
         std::string _name;
         const ui::graph::connectable::direction::type _direction;
-        ui::graph::port::item* _port_item;
+        ui::graph::port_item* _port_item;
       };
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);
@@ -246,13 +246,13 @@ namespace fhg
       class place
       {
       public:
-        explicit place (ui::graph::place::item*, item_by_name_type&);
+        explicit place (ui::graph::place_item*, item_by_name_type&);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        ui::graph::place::item* _place;
+        ui::graph::place_item* _place;
 
         item_by_name_type& _place_item_by_name;
       };

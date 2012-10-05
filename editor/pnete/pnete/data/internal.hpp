@@ -19,36 +19,30 @@ namespace fhg
   {
     namespace data
     {
-      namespace internal
+      class internal_type
       {
-        namespace kind
-        {
-          enum type {expression, module_call, net};
-        }
+      private:
+        ::xml::parse::state::type _state;
+        ::xml::parse::type::function_type _function;
+        change_manager_t _change_manager;
+        proxy::type _root_proxy;
 
-        class type
-        {
-        private:
-          ::xml::parse::state::type _state;
-          ::xml::parse::type::function_type _function;
-          change_manager_t _change_manager;
-          proxy::type _root_proxy;
+        proxy::type* create_proxy();
 
-          proxy::type* create_proxy();
+      public:
+        enum kind {expression, module_call, net};
 
-        public:
-          explicit type (const kind::type& = kind::expression);
-          explicit type (const QString& filename);
+        explicit internal_type (const kind& = internal_type::expression);
+        explicit internal_type (const QString& filename);
 
-          ::xml::parse::type::function_type & function ();
-          const ::xml::parse::type::function_type & function () const;
-          const ::xml::parse::state::key_values_t & context () const;
-          const ::xml::parse::state::type & state () const;
-          change_manager_t& change_manager();
-          const proxy::type& root_proxy() const;
-          proxy::type& root_proxy();
-        };
-      }
+        ::xml::parse::type::function_type & function ();
+        const ::xml::parse::type::function_type & function () const;
+        const ::xml::parse::state::key_values_t & context () const;
+        const ::xml::parse::state::type & state () const;
+        change_manager_t& change_manager();
+        const proxy::type& root_proxy() const;
+        proxy::type& root_proxy();
+      };
     }
   }
 }

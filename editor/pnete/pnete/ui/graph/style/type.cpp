@@ -20,7 +20,7 @@ namespace fhg
       {
         namespace style
         {
-          void draw_shape ( const graph::item* item
+          void draw_shape ( const base_item* item
                           , QPainter* painter
                           )
           {

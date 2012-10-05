@@ -16,6 +16,8 @@ namespace fhg
   {
     namespace data
     {
+      class internal_type;
+
       namespace action
       {
         // ## editing action forward declarations ####################
@@ -27,16 +29,15 @@ namespace fhg
         // - function ------------------------------------------------
         // - expression ----------------------------------------------
       }
-      namespace internal { class type; }
 
       class change_manager_t : public QUndoStack
       {
         Q_OBJECT;
 
       public:
-        change_manager_t (internal::type &);
+        change_manager_t (internal_type &);
 
-        internal::type& internal() const;
+        internal_type& internal() const;
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------
@@ -163,7 +164,7 @@ namespace fhg
                                  , typename ARG_TYPE(Fun,6));
 #undef ARG_TYPE
 
-        internal::type& _internal;
+        internal_type& _internal;
       };
     }
   }

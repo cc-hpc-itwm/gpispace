@@ -17,7 +17,7 @@ namespace fhg
       net_widget::net_widget
         ( data::proxy::type& proxy
         , data::proxy::net_proxy::data_type& net
-        , graph::scene::type* scene
+        , graph::scene_type* scene
         , const QStringList& types
         , QWidget* parent
         )

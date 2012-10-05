@@ -14,7 +14,7 @@ namespace fhg
   {
     namespace data
     {
-      namespace internal { class type; }
+      class internal_type;
       class change_manager_t;
     }
 
@@ -31,7 +31,7 @@ namespace fhg
 
         data::proxy::type& proxy () const;
         data::change_manager_t& change_manager () const;
-        data::internal::type* root () const;
+        data::internal_type* root () const;
         ::xml::parse::type::function_type& function() const;
 
       signals:
