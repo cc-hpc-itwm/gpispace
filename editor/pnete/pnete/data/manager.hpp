@@ -35,7 +35,7 @@ namespace fhg
         static manager& instance();
 
         internal::type* load (const QString& filename);
-        internal::type* create (const internal::kind::type&);
+        internal::type* create (const internal::type::kind&);
         void save ( internal::type* data
                   , const boost::optional<const QString&> filename = boost::none
                   ) const;

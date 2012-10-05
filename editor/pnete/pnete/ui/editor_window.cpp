@@ -356,19 +356,19 @@ namespace fhg
       void editor_window::slot_new_expression()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::kind::expression)
+                       . create(data::internal::type::expression)
                        );
       }
       void editor_window::slot_new_module_call()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::kind::module_call)
+                       . create(data::internal::type::module_call)
                        );
       }
       void editor_window::slot_new_net()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::kind::net)
+                       . create(data::internal::type::net)
                        );
       }
 

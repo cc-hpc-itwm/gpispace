@@ -54,7 +54,7 @@ namespace fhg
         }
       }
 
-      internal::type* manager::create (const internal::kind::type& kind)
+      internal::type* manager::create (const internal::type::kind& kind)
       {
         const QString filename ( QObject::tr ("unnamed-%1.xml")
                                . arg (++_unnamed_current)

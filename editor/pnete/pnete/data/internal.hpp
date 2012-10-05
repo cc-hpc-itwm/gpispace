@@ -21,11 +21,6 @@ namespace fhg
     {
       namespace internal
       {
-        namespace kind
-        {
-          enum type {expression, module_call, net};
-        }
-
         class type
         {
         private:
@@ -37,7 +32,9 @@ namespace fhg
           proxy::type* create_proxy();
 
         public:
-          explicit type (const kind::type& = kind::expression);
+          enum kind {expression, module_call, net};
+
+          explicit type (const kind& = type::expression);
           explicit type (const QString& filename);
 
           ::xml::parse::type::function_type & function ();

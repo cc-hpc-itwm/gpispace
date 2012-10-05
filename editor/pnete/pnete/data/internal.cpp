@@ -18,23 +18,24 @@ namespace fhg
     {
       namespace internal
       {
-        namespace kind
+        namespace detail
         {
-          static ::xml::parse::type::function_type::type make (const type& t)
+          static ::xml::parse::type::function_type::type make_function
+            (const type::kind& t)
           {
             switch (t)
               {
-              case expression: return ::xml::parse::type::expression_type();
-              case module_call: return ::xml::parse::type::mod_type();
-              case net: return ::xml::parse::type::net_type();
-              default: throw std::runtime_error ("kind::make of what!?");
+              case type::expression: return ::xml::parse::type::expression_type();
+              case type::module_call: return ::xml::parse::type::mod_type();
+              case type::net: return ::xml::parse::type::net_type();
+              default: throw std::runtime_error ("make_function of unknown kind!?");
               }
           }
         }
 
-        type::type (const kind::type& kind)
+        type::type (const kind& kind_)
           : _state ()
-          , _function (kind::make (kind))
+          , _function (detail::make_function (kind_))
           , _change_manager (*this)
           , _root_proxy (*create_proxy())
         {}
