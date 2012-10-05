@@ -93,7 +93,18 @@ namespace gpi
            - open data file, consistency check
            - map memory
         */
-        if (! fs::exists (m_path))
+        if (fs::exists (m_path) && gpi::flag::is_set ( descriptor ().flags
+                                                     , gpi::pc::type::segment::F_FORCE_UNLINK
+                                                     )
+           )
+        {
+          sfs_area_t::cleanup (m_path);
+        }
+
+        if (! fs::exists (m_path) && !gpi::flag::is_set ( descriptor ().flags
+                                                        , gpi::pc::type::segment::F_NOCREATE
+                                                        )
+           )
         {
           if (! initialize (m_path, m_size, ec))
           {
@@ -153,6 +164,34 @@ namespace gpi
           {
             ec.assign (errno, boost::system::system_category ());
             return -1;
+          }
+
+          off_t file_size = lseek (fd, 0, SEEK_END);
+          if (file_size < 0)
+          {
+            ec.assign (errno, boost::system::system_category ());
+            MLOG (ERROR, "could not seek: " << strerror (errno));
+            ::close (fd);
+            return -1;
+          }
+
+          lseek (fd, 0, SEEK_SET);
+          if (m_size)
+          {
+            if (m_size != (gpi::pc::type::size_t)file_size)
+            {
+              MLOG ( WARN
+                   , "segment has size: " << file_size
+                   << " but tried to open it with size: " << m_size
+                   << ", adjusting..."
+                   );
+              m_size = file_size;
+            }
+          }
+          else
+          {
+            // used in non-create mode
+            m_size = file_size;
           }
 
           m_ptr = mmap ( (void*)0
