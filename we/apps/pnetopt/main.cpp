@@ -233,7 +233,7 @@ class Optimizer {
             }
 
             result->ensureValid();
-            
+
             return result;
         }
 
@@ -277,7 +277,7 @@ class Optimizer {
             }
 
             result->ensureValid();
-            
+
             return result;
         }
 
@@ -587,7 +587,7 @@ class Optimizer {
             }
 
             result->ensureValid();
-            
+
             return result;
         }
 
@@ -623,7 +623,7 @@ class Optimizer {
         struct SubnetReturner: public boost::static_visitor<pnet_t *> {
             pnet_t *operator()(we::type::expression_t &expr) const { return NULL; }
             pnet_t *operator()(we::type::module_call_t &mod_call) const { return NULL; }
-            pnet_t *operator()(pnet_t &net) const { return &net; } 
+            pnet_t *operator()(pnet_t &net) const { return &net; }
         };
 
         PetriNet *subnet() {
@@ -645,7 +645,7 @@ class Optimizer {
         struct ExpressionReturner: public boost::static_visitor<we::type::expression_t *> {
             we::type::expression_t *operator()(we::type::expression_t &expr) const { return &expr; }
             we::type::expression_t *operator()(we::type::module_call_t &mod_call) const { return NULL; }
-            we::type::expression_t *operator()(pnet_t &net) const { return NULL; } 
+            we::type::expression_t *operator()(pnet_t &net) const { return NULL; }
         };
 
         Expression *expression() {
@@ -907,7 +907,7 @@ class Optimizer {
 } // anonymous namespace
 
 template<class P, class E, class T>
-void optimize(we::type::transition_t<P, E, T> &transition, const char *script) {
+void do_optimize(we::type::transition_t<P, E, T> &transition, const char *script) {
     Optimizer<P, E, T> optimizer(transition);
     optimizer(script);
 }
@@ -974,7 +974,7 @@ int main(int argc, char **argv) {
     }
 
     try {
-        optimize(activity.transition(), script.c_str());
+        do_optimize(activity.transition(), script.c_str());
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
