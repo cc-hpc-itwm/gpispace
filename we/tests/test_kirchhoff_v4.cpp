@@ -225,8 +225,8 @@ static void dot ( std::ostream & s
       s << "p" << fhg::util::show (*p)
         << " ["
         << "label = \""
-        << n.get_place(*p).get_name()
-        << "\\ntype: " << n.get_place(*p).get_signature()
+        << n.get_place(*p).name()
+        << "\\ntype: " << n.get_place(*p).signature()
         ;
 
       for ( typename NET::token_place_it tp (n.get_token (*p))
@@ -267,7 +267,7 @@ static void dot ( std::ostream & s
             ;
           break;
         case petri_net::edge::PT_READ:
-          if (n.get_place (connection.pid).get_name() == "config")
+          if (n.get_place (connection.pid).name() == "config")
             s << "p" << fhg::util::show (connection.pid)
               << "t" << fhg::util::show (connection.tid)
               << " [label = \"config\", shape=\"none\"];"
