@@ -599,7 +599,8 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     return -EIO;
   }
 
-  boost::timer timer;
+  typedef boost::posix_time::ptime time_type;
+  time_type timer_start = boost::posix_time::microsec_clock::local_time();
 
   gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
@@ -630,7 +631,8 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
   print_progress(stderr, src.offset, d.size);
   fprintf(stderr, "\n");
 
-  double elapsed = timer.elapsed ();
+  time_type timer_end = boost::posix_time::microsec_clock::local_time();
+  double elapsed = (timer_end - timer_start).total_milliseconds () / 1000.0;
   if (elapsed == 0.0)
     elapsed = 1e-15;
   std::cerr << (((double)total_to_write/1024/1024) / elapsed) << " MiB/s"
@@ -709,8 +711,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
     std::cout << dst.handle << std::endl;
   }
 
-  boost::timer timer;
-
+  typedef boost::posix_time::ptime time_type;
+  time_type timer_start = boost::posix_time::microsec_clock::local_time();
   // read data chunk from file to shm
 
   std::size_t read_count = 0;
@@ -757,7 +759,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
                 << std::endl;
     }
 
-    double elapsed = timer.elapsed ();
+    time_type timer_end = boost::posix_time::microsec_clock::local_time();
+    double elapsed = (timer_end - timer_start).total_milliseconds () / 1000.0;
     if (elapsed == 0.0)
       elapsed = 1e-15;
     std::cerr << (((double)read_count/1024/1024) / elapsed) << " MiB/s"
