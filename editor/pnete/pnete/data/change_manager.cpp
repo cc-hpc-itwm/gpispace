@@ -197,7 +197,7 @@ namespace fhg
       , ::xml::parse::type::net_type& net
       )
       {
-        ::xml::parse::type::transition_type transition;
+        ::xml::parse::type::transition_type transition (_state.next_id());
 
         transition.f = fun;
         transition.name = fun.name ? *fun.name : "transition";
@@ -214,7 +214,7 @@ namespace fhg
       , ::xml::parse::type::net_type& net
       )
       {
-        ::xml::parse::type::transition_type transition;
+        ::xml::parse::type::transition_type transition (_state.next_id());
 
         transition.name = "transition";
 

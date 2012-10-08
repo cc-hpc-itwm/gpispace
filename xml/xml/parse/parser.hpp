@@ -1478,7 +1478,7 @@ namespace xml
       const std::string name
         (required ("transition_type", node, "name", state.file_in_progress()));
 
-      type::transition_type t;
+      type::transition_type t (state.next_id());
 
       t.path = state.file_in_progress();
       t.name = validate_name ( validate_prefix ( name

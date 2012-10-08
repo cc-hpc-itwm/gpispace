@@ -207,8 +207,24 @@ namespace xml
         xml::util::unique<connect_type> _read;
         xml::util::unique<place_map_type> _place_map;
 
+        state::type::counter_t::value_type _id;
+
       public:
-        typedef boost::variant <function_type, use_type> f_type;
+        transition_type (const state::type::counter_t::value_type& id)
+          : _id (id)
+        { }
+
+        const state::type::counter_t::value_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const transition_type& other) const
+        {
+          return id() == other.id();
+        }
+
+       typedef boost::variant <function_type, use_type> f_type;
 
         f_type f;
 
