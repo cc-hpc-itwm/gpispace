@@ -174,8 +174,8 @@ namespace xml
 
         place_type& push_place (const place_type & p)
         {
-          place_type old;
-          boost::optional<place_type&> place (_places.push (p, old));
+          place_type* old;
+          boost::optional<place_type&> place (_places.push (p, &old));
 
           if (!place)
             {
@@ -192,12 +192,12 @@ namespace xml
 
         transition_type& push_transition (const transition_type & t)
         {
-          transition_type old;
-          boost::optional<transition_type&> trans (_transitions.push (t, old));
+          transition_type* old;
+          boost::optional<transition_type&> trans (_transitions.push (t, &old));
 
           if (!trans)
             {
-              throw error::duplicate_transition<transition_type> (t, old);
+              throw error::duplicate_transition<transition_type> (t, *old);
             }
 
           return *trans;
@@ -210,21 +210,21 @@ namespace xml
 
         void push_function (const function_type & f)
         {
-          function_type old;
+          function_type* old;
 
-          if (!_functions.push (f, old))
+          if (!_functions.push (f, &old))
             {
-              throw error::duplicate_function<function_type> (f, old);
+              throw error::duplicate_function<function_type> (f, *old);
             }
         }
 
         void push_template (const function_type & t)
         {
-          function_type old;
+          function_type* old;
 
-          if (!_templates.push (t, old))
+          if (!_templates.push (t, &old))
             {
-              throw error::duplicate_template<function_type> (t, old);
+              throw error::duplicate_template<function_type> (t, *old);
             }
         }
 
@@ -423,13 +423,13 @@ namespace xml
 
           BOOST_FOREACH (const function_type& fun, functions_above)
             {
-              function_type fun_local;
+              function_type* fun_local;
 
-              if (!_functions.push (fun, fun_local))
+              if (!_functions.push (fun, &fun_local))
                 {
                   state.warn ( warning::shadow_function ( fun.name
                                                         , fun.path
-                                                        , fun_local.path
+                                                        , fun_local->path
                                                         )
                              );
                 }
@@ -437,13 +437,13 @@ namespace xml
 
           BOOST_FOREACH (const function_type& tmpl, templates_above)
             {
-              function_type tmpl_local;
+              function_type* tmpl_local;
 
-              if (!_templates.push (tmpl, tmpl_local))
+              if (!_templates.push (tmpl, &tmpl_local))
                 {
                   state.warn ( warning::shadow_template ( tmpl.name
                                                         , tmpl.path
-                                                        , tmpl_local.path
+                                                        , tmpl_local->path
                                                         )
                              );
                 }
@@ -451,13 +451,13 @@ namespace xml
 
           BOOST_FOREACH (const specialize_type& spec, specializes_above)
             {
-              specialize_type spec_local;
+              specialize_type* spec_local;
 
-              if (!_specializes.push (spec, spec_local))
+              if (!_specializes.push (spec, &spec_local))
                 {
                   state.warn ( warning::shadow_specialize ( spec.name
                                                           , spec.path
-                                                          , spec_local.path
+                                                          , spec_local->path
                                                           )
                              );
                 }

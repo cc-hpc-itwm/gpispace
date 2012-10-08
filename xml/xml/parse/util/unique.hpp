@@ -61,13 +61,14 @@ namespace xml
         return *this;
       }
 
-      boost::optional<T&> push (const T& x, T& old)
+      boost::optional<T&> push (const T& x, T** old)
       {
         const typename names_type::const_iterator pos (_names.find (x.name));
 
         if (pos != _names.end())
           {
-            old = *(pos->second);
+            //! \note iterator<T> -> T*.
+            *old = &*(pos->second);
 
             return boost::none;
           }
