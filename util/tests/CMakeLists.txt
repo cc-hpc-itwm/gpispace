@@ -25,3 +25,7 @@ fhg_add_test(test_bool.cpp
   DESCRIPTION "Tests the bool_t wrapper around bool"
 )
 
+fhg_add_test(test_counter.cpp
+  DESCRIPTION "Tests the unique value generating counter"
+)
+
