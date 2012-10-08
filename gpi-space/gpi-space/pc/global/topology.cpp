@@ -7,6 +7,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/assert.hpp>
@@ -295,13 +296,18 @@ namespace gpi
                                        << local_size
                                        << name
                                        , reduce::max_result
-                                       , rank_result_t(m_rank, 0) // my result
+                                       , rank_result_t (m_rank, 0) // my result
                                        )
                             );
           if (res.value != 0)
           {
             LOG(ERROR,"allocation on node " << res.rank << " failed: " << res.value);
-            throw std::runtime_error("global allocation failed on at least one node");
+            throw std::runtime_error
+              ( "global allocation failed on at least one node: rank "
+              + boost::lexical_cast<std::string>(res.rank)
+              + " says: "
+              + res.message
+              );
           }
           else
           {
@@ -516,16 +522,23 @@ namespace gpi
                                              )
               ); // TODO unquote and join (av[4]...)
 
-            int res
-              (global::memory_manager().remote_alloc( seg
-                                                    , hdl
-                                                    , offset
-                                                    , size
-                                                    , local_size
-                                                    , name
-                                                    )
-              );
-            cast (rank, detail::command_t("+RES") << res);
+            try
+            {
+              int res
+                (global::memory_manager().remote_alloc( seg
+                                                      , hdl
+                                                      , offset
+                                                      , size
+                                                      , local_size
+                                                      , name
+                                                      )
+                );
+              cast (rank, detail::command_t("+RES") << res);
+            }
+            catch (std::exception const &ex)
+            {
+              cast (rank, detail::command_t("+RES") << 2 << ex.what ());
+            }
           }
           else if (av[0] == "FREE")
           {
@@ -545,9 +558,13 @@ namespace gpi
           else if (av[0] == "+RES")
           {
             lock_type lck(m_result_mutex);
+            std::vector<std::string> msg_vec ( av.begin ()+2
+                                             , av.end ()
+                                             );
             m_current_results.push_back
               (rank_result_t( rank
                             , boost::lexical_cast<int>(av[1])
+                            , boost::algorithm::join (msg_vec, " ")
                             )
               );
             m_request_finished.notify_one();

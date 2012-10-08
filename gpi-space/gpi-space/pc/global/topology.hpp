@@ -42,15 +42,18 @@ namespace gpi
           rank_result_t ()
             : rank(-1)
             , value(-1)
+            , message ("")
           {}
 
-          rank_result_t (gpi::rank_t r, int v)
+          rank_result_t (gpi::rank_t r, int v, std::string const &msg="")
             : rank(r)
             , value(v)
+            , message (msg)
           {}
 
           gpi::rank_t rank;
           int value;
+          std::string message;
         };
 
         typedef boost::function<rank_result_t ( rank_result_t
