@@ -33,7 +33,8 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        change_manager_t();
+        //! \todo This is only a hack. There should not be a link to the state!
+        change_manager_t (::xml::parse::state::type& state);
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------
@@ -160,6 +161,7 @@ namespace fhg
                                  , typename ARG_TYPE(Fun,6));
 #undef ARG_TYPE
 
+        ::xml::parse::state::type& _state;
       };
     }
   }

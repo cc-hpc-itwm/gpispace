@@ -14,7 +14,8 @@ namespace fhg
   {
     namespace data
     {
-      change_manager_t::change_manager_t()
+      change_manager_t::change_manager_t (::xml::parse::state::type& state)
+        : _state (state)
       {}
 
       namespace detail

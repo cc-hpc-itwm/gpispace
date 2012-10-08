@@ -34,7 +34,7 @@ namespace fhg
       internal_type::internal_type (const kind& kind_)
         : _state ()
         , _function (detail::make_function (kind_))
-        , _change_manager()
+        , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}
 
@@ -44,7 +44,7 @@ namespace fhg
                                               , filename.toStdString()
                                               )
                     )
-        , _change_manager()
+        , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}
 
