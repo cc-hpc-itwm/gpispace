@@ -469,9 +469,9 @@ namespace xml
                   , const std::string descr
                   )
         {
-          port_type* old;
+          port_type old;
 
-          if (!ports.push (p, &old))
+          if (!ports.push (p, old))
             {
               throw error::duplicate_port (descr, p.name, path);
             }
@@ -621,9 +621,9 @@ namespace xml
         void push_inout (const port_type & p) { push_in (p); push_out (p); }
         void push_tunnel (const port_type& p)
         {
-          port_type* old;
+          port_type old;
 
-          if (!_tunnel.push (p, &old))
+          if (!_tunnel.push (p, old))
             {
               throw error::duplicate_port ("tunnel", p.name, path);
             }
