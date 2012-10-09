@@ -240,7 +240,7 @@ namespace fhg
       , ::xml::parse::type::net_type& net
       )
       {
-        ::xml::parse::type::place_type place;
+        ::xml::parse::type::place_type place (_state.next_id());
 
         place.name = "place";
 

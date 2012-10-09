@@ -882,6 +882,7 @@ namespace xml
         , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
                                              , optional (node, "virtual")
                                              )
+        , state.next_id()
         );
 
       for ( xml_node_type * child (node->first_node())
