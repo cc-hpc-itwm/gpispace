@@ -539,7 +539,7 @@ namespace xml
           return _id;
         }
 
-        bool is_same (const place_type& other) const
+        bool is_same (const function_type& other) const
         {
           return id() == other.id();
         }
