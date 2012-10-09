@@ -19,20 +19,22 @@
       <connect-out port="c" place="c"/>
     </transition>
 
-    <defun name="take_anyway">
+    <transition name="take_anyway_a">
+    <defun>
       <in name="x" type="long"/>
       <out name="x" type="long"/>
-      <expression></expression>
+      <expression/>
     </defun>
-
-    <transition name="take_anyway_a">
-      <use name="take_anyway"/>
       <connect-in port="x" place="a"/>
       <connect-out port="x" place="c"/>
     </transition>
 
     <transition name="take_anyway_b">
-      <use name="take_anyway"/>
+    <defun>
+      <in name="x" type="long"/>
+      <out name="x" type="long"/>
+      <expression/>
+    </defun>
       <connect-in port="x" place="b"/>
       <connect-out port="x" place="c"/>
     </transition>

@@ -1,13 +1,14 @@
 <defun name="modulecall_with_multiple_occurences">
   <net>
-    <defun name="modcall">
-      <module name="mod" function="fun"/>
-    </defun>
     <transition name="a">
-      <use name="modcall"/>
+      <defun name="modcall">
+        <module name="mod" function="fun"/>
+      </defun>
     </transition>
     <transition name="b">
-      <use name="modcall"/>
+      <defun name="modcall">
+        <module name="mod" function="fun"/>
+      </defun>
     </transition>
     <transition name="e">
       <defun name="modcall">

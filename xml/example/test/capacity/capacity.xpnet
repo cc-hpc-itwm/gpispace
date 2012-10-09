@@ -12,20 +12,6 @@
     <place name="sb" type="long"/>
     <place name="r" type="long"/>
 
-    <defun name="wait">
-      <in name="d" type="string"/>
-      <in name="s" type="long"/>
-      <inout name="k" type="long"/>
-      <module name="capacity" function="wait (d, s, k)">
-        <cinclude href="fhglog/fhglog.hpp"/>
-        <code><![CDATA[
-          LOG (INFO, d << "-" << k << ": sleeping for " << s << " seconds");
-
-          sleep (s);
-        ]]></code>
-      </module>
-    </defun>
-
     <transition name="generate" inline="true">
       <include-function href="sequence.xml"/>
       <connect-in port="amount" place="n"/>
@@ -58,7 +44,7 @@
     </transition>
 
     <transition name="waita">
-      <use name="wait"/>
+      <include-function href="capacity.wait.xpnet"/>
       <connect-read port="d" place="wa"/>
       <connect-read port="s" place="sa"/>
       <connect-in port="k" place="a_in"/>
@@ -66,7 +52,7 @@
     </transition>
 
     <transition name="waitb">
-      <use name="wait"/>
+      <include-function href="capacity.wait.xpnet"/>
       <connect-read port="d" place="wb"/>
       <connect-read port="s" place="sb"/>
       <connect-in port="k" place="b"/>
