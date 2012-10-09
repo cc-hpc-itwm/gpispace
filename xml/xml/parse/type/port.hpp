@@ -27,23 +27,35 @@ namespace xml
     {
       struct port_type
       {
+        state::type::counter_t::value_type _id;
+
       public:
         std::string name;
         std::string type;
         fhg::util::maybe<std::string> place;
         we::type::property::type prop;
 
-        port_type () : name (), type (), place (), prop () {}
-
         port_type ( const std::string & _name
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
+                  , const state::type::counter_t::value_type& id
                   )
-          : name (_name)
+          : _id (id)
+          , name (_name)
           , type (_type)
           , place (_place)
           , prop ()
         {}
+
+        const state::type::counter_t::value_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const place_type& other) const
+        {
+          return id() == other.id();
+        }
 
         void specialize ( const type::type_map_type & map_in
                         , const state::type &

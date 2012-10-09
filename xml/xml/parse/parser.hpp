@@ -949,6 +949,7 @@ namespace xml
                         )
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
+        , state.next_id()
         );
 
       for ( xml_node_type * child (node->first_node())
