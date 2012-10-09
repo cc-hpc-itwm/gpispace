@@ -191,15 +191,16 @@ namespace xml
 
         transition_type& push_transition (const transition_type & t)
         {
-          transition_type old;
-          boost::optional<transition_type&> trans (_transitions.push (t, old));
+          xml::util::unique<transition_type>::push_return_type trans
+            (_transitions.push_and_get_old_value (t));
 
-          if (!trans)
+          if (!trans.first)
             {
-              throw error::duplicate_transition<transition_type> (t, old);
+              throw error::duplicate_transition<transition_type>
+                (t, *trans.second);
             }
 
-          return *trans;
+          return *trans.first;
         }
 
         void erase_transition (const transition_type& t)
@@ -209,21 +210,25 @@ namespace xml
 
         void push_function (const function_type & f)
         {
-          function_type old;
+          xml::util::unique<function_type>::push_return_type fun
+            (_functions.push_and_get_old_value (f));
 
-          if (!_functions.push (f, old))
+          if (!fun.first)
             {
-              throw error::duplicate_function<function_type> (f, old);
+              throw error::duplicate_function<function_type>
+                (f, *fun.second);
             }
         }
 
         void push_template (const function_type & t)
         {
-          function_type old;
+          xml::util::unique<function_type>::push_return_type templ
+            (_templates.push_and_get_old_value (t));
 
-          if (!_templates.push (t, old))
+          if (!templ.first)
             {
-              throw error::duplicate_template<function_type> (t, old);
+              throw error::duplicate_template<function_type>
+                (t, *templ.second);
             }
         }
 
@@ -422,13 +427,14 @@ namespace xml
 
           BOOST_FOREACH (const function_type& fun, functions_above)
             {
-              function_type fun_local;
+              xml::util::unique<function_type>::push_return_type fun_local
+                (_functions.push_and_get_old_value (fun));
 
-              if (!_functions.push (fun, fun_local))
+              if (!fun_local.first)
                 {
                   state.warn ( warning::shadow_function ( fun.name
                                                         , fun.path
-                                                        , fun_local.path
+                                                        , fun_local.second->path
                                                         )
                              );
                 }
@@ -436,13 +442,14 @@ namespace xml
 
           BOOST_FOREACH (const function_type& tmpl, templates_above)
             {
-              function_type tmpl_local;
+              xml::util::unique<function_type>::push_return_type tmpl_local
+                (_templates.push_and_get_old_value (tmpl));
 
-              if (!_templates.push (tmpl, tmpl_local))
+              if (!tmpl_local.first)
                 {
                   state.warn ( warning::shadow_template ( tmpl.name
                                                         , tmpl.path
-                                                        , tmpl_local.path
+                                                        , tmpl_local.second->path
                                                         )
                              );
                 }
@@ -450,13 +457,14 @@ namespace xml
 
           BOOST_FOREACH (const specialize_type& spec, specializes_above)
             {
-              specialize_type spec_local;
+              xml::util::unique<specialize_type>::push_return_type spec_local
+                (_specializes.push_and_get_old_value (spec));
 
-              if (!_specializes.push (spec, spec_local))
+              if (!spec_local.first)
                 {
                   state.warn ( warning::shadow_specialize ( spec.name
                                                           , spec.path
-                                                          , spec_local.path
+                                                          , spec_local.second->path
                                                           )
                              );
                 }

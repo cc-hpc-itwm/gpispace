@@ -61,19 +61,30 @@ namespace xml
         return *this;
       }
 
-      boost::optional<T&> push (const T& x, T& old)
+      //! \todo This is not really nice, but the only way to do it,
+      //! when wanting a copy of the old value back without pointer or
+      //! default constructing.
+
+      //! \note .first is new, .second is old.
+#define RETURN_PAIR_TYPE boost::optional<T&>, boost::optional<T>
+      typedef std::pair<RETURN_PAIR_TYPE >
+              push_return_type;
+
+      push_return_type push_and_get_old_value (const T& x)
       {
         const typename names_type::const_iterator pos (_names.find (x.name));
 
         if (pos != _names.end())
           {
-            old = *(pos->second);
-
-            return boost::none;
+            return std::make_pair<RETURN_PAIR_TYPE >
+              (boost::none, *(pos->second));
           }
 
-        return insert (x);
+        return std::make_pair<RETURN_PAIR_TYPE >
+          (insert (x), boost::none);
       }
+
+#undef RETURN_PAIR_TYPE
 
       boost::optional<T&> push (const T& x)
       {
