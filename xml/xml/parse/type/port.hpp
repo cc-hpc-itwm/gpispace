@@ -8,6 +8,7 @@
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
@@ -27,7 +28,7 @@ namespace xml
     {
       struct port_type
       {
-        state::type::counter_t::value_type _id;
+        ::fhg::xml::parse::util::id_type _id;
 
       public:
         std::string name;
@@ -38,7 +39,7 @@ namespace xml
         port_type ( const std::string & _name
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
-                  , const state::type::counter_t::value_type& id
+                  , const ::fhg::xml::parse::util::id_type& id
                   )
           : _id (id)
           , name (_name)
@@ -47,7 +48,7 @@ namespace xml
           , prop ()
         {}
 
-        const state::type::counter_t::value_type& id() const
+        const ::fhg::xml::parse::util::id_type& id() const
         {
           return _id;
         }

@@ -11,6 +11,8 @@
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/validprefix.hpp>
 
+#include <xml/parse/util/id_type.hpp>
+
 #include <iostream>
 
 #include <boost/variant.hpp>
@@ -207,15 +209,15 @@ namespace xml
         xml::util::unique<connect_type> _read;
         xml::util::unique<place_map_type> _place_map;
 
-        state::type::counter_t::value_type _id;
+        ::fhg::xml::parse::util::id_type _id;
 
       public:
-        transition_type (const state::type::counter_t::value_type& id)
+        transition_type (const ::fhg::xml::parse::util::id_type& id)
           : _id (id)
           , _function_or_use (boost::none)
         { }
 
-        const state::type::counter_t::value_type& id() const
+        const ::fhg::xml::parse::util::id_type& id() const
         {
           return _id;
         }

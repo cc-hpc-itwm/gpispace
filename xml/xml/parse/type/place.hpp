@@ -14,6 +14,7 @@
 
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/signature.hpp>
@@ -219,7 +220,7 @@ namespace xml
       private:
         fhg::util::maybe<bool> _is_virtual;
 
-        state::type::counter_t::value_type _id;
+        ::fhg::xml::parse::util::id_type _id;
 
       public:
         std::string name;
@@ -232,7 +233,7 @@ namespace xml
         place_type ( const std::string & _name
                    , const std::string & _type
                    , const fhg::util::maybe<bool> is_virtual
-                   , const state::type::counter_t::value_type& id
+                   , const ::fhg::xml::parse::util::id_type& id
                    )
           : _is_virtual (is_virtual)
           , _id (id)
@@ -240,11 +241,11 @@ namespace xml
           , type (_type)
         {}
 
-        place_type (const state::type::counter_t::value_type& id)
+        place_type (const ::fhg::xml::parse::util::id_type& id)
           : _id (id)
         { }
 
-        const state::type::counter_t::value_type& id() const
+        const ::fhg::xml::parse::util::id_type& id() const
         {
           return _id;
         }

@@ -27,6 +27,8 @@
 #include <xml/parse/type/require.hpp>
 
 #include <fhg/util/counter.hpp>
+#include <xml/parse/util/id_type.hpp>
+
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/xml.hpp>
 
@@ -79,8 +81,6 @@ namespace xml
       {
       public:
         typedef expr::eval::context context_t;
-        typedef uint64_t counter_value_t;
-        typedef fhg::util::counter<counter_value_t> counter_t;
 
       private:
         ::xml::parse::type::requirements_type _requirements;
@@ -186,7 +186,7 @@ namespace xml
 
         std::string _Opath_to_cpp;
 
-        counter_t _id_counter;
+        ::fhg::util::counter< ::fhg::xml::parse::util::id_type> _id_counter;
 
         template<typename W>
         void generic_warn ( const W & w
@@ -934,7 +934,7 @@ namespace xml
           desc.add (warnings);
         }
 
-        counter_t::value_type next_id()
+        ::fhg::xml::parse::util::id_type next_id()
         {
           return _id_counter;
         }

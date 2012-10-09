@@ -9,6 +9,7 @@
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/mk_fstream.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <list>
 
@@ -492,7 +493,7 @@ namespace xml
 
         typenames_type _typenames;
 
-        state::type::counter_t::value_type _id;
+        ::fhg::xml::parse::util::id_type _id;
 
       public:
         typedef boost::variant < expression_type
@@ -523,17 +524,17 @@ namespace xml
         // ***************************************************************** //
 
         function_type ( const type& _f
-                      , const state::type::counter_t::value_type& id
+                      , const ::fhg::xml::parse::util::id_type& id
                       )
           : _id (id)
           , f (_f)
         { }
 
-        function_type (const state::type::counter_t::value_type& id)
+        function_type (const ::fhg::xml::parse::util::id_type& id)
           : _id (id)
         { }
 
-        const state::type::counter_t::value_type& id() const
+        const ::fhg::xml::parse::util::id_type& id() const
         {
           return _id;
         }
