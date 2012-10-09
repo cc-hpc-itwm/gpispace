@@ -174,8 +174,7 @@ namespace xml
 
         place_type& push_place (const place_type & p)
         {
-          place_type old;
-          boost::optional<place_type&> place (_places.push (p, old));
+          boost::optional<place_type&> place (_places.push (p));
 
           if (!place)
             {
