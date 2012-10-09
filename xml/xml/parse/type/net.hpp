@@ -96,19 +96,19 @@ namespace xml
 
         // ***************************************************************** //
 
-        bool get_place (const std::string & name, place_type & place) const
+        boost::optional<place_type> get_place (const std::string & name) const
         {
-          return _places.by_key (name, place);
+          return _places.copy_by_key (name);
         }
 
-        bool get_function (const std::string & name, function_type & fun) const
+        boost::optional<function_type> get_function (const std::string & name) const
         {
-          return _functions.by_key (maybe_string_type(name), fun);
+          return _functions.copy_by_key (maybe_string_type(name));
         }
 
-        bool get_template (const std::string & name, function_type & tmpl) const
+        boost::optional<function_type> get_template (const std::string & name) const
         {
-          return _templates.by_key (maybe_string_type(name), tmpl);
+          return _templates.copy_by_key (maybe_string_type(name));
         }
 
         // ***************************************************************** //
@@ -311,18 +311,19 @@ namespace xml
               ; ++specialize
               )
             {
-              function_type tmpl;
+              boost::optional<function_type> tmpl
+                (get_template (specialize->use));
 
-              if (!get_template (specialize->use, tmpl))
+              if (!tmpl)
                 {
                   throw error::unknown_template (specialize->use, path);
                 }
 
-              tmpl.name = specialize->name;
+              tmpl->name = specialize->name;
 
               type_map_apply (map, specialize->type_map);
 
-              tmpl.specialize
+              tmpl->specialize
                 ( specialize->type_map
                 , specialize->type_get
                 , st::join (known_structs, st::make (structs), state)
@@ -330,15 +331,15 @@ namespace xml
                 );
 
               split_structs ( known_structs
-                            , tmpl.structs
+                            , tmpl->structs
                             , structs
                             , specialize->type_get
                             , state
                             );
 
-              tmpl.was_template = true;
+              tmpl->was_template = true;
 
-              push_function (tmpl);
+              push_function (*tmpl);
             }
 
           _specializes.clear();

@@ -181,17 +181,17 @@ namespace xml
 
         function_type operator () (const use_type & use) const
         {
-          function_type fun;
+          boost::optional<function_type> fun (net.get_function (use.name));
 
-          if (!net.get_function (use.name, fun))
+          if (!fun)
             {
               throw error::unknown_function
                 (use.name, trans.name, trans.path);
             }
 
-          fun.name = trans.name;
+          fun->name = trans.name;
 
-          return fun;
+          return *fun;
         }
       };
 
@@ -384,9 +384,9 @@ namespace xml
                         ) const
         {
           // existence of connect.place
-          place_type place;
+          boost::optional<place_type> place (net.get_place (connect.place));
 
-          if (!net.get_place (connect.place, place))
+          if (!place)
             {
               throw error::connect_to_nonexistent_place
                 (direction, name, connect.place, path);
@@ -403,27 +403,24 @@ namespace xml
             );
 
           // existence of connect.port
-          port_type port;
+          boost::optional<port_type> port ( (direction == "out")
+                                          ? fun.get_port_out (connect.port)
+                                          : fun.get_port_in (connect.port)
+                                          );
 
-          const bool port_exists
-            ( (direction == "out")
-            ? fun.get_port_out (connect.port, port)
-            : fun.get_port_in (connect.port, port)
-            );
-
-          if (!port_exists)
+          if (!port)
             {
               throw error::connect_to_nonexistent_port
                 (direction, name, connect.port, path);
             }
 
           // typecheck connect.place.type vs connect.port.type
-          if (place.type != port.type)
+          if (place->type != port->type)
             {
               throw error::connect_type_error ( direction
                                               , name
-                                              , port
-                                              , place
+                                              , *port
+                                              , *place
                                               , path
                                               );
             }
@@ -515,17 +512,16 @@ namespace xml
             ; ++port_in
             )
           {
-            port_type port_out;
+            boost::optional<port_type> port_out
+              (fun.get_port_out (port_in->name));
 
-            if (  fun.get_port_out (port_in->name, port_out)
-               && (port_out.type != port_in->type)
-               )
+            if (port_out && (port_out->type != port_in->type))
               {
                 state.warn
                   ( warning::conflicting_port_types ( trans.name
                                                     , port_in->name
                                                     , port_in->type
-                                                    , port_out.type
+                                                    , port_out->type
                                                     , state.file_in_progress()
                                                     )
                   );

@@ -98,34 +98,35 @@ namespace xml
             }
           else
             {
-              place_type place;
+              boost::optional<place_type> place
+                (net.get_place (*port.place));
 
-              if (!net.get_place (*port.place, place))
+              if (!place)
                 {
                   throw error::port_connected_place_nonexistent
                     (direction, port.name, *port.place, path);
                 }
 
-              if (place.type != port.type)
+              if (place->type != port.type)
                 {
                   throw error::port_connected_type_error ( direction
                                                          , port
-                                                         , place
+                                                         , *place
                                                          , path
                                                          );
                 }
 
               if (direction == "tunnel")
                 {
-                  if (not place.is_virtual())
+                  if (not place->is_virtual())
                     {
                       throw
-                        error::tunnel_connected_non_virtual (port, place, path);
+                        error::tunnel_connected_non_virtual (port, *place, path);
                     }
 
-                  if (port.name != place.name)
+                  if (port.name != place->name)
                     {
-                      throw error::tunnel_name_mismatch (port, place, path);
+                      throw error::tunnel_name_mismatch (port, *place, path);
                     }
                 }
             }

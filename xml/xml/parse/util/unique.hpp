@@ -96,23 +96,22 @@ namespace xml
         return insert (x);
       }
 
-      bool by_key (const Key & key, T & x) const
+      //! \todo Most likely, there was never an intended difference
+      //! between copy_by_key and ref_by_key. When rewriting
+      //! copy_by_key, it was passing out a copy via a T& argument
+      //! though. The only difference now is the name and returning an
+      //! ?T or a ?T&. ?T& is only used in weaver of the editor and
+      //! seems to not be needed.
+      boost::optional<T> copy_by_key (const Key & key) const
       {
         const typename names_type::const_iterator pos (_names.find (key));
 
-        if (pos == _names.end())
-          {
-            return false;
-          }
+        if (pos != _names.end())
+        {
+          return *(pos->second);
+        }
 
-        x = *(pos->second);
-
-        return true;
-      }
-
-      bool is_element (const Key & key) const
-      {
-        return _names.find (key) != _names.end();
+        return boost::none;
       }
 
       boost::optional<T&> ref_by_key (const Key & key) const
@@ -125,6 +124,11 @@ namespace xml
           }
 
         return boost::none;
+      }
+
+      bool is_element (const Key & key) const
+      {
+        return _names.find (key) != _names.end();
       }
 
       void erase (const T& x)

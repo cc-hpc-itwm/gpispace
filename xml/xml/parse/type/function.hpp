@@ -474,13 +474,13 @@ namespace xml
               throw error::duplicate_port (descr, p.name, path);
             }
 
-          port_type other;
+          boost::optional<port_type> other (others.copy_by_key (p.name));
 
-          if (others.by_key (p.name, other) && p.type != other.type)
+          if (other && p.type != other->type)
             {
               throw error::port_type_mismatch ( p.name
                                               , p.type
-                                              , other.type
+                                              , other->type
                                               , path
                                               );
             }
@@ -567,14 +567,14 @@ namespace xml
         const ports_type & out (void) const { return _out.elements(); }
         const ports_type& tunnel (void) const { return _tunnel.elements(); }
 
-        bool get_port_in (const std::string & name, port_type & port) const
+        boost::optional<port_type> get_port_in (const std::string & name) const
         {
-          return _in.by_key (name, port);
+          return _in.copy_by_key (name);
         }
 
-        bool get_port_out (const std::string & name, port_type & port) const
+        boost::optional<port_type> get_port_out (const std::string & name) const
         {
-          return _out.by_key (name, port);
+          return _out.copy_by_key (name);
         }
 
         bool is_known_port_in (const std::string & name) const
@@ -1258,15 +1258,15 @@ namespace xml
 
           bool operator () (use_type & u) const
           {
-            function_type fun;
+            boost::optional<function_type> fun (net.get_function (u.name));
 
-            if (!net.get_function (u.name, fun))
+            if (!fun)
               {
                 throw error::unknown_function
                   (u.name, trans.name, trans.path);
               }
 
-            return xml::parse::type::find_module_calls (state, fun, m, mcs);
+            return xml::parse::type::find_module_calls (state, *fun, m, mcs);
           }
         };
       }
@@ -1752,15 +1752,16 @@ namespace xml
 
             if (mod.port_return.isJust())
               {
-                port_type port;
+                boost::optional<port_type> port
+                  (f.get_port_out (*mod.port_return));
 
-                if (!f.get_port_out (*mod.port_return, port))
+                if (!port)
                   {
                     STRANGE ("unknown return port " << *mod.port_return);
                   }
 
-                port_return = port_with_type (*mod.port_return, port.type);
-                types.insert (port.type);
+                port_return = port_with_type (*mod.port_return, port->type);
+                types.insert (port->type);
               }
 
             for ( port_args_type::const_iterator name (mod.port_arg.begin())
@@ -1775,71 +1776,75 @@ namespace xml
 
                 if (f.is_known_port_inout (*name))
                   {
-                    port_type port_in;
-                    port_type port_out;
+                    boost::optional<port_type> port_in
+                      (f.get_port_in (*name));
+                    boost::optional<port_type> port_out
+                      (f.get_port_out (*name));
 
-                    if (!f.get_port_in (*name, port_in))
+                    if (!port_in)
                       {
                         STRANGE ("failed to get port_in " << *name);
                       }
 
-                    if (!f.get_port_out (*name, port_out))
+                    if (!port_out)
                       {
                         STRANGE ("failed to get port_out " << *name);
                       }
 
-                    if (port_in.type != port_out.type)
+                    if (port_in->type != port_out->type)
                       {
-                        STRANGE ("in-type " << port_in.type
-                                << " != out-type " << port_out.type
+                        STRANGE ("in-type " << port_in->type
+                                << " != out-type " << port_out->type
                                 << " for port_inout " << *name
                                 );
                       }
 
                     if (    mod.port_return.isJust()
-                       && (*mod.port_return == port_in.name)
+                       && (*mod.port_return == port_in->name)
                        )
                       {
-                        ports_const.push_back (port_with_type (*name, port_in.type));
-                        types.insert (port_in.type);
+                        ports_const.push_back (port_with_type (*name, port_in->type));
+                        types.insert (port_in->type);
                       }
                     else
                       {
-                        ports_mutable.push_back (port_with_type (*name, port_in.type));
-                        types.insert (port_in.type);
+                        ports_mutable.push_back (port_with_type (*name, port_in->type));
+                        types.insert (port_in->type);
                       }
                   }
                 else if (f.is_known_port_in (*name))
                   {
-                    port_type port_in;
+                    boost::optional<port_type> port_in
+                      (f.get_port_in (*name));
 
-                    if (!f.get_port_in (*name, port_in))
+                    if (!port_in)
                       {
                         STRANGE ("failed to get port_in " << *name);
                       }
 
-                    ports_const.push_back (port_with_type (*name, port_in.type));
-                    types.insert (port_in.type);
+                    ports_const.push_back (port_with_type (*name, port_in->type));
+                    types.insert (port_in->type);
                   }
                 else if (f.is_known_port_out (*name))
                   {
-                    port_type port_out;
+                    boost::optional<port_type> port_out
+                      (f.get_port_out (*name));
 
-                    if (!f.get_port_out (*name, port_out))
+                    if (!port_out)
                       {
                         STRANGE ("failed to get port_out " << *name);
                       }
 
                     if (    mod.port_return.isJust()
-                       && (*mod.port_return == port_out.name)
+                       && (*mod.port_return == port_out->name)
                        )
                       {
                         // do nothing, it is the return port
                       }
                     else
                       {
-                        ports_out.push_back (port_with_type (*name, port_out.type));
-                        types.insert (port_out.type);
+                        ports_out.push_back (port_with_type (*name, port_out->type));
+                        types.insert (port_out->type);
                       }
                   }
                 else
