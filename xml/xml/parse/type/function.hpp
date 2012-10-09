@@ -492,6 +492,8 @@ namespace xml
 
         typenames_type _typenames;
 
+        state::type::counter_t::value_type _id;
+
       public:
         typedef boost::variant < expression_type
                                , mod_type
@@ -520,8 +522,26 @@ namespace xml
 
         // ***************************************************************** //
 
-        function_type () {}
-        function_type (const type& _f) : f (_f) {}
+        function_type ( const type& _f
+                      , const state::type::counter_t::value_type& id
+                      )
+          : _id (id)
+          , f (_f)
+        { }
+
+        function_type (const state::type::counter_t::value_type& id)
+          : _id (id)
+        { }
+
+        const state::type::counter_t::value_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const place_type& other) const
+        {
+          return id() == other.id();
+        }
 
 #ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
         function_type & operator= (function_type const &rhs)

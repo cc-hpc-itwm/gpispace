@@ -33,7 +33,7 @@ namespace fhg
 
       internal_type::internal_type (const kind& kind_)
         : _state ()
-        , _function (detail::make_function (kind_))
+        , _function (detail::make_function (kind_), _state.next_id())
         , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}

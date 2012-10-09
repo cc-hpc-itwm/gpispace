@@ -457,7 +457,7 @@ namespace xml
     static type::function_type
     function_type (const xml_node_type * node, state::type & state)
     {
-      type::function_type f;
+      type::function_type f (state.next_id());
 
       f.path = state.file_in_progress();
       f.name = optional (node, "name");
