@@ -71,6 +71,10 @@ namespace fhg
       {
         return _state;
       }
+      ::xml::parse::state::type & internal_type::state ()
+      {
+        return _state;
+      }
       change_manager_t& internal_type::change_manager ()
       {
         return _change_manager;
