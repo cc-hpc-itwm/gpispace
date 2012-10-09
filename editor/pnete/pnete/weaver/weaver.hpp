@@ -735,8 +735,8 @@ namespace fhg
           WEAVE(transition::internal, MAYBE(bool))(trans.internal);
           WEAVE(transition::properties, WETYPE(property::type))(trans.prop);
           WEAVE(transition::structs, XMLTYPE(structs_type))(trans.structs);
-          WEAVE(transition::function, XMLTYPE(transition_type::f_type))
-            (trans.f);
+          WEAVE(transition::function, XMLTYPE(transition_type::function_or_use_type))
+            (trans.function_or_use());
           WEAVE(transition::place_map, XMLTYPE(place_maps_type))
             (trans.place_map());
           WEAVE(transition::connect_read, XMLTYPE(connections_type))

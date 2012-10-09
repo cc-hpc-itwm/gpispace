@@ -85,7 +85,7 @@ namespace fhg
       WSIG(tv, transition::_inline, MAYBE(bool), _inline);
       WSIG(tv, transition::properties, WETYPE(property::type), prop);
       WSIG(tv, transition::structs, XMLTYPE(structs_type), structs);
-      WSIG(tv, transition::function, XMLTYPE(transition_type::f_type), fun);
+      WSIG(tv, transition::function, XMLTYPE(transition_type::function_or_use_type), fun);
       WSIG(tv, transition::place_map, XMLTYPE(place_maps_type), pm);
       WSIG(tv, transition::connect_read, XMLTYPE(connections_type), cs);
       WSIG(tv, transition::connect_in, XMLTYPE(connections_type), cs);

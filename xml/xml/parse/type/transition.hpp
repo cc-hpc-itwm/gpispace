@@ -212,6 +212,7 @@ namespace xml
       public:
         transition_type (const state::type::counter_t::value_type& id)
           : _id (id)
+          , _function_or_use (boost::none)
         { }
 
         const state::type::counter_t::value_type& id() const
@@ -224,9 +225,36 @@ namespace xml
           return id() == other.id();
         }
 
-       typedef boost::variant <function_type, use_type> f_type;
+        typedef boost::variant <function_type, use_type>
+                function_or_use_type;
 
-        f_type f;
+      private:
+        boost::optional<function_or_use_type> _function_or_use;
+
+      public:
+        const function_or_use_type& function_or_use() const
+        {
+          if (!_function_or_use)
+          {
+            throw std::runtime_error
+              ("requested function or use with no function set!");
+          }
+          return *_function_or_use;
+        }
+        function_or_use_type& function_or_use()
+        {
+          if (!_function_or_use)
+          {
+            throw std::runtime_error
+              ("requested function or use with no function set!");
+          }
+          return *_function_or_use;
+        }
+        const function_or_use_type& function_or_use
+          (const function_or_use_type& function_or_use_)
+        {
+          return *(_function_or_use = function_or_use_);
+        }
 
         std::string name;
         boost::filesystem::path path;
@@ -325,7 +353,9 @@ namespace xml
                      )
         {
           boost::apply_visitor
-            (transition_resolve<function_type> (global, state, forbidden), f);
+            ( transition_resolve<function_type> (global, state, forbidden)
+            , function_or_use()
+            );
         }
 
         // ***************************************************************** //
@@ -342,7 +372,7 @@ namespace xml
                                                    , known_structs
                                                    , state
                                                    )
-            , f
+            , function_or_use()
             );
         }
 
@@ -351,7 +381,7 @@ namespace xml
         void sanity_check (const state::type & state) const
         {
           boost::apply_visitor ( transition_sanity_check<function_type> (state)
-                               , f
+                               , function_or_use()
                                );
         }
 
@@ -370,7 +400,7 @@ namespace xml
               , templates
               , specializes
               )
-            , f
+            , function_or_use()
             );
         }
 
@@ -398,7 +428,7 @@ namespace xml
                                                              , state
                                                              , *this
                                                              )
-              , f
+              , function_or_use()
               )
             );
 
@@ -456,7 +486,7 @@ namespace xml
 
           // recurs
           boost::apply_visitor ( transition_type_check<function_type> (state)
-                               , f
+                               , function_or_use()
                                );
         };
       };
@@ -503,7 +533,7 @@ namespace xml
         Fun fun
           ( boost::apply_visitor
             ( transition_get_function<Net, Trans> (net, state, trans)
-            , trans.f
+            , trans.function_or_use()
             )
           );
 
@@ -1006,7 +1036,7 @@ namespace xml
           ::we::type::property::dump::dump (s, t.prop);
           ::xml::parse::type::dump::dump (s, t.requirements);
 
-          boost::apply_visitor (visitor::transition_dump (s), t.f);
+          boost::apply_visitor (visitor::transition_dump (s), t.function_or_use());
 
           dumps (s, t.place_map().begin(), t.place_map().end());
           dumps (s, t.read().begin(), t.read().end(), "read");

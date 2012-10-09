@@ -199,7 +199,7 @@ namespace fhg
       {
         ::xml::parse::type::transition_type transition (_state.next_id());
 
-        transition.f = fun;
+        transition.function_or_use (fun);
         transition.name = fun.name ? *fun.name : "transition";
 
         emit_signal ( &change_manager_t::signal_add_transition

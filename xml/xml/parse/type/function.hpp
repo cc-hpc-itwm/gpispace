@@ -1290,7 +1290,7 @@ namespace xml
               |= boost::apply_visitor
               ( visitor::transition_find_module_calls
                  <NET, transition_type> (state, n, *pos, m, mcs)
-              , pos->f
+              , pos->function_or_use()
               );
           }
 
@@ -2091,7 +2091,7 @@ namespace xml
                 )
               {
                 boost::apply_visitor ( transition_struct_to_cpp (state)
-                                     , pos->f
+                                     , pos->function_or_use()
                                      );
               }
           }

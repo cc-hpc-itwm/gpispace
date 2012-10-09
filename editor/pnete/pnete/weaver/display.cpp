@@ -138,19 +138,19 @@ namespace fhg
         , _type_map (boost::none)
       {}
       function_with_mapping_type
-      transition::get_function (XMLTYPE(transition_type::f_type)& f)
+      transition::get_function (XMLTYPE(transition_type::function_or_use_type)& f)
       {
         return boost::apply_visitor (visitor::get_function(_net), f);
       }
 
       WSIG( transition
           , transition::function
-          , XMLTYPE(transition_type::f_type)
+          , XMLTYPE(transition_type::function_or_use_type)
           , fun
           )
       {
         function_with_mapping_type function_with_mapping
-          (get_function (const_cast<XMLTYPE(transition_type::f_type)&>(fun)));
+          (get_function (const_cast<XMLTYPE(transition_type::function_or_use_type)&>(fun)));
 
         weaver::function sub (function_with_mapping, _root);
 

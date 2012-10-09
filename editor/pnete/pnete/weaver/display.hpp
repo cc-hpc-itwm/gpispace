@@ -143,13 +143,13 @@ namespace fhg
         boost::optional< ::xml::parse::type::type_map_type&> _type_map;
 
         function_with_mapping_type
-        get_function (XMLTYPE(transition_type::f_type)& f);
+        get_function (XMLTYPE(transition_type::function_or_use_type)& f);
       };
 
       WSIGE(transition, transition::close);
       WSIG( transition
           , transition::function
-          , XMLTYPE(transition_type::f_type)
+          , XMLTYPE(transition_type::function_or_use_type)
           , fun
           );
       WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port);

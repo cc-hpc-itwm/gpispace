@@ -1521,20 +1521,22 @@ namespace xml
                                                     )
                                          );
 
-                  t.f = function_include (file, state);
+                  t.function_or_use (function_include (file, state));
                 }
               else if (child_name == "use")
                 {
-                  t.f = type::use_type ( required ( "transition_type"
-                                                  , child
-                                                  , "name"
-                                                  , state.file_in_progress()
-                                                  )
-                                       );
+                  t.function_or_use
+                    ( type::use_type ( required ( "transition_type"
+                                                , child
+                                                , "name"
+                                                , state.file_in_progress()
+                                                )
+                                     )
+                    );
                 }
               else if (child_name == "defun")
                 {
-                  t.f = function_type (child, state);
+                  t.function_or_use (function_type (child, state));
                 }
               else if (child_name == "place-map")
                 {
