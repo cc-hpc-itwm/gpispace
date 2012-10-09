@@ -250,7 +250,6 @@
 
   <xsd:complexType name="net_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
-      <xsd:element name="defun" type="function_type"/>
       <xsd:element name="include-function" type="function_include_type"/>
       <xsd:element name="include-properties" type="properties_include_type"/>
       <xsd:element name="include-structs" type="struct_include_type"/>

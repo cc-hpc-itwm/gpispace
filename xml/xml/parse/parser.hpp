@@ -717,6 +717,11 @@ namespace xml
               if (child_name == "defun")
                 {
                   n.push_function (function_type (child, state));
+
+                  state.deprecated
+                    ("Free flowing function in subnetwork."
+                    " Use seperate file and <include-function> instead."
+                    );
                 }
               else if (child_name == "template")
                 {
