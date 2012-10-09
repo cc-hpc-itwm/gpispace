@@ -115,9 +115,9 @@ namespace xml
         return _names.find (key) != _names.end();
       }
 
-      boost::optional<T&> by_key (const Key & key)
+      boost::optional<T&> by_key (const Key & key) const
       {
-        typename names_type::iterator pos (_names.find (key));
+        typename names_type::const_iterator pos (_names.find (key));
 
         if (pos != _names.end())
           {
