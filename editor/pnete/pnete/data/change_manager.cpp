@@ -18,7 +18,7 @@ namespace fhg
         : _state (state)
       {}
 
-      namespace detail
+      namespace
       {
         static std::string inc (const std::string& s)
         {
@@ -51,7 +51,7 @@ namespace fhg
           }
           catch (const ::xml::parse::error::duplicate_place&)
           {
-            place.name = detail::inc (place.name);
+            place.name = inc (place.name);
 
             return push_place (place, net);
           }
@@ -70,7 +70,7 @@ namespace fhg
                 < ::xml::parse::type::transition_type>&
                 )
           {
-            transition.name = detail::inc (transition.name);
+            transition.name = inc (transition.name);
 
             return push_transition (transition, net);
           }
@@ -101,7 +101,7 @@ namespace fhg
 
           virtual void undo()
           {
-            _transition = &detail::push_transition (_transition_copy, _net);
+            _transition = &push_transition (_transition_copy, _net);
 
             _change_manager.emit_signal
               ( &change_manager_t::signal_add_transition
@@ -152,7 +152,7 @@ namespace fhg
 
           virtual void undo()
           {
-            _place = &detail::push_place (_place_copy, _net);
+            _place = &push_place (_place_copy, _net);
 
             _change_manager.emit_signal
               ( &change_manager_t::signal_add_place
@@ -204,7 +204,7 @@ namespace fhg
 
         emit_signal ( &change_manager_t::signal_add_transition
                     , origin
-                    , detail::push_transition (transition, net)
+                    , push_transition (transition, net)
                     , net
                     );
       }
@@ -220,7 +220,7 @@ namespace fhg
 
         emit_signal ( &change_manager_t::signal_add_transition
                     , origin
-                    , detail::push_transition (transition, net)
+                    , push_transition (transition, net)
                     , net
                     );
       }
@@ -246,7 +246,7 @@ namespace fhg
 
         emit_signal ( &change_manager_t::signal_add_place
                     , origin
-                    , detail::push_place (place, net)
+                    , push_place (place, net)
                     , net
                     );
       }
