@@ -58,7 +58,7 @@ install (FILES revision.hpp
                assert_modes.hpp
                assert_helper.hpp
                assertion_failed.hpp
-               counter.hpp
+               util/counter.hpp
                error_codes.hpp
   DESTINATION include/fhg
   COMPONENT headers
