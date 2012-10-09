@@ -9,8 +9,8 @@
     <place name="o" type="long"/>
 
     <transition name="step_1">
-      <require key="WORK" mandatory="true" />
       <defun>
+        <require key="WORK" mandatory="true" />
         <inout name="v" type="long"/>
         <module name="work" function="step_1 (v)">
           <cinclude href="iostream"/>
@@ -26,8 +26,8 @@
     <place name="s1" type="long"/>
 
     <transition name="step_2">
-      <require key="WORK" mandatory="true" />
       <defun>
+        <require key="WORK" mandatory="true" />
         <inout name="v" type="long"/>
         <module name="work" function="step_2 (v)">
           <cinclude href="iostream"/>

@@ -18,6 +18,7 @@
         <require key="cap2818" mandatory="false"/>
         <in name="trigger" type="control"/>
         <out name="done" type="control"/>
+        <expression/>
         <condition>
           ${trigger} :eq: []
         </condition>
@@ -38,8 +39,8 @@
           <place name="done" type="control"/>
 
           <transition name="run">
-            <require key="cap23" mandatory="true"/>
             <defun>
+              <require key="cap23" mandatory="true"/>
               <require key="cap3141" mandatory="false"/>
               <require key="GPI"/>
               <require key="GPU" mandatory="false"/>

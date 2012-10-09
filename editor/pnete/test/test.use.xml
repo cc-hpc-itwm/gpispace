@@ -22,6 +22,7 @@
     <defun name="f">
       <in name="i" type="int"/>
       <out name="i" type="int"/>
+      <expression/>
     </defun>
 
     <transition name="t0">
@@ -40,6 +41,7 @@
           <defun name="f">
             <in name="s" type="string"/>
             <out name="s" type="string"/>
+            <expression/>
           </defun>
 
           <place name="s" type="string"/>
