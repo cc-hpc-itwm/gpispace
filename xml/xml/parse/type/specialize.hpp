@@ -4,6 +4,7 @@
 #define _XML_PARSE_TYPE_SPECIALIZE_HPP
 
 #include <xml/parse/types.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <iostream>
 
@@ -21,11 +22,35 @@ namespace xml
     {
       struct specialize_type
       {
+      public:
         std::string name;
         std::string use;
         type_map_type type_map;
         type_get_type type_get;
         boost::filesystem::path path;
+
+      private:
+        ::fhg::xml::parse::util::id_type _id;
+
+      public:
+        specialize_type (const ::fhg::xml::parse::util::id_type& id)
+          : name()
+          , use()
+          , type_map()
+          , type_get()
+          , path()
+          , _id (id)
+        { }
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const specialize_type& other) const
+        {
+          return id() == other.id();
+        }
       };
 
       inline void

@@ -1434,7 +1434,7 @@ namespace xml
     static type::specialize_type
     specialize_type (const xml_node_type * node, state::type & state)
     {
-      type::specialize_type s;
+      type::specialize_type s (state.next_id());
 
       s.path = state.file_in_progress();
       s.name = required ("specialize_type", node, "name", s.path);
