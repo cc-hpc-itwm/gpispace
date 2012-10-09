@@ -14,6 +14,7 @@
 #include <fhg/util/xml.hpp>
 
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 namespace xml_util = ::fhg::util::xml;
 
@@ -31,13 +32,29 @@ namespace xml
         std::string name;
         we::type::property::type prop;
 
+      private:
+        ::fhg::xml::parse::util::id_type _id;
+
+      public:
         place_map_type ( const std::string & _place_virtual
                        , const std::string & _place_real
+                       , const ::fhg::xml::parse::util::id_type& id
                        )
           : place_virtual (_place_virtual)
           , place_real (_place_real)
           , name (_place_virtual + " <-> " + _place_real)
+          , _id (id)
         {}
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const place_map_type& other) const
+        {
+          return id() == other.id();
+        }
       };
 
       typedef xml::util::unique<place_map_type>::elements_type place_maps_type;

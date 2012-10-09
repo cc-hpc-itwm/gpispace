@@ -385,6 +385,7 @@ namespace xml
       type::place_map_type place_map
         ( required ("place_map_type", node, "virtual", state.file_in_progress())
         , required ("place_map_type", node, "real", state.file_in_progress())
+        , state.next_id()
         );
 
       for ( xml_node_type * child (node->first_node())
