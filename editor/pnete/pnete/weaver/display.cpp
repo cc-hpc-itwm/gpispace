@@ -350,6 +350,7 @@ namespace fhg
           weaver::port_toplevel wptl ( _scene
                                      , ui::graph::connectable::direction::OUT
                                      , _place_item_by_name
+                                     , _root
                                      );
           from::many (&wptl, _in, FROM(port));
         }
@@ -358,6 +359,7 @@ namespace fhg
           weaver::port_toplevel wptl ( _scene
                                      , ui::graph::connectable::direction::IN
                                      , _place_item_by_name
+                                     , _root
                                      );
           from::many (&wptl, _out, FROM(port));
         }
@@ -443,15 +445,17 @@ namespace fhg
       }
 
       port_toplevel::port_toplevel
-      ( ui::graph::scene_type* scene
+        ( ui::graph::scene_type* scene
         , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
+        , data::internal_type* root
         )
           : _scene (scene)
           , _place_item_by_name (place_item_by_name)
           , _name ()
           , _direction (direction)
           , _port_item ()
+          , _root (root)
       {}
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
@@ -480,7 +484,9 @@ namespace fhg
                                   , _direction
                                   );
 
-            FROM(connection) (&wc, XMLTYPE(connect_type) (*place, _name));
+            FROM(connection) (&wc, XMLTYPE(connect_type)
+                               (*place, _name, _root->state().next_id())
+                             );
           }
       }
       WSIG(port_toplevel, port::properties, WETYPE(property::type), props)

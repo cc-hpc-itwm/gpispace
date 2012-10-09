@@ -225,6 +225,7 @@ namespace fhg
         explicit port_toplevel ( ui::graph::scene_type*
                                , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
+                               , data::internal_type* root
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -236,6 +237,7 @@ namespace fhg
         std::string _name;
         const ui::graph::connectable::direction::type _direction;
         ui::graph::port_item* _port_item;
+        data::internal_type* _root;
       };
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);

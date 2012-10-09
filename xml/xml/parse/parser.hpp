@@ -331,6 +331,7 @@ namespace xml
       type::connect_type connect
         ( required ("connect_type", node, "place", state.file_in_progress())
         , required ("connect_type", node, "port", state.file_in_progress())
+        , state.next_id()
         );
 
       for ( xml_node_type * child (node->first_node())

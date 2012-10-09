@@ -6,6 +6,8 @@
 #include <string>
 #include <iostream>
 
+#include <xml/parse/util/id_type.hpp>
+
 #include <boost/filesystem.hpp>
 
 #include <we/type/property.hpp>
@@ -28,13 +30,29 @@ namespace xml
         std::string name;
         we::type::property::type prop;
 
+      private:
+        ::fhg::xml::parse::util::id_type _id;
+
+      public:
         connect_type ( const std::string & _place
                      , const std::string & _port
+                     , const ::fhg::xml::parse::util::id_type& id
                      )
           : place (_place)
           , port (_port)
           , name (_place + " <-> " + _port)
+          , _id (id)
         {}
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const connect_type& other) const
+        {
+          return id() == other.id();
+        }
       };
 
       namespace dump
