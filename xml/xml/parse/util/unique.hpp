@@ -3,6 +3,8 @@
 #ifndef _XML_UTIL_UNIQUE_HPP
 #define _XML_UTIL_UNIQUE_HPP
 
+#include <xml/parse/util/id_type.hpp>
+
 #include <list>
 #include <string>
 #include <boost/unordered_map.hpp>
@@ -25,8 +27,13 @@ namespace xml
                                   , typename elements_type::iterator
                                   > names_type;
 
+      typedef boost::unordered_map< ::fhg::xml::parse::util::id_type
+                                  , typename elements_type::iterator
+                                  > ids_type;
+
       elements_type _elements;
       names_type _names;
+      ids_type _ids;
 
       inline T& insert (const T& x)
       {
@@ -34,13 +41,22 @@ namespace xml
           pos (_elements.insert (_elements.end(), x));
 
         _names.insert (typename names_type::value_type (x.name, pos));
+        _ids.insert (typename ids_type::value_type (x.id(), pos));
 
         return *pos;
       }
 
     public:
-      unique () : _elements (), _names () {}
-      unique (const unique & old) : _elements (), _names () { *this = old; }
+      unique ()
+        : _elements ()
+        , _names ()
+        , _ids ()
+      {}
+      unique (const unique & old)
+        : _elements ()
+        , _names ()
+        , _ids ()
+      { *this = old; }
 
       unique & operator = (const unique & other)
       {
@@ -96,6 +112,18 @@ namespace xml
         return insert (x);
       }
 
+      boost::optional<T> copy_by_id (const ::fhg::xml::parse::util::id_type & id) const
+      {
+        const typename ids_type::const_iterator pos (_ids.find (id));
+
+        if (pos != _ids.end())
+        {
+          return *(pos->second);
+        }
+
+        return boost::none;
+      }
+
       //! \todo Most likely, there was never an intended difference
       //! between copy_by_key and ref_by_key. When rewriting
       //! copy_by_key, it was passing out a copy via a T& argument
@@ -136,13 +164,19 @@ namespace xml
         typename names_type::iterator pos (_names.find (x.name));
 
         if (pos != _names.end())
-          {
-            _elements.erase (pos->second);
-            _names.erase (pos);
-          }
+        {
+          _elements.erase (pos->second);
+          _names.erase (pos);
+          _ids.erase (_ids.find (x.id()));
+        }
       }
 
-      void clear (void) { _elements.clear(); _names.clear(); }
+      void clear (void)
+      {
+        _elements.clear();
+        _names.clear();
+        _ids.clear();
+      }
 
       elements_type & elements (void) { return _elements; }
       const elements_type & elements (void) const { return _elements; }
