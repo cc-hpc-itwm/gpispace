@@ -116,19 +116,19 @@ namespace xml
         function_with_mapping_type get_function (const std::string & name)
         {
           boost::optional<function_type&>
-            fun (_functions.by_key (maybe_string_type (name)));
+            fun (_functions.ref_by_key (maybe_string_type (name)));
 
           if (fun)
             {
               return function_with_mapping_type (*fun);
             }
 
-          boost::optional<specialize_type &> spec (_specializes.by_key (name));
+          boost::optional<specialize_type &> spec (_specializes.ref_by_key (name));
 
           if (spec)
             {
               boost::optional<function_type&>
-                spec_fun (_templates.by_key (maybe_string_type (spec->use)));
+                spec_fun (_templates.ref_by_key (maybe_string_type (spec->use)));
 
               if (spec_fun)
                 {
