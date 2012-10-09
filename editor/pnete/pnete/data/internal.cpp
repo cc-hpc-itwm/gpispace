@@ -16,7 +16,7 @@ namespace fhg
   {
     namespace data
     {
-      namespace detail
+      namespace
       {
         static ::xml::parse::type::function_type::type make_function
         (const internal_type::kind& t)
@@ -33,7 +33,7 @@ namespace fhg
 
       internal_type::internal_type (const kind& kind_)
         : _state ()
-        , _function (detail::make_function (kind_), _state.next_id())
+        , _function (make_function (kind_), _state.next_id())
         , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}
