@@ -762,14 +762,8 @@ namespace gpi
         {
           proto::error::error_t result
             (boost::get<proto::error::error_t>(rply));
-          if (result.code != proto::error::success)
-          {
-            LOG( ERROR
-               , "could not add memory segment: "
-               << result.code << ": " << result.detail
-               );
-          }
-          return 0;
+          throw
+            std::runtime_error (result.detail);
         }
         catch (std::exception const & ex)
         {
@@ -780,21 +774,14 @@ namespace gpi
       void api_t::del_memory (gpi::pc::type::segment_id_t id)
       {
         gpi::pc::proto::segment::del_memory_t msg (id);
-        try
+
+        gpi::pc::proto::message_t rply
+          (communicate (gpi::pc::proto::segment::message_t (msg)));
+        proto::error::error_t result
+          (boost::get<proto::error::error_t>(rply));
+        if (result.code != proto::error::success)
         {
-          gpi::pc::proto::message_t rply
-            (communicate (gpi::pc::proto::segment::message_t (msg)));
-          proto::error::error_t result
-            (boost::get<proto::error::error_t>(rply));
-          if (result.code != proto::error::success)
-          {
-            throw std::runtime_error (result.detail);
-          }
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "delete segment failed: " << ex.what());
-          throw;
+          throw std::runtime_error (result.detail);
         }
       }
 
