@@ -257,6 +257,45 @@ namespace gpi
             }
           }
 
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::add_memory_t & add_mem)
+          {
+            try
+            {
+              /*
+              gpi::pc::type::segment_id_t id =
+                m_proc.add_memory (add_mem.url);
+              gpi::pc::proto::segment::register_reply_t rpl;
+              rpl.id = id;
+              return gpi::pc::proto::segment::message_t (rpl);
+              */
+
+              throw std::runtime_error ("add_memory not yet supported");
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::del_memory_t & del_mem)
+          {
+            try
+            {
+              throw std::runtime_error ("permission denied");
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
 
           /**********************************************/
           /***     C O N T R O L   R E L A T E D      ***/

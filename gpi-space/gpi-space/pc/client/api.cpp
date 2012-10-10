@@ -746,6 +746,58 @@ namespace gpi
         }
       }
 
+      gpi::pc::type::segment_id_t api_t::add_memory (const std::string & url)
+      {
+        gpi::pc::proto::segment::add_memory_t msg (url);
+        gpi::pc::proto::message_t rply;
+        try
+        {
+          rply = communicate (gpi::pc::proto::segment::message_t (msg));
+          gpi::pc::proto::segment::message_t result
+            (boost::get<gpi::pc::proto::segment::message_t>(rply));
+          return
+            boost::get<gpi::pc::proto::segment::register_reply_t>(result).id;
+        }
+        catch (boost::bad_get const &)
+        {
+          proto::error::error_t result
+            (boost::get<proto::error::error_t>(rply));
+          if (result.code != proto::error::success)
+          {
+            LOG( ERROR
+               , "could not add memory segment: "
+               << result.code << ": " << result.detail
+               );
+          }
+          return 0;
+        }
+        catch (std::exception const & ex)
+        {
+          throw;
+        }
+      }
+
+      void api_t::del_memory (gpi::pc::type::segment_id_t id)
+      {
+        gpi::pc::proto::segment::del_memory_t msg (id);
+        try
+        {
+          gpi::pc::proto::message_t rply
+            (communicate (gpi::pc::proto::segment::message_t (msg)));
+          proto::error::error_t result
+            (boost::get<proto::error::error_t>(rply));
+          if (result.code != proto::error::success)
+          {
+            throw std::runtime_error (result.detail);
+          }
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "delete segment failed: " << ex.what());
+          throw;
+        }
+      }
+
       gpi::pc::type::info::descriptor_t api_t::collect_info () const
       {
         return m_info;

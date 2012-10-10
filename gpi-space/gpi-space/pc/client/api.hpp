@@ -79,6 +79,9 @@ namespace gpi
         void detach_segment(const gpi::pc::type::segment_id_t id);
         gpi::pc::type::segment::list_t list_segments ();
 
+        gpi::pc::type::segment_id_t add_memory (const std::string & url);
+        void del_memory (gpi::pc::type::segment_id_t);
+
         gpi::pc::type::info::descriptor_t collect_info () const;
         bool ping ();
 

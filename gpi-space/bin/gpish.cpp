@@ -182,6 +182,8 @@ static int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh);
 
 int main (int ac, char **av)
 {
@@ -369,14 +371,20 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("memory-copy", &cmd_memory_copy, "copy memory");
   sh.add_command("memory-wait", &cmd_memory_wait, "wait for a copy to finish");
   sh.add_command("memory-list", &cmd_memory_list, "list allocations");
+  sh.add_command("memory-add", &cmd_memory_add, "add memory segment");
+  sh.add_command("memory-del", &cmd_memory_del, "delete memory segment");
 
   // TODO alias definitions
   sh.add_command("alloc", &cmd_memory_alloc, "allocate memory");
   sh.add_command("free", &cmd_memory_free, "free memory");
   sh.add_command("memcpy", &cmd_memory_copy, "copy memory");
   sh.add_command("wait", &cmd_memory_wait, "wait for copy completion");
-  sh.add_command("list", &cmd_list, "list segments and allocations");
 
+  sh.add_command("list", &cmd_list, "list segments and allocations");
+  sh.add_command("ls", &cmd_list, "list segments and allocations");
+
+  sh.add_command ("add", &cmd_memory_add, "add a memory segment");
+  sh.add_command ("del", &cmd_memory_del, "delete a memory segment");
 
   gpi::signal::handler().connect(SIGINT, &interrupt_shell);
 }
@@ -1118,6 +1126,8 @@ int cmd_memory (shell_t::argv_t const & av, shell_t & sh)
     std::cout << "    copy" << std::endl;
     std::cout << "    wait" << std::endl;
     std::cout << "    list" << std::endl;
+    std::cout << "    add" << std::endl;
+    std::cout << "    del" << std::endl;
     return 0;
   }
   else
@@ -1354,6 +1364,138 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
     }
   }
   return 0;
+}
+
+int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
+{
+  typedef std::vector<std::string> url_list_t;
+  url_list_t urls;
+
+  po::options_description desc ("options");
+  desc.add_options ()
+    ("help,h", "this help message")
+    ( "url,u", po::value<url_list_t>(&urls)
+    , "URL of the new memory\npossible parameters: size, mmap, private, persistent"
+    )
+    ;
+  po::positional_options_description pos_opts;
+  pos_opts.add ("url", -1);
+
+  po::variables_map vm;
+  try
+  {
+    po::store (po::command_line_parser (av)
+              .options (desc).positional (pos_opts)
+              .run ()
+              , vm
+              );
+    po::notify (vm);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "invalid argument: " << ex.what() << std::endl;
+    std::cerr << "try " << av [0] << " -h to get some help" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if (vm.count ("help"))
+  {
+    std::cout << desc << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  if (urls.empty ())
+  {
+    std::cerr << "add: url must not be empty" << std::endl;
+    std::cerr << desc << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  int ec = EXIT_SUCCESS;
+  BOOST_FOREACH (std::string const &url, urls)
+  {
+    try
+    {
+      gpi::pc::type::segment_id_t id =
+        sh.state().capi.add_memory (url);
+      std::cout << "[" << id << "] = " << url;
+    }
+    catch (std::exception const &ex)
+    {
+      std::cerr << "could not add '" << url << "': " << ex.what ()
+                << std::endl;
+      ec = EXIT_FAILURE;
+    }
+  }
+
+  return ec;
+}
+
+int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh)
+{
+  {
+    int i = 0;
+    BOOST_FOREACH (std::string const &arg, av)
+    {
+      std::cout << "av [" << i << "] = " << arg << std::endl;
+      ++i;
+    }
+  }
+
+  typedef std::vector<gpi::pc::type::segment_id_t> id_list_t;
+  id_list_t ids;
+
+  po::options_description desc ("options");
+  desc.add_options ()
+    ("help,h", "this help message")
+    ( "id,i", po::value<id_list_t>(&ids), "the memory ids to remove")
+    ;
+
+  po::variables_map vm;
+  try
+  {
+    po::store ( po::command_line_parser (av)
+              . options (desc)
+              . run ()
+              , vm
+              );
+    po::notify (vm);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "invalid argument: " << ex.what() << std::endl;
+    std::cerr << "try " << av [0] << " -h to get some help" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if (vm.count ("help"))
+  {
+    std::cout << desc << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  if (ids.empty ())
+  {
+    std::cerr << "del: id missing" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  int ec = EXIT_SUCCESS;
+  BOOST_FOREACH (gpi::pc::type::segment_id_t const &id, ids)
+  {
+    try
+    {
+      sh.state().capi.del_memory (id);
+    }
+    catch (std::exception const &ex)
+    {
+      std::cerr << "del: could not delete memory: " << id << ": " << ex.what ()
+                << std::endl;
+      ec = EXIT_FAILURE;
+    }
+  }
+
+  return ec;
 }
 
 path_list_t collect_sockets (fs::path const & prefix)
