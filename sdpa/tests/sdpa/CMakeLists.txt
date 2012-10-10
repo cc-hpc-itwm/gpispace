@@ -159,8 +159,8 @@ add_custom_command(TARGET pnet-inotify-test-wf
 )
 add_dependencies(pnet-inotify-test-wf pnetput)
 ################################################################################################
-#transform 
-pnet_compile(transform_file-test-wf ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xml
+#transform
+pnet_compile(transform_file-test-wf ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file-test-wf.in.pnet
   GENERATE transform_file
   INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
