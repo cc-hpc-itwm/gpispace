@@ -1,0 +1,38 @@
+<defun name="check_update_counter">
+  <in name="counter" type="long" place="counter"/>
+  <in name="trigger" type="control" place="trigger"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+	<place name="counter" type="long"/>
+  	<place name="trigger" type="control"/>
+  	<place name="done" type="control"/>
+
+    <transition name="decrement_counter">
+      <defun>
+       	<inout name="counter" type="long"/>
+  		<in name="trigger" type="control"/>
+		 <condition>
+          ${counter}:gt:0L
+        </condition>
+        <expression>
+          ${counter} := ${counter}-1
+        </expression>
+      </defun>
+      <connect-inout place="counter" port="counter"/>
+      <connect-in port="trigger" place="trigger"/>
+    </transition>
+
+    <transition name="stop">
+      <defun>
+        <in name="counter" type="long"/>
+        <out name="done" type="control"/>
+        <condition>
+          ${counter}:eq:0L
+        </condition>
+      </defun>
+      <connect-in place="counter" port="counter"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

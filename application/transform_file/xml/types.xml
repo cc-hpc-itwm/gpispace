@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<structs>
+  <struct name="config">
+  	<field name="input_file" type="string"/>
+  	<field name="output_file" type="string"/>
+	<field name="write_area" type="long"/>
+    <field name="read_area" type="long"/>
+    <field name="chunk_size" type="long"/>
+    <field name="n_chunks" type="long"/>
+  </struct>
+  
+  <struct name="chunk_read_info">
+	<field name="read_slot_id" type="long"/>
+    <field name="chunk_id" type="long"/>
+    <field name="size" type="long"/>
+  </struct>
+  
+   <struct name="chunk_write_info">
+	<field name="write_slot_id" type="long"/>
+    <field name="chunk_id" type="long"/>
+    <field name="size" type="long"/>
+  </struct>
+</structs>
