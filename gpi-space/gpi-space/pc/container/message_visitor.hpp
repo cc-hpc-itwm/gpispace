@@ -262,15 +262,11 @@ namespace gpi
           {
             try
             {
-              /*
               gpi::pc::type::segment_id_t id =
                 m_proc.add_memory (add_mem.url);
               gpi::pc::proto::segment::register_reply_t rpl;
               rpl.id = id;
               return gpi::pc::proto::segment::message_t (rpl);
-              */
-
-              throw std::runtime_error ("add_memory not yet supported");
             }
             catch (std::exception const & ex)
             {
@@ -286,14 +282,14 @@ namespace gpi
           {
             try
             {
-              throw std::runtime_error ("permission denied");
+              m_proc.del_memory (del_mem.id);
+              return
+                gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
