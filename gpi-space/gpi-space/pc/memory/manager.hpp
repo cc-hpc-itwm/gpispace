@@ -25,6 +25,8 @@ namespace gpi
       public:
         typedef boost::shared_ptr<area_t> area_ptr;
 
+        static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
+
         // signals
         typedef boost::signals2::signal
         <void (const gpi::pc::type::segment_id_t)>
@@ -115,6 +117,15 @@ namespace gpi
         wait_on_queue ( const gpi::pc::type::process_id_t proc_id
                       , const gpi::pc::type::queue_id_t queue
                       );
+
+        gpi::pc::type::segment_id_t
+        add_memory ( const gpi::pc::type::process_id_t proc_id
+                   , const std::string & url
+                   );
+        void
+        del_memory ( const gpi::pc::type::process_id_t proc_id
+                   , const gpi::pc::type::segment_id_t seg_id
+                   );
 
         void add_area (area_ptr const &area);
       private:

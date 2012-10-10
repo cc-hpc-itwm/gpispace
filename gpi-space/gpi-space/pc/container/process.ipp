@@ -376,14 +376,14 @@ namespace gpi
       gpi::pc::type::segment_id_t
       process_t<M>::add_memory (std::string const &url)
       {
-        throw std::runtime_error ("add_memory: not yet implemented");
+        return m_mgr.add_memory (m_id, url);
       }
 
       template <typename M>
       void
-      process_t<M>::del_memory (gpi::pc::type::segment_id_t)
+      process_t<M>::del_memory (gpi::pc::type::segment_id_t seg_id)
       {
-        throw std::runtime_error ("del_memory: not yet implemented");
+        m_mgr.del_memory (m_id, seg_id);
       }
 
       template <typename M>

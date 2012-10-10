@@ -14,7 +14,8 @@ namespace gpi
     {
       manager_t::manager_t ()
         : m_ident (0)
-        , m_segment_counter (15) // default counter value for user segments
+          // default counter value for user segments
+        , m_segment_counter (MAX_PREALLOCATED_SEGMENT_ID)
       {}
 
       manager_t::~manager_t ()
@@ -442,6 +443,27 @@ namespace gpi
       {
         DLOG(TRACE, "wait_on_queue(" << queue << ") by process " << proc_id);
         return m_transfer_mgr.wait_on_queue (queue);
+      }
+
+      gpi::pc::type::segment_id_t
+      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
+                            , const std::string & url
+                            )
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      void
+      manager_t::del_memory ( const gpi::pc::type::process_id_t proc_id
+                            , const gpi::pc::type::segment_id_t seg_id
+                            )
+      {
+        if (0 == seg_id)
+          throw std::runtime_error ("invalid segment id");
+        if (seg_id <= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
+          throw std::runtime_error ("permission denied");
+
+        throw std::runtime_error ("not yet implemented");
       }
     }
   }

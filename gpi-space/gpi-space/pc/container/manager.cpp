@@ -379,6 +379,22 @@ namespace gpi
       {
         return global::memory_manager().wait_on_queue (proc_id, queue);
       }
+
+      gpi::pc::type::segment_id_t
+      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
+                            , std::string const &url
+                            )
+      {
+        return global::memory_manager ().add_memory (proc_id, url);
+      }
+
+      void
+      manager_t::del_memory ( const gpi::pc::type::process_id_t proc_id
+                            , gpi::pc::type::segment_id_t seg_id
+                            )
+      {
+        global::memory_manager ().del_memory (proc_id, seg_id);
+      }
     }
   }
 }

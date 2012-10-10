@@ -99,6 +99,15 @@ namespace gpi
         wait_on_queue ( const gpi::pc::type::process_id_t proc_id
                       , const gpi::pc::type::queue_id_t queue
                       );
+
+        gpi::pc::type::segment_id_t
+        add_memory ( const gpi::pc::type::process_id_t proc_id
+                   , std::string const & url
+                   );
+        void
+        del_memory ( const gpi::pc::type::process_id_t proc_id
+                   , const gpi::pc::type::segment_id_t
+                   );
       private:
         typedef boost::shared_ptr<process_type> process_ptr_t;
         typedef boost::unordered_map< gpi::pc::type::process_id_t
