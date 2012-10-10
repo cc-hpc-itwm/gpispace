@@ -1,3 +1,5 @@
+// who wrote this? -> most probably {rahn,petry}@itwm.fraunhofer.de
+
 #ifndef _H_TRANSFORM_FILE_UTIL_ALLOC
 #define _H_TRANSFORM_FILE_UTIL_ALLOC 1
 
