@@ -29,3 +29,6 @@ fhg_add_test(test_counter.cpp
   DESCRIPTION "Tests the unique value generating counter"
 )
 
+fhg_add_test(test_url.cpp
+  DESCRIPTION "Tests the url parser"
+)
