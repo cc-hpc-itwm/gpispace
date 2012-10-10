@@ -294,27 +294,19 @@ namespace gpi
                               , const std::string & name
                               )
       {
-        try
-        {
-          area_ptr area (get_area (seg_id));
-          area->remote_alloc (hdl, offset, size, local_size, name);
-          add_handle (hdl, seg_id);
-          handle_allocated (hdl);
+        area_ptr area (get_area (seg_id));
+        area->remote_alloc (hdl, offset, size, local_size, name);
+        add_handle (hdl, seg_id);
+        handle_allocated (hdl);
 
-          DLOG( TRACE
-              , "remote memory allocated:"
-              << " segment " << seg_id
-              << " size " << size
-              << " local " << local_size
-              << " handle " << hdl
-              );
-        }
-        catch (std::exception const & ex)
-        {
-          // TODO: check error
-          LOG(ERROR, "remote allocation failed: " << ex.what());
-          return 2;
-        }
+        DLOG( TRACE
+            , "remote memory allocated:"
+            << " segment " << seg_id
+            << " size " << size
+            << " local " << local_size
+            << " handle " << hdl
+            );
+
         return 0;
       }
 
