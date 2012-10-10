@@ -8,7 +8,7 @@ endif
 NOT_STARTS_WITH += dup
 NOT_STARTS_WITH += triple
 NOT_STARTS_WITH += generate
-#NOT_STARTS_WITH += release
+NOT_STARTS_WITH += release
 NOT_STARTS_WITH += check
 
 ###############################################################################

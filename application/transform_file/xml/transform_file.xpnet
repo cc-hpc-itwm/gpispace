@@ -177,11 +177,12 @@
       <connect-out port="out" place="read_slot_id"/>
     </transition>
 
-    <place name="chunk_id" type="long"/>
-    <transition name="generate_chunk_ids" inline="true">
-      <include-function href="sequence.xml"/>
+    <place name="chunk_and_slot" type="chunk_and_slot"/>
+    <transition name="generate_chunk_and_slots" inline="true">
+      <include-function href="generate_chunk_and_slot.xpnet"/>
       <connect-in port="amount" place="n_chunks_gen"/>
-      <connect-out port="out" place="chunk_id"/>
+      <connect-out port="out" place="chunk_and_slot"/>
+      <place-map virtual="slot" real="read_slot_id"/>
     </transition>
 
     <place name="chunk_written" type="control"/>
@@ -208,19 +209,20 @@
     <place name="read_slot_id" type="long"/>
     <transition name="load_chunk" inline="true">
       <defun>
-        <in name="chunk_id" type="long"/>
-        <in name="read_slot_id" type="long"/>
+        <in name="chunk_and_slot" type="chunk_and_slot"/>
         <in name="config" type="config"/>
         <out name="chunk_read_info" type="chunk_read_info"/>
 
-        <module name="load_chunk" function="chunk_read_info read_and_load_chunk(read_slot_id, chunk_id, config)">
+        <module name="load_chunk" function="chunk_read_info read_and_load_chunk(chunk_and_slot, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <cinclude href="iostream"/>
           <cinclude href="stdio.h"/>
           <cinclude href="cmath"/>
+          <cinclude href="boost/lexical_cast.hpp"/>
+          <cinclude href="fstream"/>
           <code><![CDATA[
-          MLOG (INFO, "Reading the chunk "<<chunk_id<<" from the file " << config.input_file<<" ...");
+          MLOG (INFO, "Reading the chunk "<<chunk_and_slot.chunk<<" from the file " << config.input_file<<" into slot " << chunk_and_slot.slot);
 
           FILE *file_ptr;
           int num;
@@ -233,7 +235,7 @@
           throw std::runtime_error(oss.str());
           }
 
-          long offset = chunk_id * config.chunk_size;
+          long offset = chunk_and_slot.chunk * config.chunk_size;
           if( (fseek(file_ptr, offset, SEEK_SET)) != 0)
           {
           printf("Error in seek operation: errno \n");
@@ -251,29 +253,29 @@
 
           waitComm ( fvmPutGlobalData
           ( static_cast<fvmAllocHandle_t> (config.read_area)
-          , read_slot_id*config.chunk_size
+          , chunk_and_slot.slot*config.chunk_size
           , result
           , 0
           , 0
           )
           );
 
-          LOG ( INFO, "The chunk "<<chunk_id<<" was successfully into the virtual memory");
+          LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully into the virtual memory");
 
           pnetc::type::chunk_read_info::chunk_read_info c_r_info;
 
-          c_r_info.read_slot_id = read_slot_id;
-          c_r_info.chunk_id = chunk_id;
+          c_r_info.read_slot_id = chunk_and_slot.slot;
+          c_r_info.chunk_id = chunk_and_slot.chunk;
           c_r_info.size = result;
 
           fclose(file_ptr);
+
           return c_r_info;
           ]]></code>
         </module>
       </defun>
       <connect-read port="config" place="config"/>
-      <connect-in port="read_slot_id" place="read_slot_id"/>
-      <connect-in port="chunk_id" place="chunk_id"/>
+      <connect-in port="chunk_and_slot" place="chunk_and_slot"/>
       <connect-out port="chunk_read_info" place="chunk_read_info"/>
     </transition>
 
@@ -373,16 +375,12 @@
           // write the data into file at the position
           // chunk_id*config.chunk_size
 
-          char b[1024];
-
-          getcwd (b,1024);
-
           int fd = open (config.output_file.c_str (), O_RDWR);
           if (fd == -1)
           {
           throw std::runtime_error
           ( std::string ("could not open output file '")
-          + config.output_file + "' " + std::string(b) + " "
+          + config.output_file + "' "
           + strerror (errno)
           );
           }

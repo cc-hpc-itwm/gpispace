@@ -20,4 +20,9 @@
     <field name="chunk_id" type="long"/>
     <field name="size" type="long"/>
   </struct>
+
+   <struct name="chunk_and_slot">
+     <field name="chunk" type="long"/>
+     <field name="slot" type="long"/>
+   </struct>
 </structs>
