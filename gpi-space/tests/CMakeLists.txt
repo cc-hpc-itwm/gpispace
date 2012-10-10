@@ -14,6 +14,7 @@ set(tc_srcs
   test_memory_manager.cpp
   test_task.cpp
   test_sfs_area.cpp
+  test_program_opts.cpp
 )
 
 foreach (tc_src ${tc_srcs})
