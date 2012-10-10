@@ -1371,13 +1371,14 @@ int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
   typedef std::vector<std::string> url_list_t;
   url_list_t urls;
 
-  po::options_description desc ("options");
+  po::options_description desc ("usage: add [options]");
   desc.add_options ()
     ("help,h", "this help message")
     ( "url,u", po::value<url_list_t>(&urls)
     , "URL of the new memory\npossible parameters: size, mmap, private, persistent"
     )
     ;
+
   po::positional_options_description pos_opts;
   pos_opts.add ("url", -1);
 
@@ -1385,7 +1386,8 @@ int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
   try
   {
     po::store (po::command_line_parser (av)
-              .options (desc).positional (pos_opts)
+              .options (desc)
+              .positional (pos_opts)
               .run ()
               , vm
               );
@@ -1403,6 +1405,17 @@ int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
   }
+
+  /* FIXME:  this  is a  quite  weird  behavior  of boost::program_options  used
+     vectors:
+
+     the original av contains: av[0] -> add av[i] -> params
+
+     when  positional arguments are  used, somehow  av[0] ends  up in  the url
+     array..., i.e. we have to drop urls[0]
+  */
+  if (urls.front () == "add")
+    urls.erase (urls.begin ());
 
   if (urls.empty ())
   {
@@ -1422,7 +1435,7 @@ int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
     }
     catch (std::exception const &ex)
     {
-      std::cerr << "could not add '" << url << "': " << ex.what ()
+      std::cerr << "add: '" << url << "' failed: " << ex.what ()
                 << std::endl;
       ec = EXIT_FAILURE;
     }
@@ -1433,29 +1446,24 @@ int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh)
 {
-  {
-    int i = 0;
-    BOOST_FOREACH (std::string const &arg, av)
-    {
-      std::cout << "av [" << i << "] = " << arg << std::endl;
-      ++i;
-    }
-  }
-
-  typedef std::vector<gpi::pc::type::segment_id_t> id_list_t;
+  typedef std::vector<std::string> id_list_t;
   id_list_t ids;
 
-  po::options_description desc ("options");
+  po::options_description desc ("usage: del [options]");
   desc.add_options ()
     ("help,h", "this help message")
     ( "id,i", po::value<id_list_t>(&ids), "the memory ids to remove")
     ;
+
+  po::positional_options_description pos_opts;
+  pos_opts.add ("id", -1);
 
   po::variables_map vm;
   try
   {
     po::store ( po::command_line_parser (av)
               . options (desc)
+              . positional (pos_opts)
               . run ()
               , vm
               );
@@ -1474,22 +1482,34 @@ int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh)
     return EXIT_SUCCESS;
   }
 
+  if (ids.front () == "del")
+    ids.erase (ids.begin ());
+
   if (ids.empty ())
   {
     std::cerr << "del: id missing" << std::endl;
+    std::cerr << desc << std::endl;
     return EXIT_FAILURE;
   }
 
   int ec = EXIT_SUCCESS;
-  BOOST_FOREACH (gpi::pc::type::segment_id_t const &id, ids)
+  BOOST_FOREACH (std::string const &id_s, ids)
   {
     try
     {
+      gpi::pc::type::segment_id_t id =
+        boost::lexical_cast<gpi::pc::type::segment_id_t>(id_s);
       sh.state().capi.del_memory (id);
+    }
+    catch (boost::bad_lexical_cast &)
+    {
+      std::cerr << "del: '" << id_s << "' failed: not a segment id"
+                << std::endl;
+      ec = EXIT_FAILURE;
     }
     catch (std::exception const &ex)
     {
-      std::cerr << "del: could not delete memory: " << id << ": " << ex.what ()
+      std::cerr << "del: '" << id_s << "' failed: " << ex.what ()
                 << std::endl;
       ec = EXIT_FAILURE;
     }
