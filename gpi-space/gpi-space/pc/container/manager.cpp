@@ -43,8 +43,8 @@ namespace gpi
         try
         {
           lock_type lock (m_mutex);
-          initialize_memory_manager ();
           initialize_topology ();
+          initialize_memory_manager ();
           m_connector.start ();
         }
         catch (std::exception const & ex)
