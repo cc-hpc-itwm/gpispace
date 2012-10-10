@@ -1,13 +1,13 @@
 <defun name="release_tokens">
-  <in name="deposit" type="long" place="deposit"/>
+  <tunnel name="deposit" type="long" place="deposit"/>
   <in name="trigger" type="control" place="trigger"/>
   <out name="done" type="control" place="done"/>
-  <tunnel name="counter" type="long" place="counter"/>
+  <in name="counter" type="long" place="counter"/>
 
   <net>
-    <place name="counter" type="long" virtual="true"/>
+    <place name="counter" type="long"/>
     <place name="trigger" type="control"/>
-    <place name="deposit" type="long"/>
+    <place name="deposit" type="long" virtual="true"/>
     <place name="done" type="control"/>
 
     <transition name="decrement_counter">

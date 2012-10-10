@@ -407,18 +407,18 @@
     <place name="write_slots_released" type="control"/>
     <transition name="release_write_slots" inline="true">
       <include-function href="release_tokens.xpnet"/>
-      <place-map virtual="counter" real="n_write_slots_cnt"/>
+      <connect-in port="counter" place="n_write_slots_cnt"/>
       <connect-in port="trigger" place="all_chunks_done_write"/>
-      <connect-in port="deposit" place="write_slot_id"/>
+      <place-map virtual="deposit" real="write_slot_id"/>
       <connect-out port="done" place="write_slots_released"/>
     </transition>
 
     <place name="read_slots_released" type="control"/>
     <transition name="release_read_slots" inline="true">
       <include-function href="release_tokens.xpnet"/>
-      <place-map virtual="counter" real="n_read_slots_cnt"/>
+      <connect-in port="counter" place="n_read_slots_cnt"/>
       <connect-in port="trigger" place="all_chunks_done_read"/>
-      <connect-in port="deposit" place="read_slot_id"/>
+      <place-map virtual="deposit" real="read_slot_id"/>
       <connect-out port="done" place="read_slots_released"/>
     </transition>
 
