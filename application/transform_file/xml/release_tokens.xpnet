@@ -1,26 +1,26 @@
 <defun name="release_tokens">
-  <in name="counter" type="long" place="counter"/>
+  <tunnel name="deposit" type="long" place="deposit"/>
   <in name="trigger" type="control" place="trigger"/>
-  <in name="deposit" type="long" place="deposit"/>
   <out name="done" type="control" place="done"/>
+  <in name="counter" type="long" place="counter"/>
 
   <net>
-	<place name="counter" type="long"/>
-  	<place name="trigger" type="control"/>
-  	<place name="deposit" type="long"/>
-  	<place name="done" type="control"/>
+    <place name="counter" type="long"/>
+    <place name="trigger" type="control"/>
+    <place name="deposit" type="long" virtual="true"/>
+    <place name="done" type="control"/>
 
     <transition name="decrement_counter">
       <defun>
-       	<inout name="counter" type="long"/>
-  		<in name="trigger" type="control"/>
-  		<in name="deposit" type="long"/>
-		 <condition>
-          ${counter}:gt:0L
-        </condition>
+        <inout name="counter" type="long"/>
+        <in name="trigger" type="control"/>
+        <in name="deposit" type="long"/>
         <expression>
           ${counter} := ${counter}-1
         </expression>
+        <condition>
+          ${counter}:gt:0L
+        </condition>
       </defun>
       <connect-inout place="counter" port="counter"/>
       <connect-read port="trigger" place="trigger"/>
@@ -30,11 +30,16 @@
     <transition name="stop">
       <defun>
         <in name="counter" type="long"/>
+        <in name="trigger" type="control"/>
         <out name="done" type="control"/>
-        <condition>
-          ${counter}:eq:0L
-        </condition>
+        <expression>
+          ${done} := []
+        </expression>
       </defun>
+      <condition>
+        ${counter}:eq:0L
+      </condition>
+      <connect-in port="trigger" place="trigger"/>
       <connect-in place="counter" port="counter"/>
       <connect-out port="done" place="done"/>
     </transition>
