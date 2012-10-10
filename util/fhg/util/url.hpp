@@ -111,6 +111,8 @@ namespace fhg
 
           args = p.second;
 
+          if (p.first.empty ())
+            continue;
           p = split (p.first, "=");
           if (p.first.empty ())
           {
