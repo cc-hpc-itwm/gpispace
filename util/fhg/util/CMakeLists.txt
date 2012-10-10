@@ -25,6 +25,7 @@ set (hdrs
   bool_io.hpp
 
   random.hpp
+  url.hpp
 )
 
 install(FILES ${hdrs}

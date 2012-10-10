@@ -440,7 +440,7 @@ namespace we { namespace type {
                 namespace prop = we::type::property::traverse;
 
                 prop::stack_type stack
-                  (prop::dfs (net.get_place(pid).get_property(), "real"));
+                  (prop::dfs (net.get_place(pid).property(), "real"));
 
                 if (  net.out_of_place (pid).empty()
                    && stack.empty()

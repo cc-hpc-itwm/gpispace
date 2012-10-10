@@ -76,7 +76,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             const P &p = net.get_place(pid);
 
             Place *place = petriNet_->createPlace();
-            place->setName(p.get_name());
+            place->setName(p.name());
             places_[pid] = place;
         }
 

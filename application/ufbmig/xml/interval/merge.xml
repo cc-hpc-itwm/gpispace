@@ -16,22 +16,6 @@
       <type-map replace="T" with="interval"/>
     </specialize>
 
-    <defun name="select_interval_get_credit">
-      <in name="interval" type="interval"/>
-      <out name="interval" type="interval"/>
-      <in name="credit" type="control"/>
-      <expression/>
-    </defun>
-
-    <defun name="select_interval_put_credit">
-      <in name="interval" type="interval"/>
-      <out name="interval" type="interval"/>
-      <out name="credit" type="control"/>
-      <expression>
-        ${credit} := []
-      </expression>
-    </defun>
-
     <place name="pre_empty" type="interval"/>
     <place name="size_wanted" type="long" virtual="true"/>
     <place name="interval" type="interval"/>
@@ -41,11 +25,21 @@
       <token><value>[]</value></token>
     </place>
 
+    <include-template href="lib/trigger_if.xml"/>
+    <specialize name="select_interval_get_credit" use="trigger_if">
+      <type-map replace="T" with="interval"/>
+    </specialize>
+
+    <include-template href="lib/trigger_when.xml"/>
+    <specialize name="select_interval_put_credit" use="trigger_when">
+      <type-map replace="T" with="interval"/>
+    </specialize>
+
     <transition name="select_empty_interval">
       <use name="select_interval_get_credit"/>
-      <connect-in port="interval" place="pre_empty"/>
-      <connect-out port="interval" place="empty_interval"/>
-      <connect-in port="credit" place="credit_empty_interval"/>
+      <connect-in port="object" place="pre_empty"/>
+      <connect-out port="object" place="empty_interval"/>
+      <connect-in port="trigger" place="credit_empty_interval"/>
     </transition>
 
     <transition name="interval_size_okay">
@@ -94,9 +88,9 @@
 
     <transition name="select_small_interval">
       <use name="select_interval_get_credit"/>
-      <connect-in port="interval" place="pre_small_interval"/>
-      <connect-out port="interval" place="small_interval"/>
-      <connect-in port="credit" place="credit_small_interval"/>
+      <connect-in port="object" place="pre_small_interval"/>
+      <connect-out port="object" place="small_interval"/>
+      <connect-in port="trigger" place="credit_small_interval"/>
     </transition>
 
     <transition name="interval_to_big">
@@ -172,9 +166,9 @@
 
     <transition name="no_merge">
       <use name="select_interval_put_credit"/>
-      <connect-in port="interval" place="small_interval"/>
-      <connect-out port="interval" place="small_intervals"/>
-      <connect-out port="credit" place="credit_small_interval"/>
+      <connect-in port="object" place="small_interval"/>
+      <connect-out port="object" place="small_intervals"/>
+      <connect-out port="trigger" place="credit_small_interval"/>
     </transition>
   </net>
 

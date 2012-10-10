@@ -22,7 +22,7 @@ namespace fhg
     {
       namespace graph
       {
-        class item;
+        class base_item;
 
         namespace style
         {
@@ -48,7 +48,7 @@ namespace fhg
             class of
             {
             public:
-              typedef cached_predicates<const graph::item*, T> type;
+              typedef cached_predicates<const base_item*, T> type;
             };
 
             typedef boost::variant < of<qreal>::type
@@ -143,7 +143,7 @@ namespace fhg
 
             template<typename T>
             const T&
-            get ( const graph::item* item
+            get ( const base_item* item
                 , const mode::type& mode
                 , const key_type& key
                 ) const
@@ -155,7 +155,7 @@ namespace fhg
 
               if (by_mode == _by_mode_by_key.end())
                 {
-                  return detail::fallback<T, graph::item> (item, key);
+                  return detail::fallback<T, base_item> (item, key);
                 }
 
               const by_mode_type::const_iterator store
@@ -163,7 +163,7 @@ namespace fhg
 
               if (store == by_mode->second.end())
                 {
-                  return detail::fallback<T, graph::item> (item, key);
+                  return detail::fallback<T, base_item> (item, key);
                 }
 
               typename store::of<T>::type::optional_value_type value
@@ -174,11 +174,11 @@ namespace fhg
                   return *value;
                 }
 
-              return detail::fallback<T, graph::item> (item, key);
+              return detail::fallback<T, base_item> (item, key);
             }
           };
 
-          void draw_shape (const graph::item*, QPainter* painter);
+          void draw_shape (const base_item*, QPainter* painter);
         }
       }
     }

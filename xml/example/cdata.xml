@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defun>
 <net>
+  <place name="i" type="long"/>
+  <place name="o" type="long"/>
+
+  <transition name="i1">
   <defun name="dec">
     <in name="value" type="long"/>
     <out name="value" type="long"/>
@@ -10,12 +14,6 @@
     </expression>
     <condition>${value} &gt; 0</condition>
   </defun>
-
-  <place name="i" type="long"/>
-  <place name="o" type="long"/>
-
-  <transition name="i1">
-    <use name="dec"/>
     <connect-in place="i" port="value"/>
     <connect-out place="o" port="value"/>
     <condition>${value} &gt;= 10</condition>
@@ -23,7 +21,15 @@
   </transition>
 
   <transition name="i2">
-    <use name="dec"/>
+  <defun name="dec">
+    <in name="value" type="long"/>
+    <out name="value" type="long"/>
+    <expression>
+      ${value} := ${value} - 1
+      <![CDATA[${value} := 23L]]>
+    </expression>
+    <condition>${value} &gt; 0</condition>
+  </defun>
     <connect-in place="i" port="value"/>
     <connect-out place="o" port="value"/>
     <condition><![CDATA[${value} < 10]]>

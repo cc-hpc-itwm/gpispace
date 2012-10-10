@@ -13,6 +13,7 @@
 #include <QWidget>
 #include <QCloseEvent>
 #include <QSettings>
+#include <QUndoView>
 
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/dock_widget.hpp>
@@ -56,6 +57,14 @@ namespace fhg
         addDockWidget ( dock_position
                       , new dock_widget ( tr ("structure_window")
                                         , _structure_view
+                                        )
+                      , Qt::Horizontal
+                      );
+
+        addDockWidget ( dock_position
+                      , new dock_widget ( tr ("undo_window")
+                                        , _view_manager->create_undo_view
+                                                                   (this)
                                         )
                       , Qt::Horizontal
                       );
@@ -149,6 +158,20 @@ namespace fhg
       {
         QMenu* edit_menu (new QMenu (tr ("edit_menu"), menu_bar));
         menu_bar->addAction (edit_menu->menuAction());
+
+        QAction* undo_action
+          ( _view_manager->undo_group()->createUndoAction
+            (this, tr ("undo_prefix"))
+          );
+        QAction* redo_action
+          ( _view_manager->undo_group()->createRedoAction
+            (this, tr ("redo_prefix"))
+          );
+        undo_action->setShortcuts (QKeySequence::Undo);
+        redo_action->setShortcuts (QKeySequence::Redo);
+        edit_menu->addAction (undo_action);
+        edit_menu->addAction (redo_action);
+        edit_menu->addSeparator();
 
         QAction* auto_layout_action (new QAction (tr ("auto_layout"), this));
         QAction* add_transition_action (new QAction (tr ("add_transition"), this));
@@ -333,19 +356,19 @@ namespace fhg
       void editor_window::slot_new_expression()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::kind::expression)
+                       . create(data::internal_type::expression)
                        );
       }
       void editor_window::slot_new_module_call()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::kind::module_call)
+                       . create(data::internal_type::module_call)
                        );
       }
       void editor_window::slot_new_net()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal::kind::net)
+                       . create(data::internal_type::net)
                        );
       }
 
@@ -362,7 +385,7 @@ namespace fhg
         open (filename);
       }
 
-      void editor_window::create_windows (data::internal::type* data)
+      void editor_window::create_windows (data::internal_type* data)
       {
         _view_manager->create_widget (data->root_proxy());
         _structure_view->append (data);

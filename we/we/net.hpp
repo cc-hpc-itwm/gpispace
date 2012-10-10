@@ -647,6 +647,7 @@ public:
         )
       {
         stack.push (tit());
+	// TODO: get port and remove place from there
       }
 
     for ( adj_transition_const_it tit (in_to_place (pid))
@@ -655,6 +656,8 @@ public:
         )
       {
         stack.push (tit());
+	// TODO: get port and remove place from there
+	// typename transition_t::port_id_t portId = transition->transition().input_port_by_pid(place_.id()).first;
       }
 
     while (!stack.empty())
@@ -662,6 +665,7 @@ public:
         delete_edge (stack.top()); stack.pop();
       }
 
+         
     pmap.erase (pid);
 
     return pid;

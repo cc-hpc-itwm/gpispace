@@ -29,7 +29,7 @@ namespace fhg
     {
       namespace graph
       {
-        class item : public QObject, public QGraphicsItem
+        class base_item : public QObject, public QGraphicsItem
         {
           Q_OBJECT;
           Q_INTERFACES(QGraphicsItem);
@@ -45,11 +45,11 @@ namespace fhg
             /* ... */
           };
 
-          item ( item* parent = NULL
-               , ::we::type::property::type* property = NULL
-               );
+          base_item ( base_item* parent = NULL
+                    , ::we::type::property::type* property = NULL
+                    );
 
-          scene::type* scene() const;
+          scene_type* scene() const;
 
           void set_just_pos_but_not_in_property (const QPointF&);
           void set_just_pos_but_not_in_property (qreal, qreal);
@@ -74,7 +74,7 @@ namespace fhg
           void mode_push (const mode::type&);
           void mode_pop();
 
-          virtual QLinkedList<item*> childs() const;
+          virtual QLinkedList<base_item*> childs() const;
           virtual QPainterPath shape() const = 0;
           virtual QRectF boundingRect() const;
 

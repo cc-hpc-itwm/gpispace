@@ -15,14 +15,17 @@
       <connect-out port="one" place="a"/>
       <connect-out port="two" place="b"/>
     </transition>
-    <defun name="sum">
-      <in name="r" type="long"/>
-      <in name="s" type="long"/>
-      <out name="t" type="long"/>
+    <template name="sumT">
+      <in name="r" type="T"/>
+      <in name="s" type="T"/>
+      <out name="t" type="T"/>
       <expression>
         ${t} := ${r} + ${s};
       </expression>
-    </defun>
+    </template>
+    <specialize name="sum_long" use="sumT">
+      <type-map replace="T" with="long"/>
+    </specialize>
 
     <transition name="inner" inline="true">
       <defun>
@@ -40,14 +43,6 @@
           </transition>
           <place name="a" type="long"/>
           <place name="b" type="long"/>
-
-          <transition name="join">
-            <!-- outer function sum is used -->
-            <use name="sum"/>
-            <connect-in port="r" place="a"/>
-            <connect-in port="s" place="b"/>
-            <connect-out port="t" place="y"/>
-          </transition>
         </net>
       </defun>
       <connect-in port="x" place="a"/>
@@ -55,13 +50,6 @@
     </transition>
 
     <place name="c" type="long"/>
-
-    <transition name="join">
-      <use name="sum"/>
-      <connect-in port="r" place="b"/>
-      <connect-in port="s" place="c"/>
-      <connect-out port="t" place="y"/>
-    </transition>
 
     <place name="y" type="long"/>
   </net>

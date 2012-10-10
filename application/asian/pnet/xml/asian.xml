@@ -137,6 +137,7 @@
     <place name="sums_eps2" type="sums"/>
     <place name="sums_delta" type="sums"/>
 
+    <transition name="collect">
     <defun name="collect">
       <in name="sums_id" type="sums"/>
       <in name="sums_eps1" type="sums"/>
@@ -170,26 +171,12 @@
         ${result.rowID} := ${sums_id.param.rowID};
       </expression>
     </defun>
-
-    <transition name="collect">
-      <use name="collect"/>
       <connect-in port="sums_id" place="sums_id"/>
       <connect-in port="sums_eps1" place="sums_eps1"/>
       <connect-in port="sums_eps2" place="sums_eps2"/>
       <connect-in port="sums_delta" place="sums_delta"/>
       <connect-out port="result" place="pre_result"/>
     </transition>
-
-<!--
-    <transition name="collect" inline="true">
-      <include-function href="collect.xml"/>
-      <connect-in port="sums_id" place="sums_id"/>
-      <connect-in port="sums_eps1" place="sums_eps1"/>
-      <connect-in port="sums_eps2" place="sums_eps2"/>
-      <connect-in port="sums_delta" place="sums_delta"/>
-      <connect-out port="result" place="pre_result"/>
-    </transition>
--->
 
     <place name="pre_result" type="result"/>
     <place name="result" type="result"/>

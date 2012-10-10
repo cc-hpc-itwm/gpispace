@@ -32,7 +32,7 @@ namespace fhg
   {
     namespace data
     {
-      namespace internal { class type; }
+      class internal_type;
     }
 
     namespace ui
@@ -43,14 +43,14 @@ namespace fhg
         QStandardItemModel* _model;
         QStandardItem* _root;
 
-        typedef std::list<data::internal::type*> datas_type;
+        typedef std::list<data::internal_type*> datas_type;
 
         datas_type _datas;
 
       public:
         StructureView (QWidget* parent = 0);
 
-        void append (data::internal::type* data);
+        void append (data::internal_type* data);
         void clear();
       };
     }

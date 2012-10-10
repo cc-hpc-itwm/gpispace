@@ -1,7 +1,8 @@
 <defun name="mod_type">
   <net>
     <!-- long f1 (double &, const double &, const double &) -->
-    <defun name="f1">
+    <transition name="f1">
+    <defun>
       <in name="x" type="double"/>
       <in name="y" type="double"/>
       <in name="phi" type="double"/>
@@ -9,42 +10,55 @@
       <out name="v" type="long"/>
       <module name="mod" function="v f1(phi, x, y)"/>
     </defun>
+    </transition>
 
     <!-- void f2 (double &, const double &, const double &) -->
-    <defun name="f2">
+    <transition name="f2">
+    <defun>
       <in name="x" type="double"/>
       <in name="y" type="double"/>
       <in name="phi" type="double"/>
       <out name="phi" type="double"/>
       <module name="mod" function="f2(phi, x, y)"/>
     </defun>
+    </transition>
 
     <!-- void f3 (void) -->
-    <defun name="f3">
+    <transition name="f3">
+    <defun>
       <module name="mod" function="f3"/>
     </defun>
+    </transition>
 
     <!-- void f4 (void) -->
-    <defun name="f4">
+    <transition name="f4">
+    <defun>
       <module name="mod" function="f4()"/>
     </defun>
+    </transition>
 
     <!-- void f5 (const long &) -->
-    <defun name="f5">
+    <transition name="f5">
+    <defun>
       <in name="i" type="long"/>
       <module name="mod" function="f5(i)"/>
     </defun>
+    </transition>
 
     <!-- long f6 (void) -->
-    <defun name="f6">
+    <transition name="f6">
+    <defun>
       <out name="v" type="long"/>
       <module name="mod" function="v f6"/>
     </defun>
+    </transition>
 
     <!-- long f7 (void) -->
-    <defun name="f7">
+    <transition name="f7">
+    <defun>
       <out name="v" type="long"/>
       <module name="mod" function="v f7()"/>
     </defun>
+    </transition>
   </net>
 </defun>

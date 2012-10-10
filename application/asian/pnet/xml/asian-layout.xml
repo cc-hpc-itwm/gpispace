@@ -37,96 +37,6 @@
     </properties>
   </out>
   <net>
-    <defun name="collect">
-      <in name="sums_id" type="sums">
-        <properties name="fhg">
-          <properties name="pnete">
-            <properties name="position">
-              <property key="y">
-                50
-              </property>
-              <property key="x">
-                40
-              </property>
-            </properties>
-            <property key="orientation">
-              SOUTH
-            </property>
-          </properties>
-        </properties>
-      </in>
-      <in name="sums_eps1" type="sums">
-        <properties name="fhg">
-          <properties name="pnete">
-            <properties name="position">
-              <property key="y">
-                10
-              </property>
-              <property key="x">
-                -80
-              </property>
-            </properties>
-            <property key="orientation">
-              WEST
-            </property>
-          </properties>
-        </properties>
-      </in>
-      <in name="sums_eps2" type="sums">
-        <properties name="fhg">
-          <properties name="pnete">
-            <properties name="position">
-              <property key="y">
-                -30
-              </property>
-              <property key="x">
-                -80
-              </property>
-            </properties>
-            <property key="orientation">
-              WEST
-            </property>
-          </properties>
-        </properties>
-      </in>
-      <in name="sums_delta" type="sums">
-        <properties name="fhg">
-          <properties name="pnete">
-            <properties name="position">
-              <property key="y">
-                -50
-              </property>
-              <property key="x">
-                40
-              </property>
-            </properties>
-            <property key="orientation">
-              NORTH
-            </property>
-          </properties>
-        </properties>
-      </in>
-      <out name="result" type="result">
-        <properties name="fhg">
-          <properties name="pnete">
-            <properties name="position">
-              <property key="y">
-                -0
-              </property>
-              <property key="x">
-                90
-              </property>
-            </properties>
-            <property key="orientation">
-              EAST
-            </property>
-          </properties>
-        </properties>
-      </out>
-      <expression>
-        ${r} := ${sums_id.param.r}; ${T} := ${sums_id.param.T}; ${runs} := (${sums_id.param.n} + ${sums_id.param.iterations_per_run} - 1L) div ${sums_id.param.iterations_per_run}; ${n} := double(${runs} * ${sums_id.param.iterations_per_run}); ${epsilon} := ${sums_id.param.epsilon}; ${delta} := ${sums_id.param.delta}; ${fak} := e ** (-${r} * ${T}); ${pv_id} := ${fak} * ${sums_id.sum1} / ${n}; ${pv_eps1} := ${fak} * ${sums_eps1.sum1} / ${n}; ${pv_eps2} := ${fak} * ${sums_eps2.sum1} / ${n}; ${pv_delta} := ${fak} * ${sums_delta.sum1} / ${n}; ${variance} := (${sums_id.sum2} - ${sums_id.sum1} * ${sums_id.sum1} / ${n}) / ${n} / ${n}; ${result.pv} := ${pv_id}; ${result.stddev} := ${fak} * sqrt (${variance}); ${result.Delta} := (${pv_eps1} - ${pv_id}) / ${epsilon}; ${result.Gamma} := (${pv_eps2} - 2.0 * ${pv_eps1} + ${pv_id}) / (${epsilon} * ${epsilon}); ${result.Vega} := (${pv_delta} - ${pv_id}) / ${delta}; ${result.rowID} := ${sums_id.param.rowID}
-      </expression>
-    </defun>
     <place name="param" type="param">
       <properties name="fhg">
         <properties name="pnete">
@@ -653,19 +563,6 @@
           </properties>
         </out>
         <net>
-          <defun name="asian">
-            <in name="param" type="param"/>
-            <out name="sums" type="sums"/>
-            <module name="asian" function="sums run (param)">
-              <cinclude href="run_impl.hpp"/>
-              <ld flag="-lprocess"/>
-              <code>
-                <![CDATA[
-          return ::asian::run (param);
-        ]]>
-              </code>
-            </module>
-          </defun>
           <place name="param" type="param"/>
           <place name="sums" type="sums"/>
           <place name="state" type="state"/>
@@ -705,7 +602,19 @@
             </condition>
           </transition>
           <transition name="run">
-            <use name="asian"/>
+          <defun name="asian">
+            <in name="param" type="param"/>
+            <out name="sums" type="sums"/>
+            <module name="asian" function="sums run (param)">
+              <cinclude href="run_impl.hpp"/>
+              <ld flag="-lprocess"/>
+              <code>
+                <![CDATA[
+          return ::asian::run (param);
+        ]]>
+              </code>
+            </module>
+          </defun>
             <connect-in port="param" place="param_to_run"/>
             <connect-out port="sums" place="sums_part"/>
           </transition>
@@ -806,19 +715,6 @@
           </properties>
         </out>
         <net>
-          <defun name="asian">
-            <in name="param" type="param"/>
-            <out name="sums" type="sums"/>
-            <module name="asian" function="sums run (param)">
-              <cinclude href="run_impl.hpp"/>
-              <ld flag="-lprocess"/>
-              <code>
-                <![CDATA[
-          return ::asian::run (param);
-        ]]>
-              </code>
-            </module>
-          </defun>
           <place name="param" type="param"/>
           <place name="sums" type="sums"/>
           <place name="state" type="state"/>
@@ -858,7 +754,19 @@
             </condition>
           </transition>
           <transition name="run">
-            <use name="asian"/>
+          <defun name="asian">
+            <in name="param" type="param"/>
+            <out name="sums" type="sums"/>
+            <module name="asian" function="sums run (param)">
+              <cinclude href="run_impl.hpp"/>
+              <ld flag="-lprocess"/>
+              <code>
+                <![CDATA[
+          return ::asian::run (param);
+        ]]>
+              </code>
+            </module>
+          </defun>
             <connect-in port="param" place="param_to_run"/>
             <connect-out port="sums" place="sums_part"/>
           </transition>
@@ -959,19 +867,6 @@
           </properties>
         </out>
         <net>
-          <defun name="asian">
-            <in name="param" type="param"/>
-            <out name="sums" type="sums"/>
-            <module name="asian" function="sums run (param)">
-              <cinclude href="run_impl.hpp"/>
-              <ld flag="-lprocess"/>
-              <code>
-                <![CDATA[
-          return ::asian::run (param);
-        ]]>
-              </code>
-            </module>
-          </defun>
           <place name="param" type="param"/>
           <place name="sums" type="sums"/>
           <place name="state" type="state"/>
@@ -1011,7 +906,19 @@
             </condition>
           </transition>
           <transition name="run">
-            <use name="asian"/>
+          <defun name="asian">
+            <in name="param" type="param"/>
+            <out name="sums" type="sums"/>
+            <module name="asian" function="sums run (param)">
+              <cinclude href="run_impl.hpp"/>
+              <ld flag="-lprocess"/>
+              <code>
+                <![CDATA[
+          return ::asian::run (param);
+        ]]>
+              </code>
+            </module>
+          </defun>
             <connect-in port="param" place="param_to_run"/>
             <connect-out port="sums" place="sums_part"/>
           </transition>
@@ -1112,19 +1019,6 @@
           </properties>
         </out>
         <net>
-          <defun name="asian">
-            <in name="param" type="param"/>
-            <out name="sums" type="sums"/>
-            <module name="asian" function="sums run (param)">
-              <cinclude href="run_impl.hpp"/>
-              <ld flag="-lprocess"/>
-              <code>
-                <![CDATA[
-          return ::asian::run (param);
-        ]]>
-              </code>
-            </module>
-          </defun>
           <place name="param" type="param"/>
           <place name="sums" type="sums"/>
           <place name="state" type="state"/>
@@ -1164,7 +1058,19 @@
             </condition>
           </transition>
           <transition name="run">
-            <use name="asian"/>
+          <defun name="asian">
+            <in name="param" type="param"/>
+            <out name="sums" type="sums"/>
+            <module name="asian" function="sums run (param)">
+              <cinclude href="run_impl.hpp"/>
+              <ld flag="-lprocess"/>
+              <code>
+                <![CDATA[
+          return ::asian::run (param);
+        ]]>
+              </code>
+            </module>
+          </defun>
             <connect-in port="param" place="param_to_run"/>
             <connect-out port="sums" place="sums_part"/>
           </transition>
@@ -1222,7 +1128,96 @@
           </properties>
         </properties>
       </properties>
-      <use name="collect"/>
+    <defun name="collect">
+      <in name="sums_id" type="sums">
+        <properties name="fhg">
+          <properties name="pnete">
+            <properties name="position">
+              <property key="y">
+                50
+              </property>
+              <property key="x">
+                40
+              </property>
+            </properties>
+            <property key="orientation">
+              SOUTH
+            </property>
+          </properties>
+        </properties>
+      </in>
+      <in name="sums_eps1" type="sums">
+        <properties name="fhg">
+          <properties name="pnete">
+            <properties name="position">
+              <property key="y">
+                10
+              </property>
+              <property key="x">
+                -80
+              </property>
+            </properties>
+            <property key="orientation">
+              WEST
+            </property>
+          </properties>
+        </properties>
+      </in>
+      <in name="sums_eps2" type="sums">
+        <properties name="fhg">
+          <properties name="pnete">
+            <properties name="position">
+              <property key="y">
+                -30
+              </property>
+              <property key="x">
+                -80
+              </property>
+            </properties>
+            <property key="orientation">
+              WEST
+            </property>
+          </properties>
+        </properties>
+      </in>
+      <in name="sums_delta" type="sums">
+        <properties name="fhg">
+          <properties name="pnete">
+            <properties name="position">
+              <property key="y">
+                -50
+              </property>
+              <property key="x">
+                40
+              </property>
+            </properties>
+            <property key="orientation">
+              NORTH
+            </property>
+          </properties>
+        </properties>
+      </in>
+      <out name="result" type="result">
+        <properties name="fhg">
+          <properties name="pnete">
+            <properties name="position">
+              <property key="y">
+                -0
+              </property>
+              <property key="x">
+                90
+              </property>
+            </properties>
+            <property key="orientation">
+              EAST
+            </property>
+          </properties>
+        </properties>
+      </out>
+      <expression>
+        ${r} := ${sums_id.param.r}; ${T} := ${sums_id.param.T}; ${runs} := (${sums_id.param.n} + ${sums_id.param.iterations_per_run} - 1L) div ${sums_id.param.iterations_per_run}; ${n} := double(${runs} * ${sums_id.param.iterations_per_run}); ${epsilon} := ${sums_id.param.epsilon}; ${delta} := ${sums_id.param.delta}; ${fak} := e ** (-${r} * ${T}); ${pv_id} := ${fak} * ${sums_id.sum1} / ${n}; ${pv_eps1} := ${fak} * ${sums_eps1.sum1} / ${n}; ${pv_eps2} := ${fak} * ${sums_eps2.sum1} / ${n}; ${pv_delta} := ${fak} * ${sums_delta.sum1} / ${n}; ${variance} := (${sums_id.sum2} - ${sums_id.sum1} * ${sums_id.sum1} / ${n}) / ${n} / ${n}; ${result.pv} := ${pv_id}; ${result.stddev} := ${fak} * sqrt (${variance}); ${result.Delta} := (${pv_eps1} - ${pv_id}) / ${epsilon}; ${result.Gamma} := (${pv_eps2} - 2.0 * ${pv_eps1} + ${pv_id}) / (${epsilon} * ${epsilon}); ${result.Vega} := (${pv_delta} - ${pv_id}) / ${delta}; ${result.rowID} := ${sums_id.param.rowID}
+      </expression>
+    </defun>
       <connect-in port="sums_id" place="sums_id"/>
       <connect-in port="sums_eps1" place="sums_eps1"/>
       <connect-in port="sums_eps2" place="sums_eps2"/>

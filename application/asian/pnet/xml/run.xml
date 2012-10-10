@@ -15,18 +15,6 @@
     <place name="param" type="param"/>
     <place name="sums" type="sums"/>
 
-    <defun name="asian">
-      <in name="param" type="param"/>
-      <out name="sums" type="sums"/>
-      <module name="asian" function="sums run (param)">
-        <cinclude href="run_impl.hpp"/>
-        <ld flag="-lprocess"/>
-        <code><![CDATA[
-          return ::asian::run (param);
-        ]]></code>
-      </module>
-    </defun>
-
     <transition name="init">
       <defun>
         <in name="param" type="param"/>
@@ -54,6 +42,11 @@
     <place name="accu" type="sums"/>
 
     <transition name="generate">
+      <properties name="fhg">
+        <properties name="pnetv">
+	  <property key="firings_limit">1</property>
+	</properties>
+      </properties>
       <defun>
         <in name="state" type="state"/>
         <out name="state" type="state"/>
@@ -66,11 +59,6 @@
       <condition>
         ${state.its} :lt: ${state.param.n}
       </condition>
-      <properties name="fhg">
-        <properties name="pnetv">
-	  <property key="firings_limit">1</property>
-	</properties>
-      </properties>       
       <connect-in port="state" place="state"/>
       <connect-out port="state" place="state"/>
       <connect-out port="param" place="param_to_run"/>
@@ -79,7 +67,17 @@
     <place name="param_to_run" type="param"/>
 
     <transition name="run">
-      <use name="asian"/>
+      <defun>
+        <in name="param" type="param"/>
+        <out name="sums" type="sums"/>
+        <module name="asian" function="sums run (param)">
+          <cinclude href="run_impl.hpp"/>
+          <ld flag="-lprocess"/>
+          <code><![CDATA[
+            return ::asian::run (param);
+          ]]></code>
+        </module>
+      </defun>
       <connect-in port="param" place="param_to_run"/>
       <connect-out port="sums" place="sums_part"/>
     </transition>

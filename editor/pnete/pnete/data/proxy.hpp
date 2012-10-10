@@ -19,13 +19,13 @@ namespace fhg
 
       namespace graph
       {
-        namespace scene { class type; }
+        class scene_type;
       }
     }
 
     namespace data
     {
-      namespace internal { class type; }
+      class internal_type;
 
       namespace proxy
       {
@@ -39,7 +39,7 @@ namespace fhg
           typedef DATA data_type;
           typedef DISPLAY display_type;
 
-          proxy_base ( internal::type* root
+          proxy_base ( internal_type* root
                      , data_type data
                      , function_with_mapping_type& function_with_mapping
                      , display_type* display = NULL
@@ -66,7 +66,7 @@ namespace fhg
           {
             return _display;
           }
-          internal::type* root() const
+          internal_type* root() const
           {
             return _root;
           }
@@ -76,7 +76,7 @@ namespace fhg
           function_with_mapping_type _function_with_mapping;
           display_type* _display;
 
-          internal::type* _root;
+          internal_type* _root;
         };
 
         namespace data
@@ -133,18 +133,18 @@ namespace fhg
 
         typedef proxy_base<data::expression_type> expression_proxy;
         typedef proxy_base<data::mod_type> mod_proxy;
-        typedef proxy_base<data::net_type, ui::graph::scene::type> net_proxy;
+        typedef proxy_base<data::net_type, ui::graph::scene_type> net_proxy;
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
         ::xml::parse::type::function_type& function (type&);
-        ::fhg::pnete::data::internal::type* root (const type&);
+        ::fhg::pnete::data::internal_type* root (const type&);
 
         ui::document_view* document_view_factory (type&);
 
         namespace visitor
         {
-          typedef ::fhg::pnete::data::internal::type* internal_type_ptr_type;
+          typedef ::fhg::pnete::data::internal_type* internal_type_ptr_type;
 
           class root
             : public boost::static_visitor<internal_type_ptr_type>

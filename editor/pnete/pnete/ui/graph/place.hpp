@@ -28,52 +28,53 @@ namespace fhg
     {
       namespace graph
       {
-        namespace place
+        typedef ITVAL(XMLTYPE(net_type::places_type)) place_type;
+
+        class place_item : public connectable_item
         {
-          typedef ITVAL(XMLTYPE(net_type::places_type)) place_type;
+          Q_OBJECT;
 
-          class item : public graph::connectable::item
-          {
-            Q_OBJECT;
-
-          public:
-            item
+        public:
+          place_item
             ( place_type& place
+            , ::xml::parse::type::net_type& net
             , boost::optional< ::xml::parse::type::type_map_type&> type_map
             = boost::none
-            , item* parent = NULL
+            , base_item* parent = NULL
             );
 
-            const place_type& place () const;
+          const place_type& place() const;
+          place_type& place();
+          ::xml::parse::type::net_type& net();
 
-            const std::string& name() const;
-            const std::string& we_type() const;
+          const std::string& name() const;
+          const std::string& we_type() const;
 
-            virtual void setPos (const QPointF&);
-            virtual QPainterPath shape() const;
+          virtual void setPos (const QPointF&);
+          virtual QPainterPath shape() const;
 
-          public slots:
-            void refresh_content();
+        public slots:
+          void refresh_content();
 
-          public:
-            virtual void paint ( QPainter* painter
-                               , const QStyleOptionGraphicsItem* option
-                               , QWidget* widget = NULL
-                               );
+        public:
+          virtual void paint ( QPainter* painter
+                             , const QStyleOptionGraphicsItem* option
+                             , QWidget* widget = NULL
+                             );
 
-            enum { Type = place_graph_type };
-            virtual int type() const { return Type; }
+          enum { Type = place_graph_type };
+          virtual int type() const { return Type; }
 
-          private:
-            place_type& _place;
+        private:
+          place_type& _place;
+          ::xml::parse::type::net_type& _net;
 
-            QStaticText _content;
+          QStaticText _content;
 
-            const QStaticText& content() const;
-            QSizeF content_size() const;
-            QPointF content_pos() const;
-          };
-        }
+          const QStaticText& content() const;
+          QSizeF content_size() const;
+          QPointF content_pos() const;
+        };
       }
     }
   }

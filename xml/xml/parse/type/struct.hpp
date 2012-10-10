@@ -113,7 +113,7 @@ namespace xml
             const type::struct_t & strct (pos->second);
             const set_type::const_iterator old (set.find (strct.name));
 
-            if (old != set.end())
+            if (old != set.end() && strct != old->second)
               {
                 const forbidden_type::const_iterator pos
                   (forbidden.find (strct.name));
@@ -124,14 +124,11 @@ namespace xml
                       (old->second, strct, pos->second);
                   }
 
-                if (strct != old->second)
-                  {
-                    state.warn
-                      (warning::struct_shadowed<type::struct_t> ( old->second
-                                                                , strct
-                                                                )
-                      );
-                  }
+                state.warn
+                  (warning::struct_shadowed<type::struct_t> ( old->second
+                                                            , strct
+                                                            )
+                  );
               }
 
             set[strct.name] = strct;

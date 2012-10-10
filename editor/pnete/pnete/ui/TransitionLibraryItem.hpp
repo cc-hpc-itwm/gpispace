@@ -13,9 +13,7 @@ namespace fhg
   {
     namespace data
     {
-      class Transition;
-
-      namespace internal { class type; }
+      class internal_type;
     }
     namespace ui
     {
@@ -38,7 +36,7 @@ namespace fhg
         QString path() const;
         QString name() const;
         const bool& trusted() const;
-        const data::internal::type* data() const;
+        const data::internal_type* data() const;
 
         TransitionLibraryItem* child (int row) const;
         TransitionLibraryItem* child_with_fileinfo (const QFileInfo&) const;
@@ -56,7 +54,7 @@ namespace fhg
         bool _is_folder;
         QFileInfo _fileinfo;
         bool _trusted;
-        data::internal::type* _data;
+        data::internal_type* _data;
 
         QList<TransitionLibraryItem*> _children;
         TransitionLibraryItem* _parent;

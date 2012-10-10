@@ -1,20 +1,12 @@
 <defun name="inline_multi">
   <net>
-      <defun name="f">
-        <out name="o1" type="control" place="p1"/>
-        <out name="o2" type="control" place="p2"/>
-        <net>
-          <place name="p1" type="control"/>
-          <place name="p2" type="control"/>
-        </net>
-      </defun>
     <transition name="t1" inline="true">
-      <use name="f"/>
+      <include-function href="inline_multi.defun.xml"/>
       <connect-out port="o1" place="p1"/>
       <connect-out port="o2" place="p2"/>
     </transition>
     <transition name="t2" inline="true">
-      <use name="f"/>
+      <include-function href="inline_multi.defun.xml"/>
       <connect-out port="o2" place="p2"/>
     </transition>
     <transition name="t3" inline="true">
@@ -23,7 +15,7 @@
           <property key="inline-many-output-ports" value="off"/>
         </properties>
       </properties>
-      <use name="f"/>
+      <include-function href="inline_multi.defun.xml"/>
       <connect-out port="o1" place="p1"/>
       <connect-out port="o2" place="p2"/>
     </transition>

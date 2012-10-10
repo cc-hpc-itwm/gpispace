@@ -79,7 +79,7 @@ namespace fhg
         return _fileinfo;
       }
 
-      const data::internal::type* TransitionLibraryItem::data() const
+      const data::internal_type* TransitionLibraryItem::data() const
       {
         return _data;
       }

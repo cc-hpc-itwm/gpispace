@@ -18,7 +18,7 @@ namespace fhg
   {
     namespace data
     {
-      namespace internal { class type; }
+      class internal_type;
     }
 
     namespace ui
@@ -27,11 +27,6 @@ namespace fhg
       class StructureView;
       class GraphView;
       class transition_library_view;
-
-      namespace graph
-      {
-        namespace scene { class type; }
-      }
 
       class editor_window : public QMainWindow
       {
@@ -67,7 +62,7 @@ namespace fhg
         void setup_file_actions (QMenuBar* menu_bar);
         void setup_window_actions (QMenuBar* menu_bar);
 
-        void create_windows (data::internal::type* data);
+        void create_windows (data::internal_type* data);
 
         void readSettings();
         void writeSettings();

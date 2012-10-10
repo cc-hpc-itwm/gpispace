@@ -21,7 +21,7 @@ namespace fhg
     {
       namespace graph
       {
-        class item;
+        class base_item;
 
         namespace style
         {

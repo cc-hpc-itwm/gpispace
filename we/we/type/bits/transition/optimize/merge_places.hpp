@@ -143,8 +143,8 @@ namespace we { namespace type {
             const place::type place_old (net.get_place (pid_A));
             const place::type place_new
               ( name_B
-              , place_old.get_signature()
-              , place_old.get_property()
+              , place_old.signature()
+              , place_old.property()
               );
 
             net.modify_place (pid_A, place_new);

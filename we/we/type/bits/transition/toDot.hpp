@@ -469,9 +469,9 @@ namespace we { namespace type {
               if (opts.show_virtual)
                 {
                   if (  "true"
-                     == place.get_property().get_with_default ( "virtual"
-                                                              , "false"
-                                                              )
+                     == place.property().get_with_default ( "virtual"
+                                                          , "false"
+                                                          )
                      )
                     {
                       virt << endl << property ("virtual");
@@ -484,7 +484,7 @@ namespace we { namespace type {
                 namespace prop = we::type::property::traverse;
 
                 prop::stack_type stack
-                  (prop::dfs (place.get_property(), "real"));
+                  (prop::dfs (place.property(), "real"));
 
                 while (!stack.empty())
                   {
@@ -530,8 +530,8 @@ namespace we { namespace type {
                 << place_dot_name
                 << node
                    ( shape::place
-                   , with_signature ( place.get_name()
-                                    , place.get_signature()
+                   , with_signature ( place.name()
+                                    , place.signature()
                                     , opts
                                     )
                    + token.str()

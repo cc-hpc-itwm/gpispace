@@ -22,7 +22,7 @@ namespace fhg
     {
       namespace graph
       {
-        namespace scene { class type; }
+        class scene_type;
       }
 
       class GraphView : public QGraphicsView
@@ -30,11 +30,11 @@ namespace fhg
         Q_OBJECT
 
         public:
-        GraphView (graph::scene::type* scene, QWidget* parent = NULL);
+        GraphView (graph::scene_type* scene, QWidget* parent = NULL);
 
         void emit_current_zoom_level();
 
-        graph::scene::type* scene() const;
+        graph::scene_type* scene() const;
 
         public slots:
           void zoom (int to);
