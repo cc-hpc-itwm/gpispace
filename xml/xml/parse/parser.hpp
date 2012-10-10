@@ -702,7 +702,7 @@ namespace xml
     static type::net_type
     net_type (const xml_node_type * node, state::type & state)
     {
-      type::net_type n;
+      type::net_type n (state.next_id());
 
       n.path = state.file_in_progress();
 

@@ -7,6 +7,7 @@
 #include <xml/parse/state.hpp>
 
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
@@ -58,6 +59,8 @@ namespace xml
         xml::util::unique<function_type,maybe_string_type> _templates;
         xml::util::unique<specialize_type> _specializes;
 
+        ::fhg::xml::parse::util::id_type _id;
+
       public:
         typedef xml::util::unique<place_type>::elements_type places_type;
         typedef xml::util::unique<transition_type>::elements_type transitions_type;
@@ -70,6 +73,20 @@ namespace xml
         we::type::property::type prop;
 
         xml::parse::struct_t::set_type structs_resolved;
+
+        net_type (const ::fhg::xml::parse::util::id_type& id)
+          : _id (id)
+        { }
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const net_type& other) const
+        {
+          return id() == other.id();
+        }
 
         // ***************************************************************** //
 
