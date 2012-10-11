@@ -63,7 +63,13 @@ namespace gpi
         int rc = this->open (ec);
         if (rc < 0)
         {
-          throw boost::system::system_error (ec, "open sfs segment failed: " );
+          throw boost::system::system_error
+            (ec, std::string ("open '")+path.string ()+"' failed: ");
+        }
+
+        if (m_size != size)
+        {
+          area_t::reinit ();
         }
       }
 
@@ -107,7 +113,12 @@ namespace gpi
                                                         )
            )
         {
-          if (! initialize (m_path, m_size, ec))
+          if (0 == m_size)
+          {
+            ec.assign (ENOSPC, boost::system::system_category ());
+            return -1;
+          }
+          else if (! initialize (m_path, m_size, ec))
           {
             return -1;
           }
@@ -194,6 +205,8 @@ namespace gpi
             // used in non-create mode
             m_size = file_size;
           }
+
+          descriptor ().local_size = m_size;
 
           if (not gpi::flag::is_set ( descriptor ().flags
                                     , gpi::pc::type::segment::F_NOMMAP
