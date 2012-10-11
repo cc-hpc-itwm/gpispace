@@ -259,7 +259,7 @@ namespace gpi
 
         if (m_ptr)
         {
-          //          munmap (m_ptr, m_size);
+          munmap (m_ptr, m_size);
           m_ptr = 0;
 
           if (gpi::flag::is_set ( descriptor ().flags
