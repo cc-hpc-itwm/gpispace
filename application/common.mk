@@ -206,7 +206,7 @@ WE_EXEC += $(WE_EXEC_OPTS)
 
 ###############################################################################
 
-.PHONY: default ps net verify put gen lib exec run
+.PHONY: default ps net verify put gen lib run
 
 default: run
 
@@ -216,8 +216,6 @@ net: $(NET)
 put: $(PUT)
 gen: $(GEN)
 verify: $(NET_VERIFICATION)
-
-run: lib exec
 
 ###############################################################################
 
@@ -263,7 +261,7 @@ $(PS_NOINLINE): $(NET_NOINLINE)
 
 ###############################################################################
 
-exec: $(PUT)
+run: lib $(PUT)
 	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
 
 ###############################################################################
@@ -304,8 +302,7 @@ help:
 	@echo
 	@echo "gen         generate code into gen"
 	@echo "lib         'gen' & build libs from code in gen"
-	@echo "exec        'put' & execute workflow"
-	@echo "run         'lib' & 'exec'"
+	@echo "run         'lib' & 'put' & execute workflow"
 	@echo
 	@echo "verify      'net' & verify the pnet"
 	@echo "ps          'net' & generate postscript"
