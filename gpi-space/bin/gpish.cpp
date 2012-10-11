@@ -1431,7 +1431,7 @@ int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
     {
       gpi::pc::type::segment_id_t id =
         sh.state().capi.add_memory (url);
-      std::cout << "[" << id << "] = " << url;
+      std::cout << "[" << id << "] = " << url << std::endl;
     }
     catch (std::exception const &ex)
     {
