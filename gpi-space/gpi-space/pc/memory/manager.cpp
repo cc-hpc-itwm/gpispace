@@ -1,10 +1,21 @@
 #include "manager.hpp"
 
 #include <fhglog/minimal.hpp>
+
 #include <fhg/assert.hpp>
+#include <fhg/util/url.hpp>
+#include <fhg/util/url_io.hpp>
+#include <fhg/util/read_bool.hpp>
+
+#include <gpi-space/pc/global/topology.hpp>
 
 #include "memory_transfer_t.hpp"
 #include "handle_generator.hpp"
+
+// those should be hidden in a factory class
+#include "gpi_area.hpp"
+#include "sfs_area.hpp"
+#include "shm_area.hpp"
 
 namespace gpi
 {
@@ -445,12 +456,91 @@ namespace gpi
         return m_transfer_mgr.wait_on_queue (queue);
       }
 
+      static memory::manager_t::area_ptr
+      create_area_from_url ( const gpi::pc::type::process_id_t proc_id
+                           , const std::string & url_s
+                           )
+      {
+        using namespace fhg::util;
+        using namespace gpi::pc::type::segment;
+
+        url_t url (url_s);
+        gpi::pc::type::flags_t flags = F_NONE;
+
+        const std::string type (url.type ());
+
+        if (not read_bool (url.get ("create", "false")))
+        {
+          gpi::flag::set (flags, F_NOCREATE);
+        }
+        if (    read_bool (url.get ("unlink", "false")))
+        {
+          gpi::flag::set (flags, F_FORCE_UNLINK);
+        }
+        if (not read_bool (url.get ("mmap", "false")))
+        {
+          gpi::flag::set (flags, F_NOMMAP);
+        }
+        if (    read_bool (url.get ("exclusive", "false")))
+        {
+          gpi::flag::set (flags, F_EXCLUSIVE);
+        }
+        if (    read_bool (url.get ("persistent", "false")))
+        {
+          gpi::flag::set (flags, F_PERSISTENT);
+        }
+
+        // TODO: delegate  the call  to a  factory class, passing  it the  url -
+        //       memory types  register themselves with 'type'  (sfs, gpi, shm),
+        //       etc.
+        if      (type == "sfs")
+        {
+          gpi::pc::type::size_t size =
+            boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
+
+          MLOG (INFO, "creating sfs segment: " << url.path ());
+
+          memory::manager_t::area_ptr area
+            (new memory::sfs_area_t ( proc_id
+                                    , url.path ()
+                                    , size
+                                    , flags
+                                    , gpi::pc::global::topology ()
+                                    )
+            );
+          return area;
+        }
+        else if (type == "shm")
+        {
+          gpi::pc::type::size_t size =
+            boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
+
+          MLOG (INFO, "opening/creating shm segment: " << url.path ());
+
+          memory::manager_t::area_ptr area
+            (new memory::shm_area_t ( proc_id
+                                    , url.path ()
+                                    , size
+                                    , flags
+                                    )
+            );
+          return area;
+        }
+        else
+        {
+          throw std::invalid_argument ("unsupported memory type: " + type);
+        }
+      }
+
       gpi::pc::type::segment_id_t
       manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
-                            , const std::string & url
+                            , const std::string & url_s
                             )
       {
-        throw std::runtime_error ("not yet implemented");
+        memory::manager_t::area_ptr area =
+          create_area_from_url (proc_id, url_s);
+        add_area (area);
+        return area->get_id ();
       }
 
       void
@@ -463,7 +553,36 @@ namespace gpi
         if (seg_id <= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
           throw std::runtime_error ("permission denied");
 
-        throw std::runtime_error ("not yet implemented");
+        {
+          area_map_t::iterator area_it (m_areas.find (seg_id));
+          if (area_it == m_areas.end())
+          {
+            throw std::runtime_error ("no such memory");
+          }
+
+          area_ptr area (area_it->second);
+
+          if (area->in_use ())
+          {
+            LOG (WARN, "memory area is still in use: " << area->descriptor());
+
+            // TODO: maybe move memory segment to garbage area
+
+            throw std::runtime_error
+              ("segment is still inuse, cannot unregister");
+          }
+
+          // WORK HERE:
+          //    let this do another thread
+          //    and just give him the area_ptr
+          area_it->second->garbage_collect ();
+
+          // depending on the area, this is a global operation...
+          m_areas.erase (area_it);
+          LOG(TRACE, "memory removed: " << seg_id);
+        }
+
+        memory_removed (seg_id);
       }
     }
   }
