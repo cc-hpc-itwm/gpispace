@@ -974,6 +974,29 @@ namespace xml
 
       // ******************************************************************* //
 
+      class port_tunneled_type_error : public generic
+      {
+      public:
+        port_tunneled_type_error ( const std::string& name_virtual
+                                 , const signature::type& sig_virtual
+                                 , const std::string& name_real
+                                 , const signature::type& sig_real
+                                 , const boost::filesystem::path& path
+                                 )
+          : generic
+            ( boost::format
+              ( "type error: virtual place %1% of type %2%"
+              " identified with real place %3% of type %4% in %5%"
+              )
+              % name_virtual % sig_virtual
+              % name_real % sig_real
+              % path
+            )
+        {}
+      };
+
+      // ******************************************************************* //
+
       class connect_to_nonexistent_place : public generic
       {
       private:

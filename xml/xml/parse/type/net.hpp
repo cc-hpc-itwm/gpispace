@@ -724,6 +724,20 @@ namespace xml
                     }
 
                   pid_of_place[place->name] = pid->second;
+
+                  const we_place_type place_real
+                    (we_net.get_place (pid->second));
+
+                  if (not (place_real.signature() == place->sig))
+                    {
+                      throw error::port_tunneled_type_error
+                        ( place->name
+                        , place->sig
+                        , place_real.name()
+                        , place_real.signature()
+                        , state.file_in_progress()
+                        );
+                    }
                 }
               else
                 {
