@@ -7,6 +7,7 @@
 #include <fhglog/minimal.hpp>
 
 #include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 #include <gpi-space/pc/memory/gpi_area.hpp>
