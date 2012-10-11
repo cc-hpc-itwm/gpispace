@@ -65,9 +65,8 @@ namespace fhg
         return *this;
       }
 
-      std::string const & get (std::string const &k) const
+      std::string const & get (std::string const &k, std::string const &dflt="") const
       {
-        static std::string dflt ("");
         arg_map_t::const_iterator it = m_args.find (k);
         if (it != m_args.end ())
           return it->second;
