@@ -82,6 +82,8 @@ namespace gpi
         gpi::pc::type::segment::descriptor_t const &
         descriptor () const;
 
+        gpi::pc::type::segment::descriptor_t & descriptor ();
+
         gpi::pc::type::handle::descriptor_t const &
         descriptor (const gpi::pc::type::handle_t) const;
 
@@ -139,6 +141,8 @@ namespace gpi
                , const gpi::pc::type::size_t size
                , const gpi::pc::type::flags_t flags
                );
+
+        void reinit ();
 
         gpi::pc::type::offset_t location_to_offset (gpi::pc::type::memory_location_t loc);
 

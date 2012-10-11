@@ -50,7 +50,7 @@ namespace gpi
                        )
         , m_mmgr (NULL)
       {
-        dtmmgr_init (&m_mmgr, size, 1);
+        reinit ();
       }
 
       area_t::~area_t ()
@@ -62,6 +62,14 @@ namespace gpi
                << " handles = " << m_handles.size()
                );
         dtmmgr_finalize (&m_mmgr);
+      }
+
+      void area_t::reinit ()
+      {
+        dtmmgr_finalize (&m_mmgr);
+        dtmmgr_init (&m_mmgr, m_descriptor.local_size, 1);
+
+        update_descriptor_from_mmgr ();
       }
 
       void area_t::set_id (const gpi::pc::type::id_t id)
@@ -516,6 +524,13 @@ namespace gpi
 
       gpi::pc::type::segment::descriptor_t const &
       area_t::descriptor () const
+      {
+        lock_type lock (m_mutex);
+        return m_descriptor;
+      }
+
+      gpi::pc::type::segment::descriptor_t &
+      area_t::descriptor ()
       {
         lock_type lock (m_mutex);
         return m_descriptor;
