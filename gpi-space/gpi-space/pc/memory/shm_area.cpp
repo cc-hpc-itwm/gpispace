@@ -18,7 +18,7 @@ namespace gpi
       namespace detail
       {
         static void* open ( std::string const & path
-                          , const gpi::pc::type::size_t size
+                          , gpi::pc::type::size_t & size
                           , const int open_flags
                           , const mode_t open_mode = 0
                           )
@@ -27,11 +27,13 @@ namespace gpi
           int fd (-1);
           void *ptr (0);
 
+          MLOG (INFO, "opening shm segment: " << path << " create = " << (open_flags & O_CREAT));
+
           fd = shm_open (path.c_str(), open_flags, open_mode);
           if (fd < 0)
           {
-            std::string err (strerror(errno));
-            throw std::runtime_error ("open: " + err);
+            std::string err = "open: " + path + ": " + strerror (errno);
+            throw std::runtime_error (err);
           }
 
           int prot (0);
@@ -41,6 +43,26 @@ namespace gpi
             prot = PROT_WRITE;
           else if (open_flags & O_RDWR)
             prot = PROT_READ | PROT_WRITE;
+
+          if (0 == size)
+          {
+            off_t end = lseek (fd, 0, SEEK_END);
+            if (end == (off_t)(-1))
+            {
+              std::string err (strerror (errno));
+              ::close (fd);
+              throw std::runtime_error ("lseek: " + err);
+            }
+            else
+            {
+              size = (gpi::pc::type::size_t)(end);
+              lseek (fd, 0, SEEK_SET);
+            }
+          }
+          else if (open_flags & O_CREAT)
+          {
+            ftruncate (fd, size);
+          }
 
           ptr = mmap ( NULL
                      , size
@@ -84,13 +106,13 @@ namespace gpi
 
       shm_area_t::shm_area_t ( const gpi::pc::type::process_id_t creator
                              , const std::string & name
-                             , const gpi::pc::type::size_t size
+                             , const gpi::pc::type::size_t user_size
                              , const gpi::pc::type::flags_t flags
                              )
         : area_t ( shm_area_t::area_type
                  , creator
                  , name
-                 , size
+                 , user_size
                  , flags
                  )
         , m_ptr (NULL)
@@ -104,14 +126,31 @@ namespace gpi
           m_path = name;
         else
           m_path = "/" + name;
+
+        gpi::pc::type::size_t size = user_size;
+
+        int open_flags = O_RDWR;
+
+        if (not gpi::flag::is_set (flags, gpi::pc::type::segment::F_NOCREATE))
+        {
+          MLOG (INFO, "setting open_flags to O_CREAT + O_EXCL");
+          open_flags |= O_CREAT | O_EXCL;
+        }
+
         m_ptr = detail::open ( m_path
                              , size
-                             , O_RDWR // TODO: pass via flags
-                             , 0
+                             , open_flags
+                             , 0600
                              );
         if (unlink_after_open (flags))
         {
           detail::unlink (m_path);
+        }
+
+        if (0 == user_size)
+        {
+          descriptor ().local_size = size;
+          area_t::reinit ();
         }
       }
 
