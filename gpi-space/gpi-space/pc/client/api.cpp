@@ -455,7 +455,7 @@ namespace gpi
           proto::segment::register_t rqst;
           rqst.name = name;
           rqst.size = sz;
-          rqst.flags = flags;
+          rqst.flags = flags | gpi::pc::type::segment::F_NOCREATE;
 
           proto::message_t rply (communicate (proto::segment::message_t (rqst)));
           try
