@@ -307,18 +307,18 @@ BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::type::segment::F_NONE
                     , topology
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   }
   catch (std::exception const &ex)
   {
-    BOOST_CHECK_MESSAGE ( false
-                        , "could not allocate sfs segment of size: " << size
-                        << ": " << ex.what ()
-                        << " - please check 'ulimit -v'"
-                        );
+    BOOST_WARN_MESSAGE ( false
+                       , "could not allocate sfs segment of size: " << size
+                       << ": " << ex.what ()
+                       << " - please check 'ulimit -v'"
+                       );
   }
 }
 
@@ -339,18 +339,18 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::type::segment::F_NONE
                     , topology
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   }
   catch (std::exception const &ex)
   {
-    BOOST_CHECK_MESSAGE ( false
-                        , "could not allocate sfs segment of size: " << size
-                        << ": " << ex.what ()
-                        << " - please check 'ulimit -v'"
-                        );
+    BOOST_WARN_MESSAGE ( false
+                       , "could not allocate sfs segment of size: " << size
+                       << ": " << ex.what ()
+                       << " - please check 'ulimit -v'"
+                       );
   }
 }
 
@@ -371,8 +371,7 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
-                    + gpi::pc::type::segment::F_NOMMAP
+                    , gpi::pc::type::segment::F_NOMMAP
                     , topology
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
