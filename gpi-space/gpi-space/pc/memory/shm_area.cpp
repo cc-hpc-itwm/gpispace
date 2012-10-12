@@ -78,6 +78,12 @@ namespace gpi
           {
             std::string err (strerror(errno));
             ::close (fd);
+
+            if (open_flags & O_CREAT)
+            {
+              detail::unlink (path.c_str ());
+            }
+
             throw std::runtime_error ("mmap: " + err);
           }
 
