@@ -27,8 +27,6 @@ namespace gpi
           int fd (-1);
           void *ptr (0);
 
-          MLOG (INFO, "opening shm segment: " << path << " create = " << (open_flags & O_CREAT));
-
           fd = shm_open (path.c_str(), open_flags, open_mode);
           if (fd < 0)
           {
