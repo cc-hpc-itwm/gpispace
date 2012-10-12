@@ -118,6 +118,18 @@ namespace xml
           return _places.copy_by_key (name);
         }
 
+        boost::optional<place_type> place_by_id
+          (const ::fhg::xml::parse::util::id_type& id) const
+        {
+          return _places.copy_by_id (id);
+        }
+
+        boost::optional<transition_type> transition_by_id
+          (const ::fhg::xml::parse::util::id_type& id) const
+        {
+          return _transitions.copy_by_id (id);
+        }
+
         boost::optional<function_type> get_function (const std::string & name) const
         {
           return _functions.copy_by_key (maybe_string_type(name));
