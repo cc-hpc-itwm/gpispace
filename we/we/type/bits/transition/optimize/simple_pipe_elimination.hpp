@@ -173,14 +173,24 @@ namespace we { namespace type {
                 return fhg::util::Nothing<pid_pair_vec_type>();
               }
 
-              pid_pair_vec.push_back
-                ( pid_pair_type
-                  ( pid_in_type ( pid_A
-                                , net.is_read_connection (tid, pid_A)
-                                )
-                  , pid_out_type (pid_B, ass_B)
+            if (  (( net.out_of_place (pid_A).size()
+                   + ((ass_A && port_A.is_output()) ? 1 : 0)
+                   ) > 1
                   )
-                );
+               && (ass_B && port_B.is_output())
+               )
+              {
+                return fhg::util::Nothing<pid_pair_vec_type>();
+              }
+
+            pid_pair_vec.push_back
+              ( pid_pair_type
+                ( pid_in_type ( pid_A
+                              , net.is_read_connection (tid, pid_A)
+                              )
+                , pid_out_type (pid_B, ass_B)
+                )
+              );
           }
 
         if (!(all_in_equals_one || all_out_equals_one))
