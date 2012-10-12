@@ -274,22 +274,18 @@ namespace gpi
         {
           munmap (m_ptr, m_size);
           m_ptr = 0;
+        }
 
-          if (gpi::flag::is_set ( descriptor ().flags
-                                , gpi::pc::type::segment::F_PERSISTENT
-                                )
-             )
-          {
-            return save_state (ec);
-          }
-          else
-          {
-            cleanup (m_path);
-            return 0;
-          }
+        if (gpi::flag::is_set ( descriptor ().flags
+                              , gpi::pc::type::segment::F_PERSISTENT
+                              )
+           )
+        {
+          return save_state (ec);
         }
         else
         {
+          cleanup (m_path);
           return 0;
         }
       }
