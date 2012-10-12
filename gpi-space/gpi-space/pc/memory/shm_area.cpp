@@ -94,11 +94,7 @@ namespace gpi
 
         static void unlink (std::string const &p)
         {
-          if (shm_unlink (p.c_str()) < 0)
-          {
-            std::string err (strerror(errno));
-            throw std::runtime_error ("unlink: " + err);
-          }
+          shm_unlink (p.c_str());
         }
       }
 
