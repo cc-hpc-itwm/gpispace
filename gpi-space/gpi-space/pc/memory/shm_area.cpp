@@ -17,6 +17,11 @@ namespace gpi
     {
       namespace detail
       {
+        static void unlink (std::string const &p)
+        {
+          shm_unlink (p.c_str());
+        }
+
         static void* open ( std::string const & path
                           , gpi::pc::type::size_t & size
                           , const int open_flags
@@ -90,11 +95,6 @@ namespace gpi
               throw std::runtime_error ("munmap: " + err);
             }
           }
-        }
-
-        static void unlink (std::string const &p)
-        {
-          shm_unlink (p.c_str());
         }
       }
 
