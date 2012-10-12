@@ -52,6 +52,18 @@ namespace we { namespace type {
         {}
       };
 
+      namespace detail
+      {
+        template<typename Set>
+        void insert_tids (Set& set, petri_net::adj_transition_const_it it)
+        {
+          for (; it.has_more(); ++it)
+            {
+              set.insert (*it);
+            }
+        }
+      }
+
       typedef std::vector<pid_pair_type> pid_pair_vec_type;
 
       template<typename P, typename E, typename T>
@@ -136,41 +148,10 @@ namespace we { namespace type {
             all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
             all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);
 
-            for ( petri_net::adj_transition_const_it
-                    t (net.out_of_place (pid_A))
-                ; t.has_more()
-                ; ++t
-                )
-              {
-                suc_in.insert (*t);
-              }
-
-            for ( petri_net::adj_transition_const_it
-                    t (net.out_of_place (pid_B))
-                ; t.has_more()
-                ; ++t
-                )
-              {
-                suc_out.insert (*t);
-              }
-
-            for ( petri_net::adj_transition_const_it
-                    t (net.in_to_place (pid_A))
-                ; t.has_more()
-                ; ++t
-                )
-              {
-                pred_in.insert (*t);
-              }
-
-            for ( petri_net::adj_transition_const_it
-                    t (net.in_to_place (pid_B))
-                ; t.has_more()
-                ; ++t
-                )
-              {
-                pred_out.insert (*t);
-              }
+            detail::insert_tids (suc_in, net.out_of_place (pid_A));
+            detail::insert_tids (suc_out, net.out_of_place (pid_B));
+            detail::insert_tids (pred_in, net.in_to_place (pid_A));
+            detail::insert_tids (pred_out, net.in_to_place (pid_B));
 
             const eid_t eid (net.get_eid_in (tid, pid_A));
 
