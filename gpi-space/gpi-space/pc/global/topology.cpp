@@ -321,6 +321,53 @@ namespace gpi
         }
       }
 
+      int topology_t::add_memory ( const gpi::pc::type::segment_id_t seg_id
+                                 , const std::string & url
+                                 )
+      {
+        int rc = 0;
+
+        try
+        {
+          rank_result_t res (all_reduce(  detail::command_t("ADDMEM")
+                                       << seg_id
+                                       << url
+                                       , reduce::max_result
+                                       , rank_result_t (m_rank, 0) // my result
+                                       )
+                            );
+          rc = res.value;
+
+          if (rc != 0)
+          {
+            LOG ( ERROR
+                , "add_memory: failed on node " << res.rank
+                << ": " << res.value
+                << ": " << res.message
+                );
+            throw std::runtime_error
+              ( "add_memory: failed on at least one node: rank "
+              + boost::lexical_cast<std::string>(res.rank)
+              + " says: "
+              + res.message
+              );
+          }
+        }
+        catch (...)
+        {
+          del_memory (seg_id);
+          throw;
+        }
+
+        return rc;
+      }
+
+      int topology_t::del_memory (const gpi::pc::type::segment_id_t seg_id)
+      {
+        broadcast (detail::command_t ("DELMEM") << seg_id);
+        return 0;
+      }
+
       void topology_t::stop ()
       {
         {
@@ -552,8 +599,31 @@ namespace gpi
             catch (std::exception const & ex)
             {
               LOG(WARN, "could not free handle: " << ex.what());
-              cast (rank, detail::command_t("+ERR") << 1);
+              cast (rank, detail::command_t("+ERR") << 1 << ex.what ());
             }
+          }
+          else if (av [0] == "ADDMEM")
+          {
+            using namespace gpi::pc::type;
+            segment_id_t seg_id = boost::lexical_cast<segment_id_t> (av[1]);
+            std::string url_s = av[2];
+
+            MLOG ( ERROR
+                 , "ADDMEM not yet implemented"
+                 << ": " << seg_id
+                 << ": " << url_s
+                 );
+
+            cast (rank, detail::command_t ("+RES") << 1 << "not implemented");
+          }
+          else if (av [0] == "DELMEM")
+          {
+            using namespace gpi::pc::type;
+            segment_id_t seg_id = boost::lexical_cast<segment_id_t> (av[1]);
+
+            MLOG (ERROR, "DELMEM not yet implemented: " << seg_id);
+
+            cast (rank, detail::command_t ("+RES") << 1 << "not implemented");
           }
           else if (av[0] == "+RES")
           {
@@ -575,7 +645,11 @@ namespace gpi
           }
           else if (av[0] == "+ERR")
           {
-            LOG(WARN, "error on node " << rank << ": " << av[1]);
+            LOG ( WARN
+                , "error on node " << rank
+                << ": " << av [1]
+                << ": " << av [2]
+                );
           }
           else if (av[0] == "SHUTDOWN" && !m_shutting_down)
           {

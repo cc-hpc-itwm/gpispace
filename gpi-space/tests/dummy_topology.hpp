@@ -19,6 +19,12 @@ namespace gpi
                 );
 
       int free (const gpi::pc::type::handle_t);
+
+      int add_memory ( const gpi::pc::type::segment_id_t seg_id
+                     , const std::string & url
+                     );
+
+      int del_memory (const gpi::pc::type::segment_id_t seg_id);
     };
   }
 }
