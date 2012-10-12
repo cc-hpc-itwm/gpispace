@@ -186,21 +186,6 @@ namespace gpi
           : 0;
       }
 
-      bool
-      shm_area_t::is_allowed_to_attach
-      (const gpi::pc::type::process_id_t proc) const
-      {
-        if (gpi::flag::is_set
-           (descriptor ().flags, gpi::pc::type::segment::F_EXCLUSIVE))
-        {
-          if (proc == descriptor ().creator)
-            return true;
-          else
-            return false;
-        }
-        return true;
-      }
-
       area_t::grow_direction_t
       shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {

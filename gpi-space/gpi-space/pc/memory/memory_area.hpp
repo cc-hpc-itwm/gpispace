@@ -151,7 +151,7 @@ namespace gpi
         grow_direction_t grow_direction (const gpi::pc::type::flags_t) const = 0;
 
         virtual
-        bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const = 0;
+        bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
 
         virtual void check_bounds ( const gpi::pc::type::handle::descriptor_t &
                                   , const gpi::pc::type::offset_t start

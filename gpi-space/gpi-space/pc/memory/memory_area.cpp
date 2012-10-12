@@ -565,15 +565,37 @@ namespace gpi
         }
       }
 
+      bool
+      area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t proc) const
+      {
+        if (gpi::flag::is_set
+           (descriptor ().flags, gpi::pc::type::segment::F_EXCLUSIVE))
+        {
+          if (proc == descriptor ().creator)
+            return true;
+          else
+            return false;
+        }
+        return true;
+      }
+
       gpi::pc::type::size_t
       area_t::attach_process (const gpi::pc::type::process_id_t id)
       {
         lock_type lock (m_mutex);
-        if (m_attached_processes.insert (id).second)
+        if (is_allowed_to_attach (id))
         {
-          ++m_descriptor.nref;
+          if (m_attached_processes.insert (id).second)
+          {
+            ++m_descriptor.nref;
+          }
+          return m_descriptor.nref;
         }
-        return m_descriptor.nref;
+        else
+        {
+          throw std::runtime_error
+            ("permission denied, exclusive segment and you are not the owner");
+        }
       }
 
       gpi::pc::type::size_t
