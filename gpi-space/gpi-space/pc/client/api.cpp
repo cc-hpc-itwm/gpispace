@@ -503,6 +503,12 @@ namespace gpi
         assert (m_segments.find (seg->id()) == m_segments.end());
 
         m_segments [seg->id()] = seg;
+
+        if (gpi::flag::is_set (flags, gpi::pc::type::segment::F_EXCLUSIVE))
+        {
+          seg->unlink();
+        }
+
         return seg->id();
       }
 

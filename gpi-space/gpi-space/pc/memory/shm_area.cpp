@@ -218,8 +218,6 @@ namespace gpi
 
       bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t flgs)
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
-          return true;
         return false;
       }
 
