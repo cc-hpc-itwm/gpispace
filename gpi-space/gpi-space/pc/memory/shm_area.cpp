@@ -225,9 +225,7 @@ namespace gpi
 
       bool shm_area_t::unlink_after_close (const gpi::pc::type::flags_t flgs)
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_NOUNLINK))
-          return false;
-        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
+        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_PERSISTENT))
           return false;
         return true;
       }
