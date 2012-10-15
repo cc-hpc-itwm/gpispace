@@ -18,11 +18,7 @@ namespace gpi
         {
           gpi::pc::type::handle_t hdl;
 
-          if (gpi::pc::type::segment::SEG_INVAL == type)
-          {
-            hdl = 0;
-          }
-          else if (gpi::pc::type::segment::SEG_SHM == type)
+          if (gpi::pc::type::segment::SEG_SHM == type)
           {
             hdl.type = type;
 
@@ -79,10 +75,9 @@ namespace gpi
       gpi::pc::type::handle_t
       handle_generator_t::next (const gpi::pc::type::segment::segment_type seg)
       {
-        if (gpi::pc::type::segment::SEG_INVAL == seg)
-          return gpi::pc::type::handle_t(0);
-        assert (seg > 0);
-        if (size_t(seg) >= m_counter.size())
+        assert (seg >= 0);
+
+        if ( size_t(seg) >= m_counter.size())
           throw std::invalid_argument ("invalid segment type");
 
         return detail::encode ( m_node_identifier
