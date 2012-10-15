@@ -27,6 +27,7 @@ namespace fhg
         // -- transition ---------------------------------------------
         class remove_transition;
         // -- place --------------------------------------------------
+        class add_place;
         class remove_place;
         // - function ------------------------------------------------
         // - expression ----------------------------------------------
@@ -117,6 +118,7 @@ namespace fhg
         // -- transition ---------------------------------------------
         friend class action::remove_transition;
         // -- place --------------------------------------------------
+        friend class action::add_place;
         friend class action::remove_place;
         // - function ------------------------------------------------
         // - expression ----------------------------------------------

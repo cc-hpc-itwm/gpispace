@@ -133,6 +133,53 @@ namespace fhg
         };
 
         // -- place --------------------------------------------------
+        class add_place : public QUndoCommand
+        {
+        public:
+          add_place
+            ( change_manager_t& change_manager
+            , const QObject* origin
+            , const handle::net& net
+            , const ::xml::parse::type::place_type& place
+            )
+            : QUndoCommand (QObject::tr ("add_place_action"))
+            , _change_manager (change_manager)
+            , _origin (origin)
+            , _handle (net)
+            , _place (place)
+          { }
+
+          virtual void undo()
+          {
+            _change_manager.emit_signal
+              ( &change_manager_t::place_deleted
+              , _origin
+              , handle::place (_place, _handle)
+              );
+
+            _handle().erase_place (_place);
+          }
+
+          virtual void redo()
+          {
+            _handle().push_place (_place);
+
+            _change_manager.emit_signal
+              ( &change_manager_t::place_added
+              , NULL
+              , handle::place (_place, _handle)
+              );
+
+            _origin = NULL;
+          }
+
+        private:
+          change_manager_t& _change_manager;
+          const QObject* _origin;
+          handle::net _handle;
+          ::xml::parse::type::place_type _place;
+        };
+
         class remove_place : public QUndoCommand
         {
         public:
@@ -238,13 +285,14 @@ namespace fhg
         )
       {
         ::xml::parse::type::place_type place (_state.next_id());
-
         place.name = "place";
 
-        emit_signal ( &change_manager_t::place_added
-                    , origin
-                    , handle::place (push_place (place, net()), net)
-                    );
+        while (net().get_place (place.name))
+        {
+          place.name = inc (place.name);
+        }
+
+        push (new action::add_place (*this, origin, net, place));
       }
 
       void change_manager_t::delete_place
