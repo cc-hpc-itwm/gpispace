@@ -22,6 +22,7 @@
 #include <gpi-space/version.hpp>
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/pc/client/api.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
@@ -93,13 +94,13 @@ struct my_state_t
     // register segment
     m_shm_com = capi.register_segment ( "gpish"
                                       , m_com_size
-                                      , gpi::pc::type::segment::F_EXCLUSIVE
-                                      | gpi::pc::type::segment::F_FORCE_UNLINK
+                                      , gpi::pc::F_EXCLUSIVE
+                                      | gpi::pc::F_FORCE_UNLINK
                                       );
     m_shm_com_hdl = capi.alloc ( m_shm_com
                                , m_com_size
                                , "gpish-shm-com"
-                               , gpi::pc::type::handle::F_EXCLUSIVE
+                               , gpi::pc::F_EXCLUSIVE
                                );
     m_shm_com_ptr = (char*)capi.ptr(m_shm_com_hdl);
 
@@ -711,8 +712,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
       sh.state().capi.alloc( target_segment
                            , file_size
                            , path.string()
-                           , gpi::pc::type::handle::F_GLOBAL
-                           | gpi::pc::type::handle::F_PERSISTENT
+                           , gpi::pc::F_GLOBAL
+                           | gpi::pc::F_PERSISTENT
                            );
     dst.offset = 0;
 
@@ -900,19 +901,16 @@ int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh)
         switch (*f)
         {
         case 'x':
-          flags |= gpi::pc::type::segment::F_EXCLUSIVE;
-          break;
-        case 'k':
-          flags |= gpi::pc::type::segment::F_NOUNLINK;
+          flags |= gpi::pc::F_EXCLUSIVE;
           break;
         case 'p':
-          flags |= gpi::pc::type::segment::F_PERSISTENT;
+          flags |= gpi::pc::F_PERSISTENT;
           break;
         case 'o':
-          flags |= gpi::pc::type::segment::F_NOCREATE;
+          flags |= gpi::pc::F_NOCREATE;
           break;
         case 'f':
-          flags |= gpi::pc::type::segment::F_FORCE_UNLINK;
+          flags |= gpi::pc::F_FORCE_UNLINK;
           break;
         default:
           std::cerr << "invalid flag: '" << *f << "'" << std::endl;
@@ -998,19 +996,19 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
         std::cout << desc << std::endl;;
         break;
       case 1:
-        if (gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_SPECIAL))
+        if (gpi::flag::is_set (desc.flags, gpi::pc::F_SPECIAL))
         {
           std::cout << desc << std::endl;
         }
         break;
       case 2:
-        if (! gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_SPECIAL))
+        if (! gpi::flag::is_set (desc.flags, gpi::pc::F_SPECIAL))
         {
           std::cout << desc << std::endl;
         }
         break;
       case 3:
-        if (gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_ATTACHED))
+        if (gpi::flag::is_set (desc.flags, gpi::pc::F_ATTACHED))
         {
           std::cout << desc << std::endl;
         }
@@ -1170,7 +1168,7 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
   gpi::pc::type::segment_id_t seg_id (0);
   gpi::pc::type::size_t size (0);
   std::string desc;
-  gpi::pc::type::flags_t flags (gpi::pc::type::handle::F_GLOBAL);
+  gpi::pc::type::flags_t flags (gpi::pc::F_GLOBAL);
 
   size = boost::lexical_cast<size_t>(av[1]);
 
@@ -1200,13 +1198,13 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
       {
       case 'l':
       case 'x':
-        gpi::flag::unset (flags, gpi::pc::type::handle::F_GLOBAL);
+        gpi::flag::unset (flags, gpi::pc::F_GLOBAL);
         break;
       case 'g':
-        gpi::flag::set (flags, gpi::pc::type::handle::F_GLOBAL);
+        gpi::flag::set (flags, gpi::pc::F_GLOBAL);
         break;
       case 'p':
-        gpi::flag::set (flags, gpi::pc::type::handle::F_PERSISTENT);
+        gpi::flag::set (flags, gpi::pc::F_PERSISTENT);
         break;
       default:
           std::cerr << "invalid flag: '" << *f << "'" << std::endl;

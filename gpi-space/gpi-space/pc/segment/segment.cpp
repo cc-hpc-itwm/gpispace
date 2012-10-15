@@ -12,6 +12,8 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/assert.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -51,7 +53,7 @@ namespace gpi
       bool segment_t::is_special () const
       {
         return gpi::flag::is_set( m_descriptor.flags
-                                , gpi::pc::type::segment::F_SPECIAL
+                                , gpi::pc::F_SPECIAL
                                 );
       }
 

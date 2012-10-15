@@ -4,6 +4,7 @@
 
 #include <fhglog/minimal.hpp>
 #include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 
 #include <boost/make_shared.hpp>
@@ -51,7 +52,7 @@ namespace gpi
       area_t::grow_direction_t
       gpi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::type::handle::F_GLOBAL))
+        if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
         {
           return GROW_UP;
         }
@@ -99,7 +100,7 @@ namespace gpi
       void
       gpi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (  gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL)
+        if (  gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL)
            && hdl.creator != (gpi::pc::type::process_id_t)(-1)
            )
         {
@@ -116,7 +117,7 @@ namespace gpi
       void
       gpi_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+        if (gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
         {
           gpi::pc::global::topology().free(hdl.id);
         }
@@ -135,7 +136,7 @@ namespace gpi
 
         gpi::pc::type::id_t     my_rank = gpi::api::gpi_api_t::get ().rank ();
 
-        if (not gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+        if (not gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
           my_rank = 0;
 
         // my part of the handle is within [my_begin, my_end)
@@ -155,7 +156,7 @@ namespace gpi
                                  , const gpi::pc::type::flags_t flgs
                                  ) const
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::type::handle::F_GLOBAL))
+        if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
         {
           // static distribution scheme with overhead
           const size_t num_nodes =

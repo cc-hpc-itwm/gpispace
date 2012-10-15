@@ -13,6 +13,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/sfs_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
@@ -72,7 +73,7 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
   sfs_area_t area ( 0
                   , path_to_shared_file
                   , size
-                  , gpi::pc::type::segment::F_PERSISTENT
+                  , gpi::pc::F_PERSISTENT
                   , topology
                   );
   area.set_id (2);
@@ -119,7 +120,7 @@ BOOST_AUTO_TEST_CASE (old_segment_version)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::F_PERSISTENT
                     , topology
                     );
     area.set_id (2);
@@ -135,7 +136,7 @@ BOOST_AUTO_TEST_CASE (old_segment_version)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::F_PERSISTENT
                     , topology
                     );
     area.set_id (2);
@@ -162,7 +163,7 @@ BOOST_AUTO_TEST_CASE (too_new_segment_version)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::F_PERSISTENT
                     , topology
                     );
   }
@@ -177,7 +178,7 @@ BOOST_AUTO_TEST_CASE (too_new_segment_version)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::F_PERSISTENT
                     , topology
                     );
     BOOST_CHECK_MESSAGE (false, "succeeded to open a newer sfs area version!");
@@ -204,7 +205,7 @@ BOOST_AUTO_TEST_CASE (garbage_segment_version)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::F_PERSISTENT
                     , topology
                     );
   }
@@ -219,7 +220,7 @@ BOOST_AUTO_TEST_CASE (garbage_segment_version)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::F_PERSISTENT
                     , topology
                     );
     BOOST_CHECK_MESSAGE
@@ -247,7 +248,7 @@ BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::F_PERSISTENT
                     , topology
                     );
     area.set_id (2);
@@ -269,7 +270,7 @@ BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
+                    , gpi::pc::F_PERSISTENT
                     , topology
                     );
     area.set_id (2);
@@ -307,7 +308,7 @@ BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_NONE
+                    , gpi::pc::F_NONE
                     , topology
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
@@ -339,7 +340,7 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_NONE
+                    , gpi::pc::F_NONE
                     , topology
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
@@ -371,7 +372,7 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_NOMMAP
+                    , gpi::pc::F_NOMMAP
                     , topology
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
@@ -403,8 +404,8 @@ BOOST_AUTO_TEST_CASE (test_read)
     sfs_area_t area ( 0
                     , path_to_shared_file
                     , size
-                    , gpi::pc::type::segment::F_PERSISTENT
-                    + gpi::pc::type::segment::F_NOMMAP
+                    , gpi::pc::F_PERSISTENT
+                    + gpi::pc::F_NOMMAP
                     , topology
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);

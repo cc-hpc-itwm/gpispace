@@ -8,6 +8,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
 
@@ -113,7 +114,7 @@ namespace gpi
         {
           if ( hdl_it->second.creator == pid
              and not gpi::flag::is_set ( hdl_it->second.flags
-                                       , gpi::pc::type::handle::F_PERSISTENT
+                                       , gpi::pc::F_PERSISTENT
                                        )
              )
           {
@@ -180,7 +181,7 @@ namespace gpi
           return false;
         }
         else if (gpi::flag::is_set ( m_descriptor.flags
-                                   , gpi::pc::type::segment::F_PERSISTENT
+                                   , gpi::pc::F_PERSISTENT
                                    ))
         {
           return false;
@@ -227,7 +228,7 @@ namespace gpi
         hdl.name = name;
         hdl.offset = offset;
         hdl.creator = (gpi::pc::type::process_id_t)(-1);
-        hdl.flags = type::handle::F_GLOBAL | type::handle::F_PERSISTENT;
+        hdl.flags = gpi::pc::F_GLOBAL | gpi::pc::F_PERSISTENT;
 
         internal_alloc (hdl);
 
@@ -569,7 +570,7 @@ namespace gpi
       area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t proc) const
       {
         if (gpi::flag::is_set
-           (descriptor ().flags, gpi::pc::type::segment::F_EXCLUSIVE))
+           (descriptor ().flags, gpi::pc::F_EXCLUSIVE))
         {
           if (proc == descriptor ().creator)
             return true;

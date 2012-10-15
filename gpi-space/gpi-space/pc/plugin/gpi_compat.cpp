@@ -5,6 +5,7 @@
 #include <unistd.h> // usleep
 #include <fvm-pc/pc.hpp>
 #include "gpi.hpp"
+#include <gpi-space/pc/type/flags.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/mutex.hpp>
@@ -194,8 +195,8 @@ private:
     // register segment
     m_shm_id = api->register_segment ( m_segment_name
                                      , m_shm_size
-                                     , gpi::pc::type::segment::F_EXCLUSIVE
-                                     | gpi::pc::type::segment::F_FORCE_UNLINK
+                                     , gpi::pc::F_EXCLUSIVE
+                                     | gpi::pc::F_FORCE_UNLINK
                                      // , gpi::pc::type::segment::F_FORCE_UNLINK
                                      );
     m_scr_hdl = api->alloc ( 1 // GPI
@@ -206,7 +207,7 @@ private:
     m_shm_hdl = api->alloc ( m_shm_id
                            , m_shm_size
                            , m_segment_handle_name
-                           , gpi::pc::type::handle::F_EXCLUSIVE
+                           , gpi::pc::F_EXCLUSIVE
                            );
     m_shm_ptr = api->ptr(m_shm_hdl);
 
@@ -278,8 +279,8 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name)
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size * gpi_compat->gpi_info.nodes
                                 , name
-                                , gpi::pc::type::handle::F_GLOBAL
-                                | gpi::pc::type::handle::F_PERSISTENT
+                                , gpi::pc::F_GLOBAL
+                                | gpi::pc::F_PERSISTENT
                                 );
 }
 

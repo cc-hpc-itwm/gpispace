@@ -122,8 +122,7 @@ namespace gpi
           (new memory::gpi_area_t ( 0
                                   , "GPI"
                                   , gpi_api.memory_size ()
-                                  , gpi::pc::type::segment::F_PERSISTENT
-                                  | gpi::pc::type::segment::F_NOUNLINK
+                                  , gpi::pc::F_PERSISTENT
                                   , gpi_api.dma_ptr ()
                                   )
           );

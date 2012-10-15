@@ -14,6 +14,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
+
 namespace fs = boost::filesystem;
 
 namespace gpi
@@ -101,7 +103,7 @@ namespace gpi
            - map memory
         */
         if (fs::exists (m_path) && gpi::flag::is_set ( descriptor ().flags
-                                                     , gpi::pc::type::segment::F_FORCE_UNLINK
+                                                     , gpi::pc::F_FORCE_UNLINK
                                                      )
            )
         {
@@ -109,7 +111,7 @@ namespace gpi
         }
 
         if (! fs::exists (m_path) && !gpi::flag::is_set ( descriptor ().flags
-                                                        , gpi::pc::type::segment::F_NOCREATE
+                                                        , gpi::pc::F_NOCREATE
                                                         )
            )
         {
@@ -209,7 +211,7 @@ namespace gpi
           descriptor ().local_size = m_size;
 
           if (not gpi::flag::is_set ( descriptor ().flags
-                                    , gpi::pc::type::segment::F_NOMMAP
+                                    , gpi::pc::F_NOMMAP
                                     )
              )
           {
@@ -277,7 +279,7 @@ namespace gpi
         }
 
         if (gpi::flag::is_set ( descriptor ().flags
-                              , gpi::pc::type::segment::F_PERSISTENT
+                              , gpi::pc::F_PERSISTENT
                               )
            )
         {
@@ -400,7 +402,7 @@ namespace gpi
       void
       sfs_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (  gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL)
+        if (  gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL)
            && hdl.creator != (gpi::pc::type::process_id_t)(-1)
            )
         {
@@ -417,7 +419,7 @@ namespace gpi
       void
       sfs_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+        if (gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
         {
           m_topology.free(hdl.id);
         }

@@ -10,6 +10,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
@@ -42,7 +43,7 @@ namespace gpi
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t
                                 , const std::string & desc
-                                , const type::flags_t = gpi::pc::type::handle::F_NONE
+                                , const type::flags_t = gpi::pc::F_NONE
                                 );
         void free (const type::handle_id_t);
 

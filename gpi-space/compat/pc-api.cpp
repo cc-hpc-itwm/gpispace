@@ -9,6 +9,7 @@
 #warning "the pc module should not require the loader"
 #include <we/loader/macros.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
@@ -49,8 +50,8 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
   return gpi_api().alloc ( 1 // GPI
                          , size
                          , "fvm-pc-compat-global-no-name"
-                         , gpi::pc::type::handle::F_GLOBAL
-                         | gpi::pc::type::handle::F_PERSISTENT
+                         , gpi::pc::F_GLOBAL
+                         | gpi::pc::F_PERSISTENT
                          );
 }
 
@@ -132,7 +133,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
   }
 
   gpi::pc::type::size_t base (0);
-  if (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
+  if (hdl_info.flags & gpi::pc::F_GLOBAL)
   {
     base = hdl_info.size * gpi_info.rank;
   }
@@ -201,7 +202,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
   }
 
   gpi::pc::type::size_t base (0);
-  if (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
+  if (hdl_info.flags & gpi::pc::F_GLOBAL)
   {
     base = hdl_info.size * gpi_info.rank;
   }
@@ -378,14 +379,14 @@ WE_MOD_INITIALIZE_START (fvm);
 
   shm_id = gpi_api().register_segment ( "fvm-pc-compat"
                                       , shm_size
-//                                       , gpi::pc::type::segment::F_EXCLUSIVE
-//                                       | gpi::pc::type::segment::F_FORCE_UNLINK
-                                      , gpi::pc::type::segment::F_FORCE_UNLINK
+//                                       , gpi::pc::F_EXCLUSIVE
+//                                       | gpi::pc::F_FORCE_UNLINK
+                                      , gpi::pc::F_FORCE_UNLINK
                                       );
   shm_hdl = gpi_api().alloc ( shm_id
                             , shm_size
                             , "fvm-pc-compat"
-                            , gpi::pc::type::handle::F_EXCLUSIVE
+                            , gpi::pc::F_EXCLUSIVE
                             );
   shm_ptr = gpi_api().segments()[shm_id]->ptr();
 

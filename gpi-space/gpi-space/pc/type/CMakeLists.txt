@@ -2,6 +2,7 @@
 
 set (hdrs
   typedefs.hpp
+  flags.hpp
   time_stamp.hpp
   generic_list.hpp
   segment_descriptor.hpp

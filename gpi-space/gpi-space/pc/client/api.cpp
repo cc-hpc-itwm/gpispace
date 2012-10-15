@@ -21,6 +21,7 @@
 #include <fhg/assert.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 
 static int close_socket (const int fd)
 {
@@ -431,13 +432,13 @@ namespace gpi
         segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
         try
         {
-          if (flags & gpi::pc::type::segment::F_NOCREATE)
+          if (flags & gpi::pc::F_NOCREATE)
           {
             seg->open();
           }
           else
           {
-            if (flags & gpi::pc::type::segment::F_FORCE_UNLINK)
+            if (flags & gpi::pc::F_FORCE_UNLINK)
             {
               seg->unlink();
             }
@@ -455,7 +456,7 @@ namespace gpi
           proto::segment::register_t rqst;
           rqst.name = name;
           rqst.size = sz;
-          rqst.flags = flags | gpi::pc::type::segment::F_NOCREATE;
+          rqst.flags = flags | gpi::pc::F_NOCREATE;
 
           proto::message_t rply (communicate (proto::segment::message_t (rqst)));
           try
@@ -504,7 +505,7 @@ namespace gpi
 
         m_segments [seg->id()] = seg;
 
-        if (gpi::flag::is_set (flags, gpi::pc::type::segment::F_EXCLUSIVE))
+        if (gpi::flag::is_set (flags, gpi::pc::F_EXCLUSIVE))
         {
           seg->unlink();
         }

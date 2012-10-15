@@ -11,6 +11,7 @@
 #include <boost/serialization/vector.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/type/time_stamp.hpp>
 
@@ -22,14 +23,6 @@ namespace gpi
     {
       namespace handle
       {
-        enum flags_type
-          {
-            F_NONE       = 0,
-            F_PERSISTENT = 1 << 0,
-            F_EXCLUSIVE  = 1 << 1,
-            F_GLOBAL     = 1 << 2,
-          };
-
         inline bool is_null (const gpi::pc::type::handle_id_t i)
         {
           return 0 == i;

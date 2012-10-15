@@ -9,6 +9,8 @@
 #include <fhglog/minimal.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -131,7 +133,7 @@ namespace gpi
 
         int open_flags = O_RDWR;
 
-        if (not gpi::flag::is_set (flags, gpi::pc::type::segment::F_NOCREATE))
+        if (not gpi::flag::is_set (flags, gpi::pc::F_NOCREATE))
         {
           MLOG (INFO, "setting open_flags to O_CREAT + O_EXCL");
           open_flags |= O_CREAT | O_EXCL;
@@ -229,7 +231,7 @@ namespace gpi
 
       bool shm_area_t::unlink_after_close (const gpi::pc::type::flags_t flgs)
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_PERSISTENT))
+        if (gpi::flag::is_set (flgs, gpi::pc::F_PERSISTENT))
           return false;
         return true;
       }
