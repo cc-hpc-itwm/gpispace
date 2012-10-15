@@ -287,7 +287,7 @@ namespace fhg
         ::xml::parse::type::place_type place (_state.next_id());
         place.name = "place";
 
-        while (net().get_place (place.name))
+        while (net().has_place (place.name))
         {
           place.name = inc (place.name);
         }
