@@ -113,6 +113,11 @@ namespace xml
 
         // ***************************************************************** //
 
+        bool has_place (const std::string& name) const
+        {
+          return _places.is_element (name);
+        }
+
         boost::optional<place_type> get_place (const std::string & name) const
         {
           return _places.copy_by_key (name);
@@ -128,6 +133,11 @@ namespace xml
           (const ::fhg::xml::parse::util::id_type& id) const
         {
           return _transitions.copy_by_id (id);
+        }
+
+        bool has_transition (const std::string& name) const
+        {
+          return _transitions.is_element (name);
         }
 
         boost::optional<function_type> get_function (const std::string & name) const
