@@ -602,6 +602,12 @@ namespace fhg
 
             addItem (item);
 
+            weaver::item_by_name_type place_by_name;
+
+            weaver::place wp (item, place_by_name);
+
+            FROM(place) (&wp, place());
+
             if (origin == this)
             {
               item->setPos (mouse_position());
