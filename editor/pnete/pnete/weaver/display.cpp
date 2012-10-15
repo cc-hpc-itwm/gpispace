@@ -9,6 +9,8 @@
 #include <pnete/ui/graph/place.hpp>
 
 #include <pnete/data/internal.hpp>
+#include <pnete/data/handle/net.hpp>
+#include <pnete/data/handle/place.hpp>
 
 #include <xml/parse/types.hpp>
 
@@ -376,9 +378,7 @@ namespace fhg
       {
         ui::graph::place_item* place_item
           ( new ui::graph::place_item
-            ( const_cast<ITVAL(XMLTYPE(net_type::places_type))&> (place)
-            , _net
-            )
+            (data::handle::place (place, data::handle::net (_net)))
           );
         weaver::place wp (place_item, _place_item_by_name);
         _scene->addItem (place_item);
@@ -392,10 +392,7 @@ namespace fhg
       {
         ui::graph::transition_item* trans
           ( new ui::graph::transition_item
-            ( const_cast< ITVAL(XMLTYPE(net_type::transitions_type))& >
-              (transition)
-            , _net
-            )
+            (data::handle::transition (transition, data::handle::net (_net)))
           );
         _scene->addItem (trans);
         weaver::transition wt ( _root

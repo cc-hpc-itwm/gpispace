@@ -3,9 +3,13 @@
 #ifndef _PNETE_DATA_CHANGE_MANAGER_HPP
 #define _PNETE_DATA_CHANGE_MANAGER_HPP 1
 
-#include <QUndoStack>
+#include <pnete/data/handle/net.fwd.hpp>
+#include <pnete/data/handle/transition.fwd.hpp>
+#include <pnete/data/handle/place.fwd.hpp>
 
 #include <xml/parse/types.hpp>
+
+#include <QUndoStack>
 
 #include <boost/function_types/function_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
@@ -41,26 +45,24 @@ namespace fhg
 
         // -- transition ---------------------------------------------
         void add_transition ( const QObject*
-                            , ::xml::parse::type::net_type&
+                            , const data::handle::net&
                             );
         void add_transition ( const QObject*
-                            , ::xml::parse::type::function_type&
-                            , ::xml::parse::type::net_type&
+                            , const ::xml::parse::type::function_type& fun
+                            , const data::handle::net&
                             );
 
         void delete_transition ( const QObject*
-                               , ::xml::parse::type::transition_type&
-                               , ::xml::parse::type::net_type&
+                               , const data::handle::transition&
                                );
 
         // -- place --------------------------------------------------
         void add_place ( const QObject*
-                       , ::xml::parse::type::net_type&
+                       , const data::handle::net&
                        );
 
         void delete_place ( const QObject*
-                          , ::xml::parse::type::place_type&
-                          , ::xml::parse::type::net_type&
+                          , const data::handle::place&
                           );
 
         // - function ------------------------------------------------
@@ -81,26 +83,16 @@ namespace fhg
         // - net -----------------------------------------------------
 
         // -- transition ---------------------------------------------
-        void signal_add_transition ( const QObject*
-                                   , ::xml::parse::type::transition_type&
-                                   , ::xml::parse::type::net_type&
-                                   );
-        void signal_delete_transition ( const QObject*
-                                      , const ::xml::parse::type::transition_type&
-                                      , const ::xml::parse::type::net_type&
-                                      );
+        void transition_added ( const QObject*
+                              , const data::handle::transition&
+                              );
+        void transition_deleted ( const QObject*
+                                , const data::handle::transition&
+                                );
 
         // -- place --------------------------------------------------
-        void signal_add_place ( const QObject*
-                              , ::xml::parse::type::place_type&
-                              , ::xml::parse::type::net_type&
-                              );
-
-        void
-        signal_delete_place ( const QObject*
-                            , const ::xml::parse::type::place_type&
-                            , const ::xml::parse::type::net_type&
-                            );
+        void place_added (const QObject*, const data::handle::place&);
+        void place_deleted (const QObject*, const data::handle::place&);
 
         // - function ------------------------------------------------
         void signal_set_function_name ( const QObject*

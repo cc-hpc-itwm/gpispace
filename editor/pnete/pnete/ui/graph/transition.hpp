@@ -16,9 +16,9 @@ class QAction;
 
 #include <pnete/ui/graph/item.hpp>
 
-#include <pnete/data/proxy.hpp>
+#include <pnete/data/handle/transition.hpp>
 
-#include <pnete/weaver/weaver.hpp>
+#include <pnete/data/proxy.hpp>
 
 namespace fhg
 {
@@ -33,19 +33,16 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          explicit transition_item ( ::xml::parse::type::transition_type& transition
-                                   , ::xml::parse::type::net_type& net
+          explicit transition_item ( const data::handle::transition& handle
                                    , base_item* parent = NULL
                                    );
 
-          const ::xml::parse::type::transition_type& transition() const;
-          ::xml::parse::type::transition_type& transition();
-          ::xml::parse::type::net_type& net();
+          const data::handle::transition& handle() const;
 
           virtual QPainterPath shape() const;
           QRectF rectangle() const;
 
-          const std::string& name() const;
+          std::string name() const;
 
           void repositionChildrenAndResize();
 
@@ -67,8 +64,7 @@ namespace fhg
           //! \todo size verstellbar
           QSizeF _size;
 
-          ::xml::parse::type::transition_type& _transition;
-          ::xml::parse::type::net_type& _net;
+          data::handle::transition _handle;
 
           data::proxy::type* _proxy;
         };

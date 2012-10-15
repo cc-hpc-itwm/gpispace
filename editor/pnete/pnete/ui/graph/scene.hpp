@@ -5,6 +5,10 @@
 
 #include <xml/parse/types.hpp>
 
+#include <pnete/data/handle/net.hpp>
+#include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/transition.fwd.hpp>
+
 #include <QGraphicsScene>
 #include <QPointF>
 #include <QObject>
@@ -52,39 +56,29 @@ namespace fhg
                                  , bool only_reading
                                  );
 
-          ::xml::parse::type::net_type& net();
           data::change_manager_t& change_manager();
 
         public slots:
-          void slot_delete_transition (base_item*);
-          void
-          slot_delete_transition ( const QObject*
-                                 , const ::xml::parse::type::transition_type&
-                                 , const ::xml::parse::type::net_type&
-                                 );
-
-          void slot_add_transition ();
-          void slot_add_transition ( const QObject*
-                                   , ::xml::parse::type::transition_type&
-                                   , ::xml::parse::type::net_type&
-                                   );
-          void slot_add_place ();
-          void slot_add_place ( const QObject*
-                              , ::xml::parse::type::place_type&
-                              , ::xml::parse::type::net_type&
-                              );
-
-          void slot_delete_place (base_item*);
-          void
-          slot_delete_place ( const QObject*
-                            , const ::xml::parse::type::place_type&
-                            , const ::xml::parse::type::net_type&
-                            );
-
-
           void slot_add_struct ();
-
           void auto_layout();
+
+          // ## trigger modification #################################
+          // # transition ############################################
+          void slot_add_transition ();
+          void slot_delete_transition (base_item*);
+
+          // # place #################################################
+          void slot_add_place ();
+          void slot_delete_place (base_item*);
+
+          // ## react on modification ################################
+          // # transition ############################################
+          void transition_added (const QObject*, const data::handle::transition&);
+          void transition_deleted (const QObject*, const data::handle::transition&);
+
+          // # place #################################################
+          void place_added (const QObject*, const data::handle::place&);
+          void place_deleted (const QObject*, const data::handle::place&);
 
         signals:
 
@@ -95,8 +89,15 @@ namespace fhg
           virtual void keyPressEvent (QKeyEvent* event);
 
         private:
+          void change_mgr_link
+            (const char* signal, const char* slot, const char* arguments);
+
+          template<typename item_type, typename handle_type>
+            item_type* item_with_handle (const handle_type&);
+
+          const data::handle::net& net() const;
+
           void remove_transition_item (transition_item*);
-          bool is_my_net (const ::xml::parse::type::net_type&);
 
           connection_item* create_connection (bool only_reading = false);
           void remove_pending_connection();
@@ -109,8 +110,10 @@ namespace fhg
           QMenu _menu_new;
           QMenu _menu_context;
 
-          ::xml::parse::type::net_type& _net;
+          data::handle::net _net;
           data::internal_type* _internal;
+
+          friend class GraphView; // for net() only.
         };
       }
     }
