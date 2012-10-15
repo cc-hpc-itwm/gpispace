@@ -25,6 +25,7 @@ namespace fhg
         // ## editing action forward declarations ####################
         // - net -----------------------------------------------------
         // -- transition ---------------------------------------------
+        class add_transition;
         class remove_transition;
         // -- place --------------------------------------------------
         class add_place;
@@ -116,6 +117,7 @@ namespace fhg
         // ## friend classes  ########################################
         // - net -----------------------------------------------------
         // -- transition ---------------------------------------------
+        friend class action::add_transition;
         friend class action::remove_transition;
         // -- place --------------------------------------------------
         friend class action::add_place;

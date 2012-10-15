@@ -86,6 +86,53 @@ namespace fhg
         // ## editing actions ########################################
         // - net -----------------------------------------------------
         // -- transition ---------------------------------------------
+        class add_transition : public QUndoCommand
+        {
+        public:
+          add_transition
+            ( change_manager_t& change_manager
+            , const QObject* origin
+            , const handle::net& net
+            , const ::xml::parse::type::transition_type& transition
+            )
+            : QUndoCommand (QObject::tr ("add_transition_action"))
+            , _change_manager (change_manager)
+            , _origin (origin)
+            , _handle (net)
+            , _transition (transition)
+          { }
+
+          virtual void undo()
+          {
+            _change_manager.emit_signal
+              ( &change_manager_t::transition_deleted
+              , _origin
+              , handle::transition (_transition, _handle)
+              );
+
+            _handle().erase_transition (_transition);
+          }
+
+          virtual void redo()
+          {
+            _handle().push_transition (_transition);
+
+            _change_manager.emit_signal
+              ( &change_manager_t::transition_added
+              , NULL
+              , handle::transition (_transition, _handle)
+              );
+
+            _origin = NULL;
+          }
+
+        private:
+          change_manager_t& _change_manager;
+          const QObject* _origin;
+          handle::net _handle;
+          ::xml::parse::type::transition_type _transition;
+        };
+
         class remove_transition : public QUndoCommand
         {
         public:
@@ -241,15 +288,16 @@ namespace fhg
         )
       {
         ::xml::parse::type::transition_type transition (_state.next_id());
-
         transition.function_or_use (fun);
         transition.name = fun.name ? *fun.name : "transition";
 
-        emit_signal ( &change_manager_t::transition_added
-                    , origin
-                    , handle::transition
-                      (push_transition (transition, net()), net)
-                    );
+        //! \todo Don't check for duplicate names when fun.name is set?
+        while (net().has_transition (transition.name))
+        {
+          transition.name = inc (transition.name);
+        }
+
+        push (new action::add_transition (*this, origin, net, transition));
       }
 
       void change_manager_t::add_transition
@@ -258,16 +306,16 @@ namespace fhg
         )
       {
         ::xml::parse::type::transition_type transition (_state.next_id());
-
         transition.function_or_use
           (::xml::parse::type::function_type (_state.next_id()));
         transition.name = "transition";
 
-        emit_signal ( &change_manager_t::transition_added
-                    , origin
-                    , handle::transition
-                      (push_transition (transition, net()), net)
-                    );
+        while (net().has_transition (transition.name))
+        {
+          transition.name = inc (transition.name);
+        }
+
+        push (new action::add_transition (*this, origin, net, transition));
       }
 
       void change_manager_t::delete_transition
