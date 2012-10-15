@@ -85,6 +85,19 @@ namespace gpi
                               , m_counter[seg]->inc()
                               );
       }
+
+      void
+      handle_generator_t::initialize_counter ( const gpi::pc::type::segment::segment_type seg
+                                             , gpi::pc::type::size_t start
+                                             )
+      {
+        assert (seg >= 0);
+
+        if ( (size_t)seg >= m_counter.size())
+          throw std::invalid_argument ("invalid segment type");
+
+        return m_counter [seg]->reset (start);
+      }
     }
   }
 }
