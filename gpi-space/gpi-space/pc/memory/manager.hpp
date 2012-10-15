@@ -118,10 +118,19 @@ namespace gpi
                       , const gpi::pc::type::queue_id_t queue
                       );
 
+        int
+        remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
+                          , std::string const & url
+                          );
+
         gpi::pc::type::segment_id_t
         add_memory ( const gpi::pc::type::process_id_t proc_id
                    , const std::string & url
                    );
+
+        int
+        remote_del_memory (const gpi::pc::type::segment_id_t seg_id);
+
         void
         del_memory ( const gpi::pc::type::process_id_t proc_id
                    , const gpi::pc::type::segment_id_t seg_id
