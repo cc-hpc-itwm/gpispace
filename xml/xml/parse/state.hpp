@@ -26,6 +26,9 @@
 
 #include <xml/parse/type/require.hpp>
 
+#include <fhg/util/counter.hpp>
+#include <xml/parse/util/id_type.hpp>
+
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/xml.hpp>
 
@@ -182,6 +185,8 @@ namespace xml
         std::string _Odo_file_backup;
 
         std::string _Opath_to_cpp;
+
+        ::fhg::util::counter< ::fhg::xml::parse::util::id_type> _id_counter;
 
         template<typename W>
         void generic_warn ( const W & w
@@ -340,6 +345,8 @@ namespace xml
           , _Odo_file_backup ("do-backup")
 
           , _Opath_to_cpp ("path-to-cpp,g")
+
+          , _id_counter()
         {}
 
         const search_path_type & search_path (void) const
@@ -925,6 +932,11 @@ namespace xml
           desc.add (generate);
           desc.add (file);
           desc.add (warnings);
+        }
+
+        ::fhg::xml::parse::util::id_type next_id()
+        {
+          return _id_counter;
         }
       };
 

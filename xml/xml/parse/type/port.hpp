@@ -8,6 +8,7 @@
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
@@ -27,23 +28,35 @@ namespace xml
     {
       struct port_type
       {
+        ::fhg::xml::parse::util::id_type _id;
+
       public:
         std::string name;
         std::string type;
         fhg::util::maybe<std::string> place;
         we::type::property::type prop;
 
-        port_type () : name (), type (), place (), prop () {}
-
         port_type ( const std::string & _name
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
+                  , const ::fhg::xml::parse::util::id_type& id
                   )
-          : name (_name)
+          : _id (id)
+          , name (_name)
           , type (_type)
           , place (_place)
           , prop ()
         {}
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const port_type& other) const
+        {
+          return id() == other.id();
+        }
 
         void specialize ( const type::type_map_type & map_in
                         , const state::type &
@@ -98,34 +111,35 @@ namespace xml
             }
           else
             {
-              place_type place;
+              boost::optional<place_type> place
+                (net.get_place (*port.place));
 
-              if (!net.get_place (*port.place, place))
+              if (!place)
                 {
                   throw error::port_connected_place_nonexistent
                     (direction, port.name, *port.place, path);
                 }
 
-              if (place.type != port.type)
+              if (place->type != port.type)
                 {
                   throw error::port_connected_type_error ( direction
                                                          , port
-                                                         , place
+                                                         , *place
                                                          , path
                                                          );
                 }
 
               if (direction == "tunnel")
                 {
-                  if (not place.is_virtual())
+                  if (not place->is_virtual())
                     {
                       throw
-                        error::tunnel_connected_non_virtual (port, place, path);
+                        error::tunnel_connected_non_virtual (port, *place, path);
                     }
 
-                  if (port.name != place.name)
+                  if (port.name != place->name)
                     {
-                      throw error::tunnel_name_mismatch (port, place, path);
+                      throw error::tunnel_name_mismatch (port, *place, path);
                     }
                 }
             }

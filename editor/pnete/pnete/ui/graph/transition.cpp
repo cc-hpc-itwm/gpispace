@@ -1,3 +1,5 @@
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
+
 #include <pnete/ui/graph/transition.hpp>
 
 #include <QGraphicsScene>
@@ -34,7 +36,7 @@ namespace fhg
           if (style::predicate::is_transition (i))
           {
             const fhg::util::maybe<std::string>& n
-              (qgraphicsitem_cast<const transition_item*>(i)->transition().name);
+              (qgraphicsitem_cast<const transition_item*>(i)->name());
 
             if (n && *n == name.toStdString())
             {
@@ -45,14 +47,11 @@ namespace fhg
           return boost::none;
         }
 
-        transition_item::transition_item ( ::xml::parse::type::transition_type& transition
-                                         , ::xml::parse::type::net_type& net
-                                         , base_item* parent
-                                         )
-          : base_item (parent, &transition.prop)
+        transition_item::transition_item
+          (const data::handle::transition& handle, base_item* parent)
+          : base_item (parent, NULL)
           , _size (size::transition::width(), size::transition::height())
-          , _transition (transition)
-          , _net (net)
+          , _handle (handle)
           , _proxy (NULL)
         {
           //            new cogwheel_button (this);
@@ -75,17 +74,9 @@ namespace fhg
             );
         }
 
-        const ::xml::parse::type::transition_type& transition_item::transition () const
+        const data::handle::transition& transition_item::handle() const
         {
-          return _transition;
-        }
-        ::xml::parse::type::transition_type& transition_item::transition()
-        {
-          return _transition;
-        }
-        ::xml::parse::type::net_type& transition_item::net ()
-        {
-          return _net;
+          return _handle;
         }
 
         void transition_item::setPos (const QPointF& new_position)
@@ -121,9 +112,9 @@ namespace fhg
           }
         }
 
-        const std::string& transition_item::name() const
+        std::string transition_item::name() const
         {
-          return transition().name;
+          return handle()().name;
         }
 
         // void slot_change_name (QString name)

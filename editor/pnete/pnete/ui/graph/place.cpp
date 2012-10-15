@@ -10,6 +10,8 @@
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/transition.hpp>
 
+#include <QPainter>
+
 namespace fhg
 {
   namespace pnete
@@ -19,44 +21,34 @@ namespace fhg
       namespace graph
       {
         place_item::place_item
-          ( place_type& place
-          , ::xml::parse::type::net_type& net
+          ( const data::handle::place& handle
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , base_item* parent
           )
-          : connectable_item ( connectable::direction::BOTH
-                              , type_map
-                              , parent
-                              , &place.prop
-                              )
-          , _place (place)
-          , _net (net)
-          , _content()
+            : connectable_item ( connectable::direction::BOTH
+                               , type_map
+                               , parent
+                               , NULL //&handle().prop
+                               )
+            , _handle (handle)
+            , _content()
         {
           refresh_content();
         }
 
-        const place_type& place_item::place() const
+        const data::handle::place& place_item::handle() const
         {
-          return _place;
-        }
-        place_type& place_item::place()
-        {
-          return _place;
-        }
-        ::xml::parse::type::net_type& place_item::net()
-        {
-          return _net;
+          return _handle;
         }
 
         const std::string& place_item::we_type() const
         {
-          return connectable_item::we_type (place().type);
+          return connectable_item::we_type (_handle().type);
         }
 
-        const std::string& place_item::name() const
+        std::string place_item::name() const
         {
-          return place().name;
+          return _handle().name;
         }
 
         void place_item::refresh_content()

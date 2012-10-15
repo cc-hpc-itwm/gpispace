@@ -9,6 +9,8 @@
 #include <pnete/ui/graph/place.hpp>
 
 #include <pnete/data/internal.hpp>
+#include <pnete/data/handle/net.hpp>
+#include <pnete/data/handle/place.hpp>
 
 #include <xml/parse/types.hpp>
 
@@ -138,19 +140,19 @@ namespace fhg
         , _type_map (boost::none)
       {}
       function_with_mapping_type
-      transition::get_function (XMLTYPE(transition_type::f_type)& f)
+      transition::get_function (XMLTYPE(transition_type::function_or_use_type)& f)
       {
         return boost::apply_visitor (visitor::get_function(_net), f);
       }
 
       WSIG( transition
           , transition::function
-          , XMLTYPE(transition_type::f_type)
+          , XMLTYPE(transition_type::function_or_use_type)
           , fun
           )
       {
         function_with_mapping_type function_with_mapping
-          (get_function (const_cast<XMLTYPE(transition_type::f_type)&>(fun)));
+          (get_function (const_cast<XMLTYPE(transition_type::function_or_use_type)&>(fun)));
 
         weaver::function sub (function_with_mapping, _root);
 
@@ -350,6 +352,7 @@ namespace fhg
           weaver::port_toplevel wptl ( _scene
                                      , ui::graph::connectable::direction::OUT
                                      , _place_item_by_name
+                                     , _root
                                      );
           from::many (&wptl, _in, FROM(port));
         }
@@ -358,6 +361,7 @@ namespace fhg
           weaver::port_toplevel wptl ( _scene
                                      , ui::graph::connectable::direction::IN
                                      , _place_item_by_name
+                                     , _root
                                      );
           from::many (&wptl, _out, FROM(port));
         }
@@ -374,9 +378,7 @@ namespace fhg
       {
         ui::graph::place_item* place_item
           ( new ui::graph::place_item
-            ( const_cast<ITVAL(XMLTYPE(net_type::places_type))&> (place)
-            , _net
-            )
+            (data::handle::place (place, data::handle::net (_net)))
           );
         weaver::place wp (place_item, _place_item_by_name);
         _scene->addItem (place_item);
@@ -390,10 +392,7 @@ namespace fhg
       {
         ui::graph::transition_item* trans
           ( new ui::graph::transition_item
-            ( const_cast< ITVAL(XMLTYPE(net_type::transitions_type))& >
-              (transition)
-            , _net
-            )
+            (data::handle::transition (transition, data::handle::net (_net)))
           );
         _scene->addItem (trans);
         weaver::transition wt ( _root
@@ -443,15 +442,17 @@ namespace fhg
       }
 
       port_toplevel::port_toplevel
-      ( ui::graph::scene_type* scene
+        ( ui::graph::scene_type* scene
         , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
+        , data::internal_type* root
         )
           : _scene (scene)
           , _place_item_by_name (place_item_by_name)
           , _name ()
           , _direction (direction)
           , _port_item ()
+          , _root (root)
       {}
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
@@ -480,7 +481,9 @@ namespace fhg
                                   , _direction
                                   );
 
-            FROM(connection) (&wc, XMLTYPE(connect_type) (*place, _name));
+            FROM(connection) (&wc, XMLTYPE(connect_type)
+                               (*place, _name, _root->state().next_id())
+                             );
           }
       }
       WSIG(port_toplevel, port::properties, WETYPE(property::type), props)

@@ -11,6 +11,8 @@
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/validprefix.hpp>
 
+#include <xml/parse/util/id_type.hpp>
+
 #include <iostream>
 
 #include <boost/variant.hpp>
@@ -181,17 +183,17 @@ namespace xml
 
         function_type operator () (const use_type & use) const
         {
-          function_type fun;
+          boost::optional<function_type> fun (net.get_function (use.name));
 
-          if (!net.get_function (use.name, fun))
+          if (!fun)
             {
               throw error::unknown_function
                 (use.name, trans.name, trans.path);
             }
 
-          fun.name = trans.name;
+          fun->name = trans.name;
 
-          return fun;
+          return *fun;
         }
       };
 
@@ -207,10 +209,54 @@ namespace xml
         xml::util::unique<connect_type> _read;
         xml::util::unique<place_map_type> _place_map;
 
-      public:
-        typedef boost::variant <function_type, use_type> f_type;
+        ::fhg::xml::parse::util::id_type _id;
 
-        f_type f;
+      public:
+        transition_type (const ::fhg::xml::parse::util::id_type& id)
+          : _id (id)
+          , _function_or_use (boost::none)
+        { }
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const transition_type& other) const
+        {
+          return id() == other.id();
+        }
+
+        typedef boost::variant <function_type, use_type>
+                function_or_use_type;
+
+      private:
+        boost::optional<function_or_use_type> _function_or_use;
+
+      public:
+        const function_or_use_type& function_or_use() const
+        {
+          if (!_function_or_use)
+          {
+            throw std::runtime_error
+              ("requested function or use with no function set!");
+          }
+          return *_function_or_use;
+        }
+        function_or_use_type& function_or_use()
+        {
+          if (!_function_or_use)
+          {
+            throw std::runtime_error
+              ("requested function or use with no function set!");
+          }
+          return *_function_or_use;
+        }
+        const function_or_use_type& function_or_use
+          (const function_or_use_type& function_or_use_)
+        {
+          return *(_function_or_use = function_or_use_);
+        }
 
         std::string name;
         boost::filesystem::path path;
@@ -309,7 +355,9 @@ namespace xml
                      )
         {
           boost::apply_visitor
-            (transition_resolve<function_type> (global, state, forbidden), f);
+            ( transition_resolve<function_type> (global, state, forbidden)
+            , function_or_use()
+            );
         }
 
         // ***************************************************************** //
@@ -326,7 +374,7 @@ namespace xml
                                                    , known_structs
                                                    , state
                                                    )
-            , f
+            , function_or_use()
             );
         }
 
@@ -335,7 +383,7 @@ namespace xml
         void sanity_check (const state::type & state) const
         {
           boost::apply_visitor ( transition_sanity_check<function_type> (state)
-                               , f
+                               , function_or_use()
                                );
         }
 
@@ -354,7 +402,7 @@ namespace xml
               , templates
               , specializes
               )
-            , f
+            , function_or_use()
             );
         }
 
@@ -368,9 +416,9 @@ namespace xml
                         ) const
         {
           // existence of connect.place
-          place_type place;
+          boost::optional<place_type> place (net.get_place (connect.place));
 
-          if (!net.get_place (connect.place, place))
+          if (!place)
             {
               throw error::connect_to_nonexistent_place
                 (direction, name, connect.place, path);
@@ -382,32 +430,29 @@ namespace xml
                                                              , state
                                                              , *this
                                                              )
-              , f
+              , function_or_use()
               )
             );
 
           // existence of connect.port
-          port_type port;
+          boost::optional<port_type> port ( (direction == "out")
+                                          ? fun.get_port_out (connect.port)
+                                          : fun.get_port_in (connect.port)
+                                          );
 
-          const bool port_exists
-            ( (direction == "out")
-            ? fun.get_port_out (connect.port, port)
-            : fun.get_port_in (connect.port, port)
-            );
-
-          if (!port_exists)
+          if (!port)
             {
               throw error::connect_to_nonexistent_port
                 (direction, name, connect.port, path);
             }
 
           // typecheck connect.place.type vs connect.port.type
-          if (place.type != port.type)
+          if (place->type != port->type)
             {
               throw error::connect_type_error ( direction
                                               , name
-                                              , port
-                                              , place
+                                              , *port
+                                              , *place
                                               , path
                                               );
             }
@@ -443,7 +488,7 @@ namespace xml
 
           // recurs
           boost::apply_visitor ( transition_type_check<function_type> (state)
-                               , f
+                               , function_or_use()
                                );
         };
       };
@@ -490,7 +535,7 @@ namespace xml
         Fun fun
           ( boost::apply_visitor
             ( transition_get_function<Net, Trans> (net, state, trans)
-            , trans.f
+            , trans.function_or_use()
             )
           );
 
@@ -499,17 +544,16 @@ namespace xml
             ; ++port_in
             )
           {
-            port_type port_out;
+            boost::optional<port_type> port_out
+              (fun.get_port_out (port_in->name));
 
-            if (  fun.get_port_out (port_in->name, port_out)
-               && (port_out.type != port_in->type)
-               )
+            if (port_out && (port_out->type != port_in->type))
               {
                 state.warn
                   ( warning::conflicting_port_types ( trans.name
                                                     , port_in->name
                                                     , port_in->type
-                                                    , port_out.type
+                                                    , port_out->type
                                                     , state.file_in_progress()
                                                     )
                   );
@@ -994,7 +1038,7 @@ namespace xml
           ::we::type::property::dump::dump (s, t.prop);
           ::xml::parse::type::dump::dump (s, t.requirements);
 
-          boost::apply_visitor (visitor::transition_dump (s), t.f);
+          boost::apply_visitor (visitor::transition_dump (s), t.function_or_use());
 
           dumps (s, t.place_map().begin(), t.place_map().end());
           dumps (s, t.read().begin(), t.read().end(), "read");

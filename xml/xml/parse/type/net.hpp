@@ -7,6 +7,7 @@
 #include <xml/parse/state.hpp>
 
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
@@ -58,6 +59,8 @@ namespace xml
         xml::util::unique<function_type,maybe_string_type> _templates;
         xml::util::unique<specialize_type> _specializes;
 
+        ::fhg::xml::parse::util::id_type _id;
+
       public:
         typedef xml::util::unique<place_type>::elements_type places_type;
         typedef xml::util::unique<transition_type>::elements_type transitions_type;
@@ -70,6 +73,20 @@ namespace xml
         we::type::property::type prop;
 
         xml::parse::struct_t::set_type structs_resolved;
+
+        net_type (const ::fhg::xml::parse::util::id_type& id)
+          : _id (id)
+        { }
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const net_type& other) const
+        {
+          return id() == other.id();
+        }
 
         // ***************************************************************** //
 
@@ -96,19 +113,31 @@ namespace xml
 
         // ***************************************************************** //
 
-        bool get_place (const std::string & name, place_type & place) const
+        boost::optional<place_type> get_place (const std::string & name) const
         {
-          return _places.by_key (name, place);
+          return _places.copy_by_key (name);
         }
 
-        bool get_function (const std::string & name, function_type & fun) const
+        boost::optional<place_type> place_by_id
+          (const ::fhg::xml::parse::util::id_type& id) const
         {
-          return _functions.by_key (maybe_string_type(name), fun);
+          return _places.copy_by_id (id);
         }
 
-        bool get_template (const std::string & name, function_type & tmpl) const
+        boost::optional<transition_type> transition_by_id
+          (const ::fhg::xml::parse::util::id_type& id) const
         {
-          return _templates.by_key (maybe_string_type(name), tmpl);
+          return _transitions.copy_by_id (id);
+        }
+
+        boost::optional<function_type> get_function (const std::string & name) const
+        {
+          return _functions.copy_by_key (maybe_string_type(name));
+        }
+
+        boost::optional<function_type> get_template (const std::string & name) const
+        {
+          return _templates.copy_by_key (maybe_string_type(name));
         }
 
         // ***************************************************************** //
@@ -116,19 +145,19 @@ namespace xml
         function_with_mapping_type get_function (const std::string & name)
         {
           boost::optional<function_type&>
-            fun (_functions.by_key (maybe_string_type (name)));
+            fun (_functions.ref_by_key (maybe_string_type (name)));
 
           if (fun)
             {
               return function_with_mapping_type (*fun);
             }
 
-          boost::optional<specialize_type &> spec (_specializes.by_key (name));
+          boost::optional<specialize_type &> spec (_specializes.ref_by_key (name));
 
           if (spec)
             {
               boost::optional<function_type&>
-                spec_fun (_templates.by_key (maybe_string_type (spec->use)));
+                spec_fun (_templates.ref_by_key (maybe_string_type (spec->use)));
 
               if (spec_fun)
                 {
@@ -174,8 +203,7 @@ namespace xml
 
         place_type& push_place (const place_type & p)
         {
-          place_type old;
-          boost::optional<place_type&> place (_places.push (p, old));
+          boost::optional<place_type&> place (_places.push (p));
 
           if (!place)
             {
@@ -192,15 +220,16 @@ namespace xml
 
         transition_type& push_transition (const transition_type & t)
         {
-          transition_type old;
-          boost::optional<transition_type&> trans (_transitions.push (t, old));
+          xml::util::unique<transition_type>::push_return_type trans
+            (_transitions.push_and_get_old_value (t));
 
-          if (!trans)
+          if (!trans.first)
             {
-              throw error::duplicate_transition<transition_type> (t, old);
+              throw error::duplicate_transition<transition_type>
+                (t, *trans.second);
             }
 
-          return *trans;
+          return *trans.first;
         }
 
         void erase_transition (const transition_type& t)
@@ -210,21 +239,25 @@ namespace xml
 
         void push_function (const function_type & f)
         {
-          function_type old;
+          xml::util::unique<function_type>::push_return_type fun
+            (_functions.push_and_get_old_value (f));
 
-          if (!_functions.push (f, old))
+          if (!fun.first)
             {
-              throw error::duplicate_function<function_type> (f, old);
+              throw error::duplicate_function<function_type>
+                (f, *fun.second);
             }
         }
 
         void push_template (const function_type & t)
         {
-          function_type old;
+          xml::util::unique<function_type>::push_return_type templ
+            (_templates.push_and_get_old_value (t));
 
-          if (!_templates.push (t, old))
+          if (!templ.first)
             {
-              throw error::duplicate_template<function_type> (t, old);
+              throw error::duplicate_template<function_type>
+                (t, *templ.second);
             }
         }
 
@@ -307,18 +340,19 @@ namespace xml
               ; ++specialize
               )
             {
-              function_type tmpl;
+              boost::optional<function_type> tmpl
+                (get_template (specialize->use));
 
-              if (!get_template (specialize->use, tmpl))
+              if (!tmpl)
                 {
                   throw error::unknown_template (specialize->use, path);
                 }
 
-              tmpl.name = specialize->name;
+              tmpl->name = specialize->name;
 
               type_map_apply (map, specialize->type_map);
 
-              tmpl.specialize
+              tmpl->specialize
                 ( specialize->type_map
                 , specialize->type_get
                 , st::join (known_structs, st::make (structs), state)
@@ -326,15 +360,15 @@ namespace xml
                 );
 
               split_structs ( known_structs
-                            , tmpl.structs
+                            , tmpl->structs
                             , structs
                             , specialize->type_get
                             , state
                             );
 
-              tmpl.was_template = true;
+              tmpl->was_template = true;
 
-              push_function (tmpl);
+              push_function (*tmpl);
             }
 
           _specializes.clear();
@@ -423,13 +457,14 @@ namespace xml
 
           BOOST_FOREACH (const function_type& fun, functions_above)
             {
-              function_type fun_local;
+              xml::util::unique<function_type>::push_return_type fun_local
+                (_functions.push_and_get_old_value (fun));
 
-              if (!_functions.push (fun, fun_local))
+              if (!fun_local.first)
                 {
                   state.warn ( warning::shadow_function ( fun.name
                                                         , fun.path
-                                                        , fun_local.path
+                                                        , fun_local.second->path
                                                         )
                              );
                 }
@@ -437,13 +472,14 @@ namespace xml
 
           BOOST_FOREACH (const function_type& tmpl, templates_above)
             {
-              function_type tmpl_local;
+              xml::util::unique<function_type>::push_return_type tmpl_local
+                (_templates.push_and_get_old_value (tmpl));
 
-              if (!_templates.push (tmpl, tmpl_local))
+              if (!tmpl_local.first)
                 {
                   state.warn ( warning::shadow_template ( tmpl.name
                                                         , tmpl.path
-                                                        , tmpl_local.path
+                                                        , tmpl_local.second->path
                                                         )
                              );
                 }
@@ -451,13 +487,14 @@ namespace xml
 
           BOOST_FOREACH (const specialize_type& spec, specializes_above)
             {
-              specialize_type spec_local;
+              xml::util::unique<specialize_type>::push_return_type spec_local
+                (_specializes.push_and_get_old_value (spec));
 
-              if (!_specializes.push (spec, spec_local))
+              if (!spec_local.first)
                 {
                   state.warn ( warning::shadow_specialize ( spec.name
                                                           , spec.path
-                                                          , spec_local.path
+                                                          , spec_local.second->path
                                                           )
                              );
                 }

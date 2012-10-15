@@ -80,7 +80,7 @@ namespace fhg
 
             namespace transition
             {
-              const std::string& name (const base_item * gi)
+              std::string name (const base_item * gi)
               {
                 return
                   qgraphicsitem_cast<const graph::transition_item*> (gi)->name();
