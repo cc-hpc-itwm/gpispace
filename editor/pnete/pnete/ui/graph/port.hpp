@@ -7,7 +7,7 @@
 #include <QMenu>
 
 #include <pnete/ui/graph/connectable_item.hpp>
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/orientation.hpp>
 
 #include <boost/optional.hpp>

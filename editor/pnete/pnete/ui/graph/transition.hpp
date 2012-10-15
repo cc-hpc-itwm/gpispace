@@ -14,7 +14,7 @@ class QStyleOptionGraphicsItem;
 class QWidget;
 class QAction;
 
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 #include <pnete/data/handle/transition.hpp>
 

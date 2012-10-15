@@ -12,7 +12,7 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/transition.hpp>
