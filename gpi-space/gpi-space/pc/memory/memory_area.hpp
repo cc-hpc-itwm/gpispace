@@ -44,6 +44,7 @@ namespace gpi
         std::string const & name () const;
         bool in_use () const;
         int type () const;
+        gpi::pc::type::flags_t flags () const;
 
         // WORK HERE:
         //    this function *must not* be called from the dtor

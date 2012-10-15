@@ -147,6 +147,12 @@ namespace gpi
         return m_descriptor.type;
       }
 
+      gpi::pc::type::flags_t
+      area_t::flags () const
+      {
+        return descriptor ().flags;
+      }
+
       bool area_t::is_local (const gpi::pc::type::memory_region_t region) const
       {
         return is_local (region.location, region.size);
