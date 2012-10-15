@@ -19,6 +19,53 @@ namespace fhg
     {
       namespace proxy
       {
+        namespace visitor
+        {
+          class root
+            : public boost::static_visitor<internal_type*>
+          {
+          public:
+            template<typename T>
+            internal_type* operator () (const T& x) const
+              {
+                return x.root();
+              }
+          };
+
+          template<typename RES>
+          class function : public boost::static_visitor<RES>
+          {
+          public:
+            template<typename T> RES operator () (T& x) const
+            {
+              return x.function();
+            }
+          };
+
+          template<typename RES>
+          class type_map : public boost::static_visitor<RES>
+          {
+          public:
+            template<typename T> RES operator () (T& x) const
+            {
+              return x.type_map();
+            }
+          };
+
+          class document_view_factory
+            : public boost::static_visitor<ui::document_view*>
+          {
+          private:
+            type& _proxy;
+
+          public:
+            document_view_factory (type& proxy);
+            ui::document_view * operator () (expression_proxy &) const;
+            ui::document_view * operator () (mod_proxy &) const;
+            ui::document_view * operator () (net_proxy &) const;
+          };
+        }
+
         ::xml::parse::type::function_type& function (type& proxy)
         {
           return boost::apply_visitor
