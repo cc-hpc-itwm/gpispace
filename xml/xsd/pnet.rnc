@@ -136,8 +136,7 @@ transition_type =
   attribute inline { xsd:boolean }?,
   attribute internal { xsd:boolean }?
 net_type =
-  (element defun { function_type }
-   | element include-function { function_include_type }
+  (element include-function { function_include_type }
    | element include-properties { properties_include_type }
    | element include-structs { struct_include_type }
    | element include-template { function_include_type }

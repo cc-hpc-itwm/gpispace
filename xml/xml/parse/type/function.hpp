@@ -1040,7 +1040,15 @@ namespace xml
         stream << "LDFLAGS += -lboost_serialization"               << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
-        stream << "  CP = cp"                                      << std::endl;
+        stream << "  CP = $(shell which cp)"                       << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifndef MKDIR"                                   << std::endl;
+        stream << "  MKDIR = $(shell which mkdir)"                 << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifndef RM"                                      << std::endl;
+        stream << "  RM = $(shell which rm) -f"                    << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
@@ -1057,7 +1065,7 @@ namespace xml
           }
 
         stream                                                     << std::endl;
-        stream << ".PHONY: default modules depend"                 << std::endl;
+        stream << ".PHONY: default modules depend install"         << std::endl;
         stream                                                     << std::endl;
         stream << "default: depend $(MODULES)"                     << std::endl;
         stream << "modules: depend $(MODULES) objcleandep"         << std::endl;
@@ -1196,10 +1204,49 @@ namespace xml
             stream                                                 << std::endl;
           }
 
-        stream << "####"                                          << std::endl;
-        stream << "#### modules finished"                         << std::endl;
-        stream << "####"                                          << std::endl;
+        stream << "####"                                           << std::endl;
+        stream << "#### modules finished"                          << std::endl;
+        stream << "####"                                           << std::endl;
         stream                                                     << std::endl;
+
+        stream << "ifeq \"$(LIB_DESTDIR)\" \"\""                   << std::endl;
+        stream                                                     << std::endl;
+        stream << "install:"                                       << std::endl;
+	stream << "\t$(error variable LIB_DESTDIR undefined)"      << std::endl;
+        stream                                                     << std::endl;
+        stream << "else"                                           << std::endl;
+        stream                                                     << std::endl;
+        stream << "$(LIB_DESTDIR):"                                << std::endl;
+	stream << "\t@$(MKDIR) -v -p $(LIB_DESTDIR)"               << std::endl;
+        stream                                                     << std::endl;
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            stream << cpp_util::make::mod_so_install (mod->first)
+                   << ": " << cpp_util::make::mod_so (mod->first)
+                   << " $(LIB_DESTDIR)"                            << std::endl;
+            stream << "\t@$(CP) -v $< $@"                          << std::endl;
+          }
+
+        stream                                                     << std::endl;
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            stream << "MODULES_INSTALL += "
+                   << cpp_util::make::mod_so_install (mod->first)  << std::endl;
+          }
+
+        stream                                                     << std::endl;
+        stream << "install: $(MODULES_INSTALL)"                    << std::endl;
+
+        stream                                                     << std::endl;
+        stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
         stream << "depend: $(DEPENDS)"                             << std::endl;
@@ -1219,7 +1266,7 @@ namespace xml
             ; ++mod
             )
           {
-            stream << "\t$(RM) $(OBJ_" << mod->first << ")"        << std::endl;
+            stream << "\t-$(RM) $(OBJ_" << mod->first << ")"        << std::endl;
           }
 
         stream                                                     << std::endl;

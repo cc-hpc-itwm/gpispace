@@ -26,22 +26,6 @@
     <specialize name="sum_long" use="sumT">
       <type-map replace="T" with="long"/>
     </specialize>
-    <defun name="sum">
-      <in name="r" type="long" place="r"/>
-      <in name="s" type="long" place="s"/>
-      <out name="t" type="long" place="t"/>
-      <net>
-        <place name="r" type="long"/>
-        <place name="s" type="long"/>
-        <place name="t" type="long"/>
-        <transition name="sum">
-          <use name="sum_long"/>
-          <connect-in port="r" place="r"/>
-          <connect-in port="s" place="s"/>
-          <connect-out port="t" place="t"/>
-        </transition>
-      </net>
-    </defun>
 
     <transition name="inner" inline="true">
       <defun>
@@ -59,14 +43,6 @@
           </transition>
           <place name="a" type="long"/>
           <place name="b" type="long"/>
-
-          <transition name="join">
-            <!-- outer function sum is used -->
-            <use name="sum"/>
-            <connect-in port="r" place="a"/>
-            <connect-in port="s" place="b"/>
-            <connect-out port="t" place="y"/>
-          </transition>
         </net>
       </defun>
       <connect-in port="x" place="a"/>
@@ -74,13 +50,6 @@
     </transition>
 
     <place name="c" type="long"/>
-
-    <transition name="join">
-      <use name="sum"/>
-      <connect-in port="r" place="b"/>
-      <connect-in port="s" place="c"/>
-      <connect-out port="t" place="y"/>
-    </transition>
 
     <place name="y" type="long"/>
   </net>

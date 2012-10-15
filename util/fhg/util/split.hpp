@@ -76,18 +76,26 @@ namespace fhg
     inline std::pair<std::string, std::string> split_string(const std::string &val
                                                            , const std::string &sep)
     {
-      std::string::size_type split_pos = val.find(sep);
+      std::string::size_type split_pos_s = val.find (sep);
+      std::string::size_type split_pos_e = split_pos_s + sep.size ();
 
-      const std::string first = val.substr(0, split_pos);
-      if (split_pos != std::string::npos)
+      const std::string first = val.substr(0, split_pos_s);
+      if (split_pos_s != std::string::npos)
       {
-        const std::string second = val.substr(split_pos+1);
+        const std::string second = val.substr (split_pos_e);
         return std::make_pair(first, second);
       }
       else
       {
         return std::make_pair(first, "");
       }
+    }
+
+    inline
+    std::pair<std::string, std::string>
+    split (std::string const &val, std::string const &sep)
+    {
+      return split_string (val, sep);
     }
 
     template <typename OutputIterator>

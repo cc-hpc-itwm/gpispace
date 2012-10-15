@@ -1,7 +1,0 @@
-<structs>
-
-  <struct name="store">
-    <field name="id" type="long"/>
-  </struct>
-
-</structs>

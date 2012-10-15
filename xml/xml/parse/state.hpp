@@ -606,6 +606,13 @@ namespace xml
 
         // ***************************************************************** //
 
+        void deprecated (const std::string& msg)
+        {
+          std::cerr << "DEPRECATED: " << msg << std::endl;
+        }
+
+        // ***************************************************************** //
+
         template<typename T>
         void warn (const struct_shadowed<T> & w) const
         {

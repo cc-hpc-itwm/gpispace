@@ -29,6 +29,8 @@ set (hdrs
   counter.hpp
   backtracing_exception.hpp
   backtracing_exception.fwd.hpp
+
+  url.hpp
 )
 
 set (srcs

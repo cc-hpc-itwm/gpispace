@@ -8,6 +8,7 @@ add_subdirectory(parsu)
 add_subdirectory(asian)
 add_subdirectory(cc)
 add_subdirectory(selftest)
+add_subdirectory(transform_file)
 
 option(WITH_APPLICATION_UFBMIG "Compile UfbMig Application" OFF)
 if (WITH_APPLICATION_UFBMIG)

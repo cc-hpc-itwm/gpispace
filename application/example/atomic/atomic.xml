@@ -119,7 +119,7 @@
     <place name="generate_B" type="long" />
     <place name="wait_B" type="long" />
 
-    <transition name="generate_b"  inline="true" inline="true">
+    <transition name="generate_b" inline="true">
       <include-function href="sequence.xml"/>
       <connect-in  port="amount" place="generate_B" />
       <connect-out port="out"    place="b" />

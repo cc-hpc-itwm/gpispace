@@ -26,14 +26,6 @@ ifndef TOUCH
   TOUCH = $(shell which touch)
 endif
 
-ifndef MKDIR
-  MKDIR = $(shell which mkdir)
-endif
-
-ifndef CP
-  CP = $(shell which cp)
-endif
-
 ###############################################################################
 
 ifndef SDPA_INCLUDE
@@ -160,13 +152,20 @@ ifndef PS_NOINLINE
   endif
 endif
 
+ifndef LIB_DESTDIR
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable LIB_DESTDIR)
+  else
+    LIB_DESTDIR = $(SDPA_LIBEXEC)/$(MAIN)
+  endif
+endif
+
 ###############################################################################
 
 DEP += $(CURDIR)/Makefile
 PATH_LIB += $(GEN)/pnetc/op
 WE_EXEC_LIBPATHS += $(PATH_LIB)
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
-LIB_DESTDIR = $(SDPA_LIBEXEC)/$(MAIN)
 
 ###############################################################################
 
@@ -206,7 +205,7 @@ WE_EXEC += $(WE_EXEC_OPTS)
 
 ###############################################################################
 
-.PHONY: default ps net verify put gen lib exec run
+.PHONY: default ps net verify put gen lib run
 
 default: run
 
@@ -216,8 +215,6 @@ net: $(NET)
 put: $(PUT)
 gen: $(GEN)
 verify: $(NET_VERIFICATION)
-
-run: lib exec
 
 ###############################################################################
 
@@ -263,18 +260,17 @@ $(PS_NOINLINE): $(NET_NOINLINE)
 
 ###############################################################################
 
-exec: $(PUT)
+run: lib $(PUT)
 	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
 
 ###############################################################################
 
-.PHONY: install
+.PHONY: install modinstall
 
-$(LIB_DESTDIR):
-	$(MKDIR) -p "$(LIB_DESTDIR)"
+install: modinstall
 
-install: lib $(LIB_DESTDIR)
-	@$(CP) -v $(PATH_LIB)/*.so $(LIB_DESTDIR)
+modinstall: lib
+	$(MAKE) LIB_DESTDIR=$(LIB_DESTDIR) -C $(GEN) install
 
 ###############################################################################
 
@@ -304,8 +300,7 @@ help:
 	@echo
 	@echo "gen         generate code into gen"
 	@echo "lib         'gen' & build libs from code in gen"
-	@echo "exec        'put' & execute workflow"
-	@echo "run         'lib' & 'exec'"
+	@echo "run         'lib' & 'put' & execute workflow"
 	@echo
 	@echo "verify      'net' & verify the pnet"
 	@echo "ps          'net' & generate postscript"
@@ -314,7 +309,9 @@ help:
 	@echo
 	@echo "showconfig  show the actual configuration"
 	@echo
-	@echo "install     install module(s) to SDPA_LIBEXEC/$(MAIN)"
+	@echo "modinstall  'lib' & install module(s) to $(LIB_DESTDIR)"
+	@echo
+	@echo "install     'modinstall'"
 
 ###############################################################################
 

@@ -122,7 +122,7 @@
 
     <include-template href="eatN.xml"/>
     <specialize name="eatN_control" use="eatN">
-      <type-map replace="T" with="long"/>
+      <type-map replace="T" with="control"/>
     </specialize>
 
     <transition name="eat_credits" inline="true">
