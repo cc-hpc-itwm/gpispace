@@ -475,7 +475,6 @@ namespace gpi
                            )
       {
         using namespace fhg::util;
-        using namespace gpi::pc::type::segment;
 
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
@@ -517,7 +516,7 @@ namespace gpi
             (new memory::sfs_area_t ( proc_id
                                     , url.path ()
                                     , size
-                                    , flags
+                                    , flags | F_GLOBAL
                                     , gpi::pc::global::topology ()
                                     )
             );
@@ -566,7 +565,7 @@ namespace gpi
           create_area_from_url (proc_id, url_s);
         add_area (area);
 
-        if (proc_id > 0 && area->type () == gpi::pc::type::segment::SEG_SFS)
+        if (proc_id > 0 && area->flags () & F_GLOBAL)
         {
           try
           {
@@ -638,7 +637,7 @@ namespace gpi
           area->garbage_collect ();
           m_areas.erase (area_it);
 
-          if (proc_id > 0 && area->type () == gpi::pc::type::segment::SEG_SFS)
+          if (proc_id > 0 && area->flags () & F_GLOBAL)
           {
             global::topology ().del_memory (seg_id);
           }
