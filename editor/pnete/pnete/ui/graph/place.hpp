@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include <xml/parse/types.hpp> // only type_map_type. m(
+#include <xml/parse/type_map_type.hpp>
 
 #include <boost/optional.hpp>
 
