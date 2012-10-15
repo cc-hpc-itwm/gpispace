@@ -3,22 +3,21 @@
 #ifndef _XML_PARSE_TYPE_PORT_HPP
 #define _XML_PARSE_TYPE_PORT_HPP
 
-#include <string>
-#include <iostream>
-
 #include <xml/parse/error.hpp>
-#include <xml/parse/state.hpp>
+#include <xml/parse/state.fwd.hpp>
+#include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/id_type.hpp>
+
+#include <fhg/util/maybe.hpp>
+#include <fhg/util/xml.fwd.hpp>
+
+#include <we/type/property.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
 
-#include <we/type/property.hpp>
-
-#include <fhg/util/maybe.hpp>
-#include <fhg/util/xml.hpp>
-
-namespace xmlutil = ::fhg::util::xml;
+#include <string>
 
 namespace xml
 {
@@ -40,41 +39,18 @@ namespace xml
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
                   , const ::fhg::xml::parse::util::id_type& id
-                  )
-          : _id (id)
-          , name (_name)
-          , type (_type)
-          , place (_place)
-          , prop ()
-        {}
+                  );
 
-        const ::fhg::xml::parse::util::id_type& id() const
-        {
-          return _id;
-        }
-
-        bool is_same (const port_type& other) const
-        {
-          return id() == other.id();
-        }
+        const ::fhg::xml::parse::util::id_type& id() const;
+        bool is_same (const port_type& other) const;
 
         void specialize ( const type::type_map_type & map_in
                         , const state::type &
-                        )
-        {
-          const type::type_map_type::const_iterator
-            mapped (map_in.find (type));
-
-          if (mapped != map_in.end())
-            {
-              type = mapped->second;
-            }
-        }
+                        );
       };
 
       // ******************************************************************* //
 
-      template<typename NET>
       class port_type_check : public boost::static_visitor<void>
       {
       private:
@@ -88,65 +64,12 @@ namespace xml
                         , const port_type & _port
                         , const boost::filesystem::path & _path
                         , const state::type & _state
-                        )
-          : direction (_direction)
-          , port (_port)
-          , path (_path)
-          , state (_state)
-        {}
+                        );
 
-        void operator () (const NET & net) const
-        {
-          if (port.place.isNothing())
-            {
-              if (direction == "in")
-                {
-                  state.warn
-                    (warning::port_not_connected (direction, port.name, path));
-                }
-              else
-                {
-                  throw error::port_not_connected (direction, port.name, path);
-                }
-            }
-          else
-            {
-              boost::optional<place_type> place
-                (net.get_place (*port.place));
-
-              if (!place)
-                {
-                  throw error::port_connected_place_nonexistent
-                    (direction, port.name, *port.place, path);
-                }
-
-              if (place->type != port.type)
-                {
-                  throw error::port_connected_type_error ( direction
-                                                         , port
-                                                         , *place
-                                                         , path
-                                                         );
-                }
-
-              if (direction == "tunnel")
-                {
-                  if (not place->is_virtual())
-                    {
-                      throw
-                        error::tunnel_connected_non_virtual (port, *place, path);
-                    }
-
-                  if (port.name != place->name)
-                    {
-                      throw error::tunnel_name_mismatch (port, *place, path);
-                    }
-                }
-            }
-        }
+        void operator () (const net_type & net) const;
 
         template<typename T>
-        void operator () (const T &) const
+          void operator () (const T &) const
         {
           if (port.place.isJust())
             {
@@ -160,21 +83,11 @@ namespace xml
 
       namespace dump
       {
-        inline void dump ( xml_util::xmlstream & s
-                         , const port_type & p
-                         , const std::string & direction
-                         )
-        {
-          s.open (direction);
-          s.attr ("name", p.name);
-          s.attr ("type", p.type);
-          s.attr ("place", p.place);
-
-          ::we::type::property::dump::dump (s, p.prop);
-
-          s.close();
-        }
-      } // namespace dump
+        void dump ( ::fhg::util::xml::xmlstream & s
+                  , const port_type & p
+                  , const std::string & direction
+                  );
+      }
     }
   }
 }

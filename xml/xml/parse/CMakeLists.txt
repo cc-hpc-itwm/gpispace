@@ -41,6 +41,7 @@ target_link_libraries(pnetc fhg-revision)
 target_link_libraries(pnetc xml_util_mk_fstream)
 target_link_libraries(pnetc ${WE_LIBRARIES})
 target_link_libraries(pnetc  ${Boost_LIBRARIES})
+target_link_libraries (pnetc xml_parse_type)
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 
@@ -50,6 +51,7 @@ if (ENABLE_STATIC_BINARIES)
   target_link_libraries(pnetc.static xml_util_mk_fstream)
   target_link_libraries(pnetc.static ${WE_LIBRARIES})
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
+  target_link_libraries (pnetc.static xml_parse_type)
 
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
 
