@@ -51,6 +51,7 @@ namespace xml
 
       // ******************************************************************* //
 
+      //! \todo This should be in the cpp file only.
       class port_type_check : public boost::static_visitor<void>
       {
       private:
