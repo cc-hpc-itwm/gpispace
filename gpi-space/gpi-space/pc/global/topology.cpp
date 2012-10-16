@@ -394,6 +394,7 @@ namespace gpi
           }
           m_shutting_down = true;
         }
+
         m_peer->stop();
         m_peer_thread->join();
         m_peer.reset();
