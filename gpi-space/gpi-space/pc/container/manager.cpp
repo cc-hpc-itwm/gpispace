@@ -10,8 +10,12 @@
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
-#include <gpi-space/pc/memory/gpi_area.hpp>
-#include <gpi-space/pc/memory/shm_area.hpp>
+
+#include <gpi-space/pc/memory/factory.hpp>
+
+// TODO remove this - currently required for register_memory
+#include <fhg/util/url.hpp>
+#include <fhg/util/url_io.hpp>
 
 namespace gpi
 {
@@ -46,6 +50,10 @@ namespace gpi
           lock_type lock (m_mutex);
           initialize_topology ();
           initialize_memory_manager ();
+
+          // TODO:  insert a  barrier  or  a global  'start'  operation that  is
+          // triggered by the master
+
           m_connector.start ();
         }
         catch (std::exception const & ex)
@@ -118,17 +126,11 @@ namespace gpi
                                         , gpi_api.number_of_queues ()
                                         );
 
-        memory::manager_t::area_ptr area
-          (new memory::gpi_area_t ( 0
-                                  , "GPI"
-                                  , gpi_api.memory_size ()
-                                  , gpi::pc::F_PERSISTENT
-                                  , gpi_api.dma_ptr ()
-                                  )
+        global::memory_manager ().add_memory
+          ( 0 // owner
+          , "gpi://"
+          , 1 // id
           );
-        area->set_id (1);
-
-        global::memory_manager ().add_area (area);
       }
 
       void manager_t::initialize_topology ()
@@ -262,13 +264,22 @@ namespace gpi
                                                               , const gpi::pc::type::flags_t flags
                                                               )
       {
-        memory::manager_t::area_ptr area
-          (new memory::shm_area_t ( pc_id
-                                  , name
-                                  , sz
-                                  , flags
-                                  )
-          );
+        // TODO: refactor here
+
+        using namespace gpi::pc;
+
+        fhg::util::url_t url;
+        url.type ("shm");
+        url.path (name);
+        url.set ("size", boost::lexical_cast<std::string>(sz));
+        if (flags & F_PERSISTENT)
+          url.set ("persistent", "true");
+        if (flags & F_EXCLUSIVE)
+          url.set ("exclusive", "true");
+
+        memory::area_ptr_t area =
+          memory::factory ().create (boost::lexical_cast<std::string>(url));
+        area->set_owner (pc_id);
         return global::memory_manager().register_memory (pc_id, area);
       }
 
