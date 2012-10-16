@@ -12,7 +12,8 @@
 #include "memory_transfer_t.hpp"
 #include "handle_generator.hpp"
 
-// those should be hidden in a factory class
+#include "factory.hpp"
+
 #include "gpi_area.hpp"
 #include "sfs_area.hpp"
 #include "shm_area.hpp"
@@ -27,7 +28,20 @@ namespace gpi
         : m_ident (0)
           // default counter value for user segments
         , m_segment_counter (MAX_PREALLOCATED_SEGMENT_ID)
-      {}
+      {
+        factory ().register_type ( "gpi"
+                                 , &gpi_area_t::create
+                                 );
+        factory ().register_type ( "shm"
+                                 , &shm_area_t::create
+                                 );
+        factory ().register_type ( "sfs"
+                                 , boost::bind ( sfs_area_t::create
+                                               , _1
+                                               , boost::ref (global::topology ())
+                                               )
+                                 );
+      }
 
       manager_t::~manager_t ()
       {
@@ -469,88 +483,13 @@ namespace gpi
         return m_transfer_mgr.wait_on_queue (queue);
       }
 
-      static memory::manager_t::area_ptr
-      create_area_from_url ( const gpi::pc::type::process_id_t proc_id
-                           , const std::string & url_s
-                           )
-      {
-        using namespace fhg::util;
-
-        url_t url (url_s);
-        gpi::pc::type::flags_t flags = F_NONE;
-
-        const std::string type (url.type ());
-
-        if (not read_bool (url.get ("create", "false")))
-        {
-          gpi::flag::set (flags, F_NOCREATE);
-        }
-        if (    read_bool (url.get ("unlink", "false")))
-        {
-          gpi::flag::set (flags, F_FORCE_UNLINK);
-        }
-        if (not read_bool (url.get ("mmap", "false")))
-        {
-          gpi::flag::set (flags, F_NOMMAP);
-        }
-        if (    read_bool (url.get ("exclusive", "false")))
-        {
-          gpi::flag::set (flags, F_EXCLUSIVE);
-        }
-        if (    read_bool (url.get ("persistent", "false")))
-        {
-          gpi::flag::set (flags, F_PERSISTENT);
-        }
-
-        // TODO: delegate  the call  to a  factory class, passing  it the  url -
-        //       memory types  register themselves with 'type'  (sfs, gpi, shm),
-        //       etc.
-        if      (type == "sfs")
-        {
-          gpi::pc::type::size_t size =
-            boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
-
-          MLOG (INFO, "creating sfs segment: " << url.path ());
-
-          memory::manager_t::area_ptr area
-            (new memory::sfs_area_t ( proc_id
-                                    , url.path ()
-                                    , size
-                                    , flags | F_GLOBAL
-                                    , gpi::pc::global::topology ()
-                                    )
-            );
-          return area;
-        }
-        else if (type == "shm")
-        {
-          gpi::pc::type::size_t size =
-            boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
-
-          MLOG (INFO, "opening/creating shm segment: " << url.path ());
-
-          memory::manager_t::area_ptr area
-            (new memory::shm_area_t ( proc_id
-                                    , url.path ()
-                                    , size
-                                    , flags
-                                    )
-            );
-          return area;
-        }
-        else
-        {
-          throw std::invalid_argument ("unsupported memory type: " + type);
-        }
-      }
-
       int
       manager_t::remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
                                    , std::string const & url
                                    )
       {
-        memory::manager_t::area_ptr area =
-          create_area_from_url (0, url);
+        area_ptr_t area = factory ().create (url);
+        area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
         return 0;
@@ -559,13 +498,17 @@ namespace gpi
       gpi::pc::type::segment_id_t
       manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
                             , const std::string & url_s
+                            , const gpi::pc::type::segment_id_t seg_id
                             )
       {
-        memory::manager_t::area_ptr area =
-          create_area_from_url (proc_id, url_s);
+        area_ptr_t area = factory ().create (url_s);
+        area->set_owner (proc_id);
+        if (seg_id > 0)
+          area->set_id (seg_id);
+
         add_area (area);
 
-        if (proc_id > 0 && area->flags () & F_GLOBAL)
+        if (area->flags () & F_GLOBAL)
         {
           try
           {
