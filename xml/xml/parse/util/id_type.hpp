@@ -31,10 +31,13 @@ namespace xml
       typedef ::fhg::xml::parse::util::id_type name
 
       MAKE_ID (connect);
+      MAKE_ID (function);
+      MAKE_ID (module);
       MAKE_ID (net);
       MAKE_ID (place);
       MAKE_ID (port);
       MAKE_ID (transition);
+      MAKE_ID (use);
 
 #undef MAKE_ID
     }
