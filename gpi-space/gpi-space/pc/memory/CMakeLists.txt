@@ -13,6 +13,7 @@ set (hdrs
   task_queue.hpp
   transfer_queue.hpp
   transfer_manager.hpp
+  factory.hpp
   )
 
 set (srcs
@@ -28,6 +29,7 @@ set (srcs
   task_queue.cpp
   transfer_queue.cpp
   transfer_manager.cpp
+  factory.cpp
   )
 
 ADD_LIBRARY(gpi-space-pc-memory ${hdrs} ${srcs})
