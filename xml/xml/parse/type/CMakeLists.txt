@@ -21,6 +21,7 @@ set (xml_parse_type_fwd_headers
   connect.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
+  port.fwd.hpp
   transition.fwd.hpp
 )
 
