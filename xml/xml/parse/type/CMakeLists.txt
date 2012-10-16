@@ -18,12 +18,14 @@ set (xml_parse_type_headers
 )
 
 set (xml_parse_type_fwd_headers
+  connect.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
   transition.fwd.hpp
 )
 
 set (xml_parse_type_sources
+  connect.cpp
   port.cpp
 )
 
