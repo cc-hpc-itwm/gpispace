@@ -37,7 +37,7 @@ namespace xml
         std::string place;
         std::string port;
 
-        //! \todo Is this needed?
+        //! \todo This is only needed for errors and unique<connect_type>.
         std::string name;
 
         we::type::property::type prop;
