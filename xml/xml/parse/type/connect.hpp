@@ -31,27 +31,34 @@ namespace xml
         we::type::property::type prop;
 
       private:
-        ::fhg::xml::parse::util::id_type _id;
+        id::connect _id;
+        id::transition _parent;
 
       public:
         connect_type ( const std::string & _place
                      , const std::string & _port
-                     , const ::fhg::xml::parse::util::id_type& id
+                     , const id::connect& id
+                     , const id::transition& parent
                      )
           : place (_place)
           , port (_port)
           , name (_place + " <-> " + _port)
           , _id (id)
+          , _parent (parent)
         {}
 
-        const ::fhg::xml::parse::util::id_type& id() const
+        const id::connect& id() const
         {
           return _id;
+        }
+        const id::transition& parent() const
+        {
+          return _parent;
         }
 
         bool is_same (const connect_type& other) const
         {
-          return id() == other.id();
+          return id() == other.id() && parent() == other.parent();
         }
       };
 

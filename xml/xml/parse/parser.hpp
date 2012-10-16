@@ -44,6 +44,7 @@ namespace xml
 
     static type::connect_type connect_type ( const xml_node_type *
                                            , state::type &
+                                           , const id::transition& parent
                                            );
     static type::function_type function_type ( const xml_node_type *
                                              , state::type &
@@ -326,12 +327,16 @@ namespace xml
     // ********************************************************************* //
 
     static type::connect_type
-    connect_type (const xml_node_type * node, state::type & state)
+    connect_type ( const xml_node_type * node
+                 , state::type & state
+                 , const id::transition& parent
+                 )
     {
       type::connect_type connect
         ( required ("connect_type", node, "place", state.file_in_progress())
         , required ("connect_type", node, "port", state.file_in_progress())
         , state.next_id()
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1551,19 +1556,19 @@ namespace xml
                 }
               else if (child_name == "connect-in")
                 {
-                  t.push_in (connect_type(child, state));
+                  t.push_in (connect_type(child, state, t.id()));
                 }
               else if (child_name == "connect-out")
                 {
-                  t.push_out (connect_type(child, state));
+                  t.push_out (connect_type(child, state, t.id()));
                 }
               else if (child_name == "connect-inout")
                 {
-                  t.push_inout (connect_type (child, state));
+                  t.push_inout (connect_type (child, state, t.id()));
                 }
               else if (child_name == "connect-read")
                 {
-                  t.push_read (connect_type(child, state));
+                  t.push_read (connect_type(child, state, t.id()));
                 }
               else if (child_name == "condition")
                 {
