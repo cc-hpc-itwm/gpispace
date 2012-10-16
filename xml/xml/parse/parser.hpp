@@ -63,6 +63,7 @@ namespace xml
     static type::token_type token_type (const xml_node_type *, state::type &);
     static type::transition_type transition_type ( const xml_node_type *
                                                  , state::type &
+                                                 , const id::net& parent
                                                  );
     static type::specialize_type specialize_type ( const xml_node_type *
                                                  , state::type &
@@ -744,7 +745,7 @@ namespace xml
                 }
               else if (child_name == "transition")
                 {
-                  n.push_transition (transition_type (child, state));
+                  n.push_transition (transition_type (child, state, n.id()));
                 }
               else if (child_name == "struct")
                 {
@@ -1487,12 +1488,15 @@ namespace xml
     // ********************************************************************* //
 
     static type::transition_type
-    transition_type (const xml_node_type * node, state::type & state)
+    transition_type ( const xml_node_type * node
+                    , state::type & state
+                    , const id::net& parent
+                    )
     {
       const std::string name
         (required ("transition_type", node, "name", state.file_in_progress()));
 
-      type::transition_type t (state.next_id());
+      type::transition_type t (state.next_id(), parent);
 
       t.path = state.file_in_progress();
       t.name = validate_name ( validate_prefix ( name

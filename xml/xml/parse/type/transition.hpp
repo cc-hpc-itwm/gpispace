@@ -209,22 +209,29 @@ namespace xml
         xml::util::unique<connect_type> _read;
         xml::util::unique<place_map_type> _place_map;
 
-        ::fhg::xml::parse::util::id_type _id;
+        id::transition _id;
+        id::net _parent;
 
       public:
-        transition_type (const ::fhg::xml::parse::util::id_type& id)
+        transition_type (const id::transition& id, const id::net& parent)
           : _id (id)
+          , _parent (parent)
           , _function_or_use (boost::none)
         { }
 
-        const ::fhg::xml::parse::util::id_type& id() const
+        const id::transition& id() const
         {
           return _id;
         }
 
+        const id::net& parent() const
+        {
+          return _parent;
+        }
+
         bool is_same (const transition_type& other) const
         {
-          return id() == other.id();
+          return id() == other.id() && parent() == other.parent();
         }
 
         typedef boost::variant <function_type, use_type>
