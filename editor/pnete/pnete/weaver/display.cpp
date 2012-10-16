@@ -470,21 +470,43 @@ namespace fhg
       WSIG(port_toplevel, port::place, MAYBE(std::string), place)
       {
         if (place)
+        {
+          item_by_name_type _port_item_by_name;
+
+          _port_item_by_name[_name] = _port_item;
+
+          typedef item_by_name_type::iterator iterator_type;
+
+          const iterator_type port_pos (_port_item_by_name.find (_name));
+          const iterator_type place_pos (_place_item_by_name.find (*place));
+
+          if (port_pos == _port_item_by_name.end())
           {
-            item_by_name_type _port_item_by_name;
-
-            _port_item_by_name[_name] = _port_item;
-
-            weaver::connection wc ( _scene
-                                  , _place_item_by_name
-                                  , _port_item_by_name
-                                  , _direction
-                                  );
-
-            FROM(connection) (&wc, XMLTYPE(connect_type)
-                               (*place, _name, _root->state().next_id())
-                             );
+            throw
+              std::runtime_error ("connection: port " + _name + " not found");
           }
+          if (place_pos == _place_item_by_name.end())
+          {
+            throw
+              std::runtime_error ("connection: place " + *place + " not found");
+          }
+
+          //! \todo Not connection, but association!
+          if (_direction == ui::graph::connectable::direction::IN)
+          {
+            _scene->create_connection ( place_pos->second
+                                      , port_pos->second
+                                      , false
+                                      );
+          }
+          else
+          {
+            _scene->create_connection ( port_pos->second
+                                      , place_pos->second
+                                      , false
+                                      );
+          }
+        }
       }
       WSIG(port_toplevel, port::properties, WETYPE(property::type), props)
       {
