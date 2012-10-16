@@ -34,7 +34,7 @@ namespace fhg
           bool operator== (const transition& other) const;
 
         private:
-          ::fhg::xml::parse::util::id_type _transition_id;
+          ::xml::parse::id::transition _transition_id;
           handle::net _net;
         };
       }

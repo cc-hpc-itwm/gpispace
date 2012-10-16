@@ -27,7 +27,7 @@ namespace fhg
           bool operator== (const net& other) const;
 
         private:
-          ::fhg::xml::parse::util::id_type _net_id;
+          ::xml::parse::id::net _net_id;
           //! \todo Remove the reference.
           net_type& _net;
         };

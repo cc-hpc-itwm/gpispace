@@ -31,7 +31,7 @@ namespace fhg
           bool operator== (const place& other) const;
 
         private:
-          ::fhg::xml::parse::util::id_type _place_id;
+          ::xml::parse::id::place _place_id;
           handle::net _net;
         };
       }
