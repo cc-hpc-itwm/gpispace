@@ -402,9 +402,7 @@ namespace gpi
       void
       sfs_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (  gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL)
-           && hdl.creator != (gpi::pc::type::process_id_t)(-1)
-           )
+        if (hdl.creator != (gpi::pc::type::process_id_t)(-1))
         {
           m_topology.alloc ( descriptor ().id
                            , hdl.id
@@ -419,10 +417,7 @@ namespace gpi
       void
       sfs_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
-        {
-          m_topology.free(hdl.id);
-        }
+        m_topology.free(hdl.id);
       }
 
       bool
