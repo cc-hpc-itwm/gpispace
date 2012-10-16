@@ -59,7 +59,8 @@ namespace xml
         xml::util::unique<function_type,maybe_string_type> _templates;
         xml::util::unique<specialize_type> _specializes;
 
-        ::fhg::xml::parse::util::id_type _id;
+        id::net _id;
+        id::function _parent;
 
       public:
         typedef xml::util::unique<place_type>::elements_type places_type;
@@ -74,18 +75,24 @@ namespace xml
 
         xml::parse::struct_t::set_type structs_resolved;
 
-        net_type (const ::fhg::xml::parse::util::id_type& id)
+        net_type (const id::net& id, const id::function& parent)
           : _id (id)
+          , _parent (parent)
         { }
 
-        const ::fhg::xml::parse::util::id_type& id() const
+        const id::net& id() const
         {
           return _id;
         }
 
+        const id::function& parent() const
+        {
+          return _parent;
+        }
+
         bool is_same (const net_type& other) const
         {
-          return id() == other.id();
+          return id() == other.id() && parent() == other.parent();
         }
 
         // ***************************************************************** //
@@ -100,6 +107,8 @@ namespace xml
             _functions = rhs._functions;
             _templates = rhs._templates;
             _specializes = rhs._specializes;
+            _id = rhs._id;
+            _parent = rhs._parent;
 
             contains_a_module_call = rhs.contains_a_module_call;
             structs = rhs.structs;

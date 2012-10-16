@@ -50,7 +50,10 @@ namespace xml
                                              , state::type &
                                              );
     static type::mod_type mod_type (const xml_node_type *, state::type &);
-    static type::net_type net_type (const xml_node_type *, state::type &);
+    static type::net_type net_type ( const xml_node_type *
+                                   , state::type &
+                                   , const id::function& parent
+                                   );
     static type::place_type place_type (const xml_node_type *, state::type &);
     static type::port_type port_type (const xml_node_type *, state::type &);
     static void gen_struct_type ( const xml_node_type *, state::type &
@@ -539,7 +542,7 @@ namespace xml
                 }
               else if (child_name == "net")
                 {
-                  f.f = net_type (child, state);
+                  f.f = net_type (child, state, f.id());
                 }
               else if (child_name == "condition")
                 {
@@ -706,9 +709,12 @@ namespace xml
     // ********************************************************************* //
 
     static type::net_type
-    net_type (const xml_node_type * node, state::type & state)
+      net_type ( const xml_node_type * node
+               , state::type & state
+               , const id::function& parent
+               )
     {
-      type::net_type n (state.next_id());
+      type::net_type n (state.next_id(), parent);
 
       n.path = state.file_in_progress();
 
