@@ -83,6 +83,16 @@ namespace gpi
         return m_descriptor.id;
       }
 
+      gpi::pc::type::id_t area_t::get_owner () const
+      {
+        return m_descriptor.creator;
+      }
+
+      void area_t::set_owner (gpi::pc::type::id_t o)
+      {
+        m_descriptor.creator = o;
+      }
+
       void area_t::garbage_collect ()
       {
         lock_type lock (m_mutex);
