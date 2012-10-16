@@ -212,6 +212,8 @@ namespace gpi
         handle_descriptor_map_t m_handles;
         process_ids_t m_attached_processes;
       };
+
+      typedef boost::shared_ptr<area_t> area_ptr_t;
     }
   }
 }

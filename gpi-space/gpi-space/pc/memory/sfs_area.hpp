@@ -22,6 +22,10 @@ namespace gpi
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SFS;
         static const int SFS_VERSION = 0x0001;
 
+        static area_ptr_t create ( std::string const &url
+                                 , gpi::pc::global::itopology_t & topology
+                                 );
+
         // cleanup a file segment
         static void cleanup (path_t const & path);
 

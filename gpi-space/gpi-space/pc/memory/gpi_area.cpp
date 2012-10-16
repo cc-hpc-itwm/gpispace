@@ -7,6 +7,10 @@
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 
+#include <fhg/util/url.hpp>
+#include <fhg/util/read_bool.hpp>
+
+#include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 
 namespace gpi
@@ -346,6 +350,50 @@ namespace gpi
         }
 
         return 0;
+      }
+
+      area_ptr_t gpi_area_t::create (std::string const &url_s)
+      {
+        using namespace fhg::util;
+        using namespace gpi::pc;
+
+        /*
+
+        url_t url (url_s);
+        gpi::pc::type::flags_t flags = F_NONE;
+
+        if (not read_bool (url.get ("create", "false")))
+        {
+          gpi::flag::set (flags, F_NOCREATE);
+        }
+        if (    read_bool (url.get ("unlink", "false")))
+        {
+          gpi::flag::set (flags, F_FORCE_UNLINK);
+        }
+        if (not read_bool (url.get ("mmap", "false")))
+        {
+          gpi::flag::set (flags, F_NOMMAP);
+        }
+        if (    read_bool (url.get ("exclusive", "false")))
+        {
+          gpi::flag::set (flags, F_EXCLUSIVE);
+        }
+        if (    read_bool (url.get ("persistent", "false")))
+        {
+          gpi::flag::set (flags, F_PERSISTENT);
+        }
+        */
+
+        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+        area_ptr_t area (new gpi_area_t ( 0
+                                        , "GPI"
+                                        , gpi_api.memory_size ()
+                                        , gpi::pc::F_PERSISTENT
+//                                        + gpi::pc::F_GLOBAL
+                                        , gpi_api.dma_ptr ()
+                                        )
+                        );
+        return area;
       }
     }
   }

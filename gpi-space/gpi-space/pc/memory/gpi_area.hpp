@@ -15,6 +15,8 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GPI;
 
+        static area_ptr_t create (std::string const &url);
+
         gpi_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & name
                    , const gpi::pc::type::size_t per_node_size

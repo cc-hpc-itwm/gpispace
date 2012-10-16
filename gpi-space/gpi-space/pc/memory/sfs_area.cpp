@@ -9,7 +9,10 @@
 #include <cstring> // strerror
 
 #include <fhglog/minimal.hpp>
+#include <fhg/util/url.hpp>
+#include <fhg/util/read_bool.hpp>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -483,6 +486,52 @@ namespace gpi
           throw std::runtime_error ("could not write");
         }
         return (gpi::pc::type::size_t)(write_rc);
+      }
+
+      area_ptr_t sfs_area_t::create ( std::string const &url_s
+                                    , gpi::pc::global::itopology_t & topology
+                                    )
+      {
+        using namespace fhg::util;
+        using namespace gpi::pc;
+
+        url_t url (url_s);
+        gpi::pc::type::flags_t flags = F_NONE;
+
+        if (not read_bool (url.get ("create", "false")))
+        {
+          gpi::flag::set (flags, F_NOCREATE);
+        }
+        if (    read_bool (url.get ("unlink", "false")))
+        {
+          gpi::flag::set (flags, F_FORCE_UNLINK);
+        }
+        if (not read_bool (url.get ("mmap", "false")))
+        {
+          gpi::flag::set (flags, F_NOMMAP);
+        }
+        if (    read_bool (url.get ("exclusive", "false")))
+        {
+          gpi::flag::set (flags, F_EXCLUSIVE);
+        }
+        if (    read_bool (url.get ("persistent", "false")))
+        {
+          gpi::flag::set (flags, F_PERSISTENT);
+        }
+
+        gpi::pc::type::size_t size =
+          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
+
+        MLOG (INFO, "creating sfs segment: " << url.path ());
+
+        area_ptr_t area (new sfs_area_t ( 0
+                                        , url.path ()
+                                        , size
+                                        , flags | F_GLOBAL
+                                        , topology
+                                        )
+                        );
+        return area;
       }
     }
   }
