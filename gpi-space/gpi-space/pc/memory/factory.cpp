@@ -32,7 +32,7 @@ namespace gpi
         function_map_t::iterator fun_it = m_factory_functions.find (url.type ());
         if (fun_it != m_factory_functions.end ())
         {
-          MLOG (INFO, "creating '" << url.type () << "' segment: " << url);
+          MLOG (DEBUG, "creating '" << url.type () << "' segment: " << url);
           return fun_it->second (url_s);
         }
         else

@@ -251,12 +251,12 @@ namespace gpi
           }
         }
 
-        MLOG( INFO
-            , "SFS memory created:"
-            << " path: " << m_path
-            << " size: " << m_size
-            << " mapped-to: " << m_ptr
-            );
+        MLOG ( TRACE
+             , "SFS memory created:"
+             << " path: " << m_path
+             << " size: " << m_size
+             << " mapped-to: " << m_ptr
+             );
 
         return 0;
       }
@@ -521,8 +521,6 @@ namespace gpi
 
         gpi::pc::type::size_t size =
           boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
-
-        MLOG (INFO, "creating sfs segment: " << url.path ());
 
         area_ptr_t area (new sfs_area_t ( 0
                                         , url.path ()

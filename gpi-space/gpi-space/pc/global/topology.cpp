@@ -440,7 +440,7 @@ namespace gpi
 
         m_established = true;
 
-        LOG(INFO, "topology established");
+        DMLOG(TRACE, "topology established");
       }
 
       void topology_t::cast( const gpi::rank_t rnk
