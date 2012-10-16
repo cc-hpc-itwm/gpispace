@@ -45,6 +45,11 @@ namespace fhg
         {
           return _place_id == other._place_id && _net == other._net;
         }
+
+        const ::xml::parse::id::place& place::id() const
+        {
+          return _place_id;
+        }
       }
     }
   }

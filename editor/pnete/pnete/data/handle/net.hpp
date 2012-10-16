@@ -26,6 +26,8 @@ namespace fhg
 
           bool operator== (const net& other) const;
 
+          const ::xml::parse::id::net& id() const;
+
         private:
           ::xml::parse::id::net _net_id;
           //! \todo Remove the reference.

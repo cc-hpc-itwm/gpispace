@@ -30,6 +30,8 @@ namespace fhg
 
           bool operator== (const place& other) const;
 
+          const ::xml::parse::id::place& id() const;
+
         private:
           ::xml::parse::id::place _place_id;
           handle::net _net;

@@ -47,6 +47,11 @@ namespace fhg
         {
           return _transition_id == other._transition_id && _net == other._net;
         }
+
+        const ::xml::parse::id::transition& transition::id() const
+        {
+          return _transition_id;
+        }
       }
     }
   }
