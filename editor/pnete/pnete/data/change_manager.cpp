@@ -341,7 +341,7 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::type::place_type place (_state.next_id());
+        ::xml::parse::type::place_type place (_state.next_id(), net.id());
         place.name = "place";
 
         while (net().has_place (place.name))

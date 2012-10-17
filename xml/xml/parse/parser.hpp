@@ -57,7 +57,10 @@ namespace xml
                                    , state::type &
                                    , const id::function& parent
                                    );
-    static type::place_type place_type (const xml_node_type *, state::type &);
+    static type::place_type place_type ( const xml_node_type *
+                                       , state::type &
+                                       , const id::net& parent
+                                       );
     static type::port_type port_type (const xml_node_type *, state::type &);
     static void gen_struct_type ( const xml_node_type *, state::type &
                                 , signature::desc_t &
@@ -759,7 +762,7 @@ namespace xml
                 }
               else if (child_name == "place")
                 {
-                  n.push_place (place_type (child, state));
+                  n.push_place (place_type (child, state, n.id()));
                 }
               else if (child_name == "transition")
                 {
@@ -895,8 +898,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::place_type
-    place_type (const xml_node_type * node, state::type & state)
+    static type::place_type place_type ( const xml_node_type * node
+                                       , state::type & state
+                                       , const id::net& parent
+                                       )
     {
       const std::string name
         (required ("place_type", node, "name", state.file_in_progress()));
@@ -914,6 +919,7 @@ namespace xml
                                              , optional (node, "virtual")
                                              )
         , state.next_id()
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())

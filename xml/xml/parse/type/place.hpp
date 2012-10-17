@@ -220,7 +220,8 @@ namespace xml
       private:
         fhg::util::maybe<bool> _is_virtual;
 
-        ::fhg::xml::parse::util::id_type _id;
+        id::place _id;
+        id::net _parent;
 
       public:
         std::string name;
@@ -233,26 +234,34 @@ namespace xml
         place_type ( const std::string & _name
                    , const std::string & _type
                    , const fhg::util::maybe<bool> is_virtual
-                   , const ::fhg::xml::parse::util::id_type& id
+                   , const id::place& id
+                   , const id::net& parent
                    )
           : _is_virtual (is_virtual)
           , _id (id)
+          , _parent (parent)
           , name (_name)
           , type (_type)
         {}
 
-        place_type (const ::fhg::xml::parse::util::id_type& id)
+        place_type (const id::place& id, const id::net& parent)
           : _id (id)
+          , _parent (parent)
         { }
 
-        const ::fhg::xml::parse::util::id_type& id() const
+        const id::place& id() const
         {
           return _id;
         }
 
+        const id::net& parent() const
+        {
+          return _parent;
+        }
+
         bool is_same (const place_type& other) const
         {
-          return id() == other.id();
+          return id() == other.id() && parent() == other.parent();
         }
 
         void push_token (const token_type & t)
