@@ -24,23 +24,26 @@ namespace xml
       struct place_map_type
       {
       public:
+        place_map_type ( const std::string & _place_virtual
+                       , const std::string & _place_real
+                       , const id::place_map& id
+                       , const id::transition& parent
+                       );
+
+        const id::place_map& id() const;
+        const id::transition& parent() const;
+
+        bool is_same (const place_map_type& other) const;
+
+      public:
         std::string place_virtual;
         std::string place_real;
         std::string name;
         we::type::property::type prop;
 
       private:
-        ::fhg::xml::parse::util::id_type _id;
-
-      public:
-        place_map_type ( const std::string & _place_virtual
-                       , const std::string & _place_real
-                       , const ::fhg::xml::parse::util::id_type& id
-                       );
-
-        const ::fhg::xml::parse::util::id_type& id() const;
-
-        bool is_same (const place_map_type& other) const;
+        id::place_map _id;
+        id::transition _parent;
       };
 
       typedef xml::util::unique<place_map_type>::elements_type place_maps_type;

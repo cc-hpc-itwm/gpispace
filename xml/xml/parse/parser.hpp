@@ -395,12 +395,16 @@ namespace xml
     // ********************************************************************* //
 
     static type::place_map_type
-    place_map_type (const xml_node_type * node, state::type & state)
+    place_map_type ( const xml_node_type * node
+                   , state::type & state
+                   , const id::transition& parent
+                   )
     {
       type::place_map_type place_map
         ( required ("place_map_type", node, "virtual", state.file_in_progress())
         , required ("place_map_type", node, "real", state.file_in_progress())
         , state.next_id()
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1580,7 +1584,7 @@ namespace xml
                 }
               else if (child_name == "place-map")
                 {
-                  t.push_place_map (place_map_type (child, state));
+                  t.push_place_map (place_map_type (child, state, t.id()));
                 }
               else if (child_name == "connect-in")
                 {

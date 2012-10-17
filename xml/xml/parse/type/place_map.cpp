@@ -12,22 +12,29 @@ namespace xml
     {
       place_map_type::place_map_type ( const std::string & _place_virtual
                                      , const std::string & _place_real
-                                     , const ::fhg::xml::parse::util::id_type& id
+                                     , const id::place_map& id
+                                     , const id::transition& parent
                                      )
         : place_virtual (_place_virtual)
         , place_real (_place_real)
         , name (_place_virtual + " <-> " + _place_real)
         , _id (id)
+        , _parent (parent)
       { }
 
-      const ::fhg::xml::parse::util::id_type& place_map_type::id() const
+      const id::place_map& place_map_type::id() const
       {
         return _id;
       }
 
+      const id::transition& place_map_type::parent() const
+      {
+        return _parent;
+      }
+
       bool place_map_type::is_same (const place_map_type& other) const
       {
-        return id() == other.id();
+        return id() == other.id() && parent() == other.parent();
       }
 
       namespace dump
