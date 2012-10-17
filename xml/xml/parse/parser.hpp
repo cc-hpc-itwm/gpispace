@@ -61,7 +61,10 @@ namespace xml
                                        , state::type &
                                        , const id::net& parent
                                        );
-    static type::port_type port_type (const xml_node_type *, state::type &);
+    static type::port_type port_type ( const xml_node_type *
+                                     , state::type &
+                                     , const id::function& parent
+                                     );
     static void gen_struct_type ( const xml_node_type *, state::type &
                                 , signature::desc_t &
                                 );
@@ -502,19 +505,19 @@ namespace xml
             {
               if (child_name == "in")
                 {
-                  f.push_in (port_type (child, state));
+                  f.push_in (port_type (child, state, f.id()));
                 }
               else if (child_name == "out")
                 {
-                  f.push_out (port_type (child, state));
+                  f.push_out (port_type (child, state, f.id()));
                 }
               else if (child_name == "inout")
                 {
-                  f.push_inout (port_type (child, state));
+                  f.push_inout (port_type (child, state, f.id()));
                 }
               else if (child_name == "tunnel")
                 {
-                  f.push_tunnel (port_type (child, state));
+                  f.push_tunnel (port_type (child, state, f.id()));
                 }
               else if (child_name == "struct")
                 {
@@ -976,7 +979,10 @@ namespace xml
     // ********************************************************************* //
 
     static type::port_type
-    port_type (const xml_node_type * node, state::type & state)
+    port_type ( const xml_node_type * node
+              , state::type & state
+              , const id::function& parent
+              )
     {
       const std::string name
         (required ("port_type", node, "name", state.file_in_progress()));
@@ -992,6 +998,7 @@ namespace xml
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
         , state.next_id()
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())

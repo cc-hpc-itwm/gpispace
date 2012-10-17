@@ -15,23 +15,30 @@ namespace xml
       port_type::port_type ( const std::string & _name
                            , const std::string & _type
                            , const fhg::util::maybe<std::string> & _place
-                           , const ::fhg::xml::parse::util::id_type& id
+                           , const id::port& id
+                           , const id::function& parent
                            )
         : _id (id)
+        , _parent (parent)
         , name (_name)
         , type (_type)
         , place (_place)
         , prop ()
       {}
 
-      const ::fhg::xml::parse::util::id_type& port_type::id() const
+      const id::port& port_type::id() const
       {
         return _id;
       }
 
+      const id::function& port_type::parent() const
+      {
+        return _parent;
+      }
+
       bool port_type::is_same (const port_type& other) const
       {
-        return id() == other.id();
+        return id() == other.id() && parent() == other.parent();
       }
 
       void port_type::specialize ( const type::type_map_type & map_in
