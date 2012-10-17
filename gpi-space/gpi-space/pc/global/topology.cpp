@@ -122,10 +122,11 @@ namespace gpi
 
       topology_t::topology_t()
         : m_shutting_down (false)
-        , m_rank ((gpi::rank_t)-1)
+        , m_go_received (false)
+        , m_waiting_for_go (0)
         , m_established (false)
-      {
-      }
+        , m_rank ((gpi::rank_t)-1)
+      {}
 
       topology_t::~topology_t()
       {
@@ -142,6 +143,31 @@ namespace gpi
       bool topology_t::is_master () const
       {
         return 0 == m_rank;
+      }
+
+      int topology_t::wait_for_go ()
+      {
+        lock_type lock (m_go_event_mutex);
+
+        ++m_waiting_for_go;
+
+        while (! m_go_received)
+        {
+          m_go_received_event.wait (lock);
+        }
+
+        --m_waiting_for_go;
+        if (0 == m_waiting_for_go)
+        {
+          m_go_received = false;
+        }
+        return 0;
+      }
+
+      int topology_t::go ()
+      {
+        broadcast (detail::command_t("GO"));
+        return 0;
       }
 
       void topology_t::add_child(const gpi::rank_t rank)
@@ -692,6 +718,12 @@ namespace gpi
                 << ": " << av [1]
                 << ": " << av [2]
                 );
+          }
+          else if (av [0] == "GO")
+          {
+            lock_type lck (m_go_event_mutex);
+            m_go_received = true;
+            m_go_received_event.notify_all ();
           }
           else if (av[0] == "SHUTDOWN" && !m_shutting_down)
           {

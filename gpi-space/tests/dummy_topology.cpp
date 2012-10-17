@@ -38,5 +38,15 @@ namespace gpi
     {
       return true;
     }
+
+    int dummy_topology::go ()
+    {
+      return 0;
+    }
+
+    int dummy_topology::wait_for_go ()
+    {
+      return 0;
+    }
   }
 }

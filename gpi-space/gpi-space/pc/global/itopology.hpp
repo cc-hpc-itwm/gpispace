@@ -41,6 +41,9 @@ namespace gpi
                                ) = 0;
 
         virtual int del_memory (const gpi::pc::type::segment_id_t seg_id) = 0;
+
+        virtual int go () = 0;
+        virtual int wait_for_go () = 0;
       };
     }
   }

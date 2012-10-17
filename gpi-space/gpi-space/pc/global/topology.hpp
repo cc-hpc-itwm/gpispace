@@ -82,6 +82,9 @@ namespace gpi
 
         bool is_master () const;
 
+        int go ();
+        int wait_for_go ();
+
         // initiate a global alloc
         int alloc ( const gpi::pc::type::segment_id_t segment
                   , const gpi::pc::type::handle_t
@@ -170,8 +173,13 @@ namespace gpi
         mutable mutex_type m_request_mutex;
         mutable mutex_type m_result_mutex;
         mutable condition_type m_request_finished;
+        mutable mutex_type m_go_event_mutex;
+        mutable condition_type m_go_received_event;
 
         bool m_shutting_down;
+        bool m_go_received;
+        size_t m_waiting_for_go;
+        bool m_established;
         gpi::rank_t m_rank;
         thread_ptr m_peer_thread;
         peer_ptr   m_peer;
@@ -179,7 +187,6 @@ namespace gpi
         fhg::com::message_t m_incoming_msg;
 
         result_list_t m_current_results;
-        bool m_established;
       };
 
       inline
