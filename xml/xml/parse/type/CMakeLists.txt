@@ -32,6 +32,7 @@ set (xml_parse_type_sources
   connect.cpp
   expression.cpp
   mod.cpp
+  place.cpp
   port.cpp
 )
 
