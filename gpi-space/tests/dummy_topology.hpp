@@ -25,6 +25,8 @@ namespace gpi
                      );
 
       int del_memory (const gpi::pc::type::segment_id_t seg_id);
+
+      bool is_master () const;
     };
   }
 }

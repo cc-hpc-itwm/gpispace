@@ -33,5 +33,10 @@ namespace gpi
     {
       return 0;
     }
+
+    bool dummy_topology::is_master () const
+    {
+      return true;
+    }
   }
 }

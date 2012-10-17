@@ -80,6 +80,8 @@ namespace gpi
 
         void establish ();
 
+        bool is_master () const;
+
         // initiate a global alloc
         int alloc ( const gpi::pc::type::segment_id_t segment
                   , const gpi::pc::type::handle_t

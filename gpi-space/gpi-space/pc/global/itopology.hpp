@@ -23,6 +23,8 @@ namespace gpi
       public:
         virtual ~itopology_t () {}
 
+        virtual bool is_master () const = 0;
+
         // initiate a global alloc
         virtual int alloc ( const gpi::pc::type::segment_id_t segment
                           , const gpi::pc::type::handle_t

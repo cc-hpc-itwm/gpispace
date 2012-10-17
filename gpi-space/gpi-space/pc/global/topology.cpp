@@ -139,6 +139,11 @@ namespace gpi
         }
       }
 
+      bool topology_t::is_master () const
+      {
+        return 0 == m_rank;
+      }
+
       void topology_t::add_child(const gpi::rank_t rank)
       {
         child_t new_child(rank);
