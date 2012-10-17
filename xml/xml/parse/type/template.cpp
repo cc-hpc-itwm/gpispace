@@ -51,6 +51,11 @@ namespace xml
       {
         return _name;
       }
+      const std::string&
+      template_type::name(const std::string& name)
+      {
+        return *(_name = name);
+      }
 
       const template_type::names_type&
       template_type::template_parameter () const

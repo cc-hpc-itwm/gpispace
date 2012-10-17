@@ -45,6 +45,7 @@ namespace xml
         const id::net& parent() const;
         bool is_same (const template_type& other) const;
         const boost::optional<std::string>& name() const;
+        const std::string& name (const std::string& name);
         const names_type& template_parameter () const;
         void insert_template_parameter ( const std::string& tn
                                        , const state::type& state
