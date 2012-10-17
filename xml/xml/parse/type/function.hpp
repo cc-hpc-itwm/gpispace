@@ -2130,13 +2130,13 @@ namespace xml
         };
 
         template<typename NET>
-        class struct_to_cpp : public boost::static_visitor<void>
+        class struct_to_cpp_visitor : public boost::static_visitor<void>
         {
         private:
           const state::type & state;
 
         public:
-          struct_to_cpp (const state::type & _state)
+          struct_to_cpp_visitor (const state::type & _state)
             : state (_state)
           {}
 
@@ -2186,7 +2186,7 @@ namespace xml
 
         structs_to_cpp (f.structs, state);
 
-        boost::apply_visitor (visitor::struct_to_cpp<net_type>(state), f.f);
+        boost::apply_visitor (visitor::struct_to_cpp_visitor<net_type>(state), f.f);
       }
 
       // ******************************************************************* //
