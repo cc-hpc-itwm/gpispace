@@ -16,7 +16,7 @@
   <xsd:element name="defun" type="function_type"/>
   <xsd:element name="props" type="property_map_list_type"/>
   <xsd:element name="structs" type="struct_list_type"/>
-  <xsd:element name="template" type="function_type"/>
+  <xsd:element name="template" type="template_type"/>
 
   <xsd:complexType name="transition_include_type">
     <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
