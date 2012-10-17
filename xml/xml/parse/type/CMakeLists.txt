@@ -27,6 +27,7 @@ set (xml_parse_type_fwd_headers
   place_map.fwd.hpp
   port.fwd.hpp
   require.fwd.hpp
+  specialize.fwd.hpp
   transition.fwd.hpp
 )
 
@@ -36,8 +37,9 @@ set (xml_parse_type_sources
   mod.cpp
   place.cpp
   place_map.cpp
-  require.cpp
   port.cpp
+  require.cpp
+  specialize.cpp
 )
 
 add_library (xml_parse_type

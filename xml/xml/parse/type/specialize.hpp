@@ -3,16 +3,16 @@
 #ifndef _XML_PARSE_TYPE_SPECIALIZE_HPP
 #define _XML_PARSE_TYPE_SPECIALIZE_HPP
 
-#include <xml/parse/types.hpp>
+#include <xml/parse/state.fwd.hpp>
+#include <xml/parse/type/struct.hpp>
+#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/id_type.hpp>
 
-#include <iostream>
+#include <fhg/util/xml.fwd.hpp>
 
-#include <boost/unordered_map.hpp>
+#include <string>
 
-#include <fhg/util/xml.hpp>
-
-namespace xml_util = ::fhg::util::xml;
+#include <boost/filesystem.hpp>
 
 namespace xml
 {
@@ -23,30 +23,11 @@ namespace xml
       struct specialize_type
       {
       public:
-        specialize_type (const id::specialize& id, const id::net& parent)
-          : name()
-          , use()
-          , type_map()
-          , type_get()
-          , path()
-          , _id (id)
-          , _parent (parent)
-        { }
+        specialize_type (const id::specialize& id, const id::net& parent);
 
-        const id::specialize& id() const
-        {
-          return _id;
-        }
-
-        const id::net& parent() const
-        {
-          return _parent;
-        }
-
-        bool is_same (const specialize_type& other) const
-        {
-          return id() == other.id() && parent() == other.parent();
-        }
+        const id::specialize& id() const;
+        const id::net& parent() const;
+        bool is_same (const specialize_type& other) const;
 
       public:
         std::string name;
@@ -60,113 +41,24 @@ namespace xml
         id::net _parent;
       };
 
-      inline void
-      split_structs ( const xml::parse::struct_t::set_type & global
-                    , structs_type & child_structs
-                    , structs_type & parent_structs
-                    , const type_get_type & type_get
-                    , const state::type & state
-                    )
-      {
-        namespace st = xml::parse::struct_t;
-
-        const st::set_type known_structs
-          ( st::join ( global
-                     , st::join ( st::make (parent_structs)
-                                , st::make (child_structs)
-                                , st::forbidden_type()
-                                , state
-                                )
-                     , st::forbidden_type()
-                     , state
-                     )
-          );
-
-        structs_type structs (child_structs);
-
-        child_structs.clear();
-
-        for ( structs_type::iterator s (structs.begin())
-            ; s != structs.end()
-            ; ++s
-            )
-          {
-            const type_get_type::const_iterator pos (type_get.find (s->name));
-
-            if (pos == type_get.end())
-              {
-                child_structs.push_back (*s);
-              }
-            else
-              {
-                boost::apply_visitor ( st::resolve (known_structs, s->path)
-                                     , s->sig
-                                     );
-
-                parent_structs.push_back (*s);
-              }
-          }
-      }
-
-      inline void
-      specialize_structs ( const type_map_type & map
-                         , structs_type & structs
+      void split_structs ( const parse::struct_t::set_type & global
+                         , structs_type & child_structs
+                         , structs_type & parent_structs
+                         , const type_get_type & type_get
                          , const state::type & state
-                         )
-      {
-        for ( structs_type::iterator s (structs.begin())
-            ; s != structs.end()
-            ; ++s
-            )
-          {
-            s->sig = boost::apply_visitor
-              ( xml::parse::struct_t::specialize (map, state)
-              , s->sig
-              );
+                         );
 
-            type_map_type::const_iterator pos (map.find (s->name));
-
-            if (pos != map.end())
-              {
-                s->name = pos->second;
-              }
-          }
-      }
+      void specialize_structs ( const type_map_type & map
+                              , structs_type & structs
+                              , const state::type & state
+                              );
 
       namespace dump
       {
-        inline void dump ( xml_util::xmlstream & s
-                         , const specialize_type & sp
-                         )
-        {
-          s.open ("specialize");
-          s.attr ("name", sp.name);
-          s.attr ("use", sp.use);
-
-          for ( type_map_type::const_iterator tm (sp.type_map.begin())
-              ; tm != sp.type_map.end()
-              ; ++tm
-              )
-            {
-              s.open ("type-map");
-              s.attr ("replace", tm->first);
-              s.attr ("with", tm->second);
-              s.close ();
-            }
-
-          for ( type_get_type::const_iterator tg (sp.type_get.begin())
-              ; tg != sp.type_get.end()
-              ; ++tg
-              )
-            {
-              s.open ("type-get");
-              s.attr ("name", *tg);
-              s.close ();
-            }
-
-          s.close ();
-        }
-      } // namespace dump
+        void dump ( ::fhg::util::xml::xmlstream & s
+                  , const specialize_type & sp
+                  );
+      }
     }
   }
 }
