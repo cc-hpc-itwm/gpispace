@@ -166,7 +166,7 @@ namespace fhg
 
             namespace transition
             {
-              const std::string& name (const base_item *);
+              std::string name (const base_item *);
 //               const bool internal (const base_item *);
 //               const bool inline (const base_item *);
 //               const bool is_expression (const base_item *);

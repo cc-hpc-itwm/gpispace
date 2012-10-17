@@ -39,6 +39,7 @@ namespace fhg
         const ::xml::parse::type::function_type & function () const;
         const ::xml::parse::state::key_values_t & context () const;
         const ::xml::parse::state::type & state () const;
+        ::xml::parse::state::type & state ();
         change_manager_t& change_manager();
         const proxy::type& root_proxy() const;
         proxy::type& root_proxy();

@@ -6,7 +6,7 @@
 class QPainter;
 class QGraphicsSceneMouseEvent;
 
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 namespace fhg
 {

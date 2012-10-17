@@ -23,9 +23,10 @@ namespace fhg
 
       namespace path
       {
-        CONSTANT (path_type, pnetc, "pnetc")
-        CONSTANT (path_type, type , pnetc() / "type")
-        CONSTANT (path_type, op   , pnetc() / "op")
+        CONSTANT (path_type, pnetc   , "pnetc")
+        CONSTANT (path_type, type    , pnetc() / "type")
+        CONSTANT (path_type, op      , pnetc() / "op")
+        CONSTANT (path_type, install , "$(LIB_DESTDIR)")
       }
 
       namespace access
@@ -107,11 +108,19 @@ namespace fhg
           return extension::extend (name, extension::tmpl());
         }
 
+        inline std::string mod_so_name (const std::string& mod)
+        {
+          return extension::extend ("lib" + mod, extension::so());
+        }
+
         inline std::string mod_so (const std::string & mod)
         {
-          const path_type path (path::op() / ("lib" + mod));
+          return (path::op() / mod_so_name (mod)).string();
+        }
 
-          return extension::extend (path.string(), extension::so());
+        inline std::string mod_so_install (const std::string& mod)
+        {
+          return (path::install() / mod_so_name (mod)).string();
         }
 
         inline std::string obj (const std::string & mod)

@@ -3,8 +3,7 @@
 #ifndef _PNETE_UI_GRAPH_ITEM_HPP
 #define _PNETE_UI_GRAPH_ITEM_HPP 1
 
-#include <QObject>
-#include <QGraphicsItem>
+#include <QGraphicsObject>
 #include <QPointF>
 #include <QRectF>
 #include <QLinkedList>
@@ -29,10 +28,9 @@ namespace fhg
     {
       namespace graph
       {
-        class base_item : public QObject, public QGraphicsItem
+        class base_item : public QGraphicsObject
         {
           Q_OBJECT;
-          Q_INTERFACES(QGraphicsItem);
 
         public:
           enum ItemTypes

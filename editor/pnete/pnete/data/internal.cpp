@@ -16,25 +16,29 @@ namespace fhg
   {
     namespace data
     {
-      namespace detail
+      namespace
       {
         static ::xml::parse::type::function_type::type make_function
-        (const internal_type::kind& t)
+          (const internal_type::kind& t, ::xml::parse::state::type& state)
         {
           switch (t)
           {
-          case internal_type::expression: return ::xml::parse::type::expression_type();
-          case internal_type::module_call: return ::xml::parse::type::mod_type();
-          case internal_type::net: return ::xml::parse::type::net_type();
-          default: throw std::runtime_error ("make_function of unknown kind!?");
+          case internal_type::expression:
+            return ::xml::parse::type::expression_type();
+          case internal_type::module_call:
+            return ::xml::parse::type::mod_type();
+          case internal_type::net:
+            return ::xml::parse::type::net_type (state.next_id());
+          default:
+            throw std::runtime_error ("make_function of unknown kind!?");
           }
         }
       }
 
       internal_type::internal_type (const kind& kind_)
         : _state ()
-        , _function (detail::make_function (kind_))
-        , _change_manager()
+        , _function (make_function (kind_, _state), _state.next_id())
+        , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}
 
@@ -44,7 +48,7 @@ namespace fhg
                                               , filename.toStdString()
                                               )
                     )
-        , _change_manager()
+        , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}
 
@@ -68,6 +72,10 @@ namespace fhg
         return _state.key_values();
       }
       const ::xml::parse::state::type & internal_type::state () const
+      {
+        return _state;
+      }
+      ::xml::parse::state::type & internal_type::state ()
       {
         return _state;
       }

@@ -331,6 +331,7 @@ namespace xml
       type::connect_type connect
         ( required ("connect_type", node, "place", state.file_in_progress())
         , required ("connect_type", node, "port", state.file_in_progress())
+        , state.next_id()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -384,6 +385,7 @@ namespace xml
       type::place_map_type place_map
         ( required ("place_map_type", node, "virtual", state.file_in_progress())
         , required ("place_map_type", node, "real", state.file_in_progress())
+        , state.next_id()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -457,7 +459,7 @@ namespace xml
     static type::function_type
     function_type (const xml_node_type * node, state::type & state)
     {
-      type::function_type f;
+      type::function_type f (state.next_id());
 
       f.path = state.file_in_progress();
       f.name = optional (node, "name");
@@ -700,7 +702,7 @@ namespace xml
     static type::net_type
     net_type (const xml_node_type * node, state::type & state)
     {
-      type::net_type n;
+      type::net_type n (state.next_id());
 
       n.path = state.file_in_progress();
 
@@ -887,6 +889,7 @@ namespace xml
         , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
                                              , optional (node, "virtual")
                                              )
+        , state.next_id()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -954,6 +957,7 @@ namespace xml
                         )
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
+        , state.next_id()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1436,7 +1440,7 @@ namespace xml
     static type::specialize_type
     specialize_type (const xml_node_type * node, state::type & state)
     {
-      type::specialize_type s;
+      type::specialize_type s (state.next_id());
 
       s.path = state.file_in_progress();
       s.name = required ("specialize_type", node, "name", s.path);
@@ -1483,7 +1487,7 @@ namespace xml
       const std::string name
         (required ("transition_type", node, "name", state.file_in_progress()));
 
-      type::transition_type t;
+      type::transition_type t (state.next_id());
 
       t.path = state.file_in_progress();
       t.name = validate_name ( validate_prefix ( name
@@ -1524,20 +1528,22 @@ namespace xml
                                                     )
                                          );
 
-                  t.f = function_include (file, state);
+                  t.function_or_use (function_include (file, state));
                 }
               else if (child_name == "use")
                 {
-                  t.f = type::use_type ( required ( "transition_type"
-                                                  , child
-                                                  , "name"
-                                                  , state.file_in_progress()
-                                                  )
-                                       );
+                  t.function_or_use
+                    ( type::use_type ( required ( "transition_type"
+                                                , child
+                                                , "name"
+                                                , state.file_in_progress()
+                                                )
+                                     )
+                    );
                 }
               else if (child_name == "defun")
                 {
-                  t.f = function_type (child, state);
+                  t.function_or_use (function_type (child, state));
                 }
               else if (child_name == "place-map")
                 {

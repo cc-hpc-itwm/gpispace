@@ -9,6 +9,7 @@
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/mk_fstream.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <list>
 
@@ -469,20 +470,18 @@ namespace xml
                   , const std::string descr
                   )
         {
-          port_type old;
-
-          if (!ports.push (p, old))
+          if (!ports.push (p))
             {
               throw error::duplicate_port (descr, p.name, path);
             }
 
-          port_type other;
+          boost::optional<port_type> other (others.copy_by_key (p.name));
 
-          if (others.by_key (p.name, other) && p.type != other.type)
+          if (other && p.type != other->type)
             {
               throw error::port_type_mismatch ( p.name
                                               , p.type
-                                              , other.type
+                                              , other->type
                                               , path
                                               );
             }
@@ -493,6 +492,8 @@ namespace xml
         typedef boost::unordered_set<std::string> typenames_type;
 
         typenames_type _typenames;
+
+        ::fhg::xml::parse::util::id_type _id;
 
       public:
         typedef boost::variant < expression_type
@@ -522,8 +523,26 @@ namespace xml
 
         // ***************************************************************** //
 
-        function_type () {}
-        function_type (const type& _f) : f (_f) {}
+        function_type ( const type& _f
+                      , const ::fhg::xml::parse::util::id_type& id
+                      )
+          : _id (id)
+          , f (_f)
+        { }
+
+        function_type (const ::fhg::xml::parse::util::id_type& id)
+          : _id (id)
+        { }
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const function_type& other) const
+        {
+          return id() == other.id();
+        }
 
 #ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
         function_type & operator= (function_type const &rhs)
@@ -569,14 +588,14 @@ namespace xml
         const ports_type & out (void) const { return _out.elements(); }
         const ports_type& tunnel (void) const { return _tunnel.elements(); }
 
-        bool get_port_in (const std::string & name, port_type & port) const
+        boost::optional<port_type> get_port_in (const std::string & name) const
         {
-          return _in.by_key (name, port);
+          return _in.copy_by_key (name);
         }
 
-        bool get_port_out (const std::string & name, port_type & port) const
+        boost::optional<port_type> get_port_out (const std::string & name) const
         {
-          return _out.by_key (name, port);
+          return _out.copy_by_key (name);
         }
 
         bool is_known_port_in (const std::string & name) const
@@ -621,9 +640,7 @@ namespace xml
         void push_inout (const port_type & p) { push_in (p); push_out (p); }
         void push_tunnel (const port_type& p)
         {
-          port_type old;
-
-          if (!_tunnel.push (p, old))
+          if (!_tunnel.push (p))
             {
               throw error::duplicate_port ("tunnel", p.name, path);
             }
@@ -767,7 +784,7 @@ namespace xml
               )
             {
               boost::apply_visitor
-                (port_type_check<net_type> ("in", *port, path, state), f);
+                (port_type_check ("in", *port, path, state), f);
             }
 
           for ( ports_type::const_iterator port (out().begin())
@@ -776,13 +793,13 @@ namespace xml
               )
             {
               boost::apply_visitor
-                (port_type_check<net_type> ("out", *port, path, state), f);
+                (port_type_check ("out", *port, path, state), f);
             }
 
           BOOST_FOREACH (const port_type& port, tunnel())
             {
               boost::apply_visitor
-                (port_type_check<net_type> ("tunnel", port, path, state), f);
+                (port_type_check ("tunnel", port, path, state), f);
             }
 
           boost::apply_visitor (function_type_check<net_type> (state), f);
@@ -1023,7 +1040,15 @@ namespace xml
         stream << "LDFLAGS += -lboost_serialization"               << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
-        stream << "  CP = cp"                                      << std::endl;
+        stream << "  CP = $(shell which cp)"                       << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifndef MKDIR"                                   << std::endl;
+        stream << "  MKDIR = $(shell which mkdir)"                 << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifndef RM"                                      << std::endl;
+        stream << "  RM = $(shell which rm) -f"                    << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
@@ -1040,7 +1065,7 @@ namespace xml
           }
 
         stream                                                     << std::endl;
-        stream << ".PHONY: default modules depend"                 << std::endl;
+        stream << ".PHONY: default modules depend install"         << std::endl;
         stream                                                     << std::endl;
         stream << "default: depend $(MODULES)"                     << std::endl;
         stream << "modules: depend $(MODULES) objcleandep"         << std::endl;
@@ -1179,10 +1204,49 @@ namespace xml
             stream                                                 << std::endl;
           }
 
-        stream << "####"                                          << std::endl;
-        stream << "#### modules finished"                         << std::endl;
-        stream << "####"                                          << std::endl;
+        stream << "####"                                           << std::endl;
+        stream << "#### modules finished"                          << std::endl;
+        stream << "####"                                           << std::endl;
         stream                                                     << std::endl;
+
+        stream << "ifeq \"$(LIB_DESTDIR)\" \"\""                   << std::endl;
+        stream                                                     << std::endl;
+        stream << "install:"                                       << std::endl;
+	stream << "\t$(error variable LIB_DESTDIR undefined)"      << std::endl;
+        stream                                                     << std::endl;
+        stream << "else"                                           << std::endl;
+        stream                                                     << std::endl;
+        stream << "$(LIB_DESTDIR):"                                << std::endl;
+	stream << "\t@$(MKDIR) -v -p $(LIB_DESTDIR)"               << std::endl;
+        stream                                                     << std::endl;
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            stream << cpp_util::make::mod_so_install (mod->first)
+                   << ": " << cpp_util::make::mod_so (mod->first)
+                   << " $(LIB_DESTDIR)"                            << std::endl;
+            stream << "\t@$(CP) -v $< $@"                          << std::endl;
+          }
+
+        stream                                                     << std::endl;
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            stream << "MODULES_INSTALL += "
+                   << cpp_util::make::mod_so_install (mod->first)  << std::endl;
+          }
+
+        stream                                                     << std::endl;
+        stream << "install: $(MODULES_INSTALL)"                    << std::endl;
+
+        stream                                                     << std::endl;
+        stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
         stream << "depend: $(DEPENDS)"                             << std::endl;
@@ -1202,7 +1266,7 @@ namespace xml
             ; ++mod
             )
           {
-            stream << "\t$(RM) $(OBJ_" << mod->first << ")"        << std::endl;
+            stream << "\t-$(RM) $(OBJ_" << mod->first << ")"        << std::endl;
           }
 
         stream                                                     << std::endl;
@@ -1262,15 +1326,15 @@ namespace xml
 
           bool operator () (use_type & u) const
           {
-            function_type fun;
+            boost::optional<function_type> fun (net.get_function (u.name));
 
-            if (!net.get_function (u.name, fun))
+            if (!fun)
               {
                 throw error::unknown_function
                   (u.name, trans.name, trans.path);
               }
 
-            return xml::parse::type::find_module_calls (state, fun, m, mcs);
+            return xml::parse::type::find_module_calls (state, *fun, m, mcs);
           }
         };
       }
@@ -1294,7 +1358,7 @@ namespace xml
               |= boost::apply_visitor
               ( visitor::transition_find_module_calls
                  <NET, transition_type> (state, n, *pos, m, mcs)
-              , pos->f
+              , pos->function_or_use()
               );
           }
 
@@ -1756,15 +1820,16 @@ namespace xml
 
             if (mod.port_return.isJust())
               {
-                port_type port;
+                boost::optional<port_type> port
+                  (f.get_port_out (*mod.port_return));
 
-                if (!f.get_port_out (*mod.port_return, port))
+                if (!port)
                   {
                     STRANGE ("unknown return port " << *mod.port_return);
                   }
 
-                port_return = port_with_type (*mod.port_return, port.type);
-                types.insert (port.type);
+                port_return = port_with_type (*mod.port_return, port->type);
+                types.insert (port->type);
               }
 
             for ( port_args_type::const_iterator name (mod.port_arg.begin())
@@ -1779,71 +1844,75 @@ namespace xml
 
                 if (f.is_known_port_inout (*name))
                   {
-                    port_type port_in;
-                    port_type port_out;
+                    boost::optional<port_type> port_in
+                      (f.get_port_in (*name));
+                    boost::optional<port_type> port_out
+                      (f.get_port_out (*name));
 
-                    if (!f.get_port_in (*name, port_in))
+                    if (!port_in)
                       {
                         STRANGE ("failed to get port_in " << *name);
                       }
 
-                    if (!f.get_port_out (*name, port_out))
+                    if (!port_out)
                       {
                         STRANGE ("failed to get port_out " << *name);
                       }
 
-                    if (port_in.type != port_out.type)
+                    if (port_in->type != port_out->type)
                       {
-                        STRANGE ("in-type " << port_in.type
-                                << " != out-type " << port_out.type
+                        STRANGE ("in-type " << port_in->type
+                                << " != out-type " << port_out->type
                                 << " for port_inout " << *name
                                 );
                       }
 
                     if (    mod.port_return.isJust()
-                       && (*mod.port_return == port_in.name)
+                       && (*mod.port_return == port_in->name)
                        )
                       {
-                        ports_const.push_back (port_with_type (*name, port_in.type));
-                        types.insert (port_in.type);
+                        ports_const.push_back (port_with_type (*name, port_in->type));
+                        types.insert (port_in->type);
                       }
                     else
                       {
-                        ports_mutable.push_back (port_with_type (*name, port_in.type));
-                        types.insert (port_in.type);
+                        ports_mutable.push_back (port_with_type (*name, port_in->type));
+                        types.insert (port_in->type);
                       }
                   }
                 else if (f.is_known_port_in (*name))
                   {
-                    port_type port_in;
+                    boost::optional<port_type> port_in
+                      (f.get_port_in (*name));
 
-                    if (!f.get_port_in (*name, port_in))
+                    if (!port_in)
                       {
                         STRANGE ("failed to get port_in " << *name);
                       }
 
-                    ports_const.push_back (port_with_type (*name, port_in.type));
-                    types.insert (port_in.type);
+                    ports_const.push_back (port_with_type (*name, port_in->type));
+                    types.insert (port_in->type);
                   }
                 else if (f.is_known_port_out (*name))
                   {
-                    port_type port_out;
+                    boost::optional<port_type> port_out
+                      (f.get_port_out (*name));
 
-                    if (!f.get_port_out (*name, port_out))
+                    if (!port_out)
                       {
                         STRANGE ("failed to get port_out " << *name);
                       }
 
                     if (    mod.port_return.isJust()
-                       && (*mod.port_return == port_out.name)
+                       && (*mod.port_return == port_out->name)
                        )
                       {
                         // do nothing, it is the return port
                       }
                     else
                       {
-                        ports_out.push_back (port_with_type (*name, port_out.type));
-                        types.insert (port_out.type);
+                        ports_out.push_back (port_with_type (*name, port_out->type));
+                        types.insert (port_out->type);
                       }
                   }
                 else
@@ -2090,7 +2159,7 @@ namespace xml
                 )
               {
                 boost::apply_visitor ( transition_struct_to_cpp (state)
-                                     , pos->f
+                                     , pos->function_or_use()
                                      );
               }
           }

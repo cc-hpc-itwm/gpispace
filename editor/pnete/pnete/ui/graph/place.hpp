@@ -3,22 +3,22 @@
 #ifndef _FHG_PNETE_UI_GRAPH_PLACE_HPP
 #define _FHG_PNETE_UI_GRAPH_PLACE_HPP 1
 
-#include <QPainter>
-#include <QRectF>
+#include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/data/handle/place.hpp>
+
 #include <QStaticText>
 #include <QPointF>
 #include <QSizeF>
 
+#include <string>
+
+#include <xml/parse/type_map_type.hpp>
+
 #include <boost/optional.hpp>
 
-#include <xml/parse/types.hpp>
-
-#include <pnete/weaver/weaver.hpp>
-
+class QPainter;
 class QWidget;
 class QStyleOptionGraphicsItem;
-
-#include <pnete/ui/graph/connectable_item.hpp>
 
 namespace fhg
 {
@@ -28,26 +28,21 @@ namespace fhg
     {
       namespace graph
       {
-        typedef ITVAL(XMLTYPE(net_type::places_type)) place_type;
-
         class place_item : public connectable_item
         {
           Q_OBJECT;
 
         public:
           place_item
-            ( place_type& place
-            , ::xml::parse::type::net_type& net
+            ( const data::handle::place& handle
             , boost::optional< ::xml::parse::type::type_map_type&> type_map
             = boost::none
             , base_item* parent = NULL
             );
 
-          const place_type& place() const;
-          place_type& place();
-          ::xml::parse::type::net_type& net();
+          const data::handle::place& handle() const;
 
-          const std::string& name() const;
+          std::string name() const;
           const std::string& we_type() const;
 
           virtual void setPos (const QPointF&);
@@ -66,8 +61,7 @@ namespace fhg
           virtual int type() const { return Type; }
 
         private:
-          place_type& _place;
-          ::xml::parse::type::net_type& _net;
+          data::handle::place _handle;
 
           QStaticText _content;
 

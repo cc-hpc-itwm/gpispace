@@ -319,7 +319,7 @@ namespace expr
               switch (*token)
                 {
                 case token::val:
-                  tmp_stack.push_back (value::type(token()));
+                  tmp_stack.push_back (token());
                   break;
                 case token::ref:
                   tmp_stack.push_back (refnode(token.get_ref()));

@@ -2,7 +2,7 @@
 
 #include <pnete/ui/graph/style/type.hpp>
 
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 #include <QPainter>
 #include <QPen>

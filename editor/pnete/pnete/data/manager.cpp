@@ -90,7 +90,7 @@ namespace fhg
 
         fhg::util::xml::xmlstream s (fs);
 
-        xml::parse::type::dump::dump (s, data->function(), data->state());
+        ::xml::parse::type::dump::dump (s, data->function(), data->state());
       }
     }
   }

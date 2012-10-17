@@ -14,6 +14,7 @@
 
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/id_type.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/signature.hpp>
@@ -219,6 +220,8 @@ namespace xml
       private:
         fhg::util::maybe<bool> _is_virtual;
 
+        ::fhg::xml::parse::util::id_type _id;
+
       public:
         std::string name;
         std::string type;
@@ -227,16 +230,30 @@ namespace xml
         signature::type sig;
         we::type::property::type prop;
 
-        place_type () {}
-
         place_type ( const std::string & _name
                    , const std::string & _type
                    , const fhg::util::maybe<bool> is_virtual
+                   , const ::fhg::xml::parse::util::id_type& id
                    )
           : _is_virtual (is_virtual)
+          , _id (id)
           , name (_name)
           , type (_type)
         {}
+
+        place_type (const ::fhg::xml::parse::util::id_type& id)
+          : _id (id)
+        { }
+
+        const ::fhg::xml::parse::util::id_type& id() const
+        {
+          return _id;
+        }
+
+        bool is_same (const place_type& other) const
+        {
+          return id() == other.id();
+        }
 
         void push_token (const token_type & t)
         {

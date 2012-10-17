@@ -25,8 +25,19 @@ set (hdrs
   bool_io.hpp
 
   random.hpp
+
+  counter.hpp
+  backtracing_exception.hpp
+  backtracing_exception.fwd.hpp
+
   url.hpp
 )
+
+set (srcs
+  backtracing_exception.cpp
+)
+
+add_library (fhg-util ${srcs})
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util

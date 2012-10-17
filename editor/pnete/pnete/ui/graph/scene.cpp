@@ -12,7 +12,10 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
+
+#include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/transition.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
 
@@ -50,64 +53,37 @@ namespace fhg
         {
           init_menu_context();
 
+          // transition
+          change_mgr_link ( "transition_added", "transition_added"
+                          , "const data::handle::transition&"
+                          );
+          change_mgr_link ( "transition_deleted", "transition_deleted"
+                          , "const data::handle::transition&"
+                          );
+
+          // place
+          change_mgr_link ( "place_added", "place_added"
+                          , "const data::handle::place&"
+                          );
+          change_mgr_link ( "place_deleted", "place_deleted"
+                          , "const data::handle::place&"
+                          );
+        }
+
+        void scene_type::change_mgr_link ( const char* signal
+                                         , const char* slot
+                                         , const char* arguments
+                                         )
+        {
           connect ( &change_manager()
-                  , SIGNAL ( signal_delete_transition
-                           ( const QObject*
-                           , const ::xml::parse::type::transition_type&
-                           , const ::xml::parse::type::net_type&
-                           )
-                           )
-                  , SLOT ( slot_delete_transition
-                         ( const QObject*
-                         , const ::xml::parse::type::transition_type&
-                         , const ::xml::parse::type::net_type&
-                         )
-                         )
-                  , Qt::DirectConnection
-                  );
-          connect ( &change_manager()
-                  , SIGNAL ( signal_add_transition
-                           ( const QObject*
-                           , ::xml::parse::type::transition_type&
-                           , ::xml::parse::type::net_type&
-                           )
-                           )
-                  , SLOT ( slot_add_transition
-                         ( const QObject*
-                         , ::xml::parse::type::transition_type&
-                         , ::xml::parse::type::net_type&
-                         )
-                         )
-                  , Qt::DirectConnection
-                  );
-          connect ( &change_manager()
-                  , SIGNAL ( signal_delete_place
-                           ( const QObject*
-                           , const ::xml::parse::type::place_type&
-                           , const ::xml::parse::type::net_type&
-                           )
-                           )
-                  , SLOT ( slot_delete_place
-                         ( const QObject*
-                         , const ::xml::parse::type::place_type&
-                         , const ::xml::parse::type::net_type&
-                         )
-                         )
-                  , Qt::DirectConnection
-                  );
-          connect ( &change_manager()
-                  , SIGNAL ( signal_add_place
-                           ( const QObject*
-                           , ::xml::parse::type::place_type&
-                           , ::xml::parse::type::net_type&
-                           )
-                           )
-                  , SLOT ( slot_add_place
-                         ( const QObject*
-                         , ::xml::parse::type::place_type&
-                         , ::xml::parse::type::net_type&
-                         )
-                         )
+                  , ( std::string (QTOSTRING (QSIGNAL_CODE))
+                    + signal
+                    + "(const QObject*," + arguments + ")"
+                    ).c_str()
+                  , ( std::string (QTOSTRING (QSLOT_CODE))
+                    + slot
+                    + "(const QObject*," + arguments + ")"
+                    ).c_str()
                   , Qt::DirectConnection
                   );
         }
@@ -254,72 +230,9 @@ namespace fhg
           }
         }
 
-        ::xml::parse::type::net_type& scene_type::net()
-        {
-          return _net;
-        }
         data::change_manager_t& scene_type::change_manager()
         {
           return _internal->change_manager();
-        }
-
-
-        void scene_type::slot_add_transition ()
-        {
-          change_manager().add_transition (this, net());
-        }
-        void scene_type::slot_add_transition
-        ( const QObject* origin
-        , ::xml::parse::type::transition_type& t
-        , ::xml::parse::type::net_type& n
-        )
-        {
-          if (is_my_net (n))
-          {
-            transition_item* trans (new transition_item (t, n));
-
-            addItem (trans);
-
-            weaver::item_by_name_type place_by_name;
-
-            weaver::transition wt ( _internal
-                                  , this
-                                  , trans
-                                  , n
-                                  , place_by_name
-                                  );
-
-            FROM(transition) (&wt, t);
-
-            trans->repositionChildrenAndResize();
-
-            if (origin == this)
-            {
-              trans->setPos (mouse_position());
-            }
-          }
-        }
-
-        void scene_type::slot_add_place ()
-        {
-          change_manager().add_place (this, net());
-        }
-        void scene_type::slot_add_place ( const QObject* origin
-                                   , ::xml::parse::type::place_type& p
-                                   , ::xml::parse::type::net_type& n
-                                   )
-        {
-          if (is_my_net (n))
-          {
-            place_item* place (new place_item (p, n));
-
-            addItem (place);
-
-            if (origin == this)
-            {
-              place->setPos (mouse_position());
-            }
-          }
         }
 
         void scene_type::slot_add_struct ()
@@ -548,29 +461,6 @@ namespace fhg
           }
         }
 
-        void scene_type::slot_delete_transition
-        ( const QObject* origin
-        , const ::xml::parse::type::transition_type& trans
-        , const ::xml::parse::type::net_type& net
-        )
-        {
-          if (origin != this && is_my_net (net))
-          {
-            foreach (QGraphicsItem* child, items())
-            {
-              if ( transition_item* item
-                 = qgraphicsitem_cast<transition_item*> (child)
-                 )
-              {
-                if (&trans == &item->transition())
-                {
-                  remove_transition_item (item);
-                  item->deleteLater();
-                }
-              }
-            }
-          }
-        }
         void scene_type::remove_transition_item (transition_item* transition_item)
         {
           foreach (QGraphicsItem* child, transition_item->childItems())
@@ -583,6 +473,35 @@ namespace fhg
 
           removeItem (transition_item);
         }
+
+        template<typename item_type, typename handle_type>
+          item_type* scene_type::item_with_handle (const handle_type& handle)
+        {
+          foreach (QGraphicsItem* child, items())
+          {
+            if (item_type* item = qgraphicsitem_cast<item_type*> (child))
+            {
+              if (item->handle() == handle)
+              {
+                return item;
+              }
+            }
+          }
+          return NULL;
+        }
+
+        const data::handle::net& scene_type::net() const
+        {
+          return _net;
+        }
+
+        // ## trigger modification ###################################
+        // # transition ##############################################
+        void scene_type::slot_add_transition ()
+        {
+          change_manager().add_transition (this, net());
+        }
+
         void scene_type::slot_delete_transition (base_item* graph_item)
         {
           transition_item* transition_item
@@ -597,36 +516,18 @@ namespace fhg
           remove_transition_item (transition_item);
 
           change_manager().delete_transition ( this
-                                             , transition_item->transition()
-                                             , transition_item->net()
+                                             , transition_item->handle()
                                              );
 
           transition_item->deleteLater();
         }
 
-        void scene_type::slot_delete_place
-        ( const QObject* origin
-        , const ::xml::parse::type::place_type& place
-        , const ::xml::parse::type::net_type& net
-        )
+        // # place ###################################################
+        void scene_type::slot_add_place ()
         {
-          if (origin != this && is_my_net (net))
-          {
-            foreach (QGraphicsItem* child, items())
-            {
-              if ( place_item* item
-                 = qgraphicsitem_cast<place_item*> (child)
-                 )
-              {
-                if (&place == &item->place())
-                {
-                  removeItem (item);
-                  item->deleteLater();
-                }
-              }
-            }
-          }
+          change_manager().add_place (this, net());
         }
+
         void scene_type::slot_delete_place (base_item* graph_item)
         {
           place_item* place_item
@@ -638,19 +539,91 @@ namespace fhg
               ("STRANGE: delete_place for something else!?");
           }
 
+          place_item->erase_connections (this);
           removeItem (place_item);
 
           change_manager().delete_place ( this
-                                        , place_item->place()
-                                        , place_item->net()
+                                        , place_item->handle()
                                         );
 
           place_item->deleteLater();
         }
 
-        bool scene_type::is_my_net (const ::xml::parse::type::net_type& n)
+        // ## react on modification ##################################
+        // # transition ############################################
+        void scene_type::transition_added
+          (const QObject* origin, const data::handle::transition& transition)
         {
-          return &n == &net();
+          if (transition.net() == net())
+          {
+            transition_item* item (new transition_item (transition));
+
+            addItem (item);
+
+            weaver::item_by_name_type place_by_name;
+
+            weaver::transition wt ( _internal
+                                  , this
+                                  , item
+                                  , transition.net()()
+                                  , place_by_name
+                                  );
+
+            FROM(transition) (&wt, transition());
+
+            item->repositionChildrenAndResize();
+
+            if (origin == this)
+            {
+              item->setPos (mouse_position());
+            }
+          }
+        }
+
+        void scene_type::transition_deleted
+          (const QObject* origin, const data::handle::transition& transition)
+        {
+          if (origin != this && transition.net() == net())
+          {
+            transition_item* item
+              (item_with_handle<transition_item> (transition));
+            remove_transition_item (item);
+            item->deleteLater();
+          }
+        }
+
+        // # place ###################################################
+        void scene_type::place_added
+          (const QObject* origin, const data::handle::place& place)
+        {
+          if (place.net() == net())
+          {
+            place_item* item (new place_item (place));
+
+            addItem (item);
+
+            weaver::item_by_name_type place_by_name;
+
+            weaver::place wp (item, place_by_name);
+
+            FROM(place) (&wp, place());
+
+            if (origin == this)
+            {
+              item->setPos (mouse_position());
+            }
+          }
+        }
+
+        void scene_type::place_deleted
+          (const QObject* origin, const data::handle::place& place)
+        {
+          if (origin != this && place.net() == net())
+          {
+            place_item* item (item_with_handle<place_item> (place));
+            removeItem (item);
+            item->deleteLater();
+          }
         }
       }
     }

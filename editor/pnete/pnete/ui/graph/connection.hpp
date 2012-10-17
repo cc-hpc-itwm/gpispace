@@ -8,7 +8,7 @@
 #include <QRectF>
 #include <QObject>
 
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 class QPainter;
 class QStyleOptionGraphicsItem;

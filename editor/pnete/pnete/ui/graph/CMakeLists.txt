@@ -7,7 +7,7 @@ set(graph_SRCS
   scene.cpp
   transition.cpp
   cogwheel_button.cpp
-  item.cpp
+  base_item.cpp
   place.cpp
   orientation.cpp
 
@@ -21,7 +21,7 @@ set(graph_HDRS
   scene.hpp
   transition.hpp
   cogwheel_button.hpp
-  item.hpp
+  base_item.hpp
   place.hpp
   orientation.hpp
 
@@ -37,7 +37,7 @@ set(graph_TOMOC
   port.hpp
   scene.hpp
   transition.hpp
-  item.hpp
+  base_item.hpp
   place.hpp
 
   popover_widget.hpp

@@ -3,9 +3,13 @@
 #ifndef _PNETE_DATA_CHANGE_MANAGER_HPP
 #define _PNETE_DATA_CHANGE_MANAGER_HPP 1
 
-#include <QUndoStack>
+#include <pnete/data/handle/net.fwd.hpp>
+#include <pnete/data/handle/transition.fwd.hpp>
+#include <pnete/data/handle/place.fwd.hpp>
 
 #include <xml/parse/types.hpp>
+
+#include <QUndoStack>
 
 #include <boost/function_types/function_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
@@ -21,8 +25,10 @@ namespace fhg
         // ## editing action forward declarations ####################
         // - net -----------------------------------------------------
         // -- transition ---------------------------------------------
+        class add_transition;
         class remove_transition;
         // -- place --------------------------------------------------
+        class add_place;
         class remove_place;
         // - function ------------------------------------------------
         // - expression ----------------------------------------------
@@ -33,33 +39,32 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        change_manager_t();
+        //! \todo This is only a hack. There should not be a link to the state!
+        change_manager_t (::xml::parse::state::type& state);
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------
 
         // -- transition ---------------------------------------------
         void add_transition ( const QObject*
-                            , ::xml::parse::type::net_type&
+                            , const data::handle::net&
                             );
         void add_transition ( const QObject*
-                            , ::xml::parse::type::function_type&
-                            , ::xml::parse::type::net_type&
+                            , const ::xml::parse::type::function_type& fun
+                            , const data::handle::net&
                             );
 
         void delete_transition ( const QObject*
-                               , ::xml::parse::type::transition_type&
-                               , ::xml::parse::type::net_type&
+                               , const data::handle::transition&
                                );
 
         // -- place --------------------------------------------------
         void add_place ( const QObject*
-                       , ::xml::parse::type::net_type&
+                       , const data::handle::net&
                        );
 
         void delete_place ( const QObject*
-                          , ::xml::parse::type::place_type&
-                          , ::xml::parse::type::net_type&
+                          , const data::handle::place&
                           );
 
         // - function ------------------------------------------------
@@ -80,26 +85,16 @@ namespace fhg
         // - net -----------------------------------------------------
 
         // -- transition ---------------------------------------------
-        void signal_add_transition ( const QObject*
-                                   , ::xml::parse::type::transition_type&
-                                   , ::xml::parse::type::net_type&
-                                   );
-        void signal_delete_transition ( const QObject*
-                                      , const ::xml::parse::type::transition_type&
-                                      , const ::xml::parse::type::net_type&
-                                      );
+        void transition_added ( const QObject*
+                              , const data::handle::transition&
+                              );
+        void transition_deleted ( const QObject*
+                                , const data::handle::transition&
+                                );
 
         // -- place --------------------------------------------------
-        void signal_add_place ( const QObject*
-                              , ::xml::parse::type::place_type&
-                              , ::xml::parse::type::net_type&
-                              );
-
-        void
-        signal_delete_place ( const QObject*
-                            , const ::xml::parse::type::place_type&
-                            , const ::xml::parse::type::net_type&
-                            );
+        void place_added (const QObject*, const data::handle::place&);
+        void place_deleted (const QObject*, const data::handle::place&);
 
         // - function ------------------------------------------------
         void signal_set_function_name ( const QObject*
@@ -122,8 +117,10 @@ namespace fhg
         // ## friend classes  ########################################
         // - net -----------------------------------------------------
         // -- transition ---------------------------------------------
+        friend class action::add_transition;
         friend class action::remove_transition;
         // -- place --------------------------------------------------
+        friend class action::add_place;
         friend class action::remove_place;
         // - function ------------------------------------------------
         // - expression ----------------------------------------------
@@ -160,6 +157,7 @@ namespace fhg
                                  , typename ARG_TYPE(Fun,6));
 #undef ARG_TYPE
 
+        ::xml::parse::state::type& _state;
       };
     }
   }

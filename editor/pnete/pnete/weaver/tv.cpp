@@ -178,7 +178,7 @@ namespace fhg
       {
         FROM(structs) (this, structs);
       }
-      WSIG(tv, transition::function, XMLTYPE(transition_type::f_type), fun)
+      WSIG(tv, transition::function, XMLTYPE(transition_type::function_or_use_type), fun)
       {
         boost::apply_visitor
           (FROM(visitor::function_type<tv>) (this), fun);

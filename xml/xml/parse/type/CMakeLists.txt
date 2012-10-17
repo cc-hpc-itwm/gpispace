@@ -1,4 +1,6 @@
-set (hdrs
+# bernd.loerwald@itwm.fraunhofer.de
+
+set (xml_parse_type_headers
   connect.hpp
   expression.hpp
   function.hpp
@@ -13,8 +15,22 @@ set (hdrs
   token.hpp
   transition.hpp
   use.hpp
-  )
+)
 
-install (FILES ${hdrs}
+set (xml_parse_type_fwd_headers
+  net.fwd.hpp
+  place.fwd.hpp
+  transition.fwd.hpp
+)
+
+set (xml_parse_type_sources
+  port.cpp
+)
+
+add_library (xml_parse_type
+  ${xml_parse_type_sources}
+)
+
+install (FILES ${xml_parse_type_headers} ${xml_parse_type_fwd_headers}
   DESTINATION include/xml/parse/type
   COMPONENT headers)

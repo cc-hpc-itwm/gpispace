@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
@@ -38,9 +38,9 @@ namespace fhg
         }
 
         base_item::base_item ( base_item* parent
-                   , ::we::type::property::type* property
-                   )
-          : QGraphicsItem (parent)
+                             , ::we::type::property::type* property
+                             )
+          : QGraphicsObject (parent)
           , _property (property)
           , _style ()
           , _mode ()
