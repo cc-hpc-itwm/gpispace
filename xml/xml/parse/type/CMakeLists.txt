@@ -19,6 +19,7 @@ set (xml_parse_type_headers
 
 set (xml_parse_type_fwd_headers
   connect.fwd.hpp
+  expression.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
   port.fwd.hpp
@@ -27,6 +28,7 @@ set (xml_parse_type_fwd_headers
 
 set (xml_parse_type_sources
   connect.cpp
+  expression.cpp
   port.cpp
 )
 
