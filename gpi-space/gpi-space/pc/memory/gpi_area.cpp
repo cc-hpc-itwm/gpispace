@@ -362,7 +362,7 @@ namespace gpi
                                         , "GPI"
                                         , gpi_api.memory_size ()
                                         , gpi::pc::F_PERSISTENT
-//                                        + gpi::pc::F_GLOBAL
+                                        + gpi::pc::F_GLOBAL
                                         , gpi_api.dma_ptr ()
                                         )
                         );

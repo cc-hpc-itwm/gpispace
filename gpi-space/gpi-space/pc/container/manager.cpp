@@ -134,11 +134,15 @@ namespace gpi
                                         , gpi_api.number_of_queues ()
                                         );
 
-        global::memory_manager ().add_memory
-          ( 0 // owner
-          , "gpi://"
-          , 1 // id
-          );
+        if (global::topology ().is_master ())
+        {
+          global::memory_manager ().add_memory
+            ( 0 // owner
+            , "gpi://"
+            //            , "sfs:///fhgfs/HPC/petry/sfs-test?create=true&size=1099511627776&persistent=true"
+            , 1 // id
+            );
+        }
       }
 
       void manager_t::initialize_topology ()
