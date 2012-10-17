@@ -94,6 +94,7 @@ namespace gpi
 
         void * m_ptr;
         int    m_fd;
+        int    m_lock_fd;
         path_t m_path;
         int    m_version;
 

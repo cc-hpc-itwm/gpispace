@@ -439,4 +439,46 @@ BOOST_AUTO_TEST_CASE (test_read)
   }
 }
 
+BOOST_AUTO_TEST_CASE (test_already_open)
+{
+  using namespace gpi::pc::memory;
+  using namespace gpi::pc::segment;
+  using namespace gpi::pc::global;
+  using namespace gpi::pc::type;
+
+  gpi::tests::dummy_topology topology;
+
+  const gpi::pc::type::size_t size = (1L << 20); // 1 MB
+  const char *text = "hello world!\n";
+
+  try
+  {
+    sfs_area_t area ( 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::F_PERSISTENT
+                    + gpi::pc::F_NOMMAP
+                    , topology
+                    );
+    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+    area.set_id (2);
+
+    sfs_area_t area_51 ( 0
+                       , path_to_shared_file
+                       , size
+                       , gpi::pc::F_PERSISTENT
+                       + gpi::pc::F_NOMMAP
+                       , topology
+                       );
+
+    BOOST_CHECK_MESSAGE ( false
+                        , "it was possible to open the same sfs segment twice!"
+                        );
+  }
+  catch (std::exception const &ex)
+  {
+    // ok
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

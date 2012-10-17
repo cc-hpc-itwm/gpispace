@@ -4,6 +4,7 @@
 #include <sys/mman.h> // mmap
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <cstring> // strerror
@@ -43,6 +44,19 @@ namespace gpi
         {
           return p / "version";
         }
+
+        static sfs_area_t::path_t lock_path (sfs_area_t::path_t const &p)
+        {
+          return p / "lock";
+        }
+
+        static std::string my_lock_info ()
+        {
+          char buf [1024]; gethostname (buf, sizeof(buf));
+          std::ostringstream sstr;
+          sstr << buf << " " << getpid ();
+          return sstr.str ();
+        }
       }
 
       sfs_area_t::sfs_area_t ( const gpi::pc::type::process_id_t creator
@@ -59,6 +73,7 @@ namespace gpi
                  )
         , m_ptr (0)
         , m_fd (-1)
+        , m_lock_fd (-1)
         , m_path (path)
         , m_version (SFS_VERSION)
         , m_size (size)
@@ -172,6 +187,77 @@ namespace gpi
         }
 
         {
+          // lock it
+          if (m_topology.is_master ())
+          {
+            static const std::string my_lock_info = detail::my_lock_info ();
+
+            path_t lock_file = detail::lock_path (m_path);
+
+            // check for lock file
+            // abort if it exists -> we have it already open?
+            m_lock_fd = ::open ( lock_file.string ().c_str ()
+                               , O_CREAT + O_RDWR + O_EXCL
+                               , S_IRUSR + S_IWUSR
+                               );
+            if (m_lock_fd < 0)
+            {
+              // still in use?
+
+              // lock was successful, check who owns/owned it and abort
+              int fd = ::open ( lock_file.string ().c_str ()
+                              , O_RDONLY
+                              );
+              if (fd < 0)
+              {
+                ec.assign (errno, boost::system::system_category ());
+                return -1;
+              }
+
+              char buf [1024];
+              int read_bytes = ::read (fd, buf, sizeof(buf)-1);
+              if (read_bytes)
+                buf [read_bytes-1] = 0;
+              else
+                buf [0] = 0;
+              ::close (fd);
+
+              // compare lock info
+              if (my_lock_info == buf)
+              {
+                MLOG (WARN, "I already have this segment open!");
+                ec.assign (EADDRINUSE, boost::system::system_category ());
+                return -1;
+              }
+              else
+              {
+                // TODO: if on same host, check pid
+
+                MLOG ( ERROR
+                     , "sfs segment in: " << m_path
+                     << " still in use by: '" << buf << "'"
+                     << " manually remove: " << lock_file
+                     );
+                ec.assign (EADDRINUSE, boost::system::system_category ());
+                return -1;
+              }
+            }
+            else
+            {
+              if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
+              {
+                ec.assign (errno, boost::system::system_category ());
+                ::close (m_lock_fd);
+                MLOG (ERROR, "STRANGE: I was able to open & create exclusively the lock file but not to lock it");
+                return -1;
+              }
+
+              write (m_lock_fd, my_lock_info.c_str (), my_lock_info.size ());
+              write (m_lock_fd, "\n", 1);
+              fdatasync (m_lock_fd);
+            }
+          }
+
           // try to open existing file
           path_t data_path = detail::data_path (m_path);
           int fd = ::open ( data_path.string ().c_str ()
@@ -263,36 +349,52 @@ namespace gpi
 
       int sfs_area_t::close (boost::system::error_code &ec)
       {
-        /*
-          steps:
+        int rc = 0;
 
-          - check that no ongoing memory transfers are accessing this area
-          - unmap memory
-          - depending on the flags, remove the directory again
-         */
-        if (m_fd)
+        // only cleanup when we actually opened...
+        if ((m_fd >= 0) || (m_ptr != 0))
         {
-          ::close (m_fd); m_fd = -1;
+          /*
+            steps:
+
+            - check that no ongoing memory transfers are accessing this area
+            - unmap memory
+            - depending on the flags, remove the directory again
+          */
+          if (m_fd)
+          {
+            ::close (m_fd); m_fd = -1;
+          }
+
+          if (m_ptr)
+          {
+            munmap (m_ptr, m_size);
+            m_ptr = 0;
+          }
+
+          if (gpi::flag::is_set ( descriptor ().flags
+                                , gpi::pc::F_PERSISTENT
+                                )
+             )
+          {
+            rc = save_state (ec);
+          }
+          else
+          {
+            cleanup (m_path);
+          }
+
+          if (m_lock_fd >= 0)
+          {
+            lockf (m_lock_fd, F_ULOCK, 0);
+            ::close (m_lock_fd);
+            m_lock_fd = -1;
+
+            fs::remove_all (detail::lock_path (m_path));
+          }
         }
 
-        if (m_ptr)
-        {
-          munmap (m_ptr, m_size);
-          m_ptr = 0;
-        }
-
-        if (gpi::flag::is_set ( descriptor ().flags
-                              , gpi::pc::F_PERSISTENT
-                              )
-           )
-        {
-          return save_state (ec);
-        }
-        else
-        {
-          cleanup (m_path);
-          return 0;
-        }
+        return rc;
       }
 
       int sfs_area_t::save_state (boost::system::error_code &ec)
