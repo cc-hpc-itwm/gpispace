@@ -23,6 +23,32 @@ namespace xml
       struct specialize_type
       {
       public:
+        specialize_type (const id::specialize& id, const id::net& parent)
+          : name()
+          , use()
+          , type_map()
+          , type_get()
+          , path()
+          , _id (id)
+          , _parent (parent)
+        { }
+
+        const id::specialize& id() const
+        {
+          return _id;
+        }
+
+        const id::net& parent() const
+        {
+          return _parent;
+        }
+
+        bool is_same (const specialize_type& other) const
+        {
+          return id() == other.id() && parent() == other.parent();
+        }
+
+      public:
         std::string name;
         std::string use;
         type_map_type type_map;
@@ -30,27 +56,8 @@ namespace xml
         boost::filesystem::path path;
 
       private:
-        ::fhg::xml::parse::util::id_type _id;
-
-      public:
-        specialize_type (const ::fhg::xml::parse::util::id_type& id)
-          : name()
-          , use()
-          , type_map()
-          , type_get()
-          , path()
-          , _id (id)
-        { }
-
-        const ::fhg::xml::parse::util::id_type& id() const
-        {
-          return _id;
-        }
-
-        bool is_same (const specialize_type& other) const
-        {
-          return id() == other.id();
-        }
+        id::specialize _id;
+        id::net _parent;
       };
 
       inline void

@@ -79,6 +79,7 @@ namespace xml
                                                  );
     static type::specialize_type specialize_type ( const xml_node_type *
                                                  , state::type &
+                                                 , const id::net& parent
                                                  );
 
     static int property_map_type ( we::type::property::type &
@@ -765,7 +766,7 @@ namespace xml
                 }
               else if (child_name == "specialize")
                 {
-                  n.push_specialize (specialize_type (child, state), state);
+                  n.push_specialize (specialize_type (child, state, n.id()), state);
                 }
               else if (child_name == "place")
                 {
@@ -1479,9 +1480,12 @@ namespace xml
     }
 
     static type::specialize_type
-    specialize_type (const xml_node_type * node, state::type & state)
+    specialize_type ( const xml_node_type * node
+                    , state::type & state
+                    , const id::net& parent
+                    )
     {
-      type::specialize_type s (state.next_id());
+      type::specialize_type s (state.next_id(), parent);
 
       s.path = state.file_in_progress();
       s.name = required ("specialize_type", node, "name", s.path);
