@@ -23,11 +23,6 @@ namespace xml
       struct place_type;
 
       // typedef xml::util::unique<place_type>::elements_type places_type;
-
-      namespace dump
-      {
-        inline void dump (::fhg::util::xml::xmlstream&, const place_type&);
-      }
     }
   }
 }
