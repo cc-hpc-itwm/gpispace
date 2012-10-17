@@ -49,7 +49,10 @@ namespace xml
     static type::function_type function_type ( const xml_node_type *
                                              , state::type &
                                              );
-    static type::mod_type mod_type (const xml_node_type *, state::type &);
+    static type::mod_type mod_type ( const xml_node_type *
+                                   , state::type &
+                                   , const id::function& parent
+                                   );
     static type::net_type net_type ( const xml_node_type *
                                    , state::type &
                                    , const id::function& parent
@@ -542,7 +545,7 @@ namespace xml
                 }
               else if (child_name == "module")
                 {
-                  f.f = mod_type (child, state);
+                  f.f = mod_type (child, state, f.id());
                 }
               else if (child_name == "net")
                 {
@@ -631,10 +634,15 @@ namespace xml
     // ********************************************************************* //
 
     static type::mod_type
-    mod_type ( const xml_node_type * node, state::type & state)
+    mod_type ( const xml_node_type * node
+             , state::type & state
+             , const id::function& parent
+             )
     {
       type::mod_type mod
-        ( required ("mod_type", node, "name", state.file_in_progress())
+        ( state.next_id()
+        , parent
+        , required ("mod_type", node, "name", state.file_in_progress())
         , required ("mod_type", node, "function", state.file_in_progress())
         , state.file_in_progress()
         );

@@ -23,54 +23,14 @@ namespace xml
       typedef std::list<std::string> flags_type;
       typedef std::list<std::string> links_type;
 
-      bool mod_type::operator == (const mod_type& other) const
-      {
-        return port_return == other.port_return
-          && port_arg == other.port_arg
-          && code == other.code
-          && cincludes == other.cincludes
-          && ldflags == other.ldflags
-          && cxxflags == other.cxxflags
-          && links == other.links
-          ;
-      }
+      mod_type::mod_type (const id::module& id, const id::function& parent)
+        : _id (id)
+        , _parent (parent)
+      { }
 
-      void mod_type::sanity_check (const function_type & fun) const
-      {
-        if (port_return.isJust())
-        {
-          if (!fun.is_known_port (*port_return))
-          {
-            throw error::function_description_with_unknown_port
-              ( "return"
-              , *port_return
-              , name
-              , function
-              , fun.path
-              );
-          }
-        }
-
-        for ( port_args_type::const_iterator port (port_arg.begin())
-            ; port != port_arg.end()
-            ; ++port
-            )
-        {
-          if (!fun.is_known_port (*port))
-          {
-            throw error::function_description_with_unknown_port
-              ( "argument"
-              , *port
-              , name
-              , function
-              , fun.path
-              );
-          }
-        }
-      }
-
-      mod_type::mod_type () {}
-      mod_type::mod_type ( const std::string & _name
+      mod_type::mod_type ( const id::module& id
+                         , const id::function& parent
+                         , const std::string & _name
                          , const std::string & _function
                          , const boost::filesystem::path & path
                          )
@@ -78,6 +38,8 @@ namespace xml
         , function ()
         , port_return ()
         , port_arg ()
+        , _id (id)
+        , _parent (parent)
       {
         // implement the grammar
         // S -> R F A
@@ -163,6 +125,66 @@ namespace xml
                                                   , pos()
                                                   , path
                                                   );
+          }
+        }
+      }
+
+      const id::module& mod_type::id() const
+      {
+        return _id;
+      }
+      const id::function& mod_type::parent() const
+      {
+        return _parent;
+      }
+
+      bool mod_type::is_same (const mod_type& other) const
+      {
+        return id() == other.id() && parent() == other.parent();
+      }
+
+      bool mod_type::operator == (const mod_type& other) const
+      {
+        return port_return == other.port_return
+          && port_arg == other.port_arg
+          && code == other.code
+          && cincludes == other.cincludes
+          && ldflags == other.ldflags
+          && cxxflags == other.cxxflags
+          && links == other.links
+          ;
+      }
+
+      void mod_type::sanity_check (const function_type & fun) const
+      {
+        if (port_return.isJust())
+        {
+          if (!fun.is_known_port (*port_return))
+          {
+            throw error::function_description_with_unknown_port
+              ( "return"
+              , *port_return
+              , name
+              , function
+              , fun.path
+              );
+          }
+        }
+
+        for ( port_args_type::const_iterator port (port_arg.begin())
+            ; port != port_arg.end()
+            ; ++port
+            )
+        {
+          if (!fun.is_known_port (*port))
+          {
+            throw error::function_description_with_unknown_port
+              ( "argument"
+              , *port
+              , name
+              , function
+              , fun.path
+              );
           }
         }
       }
