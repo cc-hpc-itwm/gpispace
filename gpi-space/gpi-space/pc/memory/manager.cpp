@@ -532,7 +532,7 @@ namespace gpi
               // ignore follow up exception
             }
 
-            throw up;
+            throw;
           }
         }
 
