@@ -3,6 +3,9 @@
 #ifndef _FHG_UTIL_JOIN_HPP
 #define _FHG_UTIL_JOIN_HPP
 
+#include <string>
+#include <sstream>
+
 namespace fhg
 {
   namespace util
