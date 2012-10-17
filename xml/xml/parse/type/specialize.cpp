@@ -2,8 +2,6 @@
 
 #include <xml/parse/type/specialize.hpp>
 
-// #include <xml/parse/types.hpp>
-
 #include <fhg/util/xml.hpp>
 
 namespace xml
