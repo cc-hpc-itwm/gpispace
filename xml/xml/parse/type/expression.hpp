@@ -5,6 +5,8 @@
 
 // #include <xml/parse/type/function.hpp>
 
+#include <xml/parse/util/id_type.hpp>
+
 #include <fhg/util/xml.fwd.hpp>
 
 #include <string>
@@ -26,9 +28,22 @@ namespace xml
       private:
         expressions_type _expressions;
 
+        id::expression _id;
+        id::function _parent;
+
       public:
-        expression_type ();
-        expression_type (const expressions_type & exps);
+        expression_type ( const id::expression& id
+                        , const id::function& parent
+                        );
+        expression_type ( const expressions_type & exps
+                        , const id::expression& id
+                        , const id::function& parent
+                        );
+
+        const id::expression& id() const;
+        const id::function& parent() const;
+
+        bool is_same (const expression_type& other) const;
 
         void set (const std::string& exps);
 

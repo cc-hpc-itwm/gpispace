@@ -30,11 +30,37 @@ namespace xml
         }
       }
 
-      expression_type::expression_type () : _expressions () {}
+      expression_type::expression_type ( const id::expression& id
+                                       , const id::function& parent
+                                       )
+        : _expressions()
+        , _id (id)
+        , _parent (parent)
+      { }
 
-      expression_type::expression_type (const expressions_type & exps)
+      expression_type::expression_type ( const expressions_type & exps
+                                       , const id::expression& id
+                                       , const id::function& parent
+                                       )
         : _expressions (split (exps))
-      {}
+        , _id (id)
+        , _parent (parent)
+      { }
+
+
+      const id::expression& expression_type::id() const
+      {
+        return _id;
+      }
+      const id::function& expression_type::parent() const
+      {
+        return _parent;
+      }
+
+      bool expression_type::is_same (const expression_type& other) const
+      {
+        return id() == other.id() && parent() == other.parent();
+      }
 
       void expression_type::set (const std::string& exps)
       {

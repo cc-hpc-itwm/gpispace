@@ -468,7 +468,9 @@ namespace xml
     static type::function_type
     function_type (const xml_node_type * node, state::type & state)
     {
-      type::function_type f (state.next_id());
+      id::expression expression_id (state.next_id());
+      id::function function_id (state.next_id());
+      type::function_type f (expression_id, function_id);
 
       f.path = state.file_in_progress();
       f.name = optional (node, "name");
@@ -533,6 +535,8 @@ namespace xml
                         ( child
                         , state.file_in_progress()
                         )
+                      , state.next_id()
+                      , f.id()
                       )
                     );
                 }

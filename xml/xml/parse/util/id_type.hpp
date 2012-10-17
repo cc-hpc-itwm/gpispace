@@ -31,6 +31,7 @@ namespace xml
       typedef ::fhg::xml::parse::util::id_type name
 
       MAKE_ID (connect);
+      MAKE_ID (expression);
       MAKE_ID (function);
       MAKE_ID (module);
       MAKE_ID (net);

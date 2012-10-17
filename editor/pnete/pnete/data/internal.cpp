@@ -26,9 +26,8 @@ namespace fhg
           {
           case internal_type::expression:
             {
-              // const ::xml::parse::id::expression id (state.next_id());
-              const ::xml::parse::type::expression_type expression;
-              return ::xml::parse::type::function_type ( expression
+              const ::xml::parse::id::expression id (state.next_id());
+              return ::xml::parse::type::function_type ( id
                                                        , function_id
                                                        );
             }

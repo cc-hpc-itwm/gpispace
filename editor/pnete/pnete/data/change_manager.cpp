@@ -307,11 +307,16 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::type::transition_type transition ( _state.next_id()
+        ::xml::parse::id::expression expression_id (_state.next_id());
+        ::xml::parse::id::function function_id (_state.next_id());
+        ::xml::parse::id::transition transition_id (_state.next_id());
+
+        ::xml::parse::type::function_type f (expression_id, function_id);
+
+        ::xml::parse::type::transition_type transition ( f
+                                                       , transition_id
                                                        , net.id()
                                                        );
-        transition.function_or_use
-          (::xml::parse::type::function_type (_state.next_id()));
         transition.name = "transition";
 
         while (net().has_transition (transition.name))

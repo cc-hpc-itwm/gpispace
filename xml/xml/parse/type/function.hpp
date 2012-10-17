@@ -524,17 +524,22 @@ namespace xml
         // ***************************************************************** //
 
         function_type ( const type& _f
-                      , const ::fhg::xml::parse::util::id_type& id
+                      , const id::function& id
                       )
           : _id (id)
           , f (_f)
         { }
 
-        function_type (const ::fhg::xml::parse::util::id_type& id)
+        //! \note With no net/module/expression given, default to
+        //! expression. Needs a second id though, so no default ctor.
+        function_type ( const id::expression& expression_id
+                      , const id::function& id
+                      )
           : _id (id)
+          , f (expression_type (expression_id, id))
         { }
 
-        const ::fhg::xml::parse::util::id_type& id() const
+        const id::function& id() const
         {
           return _id;
         }
