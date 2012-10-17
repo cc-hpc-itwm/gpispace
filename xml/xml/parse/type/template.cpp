@@ -9,23 +9,20 @@ namespace xml
   {
     namespace type
     {
-      template_type::template_type ( const id::tmpl& id
-                                   , const id::net& parent
-                                   , const boost::filesystem::path& path
-                                   , const std::string& name
-                                   )
-        : _id (id)
-        , _parent (parent)
-        , _name (name)
-        , _path (path)
-      {}
-      template_type::template_type ( const id::tmpl& id
-                                   , const id::net& parent
-                                   , const boost::filesystem::path& path
-                                   )
-        : _id (id)
-        , _parent (parent)
-        , _path (path)
+      template_type::template_type
+        ( const id::tmpl& id
+        , const id::net& parent
+        , const boost::filesystem::path& path
+        , const fhg::util::maybe<std::string>& name
+        , const names_type& template_parameter
+        , const function_type& function
+        )
+          : _id (id)
+          , _parent (parent)
+          , _template_parameter (template_parameter)
+          , _function (function)
+          , _name (name)
+          , _path (path)
       {}
 
       const id::tmpl&
@@ -46,7 +43,7 @@ namespace xml
         return id() == other.id() and parent() == other.parent();
       }
 
-      const boost::optional<std::string>&
+      const fhg::util::maybe<std::string>&
       template_type::name() const
       {
         return _name;
@@ -62,25 +59,14 @@ namespace xml
       {
         return _template_parameter;
       }
-      void
-      template_type::insert_template_parameter ( const std::string& tn
-                                               , const state::type& state
-                                               )
-      {
-        //! \todo check and warn if already there
 
-        _template_parameter.insert (tn);
-      }
-
-      const boost::optional<function_type>&
-      template_type::function() const
+      function_type& template_type::function()
       {
         return _function;
       }
-      const function_type&
-      template_type::function (const function_type& function)
+      const function_type& template_type::function() const
       {
-        return *(_function = function);
+        return _function;
       }
 
       const boost::filesystem::path& template_type::path() const
@@ -88,13 +74,41 @@ namespace xml
         return _path;
       }
 
+      void
+      template_type::distribute_function ( const state::type& state
+                                         , const functions_type& functions
+                                         , const templates_type& templates
+                                         , const specializes_type& specializes
+                                         )
+      {
+        function().distribute_function ( state
+                                       , functions
+                                       , templates
+                                       , specializes
+                                       );
+      }
+
+
+      void template_type::specialize
+        ( const type_map_type & map
+        , const type_get_type & get
+        , const xml::parse::struct_t::set_type & known_structs
+        , const state::type & state
+        )
+      {
+        function().specialize (map, get, known_structs, state);
+      }
+
       namespace dump
       {
-        inline void dump ( xml_util::xmlstream & s
-                         , const template_type & f
-                         , const state::type & state
-                         )
+        void dump (xml_util::xmlstream & s, const template_type & t)
         {
+          s.open ("template");
+          s.attr ("name", t.name());
+
+          dump (s, t.function());
+
+          s.close ();
         }
       } // namespace dump
     }

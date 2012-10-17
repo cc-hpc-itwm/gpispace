@@ -18,6 +18,8 @@
 
 #include <xml/parse/util/mk_fstream.hpp>
 
+#include <xml/parse/type/template.hpp>
+
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
@@ -30,6 +32,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
 #include <sstream>
 #include <vector>
@@ -48,6 +52,10 @@ namespace xml
                                            );
     static type::function_type function_type ( const xml_node_type *
                                              , state::type &
+                                             );
+    static type::template_type template_type ( const xml_node_type *
+                                             , state::type &
+                                             , const id::net& parent
                                              );
     static type::mod_type mod_type (const xml_node_type *, state::type &);
     static type::net_type net_type ( const xml_node_type *
@@ -84,7 +92,8 @@ namespace xml
                                               );
 
     static type::function_type parse_function (std::istream &, state::type &);
-    static type::function_type parse_template (std::istream &, state::type &);
+    static type::template_type
+    parse_template (std::istream &, state::type &, const id::net& parent);
     static type::structs_type parse_structs (std::istream &, state::type &);
     static we::type::property::type parse_props (std::istream &, state::type &);
 
@@ -96,10 +105,14 @@ namespace xml
       return state.generic_include<type::function_type> (parse_function, file);
     }
 
-    static type::function_type
-    template_include (const std::string & file, state::type & state)
+    static type::template_type
+    template_include ( const std::string & file
+                     , state::type & state
+                     , const id::net& parent
+                     )
     {
-      return state.generic_include<type::function_type> (parse_template, file);
+      return state.generic_include<type::template_type>
+        (boost::bind (parse_template, _1, _2, parent), file);
     }
 
     static type::structs_type
@@ -119,7 +132,7 @@ namespace xml
 
     template<typename T>
     static T
-    generic_parse ( T (*parse)(const xml_node_type *, state::type &)
+    generic_parse ( boost::function<T (const xml_node_type *, state::type &)> parse
                   , std::istream & f
                   , state::type & state
                   , const std::string & name_wanted
@@ -201,31 +214,37 @@ namespace xml
     static type::function_type
     parse_function (std::istream & f, state::type & state)
     {
-      return generic_parse (function_type, f, state, "defun", "parse_function");
+      return generic_parse<type::function_type>
+        (function_type, f, state, "defun", "parse_function");
     }
 
-    static type::function_type
-    parse_template (std::istream & f, state::type & state)
+    static type::template_type
+    parse_template ( std::istream & f
+                   , state::type & state
+                   , const id::net& parent
+                   )
     {
-      return
-        generic_parse (function_type, f, state, "template", "parse_template");
+      return generic_parse<type::template_type>
+        ( boost::bind (template_type, _1, _2, parent)
+        , f
+        , state
+        , "template"
+        , "parse_template"
+        );
     }
 
     static type::structs_type
     parse_structs (std::istream & f, state::type & state)
     {
-      return generic_parse (structs_type, f, state, "structs", "parse_structs");
+      return generic_parse<type::structs_type>
+        (structs_type, f, state, "structs", "parse_structs");
     }
 
     static we::type::property::type
     parse_props (std::istream & f, state::type & state)
     {
-      return generic_parse ( property_maps_type
-                           , f
-                           , state
-                           , "props"
-                           , "parse_props"
-                           );
+      return generic_parse<we::type::property::type>
+        (property_maps_type, f, state, "props", "parse_props");
     }
 
     // ********************************************************************* //
@@ -465,6 +484,83 @@ namespace xml
 
     // ********************************************************************* //
 
+    static type::template_type template_type ( const xml_node_type * node
+                                             , state::type & state
+                                             , const id::net& parent
+                                             )
+    {
+      boost::optional<type::function_type> fun;
+      type::template_type::names_type template_parameter;
+      fhg::util::maybe<std::string> name (optional (node, "name"));
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+            {
+              if (child_name == "template-parameter")
+                {
+                  const std::string tn (required ( "template-parameter"
+                                                 , child
+                                                 , "type"
+                                                 , state.file_in_progress()
+                                                 )
+                                       );
+
+                  if (template_parameter.find (tn) != template_parameter.end())
+                    {
+                      state.warn ( warning::duplicate_template_parameter
+                                   ( name
+                                   , tn
+                                   , state.file_in_progress()
+                                   )
+                                 );
+                    }
+
+                  template_parameter.insert (tn);
+                }
+              else if (child_name == "defun")
+                {
+                  //! \todo parent
+                  fun = function_type (child, state);
+                }
+              else
+                {
+                  state.warn
+                    ( warning::unexpected_element ( child_name
+                                                  , "template_type"
+                                                  , state.file_in_progress()
+                                                  )
+                    );
+                }
+            }
+        }
+
+      if (not fun)
+        {
+          throw error::template_without_function
+            ( name
+            , state.file_in_progress()
+            );
+        }
+
+      return type::template_type
+        ( state.next_id()
+        , parent
+        , state.file_in_progress()
+        , name
+        , template_parameter
+        , *fun
+        );
+    }
+
+    // ********************************************************************* //
+
     static type::function_type
     function_type (const xml_node_type * node, state::type & state)
     {
@@ -577,38 +673,6 @@ namespace xml
                 {
                   require_type (f.requirements, child, state);
                 }
-//               else if (child_name == "template-parameter")
-//                 {
-//                   if (std::string (node->name()) != "template")
-//                     {
-//                       state.warn ( warning::ignore_template_parameter
-//                                    ( f.name
-//                                    , state.file_in_progress()
-//                                    )
-//                                  );
-//                     }
-//                   else
-//                     {
-//                       const std::string tn (required ( "template-parameter"
-//                                                      , child
-//                                                      , "type"
-//                                                      , state.file_in_progress()
-//                                                      )
-//                                            );
-
-//                       if (f.typenames().find (tn) != f.typenames().end())
-//                         {
-//                           state.warn ( warning::duplicate_template_parameter
-//                                        ( f.name
-//                                        , tn
-//                                        , state.file_in_progress()
-//                                        )
-//                                      );
-//                         }
-
-//                       f.insert_typename (tn);
-//                     }
-//                 }
               else
                 {
                   state.warn
@@ -730,7 +794,7 @@ namespace xml
             {
               if (child_name == "template")
                 {
-                  n.push_template (function_type (child, state));
+                  n.push_template (template_type (child, state, n.id()));
                 }
               else if (child_name == "specialize")
                 {
@@ -776,9 +840,10 @@ namespace xml
                   const fhg::util::maybe<std::string> as
                     (optional (child, "as"));
 
-                  type::function_type tmpl (template_include (file, state));
+                  type::template_type tmpl
+                    (template_include (file, state, n.id()));
 
-                  if (as.isJust())
+                  if (as)
                     {
                       if (tmpl.name() && *tmpl.name() != *as)
                         {

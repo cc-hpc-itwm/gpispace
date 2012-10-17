@@ -19,6 +19,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/function.hpp>
 
 #include <xml/parse/warning.hpp>
 #include <xml/parse/error.hpp>
@@ -122,7 +123,6 @@ namespace xml
         bool _Winline_many_output_ports;
         bool _Wvirtual_place_not_tunneled;
         bool _Wduplicate_template_parameter;
-        bool _Wignore_template_parameter;
 
         std::string _dump_xml_file;
         std::string _dump_dependencies;
@@ -170,7 +170,6 @@ namespace xml
         std::string _OWinline_many_output_ports;
         std::string _OWvirtual_place_not_tunneled;
         std::string _OWduplicate_template_parameter;
-        std::string _OWignore_template_parameter;
 
         std::string _Odump_xml_file;
         std::string _Odump_dependencies;
@@ -282,7 +281,6 @@ namespace xml
           , _Winline_many_output_ports (true)
           , _Wvirtual_place_not_tunneled (true)
           , _Wduplicate_template_parameter (true)
-          , _Wignore_template_parameter (true)
 
           , _dump_xml_file ("")
           , _dump_dependencies ("")
@@ -330,7 +328,6 @@ namespace xml
           , _OWinline_many_output_ports ("Winline-many-output-ports")
           , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
           , _OWduplicate_template_parameter ("Wduplicate-template-parameter")
-          , _OWignore_template_parameter ("Wignore-template-parameter")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Odump_dependencies ("dump-dependencies,M")
@@ -591,7 +588,6 @@ namespace xml
         ACCESS(Winline_many_output_ports)
         ACCESS(Wvirtual_place_not_tunneled)
         ACCESS(Wduplicate_template_parameter)
-        ACCESS(Wignore_template_parameter)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
@@ -640,14 +636,13 @@ namespace xml
         WARN(shadow_template)
         WARN(shadow_specialize)
         WARN(duplicate_template_parameter)
-        WARN(ignore_template_parameter)
 
 #undef WARN
 
         // ***************************************************************** //
 
         template<typename T>
-        T generic_parse ( T (*parse)(std::istream &, type &)
+        T generic_parse ( boost::function<T (std::istream &, type &)> parse
                         , const boost::filesystem::path & path
                         )
         {
@@ -663,7 +658,7 @@ namespace xml
         }
 
         template<typename T>
-        T generic_parse ( T (*parse)(std::istream &, type &)
+        T generic_parse ( boost::function<T (std::istream &, type &)> parse
                         , const std::string & file
                         )
         {
@@ -671,7 +666,7 @@ namespace xml
         }
 
         template<typename T>
-        T generic_include ( T (*parse)(std::istream &, type &)
+        T generic_include ( boost::function<T (std::istream &, type &)> parse
                           , const std::string & file
                           )
         {
@@ -819,11 +814,6 @@ namespace xml
             ( _OWduplicate_template_parameter.c_str()
             , BOOLVAL(Wduplicate_template_parameter)
             , "warn when a template paramater is duplicated"
-            )
-            ( _OWignore_template_parameter.c_str()
-            , BOOLVAL(Wignore_template_parameter)
-            , "warn when a template paramater is ignored"
-              " (in the definition of a function)"
             )
             ;
 

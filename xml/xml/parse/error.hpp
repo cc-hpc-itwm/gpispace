@@ -744,8 +744,8 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "duplicate template " << t.name() << " in " << t.path
-            << " first definition was in " << old.path
+          s << "duplicate template " << t.name() << " in " << t.path()
+            << " first definition was in " << old.path()
             ;
 
           return s.str();
@@ -1545,6 +1545,20 @@ namespace xml
                                     , const boost::filesystem::path & file2
                                     )
           : generic (nice (name, mod, file1, file2))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class template_without_function : public generic
+      {
+      public:
+        template_without_function ( const fhg::util::maybe<std::string>& name
+                                  , const boost::filesystem::path& path
+                                  )
+          : generic ( boost::format
+                      ("template %1% without a function in %2%") % name % path
+                    )
         {}
       };
 
