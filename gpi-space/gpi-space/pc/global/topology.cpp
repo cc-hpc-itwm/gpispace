@@ -374,12 +374,12 @@ namespace gpi
         if (rc != 0)
         {
           LOG ( ERROR
-              , "add_memory: failed on node " << res.rank
+              , "del_memory: failed on node " << res.rank
               << ": " << res.value
               << ": " << res.message
               );
           throw std::runtime_error
-            ( "add_memory: failed on at least one node: rank "
+            ( "del_memory: failed on at least one node: rank "
             + boost::lexical_cast<std::string>(res.rank)
             + " says: "
             + res.message
