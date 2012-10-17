@@ -213,10 +213,22 @@ namespace xml
         id::net _parent;
 
       public:
+        typedef boost::variant <function_type, use_type>
+                function_or_use_type;
+
         transition_type (const id::transition& id, const id::net& parent)
           : _id (id)
           , _parent (parent)
           , _function_or_use (boost::none)
+        { }
+
+        transition_type ( const function_or_use_type& function_or_use
+                        , const id::transition& id
+                        , const id::net& parent
+                        )
+          : _id (id)
+          , _parent (parent)
+          , _function_or_use (function_or_use)
         { }
 
         const id::transition& id() const
@@ -233,9 +245,6 @@ namespace xml
         {
           return id() == other.id() && parent() == other.parent();
         }
-
-        typedef boost::variant <function_type, use_type>
-                function_or_use_type;
 
       private:
         boost::optional<function_or_use_type> _function_or_use;
