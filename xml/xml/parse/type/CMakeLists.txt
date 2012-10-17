@@ -28,6 +28,7 @@ set (xml_parse_type_fwd_headers
   port.fwd.hpp
   require.fwd.hpp
   specialize.fwd.hpp
+  struct.fwd.hpp
   transition.fwd.hpp
 )
 
