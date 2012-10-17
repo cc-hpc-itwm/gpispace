@@ -8,8 +8,8 @@
 
 #include <we/expr/exception.hpp>
 
-#include <we/type/literal.hpp>
-#include <we/type/literal/read.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/read.hpp>
 
 #include <we/type/control.hpp>
 
@@ -35,7 +35,7 @@ namespace expr
       fhg::util::parse::position pos;
 
       token::type token;
-      literal::type tokval;
+      value::type tokval;
       key_vec_t _ref;
 
       inline void set_E (void)
@@ -547,7 +547,7 @@ namespace expr
 
                     do
                       {
-                        _ref.push_back (literal::identifier (pos));
+                        _ref.push_back (value::identifier (pos));
 
                         if (pos.end())
                           {
@@ -568,7 +568,7 @@ namespace expr
                   default: throw exception::parse::expected ("'{'", pos());
                   }
               break;
-            default: token = val; literal::read (tokval, pos); break;
+            default: token = val; tokval = value::read (pos); break;
             }
       }
 
@@ -580,7 +580,7 @@ namespace expr
                 , const std::string::const_iterator & _end
                 )
         : pos (_k, _pos,_end), token (eof) {}
-      const literal::type & operator () (void) const { return tokval; }
+      const value::type & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }
       const key_vec_t & get_ref (void) const { return _ref; }
