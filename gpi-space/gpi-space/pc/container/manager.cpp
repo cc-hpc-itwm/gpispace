@@ -53,12 +53,12 @@ namespace gpi
 
           if (global::topology().is_master ())
           {
-            MLOG (INFO, "telling slaves to GO");
+            MLOG (TRACE, "telling slaves to GO");
             global::topology ().go ();
           }
           else
           {
-            MLOG (INFO, "waiting for master to say GO");
+            MLOG (TRACE, "waiting for master to say GO");
             global::topology ().wait_for_go ();
           }
 
