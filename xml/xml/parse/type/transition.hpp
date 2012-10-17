@@ -191,7 +191,7 @@ namespace xml
                 (use.name, trans.name, trans.path);
             }
 
-          fun->name = trans.name;
+          fun->name (trans.name);
 
           return *fun;
         }
@@ -567,14 +567,14 @@ namespace xml
               }
           }
 
-        if (fun.name.isJust())
+        if (fun.name())
           {
-            if (  (*fun.name != trans.name)
+            if (  (*fun.name() != trans.name)
                && (!rewrite::has_magic_prefix (trans.name))
                )
               {
                 state.warn ( warning::overwrite_function_name_trans
-                             ( *fun.name
+                             ( *fun.name()
                              , fun.path
                              , trans.name
                              , trans.path
@@ -583,7 +583,7 @@ namespace xml
               }
           }
 
-        fun.name = trans.name;
+        fun.name (trans.name);
 
         if (fun.internal.isJust())
           {

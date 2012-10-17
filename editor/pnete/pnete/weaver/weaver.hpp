@@ -640,7 +640,7 @@ namespace fhg
         FUN(function_head, ITVAL(XMLTYPE(functions_type)), fun)
         {
           WEAVE(function::open, ITVAL(XMLTYPE(functions_type)))(fun);
-          WEAVE(function::name, MAYBE(std::string))(fun.name);
+          WEAVE(function::name, MAYBE(std::string))(fun.name());
           WEAVE(function::internal, MAYBE(bool))(fun.internal);
         }
 

@@ -342,12 +342,12 @@ namespace xml
 
         std::string name (void) const
         {
-          if (fun.name.isNothing())
+          if (not fun.name())
             {
               throw error::synthesize_anonymous_function (fun.path);
             }
 
-          return *fun.name;
+          return *fun.name();
         }
 
         we_cond_type condition (void) const
@@ -495,6 +495,8 @@ namespace xml
 
         ::fhg::xml::parse::util::id_type _id;
 
+        fhg::util::maybe<std::string> _name;
+
       public:
         typedef boost::variant < expression_type
                                , mod_type
@@ -504,7 +506,6 @@ namespace xml
         bool contains_a_module_call;
         structs_type structs;
 
-        fhg::util::maybe<std::string> name;
         fhg::util::maybe<bool> internal;
 
         conditions_type cond;
@@ -522,6 +523,20 @@ namespace xml
         bool was_template;
 
         // ***************************************************************** //
+
+        const fhg::util::maybe<std::string> name() const
+        {
+          return _name;
+        }
+        const std::string& name (const std::string& name)
+        {
+          return *(_name = name);
+        }
+        const fhg::util::maybe<std::string>&
+        name (const fhg::util::maybe<std::string>& name)
+        {
+          return _name = name;
+        }
 
         function_type ( const type& _f
                       , const ::fhg::xml::parse::util::id_type& id
@@ -2263,7 +2278,7 @@ namespace xml
                                          )
         {
           s.open (is_template ? "template" : "defun");
-          s.attr ("name", f.name);
+          s.attr ("name", f.name());
           s.attr ("internal", f.internal);
         }
 

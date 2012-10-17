@@ -722,7 +722,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "duplicate function " << t.name << " in " << t.path
+          s << "duplicate function " << t.name() << " in " << t.path
             << " first definition was in " << old.path
             ;
 
@@ -744,7 +744,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "duplicate template " << t.name << " in " << t.path
+          s << "duplicate template " << t.name() << " in " << t.path
             << " first definition was in " << old.path
             ;
 

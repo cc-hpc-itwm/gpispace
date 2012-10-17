@@ -471,7 +471,7 @@ namespace xml
       type::function_type f (state.next_id());
 
       f.path = state.file_in_progress();
-      f.name = optional (node, "name");
+      f.name (optional (node, "name"));
       f.internal =
         fhg::util::fmap<std::string, bool>( fhg::util::read_bool
                                           , optional (node, "internal")
@@ -780,21 +780,21 @@ namespace xml
 
                   if (as.isJust())
                     {
-                      if (tmpl.name.isJust() && *tmpl.name != *as)
+                      if (tmpl.name() && *tmpl.name() != *as)
                         {
                           state.warn
                             ( warning::overwrite_template_name_as
-                              ( *tmpl.name
+                              ( *tmpl.name()
                               , *as
                               , state.file_in_progress()
                               )
                             );
                         }
 
-                      tmpl.name = *as;
+                      tmpl.name (*as);
                     }
 
-                  if (tmpl.name.isNothing())
+                  if (not tmpl.name())
                     {
                       throw error::top_level_anonymous_template
                         (file, "net_type");

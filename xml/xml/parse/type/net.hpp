@@ -55,8 +55,8 @@ namespace xml
 
         xml::util::unique<place_type> _places;
         xml::util::unique<transition_type> _transitions;
-        xml::util::unique<function_type,maybe_string_type> _functions;
-        xml::util::unique<function_type,maybe_string_type> _templates;
+        xml::util::uniquePP<function_type,maybe_string_type> _functions;
+        xml::util::uniquePP<function_type,maybe_string_type> _templates;
         xml::util::unique<specialize_type> _specializes;
 
         id::net _id;
@@ -367,7 +367,7 @@ namespace xml
                   throw error::unknown_template (specialize->use, path);
                 }
 
-              tmpl->name = specialize->name;
+              tmpl->name (specialize->name);
 
               type_map_apply (map, specialize->type_map);
 
@@ -481,7 +481,7 @@ namespace xml
 
               if (!fun_local.first)
                 {
-                  state.warn ( warning::shadow_function ( fun.name
+                  state.warn ( warning::shadow_function ( fun.name()
                                                         , fun.path
                                                         , fun_local.second->path
                                                         )
@@ -496,7 +496,7 @@ namespace xml
 
               if (!tmpl_local.first)
                 {
-                  state.warn ( warning::shadow_template ( tmpl.name
+                  state.warn ( warning::shadow_template ( tmpl.name()
                                                         , tmpl.path
                                                         , tmpl_local.second->path
                                                         )
