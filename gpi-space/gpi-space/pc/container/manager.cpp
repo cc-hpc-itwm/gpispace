@@ -51,8 +51,16 @@ namespace gpi
           initialize_topology ();
           initialize_memory_manager ();
 
-          // TODO:  insert a  barrier  or  a global  'start'  operation that  is
-          // triggered by the master
+          if (global::topology().is_master ())
+          {
+            MLOG (INFO, "telling slaves to GO");
+            global::topology ().go ();
+          }
+          else
+          {
+            MLOG (INFO, "waiting for master to say GO");
+            global::topology ().wait_for_go ();
+          }
 
           m_connector.start ();
         }
