@@ -1810,7 +1810,7 @@ namespace xml
                   }
               }
 
-            mcs[mod.name][mod.function] = mod;
+            mcs[mod.name].insert (std::make_pair (mod.function, mod));
 
 #define STRANGE(msg) THROW_STRANGE(  msg << " in module "     \
                                   << mod.name << " function " \
