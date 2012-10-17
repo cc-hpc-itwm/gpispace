@@ -11,6 +11,7 @@
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/type_map_type.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
