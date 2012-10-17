@@ -24,6 +24,7 @@ set (xml_parse_type_fwd_headers
   mod.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
+  place_map.fwd.hpp
   port.fwd.hpp
   transition.fwd.hpp
 )
@@ -33,6 +34,7 @@ set (xml_parse_type_sources
   expression.cpp
   mod.cpp
   place.cpp
+  place_map.cpp
   port.cpp
 )
 
