@@ -20,6 +20,7 @@ set (xml_parse_type_headers
 set (xml_parse_type_fwd_headers
   connect.fwd.hpp
   expression.fwd.hpp
+  function.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
   port.fwd.hpp
