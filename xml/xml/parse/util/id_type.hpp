@@ -36,6 +36,7 @@ namespace xml
       MAKE_ID (net);
       MAKE_ID (place);
       MAKE_ID (port);
+      MAKE_ID (tmpl);
       MAKE_ID (transition);
       MAKE_ID (use);
 

@@ -1,6 +1,7 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
 set (xml_parse_type_headers
+  template.hpp
   connect.hpp
   expression.hpp
   function.hpp
@@ -18,6 +19,7 @@ set (xml_parse_type_headers
 )
 
 set (xml_parse_type_fwd_headers
+  template.fwd.hpp
   connect.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
@@ -26,6 +28,7 @@ set (xml_parse_type_fwd_headers
 )
 
 set (xml_parse_type_sources
+  template.cpp
   connect.cpp
   port.cpp
 )
