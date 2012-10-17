@@ -774,43 +774,6 @@ namespace xml
                                    , structs.end()
                                    );
                 }
-              else if (child_name == "include-function")
-                {
-                  const std::string file ( required ( "net_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         );
-                  const fhg::util::maybe<std::string> as
-                    (optional (child, "as"));
-
-                  type::function_type fun (function_include (file, state));
-
-                  if (as.isJust())
-                    {
-                      if (fun.name.isJust() && *fun.name != *as)
-                        {
-                          state.warn
-                            ( warning::overwrite_function_name_as
-                              ( *fun.name
-                              , *as
-                              , state.file_in_progress()
-                              )
-                            );
-                        }
-
-                      fun.name = *as;
-                    }
-
-                  if (fun.name.isNothing())
-                    {
-                      throw error::top_level_anonymous_function
-                        (file, "net_type");
-                    }
-
-                  n.push_function (fun);
-                }
               else if (child_name == "include-template")
                 {
                   const std::string file ( required ( "net_type"
