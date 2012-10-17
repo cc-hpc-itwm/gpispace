@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
@@ -80,20 +81,20 @@ namespace gpifs
 
       shm_id = gpi_api().register_segment ( "gpifs"
                                           , shm_size
-                                          , gpi::pc::type::segment::F_EXCLUSIVE
-                                          | gpi::pc::type::segment::F_FORCE_UNLINK
+                                          , gpi::pc::F_EXCLUSIVE
+                                          | gpi::pc::F_FORCE_UNLINK
                                           );
 
       scr_hdl = gpi_api().alloc ( gpifs::segment::GPI
                                 , scr_size
                                 , "gpifs-scratch"
-                                , gpi::pc::type::handle::F_EXCLUSIVE
+                                , gpi::pc::F_EXCLUSIVE
                                 );
 
       shm_hdl = gpi_api().alloc ( shm_id
                                 , shm_size
                                 , "gpifs-transfer"
-                                , gpi::pc::type::handle::F_EXCLUSIVE
+                                , gpi::pc::F_EXCLUSIVE
                                 );
       shm_ptr = gpi_api().segments()[shm_id]->ptr();
 
@@ -137,8 +138,8 @@ namespace gpifs
         gpi_api().alloc ( descr.segment()
                         , descr.size()
                         , descr.name()
-                        , gpi::pc::type::handle::F_PERSISTENT
-                        | (descr.global() ? gpi::pc::type::handle::F_GLOBAL : 0)
+                        , gpi::pc::F_PERSISTENT
+                        | (descr.global() ? gpi::pc::F_GLOBAL : 0)
                         );
       }
       catch (std::exception const & ex)
@@ -178,7 +179,7 @@ namespace gpifs
 
         // global gpi handles are a bit different
         if (hdl_info.segment == gpifs::segment::GPI
-           && (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
+           && (hdl_info.flags & gpi::pc::F_GLOBAL)
            )
         {
           hdl_info.size *= gpi_info.nodes;
@@ -367,7 +368,7 @@ namespace gpifs
 
         // global gpi handles are a bit different
         if (  seg_id == gpifs::segment::GPI
-           && (hdl.flags & gpi::pc::type::handle::F_GLOBAL)
+           && (hdl.flags & gpi::pc::F_GLOBAL)
            )
         {
           size *= gpi_info.nodes;
@@ -378,7 +379,7 @@ namespace gpifs
                             , seg_id
                             , size
                             , name
-                            , (hdl.flags & gpi::pc::type::handle::F_GLOBAL) != 0
+                            , (hdl.flags & gpi::pc::F_GLOBAL) != 0
                             );
       }
     }

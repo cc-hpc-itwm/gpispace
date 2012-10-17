@@ -18,26 +18,23 @@ namespace gpi
         {
           gpi::pc::type::handle_t hdl;
 
-          if (gpi::pc::type::segment::SEG_INVAL == type)
+          if (gpi::pc::type::segment::SEG_SHM == type)
           {
-            hdl = 0;
+            hdl.type = type;
+
+            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::local_count_bits>(counter);
+            hdl.shm.cntr = counter;
           }
-          else if (gpi::pc::type::segment::SEG_GPI == type)
+          else
           {
-            hdl.type = gpi::pc::type::segment::SEG_GPI;
+            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::typec_bits>(type);
+            hdl.type = type;
 
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::ident_bits>(node);
             hdl.gpi.ident = node;
 
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::global_count_bits>(counter);
             hdl.gpi.cntr = counter;
-          }
-          else
-          {
-            hdl.type = type;
-
-            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::local_count_bits>(counter);
-            hdl.shm.cntr = counter;
           }
 
           return hdl;
@@ -78,16 +75,28 @@ namespace gpi
       gpi::pc::type::handle_t
       handle_generator_t::next (const gpi::pc::type::segment::segment_type seg)
       {
-        if (gpi::pc::type::segment::SEG_INVAL == seg)
-          return gpi::pc::type::handle_t(0);
-        assert (seg > 0);
-        if (size_t(seg) >= m_counter.size())
+        assert (seg >= 0);
+
+        if ( size_t(seg) >= m_counter.size())
           throw std::invalid_argument ("invalid segment type");
 
         return detail::encode ( m_node_identifier
                               , seg
                               , m_counter[seg]->inc()
                               );
+      }
+
+      void
+      handle_generator_t::initialize_counter ( const gpi::pc::type::segment::segment_type seg
+                                             , gpi::pc::type::size_t start
+                                             )
+      {
+        assert (seg >= 0);
+
+        if ( (size_t)seg >= m_counter.size())
+          throw std::invalid_argument ("invalid segment type");
+
+        return m_counter [seg]->reset (start);
       }
     }
   }

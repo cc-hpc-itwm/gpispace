@@ -117,15 +117,59 @@ namespace gpi
           }
         };
 
-        typedef boost::variant<
-          segment::register_t
-          , segment::register_reply_t
-          , segment::unregister_t
-          , segment::attach_t
-          , segment::detach_t
-          , segment::list_t
-          , segment::list_reply_t
-          > message_t;
+        // replies with register_reply_t
+        struct add_memory_t
+        {
+          add_memory_t ()
+            : url ("")
+          {}
+
+          add_memory_t (std::string const & a_url)
+            : url (a_url)
+          {}
+
+          std::string            url;
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP (url);
+          }
+        };
+
+        // replies with error message
+        struct del_memory_t
+        {
+          del_memory_t ()
+            : id (0)
+          {}
+
+          explicit
+          del_memory_t (gpi::pc::type::segment_id_t seg_id)
+            : id (seg_id)
+          {}
+
+          gpi::pc::type::segment_id_t id;
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP( id );
+          }
+        };
+
+        typedef boost::variant< segment::register_t
+                              , segment::register_reply_t
+                              , segment::unregister_t
+                              , segment::attach_t
+                              , segment::detach_t
+                              , segment::list_t
+                              , segment::list_reply_t
+                              , segment::add_memory_t
+                              , segment::del_memory_t
+                              > message_t;
       }
     }
   }

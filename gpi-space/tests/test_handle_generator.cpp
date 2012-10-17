@@ -41,11 +41,6 @@ BOOST_AUTO_TEST_CASE ( test_generate )
 {
   using namespace gpi::pc::memory;
 
-  gpi::pc::type::handle_t inval
-      (handle_generator_t::get().next (gpi::pc::type::segment::SEG_INVAL));
-  BOOST_CHECK_EQUAL (inval.handle, 0u);
-  std::cerr << "inv=" << inval << std::endl;
-
   gpi::pc::type::handle_t globl
       (handle_generator_t::get().next (gpi::pc::type::segment::SEG_GPI));
   BOOST_CHECK_EQUAL (globl.type, gpi::pc::type::segment::SEG_GPI);

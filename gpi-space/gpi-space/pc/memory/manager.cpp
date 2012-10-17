@@ -1,14 +1,22 @@
 #include "manager.hpp"
 
 #include <fhglog/minimal.hpp>
-#include <fhg/assert.hpp>
 
-#include <gpi-space/gpi/api.hpp>
+#include <fhg/assert.hpp>
+#include <fhg/util/url.hpp>
+#include <fhg/util/url_io.hpp>
+#include <fhg/util/read_bool.hpp>
+
+#include <gpi-space/pc/global/topology.hpp>
 
 #include "memory_transfer_t.hpp"
 #include "handle_generator.hpp"
-#include "shm_area.hpp"
+
+#include "factory.hpp"
+
 #include "gpi_area.hpp"
+#include "sfs_area.hpp"
+#include "shm_area.hpp"
 
 namespace gpi
 {
@@ -17,13 +25,22 @@ namespace gpi
     namespace memory
     {
       manager_t::manager_t ()
-        : m_ident (gpi::api::gpi_api_t::get().rank())
-        , m_segment_counter ()
-        , m_transfer_mgr(gpi::api::gpi_api_t::get().number_of_queues())
+        : m_ident (0)
+          // default counter value for user segments
+        , m_segment_counter (MAX_PREALLOCATED_SEGMENT_ID)
       {
-        handle_generator_t::create (m_ident);
-
-        add_gpi_memory ();
+        factory ().register_type ( "gpi"
+                                 , &gpi_area_t::create
+                                 );
+        factory ().register_type ( "shm"
+                                 , &shm_area_t::create
+                                 );
+        factory ().register_type ( "sfs"
+                                 , boost::bind ( sfs_area_t::create
+                                               , _1
+                                               , boost::ref (global::topology ())
+                                               )
+                                 );
       }
 
       manager_t::~manager_t ()
@@ -43,6 +60,20 @@ namespace gpi
       }
 
       void
+      manager_t::start ( gpi::pc::type::id_t ident
+                       , gpi::pc::type::size_t num_queues
+                       )
+      {
+        m_ident = ident;
+        m_transfer_mgr.start (num_queues);
+
+        handle_generator_t::create (m_ident);
+
+        handle_generator_t::get ().initialize_counter
+          (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
+      }
+
+      void
       manager_t::clear ()
       {
         // preconditions:
@@ -59,33 +90,13 @@ namespace gpi
 
       gpi::pc::type::segment_id_t
       manager_t::register_memory ( const gpi::pc::type::process_id_t creator
-                                 , const std::string & name
-                                 , const gpi::pc::type::size_t size
-                                 , const gpi::pc::type::flags_t flags
+                                 , const area_ptr &area
                                  )
       {
-        gpi::pc::type::segment_id_t id (m_segment_counter.inc());
+        add_area (area);
+        attach_process (creator, area->get_id ());
 
-        {
-          lock_type lock (m_mutex);
-          area_ptr area (new shm_area_t ( id
-                                        , creator
-                                        , name
-                                        , size
-                                        , flags
-                                        )
-                         );
-          m_areas[id] = area;
-          CLOG( TRACE
-              , "gpi.memory"
-              , "memory segment registered: " << area->descriptor ()
-              );
-        }
-        memory_added (id);
-
-        attach_process (creator, id);
-
-        return id;
+        return area->get_id ();
       }
 
       void
@@ -135,8 +146,9 @@ namespace gpi
           // WORK HERE:
           //    let this do another thread
           //    and just give him the area_ptr
-          area_it->second->garbage_collect ();
+          area->garbage_collect ();
           m_areas.erase (area_it);
+
           LOG(TRACE, "memory removed: " << mem_id);
         }
 
@@ -167,8 +179,12 @@ namespace gpi
         {
           throw std::runtime_error ("no such memory area");
         }
-        area->second->attach_process (proc_id);
-        process_attached(mem_id, proc_id);
+
+        if (proc_id)
+        {
+          area->second->attach_process (proc_id);
+          process_attached(mem_id, proc_id);
+        }
       }
 
       void
@@ -182,12 +198,16 @@ namespace gpi
         {
           throw std::runtime_error ("no such memory area");
         }
-        area->second->detach_process (proc_id);
-        process_detached(mem_id, proc_id);
 
-        if (area->second->is_eligible_for_deletion())
+        if (proc_id)
         {
-          unregister_memory (mem_id);
+          area->second->detach_process (proc_id);
+          process_detached(mem_id, proc_id);
+
+          if (area->second->is_eligible_for_deletion())
+          {
+            unregister_memory (mem_id);
+          }
         }
       }
 
@@ -215,33 +235,29 @@ namespace gpi
       }
 
       void
-      manager_t::add_gpi_memory ()
+      manager_t::add_area (manager_t::area_ptr const &area)
       {
         lock_type lock (m_mutex);
 
-        gpi::pc::type::segment_id_t id (m_segment_counter.inc());
-
-        if (m_areas.find(id) != m_areas.end())
+        if (area->get_id () == (gpi::pc::type::id_t (-1)))
         {
-          throw std::runtime_error
+          area->set_id (handle_generator_t::get ().next
+                       (gpi::pc::type::segment::SEG_INVAL));
+        }
+        else
+        {
+          if (m_areas.find (area->get_id ()) != m_areas.end())
+          {
+            throw std::runtime_error
               ("cannot add another gpi segment: id already in use!");
+          }
         }
 
-        area_ptr area
-            (new gpi_area_t
-             ( id, 0, "GPI"
-             , gpi::api::gpi_api_t::get().memory_size ()
-             , gpi::pc::type::segment::F_PERSISTENT
-             | gpi::pc::type::segment::F_NOUNLINK
-             , gpi::api::gpi_api_t::get().dma_ptr ()
-             )
-            );
+        m_areas [area->get_id ()] = area;
 
-        m_areas[id] = area;
+        LOG(TRACE, "memory registered:" << area->descriptor ());
 
-        LOG(TRACE, "GPI memory registered:" << area->descriptor ());
-
-        memory_added (id);
+        memory_added (area->get_id ());
       }
 
       manager_t::area_ptr
@@ -317,27 +333,19 @@ namespace gpi
                               , const std::string & name
                               )
       {
-        try
-        {
-          area_ptr area (get_area (seg_id));
-          area->remote_alloc (hdl, offset, size, local_size, name);
-          add_handle (hdl, seg_id);
-          handle_allocated (hdl);
+        area_ptr area (get_area (seg_id));
+        area->remote_alloc (hdl, offset, size, local_size, name);
+        add_handle (hdl, seg_id);
+        handle_allocated (hdl);
 
-          DLOG( TRACE
-              , "remote memory allocated:"
-              << " segment " << seg_id
-              << " size " << size
-              << " local " << local_size
-              << " handle " << hdl
-              );
-        }
-        catch (std::exception const & ex)
-        {
-          // TODO: check error
-          LOG(ERROR, "remote allocation failed: " << ex.what());
-          return 2;
-        }
+        DLOG( TRACE
+            , "remote memory allocated:"
+            << " segment " << seg_id
+            << " size " << size
+            << " local " << local_size
+            << " handle " << hdl
+            );
+
         return 0;
       }
 
@@ -457,11 +465,12 @@ namespace gpi
              << t
              );
 
+        t.dst_area->check_bounds (dst, amount);
+        t.src_area->check_bounds (src, amount);
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
-        check_boundaries(dst, src, amount);
 
         // TODO: increase refcount in handles, set access/modification times
-        m_transfer_mgr.transfer(t);
+        m_transfer_mgr.transfer (t);
         return queue;
       }
 
@@ -474,14 +483,110 @@ namespace gpi
         return m_transfer_mgr.wait_on_queue (queue);
       }
 
-      void
-      manager_t::check_boundaries ( const gpi::pc::type::memory_location_t &dst
-                                  , const gpi::pc::type::memory_location_t &src
-                                  , const gpi::pc::type::size_t amount
-                                  ) const
+      int
+      manager_t::remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
+                                   , std::string const & url
+                                   )
       {
-        get_area_by_handle (dst.handle)->check_bounds (dst, amount);
-        get_area_by_handle (src.handle)->check_bounds (src, amount);
+        area_ptr_t area = factory ().create (url);
+        area->set_owner (0);
+        area->set_id (seg_id);
+        add_area (area);
+        return 0;
+      }
+
+      gpi::pc::type::segment_id_t
+      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
+                            , const std::string & url_s
+                            , const gpi::pc::type::segment_id_t seg_id
+                            )
+      {
+        area_ptr_t area = factory ().create (url_s);
+        area->set_owner (proc_id);
+        if (seg_id > 0)
+          area->set_id (seg_id);
+
+        add_area (area);
+
+        if (area->flags () & F_GLOBAL)
+        {
+          try
+          {
+            using namespace fhg::util;
+            url_t old_url (url_s);
+            url_t new_url;
+            new_url.type (old_url.type ());
+            new_url.path (old_url.path ());
+            new_url.set ("persistent", "true");
+            global::topology ().add_memory
+              (area->get_id (), boost::lexical_cast<std::string>(new_url));
+          }
+          catch (std::exception const & up)
+          {
+            try
+            {
+              del_memory (proc_id, area->get_id ());
+            }
+            catch (...)
+            {
+              // ignore follow up exception
+            }
+
+            throw;
+          }
+        }
+
+        return area->get_id ();
+      }
+
+      int
+      manager_t::remote_del_memory (const gpi::pc::type::segment_id_t seg_id)
+      {
+        del_memory (0, seg_id);
+        return 0;
+      }
+
+      void
+      manager_t::del_memory ( const gpi::pc::type::process_id_t proc_id
+                            , const gpi::pc::type::segment_id_t seg_id
+                            )
+      {
+        if (0 == seg_id)
+          throw std::runtime_error ("invalid segment id");
+        if (seg_id <= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
+          throw std::runtime_error ("permission denied");
+
+        {
+          lock_type lock (m_mutex);
+
+          area_map_t::iterator area_it (m_areas.find (seg_id));
+          if (area_it == m_areas.end ())
+          {
+            throw std::runtime_error ("no such memory");
+          }
+
+          area_ptr area (area_it->second);
+
+          if (area->in_use ())
+          {
+            LOG(WARN, "memory area is still in use: " << area->descriptor ());
+
+            // TODO: maybe move memory segment to garbage area
+
+            throw std::runtime_error
+              ("segment is still inuse, cannot unregister");
+          }
+
+          area->garbage_collect ();
+          m_areas.erase (area_it);
+
+          if (proc_id > 0 && area->flags () & F_GLOBAL)
+          {
+            global::topology ().del_memory (seg_id);
+          }
+        }
+
+        memory_removed (seg_id);
       }
     }
   }

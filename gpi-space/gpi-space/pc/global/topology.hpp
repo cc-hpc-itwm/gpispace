@@ -18,6 +18,8 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <gpi-space/pc/global/itopology.hpp>
+
 #include <gpi-space/types.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle.hpp>
@@ -29,6 +31,7 @@ namespace gpi
     namespace global
     {
       class topology_t : boost::noncopyable
+                       , public itopology_t
       {
       public:
         typedef fhg::com::port_t port_t;
@@ -39,15 +42,18 @@ namespace gpi
           rank_result_t ()
             : rank(-1)
             , value(-1)
+            , message ("")
           {}
 
-          rank_result_t (gpi::rank_t r, int v)
+          rank_result_t (gpi::rank_t r, int v, std::string const &msg="")
             : rank(r)
             , value(v)
+            , message (msg)
           {}
 
           gpi::rank_t rank;
           int value;
+          std::string message;
         };
 
         typedef boost::function<rank_result_t ( rank_result_t
@@ -74,6 +80,8 @@ namespace gpi
 
         void establish ();
 
+        bool is_master () const;
+
         // initiate a global alloc
         int alloc ( const gpi::pc::type::segment_id_t segment
                   , const gpi::pc::type::handle_t
@@ -85,6 +93,11 @@ namespace gpi
 
         int free (const gpi::pc::type::handle_t);
 
+        int add_memory ( const gpi::pc::type::segment_id_t seg_id
+                       , const std::string & url
+                       );
+        int del_memory (const gpi::pc::type::segment_id_t seg_id);
+      private:
         void cast (const gpi::rank_t rnk, const std::string & data);
         void cast (const gpi::rank_t rnk, const char *data, const std::size_t len);
 
@@ -106,7 +119,7 @@ namespace gpi
         //       -> return: No, Yes (just for sanity)
         //    shutdown-requested()
         //       -> return: nil
-      private:
+
         struct child_t
         {
           child_t ()

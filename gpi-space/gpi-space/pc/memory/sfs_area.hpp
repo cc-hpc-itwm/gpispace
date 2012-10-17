@@ -1,7 +1,11 @@
-#ifndef GPI_SPACE_PC_MEMORY_GPI_AREA_HPP
-#define GPI_SPACE_PC_MEMORY_GPI_AREA_HPP
+#ifndef GPI_SPACE_PC_MEMORY_SFS_AREA_HPP
+#define GPI_SPACE_PC_MEMORY_SFS_AREA_HPP
+
+#include <boost/filesystem.hpp>
 
 #include <gpi-space/pc/type/segment_type.hpp>
+
+#include <gpi-space/pc/global/itopology.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 
 namespace gpi
@@ -10,23 +14,37 @@ namespace gpi
   {
     namespace memory
     {
-      class gpi_area_t : public area_t
+      class sfs_area_t : public area_t
       {
       public:
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GPI;
+        typedef boost::filesystem::path path_t;
 
-        static area_ptr_t create (std::string const &url);
+        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SFS;
+        static const int SFS_VERSION = 0x0001;
 
-        gpi_area_t ( const gpi::pc::type::process_id_t creator
-                   , const std::string & name
-                   , const gpi::pc::type::size_t per_node_size
+        static area_ptr_t create ( std::string const &url
+                                 , gpi::pc::global::itopology_t & topology
+                                 );
+
+        // cleanup a file segment
+        static void cleanup (path_t const & path);
+
+        sfs_area_t ( const gpi::pc::type::process_id_t creator
+                   , const path_t & path
+                   , const gpi::pc::type::size_t size        // total
                    , const gpi::pc::type::flags_t flags
-                   , void * dma_ptr
+                   , gpi::pc::global::itopology_t & topology
                    );
 
-        ~gpi_area_t ();
+        ~sfs_area_t ();
+
+        int save_state (boost::system::error_code &ec);
+        int open (boost::system::error_code & ec);
+        int close (boost::system::error_code & ec);
 
       protected:
+        int get_type_id () const;
+
         void check_bounds ( const gpi::pc::type::handle::descriptor_t &
                           , const gpi::pc::type::offset_t start
                           , const gpi::pc::type::size_t   amount
@@ -51,22 +69,38 @@ namespace gpi
                             , const gpi::pc::type::size_t   range_size
                             ) const;
 
-        gpi::pc::type::offset_t
-        handle_to_global_offset ( const gpi::pc::type::offset_t
-                                , const gpi::pc::type::size_t per_node_size
-                                ) const;
-
         void *raw_ptr (gpi::pc::type::offset_t off);
 
         gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                              , const gpi::pc::type::flags_t flags
                                              ) const;
 
+        gpi::pc::type::size_t
+        read_from_impl ( gpi::pc::type::offset_t off
+                       , void *buffer
+                       , gpi::pc::type::size_t amount
+                       );
+
+        gpi::pc::type::size_t
+        write_to_impl ( gpi::pc::type::offset_t off
+                      , const void *buffer
+                      , gpi::pc::type::size_t amount
+                      );
+
+        bool initialize ( path_t const & path
+                        , const gpi::pc::type::size_t size
+                        , boost::system::error_code &ec
+                        );
 
         void * m_ptr;
-        gpi::pc::type::size_t m_total_memsize;
-        gpi::pc::type::offset_t m_min_local_offset;
-        gpi::pc::type::offset_t m_max_local_offset;
+        int    m_fd;
+        int    m_lock_fd;
+        path_t m_path;
+        int    m_version;
+
+        gpi::pc::type::size_t   m_size;
+
+        gpi::pc::global::itopology_t & m_topology;
       };
     }
   }

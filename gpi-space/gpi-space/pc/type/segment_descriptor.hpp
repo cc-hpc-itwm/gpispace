@@ -11,7 +11,9 @@
 #include <boost/serialization/vector.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/time_stamp.hpp>
+#include <gpi-space/pc/type/segment_type.hpp>
 
 namespace gpi
 {
@@ -21,34 +23,13 @@ namespace gpi
     {
       namespace segment
       {
-        enum segment_type
-          {
-            // maximum of 4 bits available --> see handle_t
-            SEG_INVAL = 0,
-            SEG_GPI = 1,
-            SEG_SHM = 2,
-          };
-
-
-        enum flags_type
-          {
-            F_NONE         = 0x00,
-            F_PERSISTENT   = 0x01, // leave segment in gpi after process death
-            F_EXCLUSIVE    = 0x02, // no mapping possible from other processes
-            F_NOUNLINK     = 0x04, // do not unlink segment after gpi termination
-            F_NOCREATE     = 0x08, // do not create the segment (try to open it)
-            F_FORCE_UNLINK = 0x10, // force recreation of the segment
-            F_SPECIAL      = 0x20, // special segment (used internally to identify local/global segments)
-            F_ATTACHED     = 0x40, // special flag indicating if the process container is attached
-          };
-
         struct descriptor_t
         {
           gpi::pc::type::segment_id_t id;       // identification
           segment_type type;                    // type id
           gpi::pc::type::process_id_t creator;  // container id
           gpi::pc::type::name_t name;           // user defined name
-          gpi::pc::type::size_t size;           // maximum size
+          gpi::pc::type::size_t local_size;     // maximum local size
           gpi::pc::type::size_t avail;          // available size
           gpi::pc::type::size_t allocs;         // number of allocations
           gpi::pc::type::ref_count_t nref;      // number of containers attached
@@ -60,7 +41,7 @@ namespace gpi
             , type (SEG_INVAL)
             , creator (0)
             , name ("")
-            , size (0)
+            , local_size (0)
             , avail (0)
             , allocs (0)
             , nref (0)
@@ -78,7 +59,7 @@ namespace gpi
               , type (a_type)
               , creator (a_proc)
               , name (a_name)
-              , size (a_size)
+              , local_size (a_size)
               , avail (a_size)
               , allocs (0)
               , nref (0)
@@ -99,7 +80,7 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( type );
             ar & BOOST_SERIALIZATION_NVP( creator );
             ar & BOOST_SERIALIZATION_NVP( name );
-            ar & BOOST_SERIALIZATION_NVP( size );
+            ar & BOOST_SERIALIZATION_NVP( local_size );
             ar & BOOST_SERIALIZATION_NVP( avail );
             ar & BOOST_SERIALIZATION_NVP( allocs );
             ar & BOOST_SERIALIZATION_NVP( nref );
@@ -228,7 +209,7 @@ namespace gpi
           // SIZE
           os.flags (std::ios::right | std::ios::dec);
           os.width (12);
-          os << d.size;
+          os << d.local_size;
           os << " ";
 
           // CREATION TIME
