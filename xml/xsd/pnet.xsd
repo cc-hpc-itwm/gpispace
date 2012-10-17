@@ -193,9 +193,15 @@
     <xsd:attribute name="real" type="xsd:ID" use="required"/>
   </xsd:complexType>
 
-  <xsd:complexType name="function_type">
+  <xsd:complexType name="template_type">
     <xsd:sequence>
       <xsd:element minOccurs="0" maxOccurs="unbounded" name="template-parameter" type="template_parameter_type"/>
+      <xsd:element minOccures="1" maxOccures="1" name="defun" type="function_type"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="function_type">
+    <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="properties" type="property_map_type"/>
         <xsd:element name="include-properties" type="properties_include_type"/>
@@ -258,7 +264,7 @@
       <xsd:element name="properties" type="property_map_type"/>
       <xsd:element name="specialize" type="template_use_type"/>
       <xsd:element name="struct" type="struct_type"/>
-      <xsd:element name="template" type="function_type"/>
+      <xsd:element name="template" type="template_type"/>
       <xsd:element name="transition" type="transition_type"/>
     </xsd:choice>
   </xsd:complexType>
