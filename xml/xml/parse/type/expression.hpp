@@ -3,18 +3,17 @@
 #ifndef _XML_PARSE_TYPE_EXPRESSION_HPP
 #define _XML_PARSE_TYPE_EXPRESSION_HPP
 
+// #include <xml/parse/type/function.hpp>
+
+#include <xml/parse/util/id_type.hpp>
+
+#include <fhg/util/xml.fwd.hpp>
+
 #include <string>
-#include <iostream>
 #include <list>
+#include <stdexcept> // for visitor only
 
-#include <fhg/util/join.hpp>
-#include <fhg/util/split.hpp>
-
-#include <boost/variant.hpp>
-
-#include <fhg/util/xml.hpp>
-
-namespace xml_util = ::fhg::util::xml;
+#include <boost/variant.hpp> // for visitor only
 
 namespace xml
 {
@@ -24,76 +23,47 @@ namespace xml
     {
       typedef std::list<std::string> expressions_type;
 
-      inline expressions_type split (const expressions_type& exps)
-      {
-        expressions_type list;
-
-        for ( expressions_type::const_iterator exp (exps.begin())
-            ; exp != exps.end()
-            ; ++exp
-            )
-          {
-            fhg::util::lines (*exp, ';', list);
-          }
-
-        return list;
-      }
-
       struct expression_type
       {
       private:
         expressions_type _expressions;
 
+        id::expression _id;
+        id::function _parent;
+
       public:
-        expression_type () : _expressions () {}
+        expression_type ( const id::expression& id
+                        , const id::function& parent
+                        );
+        expression_type ( const expressions_type & exps
+                        , const id::expression& id
+                        , const id::function& parent
+                        );
 
-        expression_type (const expressions_type & exps)
-          : _expressions (split (exps))
-        {}
+        const id::expression& id() const;
+        const id::function& parent() const;
 
-        void set (const std::string& exps)
-        {
-          _expressions.clear();
-          fhg::util::lines (exps, ';', _expressions);
-        }
+        bool is_same (const expression_type& other) const;
 
-        std::string expression (const std::string& sep = " ") const
-        {
-          return fhg::util::join ( expressions().begin()
-                                 , expressions().end()
-                                 , ";" + sep
-                                 );
-        }
+        void set (const std::string& exps);
 
-        const expressions_type& expressions (void) const
-        {
-          return _expressions;
-        }
-        expressions_type& expressions (void)
-        {
-          return _expressions;
-        }
+        std::string expression (const std::string& sep = " ") const;
+
+        const expressions_type& expressions (void) const;
+        expressions_type& expressions (void);
       };
 
       namespace dump
       {
-        inline void dump ( xml_util::xmlstream & s
-                         , const expression_type & e
-                         )
-        {
-          s.open ("expression");
-
-          const std::string exp (e.expression ());
-
-          if (exp.size() > 0)
-            {
-              s.content (exp);
-            }
-
-          s.close ();
-        }
+        void dump ( ::fhg::util::xml::xmlstream & s
+                  , const expression_type & e
+                  );
       }
 
+      //! \todo Only expose void join (function_type::type);
+      //! \note This is currently not possible due to inclusion loops
+      //! in function.hpp
+      // void join (const expression_type& e, function_type::type& fun)
       namespace visitor
       {
         class join : public boost::static_visitor<void>

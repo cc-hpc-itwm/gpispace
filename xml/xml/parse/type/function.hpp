@@ -541,17 +541,22 @@ namespace xml
         }
 
         function_type ( const type& _f
-                      , const ::fhg::xml::parse::util::id_type& id
+                      , const id::function& id
                       )
           : _id (id)
           , f (_f)
         { }
 
-        function_type (const ::fhg::xml::parse::util::id_type& id)
+        //! \note With no net/module/expression given, default to
+        //! expression. Needs a second id though, so no default ctor.
+        function_type ( const id::expression& expression_id
+                      , const id::function& id
+                      )
           : _id (id)
+          , f (expression_type (expression_id, id))
         { }
 
-        const ::fhg::xml::parse::util::id_type& id() const
+        const id::function& id() const
         {
           return _id;
         }
@@ -1822,7 +1827,7 @@ namespace xml
                   }
               }
 
-            mcs[mod.name][mod.function] = mod;
+            mcs[mod.name].insert (std::make_pair (mod.function, mod));
 
 #define STRANGE(msg) THROW_STRANGE(  msg << " in module "     \
                                   << mod.name << " function " \
@@ -2142,13 +2147,13 @@ namespace xml
         };
 
         template<typename NET>
-        class struct_to_cpp : public boost::static_visitor<void>
+        class struct_to_cpp_visitor : public boost::static_visitor<void>
         {
         private:
           const state::type & state;
 
         public:
-          struct_to_cpp (const state::type & _state)
+          struct_to_cpp_visitor (const state::type & _state)
             : state (_state)
           {}
 
@@ -2198,7 +2203,7 @@ namespace xml
 
         structs_to_cpp (f.structs, state);
 
-        boost::apply_visitor (visitor::struct_to_cpp<net_type>(state), f.f);
+        boost::apply_visitor (visitor::struct_to_cpp_visitor<net_type>(state), f.f);
       }
 
       // ******************************************************************* //

@@ -21,16 +21,29 @@ set (xml_parse_type_headers
 set (xml_parse_type_fwd_headers
   template.fwd.hpp
   connect.fwd.hpp
+  expression.fwd.hpp
+  function.fwd.hpp
+  mod.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
+  place_map.fwd.hpp
   port.fwd.hpp
+  require.fwd.hpp
+  specialize.fwd.hpp
+  struct.fwd.hpp
   transition.fwd.hpp
 )
 
 set (xml_parse_type_sources
   template.cpp
   connect.cpp
+  expression.cpp
+  mod.cpp
+  place.cpp
+  place_map.cpp
   port.cpp
+  require.cpp
+  specialize.cpp
 )
 
 add_library (xml_parse_type

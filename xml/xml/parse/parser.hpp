@@ -53,17 +53,26 @@ namespace xml
     static type::function_type function_type ( const xml_node_type *
                                              , state::type &
                                              );
+    static type::mod_type mod_type ( const xml_node_type *
+                                   , state::type &
+                                   , const id::function& parent
+                                   );
     static type::template_type template_type ( const xml_node_type *
                                              , state::type &
                                              , const id::net& parent
                                              );
-    static type::mod_type mod_type (const xml_node_type *, state::type &);
     static type::net_type net_type ( const xml_node_type *
                                    , state::type &
                                    , const id::function& parent
                                    );
-    static type::place_type place_type (const xml_node_type *, state::type &);
-    static type::port_type port_type (const xml_node_type *, state::type &);
+    static type::place_type place_type ( const xml_node_type *
+                                       , state::type &
+                                       , const id::net& parent
+                                       );
+    static type::port_type port_type ( const xml_node_type *
+                                     , state::type &
+                                     , const id::function& parent
+                                     );
     static void gen_struct_type ( const xml_node_type *, state::type &
                                 , signature::desc_t &
                                 );
@@ -78,6 +87,7 @@ namespace xml
                                                  );
     static type::specialize_type specialize_type ( const xml_node_type *
                                                  , state::type &
+                                                 , const id::net& parent
                                                  );
 
     static int property_map_type ( we::type::property::type &
@@ -408,12 +418,16 @@ namespace xml
     // ********************************************************************* //
 
     static type::place_map_type
-    place_map_type (const xml_node_type * node, state::type & state)
+    place_map_type ( const xml_node_type * node
+                   , state::type & state
+                   , const id::transition& parent
+                   )
     {
       type::place_map_type place_map
         ( required ("place_map_type", node, "virtual", state.file_in_progress())
         , required ("place_map_type", node, "real", state.file_in_progress())
         , state.next_id()
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -564,7 +578,9 @@ namespace xml
     static type::function_type
     function_type (const xml_node_type * node, state::type & state)
     {
-      type::function_type f (state.next_id());
+      id::expression expression_id (state.next_id());
+      id::function function_id (state.next_id());
+      type::function_type f (expression_id, function_id);
 
       f.path = state.file_in_progress();
       f.name (optional (node, "name"));
@@ -586,19 +602,19 @@ namespace xml
             {
               if (child_name == "in")
                 {
-                  f.push_in (port_type (child, state));
+                  f.push_in (port_type (child, state, f.id()));
                 }
               else if (child_name == "out")
                 {
-                  f.push_out (port_type (child, state));
+                  f.push_out (port_type (child, state, f.id()));
                 }
               else if (child_name == "inout")
                 {
-                  f.push_inout (port_type (child, state));
+                  f.push_inout (port_type (child, state, f.id()));
                 }
               else if (child_name == "tunnel")
                 {
-                  f.push_tunnel (port_type (child, state));
+                  f.push_tunnel (port_type (child, state, f.id()));
                 }
               else if (child_name == "struct")
                 {
@@ -629,12 +645,14 @@ namespace xml
                         ( child
                         , state.file_in_progress()
                         )
+                      , state.next_id()
+                      , f.id()
                       )
                     );
                 }
               else if (child_name == "module")
                 {
-                  f.f = mod_type (child, state);
+                  f.f = mod_type (child, state, f.id());
                 }
               else if (child_name == "net")
                 {
@@ -691,10 +709,15 @@ namespace xml
     // ********************************************************************* //
 
     static type::mod_type
-    mod_type ( const xml_node_type * node, state::type & state)
+    mod_type ( const xml_node_type * node
+             , state::type & state
+             , const id::function& parent
+             )
     {
       type::mod_type mod
-        ( required ("mod_type", node, "name", state.file_in_progress())
+        ( state.next_id()
+        , parent
+        , required ("mod_type", node, "name", state.file_in_progress())
         , required ("mod_type", node, "function", state.file_in_progress())
         , state.file_in_progress()
         );
@@ -798,11 +821,11 @@ namespace xml
                 }
               else if (child_name == "specialize")
                 {
-                  n.push_specialize (specialize_type (child, state), state);
+                  n.push_specialize (specialize_type (child, state, n.id()), state);
                 }
               else if (child_name == "place")
                 {
-                  n.push_place (place_type (child, state));
+                  n.push_place (place_type (child, state, n.id()));
                 }
               else if (child_name == "transition")
                 {
@@ -902,8 +925,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::place_type
-    place_type (const xml_node_type * node, state::type & state)
+    static type::place_type place_type ( const xml_node_type * node
+                                       , state::type & state
+                                       , const id::net& parent
+                                       )
     {
       const std::string name
         (required ("place_type", node, "name", state.file_in_progress()));
@@ -921,6 +946,7 @@ namespace xml
                                              , optional (node, "virtual")
                                              )
         , state.next_id()
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -973,7 +999,10 @@ namespace xml
     // ********************************************************************* //
 
     static type::port_type
-    port_type (const xml_node_type * node, state::type & state)
+    port_type ( const xml_node_type * node
+              , state::type & state
+              , const id::function& parent
+              )
     {
       const std::string name
         (required ("port_type", node, "name", state.file_in_progress()));
@@ -989,6 +1018,7 @@ namespace xml
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
         , state.next_id()
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1469,9 +1499,12 @@ namespace xml
     }
 
     static type::specialize_type
-    specialize_type (const xml_node_type * node, state::type & state)
+    specialize_type ( const xml_node_type * node
+                    , state::type & state
+                    , const id::net& parent
+                    )
     {
-      type::specialize_type s (state.next_id());
+      type::specialize_type s (state.next_id(), parent);
 
       s.path = state.file_in_progress();
       s.name = required ("specialize_type", node, "name", s.path);
@@ -1581,7 +1614,7 @@ namespace xml
                 }
               else if (child_name == "place-map")
                 {
-                  t.push_place_map (place_map_type (child, state));
+                  t.push_place_map (place_map_type (child, state, t.id()));
                 }
               else if (child_name == "connect-in")
                 {

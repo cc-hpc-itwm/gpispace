@@ -27,26 +27,31 @@ namespace xml
     {
       struct port_type
       {
-        ::fhg::xml::parse::util::id_type _id;
+      public:
+        port_type ( const std::string & _name
+                  , const std::string & _type
+                  , const fhg::util::maybe<std::string> & _place
+                  , const id::port& id
+                  , const id::function& parent
+                  );
+
+        const id::port& id() const;
+        const id::transition& parent() const;
+
+        bool is_same (const port_type& other) const;
+
+        void specialize ( const type::type_map_type & map_in
+                        , const state::type &
+                        );
+      private:
+        id::port _id;
+        id::function _parent;
 
       public:
         std::string name;
         std::string type;
         fhg::util::maybe<std::string> place;
         we::type::property::type prop;
-
-        port_type ( const std::string & _name
-                  , const std::string & _type
-                  , const fhg::util::maybe<std::string> & _place
-                  , const ::fhg::xml::parse::util::id_type& id
-                  );
-
-        const ::fhg::xml::parse::util::id_type& id() const;
-        bool is_same (const port_type& other) const;
-
-        void specialize ( const type::type_map_type & map_in
-                        , const state::type &
-                        );
       };
 
       // ******************************************************************* //
