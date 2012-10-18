@@ -64,6 +64,7 @@ namespace xml
     static type::net_type net_type ( const xml_node_type *
                                    , state::type &
                                    , const id::function& parent
+                                   , type::function_type& parent_fun
                                    );
     static type::place_type place_type ( const xml_node_type *
                                        , state::type &
@@ -654,7 +655,7 @@ namespace xml
                 }
               else if (child_name == "net")
                 {
-                  f.f = net_type (child, state, f.id());
+                  f.f = net_type (child, state, f.id(), f);
                 }
               else if (child_name == "condition")
                 {
@@ -797,6 +798,7 @@ namespace xml
       net_type ( const xml_node_type * node
                , state::type & state
                , const id::function& parent
+               , type::function_type& parent_fun
                )
     {
       type::net_type n (state.next_id(), parent);
@@ -831,7 +833,7 @@ namespace xml
                 }
               else if (child_name == "struct")
                 {
-                  n.structs.push_back (struct_type (child, state));
+                  parent_fun.structs.push_back (struct_type (child, state));
                 }
               else if (child_name == "include-structs")
                 {
