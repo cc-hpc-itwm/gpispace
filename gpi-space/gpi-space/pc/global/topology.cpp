@@ -151,8 +151,10 @@ namespace gpi
 
         ++m_waiting_for_go;
 
-        while (! m_go_received)
+        while (not m_go_received)
         {
+          if (m_shutting_down)
+            break;
           m_go_received_event.wait (lock);
         }
 
@@ -161,6 +163,10 @@ namespace gpi
         {
           m_go_received = false;
         }
+
+        if (m_shutting_down)
+          throw std::runtime_error ("shutting down");
+
         return 0;
       }
 
@@ -453,7 +459,7 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              if (i > 0)
+              if (i > 0 && !m_shutting_down)
               {
                 usleep (snooze);
                 snooze = std::min(10 * 1000 * 1000u, snooze*2);
@@ -743,10 +749,17 @@ namespace gpi
                                     , boost::system::error_code const &ec
                                     )
       {
-        if (m_established)
+        if (m_established || m_waiting_for_go)
         {
           LOG(WARN, "error on connection to child node " << rank);
           LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
+
+          m_shutting_down = true;
+          if (m_waiting_for_go)
+          {
+            m_go_received_event.notify_all ();
+          }
+
           del_child (rank);
           kill(getpid(), SIGTERM);
           //_exit(15);
