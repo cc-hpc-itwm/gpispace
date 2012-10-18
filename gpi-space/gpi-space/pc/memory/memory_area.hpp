@@ -15,6 +15,7 @@
 #include <gpi-space/pc/type/memory_location.hpp>
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
+
 #include <gpi-space/pc/memory/task.hpp>
 
 namespace gpi
@@ -23,6 +24,8 @@ namespace gpi
   {
     namespace memory
     {
+      class buffer_pool_t;
+
       class area_t : boost::noncopyable
       {
       public:
@@ -136,6 +139,7 @@ namespace gpi
                                , area_t & dst_area
                                , gpi::pc::type::size_t amount
                                , gpi::pc::type::size_t queue
+                               , buffer_pool_t & buffer_pool
                                , task_list_t & tasks
                                );
       protected:

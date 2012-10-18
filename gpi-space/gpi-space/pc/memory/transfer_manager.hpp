@@ -8,6 +8,7 @@
 #include <gpi-space/pc/memory/thread_pool.hpp>
 #include <gpi-space/pc/memory/transfer_queue.hpp>
 #include <gpi-space/pc/memory/task_queue.hpp>
+#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
 
 namespace gpi
 {
@@ -147,6 +148,7 @@ namespace gpi
         transfer_queues_t m_queues;
         task_queue_t m_worker_queue;
         thread_pool_t m_worker_pool;
+        buffer_pool_t m_memory_buffer_pool;
       };
     }
   }

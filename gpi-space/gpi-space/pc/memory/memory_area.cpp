@@ -10,7 +10,10 @@
 
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
+
 #include <gpi-space/pc/memory/handle_generator.hpp>
+#include <gpi-space/pc/memory/memory_buffer.hpp>
+#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
 
 namespace gpi
 {
@@ -185,6 +188,7 @@ namespace gpi
 
         const gpi::pc::type::offset_t start = location.offset;
         const gpi::pc::type::offset_t end   = start + amount;
+
         return is_range_local (hdl_it->second, start, end);
       }
 
@@ -699,6 +703,73 @@ namespace gpi
           void * m_buffer;
           gpi::pc::type::size_t m_amount;
         };
+
+        struct copy
+        {
+          copy ( area_t & src
+               , area_t & dst
+               , gpi::pc::type::memory_location_t src_loc
+               , gpi::pc::type::memory_location_t dst_loc
+               , gpi::pc::type::size_t amount
+               , buffer_pool_t & buffer_pool
+               )
+            : m_src (src)
+            , m_dst (dst)
+            , m_src_loc (src_loc)
+            , m_dst_loc (dst_loc)
+            , m_amount (amount)
+            , m_pool (buffer_pool)
+          {}
+
+          void operator () ()
+          {
+            buffer_t *buffer = m_pool.acquire ();
+
+            size_t remaining = m_amount;
+
+            while (remaining)
+            {
+              const size_t to_read = std::min (remaining, buffer->size ());
+
+              const size_t num_read = m_src.read_from ( m_src_loc
+                                                      , buffer->data ()
+                                                      , to_read
+                                                      );
+              if (0 == num_read)
+              {
+                MLOG ( ERROR
+                     , "could not read " << buffer->size () << " bytes"
+                     << " from " << m_src_loc
+                     << " remaining " << remaining
+                     );
+                m_pool.release (buffer);
+                throw std::runtime_error ("could not read");
+              }
+
+              buffer->used (num_read);
+
+              const size_t num_written = m_dst.write_to ( m_dst_loc
+                                                        , buffer->data ()
+                                                        , buffer->used ()
+                                                        );
+
+              assert (num_read == num_written);
+
+              buffer->used (num_read - num_written);
+
+              remaining -= num_read;
+            }
+
+            m_pool.release (buffer);
+          }
+        private:
+          area_t & m_src;
+          area_t & m_dst;
+          gpi::pc::type::memory_location_t m_src_loc;
+          gpi::pc::type::memory_location_t m_dst_loc;
+          gpi::pc::type::size_t m_amount;
+          buffer_pool_t & m_pool;
+        };
       }
 
       gpi::pc::type::size_t
@@ -773,6 +844,7 @@ namespace gpi
                                  , area_t & dst_area
                                  , gpi::pc::type::size_t amount
                                  , gpi::pc::type::size_t queue
+                                 , buffer_pool_t & buffer_pool
                                  , task_list_t & tasks
                                  )
       {
@@ -835,9 +907,24 @@ namespace gpi
           }
           else
           {
-            MLOG ( WARN
-                 , "both segments are local, but none of them has raw memory"
-                 );
+            tasks.push_back
+              (boost::make_shared<task_t>
+              ( "copy: "
+              + boost::lexical_cast<std::string> (dst)
+              + " <- "
+              + boost::lexical_cast<std::string> (src)
+              + " "
+              + boost::lexical_cast<std::string> (amount)
+
+              , detail::copy ( *this
+                             , dst_area
+                             , src
+                             , dst
+                             , amount
+                             , buffer_pool
+                             )
+              ));
+            return 0;
           }
         }
 
