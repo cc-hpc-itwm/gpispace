@@ -751,8 +751,8 @@ namespace gpi
       {
         if (m_established || m_waiting_for_go)
         {
-          LOG(WARN, "error on connection to child node " << rank);
-          LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
+          LOG(DEBUG, "error on connection to child node " << rank);
+          LOG(DEBUG, "node-failover is not available yet, I have to commit Seppuku...");
 
           m_shutting_down = true;
           if (m_waiting_for_go)
