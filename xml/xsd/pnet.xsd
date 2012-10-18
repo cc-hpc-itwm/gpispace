@@ -218,10 +218,10 @@
         <xsd:element name="inout" type="port_type"/>
         <xsd:element name="tunnel" type="port_type"/>
       </xsd:choice>
-      <xsd:choice minOccurs="1" maxOccurs="1">
-        <xsd:element name="expression" type="xsd:string"/>
-        <xsd:element name="module" type="mod_type"/>
-        <xsd:element name="net" type="net_type"/>
+      <xsd:choice>
+        <xsd:element minOccurs="1" maxOccurs="unbounded" name="expression" type="xsd:string"/>
+        <xsd:element minOccurs="1" maxOccurs="1" name="module" type="mod_type"/>
+        <xsd:element minOccurs="1" maxOccurs="1" name="net" type="net_type"/>
       </xsd:choice>
       <xsd:element minOccurs="0" maxOccurs="unbounded" name="condition" type="xsd:string"/>
     </xsd:sequence>
