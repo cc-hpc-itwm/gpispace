@@ -41,6 +41,7 @@ namespace xml
       MAKE_ID (specialize);
       MAKE_ID (structure);
       MAKE_ID (tmpl);
+      MAKE_ID (token);
       MAKE_ID (transition);
       MAKE_ID (use);
 

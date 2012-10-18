@@ -31,6 +31,7 @@ set (xml_parse_type_fwd_headers
   specialize.fwd.hpp
   struct.fwd.hpp
   template.fwd.hpp
+  token.fwd.hpp
   transition.fwd.hpp
   use.fwd.hpp
 )
@@ -46,6 +47,7 @@ set (xml_parse_type_sources
   specialize.cpp
   struct.cpp
   template.cpp
+  token.cpp
   use.cpp
 )
 

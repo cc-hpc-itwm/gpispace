@@ -3,11 +3,11 @@
 #ifndef _XML_PARSE_TYPE_TOKEN_HPP
 #define _XML_PARSE_TYPE_TOKEN_HPP
 
+#include <xml/parse/util/id_type.hpp>
+
 #include <we/type/signature.hpp>
 
-#include <boost/filesystem.hpp>
-
-#include <iostream>
+#include <string>
 
 namespace xml
 {
@@ -19,7 +19,26 @@ namespace xml
       // string->string mapping, after the type of the place is
       // resolved, construct the concrete token out of this
 
-      typedef signature::desc_t token_type;
+      struct token_type : public signature::desc_t
+      {
+      public:
+        token_type ( const id::token& id
+                   , const id::place& parent
+                   , const signature::structured_t& structure
+                   );
+
+        token_type ( const id::token& id
+                   , const id::place& parent
+                   , const std::string& value
+                   );
+
+        const id::token& id() const;
+        const id::place& parent() const;
+
+      private:
+        id::token _id;
+        id::place _parent;
+      };
     }
   }
 }

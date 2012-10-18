@@ -83,7 +83,10 @@ namespace xml
                                       , state::type &
                                       , const id::function& parent
                                       );
-    static type::token_type token_type (const xml_node_type *, state::type &);
+    static type::token_type token_type ( const xml_node_type *
+                                       , state::type &
+                                       , const id::place& parent
+                                       );
     static type::transition_type transition_type ( const xml_node_type *
                                                  , state::type &
                                                  , const id::net& parent
@@ -987,7 +990,7 @@ namespace xml
             {
               if (child_name == "token")
                 {
-                  p.push_token (token_type (child, state));
+                  p.push_token (token_type (child, state, p.id()));
                 }
               else if (child_name == "properties")
                 {
@@ -1422,10 +1425,16 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::token_type
-    token_type (const xml_node_type * node, state::type & state)
+    static type::token_type token_type ( const xml_node_type * node
+                                       , state::type & state
+                                       , const id::place& parent
+                                       )
     {
-      type::token_type tok = signature::structured_t();
+      //! \note We can't use a structured_t, as token_field_type takes
+      //! a reference to the variant desc_t and also needs that
+      //! variant. Also, we have to boost::get the structured_t below,
+      //! even though we know it never can be something else.
+      signature::desc_t temporary_token ((signature::structured_t()));
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1439,11 +1448,14 @@ namespace xml
             {
               if (child_name == "value")
                 {
-                  return type::token_type (std::string (child->value()));
+                  return type::token_type ( state.next_id()
+                                          , parent
+                                          , std::string (child->value())
+                                          );
                 }
               else if (child_name == "field")
                 {
-                  token_field_type (child, state, tok);
+                  token_field_type (child, state, temporary_token);
                 }
               else
                 {
@@ -1456,8 +1468,11 @@ namespace xml
                 }
             }
         }
-
-      return tok;
+      return type::token_type ( state.next_id()
+                              , parent
+                              , boost::get<signature::structured_t>
+                                (temporary_token)
+                              );
     }
 
     // ********************************************************************* //
