@@ -19,7 +19,7 @@ a:documentation [
 start = element defun { function_type }
       | element props { property_map_list_type }
       | element structs { struct_list_type }
-      | element template { function_type }
+      | element template { template_type }
 transition_include_type = attribute href { xsd:anyURI }
 struct_include_type = attribute href { xsd:anyURI }
 function_include_type =
@@ -102,6 +102,9 @@ place_map_type =
    | element include-properties { properties_include_type })*,
   attribute virtual { xsd:string },
   attribute real { xsd:ID }
+template_type =
+  (element template-parameter { template_paramater_type })*,
+  element defun { function_type }
 function_type =
   element template-parameter { template_parameter_type }*,
   (element properties { property_map_type }
@@ -136,8 +139,7 @@ transition_type =
   attribute inline { xsd:boolean }?,
   attribute internal { xsd:boolean }?
 net_type =
-  (element include-function { function_include_type }
-   | element include-properties { properties_include_type }
+  (element include-properties { properties_include_type }
    | element include-structs { struct_include_type }
    | element include-template { function_include_type }
    | element place { place_type }
