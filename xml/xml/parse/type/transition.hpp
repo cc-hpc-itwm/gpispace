@@ -199,15 +199,15 @@ namespace xml
 
       // ******************************************************************* //
 
-      typedef xml::util::uniquePP<connect_type>::elements_type connections_type;
+      typedef xml::util::unique<connect_type>::elements_type connections_type;
 
       struct transition_type
       {
       private:
-        xml::util::uniquePP<connect_type> _in;
-        xml::util::uniquePP<connect_type> _out;
-        xml::util::uniquePP<connect_type> _read;
-        xml::util::uniquePP<place_map_type> _place_map;
+        xml::util::unique<connect_type> _in;
+        xml::util::unique<connect_type> _out;
+        xml::util::unique<connect_type> _read;
+        xml::util::unique<place_map_type> _place_map;
 
         id::transition _id;
         id::net _parent;

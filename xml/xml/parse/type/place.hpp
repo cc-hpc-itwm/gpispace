@@ -77,7 +77,7 @@ namespace xml
         bool is_virtual (void) const;
       };
 
-      typedef xml::util::uniquePP<place_type>::elements_type places_type;
+      typedef xml::util::unique<place_type>::elements_type places_type;
 
       namespace dump
       {

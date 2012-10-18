@@ -17,7 +17,7 @@ namespace xml
   namespace util
   {
     template<typename T, typename Key = std::string>
-    struct uniquePP
+    struct unique
     {
     public:
       typedef std::list<T> elements_type;
@@ -47,18 +47,18 @@ namespace xml
       }
 
     public:
-      uniquePP ()
+      unique ()
         : _elements ()
         , _names ()
         , _ids ()
       {}
-      uniquePP (const uniquePP & old)
+      unique (const unique & old)
         : _elements ()
         , _names ()
         , _ids ()
       { *this = old; }
 
-      uniquePP & operator = (const uniquePP & other)
+      unique & operator = (const unique & other)
       {
         if (this != &other)
           {
