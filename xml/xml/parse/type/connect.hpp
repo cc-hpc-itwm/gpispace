@@ -31,16 +31,17 @@ namespace xml
 
         bool is_same (const connect_type& other) const;
 
+        std::string _name;
+
         //! \todo Should be private with accessors.
       public:
         //! \todo Should be a id::place and id::port.
         std::string place;
         std::string port;
 
-        //! \todo This is only needed for errors and unique<connect_type>.
-        std::string name;
-
         we::type::property::type prop;
+
+        const std::string& name() const;
 
       private:
         id::connect _id;
