@@ -236,7 +236,7 @@ namespace gpi
                 MLOG ( ERROR
                      , "sfs segment in: " << m_path
                      << " still in use by: '" << buf << "'"
-                     << " manually remove: " << lock_file
+                     << " if this is wrong, manually remove: " << lock_file
                      );
                 ec.assign (EADDRINUSE, boost::system::system_category ());
                 return -1;
