@@ -1,11 +1,12 @@
 <template name="dup">
+  <template-parameter type="T"/>
+  <defun>
+    <in name="x" type="T"/>
+    <out name="a" type="T"/>
+    <out name="b" type="T"/>
 
-  <in name="x" type="T"/>
-  <out name="a" type="T"/>
-  <out name="b" type="T"/>
-
-  <expression>
-    ${a} := ${x}; ${b} := ${x}
-  </expression>
-
+    <expression>
+      ${a} := ${x}; ${b} := ${x}
+    </expression>
+  </defun>
 </template>

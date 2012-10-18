@@ -1,33 +1,37 @@
 <template name="make_pair">
+  <template-parameter type="T"/>
+  <template-parameter type="U"/>
+  <defun>
 
-  <struct name="PAIR">
-    <field name="first" type="T"/>
-    <field name="second" type="U"/>
-  </struct>
+    <struct name="PAIR">
+      <field name="first" type="T"/>
+      <field name="second" type="U"/>
+    </struct>
 
-  <in name="first" type="T" place="first"/>
-  <in name="second" type="U" place="second"/>
-  <out name="pair" type="PAIR" place="pair"/>
+    <in name="first" type="T" place="first"/>
+    <in name="second" type="U" place="second"/>
+    <out name="pair" type="PAIR" place="pair"/>
 
-  <net>
-    <place name="first" type="T"/>
-    <place name="second" type="U"/>
-    <place name="pair" type="PAIR"/>
+    <net>
+      <place name="first" type="T"/>
+      <place name="second" type="U"/>
+      <place name="pair" type="PAIR"/>
 
-    <transition name="make_pair">
-      <defun>
-        <in name="first" type="T"/>
-        <in name="second" type="U"/>
-        <out name="pair" type="PAIR"/>
-        <expression>
-          ${pair.first} := ${first};
-          ${pair.second} := ${second}
-        </expression>
-      </defun>
+      <transition name="make_pair">
+        <defun>
+          <in name="first" type="T"/>
+          <in name="second" type="U"/>
+          <out name="pair" type="PAIR"/>
+          <expression>
+            ${pair.first} := ${first};
+            ${pair.second} := ${second}
+          </expression>
+        </defun>
 
-      <connect-in port="first" place="first"/>
-      <connect-in port="second" place="second"/>
-      <connect-out port="pair" place="pair"/>
-    </transition>
-  </net>
+        <connect-in port="first" place="first"/>
+        <connect-in port="second" place="second"/>
+        <connect-out port="pair" place="pair"/>
+      </transition>
+    </net>
+  </defun>
 </template>

@@ -8,12 +8,15 @@
     <place name="z" type="long"/>
 
     <template name="dup">
-      <in name="x" type="T"/>
-      <out name="one" type="T"/>
-      <out name="two" type="T"/>
-      <expression>
-        ${one} := ${x}; ${two} := ${x}
-      </expression>
+      <template-parameter type="T"/>
+      <defun>
+        <in name="x" type="T"/>
+        <out name="one" type="T"/>
+        <out name="two" type="T"/>
+        <expression>
+          ${one} := ${x}; ${two} := ${x}
+        </expression>
+      </defun>
     </template>
     <specialize name="dup_long" use="dup">
       <type-map replace="T" with="long"/>
