@@ -707,6 +707,9 @@ namespace gpi
                         , gpi::pc::type::size_t amount
                         )
       {
+        // TODO: set amount to minimum of amount and size-loc.offset
+        check_bounds (loc, amount);
+
         if (is_local (gpi::pc::type::memory_region_t (loc, amount)))
         {
           return read_from_impl ( location_to_offset (loc)
@@ -727,6 +730,9 @@ namespace gpi
                        , gpi::pc::type::size_t amount
                        )
       {
+        // TODO: set amount to minimum of amount and size-loc.offset
+        check_bounds (loc, amount);
+
         if (is_local (gpi::pc::type::memory_region_t (loc, amount)))
         {
           return write_to_impl ( location_to_offset (loc)
