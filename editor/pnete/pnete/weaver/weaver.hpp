@@ -547,8 +547,8 @@ namespace fhg
 
         FUN(_struct, ITVAL(XMLTYPE(structs_type)), s)
         {
-          WEAVE(_struct::open, std::string)(s.name);
-          boost::apply_visitor(visitor::_struct<State>(_state),s.sig);
+          WEAVE(_struct::open, std::string)(s.name());
+          boost::apply_visitor(visitor::_struct<State>(_state),s.signature());
           WEAVEE(_struct::close) ();
         }
 

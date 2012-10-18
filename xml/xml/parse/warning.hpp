@@ -129,9 +129,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "struct with name " << late.name
-            << " in " << late.path
-            << " shadows definition from " << early.path
+          s << "struct with name " << late.name()
+            << " in " << late.path()
+            << " shadows definition from " << early.path()
             ;
 
           return s.str();

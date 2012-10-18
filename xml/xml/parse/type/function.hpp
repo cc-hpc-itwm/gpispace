@@ -749,8 +749,8 @@ namespace xml
               )
             {
               boost::apply_visitor
-                ( st::resolve (structs_resolved, pos->second.path)
-                , pos->second.sig
+                ( st::resolve (structs_resolved, pos->second.path())
+                , pos->second.signature()
                 );
             }
 
@@ -783,7 +783,7 @@ namespace xml
                 (dir, port.name, port.type, path);
             }
 
-          return signature::type (sig->second.sig, sig->second.name);
+          return signature::type (sig->second.signature(), sig->second.name());
         };
 
         // ***************************************************************** //
@@ -2099,12 +2099,12 @@ namespace xml
 
         const path_t prefix (state.path_to_cpp());
         const path_t file
-          (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name));
+          (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name()));
 
         util::check_no_change_fstream stream (state, file);
 
         signature::cpp::cpp_header
-          (stream, s.sig, s.name, s.path, cpp_util::path::type());
+          (stream, s.signature(), s.name(), s.path(), cpp_util::path::type());
 
         stream.commit();
       }

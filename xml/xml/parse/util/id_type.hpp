@@ -38,9 +38,10 @@ namespace xml
       MAKE_ID (place);
       MAKE_ID (place_map);
       MAKE_ID (port);
+      MAKE_ID (specialize);
+      MAKE_ID (structure);
       MAKE_ID (tmpl);
       MAKE_ID (transition);
-      MAKE_ID (specialize);
       MAKE_ID (use);
 
 #undef MAKE_ID

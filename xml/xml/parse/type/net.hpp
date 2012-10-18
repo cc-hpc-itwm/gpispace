@@ -327,7 +327,7 @@ namespace xml
               throw error::place_type_unknown (place.name, place.type, path);
             }
 
-          return signature::type (sig->second.sig, sig->second.name);
+          return signature::type (sig->second.signature(), sig->second.name());
         }
 
         // ***************************************************************** //
@@ -558,8 +558,8 @@ namespace xml
               )
             {
               boost::apply_visitor
-                ( st::resolve (structs_resolved, pos->second.path)
-                , pos->second.sig
+                ( st::resolve (structs_resolved, pos->second.path())
+                , pos->second.signature()
                 );
             }
 

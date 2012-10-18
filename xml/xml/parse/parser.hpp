@@ -79,7 +79,10 @@ namespace xml
     static void substruct_type ( const xml_node_type *, state::type &
                                , signature::desc_t &
                                );
-    static type::struct_t struct_type (const xml_node_type *, state::type &);
+    static type::struct_t struct_type ( const xml_node_type *
+                                      , state::type &
+                                      // , const id::XXXX& parent
+                                      );
     static type::token_type token_type (const xml_node_type *, state::type &);
     static type::transition_type transition_type ( const xml_node_type *
                                                  , state::type &
@@ -1326,19 +1329,20 @@ namespace xml
     static type::struct_t
     struct_type (const xml_node_type * node, state::type & state)
     {
-      type::struct_t s;
+      type::struct_t s ( state.next_id()
+                       // , parent
+                       , validate_field_name ( required ( "struct_type"
+                                                        , node
+                                                        , "name"
+                                                        , state.file_in_progress()
+                                                        )
+                                             , state.file_in_progress()
+                                             )
+                       , signature::structured_t()
+                       , state.file_in_progress()
+                       );
 
-      s.path = state.file_in_progress();
-      s.name = validate_field_name ( required ( "struct_type"
-                                              , node
-                                              , "name"
-                                              , state.file_in_progress()
-                                              )
-                                   , state.file_in_progress()
-                                   );
-      s.sig = signature::structured_t();
-
-      gen_struct_type (node, state, s.sig);
+      gen_struct_type (node, state, s.signature());
 
       return s;
     }

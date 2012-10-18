@@ -29,14 +29,60 @@ namespace xml
     {
       struct struct_t
       {
-        std::string name;
-        signature::desc_t sig;
-        boost::filesystem::path path;
+      public:
+        struct_t ( const id::structure& id
+                 // , const id::XXXXX& parent
+                 , const std::string& name
+                 , const signature::desc_t& sig
+                 , const boost::filesystem::path& path
+                 )
+          : _id (id)
+          // , _parent (parent)
+          , _name (name)
+          , _sig (sig)
+          , _path (path)
+        { }
+
+        const signature::desc_t& signature() const
+        {
+          return _sig;
+        }
+        signature::desc_t& signature()
+        {
+          return _sig;
+        }
+        const signature::desc_t& signature (const signature::desc_t& sig)
+        {
+          return _sig = sig;
+        }
+
+        const std::string& name() const
+        {
+          return _name;
+        }
+        const std::string& name (const std::string& name)
+        {
+          return _name = name;
+        }
+
+        const boost::filesystem::path& path() const
+        {
+          return _path;
+        }
+
+      private:
+        id::structure _id;
+        // id::structure_list _parent;
+        // id::function _parent;
+        // id::net _parent;
+        std::string _name;
+        signature::desc_t _sig;
+        boost::filesystem::path _path;
       };
 
       inline bool operator == (const struct_t & a, const struct_t & b)
       {
-        return (a.name == b.name) && (a.sig == b.sig);
+        return (a.name() == b.name()) && (a.signature() == b.signature());
       }
 
       inline bool operator != (const struct_t & a, const struct_t & b)
@@ -52,8 +98,8 @@ namespace xml
                          , const struct_t & st
                          )
         {
-          boost::apply_visitor ( signature::visitor::dump (st.name, s)
-                               , st.sig
+          boost::apply_visitor ( signature::visitor::dump (st.name(), s)
+                               , st.signature()
                                );
         }
       }
@@ -82,7 +128,7 @@ namespace xml
             ; ++pos
             )
           {
-            const set_type::const_iterator old (set.find (pos->name));
+            const set_type::const_iterator old (set.find (pos->name()));
 
             if (old != set.end())
               {
@@ -90,7 +136,7 @@ namespace xml
                   (old->second, *pos);
               }
 
-            set[pos->name] = *pos;
+            set.insert (std::make_pair (pos->name(),  *pos));
           }
 
         return set;
@@ -112,12 +158,12 @@ namespace xml
             )
           {
             const type::struct_t & strct (pos->second);
-            const set_type::const_iterator old (set.find (strct.name));
+            const set_type::const_iterator old (set.find (strct.name()));
 
             if (old != set.end() && strct != old->second)
               {
                 const forbidden_type::const_iterator pos
-                  (forbidden.find (strct.name));
+                  (forbidden.find (strct.name()));
 
                 if (pos != forbidden.end())
                   {
@@ -132,7 +178,7 @@ namespace xml
                   );
               }
 
-            set[strct.name] = strct;
+            set.insert (std::make_pair (strct.name(), strct));
           }
 
         return set;
@@ -209,7 +255,7 @@ namespace xml
                         (pos->first, child_name, path);
                     }
 
-                  pos->second = res->second.sig;
+                  pos->second = res->second.signature();
 
                   boost::apply_visitor (*this, pos->second);
                 }
