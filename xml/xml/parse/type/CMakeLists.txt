@@ -32,6 +32,7 @@ set (xml_parse_type_fwd_headers
   struct.fwd.hpp
   template.fwd.hpp
   transition.fwd.hpp
+  use.fwd.hpp
 )
 
 set (xml_parse_type_sources
@@ -45,6 +46,7 @@ set (xml_parse_type_sources
   specialize.cpp
   struct.cpp
   template.cpp
+  use.cpp
 )
 
 add_library (xml_parse_type

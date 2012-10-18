@@ -3,13 +3,11 @@
 #ifndef _XML_PARSE_TYPE_USE_HPP
 #define _XML_PARSE_TYPE_USE_HPP
 
-#include <xml/parse/types.hpp>
+#include <xml/parse/util/id_type.hpp>
 
-#include <iostream>
+#include <fhg/util/xml.fwd.hpp>
 
-#include <fhg/util/xml.hpp>
-
-namespace xml_util = ::fhg::util::xml;
+#include <string>
 
 namespace xml
 {
@@ -17,25 +15,25 @@ namespace xml
   {
     namespace type
     {
-      // ******************************************************************* //
-
       struct use_type
       {
-        std::string name;
+      public:
+        use_type ( const id::use& id
+                 , const id::transition& parent
+                 , const std::string& name
+                 );
 
-        explicit use_type (const std::string & _name)
-          : name (_name)
-        {}
+        const std::string& name() const;
+
+      private:
+        id::use _id;
+        id::transition _parent;
+        std::string _name;
       };
 
       namespace dump
       {
-        void inline dump (xml_util::xmlstream & s, const use_type & u)
-        {
-          s.open ("use");
-          s.attr ("name", u.name);
-          s.close ();
-        }
+        void dump (::fhg::util::xml::xmlstream& s, const use_type& u);
       }
     }
   }

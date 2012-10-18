@@ -283,7 +283,7 @@ namespace fhg
           function_with_mapping_type
           operator() (const XMLTYPE(use_type)& use) const
           {
-            return _net.get_function (use.name);
+            return _net.get_function (use.name());
           }
         };
       }

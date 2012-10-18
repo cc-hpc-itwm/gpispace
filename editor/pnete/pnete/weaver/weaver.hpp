@@ -463,7 +463,7 @@ namespace fhg
             void operator () (const XMLTYPE(use_type) & use) const
             {
               WEAVE(use::open, XMLTYPE(use_type))(use);
-              WEAVE(use::name, std::string)(use.name);
+              WEAVE(use::name, std::string)(use.name());
               WEAVEE(use::close)();
             }
 

@@ -183,12 +183,12 @@ namespace xml
 
         function_type operator () (const use_type & use) const
         {
-          boost::optional<function_type> fun (net.get_function (use.name));
+          boost::optional<function_type> fun (net.get_function (use.name()));
 
           if (!fun)
             {
               throw error::unknown_function
-                (use.name, trans.name, trans.path);
+                (use.name(), trans.name, trans.path);
             }
 
           fun->name (trans.name);

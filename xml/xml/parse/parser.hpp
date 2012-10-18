@@ -1630,7 +1630,9 @@ namespace xml
               else if (child_name == "use")
                 {
                   t.function_or_use
-                    ( type::use_type ( required ( "transition_type"
+                    ( type::use_type ( state.next_id()
+                                     , t.id()
+                                     , required ( "transition_type"
                                                 , child
                                                 , "name"
                                                 , state.file_in_progress()

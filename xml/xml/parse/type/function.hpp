@@ -1348,12 +1348,12 @@ namespace xml
 
           bool operator () (use_type & u) const
           {
-            boost::optional<function_type> fun (net.get_function (u.name));
+            boost::optional<function_type> fun (net.get_function (u.name()));
 
             if (!fun)
               {
                 throw error::unknown_function
-                  (u.name, trans.name, trans.path);
+                  (u.name(), trans.name, trans.path);
               }
 
             return xml::parse::type::find_module_calls (state, *fun, m, mcs);
