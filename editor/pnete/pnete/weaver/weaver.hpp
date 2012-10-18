@@ -561,7 +561,7 @@ namespace fhg
         FUN(port, ITVAL(XMLTYPE(ports_type)), port)
         {
           WEAVE(port::open, ITVAL(XMLTYPE(ports_type)))(port);
-          WEAVE(port::name, std::string)(port.name);
+          WEAVE(port::name, std::string)(port.name());
           WEAVE(port::type, std::string)(port.type);
           WEAVE(port::place, MAYBE(std::string))(port.place);
           WEAVE(port::properties, WETYPE(property::type))(port.prop);

@@ -50,7 +50,7 @@ namespace xml
   {
     namespace type
     {
-      typedef xml::util::unique<port_type>::elements_type ports_type;
+      typedef xml::util::uniquePP<port_type>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
       typedef xml::util::unique<function_type>::elements_type functions_type;
       typedef xml::util::unique<template_type>::elements_type templates_type;
@@ -286,7 +286,7 @@ namespace xml
               const signature::type type
                 (fun.type_of_port (direction, *port));
 
-              trans.add_ports () (port->name, type, direction, port->prop);
+              trans.add_ports () (port->name(), type, direction, port->prop);
             }
         }
 
@@ -307,7 +307,7 @@ namespace xml
 
               if (port->place.isNothing())
                 {
-                  trans.add_ports () (port->name, type, direction, port->prop);
+                  trans.add_ports () (port->name(), type, direction, port->prop);
                 }
               else
                 {
@@ -315,7 +315,7 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  trans.add_ports () ( port->name
+                  trans.add_ports () ( port->name()
                                      , type
                                      , direction
                                      , get_pid (pid_of_place, *port->place)
@@ -458,7 +458,7 @@ namespace xml
       struct function_type
       {
       private:
-        typedef xml::util::unique<port_type> unique_port_type;
+        typedef xml::util::uniquePP<port_type> unique_port_type;
 
         unique_port_type _in;
         unique_port_type _out;
@@ -474,14 +474,14 @@ namespace xml
         {
           if (!ports.push (p))
             {
-              throw error::duplicate_port (descr, p.name, path);
+              throw error::duplicate_port (descr, p.name(), path);
             }
 
-          boost::optional<port_type> other (others.copy_by_key (p.name));
+          boost::optional<port_type> other (others.copy_by_key (p.name()));
 
           if (other && p.type != other->type)
             {
-              throw error::port_type_mismatch ( p.name
+              throw error::port_type_mismatch ( p.name()
                                               , p.type
                                               , other->type
                                               , path
@@ -661,7 +661,7 @@ namespace xml
         {
           if (!_tunnel.push (p))
             {
-              throw error::duplicate_port ("tunnel", p.name, path);
+              throw error::duplicate_port ("tunnel", p.name(), path);
             }
         }
 
@@ -677,7 +677,7 @@ namespace xml
               ; ++pos
               )
             {
-              forbidden[pos->type] = pos->name;
+              forbidden[pos->type] = pos->name();
             }
 
           for ( ports_type::const_iterator pos (out().begin())
@@ -685,7 +685,7 @@ namespace xml
               ; ++pos
               )
             {
-              forbidden[pos->type] = pos->name;
+              forbidden[pos->type] = pos->name();
             }
 
           return forbidden;
@@ -777,7 +777,7 @@ namespace xml
           if (sig == structs_resolved.end())
             {
               throw error::port_with_unknown_type
-                (dir, port.name, port.type, path);
+                (dir, port.name(), port.type, path);
             }
 
           return signature::type (sig->second.sig, sig->second.name);
@@ -1877,7 +1877,7 @@ namespace xml
                       }
 
                     if (    mod.port_return.isJust()
-                       && (*mod.port_return == port_in->name)
+                       && (*mod.port_return == port_in->name())
                        )
                       {
                         ports_const.push_back (port_with_type (*name, port_in->type));
@@ -1913,7 +1913,7 @@ namespace xml
                       }
 
                     if (    mod.port_return.isJust()
-                       && (*mod.port_return == port_out->name)
+                       && (*mod.port_return == port_out->name())
                        )
                       {
                         // do nothing, it is the return port

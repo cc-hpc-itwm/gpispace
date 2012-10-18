@@ -28,7 +28,7 @@ namespace xml
       struct port_type
       {
       public:
-        port_type ( const std::string & _name
+        port_type ( const std::string & name
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
                   , const id::port& id
@@ -47,8 +47,10 @@ namespace xml
         id::port _id;
         id::function _parent;
 
+        std::string _name;
+
       public:
-        std::string name;
+        const std::string& name() const;
         std::string type;
         fhg::util::maybe<std::string> place;
         we::type::property::type prop;
@@ -80,7 +82,7 @@ namespace xml
           if (port.place.isJust())
             {
               throw error::port_connected_place_nonexistent
-                (direction, port.name, *port.place, path);
+                (direction, port.name(), *port.place, path);
             }
         }
       };

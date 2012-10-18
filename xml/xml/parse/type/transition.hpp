@@ -561,13 +561,13 @@ namespace xml
             )
           {
             boost::optional<port_type> port_out
-              (fun.get_port_out (port_in->name));
+              (fun.get_port_out (port_in->name()));
 
             if (port_out && (port_out->type != port_in->type))
               {
                 state.warn
                   ( warning::conflicting_port_types ( trans.name
-                                                    , port_in->name
+                                                    , port_in->name()
                                                     , port_in->type
                                                     , port_out->type
                                                     , state.file_in_progress()
@@ -698,12 +698,12 @@ namespace xml
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_IN, *port));
 
-                trans_in.add_ports () ( port->name
+                trans_in.add_ports () ( port->name()
                                       , type
                                       , we::type::PORT_IN
                                       , port->prop
                                       );
-                trans_in.add_ports () ( port->name
+                trans_in.add_ports () ( port->name()
                                       , type
                                       , we::type::PORT_OUT
                                       , port->prop
@@ -712,7 +712,7 @@ namespace xml
                 if (port->place.isJust())
                   {
                     trans_in.add_connections ()
-                      ( port->name
+                      ( port->name()
                       , get_pid (pid_of_place , prefix + *port->place)
                       , port->prop
                       )
@@ -818,12 +818,12 @@ namespace xml
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_OUT, *port));
 
-                trans_out.add_ports () ( port->name
+                trans_out.add_ports () ( port->name()
                                        , type
                                        , we::type::PORT_IN
                                        , port->prop
                                        );
-                trans_out.add_ports () ( port->name
+                trans_out.add_ports () ( port->name()
                                        , type
                                        , we::type::PORT_OUT
                                        , port->prop
@@ -833,7 +833,7 @@ namespace xml
                   {
                     trans_out.add_connections ()
                       ( get_pid (pid_of_place , prefix + *port->place)
-                      , port->name
+                      , port->name()
                       , port->prop
                       )
                       ;
