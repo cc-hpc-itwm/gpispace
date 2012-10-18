@@ -22,7 +22,7 @@ namespace xml
 
       struct place_type;
 
-      // typedef xml::util::unique<place_type>::elements_type places_type;
+      // typedef xml::util::unique<place_type,id::place>::elements_type places_type;
     }
   }
 }

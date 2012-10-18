@@ -50,11 +50,11 @@ namespace xml
   {
     namespace type
     {
-      typedef xml::util::unique<port_type>::elements_type ports_type;
+      typedef xml::util::unique<port_type,id::port>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
-      typedef xml::util::unique<function_type>::elements_type functions_type;
-      typedef xml::util::unique<template_type>::elements_type templates_type;
-      typedef xml::util::unique<specialize_type>::elements_type specializes_type;
+      typedef xml::util::unique<function_type,id::function>::elements_type functions_type;
+      typedef xml::util::unique<template_type,id::tmpl>::elements_type templates_type;
+      typedef xml::util::unique<specialize_type,id::specialize>::elements_type specializes_type;
 
       // ******************************************************************* //
 
@@ -458,7 +458,7 @@ namespace xml
       struct function_type
       {
       private:
-        typedef xml::util::unique<port_type> unique_port_type;
+        typedef xml::util::unique<port_type,id::port> unique_port_type;
 
         unique_port_type _in;
         unique_port_type _out;

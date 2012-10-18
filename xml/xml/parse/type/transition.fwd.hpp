@@ -29,7 +29,7 @@ namespace xml
       template<typename Net, typename Trans>
         class transition_get_function;
 
-      // typedef xml::util::unique<connect_type>::elements_type connections_type;
+      // typedef xml::util::unique<connect_type,id::connect>::elements_type connections_type;
 
       struct transition_type;
 

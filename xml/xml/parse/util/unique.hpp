@@ -16,7 +16,7 @@ namespace xml
 {
   namespace util
   {
-    template<typename T, typename Key = std::string>
+    template<typename T, typename ID_TYPE, typename Key = std::string>
     struct unique
     {
     public:
@@ -27,7 +27,7 @@ namespace xml
                                   , typename elements_type::iterator
                                   > names_type;
 
-      typedef boost::unordered_map< ::fhg::xml::parse::util::id_type
+      typedef boost::unordered_map< ID_TYPE
                                   , typename elements_type::iterator
                                   > ids_type;
 
@@ -112,7 +112,7 @@ namespace xml
         return insert (x);
       }
 
-      boost::optional<T> copy_by_id (const ::fhg::xml::parse::util::id_type & id) const
+      boost::optional<T> copy_by_id (const ID_TYPE & id) const
       {
         const typename ids_type::const_iterator pos (_ids.find (id));
 
@@ -183,7 +183,7 @@ namespace xml
     };
 
 
-    template<typename T, typename Key = std::string>
+    template<typename T, typename ID_TYPE, typename Key = std::string>
     struct uniqueUU
     {
     public:
@@ -194,7 +194,7 @@ namespace xml
                                   , typename elements_type::iterator
                                   > names_type;
 
-      typedef boost::unordered_map< ::fhg::xml::parse::util::id_type
+      typedef boost::unordered_map< ID_TYPE
                                   , typename elements_type::iterator
                                   > ids_type;
 
@@ -279,7 +279,7 @@ namespace xml
         return insert (x);
       }
 
-      boost::optional<T> copy_by_id (const ::fhg::xml::parse::util::id_type & id) const
+      boost::optional<T> copy_by_id (const ID_TYPE & id) const
       {
         const typename ids_type::const_iterator pos (_ids.find (id));
 
