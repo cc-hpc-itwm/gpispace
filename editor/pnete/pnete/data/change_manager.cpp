@@ -313,7 +313,7 @@ namespace fhg
 
         ::xml::parse::type::function_type f ( expression_id
                                             , function_id
-                                            , net.id()
+                                            , transition_id
                                             );
 
         ::xml::parse::type::transition_type transition ( f
