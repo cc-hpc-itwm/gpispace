@@ -305,7 +305,7 @@ namespace xml
               const signature::type type
                 (fun.type_of_port (direction, *port));
 
-              if (port->place.isNothing())
+              if (not port->place)
                 {
                   trans.add_ports () (port->name(), type, direction, port->prop);
                 }
@@ -1512,7 +1512,7 @@ namespace xml
           std::ostringstream pre;
 
           pre << "      "
-              << (port_return.isJust() ? mk_type ((*port_return).type) : "void")
+              << (port_return ? mk_type ((*port_return).type) : "void")
               << " "
               << mod.function
               << " "
@@ -1629,7 +1629,7 @@ namespace xml
 
           bool first_put (true);
 
-          if (port_return.isJust())
+          if (port_return)
             {
               first_put = false;
 
@@ -1688,7 +1688,7 @@ namespace xml
 
           s << ")";
 
-          if (port_return.isJust())
+          if (port_return)
             {
               s << ")";
 
@@ -1827,7 +1827,7 @@ namespace xml
             fhg::util::maybe<port_with_type> port_return;
             types_type types;
 
-            if (mod.port_return.isJust())
+            if (mod.port_return)
               {
                 boost::optional<port_type> port
                   (f.get_port_out (*mod.port_return));
@@ -1876,7 +1876,7 @@ namespace xml
                                 );
                       }
 
-                    if (    mod.port_return.isJust()
+                    if (    mod.port_return
                        && (*mod.port_return == port_in->name())
                        )
                       {
@@ -1912,7 +1912,7 @@ namespace xml
                         STRANGE ("failed to get port_out " << *name);
                       }
 
-                    if (    mod.port_return.isJust()
+                    if (    mod.port_return
                        && (*mod.port_return == port_out->name())
                        )
                       {
@@ -1935,7 +1935,7 @@ namespace xml
             const path_t path (prefix / cpp_util::path::op() / mod.name);
             const std::string file_hpp (cpp_util::make::hpp (mod.function));
             const std::string file_cpp
-              ( mod.code.isJust()
+              ( mod.code
               ? cpp_util::make::cpp (mod.function)
               : cpp_util::make::tmpl (mod.function)
               );
@@ -2013,7 +2013,7 @@ namespace xml
                   cpp_util::include (stream, *inc);
                 }
 
-              if (mod.code.isNothing())
+              if (not mod.code)
                 {
                   cpp_util::include (stream, "stdexcept");
                 }
@@ -2027,7 +2027,7 @@ namespace xml
 
               stream << std::endl << "      {" << std::endl;
 
-              if (mod.code.isNothing())
+              if (not mod.code)
                 {
                   stream << "        // INSERT CODE HERE" << std::endl
                          << "        throw std::runtime_error (\""

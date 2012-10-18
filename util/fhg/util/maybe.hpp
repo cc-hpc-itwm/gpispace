@@ -29,15 +29,6 @@ namespace fhg
         bool operator () (const T &) const { return true; }
       };
 
-      class isNothing : public boost::static_visitor<bool>
-      {
-      public:
-        bool operator () (const Nothing &) const { return true; }
-
-        template<typename T>
-        bool operator () (const T &) const { return false; }
-      };
-
       template<typename T>
       class get_with_default : public boost::static_visitor<T>
       {
@@ -78,17 +69,7 @@ namespace fhg
 
       operator bool (void) const
       {
-        return isJust();
-      }
-
-      bool isJust (void) const
-      {
         return boost::apply_visitor (detail::isJust(), m);
-      }
-
-      bool isNothing (void) const
-      {
-        return boost::apply_visitor (detail::isNothing(), m);
       }
 
       const_reference operator * (void) const
@@ -123,22 +104,19 @@ namespace fhg
     {
       boost::hash<T> hasher;
 
-      return x.isNothing() ? 0 : (1 + hasher (*x));
+      return x ? (1 + hasher (*x)) : 0;
     };
 
     template<typename T>
     inline bool operator == (const maybe<T> & x, const maybe<T> & y)
     {
-      return x.isNothing()
-        ? (y.isNothing() ? true : false)
-        : (y.isNothing() ? false : (*x == *y))
-        ;
+      return x ? (y ? (*x == *y) : false) : (y ? false : true);
     }
 
     template<typename T>
     std::ostream & operator << (std::ostream & s, const maybe<T> & m)
     {
-      return s << (m.isNothing() ? "Nothing" : ("Just " + fhg::util::show(*m)));
+      return s << (m ? ("Just " + fhg::util::show(*m)) : "Nothing");
     };
 
     template<typename T>
@@ -156,7 +134,7 @@ namespace fhg
     template<typename T, typename U>
     maybe<U> fmap (U (*f)(const T &), const maybe<T> & m)
     {
-      return m.isNothing() ? Nothing<U>() : Just<U>(f (*m));
+      return m ? Just<U>(f (*m)) : Nothing<U>();
     }
   }
 }

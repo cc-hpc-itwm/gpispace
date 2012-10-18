@@ -157,7 +157,7 @@ namespace xml
 
       void mod_type::sanity_check (const function_type & fun) const
       {
-        if (port_return.isJust())
+        if (port_return)
         {
           if (!fun.is_known_port (*port_return))
           {
@@ -201,7 +201,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          if (m.port_return.isJust())
+          if (m.port_return)
             {
               s << *m.port_return << " ";
             }
@@ -267,7 +267,7 @@ namespace xml
               s.close ();
             }
 
-          if (m.code.isJust())
+          if (m.code)
             {
               s.open ("code");
               s.content ("<![CDATA[" + *m.code + "]]>");

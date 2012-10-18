@@ -489,7 +489,7 @@ namespace xml
                                             , optional (node, "mandatory")
                                             )
         );
-      const bool mandatory (mmandatory.isJust() ? *mmandatory : true);
+      const bool mandatory (mmandatory ? *mmandatory : true);
 
       requirements.set (key, mandatory);
 
@@ -1113,7 +1113,7 @@ namespace xml
                         );
                     }
 
-                  if (value.isNothing())
+                  if (not value)
                     {
                       if (cdata.empty())
                         {

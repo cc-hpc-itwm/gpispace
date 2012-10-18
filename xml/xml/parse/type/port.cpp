@@ -72,7 +72,7 @@ namespace xml
 
       void port_type_check::operator () (const net_type & net) const
       {
-        if (port.place.isNothing())
+        if (not port.place)
         {
           if (direction == "in")
           {

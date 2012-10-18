@@ -79,7 +79,7 @@ namespace xml
         template<typename T>
           void operator () (const T &) const
         {
-          if (port.place.isJust())
+          if (port.place)
             {
               throw error::port_connected_place_nonexistent
                 (direction, port.name(), *port.place, path);

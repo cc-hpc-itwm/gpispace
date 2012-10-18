@@ -604,9 +604,9 @@ namespace xml
 
         fun.name (trans.name());
 
-        if (fun.internal.isJust())
+        if (fun.internal)
           {
-            if (trans.internal.isJust() && *trans.internal != *fun.internal)
+            if (trans.internal && *trans.internal != *fun.internal)
               {
                 state.warn ( warning::overwrite_function_internal_trans
                            ( trans.name()
@@ -627,7 +627,7 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
-        if (  trans.priority.isNothing() // WORK HERE: make it work with prio
+        if (  not trans.priority // WORK HERE: make it work with prio
            && (
                (  !state.synthesize_virtual_places()
                && !trans.place_map().empty()
@@ -719,7 +719,7 @@ namespace xml
                                       , port->prop
                                       );
 
-                if (port->place.isJust())
+                if (port->place)
                   {
                     trans_in.add_connections ()
                       ( port->name()
@@ -757,7 +757,7 @@ namespace xml
                 ; ++port
                 )
               {
-                if (port->place.isJust())
+                if (port->place)
                   {
                     we_net.add_edge
                       ( e++, connection_t ( TP
@@ -839,7 +839,7 @@ namespace xml
                                        , port->prop
                                        );
 
-                if (port->place.isJust())
+                if (port->place)
                   {
                     trans_out.add_connections ()
                       ( get_pid (pid_of_place , prefix + *port->place)
@@ -886,7 +886,7 @@ namespace xml
                 ; ++port
                 )
               {
-                if (port->place.isJust())
+                if (port->place)
                   {
                     we_net.add_edge
                       ( e++, connection_t ( PT
@@ -990,7 +990,7 @@ namespace xml
 
             const tid_t tid (we_net.add_transition (we_trans));
 
-            if (trans.priority.isJust())
+            if (trans.priority)
               {
                 we_net.set_transition_priority (tid, *trans.priority);
               }
