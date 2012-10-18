@@ -863,7 +863,7 @@ namespace xml
           std::ostringstream s;
 
           s << "tunnel " << port.name()
-            << " connected to non-virtual place " << place.name
+            << " connected to non-virtual place " << place.name()
             << " in " << path
             ;
 
@@ -893,7 +893,7 @@ namespace xml
           std::ostringstream s;
 
           s << "tunnel with name " << port.name()
-            << " is connected to place with different name " << place.name
+            << " is connected to place with different name " << place.name()
             << " in " << path
             ;
 
@@ -953,7 +953,7 @@ namespace xml
 
           s << "type error: port-" << direction << " " << port.name()
             << " of type " << port.type
-            << " connected to place " << place.name
+            << " connected to place " << place.name()
             << " of type " << place.type
             << " in " << path
             ;
@@ -1122,7 +1122,7 @@ namespace xml
 
           s << "in transition " << trans << " in " << path << ": "
             << "type error: connect-" << direction
-            << " place " << place.name
+            << " place " << place.name()
             << " of type " << place.type
             << " with port " << port.name()
             << " of type " << port.type

@@ -48,7 +48,7 @@ namespace fhg
 
         std::string place_item::name() const
         {
-          return _handle().name;
+          return _handle().name();
         }
 
         void place_item::refresh_content()

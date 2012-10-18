@@ -38,15 +38,18 @@ namespace xml
         id::place _id;
         id::net _parent;
 
+        std::string _name;
+
       public:
-        std::string name;
+        const std::string& name() const;
+        const std::string& name(const std::string& name);
         std::string type;
         tokens_type tokens;
         values_type values;
         signature::type sig;
         we::type::property::type prop;
 
-        place_type ( const std::string & _name
+        place_type ( const std::string & name
                    , const std::string & _type
                    , const fhg::util::maybe<bool> is_virtual
                    , const id::place& id
@@ -74,7 +77,7 @@ namespace xml
         bool is_virtual (void) const;
       };
 
-      typedef xml::util::unique<place_type>::elements_type places_type;
+      typedef xml::util::uniquePP<place_type>::elements_type places_type;
 
       namespace dump
       {

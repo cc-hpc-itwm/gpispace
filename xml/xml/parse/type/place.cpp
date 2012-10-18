@@ -182,7 +182,7 @@ namespace xml
         };
       }
 
-      place_type::place_type ( const std::string & _name
+      place_type::place_type ( const std::string & name
                              , const std::string & _type
                              , const fhg::util::maybe<bool> is_virtual
                              , const id::place& id
@@ -191,7 +191,7 @@ namespace xml
         : _is_virtual (is_virtual)
         , _id (id)
         , _parent (parent)
-        , name (_name)
+        , _name (name)
         , type (_type)
       {}
 
@@ -208,6 +208,15 @@ namespace xml
       const id::net& place_type::parent() const
       {
         return _parent;
+      }
+
+      const std::string& place_type::name() const
+      {
+        return _name;
+      }
+      const std::string& place_type::name(const std::string& name)
+      {
+        return _name = name;
       }
 
       bool place_type::is_same (const place_type& other) const
@@ -230,7 +239,7 @@ namespace xml
             )
         {
           values.push_back
-            (boost::apply_visitor ( construct_value (name, path, "", state)
+            (boost::apply_visitor ( construct_value (name(), path, "", state)
                                   , sig.desc()
                                   , *tok
                                   )
@@ -265,7 +274,7 @@ namespace xml
         void dump (xml_util::xmlstream & s, const place_type & p)
         {
           s.open ("place");
-          s.attr ("name", p.name);
+          s.attr ("name", p.name());
           s.attr ("type", p.type);
           s.attr ("virtual", p.get_is_virtual());
 

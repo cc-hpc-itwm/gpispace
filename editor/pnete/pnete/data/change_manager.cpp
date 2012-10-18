@@ -55,7 +55,7 @@ namespace fhg
           }
           catch (const ::xml::parse::error::duplicate_place&)
           {
-            place.name = inc (place.name);
+            place.name (inc (place.name()));
 
             return push_place (place, net);
           }
@@ -342,11 +342,11 @@ namespace fhg
         )
       {
         ::xml::parse::type::place_type place (_state.next_id(), net.id());
-        place.name = "place";
+        place.name ("place");
 
-        while (net().has_place (place.name))
+        while (net().has_place (place.name()))
         {
-          place.name = inc (place.name);
+          place.name (inc (place.name()));
         }
 
         push (new action::add_place (*this, origin, net, place));

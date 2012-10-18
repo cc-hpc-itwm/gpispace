@@ -112,7 +112,7 @@ namespace xml
                 error::tunnel_connected_non_virtual (port, *place, path);
             }
 
-            if (port.name() != place->name)
+            if (port.name() != place->name())
             {
               throw error::tunnel_name_mismatch (port, *place, path);
             }
