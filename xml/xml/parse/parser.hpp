@@ -1557,13 +1557,14 @@ namespace xml
       type::transition_type t (state.next_id(), parent);
 
       t.path = state.file_in_progress();
-      t.name = validate_name ( validate_prefix ( name
-                                               , "transition"
-                                               , state.file_in_progress()
-                                               )
-                             , "transition"
-                             , state.file_in_progress()
-                             );
+      t.name (validate_name ( validate_prefix ( name
+                                              , "transition"
+                                              , state.file_in_progress()
+                                              )
+                            , "transition"
+                            , state.file_in_progress()
+                            )
+             );
       t.priority = fhg::util::fmap<std::string, petri_net::prio_t>
         ( boost::lexical_cast<petri_net::prio_t>
         , optional (node, "priority")

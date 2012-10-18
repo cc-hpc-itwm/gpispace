@@ -700,7 +700,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "duplicate transition " << t.name << " in " << t.path
+          s << "duplicate transition " << t.name() << " in " << t.path
             << " first definition was in " << old.path
             ;
 

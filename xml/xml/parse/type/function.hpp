@@ -1340,7 +1340,7 @@ namespace xml
             if (!fun)
               {
                 throw error::unknown_function
-                  (u.name, trans.name, trans.path);
+                  (u.name, trans.name(), trans.path);
               }
 
             return xml::parse::type::find_module_calls (state, *fun, m, mcs);

@@ -56,7 +56,7 @@ namespace xml
         typedef fhg::util::maybe<std::string> maybe_string_type;
 
         xml::util::uniquePP<place_type> _places;
-        xml::util::unique<transition_type> _transitions;
+        xml::util::uniquePP<transition_type> _transitions;
         xml::util::uniquePP<function_type,maybe_string_type> _functions;
         xml::util::uniquePP<template_type,maybe_string_type> _templates;
         xml::util::uniquePP<specialize_type> _specializes;
@@ -66,7 +66,7 @@ namespace xml
 
       public:
         typedef xml::util::uniquePP<place_type>::elements_type places_type;
-        typedef xml::util::unique<transition_type>::elements_type transitions_type;
+        typedef xml::util::uniquePP<transition_type>::elements_type transitions_type;
 
         bool contains_a_module_call;
         structs_type structs;
@@ -245,7 +245,7 @@ namespace xml
 
         transition_type& push_transition (const transition_type & t)
         {
-          xml::util::unique<transition_type>::push_return_type trans
+          xml::util::uniquePP<transition_type>::push_return_type trans
             (_transitions.push_and_get_old_value (t));
 
           if (!trans.first)
@@ -676,7 +676,7 @@ namespace xml
             )
           {
             transition_type transition_new (*transition_old);
-            transition_new.name = prefix + transition_old->name;
+            transition_new.name (prefix + transition_old->name());
 
             transition_new.clear_ports();
 

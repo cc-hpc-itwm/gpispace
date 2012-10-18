@@ -771,7 +771,7 @@ namespace fhg
         FUN(transition, ITVAL(XMLTYPE(net_type::transitions_type)), trans)
         {
           WEAVE(transition::open,ITVAL(XMLTYPE(net_type::transitions_type)))(trans);
-          WEAVE(transition::name,std::string)(trans.name);
+          WEAVE(transition::name,std::string)(trans.name());
           WEAVE(transition::priority,MAYBE(petri_net::prio_t))
             (trans.priority);
           WEAVE(transition::internal, MAYBE(bool))(trans.internal);

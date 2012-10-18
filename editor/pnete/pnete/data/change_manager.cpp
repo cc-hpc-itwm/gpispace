@@ -74,7 +74,7 @@ namespace fhg
                 < ::xml::parse::type::transition_type>&
                 )
           {
-            transition.name = inc (transition.name);
+            transition.name (inc (transition.name()));
 
             return push_transition (transition, net);
           }
@@ -291,12 +291,12 @@ namespace fhg
                                                        , net.id()
                                                        );
         transition.function_or_use (fun);
-        transition.name = fun.name() ? *fun.name() : "transition";
+        transition.name (fun.name() ? *fun.name() : "transition");
 
         //! \todo Don't check for duplicate names when fun.name is set?
-        while (net().has_transition (transition.name))
+        while (net().has_transition (transition.name()))
         {
-          transition.name = inc (transition.name);
+          transition.name (inc (transition.name()));
         }
 
         push (new action::add_transition (*this, origin, net, transition));
@@ -317,11 +317,11 @@ namespace fhg
                                                        , transition_id
                                                        , net.id()
                                                        );
-        transition.name = "transition";
+        transition.name ("transition");
 
-        while (net().has_transition (transition.name))
+        while (net().has_transition (transition.name()))
         {
-          transition.name = inc (transition.name);
+          transition.name (inc (transition.name()));
         }
 
         push (new action::add_transition (*this, origin, net, transition));
