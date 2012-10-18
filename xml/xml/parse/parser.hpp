@@ -1375,11 +1375,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void
-    token_field_type ( const xml_node_type * node
-                     , state::type & state
-                     , type::token_type & tok
-                     )
+    static void token_field_type ( const xml_node_type * node
+                                 , state::type & state
+                                 , signature::desc_t & tok
+                                 )
     {
       const std::string name
         (required ("token_field_type", node, "name", state.file_in_progress()));
@@ -1396,25 +1395,16 @@ namespace xml
             {
               if (child_name == "value")
                 {
-                  boost::apply_visitor
-                    ( signature::visitor::create_literal_field<std::string>
-                      ( name
-                      , std::string (child->value())
-                      , "token"
-                      )
-                    , tok
-                    );
+                  signature::create_literal_field<std::string>
+                    (tok, name, child->value(), "token");
                 }
               else if (child_name == "field")
                 {
                   token_field_type
                     ( child
                     , state
-                    , boost::apply_visitor
-                      ( signature::visitor::get_or_create_structured_field
-                        (name, "token")
-                      , tok
-                      )
+                    , signature::get_or_create_structured_field
+                      (tok, name, "token")
                     );
                 }
               else
