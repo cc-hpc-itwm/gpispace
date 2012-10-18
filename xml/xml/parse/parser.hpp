@@ -1507,7 +1507,7 @@ namespace xml
       type::specialize_type s (state.next_id(), parent);
 
       s.path = state.file_in_progress();
-      s.name = required ("specialize_type", node, "name", s.path);
+      s.name (required ("specialize_type", node, "name", s.path));
       s.use = required ("specialize_type", node, "use", s.path);
 
       for ( xml_node_type * child (node->first_node())

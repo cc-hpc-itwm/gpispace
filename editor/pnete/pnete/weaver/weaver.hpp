@@ -656,7 +656,7 @@ namespace fhg
         FUN(specialize, ITVAL(XMLTYPE(specializes_type)), spec)
         {
           WEAVE(specialize::open, ITVAL(XMLTYPE(specializes_type)))(spec);
-          WEAVE(specialize::name, std::string)(spec.name);
+          WEAVE(specialize::name, std::string)(spec.name());
           WEAVE(specialize::use, std::string)(spec.use);
           WEAVE(specialize::type_map, XMLTYPE(type_map_type))(spec.type_map);
           WEAVE(specialize::type_get, XMLTYPE(type_get_type))(spec.type_get);

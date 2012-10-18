@@ -29,8 +29,11 @@ namespace xml
         const id::net& parent() const;
         bool is_same (const specialize_type& other) const;
 
+        std::string _name;
+
       public:
-        std::string name;
+        const std::string& name () const;
+        const std::string& name (const std::string& name);
         std::string use;
         type_map_type type_map;
         type_get_type type_get;

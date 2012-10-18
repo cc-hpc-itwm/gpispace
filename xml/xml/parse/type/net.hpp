@@ -59,7 +59,7 @@ namespace xml
         xml::util::unique<transition_type> _transitions;
         xml::util::uniquePP<function_type,maybe_string_type> _functions;
         xml::util::uniquePP<template_type,maybe_string_type> _templates;
-        xml::util::unique<specialize_type> _specializes;
+        xml::util::uniquePP<specialize_type> _specializes;
 
         id::net _id;
         id::function _parent;
@@ -292,7 +292,7 @@ namespace xml
         {
           if (!_specializes.push (s))
             {
-              throw error::duplicate_specialize ( s.name
+              throw error::duplicate_specialize ( s.name()
                                                 , state.file_in_progress()
                                                 );
             }
@@ -373,7 +373,7 @@ namespace xml
                   throw error::unknown_template (specialize->use, path);
                 }
 
-              tmpl->function().name (specialize->name);
+              tmpl->function().name (specialize->name());
 
               type_map_apply (map, specialize->type_map);
 
@@ -515,7 +515,7 @@ namespace xml
 
               if (!spec_local.first)
                 {
-                  state.warn ( warning::shadow_specialize ( spec.name
+                  state.warn ( warning::shadow_specialize ( spec.name()
                                                           , spec.path
                                                           , spec_local.second->path
                                                           )
