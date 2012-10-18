@@ -50,11 +50,16 @@ namespace gpi
           return p / "lock";
         }
 
-        static std::string my_lock_info ()
+        static std::string hostname ()
         {
           char buf [1024]; gethostname (buf, sizeof(buf));
+          return buf;
+        }
+
+        static std::string my_lock_info ()
+        {
           std::ostringstream sstr;
-          sstr << buf << " " << getpid ();
+          sstr << hostname () << " " << getpid ();
           return sstr.str ();
         }
       }
@@ -220,7 +225,7 @@ namespace gpi
                 buf [read_bytes-1] = 0;
               else
                 buf [0] = 0;
-              ::close (fd);
+              ::close (fd); fd = -1;
 
               // compare lock info
               if (my_lock_info == buf)
@@ -231,15 +236,46 @@ namespace gpi
               }
               else
               {
-                // TODO: if on same host, check pid
+                std::stringstream sstr (buf);
+                std::string other_host;
+                sstr >> other_host;
 
-                MLOG ( ERROR
-                     , "sfs segment in: " << m_path
-                     << " still in use by: '" << buf << "'"
-                     << " if this is wrong, manually remove: " << lock_file
-                     );
-                ec.assign (EADDRINUSE, boost::system::system_category ());
-                return -1;
+                std::string my_host = detail::hostname ();
+                if (other_host == my_host)
+                {
+                  m_lock_fd = ::open ( lock_file.string ().c_str ()
+                                     , O_CREAT + O_RDWR
+                                     , S_IRUSR + S_IWUSR
+                                     );
+                  if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
+                  {
+                    ::close (m_lock_fd); m_lock_fd = -1;
+                    MLOG ( ERROR
+                         , "sfs segment in: " << m_path
+                         << " still actively in use by another process: '" << buf << "'"
+                         );
+                    ec.assign (EADDRINUSE, boost::system::system_category ());
+                    return -1;
+                  }
+                  else
+                  {
+                    MLOG (WARN, "cleaning stale lock file: " << lock_file);
+
+                    write (m_lock_fd, my_lock_info.c_str (), my_lock_info.size ());
+                    write (m_lock_fd, "\n", 1);
+                    fdatasync (m_lock_fd);
+                  }
+                }
+                else
+                {
+                  MLOG ( ERROR
+                       , "sfs segment in: " << m_path
+                       << " may still be in use by: '" << buf << "'"
+                       << ", if this is wrong, please remove: " << lock_file
+                       );
+                  ec.assign (EADDRINUSE, boost::system::system_category ());
+                  return -1;
+                }
               }
             }
             else
@@ -247,7 +283,7 @@ namespace gpi
               if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
               {
                 ec.assign (errno, boost::system::system_category ());
-                ::close (m_lock_fd);
+                ::close (m_lock_fd); m_lock_fd = -1;
                 MLOG (ERROR, "STRANGE: I was able to open & create exclusively the lock file but not to lock it");
                 return -1;
               }
@@ -274,7 +310,7 @@ namespace gpi
           {
             ec.assign (errno, boost::system::system_category ());
             MLOG (ERROR, "could not seek: " << strerror (errno));
-            ::close (fd);
+            ::close (fd); fd = -1;
             return -1;
           }
 
@@ -314,7 +350,7 @@ namespace gpi
             if (m_ptr == MAP_FAILED)
             {
               ec.assign (errno, boost::system::system_category ());
-              ::close (fd);
+              ::close (fd); fd = -1;
               m_ptr = 0;
               return -1;
             }
@@ -333,7 +369,7 @@ namespace gpi
           if (fd >= 0)
           {
             MLOG (TRACE, "ignoring recovery information: not yet implemented");
-            ::close (fd);
+            ::close (fd); fd = -1;
           }
         }
 
@@ -387,8 +423,7 @@ namespace gpi
           if (m_lock_fd >= 0)
           {
             lockf (m_lock_fd, F_ULOCK, 0);
-            ::close (m_lock_fd);
-            m_lock_fd = -1;
+            ::close (m_lock_fd); m_lock_fd = -1;
 
             fs::remove_all (detail::lock_path (m_path));
           }
@@ -410,7 +445,7 @@ namespace gpi
           ec.assign (errno, boost::system::system_category ());
           return -1;
         }
-        ::close (fd);
+        ::close (fd); fd = -1;
 
         return 0;
       }
@@ -454,11 +489,11 @@ namespace gpi
           if (rc < 0)
           {
             ec.assign (errno, boost::system::system_category ());
-            ::close (fd);
+            ::close (fd); fd = -1;
             cleanup (path);
             return false;
           }
-          ::close (fd);
+          ::close (fd); fd = -1;
         }
 
         ec.clear ();
