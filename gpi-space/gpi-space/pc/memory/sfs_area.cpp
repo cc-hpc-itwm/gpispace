@@ -225,7 +225,7 @@ namespace gpi
               // compare lock info
               if (my_lock_info == buf)
               {
-                MLOG (WARN, "I already have this segment open!");
+                MLOG (WARN, "I already have this segment open: " << m_path);
                 ec.assign (EADDRINUSE, boost::system::system_category ());
                 return -1;
               }
