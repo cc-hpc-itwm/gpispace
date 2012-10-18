@@ -17,7 +17,7 @@ namespace xml
                                  )
         : place (_place)
         , port (_port)
-        , name (_place + " <-> " + _port)
+        , _name (_place + " <-> " + _port)
         , _id (id)
         , _parent (parent)
       { }
@@ -29,6 +29,11 @@ namespace xml
       const id::transition& connect_type::parent() const
       {
         return _parent;
+      }
+
+      const std::string& connect_type::name() const
+      {
+        return _name;
       }
 
       bool connect_type::is_same (const connect_type& other) const

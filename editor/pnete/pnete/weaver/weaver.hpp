@@ -561,7 +561,7 @@ namespace fhg
         FUN(port, ITVAL(XMLTYPE(ports_type)), port)
         {
           WEAVE(port::open, ITVAL(XMLTYPE(ports_type)))(port);
-          WEAVE(port::name, std::string)(port.name);
+          WEAVE(port::name, std::string)(port.name());
           WEAVE(port::type, std::string)(port.type);
           WEAVE(port::place, MAYBE(std::string))(port.place);
           WEAVE(port::properties, WETYPE(property::type))(port.prop);
@@ -656,7 +656,7 @@ namespace fhg
         FUN(specialize, ITVAL(XMLTYPE(specializes_type)), spec)
         {
           WEAVE(specialize::open, ITVAL(XMLTYPE(specializes_type)))(spec);
-          WEAVE(specialize::name, std::string)(spec.name);
+          WEAVE(specialize::name, std::string)(spec.name());
           WEAVE(specialize::use, std::string)(spec.use);
           WEAVE(specialize::type_map, XMLTYPE(type_map_type))(spec.type_map);
           WEAVE(specialize::type_get, XMLTYPE(type_get_type))(spec.type_get);
@@ -727,7 +727,7 @@ namespace fhg
         FUN(place, ITVAL(XMLTYPE(places_type)), place)
         {
           WEAVE(place::open, ITVAL(XMLTYPE(places_type)))(place);
-          WEAVE(place::name, std::string)(place.name);
+          WEAVE(place::name, std::string)(place.name());
           WEAVE(place::type, std::string)(place.type);
           WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());
           WEAVE(place::properties, WETYPE(property::type))(place.prop);
@@ -771,7 +771,7 @@ namespace fhg
         FUN(transition, ITVAL(XMLTYPE(net_type::transitions_type)), trans)
         {
           WEAVE(transition::open,ITVAL(XMLTYPE(net_type::transitions_type)))(trans);
-          WEAVE(transition::name,std::string)(trans.name);
+          WEAVE(transition::name,std::string)(trans.name());
           WEAVE(transition::priority,MAYBE(petri_net::prio_t))
             (trans.priority);
           WEAVE(transition::internal, MAYBE(bool))(trans.internal);

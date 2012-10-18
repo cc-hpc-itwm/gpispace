@@ -188,10 +188,10 @@ namespace xml
           if (!fun)
             {
               throw error::unknown_function
-                (use.name(), trans.name, trans.path);
+                (use.name(), trans.name(), trans.path);
             }
 
-          fun->name (trans.name);
+          fun->name (trans.name());
 
           return *fun;
         }
@@ -249,6 +249,8 @@ namespace xml
       private:
         boost::optional<function_or_use_type> _function_or_use;
 
+        std::string _name;
+
       public:
         const function_or_use_type& function_or_use() const
         {
@@ -274,7 +276,15 @@ namespace xml
           return *(_function_or_use = function_or_use_);
         }
 
-        std::string name;
+        const std::string& name() const
+        {
+          return _name;
+        }
+        const std::string& name(const std::string& name)
+        {
+          return _name = name;
+        }
+
         boost::filesystem::path path;
 
         we::type::property::type prop;
@@ -307,7 +317,7 @@ namespace xml
         {
           if (!_in.push (connect))
             {
-              throw error::duplicate_connect ("in", connect.name, name, path);
+              throw error::duplicate_connect ("in", connect.name(), name(), path);
             }
         }
 
@@ -315,7 +325,7 @@ namespace xml
         {
           if (!_out.push (connect))
             {
-              throw error::duplicate_connect ("out", connect.name, name, path);
+              throw error::duplicate_connect ("out", connect.name(), name(), path);
             }
         }
 
@@ -328,7 +338,7 @@ namespace xml
         {
           if (!_read.push (connect))
             {
-              throw error::duplicate_connect ("read", connect.name, name, path);
+              throw error::duplicate_connect ("read", connect.name(), name(), path);
             }
         }
 
@@ -336,7 +346,7 @@ namespace xml
         {
           if (!_place_map.push (place_map))
             {
-              throw error::duplicate_place_map (place_map.name, name, path);
+              throw error::duplicate_place_map (place_map.name(), name(), path);
             }
         }
 
@@ -437,7 +447,7 @@ namespace xml
           if (!place)
             {
               throw error::connect_to_nonexistent_place
-                (direction, name, connect.place, path);
+                (direction, name(), connect.place, path);
             }
 
           const function_type fun
@@ -459,14 +469,14 @@ namespace xml
           if (!port)
             {
               throw error::connect_to_nonexistent_port
-                (direction, name, connect.port, path);
+                (direction, name(), connect.port, path);
             }
 
           // typecheck connect.place.type vs connect.port.type
           if (place->type != port->type)
             {
               throw error::connect_type_error ( direction
-                                              , name
+                                              , name()
                                               , *port
                                               , *place
                                               , path
@@ -542,7 +552,7 @@ namespace xml
         if ((trans.in().size() == 0) && (trans.out().size() == 0))
           {
             state.warn
-              ( warning::independent_transition ( trans.name
+              ( warning::independent_transition ( trans.name()
                                                 , state.file_in_progress()
                                                 )
               );
@@ -561,13 +571,13 @@ namespace xml
             )
           {
             boost::optional<port_type> port_out
-              (fun.get_port_out (port_in->name));
+              (fun.get_port_out (port_in->name()));
 
             if (port_out && (port_out->type != port_in->type))
               {
                 state.warn
-                  ( warning::conflicting_port_types ( trans.name
-                                                    , port_in->name
+                  ( warning::conflicting_port_types ( trans.name()
+                                                    , port_in->name()
                                                     , port_in->type
                                                     , port_out->type
                                                     , state.file_in_progress()
@@ -578,28 +588,28 @@ namespace xml
 
         if (fun.name())
           {
-            if (  (*fun.name() != trans.name)
-               && (!rewrite::has_magic_prefix (trans.name))
+            if (  (*fun.name() != trans.name())
+               && (!rewrite::has_magic_prefix (trans.name()))
                )
               {
                 state.warn ( warning::overwrite_function_name_trans
                              ( *fun.name()
                              , fun.path
-                             , trans.name
+                             , trans.name()
                              , trans.path
                              )
                            );
               }
           }
 
-        fun.name (trans.name);
+        fun.name (trans.name());
 
         if (fun.internal.isJust())
           {
             if (trans.internal.isJust() && *trans.internal != *fun.internal)
               {
                 state.warn ( warning::overwrite_function_internal_trans
-                           ( trans.name
+                           ( trans.name()
                            , trans.path
                            )
                            );
@@ -631,7 +641,7 @@ namespace xml
           { // unfold
 
             // set a prefix
-            const std::string prefix (rewrite::mk_prefix (trans.name));
+            const std::string prefix (rewrite::mk_prefix (trans.name()));
             const Net & net_old (boost::get<Net> (fun.f));
             const Net & net_new (set_prefix (net_old, prefix));
 
@@ -651,7 +661,7 @@ namespace xml
                     throw
                       error::real_place_missing ( pm->place_virtual
                                                 , pm->place_real
-                                                , trans.name
+                                                , trans.name()
                                                 , state.file_in_progress()
                                                 );
                   }
@@ -677,7 +687,7 @@ namespace xml
               ( util::we_parse ( cond_in
                                , "condition"
                                , "unfold"
-                               , trans.name
+                               , trans.name()
                                , trans.path
                                )
               );
@@ -698,12 +708,12 @@ namespace xml
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_IN, *port));
 
-                trans_in.add_ports () ( port->name
+                trans_in.add_ports () ( port->name()
                                       , type
                                       , we::type::PORT_IN
                                       , port->prop
                                       );
-                trans_in.add_ports () ( port->name
+                trans_in.add_ports () ( port->name()
                                       , type
                                       , we::type::PORT_OUT
                                       , port->prop
@@ -712,7 +722,7 @@ namespace xml
                 if (port->place.isJust())
                   {
                     trans_in.add_connections ()
-                      ( port->name
+                      ( port->name()
                       , get_pid (pid_of_place , prefix + *port->place)
                       , port->prop
                       )
@@ -797,7 +807,7 @@ namespace xml
               ( util::we_parse ( cond_out
                                , "condition"
                                , "unfold"
-                               , trans.name
+                               , trans.name()
                                , trans.path
                                )
               );
@@ -818,12 +828,12 @@ namespace xml
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_OUT, *port));
 
-                trans_out.add_ports () ( port->name
+                trans_out.add_ports () ( port->name()
                                        , type
                                        , we::type::PORT_IN
                                        , port->prop
                                        );
-                trans_out.add_ports () ( port->name
+                trans_out.add_ports () ( port->name()
                                        , type
                                        , we::type::PORT_OUT
                                        , port->prop
@@ -833,7 +843,7 @@ namespace xml
                   {
                     trans_out.add_connections ()
                       ( get_pid (pid_of_place , prefix + *port->place)
-                      , port->name
+                      , port->name()
                       , port->prop
                       )
                       ;
@@ -862,7 +872,7 @@ namespace xml
                 if (!warning_switch || *warning_switch != "off")
                   {
                     state.warn ( warning::inline_many_output_ports
-                                 ( trans.name
+                                 ( trans.name()
                                  , state.file_in_progress()
                                  )
                                );
@@ -925,7 +935,7 @@ namespace xml
                     throw
                       error::real_place_missing ( pm->place_virtual
                                                 , pm->place_real
-                                                , trans.name
+                                                , trans.name()
                                                 , state.file_in_progress()
                                                 );
                   }
@@ -934,7 +944,7 @@ namespace xml
 
                 std::ostringstream path;
 
-                path << "real" << "." << trans.name;
+                path << "real" << "." << trans.name();
 
                 we_place.property().set (path.str(), pm->place_virtual);
 
@@ -1046,7 +1056,7 @@ namespace xml
                          )
         {
           s.open ("transition");
-          s.attr ("name", t.name);
+          s.attr ("name", t.name());
           s.attr ("priority", t.priority);
           s.attr ("inline", t.finline);
           s.attr ("internal", t.internal);

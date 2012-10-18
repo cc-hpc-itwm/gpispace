@@ -45,7 +45,7 @@ namespace fhg
             )
         {
           model->setItem
-            (row, 0, new QStandardItem (QString::fromStdString(port->name)));
+            (row, 0, new QStandardItem (QString::fromStdString(port->name())));
           model->setItem
             (row, 1, new QStandardItem (QString::fromStdString(port->type)));
         }

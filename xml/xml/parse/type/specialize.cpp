@@ -11,7 +11,7 @@ namespace xml
     namespace type
     {
       specialize_type::specialize_type (const id::specialize& id, const id::net& parent)
-        : name()
+        : _name()
         , use()
         , type_map()
         , type_get()
@@ -28,6 +28,15 @@ namespace xml
       const id::net& specialize_type::parent() const
       {
         return _parent;
+      }
+
+      const std::string& specialize_type::name() const
+      {
+        return _name;
+      }
+      const std::string& specialize_type::name(const std::string& name)
+      {
+        return _name = name;
       }
 
       bool specialize_type::is_same (const specialize_type& other) const
@@ -115,7 +124,7 @@ namespace xml
                   )
         {
           s.open ("specialize");
-          s.attr ("name", sp.name);
+          s.attr ("name", sp.name());
           s.attr ("use", sp.use);
 
           for ( type_map_type::const_iterator tm (sp.type_map.begin())

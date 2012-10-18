@@ -12,7 +12,7 @@ namespace xml
   {
     namespace type
     {
-      port_type::port_type ( const std::string & _name
+      port_type::port_type ( const std::string & name
                            , const std::string & _type
                            , const fhg::util::maybe<std::string> & _place
                            , const id::port& id
@@ -20,7 +20,7 @@ namespace xml
                            )
         : _id (id)
         , _parent (parent)
-        , name (_name)
+        , _name (name)
         , type (_type)
         , place (_place)
         , prop ()
@@ -29,6 +29,11 @@ namespace xml
       const id::port& port_type::id() const
       {
         return _id;
+      }
+
+      const std::string& port_type::name() const
+      {
+        return _name;
       }
 
       const id::function& port_type::parent() const
@@ -72,11 +77,11 @@ namespace xml
           if (direction == "in")
           {
             state.warn
-              (warning::port_not_connected (direction, port.name, path));
+              (warning::port_not_connected (direction, port.name(), path));
           }
           else
           {
-            throw error::port_not_connected (direction, port.name, path);
+            throw error::port_not_connected (direction, port.name(), path);
           }
         }
         else
@@ -87,7 +92,7 @@ namespace xml
           if (!place)
           {
             throw error::port_connected_place_nonexistent
-              (direction, port.name, *port.place, path);
+              (direction, port.name(), *port.place, path);
           }
 
           if (place->type != port.type)
@@ -107,7 +112,7 @@ namespace xml
                 error::tunnel_connected_non_virtual (port, *place, path);
             }
 
-            if (port.name != place->name)
+            if (port.name() != place->name())
             {
               throw error::tunnel_name_mismatch (port, *place, path);
             }
@@ -123,7 +128,7 @@ namespace xml
                   )
         {
           s.open (direction);
-          s.attr ("name", p.name);
+          s.attr ("name", p.name());
           s.attr ("type", p.type);
           s.attr ("place", p.place);
 

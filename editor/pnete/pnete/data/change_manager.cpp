@@ -55,7 +55,7 @@ namespace fhg
           }
           catch (const ::xml::parse::error::duplicate_place&)
           {
-            place.name = inc (place.name);
+            place.name (inc (place.name()));
 
             return push_place (place, net);
           }
@@ -74,7 +74,7 @@ namespace fhg
                 < ::xml::parse::type::transition_type>&
                 )
           {
-            transition.name = inc (transition.name);
+            transition.name (inc (transition.name()));
 
             return push_transition (transition, net);
           }
@@ -291,12 +291,12 @@ namespace fhg
                                                        , net.id()
                                                        );
         transition.function_or_use (fun);
-        transition.name = fun.name() ? *fun.name() : "transition";
+        transition.name (fun.name() ? *fun.name() : "transition");
 
         //! \todo Don't check for duplicate names when fun.name is set?
-        while (net().has_transition (transition.name))
+        while (net().has_transition (transition.name()))
         {
-          transition.name = inc (transition.name);
+          transition.name (inc (transition.name()));
         }
 
         push (new action::add_transition (*this, origin, net, transition));
@@ -320,11 +320,11 @@ namespace fhg
                                                        , transition_id
                                                        , net.id()
                                                        );
-        transition.name = "transition";
+        transition.name ("transition");
 
-        while (net().has_transition (transition.name))
+        while (net().has_transition (transition.name()))
         {
-          transition.name = inc (transition.name);
+          transition.name (inc (transition.name()));
         }
 
         push (new action::add_transition (*this, origin, net, transition));
@@ -345,11 +345,11 @@ namespace fhg
         )
       {
         ::xml::parse::type::place_type place (_state.next_id(), net.id());
-        place.name = "place";
+        place.name ("place");
 
-        while (net().has_place (place.name))
+        while (net().has_place (place.name()))
         {
-          place.name = inc (place.name);
+          place.name (inc (place.name()));
         }
 
         push (new action::add_place (*this, origin, net, place));

@@ -286,7 +286,7 @@ namespace xml
               const signature::type type
                 (fun.type_of_port (direction, *port));
 
-              trans.add_ports () (port->name, type, direction, port->prop);
+              trans.add_ports () (port->name(), type, direction, port->prop);
             }
         }
 
@@ -307,7 +307,7 @@ namespace xml
 
               if (port->place.isNothing())
                 {
-                  trans.add_ports () (port->name, type, direction, port->prop);
+                  trans.add_ports () (port->name(), type, direction, port->prop);
                 }
               else
                 {
@@ -315,7 +315,7 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  trans.add_ports () ( port->name
+                  trans.add_ports () ( port->name()
                                      , type
                                      , direction
                                      , get_pid (pid_of_place, *port->place)
@@ -474,14 +474,14 @@ namespace xml
         {
           if (!ports.push (p))
             {
-              throw error::duplicate_port (descr, p.name, path);
+              throw error::duplicate_port (descr, p.name(), path);
             }
 
-          boost::optional<port_type> other (others.copy_by_key (p.name));
+          boost::optional<port_type> other (others.copy_by_key (p.name()));
 
           if (other && p.type != other->type)
             {
-              throw error::port_type_mismatch ( p.name
+              throw error::port_type_mismatch ( p.name()
                                               , p.type
                                               , other->type
                                               , path
@@ -528,8 +528,6 @@ namespace xml
         boost::filesystem::path path;
 
         xml::parse::struct_t::set_type structs_resolved;
-
-        bool was_template;
 
         // ***************************************************************** //
 
@@ -601,7 +599,6 @@ namespace xml
             f = rhs.f;
             path = rhs.path;
             structs_resolved = rhs.structs_resolved;
-            was_template = rhs.was_template;
             _typenames = rhs._typenames;
           }
           return *this;
@@ -680,7 +677,7 @@ namespace xml
         {
           if (!_tunnel.push (p))
             {
-              throw error::duplicate_port ("tunnel", p.name, path);
+              throw error::duplicate_port ("tunnel", p.name(), path);
             }
         }
 
@@ -696,7 +693,7 @@ namespace xml
               ; ++pos
               )
             {
-              forbidden[pos->type] = pos->name;
+              forbidden[pos->type] = pos->name();
             }
 
           for ( ports_type::const_iterator pos (out().begin())
@@ -704,7 +701,7 @@ namespace xml
               ; ++pos
               )
             {
-              forbidden[pos->type] = pos->name;
+              forbidden[pos->type] = pos->name();
             }
 
           return forbidden;
@@ -796,7 +793,7 @@ namespace xml
           if (sig == structs_resolved.end())
             {
               throw error::port_with_unknown_type
-                (dir, port.name, port.type, path);
+                (dir, port.name(), port.type, path);
             }
 
           return signature::type (sig->second.signature(), sig->second.name());
@@ -862,11 +859,6 @@ namespace xml
 
         void specialize (const state::type & state)
         {
-          if (was_template)
-            {
-              return;
-            }
-
           const type_map_type type_map_empty;
           const type_get_type type_get_empty;
           const xml::parse::struct_t::set_type known_empty;
@@ -884,11 +876,6 @@ namespace xml
                         , const state::type & state
                         )
         {
-          if (was_template)
-            {
-              return;
-            }
-
           for ( ports_type::iterator port (_in.elements().begin())
               ; port != _in.elements().end()
               ; ++port
@@ -1369,7 +1356,7 @@ namespace xml
             if (!fun)
               {
                 throw error::unknown_function
-                  (u.name(), trans.name, trans.path);
+                  (u.name(), trans.name(), trans.path);
               }
 
             return xml::parse::type::find_module_calls (state, *fun, m, mcs);
@@ -1906,7 +1893,7 @@ namespace xml
                       }
 
                     if (    mod.port_return.isJust()
-                       && (*mod.port_return == port_in->name)
+                       && (*mod.port_return == port_in->name())
                        )
                       {
                         ports_const.push_back (port_with_type (*name, port_in->type));
@@ -1942,7 +1929,7 @@ namespace xml
                       }
 
                     if (    mod.port_return.isJust()
-                       && (*mod.port_return == port_out->name)
+                       && (*mod.port_return == port_out->name())
                        )
                       {
                         // do nothing, it is the return port

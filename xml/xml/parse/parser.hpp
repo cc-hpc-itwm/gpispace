@@ -65,6 +65,7 @@ namespace xml
     static type::net_type net_type ( const xml_node_type *
                                    , state::type &
                                    , const id::function& parent
+                                   , type::function_type& parent_fun
                                    );
     static type::place_type place_type ( const xml_node_type *
                                        , state::type &
@@ -629,8 +630,6 @@ namespace xml
         fhg::util::fmap<std::string, bool>( fhg::util::read_bool
                                           , optional (node, "internal")
                                           );
-      f.was_template = false;
-
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
@@ -698,7 +697,7 @@ namespace xml
                 }
               else if (child_name == "net")
                 {
-                  f.f = net_type (child, state, f.id());
+                  f.f = net_type (child, state, f.id(), f);
                 }
               else if (child_name == "condition")
                 {
@@ -841,6 +840,7 @@ namespace xml
       net_type ( const xml_node_type * node
                , state::type & state
                , const id::function& parent
+               , type::function_type& parent_fun
                )
     {
       type::net_type n (state.next_id(), parent);
@@ -875,7 +875,8 @@ namespace xml
                 }
               else if (child_name == "struct")
                 {
-                  n.structs.push_back (struct_type (child, state, n.parent()));
+                  parent_fun.structs.push_back
+                    (struct_type (child, state, n.parent()));
                 }
               else if (child_name == "include-structs")
                 {
@@ -1558,7 +1559,7 @@ namespace xml
       type::specialize_type s (state.next_id(), parent);
 
       s.path = state.file_in_progress();
-      s.name = required ("specialize_type", node, "name", s.path);
+      s.name (required ("specialize_type", node, "name", s.path));
       s.use = required ("specialize_type", node, "use", s.path);
 
       for ( xml_node_type * child (node->first_node())
@@ -1608,13 +1609,14 @@ namespace xml
       type::transition_type t (state.next_id(), parent);
 
       t.path = state.file_in_progress();
-      t.name = validate_name ( validate_prefix ( name
-                                               , "transition"
-                                               , state.file_in_progress()
-                                               )
-                             , "transition"
-                             , state.file_in_progress()
-                             );
+      t.name (validate_name ( validate_prefix ( name
+                                              , "transition"
+                                              , state.file_in_progress()
+                                              )
+                            , "transition"
+                            , state.file_in_progress()
+                            )
+             );
       t.priority = fhg::util::fmap<std::string, petri_net::prio_t>
         ( boost::lexical_cast<petri_net::prio_t>
         , optional (node, "priority")

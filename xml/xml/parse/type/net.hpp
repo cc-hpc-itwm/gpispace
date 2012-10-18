@@ -57,8 +57,8 @@ namespace xml
 
         xml::util::unique<place_type> _places;
         xml::util::unique<transition_type> _transitions;
-        xml::util::uniquePP<function_type,maybe_string_type> _functions;
-        xml::util::uniquePP<template_type,maybe_string_type> _templates;
+        xml::util::unique<function_type,maybe_string_type> _functions;
+        xml::util::unique<template_type,maybe_string_type> _templates;
         xml::util::unique<specialize_type> _specializes;
 
         id::net _id;
@@ -232,7 +232,7 @@ namespace xml
 
           if (!place)
             {
-              throw error::duplicate_place (p.name, path);
+              throw error::duplicate_place (p.name(), path);
             }
 
           return *place;
@@ -292,7 +292,7 @@ namespace xml
         {
           if (!_specializes.push (s))
             {
-              throw error::duplicate_specialize ( s.name
+              throw error::duplicate_specialize ( s.name()
                                                 , state.file_in_progress()
                                                 );
             }
@@ -324,7 +324,7 @@ namespace xml
 
           if (sig == structs_resolved.end())
             {
-              throw error::place_type_unknown (place.name, place.type, path);
+              throw error::place_type_unknown (place.name(), place.type, path);
             }
 
           return signature::type (sig->second.signature(), sig->second.name());
@@ -373,7 +373,7 @@ namespace xml
                   throw error::unknown_template (specialize->use, path);
                 }
 
-              tmpl->function().name (specialize->name);
+              tmpl->function().name (specialize->name());
 
               type_map_apply (map, specialize->type_map);
 
@@ -515,7 +515,7 @@ namespace xml
 
               if (!spec_local.first)
                 {
-                  state.warn ( warning::shadow_specialize ( spec.name
+                  state.warn ( warning::shadow_specialize ( spec.name()
                                                           , spec.path
                                                           , spec_local.second->path
                                                           )
@@ -613,10 +613,10 @@ namespace xml
 
           BOOST_FOREACH (const place_type& place, places())
             {
-              if (place.is_virtual() && !outerfun.is_known_tunnel (place.name))
+              if (place.is_virtual() && !outerfun.is_known_tunnel (place.name()))
                 {
                   state.warn
-                    ( warning::virtual_place_not_tunneled ( place.name
+                    ( warning::virtual_place_not_tunneled ( place.name()
                                                           , outerfun.path
                                                           )
                     );
@@ -664,7 +664,7 @@ namespace xml
           {
             place_type place_new (*place_old);
 
-            place_new.name = prefix + place_old->name;
+            place_new.name (prefix + place_old->name());
 
             net_new.push_place (place_new);
           }
@@ -676,7 +676,7 @@ namespace xml
             )
           {
             transition_type transition_new (*transition_old);
-            transition_new.name = prefix + transition_old->name;
+            transition_new.name (prefix + transition_old->name());
 
             transition_new.clear_ports();
 
@@ -775,15 +775,15 @@ namespace xml
                 {
                   // try to find a mapping
                   const place_map_map_type::const_iterator pid
-                    (place_map_map.find (place->name));
+                    (place_map_map.find (place->name()));
 
                   if (pid == place_map_map.end())
                     {
                       throw error::no_map_for_virtual_place
-                        (place->name, state.file_in_progress());
+                        (place->name(), state.file_in_progress());
                     }
 
-                  pid_of_place[place->name] = pid->second;
+                  pid_of_place[place->name()] = pid->second;
 
                   const we_place_type place_real
                     (we_net.get_place (pid->second));
@@ -791,7 +791,7 @@ namespace xml
                   if (not (place_real.signature() == place->sig))
                     {
                       throw error::port_tunneled_type_error
-                        ( place->name
+                        ( place->name()
                         , place->sig
                         , place_real.name()
                         , place_real.signature()
@@ -809,14 +809,14 @@ namespace xml
                     }
 
                   const pid_t pid
-                    ( we_net.add_place ( we_place_type ( place->name
+                    ( we_net.add_place ( we_place_type ( place->name()
                                                        , type
                                                        , prop
                                                        )
                                        )
                     );
 
-                  pid_of_place[place->name] = pid;
+                  pid_of_place[place->name()] = pid;
                 }
             }
 
@@ -840,7 +840,7 @@ namespace xml
               ; ++place
               )
             {
-              const pid_t pid (pid_of_place.at (place->name));
+              const pid_t pid (pid_of_place.at (place->name()));
 
               for ( values_type::const_iterator val (place->values.begin())
                   ; val != place->values.end()
@@ -856,7 +856,7 @@ namespace xml
                  )
                 {
                   state.warn
-                    ( warning::independent_place ( place->name
+                    ( warning::independent_place ( place->name()
                                                  , state.file_in_progress()
                                                  )
                     )

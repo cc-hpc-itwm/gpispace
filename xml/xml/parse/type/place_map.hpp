@@ -35,11 +35,14 @@ namespace xml
 
         bool is_same (const place_map_type& other) const;
 
+        std::string _name;
+
       public:
         std::string place_virtual;
         std::string place_real;
-        std::string name;
         we::type::property::type prop;
+
+        const std::string& name() const;
 
       private:
         id::place_map _id;
