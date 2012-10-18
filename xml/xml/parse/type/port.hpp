@@ -36,7 +36,7 @@ namespace xml
                   );
 
         const id::port& id() const;
-        const id::transition& parent() const;
+        const id::function& parent() const;
 
         bool is_same (const port_type& other) const;
 
