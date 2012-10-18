@@ -3,6 +3,8 @@
 #include <xml/parse/types.hpp>
 #include <xml/parse/type/template.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace xml
 {
   namespace parse
@@ -105,6 +107,13 @@ namespace xml
         {
           s.open ("template");
           s.attr ("name", t.name());
+
+          BOOST_FOREACH (const std::string& tn, t.template_parameter())
+            {
+              s.open ("template-parameter");
+              s.attr ("type", tn);
+              s.close ();
+            }
 
           dump (s, t.function());
 
