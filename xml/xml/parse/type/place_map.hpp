@@ -35,18 +35,21 @@ namespace xml
 
         bool is_same (const place_map_type& other) const;
 
+        std::string _name;
+
       public:
         std::string place_virtual;
         std::string place_real;
-        std::string name;
         we::type::property::type prop;
+
+        const std::string& name() const;
 
       private:
         id::place_map _id;
         id::transition _parent;
       };
 
-      typedef xml::util::unique<place_map_type>::elements_type place_maps_type;
+      typedef xml::util::uniquePP<place_map_type>::elements_type place_maps_type;
       typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
 
       namespace dump

@@ -53,7 +53,7 @@ namespace xml
       typedef xml::util::uniquePP<port_type>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
       typedef xml::util::unique<function_type>::elements_type functions_type;
-      typedef xml::util::unique<template_type>::elements_type templates_type;
+      typedef xml::util::uniquePP<template_type>::elements_type templates_type;
       typedef xml::util::uniquePP<specialize_type>::elements_type specializes_type;
 
       // ******************************************************************* //

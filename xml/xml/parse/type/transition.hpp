@@ -207,7 +207,7 @@ namespace xml
         xml::util::uniquePP<connect_type> _in;
         xml::util::uniquePP<connect_type> _out;
         xml::util::uniquePP<connect_type> _read;
-        xml::util::unique<place_map_type> _place_map;
+        xml::util::uniquePP<place_map_type> _place_map;
 
         id::transition _id;
         id::net _parent;
@@ -346,7 +346,7 @@ namespace xml
         {
           if (!_place_map.push (place_map))
             {
-              throw error::duplicate_place_map (place_map.name, name(), path);
+              throw error::duplicate_place_map (place_map.name(), name(), path);
             }
         }
 

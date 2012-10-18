@@ -15,9 +15,9 @@ namespace xml
                                      , const id::place_map& id
                                      , const id::transition& parent
                                      )
-        : place_virtual (_place_virtual)
+        : _name (_place_virtual + " <-> " + _place_real)
+        , place_virtual (_place_virtual)
         , place_real (_place_real)
-        , name (_place_virtual + " <-> " + _place_real)
         , _id (id)
         , _parent (parent)
       { }
@@ -30,6 +30,11 @@ namespace xml
       const id::transition& place_map_type::parent() const
       {
         return _parent;
+      }
+
+      const std::string& place_map_type::name() const
+      {
+        return _name;
       }
 
       bool place_map_type::is_same (const place_map_type& other) const

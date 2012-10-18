@@ -276,7 +276,7 @@ namespace xml
 
         void push_template (const template_type & t)
         {
-          xml::util::unique<template_type>::push_return_type templ
+          xml::util::uniquePP<template_type>::push_return_type templ
             (_templates.push_and_get_old_value (t));
 
           if (!templ.first)
@@ -495,7 +495,7 @@ namespace xml
 
           BOOST_FOREACH (const template_type& tmpl, templates_above)
             {
-              xml::util::unique<template_type>::push_return_type tmpl_local
+              xml::util::uniquePP<template_type>::push_return_type tmpl_local
                 (_templates.push_and_get_old_value (tmpl));
 
               if (!tmpl_local.first)
@@ -510,7 +510,7 @@ namespace xml
 
           BOOST_FOREACH (const specialize_type& spec, specializes_above)
             {
-              xml::util::unique<specialize_type>::push_return_type spec_local
+              xml::util::uniquePP<specialize_type>::push_return_type spec_local
                 (_specializes.push_and_get_old_value (spec));
 
               if (!spec_local.first)
