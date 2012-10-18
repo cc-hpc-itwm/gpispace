@@ -26,9 +26,19 @@ namespace xml
   {
     namespace id
     {
-      //! \todo Let them be of some class to prevent casting.
-#define MAKE_ID(name)                           \
-      typedef ::fhg::xml::parse::util::id_type name
+#define MAKE_ID(name)                                                   \
+      struct name                                                       \
+      {                                                                 \
+      public:                                                           \
+        name (const boost::uint_fast64_t& val);                         \
+        bool operator< (const name& other) const;                       \
+        bool operator== (const name& other) const;                      \
+        name& operator= (const boost::uint_fast64_t& val);              \
+        friend std::size_t hash_value (const name&);                    \
+      private:                                                          \
+        boost::uint_fast64_t _val;                                      \
+      };                                                                \
+      std::size_t hash_value (const name& val)
 
       MAKE_ID (connect);
       MAKE_ID (expression);
