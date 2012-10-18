@@ -135,6 +135,12 @@ namespace fhg
       WSIG(tv, function::out, XMLTYPE(ports_type), ports);
       WSIG(tv, function::fun, XMLTYPE(function_type::type), fun);
       WSIG(tv, function::conditions, XMLTYPE(conditions_type), cs);
+      WSIG(tv, tmpl::open, ITVAL(XMLTYPE(templates_type)), t);
+      WSIG(tv, tmpl::name, MAYBE(std::string), name);
+      WSIG(tv, tmpl::template_parameter, XMLTYPE(template_type::names_type), templates);
+      WSIG(tv, tmpl::function, XMLTYPE(function_type), fun);
+      WSIGE(tv, tmpl::close);
+      WSIG(tv, template_parameter::open, ITVAL(XMLTYPE(template_type::names_type)), template_parameter);
       WSIG(tv, place_map::open, ITVAL(XMLTYPE(place_maps_type)), pm);
       WSIGE(tv, place_map::close);
       WSIG(tv, place_map::place_virtual, std::string, name);

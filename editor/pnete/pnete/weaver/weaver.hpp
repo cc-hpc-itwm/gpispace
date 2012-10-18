@@ -4,6 +4,7 @@
 #define _PNETE_TRAVERSE_WEAVER_HPP 1
 
 #include <xml/parse/types.hpp>
+#include <xml/parse/type/template.hpp>
 #include <xml/parse/parser.hpp>
 
 #include <we/type/signature.hpp>
@@ -233,10 +234,28 @@ namespace fhg
             };
         }
 
-        namespace function
+        namespace tmpl
         {
           enum
             { first = conditions::last + 1
+            , open, name, template_parameter, function, close
+            , last
+            };
+        }
+
+        namespace template_parameter
+        {
+          enum
+            { first = tmpl::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        namespace function
+        {
+          enum
+            { first = template_parameter::last + 1
             , open, close, name, internal, require, properties, structs
             , in, out, fun, conditions
             , last
@@ -333,24 +352,26 @@ namespace fhg
       {
         SIG(place     , ITVAL(XMLTYPE(places_type)));
         SIG(function  , ITVAL(XMLTYPE(functions_type)));
+        SIG(tmpl      , ITVAL(XMLTYPE(templates_type)));
         SIG(specialize, ITVAL(XMLTYPE(specializes_type)));
 
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
         SIG(net       , XMLTYPE(net_type));
 
-        SIG(cinclude  , ITVAL(XMLTYPE(cincludes_type)));
-        SIG(connection, ITVAL(XMLTYPE(connections_type)));
-        SIG(ldflag    , ITVAL(XMLTYPE(flags_type)));
-        SIG(cxxflag   , ITVAL(XMLTYPE(flags_type)));
-        SIG(link      , ITVAL(XMLTYPE(links_type)));
-        SIG(port      , ITVAL(XMLTYPE(ports_type)));
-        SIG(require   , ITVAL(XMLTYPE(requirements_type)));
-        SIG(_struct   , ITVAL(XMLTYPE(structs_type)));
-        SIG(transition, ITVAL(XMLTYPE(net_type::transitions_type)));
-        SIG(type_get  , ITVAL(XMLTYPE(type_get_type)));
-        SIG(type_map  , ITVAL(XMLTYPE(type_map_type)));
-        SIG(place_map , ITVAL(XMLTYPE(place_maps_type)));
+        SIG(cinclude          , ITVAL(XMLTYPE(cincludes_type)));
+        SIG(template_parameter, ITVAL(XMLTYPE(template_type::names_type)));
+        SIG(connection        , ITVAL(XMLTYPE(connections_type)));
+        SIG(ldflag            , ITVAL(XMLTYPE(flags_type)));
+        SIG(cxxflag           , ITVAL(XMLTYPE(flags_type)));
+        SIG(link              , ITVAL(XMLTYPE(links_type)));
+        SIG(port              , ITVAL(XMLTYPE(ports_type)));
+        SIG(require           , ITVAL(XMLTYPE(requirements_type)));
+        SIG(_struct           , ITVAL(XMLTYPE(structs_type)));
+        SIG(transition        , ITVAL(XMLTYPE(net_type::transitions_type)));
+        SIG(type_get          , ITVAL(XMLTYPE(type_get_type)));
+        SIG(type_map          , ITVAL(XMLTYPE(type_map_type)));
+        SIG(place_map         , ITVAL(XMLTYPE(place_maps_type)));
 
         SIG(properties, WETYPE(property::type));
         SIG(property, ITVAL(WETYPE(property::map_type)));
@@ -553,6 +574,17 @@ namespace fhg
           WEAVEE(cinclude::close)();
         }
 
+        FUN( template_parameter
+           , ITVAL(XMLTYPE(template_type::names_type))
+           , template_parameter
+           )
+        {
+          WEAVE( template_parameter::open
+               , ITVAL(XMLTYPE(template_type::names_type))
+               )(template_parameter);
+          WEAVEE(template_parameter::close)();
+        }
+
         FUN(ldflag, ITVAL(XMLTYPE(flags_type)), flag)
         {
           WEAVE(ldflag::open, ITVAL(XMLTYPE(flags_type)))(flag);
@@ -662,6 +694,16 @@ namespace fhg
         {
           FROM(function_head) (_state, fun);
           FROM(function_tail) (_state, fun);
+        }
+
+        FUN(tmpl, ITVAL(XMLTYPE(templates_type)), t)
+        {
+          WEAVE(tmpl::open,ITVAL(XMLTYPE(templates_type)))(t);
+          WEAVE(tmpl::name, MAYBE(std::string))(t.name());
+          WEAVE(tmpl::template_parameter,XMLTYPE(template_type::names_type))
+            (t.template_parameter());
+          WEAVE(tmpl::function,XMLTYPE(function_type))(t.function());
+          WEAVEE(tmpl::close)();
         }
 
         FUN(context_key_value, ITVAL(XMLPARSE(state::key_values_t)), kv)
