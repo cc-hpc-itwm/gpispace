@@ -52,6 +52,7 @@ namespace xml
                                            );
     static type::function_type function_type ( const xml_node_type *
                                              , state::type &
+                                             , const type::function_type::id_parent& parent
                                              );
     static type::mod_type mod_type ( const xml_node_type *
                                    , state::type &
@@ -108,7 +109,10 @@ namespace xml
                                            , const id::function& parent
                                            );
 
-    static type::function_type parse_function (std::istream &, state::type &);
+    static type::function_type parse_function ( std::istream &
+                                              , state::type &
+                                              , const type::function_type::id_parent& parent
+                                              );
     static type::template_type
     parse_template (std::istream &, state::type &, const id::net& parent);
     static type::structs_type parse_structs ( std::istream &
@@ -119,10 +123,13 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::function_type
-    function_include (const std::string & file, state::type & state)
+    static type::function_type function_include ( const std::string & file
+                                                , state::type & state
+                                                , const type::function_type::id_parent& parent
+                                                )
     {
-      return state.generic_include<type::function_type> (parse_function, file);
+      return state.generic_include<type::function_type>
+        (boost::bind (parse_function, _1, _2, parent), file);
     }
 
     static type::template_type template_include ( const std::string & file
@@ -233,18 +240,24 @@ namespace xml
       return parse (node, state);
     };
 
-    static type::function_type
-    parse_function (std::istream & f, state::type & state)
+    static type::function_type parse_function ( std::istream & f
+                                              , state::type & state
+                                              , const type::function_type::id_parent& parent
+                                              )
     {
       return generic_parse<type::function_type>
-        (function_type, f, state, "defun", "parse_function");
+        ( boost::bind (function_type, _1, _2, parent)
+        , f
+        , state
+        , "defun"
+        , "parse_function"
+        );
     }
 
-    static type::template_type
-    parse_template ( std::istream & f
-                   , state::type & state
-                   , const id::net& parent
-                   )
+    static type::template_type parse_template ( std::istream & f
+                                              , state::type & state
+                                              , const id::net& parent
+                                              )
     {
       return generic_parse<type::template_type>
         ( boost::bind (template_type, _1, _2, parent)
@@ -532,6 +545,8 @@ namespace xml
       type::template_type::names_type template_parameter;
       fhg::util::maybe<std::string> name (optional (node, "name"));
 
+      const id::tmpl template_id (state.next_id());
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
@@ -565,8 +580,7 @@ namespace xml
                 }
               else if (child_name == "defun")
                 {
-                  //! \todo parent
-                  fun = function_type (child, state);
+                  fun = function_type (child, state, template_id);
                 }
               else
                 {
@@ -589,7 +603,7 @@ namespace xml
         }
 
       return type::template_type
-        ( state.next_id()
+        ( template_id
         , parent
         , state.file_in_progress()
         , name
@@ -600,12 +614,14 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::function_type
-    function_type (const xml_node_type * node, state::type & state)
+    static type::function_type function_type ( const xml_node_type * node
+                                             , state::type & state
+                                             , const type::function_type::id_parent& parent
+                                             )
     {
       id::expression expression_id (state.next_id());
       id::function function_id (state.next_id());
-      type::function_type f (expression_id, function_id);
+      type::function_type f (expression_id, function_id, parent);
 
       f.path = state.file_in_progress();
       f.name (optional (node, "name"));
@@ -1630,7 +1646,7 @@ namespace xml
                                                     )
                                          );
 
-                  t.function_or_use (function_include (file, state));
+                  t.function_or_use (function_include (file, state, t.id()));
                 }
               else if (child_name == "use")
                 {
@@ -1647,7 +1663,7 @@ namespace xml
                 }
               else if (child_name == "defun")
                 {
-                  t.function_or_use (function_type (child, state));
+                  t.function_or_use (function_type (child, state, t.id()));
                 }
               else if (child_name == "place-map")
                 {
@@ -1870,7 +1886,9 @@ namespace xml
       state.set_input (input);
 
       type::function_type f
-        (state.generic_parse<type::function_type> (parse_function, input));
+        (state.generic_parse<type::function_type>
+          (boost::bind (parse_function, _1, _2, boost::blank()), input)
+        );
 
       f.distribute_function (state);
 

@@ -311,7 +311,10 @@ namespace fhg
         ::xml::parse::id::function function_id (_state.next_id());
         ::xml::parse::id::transition transition_id (_state.next_id());
 
-        ::xml::parse::type::function_type f (expression_id, function_id);
+        ::xml::parse::type::function_type f ( expression_id
+                                            , function_id
+                                            , net.id()
+                                            );
 
         ::xml::parse::type::transition_type transition ( f
                                                        , transition_id

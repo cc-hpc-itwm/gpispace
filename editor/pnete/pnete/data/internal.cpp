@@ -27,19 +27,28 @@ namespace fhg
           case internal_type::expression:
             {
               const ::xml::parse::id::expression id (state.next_id());
-              return ::xml::parse::type::function_type (id, function_id);
+              return ::xml::parse::type::function_type ( id
+                                                       , function_id
+                                                       , boost::blank()
+                                                       );
             }
           case internal_type::module_call:
             {
               const ::xml::parse::id::module id (state.next_id());
               const ::xml::parse::type::mod_type mod (id, function_id);
-              return ::xml::parse::type::function_type (mod, function_id);
+              return ::xml::parse::type::function_type ( mod
+                                                       , function_id
+                                                       , boost::blank()
+                                                       );
             }
           case internal_type::net:
             {
               const ::xml::parse::id::net id (state.next_id());
               const ::xml::parse::type::net_type net (id, function_id);
-              return ::xml::parse::type::function_type (net, function_id);
+              return ::xml::parse::type::function_type ( net
+                                                       , function_id
+                                                       , boost::blank()
+                                                       );
             }
           default:
             {
