@@ -373,7 +373,7 @@ namespace xml
                   throw error::unknown_template (specialize->use, path);
                 }
 
-              tmpl->name (specialize->name);
+              tmpl->function().name (specialize->name);
 
               type_map_apply (map, specialize->type_map);
 
