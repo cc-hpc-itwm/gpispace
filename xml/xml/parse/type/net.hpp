@@ -264,7 +264,7 @@ namespace xml
 
         void push_function (const function_type & f)
         {
-          xml::util::unique<function_type>::push_return_type fun
+          xml::util::uniquePP<function_type>::push_return_type fun
             (_functions.push_and_get_old_value (f));
 
           if (!fun.first)
@@ -480,7 +480,7 @@ namespace xml
 
           BOOST_FOREACH (const function_type& fun, functions_above)
             {
-              xml::util::unique<function_type>::push_return_type fun_local
+              xml::util::uniquePP<function_type>::push_return_type fun_local
                 (_functions.push_and_get_old_value (fun));
 
               if (!fun_local.first)
