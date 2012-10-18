@@ -291,7 +291,7 @@ namespace fhg
                                                        , net.id()
                                                        );
         transition.function_or_use (fun);
-        transition.name = fun.name ? *fun.name : "transition";
+        transition.name = fun.name() ? *fun.name() : "transition";
 
         //! \todo Don't check for duplicate names when fun.name is set?
         while (net().has_transition (transition.name))
@@ -369,11 +369,11 @@ namespace fhg
       {
         if (!name.isEmpty())
         {
-          fun.name = name.toStdString();
+          fun.name (name.toStdString());
         }
         else
         {
-          fun.name.clear();
+          fun.name(fhg::util::Nothing<std::string>());
         }
 
         emit_signal ( &change_manager_t::signal_set_function_name

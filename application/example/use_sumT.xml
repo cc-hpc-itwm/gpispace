@@ -5,12 +5,14 @@
   <net>
     <place name="a" type="double"/>
     <place name="b" type="double"/>
-    <place name="s" type="long"/>
+    <place name="s" type="double"/>
 
-    <include-template href="sumT.xml"/>
+    <include-template href="sumT.xml" as="sum"/>
+<!--
     <specialize name="sum_long" use="sum">
       <type-map replace="T" with="long"/>
     </specialize>
+-->
     <specialize name="sum_double" use="sum">
       <type-map replace="T" with="double"/>
     </specialize>

@@ -109,9 +109,9 @@ namespace fhg
         m = maybe_type(detail::Nothing());
       }
 
-      void operator = (const_reference x)
+      maybe<T>& operator = (const_reference x)
       {
-        m = x;
+        m = x; return *this;
       }
 
       template<typename U>

@@ -743,23 +743,6 @@ namespace xml
                     )
         {}
       };
-
-      // ******************************************************************* //
-
-      class ignore_template_parameter : public generic
-      {
-      public:
-        ignore_template_parameter ( const fhg::util::maybe<std::string> name
-                                  , const boost::filesystem::path& file
-                                  )
-          : generic ( boost::format ( "ignore template parameter in the"
-                                      "definition of the function %1% in %2%"
-                                    )
-                    % name
-                    % file
-                    )
-        {}
-      };
     }
   }
 }

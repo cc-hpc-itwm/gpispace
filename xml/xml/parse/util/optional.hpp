@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include <boost/optional.hpp>
+
 namespace xml
 {
   namespace parse

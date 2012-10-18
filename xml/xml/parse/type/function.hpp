@@ -5,6 +5,8 @@
 
 #include <xml/parse/types.hpp>
 
+#include <xml/parse/type/template.fwd.hpp>
+
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/property.hpp>
@@ -51,7 +53,7 @@ namespace xml
       typedef xml::util::unique<port_type>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
       typedef xml::util::unique<function_type>::elements_type functions_type;
-      typedef xml::util::unique<function_type>::elements_type templates_type;
+      typedef xml::util::unique<template_type>::elements_type templates_type;
       typedef xml::util::unique<specialize_type>::elements_type specializes_type;
 
       // ******************************************************************* //
@@ -342,12 +344,12 @@ namespace xml
 
         std::string name (void) const
         {
-          if (fun.name.isNothing())
+          if (not fun.name())
             {
               throw error::synthesize_anonymous_function (fun.path);
             }
 
-          return *fun.name;
+          return *fun.name();
         }
 
         we_cond_type condition (void) const
@@ -495,6 +497,8 @@ namespace xml
 
         ::fhg::xml::parse::util::id_type _id;
 
+        fhg::util::maybe<std::string> _name;
+
       public:
         typedef boost::variant < expression_type
                                , mod_type
@@ -504,7 +508,6 @@ namespace xml
         bool contains_a_module_call;
         structs_type structs;
 
-        fhg::util::maybe<std::string> name;
         fhg::util::maybe<bool> internal;
 
         conditions_type cond;
@@ -522,6 +525,20 @@ namespace xml
         bool was_template;
 
         // ***************************************************************** //
+
+        const fhg::util::maybe<std::string> name() const
+        {
+          return _name;
+        }
+        const std::string& name (const std::string& name)
+        {
+          return *(_name = name);
+        }
+        const fhg::util::maybe<std::string>&
+        name (const fhg::util::maybe<std::string>& name)
+        {
+          return _name = name;
+        }
 
         function_type ( const type& _f
                       , const id::function& id
@@ -2195,11 +2212,14 @@ namespace xml
       {
         void dump ( xml_util::xmlstream &
                   , const function_type &
-                  , const bool
                   );
 
         void dump ( xml_util::xmlstream &
                   , const transition_type &
+                  );
+
+        void dump ( xml_util::xmlstream &
+                  , const template_type &
                   );
 
         template<typename IT>
@@ -2251,9 +2271,9 @@ namespace xml
               ::we::type::property::dump::dump (s, net.prop);
 
               dumps (s, net.structs.begin(), net.structs.end());
-              dumps (s, net.templates().begin(), net.templates().end(), true);
+              dumps (s, net.templates().begin(), net.templates().end());
               dumps (s, net.specializes().begin(), net.specializes().end());
-              dumps (s, net.functions().begin(), net.functions().end(), false);
+              dumps (s, net.functions().begin(), net.functions().end());
               dumps (s, net.places().begin(), net.places().end());
               dumps (s, net.transitions().begin(), net.transitions().end());
 
@@ -2264,11 +2284,10 @@ namespace xml
 
         inline void dump_before_property ( xml_util::xmlstream & s
                                          , const function_type & f
-                                         , const bool is_template = false
                                          )
         {
-          s.open (is_template ? "template" : "defun");
-          s.attr ("name", f.name);
+          s.open ("defun");
+          s.attr ("name", f.name());
           s.attr ("internal", f.internal);
         }
 
@@ -2311,7 +2330,7 @@ namespace xml
                          , const state::type & state
                          )
         {
-          dump_before_property (s, f, false);
+          dump_before_property (s, f);
 
           state.dump_context (s);
 
@@ -2322,10 +2341,9 @@ namespace xml
 
         inline void dump ( xml_util::xmlstream & s
                          , const function_type & f
-                         , const bool is_template = false
                          )
         {
-          dump_before_property (s, f, is_template);
+          dump_before_property (s, f);
 
           ::we::type::property::dump::dump (s, f.prop);
 
