@@ -196,7 +196,7 @@
   <xsd:complexType name="template_type">
     <xsd:sequence>
       <xsd:element minOccurs="0" maxOccurs="unbounded" name="template-parameter" type="template_parameter_type"/>
-      <xsd:element minOccures="1" maxOccures="1" name="defun" type="function_type"/>
+      <xsd:element minOccurs="1" maxOccurs="1" name="defun" type="function_type"/>
     </xsd:sequence>
   </xsd:complexType>
 
