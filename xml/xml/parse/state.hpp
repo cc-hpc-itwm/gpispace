@@ -185,7 +185,7 @@ namespace xml
 
         std::string _Opath_to_cpp;
 
-        ::fhg::util::counter< ::fhg::xml::parse::util::id_type> _id_counter;
+        ::fhg::util::counter<id::base_id_type> _id_counter;
 
         template<typename W>
         void generic_warn ( const W & w
@@ -924,7 +924,7 @@ namespace xml
           desc.add (warnings);
         }
 
-        ::fhg::xml::parse::util::id_type next_id()
+        id::base_id_type next_id()
         {
           return _id_counter;
         }

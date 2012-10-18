@@ -11,7 +11,7 @@ namespace xml
     namespace id
     {
 #define MAKE_ID(name)                                                   \
-      name::name (const boost::uint_fast64_t& val)                      \
+      name::name (const base_id_type& val)                              \
         :  _val (val)                                                   \
       { }                                                               \
       bool name::operator< (const name& other) const                    \
@@ -22,14 +22,14 @@ namespace xml
       {                                                                 \
         return _val == other._val;                                      \
       }                                                                 \
-      name& name::operator= (const boost::uint_fast64_t& val)           \
+      name& name::operator= (const base_id_type& val)                   \
       {                                                                 \
         _val = val;                                                     \
         return *this;                                                   \
       }                                                                 \
       std::size_t hash_value (const name& val)                          \
       {                                                                 \
-        return boost::hash< boost::uint_fast64_t>()                     \
+        return boost::hash< base_id_type>()                             \
           (val._val);                                                   \
       }
 

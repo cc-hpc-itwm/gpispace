@@ -5,38 +5,25 @@
 
 #include <boost/cstdint.hpp>
 
-namespace fhg
-{
-  namespace xml
-  {
-    namespace parse
-    {
-      namespace util
-      {
-        typedef boost::uint_fast64_t id_type;
-      }
-    }
-  }
-}
-//! \todo The remainder of xml/ is in ::xml::parse, not
-//! ::fhg::xml::parse. One should move them all to the same namespace.
 namespace xml
 {
   namespace parse
   {
     namespace id
     {
+      typedef boost::uint_fast64_t base_id_type;
+
 #define MAKE_ID(name)                                                   \
       struct name                                                       \
       {                                                                 \
       public:                                                           \
-        name (const boost::uint_fast64_t& val);                         \
+        name (const base_id_type& val);                                 \
         bool operator< (const name& other) const;                       \
         bool operator== (const name& other) const;                      \
-        name& operator= (const boost::uint_fast64_t& val);              \
+        name& operator= (const base_id_type& val);                      \
         friend std::size_t hash_value (const name&);                    \
       private:                                                          \
-        boost::uint_fast64_t _val;                                      \
+        base_id_type _val;                                              \
       };                                                                \
       std::size_t hash_value (const name& val)
 
