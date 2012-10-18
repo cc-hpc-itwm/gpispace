@@ -588,8 +588,6 @@ namespace xml
         fhg::util::fmap<std::string, bool>( fhg::util::read_bool
                                           , optional (node, "internal")
                                           );
-      f.was_template = false;
-
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child

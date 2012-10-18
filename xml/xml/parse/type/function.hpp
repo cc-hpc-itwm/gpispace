@@ -522,8 +522,6 @@ namespace xml
 
         xml::parse::struct_t::set_type structs_resolved;
 
-        bool was_template;
-
         // ***************************************************************** //
 
         const fhg::util::maybe<std::string> name() const
@@ -585,7 +583,6 @@ namespace xml
             f = rhs.f;
             path = rhs.path;
             structs_resolved = rhs.structs_resolved;
-            was_template = rhs.was_template;
             _typenames = rhs._typenames;
           }
           return *this;
@@ -846,11 +843,6 @@ namespace xml
 
         void specialize (const state::type & state)
         {
-          if (was_template)
-            {
-              return;
-            }
-
           const type_map_type type_map_empty;
           const type_get_type type_get_empty;
           const xml::parse::struct_t::set_type known_empty;
@@ -868,11 +860,6 @@ namespace xml
                         , const state::type & state
                         )
         {
-          if (was_template)
-            {
-              return;
-            }
-
           for ( ports_type::iterator port (_in.elements().begin())
               ; port != _in.elements().end()
               ; ++port
