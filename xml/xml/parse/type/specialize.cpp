@@ -74,7 +74,7 @@ namespace xml
             ; ++s
             )
           {
-            const type_get_type::const_iterator pos (type_get.find (s->name));
+            const type_get_type::const_iterator pos (type_get.find (s->name()));
 
             if (pos == type_get.end())
               {
@@ -82,8 +82,8 @@ namespace xml
               }
             else
               {
-                boost::apply_visitor ( st::resolve (known_structs, s->path)
-                                     , s->sig
+                boost::apply_visitor ( st::resolve (known_structs, s->path())
+                                     , s->signature()
                                      );
 
                 parent_structs.push_back (*s);
@@ -101,16 +101,18 @@ namespace xml
             ; ++s
             )
         {
-          s->sig = boost::apply_visitor
-            ( xml::parse::struct_t::specialize (map, state)
-            , s->sig
+          s->signature
+            ( boost::apply_visitor
+              ( xml::parse::struct_t::specialize (map, state)
+              , s->signature()
+              )
             );
 
-          type_map_type::const_iterator pos (map.find (s->name));
+          type_map_type::const_iterator pos (map.find (s->name()));
 
           if (pos != map.end())
           {
-            s->name = pos->second;
+            s->name (pos->second);
           }
         }
       }

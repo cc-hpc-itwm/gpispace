@@ -463,7 +463,7 @@ namespace fhg
             void operator () (const XMLTYPE(use_type) & use) const
             {
               WEAVE(use::open, XMLTYPE(use_type))(use);
-              WEAVE(use::name, std::string)(use.name);
+              WEAVE(use::name, std::string)(use.name());
               WEAVEE(use::close)();
             }
 
@@ -547,8 +547,8 @@ namespace fhg
 
         FUN(_struct, ITVAL(XMLTYPE(structs_type)), s)
         {
-          WEAVE(_struct::open, std::string)(s.name);
-          boost::apply_visitor(visitor::_struct<State>(_state),s.sig);
+          WEAVE(_struct::open, std::string)(s.name());
+          boost::apply_visitor(visitor::_struct<State>(_state),s.signature());
           WEAVEE(_struct::close) ();
         }
 

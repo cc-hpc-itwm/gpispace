@@ -357,9 +357,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "redefinition of struct with name " << late.name
-            << " in " << late.path
-            << ", first definition was in " << early.path
+          s << "redefinition of struct with name " << late.name()
+            << " in " << late.path()
+            << ", first definition was in " << early.path()
             ;
 
           return s.str();
@@ -536,9 +536,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "struct with name " << late.name
-            << " in " << late.path
-            << " shadows definition from " << early.path
+          s << "struct with name " << late.name()
+            << " in " << late.path()
+            << " shadows definition from " << early.path()
             << " but this is forbidden, since it is a type used for port "
             << port_name
             ;

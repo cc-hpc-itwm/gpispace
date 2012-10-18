@@ -1,7 +1,6 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
 set (xml_parse_type_headers
-  template.hpp
   connect.hpp
   expression.hpp
   function.hpp
@@ -13,13 +12,13 @@ set (xml_parse_type_headers
   require.hpp
   specialize.hpp
   struct.hpp
+  template.hpp
   token.hpp
   transition.hpp
   use.hpp
 )
 
 set (xml_parse_type_fwd_headers
-  template.fwd.hpp
   connect.fwd.hpp
   expression.fwd.hpp
   function.fwd.hpp
@@ -31,11 +30,13 @@ set (xml_parse_type_fwd_headers
   require.fwd.hpp
   specialize.fwd.hpp
   struct.fwd.hpp
+  template.fwd.hpp
+  token.fwd.hpp
   transition.fwd.hpp
+  use.fwd.hpp
 )
 
 set (xml_parse_type_sources
-  template.cpp
   connect.cpp
   expression.cpp
   mod.cpp
@@ -44,6 +45,10 @@ set (xml_parse_type_sources
   port.cpp
   require.cpp
   specialize.cpp
+  struct.cpp
+  template.cpp
+  token.cpp
+  use.cpp
 )
 
 add_library (xml_parse_type

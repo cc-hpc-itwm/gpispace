@@ -495,7 +495,14 @@ namespace xml
 
         typenames_type _typenames;
 
-        ::fhg::xml::parse::util::id_type _id;
+        id::function _id;
+      public:
+        typedef boost::variant< id::transition
+                              , id::tmpl
+                              , boost::blank
+                              > id_parent;
+      public:
+        id_parent _parent;
 
         fhg::util::maybe<std::string> _name;
 
@@ -540,8 +547,10 @@ namespace xml
 
         function_type ( const type& _f
                       , const id::function& id
+                      , const id_parent& parent
                       )
           : _id (id)
+          , _parent (parent)
           , f (_f)
         { }
 
@@ -549,8 +558,10 @@ namespace xml
         //! expression. Needs a second id though, so no default ctor.
         function_type ( const id::expression& expression_id
                       , const id::function& id
+                      , const id_parent& parent
                       )
           : _id (id)
+          , _parent (parent)
           , f (expression_type (expression_id, id))
         { }
 
@@ -559,9 +570,14 @@ namespace xml
           return _id;
         }
 
+        const id_parent& parent() const
+        {
+          return _parent;
+        }
+
         bool is_same (const function_type& other) const
         {
-          return id() == other.id();
+          return id() == other.id() && parent() == other.parent();
         }
 
 #ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
@@ -746,8 +762,8 @@ namespace xml
               )
             {
               boost::apply_visitor
-                ( st::resolve (structs_resolved, pos->second.path)
-                , pos->second.sig
+                ( st::resolve (structs_resolved, pos->second.path())
+                , pos->second.signature()
                 );
             }
 
@@ -780,7 +796,7 @@ namespace xml
                 (dir, port.name(), port.type, path);
             }
 
-          return signature::type (sig->second.sig, sig->second.name);
+          return signature::type (sig->second.signature(), sig->second.name());
         };
 
         // ***************************************************************** //
@@ -1335,12 +1351,12 @@ namespace xml
 
           bool operator () (use_type & u) const
           {
-            boost::optional<function_type> fun (net.get_function (u.name));
+            boost::optional<function_type> fun (net.get_function (u.name()));
 
             if (!fun)
               {
                 throw error::unknown_function
-                  (u.name, trans.name(), trans.path);
+                  (u.name(), trans.name(), trans.path);
               }
 
             return xml::parse::type::find_module_calls (state, *fun, m, mcs);
@@ -2086,12 +2102,12 @@ namespace xml
 
         const path_t prefix (state.path_to_cpp());
         const path_t file
-          (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name));
+          (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name()));
 
         util::check_no_change_fstream stream (state, file);
 
         signature::cpp::cpp_header
-          (stream, s.sig, s.name, s.path, cpp_util::path::type());
+          (stream, s.signature(), s.name(), s.path(), cpp_util::path::type());
 
         stream.commit();
       }
