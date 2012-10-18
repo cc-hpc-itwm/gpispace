@@ -23,10 +23,11 @@ namespace gpi
   {
     namespace container
     {
-      manager_t::manager_t (std::string const & p)
+      manager_t::manager_t (std::string const & p, std::string const &mem_url)
        : m_state (ST_STOPPED)
        , m_connector (*this, p)
        , m_process_counter (0)
+       , m_default_memory_url (mem_url)
       {}
 
       manager_t::~manager_t ()
@@ -138,8 +139,7 @@ namespace gpi
         {
           global::memory_manager ().add_memory
             ( 0 // owner
-            , "gpi://"
-            //            , "sfs:///fhgfs/HPC/petry/sfs-test?create=true&size=1099511627776&persistent=true"
+            , m_default_memory_url
             , 1 // id
             );
         }
