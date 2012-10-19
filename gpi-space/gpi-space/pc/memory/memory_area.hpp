@@ -17,6 +17,8 @@
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
 #include <gpi-space/pc/memory/task.hpp>
+#include <gpi-space/pc/memory/memory_buffer.hpp>
+#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
 
 namespace gpi
 {
@@ -24,11 +26,11 @@ namespace gpi
   {
     namespace memory
     {
-      class buffer_pool_t;
-
       class area_t : boost::noncopyable
       {
       public:
+        typedef buffer_pool_t<buffer_t> memory_pool_t;
+
         virtual ~area_t ();
 
         enum grow_direction_t
@@ -139,7 +141,7 @@ namespace gpi
                                , area_t & dst_area
                                , gpi::pc::type::size_t amount
                                , gpi::pc::type::size_t queue
-                               , buffer_pool_t & buffer_pool
+                               , memory_pool_t & buffer_pool
                                , task_list_t & tasks
                                );
       protected:

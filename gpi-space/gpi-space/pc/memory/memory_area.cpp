@@ -12,8 +12,6 @@
 #include <gpi-space/pc/type/handle.hpp>
 
 #include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/pc/memory/memory_buffer.hpp>
-#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
 
 namespace gpi
 {
@@ -711,7 +709,7 @@ namespace gpi
                , gpi::pc::type::memory_location_t src_loc
                , gpi::pc::type::memory_location_t dst_loc
                , gpi::pc::type::size_t amount
-               , buffer_pool_t & buffer_pool
+               , area_t::memory_pool_t & buffer_pool
                )
             : m_src (src)
             , m_dst (dst)
@@ -768,7 +766,7 @@ namespace gpi
           gpi::pc::type::memory_location_t m_src_loc;
           gpi::pc::type::memory_location_t m_dst_loc;
           gpi::pc::type::size_t m_amount;
-          buffer_pool_t & m_pool;
+          area_t::memory_pool_t & m_pool;
         };
       }
 
@@ -844,7 +842,7 @@ namespace gpi
                                  , area_t & dst_area
                                  , gpi::pc::type::size_t amount
                                  , gpi::pc::type::size_t queue
-                                 , buffer_pool_t & buffer_pool
+                                 , memory_pool_t & buffer_pool
                                  , task_list_t & tasks
                                  )
       {

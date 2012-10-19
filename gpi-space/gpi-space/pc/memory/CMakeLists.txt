@@ -3,6 +3,7 @@
 set (hdrs
   memory_buffer.hpp
   memory_buffer_pool.hpp
+  memory_buffer_pool.ipp
   memory_area.hpp
   handle_generator.hpp
   manager.hpp

@@ -12,22 +12,22 @@ namespace gpi
   {
     namespace memory
     {
-      class buffer_t;
-
+      template <typename Buffer>
       class buffer_pool_t
       {
       public:
-        static const size_t DEF_BUFFER_SIZE = 4194304;
+        typedef Buffer buffer_type;
 
         buffer_pool_t ();
         ~buffer_pool_t ();
 
-        void add_buffer (size_t sz = DEF_BUFFER_SIZE);
+        void add (buffer_type *);
+        void del (buffer_type **);
 
-        buffer_t *acquire ();
-        void release (buffer_t *);
+        buffer_type *acquire ();
+        void release (buffer_type *);
       private:
-        typedef std::list<buffer_t*> buffer_list_t;
+        typedef std::list<buffer_type*> buffer_list_t;
 
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
