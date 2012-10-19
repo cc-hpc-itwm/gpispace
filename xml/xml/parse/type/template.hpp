@@ -70,6 +70,11 @@ namespace xml
                         , const state::type & state
                         );
       };
+
+      namespace dump
+      {
+        void dump (::fhg::util::xml::xmlstream&, const template_type&);
+      }
     }
   }
 }
