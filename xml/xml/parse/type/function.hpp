@@ -1040,15 +1040,15 @@ namespace xml
         stream << "LDFLAGS += -lboost_serialization"               << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
-        stream << "  CP = $(shell which cp)"                       << std::endl;
+        stream << "  CP = $(shell which cp 2>/dev/null)"           << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef MKDIR"                                   << std::endl;
-        stream << "  MKDIR = $(shell which mkdir)"                 << std::endl;
+        stream << "  MKDIR = $(shell which mkdir 2>/dev/null)"     << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef RM"                                      << std::endl;
-        stream << "  RM = $(shell which rm) -f"                    << std::endl;
+        stream << "  RM = $(shell which rm 2>/dev/null) -f"        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
