@@ -11,19 +11,23 @@ MAKEFLAGS += -r
 ###############################################################################
 
 ifndef TEE
-  TEE = $(shell which tee)
+  TEE = $(shell which tee 2>/dev/null)
 endif
 
 ifndef DOT
-  DOT = $(shell which dot) -Tps
+  DOT = $(shell which dot 2>/dev/null)
 endif
 
 ifndef RM
-  RM = $(shell which rm) -f
+  RM = $(shell which rm 2>/dev/null)
 endif
 
 ifndef TOUCH
-  TOUCH = $(shell which touch)
+  TOUCH = $(shell which touch 2>/dev/null)
+endif
+
+ifndef XMLLINT
+  XMLLINT = $(shell which xmllint 2>/dev/null)
 endif
 
 ###############################################################################
@@ -42,6 +46,10 @@ endif
 
 ifndef SDPA_LIBEXEC
   SDPA_LIBEXEC = $(SDPA_HOME)/libexec
+endif
+
+ifndef SDPA_XML_SCHEMA
+  SDPA_XML_SCHEMA = $(SDPA_HOME)/share/sdpa/xml/xsd/pnet.xsd
 endif
 
 ###############################################################################
@@ -82,7 +90,7 @@ endif
 
 ifndef DEP_XML
   ifndef XML
-    $(error variable XMLL undefined but needed to derive variable DEP_XML)
+    $(error variable XML undefined but needed to derive variable DEP_XML)
   else
     DEP_XML = $(XML).d
   endif
@@ -109,6 +117,14 @@ ifndef NET_VERIFICATION
     $(error variable NET undefined but needed to derive variable NET_VERIFICATION)
   else
     NET_VERIFICATION = $(NET).verification
+  endif
+endif
+
+ifndef NET_VALIDATION
+  ifndef XML
+    $(error variable XML undefined but needed to derive variable NET_VALIDATION)
+  else
+    NET_VALIDATION = $(NET).validation
   endif
 endif
 
@@ -184,6 +200,8 @@ PNETC_NOINLINE += $(PNETC)
 PNETC_NOINLINE += --no-inline true
 PNETC_NOINLINE += --synthesize-virtual-places true
 
+PNETC_LIST_DEPENDENCIES = $(PNETC) --list-dependencies /dev/stdout
+
 PNETPUT += $(addprefix -p ,$(PUT_PORT))
 PNETPUT += $(PNETPUT_OPTS)
 
@@ -203,9 +221,12 @@ WE_EXEC += $(addprefix -L,$(WE_EXEC_LIBPATHS))
 WE_EXEC += -o /dev/null
 WE_EXEC += $(WE_EXEC_OPTS)
 
+XMLLINT += --noout
+XMLLINT += --schema $(SDPA_XML_SCHEMA)
+
 ###############################################################################
 
-.PHONY: default ps net verify put gen lib run
+.PHONY: default ps net verify validate put gen lib run
 
 default: run
 
@@ -215,6 +236,7 @@ net: $(NET)
 put: $(PUT)
 gen: $(GEN)
 verify: $(NET_VERIFICATION)
+validate: $(NET_VALIDATION)
 
 ###############################################################################
 
@@ -243,25 +265,70 @@ $(NET_VERIFICATION): $(NET)
 
 ###############################################################################
 
+ifeq "$(XMLLINT)" ""
+
+$(NET_VALIDATION):
+	$(error Cannot validate: Missing 'xmllint'.)
+
+else
+
+$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
+	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2> $@
+
+endif
+
+###############################################################################
+
+ifeq "$(TOUCH)" ""
+
+$(GEN): $(DEP_XML) $(XML) $(DEP)
+	$(warning Missing 'touch'. Most probably some timestamps will be wrong.)
+	$(PNETC) -i $(XML) -o /dev/null -g $@
+
+else
+
 $(GEN): $(DEP_XML) $(XML) $(DEP)
 	$(PNETC) -i $(XML) -o /dev/null -g $@
 	$(TOUCH) $@
+
+endif
 
 lib: $(GEN)
 	$(MAKE) -C $(GEN)
 
 ###############################################################################
 
+ifeq "$(DOT)" ""
+
+$(PS):
+$(PS_NOINLINE):
+	$(error Cannot create postscript files: Missing 'dot'.)
+
+else
+
 $(PS): $(NET)
-	$(PNET2DOT) --input $^ | $(DOT) -o $@
+	$(PNET2DOT) --input $^ | $(DOT) -Tps -o $@
 
 $(PS_NOINLINE): $(NET_NOINLINE)
-	$(PNET2DOT) --input $^ | $(DOT) -o $@
+	$(PNET2DOT) --input $^ | $(DOT) -Tps -o $@
+
+endif
 
 ###############################################################################
 
+ifeq "$(TEE)" ""
+
 run: lib $(PUT)
 	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
+
+else
+
+run: lib $(PUT)
+	$(warning Missing 'tee'. Save output into $(OUT).)
+	$(warning To watch the output on the fly install 'tee'.)
+	$(WE_EXEC) --net $(PUT) 2>&1 > $(OUT)
+
+endif
 
 ###############################################################################
 
@@ -276,17 +343,27 @@ modinstall: lib
 
 .PHONY: clean
 
+ifeq "$(RM)" ""
+
 clean:
-	-$(RM) -r $(GEN)
-	-$(RM) $(NET)
-	-$(RM) $(PUT)
-	-$(RM) $(NET_NOINLINE)
-	-$(RM) $(PS)
-	-$(RM) $(PS_NOINLINE)
-	-$(RM) $(OUT)
-	-$(RM) $(DEP_XML)
-	-$(RM) $(NET_VERIFICATION)
-	-$(RM) *~
+	$(error Cannot clean: Missing 'rm'.)
+
+else
+
+clean:
+	-$(RM) -f -r $(GEN)
+	-$(RM) -f $(NET)
+	-$(RM) -f $(PUT)
+	-$(RM) -f $(NET_NOINLINE)
+	-$(RM) -f $(PS)
+	-$(RM) -f $(PS_NOINLINE)
+	-$(RM) -f $(OUT)
+	-$(RM) -f $(DEP_XML)
+	-$(RM) -f $(NET_VERIFICATION)
+	-$(RM) -f $(NET_VALIDATION)
+	-$(RM) -f *~
+
+endif
 
 ###############################################################################
 
@@ -301,6 +378,8 @@ help:
 	@echo "gen         generate code into gen"
 	@echo "lib         'gen' & build libs from code in gen"
 	@echo "run         'lib' & 'put' & execute workflow"
+	@echo
+	@echo "validate    validate the xml'
 	@echo
 	@echo "verify      'net' & verify the pnet"
 	@echo "ps          'net' & generate postscript"
@@ -320,25 +399,26 @@ help:
 showconfig:
 	@echo "*** Needed parameters:"
 	@echo
-	@echo "MAIN = $(MAIN)"
-	@echo
 	@echo "SDPA_HOME = $(SDPA_HOME)"
+	@echo
+	@echo "MAIN = $(MAIN)"
 	@echo
 	@echo "*** External programs:"
 	@echo
-	@echo "TEE   = $(TEE)"
-	@echo "DOT   = $(DOT)"
-	@echo "RM    = $(RM)"
-	@echo "TOUCH = $(TOUCH)"
-	@echo "MKDIR = $(MKDIR)"
-	@echo "CP    = $(CP)"
+	@echo "TEE     = $(TEE)"
+	@echo "DOT     = $(DOT)"
+	@echo "RM      = $(RM)"
+	@echo "TOUCH   = $(TOUCH)"
+	@echo "XMLLINT = $(XMLLINT)"
 	@echo
-	@echo "*** GPI-Space paths:"
+	@echo "*** GPI-Space paths and files:"
 	@echo
-	@echo "SDPA_INCLUDE = $(SDPA_INCLUDE)"
-	@echo "SDPA_BIN     = $(SDPA_BIN)"
-	@echo "SDPA_XML_LIB = $(SDPA_XML_LIB)"
-	@echo "SDPA_LIBEXEC = $(SDPA_LIBEXEC)"
+	@echo "SDPA_INCLUDE    = $(SDPA_INCLUDE)"
+	@echo "SDPA_BIN        = $(SDPA_BIN)"
+	@echo "SDPA_XML_LIB    = $(SDPA_XML_LIB)"
+	@echo "SDPA_LIBEXEC    = $(SDPA_LIBEXEC)"
+	@echo
+	@echo "SDPA_XML_SCHEMA = $(SDPA_XML_SCHEMA)"
 	@echo
 	@echo "*** Files:"
 	@echo
@@ -347,6 +427,7 @@ showconfig:
 	@echo "NET              = $(NET)"
 	@echo "NET_NOINLINE     = $(NET_NOINLINE)"
 	@echo "NET_VERIFICATION = $(NET_VERIFICATION)"
+	@echo "NET_VALIDATION   = $(NET_VALIDATION)"
 	@echo "PUT              = $(PUT)"
 	@echo "GEN              = $(GEN)"
 	@echo "OUT              = $(OUT)"
@@ -383,9 +464,11 @@ showconfig:
 	@echo
 	@echo "*** Derived commands:"
 	@echo
-	@echo "PNETC          = $(PNETC)"
-	@echo "PNETC_NOINLINE = $(PNETC_NOINLINE)"
-	@echo "PNET2DOT       = $(PNET2DOT)"
-	@echo "PNETPUT        = $(PNETPUT)"
-	@echo "PNETV          = $(PNETV)"
-	@echo "WE_EXEC        = $(WE_EXEC)"
+	@echo "PNETC                   = $(PNETC)"
+	@echo "PNETC_NOINLINE          = $(PNETC_NOINLINE)"
+	@echo "PNETC_LIST_DEPENDENCIES = $(PNETC_LIST_DEPENDENCIES)"
+	@echo "PNET2DOT                = $(PNET2DOT)"
+	@echo "PNETPUT                 = $(PNETPUT)"
+	@echo "PNETV                   = $(PNETV)"
+	@echo "WE_EXEC                 = $(WE_EXEC)"
+	@echo "XMLLINT                 = $(XMLLINT)"
