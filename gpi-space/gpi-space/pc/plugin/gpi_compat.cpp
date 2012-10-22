@@ -7,6 +7,7 @@
 #include "gpi.hpp"
 #include <gpi-space/pc/type/flags.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/unordered_map.hpp>
@@ -29,7 +30,9 @@ public:
   {
     gpi_compat = this;
 
-    clear_my_gpi_state ();
+    m_shm_hdl = 0;
+    m_shm_ptr = (void*)0;
+    m_shm_id = 0;
 
     try
     {
@@ -65,10 +68,8 @@ public:
     m_scratch_handle_name = name_prefix + "-com";
 
     api = fhg_kernel()->acquire<gpi::GPI>("gpi");
-    if (reinitialize_gpi_state() < 0)
-    {
-      LOG(WARN, "gpi plugin is not yet available, state initialization deferred!");
-    }
+
+    schedule_reinitialize_gpi ();
 
     FHG_PLUGIN_STARTED();
   }
@@ -103,7 +104,7 @@ public:
 
   int reinitialize_gpi_state ()
   {
-    lock_type gpi_mutex (m_gpi_state_mutex);
+    lock_type lock (m_gpi_state_mutex);
 
     if (! api->ping())
     {
@@ -115,7 +116,7 @@ public:
       }
     }
 
-    if (0 == m_shm_ptr)
+    if (0 == m_shm_ptr && m_shm_size > 0)
     {
       try
       {
@@ -134,6 +135,24 @@ public:
     }
 
     return 0;
+  }
+
+  void schedule_reinitialize_gpi ()
+  {
+    int ec = reinitialize_gpi_state ();
+    if (ec == -EAGAIN)
+    {
+      MLOG ( WARN
+                , "gpi plugin is not yet available, state initialization deferred!"
+                );
+
+      fhg_kernel()->schedule( "gpi_compat.setup"
+                            , boost::bind ( &GPICompatPluginImpl::schedule_reinitialize_gpi
+                                          , this
+                                          )
+                            , 2
+                            );
+    }
   }
 
   int ensure_gpi_state ()
@@ -157,6 +176,14 @@ public:
       }
     }
     while (ec == -EAGAIN);
+
+    if ( (ec == 0) && (m_shm_size > 0))
+    {
+      if (m_shm_hdl == (gpi::pc::type::handle_t)0)
+        MLOG (ERROR, "gpi state setup but shm_hdl == 0");
+      if (m_shm_ptr == 0)
+        MLOG (ERROR, "gpi state setup but shm_ptr == 0");
+    }
 
     return ec;
   }
@@ -184,7 +211,7 @@ private:
                            , m_segment_handle_name
                            , gpi::pc::F_EXCLUSIVE
                            );
-    m_shm_ptr = api->ptr(m_shm_hdl);
+    m_shm_ptr = api->ptr (m_shm_hdl);
 
     LOG(INFO, "successfully initialized gpi state");
 
@@ -195,6 +222,15 @@ private:
 
   void clear_my_gpi_state ()
   {
+    if (m_shm_id)
+    {
+      if (api->ping ())
+      {
+        try { api->free (m_shm_hdl); } catch (...) {}
+        try { api->unregister_segment (m_shm_id); } catch (...) {}
+      }
+    }
+
     m_shm_hdl = 0;
     m_shm_ptr = 0;
     m_shm_id  = 0;

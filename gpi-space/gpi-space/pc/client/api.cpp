@@ -85,7 +85,10 @@ namespace gpi
 
         if (m_connected)
         {
-          stop ();
+          if (ping ())
+            return;
+          else
+            stop ();
         }
 
         m_socket = open_socket (m_path);
