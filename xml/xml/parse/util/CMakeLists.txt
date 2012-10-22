@@ -4,6 +4,7 @@ set (xml_parse_util_headers
   cdata.hpp
   expect.hpp
   id_type.hpp
+  id_type_map.hpp
   mk_fstream.hpp
   name_element.hpp
   optional.hpp
@@ -20,11 +21,13 @@ set (xml_parse_util_headers
 
 set (xml_parse_util_fwd_headers
   id_type.fwd.hpp
+  id_type_map.fwd.hpp
 )
 
 set (xml_parse_util_sources
-  mk_fstream.cpp
   id_type.cpp
+  id_type_map.cpp
+  mk_fstream.cpp
 )
 
 add_library(xml_parse_util
