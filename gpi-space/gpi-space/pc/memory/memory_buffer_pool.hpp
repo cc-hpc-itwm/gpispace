@@ -25,6 +25,8 @@ namespace gpi
         void del (buffer_type **);
 
         buffer_type *acquire ();
+        buffer_type *try_acquire ();
+
         void release (buffer_type *);
       private:
         typedef std::list<buffer_type*> buffer_list_t;

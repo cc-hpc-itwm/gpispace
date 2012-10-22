@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 #include "memory_buffer_pool.hpp"
 
 #include <limits>
@@ -80,6 +82,23 @@ namespace gpi
           m_buffers.front (); m_buffers.pop_front ();
         ++m_acquire_counter;
         return buf;
+      }
+
+      template <typename B>
+      typename buffer_pool_t<B>::buffer_type *buffer_pool_t<B>::try_acquire ()
+      {
+        lock_type lock (m_mutex);
+        if (m_buffers.empty ())
+        {
+          return NULL;
+        }
+        else
+        {
+          typename buffer_pool_t<B>::buffer_type *buf =
+            m_buffers.front (); m_buffers.pop_front ();
+          ++m_acquire_counter;
+          return buf;
+        }
       }
 
       template <typename B>
