@@ -15,26 +15,6 @@ namespace xml
       // typedef xml::util::unique<template_type,id::tmpl>::elements_type templates_type;
       // typedef xml::util::unique<specialize_type,id::specialize>::elements_type specializes_type;
 
-      template<typename Net>
-        class function_resolve;
-
-      template<typename Net, typename Fun>
-        class function_specialize;
-
-      template<typename Net, typename Fun>
-        class function_sanity_check;
-
-      template<typename Net>
-        class function_type_check;
-
-      template<typename Net>
-        class function_distribute_function;
-
-      template<typename Activity, typename Net, typename Fun>
-        class function_synthesize;
-
-      class function_is_net;
-
       struct function_type;
 
       struct fun_info_type;
@@ -44,31 +24,6 @@ namespace xml
       // typedef boost::unordered_map<std::string,fun_infos_type> fun_info_map;
 
       // typedef boost::filesystem::path path_t;
-
-      namespace visitor
-      {
-        template<typename NET, typename TRANS>
-          class transition_find_module_calls;
-
-        struct port_with_type;
-
-        template<typename NET>
-          class find_module_calls;
-
-        class transition_struct_to_cpp;
-
-        template<typename NET>
-          class struct_to_cpp_visitor;
-      }
-
-      namespace dump
-      {
-        namespace visitor
-        {
-          template<typename NET>
-            class function_dump;
-        }
-      } // namespace dump
     }
   }
 }

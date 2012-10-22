@@ -10,8 +10,6 @@ namespace xml
     namespace type
     {
       struct port_type;
-
-      class port_type_check;
     }
   }
 }

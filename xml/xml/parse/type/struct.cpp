@@ -61,12 +61,12 @@ namespace xml
         return _path;
       }
 
-      inline bool operator == (const struct_t & a, const struct_t & b)
+      bool operator == (const struct_t & a, const struct_t & b)
       {
         return (a.name() == b.name()) && (a.signature() == b.signature());
       }
 
-      inline bool operator != (const struct_t & a, const struct_t & b)
+      bool operator != (const struct_t & a, const struct_t & b)
       {
         return !(a == b);
       }
