@@ -7,6 +7,7 @@
 
 #include <xml/parse/type/require.hpp>
 #include <xml/parse/util/id_type.hpp>
+#include <xml/parse/util/id_type_map.hpp>
 #include <xml/parse/warning.hpp>
 
 #include <fhg/util/counter.hpp>
@@ -167,6 +168,7 @@ namespace xml
         std::string _Opath_to_cpp;
 
         ::fhg::util::counter<id::base_id_type> _id_counter;
+        id_map::mapper _id_mapper;
 
         template<typename W>
         void generic_warn ( const W & w
@@ -373,6 +375,8 @@ namespace xml
         void add_options (boost::program_options::options_description & desc);
 
         id::base_id_type next_id();
+        const id_map::mapper& id_mapper() const;
+        id_map::mapper& id_mapper();
       };
 
       std::pair<std::string, std::string> reg_M (const std::string& s);
