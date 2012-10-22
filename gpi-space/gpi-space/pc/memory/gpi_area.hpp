@@ -65,9 +65,7 @@ namespace gpi
                            , task_list_t & tasks
                            );
       private:
-        void init ( gpi::pc::type::size_t num_com_buffers
-                  , gpi::pc::type::size_t com_buffer_size
-                  );
+        void init ();
 
         bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin

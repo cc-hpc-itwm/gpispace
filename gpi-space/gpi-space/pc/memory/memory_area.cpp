@@ -66,6 +66,8 @@ namespace gpi
         dtmmgr_finalize (&m_mmgr);
       }
 
+      void area_t::init () {}
+
       void area_t::reinit ()
       {
         dtmmgr_finalize (&m_mmgr);

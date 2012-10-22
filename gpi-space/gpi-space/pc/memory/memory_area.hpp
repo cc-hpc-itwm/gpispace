@@ -51,6 +51,8 @@ namespace gpi
         int type () const;
         gpi::pc::type::flags_t flags () const;
 
+        virtual void init ();
+
         // WORK HERE:
         //    this function *must not* be called from the dtor
         //    otherwise we endup calling pure virtual functions

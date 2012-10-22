@@ -260,6 +260,7 @@ namespace gpi
         memory_added (area->get_id ());
       }
 
+        area->init ();
       manager_t::area_ptr
       manager_t::get_area (const gpi::pc::type::segment_id_t mem_id)
       {

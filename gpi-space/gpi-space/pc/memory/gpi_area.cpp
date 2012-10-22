@@ -50,10 +50,12 @@ namespace gpi
             );
       }
 
-      void gpi_area_t::init ( gpi::pc::type::size_t num_com_buffers
-                            , gpi::pc::type::size_t com_buffer_size
-                            )
+      void gpi_area_t::init ()
       {
+        // TODO: make those member variables
+        static const size_t num_com_buffers = 8;
+        static const size_t com_buffer_size = 4 * (1<<20);
+
         // TODO: make  this lazy, just define  a maximum number  of buffers, but
         // try to allocate them only when actually needed.
         for (size_t i = 0; i < num_com_buffers; ++i)
@@ -571,7 +573,6 @@ namespace gpi
                                         , gpi_api.dma_ptr ()
                                         )
                         );
-        ((gpi_area_t*)area.get ())->init (numbuf, comsize);
         return area;
       }
     }
