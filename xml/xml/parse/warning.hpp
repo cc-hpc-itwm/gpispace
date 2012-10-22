@@ -17,6 +17,8 @@
 
 #include <boost/format.hpp>
 
+#include <we/type/value/show.hpp>
+
 namespace xml
 {
   namespace parse

@@ -2,6 +2,7 @@
 
 #include <xml/parse/type/struct.hpp>
 
+#include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
 
 #include <fhg/util/xml.hpp>
