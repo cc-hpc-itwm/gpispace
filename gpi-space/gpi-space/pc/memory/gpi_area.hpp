@@ -3,6 +3,8 @@
 
 #include <gpi-space/pc/type/segment_type.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
+#include <gpi-space/pc/memory/handle_buffer.hpp>
+#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
 
 namespace gpi
 {
@@ -46,6 +48,8 @@ namespace gpi
                                         , task_list_t & tasks
                                         );
       private:
+        typedef buffer_pool_t<handle_buffer_t> handle_pool_t;
+
         bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin
                             , const gpi::pc::type::size_t   range_size
@@ -67,6 +71,8 @@ namespace gpi
         gpi::pc::type::size_t m_total_memsize;
         gpi::pc::type::offset_t m_min_local_offset;
         gpi::pc::type::offset_t m_max_local_offset;
+
+        handle_pool_t m_com_handles; // local allocations that can be used to transfer data
       };
     }
   }

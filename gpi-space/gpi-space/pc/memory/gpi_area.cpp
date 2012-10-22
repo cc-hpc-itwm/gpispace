@@ -48,6 +48,34 @@ namespace gpi
             << m_min_local_offset << "," << m_max_local_offset
             << "]"
             );
+
+        // TODO: make  this lazy, just define  a maximum number  of buffers, but
+        // try to allocate them only when actually needed.
+        for (size_t i = 0; i < 2; ++i)
+        {
+          const std::string name =
+            "gpi-com-" + boost::lexical_cast<std::string>(i);
+          gpi::pc::type::handle_t com_hdl =
+            this->alloc ( GPI_PC_INVAL
+                        , (4 * 1<<20)
+                        , name
+                        , gpi::pc::F_EXCLUSIVE
+                        );
+          if (com_hdl)
+          {
+            gpi::pc::type::handle::descriptor_t desc =
+              descriptor (com_hdl);
+
+            MLOG (INFO, "adding new internal communication handle: " << desc);
+
+            m_com_handles.add
+              (new handle_buffer_t ( com_hdl
+                                   , desc.local_size
+                                   , (char*)m_ptr + desc.offset
+                                   )
+              );
+          }
+        }
       }
 
       gpi_area_t::~gpi_area_t ()
