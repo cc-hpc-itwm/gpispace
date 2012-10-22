@@ -3,6 +3,7 @@
 set (xml_parse_util_headers
   cdata.hpp
   expect.hpp
+  id_type.hpp
   mk_fstream.hpp
   name_element.hpp
   optional.hpp
