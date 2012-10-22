@@ -30,8 +30,12 @@ set (xml_parse_util_sources
   mk_fstream.cpp
 )
 
-add_library(xml_parse_util
+add_library (xml_parse_util
   ${xml_parse_util_sources}
+)
+
+target_link_libraries (xml_parse_util
+  fhg-util
 )
 
 install (FILES ${xml_parse_util_headers} ${xml_parse_util_fwd_headers}
