@@ -4,8 +4,8 @@
 
 #include <pnete/data/handle/net.hpp>
 
-//! \todo Only include transition.hpp and net.hpp?
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/transition.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
 

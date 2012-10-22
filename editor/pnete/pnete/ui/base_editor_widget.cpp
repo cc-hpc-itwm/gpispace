@@ -5,8 +5,6 @@
 #include <pnete/data/internal.hpp>
 #include <pnete/data/change_manager.hpp>
 
-#include <xml/parse/types.hpp>
-
 namespace fhg
 {
   namespace pnete

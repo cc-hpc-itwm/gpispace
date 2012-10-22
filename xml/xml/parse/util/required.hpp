@@ -5,7 +5,6 @@
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/rapidxml/types.hpp>
-#include <xml/parse/types.hpp>
 
 #include <string>
 

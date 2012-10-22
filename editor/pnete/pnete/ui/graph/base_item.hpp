@@ -15,6 +15,8 @@
 #include <pnete/ui/graph/style/type.hpp>
 #include <pnete/ui/graph/mode.hpp>
 
+#include <we/type/property.hpp>
+
 class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
 

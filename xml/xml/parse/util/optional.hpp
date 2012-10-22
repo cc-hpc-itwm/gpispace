@@ -5,7 +5,6 @@
 
 #include <fhg/util/maybe.hpp>
 #include <xml/parse/rapidxml/types.hpp>
-#include <xml/parse/types.hpp>
 
 #include <string>
 

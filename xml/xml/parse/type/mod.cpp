@@ -1,8 +1,5 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-//! \todo Remove this as soon as including function.hpp is sufficient.
-#include <xml/parse/types.hpp>
-
 #include <xml/parse/type/mod.hpp>
 
 #include <fhg/util/xml.hpp>

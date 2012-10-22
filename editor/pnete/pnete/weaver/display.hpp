@@ -3,8 +3,6 @@
 #ifndef _FHG_PNETE_WEAVER_DISPLAY_HPP
 #define _FHG_PNETE_WEAVER_DISPLAY_HPP 1
 
-#include <xml/parse/types.hpp>
-
 #include <pnete/data/proxy.hpp>
 
 #include <pnete/weaver/weaver.hpp>

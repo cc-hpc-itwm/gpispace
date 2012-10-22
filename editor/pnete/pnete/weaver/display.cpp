@@ -12,8 +12,6 @@
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
 
-#include <xml/parse/types.hpp>
-
 #include <QtGlobal>
 
 namespace fhg

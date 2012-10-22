@@ -3,14 +3,27 @@
 #ifndef _XML_PARSE_PARSER_HPP
 #define _XML_PARSE_PARSER_HPP
 
-#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
-#include <xml/parse/rapidxml/1.13/rapidxml_utils.hpp>
+#include <xml/parse/rapidxml/types.hpp>
 
 #include <xml/parse/util.hpp>
 
+#include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/port.hpp>
+#include <xml/parse/type/specialize.hpp>
+#include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/template.hpp>
+#include <xml/parse/type/token.hpp>
+#include <xml/parse/type/transition.hpp>
+#include <xml/parse/type/use.hpp>
+
 #include <xml/parse/error.hpp>
 #include <xml/parse/warning.hpp>
-#include <xml/parse/types.hpp>
 #include <xml/parse/state.hpp>
 
 #include <xml/parse/headerlist.hpp>

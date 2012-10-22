@@ -2,8 +2,6 @@
 
 #include <pnete/ui/port_list_widget.hpp>
 
-#include <xml/parse/types.hpp>
-
 #include <QHeaderView>
 #include <QStandardItem>
 #include <QStandardItemModel>

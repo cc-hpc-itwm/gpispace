@@ -2,10 +2,8 @@
 
 #include <pnete/data/handle/place.hpp>
 
-#include <pnete/data/handle/net.hpp>
-
-//! \todo Only include place.hpp and net.hpp?
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
 

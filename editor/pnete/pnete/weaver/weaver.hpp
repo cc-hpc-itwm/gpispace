@@ -3,9 +3,20 @@
 #ifndef _PNETE_TRAVERSE_WEAVER_HPP
 #define _PNETE_TRAVERSE_WEAVER_HPP 1
 
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/port.hpp>
+#include <xml/parse/type/specialize.hpp>
+#include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
-#include <xml/parse/parser.hpp>
+#include <xml/parse/type/token.hpp>
+#include <xml/parse/type/transition.hpp>
+#include <xml/parse/type/use.hpp>
 
 #include <we/type/signature.hpp>
 

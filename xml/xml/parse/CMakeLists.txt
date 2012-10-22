@@ -5,7 +5,6 @@ set (hdrs
   headergen.hpp
   parser.hpp
   state.hpp
-  types.hpp
   type_map_type.hpp
   util.hpp
   warning.hpp
