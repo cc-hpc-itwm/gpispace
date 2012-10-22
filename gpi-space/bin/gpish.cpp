@@ -92,23 +92,17 @@ struct my_state_t
       return -1;
 
     // register segment
-    m_shm_com = capi.register_segment ( "gpish"
+    m_shm_com = capi.register_segment ( "gpish-" + boost::lexical_cast<std::string>(getpid ())
                                       , m_com_size
                                       , gpi::pc::F_EXCLUSIVE
                                       | gpi::pc::F_FORCE_UNLINK
                                       );
     m_shm_com_hdl = capi.alloc ( m_shm_com
                                , m_com_size
-                               , "gpish-shm-com"
+                               , "gpish-"+boost::lexical_cast<std::string>(getpid ())
                                , gpi::pc::F_EXCLUSIVE
                                );
     m_shm_com_ptr = (char*)capi.ptr(m_shm_com_hdl);
-
-    m_gpi_com_hdl = capi.alloc ( 1 // GPI
-                               , m_com_size
-                               , "gpish-gpi-com"
-                               , 0
-                               );
 
     return 0;
   }
@@ -116,7 +110,6 @@ struct my_state_t
   char*  com_buffer() { return m_shm_com_ptr; }
   size_t com_size() const   { return m_com_size; }
   gpi::pc::type::handle_t shm_com_hdl() const { return m_shm_com_hdl; }
-  gpi::pc::type::handle_t gpi_com_hdl() const { return m_gpi_com_hdl; }
 
   fs::path socket_dir;
   gpi::pc::client::api_t capi;
@@ -125,7 +118,6 @@ private:
   gpi::pc::type::segment_id_t m_shm_com;
   gpi::pc::type::handle_t     m_shm_com_hdl;
   char                       *m_shm_com_ptr;
-  gpi::pc::type::handle_t     m_gpi_com_hdl;
 };
 
 static void print_progress( FILE *fp
@@ -611,7 +603,6 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
   typedef boost::posix_time::ptime time_type;
   time_type timer_start = boost::posix_time::microsec_clock::local_time();
 
-  gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
 
   const std::size_t total_to_write =
@@ -624,12 +615,8 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     std::size_t to_write = std::min( sh.state().com_size()
                                    , d.size - src.offset
                                    );
-    // copy&wait to gpi_com area
-    sh.state().capi.memcpy(gpi_com_buf, src,         to_write, 0);
-    sh.state().capi.wait(0);
 
-    // copy&wait to shm_com area
-    sh.state().capi.memcpy(shm_com_buf, gpi_com_buf, to_write, 0);
+    sh.state().capi.memcpy (shm_com_buf, src, to_write, 0);
     sh.state().capi.wait(0);
 
     ofs.write(sh.state().com_buffer(), to_write);
@@ -725,7 +712,6 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   // read data chunk from file to shm
 
   std::size_t read_count = 0;
-  gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
 
   gpi::pc::type::handle::descriptor_t handle_descriptor;
@@ -746,13 +732,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
       ifs.read(sh.state().com_buffer(), to_read);
       std::size_t read_bytes = ifs.gcount();
 
-      // copy&wait to gpi_com area
-      sh.state().capi.memcpy(gpi_com_buf, shm_com_buf, read_bytes, 0);
-      sh.state().capi.wait(0);
-
-      // copy&wait to actual dst
-      sh.state().capi.memcpy(dst,         gpi_com_buf, read_bytes, 0);
-      sh.state().capi.wait(0);
+      sh.state ().capi.memcpy (dst, shm_com_buf, read_bytes, 0);
+      sh.state ().capi.wait (0);
 
       read_count += read_bytes;
       dst.offset += read_bytes;
