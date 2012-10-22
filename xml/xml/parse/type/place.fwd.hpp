@@ -14,9 +14,6 @@ namespace xml
   {
     namespace type
     {
-      class default_construct_value;
-      class construct_value;
-
       // typedef std::list<value::type> values_type;
       // typedef std::list<token_type> tokens_type;
 

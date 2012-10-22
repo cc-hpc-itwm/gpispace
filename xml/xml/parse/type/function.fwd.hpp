@@ -16,14 +16,6 @@ namespace xml
       // typedef xml::util::unique<specialize_type,id::specialize>::elements_type specializes_type;
 
       struct function_type;
-
-      struct fun_info_type;
-
-      // typedef boost::unordered_set<fun_info_type> fun_infos_type;
-
-      // typedef boost::unordered_map<std::string,fun_infos_type> fun_info_map;
-
-      // typedef boost::filesystem::path path_t;
     }
   }
 }

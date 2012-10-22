@@ -15,11 +15,6 @@ namespace xml
       // typedef std::list<std::string> expressions_type;
 
       struct expression_type;
-
-      namespace visitor
-      {
-        class join;
-      }
     }
   }
 }
