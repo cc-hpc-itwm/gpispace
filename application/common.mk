@@ -379,7 +379,7 @@ help:
 	@echo "lib         'gen' & build libs from code in gen"
 	@echo "run         'lib' & 'put' & execute workflow"
 	@echo
-	@echo "validate    validate the xml'
+	@echo "validate    validate the xml"
 	@echo
 	@echo "verify      'net' & verify the pnet"
 	@echo "ps          'net' & generate postscript"
