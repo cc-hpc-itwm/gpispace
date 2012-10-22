@@ -2,13 +2,14 @@
 
 #include <xml/parse/type/transition.hpp>
 
-#include <xml/parse/state.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/use.hpp>
-#include <xml/parse/util/property.hpp>
 
+#include <xml/parse/state.hpp>
 #include <xml/parse/type/dumps.hpp>
+#include <xml/parse/util/property.hpp>
+#include <xml/parse/util/weparse.hpp>
 
 #include <boost/variant.hpp>
 

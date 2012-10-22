@@ -9,9 +9,10 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
-#include <xml/parse/util/property.hpp>
 
 #include <xml/parse/type/dumps.hpp>
+#include <xml/parse/util/property.hpp>
+#include <xml/parse/util/weparse.hpp>
 
 #include <fhg/util/cpp.hpp>
 

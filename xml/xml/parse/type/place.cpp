@@ -4,6 +4,7 @@
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/util/weparse.hpp>
 
 #include <fhg/util/xml.hpp>
 
