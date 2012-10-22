@@ -11,7 +11,6 @@ namespace xml
   {
     namespace state
     {
-
       namespace fs = boost::filesystem;
       namespace property = we::type::property;
       namespace optimize = we::type::optimize;
@@ -491,7 +490,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      namespace po = boost::program_options;
 
       void type::check_for_include_loop(const fs::path& path) const
       {
@@ -508,6 +506,7 @@ namespace xml
         }
       }
 
+      namespace po = boost::program_options;
 
       void type::add_options (po::options_description & desc)
       {

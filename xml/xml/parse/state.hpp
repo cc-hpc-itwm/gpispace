@@ -352,10 +352,10 @@ namespace xml
           return generic_parse<T> (parse, boost::filesystem::path (file));
         }
 
-        template<typename T>
-        T generic_include ( boost::function<T (std::istream &, type &)> parse
         void check_for_include_loop (const fs::path& path) const;
 
+        template<typename T>
+        T generic_include ( boost::function<T (std::istream &, type &)> parse
                           , const std::string & file
                           )
         {
