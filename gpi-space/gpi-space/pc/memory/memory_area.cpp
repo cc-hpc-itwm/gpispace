@@ -43,7 +43,7 @@ namespace gpi
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::flags_t flags
                      )
-        : m_descriptor ( (gpi::pc::type::id_t (-1))
+        : m_descriptor ( GPI_PC_INVAL
                        , type
                        , creator
                        , name
@@ -245,7 +245,7 @@ namespace gpi
         hdl.local_size = local_size;
         hdl.name = name;
         hdl.offset = offset;
-        hdl.creator = (gpi::pc::type::process_id_t)(-1);
+        hdl.creator = GPI_PC_INVAL;
         hdl.flags = gpi::pc::F_GLOBAL | gpi::pc::F_PERSISTENT;
 
         internal_alloc (hdl);

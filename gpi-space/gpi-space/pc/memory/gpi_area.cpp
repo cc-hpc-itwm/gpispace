@@ -358,7 +358,7 @@ namespace gpi
         using namespace gpi::pc;
 
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        area_ptr_t area (new gpi_area_t ( 0
+        area_ptr_t area (new gpi_area_t ( GPI_PC_INVAL
                                         , "GPI"
                                         , gpi_api.memory_size ()
                                         , gpi::pc::F_PERSISTENT
