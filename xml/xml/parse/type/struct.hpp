@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_TYPE_STRUCT_HPP
 #define _XML_PARSE_TYPE_STRUCT_HPP
 
-#include <xml/parse/state.hpp>
+#include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/id_type.hpp>
 

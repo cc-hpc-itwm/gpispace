@@ -2,6 +2,8 @@
 
 #include <xml/parse/type/struct.hpp>
 
+#include <xml/parse/state.hpp>
+
 #include <fhg/util/xml.hpp>
 
 #include <boost/unordered_map.hpp>
