@@ -24,7 +24,7 @@ namespace xml
       }
       boost::optional<type_map_type&> function_with_mapping_type::type_map()
       {
-        return _type
+        return _type_map;
       }
 
       net_type::net_type (const id::net& id, const id::function& parent)
