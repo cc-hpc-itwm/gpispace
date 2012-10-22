@@ -2,9 +2,15 @@
 
 #include <xml/parse/type/expression.hpp>
 
+#include <xml/parse/type/function.hpp>
+
 #include <fhg/util/join.hpp>
 #include <fhg/util/split.hpp> // fhg::util::lines
 #include <fhg/util/xml.hpp>
+
+#include <stdexcept>
+
+#include <boost/variant.hpp>
 
 namespace xml
 {
@@ -104,36 +110,36 @@ namespace xml
         }
       }
 
-      // namespace
-      // {
-      //   class join_visitor : public boost::static_visitor<void>
-      //   {
-      //   private:
-      //     const expression_type & e;
+      namespace
+      {
+        class join_visitor : public boost::static_visitor<void>
+        {
+        private:
+          const expression_type & e;
 
-      //   public:
-      //     join_visitor (const expression_type & _e) : e(_e) {}
+        public:
+          join_visitor (const expression_type & _e) : e(_e) {}
 
-      //     void operator () (expression_type & x) const
-      //     {
-      //       x.expressions().insert ( x.expressions().end()
-      //                              , e.expressions().begin()
-      //                              , e.expressions().end()
-      //                              );
-      //     }
+          void operator () (expression_type & x) const
+          {
+            x.expressions().insert ( x.expressions().end()
+                                   , e.expressions().begin()
+                                   , e.expressions().end()
+                                   );
+          }
 
-      //     template<typename T>
-      //     void operator () (T &) const
-      //     {
-      //       throw std::runtime_error ("BUMMER: join for non expression!");
-      //     }
-      //   };
-      // }
+          template<typename T>
+          void operator () (T &) const
+          {
+            throw std::runtime_error ("BUMMER: join for non expression!");
+          }
+        };
+      }
 
-      // void join (const expression_type& e, function_type::type& fun)
-      // {
-      //   boost::apply_visitor (join_visitor (e), f);
-      // }
+      void join (const expression_type& e, function_type& fun)
+      {
+        boost::apply_visitor (join_visitor (e), fun.f);
+      }
     }
   }
 }

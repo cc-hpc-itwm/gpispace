@@ -59,65 +59,100 @@ namespace xml
         }
       }
 
-      port_type_check::port_type_check ( const std::string & _direction
-                                       , const port_type & _port
-                                       , const boost::filesystem::path & _path
-                                       , const state::type & _state
-                                       )
-        : direction (_direction)
-        , port (_port)
-        , path (_path)
-        , state (_state)
-      {}
-
-      void port_type_check::operator () (const net_type & net) const
+      namespace
       {
-        if (not port.place)
+        class port_type_check_visitor : public boost::static_visitor<void>
         {
-          if (direction == "in")
-          {
-            state.warn
-              (warning::port_not_connected (direction, port.name(), path));
-          }
-          else
-          {
-            throw error::port_not_connected (direction, port.name(), path);
-          }
-        }
-        else
-        {
-          boost::optional<place_type> place
-            (net.get_place (*port.place));
+        private:
+          const std::string & direction;
+          const port_type & port;
+          const boost::filesystem::path & path;
+          const state::type & state;
 
-          if (!place)
-          {
-            throw error::port_connected_place_nonexistent
-              (direction, port.name(), *port.place, path);
-          }
+        public:
+          port_type_check_visitor ( const std::string & _direction
+                                  , const port_type & _port
+                                  , const boost::filesystem::path & _path
+                                  , const state::type & _state
+                                  )
+            : direction (_direction)
+            , port (_port)
+            , path (_path)
+            , state (_state)
+          { }
 
-          if (place->type != port.type)
-          {
-            throw error::port_connected_type_error ( direction
-                                                   , port
-                                                   , *place
-                                                   , path
-                                                   );
-          }
 
-          if (direction == "tunnel")
+          void operator () (const net_type & net) const
           {
-            if (not place->is_virtual())
+            if (not port.place)
             {
-              throw
-                error::tunnel_connected_non_virtual (port, *place, path);
+              if (direction == "in")
+              {
+                state.warn
+                  (warning::port_not_connected (direction, port.name(), path));
+              }
+              else
+              {
+                throw error::port_not_connected (direction, port.name(), path);
+              }
             }
-
-            if (port.name() != place->name())
+            else
             {
-              throw error::tunnel_name_mismatch (port, *place, path);
+              boost::optional<place_type> place
+                (net.get_place (*port.place));
+
+              if (!place)
+              {
+                throw error::port_connected_place_nonexistent
+                  (direction, port.name(), *port.place, path);
+              }
+
+              if (place->type != port.type)
+              {
+                throw error::port_connected_type_error ( direction
+                                                       , port
+                                                       , *place
+                                                       , path
+                                                       );
+              }
+
+              if (direction == "tunnel")
+              {
+                if (not place->is_virtual())
+                {
+                  throw
+                    error::tunnel_connected_non_virtual (port, *place, path);
+                }
+
+                if (port.name() != place->name())
+                {
+                  throw error::tunnel_name_mismatch (port, *place, path);
+                }
+              }
             }
           }
-        }
+
+          template<typename T>
+          void operator () (const T &) const
+          {
+            if (port.place)
+            {
+              throw error::port_connected_place_nonexistent
+                (direction, port.name(), *port.place, path);
+            }
+          }
+        };
+      }
+
+      void port_type_check ( const std::string & direction
+                           , const port_type & port
+                           , const boost::filesystem::path & path
+                           , const state::type & state
+                           , const function_type& fun
+                           )
+      {
+        boost::apply_visitor
+          (port_type_check_visitor (direction, port, path, state), fun.f);
       }
 
       namespace dump

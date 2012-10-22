@@ -39,7 +39,9 @@ set (xml_parse_type_fwd_headers
 set (xml_parse_type_sources
   connect.cpp
   expression.cpp
+  function.cpp
   mod.cpp
+  net.cpp
   place.cpp
   place_map.cpp
   port.cpp
@@ -48,6 +50,7 @@ set (xml_parse_type_sources
   struct.cpp
   template.cpp
   token.cpp
+  transition.cpp
   use.cpp
 )
 

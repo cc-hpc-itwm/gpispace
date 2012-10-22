@@ -5,6 +5,7 @@
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/state.fwd.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/id_type.hpp>
@@ -56,38 +57,12 @@ namespace xml
         we::type::property::type prop;
       };
 
-      // ******************************************************************* //
-
-      //! \todo This should be in the cpp file only.
-      class port_type_check : public boost::static_visitor<void>
-      {
-      private:
-        const std::string & direction;
-        const port_type & port;
-        const boost::filesystem::path & path;
-        const state::type & state;
-
-      public:
-        port_type_check ( const std::string & _direction
-                        , const port_type & _port
-                        , const boost::filesystem::path & _path
-                        , const state::type & _state
-                        );
-
-        void operator () (const net_type & net) const;
-
-        template<typename T>
-          void operator () (const T &) const
-        {
-          if (port.place)
-            {
-              throw error::port_connected_place_nonexistent
-                (direction, port.name(), *port.place, path);
-            }
-        }
-      };
-
-      // ******************************************************************* //
+      void port_type_check ( const std::string & direction
+                           , const port_type & port
+                           , const boost::filesystem::path & path
+                           , const state::type & state
+                           , const function_type& fun
+                           );
 
       namespace dump
       {

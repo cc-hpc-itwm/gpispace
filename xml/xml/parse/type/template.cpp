@@ -1,7 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <xml/parse/types.hpp>
 #include <xml/parse/type/template.hpp>
+
+#include <xml/parse/type/net.hpp>
 
 #include <boost/foreach.hpp>
 

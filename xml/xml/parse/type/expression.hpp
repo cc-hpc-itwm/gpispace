@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_TYPE_EXPRESSION_HPP
 #define _XML_PARSE_TYPE_EXPRESSION_HPP
 
-// #include <xml/parse/type/function.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 
 #include <xml/parse/util/id_type.hpp>
 
@@ -11,9 +11,6 @@
 
 #include <string>
 #include <list>
-#include <stdexcept> // for visitor only
-
-#include <boost/variant.hpp> // for visitor only
 
 namespace xml
 {
@@ -60,35 +57,7 @@ namespace xml
                   );
       }
 
-      //! \todo Only expose void join (function_type::type);
-      //! \note This is currently not possible due to inclusion loops
-      //! in function.hpp
-      // void join (const expression_type& e, function_type::type& fun)
-      namespace visitor
-      {
-        class join : public boost::static_visitor<void>
-        {
-        private:
-          const expression_type & e;
-
-        public:
-          join (const expression_type & _e) : e(_e) {}
-
-          void operator () (expression_type & x) const
-          {
-            x.expressions().insert ( x.expressions().end()
-                                   , e.expressions().begin()
-                                   , e.expressions().end()
-                                   );
-          }
-
-          template<typename T>
-          void operator () (T &) const
-          {
-            throw std::runtime_error ("BUMMER: join for non expression!");
-          }
-        };
-      }
+      void join (const expression_type& e, function_type& fun);
     }
   }
 }

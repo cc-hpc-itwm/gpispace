@@ -96,7 +96,7 @@ main (int argc, char ** argv)
   {
     xml::parse::type::function_type f (xml::parse::frontend (state, input));
 
-    we::transition_t trans (f.synthesize<we::activity_t> (state));
+    we::transition_t trans (f.synthesize (state));
 
     we::type::optimize::optimize (trans, state.options_optimize());
 
