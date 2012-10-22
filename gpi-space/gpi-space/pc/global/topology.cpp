@@ -719,10 +719,13 @@ namespace gpi
           }
           else if (av[0] == "+ERR")
           {
+            std::vector<std::string> msg_vec ( av.begin ()+2
+                                             , av.end ()
+                                             );
             LOG ( WARN
                 , "error on node " << rank
                 << ": " << av [1]
-                << ": " << av [2]
+                << ": " << boost::algorithm::join (msg_vec, " ")
                 );
           }
           else if (av [0] == "GO")
