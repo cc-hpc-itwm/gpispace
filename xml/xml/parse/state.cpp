@@ -2,6 +2,7 @@
 
 #include <xml/parse/state.hpp>
 
+#include <xml/parse/error.hpp>
 #include <xml/parse/util/weparse.hpp>
 
 namespace xml
@@ -491,6 +492,22 @@ namespace xml
       // ***************************************************************** //
 
       namespace po = boost::program_options;
+
+      void type::check_for_include_loop(const fs::path& path) const
+      {
+        for ( in_progress_type::const_iterator pos (_in_progress.begin())
+            ; pos != _in_progress.end()
+            ; ++pos
+            )
+        {
+          if (*pos == path)
+          {
+            throw error::include_loop<in_progress_type::const_iterator>
+              ("generic_include", pos, _in_progress.end());
+          }
+        }
+      }
+
 
       void type::add_options (po::options_description & desc)
       {

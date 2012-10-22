@@ -5,7 +5,6 @@
 
 #include <xml/parse/state.fwd.hpp>
 
-#include <xml/parse/error.hpp>
 #include <xml/parse/type/require.hpp>
 #include <xml/parse/util/id_type.hpp>
 #include <xml/parse/warning.hpp>
@@ -355,6 +354,8 @@ namespace xml
 
         template<typename T>
         T generic_include ( boost::function<T (std::istream &, type &)> parse
+        void check_for_include_loop (const fs::path& path) const;
+
                           , const std::string & file
                           )
         {
@@ -362,17 +363,7 @@ namespace xml
 
           _dependencies.insert (path);
 
-          for ( in_progress_type::const_iterator pos (_in_progress.begin())
-              ; pos != _in_progress.end()
-              ; ++pos
-              )
-            {
-              if (*pos == path)
-                {
-                  throw error::include_loop<in_progress_type::const_iterator>
-                    ("generic_include", pos, _in_progress.end());
-                }
-            }
+          check_for_include_loop (path);
 
           return generic_parse<T> (parse, path);
         };
