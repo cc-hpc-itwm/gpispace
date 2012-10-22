@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   BOOST_CHECK_EQUAL (desc.flags, 0u);
 
   gpi::pc::type::handle::list_t list;
-  area.list_allocations (list);
+  area.list_allocations (1, list);
   BOOST_CHECK_EQUAL (list.size(), 1u);
 
   std::cout << "descriptor = " << desc << std::endl;

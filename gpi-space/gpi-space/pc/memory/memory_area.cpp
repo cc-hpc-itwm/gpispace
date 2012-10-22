@@ -571,7 +571,9 @@ namespace gpi
         }
       }
 
-      void area_t::list_allocations (gpi::pc::type::handle::list_t & list) const
+      void area_t::list_allocations ( const gpi::pc::type::process_id_t proc
+                                    , gpi::pc::type::handle::list_t & list
+                                    ) const
       {
         lock_type lock (m_mutex);
 
@@ -580,6 +582,13 @@ namespace gpi
             ; ++pos
             )
         {
+          if (  (pos->second.flags & gpi::pc::F_EXCLUSIVE)
+             && (pos->second.creator != proc)
+             )
+          {
+            continue;
+          }
+
           list.push_back (pos->second);
         }
       }

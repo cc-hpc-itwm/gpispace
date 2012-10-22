@@ -377,9 +377,9 @@ namespace gpi
       {
 //        check_permissions (permission::list_allocations_t (proc_id, seg_id));
         if (seg_id == gpi::pc::type::segment::SEG_INVAL)
-          global::memory_manager().list_allocations(list);
+          global::memory_manager().list_allocations(proc_id, list);
         else
-          global::memory_manager().list_allocations (seg_id, list);
+          global::memory_manager().list_allocations (proc_id, seg_id, list);
       }
 
       gpi::pc::type::queue_id_t
