@@ -22,15 +22,6 @@ namespace xml
       // typedef std::list<key_value_t> key_values_t;
 
       struct type;
-
-      namespace detail
-      {
-        // typedef std::pair<std::string, std::string> pair_type;
-
-        // inline pair_type mk (const std::string & param);
-
-        // inline pair_type reg_M (const std::string& s);
-      }
     }
   }
 }

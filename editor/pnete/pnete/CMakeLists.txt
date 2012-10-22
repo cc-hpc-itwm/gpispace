@@ -30,6 +30,7 @@ target_link_libraries ( pnete
                         ${UTIL_LIBRARIES}
                         ${Boost_LIBRARIES}
                         ${QT_LIBRARIES}
+                        xml_parse
                         xml_parse_type
                         xml_parse_util
                       )

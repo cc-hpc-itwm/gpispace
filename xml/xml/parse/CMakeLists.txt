@@ -1,3 +1,4 @@
+# bernd.loerwald@itwm.fraunhofer.de
 
 set (hdrs
   error.hpp
@@ -9,6 +10,20 @@ set (hdrs
   util.hpp
   warning.hpp
   )
+
+set (fwd_hdrs
+  state.fwd.hpp
+)
+
+set (sources
+  state.cpp
+)
+
+add_library (xml_parse
+  ${sources}
+)
+
+target_link_libraries(xml_parse  ${Boost_LIBRARIES})
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
                 ${CMAKE_CURRENT_BINARY_DIR}/includes.hpp
@@ -42,6 +57,7 @@ target_link_libraries(pnetc ${WE_LIBRARIES})
 target_link_libraries(pnetc  ${Boost_LIBRARIES})
 target_link_libraries (pnetc xml_parse_type)
 target_link_libraries (pnetc xml_parse_util)
+target_link_libraries (pnetc xml_parse)
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 
@@ -52,13 +68,14 @@ if (ENABLE_STATIC_BINARIES)
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
   target_link_libraries (pnetc.static xml_parse_type)
   target_link_libraries (pnetc.static xml_parse_util)
+  target_link_libraries (pnetc.static xml_parse)
 
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
 
   install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
 endif (ENABLE_STATIC_BINARIES)
 
-install (FILES ${hdrs} ${headerlist_hpp}
+install (FILES ${hdrs} ${headerlist_hpp} ${fwd_hdrs}
   DESTINATION include/xml/parse
   COMPONENT headers)
 
