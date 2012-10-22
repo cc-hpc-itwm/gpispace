@@ -3,12 +3,12 @@
 #ifndef _XML_PARSE_UTIL_NAME_ELEMENT_HPP
 #define _XML_PARSE_UTIL_NAME_ELEMENT_HPP
 
-#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
-
-#include <xml/parse/types.hpp>
 #include <xml/parse/error.hpp>
-#include <xml/parse/util/skip.hpp>
+#include <xml/parse/rapidxml/types.hpp>
 #include <xml/parse/util/expect.hpp>
+#include <xml/parse/util/skip.hpp>
+
+#include <string>
 
 #include <boost/filesystem.hpp>
 
