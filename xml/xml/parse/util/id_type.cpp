@@ -2,6 +2,8 @@
 
 #include <xml/parse/util/id_type.hpp>
 
+#include <iostream>
+
 #include <boost/functional/hash.hpp>
 
 namespace xml
@@ -31,6 +33,10 @@ namespace xml
       {                                                                 \
         return boost::hash< base_id_type>()                             \
           (val._val);                                                   \
+      }                                                                 \
+      std::ostream& operator<< (std::ostream& os, const name& val)      \
+      {                                                                 \
+        return os << val._val;                                          \
       }
 
       MAKE_ID (connect);
