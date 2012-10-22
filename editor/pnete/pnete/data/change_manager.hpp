@@ -7,7 +7,10 @@
 #include <pnete/data/handle/transition.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
 
-#include <xml/parse/types.hpp>
+//! \todo Should not be here.
+#include <xml/parse/state.fwd.hpp>
+#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/expression.fwd.hpp>
 
 #include <QUndoStack>
 

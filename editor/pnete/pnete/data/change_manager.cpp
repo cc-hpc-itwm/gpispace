@@ -6,6 +6,13 @@
 #include <pnete/data/handle/transition.hpp>
 #include <pnete/data/handle/place.hpp>
 
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/transition.hpp>
+
+#include <xml/parse/state.hpp>
 #include <we/expr/parse/parser.hpp>
 
 #include <xml/parse/error.hpp>
