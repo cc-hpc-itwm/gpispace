@@ -181,8 +181,6 @@ namespace gpi
             (m_handles.find(location.handle));
         if (hdl_it == m_handles.end())
           throw std::runtime_error ("is_local(): no such handle");
-        //        if (0 == amount)
-        //          throw std::runtime_error ("is_local(): empty region");
 
         const gpi::pc::type::offset_t start = location.offset;
         const gpi::pc::type::offset_t end   = start + amount;
