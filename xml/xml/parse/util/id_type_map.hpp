@@ -22,9 +22,8 @@
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/use.fwd.hpp>
 
-#include <map>
-
 #include <boost/optional/optional_fwd.hpp>
+#include <boost/scoped_ptr.hpp>
 
 namespace xml
 {
@@ -42,6 +41,11 @@ namespace xml
 
       public:
         mapper();
+        //! \note This does nothing but boost::~scoped_ptr<maps>,
+        //! which needs ~maps, which is only defined in the C++, thus
+        //! not visible to the implicit version defined where mapper
+        //! is used.
+        ~mapper();
 
 #define ITEM(NAME,__IGNORE,TYPE)                              \
         boost::optional<type::TYPE> get (id::NAME id) const;
@@ -54,12 +58,10 @@ namespace xml
 #undef ITEM
 
       private:
-        bool _dummy_to_use_macro_in_initializer_list;
-
-#define ITEM(TYPE,NAME,__IGNORE)                \
-        TYPE NAME;
-#include <xml/parse/util/id_type_map_helper.lst>
-#undef ITEM
+        //! \note We need to use pimpl, as there is an include loop.
+        //! \todo C++11: std::unique_ptr
+        struct maps;
+        boost::scoped_ptr<maps> _maps;
       };
     }
   }
