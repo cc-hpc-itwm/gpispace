@@ -17,6 +17,8 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GPI;
 
+        typedef buffer_pool_t<handle_buffer_t> handle_pool_t;
+
         static area_ptr_t create (std::string const &url);
 
         gpi_area_t ( const gpi::pc::type::process_id_t creator
@@ -48,7 +50,9 @@ namespace gpi
                                         , task_list_t & tasks
                                         );
       private:
-        typedef buffer_pool_t<handle_buffer_t> handle_pool_t;
+        void init ( gpi::pc::type::size_t num_com_buffers
+                  , gpi::pc::type::size_t com_buffer_size
+                  );
 
         bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin

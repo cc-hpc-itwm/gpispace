@@ -49,15 +49,19 @@ namespace gpi
             << "]"
             );
 
+      void gpi_area_t::init ( gpi::pc::type::size_t num_com_buffers
+                            , gpi::pc::type::size_t com_buffer_size
+                            )
+      {
         // TODO: make  this lazy, just define  a maximum number  of buffers, but
         // try to allocate them only when actually needed.
-        for (size_t i = 0; i < 2; ++i)
+        for (size_t i = 0; i < num_com_buffers; ++i)
         {
           const std::string name =
             "gpi-com-" + boost::lexical_cast<std::string>(i);
           gpi::pc::type::handle_t com_hdl =
             this->alloc ( GPI_PC_INVAL
-                        , (4 * 1<<20)
+                        , com_buffer_size
                         , name
                         , gpi::pc::F_EXCLUSIVE
                         );
@@ -66,14 +70,15 @@ namespace gpi
             gpi::pc::type::handle::descriptor_t desc =
               descriptor (com_hdl);
 
-            MLOG (INFO, "adding new internal communication handle: " << desc);
-
             m_com_handles.add
               (new handle_buffer_t ( com_hdl
                                    , desc.local_size
                                    , (char*)m_ptr + desc.offset
                                    )
               );
+
+            MLOG (TRACE, "added new internal communication handle: " << desc);
+        }
           }
         }
       }
@@ -399,3 +404,12 @@ namespace gpi
     }
   }
 }
+        url_t url (url_s);
+        gpi::pc::type::flags_t flags = F_PERSISTENT + F_GLOBAL;
+
+        type::size_t comsize =
+          boost::lexical_cast<type::size_t>(url.get ("comsize", "4194304"));
+        type::size_t numbuf =
+          boost::lexical_cast<type::size_t>(url.get ("numcom", "8"));
+
+        ((gpi_area_t*)area.get ())->init (numbuf, comsize);
