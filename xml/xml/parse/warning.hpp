@@ -7,6 +7,8 @@
 #include <string>
 #include <sstream>
 
+#include <xml/parse/type/struct.hpp>
+
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 #include <we/type/value.hpp>
@@ -121,11 +123,12 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class struct_shadowed : public generic
       {
       private:
-        std::string nice (const T & early, const T & late) const
+        std::string nice ( const type::struct_t & early
+                         , const type::struct_t & late
+                         ) const
         {
           std::ostringstream s;
 
@@ -138,7 +141,9 @@ namespace xml
         }
 
       public:
-        struct_shadowed (const T & early, const T & late)
+        struct_shadowed ( const type::struct_t & early
+                        , const type::struct_t & late
+                        )
           : generic (nice (early, late))
         {}
       };

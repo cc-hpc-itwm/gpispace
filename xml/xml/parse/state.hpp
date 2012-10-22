@@ -313,6 +313,8 @@ namespace xml
           , _OWport_not_connected ("Wport-not-connected")
           , _OWunexpected_element ("Wunexpected-element")
           , _OWoverwrite_function_name_trans ("Woverwrite-function-name-trans")
+#define WARN_(x,y)                                                      \
+        void warn (const x & w) const { generic_warn (w, _W ## y, _OW ## y ); }
           , _OWoverwrite_function_internal_trans ("Woverwrite-function-internal-trans")
           , _OWproperty_overwritten ("Wproperty-overwritten")
           , _OWtype_map_duplicate ("Wtype-map-duplicate")
@@ -344,6 +346,7 @@ namespace xml
           , _Opath_to_cpp ("path-to-cpp,g")
 
           , _id_counter()
+#undef WARN_
         {}
 
         const search_path_type & search_path (void) const
@@ -602,12 +605,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        template<typename T>
-        void warn (const struct_shadowed<T> & w) const
-        {
-          generic_warn (w, _Wshadow_struct, _OWshadow_struct);
-        }
-
 #define WARN(x) \
         void warn (const x & w) const { generic_warn (w, _W ## x, _OW ## x ); }
 
@@ -636,6 +633,7 @@ namespace xml
         WARN(shadow_template)
         WARN(shadow_specialize)
         WARN(duplicate_template_parameter)
+        WARN_(struct_shadowed,shadow_struct)
 
 #undef WARN
 

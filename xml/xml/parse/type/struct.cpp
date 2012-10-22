@@ -139,9 +139,9 @@ namespace xml
                   }
 
                 state.warn
-                  (warning::struct_shadowed<type::struct_t> ( old->second
-                                                            , strct
-                                                            )
+                  (warning::struct_shadowed ( old->second
+                                            , strct
+                                            )
                   );
               }
 
