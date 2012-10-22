@@ -844,6 +844,30 @@ namespace gpi
       }
 
       int
+      area_t::get_send_tasks ( area_t & src_area
+                             , const gpi::pc::type::memory_location_t src
+                             , const gpi::pc::type::memory_location_t dst
+                             , gpi::pc::type::size_t amount
+                             , gpi::pc::type::size_t queue
+                             , task_list_t & tasks
+                             )
+      {
+        throw std::runtime_error ("get_send_tasks() not implemented");
+      }
+
+      int
+      area_t::get_recv_tasks ( area_t & dst_area
+                             , const gpi::pc::type::memory_location_t dst
+                             , const gpi::pc::type::memory_location_t src
+                             , gpi::pc::type::size_t amount
+                             , gpi::pc::type::size_t queue
+                             , task_list_t & tasks
+                             )
+      {
+        throw std::runtime_error ("get_recv_tasks() not implemented");
+      }
+
+      int
       area_t::get_transfer_tasks ( const gpi::pc::type::memory_location_t src
                                  , const gpi::pc::type::memory_location_t dst
                                  , area_t & dst_area
@@ -951,18 +975,38 @@ namespace gpi
         // diagonal copy (non-local different types)
         else
         {
-          LOG ( ERROR
-              , "illegal memory transfer (diagonal copy): "
-              << amount << " bytes: "
-              << dst
-              << " <- "
-              << src
-              );
-
-          throw std::runtime_error
-            ( "illegal memory transfer requested: "
-            "I have no idea how to transfer data between those segments, sorry!"
-            );
+          if (src_is_local)
+          {
+            // send from local source to remote destination
+            return dst_area.get_send_tasks ( *this
+                                           , src
+                                           , dst
+                                           , amount
+                                           , queue
+                                           , tasks
+                                           );
+          }
+          else if (dst_is_local)
+          {
+            // receive from remote src to local destination
+            return this->get_recv_tasks ( dst_area
+                                        , dst
+                                        , src
+                                        , amount
+                                        , queue
+                                        , tasks
+                                        );
+          }
+          else
+          {
+            MLOG ( ERROR
+                 , "unsupported memory transfer: both regions are remote:"
+                 << " src := [" << src << "]"
+                 << " dst := [" << dst << "]"
+                 );
+            throw std::runtime_error
+              ("unsupported memory transfer: both regions are remote");
+          }
         }
 
         return 0;

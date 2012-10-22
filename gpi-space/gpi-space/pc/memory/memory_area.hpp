@@ -188,6 +188,22 @@ namespace gpi
                                                 , task_list_t & tasks
                                                 ) = 0;
 
+        virtual int get_send_tasks ( area_t & src_area
+                                   , const gpi::pc::type::memory_location_t src
+                                   , const gpi::pc::type::memory_location_t dst
+                                   , gpi::pc::type::size_t amount
+                                   , gpi::pc::type::size_t queue
+                                   , task_list_t & tasks
+                                   );
+
+        virtual int get_recv_tasks ( area_t & dst_area
+                                   , const gpi::pc::type::memory_location_t dst
+                                   , const gpi::pc::type::memory_location_t src
+                                   , gpi::pc::type::size_t amount
+                                   , gpi::pc::type::size_t queue
+                                   , task_list_t & tasks
+                                   );
+
         virtual gpi::pc::type::size_t
         read_from_impl ( gpi::pc::type::offset_t offset
                        , void *buffer

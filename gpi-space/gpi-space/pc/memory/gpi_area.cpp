@@ -38,7 +38,7 @@ namespace gpi
         m_min_local_offset = gpi::api::gpi_api_t::get().rank() * size;
         m_max_local_offset = m_min_local_offset + size - 1;
 
-        CLOG( TRACE
+        CLOG( INFO
             , "gpi.memory"
             , "GPI memory created:"
             <<" per-node: " << size
@@ -48,6 +48,7 @@ namespace gpi
             << m_min_local_offset << "," << m_max_local_offset
             << "]"
             );
+      }
 
       void gpi_area_t::init ( gpi::pc::type::size_t num_com_buffers
                             , gpi::pc::type::size_t com_buffer_size
@@ -78,7 +79,6 @@ namespace gpi
               );
 
             MLOG (TRACE, "added new internal communication handle: " << desc);
-        }
           }
         }
       }
@@ -317,6 +317,108 @@ namespace gpi
                  , &do_write_dma_gpi
                  );
         }
+
+        static
+        void do_send ( area_t & src_area
+                     , gpi::pc::type::memory_location_t src_loc
+                     , gpi_area_t & dst_area
+                     , gpi::pc::type::memory_location_t dst_loc
+                     , gpi::pc::type::size_t amount
+                     , const gpi::pc::type::size_t queue
+                     , gpi_area_t::handle_pool_t & handle_pool
+                     )
+        {
+          gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
+
+          handle_buffer_t *buf = handle_pool.acquire ();
+
+          gpi::pc::type::size_t remaining = amount;
+          while (remaining)
+          {
+            buf->used (0);
+
+            api.wait_dma (queue); // make sure previous iteration is finished
+            const gpi::pc::type::size_t to_send =
+              std::min (remaining, buf->size ());
+
+            const gpi::pc::type::size_t read_bytes =
+              src_area.read_from (src_loc, buf->data (), to_send);
+            buf->used (read_bytes);
+
+            if (0 == read_bytes)
+            {
+              MLOG ( WARN
+                   , "could not read from src area - premature end-of-file?"
+                   );
+              break;
+            }
+
+            do_write_dma ( dst_area.descriptor (buf->handle ())
+                         , 0
+                         , dst_area.descriptor (dst_loc.handle)
+                         , dst_loc.offset
+                         , buf->used ()
+                         , queue
+                         );
+
+            src_loc.offset += buf->used ();
+            dst_loc.offset += buf->used ();
+            remaining      -= buf->used ();
+          }
+
+          handle_pool.release (buf);
+        }
+
+        static
+        void do_recv ( area_t & dst_area
+                     , gpi::pc::type::memory_location_t dst_loc
+                     , gpi_area_t & src_area
+                     , gpi::pc::type::memory_location_t src_loc
+                     , gpi::pc::type::size_t amount
+                     , const gpi::pc::type::size_t queue
+                     , gpi_area_t::handle_pool_t & handle_pool
+                     )
+        {
+          gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
+
+          handle_buffer_t *buf = handle_pool.acquire ();
+
+          gpi::pc::type::size_t remaining = amount;
+          while (remaining)
+          {
+            buf->used (0);
+
+            const gpi::pc::type::size_t to_recv =
+              std::min (remaining, buf->size ());
+
+            do_read_dma ( src_area.descriptor (src_loc.handle)
+                        , src_loc.offset
+                        , src_area.descriptor (buf->handle ())
+                        , 0
+                        , to_recv
+                        , queue
+                        );
+            api.wait_dma (queue);
+            buf->used (to_recv);
+
+            const gpi::pc::type::size_t written_bytes =
+              dst_area.write_to (dst_loc, buf->data (), buf->used ());
+
+            if (written_bytes != buf->used ())
+            {
+              MLOG ( WARN
+                   , "could not write to dst area - premature end-of-file?"
+                   );
+              break;
+            }
+
+            src_loc.offset += buf->used ();
+            dst_loc.offset += buf->used ();
+            remaining      -= buf->used ();
+          }
+
+          handle_pool.release (buf);
+        }
       }
 
       int
@@ -385,10 +487,80 @@ namespace gpi
         return 0;
       }
 
+      int
+      gpi_area_t::get_send_tasks ( area_t & src_area
+                                 , const gpi::pc::type::memory_location_t src
+                                 , const gpi::pc::type::memory_location_t dst
+                                 , gpi::pc::type::size_t amount
+                                 , gpi::pc::type::size_t queue
+                                 , task_list_t & tasks
+                                 )
+      {
+        tasks.push_back
+          (boost::make_shared<task_t>
+          ( "send "
+          + boost::lexical_cast<std::string> (dst)
+          + " <- "
+          + boost::lexical_cast<std::string> (src)
+          + " "
+          + boost::lexical_cast<std::string> (amount)
+
+          , boost::bind ( &helper::do_send
+                        , boost::ref (src_area)
+                        , src
+                        , boost::ref (*this)
+                        , dst
+                        , amount
+                        , queue
+                        , boost::ref (m_com_handles)
+                        )
+          ));
+        return 0;
+      }
+
+      int
+      gpi_area_t::get_recv_tasks ( area_t & dst_area
+                                 , const gpi::pc::type::memory_location_t dst
+                                 , const gpi::pc::type::memory_location_t src
+                                 , gpi::pc::type::size_t amount
+                                 , gpi::pc::type::size_t queue
+                                 , task_list_t & tasks
+                                 )
+      {
+        tasks.push_back
+          (boost::make_shared<task_t>
+          ( "recv "
+          + boost::lexical_cast<std::string> (dst)
+          + " <- "
+          + boost::lexical_cast<std::string> (src)
+          + " "
+          + boost::lexical_cast<std::string> (amount)
+
+          , boost::bind ( &helper::do_recv
+                        , boost::ref (dst_area)
+                        , dst
+                        , boost::ref (*this)
+                        , src
+                        , amount
+                        , queue
+                        , boost::ref (m_com_handles)
+                        )
+          ));
+        return 0;
+      }
+
       area_ptr_t gpi_area_t::create (std::string const &url_s)
       {
         using namespace fhg::util;
         using namespace gpi::pc;
+
+        url_t url (url_s);
+        gpi::pc::type::flags_t flags = F_PERSISTENT + F_GLOBAL;
+
+        type::size_t comsize =
+          boost::lexical_cast<type::size_t>(url.get ("comsize", "4194304"));
+        type::size_t numbuf =
+          boost::lexical_cast<type::size_t>(url.get ("numcom", "8"));
 
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
         area_ptr_t area (new gpi_area_t ( GPI_PC_INVAL
@@ -399,17 +571,9 @@ namespace gpi
                                         , gpi_api.dma_ptr ()
                                         )
                         );
+        ((gpi_area_t*)area.get ())->init (numbuf, comsize);
         return area;
       }
     }
   }
 }
-        url_t url (url_s);
-        gpi::pc::type::flags_t flags = F_PERSISTENT + F_GLOBAL;
-
-        type::size_t comsize =
-          boost::lexical_cast<type::size_t>(url.get ("comsize", "4194304"));
-        type::size_t numbuf =
-          boost::lexical_cast<type::size_t>(url.get ("numcom", "8"));
-
-        ((gpi_area_t*)area.get ())->init (numbuf, comsize);

@@ -21,6 +21,8 @@ namespace gpi
 
         static area_ptr_t create (std::string const &url);
 
+        ~gpi_area_t ();
+      protected:
         gpi_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & name
                    , const gpi::pc::type::size_t per_node_size
@@ -28,9 +30,6 @@ namespace gpi
                    , void * dma_ptr
                    );
 
-        ~gpi_area_t ();
-
-      protected:
         void check_bounds ( const gpi::pc::type::handle::descriptor_t &
                           , const gpi::pc::type::offset_t start
                           , const gpi::pc::type::size_t   amount
@@ -49,6 +48,22 @@ namespace gpi
                                         , gpi::pc::type::size_t queue
                                         , task_list_t & tasks
                                         );
+
+        int get_send_tasks ( area_t & src_area
+                           , const gpi::pc::type::memory_location_t src
+                           , const gpi::pc::type::memory_location_t dst
+                           , gpi::pc::type::size_t amount
+                           , gpi::pc::type::size_t queue
+                           , task_list_t & tasks
+                           );
+
+        int get_recv_tasks ( area_t & dst_area
+                           , const gpi::pc::type::memory_location_t dst
+                           , const gpi::pc::type::memory_location_t src
+                           , gpi::pc::type::size_t amount
+                           , gpi::pc::type::size_t queue
+                           , task_list_t & tasks
+                           );
       private:
         void init ( gpi::pc::type::size_t num_com_buffers
                   , gpi::pc::type::size_t com_buffer_size
