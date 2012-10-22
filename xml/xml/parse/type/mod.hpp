@@ -67,7 +67,7 @@ namespace xml
       typedef boost::unordered_map<std::string, mod_type> mc_by_function_type;
       typedef boost::unordered_map<std::string, mc_by_function_type> mcs_type;
 
-      inline std::size_t hash_value (const mod_type& m);
+      std::size_t hash_value (const mod_type& m);
 
       namespace dump
       {

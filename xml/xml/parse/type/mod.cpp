@@ -189,7 +189,7 @@ namespace xml
         }
       }
 
-      inline std::size_t hash_value (const mod_type& m)
+      std::size_t hash_value (const mod_type& m)
       {
         boost::hash<std::string> hasher;
         return hasher (m.name);
