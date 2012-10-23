@@ -614,7 +614,7 @@ namespace xml
             // set a prefix
             const std::string prefix (rewrite::mk_prefix (trans.name()));
             const net_type & net_old (boost::get<net_type> (fun.f));
-            const net_type & net_new (set_prefix (net_old, prefix));
+            const net_type net_new (set_prefix (net_old, prefix));
 
             place_map_map_type place_map_map;
 
