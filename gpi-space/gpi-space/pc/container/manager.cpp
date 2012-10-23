@@ -153,12 +153,17 @@ namespace gpi
                                 , global::topology_t::any_port() // topology_t::port_t("10821")
                                 , "dummy-cookie"
                                 );
+
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)
         {
           if (gpi_api.rank() != n)
             global::topology().add_child(n);
         }
-        global::topology().establish();
+
+        if (gpi_api.is_master ())
+        {
+          global::topology().establish();
+        }
       }
 
       void manager_t::shutdown_topology ()

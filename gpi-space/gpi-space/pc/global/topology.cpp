@@ -443,43 +443,33 @@ namespace gpi
       {
         LOG(TRACE, "establishing topology...");
 
-        // this barrier is nice, but barriers are broken: see ticket #251
-        //        gpi::api::gpi_api_t::get().barrier();
-
-        BOOST_FOREACH(child_map_t::value_type const & n, m_children)
+        try
         {
-          useconds_t snooze(500 * 1000);
-          int i = 30;
-          while (i --> 0)
+          rank_result_t res (all_reduce( detail::command_t("CONNECT")
+                                       , reduce::max_result
+                                       , rank_result_t (m_rank, 0) // my result
+                                       )
+                            );
+          if (res.value != 0)
           {
-            try
-            {
-              LOG(TRACE, "trying to connect to " << n.second.name);
-              m_peer->send (n.second.name, detail::command_t("CONNECT"));
-              break;
-            }
-            catch (std::exception const & ex)
-            {
-              if (i > 0 && !m_shutting_down)
-              {
-                usleep (snooze);
-                snooze = std::min(10 * 1000 * 1000u, snooze*2);
-              }
-              else
-              {
-                LOG( WARN
-                   , "could not establish connection to rank " << n.first
-                   << ": " << ex.what()
-                   );
-                throw;
-              }
-            }
+            LOG (ERROR,"connection failed: " << res.rank << " failed: " << res.value);
+            throw std::runtime_error
+              ( "connections could not be established to at least one node: rank "
+              + boost::lexical_cast<std::string>(res.rank)
+              + " says: "
+              + res.message
+              );
+          }
+          else
+          {
+            m_established = true;
+            DMLOG(TRACE, "topology established");
           }
         }
-
-        m_established = true;
-
-        DMLOG(TRACE, "topology established");
+        catch (std::exception const & ex)
+        {
+          throw;
+        }
       }
 
       void topology_t::cast( const gpi::rank_t rnk
@@ -623,7 +613,9 @@ namespace gpi
         if (rank != m_rank && msg == "CONNECT")
         {
           add_child(rank); // actually set_parent(rank)?
-          cast (rank, detail::command_t("+OK"));
+          cast (rank, detail::command_t("+RES") << 0);
+
+          m_established = true;
         }
         else
         {
@@ -680,7 +672,10 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              LOG(WARN, "could not free handle: " << ex.what());
+              MLOG_IF ( WARN
+                      , not m_shutting_down
+                      , "could not free handle: " << ex.what()
+                      );
               cast (rank, detail::command_t("+ERR") << 1 << ex.what ());
             }
           }
@@ -750,11 +745,12 @@ namespace gpi
             std::vector<std::string> msg_vec ( av.begin ()+2
                                              , av.end ()
                                              );
-            LOG ( WARN
-                , "error on node " << rank
-                << ": " << av [1]
-                << ": " << boost::algorithm::join (msg_vec, " ")
-                );
+            MLOG_IF ( WARN
+                    , not m_shutting_down
+                    , "error on node " << rank
+                    << ": " << av [1]
+                    << ": " << boost::algorithm::join (msg_vec, " ")
+                    );
           }
           else if (av [0] == "GO")
           {
@@ -771,7 +767,7 @@ namespace gpi
           }
           else
           {
-            LOG(WARN, "result collection not implemented");
+            LOG(WARN, "invalid command: '" << av[0] <<"'");
           }
         }
       }
@@ -782,9 +778,8 @@ namespace gpi
       {
         if (m_established || m_waiting_for_go)
         {
-          LOG(DEBUG, "error on connection to child node " << rank);
-          LOG(DEBUG, "node-failover is not available yet, I have to commit Seppuku...");
-
+          MLOG (DEBUG, "error on connection to " << rank << ": " << ec);
+          MLOG (DEBUG, "node-failover is not available yet, I have to commit Seppuku...");
           m_shutting_down = true;
           if (m_waiting_for_go)
           {
@@ -793,7 +788,6 @@ namespace gpi
 
           del_child (rank);
           kill(getpid(), SIGTERM);
-          //_exit(15);
         }
       }
     }
