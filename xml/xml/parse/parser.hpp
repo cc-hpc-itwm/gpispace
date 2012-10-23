@@ -710,7 +710,7 @@ namespace xml
                 }
               else if (child_name == "net")
                 {
-                  f.f = net_type (child, state, f.id(), f);
+                  f.f = ::xml::parse::net_type (child, state, f.id(), f);
                 }
               else if (child_name == "condition")
                 {

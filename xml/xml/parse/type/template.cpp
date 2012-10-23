@@ -116,7 +116,7 @@ namespace xml
               s.close ();
             }
 
-          dump (s, t.function());
+          ::xml::parse::type::dump::dump (s, t.function());
 
           s.close ();
         }
