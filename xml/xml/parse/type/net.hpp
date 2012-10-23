@@ -95,6 +95,7 @@ namespace xml
 
         // ***************************************************************** //
 
+        places_elements_type & places (void);
         const places_elements_type & places (void) const;
 
         const transitions_type & transitions (void) const;

@@ -145,6 +145,10 @@ namespace xml
 
       // ***************************************************************** //
 
+      net_type::places_elements_type & net_type::places (void)
+      {
+        return _places.elements();
+      }
       const net_type::places_elements_type & net_type::places (void) const
       {
         return _places.elements();
@@ -385,8 +389,8 @@ namespace xml
                         );
         }
 
-        for ( places_elements_type::iterator place (_places.elements().begin())
-            ; place != _places.elements().end()
+        for ( places_elements_type::iterator place (places().begin())
+            ; place != places().end()
             ; ++place
             )
         {
@@ -528,8 +532,8 @@ namespace xml
           trans->resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        for ( places_elements_type::iterator place (_places.elements().begin())
-            ; place != _places.elements().end()
+        for ( places_elements_type::iterator place (places().begin())
+            ; place != places().end()
             ; ++place
             )
         {
