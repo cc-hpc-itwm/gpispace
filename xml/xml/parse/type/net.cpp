@@ -176,7 +176,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      place_type& net_type::push_place (const place_type & p)
+      void net_type::push_place (const place_type & p)
       {
         boost::optional<place_type&> place (_places.push (p));
 
@@ -184,8 +184,6 @@ namespace xml
         {
           throw error::duplicate_place (p.name(), path);
         }
-
-        return *place;
       }
 
       void net_type::erase_place (const place_type& t)

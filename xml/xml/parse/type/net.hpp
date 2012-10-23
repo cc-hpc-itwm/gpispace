@@ -108,7 +108,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        place_type& push_place (const place_type & p);
+        void push_place (const place_type & p);
         void erase_place (const place_type& t);
 
         transition_type& push_transition (const transition_type & t);

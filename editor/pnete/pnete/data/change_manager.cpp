@@ -51,23 +51,6 @@ namespace fhg
             ;
         }
 
-        static ::xml::parse::type::place_type&
-        push_place ( ::xml::parse::type::place_type place
-                   , ::xml::parse::type::net_type& net
-                   )
-        {
-          try
-          {
-            return net.push_place (place);
-          }
-          catch (const ::xml::parse::error::duplicate_place&)
-          {
-            place.name (inc (place.name()));
-
-            return push_place (place, net);
-          }
-        }
-
         static ::xml::parse::type::transition_type&
         push_transition ( ::xml::parse::type::transition_type transition
                         , ::xml::parse::type::net_type& net
