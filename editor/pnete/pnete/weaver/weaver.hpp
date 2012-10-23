@@ -361,7 +361,7 @@ namespace fhg
 
       namespace from
       {
-        SIG(place     , ITVAL(XMLTYPE(net_type::places_elements_type)));
+        SIG(place     , ITVAL(XMLTYPE(net_type::places_type)));
         SIG(function  , ITVAL(XMLTYPE(functions_type)));
         SIG(tmpl      , ITVAL(XMLTYPE(templates_type)));
         SIG(specialize, ITVAL(XMLTYPE(specializes_type)));
@@ -735,9 +735,9 @@ namespace fhg
           FROM(function_tail) (_state, fs.fun());
         }
 
-        FUN(place, ITVAL(XMLTYPE(net_type::places_elements_type)), place)
+        FUN(place, ITVAL(XMLTYPE(net_type::places_type)), place)
         {
-          WEAVE(place::open, ITVAL(XMLTYPE(net_type::places_elements_type)))(place);
+          WEAVE(place::open, ITVAL(XMLTYPE(net_type::places_type)))(place);
           WEAVE(place::name, std::string)(place.name());
           WEAVE(place::type, std::string)(place.type);
           WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());
@@ -812,7 +812,7 @@ namespace fhg
             (net.specializes());
           WEAVE(net::functions, XMLTYPE(functions_type))
             (net.functions());
-          WEAVE(net::places, XMLTYPE(net_type::places_elements_type))(net.places());
+          WEAVE(net::places, XMLTYPE(net_type::places_type))(net.places());
           WEAVE(net::transitions, XMLTYPE(net_type::transitions_type))
             (net.transitions());
           WEAVEE(net::close)();

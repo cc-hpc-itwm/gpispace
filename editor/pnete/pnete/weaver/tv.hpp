@@ -91,7 +91,7 @@ namespace fhg
       WSIG(tv, transition::connect_in, XMLTYPE(connections_type), cs);
       WSIG(tv, transition::connect_out, XMLTYPE(connections_type), cs);
       WSIG(tv, transition::condition, XMLTYPE(conditions_type), cond);
-      WSIG(tv, place::open, ITVAL(XMLTYPE(net_type::places_elements_type)), place);
+      WSIG(tv, place::open, ITVAL(XMLTYPE(net_type::places_type)), place);
       WSIGE(tv, place::close);
       WSIG(tv, place::name, std::string, name);
       WSIG(tv, place::type, std::string, type);
@@ -175,7 +175,7 @@ namespace fhg
       WSIG(tv, net::templates, XMLTYPE(templates_type), templates);
       WSIG(tv, net::specializes, XMLTYPE(specializes_type), specializes);
       WSIG(tv, net::functions, XMLTYPE(functions_type), functions);
-      WSIG(tv, net::places, XMLTYPE(net_type::places_elements_type), places);
+      WSIG(tv, net::places, XMLTYPE(net_type::places_type), places);
       WSIG( tv
           , net::transitions
           , XMLTYPE(net_type::transitions_type)

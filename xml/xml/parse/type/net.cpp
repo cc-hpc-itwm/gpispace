@@ -145,13 +145,13 @@ namespace xml
 
       // ***************************************************************** //
 
-      net_type::places_elements_type & net_type::places (void)
+      net_type::places_type & net_type::places (void)
       {
-        return _places.elements();
+        return _places;
       }
-      const net_type::places_elements_type & net_type::places (void) const
+      const net_type::places_type & net_type::places (void) const
       {
-        return _places.elements();
+        return _places;
       }
 
       const net_type::transitions_type & net_type::transitions (void) const
@@ -389,7 +389,7 @@ namespace xml
                         );
         }
 
-        for ( places_elements_type::iterator place (places().begin())
+        for ( places_type::iterator place (places().begin())
             ; place != places().end()
             ; ++place
             )
@@ -532,7 +532,7 @@ namespace xml
           trans->resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        for ( places_elements_type::iterator place (places().begin())
+        for ( places_type::iterator place (places().begin())
             ; place != places().end()
             ; ++place
             )
@@ -606,7 +606,7 @@ namespace xml
         net_new.clear_places();
         net_new.clear_transitions();
 
-        for ( net_type::places_elements_type::const_iterator
+        for ( net_type::places_type::const_iterator
                 place_old (net_old.places().begin())
             ; place_old != net_old.places().end()
             ; ++place_old
@@ -713,7 +713,7 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        for ( net_type::places_elements_type::const_iterator place (net.places().begin())
+        for ( net_type::places_type::const_iterator place (net.places().begin())
             ; place != net.places().end()
             ; ++place
             )
@@ -779,7 +779,7 @@ namespace xml
                 (*transition, state, net, we_net, pid_of_place, e);
             }
 
-          for ( net_type::places_elements_type::const_iterator place (net.places().begin())
+          for ( net_type::places_type::const_iterator place (net.places().begin())
               ; place != net.places().end()
               ; ++place
               )

@@ -36,10 +36,12 @@ namespace xml
 
       struct net_type
       {
+      public:
+        typedef xml::util::unique<place_type,id::place> places_type;
+
       private:
         typedef fhg::util::maybe<std::string> maybe_string_type;
 
-        typedef xml::util::unique<place_type,id::place> places_type;
         places_type _places;
         xml::util::unique<transition_type,id::transition> _transitions;
         xml::util::unique<function_type,id::function,maybe_string_type> _functions;
@@ -50,7 +52,6 @@ namespace xml
         id::function _parent;
 
       public:
-        typedef places_type::elements_type places_elements_type;
         typedef xml::util::unique<transition_type,id::transition>::elements_type transitions_type;
 
         bool contains_a_module_call;
@@ -95,8 +96,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        places_elements_type & places (void);
-        const places_elements_type & places (void) const;
+        places_type & places (void);
+        const places_type & places (void) const;
 
         const transitions_type & transitions (void) const;
         transitions_type & transitions (void);
