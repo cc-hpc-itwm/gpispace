@@ -3,14 +3,12 @@
 #ifndef _XML_UTIL_UNIQUE_HPP
 #define _XML_UTIL_UNIQUE_HPP
 
-#include <xml/parse/util/id_type.hpp>
-
 #include <list>
 #include <string>
+#include <stdexcept>
+
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
-
-#include <stdexcept>
 
 namespace xml
 {
