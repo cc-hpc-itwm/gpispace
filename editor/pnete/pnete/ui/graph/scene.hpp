@@ -98,10 +98,8 @@ namespace fhg
           template<typename item_type, typename handle_type>
             item_type* item_with_handle (const handle_type&);
 
-        public:
           const data::handle::net& net() const;
 
-        private:
           void remove_transition_item (transition_item*);
 
           connection_item* create_connection (bool only_reading = false);
