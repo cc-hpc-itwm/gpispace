@@ -63,7 +63,7 @@ namespace xml
     template<typename UNIQUE>
     class const_unique_iterator
       : public std::iterator< std::forward_iterator_tag
-                            , typename UNIQUE::value_type
+                            , const typename UNIQUE::value_type
                             >
     {
       typedef UNIQUE unique_type;
