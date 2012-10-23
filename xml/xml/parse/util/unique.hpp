@@ -6,6 +6,7 @@
 #include <list>
 #include <string>
 #include <stdexcept>
+#include <iterator>
 
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
@@ -14,6 +15,97 @@ namespace xml
 {
   namespace util
   {
+    template<typename UNIQUE>
+    class unique_iterator : public std::iterator< std::forward_iterator_tag
+                                                , typename UNIQUE::value_type
+                                                >
+    {
+      typedef UNIQUE unique_type;
+
+      typedef typename unique_type::elements_type::iterator
+        actual_iterator_type;
+      actual_iterator_type _actual_iterator;
+
+    public:
+      unique_iterator(const actual_iterator_type& actual_iterator)
+        : _actual_iterator (actual_iterator)
+      { }
+
+      unique_iterator& operator++()
+      {
+        ++_actual_iterator;
+        return *this;
+      }
+      unique_iterator operator++ (int)
+      {
+        unique_iterator<UNIQUE> tmp (*this);
+        operator++();
+        return tmp;
+      }
+      bool operator== (const unique_iterator& rhs)
+      {
+        return _actual_iterator == rhs._actual_iterator;
+      }
+      bool operator!= (const unique_iterator& rhs)
+      {
+        return !(operator== (rhs));
+      }
+      typename UNIQUE::value_type& operator*() const
+      {
+        return *_actual_iterator;
+      }
+      typename UNIQUE::value_type* operator->() const
+      {
+        return &*_actual_iterator;
+      }
+    };
+
+    template<typename UNIQUE>
+    class const_unique_iterator
+      : public std::iterator< std::forward_iterator_tag
+                            , typename UNIQUE::value_type
+                            >
+    {
+      typedef UNIQUE unique_type;
+
+      typedef typename unique_type::elements_type::const_iterator
+        actual_iterator_type;
+      actual_iterator_type _actual_iterator;
+
+    public:
+      const_unique_iterator(const actual_iterator_type& actual_iterator)
+        : _actual_iterator (actual_iterator)
+      { }
+
+      const_unique_iterator& operator++()
+      {
+        ++_actual_iterator;
+        return *this;
+      }
+      const_unique_iterator operator++ (int)
+      {
+        const_unique_iterator<UNIQUE> tmp (*this);
+        operator++();
+        return tmp;
+      }
+      bool operator== (const const_unique_iterator& rhs)
+      {
+        return _actual_iterator == rhs._actual_iterator;
+      }
+      bool operator!= (const const_unique_iterator& rhs)
+      {
+        return !(operator== (rhs));
+      }
+      const typename UNIQUE::value_type& operator*() const
+      {
+        return *_actual_iterator;
+      }
+      const typename UNIQUE::value_type* operator->() const
+      {
+        return &*_actual_iterator;
+      }
+    };
+
     template<typename T, typename ID_TYPE, typename Key = std::string>
     struct unique
     {
@@ -23,6 +115,11 @@ namespace xml
       typedef Key key_type;
 
       typedef std::list<value_type> elements_type;
+
+      typedef unique_iterator<unique<value_type, id_type, key_type> >
+        iterator;
+      typedef const_unique_iterator<unique<value_type, id_type, key_type> >
+        const_iterator;
 
     private:
       typedef boost::unordered_map< key_type
@@ -183,6 +280,24 @@ namespace xml
 
       elements_type & elements (void) { return _elements; }
       const elements_type & elements (void) const { return _elements; }
+
+      iterator begin()
+      {
+        return elements().begin();
+      }
+      iterator end()
+      {
+        return elements().end();
+      }
+
+      const_iterator begin() const
+      {
+        return elements().begin();
+      }
+      const_iterator end() const
+      {
+        return elements().end();
+      }
     };
   }
 }
