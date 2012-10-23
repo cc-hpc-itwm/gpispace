@@ -18,14 +18,18 @@ namespace xml
     struct unique
     {
     public:
-      typedef std::list<T> elements_type;
+      typedef T value_type;
+      typedef ID_TYPE id_type;
+      typedef Key key_type;
+
+      typedef std::list<value_type> elements_type;
 
     private:
-      typedef boost::unordered_map< Key
+      typedef boost::unordered_map< key_type
                                   , typename elements_type::iterator
                                   > names_type;
 
-      typedef boost::unordered_map< ID_TYPE
+      typedef boost::unordered_map< id_type
                                   , typename elements_type::iterator
                                   > ids_type;
 
@@ -33,7 +37,7 @@ namespace xml
       names_type _names;
       ids_type _ids;
 
-      inline T& insert (const T& x)
+      inline value_type& insert (const value_type& x)
       {
         typename elements_type::iterator
           pos (_elements.insert (_elements.end(), x));
@@ -80,11 +84,11 @@ namespace xml
       //! default constructing.
 
       //! \note .first is new, .second is old.
-#define RETURN_PAIR_TYPE boost::optional<T&>, boost::optional<T>
+#define RETURN_PAIR_TYPE boost::optional<value_type&>, boost::optional<value_type>
       typedef std::pair<RETURN_PAIR_TYPE >
               push_return_type;
 
-      push_return_type push_and_get_old_value (const T& x)
+      push_return_type push_and_get_old_value (const value_type& x)
       {
         const typename names_type::const_iterator pos (_names.find (x.name()));
 
@@ -100,7 +104,7 @@ namespace xml
 
 #undef RETURN_PAIR_TYPE
 
-      boost::optional<T&> push (const T& x)
+      boost::optional<value_type&> push (const value_type& x)
       {
         if (is_element (x.name()))
           {
@@ -110,7 +114,7 @@ namespace xml
         return insert (x);
       }
 
-      boost::optional<T> copy_by_id (const ID_TYPE & id) const
+      boost::optional<value_type> copy_by_id (const id_type & id) const
       {
         const typename ids_type::const_iterator pos (_ids.find (id));
 
@@ -124,11 +128,12 @@ namespace xml
 
       //! \todo Most likely, there was never an intended difference
       //! between copy_by_key and ref_by_key. When rewriting
-      //! copy_by_key, it was passing out a copy via a T& argument
-      //! though. The only difference now is the name and returning an
-      //! ?T or a ?T&. ?T& is only used in weaver of the editor and
-      //! seems to not be needed.
-      boost::optional<T> copy_by_key (const Key & key) const
+      //! copy_by_key, it was passing out a copy via a value_type&
+      //! argument though. The only difference now is the name and
+      //! returning an ?value_type or a ?value_type&. ?value_type& is
+      //! only used in weaver of the editor and seems to not be
+      //! needed.
+      boost::optional<value_type> copy_by_key (const key_type & key) const
       {
         const typename names_type::const_iterator pos (_names.find (key));
 
@@ -140,7 +145,7 @@ namespace xml
         return boost::none;
       }
 
-      boost::optional<T&> ref_by_key (const Key & key) const
+      boost::optional<value_type&> ref_by_key (const key_type & key) const
       {
         const typename names_type::const_iterator pos (_names.find (key));
 
@@ -152,12 +157,12 @@ namespace xml
         return boost::none;
       }
 
-      bool is_element (const Key & key) const
+      bool is_element (const key_type & key) const
       {
         return _names.find (key) != _names.end();
       }
 
-      void erase (const T& x)
+      void erase (const value_type& x)
       {
         typename names_type::iterator pos (_names.find (x.name()));
 
