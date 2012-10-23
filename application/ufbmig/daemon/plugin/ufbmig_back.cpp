@@ -1066,7 +1066,7 @@ private:
     m_transfer_buffer = gpi_api->alloc ( m_transfer_segment
                                         , m_chunk_size
                                         , "ufbmigd transfer buffer"
-                                        , gpi::pc::F_NONE
+                                        , gpi::pc::F_EXCLUSIVE
                                         );
     return 0;
   }
