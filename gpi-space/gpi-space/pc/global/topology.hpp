@@ -128,16 +128,19 @@ namespace gpi
           child_t ()
             : rank((gpi::rank_t)-1)
             , last_signal(0)
+            , error_counter(0)
           {}
 
           child_t (const gpi::rank_t r)
             : rank (r)
             , last_signal (0)
+            , error_counter (0)
           {}
 
           gpi::rank_t rank;
           std::string name;
           time_t      last_signal;
+          std::size_t error_counter;
         };
 
         explicit
@@ -152,6 +155,11 @@ namespace gpi
         typedef std::list<rank_result_t> result_list_t;
 
         void message_received (boost::system::error_code const &);
+        void message_sent ( child_t & child
+                          , std::string const & data
+                          , boost::system::error_code const &
+                          );
+
         void handle_message ( const gpi::rank_t rank
                             , const std::string &
                             );

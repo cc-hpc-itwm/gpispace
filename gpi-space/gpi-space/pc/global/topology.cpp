@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <csignal> // kill
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -509,16 +510,43 @@ namespace gpi
         cast(rnk, std::string(data, len));
       }
 
-      static void message_sent (boost::system::error_code const &ec)
+      void topology_t::message_sent ( child_t & child
+                                    , std::string const & data
+                                    , boost::system::error_code const & ec
+                                    )
       {
-        DLOG_IF(WARN, ec, "message could not be sent: " << ec);
+        if (ec)
+        {
+          if (++child.error_counter > 10)
+          {
+            MLOG (ERROR, "exceeded error counter for " << child.name);
+            this->stop ();
+          }
+          else
+          {
+            usleep (child.error_counter * 200 * 1000);
+            cast (child, data);
+          }
+        }
+        else
+        {
+          child.error_counter = 0;
+        }
       }
 
       void topology_t::cast( const child_t & child
                            , const std::string & data
                            )
       {
-        m_peer->async_send(child.name, data, &message_sent);
+        m_peer->async_send ( child.name
+                           , data
+                           , boost::bind ( &topology_t::message_sent
+                                         , this
+                                         , child
+                                         , data
+                                         , _1
+                                         )
+                           );
       }
 
       void topology_t::broadcast (const std::string &data)
