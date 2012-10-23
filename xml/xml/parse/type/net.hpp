@@ -39,7 +39,8 @@ namespace xml
       private:
         typedef fhg::util::maybe<std::string> maybe_string_type;
 
-        xml::util::unique<place_type,id::place> _places;
+        typedef xml::util::unique<place_type,id::place> places_type;
+        places_type _places;
         xml::util::unique<transition_type,id::transition> _transitions;
         xml::util::unique<function_type,id::function,maybe_string_type> _functions;
         xml::util::unique<template_type,id::tmpl,maybe_string_type> _templates;
@@ -49,7 +50,7 @@ namespace xml
         id::function _parent;
 
       public:
-        typedef xml::util::unique<place_type,id::place>::elements_type places_type;
+        typedef places_type::elements_type places_elements_type;
         typedef xml::util::unique<transition_type,id::transition>::elements_type transitions_type;
 
         bool contains_a_module_call;
@@ -94,7 +95,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        const places_type & places (void) const;
+        const places_elements_type & places (void) const;
 
         const transitions_type & transitions (void) const;
         transitions_type & transitions (void);

@@ -105,8 +105,9 @@ namespace fhg
           , XMLTYPE(net_type::transitions_type)
           , transitions
           );
-      WSIG(net, net::places, XMLTYPE(net_type::places_type), places);
-      WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_type)), place);
+      WSIG(net, net::places, XMLTYPE(net_type::places_elements_type), places);
+      WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_elements_type
+)), place);
       WSIG( net
           , transition::open
           , ITVAL(XMLTYPE(net_type::transitions_type))

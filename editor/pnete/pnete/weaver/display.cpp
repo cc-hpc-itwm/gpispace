@@ -368,11 +368,11 @@ namespace fhg
       {
         from::many (this, transitions, FROM(transition));
       }
-      WSIG(net, net::places, XMLTYPE(net_type::places_type), places)
+      WSIG(net, net::places, XMLTYPE(net_type::places_elements_type), places)
       {
         from::many (this, places, FROM(place));
       }
-      WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
+      WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_elements_type)), place)
       {
         ui::graph::place_item* place_item
           ( new ui::graph::place_item

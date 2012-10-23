@@ -204,7 +204,7 @@ namespace fhg
         FROM(conditions) (this, cond);
       }
 
-      WSIG(tv, place::open, ITVAL(XMLTYPE(places_type)), place)
+      WSIG(tv, place::open, ITVAL(XMLTYPE(net_type::places_elements_type)), place)
       {
         push (append ("<<place>>"));
       }
@@ -562,7 +562,7 @@ namespace fhg
       {
         xs ("function", functions, FROM(function));
       }
-      WSIG(tv, net::places, XMLTYPE(net_type::places_type), places)
+      WSIG(tv, net::places, XMLTYPE(net_type::places_elements_type), places)
       {
         xs ("place", places, FROM(place));
       }

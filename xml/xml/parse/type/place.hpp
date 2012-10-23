@@ -7,7 +7,6 @@
 #include <xml/parse/type/token.hpp>
 #include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/id_type.hpp>
-#include <xml/parse/util/unique.hpp>
 
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
@@ -76,8 +75,6 @@ namespace xml
         const fhg::util::maybe<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
       };
-
-      typedef xml::util::unique<place_type,id::place>::elements_type places_type;
 
       namespace dump
       {

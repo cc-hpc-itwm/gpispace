@@ -145,7 +145,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      const places_type & net_type::places (void) const
+      const net_type::places_elements_type & net_type::places (void) const
       {
         return _places.elements();
       }
@@ -387,7 +387,7 @@ namespace xml
                         );
         }
 
-        for ( places_type::iterator place (_places.elements().begin())
+        for ( places_elements_type::iterator place (_places.elements().begin())
             ; place != _places.elements().end()
             ; ++place
             )
@@ -530,7 +530,7 @@ namespace xml
           trans->resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        for ( places_type::iterator place (_places.elements().begin())
+        for ( places_elements_type::iterator place (_places.elements().begin())
             ; place != _places.elements().end()
             ; ++place
             )
@@ -604,7 +604,7 @@ namespace xml
         net_new.clear_places();
         net_new.clear_transitions();
 
-        for ( net_type::places_type::const_iterator
+        for ( net_type::places_elements_type::const_iterator
                 place_old (net_old.places().begin())
             ; place_old != net_old.places().end()
             ; ++place_old
@@ -711,7 +711,7 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        for ( places_type::const_iterator place (net.places().begin())
+        for ( net_type::places_elements_type::const_iterator place (net.places().begin())
             ; place != net.places().end()
             ; ++place
             )
@@ -777,7 +777,7 @@ namespace xml
                 (*transition, state, net, we_net, pid_of_place, e);
             }
 
-          for ( places_type::const_iterator place (net.places().begin())
+          for ( net_type::places_elements_type::const_iterator place (net.places().begin())
               ; place != net.places().end()
               ; ++place
               )
