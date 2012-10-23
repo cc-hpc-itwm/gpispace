@@ -373,6 +373,20 @@ namespace gpi
       }
 
       template <typename M>
+      gpi::pc::type::segment_id_t
+      process_t<M>::add_memory (std::string const &url)
+      {
+        return m_mgr.add_memory (m_id, url);
+      }
+
+      template <typename M>
+      void
+      process_t<M>::del_memory (gpi::pc::type::segment_id_t seg_id)
+      {
+        m_mgr.del_memory (m_id, seg_id);
+      }
+
+      template <typename M>
       void
       process_t<M>::attach_segment(const gpi::pc::type::segment_id_t seg)
       {

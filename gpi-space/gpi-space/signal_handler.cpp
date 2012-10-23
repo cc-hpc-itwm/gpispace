@@ -240,6 +240,7 @@ namespace gpi
         try
         {
           std::size_t count (0);
+          (void) count;
 
           count = deliver_signal (sig);
           DLOG(TRACE, "delivered signal " << count << " times");

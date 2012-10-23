@@ -7,7 +7,15 @@
 #include <fhglog/minimal.hpp>
 
 #include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/memory/manager.hpp>
+
+#include <gpi-space/pc/memory/factory.hpp>
+
+// TODO remove this - currently required for register_memory
+#include <fhg/util/url.hpp>
+#include <fhg/util/url_io.hpp>
 
 namespace gpi
 {
@@ -40,8 +48,20 @@ namespace gpi
         try
         {
           lock_type lock (m_mutex);
-          initialize_memory_manager ();
           initialize_topology ();
+          initialize_memory_manager ();
+
+          if (global::topology().is_master ())
+          {
+            MLOG (TRACE, "telling slaves to GO");
+            global::topology ().go ();
+          }
+          else
+          {
+            MLOG (TRACE, "waiting for master to say GO");
+            global::topology ().wait_for_go ();
+          }
+
           m_connector.start ();
         }
         catch (std::exception const & ex)
@@ -108,7 +128,22 @@ namespace gpi
       }
 
       void manager_t::initialize_memory_manager ()
-      {}
+      {
+        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+        global::memory_manager ().start ( gpi_api.rank ()
+                                        , gpi_api.number_of_queues ()
+                                        );
+
+        if (global::topology ().is_master ())
+        {
+          global::memory_manager ().add_memory
+            ( 0 // owner
+            , "gpi://"
+            //            , "sfs:///fhgfs/HPC/petry/sfs-test?create=true&size=1099511627776&persistent=true"
+            , 1 // id
+            );
+        }
+      }
 
       void manager_t::initialize_topology ()
       {
@@ -241,9 +276,23 @@ namespace gpi
                                                               , const gpi::pc::type::flags_t flags
                                                               )
       {
-        gpi::pc::type::segment_id_t seg_id
-          (global::memory_manager().register_memory (pc_id, name, sz, flags));
-        return seg_id;
+        // TODO: refactor here
+
+        using namespace gpi::pc;
+
+        fhg::util::url_t url;
+        url.type ("shm");
+        url.path (name);
+        url.set ("size", boost::lexical_cast<std::string>(sz));
+        if (flags & F_PERSISTENT)
+          url.set ("persistent", "true");
+        if (flags & F_EXCLUSIVE)
+          url.set ("exclusive", "true");
+
+        memory::area_ptr_t area =
+          memory::factory ().create (boost::lexical_cast<std::string>(url));
+        area->set_owner (pc_id);
+        return global::memory_manager().register_memory (pc_id, area);
       }
 
       void manager_t::unregister_segment ( const gpi::pc::type::process_id_t proc_id
@@ -352,6 +401,22 @@ namespace gpi
                                )
       {
         return global::memory_manager().wait_on_queue (proc_id, queue);
+      }
+
+      gpi::pc::type::segment_id_t
+      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
+                            , std::string const &url
+                            )
+      {
+        return global::memory_manager ().add_memory (proc_id, url);
+      }
+
+      void
+      manager_t::del_memory ( const gpi::pc::type::process_id_t proc_id
+                            , gpi::pc::type::segment_id_t seg_id
+                            )
+      {
+        global::memory_manager ().del_memory (proc_id, seg_id);
       }
     }
   }

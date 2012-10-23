@@ -7,7 +7,6 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition_variable.hpp>
 
-#include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/task_queue.hpp>
 
 namespace gpi
@@ -19,15 +18,11 @@ namespace gpi
       class transfer_queue_t
       {
       public:
-        typedef boost::shared_ptr<task_t> task_ptr;
-        typedef std::set<task_ptr> task_set_t;
-        typedef std::list<task_ptr> task_list_t;
-
         explicit
         transfer_queue_t (const std::size_t id, task_queue_t *async);
         ~transfer_queue_t ();
 
-        void enqueue (memory_transfer_t const &);
+        void enqueue (task_ptr const &);
         void enqueue (task_list_t const &);
 
         // request to pause the queue
@@ -65,7 +60,6 @@ namespace gpi
 
         void worker ();
         void wait_until_unpaused () const;
-        task_list_t split (memory_transfer_t const &mt);
 
         mutable mutex_type m_mutex;
         mutable condition_type m_resume_condition;

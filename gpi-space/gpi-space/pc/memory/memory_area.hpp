@@ -15,6 +15,7 @@
 #include <gpi-space/pc/type/memory_location.hpp>
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
+#include <gpi-space/pc/memory/task.hpp>
 
 namespace gpi
 {
@@ -43,12 +44,19 @@ namespace gpi
         std::string const & name () const;
         bool in_use () const;
         int type () const;
+        gpi::pc::type::flags_t flags () const;
 
         // WORK HERE:
         //    this function *must not* be called from the dtor
         //    otherwise we endup calling pure virtual functions
         void garbage_collect ();
         void garbage_collect (const gpi::pc::type::process_id_t pid);
+
+        void                set_id (const gpi::pc::type::id_t id);
+        gpi::pc::type::id_t get_id () const;
+
+        gpi::pc::type::id_t get_owner () const;
+        void set_owner (gpi::pc::type::id_t);
 
         gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::process_id_t proc_id
@@ -78,6 +86,8 @@ namespace gpi
         gpi::pc::type::segment::descriptor_t const &
         descriptor () const;
 
+        gpi::pc::type::segment::descriptor_t & descriptor ();
+
         gpi::pc::type::handle::descriptor_t const &
         descriptor (const gpi::pc::type::handle_t) const;
 
@@ -99,22 +109,53 @@ namespace gpi
                           , const gpi::pc::type::size_t size
                           ) const;
 
+        /**
+           Return a raw pointer to the given memory location, if possible.
+
+           It may return NULL in the following cases:
+
+           - the location is out of bounds
+           - the implementation does not support raw pointers.
+         */
         void *pointer_to (const gpi::pc::type::memory_location_t & loc);
+
+        gpi::pc::type::size_t
+        read_from ( gpi::pc::type::memory_location_t loc
+                  , void *buffer
+                  , gpi::pc::type::size_t amount
+                  );
+
+        gpi::pc::type::size_t
+        write_to ( gpi::pc::type::memory_location_t loc
+                 , const void *buffer
+                 , gpi::pc::type::size_t amount
+                 );
+
+        int get_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                               , const gpi::pc::type::memory_location_t dst
+                               , area_t & dst_area
+                               , gpi::pc::type::size_t amount
+                               , gpi::pc::type::size_t queue
+                               , task_list_t & tasks
+                               );
       protected:
         area_t ( const gpi::pc::type::segment::segment_type type
-               , const gpi::pc::type::id_t id
                , const gpi::pc::type::process_id_t creator
                , const std::string & name
                , const gpi::pc::type::size_t size
                , const gpi::pc::type::flags_t flags
                );
 
+        void reinit ();
+
+        gpi::pc::type::offset_t location_to_offset (gpi::pc::type::memory_location_t loc);
+
         /* hook functions that need to be overridded by specific segments */
         virtual
         grow_direction_t grow_direction (const gpi::pc::type::flags_t) const = 0;
 
         virtual
-        bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const = 0;
+        bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
 
         virtual void check_bounds ( const gpi::pc::type::handle::descriptor_t &
                                   , const gpi::pc::type::offset_t start
@@ -125,11 +166,31 @@ namespace gpi
                                     , const gpi::pc::type::offset_t a
                                     , const gpi::pc::type::offset_t b
                                     ) const = 0;
-        virtual void *ptr() = 0;
+        virtual void *raw_ptr (gpi::pc::type::offset_t off) = 0;
 
         virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                                      , const gpi::pc::type::flags_t flags
                                                      ) const = 0;
+
+        virtual int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                                                , const gpi::pc::type::memory_location_t dst
+                                                , area_t & dst_area
+                                                , gpi::pc::type::size_t amount
+                                                , gpi::pc::type::size_t queue
+                                                , task_list_t & tasks
+                                                ) = 0;
+
+        virtual gpi::pc::type::size_t
+        read_from_impl ( gpi::pc::type::offset_t offset
+                       , void *buffer
+                       , gpi::pc::type::size_t amount
+                       );
+
+        virtual gpi::pc::type::size_t
+        write_to_impl ( gpi::pc::type::offset_t offset
+                      , const void *buffer
+                      , gpi::pc::type::size_t amount
+                      );
 
         /*
          hook functions that may be overriden
@@ -154,6 +215,8 @@ namespace gpi
         handle_descriptor_map_t m_handles;
         process_ids_t m_attached_processes;
       };
+
+      typedef boost::shared_ptr<area_t> area_ptr_t;
     }
   }
 }

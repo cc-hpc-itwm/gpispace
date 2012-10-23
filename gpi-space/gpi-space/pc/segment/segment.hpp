@@ -31,7 +31,7 @@ namespace gpi
         std::string const & name () const { return m_descriptor.name; }
         void assign_id (const type::segment_id_t);
         type::segment_id_t id () const { return m_descriptor.id; }
-        type::size_t size () const { return m_descriptor.size; }
+        type::size_t size () const { return m_descriptor.local_size; }
 
         type::segment::descriptor_t const & descriptor() const { return m_descriptor; }
         type::segment::descriptor_t & descriptor() { return m_descriptor; }

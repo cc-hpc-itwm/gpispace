@@ -133,6 +133,7 @@ namespace xml
 
         , _dump_xml_file ("")
         , _dump_dependencies ("")
+        , _list_dependencies ("")
         , _dump_dependenciesD ()
         , _dependencies_target ()
         , _dependencies_target_quoted ()
@@ -180,6 +181,7 @@ namespace xml
 
         , _Odump_xml_file ("dump-xml-file,d")
         , _Odump_dependencies ("dump-dependencies,M")
+        , _Olist_dependencies ("list-dependencies")
         , _Odump_dependenciesD ("dump-dependenciesD")
         , _Odependencies_target ("dependencies-target")
         , _Odependencies_target_quoted ("dependencies-target-quoted")
@@ -360,6 +362,7 @@ namespace xml
       ACCESS(path_to_cpp)
       ACCESS(dump_xml_file)
       ACCESS(dump_dependencies)
+      ACCESS(list_dependencies)
       ACCESS(backup_extension)
 
 #undef ACCESS
@@ -685,6 +688,10 @@ namespace xml
           ( _Odependencies_add_phony_targets.c_str()
           , BOOLVAL(dependencies_add_phony_targets)
           , "add phony targets for all dependencies (also as -MP)"
+          )
+          ( _Olist_dependencies.c_str()
+          , STRINGVAL(list_dependencies)->implicit_value("/dev/stdout")
+          , "file to list the dependencies, empty for no list"
           )
           ;
 

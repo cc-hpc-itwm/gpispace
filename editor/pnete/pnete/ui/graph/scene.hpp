@@ -32,6 +32,8 @@ namespace fhg
 
     namespace ui
     {
+      class GraphView;
+
       namespace graph
       {
         class base_item;
@@ -42,13 +44,13 @@ namespace fhg
         class scene_type : public QGraphicsScene
         {
           Q_OBJECT;
-          
+
         public:
           explicit scene_type ( ::xml::parse::type::net_type& net
                               , data::internal_type* internal
                               , QObject* parent = NULL
                               );
-          
+
           const QPointF& mouse_position() const;
 
           void create_connection (connectable_item* item);
@@ -114,7 +116,7 @@ namespace fhg
           data::handle::net _net;
           data::internal_type* _internal;
 
-          friend class GraphView; // for net() only.
+          friend class fhg::pnete::ui::GraphView; // for net() only.
         };
       }
     }

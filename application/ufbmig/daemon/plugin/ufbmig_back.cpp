@@ -1063,13 +1063,13 @@ private:
 
     m_transfer_segment = gpi_api->register_segment ( "ufbmigd"
                                                    , m_transfer_segment_size
-                                                   , gpi::pc::type::segment::F_FORCE_UNLINK
-                                                   | gpi::pc::type::segment::F_EXCLUSIVE
+                                                   , gpi::pc::F_FORCE_UNLINK
+                                                   | gpi::pc::F_EXCLUSIVE
                                                    );
     m_transfer_buffer = gpi_api->alloc ( m_transfer_segment
                                         , m_chunk_size
                                         , "ufbmigd transfer buffer"
-                                        , gpi::pc::type::handle::F_NONE
+                                        , gpi::pc::F_NONE
                                         );
     return 0;
   }

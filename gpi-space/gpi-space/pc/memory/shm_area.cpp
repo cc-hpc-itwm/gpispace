@@ -7,7 +7,12 @@
 #include <fcntl.h>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/util/url.hpp>
+#include <fhg/util/read_bool.hpp>
+
 #include <boost/lexical_cast.hpp>
+
+#include <gpi-space/pc/type/flags.hpp>
 
 namespace gpi
 {
@@ -15,17 +20,104 @@ namespace gpi
   {
     namespace memory
     {
-      shm_area_t::shm_area_t ( const gpi::pc::type::id_t id
-                             , const gpi::pc::type::process_id_t creator
+      namespace detail
+      {
+        static void unlink (std::string const &p)
+        {
+          shm_unlink (p.c_str());
+        }
+
+        static void* open ( std::string const & path
+                          , gpi::pc::type::size_t & size
+                          , const int open_flags
+                          , const mode_t open_mode = 0
+                          )
+        {
+          int err (0);
+          int fd (-1);
+          void *ptr (0);
+
+          fd = shm_open (path.c_str(), open_flags, open_mode);
+          if (fd < 0)
+          {
+            std::string err = "open: " + path + ": " + strerror (errno);
+            throw std::runtime_error (err);
+          }
+
+          int prot (0);
+          if (open_flags & O_RDONLY)
+            prot = PROT_READ;
+          else if (open_flags & O_WRONLY)
+            prot = PROT_WRITE;
+          else if (open_flags & O_RDWR)
+            prot = PROT_READ | PROT_WRITE;
+
+          if (0 == size)
+          {
+            off_t end = lseek (fd, 0, SEEK_END);
+            if (end == (off_t)(-1))
+            {
+              std::string err (strerror (errno));
+              ::close (fd);
+              throw std::runtime_error ("lseek: " + err);
+            }
+            else
+            {
+              size = (gpi::pc::type::size_t)(end);
+              lseek (fd, 0, SEEK_SET);
+            }
+          }
+          else if (open_flags & O_CREAT)
+          {
+            ftruncate (fd, size);
+          }
+
+          ptr = mmap ( NULL
+                     , size
+                     , prot
+                     , MAP_SHARED
+                     , fd
+                     , 0
+                     );
+          if (MAP_FAILED == ptr)
+          {
+            std::string err (strerror(errno));
+            ::close (fd);
+
+            if (open_flags & O_CREAT)
+            {
+              detail::unlink (path.c_str ());
+            }
+
+            throw std::runtime_error ("mmap: " + err);
+          }
+
+          ::close (fd);
+          return ptr;
+        }
+
+        static void close (void *ptr, const gpi::pc::type::size_t sz)
+        {
+          if (ptr)
+          {
+            if (munmap(ptr, sz) < 0)
+            {
+              std::string err (strerror(errno));
+              throw std::runtime_error ("munmap: " + err);
+            }
+          }
+        }
+      }
+
+      shm_area_t::shm_area_t ( const gpi::pc::type::process_id_t creator
                              , const std::string & name
-                             , const gpi::pc::type::size_t size
+                             , const gpi::pc::type::size_t user_size
                              , const gpi::pc::type::flags_t flags
                              )
-        : area_t ( gpi::pc::type::segment::SEG_SHM
-                 , id
+        : area_t ( shm_area_t::area_type
                  , creator
                  , name
-                 , size
+                 , user_size
                  , flags
                  )
         , m_ptr (NULL)
@@ -39,13 +131,31 @@ namespace gpi
           m_path = name;
         else
           m_path = "/" + name;
-        m_ptr = shm_area_t::open ( m_path
-                                 , size
-                                 , O_RDWR // TODO: pass via flags
-                                 );
+
+        gpi::pc::type::size_t size = user_size;
+
+        int open_flags = O_RDWR;
+
+        if (not gpi::flag::is_set (flags, gpi::pc::F_NOCREATE))
+        {
+          MLOG (INFO, "setting open_flags to O_CREAT + O_EXCL");
+          open_flags |= O_CREAT | O_EXCL;
+        }
+
+        m_ptr = detail::open ( m_path
+                             , size
+                             , open_flags
+                             , 0600
+                             );
         if (unlink_after_open (flags))
         {
-          shm_area_t::unlink (m_path);
+          detail::unlink (m_path);
+        }
+
+        if (0 == user_size)
+        {
+          descriptor ().local_size = size;
+          area_t::reinit ();
         }
       }
 
@@ -53,11 +163,11 @@ namespace gpi
       {
         try
         {
-          shm_area_t::close(m_ptr, descriptor().size);
+          detail::close (m_ptr, descriptor().local_size);
           m_ptr = 0;
           if (unlink_after_close (descriptor().flags))
           {
-            shm_area_t::unlink (m_path);
+            detail::unlink (m_path);
           }
         }
         catch (std::exception const & ex)
@@ -73,24 +183,12 @@ namespace gpi
       }
 
       void*
-      shm_area_t::ptr ()
+      shm_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
-        return m_ptr;
-      }
-
-      bool
-      shm_area_t::is_allowed_to_attach
-      (const gpi::pc::type::process_id_t proc) const
-      {
-        if (gpi::flag::is_set
-           (descriptor ().flags, gpi::pc::type::segment::F_EXCLUSIVE))
-        {
-          if (proc == descriptor ().creator)
-            return true;
-          else
-            return false;
-        }
-        return true;
+        return
+          (m_ptr && off < descriptor().local_size)
+          ? ((char*)m_ptr + off)
+          : 0;
       }
 
       area_t::grow_direction_t
@@ -131,84 +229,14 @@ namespace gpi
 
       bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t flgs)
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
-          return true;
         return false;
       }
 
       bool shm_area_t::unlink_after_close (const gpi::pc::type::flags_t flgs)
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_NOUNLINK))
-          return false;
-        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
+        if (gpi::flag::is_set (flgs, gpi::pc::F_PERSISTENT))
           return false;
         return true;
-      }
-
-      void* shm_area_t::open ( std::string const & path
-                             , const gpi::pc::type::size_t size
-                             , const int open_flags
-                             , const mode_t open_mode
-                             )
-      {
-        int err (0);
-        int fd (-1);
-        void *ptr (0);
-
-        fd = shm_open (path.c_str(), open_flags, open_mode);
-        if (fd < 0)
-        {
-          std::string err (strerror(errno));
-          throw std::runtime_error ("open: " + err);
-        }
-
-        int prot (0);
-        if (open_flags & O_RDONLY)
-          prot = PROT_READ;
-        else if (open_flags & O_WRONLY)
-          prot = PROT_WRITE;
-        else if (open_flags & O_RDWR)
-          prot = PROT_READ | PROT_WRITE;
-
-        ptr = mmap ( NULL
-                   , size
-                   , prot
-                   , MAP_SHARED
-                   , fd
-                   , 0
-                   );
-        if (MAP_FAILED == ptr)
-        {
-          std::string err (strerror(errno));
-          ::close (fd);
-          throw std::runtime_error ("mmap: " + err);
-        }
-
-        ::close (fd);
-        return ptr;
-      }
-
-      void shm_area_t::close ( void *ptr
-                             , const gpi::pc::type::size_t sz
-                             )
-      {
-        if (ptr)
-        {
-          if (munmap(ptr, sz) < 0)
-          {
-            std::string err (strerror(errno));
-            throw std::runtime_error ("munmap: " + err);
-          }
-        }
-      }
-
-      void shm_area_t::unlink (std::string const & p)
-      {
-        if (shm_unlink (p.c_str()) < 0)
-        {
-          std::string err (strerror(errno));
-          throw std::runtime_error ("unlink: " + err);
-        }
       }
 
       bool
@@ -227,6 +255,67 @@ namespace gpi
                                  ) const
       {
         return sz;
+      }
+
+      int
+      shm_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+                                              , const gpi::pc::type::memory_location_t dst
+                                              , area_t & dst_area
+                                              , gpi::pc::type::size_t amount
+                                              , gpi::pc::type::size_t queue
+                                              , task_list_t & tasks
+                                              )
+      {
+        LOG ( ERROR
+            , "specific transfer not implemented: "
+            << amount << " bytes: "
+            << dst
+            << " <- "
+            << src
+            );
+        throw std::runtime_error
+          ("get_specific_transfer_tasks not implemented on shm_area");
+      }
+
+      area_ptr_t shm_area_t::create (std::string const &url_s)
+      {
+        using namespace fhg::util;
+        using namespace gpi::pc;
+
+        url_t url (url_s);
+        gpi::pc::type::flags_t flags = F_NONE;
+
+        if (not read_bool (url.get ("create", "false")))
+        {
+          gpi::flag::set (flags, F_NOCREATE);
+        }
+        if (    read_bool (url.get ("unlink", "false")))
+        {
+          gpi::flag::set (flags, F_FORCE_UNLINK);
+        }
+        if (not read_bool (url.get ("mmap", "false")))
+        {
+          gpi::flag::set (flags, F_NOMMAP);
+        }
+        if (    read_bool (url.get ("exclusive", "false")))
+        {
+          gpi::flag::set (flags, F_EXCLUSIVE);
+        }
+        if (    read_bool (url.get ("persistent", "false")))
+        {
+          gpi::flag::set (flags, F_PERSISTENT);
+        }
+
+        gpi::pc::type::size_t size =
+          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
+
+        area_ptr_t area (new shm_area_t ( 0
+                                        , url.path ()
+                                        , size
+                                        , flags
+                                        )
+                        );
+        return area;
       }
     }
   }

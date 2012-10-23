@@ -15,23 +15,23 @@ namespace value
 {
   namespace detail
   {
-    void skip_spaces (fhg::util::parse::position& pos)
+    inline void skip_spaces (fhg::util::parse::position& pos)
     {
       while (!pos.end() && isspace (*pos))
         {
           ++pos;
         }
     }
-
-    std::string identifier (fhg::util::parse::position& pos)
-    {
-      skip_spaces (pos);
-
-      return literal::identifier (pos);
-    }
   }
 
-  type read (fhg::util::parse::position& pos)
+  inline std::string identifier (fhg::util::parse::position& pos)
+  {
+    detail::skip_spaces (pos);
+
+    return literal::identifier (pos);
+  }
+
+  inline type read (fhg::util::parse::position& pos)
   {
     type v;
 
@@ -73,11 +73,11 @@ namespace value
 
                 while (not pos.end() && not struct_closed)
                   {
-                    const std::string name (detail::identifier (pos));
+                    const std::string name (identifier (pos));
 
                     if (name.empty())
                       {
-                        throw expr::exception::parse::expected ("III identifier", pos());
+                        throw expr::exception::parse::expected ("identifier", pos());
                       }
 
                     detail::skip_spaces (pos);
@@ -132,7 +132,7 @@ namespace value
     return v;
   }
 
-  type read (const std::string& s)
+  inline type read (const std::string& s)
   {
     std::size_t k (0);
     std::string::const_iterator begin (s.begin());

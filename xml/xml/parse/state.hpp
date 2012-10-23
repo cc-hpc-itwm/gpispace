@@ -108,6 +108,7 @@ namespace xml
 
         std::string _dump_xml_file;
         std::string _dump_dependencies;
+        std::string _list_dependencies;
         bool _dump_dependenciesD;
         std::vector<std::string> _dependencies_target;
         std::vector<std::string> _dependencies_target_quoted;
@@ -155,6 +156,7 @@ namespace xml
 
         std::string _Odump_xml_file;
         std::string _Odump_dependencies;
+        std::string _Olist_dependencies;
         std::string _Odump_dependenciesD;
         std::string _Odependencies_target;
         std::string _Odependencies_target_quoted;
@@ -229,6 +231,7 @@ namespace xml
         ACCESS(path_to_cpp)
         ACCESS(dump_xml_file)
         ACCESS(dump_dependencies)
+        ACCESS(list_dependencies)
         ACCESS(backup_extension)
 
 #undef ACCESS

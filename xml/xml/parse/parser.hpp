@@ -1822,6 +1822,32 @@ namespace xml
         operator const std::string& () const { return _quoted; }
       };
 
+
+      inline std::string quote_for_list (const std::string& s)
+      {
+        std::string quoted;
+        std::string::const_iterator pos (s.begin());
+        const std::string::const_iterator end (s.end());
+
+        while (pos != end)
+          {
+            switch (*pos)
+              {
+              case ' ': quoted += "\\ "; break;
+              default: quoted += *pos; break;
+              }
+
+            ++pos;
+          }
+
+        return quoted;
+      }
+
+      inline std::string quote_for_list (const boost::filesystem::path& p)
+      {
+        return quote_for_list (p.string());
+      }
+
       template<typename Stream>
       void mk ( const state::type& state
               , const std::string& input
@@ -1971,6 +1997,24 @@ namespace xml
             }
 
           dependencies::mk (state, input, stream);
+        }
+
+      if (state.list_dependencies().size() > 0)
+        {
+          const std::string& file (state.list_dependencies());
+          std::ofstream stream (file.c_str());
+
+          if (not stream)
+            {
+              throw error::could_not_open_file (file);
+            }
+
+          stream << dependencies::quote_for_list (input) << std::endl;
+
+          BOOST_FOREACH (const boost::filesystem::path& p, state.dependencies())
+            {
+              stream << dependencies::quote_for_list(p) << std::endl;
+            }
         }
 
       return f;

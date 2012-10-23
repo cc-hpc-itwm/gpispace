@@ -966,6 +966,10 @@ namespace xml
         stream << "  BOOST_ROOT = /usr"                            << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
+        stream << "ifeq \"$(CXX)\" \"\""                           << std::endl;
+        stream << "  $(error Variable CXX is empty.)"              << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -I$(BOOST_ROOT)/include"            << std::endl;
         stream                                                     << std::endl;
@@ -973,15 +977,15 @@ namespace xml
         stream << "LDFLAGS += -lboost_serialization"               << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
-        stream << "  CP = $(shell which cp)"                       << std::endl;
+        stream << "  CP = $(shell which cp 2>/dev/null)"           << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef MKDIR"                                   << std::endl;
-        stream << "  MKDIR = $(shell which mkdir)"                 << std::endl;
+        stream << "  MKDIR = $(shell which mkdir 2>/dev/null)"     << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef RM"                                      << std::endl;
-        stream << "  RM = $(shell which rm) -f"                    << std::endl;
+        stream << "  RM = $(shell which rm 2>/dev/null) -f"        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
@@ -1003,6 +1007,13 @@ namespace xml
         stream << "default: depend $(MODULES)"                     << std::endl;
         stream << "modules: depend $(MODULES) objcleandep"         << std::endl;
         stream                                                     << std::endl;
+        stream << "ifeq \"$(CP)\" \"\""                            << std::endl;
+        stream                                                     << std::endl;
+        stream << "%.cpp:"                                         << std::endl;
+        stream << "\t$(error Missing file '$@'.)"                  << std::endl;
+        stream                                                     << std::endl;
+        stream << "else"                                           << std::endl;
+        stream                                                     << std::endl;
         stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
         stream << "\t$(warning !!! COPY $*.cpp_tmpl TO $*.cpp)"    << std::endl;
@@ -1010,6 +1021,8 @@ namespace xml
                                                                    << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
         stream << "\t$(CP) $^ $@"                                  << std::endl;
+        stream                                                     << std::endl;
+        stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
         for ( fun_info_map::const_iterator mod (m.begin())
@@ -1145,12 +1158,27 @@ namespace xml
         stream << "ifeq \"$(LIB_DESTDIR)\" \"\""                   << std::endl;
         stream                                                     << std::endl;
         stream << "install:"                                       << std::endl;
-	stream << "\t$(error variable LIB_DESTDIR undefined)"      << std::endl;
+        stream << "\t$(error variable LIB_DESTDIR empty.)"         << std::endl;
+        stream                                                     << std::endl;
+        stream << "else ifeq \"$(CP)\" \"\""                       << std::endl;
+        stream                                                     << std::endl;
+        stream << "install:"                                       << std::endl;
+        stream << "\t$(error variable CP empty.)"                  << std::endl;
+        stream                                                     << std::endl;
+        stream << "else"                                           << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifeq \"$(MKDIR)\" \"\""                         << std::endl;
+        stream                                                     << std::endl;
+        stream << "$(LIB_DESTDIR):"                                << std::endl;
+        stream << "\t$(error Could not create installation directory: Variable 'mkdir' empty.)"
+                                                                   << std::endl;
         stream                                                     << std::endl;
         stream << "else"                                           << std::endl;
         stream                                                     << std::endl;
         stream << "$(LIB_DESTDIR):"                                << std::endl;
-	stream << "\t@$(MKDIR) -v -p $(LIB_DESTDIR)"               << std::endl;
+        stream << "\t@$(MKDIR) -v -p $(LIB_DESTDIR)"               << std::endl;
+        stream                                                     << std::endl;
+        stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
         for ( fun_info_map::const_iterator mod (m.begin())
@@ -1184,6 +1212,17 @@ namespace xml
 
         stream << "depend: $(DEPENDS)"                             << std::endl;
         stream                                                     << std::endl;
+        stream << "ifeq \"$(RM)\" \"\""                            << std::endl;
+        stream                                                     << std::endl;
+        stream << "clean:"                                         << std::endl;
+        stream << "depclean:"                                      << std::endl;
+        stream << "objclean:"                                      << std::endl;
+        stream << "modclean:"                                      << std::endl;
+        stream << "objcleandep:"                                   << std::endl;
+        stream << "\t$(error Variable RM empty.)"                  << std::endl;
+        stream                                                     << std::endl;
+        stream << "else"                                           << std::endl;
+        stream                                                     << std::endl;
         stream << ".PHONY: clean depclean objclean modclean objcleandep"
                                                                    << std::endl;
         stream                                                     << std::endl;
@@ -1216,6 +1255,9 @@ namespace xml
         stream                                                     << std::endl;
         stream << "modclean:"                                      << std::endl;
         stream << "\t-$(RM) $(MODULES)"                            << std::endl;
+        stream                                                     << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
 
         stream.commit();
       }
