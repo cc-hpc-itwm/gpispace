@@ -23,11 +23,10 @@ namespace gpi
   {
     namespace container
     {
-      manager_t::manager_t (std::string const & p, std::string const &mem_url)
+      manager_t::manager_t (std::string const & p)
        : m_state (ST_STOPPED)
        , m_connector (*this, p)
        , m_process_counter (0)
-       , m_default_memory_url (mem_url)
       {}
 
       manager_t::~manager_t ()
@@ -40,6 +39,13 @@ namespace gpi
         {
           LOG(ERROR, "error within dtor of container manager: " << ex.what());
         }
+      }
+
+      void manager_t::add_default_memory (std::string const &url_s)
+      {
+        if (m_default_memory_urls.size () == gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
+          throw std::runtime_error ("too many predefined memory urls!");
+        m_default_memory_urls.push_back (url_s);
       }
 
       void manager_t::start ()
@@ -137,11 +143,19 @@ namespace gpi
 
         if (global::topology ().is_master ())
         {
-          global::memory_manager ().add_memory
-            ( 0 // owner
-            , m_default_memory_url
-            , 1 // id
-            );
+          typedef std::vector<std::string> url_list_t;
+          url_list_t::iterator it = m_default_memory_urls.begin ();
+          url_list_t::iterator end = m_default_memory_urls.end ();
+          gpi::pc::type::id_t id = 1;
+          for ( ; it != end ; ++it)
+          {
+            global::memory_manager ().add_memory
+              ( 0 // owner
+              , *it
+              , id
+              );
+            ++id;
+          }
         }
       }
 

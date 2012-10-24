@@ -40,7 +40,6 @@ struct config_t
 {
   int  magic;
   char socket[MAX_PATH_LEN];
-  char memory_url[MAX_PATH_LEN];
   char kvs_host[MAX_HOST_LEN];
   unsigned short kvs_port;
   unsigned int kvs_retry_count;
@@ -63,6 +62,9 @@ static int gpi_np = -1;
 static int gpi_numa_socket = 0;
 static unsigned int gpi_timeout = 120;
 static int verbose = 0;
+
+static char default_memory_url [MAX_PATH_LEN];
+static std::vector<std::string> mem_urls;
 
 typedef gpi::api::gpi_api_t gpi_api_t;
 gpi::pc::container::manager_t *global_container_mgr(NULL);
@@ -92,11 +94,11 @@ static void long_usage()
   fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
   fprintf(stderr, "      create sockets in this base path\n");
   fprintf(stderr, "\n");
-  fprintf(stderr, "    --mem-url PATH (%s)\n", config.memory_url);
+  fprintf(stderr, "    --mem-url URL (%s)\n", default_memory_url);
   fprintf(stderr, "      url of the default memory segment (1)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "      examples are:\n");
-  fprintf(stderr, "         gpi://   GPI memory\n");
+  fprintf(stderr, "         gpi://?buffers=8&buffer_size=4194304 GPI memory\n");
   fprintf(stderr, "         sfs://<path>?create=true&size=1073741824\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "KVS options\n");
@@ -175,6 +177,10 @@ int main (int ac, char *av[])
   snprintf (pidfile, sizeof(pidfile), "%s", "");
   snprintf (api_name, sizeof(api_name), "%s", "auto");
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
+  snprintf ( default_memory_url
+           , sizeof (default_memory_url)
+           , "gpi://?buffer_size=4194304&buffers=8"
+           );
 
   initialize_config (&config);
 
@@ -258,20 +264,17 @@ int main (int ac, char *av[])
       ++i;
       if (i < ac)
       {
-        if ((strlen (av[i]) + 1) > sizeof (config.memory_url))
+        if ((strlen (av[i]) + 1) > MAX_PATH_LEN)
         {
           fprintf (stderr, "%s: memory url is too large!\n", program_name);
           fprintf (stderr, "    at most %lu characters are supported\n"
-                  , sizeof(config.memory_url) - 1
+                  , MAX_PATH_LEN - 1
                   );
           exit(EX_INVAL);
         }
 
-        snprintf ( config.memory_url
-                 , sizeof (config.memory_url)
-                 , "%s"
-                 , av[i]
-                 );
+        mem_urls.push_back (av [i]);
+
         ++i;
       }
       else
@@ -905,9 +908,17 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
   try
   {
     global_container_mgr =
-      new gpi::pc::container::manager_t ( cfg->socket
-                                        , cfg->memory_url
-                                        );
+      new gpi::pc::container::manager_t (cfg->socket);
+    if (mem_urls.empty ())
+      mem_urls.push_back (default_memory_url);
+
+    for ( std::vector<std::string>::iterator url_it = mem_urls.begin ()
+        ; url_it != mem_urls.end ()
+        ; ++url_it
+        )
+    {
+      global_container_mgr->add_default_memory (*url_it);
+    }
     global_container_mgr->start ();
   }
   catch (std::exception const & ex)
@@ -1026,11 +1037,6 @@ static void initialize_config (config_t * c)
   }
   c->log_port = 2438;
   c->log_level = 'I';
-
-  snprintf ( c->memory_url
-           , MAX_PATH_LEN
-           , "gpi://"
-           );
 }
 
 static void distribute_config_or_die(const config_t *c)
