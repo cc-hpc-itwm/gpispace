@@ -9,25 +9,13 @@ namespace xml
   {
     namespace id
     {
-#define MAKE_ID(name)                                                   \
-      struct name
+#define ITEM(NAME,__IGNORE,__IGNORE2,__IGNORE3)                         \
+      struct NAME;
 
-      MAKE_ID (connect);
-      MAKE_ID (expression);
-      MAKE_ID (function);
-      MAKE_ID (module);
-      MAKE_ID (net);
-      MAKE_ID (place);
-      MAKE_ID (place_map);
-      MAKE_ID (port);
-      MAKE_ID (specialize);
-      MAKE_ID (structure);
-      MAKE_ID (tmpl);
-      MAKE_ID (token);
-      MAKE_ID (transition);
-      MAKE_ID (use);
+#include <xml/parse/id/helper.lst>
 
-#undef MAKE_ID
+#undef ITEM
+      }
     }
   }
 }
