@@ -90,6 +90,9 @@ namespace gpi
         gpi::pc::type::offset_t m_max_local_offset;
 
         handle_pool_t m_com_handles; // local allocations that can be used to transfer data
+
+        gpi::pc::type::size_t m_num_com_buffers;
+        gpi::pc::type::size_t m_com_buffer_size;
       };
     }
   }

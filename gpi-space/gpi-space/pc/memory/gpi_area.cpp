@@ -32,6 +32,8 @@ namespace gpi
                  , flags
                  )
         , m_ptr (dma_ptr)
+        , m_com_buffer_size (4* (1<<20))
+        , m_num_com_buffers (8)
       {
         // total memory size is required for boundary checks
         m_total_memsize = gpi::api::gpi_api_t::get().number_of_nodes () * size;
@@ -52,20 +54,19 @@ namespace gpi
 
       void gpi_area_t::init ()
       {
-        // TODO: make those member variables
-        static const size_t num_com_buffers = 8;
-        static const size_t com_buffer_size = 4 * (1<<20);
+        fhg_assert (m_num_com_buffers > 0);
+        fhg_assert (m_com_buffer_size > 0);
 
         // TODO: make  this lazy, just define  a maximum number  of buffers, but
         // try to allocate them only when actually needed.
-        for (size_t i = 0; i < num_com_buffers; ++i)
+        for (size_t i = 0; i < m_num_com_buffers; ++i)
         {
-          const std::string name =
-            "gpi-com-" + boost::lexical_cast<std::string>(i);
+          const std::string hdl_name =
+            name () + "-com-" + boost::lexical_cast<std::string>(i);
           gpi::pc::type::handle_t com_hdl =
             this->alloc ( GPI_PC_INVAL
-                        , com_buffer_size
-                        , name
+                        , m_com_buffer_size
+                        , hdl_name
                         , gpi::pc::F_EXCLUSIVE
                         );
           if (com_hdl)
@@ -565,15 +566,16 @@ namespace gpi
           boost::lexical_cast<type::size_t>(url.get ("numcom", "8"));
 
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        area_ptr_t area (new gpi_area_t ( GPI_PC_INVAL
-                                        , "GPI"
-                                        , gpi_api.memory_size ()
-                                        , gpi::pc::F_PERSISTENT
-                                        + gpi::pc::F_GLOBAL
-                                        , gpi_api.dma_ptr ()
-                                        )
-                        );
-        return area;
+        gpi_area_t * area = new gpi_area_t ( GPI_PC_INVAL
+                                           , "GPI"
+                                           , gpi_api.memory_size ()
+                                           , gpi::pc::F_PERSISTENT
+                                           + gpi::pc::F_GLOBAL
+                                           , gpi_api.dma_ptr ()
+                                           );
+        area->m_num_com_buffers = numbuf;
+        area->m_com_buffer_size = comsize;
+        return area_ptr_t (area);
       }
     }
   }
