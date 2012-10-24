@@ -36,8 +36,8 @@ class ReducerWorkflowEngine : public BasicEngine
     typedef typename MapTag2ReducerT::value_type PairTagReducerT;
 
     ReducerWorkflowEngine( GenericDaemon* pIAgent = NULL, Function_t f = Function_t() )
-    : SDPA_INIT_LOGGER(pIAgent->name()+": ReducerWE"),
-      BasicEngine(pIAgent, f)
+    : BasicEngine(pIAgent, f),
+      SDPA_INIT_LOGGER(pIAgent->name()+": ReducerWE")
     {
       SDPA_LOG_DEBUG("Reducer workflow engine created ...");
     }
