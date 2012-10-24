@@ -90,7 +90,7 @@ namespace xml
         {                                                               \
           throw fhg::util::backtracing_exception                        \
             ( ( boost::format ( "Adding " EXPAND_AND_STRINGIFY (NAME)   \
-                          "failed: Element with ID %2% already exists." \
+                          "failed: Element with ID %1% already exists." \
                               )                                         \
               % id                                                      \
               ).str()                                                   \
