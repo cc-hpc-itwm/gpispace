@@ -44,15 +44,22 @@ namespace xml
 #define ITEM(NAME,__IGNORE,TYPE)                                      \
                                                                       \
         boost::optional<type::TYPE> get (const NAME&) const;          \
-        void put (const NAME&, const type::TYPE& elem);               \
-                                                                      \
-        void add_reference (const NAME&);                             \
-        void remove_reference (const NAME&);
+        void put (const NAME&, const type::TYPE& elem);
 
 #include <xml/parse/id/mapper_helper.lst>
 #undef ITEM
 
       private:
+
+#define ITEM(NAME,__IGNORE,TYPE)                                      \
+                                                                      \
+        void add_reference (const NAME&);                             \
+        void remove_reference (const NAME&);                          \
+                                                                      \
+        friend struct NAME;
+
+#include <xml/parse/id/mapper_helper.lst>
+#undef ITEM
 
         //! \note We need to use pimpl, as there is an include loop.
         //! \todo C++11: std::unique_ptr
