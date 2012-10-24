@@ -3,6 +3,8 @@
 #ifndef XML_UTIL_ID_TYPE_HPP
 #define XML_UTIL_ID_TYPE_HPP
 
+#include <xml/parse/util/id_type_map.fwd.hpp>
+
 #include <iosfwd>
 
 #include <boost/cstdint.hpp>
@@ -15,21 +17,24 @@ namespace xml
     {
       typedef boost::uint_fast64_t base_id_type;
 
-#define MAKE_ID(name)                                                   \
-      struct name                                                       \
+#define MAKE_ID(NAME)                                                   \
+      struct NAME                                                       \
       {                                                                 \
       public:                                                           \
-        name (const base_id_type& val);                                 \
-        bool operator< (const name& other) const;                       \
-        bool operator== (const name& other) const;                      \
-        name& operator= (const base_id_type& val);                      \
-        friend std::size_t hash_value (const name&);                    \
-        friend std::ostream& operator<< (std::ostream&, const name&);   \
+        NAME (const base_id_type& val);                                 \
+        NAME (const NAME& other);                                       \
+        bool operator< (const NAME& other) const;                       \
+        bool operator== (const NAME& other) const;                      \
+        NAME& operator= (const base_id_type& val);                      \
+        NAME& operator= (const NAME& other);                            \
+        friend std::size_t hash_value (const NAME&);                    \
+        friend std::ostream& operator<< (std::ostream&, const NAME&);   \
       private:                                                          \
         base_id_type _val;                                              \
+        id_map::mapper* _mapper;                                        \
       };                                                                \
-      std::size_t hash_value (const name& val);                         \
-      std::ostream& operator<< (std::ostream& os, const name& val)
+      std::size_t hash_value (const NAME& val);                         \
+      std::ostream& operator<< (std::ostream& os, const NAME& val)
 
       MAKE_ID (connect);
       MAKE_ID (expression);

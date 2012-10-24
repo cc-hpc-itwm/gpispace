@@ -12,29 +12,41 @@ namespace xml
   {
     namespace id
     {
-#define MAKE_ID(name)                                                   \
-      name::name (const base_id_type& val)                              \
+#define MAKE_ID(NAME)                                                   \
+      NAME::NAME (const base_id_type& val)                              \
         :  _val (val)                                                   \
+        , _mapper (NULL)                                                \
       { }                                                               \
-      bool name::operator< (const name& other) const                    \
+      NAME::NAME (const NAME& other)                                    \
+        :  _val (other._val)                                            \
+        , _mapper (other._mapper)                                       \
+      { }                                                               \
+      bool NAME::operator< (const NAME& other) const                    \
       {                                                                 \
         return _val < other._val;                                       \
       }                                                                 \
-      bool name::operator== (const name& other) const                   \
+      bool NAME::operator== (const NAME& other) const                   \
       {                                                                 \
         return _val == other._val;                                      \
       }                                                                 \
-      name& name::operator= (const base_id_type& val)                   \
+      NAME& NAME::operator= (const base_id_type& val)                   \
       {                                                                 \
         _val = val;                                                     \
+        _mapper = NULL;                                                 \
         return *this;                                                   \
       }                                                                 \
-      std::size_t hash_value (const name& val)                          \
+      NAME& NAME::operator= (const NAME& other)                         \
       {                                                                 \
-        return boost::hash< base_id_type>()                             \
+        _val = other._val;                                              \
+        _mapper = other._mapper;                                        \
+        return *this;                                                   \
+      }                                                                 \
+      std::size_t hash_value (const NAME& val)                          \
+      {                                                                 \
+        return boost::hash<base_id_type>()                              \
           (val._val);                                                   \
       }                                                                 \
-      std::ostream& operator<< (std::ostream& os, const name& val)      \
+      std::ostream& operator<< (std::ostream& os, const NAME& val)      \
       {                                                                 \
         return os << val._val;                                          \
       }
