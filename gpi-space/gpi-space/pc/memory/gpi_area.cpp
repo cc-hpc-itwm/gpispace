@@ -40,7 +40,7 @@ namespace gpi
         m_min_local_offset = gpi::api::gpi_api_t::get().rank() * size;
         m_max_local_offset = m_min_local_offset + size - 1;
 
-        CLOG( INFO
+        CLOG( DEBUG
             , "gpi.memory"
             , "GPI memory created:"
             <<" per-node: " << size
@@ -561,9 +561,9 @@ namespace gpi
         gpi::pc::type::flags_t flags = F_PERSISTENT + F_GLOBAL;
 
         type::size_t comsize =
-          boost::lexical_cast<type::size_t>(url.get ("comsize", "4194304"));
+          boost::lexical_cast<type::size_t>(url.get ("buffer_size", "4194304"));
         type::size_t numbuf =
-          boost::lexical_cast<type::size_t>(url.get ("numcom", "8"));
+          boost::lexical_cast<type::size_t>(url.get ("buffers", "8"));
 
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
         gpi_area_t * area = new gpi_area_t ( GPI_PC_INVAL
