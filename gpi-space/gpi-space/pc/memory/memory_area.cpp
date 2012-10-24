@@ -150,6 +150,11 @@ namespace gpi
         return m_descriptor.nref > 0;
       }
 
+      std::string const & area_t::name () const
+      {
+        return m_descriptor.name;
+      }
+
       gpi::pc::type::size_t area_t::size () const
       {
         return m_descriptor.local_size;
