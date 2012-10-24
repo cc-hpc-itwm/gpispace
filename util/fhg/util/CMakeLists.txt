@@ -1,4 +1,21 @@
 # -*- mode: cmake; -*-
+
+# check for 'pthread_setname_np'
+include(CheckCSourceRuns)
+CHECK_C_SOURCE_RUNS(
+  "
+#include <pthread.h>
+int main ()
+{
+   pthread_setname_np (pthread_self (), \"test\");
+   return 0;
+}"
+   HAVE_PTHREAD_SETNAME)
+
+if (HAVE_PTHREAD_SETNAME)
+  add_definitions(-DHAVE_PTHREAD_SETNAME)
+endif()
+
 set (hdrs
   join.hpp
   maybe.hpp
