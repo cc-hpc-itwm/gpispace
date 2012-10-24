@@ -26,14 +26,19 @@ namespace xml
         NAME (const base_id_type& val);                                 \
         NAME (const NAME& other);                                       \
         NAME& operator= (const NAME& other);                            \
+        ~NAME();                                                        \
+                                                                        \
         bool operator< (const NAME& other) const;                       \
         bool operator== (const NAME& other) const;                      \
+                                                                        \
         friend std::size_t hash_value (const NAME&);                    \
         friend std::ostream& operator<< (std::ostream&, const NAME&);   \
+                                                                        \
       private:                                                          \
         base_id_type _val;                                              \
         id_map::mapper* _mapper;                                        \
       };                                                                \
+                                                                        \
       std::size_t hash_value (const NAME& val);                         \
       std::ostream& operator<< (std::ostream& os, const NAME& val)
 

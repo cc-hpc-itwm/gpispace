@@ -2,6 +2,8 @@
 
 #include <xml/parse/util/id_type.hpp>
 
+#include <xml/parse/util/id_type_map.hpp>
+
 #include <iostream>
 
 #include <boost/functional/hash.hpp>
@@ -16,17 +18,28 @@ namespace xml
       NAME::NAME (const base_id_type& val)                              \
         :  _val (val)                                                   \
         , _mapper (NULL)                                                \
-      { }                                                               \
+      {                                                                 \
+        _mapper->add_reference (*this);                                 \
+      }                                                                 \
       NAME::NAME (const NAME& other)                                    \
         :  _val (other._val)                                            \
         , _mapper (other._mapper)                                       \
-      { }                                                               \
+      {                                                                 \
+        _mapper->add_reference (*this);                                 \
+      }                                                                 \
       NAME& NAME::operator= (const NAME& other)                         \
       {                                                                 \
         _val = other._val;                                              \
         _mapper = other._mapper;                                        \
+        _mapper->add_reference (*this);                                 \
         return *this;                                                   \
       }                                                                 \
+      NAME::~NAME()                                                     \
+      {                                                                 \
+        _mapper->remove_reference (*this);                              \
+        _mapper = NULL;                                                 \
+      }                                                                 \
+                                                                        \
       bool NAME::operator< (const NAME& other) const                    \
       {                                                                 \
         return _val < other._val;                                       \
@@ -35,6 +48,7 @@ namespace xml
       {                                                                 \
         return _val == other._val;                                      \
       }                                                                 \
+                                                                        \
       std::size_t hash_value (const NAME& val)                          \
       {                                                                 \
         return boost::hash<base_id_type>() (val._val);                  \
