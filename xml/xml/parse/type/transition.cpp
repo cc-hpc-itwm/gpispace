@@ -630,8 +630,6 @@ namespace xml
 
             // set a prefix
             const std::string prefix (rewrite::mk_prefix (trans.name()));
-            const net_type & net_old (boost::get<net_type> (fun.f));
-            const net_type net_new (set_prefix (net_old, prefix));
 
             place_map_map_type place_map_map;
 
@@ -657,16 +655,14 @@ namespace xml
                 place_map_map[prefix + pm->place_virtual] = pid->second;
               }
 
+            net_type& net (boost::get<net_type> (fun.f));
+            net.set_prefix (prefix);
+
             // synthesize into this level
             const place_map_map_type pid_of_place
-              ( net_synthesize
-                ( we_net
-                , place_map_map
-                , net_new
-                , state
-                , e
-                )
-              );
+              (net_synthesize (we_net, place_map_map, net, state, e));
+
+            net.remove_prefix (prefix);
 
             // go in the subnet
             const std::string cond_in (fun.condition());

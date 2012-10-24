@@ -598,96 +598,119 @@ namespace xml
 
       // ******************************************************************* //
 
-      net_type
-      set_prefix (const net_type & net_old, const std::string & prefix)
+      void net_type::set_prefix (const std::string & prefix)
       {
-        net_type net_new (net_old);
-
-        net_new.clear_places();
-        net_new.clear_transitions();
-
-        for ( net_type::places_type::const_iterator
-                place_old (net_old.places().begin())
-            ; place_old != net_old.places().end()
-            ; ++place_old
+        for ( places_type::iterator place (places().begin())
+            ; place != places().end()
+            ; ++place
             )
+        {
+          place->name (prefix + place->name());
+        }
+
+        for ( transitions_type::iterator transition (transitions().begin())
+            ; transition != transitions().end()
+            ; ++transition
+            )
+        {
+          transition->name (prefix + transition->name());
+
+          for ( connections_type::iterator
+                  connection (transition->in().begin())
+              ; connection != transition->in().end()
+              ; ++connection
+              )
           {
-            place_type place_new (*place_old);
-
-            place_new.name (prefix + place_old->name());
-
-            net_new.push_place (place_new);
+            connection->place = prefix + connection->place;
           }
 
-        for ( net_type::transitions_type::const_iterator
-                transition_old (net_old.transitions().begin())
-            ; transition_old != net_old.transitions().end()
-            ; ++transition_old
-            )
+          for ( connections_type::iterator
+                  connection (transition->read().begin())
+              ; connection != transition->read().end()
+              ; ++connection
+              )
           {
-            transition_type transition_new (*transition_old);
-            transition_new.name (prefix + transition_old->name());
-
-            transition_new.clear_ports();
-
-            for (connections_type::const_iterator
-                   connect_in_old (transition_old->in().begin())
-                ; connect_in_old != transition_old->in().end()
-                ; ++connect_in_old
-                )
-              {
-                connect_type connect_in_new (*connect_in_old);
-
-                connect_in_new.place = prefix + connect_in_old->place;
-
-                transition_new.push_in (connect_in_new);
-              }
-
-            for (connections_type::const_iterator
-                   connect_read_old (transition_old->read().begin())
-                ; connect_read_old != transition_old->read().end()
-                ; ++connect_read_old
-                )
-              {
-                connect_type connect_read_new (*connect_read_old);
-
-                connect_read_new.place = prefix + connect_read_old->place;
-
-                transition_new.push_read (connect_read_new);
-              }
-
-            for (connections_type::const_iterator
-                   connect_out_old (transition_old->out().begin())
-                ; connect_out_old != transition_old->out().end()
-                ; ++connect_out_old
-                )
-              {
-                connect_type connect_out_new (*connect_out_old);
-
-                connect_out_new.place = prefix + connect_out_old->place;
-
-                transition_new.push_out (connect_out_new);
-              }
-
-            transition_new.clear_place_map();
-
-            for (place_maps_type::const_iterator
-                   place_map_old (transition_old->place_map().begin())
-                ; place_map_old != transition_old->place_map().end()
-                ; ++place_map_old
-                )
-              {
-                place_map_type place_map_new (*place_map_old);
-
-                place_map_new.place_real = prefix + place_map_old->place_real;
-
-                transition_new.push_place_map (place_map_new);
-              }
-
-            net_new.push_transition (transition_new);
+            connection->place = prefix + connection->place;
           }
 
-        return net_new;
+          for ( connections_type::iterator
+                  connection (transition->out().begin())
+              ; connection != transition->out().end()
+              ; ++connection
+              )
+          {
+            connection->place = prefix + connection->place;
+          }
+
+          for ( place_maps_type::iterator
+                  place_map (transition->place_map().begin())
+              ; place_map != transition->place_map().end()
+              ; ++place_map
+              )
+          {
+            place_map->place_real = prefix + place_map->place_real;
+          }
+        }
+      }
+
+      //! \note Does not assert that the names begin with prefix, but
+      //! only trims them.
+      void net_type::remove_prefix (const std::string & prefix)
+      {
+        const std::string::size_type prefix_length (prefix.size());
+
+        for ( places_type::iterator place (places().begin())
+            ; place != places().end()
+            ; ++place
+            )
+        {
+          place->name (place->name().substr (prefix_length));
+        }
+
+        for ( transitions_type::iterator transition (transitions().begin())
+            ; transition != transitions().end()
+            ; ++transition
+            )
+        {
+          transition->name (transition->name().substr (prefix_length));
+
+          for ( connections_type::iterator
+                  connection (transition->in().begin())
+              ; connection != transition->in().end()
+              ; ++connection
+              )
+          {
+            connection->place = connection->place.substr (prefix_length);
+          }
+
+          for ( connections_type::iterator
+                  connection (transition->read().begin())
+              ; connection != transition->read().end()
+              ; ++connection
+              )
+          {
+            connection->place = connection->place.substr (prefix_length);
+          }
+
+          for ( connections_type::iterator
+                  connection (transition->out().begin())
+              ; connection != transition->out().end()
+              ; ++connection
+              )
+          {
+            connection->place = connection->place.substr (prefix_length);
+          }
+
+          for ( place_maps_type::iterator
+                  place_map (transition->place_map().begin())
+              ; place_map != transition->place_map().end()
+              ; ++place_map
+              )
+          {
+            place_map->place_real =
+              place_map->place_real.substr (prefix_length);
+          }
+        }
       }
 
       // ******************************************************************* //

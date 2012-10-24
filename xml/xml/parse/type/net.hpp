@@ -172,11 +172,10 @@ namespace xml
         // ***************************************************************** //
 
         void type_check (const state::type & state) const;
+
+        void set_prefix (const std::string & prefix);
+        void remove_prefix (const std::string & prefix);
       };
-
-      // ******************************************************************* //
-
-      net_type set_prefix (const net_type & net_old, const std::string & prefix);
 
       // ******************************************************************* //
 
