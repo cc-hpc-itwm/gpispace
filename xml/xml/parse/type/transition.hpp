@@ -80,6 +80,11 @@ namespace xml
         const connections_type & read (void) const;
         const place_maps_type & place_map (void) const;
 
+        connections_type & in (void);
+        connections_type & out (void);
+        connections_type & read (void);
+        place_maps_type & place_map (void);
+
         // ***************************************************************** //
 
         void push_in (const connect_type & connect);

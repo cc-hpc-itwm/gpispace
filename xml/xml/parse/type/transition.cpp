@@ -102,6 +102,23 @@ namespace xml
         return _place_map.elements();
       }
 
+      connections_type & transition_type::in()
+      {
+        return _in.elements();
+      }
+      connections_type & transition_type::out()
+      {
+        return _out.elements();
+      }
+      connections_type & transition_type::read()
+      {
+        return _read.elements();
+      }
+      place_maps_type & transition_type::place_map()
+      {
+        return _place_map.elements();
+      }
+
       // ***************************************************************** //
 
       void transition_type::push_in (const connect_type & connect)
