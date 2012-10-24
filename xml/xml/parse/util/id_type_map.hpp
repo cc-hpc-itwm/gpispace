@@ -49,17 +49,11 @@ namespace xml
         ~mapper();
 
 #define ITEM(NAME,__IGNORE,TYPE)                              \
-        boost::optional<type::TYPE> get (id::NAME id) const;
-#include <xml/parse/util/id_type_map_helper.lst>
-#undef ITEM
-
-#define ITEM(NAME,__IGNORE,TYPE)                        \
-        void put (id::NAME id, type::TYPE elem);
-#include <xml/parse/util/id_type_map_helper.lst>
-#undef ITEM
-
-#define ITEM(NAME,__IGNORE,__IGNORE2)           \
-        void remove (id::NAME id);
+        boost::optional<type::TYPE> get (id::NAME id) const;  \
+        void put (id::NAME id, type::TYPE elem);              \
+                                                              \
+        void add_reference (id::NAME id);                     \
+        void remove_reference (id::NAME id);
 #include <xml/parse/util/id_type_map_helper.lst>
 #undef ITEM
 
