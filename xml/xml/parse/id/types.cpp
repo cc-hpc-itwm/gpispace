@@ -15,30 +15,9 @@ namespace xml
     namespace id
     {
 #define ITEM(NAME,__IGNORE,__IGNORE2,__IGNORE3)                         \
-      NAME::NAME (const base_id_type& val, mapper* mapper_)             \
+      NAME::NAME (const base_id_type& val)                              \
         :  _val (val)                                                   \
-        , _mapper (mapper_)                                             \
-      {                                                                 \
-        _mapper->add_reference (*this);                                 \
-      }                                                                 \
-      NAME::NAME (const NAME& other)                                    \
-        :  _val (other._val)                                            \
-        , _mapper (other._mapper)                                       \
-      {                                                                 \
-        _mapper->add_reference (*this);                                 \
-      }                                                                 \
-      NAME& NAME::operator= (const NAME& other)                         \
-      {                                                                 \
-        _val = other._val;                                              \
-        _mapper = other._mapper;                                        \
-        _mapper->add_reference (*this);                                 \
-        return *this;                                                   \
-      }                                                                 \
-      NAME::~NAME()                                                     \
-      {                                                                 \
-        _mapper->remove_reference (*this);                              \
-        _mapper = NULL;                                                 \
-      }                                                                 \
+      { }                                                               \
                                                                         \
       bool NAME::operator< (const NAME& other) const                    \
       {                                                                 \
@@ -61,6 +40,57 @@ namespace xml
 #include <xml/parse/id/helper.lst>
 
 #undef ITEM
+
+      namespace ref
+      {
+#define ITEM(NAME,__IGNORE,__IGNORE2,__IGNORE3)                         \
+        NAME::NAME (const id::NAME& id, mapper* mapper_)                \
+          :  _id (id)                                                   \
+          , _mapper (mapper_)                                           \
+        {                                                               \
+          _mapper->add_reference (*this);                               \
+        }                                                               \
+        NAME::NAME (const NAME& other)                                  \
+          :  _id (other._id)                                            \
+          , _mapper (other._mapper)                                     \
+        {                                                               \
+          _mapper->add_reference (*this);                               \
+        }                                                               \
+        NAME& NAME::operator= (const NAME& other)                       \
+        {                                                               \
+          _id = other._id;                                              \
+          _mapper = other._mapper;                                      \
+          _mapper->add_reference (*this);                               \
+          return *this;                                                 \
+        }                                                               \
+        NAME::~NAME()                                                   \
+        {                                                               \
+          _mapper->remove_reference (*this);                            \
+          _mapper = NULL;                                               \
+        }                                                               \
+                                                                        \
+        bool NAME::operator< (const NAME& other) const                  \
+        {                                                               \
+          return _id < other._id;                                       \
+        }                                                               \
+        bool NAME::operator== (const NAME& other) const                 \
+        {                                                               \
+          return _id == other._id;                                      \
+        }                                                               \
+                                                                        \
+        std::size_t hash_value (const NAME& ref)                        \
+        {                                                               \
+          return hash_value (ref._id);                                  \
+        }                                                               \
+        std::ostream& operator<< (std::ostream& os, const NAME& ref)    \
+        {                                                               \
+          return os << ref._id;                                         \
+        }
+
+#include <xml/parse/id/helper.lst>
+
+#undef ITEM
+      }
     }
   }
 }

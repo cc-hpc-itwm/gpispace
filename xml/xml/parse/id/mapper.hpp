@@ -44,6 +44,7 @@ namespace xml
 #define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                            \
                                                                       \
         boost::optional<type::TYPE> get (const NAME&) const;          \
+        boost::optional<type::TYPE> get (const ref::NAME&) const;     \
         void put (const NAME&, const type::TYPE& elem);
 
 #include <xml/parse/id/helper.lst>
@@ -53,10 +54,10 @@ namespace xml
 
 #define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                            \
                                                                       \
-        void add_reference (const NAME&);                             \
-        void remove_reference (const NAME&);                          \
+        void add_reference (const ref::NAME&);                        \
+        void remove_reference (const ref::NAME&);                     \
                                                                       \
-        friend struct NAME;
+        friend struct ref::NAME;
 
 #include <xml/parse/id/helper.lst>
 #undef ITEM

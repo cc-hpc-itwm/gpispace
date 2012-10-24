@@ -23,21 +23,18 @@ namespace xml
       struct NAME                                                       \
       {                                                                 \
       public:                                                           \
-        NAME (const base_id_type& val, mapper* mapper_);                \
-        NAME (const NAME& other);                                       \
-        NAME& operator= (const NAME& other);                            \
-        ~NAME();                                                        \
+        NAME (const base_id_type& val);                                 \
                                                                         \
         bool operator< (const NAME& other) const;                       \
         bool operator== (const NAME& other) const;                      \
                                                                         \
         friend std::size_t hash_value (const NAME&);                    \
         friend std::ostream& operator<< (std::ostream&, const NAME&);   \
+        friend struct ref::NAME;                                        \
         friend class mapper;                                            \
                                                                         \
       private:                                                          \
         base_id_type _val;                                              \
-        mapper* _mapper;                                                \
       };                                                                \
                                                                         \
       std::size_t hash_value (const NAME& val);                         \
@@ -46,6 +43,37 @@ namespace xml
 #include <xml/parse/id/helper.lst>
 
 #undef ITEM
+
+      namespace ref
+      {
+#define ITEM(NAME,__IGNORE,__IGNORE2,__IGNORE3)                         \
+        struct NAME                                                     \
+        {                                                               \
+        public:                                                         \
+          NAME (const id::NAME& id, mapper* mapper_);                   \
+          NAME (const NAME& other);                                     \
+          NAME& operator= (const NAME& other);                          \
+          ~NAME();                                                      \
+                                                                        \
+          bool operator< (const NAME& other) const;                     \
+          bool operator== (const NAME& other) const;                    \
+                                                                        \
+          friend std::size_t hash_value (const NAME&);                  \
+          friend std::ostream& operator<< (std::ostream&, const NAME&); \
+          friend class mapper;                                          \
+                                                                        \
+        private:                                                        \
+          id::NAME _id;                                                 \
+          mapper* _mapper;                                              \
+        };                                                              \
+                                                                        \
+        std::size_t hash_value (const NAME& val);                       \
+        std::ostream& operator<< (std::ostream& os, const NAME& val);
+
+#include <xml/parse/id/helper.lst>
+
+#undef ITEM
+      }
     }
   }
 }

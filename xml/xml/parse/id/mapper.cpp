@@ -53,12 +53,12 @@ namespace xml
 
 #define ITEM(NAME,MEMBER_NAME,TYPE,__IGNORE)                            \
                                                                         \
-        typedef boost::unordered_map< base_id_type                      \
+        typedef boost::unordered_map< NAME                              \
                                     , type::TYPE                        \
                                     > NAME ## _map_type;                \
                                                                         \
         NAME ## _map_type MEMBER_NAME;                                  \
-        boost::unordered_map<base_id_type, base_id_type>                \
+        boost::unordered_map<NAME, base_id_type>                        \
           MEMBER_NAME ## _references;
 
 #include <xml/parse/id/helper.lst>
@@ -86,6 +86,12 @@ namespace xml
                                     );                                  \
       }                                                                 \
                                                                         \
+      boost::optional<type::TYPE>                                       \
+        mapper::get (const ref::NAME& ref) const                        \
+      {                                                                 \
+        return get (ref._id);                                           \
+      }                                                                 \
+                                                                        \
       void mapper::put (const NAME& id, const type::TYPE& elem)         \
       {                                                                 \
         if ( _maps->MEMBER_NAME.find (id._val)                          \
@@ -100,20 +106,20 @@ namespace xml
               ).str()                                                   \
             );                                                          \
         }                                                               \
-        _maps->MEMBER_NAME.insert (std::make_pair (id._val, elem));     \
+        _maps->MEMBER_NAME.insert (std::make_pair (id, elem));          \
       }                                                                 \
                                                                         \
-      void mapper::add_reference (const NAME& id)                       \
+      void mapper::add_reference (const ref::NAME& ref)                 \
       {                                                                 \
-        ++_maps->MEMBER_NAME ## _references[id._val];                   \
+        ++_maps->MEMBER_NAME ## _references[ref._id];                   \
       }                                                                 \
                                                                         \
-      void mapper::remove_reference (const NAME& id)                    \
+      void mapper::remove_reference (const ref::NAME& ref)              \
       {                                                                 \
-        if (!(--_maps->MEMBER_NAME ## _references[id._val]))            \
+        if (!(--_maps->MEMBER_NAME ## _references[ref._id]))            \
         {                                                               \
-          _maps->MEMBER_NAME.erase (id._val);                           \
-          _maps->MEMBER_NAME ## _references.erase (id._val);            \
+          _maps->MEMBER_NAME.erase (ref._id);                           \
+          _maps->MEMBER_NAME ## _references.erase (ref._id);            \
         }                                                               \
       }
 
