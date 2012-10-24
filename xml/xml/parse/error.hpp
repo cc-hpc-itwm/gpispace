@@ -3,13 +3,13 @@
 #ifndef _XML_PARSE_ERROR_HPP
 #define _XML_PARSE_ERROR_HPP
 
-#include <stdexcept>
 #include <string>
 #include <sstream>
 
 #include <we/we.hpp>
 
 #include <fhg/util/join.hpp>
+#include <fhg/util/backtracing_exception.hpp>
 
 #include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
 
@@ -24,19 +24,19 @@ namespace xml
     {
       // ******************************************************************* //
 
-      class generic : public std::runtime_error
+      class generic : public fhg::util::backtracing_exception
       {
       public:
         generic (const std::string & msg)
-          : std::runtime_error ("ERROR: " + msg)
+          : fhg::util::backtracing_exception ("ERROR: " + msg)
         {}
 
         generic (const boost::format& bf)
-          : std::runtime_error ("ERROR: " + bf.str())
+          : fhg::util::backtracing_exception ("ERROR: " + bf.str())
         {}
 
         generic (const std::string & msg, const std::string & pre)
-          : std::runtime_error ("ERROR: " + pre + ": " + msg)
+          : fhg::util::backtracing_exception ("ERROR: " + pre + ": " + msg)
         {}
       };
 
