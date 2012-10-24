@@ -1,0 +1,408 @@
+<!-- tiberiu.rotaru@itwm.fraunhofer.de -->
+<template name="reduce_tpl">
+	<include-structs href="types.xpnet"/>
+  <in name="config" type="T" place="config"/> 
+  <in name="reduce_info_in" type="iterator_red_info" place="reduce_info_in"/>
+  <out name="reduce_info_out" type="iterator_red_info" place="reduce_info_out"/>
+
+  <net>
+	<place name="reduce_info_in" type="iterator_red_info"/>
+	<place name="agg_iter_red_info" type="iterator_red_info"/>
+  	<place name="gen_iterator_red_info" type="iterator_red_info"/>
+  	<place name="n_reduce_tasks_left" type="long"/>
+  	 <place name="reduce_info_out" type="iterator_red_info"/>
+  	 <place name="config" type="T"/>
+  	  	
+  	<transition name="init" inline="true">
+      <defun>
+       	<in name="reduce_info_in" type="iterator_red_info"/>
+       	<in name="config" type="T"/> 
+		<out name="agg_iter_red_info" type="iterator_red_info"/>
+  		<out name="gen_iterator_red_info" type="iterator_red_info"/>
+  		<out name="n_reduce_tasks_left" type="long"/>
+  		<module name="init" function="init(reduce_info_in, agg_iter_red_info, gen_iterator_red_info, n_reduce_tasks_left)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/memory.hpp"/>
+           <cinclude href="util/helper.hpp"/>
+          <cinclude href="sstream"/>
+          <cinclude href="boost/tokenizer.hpp"/>
+          <code><![CDATA[
+	         MLOG (INFO, "Call Init " );
+			  
+		    std::cout<<"reduce_info_in.avail_slots = "<<reduce_info_in.avail_slots<<std::endl;
+            std::cout<<"reduce_info_in.slots_to_reduce = "<<reduce_info_in.slots_to_reduce<<std::endl;
+            std::cout<<"reduce_info_in.part_used = "<<reduce_info_in.part_used<<std::endl;
+            std::cout<<"reduce_info_in.red_used = "<<reduce_info_in.red_used<<std::endl; 
+	            
+			// first find out what are the actual sizes of the partitions!
+		  	//us this as a counter
+			agg_iter_red_info.slots_to_reduce="";
+			agg_iter_red_info.part_used="";
+			agg_iter_red_info.red_used="";
+			
+			gen_iterator_red_info = reduce_info_in;
+			
+		  	MLOG(INFO, "list of partitions to reduce: "<<gen_iterator_red_info.slots_to_reduce);
+		  	
+       		std::vector<int> arr_slots_to_reduce = ::mapreduce::util::get_array(gen_iterator_red_info.slots_to_reduce);
+         	n_reduce_tasks_left = arr_slots_to_reduce.size();
+         	agg_iter_red_info.avail_slots = n_reduce_tasks_left;
+         	
+         	MLOG(INFO, "number of partitions to reduce: "<<n_reduce_tasks_left);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in place="reduce_info_in" port="reduce_info_in"/>
+      <connect-out place="agg_iter_red_info" port="agg_iter_red_info"/>
+  	  <connect-out place="gen_iterator_red_info" port="gen_iterator_red_info"/>
+  	  <connect-out place="n_reduce_tasks_left" port="n_reduce_tasks_left"/>
+    </transition>
+  	
+  	<place name="reduce_slot" type="reduce_slot"/>
+  	<place name="new_gen_iterator_red_info" type="iterator_red_info"/>
+    <transition name="split">
+      <defun>
+       	<in name="gen_iterator_red_info" type="iterator_red_info"/>
+        <out name="reduce_slot" type="reduce_slot"/>
+        <out name="new_gen_iterator_red_info" type="iterator_red_info"/>
+         <module name="split" function="get_next_part_id(gen_iterator_red_info, reduce_slot, new_gen_iterator_red_info)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="sstream"/>
+          <cinclude href="cstdio"/>
+          <cinclude href="boost/tokenizer.hpp"/>
+          <cinclude href="boost/foreach.hpp"/>
+          <cinclude href="boost/utility.hpp"/>
+          <cinclude href="boost/lexical_cast.hpp"/>
+          <cinclude href="util/helper.hpp"/>
+          <cinclude href="vector"/>
+          <code><![CDATA[
+	        LOG (INFO, "Get next partition id to reduce ...");
+						
+			std::vector<int> arr_reduce_slots = ::mapreduce::util::get_array(gen_iterator_red_info.slots_to_reduce);
+			reduce_slot.id = arr_reduce_slots[0]; //guaranteed to exist, see condition
+			
+			std::vector<int> arr_part_used = ::mapreduce::util::get_array(gen_iterator_red_info.part_used);
+            reduce_slot.part_used = arr_part_used[reduce_slot.id];
+            
+            std::vector<int> arr_red_used = ::mapreduce::util::get_array(gen_iterator_red_info.red_used);            
+            reduce_slot.red_used = arr_red_used[reduce_slot.id];
+              
+            MLOG(INFO, "Next partition to reduce: "<<reduce_slot.id
+            			<<", part_used: "<<reduce_slot.part_used
+            			<<", red_used: "<<reduce_slot.red_used);
+			  
+			std::vector<int>::iterator it_first = boost::next(arr_reduce_slots.begin());
+			std::vector<int>::iterator it_last =  arr_reduce_slots.end();
+			
+			std::string str_left_ids = ::mapreduce::util::get_string(it_first, it_last);
+			MLOG(INFO, "The list of ids left to reduce: "<<str_left_ids);
+			  
+			new_gen_iterator_red_info = gen_iterator_red_info;
+			new_gen_iterator_red_info.slots_to_reduce = str_left_ids;
+				          
+          ]]></code>
+        </module>
+       <condition>
+          ${gen_iterator_red_info.slots_to_reduce}:ne:""
+        </condition>
+      </defun>
+      <connect-in place="gen_iterator_red_info" port="gen_iterator_red_info"/>
+      <connect-out place="reduce_slot" port="reduce_slot"/>
+      <connect-out place="new_gen_iterator_red_info" port="new_gen_iterator_red_info"/>
+    </transition>
+    
+    <transition name="repeat">
+      <defun>
+       	<in name="new_gen_iterator_red_info" type="iterator_red_info"/>
+        <out name="gen_iterator_red_info" type="iterator_red_info"/>
+        <expression>
+        	${gen_iterator_red_info}:=${new_gen_iterator_red_info};
+        </expression> 
+      </defun>
+      <connect-in place="new_gen_iterator_red_info" port="new_gen_iterator_red_info"/>
+      <connect-out place="gen_iterator_red_info" port="gen_iterator_red_info"/>
+    </transition>
+
+    <place name="end_gen_iter" type="iterator_red_info"/>
+	<transition name="wait">
+      <defun>
+       	<in name="gen_iterator_red_info" type="iterator_red_info"/>
+        <out name="end_gen_iter" type="iterator_red_info"/>
+         <expression>
+        	${end_gen_iter}:= ${gen_iterator_red_info};
+         </expression>
+        <condition>
+          	${gen_iterator_red_info.slots_to_reduce}:eq:""
+        </condition>
+      </defun>
+      <connect-in place="gen_iterator_red_info" port="gen_iterator_red_info"/>
+      <connect-out place="end_gen_iter" port="end_gen_iter"/>
+    </transition>
+    
+    <place name="reduce_done" type="control"/>
+    <place name="reduce_slot_updated" type="reduce_slot"/>
+	<transition name="reduce_partition">
+      <defun>
+       	<in name="reduce_slot" type="reduce_slot"/>
+       	<in name="config" type="T"/> 
+        <out name="reduce_done" type="control"/>
+        <out name="reduce_slot_updated" type="reduce_slot"/>
+        
+         <module name="reduce" function="reduce_done reduce(config, reduce_slot, reduce_slot_updated)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/reduce.hpp"/>
+          <cinclude href="sstream"/>
+          <cinclude href="cstdio"/>
+          <cinclude href="algorithm"/>
+          
+          <code><![CDATA[
+	          LOG (INFO, "Call the reduce method here ...");
+			 
+			  LOG (INFO, "Reduce the partition "<<reduce_slot.id<<" partition size "<<reduce_slot.part_used<<", reduce slot size:"<<reduce_slot.red_used);
+			  // first find out what are the actual sizes of the partitions!
+			  char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
+			 
+			  reduce_slot_updated.id = reduce_slot.id;
+			  reduce_slot_updated.part_used = 0;
+			  
+			  size_t total_size = reduce_slot.part_used+1+reduce_slot.part_used+1;
+			  char *local_buff = new char[total_size];
+			  bzero(local_buff, total_size);
+			
+			  if(reduce_slot.part_used)
+			  {	  	
+			     bzero( ptr_shmem, reduce_slot.part_used+1);		  
+			     long part_offset = reduce_slot.id*config.size.partition.slot;
+		         waitComm ( fvmGetGlobalData
+		         ( static_cast<fvmAllocHandle_t> (config.handle.partition)
+		          									, part_offset
+		          									, reduce_slot.part_used
+		          									, 0
+		          									, 0
+		          								)
+		         );
+		         
+		         
+		        memcpy(local_buff, ptr_shmem, reduce_slot.part_used);
+		        //MLOG(INFO, "Partition "<<reduce_slot.id<<", size: "<<reduce_slot.part_used<<", content: "<<ptr_shmem);	 
+		       
+	          }
+		
+		      if(reduce_slot.red_used)
+		      {
+				// read into local_buff from vm the reduce slot reduce_slot.id ((size: reduce_slot.red_used)
+				bzero( ptr_shmem, reduce_slot.red_used+1);		    
+				long part_offset = reduce_slot.id*config.size.partition.slot;
+				 
+				waitComm ( fvmGetGlobalData
+		        ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
+		          									, part_offset
+		          									, reduce_slot.red_used
+		          									, 0
+		          									, 0
+		          								)
+		        );
+		       
+		       if(reduce_slot.part_used)
+		       {
+		        	*(local_buff+reduce_slot.part_used)=' '; 
+		        	memcpy(local_buff+reduce_slot.part_used+1, ptr_shmem, reduce_slot.red_used);	
+		        }
+		        else
+		        	memcpy(local_buff, ptr_shmem, reduce_slot.red_used);	
+		        	
+		        //MLOG(INFO, "reduce_slot "<<reduce_slot.id<<", local_buff="<<ptr_shmem);	          
+			  }
+						
+			  std::stringstream sstr(local_buff);		  
+			  std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
+			  
+			  std::sort( arr_items.begin(), arr_items.end(), ::mapreduce::util::comp ); 
+			  			  			   
+			  // copy the result to shmem
+			  // memcpy(local_buff, ptr_shmem, reduce_slot.part_used);
+			  
+			   bzero(ptr_shmem, total_size);
+			  
+			  // size_t size_result_buff = total_size;
+			  // memcpy(reduced_buff, local_buff, total_size);
+			  
+			  std::list<std::string> list_in_values;
+		
+			  size_t split_pos = arr_items.begin()->find(':');
+			  std::string last_key(arr_items.begin()->substr(0, split_pos));
+			  		  
+			  size_t last_pos = 0;
+			  			 
+			  BOOST_FOREACH(const std::string& str_item, arr_items)
+			  {
+			    split_pos = str_item.find(':');
+			  	std::string key=str_item.substr(0,split_pos);
+			  	std::string value=str_item.substr(split_pos+1, str_item.size());
+			  	
+			  	//std::cout<<"last_key: "<<last_key<<", key: "<<key<<", value: "<<value<<std::endl;
+			  	
+			  	if(last_key==key)
+			  		list_in_values.push_back(value);
+			  	else // key!=last_key
+			  	{
+			  		/*std::cout<<"STOP! Time to do a reduce for the key \""<<last_key<<"\" and the values [";
+			  		BOOST_FOREACH(std::string& val, list_in_values)
+			  			std::cout<<val<<" ";
+			  		std::cout<<"]"<<std::endl;*/
+			  		
+			  		std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
+			  		last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos);
+			  					  		
+			  		last_key=key;
+			  		list_in_values.clear();
+			  		list_in_values.push_back(value);
+			  	}
+			  }
+			  	  
+			  
+			 waitComm ( fvmPutGlobalData
+	         ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
+	          									, reduce_slot.id*config.size.reduce.slot
+	          									, last_pos
+	          									, 0
+	          									, 0
+	          								)
+	         ); 
+		
+			 reduce_slot_updated.red_used = last_pos;
+			 reduce_slot_updated.part_used = 0;
+			  
+			 if(local_buff)
+			 	delete[] local_buff;
+			  			  	
+			 return control();
+			  
+          ]]></code>
+        </module>
+       
+      </defun>
+      <connect-in place="reduce_slot" port="reduce_slot"/>
+	  <connect-read place="config" port="config"/> 
+      <connect-out place="reduce_done" port="reduce_done"/>
+      <connect-out place="reduce_slot_updated" port="reduce_slot_updated"/>
+    </transition>
+    
+     <place name="new_agg_iter_red_info" type="iterator_red_info"/>
+	<transition name="accumulate">
+      <defun>
+       	<in name="reduce_slot_updated" type="reduce_slot"/>
+       	<in name="agg_iter_red_info" type="iterator_red_info"/>
+        <out name="new_agg_iter_red_info" type="iterator_red_info"/>
+        
+         <module name="accumulate" function="acc(agg_iter_red_info, reduce_slot_updated, new_agg_iter_red_info)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="sstream"/>
+          <cinclude href="boost/lexical_cast.hpp"/>
+          
+          <code><![CDATA[
+          	LOG (INFO, "Accumulate reduction info ...");
+          	LOG (INFO, "Before update: "<<agg_iter_red_info.slots_to_reduce<<std::endl<<agg_iter_red_info.part_used<<std::endl<<agg_iter_red_info.red_used);
+          
+		  	new_agg_iter_red_info.avail_slots = agg_iter_red_info.avail_slots-1;
+		 	new_agg_iter_red_info.slots_to_reduce =  agg_iter_red_info.slots_to_reduce + std::string(" ") + boost::lexical_cast<std::string>(reduce_slot_updated.id);
+			new_agg_iter_red_info.part_used = agg_iter_red_info.part_used + std::string(" ") +  boost::lexical_cast<std::string>(reduce_slot_updated.part_used);
+		 	new_agg_iter_red_info.red_used = agg_iter_red_info.red_used + std::string(" ") +  boost::lexical_cast<std::string>(reduce_slot_updated.red_used);
+		 
+		 	LOG (INFO, "After update: "<<new_agg_iter_red_info.slots_to_reduce<<std::endl<<new_agg_iter_red_info.part_used<<std::endl<<new_agg_iter_red_info.red_used);
+          ]]></code>
+        </module>
+        <condition>
+        	${agg_iter_red_info.avail_slots}:gt:0L
+        </condition>
+       
+      </defun>
+      <connect-in place="agg_iter_red_info" port="agg_iter_red_info"/>
+      <connect-in place="reduce_slot_updated" port="reduce_slot_updated"/>
+      <connect-out place="new_agg_iter_red_info" port="new_agg_iter_red_info"/>
+    </transition>
+    
+	<transition name="repeat_acc">
+      <defun>
+       	<in name="new_agg_iter_red_info" type="iterator_red_info"/>
+        <out name="agg_iter_red_info" type="iterator_red_info"/>
+        <expression>
+        	${agg_iter_red_info}:=${new_agg_iter_red_info};
+        </expression>
+       
+      </defun>
+      <connect-in place="new_agg_iter_red_info" port="new_agg_iter_red_info"/>
+      <connect-out place="agg_iter_red_info" port="agg_iter_red_info"/>
+    </transition>
+    
+    <place name="all_reduce_tasks_done" type="control"/>
+    <transition name="check_all_reduce_tasks_done" inline="true">
+      <include-function href="check_update_counter.xpnet"/>
+      <place-map real="n_reduce_tasks_left" virtual="counter"/>
+      <connect-in port="trigger" place="reduce_done"/>
+      <connect-out port="done" place="all_reduce_tasks_done"/>
+    </transition>
+   
+	<transition name="stop">
+      <defun>
+       	<in name="agg_iter_red_info" type="iterator_red_info"/>
+       	<in name="end_gen_iter" type="iterator_red_info"/>
+       	<in name="all_reduce_tasks_done" type="control"/>
+        <out name="reduce_info_out" type="iterator_red_info"/>
+        <module name="update_reduce_info_out" function="update_reduce_info_out(agg_iter_red_info, end_gen_iter, reduce_info_out)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="sstream"/>
+          <cinclude href="boost/tokenizer.hpp"/>
+          <cinclude href="boost/foreach.hpp"/>
+          <cinclude href="util/helper.hpp"/>
+          <cinclude href="vector"/>
+          
+          <code><![CDATA[
+	          	LOG (INFO, "Update the partition and reduction info after reduction. Free the reduced partitions.");
+	          	pnetc::type::iterator_red_info::iterator_red_info part_info;
+	            
+				MLOG(INFO, "Stop, all reduce tasks were done. Update noe the information about partitions and reduce ..");
+            			
+            	::mapreduce::util::dump_iter_red_info("agg_iter_red_info", agg_iter_red_info);
+            	
+            	::mapreduce::util::dump_iter_red_info("end_gen_iter", end_gen_iter);
+            	
+	        	reduce_info_out.avail_slots = end_gen_iter.avail_slots;
+	        	reduce_info_out.slots_to_reduce = "";
+	        	
+	        	std::vector<int> arr_red_ids = ::mapreduce::util::get_array(agg_iter_red_info.slots_to_reduce);
+	        	std::vector<int> arr_red_upd = ::mapreduce::util::get_array(agg_iter_red_info.red_used);
+	        	
+	        	std::vector<int> arr_part_used = ::mapreduce::util::get_array(end_gen_iter.part_used);
+	        	std::vector<int> arr_red_used  = ::mapreduce::util::get_array(end_gen_iter.red_used);
+	        	
+	        	for(std::vector<int>::iterator it(arr_red_ids.begin()); it!=arr_red_ids.end(); it++)
+	        	{
+	        		arr_part_used[*it]=0;
+	        		arr_red_used[*it]=arr_red_upd[it-arr_red_ids.begin()];
+	        	}
+	        	
+	        	reduce_info_out.part_used = ::mapreduce::util::get_string(arr_part_used);
+	        	reduce_info_out.red_used = ::mapreduce::util::get_string(arr_red_used);
+	        	
+	        	::mapreduce::util::dump_iter_red_info("reduce_info_out", reduce_info_out);
+			  
+          ]]></code>
+        </module>
+        <condition>
+        	${agg_iter_red_info.avail_slots}:eq:0L
+        </condition>
+      </defun>
+      <connect-in place="agg_iter_red_info" port="agg_iter_red_info"/>
+      <connect-in place="end_gen_iter" port="end_gen_iter"/>
+      <connect-in place="all_reduce_tasks_done" port="all_reduce_tasks_done"/>
+	  <connect-out place="reduce_info_out" port="reduce_info_out"/>
+    </transition>
+       
+       
+  </net>
+</template> 
