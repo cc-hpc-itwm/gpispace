@@ -37,9 +37,9 @@ namespace xml
 #define ITEM(__IGNORE,MEMBER_NAME,__IGNORE2,NUMBER)             \
                                                                 \
           BOOST_PP_IF ( BOOST_PP_EQUAL (NUMBER, 0)              \
-                      , BOOST_PP_COMMA                          \
                       , COLON                                   \
-                      ) MEMBER_NAME()                           \
+                      , BOOST_PP_COMMA                          \
+                      )() MEMBER_NAME()                         \
           , MEMBER_NAME ## _references()
 
 #include <xml/parse/id/helper.lst>
