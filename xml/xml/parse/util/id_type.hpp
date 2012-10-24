@@ -23,10 +23,9 @@ namespace xml
       public:                                                           \
         NAME (const base_id_type& val);                                 \
         NAME (const NAME& other);                                       \
+        NAME& operator= (const NAME& other);                            \
         bool operator< (const NAME& other) const;                       \
         bool operator== (const NAME& other) const;                      \
-        NAME& operator= (const base_id_type& val);                      \
-        NAME& operator= (const NAME& other);                            \
         friend std::size_t hash_value (const NAME&);                    \
         friend std::ostream& operator<< (std::ostream&, const NAME&);   \
       private:                                                          \
