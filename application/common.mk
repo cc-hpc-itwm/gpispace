@@ -319,14 +319,14 @@ endif
 ifeq "$(TEE)" ""
 
 run: lib $(PUT)
-	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
+	$(warning Missing 'tee'. Save output into $(OUT).)
+	$(warning To watch the output on the fly install 'tee'.)
+	$(WE_EXEC) --net $(PUT) 2>&1 > $(OUT)
 
 else
 
 run: lib $(PUT)
-	$(warning Missing 'tee'. Save output into $(OUT).)
-	$(warning To watch the output on the fly install 'tee'.)
-	$(WE_EXEC) --net $(PUT) 2>&1 > $(OUT)
+	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
 
 endif
 
