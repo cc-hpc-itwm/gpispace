@@ -277,9 +277,10 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::type::transition_type transition ( _state.next_id()
-                                                       , net.id()
-                                                       );
+        ::xml::parse::type::transition_type transition
+          ( xml::parse::id::transition (_state.next_id(), _state.id_mapper())
+          , net.id()
+          );
         transition.function_or_use (fun);
         transition.name (fun.name() ? *fun.name() : "transition");
 
@@ -297,9 +298,12 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::id::expression expression_id (_state.next_id());
-        ::xml::parse::id::function function_id (_state.next_id());
-        ::xml::parse::id::transition transition_id (_state.next_id());
+        const ::xml::parse::id::expression expression_id
+          (_state.next_id(), _state.id_mapper());
+        const ::xml::parse::id::function function_id
+            (_state.next_id(), _state.id_mapper());
+        const ::xml::parse::id::transition transition_id
+            (_state.next_id(), _state.id_mapper());
 
         ::xml::parse::type::function_type f ( expression_id
                                             , function_id
@@ -334,7 +338,10 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::type::place_type place (_state.next_id(), net.id());
+        ::xml::parse::type::place_type place
+          ( ::xml::parse::id::place (_state.next_id(), _state.id_mapper())
+          , net.id()
+          );
         place.name ("place");
 
         while (net().has_place (place.name()))

@@ -23,7 +23,7 @@ namespace xml
       struct NAME                                                       \
       {                                                                 \
       public:                                                           \
-        NAME (const base_id_type& val);                                 \
+        NAME (const base_id_type& val, id_map::mapper* mapper);         \
         NAME (const NAME& other);                                       \
         NAME& operator= (const NAME& other);                            \
         ~NAME();                                                        \

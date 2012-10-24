@@ -15,9 +15,9 @@ namespace xml
     namespace id
     {
 #define MAKE_ID(NAME)                                                   \
-      NAME::NAME (const base_id_type& val)                              \
+      NAME::NAME (const base_id_type& val, id_map::mapper* mapper )     \
         :  _val (val)                                                   \
-        , _mapper (NULL)                                                \
+        , _mapper (mapper)                                              \
       {                                                                 \
         _mapper->add_reference (*this);                                 \
       }                                                                 \

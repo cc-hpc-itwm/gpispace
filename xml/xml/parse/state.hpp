@@ -378,8 +378,8 @@ namespace xml
         void add_options (boost::program_options::options_description & desc);
 
         id::base_id_type next_id();
-        const id_map::mapper& id_mapper() const;
-        id_map::mapper& id_mapper();
+        const id_map::mapper* id_mapper() const;
+        id_map::mapper* id_mapper();
       };
 
       std::pair<std::string, std::string> reg_M (const std::string& s);
