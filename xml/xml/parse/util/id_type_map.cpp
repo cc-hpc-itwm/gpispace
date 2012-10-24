@@ -92,3 +92,12 @@ namespace xml
     }
   }
 }
+
+#define ITEM(NAME,MEMBER_NAME,__IGNORE2)         \
+      void mapper::remove (id::NAME id)          \
+      {                                          \
+        _maps->MEMBER_NAME.erase (id);           \
+      }
+#include <xml/parse/util/id_type_map_helper.lst>
+#undef ITEM
+

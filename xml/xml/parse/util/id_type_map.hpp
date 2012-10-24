@@ -68,3 +68,8 @@ namespace xml
 }
 
 #endif
+#define ITEM(NAME,__IGNORE,__IGNORE2)           \
+        void remove (id::NAME id);
+#include <xml/parse/util/id_type_map_helper.lst>
+#undef ITEM
+
