@@ -754,11 +754,11 @@ namespace xml
         return _id_counter;
       }
 
-      const id_map::mapper* type::id_mapper() const
+      const id::mapper* type::id_mapper() const
       {
         return &_id_mapper;
       }
-      id_map::mapper* type::id_mapper()
+      id::mapper* type::id_mapper()
       {
         return &_id_mapper;
       }

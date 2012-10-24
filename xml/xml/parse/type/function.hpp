@@ -3,6 +3,7 @@
 #ifndef _XML_PARSE_TYPE_FUNCTION_HPP
 #define _XML_PARSE_TYPE_FUNCTION_HPP
 
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/port.hpp>
@@ -10,7 +11,6 @@
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/transition.fwd.hpp>
-
 #include <xml/parse/util/mk_fstream.hpp>
 #include <xml/parse/util/unique.hpp>
 

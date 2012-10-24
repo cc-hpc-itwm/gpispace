@@ -6,7 +6,7 @@
 #include <pnete/data/handle/net.hpp>
 
 #include <xml/parse/type/place.fwd.hpp>
-#include <xml/parse/util/id_type.hpp>
+#include <xml/parse/id/types.hpp>
 
 namespace fhg
 {

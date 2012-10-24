@@ -1,3 +1,4 @@
+// bernd.loerwald@itwm.fraunhofer.de
 //    id_name, map_member_name, type_name
 ITEM (connect   , _connects   , connect_type   )
 ITEM (expression, _expressions, expression_type)

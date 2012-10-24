@@ -4,7 +4,7 @@
 #define _FHG_PNETE_DATA_HANDLE_NET_HPP 1
 
 #include <xml/parse/type/net.fwd.hpp>
-#include <xml/parse/util/id_type.hpp>
+#include <xml/parse/id/types.hpp>
 
 namespace fhg
 {

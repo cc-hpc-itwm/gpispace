@@ -56,6 +56,7 @@ target_link_libraries(pnetc ${WE_LIBRARIES})
 target_link_libraries(pnetc  ${Boost_LIBRARIES})
 target_link_libraries (pnetc xml_parse_type)
 target_link_libraries (pnetc xml_parse_util)
+target_link_libraries (pnetc xml_parse_id)
 target_link_libraries (pnetc xml_parse)
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
@@ -67,6 +68,7 @@ if (ENABLE_STATIC_BINARIES)
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
   target_link_libraries (pnetc.static xml_parse_type)
   target_link_libraries (pnetc.static xml_parse_util)
+  target_link_libraries (pnetc.static xml_parse_id)
   target_link_libraries (pnetc.static xml_parse)
 
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
@@ -78,7 +80,8 @@ install (FILES ${hdrs} ${headerlist_hpp} ${fwd_hdrs}
   DESTINATION include/xml/parse
   COMPONENT headers)
 
+add_subdirectory (id)
+add_subdirectory (rapidxml)
 add_subdirectory (type)
 add_subdirectory (util)
-add_subdirectory (rapidxml)
 

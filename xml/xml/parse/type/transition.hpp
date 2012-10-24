@@ -3,11 +3,11 @@
 #ifndef _XML_PARSE_TYPE_TRANSITION_HPP
 #define _XML_PARSE_TYPE_TRANSITION_HPP
 
-#include <xml/parse/type/function.hpp>
-#include <xml/parse/type/use.hpp>
-
-#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/use.hpp>
 
 namespace xml
 {

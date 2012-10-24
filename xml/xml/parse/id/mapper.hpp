@@ -1,11 +1,11 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef XML_UTIL_ID_TYPE_MAP_HPP
-#define XML_UTIL_ID_TYPE_MAP_HPP
+#ifndef XML_PARSE_ID_MAPPER_HPP
+#define XML_PARSE_ID_MAPPER_HPP
 
-#include <xml/parse/util/id_type_map.fwd.hpp>
+#include <xml/parse/id/mapper.fwd.hpp>
 
-#include <xml/parse/util/id_type.fwd.hpp>
+#include <xml/parse/id/types.fwd.hpp>
 
 #include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/expression.fwd.hpp>
@@ -29,7 +29,7 @@ namespace xml
 {
   namespace parse
   {
-    namespace id_map
+    namespace id
     {
       class mapper
       {
@@ -43,13 +43,13 @@ namespace xml
 
 #define ITEM(NAME,__IGNORE,TYPE)                                      \
                                                                       \
-        boost::optional<type::TYPE> get (const id::NAME&) const;      \
-        void put (const id::NAME&, const type::TYPE& elem);           \
+        boost::optional<type::TYPE> get (const NAME&) const;          \
+        void put (const NAME&, const type::TYPE& elem);               \
                                                                       \
-        void add_reference (const id::NAME&);                         \
-        void remove_reference (const id::NAME&);
+        void add_reference (const NAME&);                             \
+        void remove_reference (const NAME&);
 
-#include <xml/parse/util/id_type_map_helper.lst>
+#include <xml/parse/id/mapper_helper.lst>
 #undef ITEM
 
       private:

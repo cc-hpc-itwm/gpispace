@@ -5,7 +5,7 @@
 
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
-#include <xml/parse/util/id_type.hpp>
+#include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 

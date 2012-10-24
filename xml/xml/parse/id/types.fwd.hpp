@@ -1,7 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef XML_UTIL_ID_TYPE_FWD_HPP
-#define XML_UTIL_ID_TYPE_FWD_HPP
+#ifndef XML_PARSE_ID_TYPES_FWD_HPP
+#define XML_PARSE_ID_TYPES_FWD_HPP
 
 namespace xml
 {

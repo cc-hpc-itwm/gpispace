@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <xml/parse/util/id_type_map.hpp>
+#include <xml/parse/id/mapper.hpp>
 
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>
@@ -27,7 +27,7 @@ namespace xml
 {
   namespace parse
   {
-    namespace id_map
+    namespace id
     {
       struct mapper::maps
       {
@@ -38,7 +38,7 @@ namespace xml
           , MEMBER_NAME()                       \
           , MEMBER_NAME ## _references()
 
-#include <xml/parse/util/id_type_map_helper.lst>
+#include <xml/parse/id/mapper_helper.lst>
 #undef ITEM
         { }
 
@@ -49,15 +49,15 @@ namespace xml
 
 #define ITEM(NAME,MEMBER_NAME,TYPE)                                     \
                                                                         \
-        typedef boost::unordered_map< id::base_id_type                  \
+        typedef boost::unordered_map< base_id_type                      \
                                     , type::TYPE                        \
                                     > NAME ## _map_type;                \
                                                                         \
         NAME ## _map_type MEMBER_NAME;                                  \
-        boost::unordered_map<id::base_id_type, id::base_id_type>        \
+        boost::unordered_map<base_id_type, base_id_type>                \
           MEMBER_NAME ## _references;
 
-#include <xml/parse/util/id_type_map_helper.lst>
+#include <xml/parse/id/mapper_helper.lst>
 #undef ITEM
       };
 
@@ -73,7 +73,7 @@ namespace xml
 #define ITEM(NAME,MEMBER_NAME,TYPE)                                     \
                                                                         \
       boost::optional<type::TYPE>                                       \
-        mapper::get (const id::NAME& id) const                          \
+        mapper::get (const NAME& id) const                              \
       {                                                                 \
         const maps::NAME ## _map_type::const_iterator elem              \
           (_maps->MEMBER_NAME.find (id._val));                          \
@@ -82,7 +82,7 @@ namespace xml
                                     );                                  \
       }                                                                 \
                                                                         \
-      void mapper::put (const id::NAME& id, const type::TYPE& elem)     \
+      void mapper::put (const NAME& id, const type::TYPE& elem)         \
       {                                                                 \
         if ( _maps->MEMBER_NAME.find (id._val)                          \
            != _maps->MEMBER_NAME.end()                                  \
@@ -99,12 +99,12 @@ namespace xml
         _maps->MEMBER_NAME.insert (std::make_pair (id._val, elem));     \
       }                                                                 \
                                                                         \
-      void mapper::add_reference (const id::NAME& id)                   \
+      void mapper::add_reference (const NAME& id)                       \
       {                                                                 \
         ++_maps->MEMBER_NAME ## _references[id._val];                   \
       }                                                                 \
                                                                         \
-      void mapper::remove_reference (const id::NAME& id)                \
+      void mapper::remove_reference (const NAME& id)                    \
       {                                                                 \
         if (!(--_maps->MEMBER_NAME ## _references[id._val]))            \
         {                                                               \
@@ -113,7 +113,7 @@ namespace xml
         }                                                               \
       }
 
-#include <xml/parse/util/id_type_map_helper.lst>
+#include <xml/parse/id/mapper_helper.lst>
 #undef ITEM
 
 #undef STRINIGFY

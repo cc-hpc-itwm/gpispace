@@ -5,7 +5,7 @@
 
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/template.fwd.hpp>
-#include <xml/parse/util/id_type.hpp>
+#include <xml/parse/id/types.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/unordered_set.hpp>

@@ -5,7 +5,7 @@
 
 #include <xml/parse/type/function.fwd.hpp>
 
-#include <xml/parse/util/id_type.hpp>
+#include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 

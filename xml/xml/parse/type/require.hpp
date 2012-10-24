@@ -3,8 +3,6 @@
 #ifndef _XML_PARSE_TYPE_REQUIRE_HPP
 #define _XML_PARSE_TYPE_REQUIRE_HPP
 
-#include <xml/parse/util/id_type.hpp>
-
 #include <fhg/util/xml.fwd.hpp>
 
 #include <string>

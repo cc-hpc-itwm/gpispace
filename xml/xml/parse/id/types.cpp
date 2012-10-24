@@ -1,8 +1,8 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <xml/parse/util/id_type.hpp>
+#include <xml/parse/id/types.hpp>
 
-#include <xml/parse/util/id_type_map.hpp>
+#include <xml/parse/id/mapper.hpp>
 
 #include <iostream>
 
@@ -15,9 +15,9 @@ namespace xml
     namespace id
     {
 #define MAKE_ID(NAME)                                                   \
-      NAME::NAME (const base_id_type& val, id_map::mapper* mapper )     \
+      NAME::NAME (const base_id_type& val, mapper* mapper_)             \
         :  _val (val)                                                   \
-        , _mapper (mapper)                                              \
+        , _mapper (mapper_)                                             \
       {                                                                 \
         _mapper->add_reference (*this);                                 \
       }                                                                 \

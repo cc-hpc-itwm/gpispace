@@ -1,11 +1,11 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef XML_UTIL_ID_TYPE_HPP
-#define XML_UTIL_ID_TYPE_HPP
+#ifndef XML_PARSE_ID_TYPES_HPP
+#define XML_PARSE_ID_TYPES_HPP
 
-#include <xml/parse/util/id_type.fwd.hpp>
+#include <xml/parse/id/types.fwd.hpp>
 
-#include <xml/parse/util/id_type_map.fwd.hpp>
+#include <xml/parse/id/mapper.fwd.hpp>
 
 #include <iosfwd>
 
@@ -23,7 +23,7 @@ namespace xml
       struct NAME                                                       \
       {                                                                 \
       public:                                                           \
-        NAME (const base_id_type& val, id_map::mapper* mapper);         \
+        NAME (const base_id_type& val, mapper* mapper_);                \
         NAME (const NAME& other);                                       \
         NAME& operator= (const NAME& other);                            \
         ~NAME();                                                        \
@@ -33,11 +33,11 @@ namespace xml
                                                                         \
         friend std::size_t hash_value (const NAME&);                    \
         friend std::ostream& operator<< (std::ostream&, const NAME&);   \
-        friend class id_map::mapper;                                    \
+        friend class mapper;                                            \
                                                                         \
       private:                                                          \
         base_id_type _val;                                              \
-        id_map::mapper* _mapper;                                        \
+        mapper* _mapper;                                                \
       };                                                                \
                                                                         \
       std::size_t hash_value (const NAME& val);                         \
