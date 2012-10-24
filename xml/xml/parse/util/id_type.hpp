@@ -3,6 +3,8 @@
 #ifndef XML_UTIL_ID_TYPE_HPP
 #define XML_UTIL_ID_TYPE_HPP
 
+#include <xml/parse/util/id_type.fwd.hpp>
+
 #include <xml/parse/util/id_type_map.fwd.hpp>
 
 #include <iosfwd>

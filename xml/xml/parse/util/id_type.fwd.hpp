@@ -3,9 +3,6 @@
 #ifndef XML_UTIL_ID_TYPE_FWD_HPP
 #define XML_UTIL_ID_TYPE_FWD_HPP
 
-#include <boost/cstdint.hpp>
-#include <boost/functional/hash.hpp>
-
 namespace xml
 {
   namespace parse
