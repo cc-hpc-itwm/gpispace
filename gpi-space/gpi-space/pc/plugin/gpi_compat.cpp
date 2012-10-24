@@ -7,6 +7,7 @@
 #include "gpi.hpp"
 #include <gpi-space/pc/type/flags.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/unordered_map.hpp>
@@ -29,7 +30,9 @@ public:
   {
     gpi_compat = this;
 
-    clear_my_gpi_state ();
+    m_shm_hdl = 0;
+    m_shm_ptr = (void*)0;
+    m_shm_id = 0;
 
     try
     {
@@ -39,17 +42,6 @@ public:
     catch (std::exception const & ex)
     {
       LOG(ERROR, "could not parse plugin.gpi_compat.shm_size: " << ex.what());
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
-    try
-    {
-      m_scr_size = boost::lexical_cast<fvmSize_t>
-        (fhg_kernel()->get<std::size_t>("com_size", 16U * (1<<20)));
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "could not parse plugin.gpi_compat.scratch_size: " << ex.what());
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -76,25 +68,14 @@ public:
     m_scratch_handle_name = name_prefix + "-com";
 
     api = fhg_kernel()->acquire<gpi::GPI>("gpi");
-    if (reinitialize_gpi_state() < 0)
-    {
-      LOG(WARN, "gpi plugin is not yet available, state initialization deferred!");
-    }
+
+    schedule_reinitialize_gpi ();
 
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
-    try
-    {
-      if (m_scr_hdl)
-        api->free(m_scr_hdl);
-    }
-    catch (std::exception const &ex)
-    {
-      LOG(WARN, "gpi_compat plugin could not clean up scratch handle");
-    }
     try
     {
       if (m_shm_hdl)
@@ -123,7 +104,7 @@ public:
 
   int reinitialize_gpi_state ()
   {
-    lock_type gpi_mutex (m_gpi_state_mutex);
+    lock_type lock (m_gpi_state_mutex);
 
     if (! api->ping())
     {
@@ -135,7 +116,7 @@ public:
       }
     }
 
-    if (0 == m_scr_hdl)
+    if (0 == m_shm_ptr && m_shm_size > 0)
     {
       try
       {
@@ -154,6 +135,24 @@ public:
     }
 
     return 0;
+  }
+
+  void schedule_reinitialize_gpi ()
+  {
+    int ec = reinitialize_gpi_state ();
+    if (ec == -EAGAIN)
+    {
+      MLOG ( WARN
+                , "gpi plugin is not yet available, state initialization deferred!"
+                );
+
+      fhg_kernel()->schedule( "gpi_compat.setup"
+                            , boost::bind ( &GPICompatPluginImpl::schedule_reinitialize_gpi
+                                          , this
+                                          )
+                            , 2
+                            );
+    }
   }
 
   int ensure_gpi_state ()
@@ -178,6 +177,14 @@ public:
     }
     while (ec == -EAGAIN);
 
+    if ( (ec == 0) && (m_shm_size > 0))
+    {
+      if (m_shm_hdl == (gpi::pc::type::handle_t)0)
+        MLOG (ERROR, "gpi state setup but shm_hdl == 0");
+      if (m_shm_ptr == 0)
+        MLOG (ERROR, "gpi state setup but shm_ptr == 0");
+    }
+
     return ec;
   }
 private:
@@ -197,20 +204,14 @@ private:
                                      , m_shm_size
                                      , gpi::pc::F_EXCLUSIVE
                                      | gpi::pc::F_FORCE_UNLINK
-                                     // , gpi::pc::type::segment::F_FORCE_UNLINK
                                      );
-    m_scr_hdl = api->alloc ( 1 // GPI
-                           , m_scr_size
-                           , m_scratch_handle_name
-                           , 0
-                           );
+
     m_shm_hdl = api->alloc ( m_shm_id
                            , m_shm_size
                            , m_segment_handle_name
                            , gpi::pc::F_EXCLUSIVE
                            );
-    m_shm_ptr = api->ptr(m_shm_hdl);
-
+    m_shm_ptr = api->ptr (m_shm_hdl);
 
     LOG(INFO, "successfully initialized gpi state");
 
@@ -221,7 +222,15 @@ private:
 
   void clear_my_gpi_state ()
   {
-    m_scr_hdl = 0;
+    if (m_shm_id)
+    {
+      if (api->ping ())
+      {
+        try { api->free (m_shm_hdl); } catch (...) {}
+        try { api->unregister_segment (m_shm_id); } catch (...) {}
+      }
+    }
+
     m_shm_hdl = 0;
     m_shm_ptr = 0;
     m_shm_id  = 0;
@@ -244,9 +253,6 @@ public:
   void                              *m_shm_ptr;
   fvmSize_t                          m_shm_size;
   gpi::pc::type::handle_t            m_shm_hdl;
-  fvmSize_t                          m_scr_size;
-  gpi::pc::type::handle_t            m_scr_hdl;
-
 private:
   useconds_t                         m_initialize_retry_interval;
   bool                               m_was_connected;
@@ -331,63 +337,16 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = 0;
 
-  fhg_assert (0 != gpi_compat->m_scr_size);
-  fhg_assert (0 != gpi_compat->m_scr_hdl);
   fhg_assert (0 != gpi_compat->m_shm_hdl);
 
-  gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
-  gpi::pc::type::size_t remaining (size);
-
-  DMLOG_IF( TRACE
-          , chunk_size < remaining
-          , "internal communication buffer is too small, need to split 'get' up: "
-          << "requested := " << size << " "
-          << "com-buffer := " << chunk_size
-          );
-
-  gpi::pc::type::size_t src_offset(fvmOffset);
-  gpi::pc::type::size_t dst_offset(shmemOffset);
-
-  bool in_progress (false);
-
-  while (remaining > 0)
-  {
-    gpi::pc::type::size_t transfer_size (std::min(remaining, chunk_size));
-
-    if (in_progress)
-      gpi_compat->api->wait(queue);
-
-    DLOG(INFO, "transfer from gpi to scratch");
-
-    // 1. transfer memory to scratch
-    gpi_compat->api->wait
-      (gpi_compat->api->memcpy( gpi::pc::type::memory_location_t( gpi_compat->m_scr_hdl
-                                                                , 0
-                                                                )
-                              , gpi::pc::type::memory_location_t(handle, src_offset)
-                              , transfer_size
-                              , queue
-                              )
-      );
-
-    DLOG(INFO, "transfer from scratch to shm");
-
-    // 2. transfer from scratch to shm
-    gpi_compat->api->memcpy( gpi::pc::type::memory_location_t( gpi_compat->m_shm_hdl
-                                                             , dst_offset
-                                                             )
-                           , gpi::pc::type::memory_location_t(gpi_compat->m_scr_hdl, 0)
-                           , transfer_size
+  return
+    gpi_compat->api->memcpy( gpi::pc::type::memory_location_t ( gpi_compat->m_shm_hdl
+                                                              , shmemOffset
+                                                              )
+                           , gpi::pc::type::memory_location_t (handle, fvmOffset)
+                           , size
                            , queue
                            );
-
-    in_progress = true;
-    remaining -= transfer_size;
-    src_offset += transfer_size;
-    dst_offset += transfer_size;
-  }
-
-  return queue;
 }
 
 fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
@@ -400,63 +359,16 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = 1;
 
-  fhg_assert (0 != gpi_compat->m_scr_size);
-  fhg_assert (0 != gpi_compat->m_scr_hdl);
   fhg_assert (0 != gpi_compat->m_shm_hdl);
 
-  gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
-  gpi::pc::type::size_t remaining (size);
-
-  DMLOG_IF( TRACE
-          , chunk_size < remaining
-          , "internal communication buffer is too small, need to split 'get' up: "
-          << "requested := " << size << " "
-          << "com-buffer := " << chunk_size
-          );
-
-  gpi::pc::type::size_t src_offset(shmemOffset);
-  gpi::pc::type::size_t dst_offset(fvmOffset);
-
-  bool in_progress (false);
-
-  while (remaining > 0)
-  {
-    gpi::pc::type::size_t transfer_size (std::min(remaining, chunk_size));
-
-    if (in_progress)
-      gpi_compat->api->wait(queue);
-
-    DLOG(INFO, "transfer from shm to scratch");
-
-    // 1. transfer memory from shm to scratch
-    gpi_compat->api->wait
-      (gpi_compat->api->memcpy( gpi::pc::type::memory_location_t( gpi_compat->m_scr_hdl
-                                                                , 0
-                                                                )
-                              , gpi::pc::type::memory_location_t( gpi_compat->m_shm_hdl
-                                                                , src_offset
-                                                                )
-                              , transfer_size
-                              , queue
-                              )
-      );
-
-    DLOG(INFO, "transfer from scratch to gpi");
-
-    // 2. transfer memory from scratch to global
-    gpi_compat->api->memcpy( gpi::pc::type::memory_location_t(handle, dst_offset)
-                           , gpi::pc::type::memory_location_t(gpi_compat->m_scr_hdl, 0)
-                           , transfer_size
+  return
+    gpi_compat->api->memcpy( gpi::pc::type::memory_location_t (handle, fvmOffset)
+                           , gpi::pc::type::memory_location_t ( gpi_compat->m_shm_hdl
+                                                              , shmemOffset
+                                                              )
+                           , size
                            , queue
                            );
-
-    in_progress = true;
-    remaining  -= transfer_size;
-    src_offset += transfer_size;
-    dst_offset += transfer_size;
-  }
-
-  return queue;
 }
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
@@ -468,7 +380,6 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = 2;
 
-  fhg_assert (0 != gpi_compat->m_scr_size);
   fhg_assert (0 != gpi_compat->m_shm_hdl);
 
   return gpi_compat->api->
@@ -488,7 +399,6 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = 3;
 
-  fhg_assert (0 != gpi_compat->m_scr_size);
   fhg_assert (0 != gpi_compat->m_shm_hdl);
 
   return gpi_compat->api->

@@ -1,11 +1,16 @@
 #include <fhglog/minimal.hpp>
 
+#include <boost/thread.hpp>
+
 #include <fhg/util/read_bool.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/capability.hpp>
 #include "gpi.hpp"
 
 #include <gpi-space/pc/client/api.hpp>
+
+typedef boost::recursive_mutex         mutex_type;
+typedef boost::unique_lock<mutex_type> lock_type;
 
 class GpiPluginImpl : FHG_PLUGIN
                     , public gpi::GPI
@@ -184,6 +189,8 @@ public:
 
   bool connect ()
   {
+    lock_type lock (m_state_mtx);
+
     if (! is_connected())
     {
       return try_start ();
@@ -201,9 +208,11 @@ public:
 private:
   bool try_start ()
   {
+    lock_type lock (m_state_mtx);
+
     try
     {
-      api.start();
+      api.start ();
       return true;
     }
     catch (std::exception const &ex)
@@ -229,6 +238,7 @@ private:
     }
   }
 
+  mutable mutex_type     m_state_mtx;
   gpi::pc::client::api_t api;
 };
 

@@ -58,7 +58,7 @@ if [ -z "$cxx_compiler" ] ; then
 fi
 
 args="$@"
-pnet="$SDPA_HOME/libexec/apps/sdpacc/compile.pnet"
+pnet="$SDPA_HOME/libexec/sdpa/apps/sdpacc/compile.pnet"
 
 pnet_tmp=$(mktemp)
 result=
@@ -71,24 +71,24 @@ function isatty()
     local f="$1" ; shift
     f=$(readlink -f "$f")
     if [ -e "$f" ] ; then
-	tty -s < "$f" >/dev/null 2>&1
-	return $?
+        tty -s < "$f" >/dev/null 2>&1
+        return $?
     else
-	return 1
+        return 1
     fi
 }
 
 function cancel()
 {
     if [ -z "$jobid" ] ; then
-	return 0
+        return 0
     fi
     sdpac $SDPACFLAGS cancel "$jobid" &>/dev/null
     sdpac $SDPACFLAGS wait "$jobid" &>/dev/null
     ec=$?
     sdpac $SDPACFLAGS delete "$jobid" &>/dev/null
     if [ -n "$result" ] ; then
-	test -e "$result" && rm -f "$result"
+        test -e "$result" && rm -f "$result"
     fi
     return $ec
 }
@@ -114,22 +114,22 @@ function execute ()
     ec=$?
     test -e "${pnet_tmp}" && rm -f "${pnet_tmp}"
     if [ $ec -ne 0 ] ; then
-	echo "submission failed: $ec: $err" >&2
-	return $ec
+        echo "submission failed: $ec: $err" >&2
+        return $ec
     fi
     jobid="$err"
     err=$(sdpac $SDPACFLAGS wait "$jobid" 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
-	echo "job failed: $ec: $err" >&2
-	return $ec
+        echo "job failed: $ec: $err" >&2
+        return $ec
     fi
     result=$(mktemp)
     err=$(sdpac $SDPACFLAGS -f -o "$result" results "${jobid}" 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
-	echo "could not get results: $ec: $err" >&2
-	return $ec
+        echo "could not get results: $ec: $err" >&2
+        return $ec
     fi
 
     to_be_deleted="${jobid}"
@@ -137,7 +137,7 @@ function execute ()
     err=$(sdpac $SDPACFLAGS delete "${to_be_deleted}" 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
-	echo "could not delete job: $ec: $err" >&2
+        echo "could not delete job: $ec: $err" >&2
     fi
 
     std_out=$(pnetget < "$result" --type=output std_out | sed -e 's/^"//g' -e 's/"$//g')
@@ -146,16 +146,16 @@ function execute ()
     test -e "$result" && rm -f "$result"
 
     if [ -n "$std_out" ] ; then
-	echo -e "$std_out"
+        echo -e "$std_out"
     fi
     if [ -n "$std_err" ] ; then
         co=
         nc=
         if isatty /dev/stderr ; then
-	    co='\033[0;35m'
+            co='\033[0;35m'
             nc="\033[0m"
         fi
-	echo -e "${co}$std_err${nc}" >&2
+        echo -e "${co}$std_err${nc}" >&2
     fi
 
     unset jobid
@@ -165,15 +165,15 @@ function execute ()
 
 case "$prog_name" in
     *cc)
-	compiler="$c_compiler"
-	;;
+        compiler="$c_compiler"
+        ;;
     *++)
-	compiler="$cxx_compiler"
-	;;
+        compiler="$cxx_compiler"
+        ;;
     *)
-	echo "E: dunno how to behave as $prog_name" >&2
-	exit 1
-	;;
+        echo "E: dunno how to behave as $prog_name" >&2
+        exit 1
+        ;;
 esac
 
 compile $@

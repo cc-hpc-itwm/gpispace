@@ -129,6 +129,9 @@ namespace helper
       tmp = cmd + " gpi";
       ec += do_run (tmp)  ? 1 : 0;
 
+      tmp = "sleep 5";
+      do_run (tmp);
+
       tmp = cmd + " kvs";
       ec += do_run (tmp)  ?16 : 0;
     }

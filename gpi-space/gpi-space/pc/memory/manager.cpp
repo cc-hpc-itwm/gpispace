@@ -128,7 +128,9 @@ namespace gpi
           area_map_t::iterator area_it (m_areas.find(mem_id));
           if (area_it == m_areas.end())
           {
-            throw std::runtime_error ("no such memory");
+            throw std::runtime_error ( "no such memory: "
+                                     + boost::lexical_cast<std::string>(mem_id)
+                                     );
           }
 
           area_ptr area (area_it->second);
@@ -177,7 +179,9 @@ namespace gpi
         area_map_t::iterator area (m_areas.find(mem_id));
         if (area == m_areas.end())
         {
-          throw std::runtime_error ("no such memory area");
+          throw std::runtime_error ( "no such memory: "
+                                   + boost::lexical_cast<std::string>(mem_id)
+                                   );
         }
 
         if (proc_id)
@@ -196,7 +200,9 @@ namespace gpi
         area_map_t::iterator area (m_areas.find(mem_id));
         if (area == m_areas.end())
         {
-          throw std::runtime_error ("no such memory area");
+          throw std::runtime_error ( "no such memory: "
+                                   + boost::lexical_cast<std::string>(mem_id)
+                                   );
         }
 
         if (proc_id)
@@ -254,6 +260,7 @@ namespace gpi
         }
 
         m_areas [area->get_id ()] = area;
+        area->init ();
 
         LOG(TRACE, "memory registered:" << area->descriptor ());
 
@@ -273,7 +280,9 @@ namespace gpi
         area_map_t::const_iterator area_it (m_areas.find (mem_id));
         if (area_it == m_areas.end())
         {
-          throw std::runtime_error ("no such memory");
+          throw std::runtime_error ( "no such memory: "
+                                   + boost::lexical_cast<std::string>(mem_id)
+                                   );
         }
         return area_it->second;
       }
@@ -296,7 +305,9 @@ namespace gpi
         }
         else
         {
-          throw std::runtime_error ("no such handle");
+          throw std::runtime_error ( "no such handle: "
+                                   + boost::lexical_cast<std::string>(hdl)
+                                   );
         }
       }
 
@@ -421,15 +432,18 @@ namespace gpi
       }
 
       void
-      manager_t::list_allocations( const gpi::pc::type::segment_id_t id
+      manager_t::list_allocations( const gpi::pc::type::process_id_t proc_id
+                                 , const gpi::pc::type::segment_id_t id
                                  , gpi::pc::type::handle::list_t & l
                                  ) const
       {
-        get_area (id)->list_allocations (l);
+        get_area (id)->list_allocations (proc_id, l);
       }
 
       void
-      manager_t::list_allocations(gpi::pc::type::handle::list_t & l) const
+      manager_t::list_allocations ( const gpi::pc::type::process_id_t proc_id
+                                  , gpi::pc::type::handle::list_t & l
+                                  ) const
       {
         lock_type lock (m_mutex);
 
@@ -438,7 +452,7 @@ namespace gpi
             ; ++s2a
             )
         {
-          s2a->second->list_allocations (l);
+          s2a->second->list_allocations (proc_id, l);
         }
       }
 
@@ -562,7 +576,9 @@ namespace gpi
           area_map_t::iterator area_it (m_areas.find (seg_id));
           if (area_it == m_areas.end ())
           {
-            throw std::runtime_error ("no such memory");
+            throw std::runtime_error ( "no such memory: "
+                                     + boost::lexical_cast<std::string>(seg_id)
+                                     );
           }
 
           area_ptr area (area_it->second);

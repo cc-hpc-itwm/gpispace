@@ -15,7 +15,10 @@
 #include <gpi-space/pc/type/memory_location.hpp>
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
+
 #include <gpi-space/pc/memory/task.hpp>
+#include <gpi-space/pc/memory/memory_buffer.hpp>
+#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
 
 namespace gpi
 {
@@ -26,6 +29,8 @@ namespace gpi
       class area_t : boost::noncopyable
       {
       public:
+        typedef buffer_pool_t<buffer_t> memory_pool_t;
+
         virtual ~area_t ();
 
         enum grow_direction_t
@@ -45,6 +50,8 @@ namespace gpi
         bool in_use () const;
         int type () const;
         gpi::pc::type::flags_t flags () const;
+
+        virtual void init ();
 
         // WORK HERE:
         //    this function *must not* be called from the dtor
@@ -81,7 +88,9 @@ namespace gpi
 
         void defrag (const gpi::pc::type::size_t free_at_least = 0);
 
-        void list_allocations (gpi::pc::type::handle::list_t &) const;
+        void list_allocations ( const gpi::pc::type::process_id_t id
+                              , gpi::pc::type::handle::list_t &
+                              ) const;
 
         gpi::pc::type::segment::descriptor_t const &
         descriptor () const;
@@ -136,6 +145,7 @@ namespace gpi
                                , area_t & dst_area
                                , gpi::pc::type::size_t amount
                                , gpi::pc::type::size_t queue
+                               , memory_pool_t & buffer_pool
                                , task_list_t & tasks
                                );
       protected:
@@ -179,6 +189,22 @@ namespace gpi
                                                 , gpi::pc::type::size_t queue
                                                 , task_list_t & tasks
                                                 ) = 0;
+
+        virtual int get_send_tasks ( area_t & src_area
+                                   , const gpi::pc::type::memory_location_t src
+                                   , const gpi::pc::type::memory_location_t dst
+                                   , gpi::pc::type::size_t amount
+                                   , gpi::pc::type::size_t queue
+                                   , task_list_t & tasks
+                                   );
+
+        virtual int get_recv_tasks ( area_t & dst_area
+                                   , const gpi::pc::type::memory_location_t dst
+                                   , const gpi::pc::type::memory_location_t src
+                                   , gpi::pc::type::size_t amount
+                                   , gpi::pc::type::size_t queue
+                                   , task_list_t & tasks
+                                   );
 
         virtual gpi::pc::type::size_t
         read_from_impl ( gpi::pc::type::offset_t offset

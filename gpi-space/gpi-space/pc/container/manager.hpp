@@ -33,9 +33,11 @@ namespace gpi
         typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
         explicit
-        manager_t (std::string const & p);
+        manager_t (std::string const & path_to_socket);
 
         ~manager_t ();
+
+        void add_default_memory (std::string const &);
 
         void start();
         void stop ();
@@ -138,6 +140,7 @@ namespace gpi
         state_t m_state;
         connector_type m_connector;
         gpi::pc::type::counter_t m_process_counter;
+        std::vector<std::string> m_default_memory_urls;
 
         process_map_t m_processes;
         process_list_t m_detached_processes;

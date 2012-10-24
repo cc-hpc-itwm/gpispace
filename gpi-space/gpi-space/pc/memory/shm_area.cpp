@@ -309,7 +309,7 @@ namespace gpi
         gpi::pc::type::size_t size =
           boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
 
-        area_ptr_t area (new shm_area_t ( 0
+        area_ptr_t area (new shm_area_t ( GPI_PC_INVAL
                                         , url.path ()
                                         , size
                                         , flags

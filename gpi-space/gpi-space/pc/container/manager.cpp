@@ -41,6 +41,13 @@ namespace gpi
         }
       }
 
+      void manager_t::add_default_memory (std::string const &url_s)
+      {
+        if (m_default_memory_urls.size () == gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
+          throw std::runtime_error ("too many predefined memory urls!");
+        m_default_memory_urls.push_back (url_s);
+      }
+
       void manager_t::start ()
       {
         set_state (ST_STARTING);
@@ -136,12 +143,19 @@ namespace gpi
 
         if (global::topology ().is_master ())
         {
-          global::memory_manager ().add_memory
-            ( 0 // owner
-            , "gpi://"
-            //            , "sfs:///fhgfs/HPC/petry/sfs-test?create=true&size=1099511627776&persistent=true"
-            , 1 // id
-            );
+          typedef std::vector<std::string> url_list_t;
+          url_list_t::iterator it = m_default_memory_urls.begin ();
+          url_list_t::iterator end = m_default_memory_urls.end ();
+          gpi::pc::type::id_t id = 1;
+          for ( ; it != end ; ++it)
+          {
+            global::memory_manager ().add_memory
+              ( 0 // owner
+              , *it
+              , id
+              );
+            ++id;
+          }
         }
       }
 
@@ -153,12 +167,17 @@ namespace gpi
                                 , global::topology_t::any_port() // topology_t::port_t("10821")
                                 , "dummy-cookie"
                                 );
+
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)
         {
           if (gpi_api.rank() != n)
             global::topology().add_child(n);
         }
-        global::topology().establish();
+
+        if (gpi_api.is_master ())
+        {
+          global::topology().establish();
+        }
       }
 
       void manager_t::shutdown_topology ()
@@ -377,9 +396,9 @@ namespace gpi
       {
 //        check_permissions (permission::list_allocations_t (proc_id, seg_id));
         if (seg_id == gpi::pc::type::segment::SEG_INVAL)
-          global::memory_manager().list_allocations(list);
+          global::memory_manager().list_allocations(proc_id, list);
         else
-          global::memory_manager().list_allocations (seg_id, list);
+          global::memory_manager().list_allocations (proc_id, seg_id, list);
       }
 
       gpi::pc::type::queue_id_t

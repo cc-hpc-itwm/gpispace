@@ -10,6 +10,7 @@
 
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
+
 #include <gpi-space/pc/memory/handle_generator.hpp>
 
 namespace gpi
@@ -42,7 +43,7 @@ namespace gpi
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::flags_t flags
                      )
-        : m_descriptor ( (gpi::pc::type::id_t (-1))
+        : m_descriptor ( GPI_PC_INVAL
                        , type
                        , creator
                        , name
@@ -64,6 +65,8 @@ namespace gpi
                );
         dtmmgr_finalize (&m_mmgr);
       }
+
+      void area_t::init () {}
 
       void area_t::reinit ()
       {
@@ -147,6 +150,11 @@ namespace gpi
         return m_descriptor.nref > 0;
       }
 
+      std::string const & area_t::name () const
+      {
+        return m_descriptor.name;
+      }
+
       gpi::pc::type::size_t area_t::size () const
       {
         return m_descriptor.local_size;
@@ -180,11 +188,10 @@ namespace gpi
             (m_handles.find(location.handle));
         if (hdl_it == m_handles.end())
           throw std::runtime_error ("is_local(): no such handle");
-        //        if (0 == amount)
-        //          throw std::runtime_error ("is_local(): empty region");
 
         const gpi::pc::type::offset_t start = location.offset;
         const gpi::pc::type::offset_t end   = start + amount;
+
         return is_range_local (hdl_it->second, start, end);
       }
 
@@ -243,7 +250,7 @@ namespace gpi
         hdl.local_size = local_size;
         hdl.name = name;
         hdl.offset = offset;
-        hdl.creator = (gpi::pc::type::process_id_t)(-1);
+        hdl.creator = GPI_PC_INVAL;
         hdl.flags = gpi::pc::F_GLOBAL | gpi::pc::F_PERSISTENT;
 
         internal_alloc (hdl);
@@ -569,7 +576,9 @@ namespace gpi
         }
       }
 
-      void area_t::list_allocations (gpi::pc::type::handle::list_t & list) const
+      void area_t::list_allocations ( const gpi::pc::type::process_id_t proc
+                                    , gpi::pc::type::handle::list_t & list
+                                    ) const
       {
         lock_type lock (m_mutex);
 
@@ -578,6 +587,13 @@ namespace gpi
             ; ++pos
             )
         {
+          if (  (pos->second.flags & gpi::pc::F_EXCLUSIVE)
+             && (pos->second.creator != proc)
+             )
+          {
+            continue;
+          }
+
           list.push_back (pos->second);
         }
       }
@@ -699,6 +715,73 @@ namespace gpi
           void * m_buffer;
           gpi::pc::type::size_t m_amount;
         };
+
+        struct copy
+        {
+          copy ( area_t & src
+               , area_t & dst
+               , gpi::pc::type::memory_location_t src_loc
+               , gpi::pc::type::memory_location_t dst_loc
+               , gpi::pc::type::size_t amount
+               , area_t::memory_pool_t & buffer_pool
+               )
+            : m_src (src)
+            , m_dst (dst)
+            , m_src_loc (src_loc)
+            , m_dst_loc (dst_loc)
+            , m_amount (amount)
+            , m_pool (buffer_pool)
+          {}
+
+          void operator () ()
+          {
+            buffer_t *buffer = m_pool.acquire ();
+
+            size_t remaining = m_amount;
+
+            while (remaining)
+            {
+              const size_t to_read = std::min (remaining, buffer->size ());
+
+              const size_t num_read = m_src.read_from ( m_src_loc
+                                                      , buffer->data ()
+                                                      , to_read
+                                                      );
+              if (0 == num_read)
+              {
+                MLOG ( ERROR
+                     , "could not read " << buffer->size () << " bytes"
+                     << " from " << m_src_loc
+                     << " remaining " << remaining
+                     );
+                m_pool.release (buffer);
+                throw std::runtime_error ("could not read");
+              }
+
+              buffer->used (num_read);
+
+              const size_t num_written = m_dst.write_to ( m_dst_loc
+                                                        , buffer->data ()
+                                                        , buffer->used ()
+                                                        );
+
+              assert (num_read == num_written);
+
+              buffer->used (num_read - num_written);
+
+              remaining -= num_read;
+            }
+
+            m_pool.release (buffer);
+          }
+        private:
+          area_t & m_src;
+          area_t & m_dst;
+          gpi::pc::type::memory_location_t m_src_loc;
+          gpi::pc::type::memory_location_t m_dst_loc;
+          gpi::pc::type::size_t m_amount;
+          area_t::memory_pool_t & m_pool;
+        };
       }
 
       gpi::pc::type::size_t
@@ -707,6 +790,9 @@ namespace gpi
                         , gpi::pc::type::size_t amount
                         )
       {
+        // TODO: set amount to minimum of amount and size-loc.offset
+        check_bounds (loc, amount);
+
         if (is_local (gpi::pc::type::memory_region_t (loc, amount)))
         {
           return read_from_impl ( location_to_offset (loc)
@@ -727,6 +813,9 @@ namespace gpi
                        , gpi::pc::type::size_t amount
                        )
       {
+        // TODO: set amount to minimum of amount and size-loc.offset
+        check_bounds (loc, amount);
+
         if (is_local (gpi::pc::type::memory_region_t (loc, amount)))
         {
           return write_to_impl ( location_to_offset (loc)
@@ -762,11 +851,36 @@ namespace gpi
       }
 
       int
+      area_t::get_send_tasks ( area_t & src_area
+                             , const gpi::pc::type::memory_location_t src
+                             , const gpi::pc::type::memory_location_t dst
+                             , gpi::pc::type::size_t amount
+                             , gpi::pc::type::size_t queue
+                             , task_list_t & tasks
+                             )
+      {
+        throw std::runtime_error ("get_send_tasks() not implemented");
+      }
+
+      int
+      area_t::get_recv_tasks ( area_t & dst_area
+                             , const gpi::pc::type::memory_location_t dst
+                             , const gpi::pc::type::memory_location_t src
+                             , gpi::pc::type::size_t amount
+                             , gpi::pc::type::size_t queue
+                             , task_list_t & tasks
+                             )
+      {
+        throw std::runtime_error ("get_recv_tasks() not implemented");
+      }
+
+      int
       area_t::get_transfer_tasks ( const gpi::pc::type::memory_location_t src
                                  , const gpi::pc::type::memory_location_t dst
                                  , area_t & dst_area
                                  , gpi::pc::type::size_t amount
                                  , gpi::pc::type::size_t queue
+                                 , memory_pool_t & buffer_pool
                                  , task_list_t & tasks
                                  )
       {
@@ -829,9 +943,24 @@ namespace gpi
           }
           else
           {
-            MLOG ( WARN
-                 , "both segments are local, but none of them has raw memory"
-                 );
+            tasks.push_back
+              (boost::make_shared<task_t>
+              ( "copy: "
+              + boost::lexical_cast<std::string> (dst)
+              + " <- "
+              + boost::lexical_cast<std::string> (src)
+              + " "
+              + boost::lexical_cast<std::string> (amount)
+
+              , detail::copy ( *this
+                             , dst_area
+                             , src
+                             , dst
+                             , amount
+                             , buffer_pool
+                             )
+              ));
+            return 0;
           }
         }
 
@@ -853,18 +982,38 @@ namespace gpi
         // diagonal copy (non-local different types)
         else
         {
-          LOG ( ERROR
-              , "illegal memory transfer (diagonal copy): "
-              << amount << " bytes: "
-              << dst
-              << " <- "
-              << src
-              );
-
-          throw std::runtime_error
-            ( "illegal memory transfer requested: "
-            "I have no idea how to transfer data between those segments, sorry!"
-            );
+          if (src_is_local)
+          {
+            // send from local source to remote destination
+            return dst_area.get_send_tasks ( *this
+                                           , src
+                                           , dst
+                                           , amount
+                                           , queue
+                                           , tasks
+                                           );
+          }
+          else if (dst_is_local)
+          {
+            // receive from remote src to local destination
+            return this->get_recv_tasks ( dst_area
+                                        , dst
+                                        , src
+                                        , amount
+                                        , queue
+                                        , tasks
+                                        );
+          }
+          else
+          {
+            MLOG ( ERROR
+                 , "unsupported memory transfer: both regions are remote:"
+                 << " src := [" << src << "]"
+                 << " dst := [" << dst << "]"
+                 );
+            throw std::runtime_error
+              ("unsupported memory transfer: both regions are remote");
+          }
         }
 
         return 0;

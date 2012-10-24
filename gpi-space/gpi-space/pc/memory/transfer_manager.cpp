@@ -45,6 +45,11 @@ namespace gpi
           ( boost::bind(&transfer_manager_t::worker, this)
           , std::max(std::size_t(1), memcpy_pool_size)
           );
+
+        for (size_t i = 0; i < number_of_queues; ++i)
+        {
+          m_memory_buffer_pool.add (new buffer_t (DEF_BUFFER_SIZE));
+        }
       }
 
       void
@@ -66,6 +71,7 @@ namespace gpi
                                        , *t.dst_area
                                        , t.amount
                                        , t.queue
+                                       , m_memory_buffer_pool
                                        , task_list
                                        );
 

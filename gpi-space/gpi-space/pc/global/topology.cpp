@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <csignal> // kill
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -151,8 +152,10 @@ namespace gpi
 
         ++m_waiting_for_go;
 
-        while (! m_go_received)
+        while (not m_go_received)
         {
+          if (m_shutting_down)
+            break;
           m_go_received_event.wait (lock);
         }
 
@@ -161,6 +164,10 @@ namespace gpi
         {
           m_go_received = false;
         }
+
+        if (m_shutting_down)
+          throw std::runtime_error ("shutting down");
+
         return 0;
       }
 
@@ -436,43 +443,33 @@ namespace gpi
       {
         LOG(TRACE, "establishing topology...");
 
-        // this barrier is nice, but barriers are broken: see ticket #251
-        //        gpi::api::gpi_api_t::get().barrier();
-
-        BOOST_FOREACH(child_map_t::value_type const & n, m_children)
+        try
         {
-          useconds_t snooze(500 * 1000);
-          int i = 30;
-          while (i --> 0)
+          rank_result_t res (all_reduce( detail::command_t("CONNECT")
+                                       , reduce::max_result
+                                       , rank_result_t (m_rank, 0) // my result
+                                       )
+                            );
+          if (res.value != 0)
           {
-            try
-            {
-              LOG(TRACE, "trying to connect to " << n.second.name);
-              m_peer->send (n.second.name, detail::command_t("CONNECT"));
-              break;
-            }
-            catch (std::exception const & ex)
-            {
-              if (i > 0)
-              {
-                usleep (snooze);
-                snooze = std::min(10 * 1000 * 1000u, snooze*2);
-              }
-              else
-              {
-                LOG( WARN
-                   , "could not establish connection to rank " << n.first
-                   << ": " << ex.what()
-                   );
-                throw;
-              }
-            }
+            LOG (ERROR,"connection failed: " << res.rank << " failed: " << res.value);
+            throw std::runtime_error
+              ( "connections could not be established to at least one node: rank "
+              + boost::lexical_cast<std::string>(res.rank)
+              + " says: "
+              + res.message
+              );
+          }
+          else
+          {
+            m_established = true;
+            DMLOG(TRACE, "topology established");
           }
         }
-
-        m_established = true;
-
-        DMLOG(TRACE, "topology established");
+        catch (std::exception const & ex)
+        {
+          throw;
+        }
       }
 
       void topology_t::cast( const gpi::rank_t rnk
@@ -503,16 +500,43 @@ namespace gpi
         cast(rnk, std::string(data, len));
       }
 
-      static void message_sent (boost::system::error_code const &ec)
+      void topology_t::message_sent ( child_t & child
+                                    , std::string const & data
+                                    , boost::system::error_code const & ec
+                                    )
       {
-        DLOG_IF(WARN, ec, "message could not be sent: " << ec);
+        if (ec)
+        {
+          if (++child.error_counter > 10)
+          {
+            MLOG (ERROR, "exceeded error counter for " << child.name);
+            this->stop ();
+          }
+          else
+          {
+            usleep (child.error_counter * 200 * 1000);
+            cast (child, data);
+          }
+        }
+        else
+        {
+          child.error_counter = 0;
+        }
       }
 
       void topology_t::cast( const child_t & child
                            , const std::string & data
                            )
       {
-        m_peer->async_send(child.name, data, &message_sent);
+        m_peer->async_send ( child.name
+                           , data
+                           , boost::bind ( &topology_t::message_sent
+                                         , this
+                                         , child
+                                         , data
+                                         , _1
+                                         )
+                           );
       }
 
       void topology_t::broadcast (const std::string &data)
@@ -589,7 +613,9 @@ namespace gpi
         if (rank != m_rank && msg == "CONNECT")
         {
           add_child(rank); // actually set_parent(rank)?
-          cast (rank, detail::command_t("+OK"));
+          cast (rank, detail::command_t("+RES") << 0);
+
+          m_established = true;
         }
         else
         {
@@ -646,7 +672,10 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              LOG(WARN, "could not free handle: " << ex.what());
+              MLOG_IF ( WARN
+                      , not m_shutting_down
+                      , "could not free handle: " << ex.what()
+                      );
               cast (rank, detail::command_t("+ERR") << 1 << ex.what ());
             }
           }
@@ -713,11 +742,15 @@ namespace gpi
           }
           else if (av[0] == "+ERR")
           {
-            LOG ( WARN
-                , "error on node " << rank
-                << ": " << av [1]
-                << ": " << av [2]
-                );
+            std::vector<std::string> msg_vec ( av.begin ()+2
+                                             , av.end ()
+                                             );
+            MLOG_IF ( WARN
+                    , not m_shutting_down
+                    , "error on node " << rank
+                    << ": " << av [1]
+                    << ": " << boost::algorithm::join (msg_vec, " ")
+                    );
           }
           else if (av [0] == "GO")
           {
@@ -734,7 +767,7 @@ namespace gpi
           }
           else
           {
-            LOG(WARN, "result collection not implemented");
+            LOG(WARN, "invalid command: '" << av[0] <<"'");
           }
         }
       }
@@ -743,13 +776,18 @@ namespace gpi
                                     , boost::system::error_code const &ec
                                     )
       {
-        if (m_established)
+        if (m_established || m_waiting_for_go)
         {
-          LOG(WARN, "error on connection to child node " << rank);
-          LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
+          MLOG (DEBUG, "error on connection to " << rank << ": " << ec);
+          MLOG (DEBUG, "node-failover is not available yet, I have to commit Seppuku...");
+          m_shutting_down = true;
+          if (m_waiting_for_go)
+          {
+            m_go_received_event.notify_all ();
+          }
+
           del_child (rank);
           kill(getpid(), SIGTERM);
-          //_exit(15);
         }
       }
     }

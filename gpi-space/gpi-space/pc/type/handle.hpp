@@ -97,7 +97,8 @@ namespace gpi
       {
         if (! is_valid (hdl))
         {
-          throw std::invalid_argument("invalid handle");
+          throw std::invalid_argument
+            ("invalid handle: " + boost::lexical_cast<std::string>(hdl));
         }
       }
 

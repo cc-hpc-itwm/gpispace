@@ -1,6 +1,10 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
+  memory_buffer.hpp
+  handle_buffer.hpp
+  memory_buffer_pool.hpp
+  memory_buffer_pool.ipp
   memory_area.hpp
   handle_generator.hpp
   manager.hpp
@@ -17,6 +21,8 @@ set (hdrs
   )
 
 set (srcs
+  memory_buffer.cpp
+  memory_buffer_pool.cpp
   memory_area.cpp
   handle_generator.cpp
   manager.cpp

@@ -23,7 +23,6 @@ static gpi::pc::client::api_t & gpi_api ()
 static gpi::pc::type::info::descriptor_t gpi_info;
 static void *shm_ptr = 0;
 static const size_t shm_size = GPIFS_SHM_SIZE;
-static const size_t scr_size = GPIFS_SHM_SIZE;
 static gpi::pc::type::segment_id_t shm_id = 0;
 static gpi::pc::type::handle_t     shm_hdl = 0;
 static gpi::pc::type::handle_t     scr_hdl = 0;
@@ -79,24 +78,18 @@ namespace gpifs
 
       // register segment
 
-      shm_id = gpi_api().register_segment ( "gpifs"
+      shm_id = gpi_api().register_segment ( "gpifs-"+boost::lexical_cast<std::string>(getpid ())
                                           , shm_size
                                           , gpi::pc::F_EXCLUSIVE
                                           | gpi::pc::F_FORCE_UNLINK
                                           );
-
-      scr_hdl = gpi_api().alloc ( gpifs::segment::GPI
-                                , scr_size
-                                , "gpifs-scratch"
-                                , gpi::pc::F_EXCLUSIVE
-                                );
 
       shm_hdl = gpi_api().alloc ( shm_id
                                 , shm_size
                                 , "gpifs-transfer"
                                 , gpi::pc::F_EXCLUSIVE
                                 );
-      shm_ptr = gpi_api().segments()[shm_id]->ptr();
+      shm_ptr = gpi_api ().ptr (shm_hdl);
 
       return res;
     }
@@ -221,25 +214,13 @@ namespace gpifs
       size_t remaining(size);
       while (remaining)
       {
-        size_t chunk
-          (std::min ( remaining
-                    , std::min (shm_size, scr_size)
-                    )
-          );
+        size_t chunk (std::min (remaining, shm_size));
 
         try
         {
           gpi_api().wait
-            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(scr_hdl, 0)
-                              , gpi::pc::type::memory_location_t(id, offset)
-                              , chunk
-                              , 0
-                              )
-            );
-
-          gpi_api().wait
-            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(shm_hdl, 0)
-                              , gpi::pc::type::memory_location_t(scr_hdl, 0)
+            (gpi_api().memcpy ( gpi::pc::type::memory_location_t (shm_hdl, 0)
+                              , gpi::pc::type::memory_location_t (id, offset)
                               , chunk
                               , 0
                               )
@@ -287,27 +268,15 @@ namespace gpifs
       size_t remaining(size);
       while (remaining)
       {
-        size_t chunk
-          (std::min ( remaining
-                    , std::min (shm_size, scr_size)
-                    )
-          );
+        size_t chunk (std::min (remaining, shm_size));
 
         memcpy (shm_ptr, buf, chunk);
 
         try
         {
           gpi_api().wait
-            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(scr_hdl, 0)
-                              , gpi::pc::type::memory_location_t(shm_hdl, 0)
-                              , chunk
-                              , 0
-                              )
-            );
-
-          gpi_api().wait
-            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(id, offset)
-                              , gpi::pc::type::memory_location_t(scr_hdl, 0)
+            (gpi_api().memcpy ( gpi::pc::type::memory_location_t (id, offset)
+                              , gpi::pc::type::memory_location_t (shm_hdl, 0)
                               , chunk
                               , 0
                               )

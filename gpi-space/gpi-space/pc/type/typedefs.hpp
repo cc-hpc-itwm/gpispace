@@ -27,6 +27,8 @@ namespace gpi
       typedef uint16_t flags_t;
       typedef std::string path_t;
       typedef std::string name_t;
+
+#define GPI_PC_INVAL (::gpi::pc::type::id_t)(-1)
     }
   }
 
