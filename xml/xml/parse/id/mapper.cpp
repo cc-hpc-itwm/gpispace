@@ -44,6 +44,7 @@ namespace xml
 
 #include <xml/parse/id/helper.lst>
 #undef ITEM
+#undef COLON
         { }
 
       private:
