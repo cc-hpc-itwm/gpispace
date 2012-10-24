@@ -2,6 +2,7 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/bool.hpp>
 #include <fhg/util/bool_io.hpp>
+#include <fhg/util/threadname.hpp>
 
 #include <boost/thread.hpp>
 
@@ -49,6 +50,7 @@ public:
     }
 
     m_thread = boost::thread (&fhg::com::io_service_pool::run, m_io_pool);
+    fhg::util::set_threadname (m_thread, "[kvsd]");
 
     FHG_PLUGIN_STARTED();
   }

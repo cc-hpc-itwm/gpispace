@@ -8,6 +8,7 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/thread/queue.hpp>
+#include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <cstdio>
@@ -109,7 +110,9 @@ public:
 
     m_stop_requested = false;
     m_transfer_thread = boost::thread (&UfBMigFrontImpl::transfer_thread, this);
+    fhg::util::set_threadname (m_transfer_thread, "[ufbmig-transfer]");
     m_message_thread = boost::thread (&UfBMigFrontImpl::message_thread, this);
+    fhg::util::set_threadname (m_message_thread, "[ufbmig-msg]");
 
     send_logoutput ("Preparing backend...");
 

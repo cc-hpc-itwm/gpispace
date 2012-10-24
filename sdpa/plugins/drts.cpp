@@ -17,6 +17,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <sdpa/uuidgen.hpp>
@@ -151,6 +152,7 @@ public:
     assert (! m_event_thread);
 
     m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
+    fhg::util::set_threadname (*m_event_thread, "[drts-events]");
 
     // initialize peer
     m_peer.reset
@@ -160,6 +162,7 @@ public:
                             )
       );
     m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
+    fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
     try
     {
       m_peer->start();
@@ -216,11 +219,15 @@ public:
     restore_jobs ();
 
     if (have_master_with_polling)
+    {
       m_request_thread.reset
         (new boost::thread(&DRTSImpl::job_requestor_thread, this));
+      fhg::util::set_threadname (*m_request_thread, "[drts-requests]");
+    }
 
     m_execution_thread.reset
       (new boost::thread(&DRTSImpl::job_execution_thread, this));
+    fhg::util::set_threadname (*m_execution_thread, "[drts-execute]");
 
     start_connect ();
 
