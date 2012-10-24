@@ -31,10 +31,12 @@ set (hdrs
   backtracing_exception.fwd.hpp
 
   url.hpp
+  setproctitle.h
 )
 
 set (srcs
   backtracing_exception.cpp
+  setproctitle.c
 )
 
 add_library (fhg-util ${srcs})
