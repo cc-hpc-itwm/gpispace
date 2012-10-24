@@ -41,24 +41,24 @@ namespace xml
         //! is used.
         ~mapper();
 
-#define ITEM(NAME,__IGNORE,TYPE)                                      \
+#define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                            \
                                                                       \
         boost::optional<type::TYPE> get (const NAME&) const;          \
         void put (const NAME&, const type::TYPE& elem);
 
-#include <xml/parse/id/mapper_helper.lst>
+#include <xml/parse/id/helper.lst>
 #undef ITEM
 
       private:
 
-#define ITEM(NAME,__IGNORE,TYPE)                                      \
+#define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                            \
                                                                       \
         void add_reference (const NAME&);                             \
         void remove_reference (const NAME&);                          \
                                                                       \
         friend struct NAME;
 
-#include <xml/parse/id/mapper_helper.lst>
+#include <xml/parse/id/helper.lst>
 #undef ITEM
 
         //! \note We need to use pimpl, as there is an include loop.

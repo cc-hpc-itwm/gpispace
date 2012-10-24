@@ -22,6 +22,7 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/preprocessor.hpp>
 
 namespace xml
 {
@@ -32,13 +33,16 @@ namespace xml
       struct mapper::maps
       {
         maps()
-          : _dummy_to_use_macro_in_initializer_list (true)
-#define ITEM(__IGNORE,MEMBER_NAME,__IGNORE2)    \
-                                                \
-          , MEMBER_NAME()                       \
+#define COLON() :
+#define ITEM(__IGNORE,MEMBER_NAME,__IGNORE2,NUMBER)             \
+                                                                \
+          BOOST_PP_IF ( BOOST_PP_EQUAL (NUMBER, 0)              \
+                      , BOOST_PP_COMMA                          \
+                      , COLON                                   \
+                      ) MEMBER_NAME()                           \
           , MEMBER_NAME ## _references()
 
-#include <xml/parse/id/mapper_helper.lst>
+#include <xml/parse/id/helper.lst>
 #undef ITEM
         { }
 
@@ -47,7 +51,7 @@ namespace xml
 
       public:
 
-#define ITEM(NAME,MEMBER_NAME,TYPE)                                     \
+#define ITEM(NAME,MEMBER_NAME,TYPE,__IGNORE)                            \
                                                                         \
         typedef boost::unordered_map< base_id_type                      \
                                     , type::TYPE                        \
@@ -57,7 +61,7 @@ namespace xml
         boost::unordered_map<base_id_type, base_id_type>                \
           MEMBER_NAME ## _references;
 
-#include <xml/parse/id/mapper_helper.lst>
+#include <xml/parse/id/helper.lst>
 #undef ITEM
       };
 
@@ -70,7 +74,7 @@ namespace xml
 #define STRINGIFY(s) #s
 #define EXPAND_AND_STRINGIFY(s) STRINGIFY(s)
 
-#define ITEM(NAME,MEMBER_NAME,TYPE)                                     \
+#define ITEM(NAME,MEMBER_NAME,TYPE,__IGNORE)                            \
                                                                         \
       boost::optional<type::TYPE>                                       \
         mapper::get (const NAME& id) const                              \
@@ -113,7 +117,7 @@ namespace xml
         }                                                               \
       }
 
-#include <xml/parse/id/mapper_helper.lst>
+#include <xml/parse/id/helper.lst>
 #undef ITEM
 
 #undef STRINIGFY
