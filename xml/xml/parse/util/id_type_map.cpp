@@ -34,8 +34,10 @@ namespace xml
         maps()
           : _dummy_to_use_macro_in_initializer_list (true)
 #define ITEM(__IGNORE,MEMBER_NAME,__IGNORE2)    \
+                                                \
           , MEMBER_NAME()                       \
           , MEMBER_NAME ## _references()
+
 #include <xml/parse/util/id_type_map_helper.lst>
 #undef ITEM
         { }
@@ -44,10 +46,17 @@ namespace xml
         bool _dummy_to_use_macro_in_initializer_list;
 
       public:
-#define ITEM(TYPE,NAME,__IGNORE)                                  \
-        TYPE NAME;                                                \
-        boost::unordered_map<id::TYPE, id::base_id_type>          \
-          NAME ## _references;
+
+#define ITEM(NAME,MEMBER_NAME,TYPE)                                     \
+                                                                        \
+        typedef boost::unordered_map< id::base_id_type                  \
+                                    , type::TYPE                        \
+                                    > NAME ## _map_type;                \
+                                                                        \
+        NAME ## _map_type MEMBER_NAME;                                  \
+        boost::unordered_map<id::base_id_type, id::base_id_type>        \
+          MEMBER_NAME ## _references;
+
 #include <xml/parse/util/id_type_map_helper.lst>
 #undef ITEM
       };
@@ -55,7 +64,6 @@ namespace xml
       mapper::mapper()
         : _maps (new maps)
       { }
-
       mapper::~mapper()
       { }
 
@@ -63,45 +71,54 @@ namespace xml
 #define EXPAND_AND_STRINGIFY(s) STRINGIFY(s)
 
 #define ITEM(NAME,MEMBER_NAME,TYPE)                                     \
-      boost::optional<type::TYPE> mapper::get (id::NAME id) const       \
+                                                                        \
+      boost::optional<type::TYPE>                                       \
+        mapper::get (const id::NAME& id) const                          \
       {                                                                 \
-        const NAME::const_iterator elem (_maps->MEMBER_NAME.find (id)); \
+        const maps::NAME ## _map_type::const_iterator elem              \
+          (_maps->MEMBER_NAME.find (id._val));                          \
         return boost::make_optional ( elem != _maps->MEMBER_NAME.end()  \
                                     , elem->second                      \
                                     );                                  \
       }                                                                 \
                                                                         \
-      void mapper::put (id::NAME id, type::TYPE elem)                   \
+      void mapper::put (const id::NAME& id, const type::TYPE& elem)     \
       {                                                                 \
-        if (_maps->MEMBER_NAME.find (id) != _maps->MEMBER_NAME.end())   \
+        if ( _maps->MEMBER_NAME.find (id._val)                          \
+           != _maps->MEMBER_NAME.end()                                  \
+           )                                                            \
         {                                                               \
           throw fhg::util::backtracing_exception                        \
             ( ( boost::format ( "Adding " EXPAND_AND_STRINGIFY (NAME)   \
-                              "failed: Element with ID %2% already exists." \
+                          "failed: Element with ID %2% already exists." \
                               )                                         \
               % id                                                      \
               ).str()                                                   \
             );                                                          \
         }                                                               \
-        _maps->MEMBER_NAME.insert (std::make_pair (id, elem));          \
+        _maps->MEMBER_NAME.insert (std::make_pair (id._val, elem));     \
       }                                                                 \
                                                                         \
-      void mapper::add_reference (id::NAME id)                          \
+      void mapper::add_reference (const id::NAME& id)                   \
       {                                                                 \
-        ++_maps->MEMBER_NAME ## _references[id];                        \
+        ++_maps->MEMBER_NAME ## _references[id._val];                   \
       }                                                                 \
                                                                         \
-      void mapper::remove_reference (id::NAME id)                       \
+      void mapper::remove_reference (const id::NAME& id)                \
       {                                                                 \
-        if (--_maps->MEMBER_NAME ## _references[id])                    \
+        if (!(--_maps->MEMBER_NAME ## _references[id._val]))            \
         {                                                               \
-          _maps->MEMBER_NAME.erase (id);                                \
-          _maps->MEMBER_NAME ## _references.erase (id);                 \
+          _maps->MEMBER_NAME.erase (id._val);                           \
+          _maps->MEMBER_NAME ## _references.erase (id._val);            \
         }                                                               \
       }
 
 #include <xml/parse/util/id_type_map_helper.lst>
 #undef ITEM
+
+#undef STRINIGFY
+#undef EXPAND_AND_STRINGIFY
+
     }
   }
 }

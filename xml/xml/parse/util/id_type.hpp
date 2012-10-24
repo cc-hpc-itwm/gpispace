@@ -33,6 +33,7 @@ namespace xml
                                                                         \
         friend std::size_t hash_value (const NAME&);                    \
         friend std::ostream& operator<< (std::ostream&, const NAME&);   \
+        friend class id_map::mapper;                                    \
                                                                         \
       private:                                                          \
         base_id_type _val;                                              \

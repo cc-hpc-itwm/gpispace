@@ -24,7 +24,6 @@
 
 #include <boost/optional/optional_fwd.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <boost/unordered/unordered_map_fwd.hpp>
 
 namespace xml
 {
@@ -34,12 +33,6 @@ namespace xml
     {
       class mapper
       {
-      private:
-#define ITEM(NAME,__IGNORE,TYPE)                                \
-        typedef boost::unordered_map<id::NAME,type::TYPE> NAME;
-#include <xml/parse/util/id_type_map_helper.lst>
-#undef ITEM
-
       public:
         mapper();
         //! \note This does nothing but boost::~scoped_ptr<maps>,
@@ -48,16 +41,19 @@ namespace xml
         //! is used.
         ~mapper();
 
-#define ITEM(NAME,__IGNORE,TYPE)                              \
-        boost::optional<type::TYPE> get (id::NAME id) const;  \
-        void put (id::NAME id, type::TYPE elem);              \
-                                                              \
-        void add_reference (id::NAME id);                     \
-        void remove_reference (id::NAME id);
+#define ITEM(NAME,__IGNORE,TYPE)                                      \
+                                                                      \
+        boost::optional<type::TYPE> get (const id::NAME&) const;      \
+        void put (const id::NAME&, const type::TYPE& elem);           \
+                                                                      \
+        void add_reference (const id::NAME&);                         \
+        void remove_reference (const id::NAME&);
+
 #include <xml/parse/util/id_type_map_helper.lst>
 #undef ITEM
 
       private:
+
         //! \note We need to use pimpl, as there is an include loop.
         //! \todo C++11: std::unique_ptr
         struct maps;
