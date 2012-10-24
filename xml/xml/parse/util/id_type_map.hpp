@@ -57,6 +57,11 @@ namespace xml
 #include <xml/parse/util/id_type_map_helper.lst>
 #undef ITEM
 
+#define ITEM(NAME,__IGNORE,__IGNORE2)           \
+        void remove (id::NAME id);
+#include <xml/parse/util/id_type_map_helper.lst>
+#undef ITEM
+
       private:
         //! \note We need to use pimpl, as there is an include loop.
         //! \todo C++11: std::unique_ptr
@@ -68,8 +73,3 @@ namespace xml
 }
 
 #endif
-#define ITEM(NAME,__IGNORE,__IGNORE2)           \
-        void remove (id::NAME id);
-#include <xml/parse/util/id_type_map_helper.lst>
-#undef ITEM
-

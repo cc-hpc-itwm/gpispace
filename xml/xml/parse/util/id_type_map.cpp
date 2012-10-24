@@ -89,9 +89,6 @@ namespace xml
       }
 #include <xml/parse/util/id_type_map_helper.lst>
 #undef ITEM
-    }
-  }
-}
 
 #define ITEM(NAME,MEMBER_NAME,__IGNORE2)         \
       void mapper::remove (id::NAME id)          \
@@ -100,4 +97,7 @@ namespace xml
       }
 #include <xml/parse/util/id_type_map_helper.lst>
 #undef ITEM
+    }
+  }
+}
 
