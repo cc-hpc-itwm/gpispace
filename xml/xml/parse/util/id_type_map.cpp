@@ -19,10 +19,9 @@
 
 #include <fhg/util/backtracing_exception.hpp>
 
-#include <map>
-
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace xml
 {
