@@ -15,6 +15,20 @@ namespace mapreduce
 {
   namespace util
   {
+     bool string_comp( const std::string &left, const std::string &right )
+     {
+        for( std::string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
+          if( *lit < *rit )
+            return true;
+          else if( *lit > *rit  )
+            return false;
+
+        if( left.size() < right.size() )
+          return true;
+
+        return false;
+    }
+
     bool comp (const std::string& l, const std::string& r)
     {
       size_t l_pos = l.find(':');
@@ -22,10 +36,7 @@ namespace mapreduce
       std:: string l_pref = l.substr(0, l_pos);
       std:: string r_pref = r.substr(0, r_pos);
 
-      /*std::string resp(l_pref<r_pref?"l_pref<r_pref":"l_pref>=r_pref");
-      std::cout<<" l_pref="<<l_pref<<", r_pref="<<r_pref<<resp<<std::endl;*/
-
-      return (l_pref<r_pref);
+      return string_comp(l_pref, r_pref);
     }
 
     std::vector<int> get_array(const std::string& str_input)
