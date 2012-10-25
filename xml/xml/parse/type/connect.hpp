@@ -3,6 +3,7 @@
 #ifndef _XML_PARSE_TYPE_CONNECT_HPP
 #define _XML_PARSE_TYPE_CONNECT_HPP
 
+#include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
@@ -24,6 +25,7 @@ namespace xml
                      , const std::string & _port
                      , const id::connect& id
                      , const id::transition& parent
+                     , id::mapper* id_mapper
                      );
 
         const id::connect& id() const;
@@ -46,6 +48,7 @@ namespace xml
       private:
         id::connect _id;
         id::transition _parent;
+        id::mapper* _id_mapper;
       };
 
       namespace dump

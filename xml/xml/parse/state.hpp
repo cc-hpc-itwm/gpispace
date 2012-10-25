@@ -5,9 +5,9 @@
 
 #include <xml/parse/state.fwd.hpp>
 
-#include <xml/parse/type/require.hpp>
-#include <xml/parse/id/types.hpp>
 #include <xml/parse/id/mapper.hpp>
+#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/require.hpp>
 #include <xml/parse/warning.hpp>
 
 #include <fhg/util/counter.hpp>

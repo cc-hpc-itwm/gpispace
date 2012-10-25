@@ -2,6 +2,7 @@
 
 #include <xml/parse/type/port.hpp>
 
+#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -17,14 +18,18 @@ namespace xml
                            , const fhg::util::maybe<std::string> & _place
                            , const id::port& id
                            , const id::function& parent
+                           , id::mapper* id_mapper
                            )
         : _id (id)
         , _parent (parent)
+        , _id_mapper (id_mapper)
         , _name (name)
         , type (_type)
         , place (_place)
         , prop ()
-      {}
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::port& port_type::id() const
       {

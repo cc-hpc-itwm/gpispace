@@ -12,6 +12,7 @@
 
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/id/mapper.fwd.hpp>
 
 namespace xml
 {
@@ -51,6 +52,7 @@ namespace xml
 
         id::net _id;
         id::function _parent;
+        id::mapper* _id_mapper;
 
       public:
         typedef xml::util::unique<transition_type,id::transition>::elements_type transitions_type;
@@ -64,7 +66,10 @@ namespace xml
 
         xml::parse::struct_t::set_type structs_resolved;
 
-        net_type (const id::net& id, const id::function& parent);
+        net_type ( const id::net& id
+                 , const id::function& parent
+                 , id::mapper* id_mapper
+                 );
 
         const id::net& id() const;
         const id::function& parent() const;

@@ -5,6 +5,7 @@
 
 #include <xml/parse/type/function.fwd.hpp>
 
+#include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
@@ -27,14 +28,17 @@ namespace xml
 
         id::expression _id;
         id::function _parent;
+        id::mapper* _id_mapper;
 
       public:
         expression_type ( const id::expression& id
                         , const id::function& parent
+                        , id::mapper* id_mapper
                         );
         expression_type ( const expressions_type & exps
                         , const id::expression& id
                         , const id::function& parent
+                        , id::mapper* id_mapper
                         );
 
         const id::expression& id() const;

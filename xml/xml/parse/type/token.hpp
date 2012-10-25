@@ -4,6 +4,7 @@
 #define _XML_PARSE_TYPE_TOKEN_HPP
 
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/id/mapper.fwd.hpp>
 
 #include <we/type/signature.hpp>
 
@@ -24,11 +25,13 @@ namespace xml
       public:
         token_type ( const id::token& id
                    , const id::place& parent
+                   , id::mapper* id_mapper
                    , const signature::structured_t& structure
                    );
 
         token_type ( const id::token& id
                    , const id::place& parent
+                   , id::mapper* id_mapper
                    , const std::string& value
                    );
 
@@ -38,6 +41,7 @@ namespace xml
       private:
         id::token _id;
         id::place _parent;
+        id::mapper* _id_mapper;
       };
     }
   }

@@ -3,10 +3,11 @@
 #ifndef _XML_PARSE_TYPE_SPECIALIZE_HPP
 #define _XML_PARSE_TYPE_SPECIALIZE_HPP
 
+#include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type_map_type.hpp>
-#include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -23,7 +24,10 @@ namespace xml
       struct specialize_type
       {
       public:
-        specialize_type (const id::specialize& id, const id::net& parent);
+        specialize_type ( const id::specialize& id
+                        , const id::net& parent
+                        , id::mapper* id_mapper
+                        );
 
         const id::specialize& id() const;
         const id::net& parent() const;
@@ -42,6 +46,7 @@ namespace xml
       private:
         id::specialize _id;
         id::net _parent;
+        id::mapper* _id_mapper;
       };
 
       void split_structs ( const parse::struct_t::set_type & global

@@ -3,6 +3,7 @@
 #ifndef _XML_PARSE_TYPE_TRANSITION_HPP
 #define _XML_PARSE_TYPE_TRANSITION_HPP
 
+#include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/function.hpp>
@@ -27,15 +28,20 @@ namespace xml
 
         id::transition _id;
         id::net _parent;
+        id::mapper* _id_mapper;
 
       public:
         typedef boost::variant <function_type, use_type>
                 function_or_use_type;
 
-        transition_type (const id::transition& id, const id::net& parent);
+        transition_type ( const id::transition& id
+                        , const id::net& parent
+                        , id::mapper* id_mapper
+                        );
         transition_type ( const function_or_use_type& function_or_use
                         , const id::transition& id
                         , const id::net& parent
+                        , id::mapper* id_mapper
                         );
 
         const id::transition& id() const;

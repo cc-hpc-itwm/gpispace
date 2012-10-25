@@ -3,9 +3,10 @@
 #ifndef _XML_PARSE_TYPE_STRUCT_HPP
 #define _XML_PARSE_TYPE_STRUCT_HPP
 
+#include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
-#include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -30,6 +31,7 @@ namespace xml
       public:
         struct_t ( const id::structure& id
                  , const id::function& parent
+                 , id::mapper* id_mapper
                  , const std::string& name
                  , const signature::desc_t& sig
                  , const boost::filesystem::path& path
@@ -50,6 +52,8 @@ namespace xml
       private:
         id::structure _id;
         id::function _parent;
+        id::mapper* _id_mapper;
+
         std::string _name;
         signature::desc_t _sig;
         boost::filesystem::path _path;

@@ -3,6 +3,7 @@
 #ifndef _XML_PARSE_TYPE_USE_HPP
 #define _XML_PARSE_TYPE_USE_HPP
 
+#include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
@@ -20,6 +21,7 @@ namespace xml
       public:
         use_type ( const id::use& id
                  , const id::transition& parent
+                 , id::mapper* id_mapper
                  , const std::string& name
                  );
 
@@ -28,6 +30,8 @@ namespace xml
       private:
         id::use _id;
         id::transition _parent;
+        id::mapper* _id_mapper;
+
         std::string _name;
       };
 

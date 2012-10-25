@@ -280,6 +280,7 @@ namespace fhg
         ::xml::parse::type::transition_type transition
           ( xml::parse::id::transition (_state.next_id())
           , net.id()
+          , _state.id_mapper()
           );
         transition.function_or_use (fun);
         transition.name (fun.name() ? *fun.name() : "transition");
@@ -302,14 +303,20 @@ namespace fhg
         const ::xml::parse::id::function function_id (_state.next_id());
         const ::xml::parse::id::transition transition_id (_state.next_id());
 
-        ::xml::parse::type::function_type f ( expression_id
+        ::xml::parse::type::expression_type expression ( expression_id
+                                                       , function_id
+                                                       , _state.id_mapper()
+                                                       );
+        ::xml::parse::type::function_type f ( expression
                                             , function_id
                                             , transition_id
+                                            , _state.id_mapper()
                                             );
 
         ::xml::parse::type::transition_type transition ( f
                                                        , transition_id
                                                        , net.id()
+                                                       , _state.id_mapper()
                                                        );
         transition.name ("transition");
 
@@ -338,6 +345,7 @@ namespace fhg
         ::xml::parse::type::place_type place
           ( ::xml::parse::id::place (_state.next_id())
           , net.id()
+          , _state.id_mapper()
           );
         place.name ("place");
 

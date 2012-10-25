@@ -2,6 +2,8 @@
 
 #include <xml/parse/type/connect.hpp>
 
+#include <xml/parse/id/mapper.hpp>
+
 #include <fhg/util/xml.hpp>
 
 namespace xml
@@ -14,13 +16,17 @@ namespace xml
                                  , const std::string & _port
                                  , const id::connect& id
                                  , const id::transition& parent
+                                 , id::mapper* id_mapper
                                  )
         : place (_place)
         , port (_port)
         , _name (_place + " <-> " + _port)
         , _id (id)
         , _parent (parent)
-      { }
+        , _id_mapper (id_mapper)
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::connect& connect_type::id() const
       {

@@ -2,6 +2,7 @@
 
 #include <xml/parse/type/function.hpp>
 
+#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -9,10 +10,10 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
-
-#include <xml/parse/type/dumps.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/weparse.hpp>
+
+#include <xml/parse/type/dumps.hpp>
 
 #include <fhg/util/cpp.hpp>
 
@@ -83,22 +84,15 @@ namespace xml
       function_type::function_type ( const type& _f
                                    , const id::function& id
                                    , const id_parent& parent
+                                   , id::mapper* id_mapper
                                    )
         : _id (id)
         , _parent (parent)
+        , _id_mapper (id_mapper)
         , f (_f)
-      { }
-
-      //! \note With no net/module/expression given, default to
-      //! expression. Needs a second id though, so no default ctor.
-      function_type::function_type ( const id::expression& expression_id
-                                   , const id::function& id
-                                   , const id_parent& parent
-                                   )
-        : _id (id)
-        , _parent (parent)
-        , f (expression_type (expression_id, id))
-      { }
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::function& function_type::id() const
       {

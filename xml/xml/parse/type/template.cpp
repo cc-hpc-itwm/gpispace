@@ -2,6 +2,7 @@
 
 #include <xml/parse/type/template.hpp>
 
+#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
 #include <boost/foreach.hpp>
@@ -15,6 +16,7 @@ namespace xml
       template_type::template_type
         ( const id::tmpl& id
         , const id::net& parent
+        , id::mapper* id_mapper
         , const boost::filesystem::path& path
         , const fhg::util::maybe<std::string>& name
         , const names_type& template_parameter
@@ -22,11 +24,14 @@ namespace xml
         )
           : _id (id)
           , _parent (parent)
+          , _id_mapper (id_mapper)
           , _template_parameter (template_parameter)
           , _function (function)
           , _name (name)
           , _path (path)
-      {}
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::tmpl&
       template_type::id() const

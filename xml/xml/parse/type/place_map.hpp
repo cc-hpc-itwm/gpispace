@@ -3,6 +3,7 @@
 #ifndef _XML_PARSE_TYPE_PLACE_MAP_HPP
 #define _XML_PARSE_TYPE_PLACE_MAP_HPP
 
+#include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/util/unique.hpp>
 
@@ -28,6 +29,7 @@ namespace xml
                        , const std::string & _place_real
                        , const id::place_map& id
                        , const id::transition& parent
+                       , id::mapper* id_mapper
                        );
 
         const id::place_map& id() const;
@@ -47,6 +49,7 @@ namespace xml
       private:
         id::place_map _id;
         id::transition _parent;
+        id::mapper* _id_mapper;
       };
 
       typedef xml::util::unique<place_map_type,id::place_map>::elements_type place_maps_type;

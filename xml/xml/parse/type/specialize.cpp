@@ -2,6 +2,8 @@
 
 #include <xml/parse/type/specialize.hpp>
 
+#include <xml/parse/id/mapper.hpp>
+
 #include <fhg/util/xml.hpp>
 
 namespace xml
@@ -10,7 +12,10 @@ namespace xml
   {
     namespace type
     {
-      specialize_type::specialize_type (const id::specialize& id, const id::net& parent)
+      specialize_type::specialize_type ( const id::specialize& id
+                                       , const id::net& parent
+                                       , id::mapper* id_mapper
+                                       )
         : _name()
         , use()
         , type_map()
@@ -18,7 +23,10 @@ namespace xml
         , path()
         , _id (id)
         , _parent (parent)
-      { }
+        , _id_mapper (id_mapper)
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::specialize& specialize_type::id() const
       {

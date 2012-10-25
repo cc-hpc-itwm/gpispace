@@ -3,6 +3,7 @@
 #include <xml/parse/type/struct.hpp>
 
 #include <xml/parse/error.hpp>
+#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -17,16 +18,20 @@ namespace xml
     {
       struct_t::struct_t ( const id::structure& id
                          , const id::function& parent
+                         , id::mapper* id_mapper
                          , const std::string& name
                          , const signature::desc_t& sig
                          , const boost::filesystem::path& path
                          )
         : _id (id)
         , _parent (parent)
+        , _id_mapper (id_mapper)
         , _name (name)
         , _sig (sig)
         , _path (path)
-      { }
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::structure& struct_t::id() const
       {

@@ -3,8 +3,10 @@
 #ifndef _XML_PARSE_TYPE_MOD_HPP
 #define _XML_PARSE_TYPE_MOD_HPP
 
-#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/type/function.fwd.hpp>
+
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
@@ -28,9 +30,13 @@ namespace xml
       struct mod_type
       {
       public:
-        mod_type (const id::module& id, const id::function& parent);
         mod_type ( const id::module& id
                  , const id::function& parent
+                 , id::mapper* id_mapper
+                 );
+        mod_type ( const id::module& id
+                 , const id::function& parent
+                 , id::mapper* id_mapper
                  , const std::string & _name
                  , const std::string & _function
                  , const boost::filesystem::path & path
@@ -62,6 +68,7 @@ namespace xml
       private:
         id::module _id;
         id::function _parent;
+        id::mapper* _id_mapper;
       };
 
       typedef boost::unordered_map<std::string, mod_type> mc_by_function_type;

@@ -3,6 +3,7 @@
 #include <xml/parse/type/net.hpp>
 
 #include <xml/parse/type/specialize.hpp>
+#include <xml/parse/id/mapper.hpp>
 
 namespace xml
 {
@@ -27,10 +28,16 @@ namespace xml
         return _type_map;
       }
 
-      net_type::net_type (const id::net& id, const id::function& parent)
+      net_type::net_type ( const id::net& id
+                         , const id::function& parent
+                         , id::mapper* id_mapper
+                         )
         : _id (id)
         , _parent (parent)
-      { }
+        , _id_mapper (id_mapper)
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::net& net_type::id() const
       {

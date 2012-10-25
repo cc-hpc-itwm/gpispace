@@ -2,10 +2,12 @@
 
 #include <xml/parse/type/mod.hpp>
 
-#include <fhg/util/xml.hpp>
 #include <xml/parse/error.hpp>
+#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/util/valid_name.hpp>
+
+#include <fhg/util/xml.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -20,13 +22,20 @@ namespace xml
       typedef std::list<std::string> flags_type;
       typedef std::list<std::string> links_type;
 
-      mod_type::mod_type (const id::module& id, const id::function& parent)
+      mod_type::mod_type ( const id::module& id
+                         , const id::function& parent
+                         , id::mapper* id_mapper
+                         )
         : _id (id)
         , _parent (parent)
-      { }
+        , _id_mapper (id_mapper)
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       mod_type::mod_type ( const id::module& id
                          , const id::function& parent
+                         , id::mapper* id_mapper
                          , const std::string & _name
                          , const std::string & _function
                          , const boost::filesystem::path & path
@@ -37,7 +46,10 @@ namespace xml
         , port_arg ()
         , _id (id)
         , _parent (parent)
+        , _id_mapper (id_mapper)
       {
+        _id_mapper->put (_id, *this);
+
         // implement the grammar
         // S -> R F A
         // F -> valid_name

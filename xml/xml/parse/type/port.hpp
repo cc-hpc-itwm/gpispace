@@ -4,11 +4,12 @@
 #define _XML_PARSE_TYPE_PORT_HPP
 
 #include <xml/parse/error.hpp>
+#include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
-#include <xml/parse/id/types.hpp>
 
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
@@ -34,6 +35,7 @@ namespace xml
                   , const fhg::util::maybe<std::string> & _place
                   , const id::port& id
                   , const id::function& parent
+                  , id::mapper* id_mapper
                   );
 
         const id::port& id() const;
@@ -47,6 +49,7 @@ namespace xml
       private:
         id::port _id;
         id::function _parent;
+        id::mapper* _id_mapper;
 
         std::string _name;
 

@@ -2,6 +2,8 @@
 
 #include <xml/parse/type/place_map.hpp>
 
+#include <xml/parse/id/mapper.hpp>
+
 #include <fhg/util/xml.hpp>
 
 namespace xml
@@ -14,13 +16,17 @@ namespace xml
                                      , const std::string & _place_real
                                      , const id::place_map& id
                                      , const id::transition& parent
+                                     , id::mapper* id_mapper
                                      )
         : _name (_place_virtual + " <-> " + _place_real)
         , place_virtual (_place_virtual)
         , place_real (_place_real)
         , _id (id)
         , _parent (parent)
-      { }
+        , _id_mapper (id_mapper)
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::place_map& place_map_type::id() const
       {

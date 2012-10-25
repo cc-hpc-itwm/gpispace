@@ -2,6 +2,7 @@
 
 #include <xml/parse/type/expression.hpp>
 
+#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/function.hpp>
 
 #include <fhg/util/join.hpp>
@@ -38,20 +39,28 @@ namespace xml
 
       expression_type::expression_type ( const id::expression& id
                                        , const id::function& parent
+                                       , id::mapper* id_mapper
                                        )
         : _expressions()
         , _id (id)
         , _parent (parent)
-      { }
+        , _id_mapper (id_mapper)
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       expression_type::expression_type ( const expressions_type & exps
                                        , const id::expression& id
                                        , const id::function& parent
+                                       , id::mapper* id_mapper
                                        )
         : _expressions (split (exps))
         , _id (id)
         , _parent (parent)
-      { }
+        , _id_mapper (id_mapper)
+      {
+        _id_mapper->put (_id, *this);
+      }
 
 
       const id::expression& expression_type::id() const

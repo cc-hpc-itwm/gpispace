@@ -422,6 +422,7 @@ namespace xml
         , required ("connect_type", node, "port", state.file_in_progress())
         , id::connect (state.next_id())
         , parent
+        , state.id_mapper()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -480,6 +481,7 @@ namespace xml
         , required ("place_map_type", node, "real", state.file_in_progress())
         , id::place_map (state.next_id())
         , parent
+        , state.id_mapper()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -619,6 +621,7 @@ namespace xml
       return type::template_type
         ( template_id
         , parent
+        , state.id_mapper()
         , state.file_in_progress()
         , name
         , template_parameter
@@ -635,7 +638,15 @@ namespace xml
     {
       id::expression expression_id (state.next_id());
       id::function function_id (state.next_id());
-      type::function_type f (expression_id, function_id, parent);
+      type::expression_type expression ( expression_id
+                                       , function_id
+                                       , state.id_mapper()
+                                       );
+      type::function_type f ( expression
+                            , function_id
+                            , parent
+                            , state.id_mapper()
+                            );
 
       f.path = state.file_in_progress();
       f.name (optional (node, "name"));
@@ -701,6 +712,7 @@ namespace xml
                         )
                       , id::expression (state.next_id())
                       , f.id()
+                      , state.id_mapper()
                       )
                     );
                 }
@@ -771,6 +783,7 @@ namespace xml
       type::mod_type mod
         ( id::module (state.next_id())
         , parent
+        , state.id_mapper()
         , required ("mod_type", node, "name", state.file_in_progress())
         , required ("mod_type", node, "function", state.file_in_progress())
         , state.file_in_progress()
@@ -858,6 +871,7 @@ namespace xml
     {
       type::net_type n ( id::net (state.next_id())
                        , parent
+                       , state.id_mapper()
                        );
 
       n.path = state.file_in_progress();
@@ -1008,6 +1022,7 @@ namespace xml
                                              )
         , id::place (state.next_id())
         , parent
+        , state.id_mapper()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1080,6 +1095,7 @@ namespace xml
         , optional (node, "place")
         , id::port (state.next_id())
         , parent
+        , state.id_mapper()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1392,6 +1408,7 @@ namespace xml
     {
       type::struct_t s ( id::structure (state.next_id())
                        , parent
+                       , state.id_mapper()
                        , validate_field_name ( required ( "struct_type"
                                                         , node
                                                         , "name"
@@ -1482,6 +1499,7 @@ namespace xml
                 {
                   return type::token_type ( id::token (state.next_id())
                                           , parent
+                                          , state.id_mapper()
                                           , std::string (child->value())
                                           );
                 }
@@ -1503,6 +1521,7 @@ namespace xml
 
       return type::token_type ( id::token (state.next_id())
                               , parent
+                              , state.id_mapper()
                               , boost::get<signature::structured_t>
                                 (temporary_token)
                               );
@@ -1574,6 +1593,7 @@ namespace xml
     {
       type::specialize_type s ( id::specialize (state.next_id())
                               , parent
+                              , state.id_mapper()
                               );
 
       s.path = state.file_in_progress();
@@ -1626,6 +1646,7 @@ namespace xml
 
       type::transition_type t ( id::transition (state.next_id())
                               , parent
+                              , state.id_mapper()
                               );
 
       t.path = state.file_in_progress();
@@ -1677,6 +1698,7 @@ namespace xml
 
                                                )
                                      , t.id()
+                                     , state.id_mapper()
                                      , required ( "transition_type"
                                                 , child
                                                 , "name"

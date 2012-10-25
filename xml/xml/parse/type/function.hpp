@@ -3,6 +3,7 @@
 #ifndef _XML_PARSE_TYPE_FUNCTION_HPP
 #define _XML_PARSE_TYPE_FUNCTION_HPP
 
+#include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/mod.hpp>
@@ -52,6 +53,7 @@ namespace xml
         typenames_type _typenames;
 
         id::function _id;
+
       public:
         typedef boost::variant< id::transition
                               , id::tmpl
@@ -59,6 +61,7 @@ namespace xml
                               > id_parent;
       public:
         id_parent _parent;
+        id::mapper* _id_mapper;
 
         fhg::util::maybe<std::string> _name;
 
@@ -99,13 +102,7 @@ namespace xml
         function_type ( const type& _f
                       , const id::function& id
                       , const id_parent& parent
-                      );
-
-        //! \note With no net/module/expression given, default to
-        //! expression. Needs a second id though, so no default ctor.
-        function_type ( const id::expression& expression_id
-                      , const id::function& id
-                      , const id_parent& parent
+                      , id::mapper* id_mapper
                       );
 
         const id::function& id() const;

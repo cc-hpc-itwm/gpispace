@@ -2,14 +2,15 @@
 
 #include <xml/parse/type/transition.hpp>
 
+#include <xml/parse/id/mapper.hpp>
+#include <xml/parse/state.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/use.hpp>
-
-#include <xml/parse/state.hpp>
-#include <xml/parse/type/dumps.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/weparse.hpp>
+
+#include <xml/parse/type/dumps.hpp>
 
 #include <boost/variant.hpp>
 
@@ -19,20 +20,30 @@ namespace xml
   {
     namespace type
     {
-      transition_type::transition_type (const id::transition& id, const id::net& parent)
+      transition_type::transition_type ( const id::transition& id
+                                       , const id::net& parent
+                                       , id::mapper* id_mapper
+                                       )
         : _id (id)
         , _parent (parent)
+        , _id_mapper (id_mapper)
         , _function_or_use (boost::none)
-      { }
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       transition_type::transition_type ( const function_or_use_type& function_or_use
                                        , const id::transition& id
                                        , const id::net& parent
+                                       , id::mapper* id_mapper
                                        )
         : _id (id)
         , _parent (parent)
+        , _id_mapper (id_mapper)
         , _function_or_use (function_or_use)
-      { }
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::transition& transition_type::id() const
       {

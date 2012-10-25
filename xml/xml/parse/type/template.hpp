@@ -3,9 +3,10 @@
 #ifndef _XML_PARSE_TYPE_TEMPLATE_HPP
 #define _XML_PARSE_TYPE_TEMPLATE_HPP 1
 
+#include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/template.fwd.hpp>
-#include <xml/parse/id/types.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/unordered_set.hpp>
@@ -29,6 +30,8 @@ namespace xml
 
         id::tmpl _id;
         id::net _parent;
+        id::mapper* _id_mapper;
+
         names_type _template_parameter;
         function_type _function;
         fhg::util::maybe<std::string> _name;
@@ -37,6 +40,7 @@ namespace xml
       public:
         template_type ( const id::tmpl& id
                       , const id::net& parent
+                      , id::mapper* id_mapper
                       , const boost::filesystem::path& path
                       , const fhg::util::maybe<std::string>& name
                       , const names_type& names

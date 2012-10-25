@@ -3,7 +3,8 @@
 #include <xml/parse/type/place.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/state.hpp>
+#include <xml/parse/id/mapper.hpp>
+#include <xml/parse/type/net.hpp>
 #include <xml/parse/util/weparse.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -188,18 +189,28 @@ namespace xml
                              , const fhg::util::maybe<bool> is_virtual
                              , const id::place& id
                              , const id::net& parent
+                             , id::mapper* id_mapper
                              )
         : _is_virtual (is_virtual)
         , _id (id)
         , _parent (parent)
+        , _id_mapper (id_mapper)
         , _name (name)
         , type (_type)
-      {}
+      {
+        _id_mapper->put (_id, *this);
+      }
 
-      place_type::place_type (const id::place& id, const id::net& parent)
+      place_type::place_type ( const id::place& id
+                             , const id::net& parent
+                             , id::mapper* id_mapper
+                             )
         : _id (id)
         , _parent (parent)
-      { }
+        , _id_mapper (id_mapper)
+      {
+        _id_mapper->put (_id, *this);
+      }
 
       const id::place& place_type::id() const
       {
