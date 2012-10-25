@@ -577,7 +577,7 @@
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
     </transition> 
     
-   <!--
+<!--
     <transition name="reduce" inline="true">
       <defun>
         <in name="reduce_info_in" type="iterator_red_info"/>
@@ -641,8 +641,8 @@
       <connect-in port="reduce_info_in" place="reduce_info_in"/>
       <connect-out port="iterator_red_info" place="iterator_red_info"/>
     </transition>     
-	-->
-  
+-->
+
     <include-template href="reduce_tpl.xpnet" />
     <specialize name="reduce" use="reduce_tpl">
       <type-map replace="T" with="config" />
@@ -650,7 +650,7 @@
         
     <transition name="reduce" inline="true">
       <use name="reduce" />
-      <connect-in port="config" place="config"/>
+      <connect-read port="config" place="config"/>
       <connect-in port="reduce_info_in" place="reduce_info_in"/>
       <connect-out port="reduce_info_out" place="iterator_red_info"/>
     </transition>
@@ -777,8 +777,9 @@
 	   		  std::vector<int> arr_red_used = ::mapreduce::util::get_array(iterator_red_info.red_used);
 	          // get data from vm::map_area
 	          	          
-	          std::ofstream ofs(config.file.output.c_str (), std::ofstream::binary);
+	          std::ofstream ofs(config.file.output.c_str());
 	        
+	          std::cout<<std::endl<<"***********************************************"<<std::endl<<std::endl;	   
 	          for(int k=0; k<iterator_red_info.avail_slots; k++)
 	          {
 	          	  size_t slot_used = arr_red_used[k];
@@ -794,8 +795,13 @@
 				  								)
 				  );
 				  
-				  ofs.write(ptr_shmem, slot_used);
-				  //std::cout<<ptr_shmem<<std::endl<<std::endl<<std::endl;	          
+				  std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
+				  std::sort( arr_items.begin(), arr_items.end(), ::mapreduce::util::comp ); 
+				  BOOST_FOREACH(std::string& item, arr_items)
+				  {
+				  	ofs<<item<<std::endl;
+				  }
+				 
 			  }
 	          
 	          ofs.close();
