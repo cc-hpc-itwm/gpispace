@@ -22,7 +22,7 @@ PUT_PORT += output_file=\"out.txt\"
 PUT_PORT += read_chunk_size=1024
 PUT_PORT += map_chunk_size=2048
 PUT_PORT += partition_slot_size=20000
-PUT_PORT += reduce_slot_size=20000
+PUT_PORT += reduce_slot_size=200000
 PUT_PORT += n_part=5
 PUT_PORT += input_n_read_slots=10
 PUT_PORT += input_n_map_slots=20

@@ -186,7 +186,7 @@
 		         
 		         
 		        memcpy(local_buff, ptr_shmem, reduce_slot.part_used);
-		        //MLOG(INFO, "Partition "<<reduce_slot.id<<", size: "<<reduce_slot.part_used<<", content: "<<ptr_shmem);	 
+		        MLOG(INFO, "Partition "<<reduce_slot.id<<", size: "<<reduce_slot.part_used<<", content: "<<ptr_shmem);	 
 		       
 	          }
 		
@@ -213,18 +213,23 @@
 		        else
 		        	memcpy(local_buff, ptr_shmem, reduce_slot.red_used);	
 		        	
-		        //MLOG(INFO, "reduce_slot "<<reduce_slot.id<<", local_buff="<<ptr_shmem);	          
+		        MLOG(INFO, "reduce_slot "<<reduce_slot.id<<", local_buff="<<ptr_shmem);	          
 			  }
 						
 			  std::stringstream sstr(local_buff);		  
 			  std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
 			  
-			  std::sort( arr_items.begin(), arr_items.end(), ::mapreduce::util::comp ); 
+			  std::sort( arr_items.begin(), arr_items.end()); 
+			  
+			  std::cout<<"The sorted join(partition, reduce slot):\n ";
+			  BOOST_FOREACH(std::string& item, arr_items)
+			  	std::cout<<item<<std::endl;
+			  std::cout<<std::endl;
 			  			  			   
 			  // copy the result to shmem
 			  // memcpy(local_buff, ptr_shmem, reduce_slot.part_used);
 			  
-			   bzero(ptr_shmem, total_size);
+			  bzero(ptr_shmem, total_size);
 			  
 			  // size_t size_result_buff = total_size;
 			  // memcpy(reduced_buff, local_buff, total_size);
@@ -254,7 +259,23 @@
 			  		std::cout<<"]"<<std::endl;*/
 			  		
 			  		std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
+			  		
+			  		/*std::stringstream sstr;
+			  		sstr<<"reduce("<<last_key<<", [";
+			  		BOOST_FOREACH(std::string& item, list_in_values)
+			  			sstr<<item<<" ";
+			  		sstr<<"]= -> [";
+			  		
+			  		BOOST_FOREACH(std::string& item, list_out_values)
+			  			sstr<<item<<" ";
+			  		sstr<<"]";
+			  			
+			  		MLOG(INFO, sstr.str());*/
+			  		
+			  		// here is the problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			  		last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos);
+			  		
+			  		//std::cout<<"The content of the shared memory buffer:\n"<<ptr_shmem<<std::endl<<std::endl;
 			  					  		
 			  		last_key=key;
 			  		list_in_values.clear();
