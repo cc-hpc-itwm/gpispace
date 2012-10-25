@@ -7,9 +7,12 @@
   <net>
 
     <template name="select">
-      <in name="x" type="T"/>
-      <out name="x" type="T"/>
-      <expression/>
+      <template-parameter type="T"/>
+      <defun>
+        <in name="x" type="T"/>
+        <out name="x" type="T"/>
+        <expression/>
+      </defun>
     </template>
 
     <specialize name="select_interval" use="select">

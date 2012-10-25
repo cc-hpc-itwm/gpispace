@@ -7,6 +7,8 @@
 #include <string>
 #include <sstream>
 
+#include <xml/parse/type/struct.hpp>
+
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 #include <we/type/value.hpp>
@@ -14,6 +16,8 @@
 #include <fhg/util/join.hpp>
 
 #include <boost/format.hpp>
+
+#include <we/type/value/show.hpp>
 
 namespace xml
 {
@@ -121,24 +125,27 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class struct_shadowed : public generic
       {
       private:
-        std::string nice (const T & early, const T & late) const
+        std::string nice ( const type::struct_t & early
+                         , const type::struct_t & late
+                         ) const
         {
           std::ostringstream s;
 
-          s << "struct with name " << late.name
-            << " in " << late.path
-            << " shadows definition from " << early.path
+          s << "struct with name " << late.name()
+            << " in " << late.path()
+            << " shadows definition from " << early.path()
             ;
 
           return s.str();
         }
 
       public:
-        struct_shadowed (const T & early, const T & late)
+        struct_shadowed ( const type::struct_t & early
+                        , const type::struct_t & late
+                        )
           : generic (nice (early, late))
         {}
       };
@@ -739,23 +746,6 @@ namespace xml
                                     )
                     % (name ? *name : "<<noname>>")
                     % tn
-                    % file
-                    )
-        {}
-      };
-
-      // ******************************************************************* //
-
-      class ignore_template_parameter : public generic
-      {
-      public:
-        ignore_template_parameter ( const fhg::util::maybe<std::string> name
-                                  , const boost::filesystem::path& file
-                                  )
-          : generic ( boost::format ( "ignore template parameter in the"
-                                      "definition of the function %1% in %2%"
-                                    )
-                    % name
                     % file
                     )
         {}

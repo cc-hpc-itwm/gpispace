@@ -1,6 +1,9 @@
 <template name="trigger_if">
-  <in name="trigger" type="control"/>
-  <in name="object" type="T"/>
-  <out name="object" type="T"/>
-  <expression></expression>
+  <template-parameter type="T"/>
+  <defun>
+    <in name="trigger" type="control"/>
+    <in name="object" type="T"/>
+    <out name="object" type="T"/>
+    <expression></expression>
+  </defun>
 </template>

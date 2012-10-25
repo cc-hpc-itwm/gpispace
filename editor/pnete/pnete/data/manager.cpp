@@ -2,8 +2,8 @@
 
 #include <pnete/data/manager.hpp>
 
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/state.hpp>
-#include <xml/parse/types.hpp>
 
 #include <fhg/util/xml.hpp>
 

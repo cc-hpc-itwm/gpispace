@@ -2,8 +2,6 @@
 
 #include <pnete/ui/port_list_widget.hpp>
 
-#include <xml/parse/types.hpp>
-
 #include <QHeaderView>
 #include <QStandardItem>
 #include <QStandardItemModel>
@@ -45,7 +43,7 @@ namespace fhg
             )
         {
           model->setItem
-            (row, 0, new QStandardItem (QString::fromStdString(port->name)));
+            (row, 0, new QStandardItem (QString::fromStdString(port->name())));
           model->setItem
             (row, 1, new QStandardItem (QString::fromStdString(port->type)));
         }

@@ -18,26 +18,47 @@ namespace fhg
     {
       namespace
       {
-        static ::xml::parse::type::function_type::type make_function
+        ::xml::parse::type::function_type make_function
           (const internal_type::kind& t, ::xml::parse::state::type& state)
         {
+          const ::xml::parse::id::function function_id (state.next_id());
           switch (t)
           {
           case internal_type::expression:
-            return ::xml::parse::type::expression_type();
+            {
+              const ::xml::parse::id::expression id (state.next_id());
+              const ::xml::parse::type::expression_type expression
+                (id, function_id, state.id_mapper());
+              return ::xml::parse::type::function_type
+                (expression, function_id, boost::blank(), state.id_mapper());
+            }
           case internal_type::module_call:
-            return ::xml::parse::type::mod_type();
+            {
+              const ::xml::parse::id::module id (state.next_id());
+              const ::xml::parse::type::mod_type mod
+                (id, function_id, state.id_mapper());
+              return ::xml::parse::type::function_type
+                (mod, function_id, boost::blank(), state.id_mapper());
+            }
           case internal_type::net:
-            return ::xml::parse::type::net_type (state.next_id());
+            {
+              const ::xml::parse::id::net id (state.next_id());
+              const ::xml::parse::type::net_type net
+                (id, function_id, state.id_mapper());
+              return ::xml::parse::type::function_type
+                (net, function_id, boost::blank(), state.id_mapper());
+            }
           default:
-            throw std::runtime_error ("make_function of unknown kind!?");
+            {
+              throw std::runtime_error ("make_function of unknown kind!?");
+            }
           }
         }
       }
 
       internal_type::internal_type (const kind& kind_)
         : _state ()
-        , _function (make_function (kind_, _state), _state.next_id())
+        , _function (make_function (kind_, _state))
         , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}

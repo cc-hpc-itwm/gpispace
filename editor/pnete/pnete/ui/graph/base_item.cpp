@@ -11,8 +11,6 @@
 
 #include <we/type/property.hpp>
 
-#include <boost/lexical_cast.hpp>
-
 namespace fhg
 {
   namespace pnete

@@ -8,7 +8,7 @@
 
 class QWidget;
 
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/function.hpp> // ports_type..
 
 namespace fhg
 {

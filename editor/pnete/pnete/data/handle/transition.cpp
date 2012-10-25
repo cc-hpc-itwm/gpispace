@@ -4,8 +4,8 @@
 
 #include <pnete/data/handle/net.hpp>
 
-//! \todo Only include transition.hpp and net.hpp?
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/transition.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
 
@@ -46,6 +46,11 @@ namespace fhg
         bool transition::operator== (const transition& other) const
         {
           return _transition_id == other._transition_id && _net == other._net;
+        }
+
+        const ::xml::parse::id::transition& transition::id() const
+        {
+          return _transition_id;
         }
       }
     }

@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_UTIL_SKIP_HPP
 #define _XML_PARSE_UTIL_SKIP_HPP
 
-#include <xml/parse/types.hpp>
+#include <xml/parse/rapidxml/types.hpp>
 
 namespace xml
 {

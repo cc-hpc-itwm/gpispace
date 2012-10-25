@@ -1,45 +1,46 @@
 <template name="wait">
+  <template-parameter type="T"/>
+  <defun>
+    <in name="object" type="T" place="object"/>
+    <out name="done" type="control" place="done"/>
+    <tunnel name="num" type="long" place="num"/>
 
-  <in name="object" type="T" place="object"/>
-  <out name="done" type="control" place="done"/>
-  <tunnel name="num" type="long" place="num"/>
+    <net>
 
-  <net>
+      <place name="object" type="T"/>
+      <place name="num" type="long" virtual="true"/>
+      <place name="done" type="control"/>
 
-    <place name="object" type="T"/>
-    <place name="num" type="long" virtual="true"/>
-    <place name="done" type="control"/>
+      <transition name="dec">
+        <defun>
+          <in name="object" type="T"/>
+          <inout name="num" type="long"/>
+          <expression>
+            ${num} := ${num} - 1
+          </expression>
+        </defun>
+        <condition>
+          ${num} :gt: 0
+        </condition>
+        <connect-in port="object" place="object"/>
+        <connect-inout port="num" place="num"/>
+      </transition>
 
-    <transition name="dec">
-      <defun>
-        <in name="object" type="T"/>
-        <inout name="num" type="long"/>
-        <expression>
-          ${num} := ${num} - 1
-        </expression>
-      </defun>
-      <condition>
-        ${num} :gt: 0
-      </condition>
-      <connect-in port="object" place="object"/>
-      <connect-inout port="num" place="num"/>
-    </transition>
+      <transition name="done">
+        <defun>
+          <in name="num" type="long"/>
+          <out name="done" type="control"/>
+          <expression>
+            ${done} := []
+          </expression>
+        </defun>
+        <condition>
+          ${num} :le: 0
+        </condition>
+        <connect-in port="num" place="num"/>
+        <connect-out port="done" place="done"/>
+      </transition>
 
-    <transition name="done">
-      <defun>
-        <in name="num" type="long"/>
-        <out name="done" type="control"/>
-        <expression>
-          ${done} := []
-        </expression>
-      </defun>
-      <condition>
-        ${num} :le: 0
-      </condition>
-      <connect-in port="num" place="num"/>
-      <connect-out port="done" place="done"/>
-    </transition>
-
-  </net>
-
+    </net>
+  </defun>
 </template>

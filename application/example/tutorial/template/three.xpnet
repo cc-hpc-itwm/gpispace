@@ -1,12 +1,13 @@
 <template name="three">
+  <template-parameter type="T"/>
+  <defun>
+    <in name="x" type="T"/>
+    <out name="a" type="T"/>
+    <out name="b" type="T"/>
+    <out name="c" type="T"/>
 
-  <in name="x" type="T"/>
-  <out name="a" type="T"/>
-  <out name="b" type="T"/>
-  <out name="c" type="T"/>
-
-  <expression>
-    ${a} := ${x}; ${b} := ${x}; ${c} := ${x}
-  </expression>
-
+    <expression>
+      ${a} := ${x}; ${b} := ${x}; ${c} := ${x}
+    </expression>
+  </defun>
 </template>

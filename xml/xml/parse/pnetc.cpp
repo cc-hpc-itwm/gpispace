@@ -54,7 +54,7 @@ main (int argc, char ** argv)
   {
     po::store( po::command_line_parser(argc, argv)
              . options(desc).positional(p)
-             . extra_parser (xml::parse::state::detail::reg_M)
+             . extra_parser (xml::parse::state::reg_M)
              . run()
              , vm
              );
@@ -96,7 +96,7 @@ main (int argc, char ** argv)
   {
     xml::parse::type::function_type f (xml::parse::frontend (state, input));
 
-    we::transition_t trans (f.synthesize<we::activity_t> (state));
+    we::transition_t trans (f.synthesize (state));
 
     we::type::optimize::optimize (trans, state.options_optimize());
 

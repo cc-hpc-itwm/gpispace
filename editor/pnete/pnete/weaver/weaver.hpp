@@ -3,8 +3,20 @@
 #ifndef _PNETE_TRAVERSE_WEAVER_HPP
 #define _PNETE_TRAVERSE_WEAVER_HPP 1
 
-#include <xml/parse/types.hpp>
-#include <xml/parse/parser.hpp>
+#include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/port.hpp>
+#include <xml/parse/type/specialize.hpp>
+#include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/template.hpp>
+#include <xml/parse/type/token.hpp>
+#include <xml/parse/type/transition.hpp>
+#include <xml/parse/type/use.hpp>
 
 #include <we/type/signature.hpp>
 
@@ -233,10 +245,28 @@ namespace fhg
             };
         }
 
-        namespace function
+        namespace tmpl
         {
           enum
             { first = conditions::last + 1
+            , open, name, template_parameter, function, close
+            , last
+            };
+        }
+
+        namespace template_parameter
+        {
+          enum
+            { first = tmpl::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        namespace function
+        {
+          enum
+            { first = template_parameter::last + 1
             , open, close, name, internal, require, properties, structs
             , in, out, fun, conditions
             , last
@@ -331,26 +361,28 @@ namespace fhg
 
       namespace from
       {
-        SIG(place     , ITVAL(XMLTYPE(places_type)));
+        SIG(place     , ITVAL(XMLTYPE(net_type::places_type)));
         SIG(function  , ITVAL(XMLTYPE(functions_type)));
+        SIG(tmpl      , ITVAL(XMLTYPE(templates_type)));
         SIG(specialize, ITVAL(XMLTYPE(specializes_type)));
 
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
         SIG(net       , XMLTYPE(net_type));
 
-        SIG(cinclude  , ITVAL(XMLTYPE(cincludes_type)));
-        SIG(connection, ITVAL(XMLTYPE(connections_type)));
-        SIG(ldflag    , ITVAL(XMLTYPE(flags_type)));
-        SIG(cxxflag   , ITVAL(XMLTYPE(flags_type)));
-        SIG(link      , ITVAL(XMLTYPE(links_type)));
-        SIG(port      , ITVAL(XMLTYPE(ports_type)));
-        SIG(require   , ITVAL(XMLTYPE(requirements_type)));
-        SIG(_struct   , ITVAL(XMLTYPE(structs_type)));
-        SIG(transition, ITVAL(XMLTYPE(net_type::transitions_type)));
-        SIG(type_get  , ITVAL(XMLTYPE(type_get_type)));
-        SIG(type_map  , ITVAL(XMLTYPE(type_map_type)));
-        SIG(place_map , ITVAL(XMLTYPE(place_maps_type)));
+        SIG(cinclude          , ITVAL(XMLTYPE(cincludes_type)));
+        SIG(template_parameter, ITVAL(XMLTYPE(template_type::names_type)));
+        SIG(connection        , ITVAL(XMLTYPE(connections_type)));
+        SIG(ldflag            , ITVAL(XMLTYPE(flags_type)));
+        SIG(cxxflag           , ITVAL(XMLTYPE(flags_type)));
+        SIG(link              , ITVAL(XMLTYPE(links_type)));
+        SIG(port              , ITVAL(XMLTYPE(ports_type)));
+        SIG(require           , ITVAL(XMLTYPE(requirements_type)));
+        SIG(_struct           , ITVAL(XMLTYPE(structs_type)));
+        SIG(transition        , ITVAL(XMLTYPE(net_type::transitions_type)));
+        SIG(type_get          , ITVAL(XMLTYPE(type_get_type)));
+        SIG(type_map          , ITVAL(XMLTYPE(type_map_type)));
+        SIG(place_map         , ITVAL(XMLTYPE(place_maps_type)));
 
         SIG(properties, WETYPE(property::type));
         SIG(property, ITVAL(WETYPE(property::map_type)));
@@ -442,7 +474,7 @@ namespace fhg
             void operator () (const XMLTYPE(use_type) & use) const
             {
               WEAVE(use::open, XMLTYPE(use_type))(use);
-              WEAVE(use::name, std::string)(use.name);
+              WEAVE(use::name, std::string)(use.name());
               WEAVEE(use::close)();
             }
 
@@ -526,8 +558,8 @@ namespace fhg
 
         FUN(_struct, ITVAL(XMLTYPE(structs_type)), s)
         {
-          WEAVE(_struct::open, std::string)(s.name);
-          boost::apply_visitor(visitor::_struct<State>(_state),s.sig);
+          WEAVE(_struct::open, std::string)(s.name());
+          boost::apply_visitor(visitor::_struct<State>(_state),s.signature());
           WEAVEE(_struct::close) ();
         }
 
@@ -540,7 +572,7 @@ namespace fhg
         FUN(port, ITVAL(XMLTYPE(ports_type)), port)
         {
           WEAVE(port::open, ITVAL(XMLTYPE(ports_type)))(port);
-          WEAVE(port::name, std::string)(port.name);
+          WEAVE(port::name, std::string)(port.name());
           WEAVE(port::type, std::string)(port.type);
           WEAVE(port::place, MAYBE(std::string))(port.place);
           WEAVE(port::properties, WETYPE(property::type))(port.prop);
@@ -551,6 +583,17 @@ namespace fhg
         {
           WEAVE(cinclude::open, ITVAL(XMLTYPE(cincludes_type)))(cinclude);
           WEAVEE(cinclude::close)();
+        }
+
+        FUN( template_parameter
+           , ITVAL(XMLTYPE(template_type::names_type))
+           , template_parameter
+           )
+        {
+          WEAVE( template_parameter::open
+               , ITVAL(XMLTYPE(template_type::names_type))
+               )(template_parameter);
+          WEAVEE(template_parameter::close)();
         }
 
         FUN(ldflag, ITVAL(XMLTYPE(flags_type)), flag)
@@ -624,7 +667,7 @@ namespace fhg
         FUN(specialize, ITVAL(XMLTYPE(specializes_type)), spec)
         {
           WEAVE(specialize::open, ITVAL(XMLTYPE(specializes_type)))(spec);
-          WEAVE(specialize::name, std::string)(spec.name);
+          WEAVE(specialize::name, std::string)(spec.name());
           WEAVE(specialize::use, std::string)(spec.use);
           WEAVE(specialize::type_map, XMLTYPE(type_map_type))(spec.type_map);
           WEAVE(specialize::type_get, XMLTYPE(type_get_type))(spec.type_get);
@@ -640,7 +683,7 @@ namespace fhg
         FUN(function_head, ITVAL(XMLTYPE(functions_type)), fun)
         {
           WEAVE(function::open, ITVAL(XMLTYPE(functions_type)))(fun);
-          WEAVE(function::name, MAYBE(std::string))(fun.name);
+          WEAVE(function::name, MAYBE(std::string))(fun.name());
           WEAVE(function::internal, MAYBE(bool))(fun.internal);
         }
 
@@ -664,6 +707,16 @@ namespace fhg
           FROM(function_tail) (_state, fun);
         }
 
+        FUN(tmpl, ITVAL(XMLTYPE(templates_type)), t)
+        {
+          WEAVE(tmpl::open,ITVAL(XMLTYPE(templates_type)))(t);
+          WEAVE(tmpl::name, MAYBE(std::string))(t.name());
+          WEAVE(tmpl::template_parameter,XMLTYPE(template_type::names_type))
+            (t.template_parameter());
+          WEAVE(tmpl::function,XMLTYPE(function_type))(t.function());
+          WEAVEE(tmpl::close)();
+        }
+
         FUN(context_key_value, ITVAL(XMLPARSE(state::key_values_t)), kv)
         {
           WEAVE(context::key_value, ITVAL(XMLPARSE(state::key_values_t)))(kv);
@@ -682,10 +735,10 @@ namespace fhg
           FROM(function_tail) (_state, fs.fun());
         }
 
-        FUN(place, ITVAL(XMLTYPE(places_type)), place)
+        FUN(place, ITVAL(XMLTYPE(net_type::places_type)), place)
         {
-          WEAVE(place::open, ITVAL(XMLTYPE(places_type)))(place);
-          WEAVE(place::name, std::string)(place.name);
+          WEAVE(place::open, ITVAL(XMLTYPE(net_type::places_type)))(place);
+          WEAVE(place::name, std::string)(place.name());
           WEAVE(place::type, std::string)(place.type);
           WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());
           WEAVE(place::properties, WETYPE(property::type))(place.prop);
@@ -729,7 +782,7 @@ namespace fhg
         FUN(transition, ITVAL(XMLTYPE(net_type::transitions_type)), trans)
         {
           WEAVE(transition::open,ITVAL(XMLTYPE(net_type::transitions_type)))(trans);
-          WEAVE(transition::name,std::string)(trans.name);
+          WEAVE(transition::name,std::string)(trans.name());
           WEAVE(transition::priority,MAYBE(petri_net::prio_t))
             (trans.priority);
           WEAVE(transition::internal, MAYBE(bool))(trans.internal);

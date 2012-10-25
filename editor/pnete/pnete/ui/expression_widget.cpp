@@ -126,7 +126,7 @@ namespace fhg
                 , SLOT (expression_changed ())
                 );
 
-        set_name (function().name);
+        set_name (function().name());
         set_expression (expression.expression().expression("\n"));
         expression_changed();
       }

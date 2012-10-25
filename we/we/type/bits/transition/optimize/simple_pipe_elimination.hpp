@@ -263,7 +263,7 @@ namespace we { namespace type {
                 const fhg::util::maybe<pid_pair_vec_type>
                   pid_pair_vec (pid_pairs (trans, tid, net, trans_parent));
 
-                if (pid_pair_vec.isJust())
+                if (pid_pair_vec)
                   {
                     net.delete_transition (tid);
 

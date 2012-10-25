@@ -1,8 +1,0 @@
-<structs>
-
-  <struct name="n_of_m">
-    <field name="max" type="long"/>
-    <field name="id" type="long"/>
-  </struct>
-
-</structs>

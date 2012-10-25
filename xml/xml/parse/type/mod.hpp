@@ -3,23 +3,18 @@
 #ifndef _XML_PARSE_TYPE_MOD_HPP
 #define _XML_PARSE_TYPE_MOD_HPP
 
-#include <string>
-#include <iostream>
+#include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 
 #include <fhg/util/maybe.hpp>
-#include <fhg/util/parse/position.hpp>
+#include <fhg/util/xml.fwd.hpp>
 
-#include <xml/parse/util/valid_name.hpp>
-#include <xml/parse/error.hpp>
-
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-
+#include <string>
 #include <list>
 
-#include <fhg/util/xml.hpp>
-
-namespace xml_util = ::fhg::util::xml;
+#include <boost/filesystem.hpp>
+#include <boost/unordered/unordered_map_fwd.hpp>
 
 namespace xml
 {
@@ -35,6 +30,29 @@ namespace xml
       struct mod_type
       {
       public:
+        mod_type ( const id::module& id
+                 , const id::function& parent
+                 , id::mapper* id_mapper
+                 );
+        mod_type ( const id::module& id
+                 , const id::function& parent
+                 , id::mapper* id_mapper
+                 , const std::string & _name
+                 , const std::string & _function
+                 , const boost::filesystem::path & path
+                 );
+
+        const id::module& id() const;
+        const id::function& parent() const;
+
+        bool is_same (const mod_type& other) const;
+
+        bool operator == (const mod_type& other) const;
+
+        void sanity_check (const function_type & fun) const;
+
+        friend std::size_t hash_value (const mod_type&);
+
         std::string name;
         std::string function;
         fhg::util::maybe<std::string> port_return;
@@ -47,250 +65,24 @@ namespace xml
         links_type links;
         boost::filesystem::path path;
 
-        // ***************************************************************** //
-
-        bool operator == (const mod_type& other) const
-        {
-          return port_return == other.port_return
-            && port_arg == other.port_arg
-            && code == other.code
-            && cincludes == other.cincludes
-            && ldflags == other.ldflags
-            && cxxflags == other.cxxflags
-            && links == other.links
-            ;
-        }
-
-        friend std::size_t hash_value (const mod_type&);
-
-        // ***************************************************************** //
-
-        template<typename Fun>
-        void sanity_check (const Fun & fun) const
-        {
-          if (port_return.isJust())
-            {
-              if (!fun.is_known_port (*port_return))
-                {
-                  throw error::function_description_with_unknown_port
-                    ( "return"
-                    , *port_return
-                    , name
-                    , function
-                    , fun.path
-                    );
-                }
-            }
-
-          for ( port_args_type::const_iterator port (port_arg.begin())
-              ; port != port_arg.end()
-              ; ++port
-              )
-            {
-              if (!fun.is_known_port (*port))
-                {
-                  throw error::function_description_with_unknown_port
-                    ( "argument"
-                    , *port
-                    , name
-                    , function
-                    , fun.path
-                    );
-                }
-            }
-        }
-
-        // ***************************************************************** //
-
-        mod_type () {}
-        mod_type ( const std::string & _name
-                 , const std::string & _function
-                 , const boost::filesystem::path & path
-                 )
-          : name (_name)
-          , function ()
-          , port_return ()
-          , port_arg ()
-        {
-          // implement the grammar
-          // S -> R F A
-          // F -> valid_name
-          // R -> eps | valid_name
-          // A -> eps | '(' L ')' | '(' ')'
-          // L -> valid_name | valid_name ',' L
-          //
-          // here R stands for the return port, F for the function
-          // name and A for the list of argument ports
-
-          std::size_t k (0);
-          std::string::const_iterator begin (_function.begin());
-          fhg::util::parse::position pos (k, begin, _function.end());
-
-          function = parse_name (pos);
-
-          if (!pos.end())
-            {
-              if (*pos != '(')
-                {
-                  port_return = function;
-                  function = parse_name (pos);
-                }
-
-              if (!pos.end())
-                {
-                  if (*pos != '(')
-                    {
-                      throw error::parse_function::expected ( _name
-                                                            , _function
-                                                            , "("
-                                                            , pos()
-                                                            , path
-                                                            );
-                    }
-
-                  ++pos;
-
-                  while (!pos.end() && *pos != ')')
-                    {
-                      port_arg.push_back (parse_name (pos));
-
-                      if (!pos.end() && *pos != ')')
-                        {
-                          if (*pos != ',')
-                            {
-                              throw error::parse_function::expected ( _name
-                                                                    , _function
-                                                                    , ","
-                                                                    , pos()
-                                                                    , path
-                                                                    );
-                            }
-
-                          ++pos;
-                        }
-                    }
-
-                  if (pos.end() || *pos != ')')
-                    {
-                      throw error::parse_function::expected ( _name
-                                                            , _function
-                                                            , ")"
-                                                            , pos()
-                                                            , path
-                                                            );
-                    }
-
-                  ++pos;
-                }
-
-              while (!pos.end() && isspace(*pos))
-                {
-                  ++pos;
-                }
-
-              if (!pos.end())
-                {
-                  throw error::parse_function::expected ( _name
-                                                        , _function
-                                                        , "<end of input>"
-                                                        , pos()
-                                                        , path
-                                                        );
-                }
-            }
-        }
+      private:
+        id::module _id;
+        id::function _parent;
+        id::mapper* _id_mapper;
       };
 
       typedef boost::unordered_map<std::string, mod_type> mc_by_function_type;
       typedef boost::unordered_map<std::string, mc_by_function_type> mcs_type;
 
-      inline std::size_t hash_value (const mod_type& m)
-      {
-        boost::hash<std::string> hasher;
-        return hasher (m.name);
-      }
+      std::size_t hash_value (const mod_type& m);
 
       namespace dump
       {
-        inline std::string dump_fun (const mod_type & m)
-        {
-          std::ostringstream s;
+        std::string dump_fun (const mod_type & m);
 
-          if (m.port_return.isJust())
-            {
-              s << *m.port_return << " ";
-            }
-
-          s << m.function;
-
-          s << " (";
-
-          bool first (true);
-
-          for ( port_args_type::const_iterator arg (m.port_arg.begin())
-              ; arg != m.port_arg.end()
-              ; ++arg, first = false
-              )
-            {
-              if (!first)
-                {
-                  s << ", ";
-                }
-
-              s << *arg;
-            }
-
-          s << ")";
-
-          return s.str();
-        }
-
-        inline void dump (xml_util::xmlstream & s, const mod_type & m)
-        {
-          s.open ("module");
-          s.attr ("name", m.name);
-          s.attr ("function", dump_fun (m));
-
-          for ( cincludes_type::const_iterator inc (m.cincludes.begin())
-              ; inc != m.cincludes.end()
-              ; ++inc
-              )
-            {
-              s.open ("cinclude");
-              s.attr ("href", *inc);
-              s.close ();
-            }
-
-          BOOST_FOREACH (flags_type::value_type const& flag, m.ldflags)
-            {
-              s.open ("ld");
-              s.attr ("flag", flag);
-              s.close ();
-            }
-
-          BOOST_FOREACH (flags_type::value_type const& flag, m.cxxflags)
-            {
-              s.open ("cxx");
-              s.attr ("flag", flag);
-              s.close ();
-            }
-
-          BOOST_FOREACH (links_type::value_type const& link, m.links)
-            {
-              s.open ("link");
-              s.attr ("href", link);
-              s.close ();
-            }
-
-          if (m.code.isJust())
-            {
-              s.open ("code");
-              s.content ("<![CDATA[" + *m.code + "]]>");
-              s.close ();
-            }
-
-          s.close ();
-        }
+        void dump ( ::fhg::util::xml::xmlstream & s
+                  , const mod_type & m
+                  );
       }
     }
   }

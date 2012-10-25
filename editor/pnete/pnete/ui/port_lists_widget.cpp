@@ -2,8 +2,6 @@
 
 #include <pnete/ui/port_lists_widget.hpp>
 
-#include <xml/parse/types.hpp>
-
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QGroupBox>

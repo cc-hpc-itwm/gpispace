@@ -1,8 +1,0 @@
-<structs>
-
-  <struct name="volume_with_store">
-    <field name="volume" type="volume"/>
-    <field name="store" type="store_volume"/>
-  </struct>
-
-</structs>

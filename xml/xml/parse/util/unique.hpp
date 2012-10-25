@@ -3,31 +3,130 @@
 #ifndef _XML_UTIL_UNIQUE_HPP
 #define _XML_UTIL_UNIQUE_HPP
 
-#include <xml/parse/util/id_type.hpp>
-
 #include <list>
 #include <string>
+#include <stdexcept>
+#include <iterator>
+
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
-
-#include <stdexcept>
 
 namespace xml
 {
   namespace util
   {
-    template<typename T, typename Key = std::string>
+    template<typename UNIQUE>
+    class unique_iterator : public std::iterator< std::forward_iterator_tag
+                                                , typename UNIQUE::value_type
+                                                >
+    {
+      typedef UNIQUE unique_type;
+
+      typedef typename unique_type::elements_type::iterator
+        actual_iterator_type;
+      actual_iterator_type _actual_iterator;
+
+    public:
+      unique_iterator(const actual_iterator_type& actual_iterator)
+        : _actual_iterator (actual_iterator)
+      { }
+
+      unique_iterator& operator++()
+      {
+        ++_actual_iterator;
+        return *this;
+      }
+      unique_iterator operator++ (int)
+      {
+        unique_iterator<UNIQUE> tmp (*this);
+        operator++();
+        return tmp;
+      }
+      bool operator== (const unique_iterator& rhs)
+      {
+        return _actual_iterator == rhs._actual_iterator;
+      }
+      bool operator!= (const unique_iterator& rhs)
+      {
+        return !(operator== (rhs));
+      }
+      typename UNIQUE::value_type& operator*() const
+      {
+        return *_actual_iterator;
+      }
+      typename UNIQUE::value_type* operator->() const
+      {
+        return &*_actual_iterator;
+      }
+    };
+
+    template<typename UNIQUE>
+    class const_unique_iterator
+      : public std::iterator< std::forward_iterator_tag
+                            , const typename UNIQUE::value_type
+                            >
+    {
+      typedef UNIQUE unique_type;
+
+      typedef typename unique_type::elements_type::const_iterator
+        actual_iterator_type;
+      actual_iterator_type _actual_iterator;
+
+    public:
+      const_unique_iterator(const actual_iterator_type& actual_iterator)
+        : _actual_iterator (actual_iterator)
+      { }
+
+      const_unique_iterator& operator++()
+      {
+        ++_actual_iterator;
+        return *this;
+      }
+      const_unique_iterator operator++ (int)
+      {
+        const_unique_iterator<UNIQUE> tmp (*this);
+        operator++();
+        return tmp;
+      }
+      bool operator== (const const_unique_iterator& rhs)
+      {
+        return _actual_iterator == rhs._actual_iterator;
+      }
+      bool operator!= (const const_unique_iterator& rhs)
+      {
+        return !(operator== (rhs));
+      }
+      const typename UNIQUE::value_type& operator*() const
+      {
+        return *_actual_iterator;
+      }
+      const typename UNIQUE::value_type* operator->() const
+      {
+        return &*_actual_iterator;
+      }
+    };
+
+    template<typename T, typename ID_TYPE, typename Key = std::string>
     struct unique
     {
     public:
-      typedef std::list<T> elements_type;
+      typedef T value_type;
+      typedef ID_TYPE id_type;
+      typedef Key key_type;
+
+      typedef std::list<value_type> elements_type;
+
+      typedef unique_iterator<unique<value_type, id_type, key_type> >
+        iterator;
+      typedef const_unique_iterator<unique<value_type, id_type, key_type> >
+        const_iterator;
 
     private:
-      typedef boost::unordered_map< Key
+      typedef boost::unordered_map< key_type
                                   , typename elements_type::iterator
                                   > names_type;
 
-      typedef boost::unordered_map< ::fhg::xml::parse::util::id_type
+      typedef boost::unordered_map< id_type
                                   , typename elements_type::iterator
                                   > ids_type;
 
@@ -35,12 +134,12 @@ namespace xml
       names_type _names;
       ids_type _ids;
 
-      inline T& insert (const T& x)
+      inline value_type& insert (const value_type& x)
       {
         typename elements_type::iterator
           pos (_elements.insert (_elements.end(), x));
 
-        _names.insert (typename names_type::value_type (x.name, pos));
+        _names.insert (typename names_type::value_type (x.name(), pos));
         _ids.insert (typename ids_type::value_type (x.id(), pos));
 
         return *pos;
@@ -82,13 +181,13 @@ namespace xml
       //! default constructing.
 
       //! \note .first is new, .second is old.
-#define RETURN_PAIR_TYPE boost::optional<T&>, boost::optional<T>
+#define RETURN_PAIR_TYPE boost::optional<value_type&>, boost::optional<value_type>
       typedef std::pair<RETURN_PAIR_TYPE >
               push_return_type;
 
-      push_return_type push_and_get_old_value (const T& x)
+      push_return_type push_and_get_old_value (const value_type& x)
       {
-        const typename names_type::const_iterator pos (_names.find (x.name));
+        const typename names_type::const_iterator pos (_names.find (x.name()));
 
         if (pos != _names.end())
           {
@@ -102,9 +201,9 @@ namespace xml
 
 #undef RETURN_PAIR_TYPE
 
-      boost::optional<T&> push (const T& x)
+      boost::optional<value_type&> push (const value_type& x)
       {
-        if (is_element (x.name))
+        if (is_element (x.name()))
           {
             return boost::none;
           }
@@ -112,7 +211,7 @@ namespace xml
         return insert (x);
       }
 
-      boost::optional<T> copy_by_id (const ::fhg::xml::parse::util::id_type & id) const
+      boost::optional<value_type> copy_by_id (const id_type & id) const
       {
         const typename ids_type::const_iterator pos (_ids.find (id));
 
@@ -126,11 +225,12 @@ namespace xml
 
       //! \todo Most likely, there was never an intended difference
       //! between copy_by_key and ref_by_key. When rewriting
-      //! copy_by_key, it was passing out a copy via a T& argument
-      //! though. The only difference now is the name and returning an
-      //! ?T or a ?T&. ?T& is only used in weaver of the editor and
-      //! seems to not be needed.
-      boost::optional<T> copy_by_key (const Key & key) const
+      //! copy_by_key, it was passing out a copy via a value_type&
+      //! argument though. The only difference now is the name and
+      //! returning an ?value_type or a ?value_type&. ?value_type& is
+      //! only used in weaver of the editor and seems to not be
+      //! needed.
+      boost::optional<value_type> copy_by_key (const key_type & key) const
       {
         const typename names_type::const_iterator pos (_names.find (key));
 
@@ -142,7 +242,7 @@ namespace xml
         return boost::none;
       }
 
-      boost::optional<T&> ref_by_key (const Key & key) const
+      boost::optional<value_type&> ref_by_key (const key_type & key) const
       {
         const typename names_type::const_iterator pos (_names.find (key));
 
@@ -154,14 +254,14 @@ namespace xml
         return boost::none;
       }
 
-      bool is_element (const Key & key) const
+      bool is_element (const key_type & key) const
       {
         return _names.find (key) != _names.end();
       }
 
-      void erase (const T& x)
+      void erase (const value_type& x)
       {
-        typename names_type::iterator pos (_names.find (x.name));
+        typename names_type::iterator pos (_names.find (x.name()));
 
         if (pos != _names.end())
         {
@@ -180,6 +280,24 @@ namespace xml
 
       elements_type & elements (void) { return _elements; }
       const elements_type & elements (void) const { return _elements; }
+
+      iterator begin()
+      {
+        return elements().begin();
+      }
+      iterator end()
+      {
+        return elements().end();
+      }
+
+      const_iterator begin() const
+      {
+        return elements().begin();
+      }
+      const_iterator end() const
+      {
+        return elements().end();
+      }
     };
   }
 }

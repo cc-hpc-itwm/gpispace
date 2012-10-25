@@ -4,10 +4,12 @@
 #define _XML_PARSE_TYPE_PORT_HPP
 
 #include <xml/parse/error.hpp>
+#include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/state.fwd.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
-#include <xml/parse/util/id_type.hpp>
 
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
@@ -27,59 +29,43 @@ namespace xml
     {
       struct port_type
       {
-        ::fhg::xml::parse::util::id_type _id;
-
       public:
-        std::string name;
-        std::string type;
-        fhg::util::maybe<std::string> place;
-        we::type::property::type prop;
-
-        port_type ( const std::string & _name
+        port_type ( const std::string & name
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
-                  , const ::fhg::xml::parse::util::id_type& id
+                  , const id::port& id
+                  , const id::function& parent
+                  , id::mapper* id_mapper
                   );
 
-        const ::fhg::xml::parse::util::id_type& id() const;
+        const id::port& id() const;
+        const id::function& parent() const;
+
         bool is_same (const port_type& other) const;
 
         void specialize ( const type::type_map_type & map_in
                         , const state::type &
                         );
-      };
-
-      // ******************************************************************* //
-
-      class port_type_check : public boost::static_visitor<void>
-      {
       private:
-        const std::string & direction;
-        const port_type & port;
-        const boost::filesystem::path & path;
-        const state::type & state;
+        id::port _id;
+        id::function _parent;
+        id::mapper* _id_mapper;
+
+        std::string _name;
 
       public:
-        port_type_check ( const std::string & _direction
-                        , const port_type & _port
-                        , const boost::filesystem::path & _path
-                        , const state::type & _state
-                        );
-
-        void operator () (const net_type & net) const;
-
-        template<typename T>
-          void operator () (const T &) const
-        {
-          if (port.place.isJust())
-            {
-              throw error::port_connected_place_nonexistent
-                (direction, port.name, *port.place, path);
-            }
-        }
+        const std::string& name() const;
+        std::string type;
+        fhg::util::maybe<std::string> place;
+        we::type::property::type prop;
       };
 
-      // ******************************************************************* //
+      void port_type_check ( const std::string & direction
+                           , const port_type & port
+                           , const boost::filesystem::path & path
+                           , const state::type & state
+                           , const function_type& fun
+                           );
 
       namespace dump
       {

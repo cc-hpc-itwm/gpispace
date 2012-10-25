@@ -3,13 +3,13 @@
 #ifndef _XML_PARSE_ERROR_HPP
 #define _XML_PARSE_ERROR_HPP
 
-#include <stdexcept>
 #include <string>
 #include <sstream>
 
 #include <we/we.hpp>
 
 #include <fhg/util/join.hpp>
+#include <fhg/util/backtracing_exception.hpp>
 
 #include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
 
@@ -24,19 +24,19 @@ namespace xml
     {
       // ******************************************************************* //
 
-      class generic : public std::runtime_error
+      class generic : public fhg::util::backtracing_exception
       {
       public:
         generic (const std::string & msg)
-          : std::runtime_error ("ERROR: " + msg)
+          : fhg::util::backtracing_exception ("ERROR: " + msg)
         {}
 
         generic (const boost::format& bf)
-          : std::runtime_error ("ERROR: " + bf.str())
+          : fhg::util::backtracing_exception ("ERROR: " + bf.str())
         {}
 
         generic (const std::string & msg, const std::string & pre)
-          : std::runtime_error ("ERROR: " + pre + ": " + msg)
+          : fhg::util::backtracing_exception ("ERROR: " + pre + ": " + msg)
         {}
       };
 
@@ -357,9 +357,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "redefinition of struct with name " << late.name
-            << " in " << late.path
-            << ", first definition was in " << early.path
+          s << "redefinition of struct with name " << late.name()
+            << " in " << late.path()
+            << ", first definition was in " << early.path()
             ;
 
           return s.str();
@@ -536,9 +536,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "struct with name " << late.name
-            << " in " << late.path
-            << " shadows definition from " << early.path
+          s << "struct with name " << late.name()
+            << " in " << late.path()
+            << " shadows definition from " << early.path()
             << " but this is forbidden, since it is a type used for port "
             << port_name
             ;
@@ -700,7 +700,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "duplicate transition " << t.name << " in " << t.path
+          s << "duplicate transition " << t.name() << " in " << t.path
             << " first definition was in " << old.path
             ;
 
@@ -722,7 +722,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "duplicate function " << t.name << " in " << t.path
+          s << "duplicate function " << t.name() << " in " << t.path
             << " first definition was in " << old.path
             ;
 
@@ -744,8 +744,8 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "duplicate template " << t.name << " in " << t.path
-            << " first definition was in " << old.path
+          s << "duplicate template " << t.name() << " in " << t.path()
+            << " first definition was in " << old.path()
             ;
 
           return s.str();
@@ -862,8 +862,8 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "tunnel " << port.name
-            << " connected to non-virtual place " << place.name
+          s << "tunnel " << port.name()
+            << " connected to non-virtual place " << place.name()
             << " in " << path
             ;
 
@@ -892,8 +892,8 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "tunnel with name " << port.name
-            << " is connected to place with different name " << place.name
+          s << "tunnel with name " << port.name()
+            << " is connected to place with different name " << place.name()
             << " in " << path
             ;
 
@@ -951,9 +951,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "type error: port-" << direction << " " << port.name
+          s << "type error: port-" << direction << " " << port.name()
             << " of type " << port.type
-            << " connected to place " << place.name
+            << " connected to place " << place.name()
             << " of type " << place.type
             << " in " << path
             ;
@@ -1122,9 +1122,9 @@ namespace xml
 
           s << "in transition " << trans << " in " << path << ": "
             << "type error: connect-" << direction
-            << " place " << place.name
+            << " place " << place.name()
             << " of type " << place.type
-            << " with port " << port.name
+            << " with port " << port.name()
             << " of type " << port.type
             ;
 
@@ -1545,6 +1545,20 @@ namespace xml
                                     , const boost::filesystem::path & file2
                                     )
           : generic (nice (name, mod, file1, file2))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class template_without_function : public generic
+      {
+      public:
+        template_without_function ( const fhg::util::maybe<std::string>& name
+                                  , const boost::filesystem::path& path
+                                  )
+          : generic ( boost::format
+                      ("template %1% without a function in %2%") % name % path
+                    )
         {}
       };
 
