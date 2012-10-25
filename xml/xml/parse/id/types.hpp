@@ -31,7 +31,7 @@ namespace xml
         friend std::size_t hash_value (const NAME&);                    \
         friend std::ostream& operator<< (std::ostream&, const NAME&);   \
         friend struct ref::NAME;                                        \
-        friend class mapper;                                            \
+        friend class ::xml::parse::id::mapper;                          \
                                                                         \
       private:                                                          \
         base_id_type _val;                                              \
@@ -60,7 +60,7 @@ namespace xml
                                                                         \
           friend std::size_t hash_value (const NAME&);                  \
           friend std::ostream& operator<< (std::ostream&, const NAME&); \
-          friend class mapper;                                          \
+          friend class ::xml::parse::id::mapper;                        \
                                                                         \
         private:                                                        \
           id::NAME _id;                                                 \
