@@ -16,6 +16,7 @@
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/bool.hpp>
 #include <fhg/util/bool_io.hpp>
+#include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <fhglog/minimal.hpp>
@@ -96,6 +97,8 @@ public:
     }
 
     m_worker.reset(new boost::thread(&WFEImpl::execution_thread, this));
+    fhg::util::set_threadname (*m_worker, "[wfe]");
+
     FHG_PLUGIN_STARTED();
   }
 
@@ -327,8 +330,8 @@ private:
           task->errc = fhg::error::MODULE_CALL_FAILED;
           task->error_message = ex.what();
 
-	  if (m_auto_unload)
-	    m_loader->unload_autoloaded();
+          if (m_auto_unload)
+            m_loader->unload_autoloaded();
         }
         catch (...)
         {
@@ -338,8 +341,8 @@ private:
             "UNKNOWN REASON, exception not derived from std::exception";
           task->done.notify(1);
 
-	  if (m_auto_unload)
-	    m_loader->unload_autoloaded();
+          if (m_auto_unload)
+            m_loader->unload_autoloaded();
         }
       }
 

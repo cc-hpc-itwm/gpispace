@@ -6,7 +6,7 @@
 #include <pnete/data/handle/net.hpp>
 
 #include <xml/parse/type/place.fwd.hpp>
-#include <xml/parse/util/id_type.hpp>
+#include <xml/parse/id/types.hpp>
 
 namespace fhg
 {
@@ -30,8 +30,10 @@ namespace fhg
 
           bool operator== (const place& other) const;
 
+          const ::xml::parse::id::place& id() const;
+
         private:
-          ::fhg::xml::parse::util::id_type _place_id;
+          ::xml::parse::id::place _place_id;
           handle::net _net;
         };
       }

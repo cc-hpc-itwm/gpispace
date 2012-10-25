@@ -89,7 +89,7 @@ namespace fhg
         template<typename Key, typename Val>
         void attr (const Key & key, const fhg::util::maybe<Val> & val) const
         {
-          if (val.isJust())
+          if (val)
             {
               attr<Key, Val> (key, *val);
             }

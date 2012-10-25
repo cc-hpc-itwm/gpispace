@@ -3,20 +3,18 @@
 #ifndef _XML_PARSE_TYPE_PLACE_MAP_HPP
 #define _XML_PARSE_TYPE_PLACE_MAP_HPP
 
-#include <string>
-#include <iostream>
-
-#include <boost/filesystem.hpp>
-
-#include <we/type/property.hpp>
-#include <we/type/id.hpp>
-
-#include <fhg/util/xml.hpp>
-
+#include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/util/unique.hpp>
-#include <xml/parse/util/id_type.hpp>
 
-namespace xml_util = ::fhg::util::xml;
+#include <fhg/util/xml.fwd.hpp>
+
+#include <we/type/id.hpp> //petri_net::pid_t
+#include <we/type/property.hpp>
+
+#include <string>
+
+#include <boost/unordered/unordered_map_fwd.hpp>
 
 namespace xml
 {
@@ -27,54 +25,42 @@ namespace xml
       struct place_map_type
       {
       public:
-        std::string place_virtual;
-        std::string place_real;
-        std::string name;
-        we::type::property::type prop;
-
-      private:
-        ::fhg::xml::parse::util::id_type _id;
-
-      public:
         place_map_type ( const std::string & _place_virtual
                        , const std::string & _place_real
-                       , const ::fhg::xml::parse::util::id_type& id
-                       )
-          : place_virtual (_place_virtual)
-          , place_real (_place_real)
-          , name (_place_virtual + " <-> " + _place_real)
-          , _id (id)
-        {}
+                       , const id::place_map& id
+                       , const id::transition& parent
+                       , id::mapper* id_mapper
+                       );
 
-        const ::fhg::xml::parse::util::id_type& id() const
-        {
-          return _id;
-        }
+        const id::place_map& id() const;
+        const id::transition& parent() const;
 
-        bool is_same (const place_map_type& other) const
-        {
-          return id() == other.id();
-        }
+        bool is_same (const place_map_type& other) const;
+
+        std::string _name;
+
+      public:
+        std::string place_virtual;
+        std::string place_real;
+        we::type::property::type prop;
+
+        const std::string& name() const;
+
+      private:
+        id::place_map _id;
+        id::transition _parent;
+        id::mapper* _id_mapper;
       };
 
-      typedef xml::util::unique<place_map_type>::elements_type place_maps_type;
+      typedef xml::util::unique<place_map_type,id::place_map>::elements_type place_maps_type;
       typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
 
       namespace dump
       {
-        inline void dump ( xml_util::xmlstream & s
-                         , const place_map_type & p
-                         )
-        {
-          s.open ("place-map");
-          s.attr ("virtual", p.place_virtual);
-          s.attr ("real", p.place_real);
-
-          ::we::type::property::dump::dump (s, p.prop);
-
-          s.close ();
-        }
-      } // namespace dump
+        void dump ( ::fhg::util::xml::xmlstream & s
+                  , const place_map_type & p
+                  );
+      }
     }
   }
 }

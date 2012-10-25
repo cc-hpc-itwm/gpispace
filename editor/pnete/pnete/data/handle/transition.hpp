@@ -6,8 +6,7 @@
 #include <pnete/data/handle/net.hpp>
 
 #include <xml/parse/type/transition.fwd.hpp>
-
-#include <xml/parse/util/id_type.hpp>
+#include <xml/parse/id/types.hpp>
 
 namespace fhg
 {
@@ -33,8 +32,10 @@ namespace fhg
 
           bool operator== (const transition& other) const;
 
+          const ::xml::parse::id::transition& id() const;
+
         private:
-          ::fhg::xml::parse::util::id_type _transition_id;
+          ::xml::parse::id::transition _transition_id;
           handle::net _net;
         };
       }

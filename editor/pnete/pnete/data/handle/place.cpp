@@ -2,10 +2,8 @@
 
 #include <pnete/data/handle/place.hpp>
 
-#include <pnete/data/handle/net.hpp>
-
-//! \todo Only include place.hpp and net.hpp?
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
 
@@ -44,6 +42,11 @@ namespace fhg
         bool place::operator== (const place& other) const
         {
           return _place_id == other._place_id && _net == other._net;
+        }
+
+        const ::xml::parse::id::place& place::id() const
+        {
+          return _place_id;
         }
       }
     }

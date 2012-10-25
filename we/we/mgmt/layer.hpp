@@ -25,6 +25,7 @@
 #include <fhg/error_codes.hpp>
 #include <fhg/util/show.hpp>
 #include <fhg/util/warnings.hpp>
+#include <fhg/util/threadname.hpp>
 
 #include <we/net.hpp>
 
@@ -636,20 +637,25 @@ namespace we { namespace mgmt {
         lock_t lock (mutex_);
 
         manager_   = boost::thread(boost::bind(&this_type::manager, this));
+        fhg::util::set_threadname (manager_, "[we-mgr]");
 
         active_nets_ = new active_nets_t[policy::NUM_EXTRACTORS];
-        start_threads (policy::NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
+        start_threads ("we-extract", policy::NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
 
         inj_q_ = new active_nets_t[policy::NUM_INJECTORS];
-        start_threads (policy::NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
+        start_threads ("we-inject", policy::NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
       }
 
       template <typename ThreadList, typename ThreadFunc>
-      void start_threads( const std::size_t num, ThreadList & list, ThreadFunc tf)
+      void start_threads(std::string const & tag, const std::size_t num, ThreadList & list, ThreadFunc tf)
       {
         for (std::size_t rank(0); rank < num; ++rank)
         {
-          list.push_back (new boost::thread (boost::bind (tf, rank)));
+          std::stringstream sstr;
+          sstr << "[" << tag << "-" << rank << "]";
+          boost::thread *thrd = new boost::thread (boost::bind (tf, rank));
+          fhg::util::set_threadname (*thrd, sstr.str ());
+          list.push_back (thrd);
         }
       }
 

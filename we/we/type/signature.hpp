@@ -1,3 +1,4 @@
+
 // mirko.rahn@itwm.fraunhofer.de
 
 #ifndef _WE_TYPE_SIGNATURE_HPP
@@ -347,8 +348,11 @@ namespace signature
           (msg + ": try to create a field in a non-strutured " + msg);
       }
     };
+  }
 
-    class get_or_create_structured_field
+  namespace
+  {
+    class get_or_create_structured_field_visitor
       : public boost::static_visitor<desc_t &>
     {
     private:
@@ -356,9 +360,9 @@ namespace signature
       const std::string msg;
 
     public:
-      get_or_create_structured_field ( const std::string & _field
-                                     , const std::string & _msg = "signature"
-                                     )
+      get_or_create_structured_field_visitor ( const std::string & _field
+                                             , const std::string & _msg
+                                             )
         : field (_field)
         , msg (_msg)
       {}
@@ -366,9 +370,9 @@ namespace signature
       desc_t & operator () (structured_t & map) const
       {
         if (!map.has_field (field))
-          {
-            map[field] = structured_t();
-          }
+        {
+          map[field] = structured_t();
+        }
 
         return map[field];
       }
@@ -381,7 +385,7 @@ namespace signature
     };
 
     template<typename T>
-    class create_literal_field : public boost::static_visitor<void>
+    class create_literal_field_visitor : public boost::static_visitor<void>
     {
     private:
       const field_name_t field;
@@ -389,10 +393,10 @@ namespace signature
       const std::string msg;
 
     public:
-      create_literal_field ( const std::string & _field
-                           , const T & _val
-                           , const std::string & _msg = "signature"
-                           )
+      create_literal_field_visitor ( const std::string & _field
+                                   , const T & _val
+                                   , const std::string & _msg
+                                   )
         : field (_field)
         , val (_val)
         , msg (_msg)
@@ -418,6 +422,29 @@ namespace signature
       }
     };
   }
+
+  inline desc_t& get_or_create_structured_field ( desc_t& desc
+                                                , const std::string& field
+                                                , const std::string& msg
+                                                = "signature"
+                                                )
+  {
+    return boost::apply_visitor
+      (get_or_create_structured_field_visitor (field, msg), desc);
+  }
+
+  template<typename T>
+  inline void create_literal_field ( desc_t& desc
+                                   , const std::string& field
+                                   , const T& value
+                                   , const std::string& msg
+                                   = "signature"
+                                   )
+  {
+    boost::apply_visitor
+      (create_literal_field_visitor<T> (field, value, msg), desc);
+  }
+
 
   inline std::ostream & operator << (std::ostream & os, const type & s)
   {

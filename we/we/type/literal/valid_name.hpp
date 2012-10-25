@@ -5,6 +5,8 @@
 
 #include <we/type/literal/name.hpp>
 
+#include <boost/unordered/unordered_set.hpp>
+
 namespace literal
 {
   struct name

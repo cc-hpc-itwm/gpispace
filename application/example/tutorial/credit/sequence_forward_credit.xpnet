@@ -1,75 +1,76 @@
 <template name="sequence_forward_credit">
   <template-parameter type="T"/>
+  <defun>
 
-  <struct name="WITH_CREDIT">
-    <field name="id" type="long"/>
-    <field name="credit" type="T"/>
-  </struct>
-
-  <in name="n" type="long" place="n"/>
-  <out name="i" type="WITH_CREDIT" place="i"/>
-  <tunnel name="credit" type="T" place="credit"/>
-
-  <net>
-
-    <struct name="state">
-      <field name="max" type="long"/>
-      <field name="i" type="long"/>
+    <struct name="WITH_CREDIT">
+      <field name="id" type="long"/>
+      <field name="credit" type="T"/>
     </struct>
 
-    <place name="n" type="long"/>
-    <place name="i" type="WITH_CREDIT"/>
-    <place name="state" type="state"/>
-    <place name="credit" type="T" virtual="true"/>
+    <in name="n" type="long" place="n"/>
+    <out name="i" type="WITH_CREDIT" place="i"/>
+    <tunnel name="credit" type="T" place="credit"/>
 
-    <transition name="init">
-      <defun>
-        <in name="n" type="long"/>
-        <out name="state" type="state"/>
-        <expression>
-          ${state.i} := 0;
-          ${state.max} := ${n};
-        </expression>
-      </defun>
-      <connect-in port="n" place="n"/>
-      <connect-out port="state" place="state"/>
-    </transition>
+    <net>
 
-    <transition name="step">
-      <properties name="fhg">
-        <properties name="pnetv">
-          <property key="firings_limit" value="1"/>
+      <struct name="state">
+        <field name="max" type="long"/>
+        <field name="i" type="long"/>
+      </struct>
+
+      <place name="n" type="long"/>
+      <place name="i" type="WITH_CREDIT"/>
+      <place name="state" type="state"/>
+      <place name="credit" type="T" virtual="true"/>
+
+      <transition name="init">
+        <defun>
+          <in name="n" type="long"/>
+          <out name="state" type="state"/>
+          <expression>
+            ${state.i} := 0;
+            ${state.max} := ${n};
+          </expression>
+        </defun>
+        <connect-in port="n" place="n"/>
+        <connect-out port="state" place="state"/>
+      </transition>
+
+      <transition name="step">
+        <properties name="fhg">
+          <properties name="pnetv">
+            <property key="firings_limit" value="1"/>
+          </properties>
         </properties>
-      </properties>
-      <defun>
-        <inout name="state" type="state"/>
-        <in name="credit" type="T"/>
-        <out name="i" type="WITH_CREDIT"/>
-        <expression>
-          ${i.id} := ${state.i};
-          ${i.credit} := ${credit};
-          ${state.i} := ${state.i} + 1;
-        </expression>
-      </defun>
-      <condition>
-        ${state.i} :lt: ${state.max}
-      </condition>
-      <connect-in port="credit" place="credit"/>
-      <connect-inout port="state" place="state"/>
-      <connect-out port="i" place="i"/>
-    </transition>
+        <defun>
+          <inout name="state" type="state"/>
+          <in name="credit" type="T"/>
+          <out name="i" type="WITH_CREDIT"/>
+          <expression>
+            ${i.id} := ${state.i};
+            ${i.credit} := ${credit};
+            ${state.i} := ${state.i} + 1;
+          </expression>
+        </defun>
+        <condition>
+          ${state.i} :lt: ${state.max}
+        </condition>
+        <connect-in port="credit" place="credit"/>
+        <connect-inout port="state" place="state"/>
+        <connect-out port="i" place="i"/>
+      </transition>
 
-    <transition name="break">
-      <defun>
-        <in name="state" type="state"/>
-        <expression/>
-      </defun>
-      <condition>
-        ${state.i} :ge: ${state.max}
-      </condition>
-      <connect-in port="state" place="state"/>
-    </transition>
+      <transition name="break">
+        <defun>
+          <in name="state" type="state"/>
+          <expression/>
+        </defun>
+        <condition>
+          ${state.i} :ge: ${state.max}
+        </condition>
+        <connect-in port="state" place="state"/>
+      </transition>
 
-  </net>
-
+    </net>
+  </defun>
 </template>

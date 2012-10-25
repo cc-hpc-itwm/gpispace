@@ -16,6 +16,7 @@
 #include <fhg/plugin/core/file_storage.hpp>
 
 #include <fhg/util/split.hpp>
+#include <fhg/util/threadname.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
@@ -593,6 +594,7 @@ namespace fhg
       m_running = true;
       m_failed_path_cache.clear ();
       m_task_handler = boost::thread (&kernel_t::task_handler, this);
+      fhg::util::set_threadname (m_task_handler, "[kernel-tasks]");
 
       const bool daemonize
         (boost::lexical_cast<bool>(get("kernel.daemonize", "0")));

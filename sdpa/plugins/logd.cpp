@@ -7,6 +7,8 @@
 #include <fhglog/fhglog.hpp>
 #include <fhg/plugin/plugin.hpp>
 
+#include <fhg/util/threadname.hpp>
+
 namespace detail
 {
   class FunctionAppender : public fhg::log::Appender
@@ -57,6 +59,7 @@ public:
 
     m_io_thread = boost::thread
       (boost::bind (&boost::asio::io_service::run, &m_io_service));
+    fhg::util::set_threadname (m_io_thread, "[logd]");
 
     FHG_PLUGIN_STARTED();
   }

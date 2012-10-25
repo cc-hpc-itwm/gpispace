@@ -21,7 +21,7 @@ namespace fhg
       {
         //! \todo submit known types
         setWidget (new module_call_widget (proxy, mod, QStringList(), this));
-        set_title (data::proxy::function (proxy).name);
+        set_title (data::proxy::function (proxy).name());
       }
       QString mod_view::fallback_title () const
       {

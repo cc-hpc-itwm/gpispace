@@ -273,7 +273,7 @@ namespace fhg
 
         const std::string& port_item::name() const
         {
-          return port().name;
+          return port().name();
         }
         const std::string& port_item::we_type() const
         {

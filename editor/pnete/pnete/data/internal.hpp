@@ -3,9 +3,7 @@
 #ifndef _PNETE_DATA_INTERNAL_HPP
 #define _PNETE_DATA_INTERNAL_HPP 1
 
-#include <boost/shared_ptr.hpp>
-
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/state.hpp>
 
 #include <pnete/data/change_manager.hpp>

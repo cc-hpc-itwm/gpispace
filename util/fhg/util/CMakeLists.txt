@@ -1,4 +1,18 @@
 # -*- mode: cmake; -*-
+
+# check for 'pthread_setname_np'
+include(CheckCSourceCompiles)
+find_package (Threads)
+set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+check_c_source_compiles("
+#include <pthread.h>
+int main () { pthread_setname_np (pthread_self (), \"test\"); }
+" HAVE_PTHREAD_SETNAME)
+
+if (HAVE_PTHREAD_SETNAME)
+  add_definitions (-DHAVE_PTHREAD_SETNAME)
+endif()
+
 set (hdrs
   join.hpp
   maybe.hpp
@@ -31,10 +45,14 @@ set (hdrs
   backtracing_exception.fwd.hpp
 
   url.hpp
+  setproctitle.h
+  threadname.hpp
 )
 
 set (srcs
   backtracing_exception.cpp
+  setproctitle.c
+  threadname.cpp
 )
 
 add_library (fhg-util ${srcs})

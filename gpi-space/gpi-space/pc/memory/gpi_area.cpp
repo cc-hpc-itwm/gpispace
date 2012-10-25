@@ -32,8 +32,8 @@ namespace gpi
                  , flags
                  )
         , m_ptr (dma_ptr)
-        , m_com_buffer_size (4* (1<<20))
         , m_num_com_buffers (8)
+        , m_com_buffer_size (4* (1<<20))
       {
         // total memory size is required for boundary checks
         m_total_memsize = gpi::api::gpi_api_t::get().number_of_nodes () * size;
@@ -59,18 +59,19 @@ namespace gpi
 
         // TODO: make  this lazy, just define  a maximum number  of buffers, but
         // try to allocate them only when actually needed.
+        size_t num_buffers_allocated = 0;
         for (size_t i = 0; i < m_num_com_buffers; ++i)
         {
           const std::string hdl_name =
             name () + "-com-" + boost::lexical_cast<std::string>(i);
-          gpi::pc::type::handle_t com_hdl =
-            this->alloc ( GPI_PC_INVAL
-                        , m_com_buffer_size
-                        , hdl_name
-                        , gpi::pc::F_EXCLUSIVE
-                        );
-          if (com_hdl)
+          try
           {
+            gpi::pc::type::handle_t com_hdl =
+              this->alloc ( GPI_PC_INVAL
+                          , m_com_buffer_size
+                          , hdl_name
+                          , gpi::pc::F_EXCLUSIVE
+                          );
             gpi::pc::type::handle::descriptor_t desc =
               descriptor (com_hdl);
 
@@ -81,8 +82,37 @@ namespace gpi
                                    )
               );
 
-            MLOG (TRACE, "added new internal communication handle: " << desc);
+            ++num_buffers_allocated;
           }
+          catch (std::exception const & ex)
+          {
+            MLOG (WARN, "could not allocate communication buffer "
+                 << (num_buffers_allocated+1)
+                 << ": " << ex.what ()
+                 );
+            break;
+          }
+        }
+
+        if (0 == num_buffers_allocated)
+        {
+          throw std::runtime_error
+            ( std::string ("no communication buffer could be allocated:")
+            + " com-size := " + boost::lexical_cast<std::string>(m_com_buffer_size)
+            + " mem-size := " + boost::lexical_cast<std::string>(descriptor ().local_size)
+            );
+        }
+        else
+        {
+          MLOG ( DEBUG
+               , "added " << num_buffers_allocated << "/" << m_num_com_buffers
+               << " communication buffers, " << m_com_buffer_size << " bytes each"
+               );
+
+          MLOG_IF ( WARN, descriptor ().avail == 0
+                  ,  "communication buffers consumed all your precious memory,"
+                  << " this might not be what you wanted!"
+                  );
         }
       }
 

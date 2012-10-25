@@ -29,6 +29,11 @@ namespace fhg
         {
           return _net_id == other._net_id;
         }
+
+        const ::xml::parse::id::net& net::id() const
+        {
+          return _net_id;
+        }
       }
     }
   }

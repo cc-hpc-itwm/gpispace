@@ -1,5 +1,4 @@
 add_executable(exit_code_is_nonzero exit_code_is_nonzero.c)
 
 add_subdirectory(cc_compile)
-add_subdirectory(kdm_full)
 add_subdirectory(use_sequence)

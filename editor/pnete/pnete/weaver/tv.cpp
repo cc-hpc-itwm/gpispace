@@ -204,7 +204,7 @@ namespace fhg
         FROM(conditions) (this, cond);
       }
 
-      WSIG(tv, place::open, ITVAL(XMLTYPE(places_type)), place)
+      WSIG(tv, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
       {
         push (append ("<<place>>"));
       }
@@ -288,6 +288,14 @@ namespace fhg
       {
         append (cinclude);
       }
+      WSIG(tv
+          , template_parameter::open
+          , ITVAL(XMLTYPE(template_type::names_type))
+          , template_parameter
+          )
+      {
+        append (template_parameter);
+      }
 
       WSIG(tv, ldflag::open, ITVAL(XMLTYPE(flags_type)), flag)
       {
@@ -345,6 +353,27 @@ namespace fhg
       {
         xs ("condition", cs, FROM(expression_sequence));
       }
+
+      WSIG(tv, tmpl::open, ITVAL(XMLTYPE(templates_type)), t)
+      {
+        push (append ("<<template>>"));
+      }
+      WSIG(tv, tmpl::name, MAYBE(std::string), name)
+      {
+        if (name)
+          {
+            set_text (*name);
+          }
+      }
+      WSIG(tv, tmpl::template_parameter, XMLTYPE(template_type::names_type), templates)
+      {
+        xs ("template-parameter", templates, FROM(template_parameter));
+      }
+      WSIG(tv, tmpl::function, XMLTYPE(function_type), fun)
+      {
+        FROM(function) (this, fun);
+      }
+      WSIGE(tv, tmpl::close) { pop(); }
 
       WSIG( tv
           , function::open
@@ -519,7 +548,7 @@ namespace fhg
       }
       WSIG(tv, net::templates, XMLTYPE(templates_type), templates)
       {
-        xs ("template", templates, FROM(function));
+        xs ("template", templates, FROM(tmpl));
       }
       WSIG(tv, net::specializes, XMLTYPE(specializes_type), specializes)
       {

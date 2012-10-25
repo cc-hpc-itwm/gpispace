@@ -4,6 +4,7 @@
 #define _FHG_UTIL_SPLIT_HPP
 
 #include <iterator>
+#include <utility> // std::pair
 #include <string>
 
 #include <boost/function.hpp>

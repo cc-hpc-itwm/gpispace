@@ -12,19 +12,46 @@ set (xml_parse_type_headers
   require.hpp
   specialize.hpp
   struct.hpp
+  template.hpp
   token.hpp
   transition.hpp
   use.hpp
 )
 
 set (xml_parse_type_fwd_headers
+  connect.fwd.hpp
+  expression.fwd.hpp
+  function.fwd.hpp
+  mod.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
+  place_map.fwd.hpp
+  port.fwd.hpp
+  require.fwd.hpp
+  specialize.fwd.hpp
+  struct.fwd.hpp
+  template.fwd.hpp
+  token.fwd.hpp
   transition.fwd.hpp
+  use.fwd.hpp
 )
 
 set (xml_parse_type_sources
+  connect.cpp
+  expression.cpp
+  function.cpp
+  mod.cpp
+  net.cpp
+  place.cpp
+  place_map.cpp
   port.cpp
+  require.cpp
+  specialize.cpp
+  struct.cpp
+  template.cpp
+  token.cpp
+  transition.cpp
+  use.cpp
 )
 
 add_library (xml_parse_type

@@ -1,31 +1,34 @@
 <template name="dup">
-  <properties name="pnetc">
-    <properties name="warning">
-      <property key="inline-many-output-ports" value="off"/>
+  <template-parameter type="T"/>
+  <defun>
+    <properties name="pnetc">
+      <properties name="warning">
+        <property key="inline-many-output-ports" value="off"/>
+      </properties>
     </properties>
-  </properties>
-  <in name="in" type="T" place="x"/>
-  <out name="one" type="T" place="a"/>
-  <out name="two" type="T" place="b"/>
+    <in name="in" type="T" place="x"/>
+    <out name="one" type="T" place="a"/>
+    <out name="two" type="T" place="b"/>
 
-  <net>
-    <place name="x" type="T"/>
-    <place name="a" type="T"/>
-    <place name="b" type="T"/>
+    <net>
+      <place name="x" type="T"/>
+      <place name="a" type="T"/>
+      <place name="b" type="T"/>
 
-    <transition name="dup">
-      <defun>
-        <in name="x" type="T"/>
-        <out name="a" type="T"/>
-        <out name="b" type="T"/>
-        <expression>
-          ${a} := ${x};
-          ${b} := ${x};
-        </expression>
-      </defun>
-      <connect-in port="x" place="x"/>
-      <connect-out port="a" place="a"/>
-      <connect-out port="b" place="b"/>
-    </transition>
-  </net>
+      <transition name="dup">
+        <defun>
+          <in name="x" type="T"/>
+          <out name="a" type="T"/>
+          <out name="b" type="T"/>
+          <expression>
+            ${a} := ${x};
+            ${b} := ${x};
+          </expression>
+        </defun>
+        <connect-in port="x" place="x"/>
+        <connect-out port="a" place="a"/>
+        <connect-out port="b" place="b"/>
+      </transition>
+    </net>
+  </defun>
 </template>

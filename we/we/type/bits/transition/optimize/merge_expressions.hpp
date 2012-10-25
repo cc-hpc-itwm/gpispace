@@ -272,7 +272,7 @@ namespace we { namespace type {
                 const fhg::util::maybe<const port_t>
                   maybe_pred_in (input_port_by_pid (pred, *p));
 
-                if (maybe_pred_in.isJust())
+                if (maybe_pred_in)
                   {
                     const port_t & pred_in (*maybe_pred_in);
 
@@ -380,7 +380,7 @@ namespace we { namespace type {
 
                     if (pid_read.find (pid) != pid_read.end())
                       {
-                        if (input_port_by_pid (pred, pid).isNothing())
+                        if (not input_port_by_pid (pred, pid))
                           {
                             pred.UNSAFE_add_port (p->second);
 
@@ -503,7 +503,7 @@ namespace we { namespace type {
                 const fhg::util::maybe<trans_info>
                   maybe_pred (expression_predecessor (trans, tid_trans, net));
 
-                if (maybe_pred.isJust())
+                if (maybe_pred)
                   {
                     transition_t pred ((*maybe_pred).pred);
                     tid_t tid_pred ((*maybe_pred).tid_pred);

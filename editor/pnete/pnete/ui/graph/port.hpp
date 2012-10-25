@@ -12,7 +12,7 @@
 
 #include <boost/optional.hpp>
 
-#include <xml/parse/types.hpp>
+#include <xml/parse/type_map_type.hpp>
 
 #include <pnete/weaver/weaver.hpp>
 

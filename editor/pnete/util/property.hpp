@@ -3,6 +3,8 @@
 #ifndef _FHG_PNETE_UTIL_PROPERTY_HPP
 #define _FHG_PNETE_UTIL_PROPERTY_HPP 1
 
+#include <boost/lexical_cast.hpp>
+
 namespace fhg
 {
   namespace pnete

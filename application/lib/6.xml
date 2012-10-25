@@ -1,51 +1,54 @@
 <template name="six">
-  <properties name="pnetc">
-    <properties name="warning">
-      <property key="inline-many-output-ports" value="off"/>
+  <template-parameter type="T"/>
+  <defun>
+    <properties name="pnetc">
+      <properties name="warning">
+        <property key="inline-many-output-ports" value="off"/>
+      </properties>
     </properties>
-  </properties>
-  <in name="in" type="T" place="x"/>
-  <out name="one" type="T" place="one"/>
-  <out name="two" type="T" place="two"/>
-  <out name="three" type="T" place="three"/>
-  <out name="four" type="T" place="four"/>
-  <out name="five" type="T" place="five"/>
-  <out name="six" type="T" place="six"/>
+    <in name="in" type="T" place="x"/>
+    <out name="one" type="T" place="one"/>
+    <out name="two" type="T" place="two"/>
+    <out name="three" type="T" place="three"/>
+    <out name="four" type="T" place="four"/>
+    <out name="five" type="T" place="five"/>
+    <out name="six" type="T" place="six"/>
 
-  <net>
-    <place name="x" type="T"/>
-    <place name="one" type="T"/>
-    <place name="two" type="T"/>
-    <place name="three" type="T"/>
-    <place name="four" type="T"/>
-    <place name="five" type="T"/>
-    <place name="six" type="T"/>
+    <net>
+      <place name="x" type="T"/>
+      <place name="one" type="T"/>
+      <place name="two" type="T"/>
+      <place name="three" type="T"/>
+      <place name="four" type="T"/>
+      <place name="five" type="T"/>
+      <place name="six" type="T"/>
 
-    <transition name="triple">
-      <defun>
-        <in name="x" type="T"/>
-        <out name="one" type="T"/>
-        <out name="two" type="T"/>
-        <out name="three" type="T"/>
-        <out name="four" type="T"/>
-        <out name="five" type="T"/>
-        <out name="six" type="T"/>
-        <expression>
-          ${one} := ${x};
-          ${two} := ${x};
-          ${three} := ${x};
-          ${four} := ${x};
-          ${five} := ${x};
-          ${six} := ${x};
-        </expression>
-      </defun>
-      <connect-in port="x" place="x"/>
-      <connect-out port="one" place="one"/>
-      <connect-out port="two" place="two"/>
-      <connect-out port="three" place="three"/>
-      <connect-out port="four" place="four"/>
-      <connect-out port="five" place="five"/>
-      <connect-out port="six" place="six"/>
-    </transition>
-  </net>
+      <transition name="triple">
+        <defun>
+          <in name="x" type="T"/>
+          <out name="one" type="T"/>
+          <out name="two" type="T"/>
+          <out name="three" type="T"/>
+          <out name="four" type="T"/>
+          <out name="five" type="T"/>
+          <out name="six" type="T"/>
+          <expression>
+            ${one} := ${x};
+            ${two} := ${x};
+            ${three} := ${x};
+            ${four} := ${x};
+            ${five} := ${x};
+            ${six} := ${x};
+          </expression>
+        </defun>
+        <connect-in port="x" place="x"/>
+        <connect-out port="one" place="one"/>
+        <connect-out port="two" place="two"/>
+        <connect-out port="three" place="three"/>
+        <connect-out port="four" place="four"/>
+        <connect-out port="five" place="five"/>
+        <connect-out port="six" place="six"/>
+      </transition>
+    </net>
+  </defun>
 </template>

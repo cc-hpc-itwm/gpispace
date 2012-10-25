@@ -5,7 +5,12 @@
 
 #include <boost/variant.hpp>
 
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/port.hpp>
+#include <xml/parse/type_map_type.hpp>
 
 #include <QString>
 

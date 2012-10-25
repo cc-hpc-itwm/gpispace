@@ -6,6 +6,13 @@
 #include <pnete/data/handle/transition.hpp>
 #include <pnete/data/handle/place.hpp>
 
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/transition.hpp>
+
+#include <xml/parse/state.hpp>
 #include <we/expr/parse/parser.hpp>
 
 #include <xml/parse/error.hpp>
@@ -44,23 +51,6 @@ namespace fhg
             ;
         }
 
-        static ::xml::parse::type::place_type&
-        push_place ( ::xml::parse::type::place_type place
-                   , ::xml::parse::type::net_type& net
-                   )
-        {
-          try
-          {
-            return net.push_place (place);
-          }
-          catch (const ::xml::parse::error::duplicate_place&)
-          {
-            place.name = inc (place.name);
-
-            return push_place (place, net);
-          }
-        }
-
         static ::xml::parse::type::transition_type&
         push_transition ( ::xml::parse::type::transition_type transition
                         , ::xml::parse::type::net_type& net
@@ -74,7 +64,7 @@ namespace fhg
                 < ::xml::parse::type::transition_type>&
                 )
           {
-            transition.name = inc (transition.name);
+            transition.name (inc (transition.name()));
 
             return push_transition (transition, net);
           }
@@ -287,14 +277,18 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::type::transition_type transition (_state.next_id());
+        ::xml::parse::type::transition_type transition
+          ( xml::parse::id::transition (_state.next_id())
+          , net.id()
+          , _state.id_mapper()
+          );
         transition.function_or_use (fun);
-        transition.name = fun.name ? *fun.name : "transition";
+        transition.name (fun.name() ? *fun.name() : "transition");
 
         //! \todo Don't check for duplicate names when fun.name is set?
-        while (net().has_transition (transition.name))
+        while (net().has_transition (transition.name()))
         {
-          transition.name = inc (transition.name);
+          transition.name (inc (transition.name()));
         }
 
         push (new action::add_transition (*this, origin, net, transition));
@@ -305,14 +299,30 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::type::transition_type transition (_state.next_id());
-        transition.function_or_use
-          (::xml::parse::type::function_type (_state.next_id()));
-        transition.name = "transition";
+        const ::xml::parse::id::expression expression_id (_state.next_id());
+        const ::xml::parse::id::function function_id (_state.next_id());
+        const ::xml::parse::id::transition transition_id (_state.next_id());
 
-        while (net().has_transition (transition.name))
+        ::xml::parse::type::expression_type expression ( expression_id
+                                                       , function_id
+                                                       , _state.id_mapper()
+                                                       );
+        ::xml::parse::type::function_type f ( expression
+                                            , function_id
+                                            , transition_id
+                                            , _state.id_mapper()
+                                            );
+
+        ::xml::parse::type::transition_type transition ( f
+                                                       , transition_id
+                                                       , net.id()
+                                                       , _state.id_mapper()
+                                                       );
+        transition.name ("transition");
+
+        while (net().has_transition (transition.name()))
         {
-          transition.name = inc (transition.name);
+          transition.name (inc (transition.name()));
         }
 
         push (new action::add_transition (*this, origin, net, transition));
@@ -332,12 +342,16 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::type::place_type place (_state.next_id());
-        place.name = "place";
+        ::xml::parse::type::place_type place
+          ( ::xml::parse::id::place (_state.next_id())
+          , net.id()
+          , _state.id_mapper()
+          );
+        place.name ("place");
 
-        while (net().has_place (place.name))
+        while (net().has_place (place.name()))
         {
-          place.name = inc (place.name);
+          place.name (inc (place.name()));
         }
 
         push (new action::add_place (*this, origin, net, place));
@@ -360,11 +374,11 @@ namespace fhg
       {
         if (!name.isEmpty())
         {
-          fun.name = name.toStdString();
+          fun.name (name.toStdString());
         }
         else
         {
-          fun.name.clear();
+          fun.name(fhg::util::Nothing<std::string>());
         }
 
         emit_signal ( &change_manager_t::signal_set_function_name
