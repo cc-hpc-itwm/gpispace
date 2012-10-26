@@ -21,7 +21,7 @@ namespace fhg
       std::string make_backtrace (const std::string& reason)
       {
         std::stringstream what;
-        what << reason << "\n\n";
+        what << reason << std::endl << std::endl;
 
         static const int nframes (50);
         static void* array[nframes];
@@ -99,7 +99,12 @@ namespace fhg
 #else
           what << line;
 #endif
-          what << "\n";
+          what << std::endl;
+
+          if (size == nframes)
+            {
+              what << "...maybe more" << std::endl;
+            }
         }
 
         free (strings);
