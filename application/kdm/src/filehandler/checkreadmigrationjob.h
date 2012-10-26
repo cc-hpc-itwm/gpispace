@@ -70,11 +70,11 @@ public:
   int CheckExistence(const char* FileName);
   int CreateFile(const char* FileName);
   /// Read int variable Var with key VarName from CfgFileName; return true on success, false on error
-  bool ReadXML(XMLReader& Reader, char* VarName, int& Var, bool message = true);
+  bool ReadXML(XMLReader& Reader, const char* VarName, int& Var, bool message = true);
   /// Read float variable Var with key VarName from CfgFileName; return true on success, false on error
-  bool ReadXML(XMLReader& Reader, char* VarName, float& Var, bool message = true);
+  bool ReadXML(XMLReader& Reader, const char* VarName, float& Var, bool message = true);
   /// Read float variable Var with key VarName from CfgFileName; return true on success, false on error
-  bool ReadXML(XMLReader& Reader, char* VarName, char* Var, bool message = true);
+  bool ReadXML(XMLReader& Reader, const char* VarName, char* Var, bool message = true);
 
 // private attributes
  private:
