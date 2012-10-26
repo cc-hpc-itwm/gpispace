@@ -24,6 +24,7 @@
 #include <pnete/data/internal.hpp>
 
 #include <pnete/weaver/display.hpp>
+#include <pnete/util.hpp>
 
 #include <util/graphviz.hpp>
 
@@ -505,13 +506,7 @@ namespace fhg
         void scene_type::slot_delete_transition (base_item* graph_item)
         {
           transition_item* transition_item
-            (qgraphicsitem_cast<transition_item*> (graph_item));
-
-          if (!transition_item)
-          {
-            throw std::runtime_error
-              ("STRANGE: delete_transition for something else!?");
-          }
+            (fhg::util::throwing_qgraphicsitem_cast<transition_item*> (graph_item));
 
           remove_transition_item (transition_item);
 
@@ -531,13 +526,7 @@ namespace fhg
         void scene_type::slot_delete_place (base_item* graph_item)
         {
           place_item* place_item
-            (qgraphicsitem_cast<place_item*> (graph_item));
-
-          if (!place_item)
-          {
-            throw std::runtime_error
-              ("STRANGE: delete_place for something else!?");
-          }
+            (fhg::util::throwing_qgraphicsitem_cast<place_item*> (graph_item));
 
           place_item->erase_connections (this);
           removeItem (place_item);

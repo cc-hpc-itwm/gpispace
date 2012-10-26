@@ -7,6 +7,7 @@
 
 #include <QWidget>
 #include <QObject>
+#include <QGraphicsItem>
 
 #include <stdexcept>
 
@@ -51,6 +52,22 @@ namespace fhg
         {
           throw std::runtime_error
             ( std::string ("throwing_qobject_cast failed from ")
+//             + qPrintable(from->metaObject()->className())
+//             + " to "
+//             + qPrintable(typename T::staticMetaObject.className())
+            );
+        }
+
+      return x;
+    }
+    template<typename T> T throwing_qgraphicsitem_cast (QGraphicsItem* from)
+    {
+      T x (qgraphicsitem_cast<T> (from));
+
+      if (!x)
+        {
+          throw std::runtime_error
+            ( std::string ("throwing_qgraphicsitem_cast failed from ")
 //             + qPrintable(from->metaObject()->className())
 //             + " to "
 //             + qPrintable(typename T::staticMetaObject.className())
