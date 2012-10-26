@@ -17,8 +17,6 @@
 
 // ************************************************************************* //
 
-namespace po = boost::program_options;
-
 namespace {
   template<typename Stream>
   class wrapping_word_stream
@@ -175,99 +173,7 @@ namespace {
   }
 } // anonymous namespace
 
-namespace xml
-{
-  namespace parse
-  {
-    //! \todo move stuff to anonymous namespace
-
-    // ********************************************************************* //
-
-    type::function_type
-    frontend (state::type & state, const std::string & input)
-    {
-      type::function_type f (just_parse (state, input));
-
-      if (state.dump_xml_file().size() > 0)
-        {
-          const std::string& file (state.dump_xml_file());
-          std::ofstream stream (file.c_str());
-
-          if (!stream.good())
-            {
-              throw error::could_not_open_file (file);
-            }
-
-          fhg::util::xml::xmlstream s (stream);
-
-          xml::parse::type::dump::dump (s, f, state);
-        }
-
-      // set all the collected requirements to the top level function
-      f.requirements = state.requirements();
-
-      f.specialize (state);
-      f.resolve (state, f.forbidden_below());
-      f.type_check (state);
-      f.sanity_check (state);
-
-      if (state.path_to_cpp().size() > 0)
-        {
-          type::fun_info_map m;
-
-          type::find_module_calls (state, f, m);
-
-          type::mk_wrapper (state, m);
-          type::mk_makefile (state, m);
-
-          includes::descrs_type descrs;
-
-          includes::mks (descrs);
-          includes::we_header_gen (state, descrs);
-
-          type::struct_to_cpp (state, f);
-        }
-
-      if (state.dump_dependenciesD())
-        {
-          state.dump_dependencies() = input + ".d";
-        }
-
-      if (state.dump_dependencies().size() > 0)
-        {
-          const std::string& file (state.dump_dependencies());
-          std::ofstream stream (file.c_str());
-
-          if (!stream.good())
-            {
-              throw error::could_not_open_file (file);
-            }
-
-          write_dependencies (state, input, stream);
-        }
-
-      if (state.list_dependencies().size() > 0)
-        {
-          const std::string& file (state.list_dependencies());
-          std::ofstream stream (file.c_str());
-
-          if (not stream)
-            {
-              throw error::could_not_open_file (file);
-            }
-
-          stream << quote_for_list (input) << std::endl;
-
-          BOOST_FOREACH (const boost::filesystem::path& p, state.dependencies())
-            {
-              stream << quote_for_list(p.string()) << std::endl;
-            }
-        }
-
-      return f;
-    }
-  } // namespace parse
-} // namespace xml
+namespace po = boost::program_options;
 
 int
 main (int argc, char ** argv)
@@ -348,7 +254,83 @@ main (int argc, char ** argv)
 
   try
   {
-    xml::parse::type::function_type f (xml::parse::frontend (state, input));
+    xml::parse::type::function_type f (xml::parse::just_parse (state, input));
+
+    if (state.dump_xml_file().size() > 0)
+      {
+        const std::string& file (state.dump_xml_file());
+        std::ofstream stream (file.c_str());
+
+        if (!stream.good())
+          {
+            throw xml::parse::error::could_not_open_file (file);
+          }
+
+        fhg::util::xml::xmlstream s (stream);
+
+        xml::parse::type::dump::dump (s, f, state);
+      }
+
+    // set all the collected requirements to the top level function
+    f.requirements = state.requirements();
+
+    f.specialize (state);
+    f.resolve (state, f.forbidden_below());
+    f.type_check (state);
+    f.sanity_check (state);
+
+    if (state.path_to_cpp().size() > 0)
+      {
+        xml::parse::type::fun_info_map m;
+
+        xml::parse::type::find_module_calls (state, f, m);
+
+        xml::parse::type::mk_wrapper (state, m);
+        xml::parse::type::mk_makefile (state, m);
+
+        xml::parse::includes::descrs_type descrs;
+
+        xml::parse::includes::mks (descrs);
+        xml::parse::includes::we_header_gen (state, descrs);
+
+        xml::parse::type::struct_to_cpp (state, f);
+      }
+
+    if (state.dump_dependenciesD())
+      {
+        state.dump_dependencies() = input + ".d";
+      }
+
+    if (state.dump_dependencies().size() > 0)
+      {
+        const std::string& file (state.dump_dependencies());
+        std::ofstream stream (file.c_str());
+
+        if (!stream.good())
+          {
+            throw xml::parse::error::could_not_open_file (file);
+          }
+
+        write_dependencies (state, input, stream);
+      }
+
+    if (state.list_dependencies().size() > 0)
+      {
+        const std::string& file (state.list_dependencies());
+        std::ofstream stream (file.c_str());
+
+        if (not stream)
+          {
+            throw xml::parse::error::could_not_open_file (file);
+          }
+
+        stream << quote_for_list (input) << std::endl;
+
+        BOOST_FOREACH (const boost::filesystem::path& p, state.dependencies())
+          {
+            stream << quote_for_list(p.string()) << std::endl;
+          }
+      }
 
     we::transition_t trans (f.synthesize (state));
 
