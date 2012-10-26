@@ -50,25 +50,6 @@ namespace fhg
             + boost::lexical_cast<std::string> (num + 1)
             ;
         }
-
-        static ::xml::parse::type::transition_type&
-        push_transition ( ::xml::parse::type::transition_type transition
-                        , ::xml::parse::type::net_type& net
-                        )
-        {
-          try
-          {
-            return net.push_transition (transition);
-          }
-          catch (const ::xml::parse::error::duplicate_transition
-                < ::xml::parse::type::transition_type>&
-                )
-          {
-            transition.name (inc (transition.name()));
-
-            return push_transition (transition, net);
-          }
-        }
       }
 
       namespace action
