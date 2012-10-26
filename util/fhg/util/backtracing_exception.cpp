@@ -62,7 +62,7 @@ namespace fhg
             );
 
 #elif !defined (NO_CXA_DEMANGE)
-#warning Can't pretty print backtraces on this platform.
+#warning "Can't pretty print backtraces on this platform."
 #define NO_CXA_DEMANGLE
           const std::string function_name;
 #endif
