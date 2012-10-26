@@ -40,7 +40,7 @@ namespace fhg
     {
       namespace graph
       {
-        scene_type::scene_type ( ::xml::parse::type::net_type & n
+        scene_type::scene_type ( const data::handle::net& net
                                , data::internal_type* internal
                                , QObject* parent
                                )
@@ -48,7 +48,7 @@ namespace fhg
           , _pending_connection (NULL)
           , _mouse_position (QPointF (0.0, 0.0))
           , _menu_context()
-          , _net (n)
+          , _net (net)
           , _internal (internal)
         {
           init_menu_context();

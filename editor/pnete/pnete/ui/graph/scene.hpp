@@ -46,7 +46,7 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          explicit scene_type ( ::xml::parse::type::net_type& net
+          explicit scene_type ( const data::handle::net& net
                               , data::internal_type* internal
                               , QObject* parent = NULL
                               );
