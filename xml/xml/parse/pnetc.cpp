@@ -17,8 +17,8 @@
 
 // ************************************************************************* //
 
-namespace {
-  template<typename Stream>
+namespace // anonymous
+{
   class wrapping_word_stream
   {
   private:
