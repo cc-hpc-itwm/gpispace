@@ -6,6 +6,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 
 #include <we/we.hpp>
 
@@ -101,11 +102,6 @@ namespace {
       }
 
     return quoted;
-  }
-
-  std::string quote_for_list (const boost::filesystem::path& p)
-  {
-    return quote_for_list (p.string());
   }
 
   template<typename Stream>
@@ -264,7 +260,7 @@ namespace xml
 
           BOOST_FOREACH (const boost::filesystem::path& p, state.dependencies())
             {
-              stream << quote_for_list(p) << std::endl;
+              stream << quote_for_list(p.string()) << std::endl;
             }
         }
 
