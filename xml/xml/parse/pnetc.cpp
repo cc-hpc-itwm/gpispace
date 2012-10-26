@@ -62,33 +62,26 @@ namespace {
     }
   };
 
-  class quote
+  std::string quote_for_make (const std::string& s)
   {
-  private:
-    std::string _quoted;
+    std::string quoted;
+    std::string::const_iterator pos (s.begin());
+    const std::string::const_iterator end (s.end());
 
-  public:
-    quote (const std::string& s) : _quoted ()
-    {
-      std::string::const_iterator pos (s.begin());
-      const std::string::const_iterator end (s.end());
+    while (pos != end)
+      {
+        switch (*pos)
+          {
+          case ' ': quoted += "\\ "; break;
+          case '$': quoted += "$$"; break;
+          default: quoted += *pos; break;
+          }
 
-      while (pos != end)
-        {
-          switch (*pos)
-            {
-            case ' ': _quoted += "\\ "; break;
-            case '$': _quoted += "$$"; break;
-            default: _quoted += *pos; break;
-            }
+        ++pos;
+      }
 
-          ++pos;
-        }
-    };
-
-    operator const std::string& () const { return _quoted; }
-  };
-
+    return quoted;
+  }
 
   std::string quote_for_list (const std::string& s)
   {
@@ -139,7 +132,7 @@ namespace {
                       , state.dependencies_target_quoted()
                       )
           {
-            wrapping_stream.put (quote (target));
+            wrapping_stream.put (quote_for_make (target));
           }
       }
 
