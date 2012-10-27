@@ -69,7 +69,12 @@ namespace gpi
           }
           else if (open_flags & O_CREAT)
           {
-            ftruncate (fd, size);
+            if (ftruncate (fd, size) != 0)
+            {
+              std::string err (strerror (errno));
+              ::close (fd); fd = -1;
+              throw std::runtime_error ("ftruncate: " + err);
+            }
           }
 
           ptr = mmap ( NULL

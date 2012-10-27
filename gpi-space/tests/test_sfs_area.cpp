@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
   BOOST_REQUIRE (fd >= 0);
 
   char buf [size];
-  read (fd, buf, size);
+  BOOST_CHECK_EQUAL (size, read (fd, buf, size));
   close (fd);
 
   int eq = strncmp (text, buf, strlen (text));
