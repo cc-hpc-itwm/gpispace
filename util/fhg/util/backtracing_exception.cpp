@@ -26,10 +26,10 @@ namespace fhg
         static const int nframes (50);
         static void* array[nframes];
 
-        const size_t size (backtrace (array, nframes));
+        const int size (backtrace (array, nframes));
         char** strings (backtrace_symbols (array, size));
 
-        for (size_t i (0); i < size; ++i)
+        for (int i (0); i < size; ++i)
         {
           const std::string line (strings[i]);
           if ( line.find ("make_backtrace") != std::string::npos
