@@ -77,7 +77,6 @@ namespace fhg
           virtual QRectF boundingRect() const;
 
         private:
-          ::we::type::property::type* _property;
           style::type _style;
           std::stack<mode::type> _mode;
           QPointF _move_start;
