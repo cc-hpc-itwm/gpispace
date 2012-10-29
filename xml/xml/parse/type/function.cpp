@@ -2197,22 +2197,6 @@ namespace xml
             {
               ::xml::parse::type::dump::dump (s, x);
             }
-
-            void operator () (const net_type & net) const
-            {
-              s.open ("net");
-
-              ::we::type::property::dump::dump (s, net.prop);
-
-              dumps (s, net.structs.begin(), net.structs.end());
-              dumps (s, net.templates().begin(), net.templates().end());
-              dumps (s, net.specializes().begin(), net.specializes().end());
-              dumps (s, net.functions().begin(), net.functions().end());
-              dumps (s, net.places().begin(), net.places().end());
-              dumps (s, net.transitions().begin(), net.transitions().end());
-
-              s.close ();
-            }
           };
         }
 
