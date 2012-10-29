@@ -19,6 +19,7 @@ set(graph_HDRS
   connectable_item.hpp
   port.hpp
   scene.hpp
+  scene.fwd.hpp
   transition.hpp
   cogwheel_button.hpp
   base_item.hpp
