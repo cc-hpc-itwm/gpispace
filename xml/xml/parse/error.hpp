@@ -24,6 +24,7 @@ namespace xml
     {
       // ******************************************************************* //
 
+#ifndef NO_BACKTRACE_ON_PARSE_ERROR
       class generic : public fhg::util::backtracing_exception
       {
       public:
@@ -39,7 +40,23 @@ namespace xml
           : fhg::util::backtracing_exception ("ERROR: " + pre + ": " + msg)
         {}
       };
+#else
+      class generic : public std::runtime_error
+      {
+      public:
+        generic (const std::string & msg)
+          : std::runtime_error ("ERROR: " + msg)
+        {}
 
+        generic (const boost::format& bf)
+          : std::runtime_error ("ERROR: " + bf.str())
+        {}
+
+        generic (const std::string & msg, const std::string & pre)
+          : std::runtime_error ("ERROR: " + pre + ": " + msg)
+        {}
+      };
+#endif
       // ******************************************************************* //
 
       class wrong_node : public generic
