@@ -2,14 +2,14 @@
 
 #include <pnete/ui/graph/connection.hpp>
 
-#include <QPainter>
-#include <QGraphicsSceneMouseEvent>
-
 #include <pnete/ui/graph/connectable_item.hpp>
-
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/graph/style/cap.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/style/size.hpp>
-#include <pnete/ui/graph/style/cap.hpp>
+
+#include <QGraphicsSceneMouseEvent>
+#include <QPainter>
 
 namespace fhg
 {

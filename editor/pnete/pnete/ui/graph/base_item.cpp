@@ -35,11 +35,9 @@ namespace fhg
           }
         }
 
-        base_item::base_item ( base_item* parent
-                             , ::we::type::property::type* property
-                             )
+        base_item::base_item (base_item* parent)
           : QGraphicsObject (parent)
-          , _property (property)
+          , _property (NULL)
           , _style ()
           , _mode ()
           , _move_start ()

@@ -49,7 +49,7 @@ namespace fhg
 
         transition_item::transition_item
           (const data::handle::transition& handle, base_item* parent)
-          : base_item (parent, NULL)
+          : base_item (parent)
           , _size (size::transition::width(), size::transition::height())
           , _handle (handle)
           , _proxy (NULL)

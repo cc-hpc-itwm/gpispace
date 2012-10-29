@@ -28,7 +28,6 @@ namespace fhg
             : connectable_item ( connectable::direction::BOTH
                                , type_map
                                , parent
-                               , NULL //&handle().prop
                                )
             , _handle (handle)
             , _content()

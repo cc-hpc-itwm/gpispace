@@ -45,9 +45,7 @@ namespace fhg
             /* ... */
           };
 
-          base_item ( base_item* parent = NULL
-                    , ::we::type::property::type* property = NULL
-                    );
+          base_item (base_item* parent = NULL);
 
           scene_type* scene() const;
 
