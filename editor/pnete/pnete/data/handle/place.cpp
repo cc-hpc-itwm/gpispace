@@ -2,10 +2,13 @@
 
 #include <pnete/data/handle/place.hpp>
 
-#include <xml/parse/type/net.hpp>
-#include <xml/parse/type/place.hpp>
+#include <pnete/data/change_manager.hpp>
+#include <pnete/data/internal.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
+
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
 
 #include <boost/optional.hpp>
 
@@ -17,9 +20,13 @@ namespace fhg
     {
       namespace handle
       {
-        place::place (const place_type& place, const handle::net& net)
+        place::place ( const place_type& place
+                     , const handle::net& net
+                     , change_manager_t& change_manager
+                     )
           : _place_id (place.id())
           , _net (net)
+          , _change_manager (change_manager)
         { }
 
         place::place_type place::operator()() const
@@ -48,8 +55,17 @@ namespace fhg
         {
           return _place_id;
         }
+
+        void place::remove (const QObject* sender) const
+        {
+          change_manager().delete_place (sender, *this);
+        }
+
+        change_manager_t& place::change_manager() const
+        {
+          return _change_manager;
+        }
       }
     }
   }
 }
-

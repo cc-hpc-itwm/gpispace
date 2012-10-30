@@ -531,9 +531,7 @@ namespace fhg
           place_item->erase_connections (this);
           removeItem (place_item);
 
-          change_manager().delete_place ( this
-                                        , place_item->handle()
-                                        );
+          place_item->handle().remove (this);
 
           place_item->deleteLater();
         }
