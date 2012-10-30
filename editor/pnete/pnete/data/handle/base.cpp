@@ -2,7 +2,11 @@
 
 #include <pnete/data/handle/base.hpp>
 
+#include <pnete/data/change_manager.hpp>
+
 #include <fhg/util/backtracing_exception.hpp>
+
+#include <QObject>
 
 namespace fhg
 {
@@ -29,6 +33,26 @@ namespace fhg
         change_manager_t& base::change_manager() const
         {
           return _change_manager;
+        }
+
+        void base::connect_to_change_mgr ( const QObject* object
+                                         , const char* signal
+                                         , const char* slot
+                                         , const char* arguments
+                                         ) const
+        {
+          QObject::connect ( &change_manager()
+                           , ( std::string (QTOSTRING (QSIGNAL_CODE))
+                             + signal
+                             + "(const QObject*," + arguments + ")"
+                             ).c_str()
+                           , object
+                           , ( std::string (QTOSTRING (QSLOT_CODE))
+                             + slot
+                             + "(const QObject*," + arguments + ")"
+                             ).c_str()
+                           , Qt::DirectConnection
+                           );
         }
       }
     }

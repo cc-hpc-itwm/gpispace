@@ -30,6 +30,12 @@ namespace fhg
                                     , const ::we::type::property::value_type&
                                     ) const;
 
+          void connect_to_change_mgr ( const QObject* object
+                                     , const char* signal
+                                     , const char* slot
+                                     , const char* arguments
+                                     ) const;
+
         protected:
           change_manager_t& change_manager() const;
 
