@@ -1,20 +1,5 @@
 #!/bin/bash
 
-function usage ()
-{
-    cat >&2 <<EOF
-usage: $(basename $0) [options]
-
-  -h: this help
-  -f: node file to use
-  -I: number of I/O workers per node
-  -C: number of CALC workers per node
-  -s: amount of shared memory to use
-  -c: amount of communication memory to use
-  -m: amount of gpi memory to use
-EOF
-}
-
 # catch CTRL-C and qdel the job
 on_ctrlC()
 {
@@ -28,18 +13,35 @@ on_ctrlC()
 #
 trap 'on_ctrlC' SIGINT
 
-num_io_worker_per_node=1
-num_calc_worker_per_node=1
+num_io_per_node=1
+num_calc_per_node=$(grep ^processor /proc/cpuinfo | uniq | wc -l || echo 1)
 nodefile="$PBS_NODEFILE"
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
-com_mem=$(( 64 * 1024 * 1024 ))
-avl_mem=$(( ($tot_mem * 80) / 100 - $com_mem ))
-gpi_mem=$(( ($avl_mem * 30) / 100 ))
-shm_mem=$(( $avl_mem - $gpi_mem ))
+tot_mem=$(( tot_mem * 90 / 100 ))
+com_mem=$(( 0 * 1024 * 1024 ))
+shm_mem=$(( 256 * 2**20 ))
+avl_mem=0
+gpi_mem=0
 
-while getopts ":hf:I:C:s:c:m:" opt; do
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename $0) [options]
+
+  -h: this help
+  -f: node file to use ('$nodefile')
+  -I: number of I/O workers per node ($num_io_per_node)
+  -C: number of CALC workers per node ($num_calc_per_node)
+  -s: amount of shared memory to use ($shm_mem)
+  -c: amount of communication memory to use
+  -m: amount of gpi memory to use
+  -T: amount of total memory to use ($tot_mem)
+EOF
+}
+
+while getopts ":hf:I:C:s:c:m:T:" opt; do
     case $opt in
         h)
             usage
@@ -63,10 +65,30 @@ while getopts ":hf:I:C:s:c:m:" opt; do
         m)
             gpi_mem=$OPTARG
             ;;
+        T)
+            tot_mem=$OPTARG
+            ;;
         \?)
             ;;
     esac
 done
+
+tot_shm_mem=$(( (num_calc_per_node + num_io_per_node*2) * (shm_mem + com_mem) ))
+if [ $gpi_mem -eq 0 ] ; then
+    gpi_mem=$(( tot_mem - tot_shm_mem ))
+fi
+
+if [ $gpi_mem -lt 0 ] ; then
+    echo >&2 "overflow detected: gpi memory size is negative!"
+    exit 1
+fi
+
+req_mem=$(( gpi_mem + tot_shm_mem ))
+if [ $req_mem -gt $tot_mem ] ; then
+    echo >&2 "out of memory: GPI memory plus shared memory per process exceed available memory"
+    echo >&2
+    exit 1
+fi
 
 if [ -z "$nodefile" ] ; then
     usage
