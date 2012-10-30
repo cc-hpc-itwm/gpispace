@@ -45,9 +45,7 @@ namespace fhg
             /* ... */
           };
 
-          base_item ( base_item* parent = NULL
-                    , ::we::type::property::type* property = NULL
-                    );
+          base_item (base_item* parent = NULL);
 
           scene_type* scene() const;
 
@@ -79,7 +77,6 @@ namespace fhg
           virtual QRectF boundingRect() const;
 
         private:
-          ::we::type::property::type* _property;
           style::type _style;
           std::stack<mode::type> _mode;
           QPointF _move_start;

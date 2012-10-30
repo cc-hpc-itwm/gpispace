@@ -172,7 +172,7 @@ namespace fhg
             _change_manager.emit_signal
               ( &change_manager_t::place_deleted
               , _origin
-              , handle::place (_place, _handle)
+              , handle::place (_place, _handle, _change_manager)
               );
 
             _handle().erase_place (_place);
@@ -185,7 +185,7 @@ namespace fhg
             _change_manager.emit_signal
               ( &change_manager_t::place_added
               , NULL
-              , handle::place (_place, _handle)
+              , handle::place (_place, _handle, _change_manager)
               );
 
             _origin = NULL;

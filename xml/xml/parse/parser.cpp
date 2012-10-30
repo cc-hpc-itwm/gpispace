@@ -35,53 +35,57 @@ namespace xml
   {
     // ********************************************************************* //
 
-    static type::function_type parse_function ( std::istream & f
-                                              , state::type & state
-                                              , const type::function_type::id_parent& parent
-                                              )
+    namespace
     {
-      return generic_parse<type::function_type>
-        ( boost::bind (function_type, _1, _2, parent)
-        , f
-        , state
-        , "defun"
-        , "parse_function"
-        );
-    }
+      type::function_type
+      parse_function ( std::istream & f
+                     , state::type & state
+                     , const type::function_type::id_parent& parent
+                     )
+      {
+        return generic_parse<type::function_type>
+          ( boost::bind (function_type, _1, _2, parent)
+          , f
+          , state
+          , "defun"
+          , "parse_function"
+          );
+      }
 
-    static type::template_type parse_template ( std::istream & f
-                                              , state::type & state
-                                              , const id::net& parent
-                                              )
-    {
-      return generic_parse<type::template_type>
-        ( boost::bind (template_type, _1, _2, parent)
-        , f
-        , state
-        , "template"
-        , "parse_template"
-        );
-    }
+      type::template_type parse_template ( std::istream & f
+                                         , state::type & state
+                                         , const id::net& parent
+                                         )
+      {
+        return generic_parse<type::template_type>
+          ( boost::bind (template_type, _1, _2, parent)
+          , f
+          , state
+          , "template"
+          , "parse_template"
+          );
+      }
 
-    static type::structs_type parse_structs ( std::istream & f
-                                            , state::type & state
-                                            , const id::function& parent
-                                            )
-    {
-      return generic_parse<type::structs_type>
-        ( boost::bind (structs_type, _1, _2, parent)
-        , f
-        , state
-        , "structs"
-        , "parse_structs"
-        );
-    }
+      type::structs_type parse_structs ( std::istream & f
+                                       , state::type & state
+                                       , const id::function& parent
+                                       )
+      {
+        return generic_parse<type::structs_type>
+          ( boost::bind (structs_type, _1, _2, parent)
+          , f
+          , state
+          , "structs"
+          , "parse_structs"
+          );
+      }
 
-    static we::type::property::type
-    parse_props (std::istream & f, state::type & state)
-    {
-      return generic_parse<we::type::property::type>
-        (property_maps_type, f, state, "props", "parse_props");
+      we::type::property::type
+      parse_props (std::istream & f, state::type & state)
+      {
+        return generic_parse<we::type::property::type>
+          (property_maps_type, f, state, "props", "parse_props");
+      }
     }
 
     // ********************************************************************* //

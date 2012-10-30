@@ -17,9 +17,8 @@ namespace fhg
           ( connectable::direction::type direction
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , base_item* parent
-          , ::we::type::property::type* property
           )
-          : base_item (parent, property)
+          : base_item (parent)
           , _connections ()
           , _direction (direction)
           , _type_map (type_map)

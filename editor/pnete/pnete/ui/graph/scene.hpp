@@ -3,6 +3,8 @@
 #ifndef _FHG_PNETE_UI_GRAPH_SCENE_HPP
 #define _FHG_PNETE_UI_GRAPH_SCENE_HPP 1
 
+#include <pnete/ui/graph/scene.fwd.hpp>
+
 //! \todo Remove
 #include <xml/parse/type/net.fwd.hpp>
 

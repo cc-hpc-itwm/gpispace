@@ -14,6 +14,11 @@ set(data_HDRS
   proxy.hpp
 )
 
+set (data_FWDS
+  change_manager.fwd.hpp
+  internal.fwd.hpp
+)
+
 set(data_UIS
 )
 set(data_TOMOC

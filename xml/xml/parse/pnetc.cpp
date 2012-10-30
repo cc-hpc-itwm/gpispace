@@ -17,16 +17,16 @@
 
 // ************************************************************************* //
 
-namespace {
-  template<typename Stream>
+namespace // anonymous
+{
   class wrapping_word_stream
   {
   private:
     const std::size_t _max_len;
     mutable std::size_t _len;
-    Stream& _stream;
+    std::ostream& _stream;
   public:
-    wrapping_word_stream (Stream& stream, const std::size_t max = 75)
+    wrapping_word_stream (std::ostream& stream, const std::size_t max = 75)
       : _max_len (max)
       , _len (0)
       , _stream (stream)
@@ -102,13 +102,12 @@ namespace {
     return quoted;
   }
 
-  template<typename Stream>
   void write_dependencies ( const xml::parse::state::type& state
                           , const std::string& input
-                          , Stream& stream
+                          , std::ostream& stream
                           )
   {
-    wrapping_word_stream<Stream> wrapping_stream (stream);
+    wrapping_word_stream wrapping_stream (stream);
 
     if (state.dependencies_target().size() > 0)
       {

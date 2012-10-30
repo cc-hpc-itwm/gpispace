@@ -840,6 +840,27 @@ namespace xml
 
           return pid_of_place;
       };
+
+      namespace dump
+      {
+        void dump ( ::fhg::util::xml::xmlstream & s
+                  , const net_type & net
+                  )
+        {
+          s.open ("net");
+
+          ::we::type::property::dump::dump (s, net.prop);
+
+          dumps (s, net.structs.begin(), net.structs.end());
+          dumps (s, net.templates().begin(), net.templates().end());
+          dumps (s, net.specializes().begin(), net.specializes().end());
+          dumps (s, net.functions().begin(), net.functions().end());
+          dumps (s, net.places().begin(), net.places().end());
+          dumps (s, net.transitions().begin(), net.transitions().end());
+
+          s.close ();
+        }
+      } // namespace dump
     }
   }
 }

@@ -21,15 +21,15 @@ namespace fhg
       std::string make_backtrace (const std::string& reason)
       {
         std::stringstream what;
-        what << reason << "\n\n";
+        what << reason << std::endl << std::endl;
 
         static const int nframes (50);
         static void* array[nframes];
 
-        const size_t size (backtrace (array, nframes));
+        const int size (backtrace (array, nframes));
         char** strings (backtrace_symbols (array, size));
 
-        for (size_t i (0); i < size; ++i)
+        for (int i (0); i < size; ++i)
         {
           const std::string line (strings[i]);
           if ( line.find ("make_backtrace") != std::string::npos
@@ -99,7 +99,12 @@ namespace fhg
 #else
           what << line;
 #endif
-          what << "\n";
+          what << std::endl;
+        }
+
+        if (size == nframes)
+        {
+          what << "...maybe more" << std::endl;
         }
 
         free (strings);
