@@ -471,7 +471,16 @@ namespace gpi
         t.src_area     = get_area_by_handle(src.handle);
         t.src_location = src;
         t.amount       = amount;
-        t.queue        = queue;
+        if (queue == GPI_PC_INVAL)
+        {
+          static gpi::pc::type::queue_id_t rr_queue = 0;
+          t.queue        = rr_queue;
+          rr_queue = (rr_queue + 1) % m_transfer_mgr.num_queues ();
+        }
+        else
+        {
+          t.queue        = queue;
+        }
 
         DLOG ( TRACE
              , "process " << pid
@@ -485,7 +494,8 @@ namespace gpi
 
         // TODO: increase refcount in handles, set access/modification times
         m_transfer_mgr.transfer (t);
-        return queue;
+
+        return t.queue;
       }
 
       gpi::pc::type::size_t
