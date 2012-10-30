@@ -3,6 +3,8 @@
 #ifndef _PNETE_DATA_CHANGE_MANAGER_HPP
 #define _PNETE_DATA_CHANGE_MANAGER_HPP 1
 
+#include <pnete/data/change_manager.fwd.hpp>
+
 #include <pnete/data/handle/net.fwd.hpp>
 #include <pnete/data/handle/transition.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
