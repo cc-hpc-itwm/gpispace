@@ -616,8 +616,8 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
                                    , d.size - src.offset
                                    );
 
-    sh.state().capi.memcpy (shm_com_buf, src, to_write, 0);
-    sh.state().capi.wait(0);
+    sh.state ().capi.wait
+      (sh.state().capi.memcpy (shm_com_buf, src, to_write, GPI_PC_INVAL));
 
     ofs.write(sh.state().com_buffer(), to_write);
 
@@ -732,8 +732,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
       ifs.read(sh.state().com_buffer(), to_read);
       std::size_t read_bytes = ifs.gcount();
 
-      sh.state ().capi.memcpy (dst, shm_com_buf, read_bytes, 0);
-      sh.state ().capi.wait (0);
+      sh.state ().capi.wait
+        (sh.state ().capi.memcpy (dst, shm_com_buf, read_bytes, GPI_PC_INVAL));
 
       read_count += read_bytes;
       dst.offset += read_bytes;
@@ -1253,13 +1253,13 @@ int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
   gpi::pc::type::size_t amt
       (boost::lexical_cast<gpi::pc::type::size_t>(av[3]));
 
-  gpi::pc::type::queue_id_t queue (0);
+  gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
   if (av.size() > 4)
   {
     queue = boost::lexical_cast<gpi::pc::type::queue_id_t>(av[4]);
   }
 
-  return sh.state().capi.memcpy (dst, src, amt, queue);
+  return (int)(sh.state().capi.memcpy (dst, src, amt, queue));
 }
 
 int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
