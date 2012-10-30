@@ -87,7 +87,7 @@ namespace xml
           { }
 
 
-          void operator () (const net_type & net) const
+          void operator () (const id::ref::net & id_net) const
           {
             if (not port.place)
             {
@@ -103,6 +103,8 @@ namespace xml
             }
             else
             {
+              const net_type& net (*state.id_mapper()->get (id_net));
+
               boost::optional<place_type> place
                 (net.get_place (*port.place));
 

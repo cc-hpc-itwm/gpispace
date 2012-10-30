@@ -68,7 +68,7 @@ namespace xml
       public:
         typedef boost::variant < expression_type
                                , mod_type
-                               , boost::recursive_wrapper<net_type>
+                               , id::ref::net
                                > type;
 
         bool contains_a_module_call;
@@ -107,6 +107,7 @@ namespace xml
 
         const id::function& id() const;
         const id_parent& parent() const;
+      id::mapper* id_mapper() const;
 
         bool is_same (const function_type& other) const;
 
@@ -247,12 +248,6 @@ namespace xml
                              , function_type &
                              , fun_info_map &
                              , mcs_type &
-                             );
-
-      bool find_module_calls ( const state::type & state
-                             , net_type & n
-                             , fun_info_map & m
-                             , mcs_type& mcs
                              );
 
       bool find_module_calls ( const state::type & state

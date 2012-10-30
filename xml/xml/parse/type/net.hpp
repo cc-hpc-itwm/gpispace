@@ -53,16 +53,16 @@ namespace xml
         xml::util::unique<specialize_type,id::specialize> _specializes;
 
         id::net _id;
-        id::function _parent;
+        boost::optional<id::function> _parent;
         id::mapper* _id_mapper;
+
+        boost::filesystem::path _path;
 
       public:
         typedef xml::util::unique<transition_type,id::transition>::elements_type transitions_type;
 
         bool contains_a_module_call;
         structs_type structs;
-
-        boost::filesystem::path path;
 
         we::type::property::type prop;
 
@@ -71,12 +71,15 @@ namespace xml
         net_type ( const id::net& id
                  , const id::function& parent
                  , id::mapper* id_mapper
+                 , const boost::filesystem::path& path
+                       = boost::filesystem::path()
                  );
 
         const id::net& id() const;
-        const id::function& parent() const;
+        boost::optional<const function_type&> parent() const;
+        boost::optional<function_type&> parent();
 
-        bool is_same (const net_type& other) const;
+        const boost::filesystem::path& path() const;
 
         // ***************************************************************** //
 

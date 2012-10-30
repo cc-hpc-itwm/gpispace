@@ -265,6 +265,8 @@ namespace xml
           void operator () (use_type &) const { return; }
           void operator () (function_type & fun) const
           {
+
+
             fun.specialize (map, get, known_structs, state);
           }
         };
@@ -666,7 +668,8 @@ namespace xml
                 place_map_map[prefix + pm->place_virtual] = pid->second;
               }
 
-            net_type& net (boost::get<net_type> (fun.f));
+            net_type& net
+              (*state.id_mapper()->get_ref (boost::get<id::ref::net> (fun.f)));
             net.set_prefix (prefix);
 
             // synthesize into this level

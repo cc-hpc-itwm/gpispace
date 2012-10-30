@@ -31,7 +31,7 @@ namespace xml
         class function_is_net_visitor : public boost::static_visitor<bool>
         {
         public:
-          bool operator () (const net_type &) const { return true; }
+          bool operator () (const id::ref::net &) const { return true; }
           template<typename T>
           bool operator () (const T &) const { return false; }
         };
@@ -102,6 +102,11 @@ namespace xml
       const function_type::id_parent& function_type::parent() const
       {
         return _parent;
+      }
+
+      id::mapper* function_type::id_mapper() const
+      {
+        return _id_mapper;
       }
 
       bool function_type::is_same (const function_type& other) const
@@ -299,9 +304,11 @@ namespace xml
 
           void operator () (expression_type&) const { return; }
           void operator () (mod_type&) const { return; }
-          void operator () (net_type& net) const
+          void operator () (id::ref::net& id) const
           {
-            net.distribute_function ( _state
+            _state.id_mapper()
+              ->get_ref (id)
+              ->distribute_function ( _state
                                     , _functions
                                     , _templates
                                     , _specializes
@@ -359,9 +366,11 @@ namespace xml
 
           void operator () (expression_type &) const { return; }
           void operator () (mod_type &) const { return; }
-          void operator () (net_type & net) const
+          void operator () (id::ref::net & id) const
           {
-            net.resolve (global, state, forbidden);
+            state.id_mapper()
+              ->get_ref (id)
+              ->resolve (global, state, forbidden);
           }
         };
       }
@@ -440,9 +449,11 @@ namespace xml
 
           void operator () (const expression_type &) const { return; }
           void operator () (const mod_type & m) const { m.sanity_check (fun); }
-          void operator () (const net_type & net) const
+          void operator () (const id::ref::net& id) const
           {
-            net.sanity_check (state, fun);
+            state.id_mapper()
+              ->get (id)
+              ->sanity_check (state, fun);
           }
         };
       }
@@ -466,9 +477,11 @@ namespace xml
 
           void operator () (const expression_type &) const { return; }
           void operator () (const mod_type &) const { return; }
-          void operator () (const net_type & net) const
+          void operator () (const id::ref::net& id) const
           {
-            net.type_check (state);
+            state.id_mapper()
+              ->get (id)
+              ->type_check (state);
           }
         };
       }
@@ -500,16 +513,6 @@ namespace xml
       }
 
       // ***************************************************************** //
-
-      boost::unordered_map< std::string
-                          , we::activity_t::transition_type::pid_t
-                          >
-      net_synthesize ( we::activity_t::transition_type::net_type &
-                     , const place_map_map_type &
-                     , const net_type &
-                     , const state::type &
-                     , we::activity_t::transition_type::edge_type &
-                     );
 
       class function_synthesize
         : public boost::static_visitor<we::activity_t::transition_type>
@@ -683,7 +686,7 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const net_type & net) const
+        we_transition_type operator () (const id::ref::net & id_net) const
         {
           we_net_type we_net;
 
@@ -692,13 +695,16 @@ namespace xml
           pid_of_place_type pid_of_place
             ( net_synthesize ( we_net
                              , place_map_map_type()
-                             , net
+                             , *state.id_mapper()->get (id_net)
                              , state
                              , e
                              )
             );
 
-          util::property::join (state, fun.prop, net.prop);
+          util::property::join ( state
+                               , fun.prop
+                               , state.id_mapper()->get (id_net)->prop
+                               );
 
           we_transition_type trans
             ( name()
@@ -767,12 +773,19 @@ namespace xml
 
           void operator () (expression_type &) const { return; }
           void operator () (mod_type &) const { return; }
-          void operator () (net_type & net) const
+          void operator () (id::ref::net & id) const
           {
-            net.specialize (map, get, known_structs, state);
+            std::cerr << "SPECIALIZE_FUNCTION NET "
+                      << id
+                      << std::endl;
+
+
+            state.id_mapper()
+              ->get_ref (id)
+              ->specialize (map, get, known_structs, state);
 
             split_structs ( known_structs
-                          , net.structs
+                          , state.id_mapper()->get_ref (id)->structs
                           , fun.structs
                           , get
                           , state
@@ -1269,20 +1282,20 @@ namespace xml
         {
         private:
           const state::type & state;
-          const net_type & net;
+          const id::ref::net & _id_net;
           const transition_type & trans;
           fun_info_map & m;
           mcs_type& mcs;
 
         public:
           transition_find_module_calls_visitor ( const state::type & _state
-                                               , const net_type & _net
+                                               , const id::ref::net& id_net
                                                , const transition_type & _trans
                                                , fun_info_map & _m
                                                , mcs_type& _mcs
                                        )
             : state (_state)
-            , net (_net)
+            , _id_net (id_net)
             , trans (_trans)
             , m (_m)
             , mcs (_mcs)
@@ -1295,7 +1308,8 @@ namespace xml
 
           bool operator () (use_type & u) const
           {
-            boost::optional<function_type> fun (net.get_function (u.name()));
+            boost::optional<function_type> fun
+              (state.id_mapper()->get (_id_net)->get_function (u.name()));
 
             if (!fun)
               {
@@ -1309,11 +1323,13 @@ namespace xml
       }
 
       bool find_module_calls ( const state::type & state
-                             , net_type & n
+                             , id::ref::net & id_net
                              , fun_info_map & m
                              , mcs_type& mcs
                              )
       {
+        net_type& n (*state.id_mapper()->get_ref (id_net));
+
         n.contains_a_module_call = false;
 
         for ( net_type::transitions_type::iterator pos
@@ -1324,7 +1340,7 @@ namespace xml
           {
             n.contains_a_module_call
               |= boost::apply_visitor
-              ( transition_find_module_calls_visitor(state, n, *pos, m, mcs)
+              ( transition_find_module_calls_visitor(state, id_net, *pos, m, mcs)
               , pos->function_or_use()
               );
           }
@@ -1747,9 +1763,9 @@ namespace xml
             return false;
           }
 
-          bool operator () (net_type & n) const
+          bool operator () (id::ref::net & id) const
           {
-            return find_module_calls (state, n, m, mcs);
+            return find_module_calls (state, id, m, mcs);
           }
 
           bool operator () (mod_type & mod) const
@@ -2117,8 +2133,10 @@ namespace xml
             : state (_state)
           {}
 
-          void operator () (const net_type & n) const
+          void operator () (const id::ref::net & id) const
           {
+            const net_type& n (*state.id_mapper()->get (id));
+
             if (!n.contains_a_module_call)
               {
                 return;
@@ -2188,14 +2206,25 @@ namespace xml
           {
           private:
             ::fhg::util::xml::xmlstream & s;
+            id::mapper* _id_mapper;
 
           public:
-            function_dump_visitor (::fhg::util::xml::xmlstream & _s) : s (_s) {}
+            function_dump_visitor ( ::fhg::util::xml::xmlstream & _s
+                                  , id::mapper* id_mapper
+                                  )
+              : s (_s)
+              , _id_mapper (id_mapper)
+            {}
 
             template<typename T>
             void operator () (const T & x) const
             {
               ::xml::parse::type::dump::dump (s, x);
+            }
+
+            void operator () (const id::ref::net& id_net) const
+            {
+              ::xml::parse::type::dump::dump (s, *_id_mapper->get (id_net));
             }
           };
         }
@@ -2228,7 +2257,7 @@ namespace xml
           dumps (s, f.out().begin(), f.out().end(), "out");
           dumps (s, f.tunnel().begin(), f.tunnel().end(), "tunnel");
 
-          boost::apply_visitor (function_dump_visitor (s), f.f);
+          boost::apply_visitor (function_dump_visitor (s, f.id_mapper()), f.f);
 
           for ( conditions_type::const_iterator cond (f.cond.begin())
               ; cond != f.cond.end()

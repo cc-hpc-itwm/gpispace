@@ -31,10 +31,12 @@ namespace xml
       net_type::net_type ( const id::net& id
                          , const id::function& parent
                          , id::mapper* id_mapper
+                         , const boost::filesystem::path& path
                          )
         : _id (id)
         , _parent (parent)
         , _id_mapper (id_mapper)
+        , _path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -44,14 +46,28 @@ namespace xml
         return _id;
       }
 
-      const id::function& net_type::parent() const
+      boost::optional<const function_type&> net_type::parent() const
       {
-        return _parent;
+        if (_parent)
+          {
+            return (_id_mapper)->get (*_parent);
+          }
+
+        return boost::none;
+      }
+      boost::optional<function_type&> net_type::parent()
+      {
+        if (_parent)
+          {
+            return _id_mapper->get_ref (*_parent);
+          }
+
+        return boost::none;
       }
 
-      bool net_type::is_same (const net_type& other) const
+      const boost::filesystem::path& net_type::path () const
       {
-        return id() == other.id() && parent() == other.parent();
+        return _path;
       }
 
       // ***************************************************************** //
@@ -193,7 +209,7 @@ namespace xml
 
         if (!place)
         {
-          throw error::duplicate_place (p.name(), path);
+          throw error::duplicate_place (p.name(), path());
         }
       }
 
@@ -283,7 +299,7 @@ namespace xml
 
         if (sig == structs_resolved.end())
         {
-          throw error::place_type_unknown (place.name(), place.type, path);
+          throw error::place_type_unknown (place.name(), place.type, path());
         }
 
         return signature::type (sig->second.signature(), sig->second.name());
@@ -316,6 +332,10 @@ namespace xml
                                 , const state::type & state
                                 )
       {
+        std::cerr << "SPECIALIZE NET "
+                  << id() << " - "
+                  << std::endl;
+
         namespace st = xml::parse::struct_t;
 
         for ( specializes_type::iterator
@@ -329,8 +349,14 @@ namespace xml
 
           if (!tmpl)
           {
-            throw error::unknown_template (specialize->use, path);
+            throw error::unknown_template (specialize->use, path());
           }
+
+          std::cerr << "SPEC TEMPL "
+                    << tmpl->id() << " - "
+                    << tmpl->function().name() << " - "
+                    << specialize->name()
+                    << std::endl;
 
           tmpl->function().name (specialize->name());
 
@@ -350,6 +376,12 @@ namespace xml
                         , state
                         );
 
+          std::cerr << "PUSH FUNCTION "
+                    << tmpl->function().id() << " - "
+                    << tmpl->id() << " - "
+                    << tmpl->function().name()
+                    << std::endl;
+
           push_function (tmpl->function());
         }
 
@@ -360,6 +392,11 @@ namespace xml
             ; ++fun
             )
         {
+          std::cerr << "SPECIALIZE FUNCTION "
+                    << fun->id() << " - "
+                    << fun->name()
+                    << std::endl;
+
           fun->specialize
             ( map
             , get
@@ -381,6 +418,11 @@ namespace xml
             ; ++trans
             )
         {
+          std::cerr << "SPECIALIZE TRANSITION "
+                    << trans->id() << " - "
+                    << trans->name()
+                    << std::endl;
+
           trans->specialize
             ( map
             , get
@@ -415,13 +457,19 @@ namespace xml
                                          , const specializes_type& specializes_above
                                          )
       {
+        // kopiert functions(), templates(), specializes() in alle
+        // netze in functions, templates, transitions, wobei {fun,
+        // tmpl, trans}::distribute nur weiter nach netzen sucht und
+        // dort ::distribute aufruft.
+
+        // dive
         functions_type funs (functions());
 
         BOOST_FOREACH (function_type& fun, funs)
         {
           fun.distribute_function ( state
-                                  , functions()
-                                  , templates()
+                                  , functions() // <<<< net_type::functions()
+                                  , templates() // nicht ctor
                                   , specializes()
                                   );
         }
@@ -437,6 +485,7 @@ namespace xml
                                    );
         }
 
+        // copy all {functions ... } from above to my {functions ...}
         BOOST_FOREACH (const function_type& fun, functions_above)
         {
           xml::util::unique<function_type,id::function>::push_return_type fun_local
@@ -482,6 +531,7 @@ namespace xml
           }
         }
 
+        // dive
         BOOST_FOREACH (transition_type& transition, transitions())
         {
           transition.distribute_function ( state
@@ -545,7 +595,7 @@ namespace xml
             )
         {
           place->sig = type_of_place (*place);
-          place->translate (path, state);
+          place->translate (path(), state);
         }
       }
 

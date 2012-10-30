@@ -7,6 +7,8 @@
 
 #include <xml/parse/util.hpp>
 
+#include <xml/parse/id/types.fwd.hpp>
+
 #include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/expression.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
@@ -59,11 +61,11 @@ namespace xml
                                       , state::type &
                                       , const id::net& parent
                                       );
-    type::net_type net_type ( const xml_node_type *
-                            , state::type &
-                            , const id::function& parent
-                            , type::function_type& parent_fun
-                            );
+    id::net net_type ( const xml_node_type *
+                     , state::type &
+                     , const id::function& parent
+                     , type::function_type& parent_fun
+                     );
     type::place_type place_type ( const xml_node_type *
                                 , state::type &
                                 , const id::net& parent

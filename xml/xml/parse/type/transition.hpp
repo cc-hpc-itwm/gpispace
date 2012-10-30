@@ -31,6 +31,8 @@ namespace xml
         id::mapper* _id_mapper;
 
       public:
+        id::mapper* id_mapper() const { return _id_mapper; }
+
         typedef boost::variant <function_type, use_type>
                 function_or_use_type;
 
