@@ -100,11 +100,11 @@ namespace fhg
           what << line;
 #endif
           what << std::endl;
+        }
 
-          if (size == nframes)
-            {
-              what << "...maybe more" << std::endl;
-            }
+        if (size == nframes)
+        {
+          what << "...maybe more" << std::endl;
         }
 
         free (strings);
