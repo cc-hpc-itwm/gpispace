@@ -13,15 +13,16 @@ namespace mapreduce
       int hash(const std::string& key, const int N)
       {
         int i = 0;
+        char first_char = key[0];
 
-        if((key[0]>='A' && key[0]<='Z') )
+        if((first_char>='A' && first_char<='Z') )
         {
-          i = (key[0] - 'A')/N;
+          i = ((key[0] - 'A')*N)/('Z'-'A');
         }
         else
-        if( key[0]>='a' && key[0]<='z' )
+        if( first_char>='a' && first_char<='z' )
         {
-          i = (key[0] - 'a')/N;
+          i = ((key[0] - 'a')*N)/('z'-'a');
         }
         else
           i=N-1;
