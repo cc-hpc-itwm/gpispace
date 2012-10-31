@@ -41,13 +41,13 @@ namespace mapreduce
       bool bMatching = false;
 
       MLOG(TRACE, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
-      boost::char_separator<char> sep(":");
+      boost::char_separator<char> sep("#:");
       boost::tokenizer<boost::char_separator<char> > tok_v(keyval_pair, sep);
-      std::vector<std::string> v(4,"");
+      std::vector<std::string> v(3,"");
       v.assign(tok_v.begin(), tok_v.end());
 
-      cid = boost::lexical_cast<long>(v[1]);
-      end = boost::lexical_cast<long>(v[2]);
+      cid = boost::lexical_cast<long>(v[0]);
+      end = boost::lexical_cast<long>(v[1]);
 
       if( arr_border_keys.size() == 0 )
       {
@@ -59,31 +59,31 @@ namespace mapreduce
       for( int k=0;k<arr_border_keys.size() && !bMatching; k++ )
       {
         boost::tokenizer<boost::char_separator<char> > tok_u(arr_border_keys[k], sep);
-        std::vector<std::string> u(4, "");
+        std::vector<std::string> u(3, "");
         u.assign(tok_u.begin(), tok_u.end());
 
-        int v1 = cid;
-        int u1 = boost::lexical_cast<long>(u[1]);
+        int v0 = cid;
+        int u0 = boost::lexical_cast<long>(u[0]);
 
-        int v2 = end;
-        int u2 = boost::lexical_cast<long>(u[2]);
+        int v1 = end;
+        int u1 = boost::lexical_cast<long>(u[1]);
 
         std::ostringstream osstr;
 
-        if( v1 == u1+1 && u2 == v2+1 )
+        if( v0 == u0+1 && u1 == v1+1 )
         {
-          osstr<<u[3];
-          osstr<<v[3];
+          osstr<<u[2];
+          osstr<<v[2];
           w = osstr.str();
           MLOG(INFO, "The recovered word from "<<keyval_pair<<" and "<<arr_border_keys[k]<<" is "<<w);
           bMatching = true;
           matching_pair = arr_border_keys[k];
         }
         else
-          if( u1 == v1+1 && v2 == u2+1 )
+          if( u0 == v0+1 && v1 == u1+1 )
           {
-            osstr<<v[3];
-            osstr<<u[3];
+            osstr<<v[2];
+            osstr<<u[2];
             w = osstr.str();
             MLOG(INFO, "The recovered word from "<<keyval_pair<<" and "<<arr_border_keys[k]<<" is "<<w);
             bMatching = true;
