@@ -7,7 +7,7 @@
 #include <pnete/ui/base_editor_widget.hpp>
 #include <pnete/data/internal.hpp>
 
-#include <pnete/util.hpp>
+#include <util/qt/cast.hpp>
 
 namespace fhg
 {
@@ -64,7 +64,7 @@ namespace fhg
       }
       base_editor_widget* document_view::widget() const
       {
-        return util::throwing_qobject_cast<base_editor_widget*>
+        return util::qt::throwing_qobject_cast<base_editor_widget*>
           (dock_widget::widget());
       }
       void document_view::setWidget (base_editor_widget* widget)

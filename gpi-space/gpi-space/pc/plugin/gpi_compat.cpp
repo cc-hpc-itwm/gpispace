@@ -18,6 +18,12 @@
 class GPICompatPluginImpl;
 static GPICompatPluginImpl * gpi_compat = 0;
 
+enum gpi_state_t
+  {
+    ST_DISCONNECTED
+  , ST_CONNECTED
+  };
+
 class GPICompatPluginImpl : FHG_PLUGIN
 {
   typedef boost::unordered_map< gpi::pc::type::handle_t
@@ -30,6 +36,7 @@ public:
   {
     gpi_compat = this;
 
+    m_gpi_state = ST_DISCONNECTED;
     m_shm_hdl = 0;
     m_shm_ptr = (void*)0;
     m_shm_id = 0;
@@ -116,7 +123,7 @@ public:
       }
     }
 
-    if (0 == m_shm_ptr && m_shm_size > 0)
+    if (ST_DISCONNECTED == m_gpi_state)
     {
       try
       {
@@ -194,35 +201,34 @@ private:
 
     gpi_info = api->collect_info();
 
-    if (0 == m_shm_size)
+    if (m_shm_size)
     {
-      return 0;
+      // register segment
+      m_shm_id = api->register_segment ( m_segment_name
+                                       , m_shm_size
+                                       , gpi::pc::F_EXCLUSIVE
+                                       | gpi::pc::F_FORCE_UNLINK
+                                       );
+
+      m_shm_hdl = api->alloc ( m_shm_id
+                             , m_shm_size
+                             , m_segment_handle_name
+                             , gpi::pc::F_EXCLUSIVE
+                             );
+      m_shm_ptr = api->ptr (m_shm_hdl);
     }
-
-    // register segment
-    m_shm_id = api->register_segment ( m_segment_name
-                                     , m_shm_size
-                                     , gpi::pc::F_EXCLUSIVE
-                                     | gpi::pc::F_FORCE_UNLINK
-                                     );
-
-    m_shm_hdl = api->alloc ( m_shm_id
-                           , m_shm_size
-                           , m_segment_handle_name
-                           , gpi::pc::F_EXCLUSIVE
-                           );
-    m_shm_ptr = api->ptr (m_shm_hdl);
 
     LOG(INFO, "successfully initialized gpi state");
 
     m_was_connected = true;
+    m_gpi_state = ST_CONNECTED;
 
     return 0;
   }
 
   void clear_my_gpi_state ()
   {
-    if (m_shm_id)
+    if (m_gpi_state == ST_CONNECTED)
     {
       if (api->ping ())
       {
@@ -234,6 +240,8 @@ private:
     m_shm_hdl = 0;
     m_shm_ptr = 0;
     m_shm_id  = 0;
+
+    m_gpi_state = ST_DISCONNECTED;
   }
 public:
   mutable mutex_type                 m_handle_cache_mtx;
@@ -253,6 +261,7 @@ public:
   void                              *m_shm_ptr;
   fvmSize_t                          m_shm_size;
   gpi::pc::type::handle_t            m_shm_hdl;
+  gpi_state_t                        m_gpi_state;
 private:
   useconds_t                         m_initialize_retry_interval;
   bool                               m_was_connected;

@@ -14,7 +14,7 @@
 
 #include <pnete/data/internal.hpp>
 
-#include <pnete/util.hpp>
+#include <util/qt/scoped_signal_block.hpp>
 
 namespace fhg
 {
@@ -183,7 +183,7 @@ namespace fhg
       }
       void expression_widget::set_name (const QString& name)
       {
-        const util::scoped_signal_block block (_name_edit);
+        const util::qt::scoped_signal_block block (_name_edit);
         _name_edit->setText (name);
       }
       void expression_widget::set_expression (const std::string& text)
@@ -192,7 +192,7 @@ namespace fhg
       }
       void expression_widget::set_expression (const QString& text)
       {
-         const util::scoped_signal_block block (_expression_edit);
+        const util::qt::scoped_signal_block block (_expression_edit);
         _expression_edit->setPlainText (text);
       }
       void expression_widget::name_changed (const QString& name_)

@@ -505,7 +505,7 @@ namespace gpi
                                     , boost::system::error_code const & ec
                                     )
       {
-        if (ec)
+        if (not m_shutting_down && ec)
         {
           if (++child.error_counter > 10)
           {
