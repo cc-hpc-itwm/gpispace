@@ -6,7 +6,7 @@
 #include <QGraphicsSceneMouseEvent>
 
 #include <pnete/ui/graph/style/raster.hpp>
-#include <pnete/util.hpp>
+#include <util/qt/cast.hpp>
 #include <util/property.hpp>
 
 #include <we/type/property.hpp>
@@ -50,7 +50,7 @@ namespace fhg
         {
           QGraphicsScene* sc (QGraphicsItem::scene());
 
-          return sc ? fhg::util::throwing_qobject_cast<scene_type*> (sc)
+          return sc ? util::qt::throwing_qobject_cast<scene_type*> (sc)
                     : NULL
                     ;
         }

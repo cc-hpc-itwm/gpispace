@@ -182,8 +182,8 @@ hosts=$(cat "$nodefile" | uniq)
 master=$(cat "$nodefile" | head -n 1)
 num_hosts=$(cat "$nodefile" | uniq | wc -l)
 
-rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "init" -m aggregator -C "init" -M 4 -B 4 &
-rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "finalize" -m aggregator -C "finalize" -M 4 -B 4 &
+rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "init" -m aggregator -C "init" -M 0 -B 0 &
+rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "finalize" -m aggregator -C "finalize" -M 0 -B 0 &
 
 for host in $hosts ; do
     wait

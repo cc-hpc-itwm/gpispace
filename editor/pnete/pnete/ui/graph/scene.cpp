@@ -24,8 +24,8 @@
 #include <pnete/data/internal.hpp>
 
 #include <pnete/weaver/display.hpp>
-#include <pnete/util.hpp>
 
+#include <util/qt/cast.hpp>
 #include <util/graphviz.hpp>
 
 #include <boost/unordered_map.hpp>
@@ -506,7 +506,7 @@ namespace fhg
         void scene_type::slot_delete_transition (base_item* graph_item)
         {
           transition_item* transition_item
-            (fhg::util::throwing_qgraphicsitem_cast<transition_item*> (graph_item));
+            (fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*> (graph_item));
 
           remove_transition_item (transition_item);
 
@@ -526,7 +526,7 @@ namespace fhg
         void scene_type::slot_delete_place (base_item* graph_item)
         {
           place_item* place_item
-            (fhg::util::throwing_qgraphicsitem_cast<place_item*> (graph_item));
+            (fhg::util::qt::throwing_qgraphicsitem_cast<place_item*> (graph_item));
 
           place_item->erase_connections (this);
           removeItem (place_item);

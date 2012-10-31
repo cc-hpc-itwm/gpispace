@@ -187,7 +187,7 @@
 
 
 		        memcpy(local_buff, ptr_shmem, reduce_slot.part_used);
-		        MLOG(INFO, "Partition "<<reduce_slot.id<<", size: "<<reduce_slot.part_used<<", content: "<<ptr_shmem);
+		        //MLOG(INFO, "Partition "<<reduce_slot.id<<", size: "<<reduce_slot.part_used<<", content: "<<ptr_shmem);
 
 	          }
 
@@ -331,16 +331,14 @@
 
           <code><![CDATA[
           	LOG (INFO, "Accumulate reduction info ...");
-          	LOG (INFO, "Before update: "<<agg_iter_red_info.slots_to_reduce<<std::endl<<agg_iter_red_info.part_used<<std::endl<<agg_iter_red_info.red_used);
-
+          	
 		  	new_agg_iter_red_info.avail_slots = agg_iter_red_info.avail_slots-1;
 		 	new_agg_iter_red_info.slots_to_reduce =  agg_iter_red_info.slots_to_reduce + std::string(" ") + boost::lexical_cast<std::string>(reduce_slot_updated.id);
 			new_agg_iter_red_info.part_used = agg_iter_red_info.part_used + std::string(" ") +  boost::lexical_cast<std::string>(reduce_slot_updated.part_used);
 		 	new_agg_iter_red_info.red_used = agg_iter_red_info.red_used + std::string(" ") +  boost::lexical_cast<std::string>(reduce_slot_updated.red_used);
 		    new_agg_iter_red_info.border_used = 0;
-		 	//LOG (INFO, "After update: "<<new_agg_iter_red_info.slots_to_reduce<<std::endl<<new_agg_iter_red_info.part_used<<std::endl<<new_agg_iter_red_info.red_used);
 
-		 	::mapreduce::util::dump_iter_red_info("new_agg_iter_red_info", new_agg_iter_red_info);
+		 	//::mapreduce::util::dump_iter_red_info("new_agg_iter_red_info", new_agg_iter_red_info);
 
           ]]></code>
         </module>
