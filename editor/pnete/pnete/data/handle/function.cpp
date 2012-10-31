@@ -20,29 +20,34 @@ namespace fhg
       namespace handle
       {
         function::function ( const function_type& function
-                           , const handle::transition& transition
+                           , boost::optional<const handle::transition&>
+                               transition
                            , change_manager_t& change_manager
                            )
           : base (change_manager)
           , _function_id (function.id())
           , _transition (transition)
+          , _BAD_BAD_FUNCTION_REFERENCE (const_cast<function_type&> (function))
         { }
 
         function::function_type& function::operator()() const
         {
-          const boost::optional<function_type&> function
-            (transition()().function_by_id_ref (_function_id));
-          if (!function)
-          {
-            throw fhg::util::backtracing_exception
-              ("INVALID HANDLE: function id not found");
-          }
-          return *function;
+          //! \todo This needs to be either resolved via parent
+          //! (transition) or the global id_mapper.
+          return _BAD_BAD_FUNCTION_REFERENCE;
+          // const boost::optional<function_type&> function
+          //   (transition()().function_by_id_ref (_function_id));
+          // if (!function)
+          // {
+          //   throw fhg::util::backtracing_exception
+          //     ("INVALID HANDLE: function id not found");
+          // }
+          // return *function;
         }
 
         const handle::transition& function::transition() const
         {
-          return _transition;
+          return *_transition;
         }
 
         bool function::operator== (const function& other) const

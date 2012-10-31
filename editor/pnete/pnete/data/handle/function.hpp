@@ -12,6 +12,8 @@
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 
+#include <boost/optional.hpp>
+
 class QObject;
 
 namespace fhg
@@ -29,7 +31,7 @@ namespace fhg
 
         public:
           function ( const function_type& function
-                   , const handle::transition& transition
+                   , boost::optional<const handle::transition&> transition
                    , change_manager_t& change_manager
                    );
 
@@ -48,7 +50,8 @@ namespace fhg
 
         private:
           ::xml::parse::id::function _function_id;
-          handle::transition _transition;
+          boost::optional<handle::transition> _transition;
+          ::xml::parse::type::function_type& _BAD_BAD_FUNCTION_REFERENCE;
         };
       }
     }
