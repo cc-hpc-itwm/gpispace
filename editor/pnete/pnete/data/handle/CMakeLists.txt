@@ -1,5 +1,19 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
+set (pnete_data_handle_headers
+  base.hpp
+  net.hpp
+  place.hpp
+  transition.hpp
+)
+
+set (pnete_data_handle_fwd_headers
+  base.fwd.hpp
+  net.fwd.hpp
+  place.fwd.hpp
+  transition.fwd.hpp
+)
+
 set (handle_SRCS
   base.cpp
   net.cpp
