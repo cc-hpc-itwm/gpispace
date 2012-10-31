@@ -48,6 +48,10 @@ namespace fhg
           setAcceptHoverEvents (true);
           setAcceptedMouseButtons (Qt::LeftButton);
         }
+        void base_item::setPos (qreal x, qreal y)
+        {
+          setPos (QPointF (x, y));
+        }
 
         scene_type* base_item::scene() const
         {
