@@ -120,12 +120,22 @@ namespace fhg
             _origin = NULL;
           }
 
+          const ::we::type::property::value_type& new_value
+            (const ::we::type::property::value_type& new_value_)
+          {
+            return _new_value = new_value_;
+          }
+          const ::we::type::property::value_type& new_value() const
+          {
+            return _new_value;
+          }
+
         private:
           change_manager_t& _change_manager;
           const QObject* _origin;
           const handle_type _handle;
           const ::we::type::property::key_type _key;
-          const ::we::type::property::value_type _new_value;
+          ::we::type::property::value_type _new_value;
           const ::we::type::property::value_type _old_value;
         };
 
