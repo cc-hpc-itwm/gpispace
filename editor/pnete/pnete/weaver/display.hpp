@@ -84,6 +84,7 @@ namespace fhg
                      , XMLTYPE(net_type)& net
                      , XMLTYPE(function_type::ports_type)& in
                      , XMLTYPE(function_type::ports_type)& out
+                     , XMLTYPE(function_type)& function
                      );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -95,6 +96,7 @@ namespace fhg
         XMLTYPE(net_type)& _net;
         XMLTYPE(function_type::ports_type)& _in;
         XMLTYPE(function_type::ports_type)& _out;
+        XMLTYPE(function_type)& _function;
 
         item_by_name_type _place_item_by_name;
         data::internal_type* _root;
@@ -135,6 +137,7 @@ namespace fhg
         data::internal_type* _root;
 
         boost::optional< ::xml::parse::type::type_map_type&> _type_map;
+        boost::optional< ::xml::parse::type::function_type&> _function;
 
         function_with_mapping_type
         get_function (XMLTYPE(transition_type::function_or_use_type)& f);
@@ -220,6 +223,7 @@ namespace fhg
                                , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                , data::internal_type* root
+                               , XMLTYPE(function_type)&
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -232,6 +236,7 @@ namespace fhg
         const ui::graph::connectable::direction::type _direction;
         ui::graph::port_item* _port_item;
         data::internal_type* _root;
+        XMLTYPE(function_type)& _function;
       };
 
       WSIG(port_toplevel, port::open, XMLTYPE(port_type), port);

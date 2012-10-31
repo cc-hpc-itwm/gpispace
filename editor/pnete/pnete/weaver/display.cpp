@@ -132,6 +132,7 @@ namespace fhg
                        , const_cast< XMLTYPE(net_type) &> (net)
                        , in()
                        , out()
+                       , _function_with_mapping.function()
                        );
 
         FROM(net) (&wn, net);
@@ -165,6 +166,7 @@ namespace fhg
         , _port_out_item_by_name ()
         , _root (root)
         , _type_map (boost::none)
+        , _function (boost::none)
       {}
       function_with_mapping_type
       transition::get_function (XMLTYPE(transition_type::function_or_use_type)& f)
@@ -184,6 +186,7 @@ namespace fhg
         weaver::function sub (function_with_mapping, _root);
 
         _type_map = function_with_mapping.type_map();
+        _function = function_with_mapping.function();
 
         _transition->set_proxy (sub.proxy());
 
@@ -365,11 +368,13 @@ namespace fhg
                , XMLTYPE(net_type)& net
                , XMLTYPE(function_type::ports_type)& in
                , XMLTYPE(function_type::ports_type)& out
+               , XMLTYPE(function_type)& function
                )
         : _scene (scene)
         , _net (net)
         , _in (in)
         , _out (out)
+        , _function (function)
         , _place_item_by_name ()
         , _root (root)
       {}
@@ -380,6 +385,7 @@ namespace fhg
                                      , ui::graph::connectable::direction::OUT
                                      , _place_item_by_name
                                      , _root
+                                     , _function
                                      );
           from::many (&wptl, _in.values(), FROM(port));
         }
@@ -389,6 +395,7 @@ namespace fhg
                                      , ui::graph::connectable::direction::IN
                                      , _place_item_by_name
                                      , _root
+                                     , _function
                                      );
           from::many (&wptl, _out.values(), FROM(port));
         }
@@ -475,6 +482,7 @@ namespace fhg
         , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
         , data::internal_type* root
+        , XMLTYPE(function_type)& function
         )
           : _scene (scene)
           , _place_item_by_name (place_item_by_name)
@@ -482,6 +490,7 @@ namespace fhg
           , _direction (direction)
           , _port_item ()
           , _root (root)
+          , _function (function)
       {}
 
       WSIG(port_toplevel, port::open, XMLTYPE(port_type), port)
