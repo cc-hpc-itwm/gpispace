@@ -200,7 +200,13 @@ namespace fhg
       {
         ui::graph::port_item* port_item
           ( new ui::graph::port_item
-          ( const_cast<XMLTYPE(port_type)&> (port)
+            ( data::handle::port ( port
+                                 , data::handle::function ( *_function
+                                                          , _transition->handle()
+                                                          , _root->change_manager()
+                                                          )
+                                 , _root->change_manager()
+                                 )
             , _current_port_direction
             , _type_map
             , _transition
@@ -496,7 +502,13 @@ namespace fhg
       WSIG(port_toplevel, port::open, XMLTYPE(port_type), port)
       {
         _port_item = new ui::graph::top_level_port_item
-          ( const_cast<XMLTYPE(port_type)&> (port)
+          ( data::handle::port ( port
+                               , data::handle::function ( _function
+                                                        , boost::none
+                                                        , _root->change_manager()
+                                                        )
+                               , _root->change_manager()
+                               )
           , _direction
           );
         _scene->addItem (_port_item);

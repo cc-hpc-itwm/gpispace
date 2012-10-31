@@ -160,7 +160,7 @@ namespace fhg
 
             namespace port
             {
-              const std::string& name (const base_item *);
+              std::string name (const base_item *);
               const std::string& type (const base_item *);
             }
 

@@ -76,16 +76,25 @@ namespace fhg
         }
 
         port_item::port_item
-        ( port_type& port
-        , connectable::direction::type direction
-        , boost::optional< ::xml::parse::type::type_map_type&> type_map
-        , transition_item* parent
-        )
-          : connectable_item (direction, type_map, parent)
-          , _port (port)
-          , _orientation ()
-          , _length (size::port::width())
+          ( const data::handle::port& handle
+          , connectable::direction::type direction
+          , boost::optional< ::xml::parse::type::type_map_type&> type_map
+          , transition_item* parent
+          )
+            : connectable_item (direction, type_map, parent)
+            , _handle (handle)
+            , _orientation ()
+            , _length (size::port::width())
         {
+          handle.connect_to_change_mgr
+            ( this
+            , "property_changed", "property_changed"
+            , "  const data::handle::port&"
+              ", const ::we::type::property::key_type&"
+              ", const ::we::type::property::value_type&"
+              ", const ::we::type::property::value_type&"
+            );
+
           access_style().push<qreal>
             ( "border_thickness"
             , mode::NORMAL
@@ -147,6 +156,11 @@ namespace fhg
                         , QStaticText(QString::fromStdString (name())).size().width()
                         + 2 * size::cap::length()
                         );
+        }
+
+        const data::handle::port& port_item::handle() const
+        {
+          return _handle;
         }
 
         void port_item::slot_set_type ()
@@ -271,13 +285,13 @@ namespace fhg
           return _length;
         }
 
-        const std::string& port_item::name() const
+        std::string port_item::name() const
         {
-          return port().name();
+          return handle()().name();
         }
         const std::string& port_item::we_type() const
         {
-          return connectable_item::we_type (port().type);
+          return connectable_item::we_type (handle()().type);
         }
 
         const port::orientation::type&
@@ -290,7 +304,7 @@ namespace fhg
         {
           _orientation = orientation_;
 
-          detail::set_orientation (&_port.prop, orientation());
+          // detail::set_orientation (&_port.prop, orientation());
 
           return orientation();
         }
@@ -438,8 +452,21 @@ namespace fhg
             painter->drawText(area, Qt::AlignCenter, QString::fromStdString (name()));
           }
         }
+
+        void port_item::property_changed
+          ( const QObject* origin
+          , const data::handle::port& changed_handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& from
+          , const ::we::type::property::value_type& to
+          )
+        {
+          if (origin != this && changed_handle == handle())
+          {
+            handle_property_change (key, from, to);
+          }
+        }
       }
     }
   }
 }
-
