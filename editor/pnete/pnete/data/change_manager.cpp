@@ -62,6 +62,20 @@ namespace fhg
         private:
           typedef HANDLE_TYPE handle_type;
           typedef void (change_manager_t::* signal_type)
+
+        template<typename T>
+          ::we::type::property::value_type to_property_type (const T& t)
+        {
+          return
+            boost::lexical_cast< ::we::type::property::value_type> (t);
+        }
+
+        template<typename T>
+          T from_property_type (const ::we::type::property::value_type& v)
+        {
+          return
+            boost::lexical_cast<T> (v);
+        }
             ( const QObject*
             , const handle_type&
             , const ::we::type::property::key_type&
