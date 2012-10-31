@@ -77,6 +77,12 @@ namespace fhg
           virtual QPainterPath shape() const = 0;
           virtual QRectF boundingRect() const;
 
+          virtual void handle_property_change
+            ( const ::we::type::property::key_type& key
+            , const ::we::type::property::value_type& from
+            , const ::we::type::property::value_type& to
+            );
+
         private:
           style::type _style;
           std::stack<mode::type> _mode;

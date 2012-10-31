@@ -72,6 +72,15 @@ namespace fhg
             , mode::NORMAL
             , boost::bind (&color_if_name, "double", background_color, _1)
             );
+
+          handle.connect_to_change_mgr
+            ( this
+            , "property_changed", "property_changed"
+            , "  const data::handle::transition&"
+              ", const ::we::type::property::key_type&"
+              ", const ::we::type::property::value_type&"
+              ", const ::we::type::property::value_type&"
+            );
         }
 
         const data::handle::transition& transition_item::handle() const
@@ -217,6 +226,20 @@ namespace fhg
                             , Qt::AlignCenter | Qt::TextWordWrap
                             , QString::fromStdString (name())
                             );
+        }
+
+        void transition_item::property_changed
+          ( const QObject* origin
+          , const data::handle::transition& changed_handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& from
+          , const ::we::type::property::value_type& to
+          )
+        {
+          if (origin != this && changed_handle == handle())
+          {
+            handle_property_change (key, from, to);
+          }
         }
       }
     }

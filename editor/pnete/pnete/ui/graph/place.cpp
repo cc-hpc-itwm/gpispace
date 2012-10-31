@@ -33,6 +33,15 @@ namespace fhg
             , _content()
         {
           refresh_content();
+
+          handle.connect_to_change_mgr
+            ( this
+            , "property_changed", "property_changed"
+            , "  const data::handle::place&"
+              ", const ::we::type::property::key_type&"
+              ", const ::we::type::property::value_type&"
+              ", const ::we::type::property::value_type&"
+            );
         }
 
         const data::handle::place& place_item::handle() const
@@ -118,6 +127,21 @@ namespace fhg
             }
           }
         }
+
+        void place_item::property_changed
+          ( const QObject* origin
+          , const data::handle::place& changed_handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& from
+          , const ::we::type::property::value_type& to
+          )
+        {
+          if (origin != this && changed_handle == handle())
+          {
+            handle_property_change (key, from, to);
+          }
+        }
+
 
 //           void place_item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
 //           {

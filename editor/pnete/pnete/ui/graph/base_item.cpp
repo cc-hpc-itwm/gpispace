@@ -9,8 +9,6 @@
 
 #include <fhg/util/backtracing_exception.hpp>
 
-#include <we/type/property.hpp>
-
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 
@@ -22,22 +20,6 @@ namespace fhg
     {
       namespace graph
       {
-        namespace detail
-        {
-          static void set_position_x ( ::we::type::property::type* prop
-                                     , const qreal& x
-                                     )
-          {
-            static util::property::setter s ("position.x"); s.set (prop, x);
-          }
-          static void set_position_y ( ::we::type::property::type* prop
-                                     , const qreal& x
-                                     )
-          {
-            static util::property::setter s ("position.y"); s.set (prop, x);
-          }
-        }
-
         base_item::base_item (base_item* parent)
           : QGraphicsObject (parent)
           , _style ()
@@ -47,10 +29,6 @@ namespace fhg
           _mode.push (mode::NORMAL);
           setAcceptHoverEvents (true);
           setAcceptedMouseButtons (Qt::LeftButton);
-        }
-        void base_item::setPos (qreal x, qreal y)
-        {
-          setPos (QPointF (x, y));
         }
 
         scene_type* base_item::scene() const
@@ -66,10 +44,13 @@ namespace fhg
         {
           QPointF snapped (style::raster::snap (new_pos));
 
-          // detail::set_position_x (_property, snapped.x());
-          // detail::set_position_y (_property, snapped.y());
+          handle().move (this, new_pos);
 
           set_just_pos_but_not_in_property (snapped);
+        }
+        void base_item::setPos (qreal x, qreal y)
+        {
+          setPos (QPointF (x, y));
         }
         void base_item::set_just_pos_but_not_in_property (qreal x, qreal y)
         {
@@ -185,6 +166,40 @@ namespace fhg
         {
           throw fhg::util::backtracing_exception
             ("base_item::handle() called: sub-class didn't define handle()");
+        }
+
+        void base_item::handle_property_change
+          ( const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& old_value
+          , const ::we::type::property::value_type& value
+          )
+        {
+          const ::we::type::property::path_type path
+            (we::type::property::util::split (key));
+
+          if (path.size() > 1 && path[0] == "fhg" && path[1] == "pnete")
+          {
+            if (path.size() > 2 && path[2] == "position")
+            {
+              if (path.size() > 3)
+              {
+                if (path[3] == "x")
+                {
+                  set_just_pos_but_not_in_property
+                    ( boost::lexical_cast<qreal>(value)
+                    , pos().y()
+                    );
+                }
+                else if (path[3] == "y")
+                {
+                  set_just_pos_but_not_in_property
+                    ( pos().x()
+                    , boost::lexical_cast<qreal>(value)
+                    );
+                }
+              }
+            }
+          }
         }
       }
     }
