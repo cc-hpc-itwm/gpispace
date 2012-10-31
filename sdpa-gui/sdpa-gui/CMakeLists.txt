@@ -22,6 +22,11 @@ set(sdpa-gui_HDRS
   portfolioeval.hpp
 )
 
+set (sdpa-gui_TOMOC
+  monitorwindow.hpp
+  portfolioeval.hpp
+)
+
 # FIXME: I get a linker error, when I try to link against sdpa-util (Bad value),
 # which seems to be  a known compiler bug in gcc 4.1.2,  by explicitly using the
 # source files, everything is fine but that just sucks.
@@ -32,7 +37,7 @@ set(util-sources
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 QT4_WRAP_UI(sdpa-gui_UIS_H ${sdpa-gui_UIS})
-QT4_WRAP_CPP(sdpa-gui_SRCS_MOC ${sdpa-gui_HDRS} ${sdpa-gui_UIS_H})
+QT4_WRAP_CPP(sdpa-gui_SRCS_MOC ${sdpa-gui_TOMOC} ${sdpa-gui_UIS_H})
 
 qt4_automoc(${sdpa-gui_SRCS_MOC})
 add_executable (sdpa-gui ${sdpa-gui_SRCS} ${sdpa-gui_SRCS_MOC} ${util-sources})

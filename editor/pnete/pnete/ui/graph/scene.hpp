@@ -3,6 +3,8 @@
 #ifndef _FHG_PNETE_UI_GRAPH_SCENE_HPP
 #define _FHG_PNETE_UI_GRAPH_SCENE_HPP 1
 
+#include <pnete/ui/graph/scene.fwd.hpp>
+
 //! \todo Remove
 #include <xml/parse/type/net.fwd.hpp>
 
@@ -46,7 +48,7 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          explicit scene_type ( ::xml::parse::type::net_type& net
+          explicit scene_type ( const data::handle::net& net
                               , data::internal_type* internal
                               , QObject* parent = NULL
                               );

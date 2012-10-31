@@ -3,6 +3,8 @@
 #ifndef _PNETE_DATA_INTERNAL_HPP
 #define _PNETE_DATA_INTERNAL_HPP 1
 
+#include <pnete/data/internal.fwd.hpp>
+
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/state.hpp>
 

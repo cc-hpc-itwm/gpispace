@@ -261,8 +261,19 @@ namespace gpi
                   {
                     MLOG (WARN, "cleaning stale lock file: " << lock_file);
 
-                    write (m_lock_fd, my_lock_info.c_str (), my_lock_info.size ());
-                    write (m_lock_fd, "\n", 1);
+                    if (write ( m_lock_fd
+                              , my_lock_info.c_str (), my_lock_info.size ()
+                              )
+                       <= 0
+                       )
+                    {
+                      MLOG (ERROR, "could not write to lock file");
+                    }
+
+                    if (write (m_lock_fd, "\n", 1) <= 0)
+                    {
+                      MLOG (ERROR, "could not write to lock file");
+                    }
                     fdatasync (m_lock_fd);
                   }
                 }
@@ -288,8 +299,18 @@ namespace gpi
                 return -1;
               }
 
-              write (m_lock_fd, my_lock_info.c_str (), my_lock_info.size ());
-              write (m_lock_fd, "\n", 1);
+              if (write ( m_lock_fd
+                        , my_lock_info.c_str (), my_lock_info.size ()
+                        )
+                 <= 0
+                 )
+              {
+                MLOG (ERROR, "could not write to lock file");
+              }
+              if (write (m_lock_fd, "\n", 1) <= 0)
+              {
+                MLOG (ERROR, "could not write to lock file");
+              }
               fdatasync (m_lock_fd);
             }
           }
@@ -422,7 +443,10 @@ namespace gpi
 
           if (m_lock_fd >= 0)
           {
-            lockf (m_lock_fd, F_ULOCK, 0);
+            if (0 != lockf (m_lock_fd, F_ULOCK, 0))
+            {
+              MLOG (WARN, "could not unlock sfs area: " << m_path);
+            }
             ::close (m_lock_fd); m_lock_fd = -1;
 
             fs::remove_all (detail::lock_path (m_path));

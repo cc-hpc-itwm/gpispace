@@ -35,11 +35,8 @@ namespace fhg
           }
         }
 
-        base_item::base_item ( base_item* parent
-                             , ::we::type::property::type* property
-                             )
+        base_item::base_item (base_item* parent)
           : QGraphicsObject (parent)
-          , _property (property)
           , _style ()
           , _mode ()
           , _move_start ()
@@ -62,8 +59,8 @@ namespace fhg
         {
           QPointF snapped (style::raster::snap (new_pos));
 
-          detail::set_position_x (_property, snapped.x());
-          detail::set_position_y (_property, snapped.y());
+          // detail::set_position_x (_property, snapped.x());
+          // detail::set_position_y (_property, snapped.y());
 
           set_just_pos_but_not_in_property (snapped);
         }

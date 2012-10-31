@@ -50,25 +50,6 @@ namespace fhg
             + boost::lexical_cast<std::string> (num + 1)
             ;
         }
-
-        static ::xml::parse::type::transition_type&
-        push_transition ( ::xml::parse::type::transition_type transition
-                        , ::xml::parse::type::net_type& net
-                        )
-        {
-          try
-          {
-            return net.push_transition (transition);
-          }
-          catch (const ::xml::parse::error::duplicate_transition
-                < ::xml::parse::type::transition_type>&
-                )
-          {
-            transition.name (inc (transition.name()));
-
-            return push_transition (transition, net);
-          }
-        }
       }
 
       namespace action
@@ -191,7 +172,7 @@ namespace fhg
             _change_manager.emit_signal
               ( &change_manager_t::place_deleted
               , _origin
-              , handle::place (_place, _handle)
+              , handle::place (_place, _handle, _change_manager)
               );
 
             _handle().erase_place (_place);
@@ -204,7 +185,7 @@ namespace fhg
             _change_manager.emit_signal
               ( &change_manager_t::place_added
               , NULL
-              , handle::place (_place, _handle)
+              , handle::place (_place, _handle, _change_manager)
               );
 
             _origin = NULL;

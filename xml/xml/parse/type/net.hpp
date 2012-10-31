@@ -14,6 +14,8 @@
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/id/mapper.fwd.hpp>
 
+#include <xml/parse/type/dumps.hpp>
+
 namespace xml
 {
   namespace parse
@@ -194,6 +196,13 @@ namespace xml
                      , const state::type & state
                      , we::activity_t::transition_type::edge_type & e
                      );
+
+      namespace dump
+      {
+        void dump ( ::fhg::util::xml::xmlstream & s
+                  , const net_type & net
+                  );
+      } // namespace dump
     }
   }
 }

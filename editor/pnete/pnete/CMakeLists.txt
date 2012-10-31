@@ -31,9 +31,6 @@ target_link_libraries ( pnete
                         ${Boost_LIBRARIES}
                         ${QT_LIBRARIES}
                         xml_parse
-                        xml_parse_id
-                        xml_parse_type
-                        xml_parse_util
                       )
 
 install ( TARGETS pnete

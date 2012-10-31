@@ -81,7 +81,7 @@ namespace fhg
         , boost::optional< ::xml::parse::type::type_map_type&> type_map
         , transition_item* parent
         )
-          : connectable_item (direction, type_map, parent, &port.prop)
+          : connectable_item (direction, type_map, parent)
           , _port (port)
           , _orientation ()
           , _length (size::port::width())

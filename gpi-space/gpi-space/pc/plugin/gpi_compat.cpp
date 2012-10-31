@@ -335,7 +335,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 {
   require_gpi_state ("fvmGetGlobalData");
 
-  static const gpi::pc::type::queue_id_t queue = 0;
+  static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
   fhg_assert (0 != gpi_compat->m_shm_hdl);
 
@@ -357,7 +357,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 {
   require_gpi_state ("fvmPutGlobalData");
 
-  static const gpi::pc::type::queue_id_t queue = 1;
+  static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
   fhg_assert (0 != gpi_compat->m_shm_hdl);
 
@@ -378,7 +378,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 {
   require_gpi_state ("fvmPutLocalData");
 
-  static const gpi::pc::type::queue_id_t queue = 2;
+  static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
   fhg_assert (0 != gpi_compat->m_shm_hdl);
 
@@ -397,7 +397,7 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 {
   require_gpi_state ("fvmGetLocalData");
 
-  static const gpi::pc::type::queue_id_t queue = 3;
+  static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
   fhg_assert (0 != gpi_compat->m_shm_hdl);
 

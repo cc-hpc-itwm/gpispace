@@ -267,7 +267,7 @@ int main (int ac, char *av[])
         if ((strlen (av[i]) + 1) > MAX_PATH_LEN)
         {
           fprintf (stderr, "%s: memory url is too large!\n", program_name);
-          fprintf (stderr, "    at most %lu characters are supported\n"
+          fprintf (stderr, "    at most %d characters are supported\n"
                   , MAX_PATH_LEN - 1
                   );
           exit(EX_INVAL);

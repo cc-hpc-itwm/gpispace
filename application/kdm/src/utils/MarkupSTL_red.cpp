@@ -938,9 +938,9 @@ string CMarkupSTL::x_TextFromDoc( int nLeft, int nRight ) const
 	//
 	// Conveniently the result is always the same or shorter in length
 	//
-	static char* szaCode[] = { "lt;","amp;","gt;","apos;","quot;" };
-	static int anCodeLen[] = { 3,4,3,5,5 };
-	static char* szSymbol = "<&>\'\"";
+	static const char* szaCode[] = { "lt;","amp;","gt;","apos;","quot;" };
+	static const int anCodeLen[] = { 3,4,3,5,5 };
+	static const char* szSymbol = "<&>\'\"";
 	string strResult;
 	strResult.reserve( nRight - nLeft + 1 );
 	const char* pSource = m_strDoc.c_str();
