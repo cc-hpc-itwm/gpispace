@@ -85,8 +85,6 @@ namespace fhg
           void place_added (const QObject*, const data::handle::place&);
           void place_deleted (const QObject*, const data::handle::place&);
 
-        signals:
-
         protected:
           virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);

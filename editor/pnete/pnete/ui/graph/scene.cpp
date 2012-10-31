@@ -250,7 +250,7 @@ namespace fhg
         {
           connection_item * c (new connection_item (only_reading));
           addItem (c);
-          c->setPos (QPointF (0.0, 0.0));
+          c->set_just_pos_but_not_in_property (0.0, 0.0);
           return c;
         }
 
