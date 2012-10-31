@@ -9,6 +9,7 @@
 #include <boost/foreach.hpp>
 #include <sstream>
 #include <list>
+#include <cstdio> // snprintf
 
 using namespace std;
 
@@ -47,7 +48,7 @@ namespace mapreduce
             sstr<<"]";
         }
 
-        sprintf( reduce_buff+last_pos, "%s ", sstr.str().c_str() );
+        sprintf (reduce_buff+last_pos, "%s ", sstr.str().c_str() );
 
         size_t new_pos =  last_pos + sstr.str().size()+1;
 
