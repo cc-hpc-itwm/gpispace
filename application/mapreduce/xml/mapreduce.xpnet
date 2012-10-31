@@ -332,7 +332,6 @@
           <cinclude href="util/map.hpp"/>
           <cinclude href="sstream"/>
           <cinclude href="ctype.h"/>
-          <cinclude href="cstdio"/>
           <code><![CDATA[
 	          LOG (INFO, "Map the chunk ..."<<read_chunk_info.chunk_id);
 	
@@ -375,15 +374,39 @@
 	          // is a substring of a word
 	          
 	          int n = 0;
-	          if(first_char_is_delim )
-				n = sprintf(ptr_next, "%s: ", oss_left.str().data() );
-	          else
-	          	n = sprintf(ptr_next, "%s:%s ", oss_left.str().data(), list_words[0].data()  );
-	         
-	          ptr_next += n;
-	          	          
-	          for(int k=1; k<list_words.size()-1; k++ )
+	          
+	          for(int k=0; k<list_words.size(); k++ )
 	          {
+	            if(config.num.chunks>1)
+	            {
+		            if(k==0 && read_chunk_info.chunk_id > 0)
+		            {
+						if(first_char_is_delim )
+							n = sprintf(ptr_next, "%s: ", oss_left.str().data() );
+			          	else
+			          		n = sprintf(ptr_next, "%s:%s ", oss_left.str().data(), list_words[0].data()  );
+			         
+			          	ptr_next += n;
+		            	continue;
+					}
+		            	
+		            if(k==list_words.size()-1 && read_chunk_info.chunk_id < config.num.chunks-1 )
+		            {
+						if(last_char_is_delim)
+				        {
+							n = sprintf(ptr_next, "%s: ", oss_right.str().data() );
+						}
+				        else
+				        {
+				        	n = sprintf(ptr_next, "%s:%s ", oss_right.str().data(), list_words[list_words.size()-1].data() );
+				          	std::cout<<"Last chunk word "<< list_words[list_words.size()-1]<<std::endl;
+						}
+				          
+				        ptr_next += n;
+		            	continue;
+					}
+				}
+	            	
 	          	key = list_words[k];
 	          	val = "";
 	          	
@@ -399,31 +422,7 @@
 	          		//std::cout<<key_val_pair.first<<":"<<key_val_pair.second<<""<<std::endl;
 	          	}
 	          }
-	         
-	          if(last_char_is_delim)
-	          {
-				n = sprintf(ptr_next, "%s: ", oss_right.str().data() );
-	          }
-	          else
-	          {
-	          	n = sprintf(ptr_next, "%s:%s ", oss_right.str().data(), list_words[list_words.size()-1].data() );
-	          	std::cout<<"Last chunk word "<< list_words[list_words.size()-1]<<std::endl;
-	          }
-	          
-	          ptr_next += n;
-	          
-	          // MAP the border words differently !!!!!!
-	           
-	          // it is assumed that the words were mapped in order
-	          // first word in read_chunk -
-			  // YOU SHOULD TAKE HERE THE FIRST AND THE LAST WORD, see if 
-			  // either the first or the last character in the read_chunk is a space
-			  // or if both are non_delimiters and do
-			  // map(w_first) -> "chunk_id:0:w_first"
-			  // map(w_last) -> "chunk_id:1:w_last"
-			  // put hese two values into the border area and not into the map region
-			  // should be solved later
-	          			  		 	
+	         	          	          			  		 	
 	          map_chnk_info.map_slot_id = map_slot_id;
 	          map_chnk_info.chunk_id = read_chunk_info.chunk_id;
 	          map_chnk_info.size = ptr_next-ptr_chunk;
@@ -543,7 +542,7 @@
 	          		
 	          	if(::mapreduce::util::is_special_item(keyval_pair))
 	          	{
-	          	    MLOG(INFO, "The item "<<keyval_pair<<" is special. It's a part of an original key!");
+	          	    MLOG(INFO, "The item "<<keyval_pair<<" is special");
 	          	    
 	          	    /*MLOG(INFO, "The current border keys are:");
 	          	     ::mapreduce::util::print_keys("arr_border_keys:", arr_border_keys);*/
@@ -552,13 +551,13 @@
 	          		std::string matching_pair;
 	          		int cid = -1;
 	          		int end = -1;
-	          		std:: string recovered_key = ::mapreduce::util::match_keys(keyval_pair, arr_border_keys, matching_pair, config.num.chunks, cid, end );
+	          		std:: string recovered_key = ::mapreduce::util::match_keys(keyval_pair, arr_border_keys, matching_pair, cid, end );
 	          		
 	          		if(!recovered_key.empty())
 	          		{        			
 	          			
 	          			// recover the original key from the two parts
-	          			std::cout<<"Recovered the key "<<recovered_key<<" from \""<<keyval_pair<<"\" and \""<<matching_pair<<"\""<<std::endl;
+	          			MLOG(INFO, "Recovered the key "<<recovered_key<<" from \""<<keyval_pair<<"\" and \""<<matching_pair<<"\"");
 	          			// map the key
 	          			
 						::mapreduce::util::list_key_val_pairs_t list_key_val_pairs = ::mapreduce::util::map(recovered_key, "");
@@ -569,7 +568,7 @@
 							std::string key = pair.first;
 							std::string val = pair.second;
 							
-							 MLOG(INFO,"Number of partitions: "<<config.num.part);
+							MLOG(INFO,"Number of partitions: "<<config.num.part);
 							 
 					        int part_id = ::mapreduce::util::hash(key, config.num.part);
 					        MLOG(INFO,"The pair "<<key<<":"<<val<<" goes to the partition "<<part_id);
@@ -593,13 +592,10 @@
 					}
 	          		else
 	          		{
-	          			if(!(cid == config.num.chunks-1 && end==1) && !(cid==0 && end==0) )
-	          			{
-		          			// add keyval_pair to arr_border_keys
-		          			MLOG(INFO, "The recovered key is empty!");
-		          			MLOG(INFO, "Add the item "<<keyval_pair<<" to the border key array");
-		          			arr_border_keys.push_back(keyval_pair);
-	          			}
+	          			// add keyval_pair to arr_border_keys
+	          			MLOG(INFO, "The recovered key is empty!");
+	          			MLOG(INFO, "Add the item "<<keyval_pair<<" to the border key array");
+	          			arr_border_keys.push_back(keyval_pair);
 	          		}	    	
 	          		
 	          		bUpdateBorder = true;
@@ -690,10 +686,10 @@
 					          									, size_border_keys
 					          									, 0
 					          									, 0
-					          								)
+													)
 					    );
 					    
-					     part_res.iterator_red_info.border_used = size_border_keys;
+					    part_res.iterator_red_info.border_used = size_border_keys;
 					  }
 				  }
 				  
@@ -730,16 +726,6 @@
         <out name="reduce_info_in" type="iterator_red_info"/>
         <out name="map_chunk_info" type="map_chunk_info"/>
         
-        
-        <!-- SHOULD INSPECT the border region,
-             SEE IF THERE ARE ANY MATCHING PAIRS
-             FOR ANY MATCHING PAIR DO
-             	PUT THE LIST=MAP(GLUED_WORD) INTO REDUCE[HASH(GLUED_EORD)]
-            	 UPDATE THE red_used information in reduce_info_in
-             DONE
-             THAT'S ALL
-        -->
-        
        <expression>			  
 			${map_chunk_info}:=${partition_result.map_chunk_info};
 			${reduce_info_in}:=${partition_result.iterator_red_info};  
@@ -752,73 +738,7 @@
       <connect-out port="reduce_info_in" place="reduce_info_in"/>
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
     </transition> 
-    
-    <!--
-    <transition name="reduce" inline="true">
-      <defun>
-        <in name="reduce_info_in" type="iterator_red_info"/>
-        <in name="config" type="config"/>
-        <out name="iterator_red_info" type="iterator_red_info"/>
-	   <module name="reduce" function="reduce(config, reduce_info_in, iterator_red_info)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>
-          <cinclude href="sstream"/>
-          <code><![CDATA[
-	        MLOG (INFO, "You should call here the right reduce subnet (template) ...");
-	        iterator_red_info = reduce_info_in;
-			 	           
-	        ::mapreduce::util::dump_iter_red_info("reduce_info_in", reduce_info_in);
-	        ::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
-	        
-	        // for testing purposes, simply copy the content of part[k] into reduce_slot[k];
-	        std::vector<int> arr_part_used = ::mapreduce::util::get_array(reduce_info_in.part_used);
-	        
-	        std::vector<int>  arr_red_used;		
-	        arr_red_used.resize(arr_part_used.size());
-	        
-	     
-	        for(int k=0;k<arr_part_used.size();k++)
-	        {
-	         	char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
-	            bzero( ptr_shmem, arr_part_used[k]+1);		  
-	        	MLOG(INFO, "Copy the data from part["<<k<<"] into the reduce slot "<<k<<", used "<<arr_part_used[k]<<" bytes");
-	        	waitComm ( fvmGetGlobalData
-	          	( static_cast<fvmAllocHandle_t> (config.handle.partition)
-	          									, k*config.size.partition.slot
-	          									, arr_part_used[k]
-	          									, 0
-	          									, 0
-	          								)
-	          	);
-	
-	         
-	          std::cout<<std::endl<<"partition "<<k<<", size: "<<arr_part_used[k]<<", content: "<<ptr_shmem<<std::endl<<std::endl;	 
-	           
-	          arr_red_used[k]=arr_part_used[k];
-	          
-	          // get data from the part[k region vm
-	        	waitComm ( fvmPutGlobalData
-	          	( static_cast<fvmAllocHandle_t> (config.handle.reduce)
-	          									, k*config.size.reduce.slot
-	          									, arr_red_used[k]
-	          									, 0
-	          									, 0
-	          								)
-	          	);
-	        }
-	         
-	        iterator_red_info.red_used = ::mapreduce::util::get_string(arr_red_used);
-	        
-          ]]></code>
-        </module>
-      </defun>
-      <connect-read port="config" place="config"/>
-      <connect-in port="reduce_info_in" place="reduce_info_in"/>
-      <connect-out port="iterator_red_info" place="iterator_red_info"/>
-    </transition>     
-    -->
-
+   
     <include-template href="reduce_tpl.xpnet" />
     <specialize name="reduce" use="reduce_tpl">
       <type-map replace="T" with="config" />
@@ -965,7 +885,6 @@
           <code><![CDATA[
 	          LOG (INFO, "write all the reduced data into the output file " <<config.file.output<<" ...");
 	          
-			  std::cout<<std::endl<<"********************Print border info**************************"<<std::endl<<std::endl;	   
 			  char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
 	          bzero(ptr_shmem, iterator_red_info.border_used+1);
 	          
@@ -979,13 +898,11 @@
 	          );
 	          
 	          std::vector<std::string> arr_border_keys;
-	          std::cout<<std::endl<<"*******************Left border keys***************************"<<std::endl;	 
 	          if(iterator_red_info.border_used)
 	          {
 	          	  arr_border_keys = ::mapreduce::util::get_list_items(ptr_shmem);
-	          	  ::mapreduce::util::print_keys("arr_border_keys:", arr_border_keys);
+	          	  ::mapreduce::util::print_keys("border keys: ", arr_border_keys);
 			  }
-			  std::cout<<std::endl<<"*******************End left border keys***************************"<<std::endl;	 
 	
 	   		  std::vector<int> arr_red_used = ::mapreduce::util::get_array(iterator_red_info.red_used);
 	          // get data from vm::map_area
@@ -993,7 +910,6 @@
 	          std::ofstream ofs(config.file.output.c_str());
 	        
 	           ::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
-	          std::cout<<std::endl<<"***********************************************"<<std::endl<<std::endl;	   
 	          
 	          for(int k=0; k<arr_red_used.size(); k++)
 	          {
