@@ -68,6 +68,11 @@ namespace xml
         const function_or_use_type& function_or_use
           (const function_or_use_type& function_or_use_);
 
+        boost::optional<function_type>
+          function_by_id (const id::function& id) const;
+        boost::optional<function_type&>
+          function_by_id_ref (const id::function& id) const;
+
         const std::string& name() const;
         const std::string& name(const std::string& name);
 

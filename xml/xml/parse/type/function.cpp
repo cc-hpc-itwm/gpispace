@@ -239,6 +239,27 @@ namespace xml
         return out().get (name);
       }
 
+      boost::optional<port_type>
+        function_type::port_by_id (const id::port& id) const
+      {
+        boost::optional<port_type> maybe_in (_in.copy_by_id (id));
+        if (!maybe_in)
+        {
+          return _out.copy_by_id (id);
+        }
+        return maybe_in;
+      }
+      boost::optional<port_type&>
+        function_type::port_by_id_ref (const id::port& id) const
+      {
+        boost::optional<port_type&> maybe_in (_in.ref_by_id (id));
+        if (!maybe_in)
+        {
+          return _out.ref_by_id (id);
+        }
+        return maybe_in;
+      }
+
       bool function_type::is_known_port_in (const std::string & name) const
       {
         return get_port_in (name);

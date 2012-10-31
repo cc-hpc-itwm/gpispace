@@ -124,6 +124,9 @@ namespace xml
         boost::optional<const id::ref::port&> get_port_in (const std::string & name) const;
         boost::optional<const id::ref::port&> get_port_out (const std::string & name) const;
 
+        boost::optional<port_type> port_by_id (const id::port& id) const;
+        boost::optional<port_type&> port_by_id_ref (const id::port& id) const;
+
         bool is_known_port_in (const std::string & name) const;
         bool is_known_port_out (const std::string & name) const;
         bool is_known_port (const std::string & name) const;

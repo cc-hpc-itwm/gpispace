@@ -2,9 +2,11 @@
 
 #include <pnete/data/change_manager.hpp>
 
+#include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
-#include <pnete/data/handle/transition.hpp>
 #include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/port.hpp>
+#include <pnete/data/handle/transition.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/function.hpp>
@@ -39,6 +41,7 @@ namespace fhg
           enum
           {
             move_place_item,
+            move_port_item,
             move_transition_item,
           };
         }
@@ -590,6 +593,33 @@ namespace fhg
              );
       }
 
+      // - port ------------------------------------------------------
+      void change_manager_t::set_property
+        ( const QObject* origin
+        , const data::handle::port& port
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        push ( new action::meta_set_property<handle::port>
+               ( "set_port_property_action"
+               , *this, origin, port, key, val
+               )
+             );
+      }
+
+      void change_manager_t::move_item ( const QObject* origin
+                                       , const handle::port& port
+                                       , const QPointF& position
+                                       )
+      {
+        push ( new action::meta_move_item<handle::port>
+               ( "move_port_item_action", ids::move_port_item
+               , *this, origin, port, position
+               )
+             );
+      }
+
       // - function --------------------------------------------------
       void change_manager_t::set_function_name
         ( const QObject* origin
@@ -611,6 +641,20 @@ namespace fhg
                     , fun
                     , name
                     );
+      }
+
+      void change_manager_t::set_property
+        ( const QObject* origin
+        , const data::handle::function& function
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        push ( new action::meta_set_property<handle::function>
+               ( "set_function_property_action"
+               , *this, origin, function, key, val
+               )
+             );
       }
 
       // - expression ------------------------------------------------

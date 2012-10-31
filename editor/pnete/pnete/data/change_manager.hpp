@@ -5,9 +5,11 @@
 
 #include <pnete/data/change_manager.fwd.hpp>
 
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
-#include <pnete/data/handle/transition.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/port.fwd.hpp>
+#include <pnete/data/handle/transition.fwd.hpp>
 
 #include <we/type/property.fwd.hpp>
 
@@ -99,11 +101,27 @@ namespace fhg
                        , const QPointF&
                        );
 
+        // -- port ---------------------------------------------------
+        void set_property ( const QObject*
+                          , const data::handle::port&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+        void move_item ( const QObject*
+                       , const handle::port&
+                       , const QPointF&
+                       );
+
         // - function ------------------------------------------------
         void set_function_name ( const QObject*
                                , ::xml::parse::type::function_type&
                                , const QString&
                                );
+        void set_property ( const QObject*
+                          , const data::handle::function&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
 
         // - expression ----------------------------------------------
         void set_expression ( const QObject*
@@ -140,11 +158,27 @@ namespace fhg
                               , const ::we::type::property::value_type& to
                               );
 
+        // - port ----------------------------------------------------
+        void property_changed ( const QObject*
+                              , const data::handle::port&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type& from
+                              , const ::we::type::property::value_type& to
+                              );
+
+
         // - function ------------------------------------------------
         void signal_set_function_name ( const QObject*
                                       , const ::xml::parse::type::function_type&
                                       , const QString&
                                       );
+
+        void property_changed ( const QObject*
+                              , const data::handle::function&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type& from
+                              , const ::we::type::property::value_type& to
+                              );
 
         // - expression ----------------------------------------------
         void signal_set_expression ( const QObject*
@@ -170,7 +204,11 @@ namespace fhg
         friend class action::remove_place;
         friend class action::meta_set_property<handle::place>;
         friend class action::meta_move_item<handle::place>;
+        // -- port ---------------------------------------------------
+        friend class action::meta_set_property<handle::port>;
+        friend class action::meta_move_item<handle::port>;
         // - function ------------------------------------------------
+        friend class action::meta_set_property<handle::function>;
         // - expression ----------------------------------------------
 
 #define ARG_TYPE(function_type,n)                                       \
