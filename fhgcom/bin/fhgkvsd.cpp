@@ -198,7 +198,7 @@ int main(int ac, char *av[])
       LOG (WARN, "could not truncate file: " << strerror (errno));
     }
     snprintf(buf, sizeof(buf), "%d\n", getpid());
-    if (write(pidfile_fd, buf, strlen(buf)) != strlen (buf))
+    if (write(pidfile_fd, buf, strlen(buf)) != (ssize_t)strlen (buf))
     {
       LOG (WARN, "PID could not be written completely: " << strerror (errno));
     }
