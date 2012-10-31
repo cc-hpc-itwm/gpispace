@@ -38,27 +38,6 @@ install(TARGETS agent
   RUNTIME
   DESTINATION bin
   COMPONENT runtime)
-  
-  
-#
-# mapreduce master
-#
-add_executable(mapreduce_master mapreduce_master.cpp ${util-sources})
-target_link_libraries(mapreduce_master ${daemon_libs})
-install(TARGETS mapreduce_master
-  RUNTIME
-  DESTINATION bin
-  COMPONENT runtime)
-  
-#
-# mapreduce Agent
-#
-add_executable(mapreduce_agent mapreduce_agent.cpp ${util-sources})
-target_link_libraries(mapreduce_agent ${daemon_libs})
-install(TARGETS mapreduce_agent
-  RUNTIME
-  DESTINATION bin
-  COMPONENT runtime)
 
 
 set ( client_libs
@@ -82,20 +61,3 @@ install(TARGETS sdpac
   RUNTIME
   DESTINATION bin
   COMPONENT runtime)
-
-add_executable(bsdpac blocking_client.cpp)
-target_link_libraries(bsdpac ${client_libs})
-install(TARGETS bsdpac
-  RUNTIME
-  DESTINATION bin
-  )
-
-add_executable(mapreduce_subscriber_client mapreduce_subscriber_client.cpp)
-target_link_libraries(mapreduce_subscriber_client ${client_libs})
-install(TARGETS mapreduce_subscriber_client
-  RUNTIME
-  DESTINATION bin
-  )
-
-#add_executable(suca submit_and_cancel.cpp)
-#target_link_libraries(suca ${client_libs})
