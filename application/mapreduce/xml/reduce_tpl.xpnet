@@ -276,8 +276,13 @@
 
 			  		MLOG(INFO, sstr.str());*/
 
-			  		// here is the problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			  		last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos);
+			  		try {
+			  			last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
+					}
+					catch(const std::exception& exc)
+					{
+						throw("Reduce slot "+boost::lexical_cast<std::string>(reduce_slot.id)+":"+exc.what());
+					}
 
 			  		//std::cout<<"The content of the shared memory buffer:\n"<<ptr_shmem<<std::endl<<std::endl;
 

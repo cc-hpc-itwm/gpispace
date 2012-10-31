@@ -352,12 +352,12 @@
 	          bool first_char_is_delim = first_char_is_delim = ::mapreduce::util::is_delimiter(ptr_chunk[0]);
 	          	
 	          std::ostringstream oss_left;
-	          oss_left<<SPCHAR<<":"<<read_chunk_info.chunk_id<<":0";
+	          oss_left<<SPCHAR<<read_chunk_info.chunk_id<<SPCHAR<<"0";
 	          	
 	          bool last_char_is_delim = ::mapreduce::util::is_delimiter(ptr_chunk[read_chunk_info.size-1]);
 	          
 	          std::ostringstream oss_right;
-	          oss_right<<SPCHAR<<":"<<read_chunk_info.chunk_id<<":1";
+	          oss_right<<SPCHAR<<read_chunk_info.chunk_id<<SPCHAR<<"1";
 	          
 	          //copy it locally
 	          size_t size(sizeof(char)*read_chunk_info.size+1);
@@ -382,9 +382,17 @@
 		            if(k==0 && read_chunk_info.chunk_id > 0)
 		            {
 						if(first_char_is_delim )
-							n = sprintf(ptr_next, "%s: ", oss_left.str().data() );
+						{
+							std::string str_pair =  oss_left.str() + ": ";
+							n = str_pair.size();
+							memcpy(ptr_next, str_pair.data(), n);
+						}
 			          	else
-			          		n = sprintf(ptr_next, "%s:%s ", oss_left.str().data(), list_words[0].data()  );
+			          	{
+			          		std::string str_pair = oss_left.str() + ':' + list_words[0] + ' '; 
+			          		n = str_pair.size();
+							memcpy(ptr_next, str_pair.data(), n); 
+			          	}
 			         
 			          	ptr_next += n;
 		            	continue;
@@ -394,12 +402,15 @@
 		            {
 						if(last_char_is_delim)
 				        {
-							n = sprintf(ptr_next, "%s: ", oss_right.str().data() );
+							std::string str_pair =  oss_right.str() + ": ";
+							n = str_pair.size();
+							memcpy(ptr_next, str_pair.data(), n);
 						}
 				        else
 				        {
-				        	n = sprintf(ptr_next, "%s:%s ", oss_right.str().data(), list_words[list_words.size()-1].data() );
-				          	std::cout<<"Last chunk word "<< list_words[list_words.size()-1]<<std::endl;
+				        	std::string str_pair = oss_right.str() + ':' + list_words[list_words.size()-1] + ' '; 
+			          		n = str_pair.size();
+							memcpy(ptr_next, str_pair.data(), n); 
 						}
 				          
 				        ptr_next += n;
@@ -416,10 +427,10 @@
 	          		
 	          	BOOST_FOREACH(::mapreduce::util::key_val_pair_t& key_val_pair, list_key_val_pairs)
 	          	{
-					int n = sprintf(ptr_next, "%s:%s ", key_val_pair.first.data(), key_val_pair.second.data());
-	          		ptr_next += n;
-	          		
-	          		//std::cout<<key_val_pair.first<<":"<<key_val_pair.second<<""<<std::endl;
+	          	    std::string str_pair =  key_val_pair.first + ':' + key_val_pair.second + ' ';
+	          	    size_t item_size = str_pair.size();
+					memcpy(ptr_next, str_pair.c_str(), item_size);
+	          		ptr_next += item_size;
 	          	}
 	          }
 	         	          	          			  		 	
@@ -571,7 +582,7 @@
 							MLOG(INFO,"Number of partitions: "<<config.num.part);
 							 
 					        int part_id = ::mapreduce::util::hash(key, config.num.part);
-					        MLOG(INFO,"The pair "<<key<<":"<<val<<" goes to the partition "<<part_id);
+					        MLOG(INFO,"The pair "<<key<<":"<<val<<" goes into the partition "<<part_id);
 					        					      
 					        std::string str_pair = mapreduce::util::make_string(pair);
 			          		int n_bytes = str_pair.size();
