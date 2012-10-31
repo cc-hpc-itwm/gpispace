@@ -85,14 +85,14 @@ namespace fhg
 
         public:
           meta_set_property
-            ( const QString& name
+            ( const char* name
             , change_manager_t& change_manager
             , const QObject* origin
             , const handle_type& handle
             , const ::we::type::property::key_type& key
             , const ::we::type::property::value_type& val
             )
-              : QUndoCommand (name)
+              : QUndoCommand (QObject::tr (name))
               , _change_manager (change_manager)
               , _origin (origin)
               , _handle (handle)
@@ -106,7 +106,7 @@ namespace fhg
             _handle().prop.set (_key, _old_value);
             _change_manager.emit_signal<signal_type>
               ( &change_manager_t::property_changed
-              , NULL, _handle, _key, _old_value, _new_value
+              , NULL, _handle, _key, _new_value, _old_value
               );
           }
 
