@@ -85,6 +85,11 @@ namespace fhg
                                    );
         }
 
+        if (_accessed_widgets.contains (current_view))
+        {
+          _accessed_widgets.remove
+            (_accessed_widgets.indexOf (current_view));
+        }
         _accessed_widgets.push (current_view);
 
         data::proxy::root (current_view->widget()->proxy())->change_manager()
