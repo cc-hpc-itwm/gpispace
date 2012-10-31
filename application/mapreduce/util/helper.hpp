@@ -11,10 +11,115 @@
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 
+const int KEY_MAX_SIZE = 50;
+const std::string delimiters=" \n";
+char SPCHAR = '#';
+
 namespace mapreduce
 {
   namespace util
   {
+
+    std::string match_keys(const std::string& keyval_pair, const std::vector<std::string>& arr_border_keys, std::string& matching_pair, int nChunks, int& cid, int& end)
+    {
+      std::string w;
+      bool bMatching = false;
+
+      std::cout<<"Trying to find the matching pair of the item "<<keyval_pair<<" ..."<<std::endl<<std::endl;
+      boost::char_separator<char> sep(":");
+      boost::tokenizer<boost::char_separator<char> > tok_v(keyval_pair, sep);
+      std::vector<std::string> v;
+      v.resize(4);
+      v.assign(tok_v.begin(), tok_v.end());
+
+      cid = boost::lexical_cast<long>(v[1]);
+      end = boost::lexical_cast<long>(v[2]);
+
+      if( cid == 0 && end == 0)
+      {
+        matching_pair = "";
+        std::cout<<"There were found "<<v.size()<<" tokens. Special case #:0:0:* ... "<<std::endl;
+        return v[3];
+      }
+
+      if( cid == nChunks-1 && end == 1 )
+      {
+
+        std::cout<<"There were found "<<v.size()<<" tokens. Special case #:"<<nChunks-1<<":1:* ..."<<std::endl;
+        matching_pair = "";
+        return v[3];
+      }
+
+      if( arr_border_keys.size() == 0 )
+      {
+           std::cout<<"The array of border keys is empty ..."<<std::endl;
+           matching_pair = "";
+           return "";
+      }
+
+      for( int k=0;k<arr_border_keys.size() && !bMatching; k++ )
+      {
+        boost::tokenizer<boost::char_separator<char> > tok_u(arr_border_keys[k], sep);
+        std::vector<std::string> u;
+        u.assign(tok_u.begin(), tok_u.end());
+
+        int v1 = cid;
+        int u1 = boost::lexical_cast<long>(u[1]);
+
+        int v2 = end;
+        int u2 = boost::lexical_cast<long>(u[2]);
+
+        std::ostringstream osstr;
+
+        if( v1 == u1+1 && u2 == v2+1 )
+        {
+          osstr<<u[3];
+          osstr<<v[3];
+          w = osstr.str();
+          std::cout<<std::endl<<"The recovered word from "<<keyval_pair<<" and "<<arr_border_keys[k]<<" is "<<w<<std::endl<<std::endl;
+          bMatching = true;
+          matching_pair = arr_border_keys[k];
+        }
+        else
+          if( u1 == v1+1 && v2 == u2+1 )
+          {
+            osstr<<v[3];
+            osstr<<u[3];
+            w = osstr.str();
+            std::cout<<std::endl<<"The recovered word from "<<keyval_pair<<" and "<<arr_border_keys[k]<<" is "<<w<<std::endl<<std::endl;
+            bMatching = true;
+            matching_pair = arr_border_keys[k];
+          }
+      }
+
+      if(w.empty())
+        std::cout<<"No matching pair was found!"<<std::endl;
+
+      return w;
+    }
+
+    void print_keys(const std::string& msg, const std::vector<std::string>& arr_keys )
+    {
+      std::ostringstream osstr;
+      for( int k=0;k<arr_keys.size(); k++ )
+      {
+        osstr<<arr_keys[k]<<" ";
+      }
+
+      MLOG(INFO, msg<<" "<<osstr.str());
+    }
+
+    bool is_special_item(const std::string& str_item)
+    {
+      return str_item.find(SPCHAR) != std::string::npos; // true if it begins with #
+    }
+
+    bool is_delimiter(char x)
+    {
+      bool b = (delimiters.find(x) != std::string::npos);
+      return b;
+    }
+
      bool string_comp( const std::string &left, const std::string &right )
      {
         for( std::string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
@@ -54,10 +159,11 @@ namespace mapreduce
       return vint;
     }
 
-    std::string get_string(std::vector<int>& arr)
+    template <typename T>
+    std::string get_string(typename std::vector<T>& arr)
     {
        std::stringstream sstr;
-       for(std::vector<int>::iterator it=arr.begin();it!=arr.end();it++)
+       for(typename std::vector<T>::iterator it=arr.begin();it!=arr.end();it++)
        {
           sstr<<*it<<" ";
        }
@@ -109,6 +215,7 @@ namespace mapreduce
       sstr<<"   slots_to_reduce = "<<t.slots_to_reduce<<std::endl;
       sstr<<"   part_used = "<<t.part_used<<std::endl;
       sstr<<"   red_used = "<<t.red_used<<std::endl;
+      sstr<<"   border_used = "<<t.border_used<<std::endl;
 
       MLOG(INFO, sstr.str());
     }
