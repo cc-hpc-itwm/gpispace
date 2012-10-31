@@ -332,6 +332,7 @@
           <cinclude href="util/map.hpp"/>
           <cinclude href="sstream"/>
           <cinclude href="ctype.h"/>
+          <cinclude href="cstdio"/>
           <code><![CDATA[
 	          LOG (INFO, "Map the chunk ..."<<read_chunk_info.chunk_id);
 	
