@@ -30,6 +30,14 @@ namespace fhg
             "of overloaded version.");
         }
 
+        void base::move ( const QObject* sender
+                        , const QPointF& position
+                        ) const
+        {
+          throw fhg::util::backtracing_exception
+            ("handle::base::move() called instead of overloaded version.");
+        }
+
         change_manager_t& base::change_manager() const
         {
           return _change_manager;

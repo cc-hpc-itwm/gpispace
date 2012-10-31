@@ -10,6 +10,7 @@
 #include <we/type/property.fwd.hpp>
 
 class QObject;
+class QPointF;
 
 namespace fhg
 {
@@ -29,6 +30,11 @@ namespace fhg
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
+
+          //! \note This is not nice, as not all elements actually can move.
+          virtual void move ( const QObject* sender
+                            , const QPointF& position
+                            ) const;
 
           void connect_to_change_mgr ( const QObject* object
                                      , const char* signal

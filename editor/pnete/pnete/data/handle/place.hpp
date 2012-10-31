@@ -41,6 +41,10 @@ namespace fhg
                                     , const ::we::type::property::value_type&
                                     ) const;
 
+          virtual void move ( const QObject* sender
+                            , const QPointF& position
+                            ) const;
+
           const ::xml::parse::id::ref::place& id() const;
 
           net parent() const;

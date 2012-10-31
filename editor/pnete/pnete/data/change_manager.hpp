@@ -22,6 +22,8 @@
 #include <boost/function_types/function_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
 
+class QPointF;
+
 namespace fhg
 {
   namespace pnete
@@ -33,6 +35,7 @@ namespace fhg
         // ## editing action forward declarations ####################
         template<typename handle_type> class meta_set_property;
         // - net -----------------------------------------------------
+        template<typename handle_type> class meta_move_item;
         // -- transition ---------------------------------------------
         class add_transition;
         class remove_transition;
@@ -72,6 +75,10 @@ namespace fhg
                           , const ::we::type::property::key_type&
                           , const ::we::type::property::value_type&
                           );
+        void move_item ( const QObject*
+                       , const handle::transition&
+                       , const QPointF&
+                       );
 
         // -- place --------------------------------------------------
         void add_place ( const QObject*
@@ -87,6 +94,10 @@ namespace fhg
                           , const ::we::type::property::key_type&
                           , const ::we::type::property::value_type&
                           );
+        void move_item ( const QObject*
+                       , const handle::place&
+                       , const QPointF&
+                       );
 
         // - function ------------------------------------------------
         void set_function_name ( const QObject*
@@ -153,10 +164,12 @@ namespace fhg
         friend class action::add_transition;
         friend class action::remove_transition;
         friend class action::meta_set_property<handle::transition>;
+        friend class action::meta_move_item<handle::transition>;
         // -- place --------------------------------------------------
         friend class action::add_place;
         friend class action::remove_place;
         friend class action::meta_set_property<handle::place>;
+        friend class action::meta_move_item<handle::place>;
         // - function ------------------------------------------------
         // - expression ----------------------------------------------
 

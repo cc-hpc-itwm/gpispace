@@ -45,6 +45,13 @@ namespace fhg
           change_manager().set_property (sender, *this, key, val);
         }
 
+        void transition::move ( const QObject* sender
+                              , const QPointF& position
+                              ) const
+        {
+          change_manager().move_item (sender, *this, position);
+        }
+
         const ::xml::parse::id::ref::transition& transition::id() const
         {
           return _id;

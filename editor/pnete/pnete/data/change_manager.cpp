@@ -20,6 +20,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <QPointF>
+
 namespace fhg
 {
   namespace pnete
@@ -32,6 +34,15 @@ namespace fhg
 
       namespace
       {
+        namespace ids
+        {
+          enum
+          {
+            move_place_item,
+            move_transition_item,
+          };
+        }
+
         static std::string inc (const std::string& s)
         {
           unsigned long num (0);
@@ -140,6 +151,90 @@ namespace fhg
         };
 
         // - net -----------------------------------------------------
+        template<typename HANDLE_TYPE>
+          class meta_move_item : public QUndoCommand
+        {
+        private:
+          typedef HANDLE_TYPE handle_type;
+
+        public:
+          meta_move_item
+            ( const char* name
+            , int id
+            , change_manager_t& change_manager
+            , const QObject* origin
+            , const handle_type& handle
+            , const QPointF& position
+            )
+              : QUndoCommand (QObject::tr (name))
+              , _id (id)
+              , _change_manager (change_manager)
+              , _origin (origin)
+              , _handle (handle)
+              , _set_x_action ( new action::meta_set_property<handle_type>
+                                ( "set_transition_property_action"
+                                , change_manager, origin, handle
+                                , "fhg.pnete.position.x"
+                                , to_property_type (position.x())
+                                )
+                              )
+              , _set_y_action ( new action::meta_set_property<handle_type>
+                                ( "set_transition_property_action"
+                                , change_manager, origin, handle
+                                , "fhg.pnete.position.y"
+                                , to_property_type (position.y())
+                                )
+                              )
+          { }
+          ~meta_move_item()
+          {
+            delete _set_x_action;
+            delete _set_y_action;
+          }
+
+          virtual void undo()
+          {
+            _set_x_action->undo();
+            _set_y_action->undo();
+          }
+
+          virtual void redo()
+          {
+            _set_x_action->redo();
+            _set_y_action->redo();
+          }
+
+          virtual int id() const
+          {
+            return _id;
+          }
+
+          virtual bool mergeWith (const QUndoCommand* other_)
+          {
+            if (id() == other_->id())
+            {
+              const meta_move_item<handle_type>* other
+                (static_cast<const meta_move_item<handle_type>*> (other_));
+              if (_handle == other->_handle)
+              {
+                _set_x_action->new_value (other->_set_x_action->new_value());
+                _set_y_action->new_value (other->_set_y_action->new_value());
+                return true;
+              }
+            }
+
+            return false;
+          }
+
+        private:
+          int _id;
+          change_manager_t& _change_manager;
+          const QObject* _origin;
+          const handle_type _handle;
+          meta_set_property<handle_type>* _set_x_action;
+          meta_set_property<handle_type>* _set_y_action;
+        };
+
         // -- transition ---------------------------------------------
         class add_transition : public QUndoCommand
         {
@@ -425,6 +520,19 @@ namespace fhg
              );
       }
 
+      void change_manager_t::move_item ( const QObject* origin
+                                       , const handle::transition& transition
+                                       , const QPointF& position
+                                       )
+      {
+        push ( new action::meta_move_item<handle::transition>
+               ( "move_transition_item_action", ids::move_transition_item
+               , *this, origin, transition, position
+               )
+             );
+      }
+
+
       // -- place ----------------------------------------------------
       void change_manager_t::add_place
         ( const QObject* origin
@@ -466,6 +574,18 @@ namespace fhg
         push ( new action::meta_set_property<handle::place>
                ( "set_place_property_action"
                , *this, origin, place, key, val
+               )
+             );
+      }
+
+      void change_manager_t::move_item ( const QObject* origin
+                                       , const handle::place& place
+                                       , const QPointF& position
+                                       )
+      {
+        push ( new action::meta_move_item<handle::place>
+               ( "move_place_item_action", ids::move_place_item
+               , *this, origin, place, position
                )
              );
       }

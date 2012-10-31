@@ -39,6 +39,10 @@ namespace fhg
                                     , const ::we::type::property::value_type&
                                     ) const;
 
+          virtual void move ( const QObject* sender
+                            , const QPointF& position
+                            ) const;
+
           net parent() const;
 
         private:
