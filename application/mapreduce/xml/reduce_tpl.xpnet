@@ -27,18 +27,16 @@
           <cinclude href="sstream"/>
           <cinclude href="boost/tokenizer.hpp"/>
           <code><![CDATA[
-	         MLOG (INFO, "Call Init " );
+	         MLOG (INFO, "Call init reduce subnet ..." );
 			  
-		    std::cout<<"reduce_info_in.avail_slots = "<<reduce_info_in.avail_slots<<std::endl;
-            std::cout<<"reduce_info_in.slots_to_reduce = "<<reduce_info_in.slots_to_reduce<<std::endl;
-            std::cout<<"reduce_info_in.part_used = "<<reduce_info_in.part_used<<std::endl;
-            std::cout<<"reduce_info_in.red_used = "<<reduce_info_in.red_used<<std::endl; 
+             ::mapreduce::util::dump_iter_red_info("reduce_info_in", reduce_info_in);
 	            
 			// first find out what are the actual sizes of the partitions!
 		  	//us this as a counter
 			agg_iter_red_info.slots_to_reduce="";
 			agg_iter_red_info.part_used="";
 			agg_iter_red_info.red_used="";
+			agg_iter_red_info.border_used=0;
 			
 			gen_iterator_red_info = reduce_info_in;
 			
@@ -153,6 +151,7 @@
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
+          <cinclude href="boost/utility.hpp"/>
           <cinclude href="sstream"/>
           <cinclude href="cstdio"/>
           <cinclude href="algorithm"/>
@@ -160,7 +159,7 @@
           <code><![CDATA[
 	          LOG (INFO, "Call the reduce method here ...");
 			 
-			  LOG (INFO, "Reduce the partition "<<reduce_slot.id<<" partition size "<<reduce_slot.part_used<<", reduce slot size:"<<reduce_slot.red_used);
+			  LOG (INFO, "Reduce the partition "<<reduce_slot.id<<", partition space used: "<<reduce_slot.part_used<<", reduce space used: "<<reduce_slot.red_used);
 			  // first find out what are the actual sizes of the partitions!
 			  char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
 			 
@@ -205,15 +204,15 @@
 		          								)
 		        );
 		       
-		       if(reduce_slot.part_used)
-		       {
+		       	if(reduce_slot.part_used)
+		       	{
 		        	*(local_buff+reduce_slot.part_used)=' '; 
 		        	memcpy(local_buff+reduce_slot.part_used+1, ptr_shmem, reduce_slot.red_used);	
 		        }
 		        else
 		        	memcpy(local_buff, ptr_shmem, reduce_slot.red_used);	
 		        	
-		        MLOG(INFO, "reduce_slot "<<reduce_slot.id<<", local_buff="<<ptr_shmem);	          
+		        //MLOG(INFO, "reduce_slot "<<reduce_slot.id<<", local_buff="<<ptr_shmem);	          
 			  }
 						
 			  std::stringstream sstr(local_buff);		  
@@ -221,10 +220,10 @@
 			  
 			  std::sort( arr_items.begin(), arr_items.end()); 
 			  
-			  std::cout<<"The sorted join(partition, reduce slot):\n ";
+			  /*std::cout<<"The sorted join(partition, reduce slot):\n ";
 			  BOOST_FOREACH(std::string& item, arr_items)
 			  	std::cout<<item<<std::endl;
-			  std::cout<<std::endl;
+			  std::cout<<std::endl;*/
 			  			  			   
 			  // copy the result to shmem
 			  // memcpy(local_buff, ptr_shmem, reduce_slot.part_used);
@@ -241,17 +240,20 @@
 			  		  
 			  size_t last_pos = 0;
 			  			 
-			  BOOST_FOREACH(const std::string& str_item, arr_items)
+			  //BOOST_FOREACH(const std::string& str_item, arr_items)
+			  for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
 			  {
-			    split_pos = str_item.find(':');
-			  	std::string key=str_item.substr(0,split_pos);
-			  	std::string value=str_item.substr(split_pos+1, str_item.size());
+			  	
+			    split_pos = it->find(':');
+			  	std::string key=it->substr(0,split_pos);
+			  	std::string value=it->substr(split_pos+1, it->size());
 			  	
 			  	//std::cout<<"last_key: "<<last_key<<", key: "<<key<<", value: "<<value<<std::endl;
 			  	
-			  	if(last_key==key)
+			  	if( last_key==key )
 			  		list_in_values.push_back(value);
-			  	else // key!=last_key
+			  	
+			  	if( key!=last_key || boost::next(it) == arr_items.end() )
 			  	{
 			  		/*std::cout<<"STOP! Time to do a reduce for the key \""<<last_key<<"\" and the values [";
 			  		BOOST_FOREACH(std::string& val, list_in_values)
@@ -321,6 +323,7 @@
          <module name="accumulate" function="acc(agg_iter_red_info, reduce_slot_updated, new_agg_iter_red_info)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
+           <cinclude href="util/helper.hpp"/>
           <cinclude href="sstream"/>
           <cinclude href="boost/lexical_cast.hpp"/>
           
@@ -332,8 +335,11 @@
 		 	new_agg_iter_red_info.slots_to_reduce =  agg_iter_red_info.slots_to_reduce + std::string(" ") + boost::lexical_cast<std::string>(reduce_slot_updated.id);
 			new_agg_iter_red_info.part_used = agg_iter_red_info.part_used + std::string(" ") +  boost::lexical_cast<std::string>(reduce_slot_updated.part_used);
 		 	new_agg_iter_red_info.red_used = agg_iter_red_info.red_used + std::string(" ") +  boost::lexical_cast<std::string>(reduce_slot_updated.red_used);
-		 
-		 	LOG (INFO, "After update: "<<new_agg_iter_red_info.slots_to_reduce<<std::endl<<new_agg_iter_red_info.part_used<<std::endl<<new_agg_iter_red_info.red_used);
+		    new_agg_iter_red_info.border_used = 0; 
+		 	//LOG (INFO, "After update: "<<new_agg_iter_red_info.slots_to_reduce<<std::endl<<new_agg_iter_red_info.part_used<<std::endl<<new_agg_iter_red_info.red_used);
+		 	
+		 	::mapreduce::util::dump_iter_red_info("new_agg_iter_red_info", new_agg_iter_red_info);
+		 	
           ]]></code>
         </module>
         <condition>
@@ -386,7 +392,7 @@
 	          	LOG (INFO, "Update the partition and reduction info after reduction. Free the reduced partitions.");
 	          	pnetc::type::iterator_red_info::iterator_red_info part_info;
 	            
-				MLOG(INFO, "Stop, all reduce tasks were done. Update noe the information about partitions and reduce ..");
+				MLOG(INFO, "Stop, all reduce tasks were done. Update now the information about partitions and reduce ..");
             			
             	::mapreduce::util::dump_iter_red_info("agg_iter_red_info", agg_iter_red_info);
             	
@@ -409,6 +415,7 @@
 	        	
 	        	reduce_info_out.part_used = ::mapreduce::util::get_string(arr_part_used);
 	        	reduce_info_out.red_used = ::mapreduce::util::get_string(arr_red_used);
+	        	reduce_info_out.border_used = end_gen_iter.border_used;
 	        	
 	        	::mapreduce::util::dump_iter_red_info("reduce_info_out", reduce_info_out);
 			  
