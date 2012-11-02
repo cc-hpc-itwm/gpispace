@@ -96,7 +96,7 @@ namespace xml
         ( const type_map_type & map
         , const type_get_type & get
         , const xml::parse::struct_t::set_type & known_structs
-        , const state::type & state
+        , state::type & state
         )
       {
         function()->specialize (map, get, known_structs, state);

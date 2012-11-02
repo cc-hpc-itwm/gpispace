@@ -8,6 +8,8 @@
 
 #include <fhg/util/xml.hpp>
 
+#include <xml/parse/id/mapper.hpp>
+
 // #include <xml/parse/type/function.hpp>
 // #include <xml/parse/type/place.hpp>
 // #include <xml/parse/type/place_map.hpp>
@@ -48,6 +50,22 @@ namespace xml
           {
             ::xml::parse::type::dump::dump (s, *pos, x);
           }
+        }
+
+        template<typename Container>
+        void dumps ( ::fhg::util::xml::xmlstream& s
+                   , Container container
+                   , ::xml::parse::id::mapper* id_mapper
+                   )
+        {
+          for ( typename Container::const_iterator pos (container.begin())
+              , end (container.end())
+              ; pos != end
+              ; ++pos
+              )
+            {
+              ::xml::parse::type::dump::dump (s, *id_mapper->get (*pos));
+            }
         }
       }
     }

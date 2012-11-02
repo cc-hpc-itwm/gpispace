@@ -65,7 +65,7 @@ namespace xml
         void specialize ( const type_map_type & map
                         , const type_get_type & get
                         , const xml::parse::struct_t::set_type & known_structs
-                        , const state::type & state
+                        , state::type & state
                         );
 
         boost::optional<function_type> get_function (const std::string&) const;

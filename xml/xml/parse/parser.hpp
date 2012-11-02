@@ -87,10 +87,10 @@ namespace xml
                                 , state::type &
                                 , const id::place& parent
                                 );
-    type::transition_type transition_type ( const xml_node_type *
-                                          , state::type &
-                                          , const id::net& parent
-                                          );
+    id::transition transition_type ( const xml_node_type *
+                                   , state::type &
+                                   , const id::net& parent
+                                   );
     type::specialize_type specialize_type ( const xml_node_type *
                                           , state::type &
                                           , const id::net& parent

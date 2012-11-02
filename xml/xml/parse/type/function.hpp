@@ -189,12 +189,12 @@ namespace xml
 
         // ***************************************************************** //
 
-        void specialize (const state::type & state);
+        void specialize (state::type & state);
 
         void specialize ( const type_map_type & map
                         , const type_get_type & get
                         , const xml::parse::struct_t::set_type & known_structs
-                        , const state::type & state
+                        , state::type & state
                         );
       };
 

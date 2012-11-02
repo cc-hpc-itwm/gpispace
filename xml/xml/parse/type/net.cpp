@@ -55,7 +55,7 @@ namespace xml
       {
         if (has_parent())
           {
-            return (_id_mapper)->get (*_parent);
+            return id_mapper()->get (*_parent);
           }
 
         return boost::none;
@@ -64,7 +64,7 @@ namespace xml
       {
         if (has_parent())
           {
-            return _id_mapper->get_ref (*_parent);
+            return id_mapper()->get_ref (*_parent);
           }
 
         return boost::none;
@@ -73,6 +73,11 @@ namespace xml
       const boost::filesystem::path& net_type::path () const
       {
         return _path;
+      }
+
+      id::mapper* net_type::id_mapper() const
+      {
+        return _id_mapper;
       }
 
       // ***************************************************************** //
@@ -117,15 +122,20 @@ namespace xml
         return _places.copy_by_id (id);
       }
 
-      boost::optional<transition_type> net_type::transition_by_id
-        (const id::transition& id) const
-      {
-        return _transitions.copy_by_id (id);
-      }
-
       bool net_type::has_transition (const std::string& name) const
       {
-        return _transitions.is_element (name);
+        return _by_name_transition.find (name) != _by_name_transition.end();
+      }
+
+      const boost::unordered_set<id::ref::transition>&
+      net_type::ids_transition() const
+      {
+        return _ids_transition;
+      }
+      boost::unordered_set<id::ref::transition>&
+      net_type::ids_transition()
+      {
+        return _ids_transition;
       }
 
       boost::optional<function_type> net_type::get_function (const std::string & name) const
@@ -194,15 +204,6 @@ namespace xml
         return _places;
       }
 
-      const net_type::transitions_type & net_type::transitions (void) const
-      {
-        return _transitions.elements();
-      }
-      net_type::transitions_type & net_type::transitions (void)
-      {
-        return _transitions.elements();
-      }
-
       const functions_type & net_type::functions (void) const
       {
         return _functions.elements();
@@ -235,23 +236,27 @@ namespace xml
         _places.erase (t);
       }
 
-      transition_type& net_type::push_transition (const transition_type & t)
+      const id::ref::transition&
+      net_type::push_transition (const id::ref::transition& id_transition)
       {
-        xml::util::unique<transition_type,id::transition>::push_return_type trans
-          (_transitions.push_and_get_old_value (t));
+        const transition_type& transition (*id_mapper()->get (id_transition));
 
-        if (!trans.first)
+        const boost::unordered_map<std::string,id::ref::transition>::const_iterator
+          pos (_by_name_transition.find (transition.name()));
+
+        if (pos != _by_name_transition.end())
         {
           throw error::duplicate_transition<transition_type>
-            (t, *trans.second);
+            (transition, *id_mapper()->get (pos->second));
         }
 
-        return *trans.first;
-      }
+        _ids_transition.insert (id_transition);
+        _by_name_transition.insert (std::make_pair ( transition.name()
+                                                   , id_transition
+                                                   )
+                                   );
 
-      void net_type::erase_transition (const transition_type& t)
-      {
-        _transitions.erase (t);
+        return id_transition;
       }
 
       void net_type::push_function (const function_type & f)
@@ -299,7 +304,8 @@ namespace xml
 
       void net_type::clear_transitions (void)
       {
-        _transitions.clear();
+        _ids_transition.clear();
+        _by_name_transition.clear();
       }
 
       // ***************************************************************** //
@@ -346,7 +352,7 @@ namespace xml
       void net_type::specialize ( const type::type_map_type & map
                                 , const type::type_get_type & get
                                 , const xml::parse::struct_t::set_type & known_structs
-                                , const state::type & state
+                                , state::type & state
                                 )
       {
         namespace st = xml::parse::struct_t;
@@ -365,7 +371,9 @@ namespace xml
             throw error::unknown_template (specialize->use, path());
           }
 
-          tmpl->function()->name (specialize->name());
+          //! \todo generate a new function, with a state.next_id and
+          //! the parent that is the transition that requires the
+          //! specialization -> needs lazy specialization
 
           type_map_apply (map, specialize->type_map);
 
@@ -382,6 +390,8 @@ namespace xml
                         , specialize->type_get
                         , state
                         );
+
+          tmpl->function()->name (specialize->name());
 
           push_function (*tmpl->function());
         }
@@ -408,13 +418,15 @@ namespace xml
                         );
         }
 
-        for ( transitions_type::iterator
-                trans (_transitions.elements().begin())
-            ; trans != _transitions.elements().end()
-            ; ++trans
+        for ( boost::unordered_set<id::ref::transition>::iterator
+                id_transition (ids_transition().begin())
+            ; id_transition != ids_transition().end()
+            ; ++id_transition
             )
         {
-          trans->specialize
+          transition_type& transition (*id_mapper()->get_ref (*id_transition));
+
+          transition.specialize
             ( map
             , get
             , st::join (known_structs, st::make (structs), state)
@@ -422,7 +434,7 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , trans->structs
+                        , transition.structs
                         , structs
                         , get
                         , state
@@ -478,13 +490,14 @@ namespace xml
           fun->resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        for ( transitions_type::iterator
-                trans (_transitions.elements().begin())
-            ; trans != _transitions.elements().end()
-            ; ++trans
+        for ( boost::unordered_set<id::ref::transition>::iterator
+                id_transition (ids_transition().begin())
+            ; id_transition != ids_transition().end()
+            ; ++id_transition
             )
         {
-          trans->resolve (structs_resolved, state, st::forbidden_type());
+          id_mapper()->get_ref(*id_transition)
+            ->resolve (structs_resolved, state, st::forbidden_type());
         }
 
         for ( places_type::iterator place (places().begin())
@@ -501,12 +514,13 @@ namespace xml
 
       void net_type::sanity_check (const state::type & state, const function_type& outerfun) const
       {
-        for ( transitions_type::const_iterator trans (transitions().begin())
-            ; trans != transitions().end()
-            ; ++trans
+        for ( boost::unordered_set<id::ref::transition>::const_iterator
+                id_transition (ids_transition().begin())
+            ; id_transition != ids_transition().end()
+            ; ++id_transition
             )
         {
-          trans->sanity_check (state);
+          id_mapper()->get (*id_transition)->sanity_check (state);
         }
 
         for ( functions_type::const_iterator fun (functions().begin())
@@ -534,12 +548,13 @@ namespace xml
 
       void net_type::type_check (const state::type & state) const
       {
-        for ( transitions_type::const_iterator trans (transitions().begin())
-            ; trans != transitions().end()
-            ; ++trans
+        for ( boost::unordered_set<id::ref::transition>::const_iterator
+                id_transition (ids_transition().begin())
+            ; id_transition != ids_transition().end()
+            ; ++id_transition
             )
         {
-          trans->type_check (*this, state);
+          id_mapper()->get (*id_transition)->type_check (*this, state);
         }
 
         for ( functions_type::const_iterator fun (functions().begin())
@@ -563,11 +578,15 @@ namespace xml
           place->name (prefix + place->name());
         }
 
-        for ( transitions_type::iterator transition (transitions().begin())
-            ; transition != transitions().end()
-            ; ++transition
+        for ( boost::unordered_set<id::ref::transition>::iterator
+                id_transition (ids_transition().begin())
+            ; id_transition != ids_transition().end()
+            ; ++id_transition
             )
         {
+          boost::optional<transition_type&>
+            transition (id_mapper()->get_ref (*id_transition));
+
           transition->name (prefix + transition->name());
 
           for ( connections_type::iterator
@@ -622,11 +641,15 @@ namespace xml
           place->name (place->name().substr (prefix_length));
         }
 
-        for ( transitions_type::iterator transition (transitions().begin())
-            ; transition != transitions().end()
-            ; ++transition
+        for ( boost::unordered_set<id::ref::transition>::iterator
+                id_transition (ids_transition().begin())
+            ; id_transition != ids_transition().end()
+            ; ++id_transition
             )
         {
+          boost::optional<transition_type&>
+            transition (id_mapper()->get_ref (*id_transition));
+
           transition->name (transition->name().substr (prefix_length));
 
           for ( connections_type::iterator
@@ -747,15 +770,21 @@ namespace xml
                 }
             }
 
-          for ( net_type::transitions_type::const_iterator transition
-                  (net.transitions().begin())
-              ; transition != net.transitions().end()
-              ; ++transition
-              )
-            {
-              transition_synthesize
-                (*transition, state, net, we_net, pid_of_place, e);
-            }
+        for ( boost::unordered_set<id::ref::transition>::const_iterator
+                id_transition (net.ids_transition().begin())
+            ; id_transition != net.ids_transition().end()
+            ; ++id_transition
+            )
+          {
+            transition_synthesize
+              ( *state.id_mapper()->get (*id_transition)
+              , state
+              , net
+              , we_net
+              , pid_of_place
+              , e
+              );
+          }
 
           for ( net_type::places_type::const_iterator place (net.places().begin())
               ; place != net.places().end()
@@ -804,7 +833,8 @@ namespace xml
           dumps (s, net.specializes().begin(), net.specializes().end());
           dumps (s, net.functions().begin(), net.functions().end());
           dumps (s, net.places().begin(), net.places().end());
-          dumps (s, net.transitions().begin(), net.transitions().end());
+
+          dumps (s, net.ids_transition(), net.id_mapper());
 
           s.close ();
         }

@@ -330,40 +330,46 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::transition_type
+    id::transition
     transition_type ( const xml_node_type * node
                     , state::type & state
                     , const id::net& parent
                     )
     {
+      id::transition id (state.next_id());
+
       const std::string name
         (required ("transition_type", node, "name", state.file_in_progress()));
 
-      type::transition_type t ( id::transition (state.next_id())
-                              , parent
-                              , state.id_mapper()
-                              );
+      {
+        type::transition_type t (id, parent, state.id_mapper());
+      }
 
-      t.path = state.file_in_progress();
-      t.name (validate_name ( validate_prefix ( name
-                                              , "transition"
-                                              , state.file_in_progress()
-                                              )
-                            , "transition"
-                            , state.file_in_progress()
-                            )
-             );
-      t.priority = fhg::util::fmap<std::string, petri_net::prio_t>
-        ( boost::lexical_cast<petri_net::prio_t>
-        , optional (node, "priority")
+      state.id_mapper()->get_ref (id)->path = state.file_in_progress();
+      state.id_mapper()->get_ref (id)->name
+        (validate_name ( validate_prefix ( name
+                                         , "transition"
+                                         , state.file_in_progress()
+                                         )
+                       , "transition"
+                       , state.file_in_progress()
+                       )
         );
-      t.finline = fhg::util::fmap<std::string, bool>( fhg::util::read_bool
-                                                    , optional (node, "inline")
-                                                    );
-      t.internal =
-        fhg::util::fmap<std::string, bool>( fhg::util::read_bool
-                                          , optional (node, "internal")
-                                          );
+      state.id_mapper()->get_ref (id)
+        ->priority = fhg::util::fmap<std::string, petri_net::prio_t>
+                   ( boost::lexical_cast<petri_net::prio_t>
+                   , optional (node, "priority")
+                   );
+      state.id_mapper()->get_ref (id)
+        ->finline = fhg::util::fmap<std::string, bool>
+                  ( fhg::util::read_bool
+                  , optional (node, "inline")
+                  );
+      state.id_mapper()->get_ref (id)
+        ->internal = fhg::util::fmap<std::string, bool>
+                   ( fhg::util::read_bool
+                   , optional (node, "internal")
+                   );
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -386,21 +392,25 @@ namespace xml
 
 
 
-                  t.function_or_use
-                    ( id::ref::function  ( function_include (file, state,
-                                                           boost::make_optional (type::function_type::id_parent(t.id()))
-                                                           )
-                                        , state.id_mapper()
-                                        )
+                  state.id_mapper()->get_ref (id)
+                    ->function_or_use
+                    ( id::ref::function
+                      ( function_include
+                        ( file
+                        , state
+                        , boost::make_optional
+                          (type::function_type::id_parent(id))
+                        )
+                      , state.id_mapper()
+                      )
                     );
                 }
               else if (child_name == "use")
                 {
-                  t.function_or_use
-                    ( type::use_type ( id::use ( state.next_id()
-
-                                               )
-                                     , t.id()
+                  state.id_mapper()->get_ref (id)
+                    ->function_or_use
+                    ( type::use_type ( id::use (state.next_id())
+                                     , id
                                      , state.id_mapper()
                                      , required ( "transition_type"
                                                 , child
@@ -412,34 +422,43 @@ namespace xml
                 }
               else if (child_name == "defun")
                 {
-                  t.function_or_use ( id::ref::function
-                                    ( function_type ( child
-                                                    , state
-                                                    , boost::make_optional (type::function_type::id_parent(t.id()))
-                                                    )
-                                      , state.id_mapper()
-                                      )
-                                    );
+                  state.id_mapper()->get_ref (id)
+                    ->function_or_use
+                    ( id::ref::function
+                      ( function_type
+                        ( child
+                        , state
+                        , boost::make_optional
+                          (type::function_type::id_parent(id))
+                        )
+                      , state.id_mapper()
+                      )
+                    );
                 }
               else if (child_name == "place-map")
                 {
-                  t.push_place_map (place_map_type (child, state, t.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_place_map (place_map_type (child, state, id));
                 }
               else if (child_name == "connect-in")
                 {
-                  t.push_in (connect_type(child, state, t.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_in (connect_type(child, state, id));
                 }
               else if (child_name == "connect-out")
                 {
-                  t.push_out (connect_type(child, state, t.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_out (connect_type(child, state, id));
                 }
               else if (child_name == "connect-inout")
                 {
-                  t.push_inout (connect_type (child, state, t.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_inout (connect_type (child, state, id));
                 }
               else if (child_name == "connect-read")
                 {
-                  t.push_read (connect_type(child, state, t.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_read (connect_type(child, state, id));
                 }
               else if (child_name == "condition")
                 {
@@ -450,15 +469,25 @@ namespace xml
                       )
                     );
 
-                  t.cond.insert (t.cond.end(), conds.begin(), conds.end());
+                  state.id_mapper()->get_ref (id)
+                    ->cond.insert ( state.id_mapper()->get_ref (id)->cond.end()
+                                  , conds.begin()
+                                  , conds.end()
+                                  );
                 }
               else if (child_name == "require")
                 {
-                  require_type (t.requirements, child, state);
+                  require_type ( state.id_mapper()->get_ref (id)->requirements
+                               , child
+                               , state
+                               );
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type (t.prop, child, state);
+                  property_map_type ( state.id_mapper()->get_ref (id)->prop
+                                    , child
+                                    , state
+                                    );
                 }
               else if (child_name == "include-properties")
                 {
@@ -472,7 +501,10 @@ namespace xml
                                          )
                     );
 
-                  util::property::join (state, t.prop, deeper);
+                  util::property::join ( state
+                                       , state.id_mapper()->get_ref (id)->prop
+                                       , deeper
+                                       );
                 }
               else
                 {
@@ -486,7 +518,7 @@ namespace xml
             }
         }
 
-      return t;
+      return id;
     }
 
     // ********************************************************************* //
@@ -1312,7 +1344,11 @@ namespace xml
                 {
                   state.id_mapper()
                     ->get_ref (id)
-                    ->push_transition (transition_type (child, state, id));
+                    ->push_transition ( id::ref::transition
+                                        ( transition_type (child, state, id)
+                                        , state.id_mapper()
+                                        )
+                                      );
                 }
               else if (child_name == "struct")
                 {

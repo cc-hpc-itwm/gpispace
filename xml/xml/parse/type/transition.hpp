@@ -125,7 +125,7 @@ namespace xml
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
                         , const xml::parse::struct_t::set_type & known_structs
-                        , const state::type & state
+                        , state::type & state
                         );
 
         // ***************************************************************** //

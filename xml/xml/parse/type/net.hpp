@@ -47,7 +47,10 @@ namespace xml
         typedef fhg::util::maybe<std::string> maybe_string_type;
 
         places_type _places;
-        xml::util::unique<transition_type,id::transition> _transitions;
+
+        boost::unordered_set<id::ref::transition> _ids_transition;
+        boost::unordered_map<std::string,id::ref::transition> _by_name_transition;
+
         xml::util::unique<function_type,id::function,maybe_string_type> _functions;
         xml::util::unique<template_type,id::tmpl,maybe_string_type> _templates;
         xml::util::unique<specialize_type,id::specialize> _specializes;
@@ -59,8 +62,6 @@ namespace xml
         boost::filesystem::path _path;
 
       public:
-        typedef xml::util::unique<transition_type,id::transition>::elements_type transitions_type;
-
         bool contains_a_module_call;
         structs_type structs;
 
@@ -79,6 +80,7 @@ namespace xml
         boost::optional<const function_type&> parent() const;
         boost::optional<function_type&> parent();
         bool has_parent() const;
+        id::mapper* id_mapper() const;
 
         const boost::filesystem::path& path() const;
 
@@ -94,9 +96,9 @@ namespace xml
         boost::optional<place_type> get_place (const std::string & name) const;
         boost::optional<place_type> place_by_id (const id::place& id) const;
 
-        boost::optional<transition_type> transition_by_id
-          (const id::transition& id) const;
         bool has_transition (const std::string& name) const;
+        const boost::unordered_set<id::ref::transition>& ids_transition() const;
+        boost::unordered_set<id::ref::transition>& ids_transition();
 
         boost::optional<function_type> get_function (const std::string & name) const;
 
@@ -111,9 +113,6 @@ namespace xml
         places_type & places (void);
         const places_type & places (void) const;
 
-        const transitions_type & transitions (void) const;
-        transitions_type & transitions (void);
-
         const functions_type & functions (void) const;
 
         const specializes_type & specializes (void) const;
@@ -125,8 +124,7 @@ namespace xml
         void push_place (const place_type & p);
         void erase_place (const place_type& t);
 
-        transition_type& push_transition (const transition_type & t);
-        void erase_transition (const transition_type& t);
+        const id::ref::transition& push_transition (const id::ref::transition&);
 
         void push_function (const function_type & f);
 
@@ -155,7 +153,7 @@ namespace xml
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
                         , const xml::parse::struct_t::set_type & known_structs
-                        , const state::type & state
+                        , state::type & state
                         );
 
         // ***************************************************************** //

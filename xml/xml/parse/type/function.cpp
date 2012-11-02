@@ -712,7 +712,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::specialize (const state::type & state)
+      void function_type::specialize (state::type & state)
       {
         const type_map_type type_map_empty;
         const type_get_type type_get_empty;
@@ -733,7 +733,7 @@ namespace xml
           const type::type_map_type & map;
           const type::type_get_type & get;
           const xml::parse::struct_t::set_type & known_structs;
-          const state::type & state;
+          state::type & state;
           function_type & fun;
 
         public:
@@ -741,7 +741,7 @@ namespace xml
             ( const type::type_map_type & _map
             , const type::type_get_type & _get
             , const xml::parse::struct_t::set_type & _known_structs
-            , const state::type & _state
+            , state::type & _state
             , function_type & _fun
             )
               : map (_map)
@@ -772,7 +772,7 @@ namespace xml
       void function_type::specialize ( const type_map_type & map
                                      , const type_get_type & get
                                      , const xml::parse::struct_t::set_type & known_structs
-                                     , const state::type & state
+                                     , state::type & state
                                      )
       {
         for ( ports_type::iterator port (_in.elements().begin())
@@ -1312,16 +1312,22 @@ namespace xml
 
         n.contains_a_module_call = false;
 
-        for ( net_type::transitions_type::iterator pos
-                (n.transitions().begin())
-            ; pos != n.transitions().end()
-            ; ++pos
+        for ( boost::unordered_set<id::ref::transition>::iterator
+                id_transition (n.ids_transition().begin())
+            ; id_transition != n.ids_transition().end()
+            ; ++id_transition
             )
           {
             n.contains_a_module_call
               |= boost::apply_visitor
-              ( transition_find_module_calls_visitor(state, id_net, *pos, m, mcs)
-              , pos->function_or_use()
+              ( transition_find_module_calls_visitor
+                ( state
+                , id_net
+                , *state.id_mapper()->get_ref (*id_transition)
+                , m
+                , mcs
+                )
+              , state.id_mapper()->get_ref (*id_transition)->function_or_use()
               );
           }
 
@@ -2152,15 +2158,16 @@ namespace xml
                 struct_to_cpp (state, *pos);
               }
 
-            for ( net_type::transitions_type::const_iterator pos
-                   (n.transitions().begin())
-                ; pos != n.transitions().end()
-                ; ++pos
+            for ( boost::unordered_set<id::ref::transition>::const_iterator
+                    id_transition (n.ids_transition().begin())
+                ; id_transition != n.ids_transition().end()
+                ; ++id_transition
                 )
               {
-                boost::apply_visitor ( transition_struct_to_cpp_visitor (state)
-                                     , pos->function_or_use()
-                                     );
+                boost::apply_visitor
+                  ( transition_struct_to_cpp_visitor (state)
+                  , state.id_mapper()->get (*id_transition)->function_or_use()
+                  );
               }
           }
 

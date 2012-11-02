@@ -133,7 +133,7 @@ namespace xml
       boost::optional<function_type>
       transition_type::get_function (const std::string& name) const
       {
-        std::cerr << "transition " << _name
+        std::cerr << "transition " << this->name()
                   << " asked for the function " << name
                   << std::endl;
 
@@ -258,14 +258,14 @@ namespace xml
           const type::type_map_type & map;
           const type::type_get_type & get;
           const xml::parse::struct_t::set_type & known_structs;
-          const state::type & state;
+          state::type & state;
 
         public:
           transition_specialize
             ( const type::type_map_type & _map
             , const type::type_get_type & _get
             , const xml::parse::struct_t::set_type & _known_structs
-            , const state::type & _state
+            , state::type & _state
             )
               : map (_map)
               , get (_get)
@@ -285,7 +285,7 @@ namespace xml
       void transition_type::specialize ( const type::type_map_type & map
                                        , const type::type_get_type & get
                                        , const xml::parse::struct_t::set_type & known_structs
-                                       , const state::type & state
+                                       , state::type & state
                                        )
       {
         boost::apply_visitor
