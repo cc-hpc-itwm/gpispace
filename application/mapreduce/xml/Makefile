@@ -40,7 +40,7 @@ CXXLIBRARYPATHS += $(SDPA_HOME)/lib
 
 ###############################################################################
 WE_EXEC_WORKER = 1
-SDPA_HOME=/p/hpc/sdpa/rotaru/sdpa_install
+
 ifndef SDPA_HOME
  $(error variable SDPA_HOME not set)
 endif
