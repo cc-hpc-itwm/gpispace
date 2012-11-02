@@ -130,6 +130,16 @@ namespace xml
         return _place_map.elements();
       }
 
+      boost::optional<function_type>
+      transition_type::get_function (const std::string& name) const
+      {
+        std::cerr << "transition " << _name
+                  << " asked for the function " << name
+                  << std::endl;
+
+        return boost::none;
+      }
+
       // ***************************************************************** //
 
       void transition_type::push_in (const connect_type & connect)

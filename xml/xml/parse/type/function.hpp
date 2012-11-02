@@ -108,6 +108,8 @@ namespace xml
         const boost::optional<id_parent>& parent() const;
         id::mapper* id_mapper() const;
 
+        bool has_parent() const;
+
         boost::optional<function_type> get_function (const std::string& name) const;
 
         bool is_same (const function_type& other) const;

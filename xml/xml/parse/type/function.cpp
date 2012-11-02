@@ -109,10 +109,48 @@ namespace xml
         return _id_mapper;
       }
 
+      bool function_type::has_parent() const
+      {
+        return _parent;
+      }
+
+      namespace
+      {
+        class visitor_get_function
+          : public boost::static_visitor<boost::optional<function_type> >
+        {
+        private:
+          id::mapper* _id_mapper;
+          const std::string& _name;
+
+        public:
+          visitor_get_function ( id::mapper* id_mapper
+                               , const std::string& name
+                               )
+            : _id_mapper (id_mapper)
+            , _name (name)
+          {}
+
+          template<typename ID>
+          boost::optional<function_type> operator () (ID id) const
+          {
+            return _id_mapper->get (id)->get_function (_name);
+          }
+        };
+      }
+
       boost::optional<function_type>
       function_type::get_function (const std::string& name) const
       {
         std::cerr << "function " << _name << " asked for the function " << name << std::endl;
+
+        if (has_parent())
+          {
+            return boost::apply_visitor
+              ( visitor_get_function (id_mapper(), name)
+              , *parent()
+              );
+          }
 
         return boost::none;
       }

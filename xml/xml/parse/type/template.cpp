@@ -82,6 +82,16 @@ namespace xml
         return _path;
       }
 
+      boost::optional<function_type>
+      template_type::get_function (const std::string& name) const
+      {
+        std::cerr << "template " << _name
+                  << " asked for the function " << name
+                  << std::endl;
+
+        return boost::none;
+      }
+
       void template_type::specialize
         ( const type_map_type & map
         , const type_get_type & get

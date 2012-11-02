@@ -83,6 +83,10 @@ namespace xml
 
         // ***************************************************************** //
 
+        boost::optional<function_type> get_function (const std::string&) const;
+
+        // ***************************************************************** //
+
         const connections_type & in (void) const;
         const connections_type & out (void) const;
         const connections_type & read (void) const;

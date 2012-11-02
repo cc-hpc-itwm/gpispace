@@ -67,6 +67,8 @@ namespace xml
                         , const xml::parse::struct_t::set_type & known_structs
                         , const state::type & state
                         );
+
+        boost::optional<function_type> get_function (const std::string&) const;
       };
 
       namespace dump
