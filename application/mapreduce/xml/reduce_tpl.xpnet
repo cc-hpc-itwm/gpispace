@@ -2,7 +2,7 @@
 <template name="reduce_tpl">
 <template-parameter type="T"/>
 <defun>
-	<include-structs href="types.xpnet"/>
+<!--	<include-structs href="types.xpnet"/> -->
   <in name="config" type="T" place="config"/>
   <in name="reduce_info_in" type="iterator_red_info" place="reduce_info_in"/>
   <out name="reduce_info_out" type="iterator_red_info" place="reduce_info_out"/>
@@ -336,7 +336,7 @@
 
           <code><![CDATA[
           	LOG (INFO, "Accumulate reduction info ...");
-          	
+
 		  	new_agg_iter_red_info.avail_slots = agg_iter_red_info.avail_slots-1;
 		 	new_agg_iter_red_info.slots_to_reduce =  agg_iter_red_info.slots_to_reduce + std::string(" ") + boost::lexical_cast<std::string>(reduce_slot_updated.id);
 			new_agg_iter_red_info.part_used = agg_iter_red_info.part_used + std::string(" ") +  boost::lexical_cast<std::string>(reduce_slot_updated.part_used);
