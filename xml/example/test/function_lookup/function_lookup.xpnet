@@ -1,0 +1,28 @@
+<defun name="function_lookup">
+  <net>
+    <template name="t">
+      <template-parameter type="T"/>
+      <defun name="exp">
+        <expression/>
+      </defun>
+    </template>
+    <specialize name="t_control" use="t">
+      <type-map replace="T" with="control"/>
+    </specialize>
+    <specialize name="t_bool" use="t">
+      <type-map replace="T" with="bool"/>
+    </specialize>
+    <transition name="t1">
+      <use name="t_control"/>
+    </transition>
+    <transition name="tnet">
+      <defun name="ask_me_baby">
+        <net>
+          <transition name="tnet1">
+            <use name="t_control"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+  </net>
+</defun>
