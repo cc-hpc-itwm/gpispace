@@ -49,10 +49,10 @@ namespace xml
                                     , state::type &
                                     , const id::transition& parent
                                     );
-    type::function_type function_type ( const xml_node_type *
-                                      , state::type &
-                                      , const type::function_type::id_parent& parent
-                                      );
+    id::function function_type ( const xml_node_type *
+                               , state::type &
+                               , const type::function_type::id_parent& parent
+                               );
     type::mod_type mod_type ( const xml_node_type *
                             , state::type &
                             , const id::function& parent
@@ -64,7 +64,6 @@ namespace xml
     id::net net_type ( const xml_node_type *
                      , state::type &
                      , const id::function& parent
-                     , type::function_type& parent_fun
                      );
     type::place_type place_type ( const xml_node_type *
                                 , state::type &
@@ -108,7 +107,7 @@ namespace xml
                                     , const id::function& parent
                                     );
 
-    type::function_type
+    id::function
     just_parse (state::type & state, const std::string & input);
 
     // ********************************************************************* //

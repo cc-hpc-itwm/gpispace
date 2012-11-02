@@ -215,9 +215,10 @@ namespace xml
           { }
 
           void operator () (use_type &) const { return; }
-          void operator () (function_type& fun) const
+          void operator () (id::ref::function& id_function) const
           {
-            fun.resolve (global, state, forbidden);
+            state.id_mapper()->get_ref (id_function)
+              ->resolve (global, state, forbidden);
           }
         };
       }
@@ -263,11 +264,10 @@ namespace xml
           {}
 
           void operator () (use_type &) const { return; }
-          void operator () (function_type & fun) const
+          void operator () (id::ref::function& id_function) const
           {
-
-
-            fun.specialize (map, get, known_structs, state);
+            state.id_mapper()->get_ref (id_function)
+              ->specialize (map, get, known_structs, state);
           }
         };
       }
@@ -303,9 +303,10 @@ namespace xml
           { }
 
           void operator () (const use_type &) const { return; }
-          void operator () (const function_type & fun) const
+          void operator () (const id::ref::function& id_function) const
           {
-            fun.sanity_check (state);
+            state.id_mapper()->get (id_function)
+              ->sanity_check (state);
           }
         };
       }
@@ -315,59 +316,6 @@ namespace xml
         boost::apply_visitor ( transition_sanity_check (state)
                              , function_or_use()
                              );
-      }
-
-      // ***************************************************************** //
-
-      namespace
-      {
-        class transition_distribute_function : public boost::static_visitor<void>
-        {
-        private:
-          const state::type& _state;
-          const functions_type& _functions;
-          const templates_type& _templates;
-          const specializes_type& _specializes;
-
-        public:
-          transition_distribute_function ( const state::type& state
-                                         , const functions_type& functions
-                                         , const templates_type& templates
-                                         , const specializes_type& specializes
-                                         )
-            : _state (state)
-            , _functions (functions)
-            , _templates (templates)
-            , _specializes (specializes)
-          {}
-
-          void operator () (use_type&) const { return; }
-          void operator () (function_type& fun) const
-          {
-            fun.distribute_function ( _state
-                                    , _functions
-                                    , _templates
-                                    , _specializes
-                                    );
-          }
-        };
-      }
-
-      void transition_type::distribute_function ( const state::type& state
-                                                , const functions_type& functions
-                                                , const templates_type& templates
-                                                , const specializes_type& specializes
-                                                )
-      {
-        boost::apply_visitor
-          ( transition_distribute_function
-            ( state
-            , functions
-            , templates
-            , specializes
-            )
-          , function_or_use()
-          );
       }
 
       // ***************************************************************** //
@@ -392,9 +340,9 @@ namespace xml
             , trans (_trans)
           {}
 
-          function_type operator () (const function_type & fun) const
+          function_type operator () (const id::ref::function& id_function) const
           {
-            return fun;
+            return *state.id_mapper()->get (id_function);
           }
 
           function_type operator () (const use_type & use) const
@@ -471,9 +419,9 @@ namespace xml
           { }
 
           void operator () (const use_type &) const { return; }
-          void operator () (const function_type & fun) const
+          void operator () (const id::ref::function & id_function) const
           {
-            fun.type_check (state);
+            state.id_mapper()->get (id_function)->type_check (state);
           }
         };
       }
@@ -1032,14 +980,24 @@ namespace xml
           {
           private:
             ::fhg::util::xml::xmlstream & s;
+            id::mapper* _id_mapper;
 
           public:
-            dump_visitor (::fhg::util::xml::xmlstream & _s) : s (_s) {}
+            dump_visitor ( ::fhg::util::xml::xmlstream & _s
+                         , id::mapper* id_mapper
+                         )
+              : s (_s)
+              , _id_mapper (id_mapper)
+            {}
 
-            template<typename T>
-            void operator () (const T & x) const
+            void operator () (const use_type& use) const
             {
-              ::xml::parse::type::dump::dump (s, x);
+              ::xml::parse::type::dump::dump (s, use);
+            }
+            void operator () (const id::ref::function& id_function) const
+            {
+              ::xml::parse::type::dump::dump
+                (s, *_id_mapper->get_ref (id_function));
             }
           };
         }
@@ -1057,7 +1015,9 @@ namespace xml
           ::we::type::property::dump::dump (s, t.prop);
           ::xml::parse::type::dump::dump (s, t.requirements);
 
-          boost::apply_visitor (dump_visitor (s), t.function_or_use());
+          boost::apply_visitor ( dump_visitor (s, t.id_mapper())
+                               , t.function_or_use()
+                               );
 
           dumps (s, t.place_map().begin(), t.place_map().end());
           dumps (s, t.read().begin(), t.read().end(), "read");

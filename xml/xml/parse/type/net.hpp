@@ -78,6 +78,7 @@ namespace xml
         const id::net& id() const;
         boost::optional<const function_type&> parent() const;
         boost::optional<function_type&> parent();
+        bool has_parent() const;
 
         const boost::filesystem::path& path() const;
 
@@ -156,14 +157,6 @@ namespace xml
                         , const xml::parse::struct_t::set_type & known_structs
                         , const state::type & state
                         );
-
-        // ***************************************************************** //
-
-        void distribute_function ( const state::type& state
-                                 , const functions_type& functions_above
-                                 , const templates_type& templates_above
-                                 , const specializes_type& specializes_above
-                                 );
 
         // ***************************************************************** //
 

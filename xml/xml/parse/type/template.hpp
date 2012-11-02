@@ -33,7 +33,7 @@ namespace xml
         id::mapper* _id_mapper;
 
         names_type _template_parameter;
-        function_type _function;
+        id::ref::function _function;
         fhg::util::maybe<std::string> _name;
         boost::filesystem::path _path;
 
@@ -44,7 +44,7 @@ namespace xml
                       , const boost::filesystem::path& path
                       , const fhg::util::maybe<std::string>& name
                       , const names_type& names
-                      , const function_type& function
+                      , const id::ref::function& function
                       );
 
         const id::tmpl& id() const;
@@ -57,16 +57,10 @@ namespace xml
 
         const names_type& template_parameter () const;
 
-        const function_type& function() const;
-        function_type& function();
+        boost::optional<const function_type&> function() const;
+        boost::optional<function_type&> function();
 
         const boost::filesystem::path& path() const;
-
-        void distribute_function ( const state::type& state
-                                 , const functions_type& functions
-                                 , const templates_type& templates
-                                 , const specializes_type& specializes
-                                 );
 
         void specialize ( const type_map_type & map
                         , const type_get_type & get

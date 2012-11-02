@@ -20,7 +20,7 @@ namespace xml
         , const boost::filesystem::path& path
         , const fhg::util::maybe<std::string>& name
         , const names_type& template_parameter
-        , const function_type& function
+        , const id::ref::function& function
         )
           : _id (id)
           , _parent (parent)
@@ -68,34 +68,19 @@ namespace xml
         return _template_parameter;
       }
 
-      function_type& template_type::function()
+      boost::optional<function_type&> template_type::function()
       {
-        return _function;
+        return _id_mapper->get_ref (_function);
       }
-      const function_type& template_type::function() const
+      boost::optional<const function_type&> template_type::function() const
       {
-        return _function;
+        return _id_mapper->get (_function);
       }
 
       const boost::filesystem::path& template_type::path() const
       {
         return _path;
       }
-
-      void
-      template_type::distribute_function ( const state::type& state
-                                         , const functions_type& functions
-                                         , const templates_type& templates
-                                         , const specializes_type& specializes
-                                         )
-      {
-        function().distribute_function ( state
-                                       , functions
-                                       , templates
-                                       , specializes
-                                       );
-      }
-
 
       void template_type::specialize
         ( const type_map_type & map
@@ -104,7 +89,7 @@ namespace xml
         , const state::type & state
         )
       {
-        function().specialize (map, get, known_structs, state);
+        function()->specialize (map, get, known_structs, state);
       }
 
       namespace dump
@@ -121,7 +106,7 @@ namespace xml
               s.close ();
             }
 
-          ::xml::parse::type::dump::dump (s, t.function());
+          ::xml::parse::type::dump::dump (s, *t.function());
 
           s.close ();
         }

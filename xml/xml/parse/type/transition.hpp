@@ -33,7 +33,7 @@ namespace xml
       public:
         id::mapper* id_mapper() const { return _id_mapper; }
 
-        typedef boost::variant <function_type, use_type>
+        typedef boost::variant <id::ref::function, use_type>
                 function_or_use_type;
 
         transition_type ( const id::transition& id
@@ -127,14 +127,6 @@ namespace xml
         // ***************************************************************** //
 
         void sanity_check (const state::type & state) const;
-
-        // ***************************************************************** //
-
-        void distribute_function ( const state::type& state
-                                 , const functions_type& functions
-                                 , const templates_type& templates
-                                 , const specializes_type& specializes
-                                 );
 
         // ***************************************************************** //
 

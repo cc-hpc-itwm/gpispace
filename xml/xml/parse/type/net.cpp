@@ -46,9 +46,14 @@ namespace xml
         return _id;
       }
 
+      bool net_type::has_parent() const
+      {
+        return _parent;
+      }
+
       boost::optional<const function_type&> net_type::parent() const
       {
-        if (_parent)
+        if (has_parent())
           {
             return (_id_mapper)->get (*_parent);
           }
@@ -57,7 +62,7 @@ namespace xml
       }
       boost::optional<function_type&> net_type::parent()
       {
-        if (_parent)
+        if (has_parent())
           {
             return _id_mapper->get_ref (*_parent);
           }
@@ -125,7 +130,19 @@ namespace xml
 
       boost::optional<function_type> net_type::get_function (const std::string & name) const
       {
-        return _functions.copy_by_key (maybe_string_type(name));
+        boost::optional<function_type> mf
+          (_functions.copy_by_key (maybe_string_type(name)));
+
+        if (mf)
+          {
+            return mf;
+          }
+        else if (has_parent())
+          {
+            return parent()->get_function (name);
+          }
+
+        return boost::none;
       }
 
       boost::optional<template_type> net_type::get_template (const std::string & name) const
@@ -157,7 +174,7 @@ namespace xml
           if (spec_fun)
           {
             return function_with_mapping_type
-              ( (*spec_fun).function()
+              ( *(*spec_fun).function()
               , spec->type_map
               );
           }
@@ -332,10 +349,6 @@ namespace xml
                                 , const state::type & state
                                 )
       {
-        std::cerr << "SPECIALIZE NET "
-                  << id() << " - "
-                  << std::endl;
-
         namespace st = xml::parse::struct_t;
 
         for ( specializes_type::iterator
@@ -352,13 +365,7 @@ namespace xml
             throw error::unknown_template (specialize->use, path());
           }
 
-          std::cerr << "SPEC TEMPL "
-                    << tmpl->id() << " - "
-                    << tmpl->function().name() << " - "
-                    << specialize->name()
-                    << std::endl;
-
-          tmpl->function().name (specialize->name());
+          tmpl->function()->name (specialize->name());
 
           type_map_apply (map, specialize->type_map);
 
@@ -370,19 +377,13 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , tmpl->function().structs
+                        , tmpl->function()->structs
                         , structs
                         , specialize->type_get
                         , state
                         );
 
-          std::cerr << "PUSH FUNCTION "
-                    << tmpl->function().id() << " - "
-                    << tmpl->id() << " - "
-                    << tmpl->function().name()
-                    << std::endl;
-
-          push_function (tmpl->function());
+          push_function (*tmpl->function());
         }
 
         _specializes.clear();
@@ -392,11 +393,6 @@ namespace xml
             ; ++fun
             )
         {
-          std::cerr << "SPECIALIZE FUNCTION "
-                    << fun->id() << " - "
-                    << fun->name()
-                    << std::endl;
-
           fun->specialize
             ( map
             , get
@@ -418,11 +414,6 @@ namespace xml
             ; ++trans
             )
         {
-          std::cerr << "SPECIALIZE TRANSITION "
-                    << trans->id() << " - "
-                    << trans->name()
-                    << std::endl;
-
           trans->specialize
             ( map
             , get
@@ -447,99 +438,6 @@ namespace xml
         }
 
         specialize_structs (map, structs, state);
-      }
-
-      // ***************************************************************** //
-
-      void net_type::distribute_function ( const state::type& state
-                                         , const functions_type& functions_above
-                                         , const templates_type& templates_above
-                                         , const specializes_type& specializes_above
-                                         )
-      {
-        // kopiert functions(), templates(), specializes() in alle
-        // netze in functions, templates, transitions, wobei {fun,
-        // tmpl, trans}::distribute nur weiter nach netzen sucht und
-        // dort ::distribute aufruft.
-
-        // dive
-        functions_type funs (functions());
-
-        BOOST_FOREACH (function_type& fun, funs)
-        {
-          fun.distribute_function ( state
-                                  , functions() // <<<< net_type::functions()
-                                  , templates() // nicht ctor
-                                  , specializes()
-                                  );
-        }
-
-        templates_type tmpls (templates());
-
-        BOOST_FOREACH (template_type& tmpl, tmpls)
-        {
-          tmpl.distribute_function ( state
-                                   , functions()
-                                   , templates()
-                                   , specializes()
-                                   );
-        }
-
-        // copy all {functions ... } from above to my {functions ...}
-        BOOST_FOREACH (const function_type& fun, functions_above)
-        {
-          xml::util::unique<function_type,id::function>::push_return_type fun_local
-            (_functions.push_and_get_old_value (fun));
-
-          if (!fun_local.first)
-          {
-            state.warn ( warning::shadow_function ( fun.name()
-                                                  , fun.path
-                                                  , fun_local.second->path
-                                                  )
-                       );
-          }
-        }
-
-        BOOST_FOREACH (const template_type& tmpl, templates_above)
-        {
-          xml::util::unique<template_type,id::tmpl>::push_return_type tmpl_local
-            (_templates.push_and_get_old_value (tmpl));
-
-          if (!tmpl_local.first)
-          {
-            state.warn ( warning::shadow_template ( tmpl.name()
-                                                  , tmpl.path()
-                                                  , tmpl_local.second->path()
-                                                  )
-                       );
-          }
-        }
-
-        BOOST_FOREACH (const specialize_type& spec, specializes_above)
-        {
-          xml::util::unique<specialize_type,id::specialize>::push_return_type spec_local
-            (_specializes.push_and_get_old_value (spec));
-
-          if (!spec_local.first)
-          {
-            state.warn ( warning::shadow_specialize ( spec.name()
-                                                    , spec.path
-                                                    , spec_local.second->path
-                                                    )
-                       );
-          }
-        }
-
-        // dive
-        BOOST_FOREACH (transition_type& transition, transitions())
-        {
-          transition.distribute_function ( state
-                                         , functions()
-                                         , templates()
-                                         , specializes()
-                                         );
-        }
       }
 
       // ***************************************************************** //

@@ -109,6 +109,14 @@ namespace xml
         return _id_mapper;
       }
 
+      boost::optional<function_type>
+      function_type::get_function (const std::string& name) const
+      {
+        std::cerr << "function " << _name << " asked for the function " << name << std::endl;
+
+        return boost::none;
+      }
+
       bool function_type::is_same (const function_type& other) const
       {
         return id() == other.id() && parent() == other.parent();
@@ -265,72 +273,6 @@ namespace xml
         }
 
         return forbidden;
-      }
-
-      // ***************************************************************** //
-
-      void function_type::distribute_function (const state::type& state)
-      {
-        distribute_function ( state
-                            , functions_type()
-                            , templates_type()
-                            , specializes_type()
-                            );
-      }
-
-      namespace
-      {
-        class function_distribute_function_visitor
-          : public boost::static_visitor<void>
-        {
-        private:
-          const state::type& _state;
-          const functions_type& _functions;
-          const templates_type& _templates;
-          const specializes_type& _specializes;
-
-        public:
-          function_distribute_function_visitor
-            ( const state::type& state
-            , const functions_type& functions
-            , const templates_type& templates
-            , const specializes_type& specializes
-            )
-              : _state (state)
-              , _functions (functions)
-              , _templates (templates)
-              , _specializes (specializes)
-          {}
-
-          void operator () (expression_type&) const { return; }
-          void operator () (mod_type&) const { return; }
-          void operator () (id::ref::net& id) const
-          {
-            _state.id_mapper()
-              ->get_ref (id)
-              ->distribute_function ( _state
-                                    , _functions
-                                    , _templates
-                                    , _specializes
-                                    );
-          }
-        };
-      }
-
-      void function_type::distribute_function ( const state::type& state
-                                              , const functions_type& functions
-                                              , const templates_type& templates
-                                              , const specializes_type& specializes
-                                              )
-      {
-        boost::apply_visitor
-          ( function_distribute_function_visitor ( state
-                                                 , functions
-                                                 , templates
-                                                 , specializes
-                                                 )
-          , f
-          );
       }
 
       // ***************************************************************** //
@@ -1270,7 +1212,7 @@ namespace xml
       }
 
       bool find_module_calls ( const state::type &
-                             , function_type &
+                             , const id::ref::function &
                              , fun_info_map &
                              , mcs_type &
                              );
@@ -1301,9 +1243,9 @@ namespace xml
             , mcs (_mcs)
           {}
 
-          bool operator () (function_type & f) const
+          bool operator () (id::ref::function & id_function) const
           {
-            return find_module_calls (state, f, m, mcs);
+            return find_module_calls (state, id_function, m, mcs);
           }
 
           bool operator () (use_type & u) const
@@ -1317,7 +1259,12 @@ namespace xml
                   (u.name(), trans.name(), trans.path);
               }
 
-            return find_module_calls (state, *fun, m, mcs);
+            return find_module_calls
+              ( state
+              , id::ref::function (fun->id(), fun->id_mapper())
+              , m
+              , mcs
+              );
           }
         };
       }
@@ -1742,18 +1689,18 @@ namespace xml
         {
         private:
           const state::type & state;
-          const function_type & f;
+          const id::ref::function & _id_function;
           fun_info_map & m;
           mcs_type& mcs;
 
         public:
           find_module_calls_visitor ( const state::type & _state
-                                    , const function_type & _f
+                                    , const id::ref::function & id_function
                                     , fun_info_map & _m
                                     , mcs_type& _mcs
                                     )
             : state (_state)
-            , f (_f)
+            , _id_function (id_function)
             , m (_m)
             , mcs (_mcs)
           {}
@@ -1819,7 +1766,9 @@ namespace xml
             if (mod.port_return)
             {
               boost::optional<port_type> port
-                (f.get_port_out (*mod.port_return));
+                ( state.id_mapper()->get (_id_function)
+                ->get_port_out (*mod.port_return)
+                );
 
               if (!port)
               {
@@ -1835,17 +1784,25 @@ namespace xml
                 ; ++name
                 )
             {
-              if (!f.is_known_port (*name))
+              if (not state.id_mapper()->get (_id_function)
+                 ->is_known_port (*name)
+                 )
               {
                 STRANGE ("unknown arg port " << *name);
               }
 
-              if (f.is_known_port_inout (*name))
+              if ( state.id_mapper()->get (_id_function)
+                 ->is_known_port_inout (*name)
+                 )
               {
                 boost::optional<port_type> port_in
-                  (f.get_port_in (*name));
+                  ( state.id_mapper()->get (_id_function)
+                  ->get_port_in (*name)
+                  );
                 boost::optional<port_type> port_out
-                  (f.get_port_out (*name));
+                  ( state.id_mapper()->get (_id_function)
+                  ->get_port_out (*name)
+                  );
 
                 if (!port_in)
                 {
@@ -1878,10 +1835,14 @@ namespace xml
                   types.insert (port_in->type);
                 }
               }
-              else if (f.is_known_port_in (*name))
+              else if ( state.id_mapper()->get (_id_function)
+                      ->is_known_port_in (*name)
+                      )
               {
                 boost::optional<port_type> port_in
-                  (f.get_port_in (*name));
+                  ( state.id_mapper()->get (_id_function)
+                  ->get_port_in (*name)
+                  );
 
                 if (!port_in)
                 {
@@ -1891,10 +1852,14 @@ namespace xml
                 ports_const.push_back (port_with_type (*name, port_in->type));
                 types.insert (port_in->type);
               }
-              else if (f.is_known_port_out (*name))
+              else if ( state.id_mapper()->get (_id_function)
+                      ->is_known_port_out (*name)
+                      )
               {
                 boost::optional<port_type> port_out
-                  (f.get_port_out (*name));
+                  ( state.id_mapper()->get (_id_function)
+                  ->get_port_out (*name)
+                  );
 
                 if (!port_out)
                 {
@@ -2041,26 +2006,28 @@ namespace xml
       }
 
       bool find_module_calls ( const state::type & state
-                             , function_type & f
+                             , const id::ref::function& id_function
                              , fun_info_map & m
                              )
       {
         mcs_type mcs;
 
-        return find_module_calls (state, f, m, mcs);
+        return find_module_calls (state, id_function, m, mcs);
       }
 
       bool find_module_calls ( const state::type & state
-                             , function_type & f
+                             , const id::ref::function & id_function
                              , fun_info_map & m
                              , mcs_type& mcs
                              )
       {
-        f.contains_a_module_call
+        state.id_mapper()->get_ref (id_function)->contains_a_module_call
           = boost::apply_visitor
-          (find_module_calls_visitor(state, f, m, mcs), f.f);
+          ( find_module_calls_visitor (state, id_function, m, mcs)
+          , state.id_mapper()->get_ref (id_function)->f
+          );
 
-        return f.contains_a_module_call;
+        return state.id_mapper()->get (id_function)->contains_a_module_call;
       }
 
       // ***************************************************************** //

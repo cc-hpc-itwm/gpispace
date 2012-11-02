@@ -107,7 +107,9 @@ namespace xml
 
         const id::function& id() const;
         const id_parent& parent() const;
-      id::mapper* id_mapper() const;
+        id::mapper* id_mapper() const;
+
+        boost::optional<function_type> get_function (const std::string& name) const;
 
         bool is_same (const function_type& other) const;
 
@@ -153,15 +155,6 @@ namespace xml
         // ***************************************************************** //
 
         xml::parse::struct_t::forbidden_type forbidden_below (void) const;
-
-        // ***************************************************************** //
-
-        void distribute_function (const state::type& state);
-        void distribute_function ( const state::type& state
-                                 , const functions_type& functions
-                                 , const templates_type& templates
-                                 , const specializes_type& specializes
-                                 );
 
         // ***************************************************************** //
 
@@ -244,21 +237,9 @@ namespace xml
                        , const fun_info_map & m
                        );
 
-      bool find_module_calls ( const state::type &
-                             , function_type &
-                             , fun_info_map &
-                             , mcs_type &
-                             );
-
       bool find_module_calls ( const state::type & state
-                             , function_type & f
+                             , const id::ref::function&
                              , fun_info_map & m
-                             );
-
-      bool find_module_calls ( const state::type & state
-                             , function_type & f
-                             , fun_info_map & m
-                             , mcs_type& mcs
                              );
 
       // ***************************************************************** //

@@ -37,13 +37,13 @@ namespace xml
 
     namespace
     {
-      type::function_type
+      id::function
       parse_function ( std::istream & f
                      , state::type & state
                      , const type::function_type::id_parent& parent
                      )
       {
-        return generic_parse<type::function_type>
+        return generic_parse<id::function>
           ( boost::bind (function_type, _1, _2, parent)
           , f
           , state
@@ -90,12 +90,13 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::function_type function_include ( const std::string & file
-                                                , state::type & state
-                                                , const type::function_type::id_parent& parent
-                                                )
+    static id::function
+    function_include ( const std::string & file
+                     , state::type & state
+                     , const type::function_type::id_parent& parent
+                     )
     {
-      return state.generic_include<type::function_type>
+      return state.generic_include<id::function>
         (boost::bind (parse_function, _1, _2, parent), file);
     }
 
@@ -381,7 +382,11 @@ namespace xml
                                                     )
                                          );
 
-                  t.function_or_use (function_include (file, state, t.id()));
+                  t.function_or_use
+                    ( id::ref::function ( function_include (file, state, t.id())
+                                        , state.id_mapper()
+                                        )
+                    );
                 }
               else if (child_name == "use")
                 {
@@ -401,7 +406,11 @@ namespace xml
                 }
               else if (child_name == "defun")
                 {
-                  t.function_or_use (function_type (child, state, t.id()));
+                  t.function_or_use ( id::ref::function
+                                      ( function_type (child, state, t.id())
+                                      , state.id_mapper()
+                                      )
+                                    );
                 }
               else if (child_name == "place-map")
                 {
@@ -473,19 +482,13 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::function_type
+    id::function
     just_parse (state::type & state, const std::string & input)
     {
       state.set_input (input);
 
-      type::function_type f
-        (state.generic_parse<type::function_type>
-          (boost::bind (parse_function, _1, _2, boost::blank()), input)
-        );
-
-      //      f.distribute_function (state);
-
-      return f;
+      return state.generic_parse<id::function>
+        (boost::bind (parse_function, _1, _2, boost::blank()), input);
     }
 
     type::specialize_type
@@ -912,7 +915,7 @@ namespace xml
                                       , const id::net& parent
                                       )
     {
-      boost::optional<type::function_type> fun;
+      boost::optional<id::ref::function> fun;
       type::template_type::names_type template_parameter;
       fhg::util::maybe<std::string> name (optional (node, "name"));
 
@@ -951,7 +954,10 @@ namespace xml
                 }
               else if (child_name == "defun")
                 {
-                  fun = function_type (child, state, template_id);
+                  fun = id::ref::function
+                    ( function_type (child, state, template_id)
+                    , state.id_mapper()
+                    );
                 }
               else
                 {
@@ -986,26 +992,29 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::function_type function_type ( const xml_node_type * node
-                                      , state::type & state
-                                      , const type::function_type::id_parent& parent
-                                      )
+    id::function
+    function_type ( const xml_node_type * node
+                  , state::type & state
+                  , const type::function_type::id_parent& parent
+                  )
     {
       id::expression expression_id (state.next_id());
-      id::function function_id (state.next_id());
+      id::function id (state.next_id());
       type::expression_type expression ( expression_id
-                                       , function_id
+                                       , id
                                        , state.id_mapper()
                                        );
-      type::function_type f ( expression
-                            , function_id
-                            , parent
-                            , state.id_mapper()
-                            );
+      {
+        type::function_type f ( expression
+                              , id
+                              , parent
+                              , state.id_mapper()
+                              );
+      }
 
-      f.path = state.file_in_progress();
-      f.name (optional (node, "name"));
-      f.internal =
+      state.id_mapper()->get_ref (id)->path = state.file_in_progress();
+      state.id_mapper()->get_ref (id)->name (optional (node, "name"));
+      state.id_mapper()->get_ref (id)->internal =
         fhg::util::fmap<std::string, bool>( fhg::util::read_bool
                                           , optional (node, "internal")
                                           );
@@ -1021,23 +1030,28 @@ namespace xml
             {
               if (child_name == "in")
                 {
-                  f.push_in (port_type (child, state, f.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_in (port_type (child, state, id));
                 }
               else if (child_name == "out")
                 {
-                  f.push_out (port_type (child, state, f.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_out (port_type (child, state, id));
                 }
               else if (child_name == "inout")
                 {
-                  f.push_inout (port_type (child, state, f.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_inout (port_type (child, state, id));
                 }
               else if (child_name == "tunnel")
                 {
-                  f.push_tunnel (port_type (child, state, f.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_tunnel (port_type (child, state, id));
                 }
               else if (child_name == "struct")
                 {
-                  f.structs.push_back (struct_type (child, state, f.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->structs.push_back (struct_type (child, state, id));
                 }
               else if (child_name == "include-structs")
                 {
@@ -1048,37 +1062,41 @@ namespace xml
                                                  , state.file_in_progress()
                                                  )
                                       , state
-                                      , f.id()
+                                      , id
                                       )
                     );
 
-                  f.structs.insert ( f.structs.end()
-                                   , structs.begin()
-                                   , structs.end()
-                                   );
+                  state.id_mapper()->get_ref (id)
+                    ->structs.insert ( state.id_mapper()->get_ref (id)
+                                     ->structs.end()
+                                     , structs.begin()
+                                     , structs.end()
+                                     );
                 }
               else if (child_name == "expression")
                 {
-                  f.add_expression
+                  state.id_mapper()->get_ref (id)
+                    ->add_expression
                     ( type::expression_type
                       ( parse_cdata<type::expressions_type>
                         ( child
                         , state.file_in_progress()
                         )
                       , id::expression (state.next_id())
-                      , f.id()
+                      , id
                       , state.id_mapper()
                       )
                     );
                 }
               else if (child_name == "module")
                 {
-                  f.f = mod_type (child, state, f.id());
+                  state.id_mapper()->get_ref (id)
+                    ->f = mod_type (child, state, id);
                 }
               else if (child_name == "net")
                 {
-                  f.f = id::ref::net
-                    ( ::xml::parse::net_type (child, state, f.id(), f)
+                  state.id_mapper()->get_ref (id)->f = id::ref::net
+                    ( ::xml::parse::net_type (child, state, id)
                     , state.id_mapper()
                     );
                 }
@@ -1091,11 +1109,19 @@ namespace xml
                       )
                     );
 
-                  f.cond.insert (f.cond.end(), conds.begin(), conds.end());
+                  state.id_mapper()->get_ref (id)
+                    ->cond.insert ( state.id_mapper()->get_ref (id)
+                                  ->cond.end()
+                                  , conds.begin()
+                                  , conds.end()
+                                  );
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type (f.prop, child, state);
+                  property_map_type ( state.id_mapper()->get_ref (id)->prop
+                                    , child
+                                    , state
+                                    );
                 }
               else if (child_name == "include-properties")
                 {
@@ -1109,11 +1135,17 @@ namespace xml
                                          )
                     );
 
-                  util::property::join (state, f.prop, deeper);
+                  util::property::join ( state
+                                       , state.id_mapper()->get_ref (id)->prop
+                                       , deeper
+                                       );
                 }
               else if (child_name == "require")
                 {
-                  require_type (f.requirements, child, state);
+                  require_type ( state.id_mapper()->get_ref (id)->requirements
+                               , child
+                               , state
+                               );
                 }
               else
                 {
@@ -1127,7 +1159,7 @@ namespace xml
             }
         }
 
-      return f;
+      return id;
     }
 
     // ********************************************************************* //
@@ -1224,7 +1256,6 @@ namespace xml
       net_type ( const xml_node_type * node
                , state::type & state
                , const id::function& parent
-               , type::function_type& parent_fun
                )
     {
       id::net id (state.next_id());
@@ -1273,8 +1304,8 @@ namespace xml
                 }
               else if (child_name == "struct")
                 {
-                  parent_fun.structs.push_back
-                    (struct_type (child, state, parent));
+                  state.id_mapper()->get_ref (parent)
+                    ->structs.push_back (struct_type (child, state, parent));
                 }
               else if (child_name == "include-structs")
                 {
