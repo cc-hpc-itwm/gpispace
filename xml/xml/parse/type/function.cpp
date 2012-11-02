@@ -717,11 +717,6 @@ namespace xml
           void operator () (mod_type &) const { return; }
           void operator () (id::ref::net & id) const
           {
-            std::cerr << "SPECIALIZE_FUNCTION NET "
-                      << id
-                      << std::endl;
-
-
             state.id_mapper()
               ->get_ref (id)
               ->specialize (map, get, known_structs, state);
