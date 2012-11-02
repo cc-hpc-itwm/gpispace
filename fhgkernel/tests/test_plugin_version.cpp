@@ -1,4 +1,4 @@
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/exception.hpp>
