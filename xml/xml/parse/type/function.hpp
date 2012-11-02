@@ -57,10 +57,9 @@ namespace xml
       public:
         typedef boost::variant< id::transition
                               , id::tmpl
-                              , boost::blank
                               > id_parent;
       public:
-        id_parent _parent;
+        boost::optional<id_parent> _parent;
         id::mapper* _id_mapper;
 
         fhg::util::maybe<std::string> _name;
@@ -101,12 +100,12 @@ namespace xml
 
         function_type ( const type& _f
                       , const id::function& id
-                      , const id_parent& parent
+                      , const boost::optional<id_parent>& parent
                       , id::mapper* id_mapper
                       );
 
         const id::function& id() const;
-        const id_parent& parent() const;
+        const boost::optional<id_parent>& parent() const;
         id::mapper* id_mapper() const;
 
         boost::optional<function_type> get_function (const std::string& name) const;

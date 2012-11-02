@@ -83,7 +83,7 @@ namespace xml
 
       function_type::function_type ( const type& _f
                                    , const id::function& id
-                                   , const id_parent& parent
+                                   , const boost::optional<id_parent>& parent
                                    , id::mapper* id_mapper
                                    )
         : _id (id)
@@ -99,7 +99,7 @@ namespace xml
         return _id;
       }
 
-      const function_type::id_parent& function_type::parent() const
+      const boost::optional<function_type::id_parent>& function_type::parent() const
       {
         return _parent;
       }

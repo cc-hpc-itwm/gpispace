@@ -38,10 +38,11 @@ namespace xml
     namespace
     {
       id::function
-      parse_function ( std::istream & f
-                     , state::type & state
-                     , const type::function_type::id_parent& parent
-                     )
+      parse_function
+        ( std::istream & f
+        , state::type & state
+        , const boost::optional<type::function_type::id_parent>& parent
+        )
       {
         return generic_parse<id::function>
           ( boost::bind (function_type, _1, _2, parent)
@@ -91,10 +92,11 @@ namespace xml
     // ********************************************************************* //
 
     static id::function
-    function_include ( const std::string & file
-                     , state::type & state
-                     , const type::function_type::id_parent& parent
-                     )
+    function_include
+      ( const std::string & file
+      , state::type & state
+      , const boost::optional<type::function_type::id_parent>& parent
+      )
     {
       return state.generic_include<id::function>
         (boost::bind (parse_function, _1, _2, parent), file);
@@ -382,8 +384,12 @@ namespace xml
                                                     )
                                          );
 
+
+
                   t.function_or_use
-                    ( id::ref::function ( function_include (file, state, t.id())
+                    ( id::ref::function  ( function_include (file, state,
+                                                           boost::make_optional (type::function_type::id_parent(t.id()))
+                                                           )
                                         , state.id_mapper()
                                         )
                     );
@@ -407,7 +413,10 @@ namespace xml
               else if (child_name == "defun")
                 {
                   t.function_or_use ( id::ref::function
-                                      ( function_type (child, state, t.id())
+                                    ( function_type ( child
+                                                    , state
+                                                    , boost::make_optional (type::function_type::id_parent(t.id()))
+                                                    )
                                       , state.id_mapper()
                                       )
                                     );
@@ -488,7 +497,7 @@ namespace xml
       state.set_input (input);
 
       return state.generic_parse<id::function>
-        (boost::bind (parse_function, _1, _2, boost::blank()), input);
+        (boost::bind (parse_function, _1, _2, boost::none), input);
     }
 
     type::specialize_type
@@ -955,7 +964,9 @@ namespace xml
               else if (child_name == "defun")
                 {
                   fun = id::ref::function
-                    ( function_type (child, state, template_id)
+                    ( function_type ( child, state
+                                    , boost::make_optional (type::function_type::id_parent(template_id))
+                                    )
                     , state.id_mapper()
                     );
                 }
@@ -993,10 +1004,11 @@ namespace xml
     // ********************************************************************* //
 
     id::function
-    function_type ( const xml_node_type * node
-                  , state::type & state
-                  , const type::function_type::id_parent& parent
-                  )
+    function_type
+      ( const xml_node_type * node
+      , state::type & state
+      , const boost::optional<type::function_type::id_parent>& parent
+      )
     {
       id::expression expression_id (state.next_id());
       id::function id (state.next_id());

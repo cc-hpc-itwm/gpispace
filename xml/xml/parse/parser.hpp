@@ -51,7 +51,7 @@ namespace xml
                                     );
     id::function function_type ( const xml_node_type *
                                , state::type &
-                               , const type::function_type::id_parent& parent
+                               , const boost::optional<type::function_type::id_parent>& parent
                                );
     type::mod_type mod_type ( const xml_node_type *
                             , state::type &
