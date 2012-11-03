@@ -44,8 +44,6 @@ namespace xml
         , port_return ()
         , port_arg ()
       {
-        _id_mapper->put (_id, *this);
-
         // implement the grammar
         // S -> R F A
         // F -> valid_name
@@ -132,6 +130,8 @@ namespace xml
                                                   );
           }
         }
+
+        _id_mapper->put (_id, *this);
       }
 
       bool module_type::operator == (const module_type& other) const
