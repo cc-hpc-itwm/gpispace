@@ -29,7 +29,7 @@ namespace xml
 
       private:
 
-        id::net _parent;
+        boost::optional<id::net> _parent;
 
         names_type _tmpl_parameter;
         id::ref::function _function;
@@ -45,7 +45,10 @@ namespace xml
                   , const id::ref::function& function
                   );
 
-        const id::net& parent() const;
+        bool has_parent() const;
+
+        boost::optional<const net_type&> parent() const;
+        boost::optional<net_type&> parent();
 
         const fhg::util::maybe<std::string>& name() const;
         const std::string& name (const std::string& name);

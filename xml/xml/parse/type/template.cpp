@@ -31,10 +31,28 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      const id::net&
-      tmpl_type::parent() const
+      bool tmpl_type::has_parent() const
       {
         return _parent;
+      }
+
+      boost::optional<const net_type&> tmpl_type::parent() const
+      {
+        if (has_parent())
+          {
+            return id_mapper()->get (*_parent);
+          }
+
+        return boost::none;
+      }
+      boost::optional<net_type&> tmpl_type::parent()
+      {
+        if (has_parent())
+          {
+            return id_mapper()->get_ref (*_parent);
+          }
+
+        return boost::none;
       }
 
       const fhg::util::maybe<std::string>&
@@ -71,9 +89,10 @@ namespace xml
       boost::optional<function_type>
       tmpl_type::get_function (const std::string& name) const
       {
-        std::cerr << "tmpl " << _name
-                  << " asked for the function " << name
-                  << std::endl;
+        if (has_parent())
+          {
+            return parent()->get_function (name);
+          }
 
         return boost::none;
       }
