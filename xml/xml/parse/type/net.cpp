@@ -36,6 +36,7 @@ namespace xml
         , _places (id_mapper)
         , _transitions (id_mapper)
         , _specializes (id_mapper)
+        , _templates (id_mapper)
         , _parent (parent)
         , _path (path)
       {
@@ -81,6 +82,15 @@ namespace xml
         return _specializes;
       }
 
+      const xml::util::uniqueID< tmpl_type
+                               , id::ref::tmpl
+                               , net_type::maybe_string_type
+                               >&
+      net_type::templates() const
+      {
+        return _templates;
+      }
+
       boost::optional<const function_type&>
       net_type::get_function (const std::string & name) const
       {
@@ -99,10 +109,23 @@ namespace xml
         return boost::none;
       }
 
-      boost::optional<const tmpl_type&>
+      boost::optional<const id::ref::tmpl&>
       net_type::get_template (const std::string & name) const
       {
-        return _templates.copy_by_key (name);
+        boost::optional<const id::ref::tmpl&>
+          id_tmpl (templates().get (name));
+
+        if (id_tmpl)
+          {
+            return id_tmpl;
+          }
+        else if (has_parent())
+          {
+            std::cerr << "IMPLEMENT THE LOOKUP FOR TEMPLATES IN FUNCTION" << std::endl;
+            // return parent()->get_template (name);
+          }
+
+        return boost::none;
       }
 
       // ***************************************************************** //
@@ -110,11 +133,6 @@ namespace xml
       const functions_type & net_type::functions (void) const
       {
         return _functions.elements();
-      }
-
-      const templates_type & net_type::templates (void) const
-      {
-        return _templates.elements();
       }
 
       // ***************************************************************** //
@@ -162,6 +180,21 @@ namespace xml
         return id;
       }
 
+      const id::ref::tmpl&
+      net_type::push_template (const id::ref::tmpl& id)
+      {
+        const id::ref::tmpl& id_old (_templates.push (id));
+
+        if (not (id_old == id))
+          {
+            throw error::duplicate_template<tmpl_type>
+              (*id_mapper()->get (id), *id_mapper()->get (id_old));
+          }
+
+        return id;
+      }
+
+
       void net_type::push_function (const function_type & f)
       {
         xml::util::unique<function_type,id::function>::push_return_type fun
@@ -171,18 +204,6 @@ namespace xml
         {
           throw error::duplicate_function<function_type>
             (f, *fun.second);
-        }
-      }
-
-      void net_type::push_template (const tmpl_type & t)
-      {
-        xml::util::unique<tmpl_type,id::tmpl>::push_return_type templ
-          (_templates.push_and_get_old_value (t));
-
-        if (!templ.first)
-        {
-          throw error::duplicate_template<tmpl_type>
-            (t, *templ.second);
         }
       }
 
@@ -254,10 +275,10 @@ namespace xml
           boost::optional<specialize_type&>
             specialize (id_mapper()->get_ref (id_specialize));
 
-          boost::optional<tmpl_type> tmpl
+          boost::optional<const id::ref::tmpl&> id_tmpl
             (get_template (specialize->use));
 
-          if (!tmpl)
+          if (not id_tmpl)
           {
             throw error::unknown_template (specialize->use, path());
           }
@@ -268,7 +289,7 @@ namespace xml
 
           type_map_apply (map, specialize->type_map);
 
-          tmpl->specialize
+          id_mapper()->get_ref (*id_tmpl)->specialize
             ( specialize->type_map
             , specialize->type_get
             , st::join (known_structs, st::make (structs), state)
@@ -276,15 +297,15 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , tmpl->function()->structs
+                        , id_mapper()->get_ref (*id_tmpl)->function()->structs
                         , structs
                         , specialize->type_get
                         , state
                         );
 
-          tmpl->function()->name (specialize->name());
+          id_mapper()->get_ref (*id_tmpl)->function()->name (specialize->name());
 
-          push_function (*tmpl->function());
+          push_function (*id_mapper()->get_ref (*id_tmpl)->function());
         }
 
         _specializes.clear();
@@ -706,7 +727,7 @@ namespace xml
           ::we::type::property::dump::dump (s, net.prop);
 
           dumps (s, net.structs.begin(), net.structs.end());
-          dumps (s, net.templates().begin(), net.templates().end());
+          dumps (s, net.templates().ids(), net.id_mapper());
           dumps (s, net.specializes().ids(), net.id_mapper());
           dumps (s, net.functions().begin(), net.functions().end());
 

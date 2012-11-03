@@ -53,12 +53,12 @@ namespace xml
           );
       }
 
-      type::tmpl_type parse_template ( std::istream & f
-                                     , state::type & state
-                                     , const id::net& parent
-                                     )
+      id::tmpl parse_template ( std::istream & f
+                              , state::type & state
+                              , const id::net& parent
+                              )
       {
-        return generic_parse<type::tmpl_type>
+        return generic_parse<id::tmpl>
           ( boost::bind (tmpl_type, _1, _2, parent)
           , f
           , state
@@ -102,12 +102,12 @@ namespace xml
         (boost::bind (parse_function, _1, _2, parent), file);
     }
 
-    static type::tmpl_type template_include ( const std::string & file
-                                            , state::type & state
-                                            , const id::net& parent
-                                            )
+    static id::tmpl template_include ( const std::string & file
+                                     , state::type & state
+                                     , const id::net& parent
+                                     )
     {
-      return state.generic_include<type::tmpl_type>
+      return state.generic_include<id::tmpl>
         (boost::bind (parse_template, _1, _2, parent), file);
     }
 
@@ -965,16 +965,16 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::tmpl_type tmpl_type ( const xml_node_type * node
-                              , state::type & state
-                              , const id::net& parent
-                              )
+    id::tmpl tmpl_type ( const xml_node_type * node
+                       , state::type & state
+                       , const id::net& parent
+                       )
     {
       boost::optional<id::ref::function> fun;
       type::tmpl_type::names_type template_parameter;
       fhg::util::maybe<std::string> name (optional (node, "name"));
 
-      const id::tmpl template_id (state.next_id());
+      const id::tmpl id (state.next_id());
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1011,7 +1011,7 @@ namespace xml
                 {
                   fun = id::ref::function
                     ( function_type ( child, state
-                                    , boost::make_optional (type::function_type::id_parent(template_id))
+                                    , boost::make_optional (type::function_type::id_parent(id))
                                     )
                     , state.id_mapper()
                     );
@@ -1037,14 +1037,14 @@ namespace xml
         }
 
       return type::tmpl_type
-        ( template_id
+        ( id
         , state.id_mapper()
         , parent
         , state.file_in_progress()
         , name
         , template_parameter
         , *fun
-        );
+        ).id();
     }
 
     // ********************************************************************* //
@@ -1340,7 +1340,11 @@ namespace xml
                 {
                   state.id_mapper()
                     ->get_ref (id)
-                    ->push_template (tmpl_type (child, state, id));
+                    ->push_template ( id::ref::tmpl
+                                      ( tmpl_type (child, state, id)
+                                      , state.id_mapper()
+                                      )
+                                    );
                 }
               else if (child_name == "specialize")
                 {
@@ -1412,34 +1416,36 @@ namespace xml
                   const fhg::util::maybe<std::string> as
                     (optional (child, "as"));
 
-                  type::tmpl_type tmpl
-                    (template_include (file, state, id));
+                  id::tmpl id_tmpl (template_include (file, state, id));
 
                   if (as)
                     {
-                      if (tmpl.name() && *tmpl.name() != *as)
+                      if (  state.id_mapper()->get(id_tmpl)->name()
+                         && *state.id_mapper()->get(id_tmpl)->name() != *as)
                         {
                           state.warn
                             ( warning::overwrite_template_name_as
-                              ( *tmpl.name()
+                              ( *state.id_mapper()->get(id_tmpl)->name()
                               , *as
                               , state.file_in_progress()
                               )
                             );
                         }
 
-                      tmpl.name (*as);
+                      state.id_mapper()->get_ref (id_tmpl)->name (*as);
                     }
 
-                  if (not tmpl.name())
+                  if (not state.id_mapper()->get_ref (id_tmpl)->name())
                     {
                       throw error::top_level_anonymous_template
                         (file, "net_type");
                     }
 
-                  state.id_mapper()
-                    ->get_ref (id)
-                    ->push_template (tmpl);
+                  state.id_mapper()->get_ref (id)
+                    ->push_template (id::ref::tmpl ( id_tmpl
+                                                   , state.id_mapper()
+                                                   )
+                                    );
                 }
               else if (child_name == "properties")
                 {

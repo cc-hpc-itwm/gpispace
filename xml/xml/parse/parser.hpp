@@ -57,10 +57,10 @@ namespace xml
                             , state::type &
                             , const id::function& parent
                             );
-    type::tmpl_type tmpl_type ( const xml_node_type *
-                              , state::type &
-                              , const id::net& parent
-                              );
+    id::tmpl tmpl_type ( const xml_node_type *
+                       , state::type &
+                       , const id::net& parent
+                       );
     id::net net_type ( const xml_node_type *
                      , state::type &
                      , const id::function& parent
