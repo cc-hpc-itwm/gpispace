@@ -63,7 +63,7 @@ namespace xml
         fhg::util::maybe<std::string> _name;
 
       public:
-        typedef boost::variant < expression_type
+        typedef boost::variant < id::ref::expression
                                , id::ref::module
                                , id::ref::net
                                > type;
@@ -121,7 +121,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        void add_expression (const expression_type & e);
+        void add_expression (const expressions_type & e);
 
         // ***************************************************************** //
 

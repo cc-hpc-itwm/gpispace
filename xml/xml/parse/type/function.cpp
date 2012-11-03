@@ -183,9 +183,9 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::add_expression (const expression_type & e)
+      void function_type::add_expression (const expressions_type & es)
       {
-        join (e, *this);
+        join (es, *this);
       }
 
       // ***************************************************************** //
@@ -317,7 +317,7 @@ namespace xml
               , forbidden (_forbidden)
           {}
 
-          void operator () (expression_type &) const { return; }
+          void operator () (id::ref::expression &) const { return; }
           void operator () (id::ref::module &) const { return; }
           void operator () (id::ref::net & id) const
           {
@@ -400,7 +400,7 @@ namespace xml
             , fun (_fun)
           {}
 
-          void operator () (const expression_type &) const { return; }
+          void operator () (const id::ref::expression &) const { return; }
           void operator () (const id::ref::module& id) const
           {
             state.id_mapper()->get (id)->sanity_check (fun);
@@ -429,7 +429,7 @@ namespace xml
         public:
           function_type_check (const state::type & _state) : state (_state) {}
 
-          void operator () (const expression_type &) const { return; }
+          void operator () (const id::ref::expression &) const { return; }
           void operator () (const id::ref::module &) const { return; }
           void operator () (const id::ref::net& id) const
           {
@@ -608,9 +608,11 @@ namespace xml
           , fun (_fun)
         {}
 
-        we_transition_type operator () (const expression_type & e) const
+        we_transition_type
+        operator () (const id::ref::expression& id_expression) const
         {
-          const std::string expr (e.expression());
+          const std::string
+            expr (state.id_mapper()->get (id_expression)->expression());
           const util::we_parser_t parsed_expression
             (util::we_parse (expr, "expression", "function", name(), fun.path));
 
@@ -736,7 +738,7 @@ namespace xml
               , fun (_fun)
           {}
 
-          void operator () (expression_type &) const { return; }
+          void operator () (id::ref::expression &) const { return; }
           void operator () (id::ref::module &) const { return; }
           void operator () (id::ref::net & id) const
           {
@@ -1715,7 +1717,7 @@ namespace xml
             , mcs (_mcs)
           {}
 
-          bool operator () (expression_type &) const
+          bool operator () (id::ref::expression &) const
           {
             return false;
           }
@@ -2161,17 +2163,8 @@ namespace xml
               , _id_mapper (id_mapper)
             {}
 
-            template<typename T>
-            void operator () (const T & x) const
-            {
-              ::xml::parse::type::dump::dump (s, x);
-            }
-
-            void operator () (const id::ref::module& id) const
-            {
-              ::xml::parse::type::dump::dump (s, *_id_mapper->get (id));
-            }
-            void operator () (const id::ref::net& id) const
+            template<typename ID>
+            void operator () (const ID& id) const
             {
               ::xml::parse::type::dump::dump (s, *_id_mapper->get (id));
             }

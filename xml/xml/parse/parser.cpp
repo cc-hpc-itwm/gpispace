@@ -1056,16 +1056,21 @@ namespace xml
       , const boost::optional<type::function_type::id_parent>& parent
       )
     {
-      id::expression expression_id (state.next_id());
       id::function id (state.next_id());
-      type::expression_type expression ( expression_id
-                                       , state.id_mapper()
-                                       , id
-                                       );
+
       {
+        id::expression expression_id (state.next_id());
+
+        type::expression_type expression ( expression_id
+                                         , state.id_mapper()
+                                         , id
+                                         );
+
         type::function_type f ( id
                               , state.id_mapper()
-                              , expression
+                              , id::ref::expression ( expression_id
+                                                    , state.id_mapper()
+                                                    )
                               , parent
                               );
       }
@@ -1150,17 +1155,11 @@ namespace xml
               else if (child_name == "expression")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->add_expression
-                    ( type::expression_type
-                      ( id::expression (state.next_id())
-                      , state.id_mapper()
-                      , id
-                      , parse_cdata<type::expressions_type>
-                        ( child
-                        , state.file_in_progress()
-                        )
-                      )
-                    );
+                    ->add_expression ( parse_cdata<type::expressions_type>
+                                       ( child
+                                       , state.file_in_progress()
+                                       )
+                                     );
                 }
               else if (child_name == "module")
                 {

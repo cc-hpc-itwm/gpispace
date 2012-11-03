@@ -51,7 +51,7 @@ namespace xml
                   );
       }
 
-      void join (const expression_type& e, function_type& fun);
+      void join (const expressions_type& es, function_type& fun);
     }
   }
 }

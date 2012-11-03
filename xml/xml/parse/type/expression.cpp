@@ -99,17 +99,24 @@ namespace xml
         class join_visitor : public boost::static_visitor<void>
         {
         private:
-          const expression_type & e;
+          const expressions_type& _es;
+          id::mapper* _id_mapper;
 
         public:
-          join_visitor (const expression_type & _e) : e(_e) {}
+          join_visitor ( const expressions_type & es
+                       , id::mapper* id_mapper
+                       )
+            : _es (es)
+            , _id_mapper (id_mapper)
+          {}
 
-          void operator () (expression_type & x) const
+          void operator () (id::ref::expression & id_expression) const
           {
-            x.expressions().insert ( x.expressions().end()
-                                   , e.expressions().begin()
-                                   , e.expressions().end()
-                                   );
+            boost::optional<expression_type&>
+              expression (_id_mapper->get_ref (id_expression));
+
+            expression->expressions().insert
+              (expression->expressions().end(), _es.begin(), _es.end());
           }
 
           template<typename T>
@@ -120,9 +127,9 @@ namespace xml
         };
       }
 
-      void join (const expression_type& e, function_type& fun)
+      void join (const expressions_type& es, function_type& fun)
       {
-        boost::apply_visitor (join_visitor (e), fun.f);
+        boost::apply_visitor (join_visitor (es, fun.id_mapper()), fun.f);
       }
     }
   }
