@@ -66,7 +66,7 @@ namespace xml
                         , state::type & state
                         );
 
-        boost::optional<const function_type&>
+        boost::optional<const id::ref::function&>
         get_function (const std::string&) const;
       };
 

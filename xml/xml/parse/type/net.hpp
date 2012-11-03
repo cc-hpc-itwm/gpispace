@@ -42,18 +42,20 @@ namespace xml
       {
         ID_SIGNATURES(net)
 
-      public:
-        typedef xml::util::unique<place_type,id::place> places_type;
-
       private:
         typedef fhg::util::maybe<std::string> maybe_string_type;
 
-        xml::util::uniqueID<place_type,id::ref::place> _places;
-        xml::util::uniqueID<transition_type,id::ref::transition> _transitions;
-        xml::util::uniqueID<specialize_type,id::ref::specialize> _specializes;
-        xml::util::uniqueID<tmpl_type,id::ref::tmpl,maybe_string_type> _templates;
+        typedef xml::util::uniqueID<place_type,id::ref::place> places_type;
+        typedef xml::util::uniqueID<transition_type,id::ref::transition> transitions_type;
+        typedef xml::util::uniqueID<specialize_type,id::ref::specialize> specializes_type;
+        typedef xml::util::uniqueID<tmpl_type,id::ref::tmpl,maybe_string_type> templates_type;
+        typedef xml::util::uniqueID<function_type,id::ref::function,maybe_string_type> functions_type;
 
-        xml::util::unique<function_type,id::function,maybe_string_type> _functions;
+        places_type _places;
+        transitions_type _transitions;
+        specializes_type _specializes;
+        templates_type _templates;
+        functions_type _functions;
 
         boost::optional<id::function> _parent;
 
@@ -81,29 +83,19 @@ namespace xml
 
         // ***************************************************************** //
 
-        const xml::util::uniqueID<place_type,id::ref::place>&
-        places() const;
-
-        const xml::util::uniqueID<transition_type,id::ref::transition>&
-        transitions() const;
-
-        const xml::util::uniqueID<specialize_type,id::ref::specialize>&
-        specializes() const;
-
-        const xml::util::uniqueID<tmpl_type,id::ref::tmpl,maybe_string_type>&
-        templates() const;
+        const places_type& places() const;
+        const transitions_type& transitions() const;
+        const specializes_type& specializes() const;
+        const templates_type& templates() const;
+        const functions_type& functions() const;
 
         // ***************************************************************** //
 
-        boost::optional<const function_type&>
-        get_function (const std::string & name) const;
+        boost::optional<const id::ref::function&>
+        get_function (const std::string& name) const;
 
         boost::optional<const id::ref::tmpl&>
         get_template (const std::string& name) const;
-
-        // ***************************************************************** //
-
-        const functions_type & functions (void) const;
 
         // ***************************************************************** //
 
@@ -111,8 +103,7 @@ namespace xml
         const id::ref::transition& push_transition (const id::ref::transition&);
         const id::ref::specialize& push_specialize (const id::ref::specialize&);
         const id::ref::tmpl& push_template (const id::ref::tmpl&);
-
-        void push_function (const function_type & f);
+        const id::ref::function& push_function (const id::ref::function&);
 
         // ***************************************************************** //
 

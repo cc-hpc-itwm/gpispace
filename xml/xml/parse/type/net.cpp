@@ -37,6 +37,7 @@ namespace xml
         , _transitions (id_mapper)
         , _specializes (id_mapper)
         , _templates (id_mapper)
+        , _functions (id_mapper)
         , _parent (parent)
         , _path (path)
       {
@@ -64,42 +65,40 @@ namespace xml
 
       // ***************************************************************** //
 
-      const xml::util::uniqueID<place_type,id::ref::place>&
-      net_type::places() const
+      const net_type::places_type& net_type::places() const
       {
         return _places;
       }
 
-      const xml::util::uniqueID<transition_type,id::ref::transition>&
-      net_type::transitions() const
+      const net_type::transitions_type& net_type::transitions() const
       {
         return _transitions;
       }
 
-      const xml::util::uniqueID<specialize_type,id::ref::specialize>&
-      net_type::specializes() const
+      const net_type::specializes_type& net_type::specializes() const
       {
         return _specializes;
       }
 
-      const xml::util::uniqueID< tmpl_type
-                               , id::ref::tmpl
-                               , net_type::maybe_string_type
-                               >&
-      net_type::templates() const
+      const net_type::templates_type& net_type::templates() const
       {
         return _templates;
       }
 
-      boost::optional<const function_type&>
-      net_type::get_function (const std::string & name) const
+      const net_type::functions_type& net_type::functions() const
       {
-        boost::optional<const function_type &> mf
-          (_functions.copy_by_key (maybe_string_type(name)));
+        return _functions;
+      }
 
-        if (mf)
+      boost::optional<const id::ref::function&>
+      net_type::get_function (const std::string& name) const
+      {
+        boost::optional<const id::ref::function&>
+          id_function (functions().get (name));
+
+        if (id_function)
           {
-            return mf;
+            return id_function;
           }
         else if (has_parent())
           {
@@ -109,6 +108,14 @@ namespace xml
         return boost::none;
       }
 
+      //! \todo The logic should be like this: Just when a function is
+      //! requested by some transition it is lookup up recursively up
+      //! the tree and on each level, it is checked
+      //! 1. if there is such a function known, then take it
+      //! 2. if there is a specialize, then
+      //!    2.1 search for the template and do the specialization
+      //! So this would be a lazy specialization.
+      //! The shadowing could be done by going further up the tree
       boost::optional<const id::ref::tmpl&>
       net_type::get_template (const std::string & name) const
       {
@@ -126,13 +133,6 @@ namespace xml
           }
 
         return boost::none;
-      }
-
-      // ***************************************************************** //
-
-      const functions_type & net_type::functions (void) const
-      {
-        return _functions.elements();
       }
 
       // ***************************************************************** //
@@ -195,16 +195,18 @@ namespace xml
       }
 
 
-      void net_type::push_function (const function_type & f)
+      const id::ref::function&
+      net_type::push_function (const id::ref::function& id)
       {
-        xml::util::unique<function_type,id::function>::push_return_type fun
-          (_functions.push_and_get_old_value (f));
+        const id::ref::function& id_old (_functions.push (id));
 
-        if (!fun.first)
-        {
-          throw error::duplicate_function<function_type>
-            (f, *fun.second);
-        }
+        if (not (id_old == id))
+          {
+            throw error::duplicate_function<function_type>
+              (*id_mapper()->get (id), *id_mapper()->get (id_old));
+          }
+
+        return id;
       }
 
       // ***************************************************************** //
@@ -305,17 +307,21 @@ namespace xml
 
           id_mapper()->get_ref (*id_tmpl)->function()->name (specialize->name());
 
-          push_function (*id_mapper()->get_ref (*id_tmpl)->function());
+          push_function ( id::ref::function
+                          ( id_mapper()->get_ref (*id_tmpl)->function()->id()
+                          , id_mapper()
+                          )
+                        );
         }
 
         _specializes.clear();
 
-        for ( functions_type::iterator fun (_functions.elements().begin())
-            ; fun != _functions.elements().end()
-            ; ++fun
-            )
+
+        BOOST_FOREACH ( const id::ref::function& id_function
+                      , functions().ids()
+                      )
         {
-          fun->specialize
+          id_mapper()->get_ref (id_function)->specialize
             ( map
             , get
             , st::join (known_structs, st::make (structs), state)
@@ -323,7 +329,7 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , fun->structs
+                        , id_mapper()->get_ref (id_function)->structs
                         , structs
                         , get
                         , state
@@ -392,12 +398,12 @@ namespace xml
             );
         }
 
-        for ( functions_type::iterator fun (_functions.elements().begin())
-            ; fun != _functions.elements().end()
-            ; ++fun
-            )
+        BOOST_FOREACH ( const id::ref::function& id_function
+                      , functions().ids()
+                      )
         {
-          fun->resolve (structs_resolved, state, st::forbidden_type());
+          id_mapper()->get_ref (id_function)
+            ->resolve (structs_resolved, state, st::forbidden_type());
         }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
@@ -427,12 +433,11 @@ namespace xml
           id_mapper()->get (id_transition)->sanity_check (state);
         }
 
-        for ( functions_type::const_iterator fun (functions().begin())
-            ; fun != functions().end()
-            ; ++fun
-            )
+        BOOST_FOREACH ( const id::ref::function& id_function
+                      , functions().ids()
+                      )
         {
-          fun->sanity_check (state);
+          id_mapper()->get (id_function)->sanity_check (state);
         }
 
         BOOST_FOREACH (const id::ref::place& id_place, places().ids())
@@ -462,12 +467,11 @@ namespace xml
           id_mapper()->get (id_transition)->type_check (*this, state);
         }
 
-        for ( functions_type::const_iterator fun (functions().begin())
-            ; fun != functions().end()
-            ; ++fun
-            )
+        BOOST_FOREACH ( const id::ref::function& id_function
+                      , functions().ids()
+                      )
         {
-          fun->type_check (state);
+          id_mapper()->get (id_function)->type_check (state);
         }
       }
 
@@ -729,8 +733,7 @@ namespace xml
           dumps (s, net.structs.begin(), net.structs.end());
           dumps (s, net.templates().ids(), net.id_mapper());
           dumps (s, net.specializes().ids(), net.id_mapper());
-          dumps (s, net.functions().begin(), net.functions().end());
-
+          dumps (s, net.functions().ids(), net.id_mapper());
           dumps (s, net.places().ids(), net.id_mapper());
           dumps (s, net.transitions().ids(), net.id_mapper());
 

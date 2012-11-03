@@ -105,7 +105,7 @@ namespace xml
 
         bool has_parent() const;
 
-        boost::optional<const function_type&>
+        boost::optional<const id::ref::function&>
         get_function (const std::string& name) const;
 
         // ***************************************************************** //

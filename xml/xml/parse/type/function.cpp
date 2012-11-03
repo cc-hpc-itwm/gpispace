@@ -105,7 +105,7 @@ namespace xml
       namespace
       {
         class visitor_get_function
-          : public boost::static_visitor<boost::optional<const function_type&> >
+          : public boost::static_visitor<boost::optional<const id::ref::function&> >
         {
         private:
           id::mapper* _id_mapper;
@@ -120,14 +120,14 @@ namespace xml
           {}
 
           template<typename ID>
-          boost::optional<const function_type&> operator () (ID id) const
+          boost::optional<const id::ref::function&> operator () (ID id) const
           {
             return _id_mapper->get (id)->get_function (_name);
           }
         };
       }
 
-      boost::optional<const function_type&>
+      boost::optional<const id::ref::function&>
       function_type::get_function (const std::string& name) const
       {
         if (has_parent())
@@ -1239,21 +1239,16 @@ namespace xml
 
           bool operator () (use_type & u) const
           {
-            boost::optional<const function_type&> fun
+            boost::optional<const id::ref::function&> id_function
               (state.id_mapper()->get (_id_net)->get_function (u.name()));
 
-            if (!fun)
+            if (not id_function)
               {
                 throw error::unknown_function
                   (u.name(), trans.name(), trans.path);
               }
 
-            return find_module_calls
-              ( state
-              , id::ref::function (fun->id(), fun->id_mapper())
-              , m
-              , mcs
-              );
+            return find_module_calls (state, *id_function, m, mcs);
           }
         };
       }
@@ -2105,12 +2100,12 @@ namespace xml
 
             structs_to_cpp (n.structs, state);
 
-            for ( functions_type::const_iterator pos (n.functions().begin())
-                ; pos != n.functions().end()
-                ; ++pos
-                )
+
+            BOOST_FOREACH ( const id::ref::function& id_function
+                          , n.functions().ids()
+                          )
               {
-                struct_to_cpp (state, *pos);
+                struct_to_cpp (state, *state.id_mapper()->get (id_function));
               }
 
 

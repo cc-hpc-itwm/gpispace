@@ -125,7 +125,7 @@ namespace xml
         return _place_map.elements();
       }
 
-      boost::optional<const function_type&>
+      boost::optional<const id::ref::function&>
       transition_type::get_function (const std::string& name) const
       {
         if (has_parent())
@@ -329,7 +329,7 @@ namespace xml
       namespace
       {
         class transition_get_function
-          : public boost::static_visitor<const function_type&>
+          : public boost::static_visitor <boost::optional<const id::ref::function&> >
         {
         private:
           const net_type & net;
@@ -346,19 +346,19 @@ namespace xml
             , trans (_trans)
           {}
 
-          const function_type&
+          boost::optional<const id::ref::function&>
           operator () (const id::ref::function& id_function) const
           {
-            return *state.id_mapper()->get (id_function);
+            return id_function;
           }
 
-          const function_type&
+          boost::optional<const id::ref::function&>
           operator () (const use_type & use) const
           {
-            boost::optional<const function_type&>
-              fun (net.get_function (use.name()));
+            boost::optional<const id::ref::function&>
+              id_function (net.get_function (use.name()));
 
-            if (!fun)
+            if (not id_function)
             {
               throw error::unknown_function
                 (use.name(), trans.name(), trans.path);
@@ -366,7 +366,7 @@ namespace xml
 
             //            fun->name (trans.name());
 
-            return *fun;
+            return id_function;
           }
         };
       }
@@ -387,16 +387,17 @@ namespace xml
             (direction, name(), connect.place, path);
         }
 
-        const function_type fun
+        boost::optional<const id::ref::function&> id_function
           ( boost::apply_visitor
             (transition_get_function (net, state, *this), function_or_use())
           );
 
         // existence of connect.port
-        boost::optional<port_type> port ( (direction == "out")
-                                        ? fun.get_port_out (connect.port)
-                                        : fun.get_port_in (connect.port)
-                                        );
+        boost::optional<port_type> port
+          ( (direction == "out")
+          ? id_mapper()->get (*id_function)->get_port_out (connect.port)
+          : id_mapper()->get (*id_function)->get_port_in (connect.port)
+          );
 
         if (!port)
         {
@@ -523,12 +524,15 @@ namespace xml
               );
           }
 
-        function_type fun
+        boost::optional<const id::ref::function&> id_function
           ( boost::apply_visitor
             ( transition_get_function (net, state, trans)
             , trans.function_or_use()
             )
           );
+
+        //! \todo keep working with the id_function, deref deeper
+        function_type& fun (*state.id_mapper()->get_ref (*id_function));
 
         for ( ports_type::const_iterator port_in (fun.in().begin())
             ; port_in != fun.in().end()
@@ -574,9 +578,9 @@ namespace xml
             if (trans.internal && *trans.internal != *fun.internal)
               {
                 state.warn ( warning::overwrite_function_internal_trans
-                           ( trans.name()
-                           , trans.path
-                           )
+                             ( trans.name()
+                             , trans.path
+                             )
                            );
 
                 fun.internal = trans.internal;
