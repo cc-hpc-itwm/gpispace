@@ -130,8 +130,6 @@ namespace xml
       boost::optional<function_type>
       function_type::get_function (const std::string& name) const
       {
-        std::cerr << "function " << _name << " asked for the function " << name << std::endl;
-
         if (has_parent())
           {
             return boost::apply_visitor
