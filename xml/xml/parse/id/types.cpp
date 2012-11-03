@@ -78,6 +78,11 @@ namespace xml
           return _id == other._id;                                      \
         }                                                               \
                                                                         \
+        const id::NAME& NAME::id() const                                \
+        {                                                               \
+          return _id;                                                   \
+        }                                                               \
+                                                                        \
         std::size_t hash_value (const NAME& ref)                        \
         {                                                               \
           return hash_value (ref._id);                                  \

@@ -58,6 +58,8 @@ namespace xml
           bool operator< (const NAME& other) const;                     \
           bool operator== (const NAME& other) const;                    \
                                                                         \
+          const id::NAME& id() const;                                   \
+                                                                        \
           friend std::size_t hash_value (const NAME&);                  \
           friend std::ostream& operator<< (std::ostream&, const NAME&); \
           friend class ::xml::parse::id::mapper;                        \
