@@ -141,31 +141,6 @@ namespace xml
         return boost::none;
       }
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-      function_type & function_type::operator= (function_type const &rhs)
-      {
-        if (this != &rhs)
-        {
-          _in = rhs._in;
-          _out = rhs._out;
-          _tunnel = rhs._tunnel;
-
-          contains_a_module_call = rhs.contains_a_module_call;
-          structs = rhs.structs;
-          name = rhs.name;
-          internal = rhs.internal;
-          cond = rhs.cond;
-          requirements = rhs.requirements;
-          prop = rhs.prop;
-          f = rhs.f;
-          path = rhs.path;
-          structs_resolved = rhs.structs_resolved;
-          _typenames = rhs._typenames;
-        }
-        return *this;
-      }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-
       // ***************************************************************** //
 
       const function_type::typenames_type& function_type::typenames () const

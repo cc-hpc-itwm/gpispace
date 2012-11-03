@@ -60,31 +60,6 @@ namespace xml
 
       // ***************************************************************** //
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-      net_type & net_type::operator= (net_type const &rhs)
-      {
-        if (this != &rhs)
-        {
-          _places = rhs._places;
-          _transitions = rhs._transitions;
-          _functions = rhs._functions;
-          _templates = rhs._templates;
-          _specializes = rhs._specializes;
-          _id = rhs._id;
-          _parent = rhs._parent;
-
-          contains_a_module_call = rhs.contains_a_module_call;
-          structs = rhs.structs;
-          path = rhs.path;
-          prop = rhs.prop;
-          structs_resolved = rhs.structs_resolved;
-        }
-        return *this;
-      }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-
-      // ***************************************************************** //
-
       bool net_type::has_place (const std::string& name) const
       {
         return _places.is_element (name);

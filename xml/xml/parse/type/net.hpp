@@ -83,12 +83,6 @@ namespace xml
 
         // ***************************************************************** //
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-        net_type & operator= (net_type const &rhs);
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-
-        // ***************************************************************** //
-
         bool has_place (const std::string& name) const;
         boost::optional<place_type> get_place (const std::string & name) const;
         boost::optional<place_type> place_by_id (const id::place& id) const;

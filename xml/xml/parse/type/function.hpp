@@ -107,10 +107,6 @@ namespace xml
 
         boost::optional<function_type> get_function (const std::string& name) const;
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-        function_type & operator= (function_type const &rhs);
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-
         // ***************************************************************** //
 
         const typenames_type& typenames () const;
