@@ -168,6 +168,9 @@ namespace xml
 #include <xml/parse/id/helper.lst>
 #undef ITEM
 
+#undef BODY
+#undef BODY_OPTIONAL
+
 #undef STRINIGFY
 #undef EXPAND_AND_STRINGIFY
 
