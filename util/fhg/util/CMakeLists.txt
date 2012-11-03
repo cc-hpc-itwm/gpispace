@@ -47,12 +47,15 @@ set (hdrs
   url.hpp
   setproctitle.h
   threadname.hpp
+
+  remove_prefix.hpp
 )
 
 set (srcs
   backtracing_exception.cpp
   setproctitle.c
   threadname.cpp
+  remove_prefix.cpp
 )
 
 add_library (fhg-util ${srcs})
