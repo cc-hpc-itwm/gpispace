@@ -38,8 +38,6 @@ namespace xml
                         , const expressions_type & exps
                         );
 
-        void set (const std::string& exps);
-
         std::string expression (const std::string& sep = " ") const;
 
         const expressions_type& expressions (void) const;
