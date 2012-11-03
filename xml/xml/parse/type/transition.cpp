@@ -138,9 +138,10 @@ namespace xml
       boost::optional<function_type>
       transition_type::get_function (const std::string& name) const
       {
-        std::cerr << "transition " << this->name()
-                  << " asked for the function " << name
-                  << std::endl;
+        if (has_parent())
+          {
+            return parent()->get_function (name);
+          }
 
         return boost::none;
       }
