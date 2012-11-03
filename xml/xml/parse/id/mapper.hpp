@@ -41,12 +41,26 @@ namespace xml
         //! is used.
         ~mapper();
 
-#define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                               \
-                                                                         \
-        boost::optional<const type::TYPE&> get (const NAME&) const;      \
-        boost::optional<const type::TYPE&> get (const ref::NAME&) const; \
-        boost::optional<type::TYPE&> get_ref (const NAME&) const;        \
-        boost::optional<type::TYPE&> get_ref (const ref::NAME&) const;   \
+#define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                              \
+                                                                        \
+        boost::optional<const type::TYPE&>                              \
+        get (const boost::optional<NAME>&) const;                       \
+                                                                        \
+        boost::optional<type::TYPE&>                                    \
+        get_ref (const boost::optional<NAME>&) const;                   \
+                                                                        \
+        boost::optional<const type::TYPE&>                              \
+        get (const NAME&) const;                                        \
+                                                                        \
+        boost::optional<type::TYPE&>                                    \
+        get_ref (const NAME&) const;                                    \
+                                                                        \
+        boost::optional<const type::TYPE&>                              \
+        get (const ref::NAME&) const;                                   \
+                                                                        \
+        boost::optional<type::TYPE&>                                    \
+        get_ref (const ref::NAME&) const;                               \
+                                                                        \
         void put (const NAME&, const type::TYPE& elem);
 
 #include <xml/parse/id/helper.lst>

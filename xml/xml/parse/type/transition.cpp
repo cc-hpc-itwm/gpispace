@@ -48,21 +48,11 @@ namespace xml
 
       boost::optional<const net_type&> transition_type::parent() const
       {
-        if (has_parent())
-          {
-            return id_mapper()->get (*_parent);
-          }
-
-        return boost::none;
+        return id_mapper()->get (_parent);
       }
       boost::optional<net_type&> transition_type::parent()
       {
-        if (has_parent())
-          {
-            return id_mapper()->get_ref (*_parent);
-          }
-
-        return boost::none;
+        return id_mapper()->get_ref (_parent);
       }
 
       const transition_type::function_or_use_type&

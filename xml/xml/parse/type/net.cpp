@@ -46,21 +46,11 @@ namespace xml
 
       boost::optional<const function_type&> net_type::parent() const
       {
-        if (has_parent())
-          {
-            return id_mapper()->get (*_parent);
-          }
-
-        return boost::none;
+        return id_mapper()->get (_parent);
       }
       boost::optional<function_type&> net_type::parent()
       {
-        if (has_parent())
-          {
-            return id_mapper()->get_ref (*_parent);
-          }
-
-        return boost::none;
+        return id_mapper()->get_ref (_parent);
       }
 
       const boost::filesystem::path& net_type::path () const
