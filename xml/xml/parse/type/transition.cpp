@@ -378,10 +378,10 @@ namespace xml
                                        ) const
       {
         // existence of connect.place
-        boost::optional<const place_type&>
-          place (net.get_place (connect.place));
+        boost::optional<const id::ref::place&>
+          id_place (net.get_place (connect.place));
 
-        if (!place)
+        if (not id_place)
         {
           throw error::connect_to_nonexistent_place
             (direction, name(), connect.place, path);
@@ -403,6 +403,10 @@ namespace xml
           throw error::connect_to_nonexistent_port
             (direction, name(), connect.port, path);
         }
+
+
+        const boost::optional<const place_type&>
+          place (state.id_mapper()->get (*id_place));
 
         // typecheck connect.place.type vs connect.port.type
         if (place->type != port->type)

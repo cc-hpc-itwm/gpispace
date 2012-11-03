@@ -84,13 +84,13 @@ namespace xml
 
         // ***************************************************************** //
 
-        bool has_place (const std::string& name) const;
-        boost::optional<const place_type&> get_place (const std::string & name) const;
+        boost::optional<const id::ref::place&>
+        get_place (const std::string & name) const;
         const boost::unordered_set<id::ref::place>& ids_place() const;
 
-        bool has_transition (const std::string& name) const;
+        boost::optional<const id::ref::transition&>
+        get_transition (const std::string& name) const;
         const boost::unordered_set<id::ref::transition>& ids_transition() const;
-        boost::unordered_set<id::ref::transition>& ids_transition();
 
         boost::optional<const function_type&>
         get_function (const std::string & name) const;

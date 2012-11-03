@@ -60,12 +60,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      bool net_type::has_place (const std::string& name) const
-      {
-        return _by_name_place.find (name) != _by_name_place.end();
-      }
-
-      boost::optional<const place_type&>
+      boost::optional<const id::ref::place&>
       net_type::get_place (const std::string & name) const
       {
         const boost::unordered_map<std::string,id::ref::place>::const_iterator
@@ -73,24 +68,28 @@ namespace xml
 
         if (pos != _by_name_place.end())
           {
-            return id_mapper()->get (pos->second);
+            return pos->second;
           }
 
         return boost::none;
       }
 
-      bool net_type::has_transition (const std::string& name) const
+      boost::optional<const id::ref::transition&>
+      net_type::get_transition (const std::string& name) const
       {
-        return _by_name_transition.find (name) != _by_name_transition.end();
+        const boost::unordered_map<std::string,id::ref::transition>::const_iterator
+          pos (_by_name_transition.find (name));
+
+        if (pos != _by_name_transition.end())
+          {
+            return pos->second;
+          }
+
+        return boost::none;
       }
 
       const boost::unordered_set<id::ref::transition>&
       net_type::ids_transition() const
-      {
-        return _ids_transition;
-      }
-      boost::unordered_set<id::ref::transition>&
-      net_type::ids_transition()
       {
         return _ids_transition;
       }
@@ -349,15 +348,14 @@ namespace xml
                         );
         }
 
-        for ( boost::unordered_set<id::ref::transition>::iterator
-                id_transition (ids_transition().begin())
-            ; id_transition != ids_transition().end()
-            ; ++id_transition
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , ids_transition()
+                      )
         {
-          transition_type& transition (*id_mapper()->get_ref (*id_transition));
+          boost::optional<transition_type&>
+            transition (id_mapper()->get_ref (id_transition));
 
-          transition.specialize
+          transition->specialize
             ( map
             , get
             , st::join (known_structs, st::make (structs), state)
@@ -365,7 +363,7 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , transition.structs
+                        , transition->structs
                         , structs
                         , get
                         , state
@@ -420,13 +418,11 @@ namespace xml
           fun->resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        for ( boost::unordered_set<id::ref::transition>::iterator
-                id_transition (ids_transition().begin())
-            ; id_transition != ids_transition().end()
-            ; ++id_transition
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , ids_transition()
+                      )
         {
-          id_mapper()->get_ref(*id_transition)
+          id_mapper()->get_ref(id_transition)
             ->resolve (structs_resolved, state, st::forbidden_type());
         }
 
@@ -442,13 +438,11 @@ namespace xml
 
       void net_type::sanity_check (const state::type & state, const function_type& outerfun) const
       {
-        for ( boost::unordered_set<id::ref::transition>::const_iterator
-                id_transition (ids_transition().begin())
-            ; id_transition != ids_transition().end()
-            ; ++id_transition
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , ids_transition()
+                      )
         {
-          id_mapper()->get (*id_transition)->sanity_check (state);
+          id_mapper()->get (id_transition)->sanity_check (state);
         }
 
         for ( functions_type::const_iterator fun (functions().begin())
@@ -479,13 +473,11 @@ namespace xml
 
       void net_type::type_check (const state::type & state) const
       {
-        for ( boost::unordered_set<id::ref::transition>::const_iterator
-                id_transition (ids_transition().begin())
-            ; id_transition != ids_transition().end()
-            ; ++id_transition
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , ids_transition()
+                      )
         {
-          id_mapper()->get (*id_transition)->type_check (*this, state);
+          id_mapper()->get (id_transition)->type_check (*this, state);
         }
 
         for ( functions_type::const_iterator fun (functions().begin())
@@ -507,14 +499,12 @@ namespace xml
             ->name (prefix + id_mapper()->get(id_place)->name());
         }
 
-        for ( boost::unordered_set<id::ref::transition>::iterator
-                id_transition (ids_transition().begin())
-            ; id_transition != ids_transition().end()
-            ; ++id_transition
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , ids_transition()
+                      )
         {
           boost::optional<transition_type&>
-            transition (id_mapper()->get_ref (*id_transition));
+            transition (id_mapper()->get_ref (id_transition));
 
           transition->name (prefix + transition->name());
 
@@ -568,14 +558,12 @@ namespace xml
             ->name (id_mapper()->get (id_place)->name().substr (prefix_length));
         }
 
-        for ( boost::unordered_set<id::ref::transition>::iterator
-                id_transition (ids_transition().begin())
-            ; id_transition != ids_transition().end()
-            ; ++id_transition
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , ids_transition()
+                      )
         {
           boost::optional<transition_type&>
-            transition (id_mapper()->get_ref (*id_transition));
+            transition (id_mapper()->get_ref (id_transition));
 
           transition->name (transition->name().substr (prefix_length));
 
@@ -700,14 +688,12 @@ namespace xml
                 }
             }
 
-        for ( boost::unordered_set<id::ref::transition>::const_iterator
-                id_transition (net.ids_transition().begin())
-            ; id_transition != net.ids_transition().end()
-            ; ++id_transition
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , net.ids_transition()
+                      )
           {
             transition_synthesize
-              ( id_transition->id()
+              ( id_transition.id()
               , state
               , net
               , we_net

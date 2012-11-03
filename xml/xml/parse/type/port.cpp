@@ -91,16 +91,20 @@ namespace xml
             }
             else
             {
-              const net_type& net (*state.id_mapper()->get (id_net));
+              boost::optional<const net_type&>
+                net (state.id_mapper()->get (id_net));
 
-              boost::optional<const place_type&> place
-                (net.get_place (*port.place));
+              boost::optional<const id::ref::place&>
+                id_place (net->get_place (*port.place));
 
-              if (!place)
+              if (not id_place)
               {
                 throw error::port_connected_place_nonexistent
                   (direction, port.name(), *port.place, path);
               }
+
+              boost::optional<const place_type&>
+                place (state.id_mapper()->get (*id_place));
 
               if (place->type != port.type)
               {
