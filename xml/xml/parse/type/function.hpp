@@ -22,7 +22,6 @@ namespace xml
   {
     namespace type
     {
-      typedef xml::util::unique<port_type,id::port>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
       typedef xml::util::unique<function_type,id::function>::elements_type functions_type;
       typedef xml::util::unique<tmpl_type,id::tmpl>::elements_type templates_type;
@@ -32,16 +31,17 @@ namespace xml
       {
         ID_SIGNATURES(function)
 
-      private:
-        typedef xml::util::unique<port_type,id::port> unique_port_type;
+      public:
+        typedef xml::util::uniqueID<port_type,id::ref::port> unique_port_type;
 
+      private:
         unique_port_type _in;
         unique_port_type _out;
         unique_port_type _tunnel;
 
         // ***************************************************************** //
 
-        void push ( const port_type & p
+        void push ( const id::ref::port & p
                   , unique_port_type & ports
                   , const unique_port_type & others
                   , const std::string descr
@@ -110,6 +110,12 @@ namespace xml
 
         // ***************************************************************** //
 
+        const unique_port_type& in() const;
+        const unique_port_type& out() const;
+        const unique_port_type& tunnel() const;
+
+        // ***************************************************************** //
+
         const typenames_type& typenames () const;
         void insert_typename (const std::string& tn);
 
@@ -119,12 +125,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        const ports_type& in (void) const;
-        const ports_type& out (void) const;
-        const ports_type& tunnel (void) const;
-
-        boost::optional<const port_type&> get_port_in (const std::string & name) const;
-        boost::optional<const port_type&> get_port_out (const std::string & name) const;
+        boost::optional<const id::ref::port&> get_port_in (const std::string & name) const;
+        boost::optional<const id::ref::port&> get_port_out (const std::string & name) const;
 
         bool is_known_port_in (const std::string & name) const;
         bool is_known_port_out (const std::string & name) const;
@@ -138,10 +140,10 @@ namespace xml
 
         // ***************************************************************** //
 
-        void push_in (const port_type & p);
-        void push_out (const port_type & p);
-        void push_inout (const port_type & p);
-        void push_tunnel (const port_type& p);
+        void push_in (const id::ref::port&);
+        void push_out (const id::ref::port&);
+        void push_inout (const id::ref::port&);
+        void push_tunnel (const id::ref::port&);
 
         // ***************************************************************** //
 

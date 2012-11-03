@@ -58,13 +58,22 @@ namespace xml
                    , ::xml::parse::id::mapper* id_mapper
                    )
         {
-          for ( typename Container::const_iterator pos (container.begin())
-              , end (container.end())
-              ; pos != end
-              ; ++pos
-              )
+          BOOST_FOREACH (const typename Container::value_type val, container)
             {
-              ::xml::parse::type::dump::dump (s, *id_mapper->get (*pos));
+              ::xml::parse::type::dump::dump (s, *id_mapper->get (val));
+            }
+        }
+
+        template<typename Container, typename T>
+        void dumps ( ::fhg::util::xml::xmlstream& s
+                   , Container container
+                   , ::xml::parse::id::mapper* id_mapper
+                   , const T& x
+                   )
+        {
+          BOOST_FOREACH (const typename Container::value_type val, container)
+            {
+              ::xml::parse::type::dump::dump (s, *id_mapper->get (val), x);
             }
         }
       }

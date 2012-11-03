@@ -1089,22 +1089,38 @@ namespace xml
               if (child_name == "in")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_in (port_type (child, state, id));
+                    ->push_in ( id::ref::port
+                                ( port_type (child, state, id)
+                                , state.id_mapper()
+                                )
+                              );
                 }
               else if (child_name == "out")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_out (port_type (child, state, id));
+                    ->push_out ( id::ref::port
+                                 ( port_type (child, state, id)
+                                 , state.id_mapper()
+                                 )
+                               );
                 }
               else if (child_name == "inout")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_inout (port_type (child, state, id));
+                    ->push_inout ( id::ref::port
+                                   ( port_type (child, state, id)
+                                   , state.id_mapper()
+                                   )
+                                 );
                 }
               else if (child_name == "tunnel")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_tunnel (port_type (child, state, id));
+                    ->push_tunnel ( id::ref::port
+                                    ( port_type (child, state, id)
+                                    , state.id_mapper()
+                                    )
+                                  );
                 }
               else if (child_name == "struct")
                 {
@@ -1577,7 +1593,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::port_type
+    id::port
     port_type ( const xml_node_type * node
               , state::type & state
               , const id::function& parent
@@ -1586,20 +1602,24 @@ namespace xml
       const std::string name
         (required ("port_type", node, "name", state.file_in_progress()));
 
-      type::port_type port
-        ( id::port (state.next_id())
-        , state.id_mapper()
-        , parent
-        , validate_name ( validate_prefix ( name
-                                          , "port"
-                                          , state.file_in_progress()
-                                          )
-                        , "port"
-                        , state.file_in_progress()
-                        )
-        , required ("port_type", node, "type", state.file_in_progress())
-        , optional (node, "place")
-        );
+      id::port id (state.next_id());
+
+      {
+        type::port_type port
+          ( id
+          , state.id_mapper()
+          , parent
+          , validate_name ( validate_prefix ( name
+                                            , "port"
+                                            , state.file_in_progress()
+                                            )
+                          , "port"
+                          , state.file_in_progress()
+                          )
+          , required ("port_type", node, "type", state.file_in_progress())
+          , optional (node, "place")
+          );
+      }
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1613,7 +1633,10 @@ namespace xml
             {
               if (child_name == "properties")
                 {
-                  property_map_type (port.prop, child, state);
+                  property_map_type ( state.id_mapper()->get_ref (id)->prop
+                                    , child
+                                    , state
+                                    );
                 }
               else if (child_name == "include-properties")
                 {
@@ -1627,7 +1650,10 @@ namespace xml
                                          )
                     );
 
-                  util::property::join (state, port.prop, deeper);
+                  util::property::join ( state
+                                       , state.id_mapper()->get_ref (id)->prop
+                                       , deeper
+                                       );
                 }
               else
                 {
@@ -1641,7 +1667,7 @@ namespace xml
             }
         }
 
-      return port;
+      return id;
     }
 
     // ********************************************************************* //
