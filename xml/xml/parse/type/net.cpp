@@ -146,12 +146,9 @@ namespace xml
       const id::ref::place&
       net_type::push_place (const id::ref::place& id_place)
       {
-        boost::optional<const place_type&> place (*id_mapper()->get (id_place));
+        boost::optional<const place_type&> place (id_mapper()->get (id_place));
 
-        const boost::unordered_map<std::string,id::ref::place>::const_iterator
-          pos (_by_name_place.find (place->name()));
-
-        if (pos != _by_name_place.end())
+        if (get_place (place->name()))
         {
           throw error::duplicate_place (place->name(), path());
         }
@@ -168,19 +165,20 @@ namespace xml
       const id::ref::transition&
       net_type::push_transition (const id::ref::transition& id_transition)
       {
-        const transition_type& transition (*id_mapper()->get (id_transition));
+        boost::optional<const transition_type&>
+          transition (id_mapper()->get (id_transition));
 
-        const boost::unordered_map<std::string,id::ref::transition>::const_iterator
-          pos (_by_name_transition.find (transition.name()));
+        boost::optional<const id::ref::transition&>
+          id_old (get_transition (transition->name()));
 
-        if (pos != _by_name_transition.end())
+        if (id_old)
         {
           throw error::duplicate_transition<transition_type>
-            (transition, *id_mapper()->get (pos->second));
+            (*transition, *id_mapper()->get (*id_old));
         }
 
         _ids_transition.insert (id_transition);
-        _by_name_transition.insert (std::make_pair ( transition.name()
+        _by_name_transition.insert (std::make_pair ( transition->name()
                                                    , id_transition
                                                    )
                                    );
