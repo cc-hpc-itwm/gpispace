@@ -50,3 +50,5 @@ namespace xml
     }
   }
 }
+
+#undef ID_IMPL
