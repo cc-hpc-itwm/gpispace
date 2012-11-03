@@ -9,12 +9,72 @@
 #include <iterator>
 
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 #include <boost/optional.hpp>
+
+#include <xml/parse/id/mapper.hpp>
 
 namespace xml
 {
   namespace util
   {
+    template<typename T, typename ID_TYPE, typename KEY = std::string>
+    class uniqueID
+    {
+    public:
+      typedef T value_type;
+      typedef ID_TYPE id_type;
+      typedef KEY key_type;
+
+      typedef boost::unordered_set<id_type> ids_type;
+      typedef boost::unordered_map<key_type,id_type> by_key_type;
+
+      uniqueID (parse::id::mapper* mapper)
+        : _mapper (mapper)
+        , _ids ()
+        , _by_key ()
+      {}
+
+      boost::optional<const id_type&> get (const key_type& key) const
+      {
+        const typename by_key_type::const_iterator pos (_by_key.find (key));
+
+        if (pos != _by_key.end())
+          {
+            return pos->second;
+          }
+
+        return boost::none;
+      }
+
+      const id_type& push (const id_type& id)
+      {
+        boost::optional<const value_type&> value (_mapper->get (id));
+
+        //! \todo Should we throw something informative when there is no value?
+
+        boost::optional<const id_type&> id_old (get (value->name()));
+
+        if (id_old)
+          {
+            return *id_old;
+          }
+
+        _ids.insert (id);
+        _by_key.insert (std::make_pair (value->name(), id));
+
+        return id;
+      }
+
+      const ids_type& ids() const { return _ids; }
+      void clear() { _ids.clear(); _by_key.clear(); }
+
+    private:
+      parse::id::mapper* _mapper;
+      ids_type _ids;
+      by_key_type _by_key;
+    };
+
     template<typename UNIQUE>
     class unique_iterator : public std::iterator< std::forward_iterator_tag
                                                 , typename UNIQUE::value_type

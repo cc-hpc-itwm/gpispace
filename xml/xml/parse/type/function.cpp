@@ -1268,22 +1268,21 @@ namespace xml
 
         n.contains_a_module_call = false;
 
-        for ( boost::unordered_set<id::ref::transition>::iterator
-                id_transition (n.ids_transition().begin())
-            ; id_transition != n.ids_transition().end()
-            ; ++id_transition
-            )
+
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , n.transitions().ids()
+                      )
           {
             n.contains_a_module_call
               |= boost::apply_visitor
               ( transition_find_module_calls_visitor
                 ( state
                 , id_net
-                , *state.id_mapper()->get_ref (*id_transition)
+                , *state.id_mapper()->get_ref (id_transition)
                 , m
                 , mcs
                 )
-              , state.id_mapper()->get_ref (*id_transition)->function_or_use()
+              , state.id_mapper()->get_ref (id_transition)->function_or_use()
               );
           }
 
@@ -2114,15 +2113,14 @@ namespace xml
                 struct_to_cpp (state, *pos);
               }
 
-            for ( boost::unordered_set<id::ref::transition>::const_iterator
-                    id_transition (n.ids_transition().begin())
-                ; id_transition != n.ids_transition().end()
-                ; ++id_transition
-                )
+
+            BOOST_FOREACH ( const id::ref::transition& id_transition
+                          , n.transitions().ids()
+                          )
               {
                 boost::apply_visitor
                   ( transition_struct_to_cpp_visitor (state)
-                  , state.id_mapper()->get (*id_transition)->function_or_use()
+                  , state.id_mapper()->get (id_transition)->function_or_use()
                   );
               }
           }

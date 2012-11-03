@@ -95,7 +95,7 @@ namespace xml
                 net (state.id_mapper()->get (id_net));
 
               boost::optional<const id::ref::place&>
-                id_place (net->get_place (*port.place));
+                id_place (net->places().get (*port.place));
 
               if (not id_place)
               {

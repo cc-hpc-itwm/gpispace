@@ -379,7 +379,7 @@ namespace xml
       {
         // existence of connect.place
         boost::optional<const id::ref::place&>
-          id_place (net.get_place (connect.place));
+          id_place (net.places().get (connect.place));
 
         if (not id_place)
         {

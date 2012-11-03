@@ -33,6 +33,8 @@ namespace xml
                          , const boost::filesystem::path& path
                          )
         : ID_INITIALIZE()
+        , _places (id_mapper)
+        , _transitions (id_mapper)
         , _parent (parent)
         , _path (path)
       {
@@ -60,44 +62,16 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<const id::ref::place&>
-      net_type::get_place (const std::string & name) const
+      const xml::util::uniqueID<place_type,id::ref::place>&
+      net_type::places() const
       {
-        const boost::unordered_map<std::string,id::ref::place>::const_iterator
-          pos (_by_name_place.find (name));
-
-        if (pos != _by_name_place.end())
-          {
-            return pos->second;
-          }
-
-        return boost::none;
+        return _places;
       }
 
-      boost::optional<const id::ref::transition&>
-      net_type::get_transition (const std::string& name) const
+      const xml::util::uniqueID<transition_type,id::ref::transition>&
+      net_type::transitions() const
       {
-        const boost::unordered_map<std::string,id::ref::transition>::const_iterator
-          pos (_by_name_transition.find (name));
-
-        if (pos != _by_name_transition.end())
-          {
-            return pos->second;
-          }
-
-        return boost::none;
-      }
-
-      const boost::unordered_set<id::ref::transition>&
-      net_type::ids_transition() const
-      {
-        return _ids_transition;
-      }
-
-      const boost::unordered_set<id::ref::place>&
-      net_type::ids_place() const
-      {
-        return _ids_place;
+        return _transitions;
       }
 
       boost::optional<const function_type&>
@@ -144,46 +118,30 @@ namespace xml
       // ***************************************************************** //
 
       const id::ref::place&
-      net_type::push_place (const id::ref::place& id_place)
+      net_type::push_place (const id::ref::place& id)
       {
-        boost::optional<const place_type&> place (id_mapper()->get (id_place));
+        const id::ref::place& id_old (_places.push (id));
 
-        if (get_place (place->name()))
+        if (not (id_old == id))
         {
-          throw error::duplicate_place (place->name(), path());
+          throw error::duplicate_place (id_mapper()->get (id)->name(), path());
         }
 
-        _ids_place.insert (id_place);
-        _by_name_place.insert (std::make_pair ( place->name()
-                                              , id_place
-                                              )
-                              );
-
-        return id_place;
+        return id;
       }
 
       const id::ref::transition&
-      net_type::push_transition (const id::ref::transition& id_transition)
+      net_type::push_transition (const id::ref::transition& id)
       {
-        boost::optional<const transition_type&>
-          transition (id_mapper()->get (id_transition));
+        const id::ref::transition& id_old (_transitions.push (id));
 
-        boost::optional<const id::ref::transition&>
-          id_old (get_transition (transition->name()));
-
-        if (id_old)
+        if (not (id_old == id))
         {
           throw error::duplicate_transition<transition_type>
-            (*transition, *id_mapper()->get (*id_old));
+            (*id_mapper()->get (id), *id_mapper()->get (id_old));
         }
 
-        _ids_transition.insert (id_transition);
-        _by_name_transition.insert (std::make_pair ( transition->name()
-                                                   , id_transition
-                                                   )
-                                   );
-
-        return id_transition;
+        return id;
       }
 
       void net_type::push_function (const function_type & f)
@@ -226,14 +184,12 @@ namespace xml
 
       void net_type::clear_places (void)
       {
-        _ids_place.clear();
-        _by_name_place.clear();
+        _places.clear();
       }
 
       void net_type::clear_transitions (void)
       {
-        _ids_transition.clear();
-        _by_name_transition.clear();
+        _transitions.clear();
       }
 
       // ***************************************************************** //
@@ -347,7 +303,7 @@ namespace xml
         }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , ids_transition()
+                      , transitions().ids()
                       )
         {
           boost::optional<transition_type&>
@@ -368,7 +324,7 @@ namespace xml
                         );
         }
 
-        BOOST_FOREACH (const id::ref::place& id_place, ids_place())
+        BOOST_FOREACH (const id::ref::place& id_place, places().ids())
         {
           boost::optional<place_type&> place (id_mapper()->get_ref (id_place));
 
@@ -417,14 +373,14 @@ namespace xml
         }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , ids_transition()
+                      , transitions().ids()
                       )
         {
           id_mapper()->get_ref(id_transition)
             ->resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        BOOST_FOREACH(id::ref::place id_place, ids_place())
+        BOOST_FOREACH(id::ref::place id_place, places().ids())
         {
           id_mapper()->get_ref (id_place)->sig
             = type_of_place (*id_mapper()->get (id_place));
@@ -437,7 +393,7 @@ namespace xml
       void net_type::sanity_check (const state::type & state, const function_type& outerfun) const
       {
         BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , ids_transition()
+                      , transitions().ids()
                       )
         {
           id_mapper()->get (id_transition)->sanity_check (state);
@@ -451,7 +407,7 @@ namespace xml
           fun->sanity_check (state);
         }
 
-        BOOST_FOREACH (const id::ref::place& id_place, ids_place())
+        BOOST_FOREACH (const id::ref::place& id_place, places().ids())
         {
           boost::optional<const place_type&>
             place (id_mapper()->get (id_place));
@@ -472,7 +428,7 @@ namespace xml
       void net_type::type_check (const state::type & state) const
       {
         BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , ids_transition()
+                      , transitions().ids()
                       )
         {
           id_mapper()->get (id_transition)->type_check (*this, state);
@@ -491,14 +447,14 @@ namespace xml
 
       void net_type::set_prefix (const std::string & prefix)
       {
-        BOOST_FOREACH(id::ref::place id_place, ids_place())
+        BOOST_FOREACH(id::ref::place id_place, places().ids())
         {
           id_mapper()->get_ref (id_place)
             ->name (prefix + id_mapper()->get(id_place)->name());
         }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , ids_transition()
+                      , transitions().ids()
                       )
         {
           boost::optional<transition_type&>
@@ -550,14 +506,14 @@ namespace xml
       {
         const std::string::size_type prefix_length (prefix.size());
 
-        BOOST_FOREACH (const id::ref::place& id_place, ids_place())
+        BOOST_FOREACH (const id::ref::place& id_place, places().ids())
         {
           id_mapper()->get_ref (id_place)
             ->name (id_mapper()->get (id_place)->name().substr (prefix_length));
         }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , ids_transition()
+                      , transitions().ids()
                       )
         {
           boost::optional<transition_type&>
@@ -627,7 +583,7 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        BOOST_FOREACH (const id::ref::place& id_place, net.ids_place())
+        BOOST_FOREACH (const id::ref::place& id_place, net.places().ids())
             {
               boost::optional<const place_type&>
                 place (net.id_mapper()->get (id_place));
@@ -687,7 +643,7 @@ namespace xml
             }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , net.ids_transition()
+                      , net.transitions().ids()
                       )
           {
             transition_synthesize
@@ -700,7 +656,7 @@ namespace xml
               );
           }
 
-        BOOST_FOREACH (const id::ref::place& id_place, net.ids_place())
+        BOOST_FOREACH (const id::ref::place& id_place, net.places().ids())
           {
             boost::optional<const place_type&>
               place (net.id_mapper()->get (id_place));
@@ -747,8 +703,8 @@ namespace xml
           dumps (s, net.specializes().begin(), net.specializes().end());
           dumps (s, net.functions().begin(), net.functions().end());
 
-          dumps (s, net.ids_place(), net.id_mapper());
-          dumps (s, net.ids_transition(), net.id_mapper());
+          dumps (s, net.places().ids(), net.id_mapper());
+          dumps (s, net.transitions().ids(), net.id_mapper());
 
           s.close ();
         }

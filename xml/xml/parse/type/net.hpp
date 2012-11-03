@@ -48,11 +48,8 @@ namespace xml
       private:
         typedef fhg::util::maybe<std::string> maybe_string_type;
 
-        boost::unordered_set<id::ref::place> _ids_place;
-        boost::unordered_map<std::string,id::ref::place> _by_name_place;
-
-        boost::unordered_set<id::ref::transition> _ids_transition;
-        boost::unordered_map<std::string,id::ref::transition> _by_name_transition;
+        xml::util::uniqueID<place_type,id::ref::place> _places;
+        xml::util::uniqueID<transition_type,id::ref::transition> _transitions;
 
         xml::util::unique<function_type,id::function,maybe_string_type> _functions;
         xml::util::unique<tmpl_type,id::tmpl,maybe_string_type> _templates;
@@ -84,13 +81,11 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<const id::ref::place&>
-        get_place (const std::string & name) const;
-        const boost::unordered_set<id::ref::place>& ids_place() const;
+        const xml::util::uniqueID<place_type,id::ref::place>&
+        places() const;
 
-        boost::optional<const id::ref::transition&>
-        get_transition (const std::string& name) const;
-        const boost::unordered_set<id::ref::transition>& ids_transition() const;
+        const xml::util::uniqueID<transition_type,id::ref::transition>&
+        transitions() const;
 
         boost::optional<const function_type&>
         get_function (const std::string & name) const;
