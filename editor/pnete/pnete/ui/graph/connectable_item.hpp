@@ -46,7 +46,6 @@ namespace fhg
             , boost::optional< ::xml::parse::type::type_map_type&>
             = boost::none
             , base_item* parent = NULL
-            , ::we::type::property::type* property = NULL
             );
 
           void add_connection (connection_item* c);

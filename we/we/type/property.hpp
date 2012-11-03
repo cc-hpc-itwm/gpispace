@@ -3,6 +3,8 @@
 #ifndef _WE_TYPE_PROPERTY_HPP
 #define _WE_TYPE_PROPERTY_HPP
 
+#include <we/type/property.fwd.hpp>
+
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>

@@ -19,8 +19,8 @@ xml_file_in="${tracebytrace_dir}/tracebytrace.xml.in"
 skipped_traces_default=0
 max_trace_count_default=-1
 
-gpi_mem_per_node_default=$(echo 'segment-list' | gpish 2>/dev/null | grep -E '^ +1 ' | awk '{print $5}')
-shmem_per_node_default=$(echo 'segment-list'   | gpish | tail -n +3 | awk '{print $6}' | grep -v ^4$ | head -n1)
+gpi_mem_per_node_default=$(echo segment-list | gpish | grep -E '^ +1 ' | awk '{print $5}')
+shmem_per_node_default=$(echo segment-list | gpish | grep -e 'calc.*-shm' | head -n1 | awk '{print $6}')
 
 if [ $# -lt 5 ]; then
   echo "usage: $0 input-file input-type output-file output-type \"su cmd\" [skipped-traces:${skipped_traces_default}] [max-trace-count:${max_trace_count_default}] [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"

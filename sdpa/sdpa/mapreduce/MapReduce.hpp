@@ -150,7 +150,7 @@ public:
   void setId(const std::string& id) { id_ = id; }
   std::string id() { return id_; }
 
-  std::string encode()
+  std::string encode() const
   {
     std::stringstream osstr;
     boost::archive::text_oarchive ar(osstr);

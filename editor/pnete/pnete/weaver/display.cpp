@@ -376,7 +376,11 @@ namespace fhg
       {
         ui::graph::place_item* place_item
           ( new ui::graph::place_item
-            (data::handle::place (place, data::handle::net (_net)))
+            ( data::handle::place ( place
+                                  , data::handle::net (_net)
+                                  , _root->change_manager()
+                                  )
+            )
           );
         weaver::place wp (place_item, _place_item_by_name);
         _scene->addItem (place_item);

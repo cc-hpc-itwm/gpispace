@@ -9,6 +9,7 @@
 #include <boost/foreach.hpp>
 #include <sstream>
 #include <list>
+#include <stdexcept>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ namespace mapreduce
         return list_out_values;
       }
 
-      size_t store(std::string& key, std::list<std::string>& list_values, char* reduce_buff, size_t last_pos)
+      size_t store(std::string& key, std::list<std::string>& list_values, char* reduce_buff, size_t last_pos, const long& n_max_size)
       {
         std::stringstream sstr;
         sstr<<key<<":[";
@@ -44,14 +45,21 @@ namespace mapreduce
           if( boost::next(it) != list_values.end() )
             sstr<<" ";
           else
-            sstr<<"]";
+            sstr<<"] ";
         }
 
-        sprintf( reduce_buff+last_pos, "%s ", sstr.str().c_str() );
+        size_t item_size = sstr.str().size();
+        if(last_pos+item_size>n_max_size)
+        {
+          throw(std::runtime_error("Not enough place left for performing a reduce operation!"));
+        }
+        else
+        {
+          memcpy(reduce_buff+last_pos, sstr.str().data(), item_size);
+          size_t new_pos = last_pos + item_size;
 
-        size_t new_pos =  last_pos + sstr.str().size()+1;
-
-        return new_pos;
+          return new_pos;
+        }
       }
   }
 }

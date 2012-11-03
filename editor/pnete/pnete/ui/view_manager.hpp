@@ -8,7 +8,7 @@
 
 #include <pnete/data/proxy.hpp>
 
-#include <stack>
+#include <QStack>
 
 class QAction;
 class QWidget;
@@ -63,7 +63,7 @@ namespace fhg
       private:
         editor_window* _editor_window;
 
-        std::stack<document_view*> _accessed_widgets;
+        QStack<document_view*> _accessed_widgets;
 
         void add_on_top_of_current_widget (document_view* w);
 

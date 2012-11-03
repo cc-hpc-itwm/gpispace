@@ -301,6 +301,8 @@ BOOST_AUTO_TEST_CASE( testSerializeMapSdpaJobSharedPtr )
 	   std::ofstream ofs(filename.c_str());
 	   boost::archive::text_oarchive oa(ofs);
 	   oa.register_type(static_cast<sdpa::daemon::JobImpl *>(NULL));
+     //! \note Warning: Boost: Storing non-const object with object
+     //! tracking not being 'never'.
 	   oa << mapPtrsOut;
 	}
 

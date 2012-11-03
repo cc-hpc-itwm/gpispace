@@ -7,10 +7,11 @@
   	</struct>
   	
   	<struct name="handle">
-			<field name="map" type="long"/>
+		<field name="map" type="long"/>
     	<field name="read" type="long"/>
     	<field name="partition" type="long"/>
     	<field name="reduce" type="long"/>
+    	<field name="border" type="long"/>
     </struct>
         
 		<struct name="size">
@@ -63,6 +64,8 @@
     	<field name="slots_to_reduce" type="string"/>
     	<field name="part_used" type="string"/>
     	<field name="red_used" type="string"/>
+    	<!-- new added -->
+    	<field name="border_used" type="long"/>
    </struct>
 
  	<struct name="reduce_slot">

@@ -77,6 +77,10 @@ namespace sdpa { namespace daemon {
   };
 }}
 
+BOOST_CLASS_TRACKING ( sdpa::daemon::NotificationEvent
+                     , boost::serialization::track_never
+                     )
+
 namespace boost { namespace serialization {
   template <class Archive>
   void serialize(Archive &ar, sdpa::daemon::NotificationEvent &e, const unsigned int)

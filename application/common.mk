@@ -241,7 +241,7 @@ validate: $(NET_VALIDATION)
 ###############################################################################
 
 $(DEP_XML): $(XML)
-	$(PNETC) -i $(XML) -o /dev/null -MM -MP -MT '$(DEP_XML)' > $@
+	$(PNETC) -i $(XML) -o /dev/null -MP -MT '$(DEP_XML)' -MM $@
 
 ifneq "$(wildcard $(DEP_XML))" ""
   include $(DEP_XML)

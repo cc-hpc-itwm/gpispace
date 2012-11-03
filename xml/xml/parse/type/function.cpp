@@ -1027,7 +1027,7 @@ namespace xml
                        << cpp_util::make::dep (mod->first, fun->name)
                        << "' -MT '"
                        << cpp_util::make::obj (mod->first, fun->name)
-                       << "' $< > $@"                              << std::endl;
+                       << "' $< -MF $@"                            << std::endl;
                 stream << "ifneq \"$(wildcard "
                        << cpp_util::make::dep (mod->first, fun->name)
                        << ")\" \"\""                        << std::endl;
@@ -1065,7 +1065,7 @@ namespace xml
                    << cpp_util::make::dep (mod->first)
                    << "' -MT '"
                    << cpp_util::make::obj (mod->first)
-                   << "' $< > $@"                                  << std::endl;
+                   << "' $< -MF $@"                                << std::endl;
             stream << "ifneq \"$(wildcard "
                    << cpp_util::make::dep (mod->first)
                    << ")\" \"\""                            << std::endl;

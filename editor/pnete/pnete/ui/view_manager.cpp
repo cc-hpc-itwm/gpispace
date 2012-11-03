@@ -19,7 +19,7 @@
 
 #include <pnete/data/manager.hpp>
 
-#include <pnete/util.hpp>
+#include <util/qt/parent.hpp>
 
 namespace fhg
 {
@@ -76,7 +76,7 @@ namespace fhg
       void view_manager::focus_changed (QWidget* widget)
       {
         document_view* current_view
-              (util::first_parent_being_a<document_view> (widget));
+          (util::qt::first_parent_being_a<document_view> (widget));
 
         if (!current_view)
         {
@@ -85,6 +85,11 @@ namespace fhg
                                    );
         }
 
+        if (_accessed_widgets.contains (current_view))
+        {
+          _accessed_widgets.remove
+            (_accessed_widgets.indexOf (current_view));
+        }
         _accessed_widgets.push (current_view);
 
         data::proxy::root (current_view->widget()->proxy())->change_manager()

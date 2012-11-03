@@ -123,7 +123,7 @@ public:
 		ar >> *this;
 	}
 
-	std::string encode()
+	std::string encode() const
 	{
 		std::stringstream sstr;
 		boost::archive::text_oarchive ar(sstr);
