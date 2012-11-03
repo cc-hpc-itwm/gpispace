@@ -5,6 +5,8 @@
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/id/mapper.hpp>
 
+#include <fhg/util/remove_prefix.hpp>
+
 namespace xml
 {
   namespace parse
@@ -494,54 +496,38 @@ namespace xml
 
           transition->name (prefix + transition->name());
 
-          for ( connections_type::iterator
-                  connection (transition->in().begin())
-              ; connection != transition->in().end()
-              ; ++connection
-              )
-          {
-            connection->place = prefix + connection->place;
-          }
+          BOOST_FOREACH (connect_type& connection, transition->in())
+            {
+              connection.place (prefix + connection.place());
+            }
 
-          for ( connections_type::iterator
-                  connection (transition->read().begin())
-              ; connection != transition->read().end()
-              ; ++connection
-              )
-          {
-            connection->place = prefix + connection->place;
-          }
+          BOOST_FOREACH (connect_type& connection, transition->read())
+            {
+              connection.place (prefix + connection.place());
+            }
 
-          for ( connections_type::iterator
-                  connection (transition->out().begin())
-              ; connection != transition->out().end()
-              ; ++connection
-              )
-          {
-            connection->place = prefix + connection->place;
-          }
+          BOOST_FOREACH (connect_type& connection, transition->out())
+            {
+              connection.place (prefix + connection.place());
+            }
 
-          for ( place_maps_type::iterator
-                  place_map (transition->place_map().begin())
-              ; place_map != transition->place_map().end()
-              ; ++place_map
-              )
-          {
-            place_map->place_real = prefix + place_map->place_real;
-          }
+          BOOST_FOREACH (place_map_type& place_map, transition->place_map())
+            {
+              place_map.place_real = prefix + place_map.place_real;
+            }
         }
       }
 
-      //! \note Does not assert that the names begin with prefix, but
-      //! only trims them.
       void net_type::remove_prefix (const std::string & prefix)
       {
-        const std::string::size_type prefix_length (prefix.size());
-
         BOOST_FOREACH (const id::ref::place& id_place, places().ids())
         {
           id_mapper()->get_ref (id_place)
-            ->name (id_mapper()->get (id_place)->name().substr (prefix_length));
+            ->name ( fhg::util::remove_prefix
+                     ( prefix
+                     , id_mapper()->get (id_place)->name()
+                     )
+                   );
         }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
@@ -551,7 +537,8 @@ namespace xml
           boost::optional<transition_type&>
             transition (id_mapper()->get_ref (id_transition));
 
-          transition->name (transition->name().substr (prefix_length));
+          transition->name
+            (fhg::util::remove_prefix (prefix, transition->name()));
 
           for ( connections_type::iterator
                   connection (transition->in().begin())
@@ -559,7 +546,8 @@ namespace xml
               ; ++connection
               )
           {
-            connection->place = connection->place.substr (prefix_length);
+            connection->place
+              (fhg::util::remove_prefix (prefix, connection->place()));
           }
 
           for ( connections_type::iterator
@@ -568,7 +556,8 @@ namespace xml
               ; ++connection
               )
           {
-            connection->place = connection->place.substr (prefix_length);
+            connection->place
+              (fhg::util::remove_prefix (prefix, connection->place()));
           }
 
           for ( connections_type::iterator
@@ -577,7 +566,8 @@ namespace xml
               ; ++connection
               )
           {
-            connection->place = connection->place.substr (prefix_length);
+            connection->place
+              (fhg::util::remove_prefix (prefix, connection->place()));
           }
 
           for ( place_maps_type::iterator
@@ -587,7 +577,7 @@ namespace xml
               )
           {
             place_map->place_real =
-              place_map->place_real.substr (prefix_length);
+              fhg::util::remove_prefix (prefix, place_map->place_real);
           }
         }
       }

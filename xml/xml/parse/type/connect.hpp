@@ -5,6 +5,8 @@
 
 #include <xml/parse/id/generic.hpp>
 
+#include <xml/parse/type/transition.fwd.hpp>
+
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/property.hpp>
@@ -21,29 +23,33 @@ namespace xml
       {
         ID_SIGNATURES(connect);
 
-      public:
-        connect_type ( ID_CONS_PARAM(connect)
-                     , const std::string & _place
-                     , const std::string & _port
-                     , const id::transition& parent
-                     );
+        boost::optional<id::transition> _parent;
 
-        const id::transition& parent() const;
-
-        //! \todo Should be private with accessors.
-      public:
         //! \todo Should be a id::place and id::port.
-        std::string place;
-        std::string port;
+        std::string _place;
+        std::string _port;
 
         std::string _name;
 
-        we::type::property::type prop;
+      public:
+        connect_type ( ID_CONS_PARAM(connect)
+                     , const id::transition& parent
+                     , const std::string& place
+                     , const std::string& port
+                     );
 
+        bool has_parent() const;
+        boost::optional<const transition_type&> parent() const;
+        boost::optional<transition_type&> parent();
+
+        const std::string& place() const;
+        const std::string& port() const;
         const std::string& name() const;
 
-      private:
-        id::transition _parent;
+        const std::string& place (const std::string&);
+
+        //! \todo Should be private with accessors.
+        we::type::property::type prop;
       };
 
       namespace dump

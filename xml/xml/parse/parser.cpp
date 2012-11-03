@@ -221,9 +221,9 @@ namespace xml
       type::connect_type connect
         ( id::connect (state.next_id())
         , state.id_mapper()
+        , parent
         , required ("connect_type", node, "place", state.file_in_progress())
         , required ("connect_type", node, "port", state.file_in_progress())
-        , parent
         );
 
       for ( xml_node_type * child (node->first_node())

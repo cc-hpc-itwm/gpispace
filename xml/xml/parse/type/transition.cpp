@@ -379,12 +379,12 @@ namespace xml
       {
         // existence of connect.place
         boost::optional<const id::ref::place&>
-          id_place (net.places().get (connect.place));
+          id_place (net.places().get (connect.place()));
 
         if (not id_place)
         {
           throw error::connect_to_nonexistent_place
-            (direction, name(), connect.place, path);
+            (direction, name(), connect.place(), path);
         }
 
         boost::optional<const id::ref::function&> id_function
@@ -395,14 +395,14 @@ namespace xml
         // existence of connect.port
         boost::optional<port_type> port
           ( (direction == "out")
-          ? id_mapper()->get (*id_function)->get_port_out (connect.port)
-          : id_mapper()->get (*id_function)->get_port_in (connect.port)
+          ? id_mapper()->get (*id_function)->get_port_out (connect.port())
+          : id_mapper()->get (*id_function)->get_port_in (connect.port())
           );
 
         if (!port)
         {
           throw error::connect_to_nonexistent_port
-            (direction, name(), connect.port, path);
+            (direction, name(), connect.port(), path);
         }
 
 
@@ -696,24 +696,22 @@ namespace xml
                   }
               }
 
-            for ( connections_type::const_iterator connect (trans.in().begin())
-                ; connect != trans.in().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.in())
               {
                 trans_in.add_connections ()
-                  (get_pid (pids, connect->place), connect->port, connect->prop)
-                  ;
+                  ( get_pid (pids, connect.place())
+                  , connect.port()
+                  , connect.prop
+                  );
               }
 
-            for ( connections_type::const_iterator connect (trans.read().begin())
-                ; connect != trans.read().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.read())
               {
                 trans_in.add_connections ()
-                  (get_pid (pids, connect->place), connect->port, connect->prop)
-                  ;
+                  ( get_pid (pids, connect.place())
+                  , connect.port()
+                  , connect.prop
+                  );
               }
 
             const tid_t tid_in (we_net.add_transition (trans_in));
@@ -737,30 +735,24 @@ namespace xml
                   }
               }
 
-            for ( connections_type::const_iterator connect (trans.in().begin())
-                ; connect != trans.in().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.in())
               {
                 we_net.add_edge
                   ( e++
                   , connection_t ( PT
                                  , tid_in
-                                 , get_pid (pids, connect->place)
+                                 , get_pid (pids, connect.place())
                                  )
                   )
                   ;
               }
 
-            for ( connections_type::const_iterator connect (trans.read().begin())
-                ; connect != trans.read().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.read())
               {
                 we_net.add_edge
                   ( e++, connection_t ( PT_READ
                                       , tid_in
-                                      , get_pid (pids, connect->place)
+                                      , get_pid (pids, connect.place())
                                       )
                   )
                   ;
@@ -818,13 +810,14 @@ namespace xml
 
             std::size_t num_outport (0);
 
-            for ( connections_type::const_iterator connect (trans.out().begin())
-                ; connect != trans.out().end()
-                ; ++connect, ++num_outport
-                )
+
+            BOOST_FOREACH (const connect_type& connect, trans.out())
               {
                 trans_out.add_connections ()
-                  (connect->port, get_pid (pids, connect->place), connect->prop)
+                  ( connect.port()
+                  , get_pid (pids, connect.place())
+                  , connect.prop
+                  )
                   ;
               }
 
@@ -866,16 +859,13 @@ namespace xml
                     }
                 }
 
-            for ( connections_type::const_iterator connect (trans.out().begin())
-                ; connect != trans.out().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.out())
               {
                 we_net.add_edge
                   ( e++
                   , connection_t ( TP
                                  , tid_out
-                                 , get_pid (pids, connect->place)
+                                 , get_pid (pids, connect.place())
                                  )
                   )
                   ;
@@ -919,34 +909,29 @@ namespace xml
 
             we_transition_type we_trans (fun.synthesize (state));
 
-            for ( connections_type::const_iterator connect (trans.in().begin())
-                ; connect != trans.in().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.in())
               {
                 we_trans.add_connections ()
-                  (get_pid (pids, connect->place), connect->port, connect->prop)
-                  ;
+                  ( get_pid (pids, connect.place())
+                  , connect.port()
+                  , connect.prop
+                  );
               }
-
-            for ( connections_type::const_iterator connect (trans.read().begin())
-                ; connect != trans.read().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.read())
               {
                 we_trans.add_connections ()
-                  (get_pid (pids, connect->place), connect->port, connect->prop)
-                  ;
+                  ( get_pid (pids, connect.place())
+                  , connect.port()
+                  , connect.prop
+                  );
               }
-
-            for ( connections_type::const_iterator connect (trans.out().begin())
-                ; connect != trans.out().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.out())
               {
                 we_trans.add_connections ()
-                  (connect->port, get_pid (pids, connect->place), connect->prop)
-                  ;
+                  ( connect.port()
+                  , get_pid (pids, connect.place())
+                  , connect.prop
+                  );
               }
 
             const tid_t tid (we_net.add_transition (we_trans));
@@ -956,34 +941,29 @@ namespace xml
                 we_net.set_transition_priority (tid, *trans.priority);
               }
 
-            for ( connections_type::const_iterator connect (trans.in().begin())
-                ; connect != trans.in().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.in())
               {
                 we_net.add_edge
-                  (e++, connection_t (PT, tid, get_pid (pids, connect->place)))
+                  (e++, connection_t (PT, tid, get_pid (pids, connect.place())))
                   ;
               }
-
-            for ( connections_type::const_iterator connect (trans.read().begin())
-                ; connect != trans.read().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.read())
               {
                 we_net.add_edge
-                  (e++, connection_t (PT_READ, tid, get_pid (pids, connect->place)))
-                  ;
+                  (e++, connection_t ( PT_READ
+                                     , tid
+                                     , get_pid (pids, connect.place())
+                                     )
+                  );
               }
-
-            for ( connections_type::const_iterator connect (trans.out().begin())
-                ; connect != trans.out().end()
-                ; ++connect
-                )
+            BOOST_FOREACH (const connect_type& connect, trans.out())
               {
-                const pid_t pid (get_pid (pids, connect->place));
-
-                we_net.add_edge (e++, connection_t (TP, tid, pid));
+                we_net.add_edge
+                  (e++, connection_t ( TP
+                                     , tid
+                                     , get_pid (pids, connect.place())
+                                     )
+                  );
               }
           } // not unfold
 
