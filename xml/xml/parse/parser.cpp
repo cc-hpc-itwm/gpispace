@@ -238,7 +238,7 @@ namespace xml
             {
               if (child_name == "properties")
                 {
-                  property_map_type (connect.prop, child, state);
+                  property_map_type (connect.properties(), child, state);
                 }
               else if (child_name == "include-properties")
                 {
@@ -252,7 +252,7 @@ namespace xml
                                          )
                     );
 
-                  util::property::join (state, connect.prop, deeper);
+                  util::property::join (state, connect.properties(), deeper);
                 }
               else
                 {

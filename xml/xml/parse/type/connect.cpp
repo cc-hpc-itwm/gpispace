@@ -58,6 +58,15 @@ namespace xml
         return _place = place;
       }
 
+      const we::type::property::type& connect_type::properties() const
+      {
+        return _properties;
+      }
+      we::type::property::type& connect_type::properties()
+      {
+        return _properties;
+      }
+
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
@@ -69,7 +78,7 @@ namespace xml
           s.attr ("port", c.port());
           s.attr ("place", c.place());
 
-          ::we::type::property::dump::dump (s, c.prop);
+          ::we::type::property::dump::dump (s, c.properties());
 
           s.close ();
         }

@@ -701,7 +701,7 @@ namespace xml
                 trans_in.add_connections ()
                   ( get_pid (pids, connect.place())
                   , connect.port()
-                  , connect.prop
+                  , connect.properties()
                   );
               }
 
@@ -710,7 +710,7 @@ namespace xml
                 trans_in.add_connections ()
                   ( get_pid (pids, connect.place())
                   , connect.port()
-                  , connect.prop
+                  , connect.properties()
                   );
               }
 
@@ -816,7 +816,7 @@ namespace xml
                 trans_out.add_connections ()
                   ( connect.port()
                   , get_pid (pids, connect.place())
-                  , connect.prop
+                  , connect.properties()
                   )
                   ;
               }
@@ -914,7 +914,7 @@ namespace xml
                 we_trans.add_connections ()
                   ( get_pid (pids, connect.place())
                   , connect.port()
-                  , connect.prop
+                  , connect.properties()
                   );
               }
             BOOST_FOREACH (const connect_type& connect, trans.read())
@@ -922,7 +922,7 @@ namespace xml
                 we_trans.add_connections ()
                   ( get_pid (pids, connect.place())
                   , connect.port()
-                  , connect.prop
+                  , connect.properties()
                   );
               }
             BOOST_FOREACH (const connect_type& connect, trans.out())
@@ -930,7 +930,7 @@ namespace xml
                 we_trans.add_connections ()
                   ( connect.port()
                   , get_pid (pids, connect.place())
-                  , connect.prop
+                  , connect.properties()
                   );
               }
 

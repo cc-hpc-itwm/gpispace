@@ -25,11 +25,14 @@ namespace xml
 
         boost::optional<id::transition> _parent;
 
-        //! \todo Should be a id::place and id::port.
+        //! \todo Should be a id::place and id::port. In principle yes
+        //! but we do have connections to not yet parsed places
         std::string _place;
         std::string _port;
 
         std::string _name;
+
+        we::type::property::type _properties;
 
       public:
         connect_type ( ID_CONS_PARAM(connect)
@@ -48,8 +51,8 @@ namespace xml
 
         const std::string& place (const std::string&);
 
-        //! \todo Should be private with accessors.
-        we::type::property::type prop;
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
       };
 
       namespace dump
