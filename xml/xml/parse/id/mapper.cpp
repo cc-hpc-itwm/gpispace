@@ -125,13 +125,13 @@ namespace xml
       boost::optional<const type::TYPE&>                                \
         mapper::get (const ref::NAME& ref) const                        \
       {                                                                 \
-        return get (ref._id);                                           \
+        return get (ref.id());                                          \
       }                                                                 \
                                                                         \
       boost::optional<type::TYPE&>                                      \
         mapper::get_ref (const ref::NAME& ref) const                    \
       {                                                                 \
-        return get_ref (ref._id);                                       \
+        return get_ref (ref.id());                                      \
       }                                                                 \
                                                                         \
       void mapper::put (const NAME& id, const type::TYPE& elem)         \
