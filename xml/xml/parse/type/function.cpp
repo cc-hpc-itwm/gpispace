@@ -318,7 +318,7 @@ namespace xml
           {}
 
           void operator () (expression_type &) const { return; }
-          void operator () (module_type &) const { return; }
+          void operator () (id::ref::module &) const { return; }
           void operator () (id::ref::net & id) const
           {
             state.id_mapper()
@@ -401,12 +401,13 @@ namespace xml
           {}
 
           void operator () (const expression_type &) const { return; }
-          void operator () (const module_type & m) const { m.sanity_check (fun); }
+          void operator () (const id::ref::module& id) const
+          {
+            state.id_mapper()->get (id)->sanity_check (fun);
+          }
           void operator () (const id::ref::net& id) const
           {
-            state.id_mapper()
-              ->get (id)
-              ->sanity_check (state, fun);
+            state.id_mapper()->get (id)->sanity_check (state, fun);
           }
         };
       }
@@ -429,7 +430,7 @@ namespace xml
           function_type_check (const state::type & _state) : state (_state) {}
 
           void operator () (const expression_type &) const { return; }
-          void operator () (const module_type &) const { return; }
+          void operator () (const id::ref::module &) const { return; }
           void operator () (const id::ref::net& id) const
           {
             state.id_mapper()
@@ -629,11 +630,14 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const module_type & mod) const
+        we_transition_type operator () (const id::ref::module& id_mod) const
         {
+          boost::optional<const module_type&>
+            mod (state.id_mapper()->get (id_mod));
+
           we_transition_type trans
             ( name()
-            , we_module_type (mod.name, mod.function)
+            , we_module_type (mod->name, mod->function)
             , condition()
             , fun.internal.get_with_default (false)
             , fun.prop
@@ -733,7 +737,7 @@ namespace xml
           {}
 
           void operator () (expression_type &) const { return; }
-          void operator () (module_type &) const { return; }
+          void operator () (id::ref::module &) const { return; }
           void operator () (id::ref::net & id) const
           {
             state.id_mapper()
@@ -1721,42 +1725,45 @@ namespace xml
             return find_module_calls (state, id, m, mcs);
           }
 
-          bool operator () (module_type & mod) const
+          bool operator () (id::ref::module & id) const
           {
             namespace cpp_util = ::fhg::util::cpp;
 
-            const mcs_type::const_iterator old_map (mcs.find (mod.name));
+            boost::optional<const module_type&>
+              mod (state.id_mapper()->get (id));
+
+            const mcs_type::const_iterator old_map (mcs.find (mod->name));
 
             if (old_map != mcs.end())
             {
               const mc_by_function_type::const_iterator old_mc
-                (old_map->second.find (mod.function));
+                (old_map->second.find (mod->function));
 
               if (old_mc != old_map->second.end())
               {
-                if (old_mc->second == mod)
+                if (old_mc->second == *mod)
                 {
                   state.warn ( warning::duplicate_external_function
-                             ( mod.function
-                             , mod.name
-                             , old_mc->second.path
-                             , mod.path
-                             )
+                               ( mod->function
+                               , mod->name
+                               , old_mc->second.path
+                               , mod->path
+                               )
                              );
                 }
                 else
                 {
                   throw error::duplicate_external_function
-                    ( mod.function
-                    , mod.name
+                    ( mod->function
+                    , mod->name
                     , old_mc->second.path
-                    , mod.path
+                    , mod->path
                     );
                 }
               }
             }
 
-            mcs[mod.name].insert (std::make_pair (mod.function, mod));
+            mcs[mod->name].insert (std::make_pair (mod->function, *mod));
 
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
@@ -1764,22 +1771,22 @@ namespace xml
             fhg::util::maybe<port_with_type> port_return;
             types_type types;
 
-            if (mod.port_return)
+            if (mod->port_return)
             {
               boost::optional<const id::ref::port&> id_port
                 ( state.id_mapper()->get (_id_function)
-                ->get_port_out (*mod.port_return)
+                ->get_port_out (*mod->port_return)
                 );
 
               boost::optional<const port_type&>
                 port (state.id_mapper()->get (*id_port));
 
-              port_return = port_with_type (*mod.port_return, port->type);
+              port_return = port_with_type (*mod->port_return, port->type);
               types.insert (port->type);
             }
 
-            for ( port_args_type::const_iterator name (mod.port_arg.begin())
-                ; name != mod.port_arg.end()
+            for ( port_args_type::const_iterator name (mod->port_arg.begin())
+                ; name != mod->port_arg.end()
                 ; ++name
                 )
             {
@@ -1802,8 +1809,8 @@ namespace xml
                 boost::optional<const port_type&>
                   port_out (state.id_mapper()->get (*id_port_out));
 
-                if (    mod.port_return
-                   && (*mod.port_return == port_in->name())
+                if (    mod->port_return
+                   && (*mod->port_return == port_in->name())
                    )
                 {
                   ports_const.push_back (port_with_type (*name, port_in->type));
@@ -1842,8 +1849,8 @@ namespace xml
                 boost::optional<const port_type&>
                   port_out (state.id_mapper()->get (*id_port_out));
 
-                if (    mod.port_return
-                   && (*mod.port_return == port_out->name())
+                if (    mod->port_return
+                   && (*mod->port_return == port_out->name())
                    )
                 {
                   // do nothing, it is the return port
@@ -1857,19 +1864,19 @@ namespace xml
             }
 
             const path_t prefix (state.path_to_cpp());
-            const path_t path (prefix / cpp_util::path::op() / mod.name);
-            const std::string file_hpp (cpp_util::make::hpp (mod.function));
+            const path_t path (prefix / cpp_util::path::op() / mod->name);
+            const std::string file_hpp (cpp_util::make::hpp (mod->function));
             const std::string file_cpp
-              ( mod.code
-              ? cpp_util::make::cpp (mod.function)
-              : cpp_util::make::tmpl (mod.function)
+              ( mod->code
+              ? cpp_util::make::cpp (mod->function)
+              : cpp_util::make::tmpl (mod->function)
               );
 
             {
               std::ostringstream stream;
 
               mod_wrapper ( stream
-                          , mod
+                          , *mod
                           , file_hpp
                           , ports_const
                           , ports_mutable
@@ -1877,15 +1884,15 @@ namespace xml
                           , port_return
                           );
 
-              const fun_info_type fun_info ( mod.function
+              const fun_info_type fun_info ( mod->function
                                            , stream.str()
-                                           , mod.ldflags
-                                           , mod.cxxflags
-                                           , mod.links
-                                           , mod.path
+                                           , mod->ldflags
+                                           , mod->cxxflags
+                                           , mod->links
+                                           , mod->path
                                            );
 
-              m[mod.name].insert (fun_info);
+              m[mod->name].insert (fun_info);
             }
 
             {
@@ -1895,25 +1902,25 @@ namespace xml
 
               cpp_util::header_gen_full (stream);
               cpp_util::include_guard_begin
-                (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod->name + "_" + mod->function);
 
               mod_includes (stream, types);
 
-              namespace_open (stream, mod);
+              namespace_open (stream, *mod);
 
               mod_signature ( stream
                             , port_return
-                            , ports_const, ports_mutable, ports_out, mod
+                            , ports_const, ports_mutable, ports_out, *mod
                             );
 
               stream << ";" << std::endl;
 
-              namespace_close (stream, mod);
+              namespace_close (stream, *mod);
 
               stream << std::endl;
 
               cpp_util::include_guard_end
-                (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod->name + "_" + mod->function);
 
               stream.commit();
             }
@@ -1926,47 +1933,47 @@ namespace xml
               cpp_util::header_gen (stream);
 
               cpp_util::include ( stream
-                                , cpp_util::path::op() / mod.name / file_hpp
+                                , cpp_util::path::op() / mod->name / file_hpp
                                 );
 
               for ( cincludes_type::const_iterator inc
-                      (mod.cincludes.begin())
-                  ; inc != mod.cincludes.end()
+                      (mod->cincludes.begin())
+                  ; inc != mod->cincludes.end()
                   ; ++inc
                   )
               {
                 cpp_util::include (stream, *inc);
               }
 
-              if (not mod.code)
+              if (not mod->code)
               {
                 cpp_util::include (stream, "stdexcept");
               }
 
-              namespace_open (stream, mod);
+              namespace_open (stream, *mod);
 
               mod_signature ( stream
                             , port_return
-                            , ports_const, ports_mutable, ports_out, mod
+                            , ports_const, ports_mutable, ports_out, *mod
                             );
 
               stream << std::endl << "      {" << std::endl;
 
-              if (not mod.code)
+              if (not mod->code)
               {
                 stream << "        // INSERT CODE HERE" << std::endl
                        << "        throw std::runtime_error (\""
-                       << mod.name << "::" << mod.function
+                       << mod->name << "::" << mod->function
                        << ": NOT YET IMPLEMENTED\");";
               }
               else
               {
-                stream << *mod.code;
+                stream << *mod->code;
               }
 
               stream << std::endl << "      }" << std::endl;
 
-              namespace_close (stream, mod);
+              namespace_close (stream, *mod);
 
               stream.commit();
             }
@@ -2160,9 +2167,13 @@ namespace xml
               ::xml::parse::type::dump::dump (s, x);
             }
 
-            void operator () (const id::ref::net& id_net) const
+            void operator () (const id::ref::module& id) const
             {
-              ::xml::parse::type::dump::dump (s, *_id_mapper->get (id_net));
+              ::xml::parse::type::dump::dump (s, *_id_mapper->get (id));
+            }
+            void operator () (const id::ref::net& id) const
+            {
+              ::xml::parse::type::dump::dump (s, *_id_mapper->get (id));
             }
           };
         }

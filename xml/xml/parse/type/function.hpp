@@ -64,7 +64,7 @@ namespace xml
 
       public:
         typedef boost::variant < expression_type
-                               , module_type
+                               , id::ref::module
                                , id::ref::net
                                > type;
 

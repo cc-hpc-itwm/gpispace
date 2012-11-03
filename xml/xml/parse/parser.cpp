@@ -1165,7 +1165,10 @@ namespace xml
               else if (child_name == "module")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->f = module_type (child, state, id);
+                    ->f = id::ref::module
+                        ( module_type (child, state, id)
+                        , state.id_mapper()
+                        );
                 }
               else if (child_name == "net")
                 {
@@ -1238,22 +1241,26 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::module_type
+    id::module
     module_type ( const xml_node_type * node
-             , state::type & state
-             , const id::function& parent
-             )
+                , state::type & state
+                , const id::function& parent
+                )
     {
-      type::module_type mod
-        ( id::module (state.next_id())
-        , state.id_mapper()
-        , parent
-        , required ("module_type", node, "name", state.file_in_progress())
-        , required ("module_type", node, "function", state.file_in_progress())
-        , state.file_in_progress()
-        );
+      id::module id (state.next_id());
 
-      mod.path = state.file_in_progress();
+      {
+        type::module_type mod
+          ( id
+          , state.id_mapper()
+          , parent
+          , required ("module_type", node, "name", state.file_in_progress())
+          , required ("module_type", node, "function", state.file_in_progress())
+          , state.file_in_progress()
+          );
+      }
+
+      state.id_mapper()->get_ref (id)->path = state.file_in_progress();
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1270,25 +1277,26 @@ namespace xml
                   const std::string href
                     (required ("module_type", child, "href", state.file_in_progress()));
 
-                  mod.cincludes.push_back (href);
+                  state.id_mapper()->get_ref (id)->cincludes.push_back (href);
                 }
               else if (child_name == "ld")
                 {
                   const std::string flag
                     (required ("module_type", child, "flag", state.file_in_progress()));
 
-                  mod.ldflags.push_back (flag);
+                  state.id_mapper()->get_ref (id)->ldflags.push_back (flag);
                 }
               else if (child_name == "cxx")
                 {
                   const std::string flag
                     (required ("module_type", child, "flag", state.file_in_progress()));
 
-                  mod.cxxflags.push_back (flag);
+                  state.id_mapper()->get_ref (id)->cxxflags.push_back (flag);
                 }
               else if (child_name == "link")
                 {
-                  mod.links.push_back ( required ( "module_type"
+                  state.id_mapper()->get_ref (id)
+                    ->links.push_back ( required ( "module_type"
                                                  , child
                                                  , "href"
                                                  , state.file_in_progress()
@@ -1306,7 +1314,8 @@ namespace xml
                       )
                     );
 
-                  mod.code = fhg::util::join (cdata, "\n");
+                  state.id_mapper()->get_ref (id)
+                    ->code = fhg::util::join (cdata, "\n");
                 }
               else
                 {
@@ -1320,8 +1329,7 @@ namespace xml
             }
         }
 
-
-      return mod;
+      return id;
     }
 
     // ********************************************************************* //

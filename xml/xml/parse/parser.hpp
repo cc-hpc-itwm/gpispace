@@ -53,10 +53,10 @@ namespace xml
                                , state::type &
                                , const boost::optional<type::function_type::id_parent>& parent
                                );
-    type::module_type module_type ( const xml_node_type *
-                            , state::type &
-                            , const id::function& parent
-                            );
+    id::module module_type ( const xml_node_type *
+                           , state::type &
+                           , const id::function& parent
+                           );
     id::tmpl tmpl_type ( const xml_node_type *
                        , state::type &
                        , const id::net& parent
