@@ -91,10 +91,10 @@ namespace xml
                                    , state::type &
                                    , const id::net& parent
                                    );
-    type::specialize_type specialize_type ( const xml_node_type *
-                                          , state::type &
-                                          , const id::net& parent
-                                          );
+    id::specialize specialize_type ( const xml_node_type *
+                                   , state::type &
+                                   , const id::net& parent
+                                   );
     int property_map_type ( we::type::property::type &
                           , const xml_node_type *
                           , state::type &

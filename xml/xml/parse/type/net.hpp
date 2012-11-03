@@ -50,10 +50,10 @@ namespace xml
 
         xml::util::uniqueID<place_type,id::ref::place> _places;
         xml::util::uniqueID<transition_type,id::ref::transition> _transitions;
+        xml::util::uniqueID<specialize_type,id::ref::specialize> _specializes;
 
         xml::util::unique<function_type,id::function,maybe_string_type> _functions;
         xml::util::unique<tmpl_type,id::tmpl,maybe_string_type> _templates;
-        xml::util::unique<specialize_type,id::specialize> _specializes;
 
         boost::optional<id::function> _parent;
 
@@ -87,6 +87,9 @@ namespace xml
         const xml::util::uniqueID<transition_type,id::ref::transition>&
         transitions() const;
 
+        const xml::util::uniqueID<specialize_type,id::ref::specialize>&
+        specializes() const;
+
         boost::optional<const function_type&>
         get_function (const std::string & name) const;
 
@@ -96,19 +99,16 @@ namespace xml
         // ***************************************************************** //
 
         const functions_type & functions (void) const;
-        const specializes_type & specializes (void) const;
         const templates_type & templates (void) const;
 
         // ***************************************************************** //
 
         const id::ref::place& push_place (const id::ref::place &);
         const id::ref::transition& push_transition (const id::ref::transition&);
+        const id::ref::specialize& push_specialize (const id::ref::specialize&);
 
         void push_function (const function_type & f);
         void push_template (const tmpl_type & t);
-        void push_specialize ( const specialize_type & s
-                             , const state::type & state
-                             );
 
         // ***************************************************************** //
 

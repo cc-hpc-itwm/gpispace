@@ -35,6 +35,7 @@ namespace xml
         : ID_INITIALIZE()
         , _places (id_mapper)
         , _transitions (id_mapper)
+        , _specializes (id_mapper)
         , _parent (parent)
         , _path (path)
       {
@@ -74,6 +75,12 @@ namespace xml
         return _transitions;
       }
 
+      const xml::util::uniqueID<specialize_type,id::ref::specialize>&
+      net_type::specializes() const
+      {
+        return _specializes;
+      }
+
       boost::optional<const function_type&>
       net_type::get_function (const std::string & name) const
       {
@@ -103,11 +110,6 @@ namespace xml
       const functions_type & net_type::functions (void) const
       {
         return _functions.elements();
-      }
-
-      const specializes_type & net_type::specializes (void) const
-      {
-        return _specializes.elements();
       }
 
       const templates_type & net_type::templates (void) const
@@ -144,6 +146,22 @@ namespace xml
         return id;
       }
 
+      const id::ref::specialize&
+      net_type::push_specialize (const id::ref::specialize& id)
+      {
+        const id::ref::specialize& id_old (_specializes.push (id));
+
+        if (not (id_old == id))
+        {
+          boost::optional<const specialize_type&>
+            spec (id_mapper()->get (id));
+
+          throw error::duplicate_specialize (spec->name(), spec->path);
+        }
+
+        return id;
+      }
+
       void net_type::push_function (const function_type & f)
       {
         xml::util::unique<function_type,id::function>::push_return_type fun
@@ -165,18 +183,6 @@ namespace xml
         {
           throw error::duplicate_template<tmpl_type>
             (t, *templ.second);
-        }
-      }
-
-      void net_type::push_specialize ( const specialize_type & s
-                                     , const state::type & state
-                                     )
-      {
-        if (!_specializes.push (s))
-        {
-          throw error::duplicate_specialize ( s.name()
-                                            , state.file_in_progress()
-                                            );
         }
       }
 
@@ -241,12 +247,13 @@ namespace xml
       {
         namespace st = xml::parse::structure_type;
 
-        for ( specializes_type::iterator
-                specialize (_specializes.elements().begin())
-            ; specialize != _specializes.elements().end()
-            ; ++specialize
-            )
+        BOOST_FOREACH( const id::ref::specialize& id_specialize
+                     , specializes().ids()
+                     )
         {
+          boost::optional<specialize_type&>
+            specialize (id_mapper()->get_ref (id_specialize));
+
           boost::optional<tmpl_type> tmpl
             (get_template (specialize->use));
 
@@ -700,7 +707,7 @@ namespace xml
 
           dumps (s, net.structs.begin(), net.structs.end());
           dumps (s, net.templates().begin(), net.templates().end());
-          dumps (s, net.specializes().begin(), net.specializes().end());
+          dumps (s, net.specializes().ids(), net.id_mapper());
           dumps (s, net.functions().begin(), net.functions().end());
 
           dumps (s, net.places().ids(), net.id_mapper());

@@ -532,20 +532,28 @@ namespace xml
         (boost::bind (parse_function, _1, _2, boost::none), input);
     }
 
-    type::specialize_type
+    id::specialize
     specialize_type ( const xml_node_type * node
                     , state::type & state
                     , const id::net& parent
                     )
     {
-      type::specialize_type s ( id::specialize (state.next_id())
-                              , state.id_mapper()
-                              , parent
-                              );
+      id::specialize id (state.next_id());
 
-      s.path = state.file_in_progress();
-      s.name (required ("specialize_type", node, "name", s.path));
-      s.use = required ("specialize_type", node, "use", s.path);
+      {
+        type::specialize_type s ( id
+                                , state.id_mapper()
+                                , parent
+                                );
+      }
+
+      const boost::filesystem::path& path (state.file_in_progress());
+
+      state.id_mapper()->get_ref(id)->path = path;
+      state.id_mapper()->get_ref(id)
+        ->name (required ("specialize_type", node, "name", path));
+      state.id_mapper()->get_ref(id)
+        ->use = required ("specialize_type", node, "use", path);
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -559,11 +567,17 @@ namespace xml
             {
               if (child_name == "type-map")
                 {
-                  set_type_map (child, state, s.type_map);
+                  set_type_map ( child
+                               , state
+                               , state.id_mapper()->get_ref(id)->type_map
+                               );
                 }
               else if (child_name == "type-get")
                 {
-                  set_type_get (child, state, s.type_get);
+                  set_type_get ( child
+                               , state
+                               , state.id_mapper()->get_ref(id)->type_get
+                               );
                 }
               else
                 {
@@ -577,7 +591,7 @@ namespace xml
             }
         }
 
-      return s;
+      return id;
     }
 
     // ********************************************************************* //
@@ -1332,7 +1346,11 @@ namespace xml
                 {
                   state.id_mapper()
                     ->get_ref (id)
-                    ->push_specialize (specialize_type (child, state, id), state);
+                    ->push_specialize ( id::ref::specialize
+                                        ( specialize_type (child, state, id)
+                                        , state.id_mapper()
+                                        )
+                                      );
                 }
               else if (child_name == "place")
                 {
