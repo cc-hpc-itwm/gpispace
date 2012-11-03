@@ -755,7 +755,7 @@ namespace xml
             )
           {
             transition_synthesize
-              ( *state.id_mapper()->get (*id_transition)
+              ( id_transition->id()
               , state
               , net
               , we_net

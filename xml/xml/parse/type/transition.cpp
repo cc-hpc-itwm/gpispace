@@ -489,7 +489,7 @@ namespace xml
       }
 
       void transition_synthesize
-        ( const transition_type & trans
+        ( const id::transition & id_transition
         , const state::type & state
         , const net_type & net
         , we::activity_t::transition_type::net_type & we_net
@@ -503,6 +503,8 @@ namespace xml
         typedef we_transition_type::place_type we_place_type;
         typedef we_transition_type::preparsed_cond_type we_cond_type;
         typedef petri_net::tid_t tid_t;
+
+        const transition_type& trans (*state.id_mapper()->get (id_transition));
 
         if ((trans.in().size() == 0) && (trans.out().size() == 0))
           {

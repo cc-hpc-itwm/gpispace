@@ -147,7 +147,7 @@ namespace xml
       using petri_net::edge::TP;
 
       void transition_synthesize
-        ( const transition_type & trans
+        ( const id::transition & id_transition
         , const state::type & state
         , const net_type & net
         , we::activity_t::transition_type::net_type & we_net
