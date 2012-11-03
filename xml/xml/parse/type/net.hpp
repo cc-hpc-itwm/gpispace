@@ -100,14 +100,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        function_with_mapping_type get_function (const std::string & name);
-
-        // ***************************************************************** //
-
         const functions_type & functions (void) const;
-
         const specializes_type & specializes (void) const;
-
         const templates_type & templates (void) const;
 
         // ***************************************************************** //
@@ -116,9 +110,7 @@ namespace xml
         const id::ref::transition& push_transition (const id::ref::transition&);
 
         void push_function (const function_type & f);
-
         void push_template (const tmpl_type & t);
-
         void push_specialize ( const specialize_type & s
                              , const state::type & state
                              );
@@ -126,7 +118,6 @@ namespace xml
         // ***************************************************************** //
 
         void clear_places (void);
-
         void clear_transitions (void);
 
         // ***************************************************************** //
