@@ -16,7 +16,6 @@ set (xml_parse_type_headers
   token.hpp
   transition.hpp
   use.hpp
-  id.hpp
 )
 
 set (xml_parse_type_fwd_headers
@@ -53,7 +52,6 @@ set (xml_parse_type_sources
   token.cpp
   transition.cpp
   use.cpp
-  id.cpp
 )
 
 add_library (xml_parse_type

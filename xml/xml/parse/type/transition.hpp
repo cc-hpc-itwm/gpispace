@@ -8,7 +8,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/use.hpp>
 
-#include <xml/parse/type/id.hpp>
+#include <xml/parse/id/generic.hpp>
 
 namespace xml
 {

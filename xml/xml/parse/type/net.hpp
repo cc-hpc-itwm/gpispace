@@ -14,7 +14,7 @@
 
 #include <xml/parse/type/dumps.hpp>
 
-#include <xml/parse/type/id.hpp>
+#include <xml/parse/id/generic.hpp>
 
 namespace xml
 {

@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_TYPE_TOKEN_HPP
 #define _XML_PARSE_TYPE_TOKEN_HPP
 
-#include <xml/parse/type/id.hpp>
+#include <xml/parse/id/generic.hpp>
 
 #include <we/type/signature.hpp>
 

@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_TYPE_CONNECT_HPP
 #define _XML_PARSE_TYPE_CONNECT_HPP
 
-#include <xml/parse/type/id.hpp>
+#include <xml/parse/id/generic.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 

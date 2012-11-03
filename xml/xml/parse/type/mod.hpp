@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_TYPE_MOD_HPP
 #define _XML_PARSE_TYPE_MOD_HPP
 
-#include <xml/parse/type/id.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 
 #include <fhg/util/maybe.hpp>

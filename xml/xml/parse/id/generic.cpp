@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fhg.de
 
-#include <xml/parse/type/id.hpp>
+#include <xml/parse/id/generic.hpp>
 
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>

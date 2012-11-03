@@ -4,7 +4,7 @@
 #define _XML_PARSE_TYPE_PORT_HPP
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/type/id.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>

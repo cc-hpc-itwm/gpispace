@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_TYPE_PLACE_HPP
 #define _XML_PARSE_TYPE_PLACE_HPP
 
-#include <xml/parse/type/id.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/token.hpp>
 #include <xml/parse/type_map_type.hpp>
