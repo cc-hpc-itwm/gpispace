@@ -49,15 +49,33 @@ namespace xml
       {
         return _id;
       }
+      id::mapper* transition_type::id_mapper() const
+      {
+        return _id_mapper;
+      }
 
-      const id::net& transition_type::parent() const
+      bool transition_type::has_parent() const
       {
         return _parent;
       }
 
-      bool transition_type::is_same (const transition_type& other) const
+      boost::optional<const net_type&> transition_type::parent() const
       {
-        return id() == other.id() && parent() == other.parent();
+        if (has_parent())
+          {
+            return id_mapper()->get (*_parent);
+          }
+
+        return boost::none;
+      }
+      boost::optional<net_type&> transition_type::parent()
+      {
+        if (has_parent())
+          {
+            return id_mapper()->get_ref (*_parent);
+          }
+
+        return boost::none;
       }
 
       const transition_type::function_or_use_type&

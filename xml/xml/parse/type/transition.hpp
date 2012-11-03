@@ -27,12 +27,10 @@ namespace xml
         xml::util::unique<place_map_type,id::place_map> _place_map;
 
         id::transition _id;
-        id::net _parent;
+        boost::optional<id::net> _parent;
         id::mapper* _id_mapper;
 
       public:
-        id::mapper* id_mapper() const { return _id_mapper; }
-
         typedef boost::variant <id::ref::function, use_type>
                 function_or_use_type;
 
@@ -47,9 +45,12 @@ namespace xml
                         );
 
         const id::transition& id() const;
-        const id::net& parent() const;
+        id::mapper* id_mapper() const;
 
-        bool is_same (const transition_type& other) const;
+        bool has_parent() const;
+
+        boost::optional<const net_type&> parent() const;
+        boost::optional<net_type&> parent();
 
       private:
         boost::optional<function_or_use_type> _function_or_use;
