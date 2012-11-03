@@ -53,14 +53,14 @@ namespace xml
                                , state::type &
                                , const boost::optional<type::function_type::id_parent>& parent
                                );
-    type::mod_type mod_type ( const xml_node_type *
+    type::module_type module_type ( const xml_node_type *
                             , state::type &
                             , const id::function& parent
                             );
-    type::template_type template_type ( const xml_node_type *
-                                      , state::type &
-                                      , const id::net& parent
-                                      );
+    type::tmpl_type tmpl_type ( const xml_node_type *
+                              , state::type &
+                              , const id::net& parent
+                              );
     id::net net_type ( const xml_node_type *
                      , state::type &
                      , const id::function& parent
@@ -79,7 +79,7 @@ namespace xml
     void substruct_type ( const xml_node_type *, state::type &
                         , signature::desc_t &
                         );
-    type::struct_t struct_type ( const xml_node_type *
+    type::structure_type struct_type ( const xml_node_type *
                                , state::type &
                                , const id::function& parent
                                );

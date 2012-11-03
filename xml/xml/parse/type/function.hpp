@@ -3,8 +3,7 @@
 #ifndef _XML_PARSE_TYPE_FUNCTION_HPP
 #define _XML_PARSE_TYPE_FUNCTION_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/id.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/port.hpp>
@@ -26,11 +25,13 @@ namespace xml
       typedef xml::util::unique<port_type,id::port>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
       typedef xml::util::unique<function_type,id::function>::elements_type functions_type;
-      typedef xml::util::unique<template_type,id::tmpl>::elements_type templates_type;
+      typedef xml::util::unique<tmpl_type,id::tmpl>::elements_type templates_type;
       typedef xml::util::unique<specialize_type,id::specialize>::elements_type specializes_type;
 
       struct function_type
       {
+        ID_SIGNATURES(function)
+
       private:
         typedef xml::util::unique<port_type,id::port> unique_port_type;
 
@@ -52,21 +53,18 @@ namespace xml
 
         typenames_type _typenames;
 
-        id::function _id;
-
       public:
         typedef boost::variant< id::transition
                               , id::tmpl
                               > id_parent;
       public:
         boost::optional<id_parent> _parent;
-        id::mapper* _id_mapper;
 
         fhg::util::maybe<std::string> _name;
 
       public:
         typedef boost::variant < expression_type
-                               , mod_type
+                               , module_type
                                , id::ref::net
                                > type;
 
@@ -85,7 +83,7 @@ namespace xml
 
         boost::filesystem::path path;
 
-        xml::parse::struct_t::set_type structs_resolved;
+        xml::parse::structure_type::set_type structs_resolved;
 
         // ***************************************************************** //
 
@@ -98,21 +96,16 @@ namespace xml
         const fhg::util::maybe<std::string>&
         name (const fhg::util::maybe<std::string>& name);
 
-        function_type ( const type& _f
-                      , const id::function& id
+        function_type ( ID_CONS_PARAM(function)
+                      , const type& _f
                       , const boost::optional<id_parent>& parent
-                      , id::mapper* id_mapper
                       );
 
-        const id::function& id() const;
         const boost::optional<id_parent>& parent() const;
-        id::mapper* id_mapper() const;
 
         bool has_parent() const;
 
         boost::optional<function_type> get_function (const std::string& name) const;
-
-        bool is_same (const function_type& other) const;
 
 #ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
         function_type & operator= (function_type const &rhs);
@@ -155,17 +148,17 @@ namespace xml
 
         // ***************************************************************** //
 
-        xml::parse::struct_t::forbidden_type forbidden_below (void) const;
+        xml::parse::structure_type::forbidden_type forbidden_below (void) const;
 
         // ***************************************************************** //
 
         void resolve ( const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
         void resolve
-          ( const xml::parse::struct_t::set_type & global
+          ( const xml::parse::structure_type::set_type & global
           , const state::type & state
-          , const xml::parse::struct_t::forbidden_type & forbidden
+          , const xml::parse::structure_type::forbidden_type & forbidden
           );
 
         // ***************************************************************** //
@@ -193,7 +186,7 @@ namespace xml
 
         void specialize ( const type_map_type & map
                         , const type_get_type & get
-                        , const xml::parse::struct_t::set_type & known_structs
+                        , const xml::parse::structure_type::set_type & known_structs
                         , state::type & state
                         );
       };
@@ -245,7 +238,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      void struct_to_cpp ( const struct_t & s
+      void struct_to_cpp ( const structure_type & s
                          , const state::type & state
                          );
 

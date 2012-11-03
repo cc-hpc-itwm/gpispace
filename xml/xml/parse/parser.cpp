@@ -53,13 +53,13 @@ namespace xml
           );
       }
 
-      type::template_type parse_template ( std::istream & f
-                                         , state::type & state
-                                         , const id::net& parent
-                                         )
+      type::tmpl_type parse_template ( std::istream & f
+                                     , state::type & state
+                                     , const id::net& parent
+                                     )
       {
-        return generic_parse<type::template_type>
-          ( boost::bind (template_type, _1, _2, parent)
+        return generic_parse<type::tmpl_type>
+          ( boost::bind (tmpl_type, _1, _2, parent)
           , f
           , state
           , "template"
@@ -102,12 +102,12 @@ namespace xml
         (boost::bind (parse_function, _1, _2, parent), file);
     }
 
-    static type::template_type template_include ( const std::string & file
-                                                , state::type & state
-                                                , const id::net& parent
-                                                )
+    static type::tmpl_type template_include ( const std::string & file
+                                            , state::type & state
+                                            , const id::net& parent
+                                            )
     {
-      return state.generic_include<type::template_type>
+      return state.generic_include<type::tmpl_type>
         (boost::bind (parse_template, _1, _2, parent), file);
     }
 
@@ -219,11 +219,11 @@ namespace xml
                  )
     {
       type::connect_type connect
-        ( required ("connect_type", node, "place", state.file_in_progress())
-        , required ("connect_type", node, "port", state.file_in_progress())
-        , id::connect (state.next_id())
-        , parent
+        ( id::connect (state.next_id())
         , state.id_mapper()
+        , required ("connect_type", node, "place", state.file_in_progress())
+        , required ("connect_type", node, "port", state.file_in_progress())
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -278,11 +278,11 @@ namespace xml
                    )
     {
       type::place_map_type place_map
-        ( required ("place_map_type", node, "virtual", state.file_in_progress())
-        , required ("place_map_type", node, "real", state.file_in_progress())
-        , id::place_map (state.next_id())
-        , parent
+        ( id::place_map (state.next_id())
         , state.id_mapper()
+        , required ("place_map_type", node, "virtual", state.file_in_progress())
+        , required ("place_map_type", node, "real", state.file_in_progress())
+        , parent
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -342,7 +342,7 @@ namespace xml
         (required ("transition_type", node, "name", state.file_in_progress()));
 
       {
-        type::transition_type t (id, parent, state.id_mapper());
+        type::transition_type t (id, state.id_mapper(), parent);
       }
 
       state.id_mapper()->get_ref (id)->path = state.file_in_progress();
@@ -410,8 +410,8 @@ namespace xml
                   state.id_mapper()->get_ref (id)
                     ->function_or_use
                     ( type::use_type ( id::use (state.next_id())
-                                     , id
                                      , state.id_mapper()
+                                     , id
                                      , required ( "transition_type"
                                                 , child
                                                 , "name"
@@ -539,8 +539,8 @@ namespace xml
                     )
     {
       type::specialize_type s ( id::specialize (state.next_id())
-                              , parent
                               , state.id_mapper()
+                              , parent
                               );
 
       s.path = state.file_in_progress();
@@ -814,8 +814,8 @@ namespace xml
               if (child_name == "value")
                 {
                   return type::token_type ( id::token (state.next_id())
-                                          , parent
                                           , state.id_mapper()
+                                          , parent
                                           , std::string (child->value())
                                           );
                 }
@@ -836,8 +836,8 @@ namespace xml
         }
 
       return type::token_type ( id::token (state.next_id())
-                              , parent
                               , state.id_mapper()
+                              , parent
                               , boost::get<signature::structured_t>
                                 (temporary_token)
                               );
@@ -951,13 +951,13 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::template_type template_type ( const xml_node_type * node
-                                      , state::type & state
-                                      , const id::net& parent
-                                      )
+    type::tmpl_type tmpl_type ( const xml_node_type * node
+                              , state::type & state
+                              , const id::net& parent
+                              )
     {
       boost::optional<id::ref::function> fun;
-      type::template_type::names_type template_parameter;
+      type::tmpl_type::names_type template_parameter;
       fhg::util::maybe<std::string> name (optional (node, "name"));
 
       const id::tmpl template_id (state.next_id());
@@ -1022,10 +1022,10 @@ namespace xml
             );
         }
 
-      return type::template_type
+      return type::tmpl_type
         ( template_id
-        , parent
         , state.id_mapper()
+        , parent
         , state.file_in_progress()
         , name
         , template_parameter
@@ -1045,14 +1045,14 @@ namespace xml
       id::expression expression_id (state.next_id());
       id::function id (state.next_id());
       type::expression_type expression ( expression_id
-                                       , id
                                        , state.id_mapper()
+                                       , id
                                        );
       {
-        type::function_type f ( expression
-                              , id
-                              , parent
+        type::function_type f ( id
                               , state.id_mapper()
+                              , expression
+                              , parent
                               );
       }
 
@@ -1122,20 +1122,20 @@ namespace xml
                   state.id_mapper()->get_ref (id)
                     ->add_expression
                     ( type::expression_type
-                      ( parse_cdata<type::expressions_type>
+                      ( id::expression (state.next_id())
+                      , state.id_mapper()
+                      , parse_cdata<type::expressions_type>
                         ( child
                         , state.file_in_progress()
                         )
-                      , id::expression (state.next_id())
                       , id
-                      , state.id_mapper()
                       )
                     );
                 }
               else if (child_name == "module")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->f = mod_type (child, state, id);
+                    ->f = module_type (child, state, id);
                 }
               else if (child_name == "net")
                 {
@@ -1208,18 +1208,18 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::mod_type
-    mod_type ( const xml_node_type * node
+    type::module_type
+    module_type ( const xml_node_type * node
              , state::type & state
              , const id::function& parent
              )
     {
-      type::mod_type mod
+      type::module_type mod
         ( id::module (state.next_id())
-        , parent
         , state.id_mapper()
-        , required ("mod_type", node, "name", state.file_in_progress())
-        , required ("mod_type", node, "function", state.file_in_progress())
+        , parent
+        , required ("module_type", node, "name", state.file_in_progress())
+        , required ("module_type", node, "function", state.file_in_progress())
         , state.file_in_progress()
         );
 
@@ -1238,27 +1238,27 @@ namespace xml
               if (child_name == "cinclude")
                 {
                   const std::string href
-                    (required ("mod_type", child, "href", state.file_in_progress()));
+                    (required ("module_type", child, "href", state.file_in_progress()));
 
                   mod.cincludes.push_back (href);
                 }
               else if (child_name == "ld")
                 {
                   const std::string flag
-                    (required ("mod_type", child, "flag", state.file_in_progress()));
+                    (required ("module_type", child, "flag", state.file_in_progress()));
 
                   mod.ldflags.push_back (flag);
                 }
               else if (child_name == "cxx")
                 {
                   const std::string flag
-                    (required ("mod_type", child, "flag", state.file_in_progress()));
+                    (required ("module_type", child, "flag", state.file_in_progress()));
 
                   mod.cxxflags.push_back (flag);
                 }
               else if (child_name == "link")
                 {
-                  mod.links.push_back ( required ( "mod_type"
+                  mod.links.push_back ( required ( "module_type"
                                                  , child
                                                  , "href"
                                                  , state.file_in_progress()
@@ -1282,7 +1282,7 @@ namespace xml
                 {
                   state.warn
                     ( warning::unexpected_element ( child_name
-                                                  , "mod_type"
+                                                  , "module_type"
                                                   , state.file_in_progress()
                                                   )
                     );
@@ -1306,8 +1306,8 @@ namespace xml
 
       {
         type::net_type n ( id
-                         , parent
                          , state.id_mapper()
+                         , parent
                          , state.file_in_progress()
                          );
       }
@@ -1326,7 +1326,7 @@ namespace xml
                 {
                   state.id_mapper()
                     ->get_ref (id)
-                    ->push_template (template_type (child, state, id));
+                    ->push_template (tmpl_type (child, state, id));
                 }
               else if (child_name == "specialize")
                 {
@@ -1390,7 +1390,7 @@ namespace xml
                   const fhg::util::maybe<std::string> as
                     (optional (child, "as"));
 
-                  type::template_type tmpl
+                  type::tmpl_type tmpl
                     (template_include (file, state, id));
 
                   if (as)
@@ -1473,7 +1473,9 @@ namespace xml
         (required ("place_type", node, "name", state.file_in_progress()));
 
       type::place_type p
-        ( validate_name ( validate_prefix ( name
+        ( id::place (state.next_id())
+        , state.id_mapper()
+        , validate_name ( validate_prefix ( name
                                           , "place"
                                           , state.file_in_progress()
                                           )
@@ -1484,9 +1486,7 @@ namespace xml
         , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
                                              , optional (node, "virtual")
                                              )
-        , id::place (state.next_id())
         , parent
-        , state.id_mapper()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1548,7 +1548,9 @@ namespace xml
         (required ("port_type", node, "name", state.file_in_progress()));
 
       type::port_type port
-        ( validate_name ( validate_prefix ( name
+        ( id::port (state.next_id())
+        , state.id_mapper()
+        , validate_name ( validate_prefix ( name
                                           , "port"
                                           , state.file_in_progress()
                                           )
@@ -1557,9 +1559,7 @@ namespace xml
                         )
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
-        , id::port (state.next_id())
         , parent
-        , state.id_mapper()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1704,25 +1704,26 @@ namespace xml
         );
     }
 
-    type::struct_t
+    type::structure_type
     struct_type ( const xml_node_type * node
                 , state::type & state
                 , const id::function& parent
                 )
     {
-      type::struct_t s ( id::structure (state.next_id())
-                       , parent
-                       , state.id_mapper()
-                       , validate_field_name ( required ( "struct_type"
-                                                        , node
-                                                        , "name"
-                                                        , state.file_in_progress()
-                                                        )
-                                             , state.file_in_progress()
-                                             )
-                       , signature::structured_t()
-                       , state.file_in_progress()
-                       );
+      type::structure_type s
+        ( id::structure (state.next_id())
+        , state.id_mapper()
+        , parent
+        , validate_field_name ( required ( "struct_type"
+                                         , node
+                                         , "name"
+                                         , state.file_in_progress()
+                                         )
+                              , state.file_in_progress()
+                              )
+        , signature::structured_t()
+        , state.file_in_progress()
+        );
 
       gen_struct_type (node, state, s.signature());
 

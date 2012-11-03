@@ -9,7 +9,7 @@ namespace xml
   {
     namespace type
     {
-      struct template_type;
+      struct tmpl_type;
     }
   }
 }

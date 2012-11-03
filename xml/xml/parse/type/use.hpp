@@ -3,8 +3,7 @@
 #ifndef _XML_PARSE_TYPE_USE_HPP
 #define _XML_PARSE_TYPE_USE_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/id.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -18,19 +17,18 @@ namespace xml
     {
       struct use_type
       {
+        ID_SIGNATURES(use)
+
       public:
-        use_type ( const id::use& id
+        use_type ( ID_CONS_PARAM(use)
                  , const id::transition& parent
-                 , id::mapper* id_mapper
                  , const std::string& name
                  );
 
         const std::string& name() const;
 
       private:
-        id::use _id;
         id::transition _parent;
-        id::mapper* _id_mapper;
 
         std::string _name;
       };

@@ -11,10 +11,10 @@
 #include <xml/parse/type_map_type.hpp>
 
 #include <xml/parse/util/unique.hpp>
-#include <xml/parse/id/types.hpp>
-#include <xml/parse/id/mapper.fwd.hpp>
 
 #include <xml/parse/type/dumps.hpp>
+
+#include <xml/parse/type/id.hpp>
 
 namespace xml
 {
@@ -40,6 +40,8 @@ namespace xml
 
       struct net_type
       {
+        ID_SIGNATURES(net)
+
       public:
         typedef xml::util::unique<place_type,id::place> places_type;
 
@@ -52,12 +54,10 @@ namespace xml
         boost::unordered_map<std::string,id::ref::transition> _by_name_transition;
 
         xml::util::unique<function_type,id::function,maybe_string_type> _functions;
-        xml::util::unique<template_type,id::tmpl,maybe_string_type> _templates;
+        xml::util::unique<tmpl_type,id::tmpl,maybe_string_type> _templates;
         xml::util::unique<specialize_type,id::specialize> _specializes;
 
-        id::net _id;
         boost::optional<id::function> _parent;
-        id::mapper* _id_mapper;
 
         boost::filesystem::path _path;
 
@@ -67,20 +67,17 @@ namespace xml
 
         we::type::property::type prop;
 
-        xml::parse::struct_t::set_type structs_resolved;
+        xml::parse::structure_type::set_type structs_resolved;
 
-        net_type ( const id::net& id
+        net_type ( ID_CONS_PARAM(net)
                  , const id::function& parent
-                 , id::mapper* id_mapper
                  , const boost::filesystem::path& path
                        = boost::filesystem::path()
                  );
 
-        const id::net& id() const;
         boost::optional<const function_type&> parent() const;
         boost::optional<function_type&> parent();
         bool has_parent() const;
-        id::mapper* id_mapper() const;
 
         const boost::filesystem::path& path() const;
 
@@ -102,7 +99,7 @@ namespace xml
 
         boost::optional<function_type> get_function (const std::string & name) const;
 
-        boost::optional<template_type> get_template (const std::string & name) const;
+        boost::optional<tmpl_type> get_template (const std::string & name) const;
 
         // ***************************************************************** //
 
@@ -128,7 +125,7 @@ namespace xml
 
         void push_function (const function_type & f);
 
-        void push_template (const template_type & t);
+        void push_template (const tmpl_type & t);
 
         void push_specialize ( const specialize_type & s
                              , const state::type & state
@@ -152,19 +149,19 @@ namespace xml
 
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
-                        , const xml::parse::struct_t::set_type & known_structs
+                        , const xml::parse::structure_type::set_type & known_structs
                         , state::type & state
                         );
 
         // ***************************************************************** //
 
         void resolve ( const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
 
-        void resolve ( const xml::parse::struct_t::set_type & global
+        void resolve ( const xml::parse::structure_type::set_type & global
                      , const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
 
         // ***************************************************************** //

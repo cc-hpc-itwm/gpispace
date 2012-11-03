@@ -106,20 +106,20 @@ namespace fhg
             xml_type::ports_type& out ();
           };
 
-          class mod_type
+          class module_type
           {
           private:
-            xml_type::mod_type& _mod;
+            xml_type::module_type& _mod;
             xml_type::ports_type& _in;
             xml_type::ports_type& _out;
 
           public:
-            explicit mod_type ( xml_type::mod_type& mod
+            explicit module_type ( xml_type::module_type& mod
                               , xml_type::ports_type& in
                               , xml_type::ports_type& out
                               );
 
-            xml_type::mod_type& mod ();
+            xml_type::module_type& mod ();
             xml_type::ports_type& in ();
             xml_type::ports_type& out ();
           };
@@ -137,7 +137,7 @@ namespace fhg
         }
 
         typedef proxy_base<data::expression_type> expression_proxy;
-        typedef proxy_base<data::mod_type> mod_proxy;
+        typedef proxy_base<data::module_type> mod_proxy;
         typedef proxy_base<data::net_type, ui::graph::scene_type> net_proxy;
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;

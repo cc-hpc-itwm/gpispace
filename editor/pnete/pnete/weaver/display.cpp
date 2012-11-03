@@ -67,13 +67,13 @@ namespace fhg
             )
           );
       }
-      WSIG(function, mod::open, XMLTYPE(mod_type), mod)
+      WSIG(function, mod::open, XMLTYPE(module_type), mod)
       {
         _proxy = new data::proxy::type
           ( data::proxy::mod_proxy
             ( _root
-            , data::proxy::data::mod_type
-              ( const_cast< XMLTYPE(mod_type) &> (mod)
+            , data::proxy::data::module_type
+              ( const_cast< XMLTYPE(module_type) &> (mod)
               , in()
               , out()
               )

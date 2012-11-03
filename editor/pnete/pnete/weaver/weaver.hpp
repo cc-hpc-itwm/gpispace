@@ -443,9 +443,9 @@ namespace fhg
               WEAVEE(expression::close)();
             }
 
-            void operator () (const XMLTYPE(mod_type) & mod) const
+            void operator () (const XMLTYPE(module_type) & mod) const
             {
-              WEAVE(mod::open, XMLTYPE(mod_type))(mod);
+              WEAVE(mod::open, XMLTYPE(module_type))(mod);
               WEAVE(mod::name, std::string)(mod.name);
               WEAVE(mod::fun, std::string)(XMLTYPE(dump::dump_fun(mod)));
               WEAVE(mod::cincludes, XMLTYPE(cincludes_type))(mod.cincludes);

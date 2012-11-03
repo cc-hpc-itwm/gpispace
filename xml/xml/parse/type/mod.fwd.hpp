@@ -18,9 +18,9 @@ namespace xml
       // typedef std::list<std::string> flags_type;
       // typedef std::list<std::string> links_type;
 
-      struct mod_type;
+      struct module_type;
 
-      // typedef boost::unordered_map<std::string, mod_type> mc_by_function_type;
+      // typedef boost::unordered_map<std::string, module_type> mc_by_function_type;
       // typedef boost::unordered_map<std::string, mc_by_function_type> mcs_type;
     }
   }

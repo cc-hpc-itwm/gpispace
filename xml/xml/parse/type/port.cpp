@@ -13,27 +13,20 @@ namespace xml
   {
     namespace type
     {
-      port_type::port_type ( const std::string & name
+      port_type::port_type ( ID_CONS_PARAM(port)
+                           , const std::string & name
                            , const std::string & _type
                            , const fhg::util::maybe<std::string> & _place
-                           , const id::port& id
                            , const id::function& parent
-                           , id::mapper* id_mapper
                            )
-        : _id (id)
+        : ID_INITIALIZE()
         , _parent (parent)
-        , _id_mapper (id_mapper)
         , _name (name)
         , type (_type)
         , place (_place)
         , prop ()
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::port& port_type::id() const
-      {
-        return _id;
       }
 
       const std::string& port_type::name() const
@@ -44,11 +37,6 @@ namespace xml
       const id::function& port_type::parent() const
       {
         return _parent;
-      }
-
-      bool port_type::is_same (const port_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
       }
 
       void port_type::specialize ( const type::type_map_type & map_in

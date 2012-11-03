@@ -479,7 +479,7 @@ namespace fhg
         xs ("expression", exp.expressions(), FROM(expression_sequence));
       }
 
-      WSIG(tv, mod::open, XMLTYPE(mod_type), mod)
+      WSIG(tv, mod::open, XMLTYPE(module_type), mod)
       {
         push (append ("module"));
       }

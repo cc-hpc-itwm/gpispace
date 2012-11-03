@@ -20,38 +20,25 @@ namespace xml
   {
     namespace type
     {
-      transition_type::transition_type ( const id::transition& id
+      transition_type::transition_type ( ID_CONS_PARAM(transition)
                                        , const id::net& parent
-                                       , id::mapper* id_mapper
                                        )
-        : _id (id)
+        : ID_INITIALIZE()
         , _parent (parent)
-        , _id_mapper (id_mapper)
         , _function_or_use (boost::none)
       {
         _id_mapper->put (_id, *this);
       }
 
-      transition_type::transition_type ( const function_or_use_type& function_or_use
-                                       , const id::transition& id
+      transition_type::transition_type ( ID_CONS_PARAM(transition)
+                                       , const function_or_use_type& function_or_use
                                        , const id::net& parent
-                                       , id::mapper* id_mapper
                                        )
-        : _id (id)
+        : ID_INITIALIZE()
         , _parent (parent)
-        , _id_mapper (id_mapper)
         , _function_or_use (function_or_use)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::transition& transition_type::id() const
-      {
-        return _id;
-      }
-      id::mapper* transition_type::id_mapper() const
-      {
-        return _id_mapper;
       }
 
       bool transition_type::has_parent() const
@@ -214,10 +201,10 @@ namespace xml
         // ***************************************************************** //
 
       void transition_type::resolve ( const state::type & state
-                                    , const xml::parse::struct_t::forbidden_type & forbidden
+                                    , const xml::parse::structure_type::forbidden_type & forbidden
                                     )
       {
-        const xml::parse::struct_t::set_type empty;
+        const xml::parse::structure_type::set_type empty;
 
         resolve (empty, state, forbidden);
       }
@@ -227,15 +214,15 @@ namespace xml
         class transition_resolve : public boost::static_visitor<void>
         {
         private:
-          const xml::parse::struct_t::set_type global;
+          const xml::parse::structure_type::set_type global;
           const state::type & state;
-          const xml::parse::struct_t::forbidden_type & forbidden;
+          const xml::parse::structure_type::forbidden_type & forbidden;
 
         public:
           transition_resolve
-            ( const xml::parse::struct_t::set_type & _global
+            ( const xml::parse::structure_type::set_type & _global
             , const state::type & _state
-            , const xml::parse::struct_t::forbidden_type & _forbidden
+            , const xml::parse::structure_type::forbidden_type & _forbidden
             )
               : global (_global)
               , state (_state)
@@ -255,9 +242,9 @@ namespace xml
 
 
 
-      void transition_type::resolve ( const xml::parse::struct_t::set_type & global
+      void transition_type::resolve ( const xml::parse::structure_type::set_type & global
                                     , const state::type & state
-                                    , const xml::parse::struct_t::forbidden_type & forbidden
+                                    , const xml::parse::structure_type::forbidden_type & forbidden
                                     )
       {
         boost::apply_visitor
@@ -275,14 +262,14 @@ namespace xml
         private:
           const type::type_map_type & map;
           const type::type_get_type & get;
-          const xml::parse::struct_t::set_type & known_structs;
+          const xml::parse::structure_type::set_type & known_structs;
           state::type & state;
 
         public:
           transition_specialize
             ( const type::type_map_type & _map
             , const type::type_get_type & _get
-            , const xml::parse::struct_t::set_type & _known_structs
+            , const xml::parse::structure_type::set_type & _known_structs
             , state::type & _state
             )
               : map (_map)
@@ -302,7 +289,7 @@ namespace xml
 
       void transition_type::specialize ( const type::type_map_type & map
                                        , const type::type_get_type & get
-                                       , const xml::parse::struct_t::set_type & known_structs
+                                       , const xml::parse::structure_type::set_type & known_structs
                                        , state::type & state
                                        )
       {

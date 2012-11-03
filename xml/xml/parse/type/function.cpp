@@ -81,32 +81,20 @@ namespace xml
         return _name = name;
       }
 
-      function_type::function_type ( const type& _f
-                                   , const id::function& id
+      function_type::function_type ( ID_CONS_PARAM(function)
+                                   , const type& _f
                                    , const boost::optional<id_parent>& parent
-                                   , id::mapper* id_mapper
                                    )
-        : _id (id)
+        : ID_INITIALIZE()
         , _parent (parent)
-        , _id_mapper (id_mapper)
         , f (_f)
       {
         _id_mapper->put (_id, *this);
       }
 
-      const id::function& function_type::id() const
-      {
-        return _id;
-      }
-
       const boost::optional<function_type::id_parent>& function_type::parent() const
       {
         return _parent;
-      }
-
-      id::mapper* function_type::id_mapper() const
-      {
-        return _id_mapper;
       }
 
       bool function_type::has_parent() const
@@ -153,11 +141,6 @@ namespace xml
           }
 
         return boost::none;
-      }
-
-      bool function_type::is_same (const function_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
       }
 
 #ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
@@ -289,10 +272,10 @@ namespace xml
 
       // ***************************************************************** //
 
-      xml::parse::struct_t::forbidden_type
+      xml::parse::structure_type::forbidden_type
         function_type::forbidden_below (void) const
       {
-        xml::parse::struct_t::forbidden_type forbidden;
+        xml::parse::structure_type::forbidden_type forbidden;
 
         for ( ports_type::const_iterator pos (in().begin())
             ; pos != in().end()
@@ -316,10 +299,10 @@ namespace xml
       // ***************************************************************** //
 
       void function_type::resolve ( const state::type & state
-                                  , const xml::parse::struct_t::forbidden_type & forbidden
+                                  , const xml::parse::structure_type::forbidden_type & forbidden
                                   )
       {
-        const xml::parse::struct_t::set_type empty;
+        const xml::parse::structure_type::set_type empty;
 
         resolve (empty, state, forbidden);
       }
@@ -329,15 +312,15 @@ namespace xml
         class function_resolve : public boost::static_visitor<void>
         {
         private:
-          const xml::parse::struct_t::set_type global;
+          const xml::parse::structure_type::set_type global;
           const state::type & state;
-          const xml::parse::struct_t::forbidden_type & forbidden;
+          const xml::parse::structure_type::forbidden_type & forbidden;
 
         public:
           function_resolve
-            ( const xml::parse::struct_t::set_type & _global
+            ( const xml::parse::structure_type::set_type & _global
             , const state::type & _state
-            , const xml::parse::struct_t::forbidden_type & _forbidden
+            , const xml::parse::structure_type::forbidden_type & _forbidden
             )
               : global (_global)
               , state (_state)
@@ -345,7 +328,7 @@ namespace xml
           {}
 
           void operator () (expression_type &) const { return; }
-          void operator () (mod_type &) const { return; }
+          void operator () (module_type &) const { return; }
           void operator () (id::ref::net & id) const
           {
             state.id_mapper()
@@ -356,12 +339,12 @@ namespace xml
       }
 
       void function_type::resolve
-        ( const xml::parse::struct_t::set_type & global
+        ( const xml::parse::structure_type::set_type & global
         , const state::type & state
-        , const xml::parse::struct_t::forbidden_type & forbidden
+        , const xml::parse::structure_type::forbidden_type & forbidden
         )
       {
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         structs_resolved =
           st::join (global, st::make (structs), forbidden, state);
@@ -397,7 +380,7 @@ namespace xml
           return signature::type (port.type);
         }
 
-        xml::parse::struct_t::set_type::const_iterator sig
+        xml::parse::structure_type::set_type::const_iterator sig
           (structs_resolved.find (port.type));
 
         if (sig == structs_resolved.end())
@@ -428,7 +411,7 @@ namespace xml
           {}
 
           void operator () (const expression_type &) const { return; }
-          void operator () (const mod_type & m) const { m.sanity_check (fun); }
+          void operator () (const module_type & m) const { m.sanity_check (fun); }
           void operator () (const id::ref::net& id) const
           {
             state.id_mapper()
@@ -456,7 +439,7 @@ namespace xml
           function_type_check (const state::type & _state) : state (_state) {}
 
           void operator () (const expression_type &) const { return; }
-          void operator () (const mod_type &) const { return; }
+          void operator () (const module_type &) const { return; }
           void operator () (const id::ref::net& id) const
           {
             state.id_mapper()
@@ -508,7 +491,7 @@ namespace xml
 
         typedef we_transition_type::expr_type we_expr_type;
         typedef we_transition_type::net_type we_net_type;
-        typedef we_transition_type::mod_type we_mod_type;
+        typedef we_transition_type::mod_type we_module_type;
         typedef we_transition_type::preparsed_cond_type we_cond_type;
 
         typedef we_transition_type::requirement_t we_requirement_type;
@@ -648,11 +631,11 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const mod_type & mod) const
+        we_transition_type operator () (const module_type & mod) const
         {
           we_transition_type trans
             ( name()
-            , we_mod_type (mod.name, mod.function)
+            , we_module_type (mod.name, mod.function)
             , condition()
             , fun.internal.get_with_default (false)
             , fun.prop
@@ -716,7 +699,7 @@ namespace xml
       {
         const type_map_type type_map_empty;
         const type_get_type type_get_empty;
-        const xml::parse::struct_t::set_type known_empty;
+        const xml::parse::structure_type::set_type known_empty;
 
         specialize ( type_map_empty
                    , type_get_empty
@@ -732,7 +715,7 @@ namespace xml
         private:
           const type::type_map_type & map;
           const type::type_get_type & get;
-          const xml::parse::struct_t::set_type & known_structs;
+          const xml::parse::structure_type::set_type & known_structs;
           state::type & state;
           function_type & fun;
 
@@ -740,7 +723,7 @@ namespace xml
           function_specialize
             ( const type::type_map_type & _map
             , const type::type_get_type & _get
-            , const xml::parse::struct_t::set_type & _known_structs
+            , const xml::parse::structure_type::set_type & _known_structs
             , state::type & _state
             , function_type & _fun
             )
@@ -752,7 +735,7 @@ namespace xml
           {}
 
           void operator () (expression_type &) const { return; }
-          void operator () (mod_type &) const { return; }
+          void operator () (module_type &) const { return; }
           void operator () (id::ref::net & id) const
           {
             state.id_mapper()
@@ -771,7 +754,7 @@ namespace xml
 
       void function_type::specialize ( const type_map_type & map
                                      , const type_get_type & get
-                                     , const xml::parse::struct_t::set_type & known_structs
+                                     , const xml::parse::structure_type::set_type & known_structs
                                      , state::type & state
                                      )
       {
@@ -798,7 +781,7 @@ namespace xml
 
         specialize_structs (map, structs, state);
 
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         boost::apply_visitor
           ( function_specialize
@@ -1377,7 +1360,7 @@ namespace xml
         }
 
         template<typename Stream>
-        void namespace_open (Stream& s, const mod_type& mod)
+        void namespace_open (Stream& s, const module_type& mod)
         {
           s << std::endl
             << "namespace pnetc" << std::endl
@@ -1390,7 +1373,7 @@ namespace xml
         }
 
         template<typename Stream>
-        void namespace_close (Stream& s, const mod_type & mod)
+        void namespace_close (Stream& s, const module_type & mod)
         {
           s << "    } // namespace " << mod.name << std::endl
             << "  } // namespace op" << std::endl
@@ -1475,7 +1458,7 @@ namespace xml
                       , const ports_with_type_type & ports_const
                       , const ports_with_type_type & ports_mutable
                       , const ports_with_type_type & ports_out
-                      , const mod_type & mod
+                      , const module_type & mod
                       )
         {
           std::ostringstream pre;
@@ -1542,7 +1525,7 @@ namespace xml
         template<typename Stream>
         void
         mod_wrapper ( Stream& s
-                    , const mod_type & mod
+                    , const module_type & mod
                     , const path_t file_hpp
                     , const ports_with_type_type & ports_const
                     , const ports_with_type_type & ports_mutable
@@ -1754,7 +1737,7 @@ namespace xml
             return find_module_calls (state, id, m, mcs);
           }
 
-          bool operator () (mod_type & mod) const
+          bool operator () (module_type & mod) const
           {
             namespace cpp_util = ::fhg::util::cpp;
 
@@ -2071,7 +2054,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      void struct_to_cpp ( const struct_t & s
+      void struct_to_cpp ( const structure_type & s
                          , const state::type & state
                          )
       {
@@ -2204,7 +2187,7 @@ namespace xml
                   );
 
         void dump ( ::fhg::util::xml::xmlstream &
-                  , const template_type &
+                  , const tmpl_type &
                   );
 
         namespace

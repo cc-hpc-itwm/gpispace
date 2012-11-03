@@ -3,12 +3,12 @@
 #ifndef _XML_PARSE_TYPE_TRANSITION_HPP
 #define _XML_PARSE_TYPE_TRANSITION_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/use.hpp>
+
+#include <xml/parse/type/id.hpp>
 
 namespace xml
 {
@@ -20,32 +20,27 @@ namespace xml
 
       struct transition_type
       {
+        ID_SIGNATURES(transition);
+
       private:
         xml::util::unique<connect_type,id::connect> _in;
         xml::util::unique<connect_type,id::connect> _out;
         xml::util::unique<connect_type,id::connect> _read;
         xml::util::unique<place_map_type,id::place_map> _place_map;
 
-        id::transition _id;
         boost::optional<id::net> _parent;
-        id::mapper* _id_mapper;
 
       public:
         typedef boost::variant <id::ref::function, use_type>
                 function_or_use_type;
 
-        transition_type ( const id::transition& id
+        transition_type ( ID_CONS_PARAM(transition)
                         , const id::net& parent
-                        , id::mapper* id_mapper
                         );
-        transition_type ( const function_or_use_type& function_or_use
-                        , const id::transition& id
+        transition_type ( ID_CONS_PARAM(transition)
+                        , const function_or_use_type& function_or_use
                         , const id::net& parent
-                        , id::mapper* id_mapper
                         );
-
-        const id::transition& id() const;
-        id::mapper* id_mapper() const;
 
         bool has_parent() const;
 
@@ -114,18 +109,18 @@ namespace xml
         // ***************************************************************** //
 
         void resolve ( const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
-        void resolve ( const xml::parse::struct_t::set_type & global
+        void resolve ( const xml::parse::structure_type::set_type & global
                      , const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
 
         // ***************************************************************** //
 
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
-                        , const xml::parse::struct_t::set_type & known_structs
+                        , const xml::parse::structure_type::set_type & known_structs
                         , state::type & state
                         );
 

@@ -128,8 +128,8 @@ namespace xml
       class struct_shadowed : public generic
       {
       private:
-        std::string nice ( const type::struct_t & early
-                         , const type::struct_t & late
+        std::string nice ( const type::structure_type & early
+                         , const type::structure_type & late
                          ) const
         {
           std::ostringstream s;
@@ -143,8 +143,8 @@ namespace xml
         }
 
       public:
-        struct_shadowed ( const type::struct_t & early
-                        , const type::struct_t & late
+        struct_shadowed ( const type::structure_type & early
+                        , const type::structure_type & late
                         )
           : generic (nice (early, late))
         {}

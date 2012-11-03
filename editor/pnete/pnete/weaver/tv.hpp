@@ -159,7 +159,7 @@ namespace fhg
       WSIG(tv, requirement::key, std::string, key);
       WSIG(tv, requirement::value, bool, val);
       WSIG(tv, expression::open, XMLTYPE(expression_type), exp);
-      WSIG(tv, mod::open, XMLTYPE(mod_type), mod);
+      WSIG(tv, mod::open, XMLTYPE(module_type), mod);
       WSIGE(tv, mod::close);
       WSIG(tv, mod::name, std::string, name);
       WSIG(tv, mod::fun, std::string, fun);

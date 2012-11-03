@@ -3,8 +3,7 @@
 #ifndef _XML_PARSE_TYPE_PLACE_MAP_HPP
 #define _XML_PARSE_TYPE_PLACE_MAP_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/id.hpp>
 #include <xml/parse/util/unique.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
@@ -24,18 +23,16 @@ namespace xml
     {
       struct place_map_type
       {
+        ID_SIGNATURES(place_map)
+
       public:
-        place_map_type ( const std::string & _place_virtual
+        place_map_type ( ID_CONS_PARAM(place_map)
+                       , const std::string & _place_virtual
                        , const std::string & _place_real
-                       , const id::place_map& id
                        , const id::transition& parent
-                       , id::mapper* id_mapper
                        );
 
-        const id::place_map& id() const;
         const id::transition& parent() const;
-
-        bool is_same (const place_map_type& other) const;
 
         std::string _name;
 
@@ -47,9 +44,7 @@ namespace xml
         const std::string& name() const;
 
       private:
-        id::place_map _id;
         id::transition _parent;
-        id::mapper* _id_mapper;
       };
 
       typedef xml::util::unique<place_map_type,id::place_map>::elements_type place_maps_type;

@@ -5,8 +5,7 @@
 
 #include <xml/parse/type/function.fwd.hpp>
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/id.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -23,28 +22,23 @@ namespace xml
 
       struct expression_type
       {
+        ID_SIGNATURES(expression);
+
       private:
         expressions_type _expressions;
 
-        id::expression _id;
         id::function _parent;
-        id::mapper* _id_mapper;
 
       public:
-        expression_type ( const id::expression& id
+        expression_type ( ID_CONS_PARAM(expression)
                         , const id::function& parent
-                        , id::mapper* id_mapper
                         );
-        expression_type ( const expressions_type & exps
-                        , const id::expression& id
+        expression_type ( ID_CONS_PARAM(expression)
+                        , const expressions_type & exps
                         , const id::function& parent
-                        , id::mapper* id_mapper
                         );
 
-        const id::expression& id() const;
         const id::function& parent() const;
-
-        bool is_same (const expression_type& other) const;
 
         void set (const std::string& exps);
 

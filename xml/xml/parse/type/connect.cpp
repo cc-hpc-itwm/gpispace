@@ -12,26 +12,20 @@ namespace xml
   {
     namespace type
     {
-      connect_type::connect_type ( const std::string & _place
+      connect_type::connect_type ( ID_CONS_PARAM(connect)
+                                 , const std::string & _place
                                  , const std::string & _port
-                                 , const id::connect& id
                                  , const id::transition& parent
-                                 , id::mapper* id_mapper
                                  )
-        : place (_place)
+        : ID_INITIALIZE()
+        , place (_place)
         , port (_port)
         , _name (_place + " <-> " + _port)
-        , _id (id)
         , _parent (parent)
-        , _id_mapper (id_mapper)
       {
         _id_mapper->put (_id, *this);
       }
 
-      const id::connect& connect_type::id() const
-      {
-        return _id;
-      }
       const id::transition& connect_type::parent() const
       {
         return _parent;
@@ -40,11 +34,6 @@ namespace xml
       const std::string& connect_type::name() const
       {
         return _name;
-      }
-
-      bool connect_type::is_same (const connect_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
       }
 
       namespace dump

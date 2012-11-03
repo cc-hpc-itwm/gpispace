@@ -37,44 +37,30 @@ namespace xml
         }
       }
 
-      expression_type::expression_type ( const id::expression& id
+      expression_type::expression_type ( ID_CONS_PARAM(expression)
                                        , const id::function& parent
-                                       , id::mapper* id_mapper
                                        )
-        : _expressions()
-        , _id (id)
+        : ID_INITIALIZE()
+        , _expressions()
         , _parent (parent)
-        , _id_mapper (id_mapper)
       {
         _id_mapper->put (_id, *this);
       }
 
-      expression_type::expression_type ( const expressions_type & exps
-                                       , const id::expression& id
+      expression_type::expression_type ( ID_CONS_PARAM(expression)
+                                       , const expressions_type & exps
                                        , const id::function& parent
-                                       , id::mapper* id_mapper
                                        )
-        : _expressions (split (exps))
-        , _id (id)
+        : ID_INITIALIZE()
+        , _expressions (split (exps))
         , _parent (parent)
-        , _id_mapper (id_mapper)
       {
         _id_mapper->put (_id, *this);
       }
 
-
-      const id::expression& expression_type::id() const
-      {
-        return _id;
-      }
       const id::function& expression_type::parent() const
       {
         return _parent;
-      }
-
-      bool expression_type::is_same (const expression_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
       }
 
       void expression_type::set (const std::string& exps)

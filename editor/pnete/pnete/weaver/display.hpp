@@ -70,7 +70,7 @@ namespace fhg
       };
 
       WSIG(function, expression::open, XMLTYPE(expression_type), exp);
-      WSIG(function, mod::open, XMLTYPE(mod_type), mod);
+      WSIG(function, mod::open, XMLTYPE(module_type), mod);
       WSIG(function, net::open, XMLTYPE(net_type), net);
       WSIG(function, function::in, XMLTYPE(ports_type), in);
       WSIG(function, function::out, XMLTYPE(ports_type), out);

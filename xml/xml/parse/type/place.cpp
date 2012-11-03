@@ -184,37 +184,28 @@ namespace xml
         };
       }
 
-      place_type::place_type ( const std::string & name
+      place_type::place_type ( ID_CONS_PARAM(place)
+                             , const std::string & name
                              , const std::string & _type
                              , const fhg::util::maybe<bool> is_virtual
-                             , const id::place& id
                              , const id::net& parent
-                             , id::mapper* id_mapper
                              )
-        : _is_virtual (is_virtual)
-        , _id (id)
+        : ID_INITIALIZE()
+        , _is_virtual (is_virtual)
         , _parent (parent)
-        , _id_mapper (id_mapper)
         , _name (name)
         , type (_type)
       {
         _id_mapper->put (_id, *this);
       }
 
-      place_type::place_type ( const id::place& id
+      place_type::place_type ( ID_CONS_PARAM(place)
                              , const id::net& parent
-                             , id::mapper* id_mapper
                              )
-        : _id (id)
+        : ID_INITIALIZE()
         , _parent (parent)
-        , _id_mapper (id_mapper)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::place& place_type::id() const
-      {
-        return _id;
       }
 
       const id::net& place_type::parent() const
@@ -229,11 +220,6 @@ namespace xml
       const std::string& place_type::name(const std::string& name)
       {
         return _name = name;
-      }
-
-      bool place_type::is_same (const place_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
       }
 
       void place_type::push_token (const token_type & t)

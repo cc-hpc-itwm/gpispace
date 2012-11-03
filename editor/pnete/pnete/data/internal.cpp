@@ -35,7 +35,7 @@ namespace fhg
           case internal_type::module_call:
             {
               const ::xml::parse::id::module id (state.next_id());
-              const ::xml::parse::type::mod_type mod
+              const ::xml::parse::type::module_type mod
                 (id, function_id, state.id_mapper());
               return ::xml::parse::type::function_type
                 (mod, function_id, boost::blank(), state.id_mapper());

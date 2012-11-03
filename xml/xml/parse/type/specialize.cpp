@@ -12,25 +12,18 @@ namespace xml
   {
     namespace type
     {
-      specialize_type::specialize_type ( const id::specialize& id
+      specialize_type::specialize_type ( ID_CONS_PARAM(specialize)
                                        , const id::net& parent
-                                       , id::mapper* id_mapper
                                        )
-        : _name()
+        : ID_INITIALIZE()
+        , _name()
         , use()
         , type_map()
         , type_get()
         , path()
-        , _id (id)
         , _parent (parent)
-        , _id_mapper (id_mapper)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::specialize& specialize_type::id() const
-      {
-        return _id;
       }
 
       const id::net& specialize_type::parent() const
@@ -47,19 +40,14 @@ namespace xml
         return _name = name;
       }
 
-      bool specialize_type::is_same (const specialize_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
-      }
-
-      void split_structs ( const xml::parse::struct_t::set_type & global
+      void split_structs ( const xml::parse::structure_type::set_type & global
                          , structs_type & child_structs
                          , structs_type & parent_structs
                          , const type_get_type & type_get
                          , const state::type & state
                          )
       {
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         const st::set_type known_structs
           ( st::join ( global
@@ -111,7 +99,7 @@ namespace xml
         {
           s->signature
             ( boost::apply_visitor
-              ( xml::parse::struct_t::specialize (map, state)
+              ( xml::parse::structure_type::specialize (map, state)
               , s->signature()
               )
             );

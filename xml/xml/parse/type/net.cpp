@@ -28,22 +28,15 @@ namespace xml
         return _type_map;
       }
 
-      net_type::net_type ( const id::net& id
+      net_type::net_type ( ID_CONS_PARAM(net)
                          , const id::function& parent
-                         , id::mapper* id_mapper
                          , const boost::filesystem::path& path
                          )
-        : _id (id)
+        : ID_INITIALIZE()
         , _parent (parent)
-        , _id_mapper (id_mapper)
         , _path (path)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::net& net_type::id() const
-      {
-        return _id;
       }
 
       bool net_type::has_parent() const
@@ -73,11 +66,6 @@ namespace xml
       const boost::filesystem::path& net_type::path () const
       {
         return _path;
-      }
-
-      id::mapper* net_type::id_mapper() const
-      {
-        return _id_mapper;
       }
 
       // ***************************************************************** //
@@ -155,7 +143,7 @@ namespace xml
         return boost::none;
       }
 
-      boost::optional<template_type> net_type::get_template (const std::string & name) const
+      boost::optional<tmpl_type> net_type::get_template (const std::string & name) const
       {
         return _templates.copy_by_key (name);
       }
@@ -178,7 +166,7 @@ namespace xml
 
         if (spec)
         {
-          boost::optional<template_type&>
+          boost::optional<tmpl_type&>
             spec_fun (_templates.ref_by_key (spec->use));
 
           if (spec_fun)
@@ -271,14 +259,14 @@ namespace xml
         }
       }
 
-      void net_type::push_template (const template_type & t)
+      void net_type::push_template (const tmpl_type & t)
       {
-        xml::util::unique<template_type,id::tmpl>::push_return_type templ
+        xml::util::unique<tmpl_type,id::tmpl>::push_return_type templ
           (_templates.push_and_get_old_value (t));
 
         if (!templ.first)
         {
-          throw error::duplicate_template<template_type>
+          throw error::duplicate_template<tmpl_type>
             (t, *templ.second);
         }
       }
@@ -317,7 +305,7 @@ namespace xml
           return signature::type (place.type);
         }
 
-        const xml::parse::struct_t::set_type::const_iterator sig
+        const xml::parse::structure_type::set_type::const_iterator sig
           (structs_resolved.find (place.type));
 
         if (sig == structs_resolved.end())
@@ -351,11 +339,11 @@ namespace xml
 
       void net_type::specialize ( const type::type_map_type & map
                                 , const type::type_get_type & get
-                                , const xml::parse::struct_t::set_type & known_structs
+                                , const xml::parse::structure_type::set_type & known_structs
                                 , state::type & state
                                 )
       {
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         for ( specializes_type::iterator
                 specialize (_specializes.elements().begin())
@@ -363,7 +351,7 @@ namespace xml
             ; ++specialize
             )
         {
-          boost::optional<template_type> tmpl
+          boost::optional<tmpl_type> tmpl
             (get_template (specialize->use));
 
           if (!tmpl)
@@ -455,18 +443,18 @@ namespace xml
       // ***************************************************************** //
 
       void net_type::resolve ( const state::type & state
-                             , const xml::parse::struct_t::forbidden_type & forbidden
+                             , const xml::parse::structure_type::forbidden_type & forbidden
                              )
       {
-        resolve (xml::parse::struct_t::set_type(), state, forbidden);
+        resolve (xml::parse::structure_type::set_type(), state, forbidden);
       }
 
-      void net_type::resolve ( const xml::parse::struct_t::set_type & global
+      void net_type::resolve ( const xml::parse::structure_type::set_type & global
                              , const state::type & state
-                             , const xml::parse::struct_t::forbidden_type & forbidden
+                             , const xml::parse::structure_type::forbidden_type & forbidden
                              )
       {
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         structs_resolved =
           st::join (global, st::make (structs), forbidden, state);

@@ -12,14 +12,12 @@ namespace xml
   {
     namespace type
     {
-      use_type::use_type ( const id::use& id
+      use_type::use_type ( ID_CONS_PARAM(use)
                          , const id::transition& parent
-                         , id::mapper* id_mapper
                          , const std::string& name
                          )
-        : _id (id)
+        : ID_INITIALIZE()
         , _parent (parent)
-        , _id_mapper (id_mapper)
         , _name (name)
       {
         _id_mapper->put (_id, *this);

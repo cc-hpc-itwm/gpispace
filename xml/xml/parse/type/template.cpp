@@ -13,19 +13,17 @@ namespace xml
   {
     namespace type
     {
-      template_type::template_type
-        ( const id::tmpl& id
+      tmpl_type::tmpl_type
+        ( ID_CONS_PARAM(tmpl)
         , const id::net& parent
-        , id::mapper* id_mapper
         , const boost::filesystem::path& path
         , const fhg::util::maybe<std::string>& name
-        , const names_type& template_parameter
+        , const names_type& tmpl_parameter
         , const id::ref::function& function
         )
-          : _id (id)
+          : ID_INITIALIZE()
           , _parent (parent)
-          , _id_mapper (id_mapper)
-          , _template_parameter (template_parameter)
+          , _tmpl_parameter (tmpl_parameter)
           , _function (function)
           , _name (name)
           , _path (path)
@@ -33,69 +31,57 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      const id::tmpl&
-      template_type::id() const
-      {
-        return _id;
-      }
-
       const id::net&
-      template_type::parent() const
+      tmpl_type::parent() const
       {
         return _parent;
       }
 
-      bool
-      template_type::is_same (const template_type& other) const
-      {
-        return id() == other.id() and parent() == other.parent();
-      }
-
       const fhg::util::maybe<std::string>&
-      template_type::name() const
+      tmpl_type::name() const
       {
         return _name;
       }
       const std::string&
-      template_type::name(const std::string& name)
+      tmpl_type::name(const std::string& name)
       {
         return *(_name = name);
       }
 
-      const template_type::names_type&
-      template_type::template_parameter () const
+      const tmpl_type::names_type&
+      tmpl_type::tmpl_parameter () const
       {
-        return _template_parameter;
+        return _tmpl_parameter;
       }
 
-      boost::optional<function_type&> template_type::function()
+      boost::optional<function_type&> tmpl_type::function()
       {
-        return _id_mapper->get_ref (_function);
+        return id_mapper()->get_ref (_function);
       }
-      boost::optional<const function_type&> template_type::function() const
+      boost::optional<const function_type&> tmpl_type::function() const
       {
-        return _id_mapper->get (_function);
+        return id_mapper()->get (_function);
       }
 
-      const boost::filesystem::path& template_type::path() const
+      const boost::filesystem::path& tmpl_type::path() const
       {
         return _path;
       }
 
       boost::optional<function_type>
-      template_type::get_function (const std::string& name) const
+      tmpl_type::get_function (const std::string& name) const
       {
-        std::cerr << "template " << _name
+        std::cerr << "tmpl " << _name
                   << " asked for the function " << name
                   << std::endl;
 
         return boost::none;
       }
 
-      void template_type::specialize
+      void tmpl_type::specialize
         ( const type_map_type & map
         , const type_get_type & get
-        , const xml::parse::struct_t::set_type & known_structs
+        , const xml::parse::structure_type::set_type & known_structs
         , state::type & state
         )
       {
@@ -104,12 +90,12 @@ namespace xml
 
       namespace dump
       {
-        void dump (xml_util::xmlstream & s, const template_type & t)
+        void dump (xml_util::xmlstream & s, const tmpl_type & t)
         {
           s.open ("template");
           s.attr ("name", t.name());
 
-          BOOST_FOREACH (const std::string& tn, t.template_parameter())
+          BOOST_FOREACH (const std::string& tn, t.tmpl_parameter())
             {
               s.open ("template-parameter");
               s.attr ("type", tn);

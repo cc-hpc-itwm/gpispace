@@ -3,8 +3,7 @@
 #ifndef _XML_PARSE_TYPE_PLACE_HPP
 #define _XML_PARSE_TYPE_PLACE_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/id.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/token.hpp>
 #include <xml/parse/type_map_type.hpp>
@@ -32,12 +31,12 @@ namespace xml
 
       struct place_type
       {
+        ID_SIGNATURES(place)
+
       private:
         fhg::util::maybe<bool> _is_virtual;
 
-        id::place _id;
         id::net _parent;
-        id::mapper* _id_mapper;
 
         std::string _name;
 
@@ -50,23 +49,18 @@ namespace xml
         signature::type sig;
         we::type::property::type prop;
 
-        place_type ( const std::string & name
+        place_type ( ID_CONS_PARAM(place)
+                   , const std::string & name
                    , const std::string & _type
                    , const fhg::util::maybe<bool> is_virtual
-                   , const id::place& id
                    , const id::net& parent
-                   , id::mapper* id_mapper
                    );
 
-        place_type ( const id::place& id
+        place_type ( ID_CONS_PARAM(place)
                    , const id::net& parent
-                   , id::mapper* id_mapper
                    );
 
-        const id::place& id() const;
         const id::net& parent() const;
-
-        bool is_same (const place_type& other) const;
 
         void push_token (const token_type & t);
 

@@ -22,31 +22,27 @@ namespace xml
       typedef std::list<std::string> flags_type;
       typedef std::list<std::string> links_type;
 
-      mod_type::mod_type ( const id::module& id
-                         , const id::function& parent
-                         , id::mapper* id_mapper
-                         )
-        : _id (id)
+      module_type::module_type ( ID_CONS_PARAM(module)
+                               , const id::function& parent
+                               )
+        : ID_INITIALIZE()
         , _parent (parent)
-        , _id_mapper (id_mapper)
       {
         _id_mapper->put (_id, *this);
       }
 
-      mod_type::mod_type ( const id::module& id
-                         , const id::function& parent
-                         , id::mapper* id_mapper
-                         , const std::string & _name
-                         , const std::string & _function
-                         , const boost::filesystem::path & path
-                         )
-        : name (_name)
+      module_type::module_type ( ID_CONS_PARAM(module)
+                               , const id::function& parent
+                               , const std::string & _name
+                               , const std::string & _function
+                               , const boost::filesystem::path & path
+                               )
+        : ID_INITIALIZE()
+        , name (_name)
         , function ()
         , port_return ()
         , port_arg ()
-        , _id (id)
         , _parent (parent)
-        , _id_mapper (id_mapper)
       {
         _id_mapper->put (_id, *this);
 
@@ -138,21 +134,12 @@ namespace xml
         }
       }
 
-      const id::module& mod_type::id() const
-      {
-        return _id;
-      }
-      const id::function& mod_type::parent() const
+      const id::function& module_type::parent() const
       {
         return _parent;
       }
 
-      bool mod_type::is_same (const mod_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
-      }
-
-      bool mod_type::operator == (const mod_type& other) const
+      bool module_type::operator == (const module_type& other) const
       {
         return port_return == other.port_return
           && port_arg == other.port_arg
@@ -164,7 +151,7 @@ namespace xml
           ;
       }
 
-      void mod_type::sanity_check (const function_type & fun) const
+      void module_type::sanity_check (const function_type & fun) const
       {
         if (port_return)
         {
@@ -198,7 +185,7 @@ namespace xml
         }
       }
 
-      std::size_t hash_value (const mod_type& m)
+      std::size_t hash_value (const module_type& m)
       {
         boost::hash<std::string> hasher;
         return hasher (m.name);
@@ -206,7 +193,7 @@ namespace xml
 
       namespace dump
       {
-        std::string dump_fun (const mod_type & m)
+        std::string dump_fun (const module_type & m)
         {
           std::ostringstream s;
 
@@ -239,7 +226,7 @@ namespace xml
           return s.str();
         }
 
-        void dump (::fhg::util::xml::xmlstream & s, const mod_type & m)
+        void dump (::fhg::util::xml::xmlstream & s, const module_type & m)
         {
           s.open ("module");
           s.attr ("name", m.name);
