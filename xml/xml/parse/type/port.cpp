@@ -93,7 +93,7 @@ namespace xml
             {
               const net_type& net (*state.id_mapper()->get (id_net));
 
-              boost::optional<place_type> place
+              boost::optional<const place_type&> place
                 (net.get_place (*port.place));
 
               if (!place)

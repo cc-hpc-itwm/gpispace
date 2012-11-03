@@ -105,7 +105,8 @@ namespace xml
 
         bool has_parent() const;
 
-        boost::optional<function_type> get_function (const std::string& name) const;
+        boost::optional<const function_type&>
+        get_function (const std::string& name) const;
 
         // ***************************************************************** //
 
@@ -122,8 +123,8 @@ namespace xml
         const ports_type& out (void) const;
         const ports_type& tunnel (void) const;
 
-        boost::optional<port_type> get_port_in (const std::string & name) const;
-        boost::optional<port_type> get_port_out (const std::string & name) const;
+        boost::optional<const port_type&> get_port_in (const std::string & name) const;
+        boost::optional<const port_type&> get_port_out (const std::string & name) const;
 
         bool is_known_port_in (const std::string & name) const;
         bool is_known_port_out (const std::string & name) const;

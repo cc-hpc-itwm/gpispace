@@ -125,7 +125,7 @@ namespace xml
         return _place_map.elements();
       }
 
-      boost::optional<function_type>
+      boost::optional<const function_type&>
       transition_type::get_function (const std::string& name) const
       {
         if (has_parent())
@@ -329,7 +329,7 @@ namespace xml
       namespace
       {
         class transition_get_function
-          : public boost::static_visitor<function_type>
+          : public boost::static_visitor<const function_type&>
         {
         private:
           const net_type & net;
@@ -346,14 +346,17 @@ namespace xml
             , trans (_trans)
           {}
 
-          function_type operator () (const id::ref::function& id_function) const
+          const function_type&
+          operator () (const id::ref::function& id_function) const
           {
             return *state.id_mapper()->get (id_function);
           }
 
-          function_type operator () (const use_type & use) const
+          const function_type&
+          operator () (const use_type & use) const
           {
-            boost::optional<function_type> fun (net.get_function (use.name()));
+            boost::optional<const function_type&>
+              fun (net.get_function (use.name()));
 
             if (!fun)
             {
@@ -361,7 +364,7 @@ namespace xml
                 (use.name(), trans.name(), trans.path);
             }
 
-            fun->name (trans.name());
+            //            fun->name (trans.name());
 
             return *fun;
           }
@@ -375,7 +378,8 @@ namespace xml
                                        ) const
       {
         // existence of connect.place
-        boost::optional<place_type> place (net.get_place (connect.place));
+        boost::optional<const place_type&>
+          place (net.get_place (connect.place));
 
         if (!place)
         {

@@ -79,7 +79,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<function_type> get_function (const std::string&) const;
+        boost::optional<const function_type&>
+        get_function (const std::string&) const;
 
         // ***************************************************************** //
 

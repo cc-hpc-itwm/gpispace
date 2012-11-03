@@ -65,14 +65,10 @@ namespace xml
         return _places.is_element (name);
       }
 
-      boost::optional<place_type> net_type::get_place (const std::string & name) const
+      boost::optional<const place_type&>
+      net_type::get_place (const std::string & name) const
       {
         return _places.copy_by_key (name);
-      }
-
-      boost::optional<place_type> net_type::place_by_id (const id::place& id) const
-      {
-        return _places.copy_by_id (id);
       }
 
       bool net_type::has_transition (const std::string& name) const
@@ -91,9 +87,10 @@ namespace xml
         return _ids_transition;
       }
 
-      boost::optional<function_type> net_type::get_function (const std::string & name) const
+      boost::optional<const function_type&>
+      net_type::get_function (const std::string & name) const
       {
-        boost::optional<function_type> mf
+        boost::optional<const function_type &> mf
           (_functions.copy_by_key (maybe_string_type(name)));
 
         if (mf)
@@ -108,42 +105,10 @@ namespace xml
         return boost::none;
       }
 
-      boost::optional<tmpl_type> net_type::get_template (const std::string & name) const
+      boost::optional<const tmpl_type&>
+      net_type::get_template (const std::string & name) const
       {
         return _templates.copy_by_key (name);
-      }
-
-      // ***************************************************************** //
-
-      function_with_mapping_type net_type::get_function
-        (const std::string & name)
-      {
-        boost::optional<function_type&>
-          fun (_functions.ref_by_key (maybe_string_type (name)));
-
-        if (fun)
-        {
-          return function_with_mapping_type (*fun);
-        }
-
-        boost::optional<specialize_type &> spec
-          (_specializes.ref_by_key (name));
-
-        if (spec)
-        {
-          boost::optional<tmpl_type&>
-            spec_fun (_templates.ref_by_key (spec->use));
-
-          if (spec_fun)
-          {
-            return function_with_mapping_type
-              ( *(*spec_fun).function()
-              , spec->type_map
-              );
-          }
-        }
-
-        throw std::runtime_error ("STRANGE: function " + name + " unknown");
       }
 
       // ***************************************************************** //

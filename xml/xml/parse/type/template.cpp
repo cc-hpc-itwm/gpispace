@@ -76,7 +76,7 @@ namespace xml
         return _path;
       }
 
-      boost::optional<function_type>
+      boost::optional<const function_type&>
       tmpl_type::get_function (const std::string& name) const
       {
         if (has_parent())

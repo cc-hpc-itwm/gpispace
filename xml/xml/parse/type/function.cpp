@@ -55,7 +55,7 @@ namespace xml
           throw error::duplicate_port (descr, p.name(), path);
         }
 
-        boost::optional<port_type> other (others.copy_by_key (p.name()));
+        boost::optional<const port_type&> other (others.copy_by_key (p.name()));
 
         if (other && p.type != other->type)
         {
@@ -105,7 +105,7 @@ namespace xml
       namespace
       {
         class visitor_get_function
-          : public boost::static_visitor<boost::optional<function_type> >
+          : public boost::static_visitor<boost::optional<const function_type&> >
         {
         private:
           id::mapper* _id_mapper;
@@ -120,14 +120,14 @@ namespace xml
           {}
 
           template<typename ID>
-          boost::optional<function_type> operator () (ID id) const
+          boost::optional<const function_type&> operator () (ID id) const
           {
             return _id_mapper->get (id)->get_function (_name);
           }
         };
       }
 
-      boost::optional<function_type>
+      boost::optional<const function_type&>
       function_type::get_function (const std::string& name) const
       {
         if (has_parent())
@@ -173,13 +173,13 @@ namespace xml
         return _tunnel.elements();
       }
 
-      boost::optional<port_type> function_type::get_port_in
+      boost::optional<const port_type&> function_type::get_port_in
         (const std::string & name) const
       {
         return _in.copy_by_key (name);
       }
 
-      boost::optional<port_type> function_type::get_port_out
+      boost::optional<const port_type&> function_type::get_port_out
         (const std::string & name) const
       {
         return _out.copy_by_key (name);
@@ -1239,7 +1239,7 @@ namespace xml
 
           bool operator () (use_type & u) const
           {
-            boost::optional<function_type> fun
+            boost::optional<const function_type&> fun
               (state.id_mapper()->get (_id_net)->get_function (u.name()));
 
             if (!fun)

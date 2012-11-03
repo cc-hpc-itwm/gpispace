@@ -211,26 +211,8 @@ namespace xml
         return insert (x);
       }
 
-      boost::optional<value_type> copy_by_id (const id_type & id) const
-      {
-        const typename ids_type::const_iterator pos (_ids.find (id));
-
-        if (pos != _ids.end())
-        {
-          return *(pos->second);
-        }
-
-        return boost::none;
-      }
-
-      //! \todo Most likely, there was never an intended difference
-      //! between copy_by_key and ref_by_key. When rewriting
-      //! copy_by_key, it was passing out a copy via a value_type&
-      //! argument though. The only difference now is the name and
-      //! returning an ?value_type or a ?value_type&. ?value_type& is
-      //! only used in weaver of the editor and seems to not be
-      //! needed.
-      boost::optional<value_type> copy_by_key (const key_type & key) const
+      boost::optional<const value_type&>
+      copy_by_key (const key_type & key) const
       {
         const typename names_type::const_iterator pos (_names.find (key));
 
@@ -238,18 +220,6 @@ namespace xml
         {
           return *(pos->second);
         }
-
-        return boost::none;
-      }
-
-      boost::optional<value_type&> ref_by_key (const key_type & key) const
-      {
-        const typename names_type::const_iterator pos (_names.find (key));
-
-        if (pos != _names.end())
-          {
-            return *(pos->second);
-          }
 
         return boost::none;
       }
