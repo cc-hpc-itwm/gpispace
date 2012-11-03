@@ -280,9 +280,9 @@ namespace xml
       type::place_map_type place_map
         ( id::place_map (state.next_id())
         , state.id_mapper()
+        , parent
         , required ("place_map_type", node, "virtual", state.file_in_progress())
         , required ("place_map_type", node, "real", state.file_in_progress())
-        , parent
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1138,11 +1138,11 @@ namespace xml
                     ( type::expression_type
                       ( id::expression (state.next_id())
                       , state.id_mapper()
+                      , id
                       , parse_cdata<type::expressions_type>
                         ( child
                         , state.file_in_progress()
                         )
-                      , id
                       )
                     );
                 }
@@ -1506,6 +1506,7 @@ namespace xml
         type::place_type p
           ( id
           , state.id_mapper()
+          , parent
           , validate_name ( validate_prefix ( name
                                             , "place"
                                             , state.file_in_progress()
@@ -1517,7 +1518,6 @@ namespace xml
           , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
                                                , optional (node, "virtual")
                                                )
-          , parent
           );
       }
 
@@ -1589,6 +1589,7 @@ namespace xml
       type::port_type port
         ( id::port (state.next_id())
         , state.id_mapper()
+        , parent
         , validate_name ( validate_prefix ( name
                                           , "port"
                                           , state.file_in_progress()
@@ -1598,7 +1599,6 @@ namespace xml
                         )
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
-        , parent
         );
 
       for ( xml_node_type * child (node->first_node())

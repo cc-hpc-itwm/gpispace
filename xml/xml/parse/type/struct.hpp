@@ -6,6 +6,8 @@
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
+#include <xml/parse/util/parent.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -28,16 +30,15 @@ namespace xml
       struct structure_type
       {
         ID_SIGNATURES(structure)
+        PARENT_SIGNATURES(function)
 
       public:
         structure_type ( ID_CONS_PARAM(structure)
-                       , const id::function& parent
+                       , PARENT_CONS_PARAM(function)
                        , const std::string& name
                        , const signature::desc_t& sig
                        , const boost::filesystem::path& path
                        );
-
-        const id::function& parent() const;
 
         const signature::desc_t& signature() const;
         signature::desc_t& signature();
@@ -49,8 +50,6 @@ namespace xml
         const boost::filesystem::path& path() const;
 
       private:
-        id::function _parent;
-
         std::string _name;
         signature::desc_t _sig;
         boost::filesystem::path _path;

@@ -6,6 +6,7 @@
 #include <xml/parse/type/function.fwd.hpp>
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/util/parent.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -23,22 +24,19 @@ namespace xml
       struct expression_type
       {
         ID_SIGNATURES(expression);
+        PARENT_SIGNATURES(function);
 
       private:
         expressions_type _expressions;
 
-        id::function _parent;
-
       public:
         expression_type ( ID_CONS_PARAM(expression)
-                        , const id::function& parent
+                        , PARENT_CONS_PARAM(function)
                         );
         expression_type ( ID_CONS_PARAM(expression)
+                        , PARENT_CONS_PARAM(function)
                         , const expressions_type & exps
-                        , const id::function& parent
                         );
-
-        const id::function& parent() const;
 
         void set (const std::string& exps);
 

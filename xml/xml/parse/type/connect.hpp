@@ -4,6 +4,7 @@
 #define _XML_PARSE_TYPE_CONNECT_HPP
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/util/parent.hpp>
 
 #include <xml/parse/type/transition.fwd.hpp>
 
@@ -22,8 +23,7 @@ namespace xml
       struct connect_type
       {
         ID_SIGNATURES(connect);
-
-        boost::optional<id::transition> _parent;
+        PARENT_SIGNATURES(transition);
 
         //! \todo Should be a id::place and id::port. In principle yes
         //! but we do have connections to not yet parsed places
@@ -36,14 +36,10 @@ namespace xml
 
       public:
         connect_type ( ID_CONS_PARAM(connect)
-                     , const id::transition& parent
+                     , PARENT_CONS_PARAM(transition)
                      , const std::string& place
                      , const std::string& port
                      );
-
-        bool has_parent() const;
-        boost::optional<const transition_type&> parent() const;
-        boost::optional<transition_type&> parent();
 
         const std::string& place() const;
         const std::string& port() const;

@@ -11,6 +11,7 @@
 #include <xml/parse/type_map_type.hpp>
 
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/parent.hpp>
 
 #include <xml/parse/type/dumps.hpp>
 
@@ -41,6 +42,7 @@ namespace xml
       struct net_type
       {
         ID_SIGNATURES(net)
+        PARENT_SIGNATURES(function)
 
       private:
         typedef fhg::util::maybe<std::string> maybe_string_type;
@@ -57,8 +59,6 @@ namespace xml
         templates_type _templates;
         functions_type _functions;
 
-        boost::optional<id::function> _parent;
-
         boost::filesystem::path _path;
 
       public:
@@ -74,10 +74,6 @@ namespace xml
                  , const boost::filesystem::path& path
                        = boost::filesystem::path()
                  );
-
-        boost::optional<const function_type&> parent() const;
-        boost::optional<function_type&> parent();
-        bool has_parent() const;
 
         const boost::filesystem::path& path() const;
 

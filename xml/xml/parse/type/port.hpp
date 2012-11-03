@@ -9,6 +9,7 @@
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
+#include <xml/parse/util/parent.hpp>
 
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
@@ -29,23 +30,20 @@ namespace xml
       struct port_type
       {
         ID_SIGNATURES(port)
+        PARENT_SIGNATURES(function)
 
       public:
         port_type ( ID_CONS_PARAM(port)
+                  , PARENT_CONS_PARAM(function)
                   , const std::string & name
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
-                  , const id::function& parent
                   );
-
-        const id::function& parent() const;
 
         void specialize ( const type::type_map_type & map_in
                         , const state::type &
                         );
       private:
-        id::function _parent;
-
         std::string _name;
 
       public:

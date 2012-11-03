@@ -13,22 +13,17 @@ namespace xml
     namespace type
     {
       place_map_type::place_map_type ( ID_CONS_PARAM(place_map)
+                                     , PARENT_CONS_PARAM(transition)
                                      , const std::string & _place_virtual
                                      , const std::string & _place_real
-                                     , const id::transition& parent
                                      )
         : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _name (_place_virtual + " <-> " + _place_real)
         , place_virtual (_place_virtual)
         , place_real (_place_real)
-        , _parent (parent)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::transition& place_map_type::parent() const
-      {
-        return _parent;
       }
 
       const std::string& place_map_type::name() const

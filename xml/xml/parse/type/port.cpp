@@ -14,13 +14,13 @@ namespace xml
     namespace type
     {
       port_type::port_type ( ID_CONS_PARAM(port)
+                           , PARENT_CONS_PARAM(function)
                            , const std::string & name
                            , const std::string & _type
                            , const fhg::util::maybe<std::string> & _place
-                           , const id::function& parent
                            )
         : ID_INITIALIZE()
-        , _parent (parent)
+        , PARENT_INITIALIZE()
         , _name (name)
         , type (_type)
         , place (_place)
@@ -32,11 +32,6 @@ namespace xml
       const std::string& port_type::name() const
       {
         return _name;
-      }
-
-      const id::function& port_type::parent() const
-      {
-        return _parent;
       }
 
       void port_type::specialize ( const type::type_map_type & map_in

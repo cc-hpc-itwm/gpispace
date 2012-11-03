@@ -15,34 +15,20 @@ namespace xml
     {
       tmpl_type::tmpl_type
         ( ID_CONS_PARAM(tmpl)
-        , const id::net& parent
+        , PARENT_CONS_PARAM(net)
         , const boost::filesystem::path& path
         , const fhg::util::maybe<std::string>& name
         , const names_type& tmpl_parameter
         , const id::ref::function& function
         )
           : ID_INITIALIZE()
-          , _parent (parent)
+          , PARENT_INITIALIZE()
           , _tmpl_parameter (tmpl_parameter)
           , _function (function)
           , _name (name)
           , _path (path)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      bool tmpl_type::has_parent() const
-      {
-        return _parent;
-      }
-
-      boost::optional<const net_type&> tmpl_type::parent() const
-      {
-        return id_mapper()->get (_parent);
-      }
-      boost::optional<net_type&> tmpl_type::parent()
-      {
-        return id_mapper()->get_ref (_parent);
       }
 
       const fhg::util::maybe<std::string>&

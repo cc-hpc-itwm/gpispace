@@ -4,6 +4,9 @@
 #define _XML_PARSE_TYPE_USE_HPP
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/util/parent.hpp>
+
+#include <xml/parse/type/transition.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -18,18 +21,17 @@ namespace xml
       struct use_type
       {
         ID_SIGNATURES(use)
+        PARENT_SIGNATURES(transition)
 
       public:
         use_type ( ID_CONS_PARAM(use)
-                 , const id::transition& parent
+                 , PARENT_CONS_PARAM(transition)
                  , const std::string& name
                  );
 
         const std::string& name() const;
 
       private:
-        id::transition _parent;
-
         std::string _name;
       };
 

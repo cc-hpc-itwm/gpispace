@@ -4,6 +4,8 @@
 #define _XML_PARSE_TYPE_MOD_HPP
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/util/parent.hpp>
+
 #include <xml/parse/type/function.fwd.hpp>
 
 #include <fhg/util/maybe.hpp>
@@ -29,19 +31,18 @@ namespace xml
       struct module_type
       {
         ID_SIGNATURES(module)
+        PARENT_SIGNATURES(function)
 
       public:
         module_type ( ID_CONS_PARAM(module)
-                    , const id::function& parent
+                    , PARENT_CONS_PARAM(function)
                     );
         module_type ( ID_CONS_PARAM(module)
-                    , const id::function& parent
+                    , PARENT_CONS_PARAM(function)
                     , const std::string & _name
                     , const std::string & _function
                     , const boost::filesystem::path & path
                     );
-
-        const id::function& parent() const;
 
         bool operator == (const module_type& other) const;
 
@@ -60,9 +61,6 @@ namespace xml
         flags_type cxxflags;
         links_type links;
         boost::filesystem::path path;
-
-      private:
-        id::function _parent;
       };
 
       typedef boost::unordered_map<std::string, module_type> mc_by_function_type;

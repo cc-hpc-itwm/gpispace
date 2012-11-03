@@ -17,23 +17,18 @@ namespace xml
     namespace type
     {
       structure_type::structure_type ( ID_CONS_PARAM(structure)
-                                     , const id::function& parent
+                                     , PARENT_CONS_PARAM(function)
                                      , const std::string& name
                                      , const signature::desc_t& sig
                                      , const boost::filesystem::path& path
                                      )
         : ID_INITIALIZE()
-        , _parent (parent)
+        , PARENT_INITIALIZE()
         , _name (name)
         , _sig (sig)
         , _path (path)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::function& structure_type::parent() const
-      {
-        return _parent;
       }
 
       const signature::desc_t& structure_type::signature() const

@@ -4,6 +4,8 @@
 #define _XML_PARSE_TYPE_TOKEN_HPP
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/util/parent.hpp>
+#include <xml/parse/type/place.fwd.hpp>
 
 #include <we/type/signature.hpp>
 
@@ -22,22 +24,18 @@ namespace xml
       struct token_type : public signature::desc_t
       {
         ID_SIGNATURES(token)
+        PARENT_SIGNATURES(place)
 
       public:
         token_type ( ID_CONS_PARAM(token)
-                   , const id::place& parent
+                   , PARENT_CONS_PARAM(place)
                    , const signature::structured_t& structure
                    );
 
         token_type ( ID_CONS_PARAM(token)
-                   , const id::place& parent
+                   , PARENT_CONS_PARAM(place)
                    , const std::string& value
                    );
-
-        const id::place& parent() const;
-
-      private:
-        id::place _parent;
       };
     }
   }

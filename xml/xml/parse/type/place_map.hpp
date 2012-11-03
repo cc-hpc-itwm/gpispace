@@ -5,6 +5,9 @@
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/parent.hpp>
+
+#include <xml/parse/type/transition.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -24,15 +27,14 @@ namespace xml
       struct place_map_type
       {
         ID_SIGNATURES(place_map)
+        PARENT_SIGNATURES(transition)
 
       public:
         place_map_type ( ID_CONS_PARAM(place_map)
+                       , PARENT_CONS_PARAM(transition)
                        , const std::string & _place_virtual
                        , const std::string & _place_real
-                       , const id::transition& parent
                        );
-
-        const id::transition& parent() const;
 
         std::string _name;
 
@@ -42,9 +44,6 @@ namespace xml
         we::type::property::type prop;
 
         const std::string& name() const;
-
-      private:
-        id::transition _parent;
       };
 
       typedef xml::util::unique<place_map_type,id::place_map>::elements_type place_maps_type;

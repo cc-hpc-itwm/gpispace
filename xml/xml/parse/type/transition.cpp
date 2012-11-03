@@ -21,38 +21,24 @@ namespace xml
     namespace type
     {
       transition_type::transition_type ( ID_CONS_PARAM(transition)
-                                       , const id::net& parent
+                                       , PARENT_CONS_PARAM(net)
                                        )
         : ID_INITIALIZE()
-        , _parent (parent)
+        , PARENT_INITIALIZE()
         , _function_or_use (boost::none)
       {
         _id_mapper->put (_id, *this);
       }
 
       transition_type::transition_type ( ID_CONS_PARAM(transition)
+                                       , PARENT_CONS_PARAM(net)
                                        , const function_or_use_type& function_or_use
-                                       , const id::net& parent
                                        )
         : ID_INITIALIZE()
-        , _parent (parent)
+        , PARENT_INITIALIZE()
         , _function_or_use (function_or_use)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      bool transition_type::has_parent() const
-      {
-        return _parent;
-      }
-
-      boost::optional<const net_type&> transition_type::parent() const
-      {
-        return id_mapper()->get (_parent);
-      }
-      boost::optional<net_type&> transition_type::parent()
-      {
-        return id_mapper()->get_ref (_parent);
       }
 
       const transition_type::function_or_use_type&

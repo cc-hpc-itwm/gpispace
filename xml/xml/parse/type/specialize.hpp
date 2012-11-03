@@ -6,7 +6,9 @@
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
+#include <xml/parse/util/parent.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -23,13 +25,12 @@ namespace xml
       struct specialize_type
       {
         ID_SIGNATURES(specialize)
+        PARENT_SIGNATURES(net)
 
       public:
         specialize_type ( ID_CONS_PARAM(specialize)
-                        , const id::net& parent
+                        , PARENT_CONS_PARAM(net)
                         );
-
-        const id::net& parent() const;
 
         std::string _name;
 
@@ -40,9 +41,6 @@ namespace xml
         type_map_type type_map;
         type_get_type type_get;
         boost::filesystem::path path;
-
-      private:
-        id::net _parent;
       };
 
       void split_structs ( const parse::structure_type::set_type & global

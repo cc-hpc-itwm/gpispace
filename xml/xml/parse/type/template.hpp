@@ -4,8 +4,10 @@
 #define _XML_PARSE_TYPE_TEMPLATE_HPP 1
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/util/parent.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/template.fwd.hpp>
+#include <xml/parse/type/net.fwd.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/unordered_set.hpp>
@@ -23,14 +25,12 @@ namespace xml
       struct tmpl_type
       {
         ID_SIGNATURES(tmpl)
+        PARENT_SIGNATURES(net)
 
       public:
         typedef boost::unordered_set<std::string> names_type;
 
       private:
-
-        boost::optional<id::net> _parent;
-
         names_type _tmpl_parameter;
         id::ref::function _function;
         fhg::util::maybe<std::string> _name;
@@ -38,17 +38,12 @@ namespace xml
 
       public:
         tmpl_type ( ID_CONS_PARAM(tmpl)
-                  , const id::net& parent
+                  , PARENT_CONS_PARAM(net)
                   , const boost::filesystem::path& path
                   , const fhg::util::maybe<std::string>& name
                   , const names_type& names
                   , const id::ref::function& function
                   );
-
-        bool has_parent() const;
-
-        boost::optional<const net_type&> parent() const;
-        boost::optional<net_type&> parent();
 
         const fhg::util::maybe<std::string>& name() const;
         const std::string& name (const std::string& name);

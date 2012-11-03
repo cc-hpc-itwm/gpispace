@@ -7,8 +7,10 @@
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/use.hpp>
+#include <xml/parse/type/net.fwd.hpp>
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/util/parent.hpp>
 
 namespace xml
 {
@@ -20,7 +22,8 @@ namespace xml
 
       struct transition_type
       {
-        ID_SIGNATURES(transition);
+        ID_SIGNATURES(transition)
+        PARENT_SIGNATURES(net)
 
       private:
         xml::util::unique<connect_type,id::connect> _in;
@@ -28,24 +31,17 @@ namespace xml
         xml::util::unique<connect_type,id::connect> _read;
         xml::util::unique<place_map_type,id::place_map> _place_map;
 
-        boost::optional<id::net> _parent;
-
       public:
         typedef boost::variant <id::ref::function, use_type>
                 function_or_use_type;
 
         transition_type ( ID_CONS_PARAM(transition)
-                        , const id::net& parent
+                        , PARENT_CONS_PARAM(net)
                         );
         transition_type ( ID_CONS_PARAM(transition)
+                        , PARENT_CONS_PARAM(net)
                         , const function_or_use_type& function_or_use
-                        , const id::net& parent
                         );
-
-        bool has_parent() const;
-
-        boost::optional<const net_type&> parent() const;
-        boost::optional<net_type&> parent();
 
       private:
         boost::optional<function_or_use_type> _function_or_use;

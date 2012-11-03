@@ -13,22 +13,17 @@ namespace xml
     namespace type
     {
       specialize_type::specialize_type ( ID_CONS_PARAM(specialize)
-                                       , const id::net& parent
+                                       , PARENT_CONS_PARAM(net)
                                        )
         : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _name()
         , use()
         , type_map()
         , type_get()
         , path()
-        , _parent (parent)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::net& specialize_type::parent() const
-      {
-        return _parent;
       }
 
       const std::string& specialize_type::name() const

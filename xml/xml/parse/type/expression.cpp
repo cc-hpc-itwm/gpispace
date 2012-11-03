@@ -38,29 +38,24 @@ namespace xml
       }
 
       expression_type::expression_type ( ID_CONS_PARAM(expression)
-                                       , const id::function& parent
+                                       , PARENT_CONS_PARAM(function)
                                        )
         : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _expressions()
-        , _parent (parent)
       {
         _id_mapper->put (_id, *this);
       }
 
       expression_type::expression_type ( ID_CONS_PARAM(expression)
+                                       , PARENT_CONS_PARAM(function)
                                        , const expressions_type & exps
-                                       , const id::function& parent
                                        )
         : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _expressions (split (exps))
-        , _parent (parent)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::function& expression_type::parent() const
-      {
-        return _parent;
       }
 
       void expression_type::set (const std::string& exps)

@@ -23,26 +23,26 @@ namespace xml
       typedef std::list<std::string> links_type;
 
       module_type::module_type ( ID_CONS_PARAM(module)
-                               , const id::function& parent
+                               , PARENT_CONS_PARAM(function)
                                )
         : ID_INITIALIZE()
-        , _parent (parent)
+        , PARENT_INITIALIZE()
       {
         _id_mapper->put (_id, *this);
       }
 
       module_type::module_type ( ID_CONS_PARAM(module)
-                               , const id::function& parent
+                               , PARENT_CONS_PARAM(function)
                                , const std::string & _name
                                , const std::string & _function
                                , const boost::filesystem::path & path
                                )
         : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , name (_name)
         , function ()
         , port_return ()
         , port_arg ()
-        , _parent (parent)
       {
         _id_mapper->put (_id, *this);
 
@@ -132,11 +132,6 @@ namespace xml
                                                   );
           }
         }
-      }
-
-      const id::function& module_type::parent() const
-      {
-        return _parent;
       }
 
       bool module_type::operator == (const module_type& other) const

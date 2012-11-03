@@ -185,14 +185,14 @@ namespace xml
       }
 
       place_type::place_type ( ID_CONS_PARAM(place)
+                             , PARENT_CONS_PARAM(net)
                              , const std::string & name
                              , const std::string & _type
                              , const fhg::util::maybe<bool> is_virtual
-                             , const id::net& parent
                              )
         : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _is_virtual (is_virtual)
-        , _parent (parent)
         , _name (name)
         , type (_type)
       {
@@ -200,17 +200,12 @@ namespace xml
       }
 
       place_type::place_type ( ID_CONS_PARAM(place)
-                             , const id::net& parent
+                             , PARENT_CONS_PARAM(net)
                              )
         : ID_INITIALIZE()
-        , _parent (parent)
+        , PARENT_INITIALIZE()
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::net& place_type::parent() const
-      {
-        return _parent;
       }
 
       const std::string& place_type::name() const

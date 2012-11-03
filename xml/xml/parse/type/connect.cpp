@@ -14,30 +14,17 @@ namespace xml
     namespace type
     {
       connect_type::connect_type ( ID_CONS_PARAM(connect)
-                                 , const id::transition& parent
+                                 , PARENT_CONS_PARAM(transition)
                                  , const std::string& place
                                  , const std::string& port
                                  )
         : ID_INITIALIZE()
-        , _parent (parent)
+        , PARENT_INITIALIZE()
         , _place (place)
         , _port (port)
         , _name (_place + " <-> " + _port)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      bool connect_type::has_parent() const
-      {
-        return _parent;
-      }
-      boost::optional<const transition_type&> connect_type::parent() const
-      {
-        return id_mapper()->get (_parent);
-      }
-      boost::optional<transition_type&> connect_type::parent()
-      {
-        return id_mapper()->get_ref (_parent);
       }
 
       const std::string& connect_type::place() const

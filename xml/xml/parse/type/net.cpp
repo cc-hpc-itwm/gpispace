@@ -31,33 +31,19 @@ namespace xml
       }
 
       net_type::net_type ( ID_CONS_PARAM(net)
-                         , const id::function& parent
+                         , PARENT_CONS_PARAM(function)
                          , const boost::filesystem::path& path
                          )
         : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _places (id_mapper)
         , _transitions (id_mapper)
         , _specializes (id_mapper)
         , _templates (id_mapper)
         , _functions (id_mapper)
-        , _parent (parent)
         , _path (path)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      bool net_type::has_parent() const
-      {
-        return _parent;
-      }
-
-      boost::optional<const function_type&> net_type::parent() const
-      {
-        return id_mapper()->get (_parent);
-      }
-      boost::optional<function_type&> net_type::parent()
-      {
-        return id_mapper()->get_ref (_parent);
       }
 
       const boost::filesystem::path& net_type::path () const
