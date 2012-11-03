@@ -226,15 +226,12 @@ namespace xml
                                  , const state::type & state
                                  )
       {
-        for ( tokens_type::const_iterator tok (tokens.begin())
-            ; tok != tokens.end()
-            ; ++tok
-            )
+        BOOST_FOREACH (const token_type& token, tokens)
         {
           values.push_back
             (boost::apply_visitor ( construct_value (name(), path, "", state)
                                   , sig.desc()
-                                  , *tok
+                                  , token
                                   )
             );
         }
@@ -273,13 +270,10 @@ namespace xml
 
           ::we::type::property::dump::dump (s, p.prop);
 
-          for ( tokens_type::const_iterator tok (p.tokens.begin())
-              ; tok != p.tokens.end()
-              ; ++tok
-              )
+          BOOST_FOREACH (const token_type& token, p.tokens)
             {
               boost::apply_visitor ( signature::visitor::dump_token ("", s)
-                                   , *tok
+                                   , token
                                    );
             }
 

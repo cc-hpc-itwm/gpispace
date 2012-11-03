@@ -29,7 +29,6 @@ namespace xml
     namespace type
     {
       typedef std::list<value::type> values_type;
-      typedef std::list<token_type> tokens_type;
 
       struct place_type
       {
@@ -45,7 +44,7 @@ namespace xml
         const std::string& name() const;
         const std::string& name(const std::string& name);
         std::string type;
-        tokens_type tokens;
+        std::list<token_type> tokens;
         values_type values;
         signature::type sig;
         we::type::property::type prop;
