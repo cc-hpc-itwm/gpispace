@@ -1338,7 +1338,11 @@ namespace xml
                 {
                   state.id_mapper()
                     ->get_ref (id)
-                    ->push_place (place_type (child, state, id));
+                    ->push_place ( id::ref::place
+                                   ( place_type (child, state, id)
+                                   , state.id_mapper()
+                                   )
+                                 );
                 }
               else if (child_name == "transition")
                 {
@@ -1464,30 +1468,34 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::place_type place_type ( const xml_node_type * node
-                                       , state::type & state
-                                       , const id::net& parent
-                                       )
+    id::place place_type ( const xml_node_type * node
+                         , state::type & state
+                         , const id::net& parent
+                         )
     {
+      id::place id (state.next_id());
+
       const std::string name
         (required ("place_type", node, "name", state.file_in_progress()));
 
-      type::place_type p
-        ( id::place (state.next_id())
-        , state.id_mapper()
-        , validate_name ( validate_prefix ( name
-                                          , "place"
-                                          , state.file_in_progress()
-                                          )
-                        , "place"
-                        , state.file_in_progress()
-                        )
-        , required ("place_type", node, "type", state.file_in_progress())
-        , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
-                                             , optional (node, "virtual")
-                                             )
-        , parent
-        );
+      {
+        type::place_type p
+          ( id
+          , state.id_mapper()
+          , validate_name ( validate_prefix ( name
+                                            , "place"
+                                            , state.file_in_progress()
+                                            )
+                          , "place"
+                          , state.file_in_progress()
+                          )
+          , required ("place_type", node, "type", state.file_in_progress())
+          , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
+                                               , optional (node, "virtual")
+                                               )
+          , parent
+          );
+      }
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1501,11 +1509,15 @@ namespace xml
             {
               if (child_name == "token")
                 {
-                  p.push_token (token_type (child, state, p.id()));
+                  state.id_mapper()->get_ref (id)
+                    ->push_token (token_type (child, state, id));
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type (p.prop, child, state);
+                  property_map_type ( state.id_mapper()->get_ref (id)->prop
+                                    , child
+                                    , state
+                                    );
                 }
               else if (child_name == "include-properties")
                 {
@@ -1519,7 +1531,10 @@ namespace xml
                                          )
                     );
 
-                  util::property::join (state, p.prop, deeper);
+                  util::property::join ( state
+                                       , state.id_mapper()->get_ref (id)->prop
+                                       , deeper
+                                       );
                 }
               else
                 {
@@ -1533,7 +1548,7 @@ namespace xml
             }
         }
 
-      return p;
+      return id;
     }
 
     // ********************************************************************* //

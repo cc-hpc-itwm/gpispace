@@ -62,13 +62,21 @@ namespace xml
 
       bool net_type::has_place (const std::string& name) const
       {
-        return _places.is_element (name);
+        return _by_name_place.find (name) != _by_name_place.end();
       }
 
       boost::optional<const place_type&>
       net_type::get_place (const std::string & name) const
       {
-        return _places.copy_by_key (name);
+        const boost::unordered_map<std::string,id::ref::place>::const_iterator
+          pos (_by_name_place.find (name));
+
+        if (pos != _by_name_place.end())
+          {
+            return id_mapper()->get (pos->second);
+          }
+
+        return boost::none;
       }
 
       bool net_type::has_transition (const std::string& name) const
@@ -85,6 +93,12 @@ namespace xml
       net_type::ids_transition()
       {
         return _ids_transition;
+      }
+
+      const boost::unordered_set<id::ref::place>&
+      net_type::ids_place() const
+      {
+        return _ids_place;
       }
 
       boost::optional<const function_type&>
@@ -113,15 +127,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      net_type::places_type & net_type::places (void)
-      {
-        return _places;
-      }
-      const net_type::places_type & net_type::places (void) const
-      {
-        return _places;
-      }
-
       const functions_type & net_type::functions (void) const
       {
         return _functions.elements();
@@ -139,19 +144,26 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::push_place (const place_type & p)
+      const id::ref::place&
+      net_type::push_place (const id::ref::place& id_place)
       {
-        boost::optional<place_type&> place (_places.push (p));
+        boost::optional<const place_type&> place (*id_mapper()->get (id_place));
 
-        if (!place)
+        const boost::unordered_map<std::string,id::ref::place>::const_iterator
+          pos (_by_name_place.find (place->name()));
+
+        if (pos != _by_name_place.end())
         {
-          throw error::duplicate_place (p.name(), path());
+          throw error::duplicate_place (place->name(), path());
         }
-      }
 
-      void net_type::erase_place (const place_type& t)
-      {
-        _places.erase (t);
+        _ids_place.insert (id_place);
+        _by_name_place.insert (std::make_pair ( place->name()
+                                              , id_place
+                                              )
+                              );
+
+        return id_place;
       }
 
       const id::ref::transition&
@@ -217,7 +229,8 @@ namespace xml
 
       void net_type::clear_places (void)
       {
-        _places.clear();
+        _ids_place.clear();
+        _by_name_place.clear();
       }
 
       void net_type::clear_transitions (void)
@@ -359,11 +372,10 @@ namespace xml
                         );
         }
 
-        for ( places_type::iterator place (places().begin())
-            ; place != places().end()
-            ; ++place
-            )
+        BOOST_FOREACH (const id::ref::place& id_place, ids_place())
         {
+          boost::optional<place_type&> place (id_mapper()->get_ref (id_place));
+
           place->specialize (map, state);
         }
 
@@ -418,13 +430,11 @@ namespace xml
             ->resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        for ( places_type::iterator place (places().begin())
-            ; place != places().end()
-            ; ++place
-            )
+        BOOST_FOREACH(id::ref::place id_place, ids_place())
         {
-          place->sig = type_of_place (*place);
-          place->translate (path(), state);
+          id_mapper()->get_ref (id_place)->sig
+            = type_of_place (*id_mapper()->get (id_place));
+          id_mapper()->get_ref (id_place)->translate (path(), state);
         }
       }
 
@@ -449,12 +459,15 @@ namespace xml
           fun->sanity_check (state);
         }
 
-        BOOST_FOREACH (const place_type& place, places())
+        BOOST_FOREACH (const id::ref::place& id_place, ids_place())
         {
-          if (place.is_virtual() && !outerfun.is_known_tunnel (place.name()))
+          boost::optional<const place_type&>
+            place (id_mapper()->get (id_place));
+
+          if (place->is_virtual() && !outerfun.is_known_tunnel (place->name()))
           {
             state.warn
-              ( warning::virtual_place_not_tunneled ( place.name()
+              ( warning::virtual_place_not_tunneled ( place->name()
                                                     , outerfun.path
                                                     )
               );
@@ -488,12 +501,10 @@ namespace xml
 
       void net_type::set_prefix (const std::string & prefix)
       {
-        for ( places_type::iterator place (places().begin())
-            ; place != places().end()
-            ; ++place
-            )
+        BOOST_FOREACH(id::ref::place id_place, ids_place())
         {
-          place->name (prefix + place->name());
+          id_mapper()->get_ref (id_place)
+            ->name (prefix + id_mapper()->get(id_place)->name());
         }
 
         for ( boost::unordered_set<id::ref::transition>::iterator
@@ -551,12 +562,10 @@ namespace xml
       {
         const std::string::size_type prefix_length (prefix.size());
 
-        for ( places_type::iterator place (places().begin())
-            ; place != places().end()
-            ; ++place
-            )
+        BOOST_FOREACH (const id::ref::place& id_place, ids_place())
         {
-          place->name (place->name().substr (prefix_length));
+          id_mapper()->get_ref (id_place)
+            ->name (id_mapper()->get (id_place)->name().substr (prefix_length));
         }
 
         for ( boost::unordered_set<id::ref::transition>::iterator
@@ -632,11 +641,11 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        for ( net_type::places_type::const_iterator place (net.places().begin())
-            ; place != net.places().end()
-            ; ++place
-            )
+        BOOST_FOREACH (const id::ref::place& id_place, net.ids_place())
             {
+              boost::optional<const place_type&>
+                place (net.id_mapper()->get (id_place));
+
               const signature::type type (net.type_of_place (*place));
 
               if (!state.synthesize_virtual_places() && place->is_virtual())
@@ -651,7 +660,10 @@ namespace xml
                         (place->name(), state.file_in_progress());
                     }
 
-                  pid_of_place[place->name()] = pid->second;
+                  pid_of_place.insert (std::make_pair ( place->name()
+                                                      , pid->second
+                                                      )
+                                      );
 
                   const we_place_type place_real
                     (we_net.get_place (pid->second));
@@ -684,7 +696,7 @@ namespace xml
                                        )
                     );
 
-                  pid_of_place[place->name()] = pid;
+                  pid_of_place.insert (std::make_pair (place->name(), pid));
                 }
             }
 
@@ -704,17 +716,17 @@ namespace xml
               );
           }
 
-          for ( net_type::places_type::const_iterator place (net.places().begin())
-              ; place != net.places().end()
-              ; ++place
-              )
-            {
-              const pid_t pid (pid_of_place.at (place->name()));
+        BOOST_FOREACH (const id::ref::place& id_place, net.ids_place())
+          {
+            boost::optional<const place_type&>
+              place (net.id_mapper()->get (id_place));
 
-              for ( values_type::const_iterator val (place->values.begin())
-                  ; val != place->values.end()
-                  ; ++val
-                  )
+            const pid_t pid (pid_of_place.at (place->name()));
+
+            for ( values_type::const_iterator val (place->values.begin())
+                ; val != place->values.end()
+                ; ++val
+                )
                 {
                   token::put (we_net, pid, *val);
                 }
@@ -750,8 +762,8 @@ namespace xml
           dumps (s, net.templates().begin(), net.templates().end());
           dumps (s, net.specializes().begin(), net.specializes().end());
           dumps (s, net.functions().begin(), net.functions().end());
-          dumps (s, net.places().begin(), net.places().end());
 
+          dumps (s, net.ids_place(), net.id_mapper());
           dumps (s, net.ids_transition(), net.id_mapper());
 
           s.close ();

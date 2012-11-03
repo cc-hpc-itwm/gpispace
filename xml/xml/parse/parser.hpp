@@ -65,10 +65,10 @@ namespace xml
                      , state::type &
                      , const id::function& parent
                      );
-    type::place_type place_type ( const xml_node_type *
-                                , state::type &
-                                , const id::net& parent
-                                );
+    id::place place_type ( const xml_node_type *
+                         , state::type &
+                         , const id::net& parent
+                         );
     type::port_type port_type ( const xml_node_type *
                               , state::type &
                               , const id::function& parent
