@@ -522,25 +522,22 @@ namespace xml
         //! \todo keep working with the id_function, deref deeper
         function_type& fun (*state.id_mapper()->get_ref (*id_function));
 
-        BOOST_FOREACH (const id::ref::port& id_port, fun.in().ids())
+        BOOST_FOREACH (const port_type& port_in, fun.in().values())
           {
-            boost::optional<const port_type&>
-              port_in (state.id_mapper()->get (id_port));
-
             boost::optional<const id::ref::port&> id_port_out
-              (fun.get_port_out (port_in->name()));
+              (fun.get_port_out (port_in.name()));
 
             if (id_port_out)
               {
                 boost::optional<const port_type&>
                   port_out (state.id_mapper()->get (*id_port_out));
 
-                if (port_out->type != port_in->type)
+                if (port_out->type != port_in.type)
                   {
                     state.warn
                       ( warning::conflicting_port_types ( trans.name()
-                                                        , port_in->name()
-                                                        , port_in->type
+                                                        , port_in.name()
+                                                        , port_in.type
                                                         , port_out->type
                                                         , state.file_in_progress()
                                                         )
@@ -660,31 +657,28 @@ namespace xml
               , fun.prop
               );
 
-            BOOST_FOREACH (const id::ref::port& id_port, fun.in().ids())
+            BOOST_FOREACH (const port_type& port, fun.in().values())
               {
-                boost::optional<const port_type&>
-                  port (state.id_mapper()->get (id_port));
-
                 const signature::type type
-                  (fun.type_of_port (we::type::PORT_IN, *port));
+                  (fun.type_of_port (we::type::PORT_IN, port));
 
-                trans_in.add_ports () ( port->name()
+                trans_in.add_ports () ( port.name()
                                       , type
                                       , we::type::PORT_IN
-                                      , port->prop
+                                      , port.prop
                                       );
-                trans_in.add_ports () ( port->name()
+                trans_in.add_ports () ( port.name()
                                       , type
                                       , we::type::PORT_OUT
-                                      , port->prop
+                                      , port.prop
                                       );
 
-                if (port->place)
+                if (port.place)
                   {
                     trans_in.add_connections ()
-                      ( port->name()
-                      , get_pid (pid_of_place , prefix + *port->place)
-                      , port->prop
+                      ( port.name()
+                      , get_pid (pid_of_place , prefix + *port.place)
+                      , port.prop
                       )
                       ;
                   }
@@ -710,18 +704,15 @@ namespace xml
 
             const tid_t tid_in (we_net.add_transition (trans_in));
 
-            BOOST_FOREACH (const id::ref::port& id_port, fun.in().ids())
+            BOOST_FOREACH (const port_type& port, fun.in().values())
               {
-                boost::optional<const port_type&>
-                  port (state.id_mapper()->get (id_port));
-
-                if (port->place)
+                if (port.place)
                   {
                     we_net.add_edge
                       ( e++, connection_t ( TP
                                           , tid_in
                                           , get_pid ( pid_of_place
-                                                    , prefix + *port->place
+                                                    , prefix + *port.place
                                                     )
                                           )
                       )
@@ -772,31 +763,28 @@ namespace xml
               , fun.prop
               );
 
-            BOOST_FOREACH (const id::ref::port& id_port, fun.out().ids())
+            BOOST_FOREACH (const port_type& port, fun.out().values())
               {
-                boost::optional<const port_type&>
-                  port (state.id_mapper()->get (id_port));
-
                 const signature::type type
-                  (fun.type_of_port (we::type::PORT_OUT, *port));
+                  (fun.type_of_port (we::type::PORT_OUT, port));
 
-                trans_out.add_ports () ( port->name()
+                trans_out.add_ports () ( port.name()
                                        , type
                                        , we::type::PORT_IN
-                                       , port->prop
+                                       , port.prop
                                        );
-                trans_out.add_ports () ( port->name()
+                trans_out.add_ports () ( port.name()
                                        , type
                                        , we::type::PORT_OUT
-                                       , port->prop
+                                       , port.prop
                                        );
 
-                if (port->place)
+                if (port.place)
                   {
                     trans_out.add_connections ()
-                      ( get_pid (pid_of_place , prefix + *port->place)
-                      , port->name()
-                      , port->prop
+                      ( get_pid (pid_of_place , prefix + *port.place)
+                      , port.name()
+                      , port.prop
                       )
                       ;
                   }
@@ -835,18 +823,15 @@ namespace xml
             const tid_t tid_out (we_net.add_transition (trans_out));
 
 
-            BOOST_FOREACH (const id::ref::port& id_port, fun.out().ids())
+            BOOST_FOREACH (const port_type& port, fun.out().values())
               {
-                boost::optional<const port_type&>
-                  port (state.id_mapper()->get (id_port));
-
-                if (port->place)
+                if (port.place)
                   {
                     we_net.add_edge
                       ( e++, connection_t ( PT
                                           , tid_out
                                           , get_pid ( pid_of_place
-                                                    , prefix + *port->place
+                                                    , prefix + *port.place
                                                     )
                                           )
                       )

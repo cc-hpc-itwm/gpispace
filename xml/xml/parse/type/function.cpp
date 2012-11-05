@@ -486,17 +486,15 @@ namespace xml
                        , const we::type::PortDirection & direction
                        ) const
         {
-          BOOST_FOREACH (const id::ref::port& id_port, ports.ids())
+          BOOST_FOREACH (const port_type& port, ports.values())
             {
-              boost::optional<const port_type&>
-                port (state.id_mapper()->get (id_port));
+              const signature::type type
+                (fun.type_of_port (direction, port));
 
-              const signature::type type (fun.type_of_port (direction, *port));
-
-              trans.add_ports () ( port->name()
+              trans.add_ports () ( port.name()
                                  , type
                                  , direction
-                                 , port->prop
+                                 , port.prop
                                  );
             }
         }
@@ -517,19 +515,17 @@ namespace xml
                        , const Map & pid_of_place
                        ) const
         {
-          BOOST_FOREACH (const id::ref::port& id_port, ports.ids())
+          BOOST_FOREACH (const port_type& port, ports.values())
             {
-              boost::optional<const port_type&>
-                port (state.id_mapper()->get (id_port));
+              const signature::type type
+                (fun.type_of_port (direction, port));
 
-              const signature::type type (fun.type_of_port (direction, *port));
-
-              if (not port->place)
+              if (not port.place)
                 {
-                  trans.add_ports () ( port->name()
+                  trans.add_ports () ( port.name()
                                      , type
                                      , direction
-                                     , port->prop
+                                     , port.prop
                                      );
                 }
               else
@@ -538,11 +534,11 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  trans.add_ports () ( port->name()
+                  trans.add_ports () ( port.name()
                                      , type
                                      , direction
-                                     , get_pid (pid_of_place, *port->place)
-                                     , port->prop
+                                     , get_pid (pid_of_place, *port.place)
+                                     , port.prop
                                      )
                     ;
                 }
@@ -2178,9 +2174,9 @@ namespace xml
 
           xml::parse::type::dump::dump (s, f.requirements);
 
-          dumps (s, f.in().ids(), f.id_mapper(), "in");
-          dumps (s, f.out().ids(), f.id_mapper(), "out");
-          dumps (s, f.tunnel().ids(), f.id_mapper(), "tunnel");
+          dumps (s, f.in().values(), "in");
+          dumps (s, f.out().values(), "out");
+          dumps (s, f.tunnel().values(), "tunnel");
 
           boost::apply_visitor (function_dump_visitor (s, f.id_mapper()), f.f);
 
@@ -2225,4 +2221,3 @@ namespace xml
     }
   }
 }
-

@@ -139,6 +139,8 @@ namespace xml
       class values_type
       {
       public:
+        typedef value_type value_type;
+
         typedef unique_iterator<unique_type> iterator;
         typedef const_unique_iterator<unique_type> const_iterator;
 
