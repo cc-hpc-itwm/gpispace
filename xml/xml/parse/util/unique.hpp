@@ -1,128 +1,23 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_UTIL_UNIQUE_HPP
-#define _XML_UTIL_UNIQUE_HPP
-
-#include <list>
-#include <string>
-#include <stdexcept>
-#include <iterator>
-
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/optional.hpp>
+#ifndef _XML_PARSE_UTIL_UNIQUE_HPP
+#define _XML_PARSE_UTIL_UNIQUE_HPP
 
 #include <xml/parse/id/mapper.hpp>
+
+#include <string>
+
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+#include <boost/optional.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace xml
 {
   namespace util
   {
-    template<typename UNIQUE>
-    class unique_iterator : public std::iterator< std::forward_iterator_tag
-                                                , typename UNIQUE::value_type
-                                                >
-    {
-    private:
-      typedef UNIQUE unique_type;
-
-      typedef typename unique_type::ids_type::iterator
-        actual_iterator_type;
-
-    public:
-      unique_iterator ( parse::id::mapper* id_mapper
-                      , const actual_iterator_type& actual_iterator
-                      )
-        : _id_mapper (id_mapper)
-        , _actual_iterator (actual_iterator)
-      { }
-
-      unique_iterator& operator++()
-      {
-        ++_actual_iterator;
-        return *this;
-      }
-      unique_iterator operator++ (int)
-      {
-        unique_iterator<unique_type> tmp (*this);
-        operator++();
-        return tmp;
-      }
-      bool operator== (const unique_iterator& rhs)
-      {
-        return _actual_iterator == rhs._actual_iterator;
-      }
-      bool operator!= (const unique_iterator& rhs)
-      {
-        return !(operator== (rhs));
-      }
-      typename unique_type::value_type& operator*() const
-      {
-        return *_id_mapper->get_ref (*_actual_iterator);
-      }
-      typename unique_type::value_type* operator->() const
-      {
-        return &operator*();
-      }
-
-    private:
-      parse::id::mapper* _id_mapper;
-      actual_iterator_type _actual_iterator;
-    };
-
-    template<typename UNIQUE>
-    class const_unique_iterator
-      : public std::iterator< std::forward_iterator_tag
-                            , const typename UNIQUE::value_type
-                            >
-    {
-    private:
-      typedef UNIQUE unique_type;
-
-      typedef typename unique_type::ids_type::const_iterator
-        actual_iterator_type;
-
-    public:
-      const_unique_iterator ( parse::id::mapper* id_mapper
-                            , const actual_iterator_type& actual_iterator
-                            )
-        : _id_mapper (id_mapper)
-        , _actual_iterator (actual_iterator)
-      { }
-
-      const_unique_iterator& operator++()
-      {
-        ++_actual_iterator;
-        return *this;
-      }
-      const_unique_iterator operator++ (int)
-      {
-        const_unique_iterator<unique_type> tmp (*this);
-        operator++();
-        return tmp;
-      }
-      bool operator== (const const_unique_iterator& rhs)
-      {
-        return _actual_iterator == rhs._actual_iterator;
-      }
-      bool operator!= (const const_unique_iterator& rhs)
-      {
-        return !(operator== (rhs));
-      }
-      const typename unique_type::value_type& operator*() const
-      {
-        return *_id_mapper->get (*_actual_iterator);
-      }
-      const typename unique_type::value_type* operator->() const
-      {
-        return &operator*();
-      }
-
-    private:
-      parse::id::mapper* _id_mapper;
-      actual_iterator_type _actual_iterator;
-    };
-
     template<typename T, typename ID_TYPE, typename KEY = std::string>
     class unique
     {
@@ -130,47 +25,76 @@ namespace xml
       typedef T value_type;
       typedef ID_TYPE id_type;
       typedef KEY key_type;
-      typedef unique<value_type, id_type, key_type> unique_type;
 
       typedef boost::unordered_set<id_type> ids_type;
       typedef boost::unordered_map<key_type,id_type> by_key_type;
 
     private:
-      class values_type
+      struct indirect
       {
-      public:
+        indirect (parse::id::mapper* id_mapper)
+          : _id_mapper (id_mapper)
+        { }
+        value_type& operator () (const id_type& id)
+        {
+          return *_id_mapper->get_ref (id);
+        }
+      private:
+        parse::id::mapper* _id_mapper;
+      };
+
+      struct const_indirect
+      {
+        const_indirect (parse::id::mapper* id_mapper)
+          : _id_mapper (id_mapper)
+        { }
+        const value_type& operator () (const id_type& id)
+        {
+          return *_id_mapper->get (id);
+        }
+      private:
+        parse::id::mapper* _id_mapper;
+      };
+
+      struct values_type
+      {
         typedef value_type value_type;
 
-        typedef unique_iterator<unique_type> iterator;
-        typedef const_unique_iterator<unique_type> const_iterator;
+        typedef typename ids_type::iterator base_iterator;
+        typedef typename ids_type::const_iterator const_base_iterator;
+        typedef boost::function
+          <value_type& (const typename base_iterator::value_type&)> fun_type;
+        typedef boost::function
+          <const value_type& (const typename base_iterator::value_type&)>
+          const_fun_type;
+        typedef boost::transform_iterator<fun_type, base_iterator>
+          iterator;
+        typedef boost::transform_iterator< const_fun_type
+                                         , const_base_iterator
+                                         > const_iterator;
 
         iterator begin()
         {
-          return iterator (_mapper, _ids.begin());
+          return iterator (_ids.begin(), indirect (_mapper));
         }
         iterator end()
         {
-          return iterator (_mapper, _ids.end());
+          return iterator (_ids.end(), indirect (_mapper));
         }
 
         const_iterator begin() const
         {
-          return const_iterator ( _mapper
-                                , _ids.begin()
-                                );
+          return const_iterator (_ids.begin(), const_indirect (_mapper));
         }
         const_iterator end() const
         {
-          return const_iterator ( _mapper
-                                , _ids.end()
-                                );
+          return const_iterator (_ids.end(), const_indirect (_mapper));
         }
 
         //! \note These are private, as only unique shall access them,
         //! but they need to be in here to work around boost ticket #5473.
         //! See c3fbafa and https://svn.boost.org/trac/boost/ticket/5473
       private:
-        //! \todo C++11: friend unique_type;
         friend class unique<value_type, id_type, key_type>;
 
         values_type (parse::id::mapper* mapper)
