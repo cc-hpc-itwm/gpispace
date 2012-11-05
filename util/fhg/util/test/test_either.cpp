@@ -1,58 +1,58 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE Either
+#include <boost/test/unit_test.hpp>
+
 #include <fhg/util/either.hpp>
 
 #include <string>
 #include <iostream>
 
-#define REQUIRE(p) if (!(p)) { std::cout << "FAILURE IN LINE " << __LINE__ << std::endl; }
+typedef fhg::util::either::type<std::string, int> string_or_int_type;
 
-int main ()
+BOOST_AUTO_TEST_CASE (ctor_left__left_right)
 {
-  typedef fhg::util::either::type<std::string, int> string_or_int_type;
+  string_or_int_type e ("Hi");
 
+  BOOST_REQUIRE (e.is_left());
+  BOOST_REQUIRE_EQUAL (e.left(), "Hi");
+
+  e = "Beep";
+
+  BOOST_REQUIRE (e.is_left());
+  BOOST_REQUIRE_EQUAL (e.left(), "Beep");
+
+  e = 42;
+
+  BOOST_REQUIRE (e.is_right());
+  BOOST_REQUIRE_EQUAL (e.right(), 42);
+}
+
+BOOST_AUTO_TEST_CASE (ctor_right)
+{
+  string_or_int_type e (42);
+
+  BOOST_REQUIRE (e.is_right());
+  BOOST_REQUIRE_EQUAL (e.right(), 42);
+}
+
+BOOST_AUTO_TEST_CASE (fail_getting_right_if_left)
+{
+  string_or_int_type e ("left");
+
+  BOOST_REQUIRE (e.is_left());
+
+  try
   {
-    string_or_int_type e ("Hi");
+    std::cout << e.right() << std::endl;
 
-    REQUIRE(e.is_left());
-    REQUIRE(e.left() == "Hi");
-
-    e = "Beep";
-
-    REQUIRE(e.is_left());
-    REQUIRE(e.left() == "Beep");
-
-    e = 42;
-
-    REQUIRE(e.is_right());
-    REQUIRE(e.right() == 42);
+    BOOST_FAIL ("should throw");
   }
-
+  catch (const boost::bad_get&)
   {
-    string_or_int_type e (42);
-
-    REQUIRE(e.is_right());
-    REQUIRE(e.right() == 42);
   }
-
+  catch (...)
   {
-    string_or_int_type e ("left");
-
-    try
-      {
-        std::cout << e.right() << std::endl;
-
-        REQUIRE (false);
-      }
-    catch (const boost::bad_get&)
-      {
-        REQUIRE (true);
-      }
-    catch (...)
-      {
-        REQUIRE (false);
-      }
+    BOOST_FAIL ("should throw boost::bad_get");
   }
-
-  return EXIT_SUCCESS;
 }
