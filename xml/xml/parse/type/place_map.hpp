@@ -46,7 +46,6 @@ namespace xml
         const std::string& name() const;
       };
 
-      typedef xml::util::unique<place_map_type,id::place_map>::elements_type place_maps_type;
       typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
 
       namespace dump

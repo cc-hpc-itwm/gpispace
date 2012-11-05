@@ -18,18 +18,16 @@ namespace xml
   {
     namespace type
     {
-      typedef xml::util::unique<connect_type,id::connect>::elements_type connections_type;
-
       struct transition_type
       {
         ID_SIGNATURES(transition)
         PARENT_SIGNATURES(net)
 
       private:
-        xml::util::unique<connect_type,id::connect> _in;
-        xml::util::unique<connect_type,id::connect> _out;
-        xml::util::unique<connect_type,id::connect> _read;
-        xml::util::unique<place_map_type,id::place_map> _place_map;
+        typedef xml::util::uniqueID<connect_type,id::ref::connect>
+          connections_type;
+        typedef xml::util::uniqueID<place_map_type,id::ref::place_map>
+          place_maps_type;
 
       public:
         typedef boost::variant <id::ref::function, use_type>
@@ -43,12 +41,6 @@ namespace xml
                         , const function_or_use_type& function_or_use
                         );
 
-      private:
-        boost::optional<function_or_use_type> _function_or_use;
-
-        std::string _name;
-
-      public:
         const function_or_use_type& function_or_use() const;
         function_or_use_type& function_or_use();
         const function_or_use_type& function_or_use
@@ -80,23 +72,17 @@ namespace xml
 
         // ***************************************************************** //
 
-        const connections_type & in (void) const;
-        const connections_type & out (void) const;
-        const connections_type & read (void) const;
-        const place_maps_type & place_map (void) const;
-
-        connections_type & in (void);
-        connections_type & out (void);
-        connections_type & read (void);
-        place_maps_type & place_map (void);
+        const connections_type& in() const;
+        const connections_type& out() const;
+        const connections_type& read() const;
+        const place_maps_type& place_map() const;
 
         // ***************************************************************** //
 
-        void push_in (const connect_type & connect);
-        void push_out (const connect_type & connect);
-        void push_inout (const connect_type& connect);
-        void push_read (const connect_type & connect);
-        void push_place_map (const place_map_type & place_map);
+        void push_in (const id::ref::connect&);
+        void push_out (const id::ref::connect&);
+        void push_read (const id::ref::connect&);
+        void push_place_map (const id::ref::place_map&);
 
         // ***************************************************************** //
 
@@ -134,6 +120,16 @@ namespace xml
                         ) const;
 
         void type_check (const net_type & net, const state::type & state) const;
+
+      private:
+        boost::optional<function_or_use_type> _function_or_use;
+
+        std::string _name;
+
+        connections_type _in;
+        connections_type _out;
+        connections_type _read;
+        place_maps_type _place_map;
       };
 
       // ******************************************************************* //

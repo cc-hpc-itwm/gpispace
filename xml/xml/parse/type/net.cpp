@@ -467,37 +467,37 @@ namespace xml
 
       void net_type::set_prefix (const std::string & prefix)
       {
-        BOOST_FOREACH(id::ref::place id_place, places().ids())
+        BOOST_FOREACH (place_type& place, places().values())
         {
-          id_mapper()->get_ref (id_place)
-            ->name (prefix + id_mapper()->get(id_place)->name());
+          place.name (prefix + place.name());
         }
 
-        BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , transitions().ids()
-                      )
+        BOOST_FOREACH (transition_type& transition, transitions().values())
         {
-          boost::optional<transition_type&>
-            transition (id_mapper()->get_ref (id_transition));
+          transition.name (prefix + transition.name());
 
-          transition->name (prefix + transition->name());
-
-          BOOST_FOREACH (connect_type& connection, transition->in())
+          BOOST_FOREACH (connect_type& connection, transition.in().values())
             {
               connection.place (prefix + connection.place());
             }
 
-          BOOST_FOREACH (connect_type& connection, transition->read())
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.read().values()
+                        )
             {
               connection.place (prefix + connection.place());
             }
 
-          BOOST_FOREACH (connect_type& connection, transition->out())
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.out().values()
+                        )
             {
               connection.place (prefix + connection.place());
             }
 
-          BOOST_FOREACH (place_map_type& place_map, transition->place_map())
+          BOOST_FOREACH ( place_map_type& place_map
+                        , transition.place_map().values()
+                        )
             {
               place_map.place_real = prefix + place_map.place_real;
             }
@@ -506,64 +506,46 @@ namespace xml
 
       void net_type::remove_prefix (const std::string & prefix)
       {
-        BOOST_FOREACH (const id::ref::place& id_place, places().ids())
+        BOOST_FOREACH (place_type& place, places().values())
         {
-          id_mapper()->get_ref (id_place)
-            ->name ( fhg::util::remove_prefix
-                     ( prefix
-                     , id_mapper()->get (id_place)->name()
-                     )
-                   );
+          place.name (fhg::util::remove_prefix (prefix, place.name()));
         }
 
-        BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , transitions().ids()
-                      )
+        BOOST_FOREACH (transition_type& transition, transitions().values())
         {
-          boost::optional<transition_type&>
-            transition (id_mapper()->get_ref (id_transition));
+          transition.name
+            (fhg::util::remove_prefix (prefix, transition.name()));
 
-          transition->name
-            (fhg::util::remove_prefix (prefix, transition->name()));
-
-          for ( connections_type::iterator
-                  connection (transition->in().begin())
-              ; connection != transition->in().end()
-              ; ++connection
-              )
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.in().values()
+                        )
           {
-            connection->place
-              (fhg::util::remove_prefix (prefix, connection->place()));
+            connection.place
+              (fhg::util::remove_prefix (prefix, connection.place()));
           }
 
-          for ( connections_type::iterator
-                  connection (transition->read().begin())
-              ; connection != transition->read().end()
-              ; ++connection
-              )
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.read().values()
+                        )
           {
-            connection->place
-              (fhg::util::remove_prefix (prefix, connection->place()));
+            connection.place
+              (fhg::util::remove_prefix (prefix, connection.place()));
           }
 
-          for ( connections_type::iterator
-                  connection (transition->out().begin())
-              ; connection != transition->out().end()
-              ; ++connection
-              )
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.out().values()
+                        )
           {
-            connection->place
-              (fhg::util::remove_prefix (prefix, connection->place()));
+            connection.place
+              (fhg::util::remove_prefix (prefix, connection.place()));
           }
 
-          for ( place_maps_type::iterator
-                  place_map (transition->place_map().begin())
-              ; place_map != transition->place_map().end()
-              ; ++place_map
-              )
+          BOOST_FOREACH ( place_map_type& place_map
+                        , transition.place_map().values()
+                        )
           {
-            place_map->place_real =
-              fhg::util::remove_prefix (prefix, place_map->place_real);
+            place_map.place_real =
+              fhg::util::remove_prefix (prefix, place_map.place_real);
           }
         }
       }
@@ -591,26 +573,23 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        BOOST_FOREACH (const id::ref::place& id_place, net.places().ids())
+        BOOST_FOREACH (const place_type& place, net.places().values())
             {
-              boost::optional<const place_type&>
-                place (net.id_mapper()->get (id_place));
+              const signature::type type (net.type_of_place (place));
 
-              const signature::type type (net.type_of_place (*place));
-
-              if (!state.synthesize_virtual_places() && place->is_virtual())
+              if (!state.synthesize_virtual_places() && place.is_virtual())
                 {
                   // try to find a mapping
                   const place_map_map_type::const_iterator pid
-                    (place_map_map.find (place->name()));
+                    (place_map_map.find (place.name()));
 
                   if (pid == place_map_map.end())
                     {
                       throw error::no_map_for_virtual_place
-                        (place->name(), state.file_in_progress());
+                        (place.name(), state.file_in_progress());
                     }
 
-                  pid_of_place.insert (std::make_pair ( place->name()
+                  pid_of_place.insert (std::make_pair ( place.name()
                                                       , pid->second
                                                       )
                                       );
@@ -618,11 +597,11 @@ namespace xml
                   const we_place_type place_real
                     (we_net.get_place (pid->second));
 
-                  if (not (place_real.signature() == place->sig))
+                  if (not (place_real.signature() == place.sig))
                     {
                       throw error::port_tunneled_type_error
-                        ( place->name()
-                        , place->sig
+                        ( place.name()
+                        , place.sig
                         , place_real.name()
                         , place_real.signature()
                         , state.file_in_progress()
@@ -631,22 +610,22 @@ namespace xml
                 }
               else
                 {
-                  we::type::property::type prop (place->prop);
+                  we::type::property::type prop (place.prop);
 
-                  if (place->is_virtual())
+                  if (place.is_virtual())
                     {
                       prop.set ("virtual", "true");
                     }
 
                   const pid_t pid
-                    ( we_net.add_place ( we_place_type ( place->name()
+                    ( we_net.add_place ( we_place_type ( place.name()
                                                        , type
                                                        , prop
                                                        )
                                        )
                     );
 
-                  pid_of_place.insert (std::make_pair (place->name(), pid));
+                  pid_of_place.insert (std::make_pair (place.name(), pid));
                 }
             }
 
@@ -664,15 +643,12 @@ namespace xml
               );
           }
 
-        BOOST_FOREACH (const id::ref::place& id_place, net.places().ids())
+        BOOST_FOREACH (const place_type& place, net.places().values())
           {
-            boost::optional<const place_type&>
-              place (net.id_mapper()->get (id_place));
+            const pid_t pid (pid_of_place.at (place.name()));
 
-            const pid_t pid (pid_of_place.at (place->name()));
-
-            for ( values_type::const_iterator val (place->values.begin())
-                ; val != place->values.end()
+            for ( values_type::const_iterator val (place.values.begin())
+                ; val != place.values.end()
                 ; ++val
                 )
                 {
@@ -681,11 +657,11 @@ namespace xml
 
               if (  (we_net.in_to_place (pid).size() == 0)
                  && (we_net.out_of_place (pid).size() == 0)
-                 && (!place->is_virtual())
+                 && (!place.is_virtual())
                  )
                 {
                   state.warn
-                    ( warning::independent_place ( place->name()
+                    ( warning::independent_place ( place.name()
                                                  , state.file_in_progress()
                                                  )
                     )

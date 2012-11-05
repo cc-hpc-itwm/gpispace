@@ -26,6 +26,11 @@ namespace xml
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _function_or_use (boost::none)
+        , _name()
+        , _in (id_mapper)
+        , _out (id_mapper)
+        , _read (id_mapper)
+        , _place_map (id_mapper)
       {
         _id_mapper->put (_id, *this);
       }
@@ -37,6 +42,11 @@ namespace xml
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _function_or_use (function_or_use)
+        , _name()
+        , _in (id_mapper)
+        , _out (id_mapper)
+        , _read (id_mapper)
+        , _place_map (id_mapper)
       {
         _id_mapper->put (_id, *this);
       }
@@ -77,38 +87,22 @@ namespace xml
         return _name = name;
       }
 
-      const connections_type & transition_type::in() const
+      const transition_type::connections_type& transition_type::in() const
       {
-        return _in.elements();
+        return _in;
       }
-      const connections_type & transition_type::out() const
+      const transition_type::connections_type& transition_type::out() const
       {
-        return _out.elements();
+        return _out;
       }
-      const connections_type & transition_type::read() const
+      const transition_type::connections_type& transition_type::read() const
       {
-        return _read.elements();
+        return _read;
       }
-      const place_maps_type & transition_type::place_map() const
+      const transition_type::place_maps_type&
+        transition_type::place_map() const
       {
-        return _place_map.elements();
-      }
-
-      connections_type & transition_type::in()
-      {
-        return _in.elements();
-      }
-      connections_type & transition_type::out()
-      {
-        return _out.elements();
-      }
-      connections_type & transition_type::read()
-      {
-        return _read.elements();
-      }
-      place_maps_type & transition_type::place_map()
-      {
-        return _place_map.elements();
+        return _place_map;
       }
 
       boost::optional<const id::ref::function&>
@@ -124,40 +118,58 @@ namespace xml
 
       // ***************************************************************** //
 
-      void transition_type::push_in (const connect_type & connect)
+      void transition_type::push_in (const id::ref::connect& id)
       {
-        if (!_in.push (connect))
+        const id::ref::connect& id_old (_in.push (id));
+
+        if (not (id_old == id))
         {
-          throw error::duplicate_connect ("in", connect.name(), name(), path);
+          throw error::duplicate_connect ( "in"
+                                         , id_mapper()->get (id)->name()
+                                         , name()
+                                         , path
+                                         );
         }
       }
 
-      void transition_type::push_out (const connect_type & connect)
+      void transition_type::push_out (const id::ref::connect& id)
       {
-        if (!_out.push (connect))
+        const id::ref::connect& id_old (_out.push (id));
+
+        if (not (id_old == id))
         {
-          throw error::duplicate_connect ("out", connect.name(), name(), path);
+          throw error::duplicate_connect ( "out"
+                                         , id_mapper()->get (id)->name()
+                                         , name()
+                                         , path
+                                         );
         }
       }
 
-      void transition_type::push_inout (const connect_type& connect)
+      void transition_type::push_read (const id::ref::connect& id)
       {
-        push_in (connect); push_out (connect);
-      }
+        const id::ref::connect& id_old (_read.push (id));
 
-      void transition_type::push_read (const connect_type & connect)
-      {
-        if (!_read.push (connect))
+        if (not (id_old == id))
         {
-          throw error::duplicate_connect ("read", connect.name(), name(), path);
+          throw error::duplicate_connect ( "read"
+                                         , id_mapper()->get (id)->name()
+                                         , name()
+                                         , path
+                                         );
         }
       }
 
-      void transition_type::push_place_map (const place_map_type & place_map)
+      void transition_type::push_place_map (const id::ref::place_map& id)
       {
-        if (!_place_map.push (place_map))
+        const id::ref::place_map& id_old (_place_map.push (id));
+
+        if (not (id_old == id))
         {
-          throw error::duplicate_place_map (place_map.name(), name(), path);
+          throw error::duplicate_place_map ( id_mapper()->get (id)->name()
+                                           , name()
+                                           , path
+                                           );
         }
       }
 
@@ -431,32 +443,19 @@ namespace xml
 
       void transition_type::type_check (const net_type & net, const state::type & state) const
       {
-        // local checks
-        for ( connections_type::const_iterator connect (in().begin())
-            ; connect != in().end()
-            ; ++connect
-            )
+        BOOST_FOREACH (const connect_type& connect, in().values())
         {
-          type_check ("in", *connect, net, state);
+          type_check ("in", connect, net, state);
+        }
+        BOOST_FOREACH (const connect_type& connect, read().values())
+        {
+          type_check ("read", connect, net, state);
+        }
+        BOOST_FOREACH (const connect_type& connect, out().values())
+        {
+          type_check ("out", connect, net, state);
         }
 
-        for ( connections_type::const_iterator connect (read().begin())
-            ; connect != read().end()
-            ; ++connect
-            )
-        {
-          type_check ("read", *connect, net, state);
-        }
-
-        for ( connections_type::const_iterator connect (out().begin())
-            ; connect != out().end()
-            ; ++connect
-            )
-        {
-          type_check ("out", *connect, net, state);
-        }
-
-        // recurs
         boost::apply_visitor ( transition_type_check (state)
                              , function_or_use()
                              );
@@ -503,7 +502,7 @@ namespace xml
 
         const transition_type& trans (*state.id_mapper()->get (id_transition));
 
-        if ((trans.in().size() == 0) && (trans.out().size() == 0))
+        if (trans.in().empty() and trans.out().empty())
           {
             state.warn
               ( warning::independent_transition ( trans.name()
@@ -605,26 +604,24 @@ namespace xml
 
             place_map_map_type place_map_map;
 
-            for ( place_maps_type::const_iterator
-                    pm (trans.place_map().begin())
-                ; pm != trans.place_map().end()
-                ; ++pm
-                )
+            BOOST_FOREACH ( const place_map_type& place_map
+                          , trans.place_map().values()
+                          )
               {
                 const place_map_map_type::const_iterator pid
-                  (pids.find (pm->place_real));
+                  (pids.find (place_map.place_real));
 
                 if (pid == pids.end())
                   {
                     throw
-                      error::real_place_missing ( pm->place_virtual
-                                                , pm->place_real
+                      error::real_place_missing ( place_map.place_virtual
+                                                , place_map.place_real
                                                 , trans.name()
                                                 , state.file_in_progress()
                                                 );
                   }
 
-                place_map_map[prefix + pm->place_virtual] = pid->second;
+                place_map_map[prefix + place_map.place_virtual] = pid->second;
               }
 
             net_type& net
@@ -684,7 +681,7 @@ namespace xml
                   }
               }
 
-            BOOST_FOREACH (const connect_type& connect, trans.in())
+            BOOST_FOREACH (const connect_type& connect, trans.in().values())
               {
                 trans_in.add_connections ()
                   ( get_pid (pids, connect.place())
@@ -693,7 +690,9 @@ namespace xml
                   );
               }
 
-            BOOST_FOREACH (const connect_type& connect, trans.read())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.read().values()
+                          )
               {
                 trans_in.add_connections ()
                   ( get_pid (pids, connect.place())
@@ -720,7 +719,7 @@ namespace xml
                   }
               }
 
-            BOOST_FOREACH (const connect_type& connect, trans.in())
+            BOOST_FOREACH (const connect_type& connect, trans.in().values())
               {
                 we_net.add_edge
                   ( e++
@@ -732,7 +731,9 @@ namespace xml
                   ;
               }
 
-            BOOST_FOREACH (const connect_type& connect, trans.read())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.read().values()
+                          )
               {
                 we_net.add_edge
                   ( e++, connection_t ( PT_READ
@@ -794,7 +795,9 @@ namespace xml
             std::size_t num_outport (0);
 
 
-            BOOST_FOREACH (const connect_type& connect, trans.out())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.out().values()
+                          )
               {
                 trans_out.add_connections ()
                   ( connect.port()
@@ -840,7 +843,9 @@ namespace xml
                     }
                 }
 
-            BOOST_FOREACH (const connect_type& connect, trans.out())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.out().values()
+                          )
               {
                 we_net.add_edge
                   ( e++
@@ -858,20 +863,18 @@ namespace xml
           { // not unfold
 
             // set the real-property
-            for ( place_maps_type::const_iterator
-                    pm (trans.place_map().begin())
-                ; pm != trans.place_map().end()
-                ; ++pm
-                )
+            BOOST_FOREACH ( const place_map_type& place_map
+                          , trans.place_map().values()
+                          )
               {
                 const place_map_map_type::const_iterator pid
-                  (pids.find (pm->place_real));
+                  (pids.find (place_map.place_real));
 
                 if (pid == pids.end())
                   {
                     throw
-                      error::real_place_missing ( pm->place_virtual
-                                                , pm->place_real
+                      error::real_place_missing ( place_map.place_virtual
+                                                , place_map.place_real
                                                 , trans.name()
                                                 , state.file_in_progress()
                                                 );
@@ -883,14 +886,16 @@ namespace xml
 
                 path << "real" << "." << trans.name();
 
-                we_place.property().set (path.str(), pm->place_virtual);
+                we_place.property().set ( path.str()
+                                        , place_map.place_virtual
+                                        );
 
                 we_net.modify_place (pid->second, we_place);
               }
 
             we_transition_type we_trans (fun.synthesize (state));
 
-            BOOST_FOREACH (const connect_type& connect, trans.in())
+            BOOST_FOREACH (const connect_type& connect, trans.in().values())
               {
                 we_trans.add_connections ()
                   ( get_pid (pids, connect.place())
@@ -898,7 +903,9 @@ namespace xml
                   , connect.properties()
                   );
               }
-            BOOST_FOREACH (const connect_type& connect, trans.read())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.read().values()
+                          )
               {
                 we_trans.add_connections ()
                   ( get_pid (pids, connect.place())
@@ -906,7 +913,9 @@ namespace xml
                   , connect.properties()
                   );
               }
-            BOOST_FOREACH (const connect_type& connect, trans.out())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.out().values()
+                          )
               {
                 we_trans.add_connections ()
                   ( connect.port()
@@ -922,13 +931,15 @@ namespace xml
                 we_net.set_transition_priority (tid, *trans.priority);
               }
 
-            BOOST_FOREACH (const connect_type& connect, trans.in())
+            BOOST_FOREACH (const connect_type& connect, trans.in().values())
               {
                 we_net.add_edge
                   (e++, connection_t (PT, tid, get_pid (pids, connect.place())))
                   ;
               }
-            BOOST_FOREACH (const connect_type& connect, trans.read())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.read().values()
+                          )
               {
                 we_net.add_edge
                   (e++, connection_t ( PT_READ
@@ -937,7 +948,9 @@ namespace xml
                                      )
                   );
               }
-            BOOST_FOREACH (const connect_type& connect, trans.out())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.out().values()
+                          )
               {
                 we_net.add_edge
                   (e++, connection_t ( TP
@@ -1000,10 +1013,10 @@ namespace xml
                                , t.function_or_use()
                                );
 
-          dumps (s, t.place_map().begin(), t.place_map().end());
-          dumps (s, t.read().begin(), t.read().end(), "read");
-          dumps (s, t.in().begin(), t.in().end(), "in");
-          dumps (s, t.out().begin(), t.out().end(), "out");
+          dumps (s, t.place_map().values());
+          dumps (s, t.read().values(), "read");
+          dumps (s, t.in().values(), "in");
+          dumps (s, t.out().values(), "out");
 
           for ( conditions_type::const_iterator cond (t.cond.begin())
               ; cond != t.cond.end()

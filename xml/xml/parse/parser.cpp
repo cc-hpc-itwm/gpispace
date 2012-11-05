@@ -212,19 +212,23 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::connect_type
+    id::connect
     connect_type ( const xml_node_type * node
                  , state::type & state
                  , const id::transition& parent
                  )
     {
-      type::connect_type connect
-        ( id::connect (state.next_id())
-        , state.id_mapper()
-        , parent
-        , required ("connect_type", node, "place", state.file_in_progress())
-        , required ("connect_type", node, "port", state.file_in_progress())
-        );
+      const id::connect id (state.next_id());
+
+      {
+        type::connect_type connect
+          ( id
+          , state.id_mapper()
+          , parent
+          , required ("connect_type", node, "place", state.file_in_progress())
+          , required ("connect_type", node, "port", state.file_in_progress())
+          );
+      }
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -238,7 +242,11 @@ namespace xml
             {
               if (child_name == "properties")
                 {
-                  property_map_type (connect.properties(), child, state);
+                  property_map_type ( state.id_mapper()->get_ref (id)
+                                    ->properties()
+                                    , child
+                                    , state
+                                    );
                 }
               else if (child_name == "include-properties")
                 {
@@ -252,7 +260,11 @@ namespace xml
                                          )
                     );
 
-                  util::property::join (state, connect.properties(), deeper);
+                  util::property::join
+                    ( state
+                    , state.id_mapper()->get_ref (id)->properties()
+                    , deeper
+                    );
                 }
               else
                 {
@@ -266,66 +278,79 @@ namespace xml
             }
         }
 
-      return connect;
+      return id;
     }
 
     // ********************************************************************* //
 
-    static type::place_map_type
-    place_map_type ( const xml_node_type * node
-                   , state::type & state
-                   , const id::transition& parent
-                   )
+    namespace
     {
-      type::place_map_type place_map
-        ( id::place_map (state.next_id())
-        , state.id_mapper()
-        , parent
-        , required ("place_map_type", node, "virtual", state.file_in_progress())
-        , required ("place_map_type", node, "real", state.file_in_progress())
-        );
+      id::place_map place_map_type ( const xml_node_type * node
+                                   , state::type & state
+                                   , const id::transition& parent
+                                   )
+      {
+        const id::place_map id (state.next_id());
 
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
+        {
+          type::place_map_type place_map
+            ( id
+            , state.id_mapper()
+            , parent
+            , required ("place_map_type", node, "virtual", state.file_in_progress())
+            , required ("place_map_type", node, "real", state.file_in_progress())
+            );
+        }
+
+        for ( xml_node_type * child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
         {
           const std::string child_name
             (name_element (child, state.file_in_progress()));
 
           if (child)
+          {
+            if (child_name == "properties")
             {
-              if (child_name == "properties")
-                {
-                  property_map_type (place_map.prop, child, state);
-                }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "connect_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join (state, place_map.prop, deeper);
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "place_map_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
+              property_map_type ( state.id_mapper()->get_ref (id)->prop
+                                , child
+                                , state
+                                );
             }
+            else if (child_name == "include-properties")
+            {
+              const we::type::property::type deeper
+                ( properties_include ( required ( "connect_type"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     , state
+                                     )
+                );
+
+              util::property::join
+                ( state
+                , state.id_mapper()->get_ref (id)->prop
+                , deeper
+                );
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "place_map_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
         }
 
-      return place_map;
+        return id;
+      }
     }
 
     // ********************************************************************* //
@@ -438,27 +463,54 @@ namespace xml
               else if (child_name == "place-map")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_place_map (place_map_type (child, state, id));
+                    ->push_place_map ( id::ref::place_map
+                                       ( place_map_type (child, state, id)
+                                       , state.id_mapper()
+                                       )
+                                     );
                 }
               else if (child_name == "connect-in")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_in (connect_type(child, state, id));
+                    ->push_in ( id::ref::connect
+                                ( connect_type(child, state, id)
+                                , state.id_mapper()
+                                )
+                              );
                 }
               else if (child_name == "connect-out")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_out (connect_type(child, state, id));
+                    ->push_out ( id::ref::connect
+                                ( connect_type(child, state, id)
+                                , state.id_mapper()
+                                )
+                              );
                 }
               else if (child_name == "connect-inout")
                 {
+                  //! \todo DEEP COPY: avoids parsing twice
                   state.id_mapper()->get_ref (id)
-                    ->push_inout (connect_type (child, state, id));
+                    ->push_in ( id::ref::connect
+                                ( connect_type(child, state, id)
+                                , state.id_mapper()
+                                )
+                              );
+                  state.id_mapper()->get_ref (id)
+                    ->push_out ( id::ref::connect
+                                ( connect_type(child, state, id)
+                                , state.id_mapper()
+                                )
+                              );
                 }
               else if (child_name == "connect-read")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_read (connect_type(child, state, id));
+                    ->push_read ( id::ref::connect
+                                  ( connect_type (child, state, id)
+                                  , state.id_mapper()
+                                  )
+                                );
                 }
               else if (child_name == "condition")
                 {
