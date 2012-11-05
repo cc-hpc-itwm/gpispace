@@ -32,8 +32,8 @@ namespace xml
 
       struct place_type
       {
-        ID_SIGNATURES(place)
-        PARENT_SIGNATURES(net)
+        ID_SIGNATURES(place);
+        PARENT_SIGNATURES(net);
 
       private:
         fhg::util::maybe<bool> _is_virtual;

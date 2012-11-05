@@ -13,7 +13,7 @@
     boost::optional<PARENT ## _type&> parent();             \
                                                             \
   private:                                                  \
-    boost::optional<id::PARENT> _parent;
+    boost::optional<id::PARENT> _parent
 
 #define PARENT_CONS_PARAM(PARENT)               \
   const id::PARENT& parent

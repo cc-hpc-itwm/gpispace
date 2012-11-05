@@ -30,8 +30,8 @@ namespace xml
 
       struct module_type
       {
-        ID_SIGNATURES(module)
-        PARENT_SIGNATURES(function)
+        ID_SIGNATURES(module);
+        PARENT_SIGNATURES(function);
 
       public:
         module_type ( ID_CONS_PARAM(module)

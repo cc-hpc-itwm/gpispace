@@ -41,8 +41,8 @@ namespace xml
 
       struct net_type
       {
-        ID_SIGNATURES(net)
-        PARENT_SIGNATURES(function)
+        ID_SIGNATURES(net);
+        PARENT_SIGNATURES(function);
 
       private:
         typedef fhg::util::maybe<std::string> maybe_string_type;

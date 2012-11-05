@@ -29,8 +29,8 @@ namespace xml
     {
       struct port_type
       {
-        ID_SIGNATURES(port)
-        PARENT_SIGNATURES(function)
+        ID_SIGNATURES(port);
+        PARENT_SIGNATURES(function);
 
       public:
         port_type ( ID_CONS_PARAM(port)

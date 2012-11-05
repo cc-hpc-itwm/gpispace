@@ -29,8 +29,8 @@ namespace xml
     {
       struct structure_type
       {
-        ID_SIGNATURES(structure)
-        PARENT_SIGNATURES(function)
+        ID_SIGNATURES(structure);
+        PARENT_SIGNATURES(function);
 
       public:
         structure_type ( ID_CONS_PARAM(structure)

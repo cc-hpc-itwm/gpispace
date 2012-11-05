@@ -24,8 +24,8 @@ namespace xml
     {
       struct specialize_type
       {
-        ID_SIGNATURES(specialize)
-        PARENT_SIGNATURES(net)
+        ID_SIGNATURES(specialize);
+        PARENT_SIGNATURES(net);
 
       public:
         specialize_type ( ID_CONS_PARAM(specialize)

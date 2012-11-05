@@ -26,7 +26,7 @@ namespace xml
 
       struct function_type
       {
-        ID_SIGNATURES(function)
+        ID_SIGNATURES(function);
 
       public:
         typedef xml::util::unique<port_type,id::ref::port> unique_port_type;

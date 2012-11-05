@@ -24,8 +24,8 @@ namespace xml
     {
       struct tmpl_type
       {
-        ID_SIGNATURES(tmpl)
-        PARENT_SIGNATURES(net)
+        ID_SIGNATURES(tmpl);
+        PARENT_SIGNATURES(net);
 
       public:
         typedef boost::unordered_set<std::string> names_type;

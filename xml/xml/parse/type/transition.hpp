@@ -20,8 +20,8 @@ namespace xml
     {
       struct transition_type
       {
-        ID_SIGNATURES(transition)
-        PARENT_SIGNATURES(net)
+        ID_SIGNATURES(transition);
+        PARENT_SIGNATURES(net);
 
       private:
         typedef xml::util::unique<connect_type,id::ref::connect>

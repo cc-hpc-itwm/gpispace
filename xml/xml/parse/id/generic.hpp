@@ -12,7 +12,7 @@
                                                 \
   private:                                      \
     id::TYPE _id;                               \
-    id::mapper* _id_mapper;
+    id::mapper* _id_mapper
 
 #define ID_CONS_PARAM(TYPE)                     \
     const id::TYPE& id                          \

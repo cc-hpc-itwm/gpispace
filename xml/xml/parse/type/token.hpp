@@ -23,8 +23,8 @@ namespace xml
 
       struct token_type : public signature::desc_t
       {
-        ID_SIGNATURES(token)
-        PARENT_SIGNATURES(place)
+        ID_SIGNATURES(token);
+        PARENT_SIGNATURES(place);
 
       public:
         token_type ( ID_CONS_PARAM(token)

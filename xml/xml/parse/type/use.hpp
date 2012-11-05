@@ -20,8 +20,8 @@ namespace xml
     {
       struct use_type
       {
-        ID_SIGNATURES(use)
-        PARENT_SIGNATURES(transition)
+        ID_SIGNATURES(use);
+        PARENT_SIGNATURES(transition);
 
       public:
         use_type ( ID_CONS_PARAM(use)

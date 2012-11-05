@@ -26,8 +26,8 @@ namespace xml
     {
       struct place_map_type
       {
-        ID_SIGNATURES(place_map)
-        PARENT_SIGNATURES(transition)
+        ID_SIGNATURES(place_map);
+        PARENT_SIGNATURES(transition);
 
       public:
         place_map_type ( ID_CONS_PARAM(place_map)
