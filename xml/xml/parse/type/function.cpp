@@ -270,17 +270,17 @@ namespace xml
       {
         xml::parse::structure_type::forbidden_type forbidden;
 
-        BOOST_FOREACH (const id::ref::port& id_port, in().ids())
+        BOOST_FOREACH (const port_type& port, in().values())
         {
-          boost::optional<const port_type&> port (id_mapper()->get (id_port));
-
-          forbidden.insert (std::make_pair (port->type, port->name()));
+          forbidden.insert (std::make_pair (port.type, port.name()));
         }
-        BOOST_FOREACH (const id::ref::port& id_port, out().ids())
+        BOOST_FOREACH (const port_type& port, out().values())
         {
-          boost::optional<const port_type&> port (id_mapper()->get (id_port));
-
-          forbidden.insert (std::make_pair (port->type, port->name()));
+          forbidden.insert (std::make_pair (port.type, port.name()));
+        }
+        BOOST_FOREACH (const port_type& port, tunnel().values())
+        {
+          forbidden.insert (std::make_pair (port.type, port.name()));
         }
 
         return forbidden;
