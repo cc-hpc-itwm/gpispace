@@ -55,6 +55,29 @@ namespace xml
         template<typename Container>
         void dumps ( ::fhg::util::xml::xmlstream& s
                    , Container container
+                   )
+        {
+          BOOST_FOREACH (const typename Container::value_type val, container)
+          {
+            ::xml::parse::type::dump::dump (s, val);
+          }
+        }
+
+        template<typename Container, typename T>
+        void dumps ( ::fhg::util::xml::xmlstream& s
+                   , Container container
+                   , const T& x
+                   )
+        {
+          BOOST_FOREACH (const typename Container::value_type val, container)
+          {
+            ::xml::parse::type::dump::dump (s, val, x);
+          }
+        }
+
+        template<typename Container>
+        void dumps ( ::fhg::util::xml::xmlstream& s
+                   , Container container
                    , ::xml::parse::id::mapper* id_mapper
                    )
         {
