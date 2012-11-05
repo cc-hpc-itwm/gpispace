@@ -29,7 +29,7 @@ namespace xml
         ID_SIGNATURES(function)
 
       public:
-        typedef xml::util::uniqueID<port_type,id::ref::port> unique_port_type;
+        typedef xml::util::unique<port_type,id::ref::port> unique_port_type;
 
       private:
         unique_port_type _in;

@@ -24,9 +24,9 @@ namespace xml
         PARENT_SIGNATURES(net)
 
       private:
-        typedef xml::util::uniqueID<connect_type,id::ref::connect>
+        typedef xml::util::unique<connect_type,id::ref::connect>
           connections_type;
-        typedef xml::util::uniqueID<place_map_type,id::ref::place_map>
+        typedef xml::util::unique<place_map_type,id::ref::place_map>
           place_maps_type;
 
       public:

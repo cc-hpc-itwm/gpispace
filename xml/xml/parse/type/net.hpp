@@ -47,11 +47,11 @@ namespace xml
       private:
         typedef fhg::util::maybe<std::string> maybe_string_type;
 
-        typedef xml::util::uniqueID<place_type,id::ref::place> places_type;
-        typedef xml::util::uniqueID<transition_type,id::ref::transition> transitions_type;
-        typedef xml::util::uniqueID<specialize_type,id::ref::specialize> specializes_type;
-        typedef xml::util::uniqueID<tmpl_type,id::ref::tmpl,maybe_string_type> templates_type;
-        typedef xml::util::uniqueID<function_type,id::ref::function,maybe_string_type> functions_type;
+        typedef xml::util::unique<place_type,id::ref::place> places_type;
+        typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
+        typedef xml::util::unique<specialize_type,id::ref::specialize> specializes_type;
+        typedef xml::util::unique<tmpl_type,id::ref::tmpl,maybe_string_type> templates_type;
+        typedef xml::util::unique<function_type,id::ref::function,maybe_string_type> functions_type;
 
         places_type _places;
         transitions_type _transitions;

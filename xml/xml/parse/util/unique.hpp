@@ -124,13 +124,13 @@ namespace xml
     };
 
     template<typename T, typename ID_TYPE, typename KEY = std::string>
-    class uniqueID
+    class unique
     {
     public:
       typedef T value_type;
       typedef ID_TYPE id_type;
       typedef KEY key_type;
-      typedef uniqueID<value_type, id_type, key_type> unique_type;
+      typedef unique<value_type, id_type, key_type> unique_type;
 
       typedef boost::unordered_set<id_type> ids_type;
       typedef boost::unordered_map<key_type,id_type> by_key_type;
@@ -171,7 +171,7 @@ namespace xml
         //! See c3fbafa and https://svn.boost.org/trac/boost/ticket/5473
       private:
         //! \todo C++11: friend unique_type;
-        friend class uniqueID<value_type, id_type, key_type>;
+        friend class unique<value_type, id_type, key_type>;
 
         values_type (parse::id::mapper* mapper)
           : _mapper (mapper)
@@ -183,7 +183,7 @@ namespace xml
       };
 
     public:
-      uniqueID (parse::id::mapper* mapper)
+      unique (parse::id::mapper* mapper)
         : _values (mapper)
         , _by_key ()
       {}
