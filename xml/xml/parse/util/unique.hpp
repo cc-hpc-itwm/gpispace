@@ -49,11 +49,9 @@ namespace xml
 
       const id_type& push (const id_type& id)
       {
-        boost::optional<const value_type&> value (_mapper->get (id));
+        const key_type& name (_mapper->get (id)->name());
 
-        //! \todo Should we throw something informative when there is no value?
-
-        boost::optional<const id_type&> id_old (get (value->name()));
+        boost::optional<const id_type&> id_old (get (name));
 
         if (id_old)
           {
@@ -61,7 +59,7 @@ namespace xml
           }
 
         _ids.insert (id);
-        _by_key.insert (std::make_pair (value->name(), id));
+        _by_key.insert (std::make_pair (name, id));
 
         return id;
       }
