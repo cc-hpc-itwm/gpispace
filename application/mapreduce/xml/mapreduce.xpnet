@@ -395,17 +395,6 @@
 	          // is a substring of a word
 	          
 	          int n = 0;
-	          
-	          {
-		        std::ofstream ofs;
-		        ofs.open("list_words_before_map.txt", ios::out | ios::app);
-		        ofs<<"chunk "<<read_chunk_info.chunk_id<<":"<<std::endl;
-		        BOOST_FOREACH(const std::string& str_item, list_words)
-		        {
-		        	ofs<<str_item<<std::endl;
-		        }
-		        ofs.close();
-		      }
 		        
 	          for(int k=0; k<list_words.size(); k++ )
 	          {
@@ -526,7 +515,7 @@
 			 bool bUpdateBorder = false;
 	         std::vector<int> arr_old_part_used = ::mapreduce::util::get_array(iterator_red_info.part_used);	
 	        	
-	        ::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
+	        //::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
 	        
 	         char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
 	         bzero(ptr_shmem, iterator_red_info.border_used+1);
@@ -754,7 +743,7 @@
 			  	 			   
 			   part_res.map_chunk_info = map_chunk_info;
 			  		 
-			  ::mapreduce::util::dump_iter_red_info("part_res.iterator_red_info", part_res.iterator_red_info);
+			  //::mapreduce::util::dump_iter_red_info("part_res.iterator_red_info", part_res.iterator_red_info);
 			  	          
 	          delete[] local_map_chunk;
 	          
@@ -813,14 +802,14 @@
            <cinclude href="util/helper.hpp"/>
           <cinclude href="sstream"/>
           <code><![CDATA[
-	          MLOG (INFO, "Post partition:");
-	          ::mapreduce::util::dump_iter_red_info("partition_result.iterator_red_info", partition_result.iterator_red_info);
+	          MLOG (INFO, "Post partition ...");
+	          //::mapreduce::util::dump_iter_red_info("partition_result.iterator_red_info", partition_result.iterator_red_info);
 	         
 	          map_slot_id = partition_result.map_chunk_info.map_slot_id;
 			  chunk_partitioned = control();  
 			  iterator_red_info = partition_result.iterator_red_info;  
 				
-			  ::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
+			  //::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
 				
           ]]></code>
         </module>
@@ -873,7 +862,7 @@
           <code><![CDATA[
 	          MLOG (INFO, "Reduce all partitions that are not empty ...");
 	          
-	          ::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
+	          //::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
 	          reduce_info_in = iterator_red_info;
 	          
 	          std::vector<int> arr_part_used = ::mapreduce::util::get_array(iterator_red_info.part_used);
@@ -889,7 +878,7 @@
 			  reduce_info_in.slots_to_reduce = ::mapreduce::util::get_string(arr_slots_to_red);
 			  reduce_info_in.avail_slots = arr_slots_to_red.size();
 	         
-	         ::mapreduce::util::dump_iter_red_info("reduce_info_in", reduce_info_in);
+	         //::mapreduce::util::dump_iter_red_info("reduce_info_in", reduce_info_in);
 	
           ]]></code>
         </module>
@@ -947,19 +936,19 @@
 	          								)
 	          );
 	          
-	          std::vector<std::string> arr_border_keys;
+	          /*std::vector<std::string> arr_border_keys;
 	          if(iterator_red_info.border_used)
 	          {
 	          	  arr_border_keys = ::mapreduce::util::get_list_items(ptr_shmem);
 	          	  ::mapreduce::util::print_keys("border keys: ", arr_border_keys);
-			  }
+			  }*/
 	
 	   		  std::vector<int> arr_red_used = ::mapreduce::util::get_array(iterator_red_info.red_used);
 	          // get data from vm::map_area
 	          	          
 	          std::ofstream ofs(config.file.output.c_str());
 	        
-	           ::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
+	           //::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
 	          
 	          for(int k=0; k<arr_red_used.size(); k++)
 	          {
@@ -1023,6 +1012,7 @@
 	          vm::free(config.handle.map);
 	          vm::free(config.handle.partition);
 	          vm::free(config.handle.reduce);
+	          vm::free(config.handle.border);
 	
 	          return control();
           ]]></code>
