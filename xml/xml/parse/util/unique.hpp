@@ -178,34 +178,47 @@ namespace xml
         typedef unique_iterator<unique_type> iterator;
         typedef const_unique_iterator<unique_type> const_iterator;
 
-        values_type (const unique_type& container)
+        values_type (const unique_type* container)
           : _container (container)
         { }
 
         iterator begin()
         {
-          return iterator (_container._mapper, _container.ids().begin());
+          return iterator (_container->_mapper, _container->ids().begin());
         }
         iterator end()
         {
-          return iterator (_container._mapper, _container.ids().end());
+          return iterator (_container->_mapper, _container->ids().end());
         }
 
         const_iterator begin() const
         {
-          return const_iterator ( _container._mapper
-                                , _container.ids().begin()
+          return const_iterator ( _container->_mapper
+                                , _container->ids().begin()
                                 );
         }
         const_iterator end() const
         {
-          return const_iterator (_container._mapper, _container.ids().end());
+          return const_iterator ( _container->_mapper
+                                , _container->ids().end()
+                                );
         }
 
       private:
-        const unique_type& _container;
+        const unique_type* _container;
       };
-      values_type values() const { return values_type (*this); }
+
+      //! \note This is NOT threadsafe and only a workaround for boost
+      //! ticket #5473: boost.foreach disallows non-const iteration of
+      //! rvalues. But as we need to construct the temporary values_type
+      //! object for adding the facade, we need to store it somewhere to
+      //! be able to return a non-const reference (i.e. not an rvalue).
+      //! See https://svn.boost.org/trac/boost/ticket/5473
+      mutable boost::optional<values_type> _temporary_values;
+      values_type& values() const
+      {
+        return *(_temporary_values = values_type (this));
+      }
 
       void clear() { _ids.clear(); _by_key.clear(); }
 
