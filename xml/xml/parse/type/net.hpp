@@ -11,7 +11,6 @@
 #include <xml/parse/type_map_type.hpp>
 
 #include <xml/parse/util/unique.hpp>
-#include <xml/parse/util/parent.hpp>
 
 #include <xml/parse/type/dumps.hpp>
 

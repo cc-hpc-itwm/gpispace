@@ -6,7 +6,6 @@
 #include <xml/parse/type/function.fwd.hpp>
 
 #include <xml/parse/id/generic.hpp>
-#include <xml/parse/util/parent.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 

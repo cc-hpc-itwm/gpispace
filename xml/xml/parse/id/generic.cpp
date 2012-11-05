@@ -2,10 +2,13 @@
 
 #include <xml/parse/id/generic.hpp>
 
+#include <xml/parse/id/mapper.hpp>
+
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
@@ -13,9 +16,8 @@
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/token.hpp>
-#include <xml/parse/type/net.hpp>
-#include <xml/parse/type/use.hpp>
 #include <xml/parse/type/transition.hpp>
+#include <xml/parse/type/use.hpp>
 
 #define ID_IMPL(TYPE)                                   \
   const id::TYPE& TYPE ## _type::id() const             \
@@ -25,6 +27,22 @@
   id::mapper* TYPE ## _type::id_mapper() const          \
   {                                                     \
     return _id_mapper;                                  \
+  }
+
+#define PARENT_IMPL(PARENT,TYPE)                \
+  bool TYPE ## _type::has_parent() const        \
+  {                                             \
+    return _parent;                             \
+  }                                             \
+  boost::optional<const PARENT ## _type&>       \
+  TYPE ## _type::parent() const                 \
+  {                                             \
+    return id_mapper()->get (_parent);          \
+  }                                             \
+  boost::optional<PARENT ## _type&>             \
+  TYPE ## _type::parent()                       \
+  {                                             \
+    return id_mapper()->get_ref (_parent);      \
   }
 
 namespace xml
@@ -37,6 +55,7 @@ namespace xml
       ID_IMPL(expression)
       ID_IMPL(function)
       ID_IMPL(module)
+      ID_IMPL(net)
       ID_IMPL(place)
       ID_IMPL(place_map)
       ID_IMPL(port)
@@ -44,11 +63,24 @@ namespace xml
       ID_IMPL(structure)
       ID_IMPL(tmpl)
       ID_IMPL(token)
-      ID_IMPL(net)
-      ID_IMPL(use)
       ID_IMPL(transition)
+      ID_IMPL(use)
+ 
+      PARENT_IMPL(function,expression)
+      PARENT_IMPL(function,module)
+      PARENT_IMPL(function,net)
+      PARENT_IMPL(function,port)
+      PARENT_IMPL(function,structure)
+      PARENT_IMPL(net,place)
+      PARENT_IMPL(net,specialize)
+      PARENT_IMPL(net,tmpl)
+      PARENT_IMPL(net,transition)
+      PARENT_IMPL(place,token)
+      PARENT_IMPL(transition,connect)
+      PARENT_IMPL(transition,use)
     }
   }
 }
 
 #undef ID_IMPL
+#undef PARENT_IMPL

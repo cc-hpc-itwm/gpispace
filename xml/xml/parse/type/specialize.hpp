@@ -8,7 +8,6 @@
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
-#include <xml/parse/util/parent.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 

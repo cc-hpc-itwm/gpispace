@@ -15,7 +15,6 @@ set (xml_parse_util_headers
   validprefix.hpp
   validstructfield.hpp
   weparse.hpp
-  parent.hpp
 )
 
 set (xml_parse_util_fwd_headers
@@ -23,7 +22,6 @@ set (xml_parse_util_fwd_headers
 
 set (xml_parse_util_sources
   mk_fstream.cpp
-  parent.cpp
 )
 
 add_library (xml_parse_util

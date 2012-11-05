@@ -4,7 +4,6 @@
 #define _XML_PARSE_TYPE_TEMPLATE_HPP 1
 
 #include <xml/parse/id/generic.hpp>
-#include <xml/parse/util/parent.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>

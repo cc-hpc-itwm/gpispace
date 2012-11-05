@@ -4,7 +4,6 @@
 #define _XML_PARSE_TYPE_MOD_HPP
 
 #include <xml/parse/id/generic.hpp>
-#include <xml/parse/util/parent.hpp>
 
 #include <xml/parse/type/function.fwd.hpp>
 
