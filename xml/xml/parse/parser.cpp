@@ -361,7 +361,7 @@ namespace xml
                     , const id::net& parent
                     )
     {
-      id::transition id (state.next_id());
+      const id::transition id (state.next_id());
 
       const std::string name
         (required ("transition_type", node, "name", state.file_in_progress()));
@@ -590,7 +590,7 @@ namespace xml
                     , const id::net& parent
                     )
     {
-      id::specialize id (state.next_id());
+      const id::specialize id (state.next_id());
 
       {
         type::specialize_type s ( id
@@ -1108,10 +1108,10 @@ namespace xml
       , const boost::optional<type::function_type::id_parent>& parent
       )
     {
-      id::function id (state.next_id());
+      const id::function id (state.next_id());
 
       {
-        id::expression expression_id (state.next_id());
+        const id::expression expression_id (state.next_id());
 
         type::expression_type expression ( expression_id
                                          , state.id_mapper()
@@ -1298,7 +1298,7 @@ namespace xml
                 , const id::function& parent
                 )
     {
-      id::module id (state.next_id());
+      const id::module id (state.next_id());
 
       {
         type::module_type mod
@@ -1391,7 +1391,7 @@ namespace xml
                , const id::function& parent
                )
     {
-      id::net id (state.next_id());
+      const id::net id (state.next_id());
 
       {
         type::net_type n ( id
@@ -1572,7 +1572,7 @@ namespace xml
                          , const id::net& parent
                          )
     {
-      id::place id (state.next_id());
+      const id::place id (state.next_id());
 
       const std::string name
         (required ("place_type", node, "name", state.file_in_progress()));
@@ -1661,7 +1661,7 @@ namespace xml
       const std::string name
         (required ("port_type", node, "name", state.file_in_progress()));
 
-      id::port id (state.next_id());
+      const id::port id (state.next_id());
 
       {
         type::port_type port
