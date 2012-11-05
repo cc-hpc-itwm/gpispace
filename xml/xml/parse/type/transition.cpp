@@ -790,6 +790,7 @@ namespace xml
                   }
               }
 
+            //! \todo Wat?
             std::size_t num_outport (0);
 
 
