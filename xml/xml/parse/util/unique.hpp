@@ -308,24 +308,6 @@ namespace xml
 
       elements_type & elements (void) { return _elements; }
       const elements_type & elements (void) const { return _elements; }
-
-      iterator begin()
-      {
-        return elements().begin();
-      }
-      iterator end()
-      {
-        return elements().end();
-      }
-
-      const_iterator begin() const
-      {
-        return elements().begin();
-      }
-      const_iterator end() const
-      {
-        return elements().end();
-      }
     };
   }
 }
