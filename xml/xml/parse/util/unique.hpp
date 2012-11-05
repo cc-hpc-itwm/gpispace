@@ -58,7 +58,7 @@ namespace xml
 
       struct values_type
       {
-        typedef value_type value_type;
+        typedef T value_type;
 
         typedef typename ids_type::iterator base_iterator;
         typedef typename ids_type::const_iterator const_base_iterator;
