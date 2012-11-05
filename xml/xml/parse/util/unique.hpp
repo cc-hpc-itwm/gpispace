@@ -18,6 +18,111 @@ namespace xml
 {
   namespace util
   {
+    template<typename UNIQUE>
+    class unique_iterator : public std::iterator< std::forward_iterator_tag
+                                                , typename UNIQUE::value_type
+                                                >
+    {
+    private:
+      typedef UNIQUE unique_type;
+
+      typedef typename unique_type::ids_type::iterator
+        actual_iterator_type;
+
+    public:
+      unique_iterator ( parse::id::mapper* id_mapper
+                      , const actual_iterator_type& actual_iterator
+                      )
+        : _id_mapper (id_mapper)
+        , _actual_iterator (actual_iterator)
+      { }
+
+      unique_iterator& operator++()
+      {
+        ++_actual_iterator;
+        return *this;
+      }
+      unique_iterator operator++ (int)
+      {
+        unique_iterator<unique_type> tmp (*this);
+        operator++();
+        return tmp;
+      }
+      bool operator== (const unique_iterator& rhs)
+      {
+        return _actual_iterator == rhs._actual_iterator;
+      }
+      bool operator!= (const unique_iterator& rhs)
+      {
+        return !(operator== (rhs));
+      }
+      typename unique_type::value_type& operator*() const
+      {
+        return *_id_mapper->get_ref (*_actual_iterator);
+      }
+      typename unique_type::value_type* operator->() const
+      {
+        return &operator*();
+      }
+
+    private:
+      parse::id::mapper* _id_mapper;
+      actual_iterator_type _actual_iterator;
+    };
+
+    template<typename UNIQUE>
+    class const_unique_iterator
+      : public std::iterator< std::forward_iterator_tag
+                            , const typename UNIQUE::value_type
+                            >
+    {
+    private:
+      typedef UNIQUE unique_type;
+
+      typedef typename unique_type::ids_type::const_iterator
+        actual_iterator_type;
+
+    public:
+      const_unique_iterator ( parse::id::mapper* id_mapper
+                            , const actual_iterator_type& actual_iterator
+                            )
+        : _id_mapper (id_mapper)
+        , _actual_iterator (actual_iterator)
+      { }
+
+      const_unique_iterator& operator++()
+      {
+        ++_actual_iterator;
+        return *this;
+      }
+      const_unique_iterator operator++ (int)
+      {
+        const_unique_iterator<unique_type> tmp (*this);
+        operator++();
+        return tmp;
+      }
+      bool operator== (const const_unique_iterator& rhs)
+      {
+        return _actual_iterator == rhs._actual_iterator;
+      }
+      bool operator!= (const const_unique_iterator& rhs)
+      {
+        return !(operator== (rhs));
+      }
+      const typename unique_type::value_type& operator*() const
+      {
+        return *_id_mapper->get (*_actual_iterator);
+      }
+      const typename unique_type::value_type* operator->() const
+      {
+        return &operator*();
+      }
+
+    private:
+      parse::id::mapper* _id_mapper;
+      actual_iterator_type _actual_iterator;
+    };
+
     template<typename T, typename ID_TYPE, typename KEY = std::string>
     class uniqueID
     {
@@ -25,6 +130,7 @@ namespace xml
       typedef T value_type;
       typedef ID_TYPE id_type;
       typedef KEY key_type;
+      typedef uniqueID<value_type, id_type, key_type> unique_type;
 
       typedef boost::unordered_set<id_type> ids_type;
       typedef boost::unordered_map<key_type,id_type> by_key_type;
@@ -65,103 +171,48 @@ namespace xml
       }
 
       const ids_type& ids() const { return _ids; }
+
+      class values_type
+      {
+      public:
+        typedef unique_iterator<unique_type> iterator;
+        typedef const_unique_iterator<unique_type> const_iterator;
+
+        values_type (const unique_type& container)
+          : _container (container)
+        { }
+
+        iterator begin()
+        {
+          return iterator (_container._mapper, _container.ids().begin());
+        }
+        iterator end()
+        {
+          return iterator (_container._mapper, _container.ids().end());
+        }
+
+        const_iterator begin() const
+        {
+          return const_iterator ( _container._mapper
+                                , _container.ids().begin()
+                                );
+        }
+        const_iterator end() const
+        {
+          return const_iterator (_container._mapper, _container.ids().end());
+        }
+
+      private:
+        const unique_type& _container;
+      };
+      values_type values() const { return values_type (*this); }
+
       void clear() { _ids.clear(); _by_key.clear(); }
 
     private:
       parse::id::mapper* _mapper;
       ids_type _ids;
       by_key_type _by_key;
-    };
-
-    template<typename UNIQUE>
-    class unique_iterator : public std::iterator< std::forward_iterator_tag
-                                                , typename UNIQUE::value_type
-                                                >
-    {
-      typedef UNIQUE unique_type;
-
-      typedef typename unique_type::elements_type::iterator
-        actual_iterator_type;
-      actual_iterator_type _actual_iterator;
-
-    public:
-      unique_iterator(const actual_iterator_type& actual_iterator)
-        : _actual_iterator (actual_iterator)
-      { }
-
-      unique_iterator& operator++()
-      {
-        ++_actual_iterator;
-        return *this;
-      }
-      unique_iterator operator++ (int)
-      {
-        unique_iterator<UNIQUE> tmp (*this);
-        operator++();
-        return tmp;
-      }
-      bool operator== (const unique_iterator& rhs)
-      {
-        return _actual_iterator == rhs._actual_iterator;
-      }
-      bool operator!= (const unique_iterator& rhs)
-      {
-        return !(operator== (rhs));
-      }
-      typename UNIQUE::value_type& operator*() const
-      {
-        return *_actual_iterator;
-      }
-      typename UNIQUE::value_type* operator->() const
-      {
-        return &*_actual_iterator;
-      }
-    };
-
-    template<typename UNIQUE>
-    class const_unique_iterator
-      : public std::iterator< std::forward_iterator_tag
-                            , const typename UNIQUE::value_type
-                            >
-    {
-      typedef UNIQUE unique_type;
-
-      typedef typename unique_type::elements_type::const_iterator
-        actual_iterator_type;
-      actual_iterator_type _actual_iterator;
-
-    public:
-      const_unique_iterator(const actual_iterator_type& actual_iterator)
-        : _actual_iterator (actual_iterator)
-      { }
-
-      const_unique_iterator& operator++()
-      {
-        ++_actual_iterator;
-        return *this;
-      }
-      const_unique_iterator operator++ (int)
-      {
-        const_unique_iterator<UNIQUE> tmp (*this);
-        operator++();
-        return tmp;
-      }
-      bool operator== (const const_unique_iterator& rhs)
-      {
-        return _actual_iterator == rhs._actual_iterator;
-      }
-      bool operator!= (const const_unique_iterator& rhs)
-      {
-        return !(operator== (rhs));
-      }
-      const typename UNIQUE::value_type& operator*() const
-      {
-        return *_actual_iterator;
-      }
-      const typename UNIQUE::value_type* operator->() const
-      {
-        return &*_actual_iterator;
-      }
     };
 
     template<typename T, typename ID_TYPE, typename Key = std::string>
