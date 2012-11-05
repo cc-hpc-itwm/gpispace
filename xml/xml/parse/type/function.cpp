@@ -433,9 +433,7 @@ namespace xml
           void operator () (const id::ref::module &) const { return; }
           void operator () (const id::ref::net& id) const
           {
-            state.id_mapper()
-              ->get (id)
-              ->type_check (state);
+            state.id_mapper()->get (id)->type_check (state);
           }
         };
       }
