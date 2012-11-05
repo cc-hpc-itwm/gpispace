@@ -442,32 +442,17 @@ namespace xml
 
       void function_type::type_check (const state::type & state) const
       {
-        BOOST_FOREACH (const id::ref::port& id_port, in().ids())
+        BOOST_FOREACH (const port_type& port, in().values())
         {
-          port_type_check ( "in"
-                          , *id_mapper()->get (id_port)
-                          , path
-                          , state
-                          , *this
-                          );
+          port.type_check ("in", path, state, *this);
         }
-        BOOST_FOREACH (const id::ref::port& id_port, out().ids())
+        BOOST_FOREACH (const port_type& port, out().values())
         {
-          port_type_check ( "out"
-                          , *id_mapper()->get (id_port)
-                          , path
-                          , state
-                          , *this
-                          );
+          port.type_check ("out", path, state, *this);
         }
-        BOOST_FOREACH (const id::ref::port& id_port, tunnel().ids())
+        BOOST_FOREACH (const port_type& port, tunnel().values())
         {
-          port_type_check ( "tunnel"
-                          , *id_mapper()->get (id_port)
-                          , path
-                          , state
-                          , *this
-                          );
+          port.type_check ("tunnel", path, state, *this);
         }
 
         boost::apply_visitor (function_type_check (state), f);
@@ -762,17 +747,17 @@ namespace xml
                                      , state::type & state
                                      )
       {
-        BOOST_FOREACH (const id::ref::port& id_port, in().ids())
+        BOOST_FOREACH (port_type& port, in().values())
         {
-          id_mapper()->get_ref (id_port)->specialize (map, state);
+          port.specialize (map, state);
         }
-        BOOST_FOREACH (const id::ref::port& id_port, out().ids())
+        BOOST_FOREACH (port_type& port, out().values())
         {
-          id_mapper()->get_ref (id_port)->specialize (map, state);
+          port.specialize (map, state);
         }
-        BOOST_FOREACH (const id::ref::port& id_port, tunnel().ids())
+        BOOST_FOREACH (port_type& port, tunnel().values())
         {
-          id_mapper()->get_ref (id_port)->specialize (map, state);
+          port.specialize (map, state);
         }
 
         specialize_structs (map, structs, state);

@@ -138,15 +138,14 @@ namespace xml
         };
       }
 
-      void port_type_check ( const std::string & direction
-                           , const port_type & port
-                           , const boost::filesystem::path & path
-                           , const state::type & state
-                           , const function_type& fun
-                           )
+      void port_type::type_check ( const std::string & direction
+                                 , const boost::filesystem::path & path
+                                 , const state::type & state
+                                 , const function_type& fun
+                                 ) const
       {
         boost::apply_visitor
-          (port_type_check_visitor (direction, port, path, state), fun.f);
+          (port_type_check_visitor (direction, *this, path, state), fun.f);
       }
 
       namespace dump

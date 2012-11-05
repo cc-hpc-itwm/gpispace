@@ -43,6 +43,13 @@ namespace xml
         void specialize ( const type::type_map_type & map_in
                         , const state::type &
                         );
+
+        void type_check ( const std::string & direction
+                        , const boost::filesystem::path & path
+                        , const state::type & state
+                        , const function_type& fun
+                        ) const;
+
       private:
         std::string _name;
 
@@ -52,13 +59,6 @@ namespace xml
         fhg::util::maybe<std::string> place;
         we::type::property::type prop;
       };
-
-      void port_type_check ( const std::string & direction
-                           , const port_type & port
-                           , const boost::filesystem::path & path
-                           , const state::type & state
-                           , const function_type& fun
-                           );
 
       namespace dump
       {
