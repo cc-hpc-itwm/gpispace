@@ -369,6 +369,7 @@ namespace xml
         };
       }
 
+      //! \todo move to connect_type
       void transition_type::type_check ( const std::string & direction
                                        , const connect_type & connect
                                        , const net_type & net
@@ -1034,4 +1035,3 @@ namespace xml
     }
   }
 }
-
