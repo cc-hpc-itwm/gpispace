@@ -135,9 +135,54 @@ namespace xml
       typedef boost::unordered_set<id_type> ids_type;
       typedef boost::unordered_map<key_type,id_type> by_key_type;
 
+    private:
+      class values_type
+      {
+      public:
+        typedef unique_iterator<unique_type> iterator;
+        typedef const_unique_iterator<unique_type> const_iterator;
+
+        iterator begin()
+        {
+          return iterator (_mapper, _ids.begin());
+        }
+        iterator end()
+        {
+          return iterator (_mapper, _ids.end());
+        }
+
+        const_iterator begin() const
+        {
+          return const_iterator ( _mapper
+                                , _ids.begin()
+                                );
+        }
+        const_iterator end() const
+        {
+          return const_iterator ( _mapper
+                                , _ids.end()
+                                );
+        }
+
+        //! \note These are private, as only unique shall access them,
+        //! but they need to be in here to work around boost ticket #5473.
+        //! See c3fbafa and https://svn.boost.org/trac/boost/ticket/5473
+      private:
+        //! \todo C++11: friend unique_type;
+        friend class uniqueID<value_type, id_type, key_type>;
+
+        values_type (parse::id::mapper* mapper)
+          : _mapper (mapper)
+          , _ids()
+        { }
+
+        parse::id::mapper* _mapper;
+        ids_type _ids;
+      };
+
+    public:
       uniqueID (parse::id::mapper* mapper)
-        : _mapper (mapper)
-        , _ids ()
+        : _values (mapper)
         , _by_key ()
       {}
 
@@ -155,7 +200,7 @@ namespace xml
 
       const id_type& push (const id_type& id)
       {
-        const key_type& name (_mapper->get (id)->name());
+        const key_type& name (_values._mapper->get (id)->name());
 
         boost::optional<const id_type&> id_old (get (name));
 
@@ -164,67 +209,24 @@ namespace xml
             return *id_old;
           }
 
-        _ids.insert (id);
+        _values._ids.insert (id);
         _by_key.insert (std::make_pair (name, id));
 
         return id;
       }
 
-      const ids_type& ids() const { return _ids; }
+      const ids_type& ids() const { return _values._ids; }
+      values_type& values() const { return _values; }
 
-      class values_type
-      {
-      public:
-        typedef unique_iterator<unique_type> iterator;
-        typedef const_unique_iterator<unique_type> const_iterator;
-
-        values_type (const unique_type* container)
-          : _container (container)
-        { }
-
-        iterator begin()
-        {
-          return iterator (_container->_mapper, _container->ids().begin());
-        }
-        iterator end()
-        {
-          return iterator (_container->_mapper, _container->ids().end());
-        }
-
-        const_iterator begin() const
-        {
-          return const_iterator ( _container->_mapper
-                                , _container->ids().begin()
-                                );
-        }
-        const_iterator end() const
-        {
-          return const_iterator ( _container->_mapper
-                                , _container->ids().end()
-                                );
-        }
-
-      private:
-        const unique_type* _container;
-      };
-
-      //! \note This is NOT threadsafe and only a workaround for boost
-      //! ticket #5473: boost.foreach disallows non-const iteration of
-      //! rvalues. But as we need to construct the temporary values_type
-      //! object for adding the facade, we need to store it somewhere to
-      //! be able to return a non-const reference (i.e. not an rvalue).
-      //! See https://svn.boost.org/trac/boost/ticket/5473
-      mutable boost::optional<values_type> _temporary_values;
-      values_type& values() const
-      {
-        return *(_temporary_values = values_type (this));
-      }
-
-      void clear() { _ids.clear(); _by_key.clear(); }
+      void clear() { _values._ids.clear(); _by_key.clear(); }
 
     private:
-      parse::id::mapper* _mapper;
-      ids_type _ids;
+      //! \note Needs to be mutable, as values() must return a
+      //! non-const reference from a const method. Else, would need to
+      //! const_cast this, which is ugly as well. See note in
+      //! values_type.
+      mutable values_type _values;
+
       by_key_type _by_key;
     };
 
