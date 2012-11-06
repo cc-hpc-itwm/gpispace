@@ -510,7 +510,7 @@ namespace gpi
           if (++child.error_counter > 10)
           {
             MLOG (ERROR, "exceeded error counter for " << child.name);
-            this->stop ();
+            m_peer->stop ();
           }
           else
           {
