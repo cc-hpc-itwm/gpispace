@@ -1131,7 +1131,8 @@ function start_proc ()
                 fi
             fi
         done
-        echo "- $name (dead)" >&2
+        echo "- $name (dead), check '$log_file' for more - here are the last 3 lines:"
+        tail -n 3 "$log_file" >&2
         return 1
     fi
     return 0
@@ -1724,7 +1725,6 @@ function stop_gpi ()
         log "E: could not stop gpi"
         return 1
     else
-        sleep 3
         return 0
     fi
 }
@@ -1771,6 +1771,7 @@ function stop ()
 function restart ()
 {
     if stop $@ ; then
+        sleep 3
         start $@
     else
         log "E: stop failed, not starting!"
