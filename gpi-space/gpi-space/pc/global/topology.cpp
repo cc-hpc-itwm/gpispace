@@ -154,11 +154,21 @@ namespace gpi
 
         ++m_waiting_for_go;
 
+        boost::system_time const timeout
+          (boost::get_system_time()+boost::posix_time::seconds(30));
+
         while (not m_go_received)
         {
           if (m_shutting_down)
             break;
-          m_go_received_event.wait (lock);
+          if (not m_go_received_event.timed_wait (lock, timeout))
+          {
+            if (not m_go_received)
+            {
+              --m_waiting_for_go;
+              throw std::runtime_error ("did not receive GO within 30 seconds");
+            }
+          }
         }
 
         --m_waiting_for_go;
