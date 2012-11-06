@@ -889,6 +889,17 @@ static int configure_kvs (const config_t *cfg)
     return -ESRCH;
   }
 
+  // quick hack to delete old kvs entries
+  // TODO: find a better place
+  gpi_api_t & gpi_api (gpi_api_t::get());
+  for (std::size_t rnk = 0 ; rnk < gpi_api.number_of_nodes (); ++rnk)
+  {
+    std::string peer_name = fhg::com::p2p::to_string
+      (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
+    std::string kvs_key = "p2p.peer." + peer_name;
+    fhg::com::kvs::del (kvs_key);
+  }
+
   return 0;
 }
 
