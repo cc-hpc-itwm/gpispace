@@ -68,13 +68,9 @@ namespace mapreduce
         int v1 = end;
         int u1 = boost::lexical_cast<long>(u[1]);
 
-        std::ostringstream osstr;
-
         if( v0 == u0+1 && u1 == v1+1 )
         {
-          osstr<<u[2];
-          osstr<<v[2];
-          w = osstr.str();
+          w = u[2]+v[2];
           MLOG(INFO, "The recovered word from "<<keyval_pair<<" and "<<arr_border_keys[k]<<" is "<<w);
           bMatching = true;
           matching_pair = arr_border_keys[k];
@@ -82,9 +78,7 @@ namespace mapreduce
         else
           if( u0 == v0+1 && v1 == u1+1 )
           {
-            osstr<<v[2];
-            osstr<<u[2];
-            w = osstr.str();
+            w = v[2]+u[2];
             MLOG(INFO, "The recovered word from "<<keyval_pair<<" and "<<arr_border_keys[k]<<" is "<<w);
             bMatching = true;
             matching_pair = arr_border_keys[k];
@@ -211,8 +205,8 @@ namespace mapreduce
 
     long ceil(long a, long b)
     {
-      bool c = (a%b);
-      return a/b+c;
+      int rest = (a%b>0)?1:0;
+      return (a/b)+rest;
     }
   }
 }

@@ -1,72 +1,80 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE RemovePrefix
+#include <boost/test/unit_test.hpp>
+
 #include <fhg/util/remove_prefix.hpp>
 
-#include <string>
-#include <iostream>
-
-#include <cstdlib>
-
-#define REQUIRE(p)                                                      \
-  if (!(p)) { std::cout << "FAILURE IN LINE " << __LINE__ << std::endl; }
-
-int main ()
+namespace
 {
   const std::string word ("ababab");
+}
 
+BOOST_AUTO_TEST_CASE (different_length_prefixes)
+{
   {
     const std::string prefix ("");
 
-    REQUIRE (fhg::util::remove_prefix (prefix, word) == "ababab");
+    BOOST_REQUIRE_EQUAL (fhg::util::remove_prefix (prefix, word), "ababab");
   }
 
   {
     const std::string prefix ("a");
 
-    REQUIRE (fhg::util::remove_prefix (prefix, word) == "babab");
+    BOOST_REQUIRE_EQUAL (fhg::util::remove_prefix (prefix, word), "babab");
   }
 
   {
     const std::string prefix ("abab");
 
-    REQUIRE (fhg::util::remove_prefix (prefix, word) == "ab");
+    BOOST_REQUIRE_EQUAL (fhg::util::remove_prefix (prefix, word), "ab");
   }
 
   {
     const std::string prefix ("ababab");
 
-    REQUIRE (fhg::util::remove_prefix (prefix, word) == "");
+    BOOST_REQUIRE_EQUAL (fhg::util::remove_prefix (prefix, word), "");
   }
+}
 
+BOOST_AUTO_TEST_CASE (longer_prefix_than_input)
+{
+  const std::string prefix ("abababab");
+
+  try
   {
-    const std::string prefix ("abababab");
+    fhg::util::remove_prefix (prefix, word);
 
-    try
-      {
-        fhg::util::remove_prefix (prefix, word);
-
-        REQUIRE (false);
-      }
-    catch (const std::string& s)
-      {
-        REQUIRE (s == "remove_prefix failed, rest: prefix = ab, word = ");
-      }
+    BOOST_FAIL ("should throw");
   }
-
+  catch (const fhg::util::remove_prefix_failed& f)
   {
-    const std::string prefix ("A");
-
-    try
-      {
-        fhg::util::remove_prefix (prefix, word);
-
-        REQUIRE (false);
-      }
-    catch (const std::string& s)
-      {
-        REQUIRE (s == "remove_prefix failed, rest: prefix = A, word = ababab");
-      }
+    BOOST_REQUIRE_EQUAL (f.word(), "");
+    BOOST_REQUIRE_EQUAL (f.prefix(), "ab");
   }
+  catch (...)
+  {
+    BOOST_FAIL ("should throw fhg::util::remove_prefix_failed");
+  }
+}
 
-  return EXIT_SUCCESS;
+BOOST_AUTO_TEST_CASE (non_matched_prefix)
+{
+  const std::string prefix ("A");
+
+  try
+  {
+    fhg::util::remove_prefix (prefix, word);
+
+    BOOST_FAIL ("should throw");
+  }
+  catch (const fhg::util::remove_prefix_failed& f)
+  {
+    BOOST_REQUIRE_EQUAL (f.word(), "ababab");
+    BOOST_REQUIRE_EQUAL (f.prefix(), "A");
+  }
+  catch (...)
+  {
+    BOOST_FAIL ("should throw fhg::util::remove_prefix_failed");
+  }
 }

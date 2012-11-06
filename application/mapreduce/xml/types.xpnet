@@ -16,18 +16,18 @@
         
 		<struct name="size">
 	    <struct name="chunk">
-	    	<field name="read" type="long"/>
+			<field name="read" type="long"/>
 	    	<field name="map" type="long"/>
 	    </struct>
 	    
-			<struct name="partition">
-					<field name="slot" type="long"/>
-			</struct>
-	    
-			<struct name="reduce">
-				<field name="slot" type="long"/>
-			</struct>
+		<struct name="partition">
+			<field name="slot" type="long"/>
 		</struct>
+    
+		<struct name="reduce">
+			<field name="slot" type="long"/>
+		</struct>
+	</struct>
     
     <struct name="num">
     	<field name="chunks" type="long"/>
@@ -38,13 +38,13 @@
   <struct name="read_chunk_info">
 	<field name="read_slot_id" type="long"/>
     <field name="chunk_id" type="long"/>
-    <field name="size" type="long"/>
+    <field name="used" type="long"/>
   </struct>
 
    <struct name="map_chunk_info">
 	<field name="map_slot_id" type="long"/>
     <field name="chunk_id" type="long"/>
-    <field name="size" type="long"/>
+    <field name="used" type="long"/>
   </struct>
   
  <!-- <struct name="partition_info">

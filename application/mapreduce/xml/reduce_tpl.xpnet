@@ -2,7 +2,7 @@
 <template name="reduce_tpl">
 <template-parameter type="T"/>
 <defun>
-<!--	<include-structs href="types.xpnet"/> -->
+  <!-- <include-structs href="types.xpnet"/> -->
   <in name="config" type="T" place="config"/>
   <in name="reduce_info_in" type="iterator_red_info" place="reduce_info_in"/>
   <out name="reduce_info_out" type="iterator_red_info" place="reduce_info_out"/>
@@ -29,9 +29,9 @@
           <cinclude href="sstream"/>
           <cinclude href="boost/tokenizer.hpp"/>
           <code><![CDATA[
-	         MLOG (INFO, "Call init reduce subnet ..." );
+	        MLOG (INFO, "Call init reduce subnet ..." );
 
-             ::mapreduce::util::dump_iter_red_info("reduce_info_in", reduce_info_in);
+            //::mapreduce::util::dump_iter_red_info("reduce_info_in", reduce_info_in);
 
 			// first find out what are the actual sizes of the partitions!
 		  	//us this as a counter
@@ -168,7 +168,7 @@
 			  reduce_slot_updated.id = reduce_slot.id;
 			  reduce_slot_updated.part_used = 0;
 
-			  size_t total_size = reduce_slot.part_used+1+reduce_slot.part_used+1;
+			  size_t total_size = reduce_slot.part_used+1+reduce_slot.red_used+1;
 			  char *local_buff = new char[total_size];
 			  bzero(local_buff, total_size);
 
@@ -292,7 +292,6 @@
 			  	}
 			  }
 
-
 			 waitComm ( fvmPutGlobalData
 	         ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
 	          									, reduce_slot.id*config.size.reduce.slot
@@ -336,7 +335,7 @@
 
           <code><![CDATA[
           	LOG (INFO, "Accumulate reduction info ...");
-
+          	
 		  	new_agg_iter_red_info.avail_slots = agg_iter_red_info.avail_slots-1;
 		 	new_agg_iter_red_info.slots_to_reduce =  agg_iter_red_info.slots_to_reduce + std::string(" ") + boost::lexical_cast<std::string>(reduce_slot_updated.id);
 			new_agg_iter_red_info.part_used = agg_iter_red_info.part_used + std::string(" ") +  boost::lexical_cast<std::string>(reduce_slot_updated.part_used);
@@ -399,9 +398,8 @@
 
 				MLOG(INFO, "Stop, all reduce tasks were done. Update now the information about partitions and reduce ..");
 
-            	::mapreduce::util::dump_iter_red_info("agg_iter_red_info", agg_iter_red_info);
-
-            	::mapreduce::util::dump_iter_red_info("end_gen_iter", end_gen_iter);
+            	//::mapreduce::util::dump_iter_red_info("agg_iter_red_info", agg_iter_red_info);
+            	//::mapreduce::util::dump_iter_red_info("end_gen_iter", end_gen_iter);
 
 	        	reduce_info_out.avail_slots = end_gen_iter.avail_slots;
 	        	reduce_info_out.slots_to_reduce = "";
@@ -422,7 +420,7 @@
 	        	reduce_info_out.red_used = ::mapreduce::util::get_string(arr_red_used);
 	        	reduce_info_out.border_used = end_gen_iter.border_used;
 
-	        	::mapreduce::util::dump_iter_red_info("reduce_info_out", reduce_info_out);
+	        	//::mapreduce::util::dump_iter_red_info("reduce_info_out", reduce_info_out);
 
           ]]></code>
         </module>
