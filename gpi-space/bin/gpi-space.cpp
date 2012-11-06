@@ -726,34 +726,26 @@ int main (int ac, char *av[])
       setsid();
       close (0); close (1); close (2);
       int fd = open ("/dev/null", O_RDWR);
-      if (strlen (logfile) > 0)
+      // duplicate to stdout
+      if (dup (fd) < 0)
       {
-        // assigns STDOUT file descriptor, possibly
-        fd = open (logfile, O_WRONLY + O_CREAT, 0600);
-        if (fd < 0)
-        {
-          fd = 0; // duplicate stdin instead
-          if (dup (fd) < 0)
-          {
-            // should never happen actually
-            LOG ( ERROR
-                , "could not duplicate file descriptor to stderr: "
-                << strerror(errno)
-                );
-            exit (EXIT_FAILURE);
-          }
-        }
+        // should never happen actually
+        LOG ( ERROR
+            , "could not duplicate file descriptor to stdout: "
+            << strerror(errno)
+            );
+        exit (EXIT_FAILURE);
+      }
 
-        // assigns stderr
-        if (dup (fd) < 0)
-        {
-          // should never happen actually
-          LOG ( ERROR
-              , "could not duplicate file descriptor to stderr: "
-              << strerror(errno)
-              );
-          exit (EXIT_FAILURE);
-        }
+      // duplicate to stderr
+      if (dup (fd) < 0)
+      {
+        // should never happen actually
+        LOG ( ERROR
+            , "could not duplicate file descriptor to stderr: "
+            << strerror(errno)
+            );
+        exit (EXIT_FAILURE);
       }
     }
 
