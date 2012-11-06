@@ -29,18 +29,18 @@ namespace xml
         ID_SIGNATURES(function);
 
       public:
-        typedef xml::util::unique<port_type,id::ref::port> unique_port_type;
+        typedef xml::util::unique<port_type,id::ref::port> ports_type;
 
       private:
-        unique_port_type _in;
-        unique_port_type _out;
-        unique_port_type _tunnel;
+        ports_type _in;
+        ports_type _out;
+        ports_type _tunnel;
 
         // ***************************************************************** //
 
         void push ( const id::ref::port & p
-                  , unique_port_type & ports
-                  , const unique_port_type & others
+                  , ports_type & ports
+                  , const ports_type & others
                   , const std::string descr
                   );
 
@@ -107,9 +107,9 @@ namespace xml
 
         // ***************************************************************** //
 
-        const unique_port_type& in() const;
-        const unique_port_type& out() const;
-        const unique_port_type& tunnel() const;
+        const ports_type& in() const;
+        const ports_type& out() const;
+        const ports_type& tunnel() const;
 
         // ***************************************************************** //
 

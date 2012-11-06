@@ -45,8 +45,8 @@ namespace xml
       // ******************************************************************* //
 
       void function_type::push ( const id::ref::port & id
-                               , unique_port_type & ports
-                               , const unique_port_type & others
+                               , ports_type & ports
+                               , const ports_type & others
                                , const std::string descr
                                )
       {
@@ -158,15 +158,15 @@ namespace xml
 
       // ***************************************************************** //
 
-      const function_type::unique_port_type& function_type::in() const
+      const function_type::ports_type& function_type::in() const
       {
         return _in;
       }
-      const function_type::unique_port_type& function_type::out() const
+      const function_type::ports_type& function_type::out() const
       {
         return _out;
       }
-      const function_type::unique_port_type& function_type::tunnel() const
+      const function_type::ports_type& function_type::tunnel() const
       {
         return _tunnel;
       }
@@ -482,7 +482,7 @@ namespace xml
         typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
 
         void add_ports ( we_transition_type & trans
-                       , const function_type::unique_port_type& ports
+                       , const function_type::ports_type& ports
                        , const we::type::PortDirection & direction
                        ) const
         {
@@ -510,7 +510,7 @@ namespace xml
 
         template<typename Map>
         void add_ports ( we_transition_type & trans
-                       , const function_type::unique_port_type& ports
+                       , const function_type::ports_type& ports
                        , const we::type::PortDirection & direction
                        , const Map & pid_of_place
                        ) const
