@@ -78,6 +78,10 @@ ifndef WE_EXEC_WORKER
   WE_EXEC_WORKER = 2
 endif
 
+ifndef SDPA
+  SDPA = $(SDPA_BIN)/sdpa
+endif
+
 ###############################################################################
 
 ifndef XML
@@ -226,7 +230,7 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default ps net verify validate put gen lib run
+.PHONY: default ps net verify validate put gen lib run submit
 
 default: run
 
@@ -329,6 +333,11 @@ run: lib $(PUT)
 	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
 
 endif
+
+###############################################################################
+
+submit: $(PUT)
+	$(SDPA) submit $(PUT)
 
 ###############################################################################
 
