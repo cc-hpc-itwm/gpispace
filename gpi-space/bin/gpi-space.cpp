@@ -54,6 +54,7 @@ static bool stop_requested = false;
 static char pidfile[MAX_PATH_LEN];
 static char api_name[MAX_PATH_LEN];
 static char socket_path[MAX_PATH_LEN];
+static char logfile[MAX_PATH_LEN];
 static unsigned long long gpi_mem = (1<<26);
 static unsigned short gpi_port = 0;
 static unsigned int gpi_mtu = 0;
@@ -163,12 +164,11 @@ static void receive_config_or_die(config_t *c);
 static void signal_handler (int sig);
 static int configure_logging (const config_t *cfg);
 static int configure_kvs (const config_t *cfg);
+static int cleanup_kvs ();
 static int main_loop (const config_t *cfg, const gpi::rank_t rank);
 
 int main (int ac, char *av[])
 {
-  FHGLOG_SETUP (ac, av);
-
   int i = 0;
   bool daemonize = false;
   bool is_master = true;
@@ -177,6 +177,7 @@ int main (int ac, char *av[])
   snprintf (pidfile, sizeof(pidfile), "%s", "");
   snprintf (api_name, sizeof(api_name), "%s", "auto");
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
+  memset (logfile, 0, sizeof(logfile));
   snprintf ( default_memory_url
            , sizeof (default_memory_url)
            , "gpi://?buffer_size=4194304&buffers=8"
@@ -336,6 +337,30 @@ int main (int ac, char *av[])
       else
       {
         fprintf(stderr, "%s: missing argument to --kvs-retry-count\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--log-file") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen(av[i] + 1) > sizeof(logfile)))
+        {
+          fprintf(stderr, "%s: logfile is too large!\n", program_name);
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(logfile));
+          exit(EX_INVAL);
+        }
+        strncpy(logfile, av[i], sizeof(logfile));
+        if (strlen (logfile) > 0)
+        {
+          setenv ("FHGLOG_to_file", logfile, true);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --log-file\n", program_name);
         exit(EX_USAGE);
       }
     }
@@ -567,6 +592,8 @@ int main (int ac, char *av[])
     }
   }
 
+  FHGLOG_SETUP (ac, av);
+
   snprintf ( config.socket
            , sizeof(config.socket)
            , "%s/S-gpi-space.%d.%d"
@@ -665,6 +692,8 @@ int main (int ac, char *av[])
       gpi_api.clear_caches();
     }
 
+    cleanup_kvs ();
+
     int pidfile_fd = -1;
 
     if (0 != strlen (pidfile))
@@ -695,17 +724,36 @@ int main (int ac, char *av[])
         }
       }
       setsid();
-      close(0); close(1); close(2);
-      int fd = open("/dev/null", O_RDWR);
-      if (dup(fd) == -1)
+      close (0); close (1); close (2);
+      int fd = open ("/dev/null", O_RDWR);
+      if (strlen (logfile) > 0)
       {
-        LOG(ERROR, "could not duplicate file descriptor: " << strerror(errno));
-        exit (EXIT_FAILURE);
-      }
-      if (dup(fd) == -1)
-      {
-        LOG(ERROR, "could not duplicate file descriptor: " << strerror(errno));
-        exit (EXIT_FAILURE);
+        // assigns STDOUT file descriptor, possibly
+        fd = open (logfile, O_WRONLY + O_CREAT, 0600);
+        if (fd < 0)
+        {
+          fd = 0; // duplicate stdin instead
+          if (dup (fd) < 0)
+          {
+            // should never happen actually
+            LOG ( ERROR
+                , "could not duplicate file descriptor to stderr: "
+                << strerror(errno)
+                );
+            exit (EXIT_FAILURE);
+          }
+        }
+
+        // assigns stderr
+        if (dup (fd) < 0)
+        {
+          // should never happen actually
+          LOG ( ERROR
+              , "could not duplicate file descriptor to stderr: "
+              << strerror(errno)
+              );
+          exit (EXIT_FAILURE);
+        }
       }
     }
 
@@ -861,8 +909,28 @@ static int configure_logging (const config_t *cfg)
   }
   setenv ("FHGLOG_to_console", "stderr", true);
 
+  if (strlen (logfile) > 0)
+  {
+    setenv ("FHGLOG_to_file", logfile, true);
+  }
+
   FHGLOG_SETUP();
 
+  return 0;
+}
+
+static int cleanup_kvs ()
+{
+  // quick hack to delete old kvs entries
+  // TODO: find a better place
+  gpi_api_t & gpi_api (gpi_api_t::get());
+  for (std::size_t rnk = 0 ; rnk < gpi_api.number_of_nodes (); ++rnk)
+  {
+    std::string peer_name = fhg::com::p2p::to_string
+      (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
+    std::string kvs_key = "p2p.peer." + peer_name;
+    fhg::com::kvs::del (kvs_key);
+  }
   return 0;
 }
 
@@ -888,18 +956,6 @@ static int configure_kvs (const config_t *cfg)
   {
     return -ESRCH;
   }
-
-  // quick hack to delete old kvs entries
-  // TODO: find a better place
-  gpi_api_t & gpi_api (gpi_api_t::get());
-  for (std::size_t rnk = 0 ; rnk < gpi_api.number_of_nodes (); ++rnk)
-  {
-    std::string peer_name = fhg::com::p2p::to_string
-      (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
-    std::string kvs_key = "p2p.peer." + peer_name;
-    fhg::com::kvs::del (kvs_key);
-  }
-
   return 0;
 }
 
