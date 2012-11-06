@@ -25,7 +25,6 @@ state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
 logdir=
 shm_size=
-com_size=
 
 function usage ()
 {
@@ -77,7 +76,7 @@ function to_bg ()
     /bin/kill -CONT "$pid"
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:B:F:" opt; do
+while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:" opt; do
     case $opt in
         h)
             usage
@@ -143,7 +142,7 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:B:F:" opt; do
             shm_size=$OPTARG
             ;;
         B)
-            com_size=$OPTARG
+            echo >&2 "W: ignoring obosolete option -B <com_size>"
             ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
@@ -312,17 +311,12 @@ fi
 cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
 cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.startmode -v wait)"
 
-if [ -z "$com_size" ] ; then
-    com_size=$(fhgcfg -f "${config_file}" -g plugin.gpi_compat.com_size -v 16777216)
-fi
-
 if [ -z "$shm_size" ] ; then
     shm_size=$(fhgcfg -f "${config_file}" -g plugin.gpi_compat.shm_size -v 536870912)
 fi
 
 # config values (gpi_compat plugin)
 cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
-cfg="$cfg -s plugin.gpi_compat.com_size=$com_size"
 
 # config values (gui plugin)
 cfg="$cfg -s plugin.gui.url=$gui"

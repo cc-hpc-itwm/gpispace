@@ -708,15 +708,7 @@ to adjust the amount.
         return 1
     fi
 
-    local com_size=$(get "plugin.gpi_compat.com_size" "${DEFAULT_GPI_COMSIZE:?}")
-    get_user_input "communication buffer size (per worker) [$com_size]:" com_size
-    parse_human_readable_size $com_size com_size
-    if [ $com_size -le 0 ] ; then
-        log "E: size must be larger than 0: $com_size"
-        return 1
-    fi
-
-    local mem_size=$(( $gpi_size + $shm_size + $com_size ))
+    local mem_size=$(( $gpi_size + $shm_size ))
 
     # try to get total memory size
     local total_mem=$( grep ^MemTotal: /proc/meminfo | awk '{print $2}')
@@ -726,7 +718,6 @@ to adjust the amount.
         log "-:     max available: $total_mem"
         log "-:          gpi size: $gpi_size"
         log "-:          shm size: $shm_size"
-        log "-:          com size: $com_size"
         if ! y_n_p "Are you really sure to use these values? [y/N] " ; then
             return 1
         fi
@@ -735,7 +726,6 @@ to adjust the amount.
     put "gpi.memory_size" "$gpi_size"
     put "gpi.priv_dir" "$gpid_dir"
     put "plugin.gpi_compat.shm_size" "$shm_size"
-    put "plugin.gpi_compat.com_size" "$com_size"
 
     put "gpi.api" $(get gpi.api "${DEFAULT_GPI_API:?}")
     put "gpi.timeout" $(get gpi.timeout "30")
