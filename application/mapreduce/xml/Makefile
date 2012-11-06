@@ -17,8 +17,8 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 ###############################################################################
 
-PUT_PORT += input_file=\"in.txt\"
-PUT_PORT += output_file=\"out.txt\"
+PUT_PORT += input_file=\"$(PWD)/in.txt\"
+PUT_PORT += output_file=\"$(PWD)/out.txt\"
 PUT_PORT += read_chunk_size=1024
 PUT_PORT += map_chunk_size=2048
 PUT_PORT += partition_slot_size=20000
