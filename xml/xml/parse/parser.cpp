@@ -35,6 +35,68 @@ namespace xml
   {
     // ********************************************************************* //
 
+    id::ref::connect connect_type ( const xml_node_type *
+                                  , state::type &
+                                  , const id::transition& parent
+                                  );
+    id::ref::function function_type ( const xml_node_type *
+                                    , state::type &
+                                    , const boost::optional<type::function_type::id_parent>& parent
+                                    );
+    id::ref::module module_type ( const xml_node_type *
+                                , state::type &
+                                , const id::function& parent
+                                );
+    id::ref::tmpl tmpl_type ( const xml_node_type *
+                            , state::type &
+                            , const id::net& parent
+                            );
+    id::ref::net net_type ( const xml_node_type *
+                          , state::type &
+                          , const id::function& parent
+                          );
+    id::ref::place place_type ( const xml_node_type *
+                              , state::type &
+                              , const id::net& parent
+                              );
+    id::ref::port port_type ( const xml_node_type *
+                            , state::type &
+                            , const id::function& parent
+                            );
+    void gen_struct_type ( const xml_node_type *, state::type &
+                         , signature::desc_t &
+                         );
+    void substruct_type ( const xml_node_type *, state::type &
+                        , signature::desc_t &
+                        );
+    type::structure_type struct_type ( const xml_node_type *
+                               , state::type &
+                               , const id::function& parent
+                               );
+    type::token_type token_type ( const xml_node_type *
+                                , state::type &
+                                , const id::place& parent
+                                );
+    id::ref::transition transition_type ( const xml_node_type *
+                                        , state::type &
+                                        , const id::net& parent
+                                        );
+    id::ref::specialize specialize_type ( const xml_node_type *
+                                        , state::type &
+                                        , const id::net& parent
+                                        );
+    int property_map_type ( we::type::property::type &
+                          , const xml_node_type *
+                          , state::type &
+                          );
+    we::type::property::type
+    property_maps_type (const xml_node_type *, state::type &);
+
+    type::structs_type structs_type ( const xml_node_type *
+                                    , state::type & state
+                                    , const id::function& parent
+                                    );
+
     namespace
     {
       id::ref::function
