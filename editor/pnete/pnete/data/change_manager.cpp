@@ -287,41 +287,30 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::expression expression_id (_state.next_id());
         const ::xml::parse::id::function function_id (_state.next_id());
         const ::xml::parse::id::transition transition_id (_state.next_id());
 
-        {
-          const ::xml::parse::type::expression_type expression
-            (expression_id, _state.id_mapper(), function_id);
-
-          const ::xml::parse::id::ref::expression expr
-            (expression_id, _state.id_mapper());
-
-          {
-            const ::xml::parse::type::function_type f
-              ( function_id
-              , _state.id_mapper()
-              , expr
-              , boost::make_optional
-              (::xml::parse::type::function_type::id_parent (transition_id))
-              );
-          }
-        }
-
-        const ::xml::parse::id::ref::function fun
-          (function_id, _state.id_mapper());
-
-        {
-          const ::xml::parse::type::transition_type transition
-            (transition_id, _state.id_mapper(), net.id().id(), fun);
-        }
-
         const ::xml::parse::id::ref::transition transition
-          (transition_id, _state.id_mapper());
+          ( ::xml::parse::type::transition_type
+            ( transition_id
+            , _state.id_mapper()
+            , net.id().id()
+            , ::xml::parse::id::ref::function
+              ( ::xml::parse::type::function_type
+                ( function_id
+                , _state.id_mapper()
+                , ::xml::parse::type::expression_type ( _state.next_id()
+                                                      , _state.id_mapper()
+                                                      , function_id
+                                                      ).make_reference_id()
+                , boost::make_optional
+                (::xml::parse::type::function_type::id_parent (transition_id))
+                ).make_reference_id()
+              )
+            ).make_reference_id()
+          );
 
-        transition.get_ref().function_or_use (fun);
-        transition.get_ref().name (fun.get().name() ? *fun.get().name() : "transition");
+        transition.get_ref().name ("transition");
 
         //! \todo Don't check for duplicate names when fun.name is set?
         while (net.get().has_transition (transition.get().name()))

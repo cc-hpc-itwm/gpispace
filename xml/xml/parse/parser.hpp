@@ -49,10 +49,10 @@ namespace xml
                                   , state::type &
                                   , const id::transition& parent
                                   );
-    id::function function_type ( const xml_node_type *
-                               , state::type &
-                               , const boost::optional<type::function_type::id_parent>& parent
-                               );
+    id::ref::function function_type ( const xml_node_type *
+                                    , state::type &
+                                    , const boost::optional<type::function_type::id_parent>& parent
+                                    );
     id::ref::module module_type ( const xml_node_type *
                                 , state::type &
                                 , const id::function& parent
@@ -61,10 +61,10 @@ namespace xml
                             , state::type &
                             , const id::net& parent
                             );
-    id::net net_type ( const xml_node_type *
-                     , state::type &
-                     , const id::function& parent
-                     );
+    id::ref::net net_type ( const xml_node_type *
+                          , state::type &
+                          , const id::function& parent
+                          );
     id::ref::place place_type ( const xml_node_type *
                               , state::type &
                               , const id::net& parent
@@ -87,14 +87,14 @@ namespace xml
                                 , state::type &
                                 , const id::place& parent
                                 );
-    id::transition transition_type ( const xml_node_type *
-                                   , state::type &
-                                   , const id::net& parent
-                                   );
-    id::specialize specialize_type ( const xml_node_type *
-                                   , state::type &
-                                   , const id::net& parent
-                                   );
+    id::ref::transition transition_type ( const xml_node_type *
+                                        , state::type &
+                                        , const id::net& parent
+                                        );
+    id::ref::specialize specialize_type ( const xml_node_type *
+                                        , state::type &
+                                        , const id::net& parent
+                                        );
     int property_map_type ( we::type::property::type &
                           , const xml_node_type *
                           , state::type &
@@ -107,7 +107,7 @@ namespace xml
                                     , const id::function& parent
                                     );
 
-    id::function
+    id::ref::function
     just_parse (state::type & state, const std::string & input);
 
     // ********************************************************************* //

@@ -253,10 +253,8 @@ main (int argc, char ** argv)
 
   try
   {
-    xml::parse::id::ref::function id_function
-      ( xml::parse::just_parse (state, input)
-      , state.id_mapper()
-      );
+    const xml::parse::id::ref::function function
+      (xml::parse::just_parse (state, input));
 
     if (state.dump_xml_file().size() > 0)
       {
@@ -270,22 +268,22 @@ main (int argc, char ** argv)
 
         fhg::util::xml::xmlstream s (stream);
 
-        xml::parse::type::dump::dump (s, id_function.get(), state);
+        xml::parse::type::dump::dump (s, function.get(), state);
       }
 
     // set all the collected requirements to the top level function
-    id_function.get_ref().requirements = state.requirements();
+    function.get_ref().requirements = state.requirements();
 
-    id_function.get_ref().specialize (state);
-    id_function.get_ref().resolve (state, id_function.get().forbidden_below());
-    id_function.get_ref().type_check (state);
-    id_function.get_ref().sanity_check (state);
+    function.get_ref().specialize (state);
+    function.get_ref().resolve (state, function.get().forbidden_below());
+    function.get_ref().type_check (state);
+    function.get_ref().sanity_check (state);
 
     if (state.path_to_cpp().size() > 0)
       {
         xml::parse::type::fun_info_map m;
 
-        xml::parse::type::find_module_calls (state, id_function, m);
+        xml::parse::type::find_module_calls (state, function, m);
 
         xml::parse::type::mk_wrapper (state, m);
         xml::parse::type::mk_makefile (state, m);
@@ -295,7 +293,7 @@ main (int argc, char ** argv)
         xml::parse::includes::mks (descrs);
         xml::parse::includes::we_header_gen (state, descrs);
 
-        xml::parse::type::struct_to_cpp (state, id_function.get_ref());
+        xml::parse::type::struct_to_cpp (state, function.get_ref());
       }
 
     if (state.dump_dependenciesD())
@@ -334,7 +332,7 @@ main (int argc, char ** argv)
           }
       }
 
-    we::transition_t trans (id_function.get_ref().synthesize (state));
+    we::transition_t trans (function.get_ref().synthesize (state));
 
     we::type::optimize::optimize (trans, state.options_optimize());
 

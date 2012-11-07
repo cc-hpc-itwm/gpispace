@@ -90,7 +90,6 @@ namespace fhg
         , _function ( ::xml::parse::just_parse ( _state
                                                , filename.toStdString()
                                                )
-                    , _state.id_mapper()
                     )
         , _change_manager (_state)
         , _root_proxy (*create_proxy())
