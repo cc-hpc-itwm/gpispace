@@ -114,7 +114,7 @@ namespace fhg
 
         std::string transition_item::name() const
         {
-          return handle()().name();
+          return handle().get().name();
         }
 
         // void slot_change_name (QString name)

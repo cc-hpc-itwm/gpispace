@@ -100,6 +100,9 @@ namespace fhg
           template<typename item_type, typename handle_type>
             item_type* item_with_handle (const handle_type&);
 
+          template<typename handle_type>
+            bool is_in_my_net (const handle_type&);
+
           const data::handle::net& net() const;
 
           void remove_transition_item (transition_item*);
