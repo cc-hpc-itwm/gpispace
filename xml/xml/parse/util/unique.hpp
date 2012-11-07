@@ -6,7 +6,6 @@
 #include <string>
 #include <stdexcept>
 
-#include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
