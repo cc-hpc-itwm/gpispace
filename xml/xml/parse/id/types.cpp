@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include <boost/functional/hash.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -43,7 +44,7 @@ namespace xml
 
       namespace ref
       {
-#define ITEM(NAME,__IGNORE,__IGNORE2,__IGNORE3)                         \
+#define ITEM(NAME,__IGNORE,XML_TYPE,__IGNORE3)                          \
         NAME::NAME (const id::NAME& id, mapper* mapper_)                \
           :  _id (id)                                                   \
           , _mapper (mapper_)                                           \
@@ -78,6 +79,15 @@ namespace xml
           return _id == other._id;                                      \
         }                                                               \
                                                                         \
+        const type::XML_TYPE& NAME::get() const                         \
+        {                                                               \
+          return *_mapper->get (*this);                                 \
+        }                                                               \
+        type::XML_TYPE& NAME::get_ref() const                           \
+        {                                                               \
+          return *_mapper->get_ref (*this);                             \
+        }                                                               \
+                                                                        \
         const id::NAME& NAME::id() const                                \
         {                                                               \
           return _id;                                                   \
@@ -99,4 +109,3 @@ namespace xml
     }
   }
 }
-

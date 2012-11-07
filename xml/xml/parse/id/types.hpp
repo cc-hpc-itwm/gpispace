@@ -6,6 +6,20 @@
 #include <xml/parse/id/types.fwd.hpp>
 
 #include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/type/connect.fwd.hpp>
+#include <xml/parse/type/expression.fwd.hpp>
+#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/mod.fwd.hpp>
+#include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/place.fwd.hpp>
+#include <xml/parse/type/place_map.fwd.hpp>
+#include <xml/parse/type/port.fwd.hpp>
+#include <xml/parse/type/specialize.fwd.hpp>
+#include <xml/parse/type/struct.fwd.hpp>
+#include <xml/parse/type/template.fwd.hpp>
+#include <xml/parse/type/token.fwd.hpp>
+#include <xml/parse/type/transition.fwd.hpp>
+#include <xml/parse/type/use.fwd.hpp>
 
 #include <iosfwd>
 
@@ -46,7 +60,7 @@ namespace xml
 
       namespace ref
       {
-#define ITEM(NAME,__IGNORE,__IGNORE2,__IGNORE3)                         \
+#define ITEM(NAME,__IGNORE,XML_TYPE,__IGNORE2)                          \
         struct NAME                                                     \
         {                                                               \
         public:                                                         \
@@ -57,6 +71,9 @@ namespace xml
                                                                         \
           bool operator< (const NAME& other) const;                     \
           bool operator== (const NAME& other) const;                    \
+                                                                        \
+          const type::XML_TYPE& get() const;                            \
+          type::XML_TYPE& get_ref() const;                              \
                                                                         \
           const id::NAME& id() const;                                   \
                                                                         \
