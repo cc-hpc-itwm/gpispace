@@ -36,11 +36,11 @@ namespace xml
                          )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
+        , _functions()
         , _places()
-        , _transitions()
         , _specializes()
         , _templates()
-        , _functions()
+        , _transitions()
         , _path (path)
       {
         _id_mapper->put (_id, *this);
@@ -53,30 +53,28 @@ namespace xml
 
       // ***************************************************************** //
 
+      const net_type::functions_type& net_type::functions() const
+      {
+        return _functions;
+      }
       const net_type::places_type& net_type::places() const
       {
         return _places;
       }
-
+      const net_type::specializes_type& net_type::specializes() const
+      {
+        return _specializes;
+      }
+      const net_type::templates_type& net_type::templates() const
+      {
+        return _templates;
+      }
       const net_type::transitions_type& net_type::transitions() const
       {
         return _transitions;
       }
 
-      const net_type::specializes_type& net_type::specializes() const
-      {
-        return _specializes;
-      }
-
-      const net_type::templates_type& net_type::templates() const
-      {
-        return _templates;
-      }
-
-      const net_type::functions_type& net_type::functions() const
-      {
-        return _functions;
-      }
+      // ***************************************************************** //
 
       boost::optional<const id::ref::function&>
       net_type::get_function (const std::string& name) const
@@ -125,28 +123,28 @@ namespace xml
 
       // ***************************************************************** //
 
+      const id::ref::function&
+      net_type::push_function (const id::ref::function& id)
+      {
+        const id::ref::function& id_old (_functions.push (id));
+
+        if (id_old != id)
+          {
+            throw error::duplicate_function<function_type>
+              (*id_mapper()->get (id), *id_mapper()->get (id_old));
+          }
+
+        return id;
+      }
+
       const id::ref::place&
       net_type::push_place (const id::ref::place& id)
       {
         const id::ref::place& id_old (_places.push (id));
 
-        if (not (id_old == id))
+        if (id_old != id)
         {
           throw error::duplicate_place (id_mapper()->get (id)->name(), path());
-        }
-
-        return id;
-      }
-
-      const id::ref::transition&
-      net_type::push_transition (const id::ref::transition& id)
-      {
-        const id::ref::transition& id_old (_transitions.push (id));
-
-        if (not (id_old == id))
-        {
-          throw error::duplicate_transition<transition_type>
-            (*id_mapper()->get (id), *id_mapper()->get (id_old));
         }
 
         return id;
@@ -157,7 +155,7 @@ namespace xml
       {
         const id::ref::specialize& id_old (_specializes.push (id));
 
-        if (not (id_old == id))
+        if (id_old != id)
         {
           boost::optional<const specialize_type&>
             spec (id_mapper()->get (id));
@@ -173,7 +171,7 @@ namespace xml
       {
         const id::ref::tmpl& id_old (_templates.push (id));
 
-        if (not (id_old == id))
+        if (id_old != id)
           {
             throw error::duplicate_template<tmpl_type>
               (*id_mapper()->get (id), *id_mapper()->get (id_old));
@@ -182,19 +180,64 @@ namespace xml
         return id;
       }
 
-
-      const id::ref::function&
-      net_type::push_function (const id::ref::function& id)
+      const id::ref::transition&
+      net_type::push_transition (const id::ref::transition& id)
       {
-        const id::ref::function& id_old (_functions.push (id));
+        const id::ref::transition& id_old (_transitions.push (id));
 
-        if (not (id_old == id))
-          {
-            throw error::duplicate_function<function_type>
-              (*id_mapper()->get (id), *id_mapper()->get (id_old));
-          }
+        if (id_old != id)
+        {
+          throw error::duplicate_transition<transition_type>
+            (*id_mapper()->get (id), *id_mapper()->get (id_old));
+        }
 
         return id;
+      }
+
+      // ***************************************************************** //
+
+      bool net_type::has_function (const std::string& name) const
+      {
+        return _functions.has (name);
+      }
+      bool net_type::has_place (const std::string& name) const
+      {
+        return _places.has (name);
+      }
+      bool net_type::has_specialize (const std::string& name) const
+      {
+        return _specializes.has (name);
+      }
+      bool net_type::has_template (const std::string& name) const
+      {
+        return _templates.has (name);
+      }
+      bool net_type::has_transition (const std::string& name) const
+      {
+        return _transitions.has (name);
+      }
+
+      // ***************************************************************** //
+
+      void net_type::erase_function (const id::ref::function& id)
+      {
+        _functions.erase (id);
+      }
+      void net_type::erase_place (const id::ref::place& id)
+      {
+        _places.erase (id);
+      }
+      void net_type::erase_specialize (const id::ref::specialize& id)
+      {
+        _specializes.erase (id);
+      }
+      void net_type::erase_template (const id::ref::tmpl& id)
+      {
+        _templates.erase (id);
+      }
+      void net_type::erase_transition (const id::ref::transition& id)
+      {
+        _transitions.erase (id);
       }
 
       // ***************************************************************** //

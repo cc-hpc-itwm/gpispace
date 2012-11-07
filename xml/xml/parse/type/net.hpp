@@ -47,18 +47,18 @@ namespace xml
         typedef fhg::util::maybe<std::string> maybe_string_type;
 
       public:
+        typedef xml::util::unique<function_type,id::ref::function,maybe_string_type> functions_type;
         typedef xml::util::unique<place_type,id::ref::place> places_type;
-        typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
         typedef xml::util::unique<specialize_type,id::ref::specialize> specializes_type;
         typedef xml::util::unique<tmpl_type,id::ref::tmpl,maybe_string_type> templates_type;
-        typedef xml::util::unique<function_type,id::ref::function,maybe_string_type> functions_type;
+        typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
 
       private:
+        functions_type _functions;
         places_type _places;
-        transitions_type _transitions;
         specializes_type _specializes;
         templates_type _templates;
-        functions_type _functions;
+        transitions_type _transitions;
 
         boost::filesystem::path _path;
 
@@ -80,11 +80,11 @@ namespace xml
 
         // ***************************************************************** //
 
+        const functions_type& functions() const;
         const places_type& places() const;
-        const transitions_type& transitions() const;
         const specializes_type& specializes() const;
         const templates_type& templates() const;
-        const functions_type& functions() const;
+        const transitions_type& transitions() const;
 
         // ***************************************************************** //
 
@@ -96,11 +96,27 @@ namespace xml
 
         // ***************************************************************** //
 
-        const id::ref::place& push_place (const id::ref::place &);
-        const id::ref::transition& push_transition (const id::ref::transition&);
+        const id::ref::function& push_function (const id::ref::function&);
+        const id::ref::place& push_place (const id::ref::place&);
         const id::ref::specialize& push_specialize (const id::ref::specialize&);
         const id::ref::tmpl& push_template (const id::ref::tmpl&);
-        const id::ref::function& push_function (const id::ref::function&);
+        const id::ref::transition& push_transition (const id::ref::transition&);
+
+        // ***************************************************************** //
+
+        bool has_function (const std::string& name) const;
+        bool has_place (const std::string& name) const;
+        bool has_specialize (const std::string& name) const;
+        bool has_template (const std::string& name) const;
+        bool has_transition (const std::string& name) const;
+
+        // ***************************************************************** //
+
+        void erase_function (const id::ref::function&);
+        void erase_place (const id::ref::place&);
+        void erase_specialize (const id::ref::specialize&);
+        void erase_template (const id::ref::tmpl&);
+        void erase_transition (const id::ref::transition&);
 
         // ***************************************************************** //
 
