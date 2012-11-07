@@ -6,6 +6,7 @@
 #include <xml/parse/id/mapper.hpp>
 
 #include <string>
+#include <stdexcept>
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -144,6 +145,17 @@ namespace xml
         _by_key.insert (std::make_pair (name, id));
 
         return id;
+      }
+
+      void erase (const id_type& id)
+      {
+        const typename ids_type::const_iterator it (_values._ids.find (id));
+        if (it == _values._ids.end())
+        {
+          throw std::out_of_range ("unique::erase called with bad id");
+        }
+        _by_key.erase (id.get().name());
+        _values._ids.erase (it);
       }
 
       const ids_type& ids() const { return _values._ids; }
