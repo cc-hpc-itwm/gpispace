@@ -50,8 +50,8 @@ namespace fhg
 
         data::proxy::type* proxy () const;
 
-        XMLTYPE(ports_type)& in ();
-        XMLTYPE(ports_type)& out ();
+        XMLTYPE(function_type::ports_type)& in ();
+        XMLTYPE(function_type::ports_type)& out ();
 
       private:
         data::proxy::type* _proxy;
@@ -59,8 +59,8 @@ namespace fhg
 
         struct ports_type
         {
-          XMLTYPE(ports_type)* in;
-          XMLTYPE(ports_type)* out;
+          XMLTYPE(function_type::ports_type)* in;
+          XMLTYPE(function_type::ports_type)* out;
 
           ports_type() : in (NULL), out (NULL) {}
         } _ports;
@@ -72,8 +72,8 @@ namespace fhg
       WSIG(function, expression::open, XMLTYPE(expression_type), exp);
       WSIG(function, mod::open, XMLTYPE(module_type), mod);
       WSIG(function, net::open, XMLTYPE(net_type), net);
-      WSIG(function, function::in, XMLTYPE(ports_type), in);
-      WSIG(function, function::out, XMLTYPE(ports_type), out);
+      WSIG(function, function::in, XMLTYPE(function_type::ports_type), in);
+      WSIG(function, function::out, XMLTYPE(function_type::ports_type), out);
       WSIG(function, function::fun, XMLTYPE(function_type::type), fun);
 
       class net
@@ -82,8 +82,8 @@ namespace fhg
         explicit net ( data::internal_type*
                      , ui::graph::scene_type* scene
                      , XMLTYPE(net_type)& net
-                     , XMLTYPE(ports_type)& in
-                     , XMLTYPE(ports_type)& out
+                     , XMLTYPE(function_type::ports_type)& in
+                     , XMLTYPE(function_type::ports_type)& out
                      );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -93,8 +93,8 @@ namespace fhg
         ui::graph::scene_type* _scene;
 
         XMLTYPE(net_type)& _net;
-        XMLTYPE(ports_type)& _in;
-        XMLTYPE(ports_type)& _out;
+        XMLTYPE(function_type::ports_type)& _in;
+        XMLTYPE(function_type::ports_type)& _out;
 
         item_by_name_type _place_item_by_name;
         data::internal_type* _root;
@@ -106,12 +106,8 @@ namespace fhg
           , transitions
           );
       WSIG(net, net::places, XMLTYPE(net_type::places_type), places);
-      WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_type)), place);
-      WSIG( net
-          , transition::open
-          , ITVAL(XMLTYPE(net_type::transitions_type))
-          , transition
-          );
+      WSIG(net, place::open, XMLTYPE(place_type), place);
+      WSIG(net, transition::open, XMLTYPE(transition_type), transition);
       WSIGE(net, net::close);
 
       class transition
@@ -150,10 +146,10 @@ namespace fhg
           , XMLTYPE(transition_type::function_or_use_type)
           , fun
           );
-      WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port);
-      WSIG(transition, transition::connect_read, XMLTYPE(connections_type), cs);
-      WSIG(transition, transition::connect_in, XMLTYPE(connections_type), cs);
-      WSIG(transition, transition::connect_out, XMLTYPE(connections_type), cs);
+      WSIG(transition, port::open, XMLTYPE(port_type), port);
+      WSIG(transition, transition::connect_read, XMLTYPE(transition_type::connections_type), cs);
+      WSIG(transition, transition::connect_in, XMLTYPE(transition_type::connections_type), cs);
+      WSIG(transition, transition::connect_out, XMLTYPE(transition_type::connections_type), cs);
       WSIG(transition, transition::properties, WETYPE(property::type), prop);
 
       class property
@@ -238,7 +234,7 @@ namespace fhg
         data::internal_type* _root;
       };
 
-      WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);
+      WSIG(port_toplevel, port::open, XMLTYPE(port_type), port);
       WSIG(port_toplevel, port::name, std::string, name);
       WSIG(port_toplevel, port::place, MAYBE(std::string), place);
       WSIG(port_toplevel, port::properties, WETYPE(property::type), props);
@@ -259,32 +255,6 @@ namespace fhg
 
       WSIG(place, place::name, std::string, name);
       WSIG(place, place::properties, WETYPE(property::type), props);
-
-      namespace visitor
-      {
-        class get_function
-          : public boost::static_visitor<function_with_mapping_type>
-        {
-        private:
-          XMLTYPE(net_type)& _net;
-
-        public:
-          get_function (XMLTYPE(net_type)& net) : _net (net) {}
-
-          function_with_mapping_type
-          operator() (const XMLTYPE(function_type)& fun) const
-          {
-            return function_with_mapping_type
-              (const_cast< ::xml::parse::type::function_type &> (fun));
-          }
-
-          function_with_mapping_type
-          operator() (const XMLTYPE(use_type)& use) const
-          {
-            return _net.get_function (use.name());
-          }
-        };
-      }
     }
   }
 }
