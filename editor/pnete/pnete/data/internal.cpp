@@ -18,56 +18,76 @@ namespace fhg
     {
       namespace
       {
-        ::xml::parse::type::function_type make_function
-          (const internal_type::kind& t, ::xml::parse::state::type& state)
+        ::xml::parse::id::function make_function
+          (const internal_type::kind& kind, ::xml::parse::state::type& state)
         {
           const ::xml::parse::id::function function_id (state.next_id());
-          switch (t)
+          switch (kind)
           {
           case internal_type::expression:
             {
               const ::xml::parse::id::expression id (state.next_id());
+
               const ::xml::parse::type::expression_type expression
-                (id, function_id, state.id_mapper());
-              return ::xml::parse::type::function_type
-                (expression, function_id, boost::blank(), state.id_mapper());
+                (id, state.id_mapper(), function_id);
+
+              const ::xml::parse::type::function_type fun
+                ( function_id
+                , state.id_mapper()
+                , ::xml::parse::id::ref::expression (id, state.id_mapper())
+                , boost::none
+                );
             }
           case internal_type::module_call:
             {
               const ::xml::parse::id::module id (state.next_id());
+
               const ::xml::parse::type::module_type mod
-                (id, function_id, state.id_mapper());
-              return ::xml::parse::type::function_type
-                (mod, function_id, boost::blank(), state.id_mapper());
+                (id, state.id_mapper(), function_id);
+
+              const ::xml::parse::type::function_type fun
+                ( function_id
+                , state.id_mapper()
+                , ::xml::parse::id::ref::module (id, state.id_mapper())
+                , boost::none
+                );
             }
           case internal_type::net:
             {
               const ::xml::parse::id::net id (state.next_id());
+
               const ::xml::parse::type::net_type net
-                (id, function_id, state.id_mapper());
-              return ::xml::parse::type::function_type
-                (net, function_id, boost::blank(), state.id_mapper());
+                (id, state.id_mapper(), function_id);
+
+              const ::xml::parse::type::function_type fun
+                ( function_id
+                , state.id_mapper()
+                , ::xml::parse::id::ref::net (id, state.id_mapper())
+                , boost::none
+                );
             }
           default:
             {
               throw std::runtime_error ("make_function of unknown kind!?");
             }
           }
+          return function_id;
         }
       }
 
       internal_type::internal_type (const kind& kind_)
         : _state ()
-        , _function (make_function (kind_, _state))
+        , _function (make_function (kind_, _state), _state.id_mapper())
         , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}
 
       internal_type::internal_type (const QString& filename)
         : _state ()
-        , _function (::xml::parse::just_parse ( _state
-                                              , filename.toStdString()
-                                              )
+        , _function ( ::xml::parse::just_parse ( _state
+                                               , filename.toStdString()
+                                               )
+                    , _state.id_mapper()
                     )
         , _change_manager (_state)
         , _root_proxy (*create_proxy())
@@ -81,13 +101,13 @@ namespace fhg
 
       ::xml::parse::type::function_type & internal_type::function ()
       {
-        return const_cast< ::xml::parse::type::function_type &> (_function);
+        return _function.get_ref();
       }
-
       const ::xml::parse::type::function_type & internal_type::function () const
       {
-        return _function;
+        return _function.get();
       }
+
       const ::xml::parse::state::key_values_t & internal_type::context () const
       {
         return _state.key_values();
