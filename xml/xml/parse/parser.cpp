@@ -53,12 +53,12 @@ namespace xml
           );
       }
 
-      id::tmpl parse_template ( std::istream & f
-                              , state::type & state
-                              , const id::net& parent
-                              )
+      id::ref::tmpl parse_template ( std::istream & f
+                                   , state::type & state
+                                   , const id::net& parent
+                                   )
       {
-        return generic_parse<id::tmpl>
+        return generic_parse<id::ref::tmpl>
           ( boost::bind (tmpl_type, _1, _2, parent)
           , f
           , state
@@ -102,12 +102,12 @@ namespace xml
         (boost::bind (parse_function, _1, _2, parent), file);
     }
 
-    static id::tmpl template_include ( const std::string & file
-                                     , state::type & state
-                                     , const id::net& parent
-                                     )
+    static id::ref::tmpl template_include ( const std::string & file
+                                          , state::type & state
+                                          , const id::net& parent
+                                          )
     {
-      return state.generic_include<id::tmpl>
+      return state.generic_include<id::ref::tmpl>
         (boost::bind (parse_template, _1, _2, parent), file);
     }
 
@@ -220,17 +220,15 @@ namespace xml
     {
       const id::connect id (state.next_id());
 
-      {
-        type::connect_type connect
+      const id::ref::connect connection
+        ( type::connect_type
           ( id
           , state.id_mapper()
           , parent
           , required ("connect_type", node, "place", state.file_in_progress())
           , required ("connect_type", node, "port", state.file_in_progress())
-          );
-      }
-
-      const id::ref::connect connection (id, state.id_mapper());
+          ).make_reference_id()
+        );
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -998,10 +996,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::tmpl tmpl_type ( const xml_node_type * node
-                       , state::type & state
-                       , const id::net& parent
-                       )
+    id::ref::tmpl tmpl_type ( const xml_node_type * node
+                            , state::type & state
+                            , const id::net& parent
+                            )
     {
       boost::optional<id::ref::function> fun;
       type::tmpl_type::names_type template_parameter;
@@ -1077,7 +1075,7 @@ namespace xml
         , name
         , template_parameter
         , *fun
-        ).id();
+        ).make_reference_id();
     }
 
     // ********************************************************************* //
@@ -1127,38 +1125,22 @@ namespace xml
               if (child_name == "in")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_in ( id::ref::port
-                                ( port_type (child, state, id)
-                                , state.id_mapper()
-                                )
-                              );
+                    ->push_in (port_type (child, state, id));
                 }
               else if (child_name == "out")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_out ( id::ref::port
-                                 ( port_type (child, state, id)
-                                 , state.id_mapper()
-                                 )
-                               );
+                    ->push_out (port_type (child, state, id));
                 }
               else if (child_name == "inout")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_inout ( id::ref::port
-                                   ( port_type (child, state, id)
-                                   , state.id_mapper()
-                                   )
-                                 );
+                    ->push_inout (port_type (child, state, id));
                 }
               else if (child_name == "tunnel")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_tunnel ( id::ref::port
-                                    ( port_type (child, state, id)
-                                    , state.id_mapper()
-                                    )
-                                  );
+                    ->push_tunnel (port_type (child, state, id));
                 }
               else if (child_name == "struct")
                 {
@@ -1197,10 +1179,7 @@ namespace xml
               else if (child_name == "module")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->f = id::ref::module
-                        ( module_type (child, state, id)
-                        , state.id_mapper()
-                        );
+                    ->f = module_type (child, state, id);
                 }
               else if (child_name == "net")
                 {
@@ -1273,7 +1252,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::module
+    id::ref::module
     module_type ( const xml_node_type * node
                 , state::type & state
                 , const id::function& parent
@@ -1281,16 +1260,16 @@ namespace xml
     {
       const id::module id (state.next_id());
 
-      {
-        type::module_type mod
+      const id::ref::module module
+        ( type::module_type
           ( id
           , state.id_mapper()
           , parent
           , required ("module_type", node, "name", state.file_in_progress())
           , required ("module_type", node, "function", state.file_in_progress())
           , state.file_in_progress()
-          );
-      }
+          ).make_reference_id()
+        );
 
       state.id_mapper()->get_ref (id)->path = state.file_in_progress();
 
@@ -1309,31 +1288,31 @@ namespace xml
                   const std::string href
                     (required ("module_type", child, "href", state.file_in_progress()));
 
-                  state.id_mapper()->get_ref (id)->cincludes.push_back (href);
+                  module.get_ref().cincludes.push_back (href);
                 }
               else if (child_name == "ld")
                 {
                   const std::string flag
                     (required ("module_type", child, "flag", state.file_in_progress()));
 
-                  state.id_mapper()->get_ref (id)->ldflags.push_back (flag);
+                  module.get_ref().ldflags.push_back (flag);
                 }
               else if (child_name == "cxx")
                 {
                   const std::string flag
                     (required ("module_type", child, "flag", state.file_in_progress()));
 
-                  state.id_mapper()->get_ref (id)->cxxflags.push_back (flag);
+                  module.get_ref().cxxflags.push_back (flag);
                 }
               else if (child_name == "link")
                 {
-                  state.id_mapper()->get_ref (id)
-                    ->links.push_back ( required ( "module_type"
-                                                 , child
-                                                 , "href"
-                                                 , state.file_in_progress()
-                                                 )
-                                      );
+                  module.get_ref().links.push_back
+                    ( required ( "module_type"
+                               , child
+                               , "href"
+                               , state.file_in_progress()
+                               )
+                    );
                 }
               else if (child_name == "code")
                 {
@@ -1346,8 +1325,7 @@ namespace xml
                       )
                     );
 
-                  state.id_mapper()->get_ref (id)
-                    ->code = fhg::util::join (cdata, "\n");
+                  module.get_ref().code = fhg::util::join (cdata, "\n");
                 }
               else
                 {
@@ -1361,7 +1339,7 @@ namespace xml
             }
         }
 
-      return id;
+      return module;
     }
 
     // ********************************************************************* //
@@ -1396,11 +1374,7 @@ namespace xml
                 {
                   state.id_mapper()
                     ->get_ref (id)
-                    ->push_template ( id::ref::tmpl
-                                      ( tmpl_type (child, state, id)
-                                      , state.id_mapper()
-                                      )
-                                    );
+                    ->push_template (tmpl_type (child, state, id));
                 }
               else if (child_name == "specialize")
                 {
@@ -1416,11 +1390,7 @@ namespace xml
                 {
                   state.id_mapper()
                     ->get_ref (id)
-                    ->push_place ( id::ref::place
-                                   ( place_type (child, state, id)
-                                   , state.id_mapper()
-                                   )
-                                 );
+                    ->push_place (place_type (child, state, id));
                 }
               else if (child_name == "transition")
                 {
@@ -1472,36 +1442,32 @@ namespace xml
                   const fhg::util::maybe<std::string> as
                     (optional (child, "as"));
 
-                  id::tmpl id_tmpl (template_include (file, state, id));
+                  id::ref::tmpl tmpl (template_include (file, state, id));
 
                   if (as)
                     {
-                      if (  state.id_mapper()->get(id_tmpl)->name()
-                         && *state.id_mapper()->get(id_tmpl)->name() != *as)
+                      if (tmpl.get().name() && *tmpl.get().name() != *as)
                         {
                           state.warn
                             ( warning::overwrite_template_name_as
-                              ( *state.id_mapper()->get(id_tmpl)->name()
+                              ( *tmpl.get().name()
                               , *as
                               , state.file_in_progress()
                               )
                             );
                         }
 
-                      state.id_mapper()->get_ref (id_tmpl)->name (*as);
+                      tmpl.get_ref().name (*as);
                     }
 
-                  if (not state.id_mapper()->get_ref (id_tmpl)->name())
+                  if (not tmpl.get().name())
                     {
                       throw error::top_level_anonymous_template
                         (file, "net_type");
                     }
 
                   state.id_mapper()->get_ref (id)
-                    ->push_template (id::ref::tmpl ( id_tmpl
-                                                   , state.id_mapper()
-                                                   )
-                                    );
+                    ->push_template (tmpl);
                 }
               else if (child_name == "properties")
                 {
@@ -1548,18 +1514,18 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::place place_type ( const xml_node_type * node
-                         , state::type & state
-                         , const id::net& parent
-                         )
+    id::ref::place place_type ( const xml_node_type * node
+                              , state::type & state
+                              , const id::net& parent
+                              )
     {
       const id::place id (state.next_id());
 
       const std::string name
         (required ("place_type", node, "name", state.file_in_progress()));
 
-      {
-        type::place_type p
+      const id::ref::place place
+        ( type::place_type
           ( id
           , state.id_mapper()
           , parent
@@ -1574,8 +1540,8 @@ namespace xml
           , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
                                                , optional (node, "virtual")
                                                )
-          );
-      }
+          ).make_reference_id()
+        );
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1589,12 +1555,11 @@ namespace xml
             {
               if (child_name == "token")
                 {
-                  state.id_mapper()->get_ref (id)
-                    ->push_token (token_type (child, state, id));
+                  place.get_ref().push_token (token_type (child, state, id));
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type ( state.id_mapper()->get_ref (id)->prop
+                  property_map_type ( place.get_ref().prop
                                     , child
                                     , state
                                     );
@@ -1612,7 +1577,7 @@ namespace xml
                     );
 
                   util::property::join ( state
-                                       , state.id_mapper()->get_ref (id)->prop
+                                       , place.get_ref().prop
                                        , deeper
                                        );
                 }
@@ -1628,38 +1593,40 @@ namespace xml
             }
         }
 
-      return id;
+      return place;
     }
 
     // ********************************************************************* //
 
-    id::port
+    id::ref::port
     port_type ( const xml_node_type * node
               , state::type & state
               , const id::function& parent
               )
     {
-      const std::string name
-        (required ("port_type", node, "name", state.file_in_progress()));
-
       const id::port id (state.next_id());
 
-      {
-        type::port_type port
+      const id::ref::port port
+        ( type::port_type
           ( id
           , state.id_mapper()
           , parent
-          , validate_name ( validate_prefix ( name
-                                            , "port"
-                                            , state.file_in_progress()
-                                            )
-                          , "port"
-                          , state.file_in_progress()
-                          )
+          , validate_name
+            ( validate_prefix ( required ( "port_type"
+                                         , node
+                                         , "name"
+                                         , state.file_in_progress()
+                                         )
+                              , "port"
+                              , state.file_in_progress()
+                              )
+            , "port"
+            , state.file_in_progress()
+            )
           , required ("port_type", node, "type", state.file_in_progress())
           , optional (node, "place")
-          );
-      }
+          ).make_reference_id()
+        );
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1673,7 +1640,7 @@ namespace xml
             {
               if (child_name == "properties")
                 {
-                  property_map_type ( state.id_mapper()->get_ref (id)->prop
+                  property_map_type ( port.get_ref().prop
                                     , child
                                     , state
                                     );
@@ -1707,7 +1674,7 @@ namespace xml
             }
         }
 
-      return id;
+      return port;
     }
 
     // ********************************************************************* //
