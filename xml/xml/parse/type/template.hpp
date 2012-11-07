@@ -49,8 +49,7 @@ namespace xml
 
         const names_type& tmpl_parameter () const;
 
-        boost::optional<const function_type&> function() const;
-        boost::optional<function_type&> function();
+        const id::ref::function& function() const;
 
         const boost::filesystem::path& path() const;
 

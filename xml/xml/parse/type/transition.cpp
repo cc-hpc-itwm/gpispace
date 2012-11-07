@@ -125,7 +125,7 @@ namespace xml
         if (not (id_old == id))
         {
           throw error::duplicate_connect ( "in"
-                                         , id_mapper()->get (id)->name()
+                                         , id.get().name()
                                          , name()
                                          , path
                                          );
@@ -139,7 +139,7 @@ namespace xml
         if (not (id_old == id))
         {
           throw error::duplicate_connect ( "out"
-                                         , id_mapper()->get (id)->name()
+                                         , id.get().name()
                                          , name()
                                          , path
                                          );
@@ -153,7 +153,7 @@ namespace xml
         if (not (id_old == id))
         {
           throw error::duplicate_connect ( "read"
-                                         , id_mapper()->get (id)->name()
+                                         , id.get().name()
                                          , name()
                                          , path
                                          );
@@ -166,7 +166,7 @@ namespace xml
 
         if (not (id_old == id))
         {
-          throw error::duplicate_place_map ( id_mapper()->get (id)->name()
+          throw error::duplicate_place_map ( id.get().name()
                                            , name()
                                            , path
                                            );
@@ -221,8 +221,7 @@ namespace xml
           void operator () (use_type &) const { return; }
           void operator () (id::ref::function& id_function) const
           {
-            state.id_mapper()->get_ref (id_function)
-              ->resolve (global, state, forbidden);
+            id_function.get_ref().resolve (global, state, forbidden);
           }
         };
       }
@@ -270,8 +269,7 @@ namespace xml
           void operator () (use_type &) const { return; }
           void operator () (id::ref::function& id_function) const
           {
-            state.id_mapper()->get_ref (id_function)
-              ->specialize (map, get, known_structs, state);
+            id_function.get_ref().specialize (map, get, known_structs, state);
           }
         };
       }
@@ -309,8 +307,7 @@ namespace xml
           void operator () (const use_type &) const { return; }
           void operator () (const id::ref::function& id_function) const
           {
-            state.id_mapper()->get (id_function)
-              ->sanity_check (state);
+            id_function.get().sanity_check (state);
           }
         };
       }
@@ -327,7 +324,7 @@ namespace xml
       namespace
       {
         class transition_get_function
-          : public boost::static_visitor <boost::optional<const id::ref::function&> >
+          : public boost::static_visitor <const id::ref::function&>
         {
         private:
           const net_type & net;
@@ -344,13 +341,13 @@ namespace xml
             , trans (_trans)
           {}
 
-          boost::optional<const id::ref::function&>
+          const id::ref::function&
           operator () (const id::ref::function& id_function) const
           {
             return id_function;
           }
 
-          boost::optional<const id::ref::function&>
+          const id::ref::function&
           operator () (const use_type & use) const
           {
             boost::optional<const id::ref::function&>
@@ -364,7 +361,7 @@ namespace xml
 
             //            fun->name (trans.name());
 
-            return id_function;
+            return *id_function;
           }
         };
       }
@@ -386,7 +383,7 @@ namespace xml
             (direction, name(), connect.place(), path);
         }
 
-        boost::optional<const id::ref::function&> id_function
+        const id::ref::function& id_function
           ( boost::apply_visitor
             (transition_get_function (net, state, *this), function_or_use())
           );
@@ -394,8 +391,8 @@ namespace xml
         // existence of connect.port
         boost::optional<const id::ref::port&> id_port
           ( (direction == "out")
-          ? id_mapper()->get (*id_function)->get_port_out (connect.port())
-          : id_mapper()->get (*id_function)->get_port_in (connect.port())
+          ? id_function.get().get_port_out (connect.port())
+          : id_function.get().get_port_in (connect.port())
           );
 
         if (not id_port)
@@ -404,19 +401,16 @@ namespace xml
             (direction, name(), connect.port(), path);
         }
 
-        boost::optional<const port_type&>
-          port (state.id_mapper()->get (*id_port));
-
-        boost::optional<const place_type&>
-          place (state.id_mapper()->get (*id_place));
+        const port_type& port (id_port->get());
+        const place_type& place (id_place->get());
 
         // typecheck connect.place.type vs connect.port.type
-        if (place->type != port->type)
+        if (place.type != port.type)
         {
           throw error::connect_type_error ( direction
                                           , name()
-                                          , *port
-                                          , *place
+                                          , port
+                                          , place
                                           , path
                                           );
         }
@@ -437,7 +431,7 @@ namespace xml
           void operator () (const use_type &) const { return; }
           void operator () (const id::ref::function & id_function) const
           {
-            state.id_mapper()->get (id_function)->type_check (state);
+            id_function.get().type_check (state);
           }
         };
       }
@@ -486,7 +480,7 @@ namespace xml
       }
 
       void transition_synthesize
-        ( const id::transition & id_transition
+        ( const id::ref::transition & id_transition
         , const state::type & state
         , const net_type & net
         , we::activity_t::transition_type::net_type & we_net
@@ -501,7 +495,7 @@ namespace xml
         typedef we_transition_type::preparsed_cond_type we_cond_type;
         typedef petri_net::tid_t tid_t;
 
-        const transition_type& trans (*state.id_mapper()->get (id_transition));
+        const transition_type& trans (id_transition.get());
 
         if (trans.in().empty() and trans.out().empty())
           {
@@ -512,7 +506,7 @@ namespace xml
               );
           }
 
-        boost::optional<const id::ref::function&> id_function
+        const id::ref::function& id_function
           ( boost::apply_visitor
             ( transition_get_function (net, state, trans)
             , trans.function_or_use()
@@ -520,7 +514,7 @@ namespace xml
           );
 
         //! \todo keep working with the id_function, deref deeper
-        function_type& fun (*state.id_mapper()->get_ref (*id_function));
+        function_type& fun (id_function.get_ref());
 
         BOOST_FOREACH (const port_type& port_in, fun.in().values())
           {
@@ -529,16 +523,15 @@ namespace xml
 
             if (id_port_out)
               {
-                boost::optional<const port_type&>
-                  port_out (state.id_mapper()->get (*id_port_out));
+                const port_type& port_out (id_port_out->get());
 
-                if (port_out->type != port_in.type)
+                if (port_out.type != port_in.type)
                   {
                     state.warn
                       ( warning::conflicting_port_types ( trans.name()
                                                         , port_in.name()
                                                         , port_in.type
-                                                        , port_out->type
+                                                        , port_out.type
                                                         , state.file_in_progress()
                                                         )
                       );
@@ -587,6 +580,9 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
+        //! \todo implement boost::optional<net_type> fun.as_net()
+        // and use this instead of is_net and boost::get some lines below
+
         if (  not trans.priority // WORK HERE: make it work with prio
            && (
                (  !state.synthesize_virtual_places()
@@ -625,8 +621,7 @@ namespace xml
                 place_map_map[prefix + place_map.place_virtual] = pid->second;
               }
 
-            net_type& net
-              (*state.id_mapper()->get_ref (boost::get<id::ref::net> (fun.f)));
+            net_type& net ((boost::get<id::ref::net> (fun.f)).get_ref());
             net.set_prefix (prefix);
 
             // synthesize into this level

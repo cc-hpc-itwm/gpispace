@@ -48,13 +48,9 @@ namespace xml
         return _tmpl_parameter;
       }
 
-      boost::optional<function_type&> tmpl_type::function()
+      const id::ref::function& tmpl_type::function() const
       {
-        return id_mapper()->get_ref (_function);
-      }
-      boost::optional<const function_type&> tmpl_type::function() const
-      {
-        return id_mapper()->get (_function);
+        return _function;
       }
 
       const boost::filesystem::path& tmpl_type::path() const
@@ -80,7 +76,7 @@ namespace xml
         , state::type & state
         )
       {
-        function()->specialize (map, get, known_structs, state);
+        function().get_ref().specialize (map, get, known_structs, state);
       }
 
       namespace dump
@@ -97,7 +93,7 @@ namespace xml
               s.close ();
             }
 
-          ::xml::parse::type::dump::dump (s, *t.function());
+          ::xml::parse::type::dump::dump (s, t.function().get());
 
           s.close ();
         }

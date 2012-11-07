@@ -640,7 +640,7 @@ namespace fhg
           WEAVE(tmpl::name, MAYBE(std::string))(t.name());
           WEAVE(tmpl::template_parameter, XMLTYPE(tmpl_type::names_type))
             (t.tmpl_parameter());
-          WEAVE(tmpl::function, XMLTYPE(function_type))(*t.function());
+          WEAVE(tmpl::function, XMLTYPE(function_type))(t.function().get());
           WEAVEE(tmpl::close)();
         }
 

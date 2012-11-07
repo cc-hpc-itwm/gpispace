@@ -86,11 +86,10 @@ namespace xml
             }
             else
             {
-              boost::optional<const net_type&>
-                net (state.id_mapper()->get (id_net));
+              const net_type& net (id_net.get());
 
               boost::optional<const id::ref::place&>
-                id_place (net->places().get (*port.place));
+                id_place (net.places().get (*port.place));
 
               if (not id_place)
               {
@@ -98,29 +97,28 @@ namespace xml
                   (direction, port.name(), *port.place, path);
               }
 
-              boost::optional<const place_type&>
-                place (state.id_mapper()->get (*id_place));
+              const place_type& place (id_place->get());
 
-              if (place->type != port.type)
+              if (place.type != port.type)
               {
                 throw error::port_connected_type_error ( direction
                                                        , port
-                                                       , *place
+                                                       , place
                                                        , path
                                                        );
               }
 
               if (direction == "tunnel")
               {
-                if (not place->is_virtual())
+                if (not place.is_virtual())
                 {
                   throw
-                    error::tunnel_connected_non_virtual (port, *place, path);
+                    error::tunnel_connected_non_virtual (port, place, path);
                 }
 
-                if (port.name() != place->name())
+                if (port.name() != place.name())
                 {
-                  throw error::tunnel_name_mismatch (port, *place, path);
+                  throw error::tunnel_name_mismatch (port, place, path);
                 }
               }
             }

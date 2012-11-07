@@ -270,20 +270,16 @@ main (int argc, char ** argv)
 
         fhg::util::xml::xmlstream s (stream);
 
-        xml::parse::type::dump::dump ( s
-                                     , *state.id_mapper()->get (id_function)
-                                     , state
-                                     );
+        xml::parse::type::dump::dump (s, id_function.get(), state);
       }
 
     // set all the collected requirements to the top level function
-    state.id_mapper()->get_ref (id_function)->requirements = state.requirements();
+    id_function.get_ref().requirements = state.requirements();
 
-    state.id_mapper()->get_ref (id_function)->specialize (state);
-    state.id_mapper()->get_ref (id_function)->resolve
-      (state, state.id_mapper()->get (id_function)->forbidden_below());
-    state.id_mapper()->get_ref (id_function)->type_check (state);
-    state.id_mapper()->get_ref (id_function)->sanity_check (state);
+    id_function.get_ref().specialize (state);
+    id_function.get_ref().resolve (state, id_function.get().forbidden_below());
+    id_function.get_ref().type_check (state);
+    id_function.get_ref().sanity_check (state);
 
     if (state.path_to_cpp().size() > 0)
       {
@@ -299,8 +295,7 @@ main (int argc, char ** argv)
         xml::parse::includes::mks (descrs);
         xml::parse::includes::we_header_gen (state, descrs);
 
-        xml::parse::type::struct_to_cpp
-          (state, *state.id_mapper()->get_ref (id_function));
+        xml::parse::type::struct_to_cpp (state, id_function.get_ref());
       }
 
     if (state.dump_dependenciesD())
@@ -339,8 +334,7 @@ main (int argc, char ** argv)
           }
       }
 
-    we::transition_t trans
-      (state.id_mapper()->get_ref (id_function)->synthesize (state));
+    we::transition_t trans (id_function.get_ref().synthesize (state));
 
     we::type::optimize::optimize (trans, state.options_optimize());
 
