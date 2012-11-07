@@ -2,7 +2,14 @@
 
 #include <xml/parse/parser.hpp>
 
+#include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/util.hpp>
+#include <xml/parse/warning.hpp>
+
+#include <xml/parse/id/types.hpp>
+
+#include <xml/parse/rapidxml/types.hpp>
 
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>
@@ -14,25 +21,113 @@
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
-#include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/token.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 
-#include <fhg/util/read.hpp>
+#include <fhg/util/join.hpp>
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/read_bool.hpp>
-#include <fhg/util/join.hpp>
 
+#include <we/type/id.hpp>
+#include <we/type/property.hpp>
+#include <we/type/signature.hpp>
+
+#include <istream>
+
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
-#include <boost/bind.hpp>
+
+// ************************************************************************* //
 
 namespace xml
 {
   namespace parse
   {
+    template<typename T>
+    T generic_parse
+      ( boost::function<T (const xml_node_type *, state::type &)> parse
+      , std::istream & f
+      , state::type & state
+      , const std::string & name_wanted
+      , const std::string & pre
+      )
+    {
+      xml_document_type doc;
+
+      input_type inp (f);
+
+      try
+        {
+          doc.parse < rapidxml::parse_full
+                    | rapidxml::parse_trim_whitespace
+                    | rapidxml::parse_normalize_whitespace
+                    > (inp.data())
+                    ;
+        }
+      catch (const rapidxml::parse_error & e)
+        {
+          int line = 1;
+          int col = 0;
+
+          for ( char * pos = const_cast<char *>(inp.data())
+              ; pos != e.where<char>()
+              ; ++pos
+              )
+            {
+              col += 1;
+
+              if (*pos == '\n')
+                {
+                  col = 0;
+                  line += 1;
+                }
+            }
+
+          std::ostringstream oss;
+
+          oss << "Parse error [" << line << ":" << col << "]: " << e.what();
+
+          throw rapidxml::parse_error (oss.str().c_str(), e.where<void>());
+        }
+
+      xml_node_type * node (doc.first_node());
+
+      if (!node)
+        {
+          throw error::no_elements_given (pre, state.file_in_progress());
+        }
+
+      skip (node, rapidxml::node_declaration);
+
+      const std::string name (name_element (node, state.file_in_progress()));
+
+      if (!node)
+        {
+          throw error::no_elements_given (pre, state.file_in_progress());
+        }
+
+      if (name != name_wanted)
+        {
+          state.warn
+            (warning::unexpected_element (name, pre, state.file_in_progress()));
+        }
+
+      xml_node_type * sib (node->next_sibling());
+
+      skip (sib, rapidxml::node_comment);
+
+      if (sib)
+        {
+          throw error::more_than_one_definition (pre, state.file_in_progress());
+        }
+
+      return parse (node, state);
+    }
+
     // ********************************************************************* //
 
     id::ref::connect connect_type ( const xml_node_type *
@@ -153,7 +248,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    static id::ref::function
+    id::ref::function
     function_include
       ( const std::string & file
       , state::type & state
@@ -164,7 +259,7 @@ namespace xml
         (boost::bind (parse_function, _1, _2, parent), file);
     }
 
-    static id::ref::tmpl template_include ( const std::string & file
+    id::ref::tmpl template_include ( const std::string & file
                                           , state::type & state
                                           , const id::net& parent
                                           )
@@ -173,7 +268,7 @@ namespace xml
         (boost::bind (parse_template, _1, _2, parent), file);
     }
 
-    static type::structs_type structs_include ( const std::string & file
+    type::structs_type structs_include ( const std::string & file
                                               , state::type & state
                                               , const id::function& parent
                                               )
@@ -182,7 +277,7 @@ namespace xml
         (boost::bind (parse_structs, _1, _2, parent), file);
     }
 
-    static we::type::property::type
+    we::type::property::type
     properties_include (const std::string & file, state::type & state)
     {
       return
@@ -191,7 +286,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void
+    void
     require_type ( type::requirements_type & requirements
                  , const xml_node_type * node
                  , state::type & state
@@ -214,7 +309,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void
+    void
     set_type_map ( const xml_node_type * node
                  , const state::type & state
                  , type::type_map_type & map
@@ -250,7 +345,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void
+    void
     set_type_get ( const xml_node_type * node
                  , const state::type & state
                  , type::type_get_type & set
@@ -609,15 +704,6 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::function
-    just_parse (state::type & state, const std::string & input)
-    {
-      state.set_input (input);
-
-      return state.generic_parse<id::ref::function>
-        (boost::bind (parse_function, _1, _2, boost::none), input);
-    }
-
     id::ref::specialize
     specialize_type ( const xml_node_type * node
                     , state::type & state
@@ -683,7 +769,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void
+    void
     property_dive ( const xml_node_type * node
                   , state::type & state
                   , we::type::property::type & prop
@@ -843,7 +929,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void token_field_type ( const xml_node_type * node
+    void token_field_type ( const xml_node_type * node
                                  , state::type & state
                                  , signature::desc_t & tok
                                  )
@@ -1819,6 +1905,17 @@ namespace xml
       gen_struct_type (node, state, s.signature());
 
       return s;
+    }
+
+    // ********************************************************************* //
+
+    id::ref::function
+    just_parse (state::type & state, const std::string & input)
+    {
+      state.set_input (input);
+
+      return state.generic_parse<id::ref::function>
+        (boost::bind (parse_function, _1, _2, boost::none), input);
     }
   } // namespace parse
 } // namespace xml
