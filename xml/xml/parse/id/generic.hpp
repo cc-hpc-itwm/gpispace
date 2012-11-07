@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fhg.de
 
-#ifndef _XML_XML_PARSE_ID_GENERIC_HPP_3ff3f82f99ee4d36a0d09bee568e892d
-#define _XML_XML_PARSE_ID_GENERIC_HPP_3ff3f82f99ee4d36a0d09bee568e892d 1
+#ifndef XML_PARSE_ID_GENERIC_HPP
+#define XML_PARSE_ID_GENERIC_HPP
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/id/mapper.fwd.hpp>

@@ -78,7 +78,7 @@ namespace xml
       ID_IMPL(token)
       ID_IMPL(transition)
       ID_IMPL(use)
- 
+
       PARENT_IMPL(function,expression)
       PARENT_IMPL(function,module)
       PARENT_IMPL(function,net)
