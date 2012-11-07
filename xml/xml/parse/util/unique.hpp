@@ -20,31 +20,26 @@ namespace xml
     template<typename T, typename ID_TYPE, typename KEY = std::string>
     class unique
     {
-    public:
-      typedef T value_type;
+    private:
       typedef ID_TYPE id_type;
       typedef KEY key_type;
 
       typedef boost::unordered_set<id_type> ids_type;
       typedef boost::unordered_map<key_type,id_type> by_key_type;
 
-    private:
-      struct values_type
+      class values_type
       {
+      public:
         typedef T value_type;
 
-        typedef typename ids_type::iterator base_iterator;
-        typedef typename ids_type::const_iterator const_base_iterator;
-        typedef boost::function
-          <value_type& (const typename base_iterator::value_type&)> fun_type;
-        typedef boost::function
-          <const value_type& (const typename base_iterator::value_type&)>
-          const_fun_type;
-        typedef boost::transform_iterator<fun_type, base_iterator>
-          iterator;
-        typedef boost::transform_iterator< const_fun_type
-                                         , const_base_iterator
-                                         > const_iterator;
+        typedef boost::transform_iterator
+          < boost::function<value_type& (const id_type&)>
+          , typename ids_type::iterator
+          > iterator;
+        typedef boost::transform_iterator
+          < boost::function<const value_type& (const id_type&)>
+          , typename ids_type::const_iterator
+          > const_iterator;
 
         iterator begin()
         {
