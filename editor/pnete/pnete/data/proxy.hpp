@@ -92,36 +92,38 @@ namespace fhg
           {
           private:
             xml_type::expression_type& _expression;
-            xml_type::ports_type& _in;
-            xml_type::ports_type& _out;
+            xml_type::function_type::ports_type& _in;
+            xml_type::function_type::ports_type& _out;
 
           public:
-            explicit expression_type ( xml_type::expression_type& expression
-                                     , xml_type::ports_type& in
-                                     , xml_type::ports_type& out
-                                     );
+            explicit expression_type
+              ( xml_type::expression_type& expression
+              , xml_type::function_type::ports_type& in
+              , xml_type::function_type::ports_type& out
+              );
 
             xml_type::expression_type& expression ();
-            xml_type::ports_type& in ();
-            xml_type::ports_type& out ();
+            xml_type::function_type::ports_type& in ();
+            xml_type::function_type::ports_type& out ();
           };
 
           class module_type
           {
           private:
             xml_type::module_type& _mod;
-            xml_type::ports_type& _in;
-            xml_type::ports_type& _out;
+            xml_type::function_type::ports_type& _in;
+            xml_type::function_type::ports_type& _out;
 
           public:
-            explicit module_type ( xml_type::module_type& mod
-                              , xml_type::ports_type& in
-                              , xml_type::ports_type& out
-                              );
+            explicit module_type
+              ( xml_type::module_type& mod
+              , xml_type::function_type::ports_type& in
+              , xml_type::function_type::ports_type& out
+              );
 
             xml_type::module_type& mod ();
-            xml_type::ports_type& in ();
-            xml_type::ports_type& out ();
+            xml_type::function_type::ports_type& in ();
+            xml_type::function_type::ports_type& out ();
           };
 
           class net_type
