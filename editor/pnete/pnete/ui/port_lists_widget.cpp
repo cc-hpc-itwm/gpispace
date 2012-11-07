@@ -17,7 +17,7 @@ namespace fhg
     {
       static QGroupBox* port_list_box
         ( const QString & label
-        , ::xml::parse::type::ports_type & ports
+        , ::xml::parse::type::function_type::ports_type & ports
         , const QStringList& types
         )
       {
@@ -29,8 +29,8 @@ namespace fhg
       }
 
       port_lists_widget::port_lists_widget
-        ( ::xml::parse::type::ports_type& in
-        , ::xml::parse::type::ports_type& out
+        ( ::xml::parse::type::function_type::ports_type& in
+        , ::xml::parse::type::function_type::ports_type& out
         , const QStringList& types
         , QWidget* parent
         )
@@ -52,4 +52,3 @@ namespace fhg
     }
   }
 }
-

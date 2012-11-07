@@ -22,15 +22,15 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        explicit port_lists_widget ( ::xml::parse::type::ports_type& in
-                                   , ::xml::parse::type::ports_type& out
+        explicit port_lists_widget ( ::xml::parse::type::function_type::ports_type& in
+                                   , ::xml::parse::type::function_type::ports_type& out
                                    , const QStringList& types
                                    , QWidget* parent = NULL
                                    );
 
       private:
-        ::xml::parse::type::ports_type& _in;
-        ::xml::parse::type::ports_type& _out;
+        ::xml::parse::type::function_type::ports_type& _in;
+        ::xml::parse::type::function_type::ports_type& _out;
 
         const QStringList& _types;
       };
