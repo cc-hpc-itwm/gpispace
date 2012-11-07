@@ -337,7 +337,7 @@ endif
 ###############################################################################
 
 submit: $(PUT)
-	$(SDPA) submit $(PUT)
+	$(SDPA) submit $(PUT) $(OUT)
 
 ###############################################################################
 
@@ -387,6 +387,7 @@ help:
 	@echo "gen         generate code into gen"
 	@echo "lib         'gen' & build libs from code in gen"
 	@echo "run         'lib' & 'put' & execute workflow"
+	@echo "submit      'put' & submit to a running SDPA system"
 	@echo
 	@echo "validate    validate the xml"
 	@echo
@@ -480,4 +481,5 @@ showconfig:
 	@echo "PNETPUT                 = $(PNETPUT)"
 	@echo "PNETV                   = $(PNETV)"
 	@echo "WE_EXEC                 = $(WE_EXEC)"
+	@echo "SDPA                    = $(SDPA)"
 	@echo "XMLLINT                 = $(XMLLINT)"

@@ -1897,6 +1897,13 @@ function submit ()
         log "E: submit: cannot read file: $net"
         return 42
     fi
+    if [ x"$net" = x"-" ] ; then
+        net="/dev/stdin"
+    fi
+    local output="$1"; shift
+    if [ -z "$output" ] ; then
+        output=/dev/null
+    fi
 
     log "I: checking system status..."
     if ! status kvs >/dev/null 2>&1 || ! status orch >/dev/null 2>&1 ; then
@@ -1943,7 +1950,7 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac results "$jobid"
+        sdpac -o "$output" results "$jobid"
         sdpac delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"
