@@ -36,6 +36,23 @@ namespace xml
       std::ostream& operator<< (std::ostream& os, const NAME& val)      \
       {                                                                 \
         return os << val._val;                                          \
+      }                                                                 \
+                                                                        \
+      bool operator< (const NAME& lhs, const ref::NAME& rhs)            \
+      {                                                                 \
+        return lhs < rhs.id();                                          \
+      }                                                                 \
+      bool operator< (const ref::NAME& lhs, const NAME& rhs)            \
+      {                                                                 \
+        return lhs.id() < rhs;                                          \
+      }                                                                 \
+      bool operator== (const NAME& lhs, const ref::NAME& rhs)           \
+      {                                                                 \
+        return lhs == rhs.id();                                         \
+      }                                                                 \
+      bool operator== (const ref::NAME& lhs, const NAME& rhs)           \
+      {                                                                 \
+        return lhs.id() == rhs;                                         \
       }
 
 #include <xml/parse/id/helper.lst>

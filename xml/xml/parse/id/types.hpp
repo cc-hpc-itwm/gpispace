@@ -52,7 +52,12 @@ namespace xml
       };                                                                \
                                                                         \
       std::size_t hash_value (const NAME& val);                         \
-      std::ostream& operator<< (std::ostream& os, const NAME& val);
+      std::ostream& operator<< (std::ostream& os, const NAME& val);     \
+                                                                        \
+      bool operator< (const NAME& lhs, const ref::NAME& rhs);           \
+      bool operator< (const ref::NAME& lhs, const NAME& rhs);           \
+      bool operator== (const NAME& lhs, const ref::NAME& rhs);          \
+      bool operator== (const ref::NAME& lhs, const NAME& rhs);
 
 #include <xml/parse/id/helper.lst>
 
