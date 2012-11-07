@@ -212,7 +212,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::connect
+    id::ref::connect
     connect_type ( const xml_node_type * node
                  , state::type & state
                  , const id::transition& parent
@@ -230,6 +230,8 @@ namespace xml
           );
       }
 
+      const id::ref::connect connection (id, state.id_mapper());
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
@@ -242,8 +244,7 @@ namespace xml
             {
               if (child_name == "properties")
                 {
-                  property_map_type ( state.id_mapper()->get_ref (id)
-                                    ->properties()
+                  property_map_type ( connection.get_ref().properties()
                                     , child
                                     , state
                                     );
@@ -262,7 +263,7 @@ namespace xml
 
                   util::property::join
                     ( state
-                    , state.id_mapper()->get_ref (id)->properties()
+                    , connection.get_ref().properties()
                     , deeper
                     );
                 }
@@ -278,7 +279,7 @@ namespace xml
             }
         }
 
-      return id;
+      return connection;
     }
 
     // ********************************************************************* //
@@ -472,45 +473,25 @@ namespace xml
               else if (child_name == "connect-in")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_in ( id::ref::connect
-                                ( connect_type(child, state, id)
-                                , state.id_mapper()
-                                )
-                              );
+                    ->push_in (connect_type(child, state, id));
                 }
               else if (child_name == "connect-out")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_out ( id::ref::connect
-                                ( connect_type(child, state, id)
-                                , state.id_mapper()
-                                )
-                              );
+                    ->push_out (connect_type(child, state, id));
                 }
               else if (child_name == "connect-inout")
                 {
                   //! \todo DEEP COPY: avoids parsing twice
                   state.id_mapper()->get_ref (id)
-                    ->push_in ( id::ref::connect
-                                ( connect_type(child, state, id)
-                                , state.id_mapper()
-                                )
-                              );
+                    ->push_in (connect_type (child, state, id));
                   state.id_mapper()->get_ref (id)
-                    ->push_out ( id::ref::connect
-                                ( connect_type(child, state, id)
-                                , state.id_mapper()
-                                )
-                              );
+                    ->push_out (connect_type(child, state, id));
                 }
               else if (child_name == "connect-read")
                 {
                   state.id_mapper()->get_ref (id)
-                    ->push_read ( id::ref::connect
-                                  ( connect_type (child, state, id)
-                                  , state.id_mapper()
-                                  )
-                                );
+                    ->push_read (connect_type (child, state, id));
                 }
               else if (child_name == "condition")
                 {

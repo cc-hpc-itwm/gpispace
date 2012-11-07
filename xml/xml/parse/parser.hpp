@@ -45,10 +45,10 @@ namespace xml
 {
   namespace parse
   {
-    id::connect connect_type ( const xml_node_type *
-                             , state::type &
-                             , const id::transition& parent
-                             );
+    id::ref::connect connect_type ( const xml_node_type *
+                                  , state::type &
+                                  , const id::transition& parent
+                                  );
     id::function function_type ( const xml_node_type *
                                , state::type &
                                , const boost::optional<type::function_type::id_parent>& parent
