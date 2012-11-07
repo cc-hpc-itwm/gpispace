@@ -14,8 +14,6 @@
 
 #include <xml/parse/type_map_type.hpp>
 
-#include <pnete/weaver/weaver.hpp>
-
 class QAction;
 class QMenu;
 class QGraphicsSceneContextMenuEvent;
@@ -36,7 +34,7 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          typedef ITVAL(XMLTYPE(ports_type)) port_type;
+          typedef ::xml::parse::type::port_type port_type;
 
           port_item ( port_type& port
                     , connectable::direction::type direction
