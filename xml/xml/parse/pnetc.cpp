@@ -2,6 +2,8 @@
 
 #include <xml/parse/parser.hpp>
 
+#include <xml/parse/type/function.hpp>
+
 #include <iostream>
 
 #include <boost/program_options.hpp>
