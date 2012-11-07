@@ -58,6 +58,12 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      void expression_type::set (const std::string& exps)
+      {
+        _expressions.clear();
+        fhg::util::lines (exps, ';', _expressions);
+      }
+
       std::string expression_type::expression (const std::string& sep) const
       {
         return fhg::util::join ( expressions().begin()
