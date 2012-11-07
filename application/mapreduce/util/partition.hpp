@@ -17,12 +17,12 @@ namespace mapreduce
 
         if((first_char>='A' && first_char<='Z') )
         {
-          i = ((key[0] - 'A')*N)/('Z'-'A');
+          i = ((key[0] - 'A')*(N-1))/('Z'-'A');
         }
         else
         if( first_char>='a' && first_char<='z' )
         {
-          i = ((key[0] - 'a')*N)/('z'-'a');
+          i = ((key[0] - 'a')*(N-1))/('z'-'a');
         }
         else
           i=N-1;
