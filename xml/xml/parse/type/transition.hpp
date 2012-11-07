@@ -22,13 +22,12 @@ namespace xml
         ID_SIGNATURES(transition);
         PARENT_SIGNATURES(net);
 
-      private:
+      public:
         typedef xml::util::unique<connect_type,id::ref::connect>
           connections_type;
         typedef xml::util::unique<place_map_type,id::ref::place_map>
           place_maps_type;
 
-      public:
         typedef boost::variant <id::ref::function, use_type>
                 function_or_use_type;
 

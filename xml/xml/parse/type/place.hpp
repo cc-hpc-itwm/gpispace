@@ -27,8 +27,6 @@ namespace xml
   {
     namespace type
     {
-      typedef std::list<value::type> values_type;
-
       struct place_type
       {
         ID_SIGNATURES(place);
@@ -40,6 +38,8 @@ namespace xml
         std::string _name;
 
       public:
+        typedef std::list<value::type> values_type;
+
         const std::string& name() const;
         const std::string& name(const std::string& name);
         std::string type;

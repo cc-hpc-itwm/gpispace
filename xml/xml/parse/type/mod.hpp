@@ -22,17 +22,17 @@ namespace xml
   {
     namespace type
     {
-      typedef std::list<std::string> port_args_type;
-      typedef std::list<std::string> cincludes_type;
-      typedef std::list<std::string> flags_type;
-      typedef std::list<std::string> links_type;
-
       struct module_type
       {
         ID_SIGNATURES(module);
         PARENT_SIGNATURES(function);
 
       public:
+        typedef std::list<std::string> port_args_type;
+        typedef std::list<std::string> cincludes_type;
+        typedef std::list<std::string> flags_type;
+        typedef std::list<std::string> links_type;
+
         module_type ( ID_CONS_PARAM(module)
                     , PARENT_CONS_PARAM(function)
                     );

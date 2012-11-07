@@ -647,7 +647,7 @@ namespace xml
           {
             const pid_t pid (pid_of_place.at (place.name()));
 
-            for ( values_type::const_iterator val (place.values.begin())
+            for ( place_type::values_type::const_iterator val (place.values.begin())
                 ; val != place.values.end()
                 ; ++val
                 )

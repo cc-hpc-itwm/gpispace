@@ -774,9 +774,9 @@ namespace xml
 
       fun_info_type::fun_info_type ( const std::string & _name
                                    , const std::string & _code
-                                   , const flags_type & _ldflags
-                                   , const flags_type & _cxxflags
-                                   , const links_type & _links
+                                   , const module_type::flags_type & _ldflags
+                                   , const module_type::flags_type & _cxxflags
+                                   , const module_type::links_type & _links
                                    , const boost::filesystem::path & _path
                                    )
         : name (_name)
@@ -994,7 +994,7 @@ namespace xml
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
 
-                BOOST_FOREACH (links_type::value_type const& link, fun->links)
+                BOOST_FOREACH (module_type::links_type::value_type const& link, fun->links)
                   {
                     stream << objs << " += "
                            << boost::filesystem::absolute
@@ -1004,12 +1004,12 @@ namespace xml
                            << std::endl;
                   }
 
-                BOOST_FOREACH (flags_type::value_type const& flag, fun->ldflags)
+                BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->ldflags)
                   {
                     stream << ldflags << " += " << flag << std::endl;
                   }
 
-                BOOST_FOREACH (flags_type::value_type const& flag, fun->cxxflags)
+                BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->cxxflags)
                   {
                     stream << cxxflags << " += " << flag << std::endl;
                   }
@@ -1766,7 +1766,7 @@ namespace xml
               types.insert (port->type);
             }
 
-            for ( port_args_type::const_iterator name (mod->port_arg.begin())
+            for ( module_type::port_args_type::const_iterator name (mod->port_arg.begin())
                 ; name != mod->port_arg.end()
                 ; ++name
                 )
@@ -1917,7 +1917,7 @@ namespace xml
                                 , cpp_util::path::op() / mod->name / file_hpp
                                 );
 
-              for ( cincludes_type::const_iterator inc
+              for ( module_type::cincludes_type::const_iterator inc
                       (mod->cincludes.begin())
                   ; inc != mod->cincludes.end()
                   ; ++inc
