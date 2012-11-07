@@ -3,8 +3,6 @@
 #ifndef _XML_PARSE_UTIL_UNIQUE_HPP
 #define _XML_PARSE_UTIL_UNIQUE_HPP
 
-#include <xml/parse/id/mapper.hpp>
-
 #include <string>
 #include <stdexcept>
 
@@ -31,32 +29,6 @@ namespace xml
       typedef boost::unordered_map<key_type,id_type> by_key_type;
 
     private:
-      struct indirect
-      {
-        indirect (parse::id::mapper* id_mapper)
-          : _id_mapper (id_mapper)
-        { }
-        value_type& operator () (const id_type& id)
-        {
-          return *_id_mapper->get_ref (id);
-        }
-      private:
-        parse::id::mapper* _id_mapper;
-      };
-
-      struct const_indirect
-      {
-        const_indirect (parse::id::mapper* id_mapper)
-          : _id_mapper (id_mapper)
-        { }
-        const value_type& operator () (const id_type& id)
-        {
-          return *_id_mapper->get (id);
-        }
-      private:
-        parse::id::mapper* _id_mapper;
-      };
-
       struct values_type
       {
         typedef T value_type;
@@ -76,20 +48,20 @@ namespace xml
 
         iterator begin()
         {
-          return iterator (_ids.begin(), indirect (_mapper));
+          return iterator (_ids.begin(), &id_type::get_ref);
         }
         iterator end()
         {
-          return iterator (_ids.end(), indirect (_mapper));
+          return iterator (_ids.end(), &id_type::get_ref);
         }
 
         const_iterator begin() const
         {
-          return const_iterator (_ids.begin(), const_indirect (_mapper));
+          return const_iterator (_ids.begin(), &id_type::get);
         }
         const_iterator end() const
         {
-          return const_iterator (_ids.end(), const_indirect (_mapper));
+          return const_iterator (_ids.end(), &id_type::get);
         }
 
         //! \note These are private, as only unique shall access them,
@@ -98,19 +70,17 @@ namespace xml
       private:
         friend class unique<value_type, id_type, key_type>;
 
-        values_type (parse::id::mapper* mapper)
-          : _mapper (mapper)
-          , _ids()
+        values_type()
+          : _ids()
         { }
 
-        parse::id::mapper* _mapper;
         ids_type _ids;
       };
 
     public:
-      unique (parse::id::mapper* mapper)
-        : _values (mapper)
-        , _by_key ()
+      unique()
+        : _values()
+        , _by_key()
       {}
 
       boost::optional<const id_type&> get (const key_type& key) const
@@ -132,7 +102,7 @@ namespace xml
 
       const id_type& push (const id_type& id)
       {
-        const key_type& name (_values._mapper->get (id)->name());
+        const key_type& name (id.get().name());
 
         boost::optional<const id_type&> id_old (get (name));
 

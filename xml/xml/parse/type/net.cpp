@@ -36,11 +36,11 @@ namespace xml
                          )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _places (id_mapper)
-        , _transitions (id_mapper)
-        , _specializes (id_mapper)
-        , _templates (id_mapper)
-        , _functions (id_mapper)
+        , _places()
+        , _transitions()
+        , _specializes()
+        , _templates()
+        , _functions()
         , _path (path)
       {
         _id_mapper->put (_id, *this);

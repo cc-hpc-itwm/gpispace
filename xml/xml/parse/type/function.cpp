@@ -98,9 +98,9 @@ namespace xml
                                    , const boost::optional<id_parent>& parent
                                    )
         : ID_INITIALIZE()
-        , _in (id_mapper)
-        , _out (id_mapper)
-        , _tunnel (id_mapper)
+        , _in()
+        , _out()
+        , _tunnel()
         , _parent (parent)
         , f (_f)
       {

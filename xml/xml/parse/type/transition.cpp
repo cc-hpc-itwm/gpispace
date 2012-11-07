@@ -27,10 +27,10 @@ namespace xml
         , PARENT_INITIALIZE()
         , _function_or_use (boost::none)
         , _name()
-        , _in (id_mapper)
-        , _out (id_mapper)
-        , _read (id_mapper)
-        , _place_map (id_mapper)
+        , _in()
+        , _out()
+        , _read()
+        , _place_map()
       {
         _id_mapper->put (_id, *this);
       }
@@ -43,10 +43,10 @@ namespace xml
         , PARENT_INITIALIZE()
         , _function_or_use (function_or_use)
         , _name()
-        , _in (id_mapper)
-        , _out (id_mapper)
-        , _read (id_mapper)
-        , _place_map (id_mapper)
+        , _in()
+        , _out()
+        , _read()
+        , _place_map()
       {
         _id_mapper->put (_id, *this);
       }
