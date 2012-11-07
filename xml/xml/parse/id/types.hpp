@@ -41,6 +41,7 @@ namespace xml
                                                                         \
         bool operator< (const NAME& other) const;                       \
         bool operator== (const NAME& other) const;                      \
+        bool operator!= (const NAME& other) const;                      \
                                                                         \
         friend std::size_t hash_value (const NAME&);                    \
         friend std::ostream& operator<< (std::ostream&, const NAME&);   \
@@ -57,7 +58,9 @@ namespace xml
       bool operator< (const NAME& lhs, const ref::NAME& rhs);           \
       bool operator< (const ref::NAME& lhs, const NAME& rhs);           \
       bool operator== (const NAME& lhs, const ref::NAME& rhs);          \
-      bool operator== (const ref::NAME& lhs, const NAME& rhs);
+      bool operator== (const ref::NAME& lhs, const NAME& rhs);          \
+      bool operator!= (const NAME& lhs, const ref::NAME& rhs);          \
+      bool operator!= (const ref::NAME& lhs, const NAME& rhs);
 
 #include <xml/parse/id/helper.lst>
 
@@ -76,6 +79,7 @@ namespace xml
                                                                         \
           bool operator< (const NAME& other) const;                     \
           bool operator== (const NAME& other) const;                    \
+          bool operator!= (const NAME& other) const;                    \
                                                                         \
           const type::XML_TYPE& get() const;                            \
           type::XML_TYPE& get_ref() const;                              \

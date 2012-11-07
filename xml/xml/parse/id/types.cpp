@@ -28,6 +28,10 @@ namespace xml
       {                                                                 \
         return _val == other._val;                                      \
       }                                                                 \
+      bool NAME::operator!= (const NAME& other) const                   \
+      {                                                                 \
+        return _val != other._val;                                      \
+      }                                                                 \
                                                                         \
       std::size_t hash_value (const NAME& val)                          \
       {                                                                 \
@@ -53,7 +57,16 @@ namespace xml
       bool operator== (const ref::NAME& lhs, const NAME& rhs)           \
       {                                                                 \
         return lhs.id() == rhs;                                         \
+      }                                                                 \
+      bool operator!= (const NAME& lhs, const ref::NAME& rhs)           \
+      {                                                                 \
+        return lhs != rhs.id();                                         \
+      }                                                                 \
+      bool operator!= (const ref::NAME& lhs, const NAME& rhs)           \
+      {                                                                 \
+        return lhs.id() != rhs;                                         \
       }
+
 
 #include <xml/parse/id/helper.lst>
 
@@ -94,6 +107,10 @@ namespace xml
         bool NAME::operator== (const NAME& other) const                 \
         {                                                               \
           return _id == other._id;                                      \
+        }                                                               \
+        bool NAME::operator!= (const NAME& other) const                 \
+        {                                                               \
+          return _id != other._id;                                      \
         }                                                               \
                                                                         \
         const type::XML_TYPE& NAME::get() const                         \
