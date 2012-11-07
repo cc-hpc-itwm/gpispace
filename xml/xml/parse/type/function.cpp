@@ -117,6 +117,15 @@ namespace xml
         return _parent;
       }
 
+      void function_type::unparent()
+      {
+        _parent = boost::none;
+      }
+      void function_type::parent (const id_parent& parent)
+      {
+        _parent = boost::make_optional (parent);
+      }
+
       namespace
       {
         class visitor_get_function

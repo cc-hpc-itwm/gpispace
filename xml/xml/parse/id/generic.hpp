@@ -11,6 +11,7 @@
 #define ID_SIGNATURES(TYPE)                     \
   public:                                       \
     const id::TYPE& id() const;                 \
+    id::ref::TYPE make_reference_id() const;    \
     id::mapper* id_mapper() const;              \
                                                 \
   private:                                      \
@@ -31,6 +32,8 @@
     bool has_parent() const;                                \
     boost::optional<const PARENT ## _type&> parent() const; \
     boost::optional<PARENT ## _type&> parent();             \
+    void unparent();                                        \
+    void parent (const id::PARENT& parent);                 \
                                                             \
   private:                                                  \
     boost::optional<id::PARENT> _parent

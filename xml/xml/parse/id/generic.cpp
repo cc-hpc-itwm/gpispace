@@ -19,30 +19,43 @@
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 
-#define ID_IMPL(TYPE)                                   \
-  const id::TYPE& TYPE ## _type::id() const             \
-  {                                                     \
-    return _id;                                         \
-  }                                                     \
-  id::mapper* TYPE ## _type::id_mapper() const          \
-  {                                                     \
-    return _id_mapper;                                  \
+#define ID_IMPL(TYPE)                                       \
+  const id::TYPE& TYPE ## _type::id() const                 \
+  {                                                         \
+    return _id;                                             \
+  }                                                         \
+  id::mapper* TYPE ## _type::id_mapper() const              \
+  {                                                         \
+    return _id_mapper;                                      \
+  }                                                         \
+  id::ref::TYPE TYPE ## _type::make_reference_id() const    \
+  {                                                         \
+    return id::ref::TYPE (id(), id_mapper());               \
   }
 
-#define PARENT_IMPL(PARENT,TYPE)                \
-  bool TYPE ## _type::has_parent() const        \
-  {                                             \
-    return _parent;                             \
-  }                                             \
-  boost::optional<const PARENT ## _type&>       \
-  TYPE ## _type::parent() const                 \
-  {                                             \
-    return id_mapper()->get (_parent);          \
-  }                                             \
-  boost::optional<PARENT ## _type&>             \
-  TYPE ## _type::parent()                       \
-  {                                             \
-    return id_mapper()->get_ref (_parent);      \
+
+#define PARENT_IMPL(PARENT,TYPE)                                        \
+  bool TYPE ## _type::has_parent() const                                \
+  {                                                                     \
+    return _parent;                                                     \
+  }                                                                     \
+  boost::optional<const PARENT ## _type&>                               \
+  TYPE ## _type::parent() const                                         \
+  {                                                                     \
+    return id_mapper()->get (_parent);                                  \
+  }                                                                     \
+  boost::optional<PARENT ## _type&>                                     \
+  TYPE ## _type::parent()                                               \
+  {                                                                     \
+    return id_mapper()->get_ref (_parent);                              \
+  }                                                                     \
+  void TYPE ## _type::unparent()                                        \
+  {                                                                     \
+    _parent = boost::none;                                              \
+  }                                                                     \
+  void TYPE ## _type::parent (const id::PARENT& parent)                 \
+  {                                                                     \
+    _parent = boost::make_optional (parent);                            \
   }
 
 namespace xml
