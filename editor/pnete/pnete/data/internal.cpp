@@ -37,6 +37,7 @@ namespace fhg
                 , ::xml::parse::id::ref::expression (id, state.id_mapper())
                 , boost::none
                 );
+              break;
             }
           case internal_type::module_call:
             {
@@ -51,6 +52,7 @@ namespace fhg
                 , ::xml::parse::id::ref::module (id, state.id_mapper())
                 , boost::none
                 );
+              break;
             }
           case internal_type::net:
             {
@@ -65,6 +67,7 @@ namespace fhg
                 , ::xml::parse::id::ref::net (id, state.id_mapper())
                 , boost::none
                 );
+              break;
             }
           default:
             {
