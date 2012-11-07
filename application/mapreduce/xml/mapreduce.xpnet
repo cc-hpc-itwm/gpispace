@@ -309,7 +309,7 @@
 	          								)
 	          );
 	
-	          LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully into the virtual memory");
+	          LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully put into the virtual memory");
 	
 	          pnetc::type::read_chunk_info::read_chunk_info c_r_info;
 	
@@ -346,7 +346,7 @@
           <cinclude href="ctype.h"/>
           <cinclude href="cstdio"/>
           <code><![CDATA[
-	         LOG (INFO, "Map the chunk ..."<<read_chunk_info.chunk_id);
+	         LOG (INFO, "Map the chunk "<<read_chunk_info.chunk_id<<" ... ");
              pnetc::type::map_chunk_info::map_chunk_info map_chnk_info;
 	 
 			 long vm_part_offset = read_chunk_info.read_slot_id*config.size.chunk.read;
@@ -364,7 +364,8 @@
 		      );
 		        
 		      std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_chunk);
-		      std::cout<<"Read slot "<<read_chunk_info.read_slot_id<<", of size "<<read_chunk_info.used<<", contains "<<arr_items.size()<<" items: "<<ptr_chunk<<std::endl;
+		      std::cout<<"Read slot "<<read_chunk_info.read_slot_id<<", of size "<<read_chunk_info.used<<", contains "<<arr_items.size()<<" items"<<std::endl;
+		      // <<ptr_chunk<<std::endl;
 		        
 	          
 	          char* ptr_next = ptr_chunk;
@@ -385,7 +386,7 @@
 	          bzero(local_chunk, size);
 	          
 	          memcpy( local_chunk, ptr_chunk,read_chunk_info.used );
-	          MLOG(INFO, "MAP the chunk "<<read_chunk_info.chunk_id<<":\n"<<local_chunk);
+	          //MLOG(INFO, "MAP the chunk "<<read_chunk_info.chunk_id<<":\n"<<local_chunk);
 	          	          
 	          std::string key, val; 
 	          bzero(ptr_next, 2*size);
@@ -870,11 +871,9 @@
 	          std::vector<int> arr_slots_to_red;
 	         
 	          for(int k=0; k<arr_part_used.size(); k++)
-	          {
 	          	if(arr_part_used[k]>0)
 	          		arr_slots_to_red.push_back(k);
-	          }
-	          
+	          	          
 			  reduce_info_in.slots_to_reduce = ::mapreduce::util::get_string(arr_slots_to_red);
 			  reduce_info_in.avail_slots = arr_slots_to_red.size();
 	         
