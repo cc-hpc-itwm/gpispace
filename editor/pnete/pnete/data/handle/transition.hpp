@@ -3,10 +3,13 @@
 #ifndef _FHG_PNETE_DATA_HANDLE_TRANSITION_HPP
 #define _FHG_PNETE_DATA_HANDLE_TRANSITION_HPP 1
 
-#include <pnete/data/handle/net.hpp>
+#include <pnete/data/handle/transition.fwd.hpp>
 
-#include <xml/parse/type/transition.fwd.hpp>
+#include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/handle/net.fwd.hpp>
+
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/type/transition.fwd.hpp>
 
 namespace fhg
 {
@@ -18,25 +21,23 @@ namespace fhg
       {
         class transition
         {
-        private:
-          typedef ::xml::parse::type::transition_type transition_type;
-
         public:
-          transition ( const transition_type& transition
-                     , const handle::net& net
+          transition ( const ::xml::parse::id::ref::transition& id
+                     , change_manager_t& change_manager
                      );
 
-          transition_type operator()() const;
-
-          const handle::net& net() const;
+          const ::xml::parse::type::transition_type& get() const;
+          ::xml::parse::type::transition_type& get_ref() const;
 
           bool operator== (const transition& other) const;
 
-          const ::xml::parse::id::transition& id() const;
+          const ::xml::parse::id::ref::transition& id() const;
+
+          net parent() const;
 
         private:
-          ::xml::parse::id::transition _transition_id;
-          handle::net _net;
+          ::xml::parse::id::ref::transition _id;
+          change_manager_t& _change_manager;
         };
       }
     }

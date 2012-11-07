@@ -6,8 +6,7 @@
 #include <pnete/data/handle/place.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
-#include <pnete/data/handle/net.hpp>
-#include <pnete/data/internal.fwd.hpp>
+#include <pnete/data/handle/net.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/place.fwd.hpp>
@@ -24,30 +23,26 @@ namespace fhg
       {
         class place
         {
-        private:
-          typedef ::xml::parse::type::place_type place_type;
-
         public:
-          place ( const place_type& place
-                , const handle::net& net
+          place ( const ::xml::parse::id::ref::place& place
                 , change_manager_t& change_manager
                 );
 
-          place_type operator()() const;
-
-          const handle::net& net() const;
+          const ::xml::parse::type::place_type& get() const;
+          ::xml::parse::type::place_type& get_ref() const;
 
           bool operator== (const place& other) const;
 
-          const ::xml::parse::id::place& id() const;
-
           void remove (const QObject* sender) const;
+
+          const ::xml::parse::id::ref::place& id() const;
+
+          net parent() const;
 
         private:
           change_manager_t& change_manager() const;
 
-          ::xml::parse::id::place _place_id;
-          handle::net _net;
+          ::xml::parse::id::ref::place _id;
           change_manager_t& _change_manager;
         };
       }
