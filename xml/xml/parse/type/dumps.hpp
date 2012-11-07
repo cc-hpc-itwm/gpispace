@@ -10,15 +10,6 @@
 
 #include <xml/parse/id/mapper.hpp>
 
-// #include <xml/parse/type/function.hpp>
-// #include <xml/parse/type/place.hpp>
-// #include <xml/parse/type/place_map.hpp>
-// #include <xml/parse/type/port.hpp>
-// #include <xml/parse/type/specialize.hpp>
-// #include <xml/parse/type/struct.hpp>
-// #include <xml/parse/type/template.hpp>
-// #include <xml/parse/type/transition.hpp>
-
 namespace xml
 {
   namespace parse
