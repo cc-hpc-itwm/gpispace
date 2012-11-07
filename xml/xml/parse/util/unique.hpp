@@ -124,6 +124,11 @@ namespace xml
         return boost::none;
       }
 
+      bool has (const key_type& key) const
+      {
+        return _by_key.find (key) != _by_key.end();
+      }
+
       const id_type& push (const id_type& id)
       {
         const key_type& name (_values._mapper->get (id)->name());
