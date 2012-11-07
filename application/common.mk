@@ -172,11 +172,19 @@ ifndef PS_NOINLINE
   endif
 endif
 
-ifndef LIB_DESTDIR
+ifndef DESTDIR
   ifndef MAIN
-    $(error variable MAIN undefined but needed to derive variable LIB_DESTDIR)
+    $(error variable MAIN undefined but needed to derive variable DESTDIR)
   else
-    LIB_DESTDIR = $(SDPA_LIBEXEC)/$(MAIN)
+    DESTDIR = $(SDPA_LIBEXEC)/apps/$(MAIN)
+  endif
+endif
+
+ifndef LIB_DESTDIR
+  ifndef DESTDIR
+    $(error variable DESTDIR undefined but needed to derive variable LIB_DESTDIR)
+  else
+    LIB_DESTDIR = $(DESTDIR)/modules
   endif
 endif
 
@@ -423,6 +431,7 @@ showconfig:
 	@echo
 	@echo "*** GPI-Space paths and files:"
 	@echo
+	@echo "DESTDIR         = $(DESTDIR)"
 	@echo "SDPA_INCLUDE    = $(SDPA_INCLUDE)"
 	@echo "SDPA_BIN        = $(SDPA_BIN)"
 	@echo "SDPA_XML_LIB    = $(SDPA_XML_LIB)"

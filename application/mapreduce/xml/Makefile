@@ -17,7 +17,7 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 ###############################################################################
 
-PUT_PORT += input_file=\"$(PWD)/in.txt\"
+PUT_PORT += input_file=\"$(PWD)/../example/loremipsum.txt\"
 PUT_PORT += output_file=\"$(PWD)/out.txt\"
 PUT_PORT += read_chunk_size=102400
 PUT_PORT += map_chunk_size=204800
@@ -27,11 +27,7 @@ PUT_PORT += n_part=5
 PUT_PORT += input_n_read_slots=20
 PUT_PORT += input_n_map_slots=10
 
-# test with reduce_tpl.xpnet
-#PUT_PORT += -p config=\"empty\" -p reduce_info_in=[avail_slots:=10,slots_to_reduce:=\"1\ 5\ 7\ 8\ 3\",part_used:=\"100\ 200\ 300\ 400\ 500\ 600\ 700\ 800\ 900\ 10000\",red_used:=\"0\ 0\ 0\ 0\ 0\ 0\ 0\ 0\ 0\ 0\"]
-
-# test with reduce.xpnet
-#PUT_PORT += -p reduce_info_in=[avail_slots:=10,slots_to_reduce:=\"1\ 5\ 7\ 8\ 3\",part_used:=\"100\ 200\ 300\ 400\ 500\ 600\ 700\ 800\ 900\ 10000\",red_used:=\"0\ 0\ 0\ 0\ 0\ 0\ 0\ 0\ 0\ 0\"]
+-include example.mk
 
 ###############################################################################
 
