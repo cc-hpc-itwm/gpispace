@@ -975,14 +975,10 @@ namespace xml
           {
           private:
             ::fhg::util::xml::xmlstream & s;
-            id::mapper* _id_mapper;
 
           public:
-            dump_visitor ( ::fhg::util::xml::xmlstream & _s
-                         , id::mapper* id_mapper
-                         )
+            dump_visitor ( ::fhg::util::xml::xmlstream & _s)
               : s (_s)
-              , _id_mapper (id_mapper)
             {}
 
             void operator () (const use_type& use) const
@@ -991,8 +987,7 @@ namespace xml
             }
             void operator () (const id::ref::function& id_function) const
             {
-              ::xml::parse::type::dump::dump
-                (s, *_id_mapper->get_ref (id_function));
+              ::xml::parse::type::dump::dump (s, id_function.get());
             }
           };
         }
@@ -1010,9 +1005,7 @@ namespace xml
           ::we::type::property::dump::dump (s, t.prop);
           ::xml::parse::type::dump::dump (s, t.requirements);
 
-          boost::apply_visitor ( dump_visitor (s, t.id_mapper())
-                               , t.function_or_use()
-                               );
+          boost::apply_visitor (dump_visitor (s), t.function_or_use());
 
           dumps (s, t.place_map().values());
           dumps (s, t.read().values(), "read");

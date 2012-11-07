@@ -2141,20 +2141,16 @@ namespace xml
           {
           private:
             ::fhg::util::xml::xmlstream & s;
-            id::mapper* _id_mapper;
 
           public:
-            function_dump_visitor ( ::fhg::util::xml::xmlstream & _s
-                                  , id::mapper* id_mapper
-                                  )
+            function_dump_visitor (::fhg::util::xml::xmlstream & _s)
               : s (_s)
-              , _id_mapper (id_mapper)
             {}
 
             template<typename ID>
             void operator () (const ID& id) const
             {
-              ::xml::parse::type::dump::dump (s, *_id_mapper->get (id));
+              ::xml::parse::type::dump::dump (s, id.get());
             }
           };
         }
@@ -2187,7 +2183,7 @@ namespace xml
           dumps (s, f.out().values(), "out");
           dumps (s, f.tunnel().values(), "tunnel");
 
-          boost::apply_visitor (function_dump_visitor (s, f.id_mapper()), f.f);
+          boost::apply_visitor (function_dump_visitor (s), f.f);
 
           for ( conditions_type::const_iterator cond (f.cond.begin())
               ; cond != f.cond.end()

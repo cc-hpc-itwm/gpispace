@@ -726,11 +726,11 @@ namespace xml
           ::we::type::property::dump::dump (s, net.prop);
 
           dumps (s, net.structs.begin(), net.structs.end());
-          dumps (s, net.templates().ids(), net.id_mapper());
-          dumps (s, net.specializes().ids(), net.id_mapper());
-          dumps (s, net.functions().ids(), net.id_mapper());
-          dumps (s, net.places().ids(), net.id_mapper());
-          dumps (s, net.transitions().ids(), net.id_mapper());
+          dumps (s, net.templates().values());
+          dumps (s, net.specializes().values());
+          dumps (s, net.functions().values());
+          dumps (s, net.places().values());
+          dumps (s, net.transitions().values());
 
           s.close ();
         }

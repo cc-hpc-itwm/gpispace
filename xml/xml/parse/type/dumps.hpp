@@ -8,8 +8,6 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <xml/parse/id/mapper.hpp>
-
 namespace xml
 {
   namespace parse
@@ -64,31 +62,6 @@ namespace xml
           {
             ::xml::parse::type::dump::dump (s, val, x);
           }
-        }
-
-        template<typename Container>
-        void dumps ( ::fhg::util::xml::xmlstream& s
-                   , Container container
-                   , ::xml::parse::id::mapper* id_mapper
-                   )
-        {
-          BOOST_FOREACH (const typename Container::value_type val, container)
-            {
-              ::xml::parse::type::dump::dump (s, *id_mapper->get (val));
-            }
-        }
-
-        template<typename Container, typename T>
-        void dumps ( ::fhg::util::xml::xmlstream& s
-                   , Container container
-                   , ::xml::parse::id::mapper* id_mapper
-                   , const T& x
-                   )
-        {
-          BOOST_FOREACH (const typename Container::value_type val, container)
-            {
-              ::xml::parse::type::dump::dump (s, *id_mapper->get (val), x);
-            }
         }
       }
     }

@@ -106,23 +106,18 @@ namespace xml
         {
         private:
           const expressions_type& _es;
-          id::mapper* _id_mapper;
 
         public:
-          join_visitor ( const expressions_type & es
-                       , id::mapper* id_mapper
-                       )
+          join_visitor ( const expressions_type & es)
             : _es (es)
-            , _id_mapper (id_mapper)
           {}
 
           void operator () (id::ref::expression & id_expression) const
           {
-            boost::optional<expression_type&>
-              expression (_id_mapper->get_ref (id_expression));
+            boost::optional<expression_type&> exp (id_expression.get_ref());
 
-            expression->expressions().insert
-              (expression->expressions().end(), _es.begin(), _es.end());
+            exp->expressions().insert
+              (exp->expressions().end(), _es.begin(), _es.end());
           }
 
           template<typename T>
@@ -135,7 +130,7 @@ namespace xml
 
       void join (const expressions_type& es, function_type& fun)
       {
-        boost::apply_visitor (join_visitor (es, fun.id_mapper()), fun.f);
+        boost::apply_visitor (join_visitor (es), fun.f);
       }
     }
   }

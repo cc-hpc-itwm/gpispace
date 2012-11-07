@@ -12,9 +12,9 @@
   public:                                       \
     const id::TYPE& id() const;                 \
     id::ref::TYPE make_reference_id() const;    \
-    id::mapper* id_mapper() const;              \
                                                 \
   private:                                      \
+    id::mapper* id_mapper() const;              \
     id::TYPE _id;                               \
     id::mapper* _id_mapper
 
