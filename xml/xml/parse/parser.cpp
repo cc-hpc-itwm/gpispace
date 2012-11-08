@@ -569,7 +569,7 @@ namespace xml
                     ( function_include
                       ( file
                       , state
-                      , boost::make_optional (type::function_type::parent_id_type(id))
+                      , type::function_type::make_parent (id)
                       )
                     );
                 }
@@ -591,9 +591,10 @@ namespace xml
                 {
                   transition.get_ref().function_or_use
                     ( function_type
-                    ( child
-                    , state
-                    , boost::make_optional (type::function_type::parent_id_type(id)))
+                      ( child
+                      , state
+                      , type::function_type::make_parent (id)
+                      )
                     );
                 }
               else if (child_name == "place-map")
@@ -1102,7 +1103,7 @@ namespace xml
                   fun = function_type
                     ( child
                     , state
-                    , boost::make_optional (type::function_type::parent_id_type(id))
+                    , type::function_type::make_parent(id)
                     );
                 }
               else
@@ -1151,11 +1152,11 @@ namespace xml
         ( type::function_type
           ( id
           , state.id_mapper()
+          , parent
           , type::expression_type ( state.id_mapper()->next_id()
                                   , state.id_mapper()
                                   , id
                                   ).make_reference_id()
-          , parent
           ).make_reference_id()
         );
 

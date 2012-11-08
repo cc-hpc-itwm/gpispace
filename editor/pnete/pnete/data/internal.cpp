@@ -30,12 +30,12 @@ namespace fhg
               return ::xml::parse::type::function_type
                 ( function_id
                 , state.id_mapper()
+                , boost::none
                 , ::xml::parse::type::expression_type
                   ( state.id_mapper()->next_id()
                   , state.id_mapper()
                   , function_id
                   ).make_reference_id()
-                , boost::none
                 ).make_reference_id();
             }
           case internal_type::module_call:
@@ -43,12 +43,12 @@ namespace fhg
               return ::xml::parse::type::function_type
                 ( function_id
                 , state.id_mapper()
+                , boost::none
                 , ::xml::parse::type::module_type
                   ( state.id_mapper()->next_id()
                   , state.id_mapper()
                   , function_id
                   ).make_reference_id()
-                , boost::none
                 ).make_reference_id();
             }
           case internal_type::net:
@@ -56,12 +56,12 @@ namespace fhg
               return ::xml::parse::type::function_type
                 ( function_id
                 , state.id_mapper()
+                , boost::none
                 , ::xml::parse::type::net_type
                   ( state.id_mapper()->next_id()
                   , state.id_mapper()
                   , function_id
                   ).make_reference_id()
-                , boost::none
                 ).make_reference_id();
             }
           }

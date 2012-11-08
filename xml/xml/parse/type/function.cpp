@@ -26,6 +26,59 @@ namespace xml
   {
     namespace type
     {
+      // ******************************************************************* //
+
+      function_type::function_type ( ID_CONS_PARAM(function)
+                                   , const boost::optional<parent_id_type>& parent
+                                   , const type& _f
+                                   )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , f (_f)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      function_type::function_type
+        ( ID_CONS_PARAM(function)
+        , const boost::optional<parent_id_type>& parent
+        , const fhg::util::maybe<std::string>& name
+        , const ports_type& in
+        , const ports_type& out
+        , const ports_type& tunnel
+        , const typenames_type& typenames
+        , const bool& contains_a_module_call
+        , const fhg::util::maybe<bool>& internal
+        , const structs_type& structs
+        , const conditions_type& cond
+        , const requirements_type& requirements
+        , const type& f
+        , const xml::parse::structure_type::set_type& structs_resolved
+        , const we::type::property::type& prop
+        , const boost::filesystem::path& path
+        )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , _name (name)
+        , _in (in)
+        , _out (out)
+        , _tunnel (tunnel)
+        , _typenames (typenames)
+        , contains_a_module_call (contains_a_module_call)
+        , internal (internal)
+        , structs (structs)
+        , cond (cond)
+        , requirements (requirements)
+        , f (f)
+        , structs_resolved (structs_resolved)
+        , prop (prop)
+        , path (path)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      // ******************************************************************* //
+
       namespace
       {
         class function_is_net_visitor : public boost::static_visitor<bool>
@@ -89,20 +142,6 @@ namespace xml
         function_type::name (const fhg::util::maybe<std::string>& name)
       {
         return _name = name;
-      }
-
-      function_type::function_type ( ID_CONS_PARAM(function)
-                                   , const type& _f
-                                   , const boost::optional<parent_id_type>& parent
-                                   )
-        : ID_INITIALIZE()
-        , _in()
-        , _out()
-        , _tunnel()
-        , _parent (parent)
-        , f (_f)
-      {
-        _id_mapper->put (_id, *this);
       }
 
       const boost::optional<function_type::parent_id_type>& function_type::parent() const
@@ -792,6 +831,45 @@ namespace xml
             )
           , f
           );
+      }
+
+      namespace
+      {
+        class visitor_clone
+          : public boost::static_visitor<function_type::type>
+        {
+        public:
+          template<typename ID_TYPE>
+            function_type::type operator() (const ID_TYPE& id) const
+          {
+            return id.get().clone();
+          }
+        };
+      }
+
+      id::ref::function function_type::clone
+        (const boost::optional<parent_id_type>& parent) const
+      {
+        const id::function new_id (id_mapper()->next_id());
+        return function_type
+          ( new_id
+          , id_mapper()
+          , parent
+          , _name
+          , _in.clone()
+          , _out.clone()
+          , _tunnel.clone()
+          , _typenames
+          , contains_a_module_call
+          , internal
+          , structs
+          , cond
+          , requirements
+          , boost::apply_visitor (visitor_clone(), f)
+          , structs_resolved
+          , prop
+          , path
+          ).make_reference_id();
       }
 
       // ***************************************************************** //

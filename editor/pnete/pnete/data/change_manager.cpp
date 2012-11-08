@@ -299,12 +299,11 @@ namespace fhg
               ( ::xml::parse::type::function_type
                 ( function_id
                 , _state.id_mapper()
+                , ::xml::parse::type::function_type::make_parent (transition_id)
                 , ::xml::parse::type::expression_type ( _state.id_mapper()->next_id()
                                                       , _state.id_mapper()
                                                       , function_id
                                                       ).make_reference_id()
-                , boost::make_optional
-                (::xml::parse::type::function_type::parent_id_type (transition_id))
                 ).make_reference_id()
               )
             ).make_reference_id()

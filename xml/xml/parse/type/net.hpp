@@ -53,27 +53,25 @@ namespace xml
         typedef xml::util::unique<tmpl_type,id::ref::tmpl,maybe_string_type> templates_type;
         typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
 
-      private:
-        functions_type _functions;
-        places_type _places;
-        specializes_type _specializes;
-        templates_type _templates;
-        transitions_type _transitions;
-
-        boost::filesystem::path _path;
-
-      public:
-        bool contains_a_module_call;
-        structs_type structs;
-
-        we::type::property::type prop;
-
-        xml::parse::structure_type::set_type structs_resolved;
 
         net_type ( ID_CONS_PARAM(net)
                  , PARENT_CONS_PARAM(function)
                  , const boost::filesystem::path& path
                        = boost::filesystem::path()
+                 );
+
+        net_type ( ID_CONS_PARAM(net)
+                 , PARENT_CONS_PARAM(function)
+                 , const functions_type& functions
+                 , const places_type& places
+                 , const specializes_type& specializes
+                 , const templates_type& templates
+                 , const transitions_type& transitions
+                 , const structs_type& structs
+                 , const bool& contains_a_module_call
+                 , const xml::parse::structure_type::set_type& resol
+                 , const we::type::property::type& properties
+                 , const boost::filesystem::path& path
                  );
 
         const boost::filesystem::path& path() const;
@@ -160,6 +158,28 @@ namespace xml
 
         void set_prefix (const std::string & prefix);
         void remove_prefix (const std::string & prefix);
+
+        id::ref::net clone
+          (boost::optional<parent_id_type> parent = boost::none) const;
+
+      private:
+        functions_type _functions;
+        places_type _places;
+        specializes_type _specializes;
+        templates_type _templates;
+        transitions_type _transitions;
+
+        //! \todo Everything below should be private with accessors.
+      public:
+        structs_type structs;
+        bool contains_a_module_call;
+
+        xml::parse::structure_type::set_type structs_resolved;
+
+        we::type::property::type prop;
+
+      private:
+        boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

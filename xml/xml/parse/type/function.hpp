@@ -28,59 +28,54 @@ namespace xml
       {
         ID_SIGNATURES(function);
 
+      private:
+        typedef boost::unordered_set<std::string> typenames_type;
+
       public:
         typedef xml::util::unique<port_type,id::ref::port> ports_type;
 
-      private:
-        ports_type _in;
-        ports_type _out;
-        ports_type _tunnel;
-
-        // ***************************************************************** //
-
-        void push ( const id::ref::port & p
-                  , ports_type & ports
-                  , const ports_type & others
-                  , const std::string descr
-                  );
-
-        // ***************************************************************** //
-
-        typedef boost::unordered_set<std::string> typenames_type;
-
-        typenames_type _typenames;
-
-      public:
         typedef boost::variant< id::transition
                               , id::tmpl
+                              , id::net
                               > parent_id_type;
-      public:
-        boost::optional<parent_id_type> _parent;
 
-        fhg::util::maybe<std::string> _name;
-
-      public:
         typedef boost::variant < id::ref::expression
                                , id::ref::module
                                , id::ref::net
                                > type;
 
-        bool contains_a_module_call;
-        structs_type structs;
+        // ***************************************************************** //
 
-        fhg::util::maybe<bool> internal;
+        template<typename T>
+          static boost::optional<parent_id_type> make_parent (const T& id)
+        {
+          return boost::make_optional (parent_id_type (id));
+        }
 
-        conditions_type cond;
+        // ***************************************************************** //
 
-        requirements_type requirements;
+        function_type ( ID_CONS_PARAM(function)
+                      , const boost::optional<parent_id_type>& parent
+                      , const type& _f
+                      );
 
-        we::type::property::type prop;
-
-        type f;
-
-        boost::filesystem::path path;
-
-        xml::parse::structure_type::set_type structs_resolved;
+        function_type ( ID_CONS_PARAM(function)
+                      , const boost::optional<parent_id_type>& parent
+                      , const fhg::util::maybe<std::string>& name
+                      , const ports_type& in
+                      , const ports_type& out
+                      , const ports_type& tunnel
+                      , const typenames_type& typenames
+                      , const bool& contains_a_module_call
+                      , const fhg::util::maybe<bool>& internal
+                      , const structs_type& structs
+                      , const conditions_type& cond
+                      , const requirements_type& requirements
+                      , const type& f
+                      , const xml::parse::structure_type::set_type& resolved
+                      , const we::type::property::type& prop
+                      , const boost::filesystem::path& path
+                      );
 
         // ***************************************************************** //
 
@@ -92,11 +87,6 @@ namespace xml
         const std::string& name (const std::string& name);
         const fhg::util::maybe<std::string>&
         name (const fhg::util::maybe<std::string>& name);
-
-        function_type ( ID_CONS_PARAM(function)
-                      , const type& _f
-                      , const boost::optional<parent_id_type>& parent
-                      );
 
         const boost::optional<parent_id_type>& parent() const;
 
@@ -112,6 +102,14 @@ namespace xml
         const ports_type& in() const;
         const ports_type& out() const;
         const ports_type& tunnel() const;
+
+        // ***************************************************************** //
+
+        void push ( const id::ref::port & p
+                  , ports_type & ports
+                  , const ports_type & others
+                  , const std::string descr
+                  );
 
         // ***************************************************************** //
 
@@ -187,6 +185,37 @@ namespace xml
                         , const xml::parse::structure_type::set_type & known_structs
                         , state::type & state
                         );
+
+        id::ref::function clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
+
+      private:
+        boost::optional<parent_id_type> _parent;
+
+        fhg::util::maybe<std::string> _name;
+
+        ports_type _in;
+        ports_type _out;
+        ports_type _tunnel;
+
+        typenames_type _typenames;
+
+      public:
+        bool contains_a_module_call;
+
+        fhg::util::maybe<bool> internal;
+
+        structs_type structs;
+        conditions_type cond;
+        requirements_type requirements;
+
+        type f;
+
+        xml::parse::structure_type::set_type structs_resolved;
+
+        we::type::property::type prop;
+
+        boost::filesystem::path path;
       };
 
       // ***************************************************************** //

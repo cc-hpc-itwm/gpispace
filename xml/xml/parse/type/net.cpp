@@ -36,11 +36,35 @@ namespace xml
                          )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _functions()
-        , _places()
-        , _specializes()
-        , _templates()
-        , _transitions()
+        , _path (path)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      net_type::net_type ( ID_CONS_PARAM(net)
+                         , PARENT_CONS_PARAM(function)
+                         , const functions_type& functions
+                         , const places_type& places
+                         , const specializes_type& specializes
+                         , const templates_type& templates
+                         , const transitions_type& transitions
+                         , const structs_type& structs
+                         , const bool& contains_a_module_call
+                         , const xml::parse::structure_type::set_type& resol
+                         , const we::type::property::type& properties
+                         , const boost::filesystem::path& path
+                         )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _functions (functions)
+        , _places (places)
+        , _specializes (specializes)
+        , _templates (templates)
+        , _transitions (transitions)
+        , structs (structs)
+        , contains_a_module_call (contains_a_module_call)
+        , structs_resolved (resol)
+        , prop (properties)
         , _path (path)
       {
         _id_mapper->put (_id, *this);
@@ -584,6 +608,27 @@ namespace xml
               fhg::util::remove_prefix (prefix, place_map.place_real);
           }
         }
+      }
+
+      id::ref::net net_type::clone
+        (boost::optional<parent_id_type> parent) const
+      {
+        const id::net new_id (id_mapper()->next_id());
+        return net_type
+          ( new_id
+          , id_mapper()
+          , parent
+          , _functions.clone (function_type::make_parent (new_id))
+          , _places.clone (new_id)
+          , _specializes.clone (new_id)
+          , _templates.clone (new_id)
+          , _transitions.clone (new_id)
+          , structs
+          , contains_a_module_call
+          , structs_resolved
+          , prop
+          , _path
+          ).make_reference_id();
       }
 
       // ******************************************************************* //
