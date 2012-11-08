@@ -32,21 +32,12 @@ namespace xml
         ID_SIGNATURES(place);
         PARENT_SIGNATURES(net);
 
-      private:
-        fhg::util::maybe<bool> _is_virtual;
-
-        std::string _name;
-
       public:
         typedef std::list<value::type> values_type;
 
-        const std::string& name() const;
-        const std::string& name(const std::string& name);
-        std::string type;
-        std::list<token_type> tokens;
-        values_type values;
-        signature::type sig;
-        we::type::property::type prop;
+        place_type ( ID_CONS_PARAM(place)
+                   , PARENT_CONS_PARAM(net)
+                   );
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
@@ -57,7 +48,18 @@ namespace xml
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
+                   , const fhg::util::maybe<bool>& _is_virtual
+                   , const std::string& name
+                   , const std::string& type
+                   , const std::list<token_type>& tokens
+                   , const values_type& values
+                   , const signature::type& sig
+                   , const we::type::property::type& prop
                    );
+
+        const std::string& name() const;
+        const std::string& name(const std::string& name);
+
 
         void push_token (const token_type & t);
 
@@ -71,6 +73,21 @@ namespace xml
 
         const fhg::util::maybe<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
+
+        id::ref::place clone() const;
+
+      private:
+        fhg::util::maybe<bool> _is_virtual;
+
+        std::string _name;
+
+        //! \todo All these should be private with accessors.
+      public:
+        std::string type;
+        std::list<token_type> tokens;
+        values_type values;
+        signature::type sig;
+        we::type::property::type prop;
       };
 
       namespace dump

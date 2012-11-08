@@ -186,6 +186,15 @@ namespace xml
 
       place_type::place_type ( ID_CONS_PARAM(place)
                              , PARENT_CONS_PARAM(net)
+                             )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      place_type::place_type ( ID_CONS_PARAM(place)
+                             , PARENT_CONS_PARAM(net)
                              , const std::string & name
                              , const std::string & _type
                              , const fhg::util::maybe<bool> is_virtual
@@ -201,9 +210,23 @@ namespace xml
 
       place_type::place_type ( ID_CONS_PARAM(place)
                              , PARENT_CONS_PARAM(net)
+                             , const fhg::util::maybe<bool>& is_virtual
+                             , const std::string& name
+                             , const std::string& type
+                             , const std::list<token_type>& tokens
+                             , const values_type& values
+                             , const signature::type& sig
+                             , const we::type::property::type& prop
                              )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
+        , _is_virtual (is_virtual)
+        , _name (name)
+        , type (type)
+        , tokens (tokens)
+        , values (values)
+        , sig (sig)
+        , prop (prop)
       {
         _id_mapper->put (_id, *this);
       }
@@ -257,6 +280,22 @@ namespace xml
       bool place_type::is_virtual (void) const
       {
         return _is_virtual.get_with_default (false);
+      }
+
+      id::ref::place place_type::clone() const
+      {
+        return place_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , *_parent
+          , _is_virtual
+          , _name
+          , type
+          , tokens
+          , values
+          , sig
+          , prop
+          ).make_reference_id();
       }
 
       namespace dump
