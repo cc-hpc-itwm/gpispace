@@ -17,11 +17,6 @@ namespace xml
   {
     namespace type
     {
-      typedef std::list<std::string> port_args_type;
-      typedef std::list<std::string> cincludes_type;
-      typedef std::list<std::string> flags_type;
-      typedef std::list<std::string> links_type;
-
       module_type::module_type ( ID_CONS_PARAM(module)
                                , PARENT_CONS_PARAM(function)
                                )
@@ -203,7 +198,7 @@ namespace xml
 
           bool first (true);
 
-          for ( port_args_type::const_iterator arg (m.port_arg.begin())
+          for ( module_type::port_args_type::const_iterator arg (m.port_arg.begin())
               ; arg != m.port_arg.end()
               ; ++arg, first = false
               )
@@ -227,7 +222,7 @@ namespace xml
           s.attr ("name", m.name);
           s.attr ("function", dump_fun (m));
 
-          for ( cincludes_type::const_iterator inc (m.cincludes.begin())
+          for ( module_type::cincludes_type::const_iterator inc (m.cincludes.begin())
               ; inc != m.cincludes.end()
               ; ++inc
               )
@@ -237,21 +232,21 @@ namespace xml
               s.close ();
             }
 
-          BOOST_FOREACH (flags_type::value_type const& flag, m.ldflags)
+          BOOST_FOREACH (module_type::flags_type::value_type const& flag, m.ldflags)
             {
               s.open ("ld");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (flags_type::value_type const& flag, m.cxxflags)
+          BOOST_FOREACH (module_type::flags_type::value_type const& flag, m.cxxflags)
             {
               s.open ("cxx");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (links_type::value_type const& link, m.links)
+          BOOST_FOREACH (module_type::links_type::value_type const& link, m.links)
             {
               s.open ("link");
               s.attr ("href", link);
