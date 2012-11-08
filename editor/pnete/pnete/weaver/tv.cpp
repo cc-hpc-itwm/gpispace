@@ -258,7 +258,7 @@ namespace fhg
       {
         append_maybe_bool ("virtual", is_virtual);
       }
-      WSIG(tv, place::token, XMLTYPE(token_type), token)
+      WSIG(tv, place::token, XMLTYPE(place_type::token_type), token)
       {
         push (append ("token"));
         boost::apply_visitor (FROM(visitor::token<tv>) (this), token);

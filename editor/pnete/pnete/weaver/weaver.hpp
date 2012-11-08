@@ -14,7 +14,6 @@
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
-#include <xml/parse/type/token.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 
@@ -670,9 +669,9 @@ namespace fhg
           WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());
           WEAVE(place::properties, WETYPE(property::type))(place.prop);
 
-          BOOST_FOREACH (const XMLTYPE(token_type)& tok, place.tokens)
+          BOOST_FOREACH (const XMLTYPE(place_type::token_type)& tok, place.tokens)
           {
-            WEAVE(place::token, XMLTYPE(token_type))(tok);
+            WEAVE(place::token, XMLTYPE(place_type::token_type))(tok);
           }
 
           WEAVEE(place::close)();

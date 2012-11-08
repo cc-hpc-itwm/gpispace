@@ -17,7 +17,6 @@
 #include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/type/struct.fwd.hpp>
 #include <xml/parse/type/template.fwd.hpp>
-#include <xml/parse/type/token.fwd.hpp>
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/use.fwd.hpp>
 

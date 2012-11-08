@@ -309,7 +309,7 @@ namespace xml
 
           ::we::type::property::dump::dump (s, p.prop);
 
-          BOOST_FOREACH (const token_type& token, p.tokens)
+          BOOST_FOREACH (const place_type::token_type& token, p.tokens)
             {
               boost::apply_visitor ( signature::visitor::dump_token ("", s)
                                    , token

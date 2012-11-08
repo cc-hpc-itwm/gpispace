@@ -5,7 +5,6 @@
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
-#include <xml/parse/type/token.hpp>
 #include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 
@@ -33,6 +32,7 @@ namespace xml
         PARENT_SIGNATURES(net);
 
       public:
+        typedef signature::desc_t token_type;
         typedef std::list<value::type> values_type;
 
         place_type ( ID_CONS_PARAM(place)

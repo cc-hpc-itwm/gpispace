@@ -15,7 +15,6 @@
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
-#include <xml/parse/type/token.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 
@@ -75,7 +74,6 @@ namespace xml
       ID_IMPL(specialize)
       ID_IMPL(structure)
       ID_IMPL(tmpl)
-      ID_IMPL(token)
       ID_IMPL(transition)
       ID_IMPL(use)
 
@@ -88,7 +86,6 @@ namespace xml
       PARENT_IMPL(net,specialize)
       PARENT_IMPL(net,tmpl)
       PARENT_IMPL(net,transition)
-      PARENT_IMPL(place,token)
       PARENT_IMPL(transition,connect)
       PARENT_IMPL(transition,use)
     }

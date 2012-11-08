@@ -22,7 +22,6 @@
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
-#include <xml/parse/type/token.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 
@@ -168,10 +167,6 @@ namespace xml
                                , state::type &
                                , const id::function& parent
                                );
-    type::token_type token_type ( const xml_node_type *
-                                , state::type &
-                                , const id::place& parent
-                                );
     id::ref::transition transition_type ( const xml_node_type *
                                         , state::type &
                                         , const id::net& parent
@@ -954,62 +949,6 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::token_type
-    token_type ( const xml_node_type * node
-               , state::type & state
-               , const id::place& parent
-               )
-    {
-      //! \note We can't use a structured_t, as token_field_type takes
-      //! a reference to the variant desc_t and also needs that
-      //! variant. Also, we have to boost::get the structured_t below,
-      //! even though we know it never can be something else.
-      signature::desc_t temporary_token ((signature::structured_t()));
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
-        {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
-
-          if (child)
-            {
-              if (child_name == "value")
-                {
-                  return type::token_type ( id::token (state.id_mapper()->next_id())
-                                          , state.id_mapper()
-                                          , parent
-                                          , std::string (child->value())
-                                          );
-                }
-              else if (child_name == "field")
-                {
-                  token_field_type (child, state, temporary_token);
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "token_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
-        }
-
-      return type::token_type ( id::token (state.id_mapper()->next_id())
-                              , state.id_mapper()
-                              , parent
-                              , boost::get<signature::structured_t>
-                                (temporary_token)
-                              );
-    }
-
-    // ********************************************************************* //
-
     type::structs_type
     structs_type ( const xml_node_type * node
                  , state::type & state
@@ -1597,6 +1536,46 @@ namespace xml
 
     // ********************************************************************* //
 
+    type::place_type::token_type
+      parse_token (const xml_node_type* node, state::type& state)
+    {
+      type::place_type::token_type token;
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+      {
+        const std::string child_name
+          (name_element (child, state.file_in_progress()));
+
+        if (child)
+        {
+          if (child_name == "value")
+          {
+            return std::string (child->value());
+          }
+          else if (child_name == "field")
+          {
+            token_field_type (child, state, token);
+          }
+          else
+          {
+            state.warn
+              ( warning::unexpected_element ( child_name
+                                            , "parse_token"
+                                            , state.file_in_progress()
+                                            )
+              );
+          }
+        }
+      }
+
+      return token;
+    }
+
+    // ********************************************************************* //
+
     id::ref::place place_type ( const xml_node_type * node
                               , state::type & state
                               , const id::net& parent
@@ -1638,7 +1617,7 @@ namespace xml
             {
               if (child_name == "token")
                 {
-                  place.get_ref().push_token (token_type (child, state, id));
+                  place.get_ref().push_token (parse_token (child, state));
                 }
               else if (child_name == "properties")
                 {
