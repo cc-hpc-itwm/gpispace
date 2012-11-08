@@ -19,16 +19,15 @@ namespace xml
                                      )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _name (_place_virtual + " <-> " + _place_real)
         , place_virtual (_place_virtual)
         , place_real (_place_real)
       {
         _id_mapper->put (_id, *this);
       }
 
-      const std::string& place_map_type::name() const
+      std::string place_map_type::name() const
       {
-        return _name;
+        return _place_virtual + " <-> " + _place_real;
       }
 
       namespace dump

@@ -35,14 +35,12 @@ namespace xml
                        , const std::string & _place_real
                        );
 
-        std::string _name;
+        std::string name() const;
 
       public:
         std::string place_virtual;
         std::string place_real;
         we::type::property::type prop;
-
-        const std::string& name() const;
       };
 
       typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
