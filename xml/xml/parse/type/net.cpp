@@ -360,9 +360,9 @@ namespace xml
 
           id_tmpl->get().function().get_ref().name (specialize.name());
 
-          //! \todo use clone here
-
-          push_function (id_tmpl->get().function()/*.get().clone()*/);
+          push_function ( id_tmpl->get().function().get().clone
+                            (function_type::make_parent (id()))
+                        );
         }
 
         _specializes.clear();

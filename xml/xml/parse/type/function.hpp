@@ -34,6 +34,9 @@ namespace xml
       public:
         typedef xml::util::unique<port_type,id::ref::port> ports_type;
 
+        //! \todo net is only in this list as specialize not yet
+        //! reparents the function to the transition requesting it, as
+        //! specialization is not yet lazy. See net_type::specialize()
         typedef boost::variant< id::transition
                               , id::tmpl
                               , id::net
