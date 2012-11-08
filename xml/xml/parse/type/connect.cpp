@@ -22,7 +22,6 @@ namespace xml
         , PARENT_INITIALIZE()
         , _place (place)
         , _port (port)
-        , _name (_place + " <-> " + _port)
       {
         _id_mapper->put (_id, *this);
       }
@@ -35,9 +34,9 @@ namespace xml
       {
         return _port;
       }
-      const std::string& connect_type::name() const
+      std::string connect_type::name() const
       {
-        return _name;
+        return _place + " <-> " + _port;
       }
 
       const std::string& connect_type::place (const std::string& place)

@@ -24,15 +24,6 @@ namespace xml
         ID_SIGNATURES(connect);
         PARENT_SIGNATURES(transition);
 
-        //! \todo Should be a id::place and id::port. In principle yes
-        //! but we do have connections to not yet parsed places
-        std::string _place;
-        std::string _port;
-
-        std::string _name;
-
-        we::type::property::type _properties;
-
       public:
         connect_type ( ID_CONS_PARAM(connect)
                      , PARENT_CONS_PARAM(transition)
@@ -42,12 +33,21 @@ namespace xml
 
         const std::string& place() const;
         const std::string& port() const;
-        const std::string& name() const;
+        std::string name() const;
 
         const std::string& place (const std::string&);
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
+
+      private:
+        //! \todo Should be a id::place and id::port.
+        //! \note In principle yes but we do have connections to
+        //! not yet parsed places
+        std::string _place;
+        std::string _port;
+
+        we::type::property::type _properties;
       };
 
       namespace dump
