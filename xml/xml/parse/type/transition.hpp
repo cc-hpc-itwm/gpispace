@@ -124,7 +124,7 @@ namespace xml
         void type_check (const net_type & net, const state::type & state) const;
 
         id::ref::transition clone
-          (boost::optional<id::net> parent = boost::none) const;
+          (boost::optional<parent_id_type> parent = boost::none) const;
 
       private:
         boost::optional<function_or_use_type> _function_or_use;
