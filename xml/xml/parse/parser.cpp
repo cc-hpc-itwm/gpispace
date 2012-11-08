@@ -369,72 +369,64 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::connect
-    connect_type ( const xml_node_type * node
-                 , state::type & state
-                 , const id::transition& parent
-                 )
+    id::ref::connect connect_type ( const xml_node_type * node
+                                  , state::type & state
+                                  , const id::transition& parent
+                                  )
     {
-      const id::connect id (state.id_mapper()->next_id());
-
-      const id::ref::connect connection
-        ( type::connect_type
-          ( id
-          , state.id_mapper()
-          , parent
-          , required ("connect_type", node, "place", state.file_in_progress())
-          , required ("connect_type", node, "port", state.file_in_progress())
-          ).make_reference_id()
-        );
+      we::type::property::type properties;
 
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
           )
+      {
+        const std::string child_name
+          (name_element (child, state.file_in_progress()));
+
+        if (child)
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
-
-          if (child)
-            {
-              if (child_name == "properties")
-                {
-                  property_map_type ( connection.get_ref().properties()
-                                    , child
-                                    , state
-                                    );
-                }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "connect_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join
-                    ( state
-                    , connection.get_ref().properties()
-                    , deeper
-                    );
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "connect_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
+          if (child_name == "properties")
+          {
+            property_map_type ( properties
+                              , child
+                              , state
+                              );
+          }
+          else if (child_name == "include-properties")
+          {
+            util::property::join
+              ( state
+              , properties
+              , properties_include ( required ( "connect_type"
+                                              , child
+                                              , "href"
+                                              , state.file_in_progress()
+                                              )
+                                   , state
+                                   )
+              );
+          }
+          else
+          {
+            state.warn
+              ( warning::unexpected_element ( child_name
+                                            , "connect_type"
+                                            , state.file_in_progress()
+                                            )
+              );
+          }
         }
+      }
 
-      return connection;
+      return type::connect_type
+        ( state.id_mapper()->next_id()
+        , state.id_mapper()
+        , parent
+        , required ("connect_type", node, "place", state.file_in_progress())
+        , required ("connect_type", node, "port", state.file_in_progress())
+        , properties
+        ).make_reference_id();
     }
 
     // ********************************************************************* //
