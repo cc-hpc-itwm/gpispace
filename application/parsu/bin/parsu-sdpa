@@ -19,9 +19,9 @@ nodefile="$PBS_NODEFILE"
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
-tot_mem=$(( tot_mem * 90 / 100 ))
-com_mem=$(( 0 * 1024 * 1024 ))
+tot_mem=$(( tot_mem * 85 / 100 ))
 shm_mem=$(( 256 * 2**20 ))
+ini_fin_mem=0
 avl_mem=0
 gpi_mem=0
 
@@ -35,7 +35,7 @@ usage: $(basename $0) [options]
   -I: number of I/O workers per node ($num_io_per_node)
   -C: number of CALC workers per node ($num_calc_per_node)
   -s: amount of shared memory to use ($shm_mem)
-  -c: amount of communication memory to use
+  -S: give init/finalize some memory ($ini_fin_mem)
   -m: amount of gpi memory to use
   -T: amount of total memory to use ($tot_mem)
 EOF
@@ -60,7 +60,7 @@ while getopts ":hf:I:C:s:c:m:T:" opt; do
             shm_mem=$OPTARG
             ;;
         c)
-            com_mem=$OPTARG
+            echo >& "ignoring obsolete option -c $OPTARG"
             ;;
         m)
             gpi_mem=$OPTARG
@@ -73,7 +73,7 @@ while getopts ":hf:I:C:s:c:m:T:" opt; do
     esac
 done
 
-tot_shm_mem=$(( (num_calc_per_node + num_io_per_node*2) * (shm_mem + com_mem) ))
+tot_shm_mem=$(( (num_calc_per_node + num_io_per_node*2) * shm_mem + ini_fin_mem*2))
 if [ $gpi_mem -eq 0 ] ; then
     gpi_mem=$(( tot_mem - tot_shm_mem ))
 fi
@@ -107,7 +107,6 @@ fi
 echo >&2 "using nodefile $nodefile"
 echo >&2 "using $gpi_mem GPI memory per node"
 echo >&2 "using $shm_mem shared-memory per process"
-echo >&2 "using $com_mem communication buffer size per process"
 
 sdpa=$(which sdpa)
 if [ $? -ne 0 ] ; then
@@ -139,7 +138,6 @@ source $HOME/.sdpa/state/sdpa.env
 fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "gpi.enabled" -v "true"
 fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "gpi.memory_size" -v "$gpi_mem"
 fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "gpi.socket_path" -v "/var/tmp"
-fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "plugin.gpi_compat.com_size" -v "$com_mem"
 fhgcfg -f ~/.sdpa/configs/sdpa.rc -a "plugin.gpi_compat.shm_size" -v "$shm_mem"
 
 # set up topology
@@ -182,8 +180,8 @@ hosts=$(cat "$nodefile" | uniq)
 master=$(cat "$nodefile" | head -n 1)
 num_hosts=$(cat "$nodefile" | uniq | wc -l)
 
-rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "init" -m aggregator -C "init" -M 0 -B 0 &
-rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "finalize" -m aggregator -C "finalize" -M 0 -B 0 &
+rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "init" -m aggregator -C "init" -M ${ini_fin_mem} &
+rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "finalize" -m aggregator -C "finalize" -M ${ini_fin_mem} &
 
 for host in $hosts ; do
     wait
