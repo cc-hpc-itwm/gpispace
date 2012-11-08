@@ -3,7 +3,16 @@
     <template name="t">
       <template-parameter type="T"/>
       <defun name="exp">
-        <expression/>
+        <net>
+          <place name="test" type="T"/>
+          <transition name="innertrans">
+            <defun>
+              <net>
+                <place name="innertest" type="T"/>
+              </net>
+            </defun>
+          </transition>
+        </net>
       </defun>
     </template>
     <specialize name="t_control" use="t">
