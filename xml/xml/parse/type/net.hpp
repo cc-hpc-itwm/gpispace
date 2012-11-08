@@ -71,7 +71,7 @@ namespace xml
         xml::parse::structure_type::set_type structs_resolved;
 
         net_type ( ID_CONS_PARAM(net)
-                 , const id::function& parent
+                 , PARENT_CONS_PARAM(function)
                  , const boost::filesystem::path& path
                        = boost::filesystem::path()
                  );
