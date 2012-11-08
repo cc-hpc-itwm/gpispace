@@ -48,6 +48,8 @@ namespace xml
 
         const boost::filesystem::path& path() const;
 
+        id::ref::structure clone() const;
+
       private:
         std::string _name;
         signature::desc_t _sig;

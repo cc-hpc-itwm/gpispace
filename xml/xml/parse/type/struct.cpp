@@ -58,6 +58,18 @@ namespace xml
         return _path;
       }
 
+      id::ref::structure structure_type::clone() const
+      {
+        return structure_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , boost::none
+          , _name
+          , _sig
+          , _path
+          ).make_reference_id();
+      }
+
       bool operator == (const structure_type & a, const structure_type & b)
       {
         return (a.name() == b.name()) && (a.signature() == b.signature());
