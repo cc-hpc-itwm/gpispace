@@ -93,7 +93,7 @@ namespace xml
 
       function_type::function_type ( ID_CONS_PARAM(function)
                                    , const type& _f
-                                   , const boost::optional<id_parent>& parent
+                                   , const boost::optional<parent_id_type>& parent
                                    )
         : ID_INITIALIZE()
         , _in()
@@ -105,7 +105,7 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      const boost::optional<function_type::id_parent>& function_type::parent() const
+      const boost::optional<function_type::parent_id_type>& function_type::parent() const
       {
         return _parent;
       }
@@ -119,7 +119,7 @@ namespace xml
       {
         _parent = boost::none;
       }
-      void function_type::parent (const id_parent& parent)
+      void function_type::parent (const parent_id_type& parent)
       {
         _parent = boost::make_optional (parent);
       }

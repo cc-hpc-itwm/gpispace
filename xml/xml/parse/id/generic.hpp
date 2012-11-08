@@ -10,6 +10,7 @@
 
 #define ID_SIGNATURES(TYPE)                     \
   public:                                       \
+    typedef id::TYPE id_type;                   \
     const id::TYPE& id() const;                 \
     id::ref::TYPE make_reference_id() const;    \
                                                 \
@@ -29,6 +30,7 @@
 
 #define PARENT_SIGNATURES(PARENT)                           \
   public:                                                   \
+    typedef id::PARENT parent_id_type;                      \
     bool has_parent() const;                                \
     boost::optional<const PARENT ## _type&> parent() const; \
     boost::optional<PARENT ## _type&> parent();             \

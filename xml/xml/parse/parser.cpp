@@ -135,7 +135,7 @@ namespace xml
                                   );
     id::ref::function function_type ( const xml_node_type *
                                     , state::type &
-                                    , const boost::optional<type::function_type::id_parent>& parent
+                                    , const boost::optional<type::function_type::parent_id_type>& parent
                                     );
     id::ref::module module_type ( const xml_node_type *
                                 , state::type &
@@ -193,7 +193,7 @@ namespace xml
       parse_function
         ( std::istream & f
         , state::type & state
-        , const boost::optional<type::function_type::id_parent>& parent
+        , const boost::optional<type::function_type::parent_id_type>& parent
         )
       {
         return generic_parse<id::ref::function>
@@ -247,7 +247,7 @@ namespace xml
     function_include
       ( const std::string & file
       , state::type & state
-      , const boost::optional<type::function_type::id_parent>& parent
+      , const boost::optional<type::function_type::parent_id_type>& parent
       )
     {
       return state.generic_include<id::ref::function>
@@ -569,7 +569,7 @@ namespace xml
                     ( function_include
                       ( file
                       , state
-                      , boost::make_optional (type::function_type::id_parent(id))
+                      , boost::make_optional (type::function_type::parent_id_type(id))
                       )
                     );
                 }
@@ -593,7 +593,7 @@ namespace xml
                     ( function_type
                     ( child
                     , state
-                    , boost::make_optional (type::function_type::id_parent(id)))
+                    , boost::make_optional (type::function_type::parent_id_type(id)))
                     );
                 }
               else if (child_name == "place-map")
@@ -1102,7 +1102,7 @@ namespace xml
                   fun = function_type
                     ( child
                     , state
-                    , boost::make_optional (type::function_type::id_parent(id))
+                    , boost::make_optional (type::function_type::parent_id_type(id))
                     );
                 }
               else
@@ -1142,7 +1142,7 @@ namespace xml
     function_type
       ( const xml_node_type * node
       , state::type & state
-      , const boost::optional<type::function_type::id_parent>& parent
+      , const boost::optional<type::function_type::parent_id_type>& parent
       )
     {
       const id::function id (state.id_mapper()->next_id());

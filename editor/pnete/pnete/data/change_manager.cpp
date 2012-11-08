@@ -304,7 +304,7 @@ namespace fhg
                                                       , function_id
                                                       ).make_reference_id()
                 , boost::make_optional
-                (::xml::parse::type::function_type::id_parent (transition_id))
+                (::xml::parse::type::function_type::parent_id_type (transition_id))
                 ).make_reference_id()
               )
             ).make_reference_id()
