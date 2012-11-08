@@ -17,19 +17,6 @@ namespace xml
                                  , PARENT_CONS_PARAM(transition)
                                  , const std::string& place
                                  , const std::string& port
-                                 )
-        : ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _place (place)
-        , _port (port)
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      connect_type::connect_type ( ID_CONS_PARAM(connect)
-                                 , PARENT_CONS_PARAM(transition)
-                                 , const std::string& place
-                                 , const std::string& port
                                  , const we::type::property::type& properties
                                  )
         : ID_INITIALIZE()
