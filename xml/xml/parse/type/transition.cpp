@@ -488,15 +488,42 @@ namespace xml
 
       // ******************************************************************* //
 
+      namespace
+      {
+        typedef transition_type::function_or_use_type function_or_use_type;
+
+        class visitor_clone
+          : public boost::static_visitor<function_or_use_type>
+        {
+        public:
+          visitor_clone (const id::transition& new_id)
+            : _new_id (new_id)
+          { }
+          function_or_use_type
+            operator() (const id::ref::function& id) const
+          {
+            return id.get().clone (function_type::make_parent (_new_id));
+          }
+          function_or_use_type operator() (const use_type& use) const
+          {
+            return use;
+          }
+        private:
+          id::transition _new_id;
+        };
+      }
+
       id::ref::transition transition_type::clone
         (boost::optional<id::net> parent) const
       {
-        id::transition new_id (id_mapper()->next_id());
+        const id::transition new_id (id_mapper()->next_id());
         return transition_type
           ( new_id
           , id_mapper()
           , parent
-          , _function_or_use
+          , _fun_or_use
+          ? boost::apply_visitor (visitor_clone (new_id), *_fun_or_use)
+          : boost::none
           , _name
           , _in.clone (new_id)
           , _out.clone (new_id)
