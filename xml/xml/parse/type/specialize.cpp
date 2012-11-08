@@ -26,6 +26,25 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      specialize_type::specialize_type ( ID_CONS_PARAM(specialize)
+                                       , PARENT_CONS_PARAM(net)
+                                       , const std::string& name
+                                       , const std::string& use
+                                       , const type_map_type& type_map
+                                       , const type_get_type& type_get
+                                       , const boost::filesystem::path& path
+                                       )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _name (name)
+        , use (use)
+        , type_map (type_map)
+        , type_get (type_get)
+        , path (path)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
       const std::string& specialize_type::name() const
       {
         return _name;
@@ -33,6 +52,20 @@ namespace xml
       const std::string& specialize_type::name(const std::string& name)
       {
         return _name = name;
+      }
+
+      id::ref::specialize specialize_type::clone() const
+      {
+        return specialize_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , *_parent
+          , _name
+          , use
+          , type_map
+          , type_get
+          , path
+          ).make_reference_id();
       }
 
       void split_structs ( const xml::parse::structure_type::set_type & global
@@ -145,4 +178,3 @@ namespace xml
     }
   }
 }
-

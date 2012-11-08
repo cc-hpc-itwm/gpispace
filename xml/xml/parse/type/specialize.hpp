@@ -31,11 +31,25 @@ namespace xml
                         , PARENT_CONS_PARAM(net)
                         );
 
-        std::string _name;
+        specialize_type ( ID_CONS_PARAM(specialize)
+                        , PARENT_CONS_PARAM(net)
+                        , const std::string& name
+                        , const std::string& use
+                        , const type_map_type& type_map
+                        , const type_get_type& type_get
+                        , const boost::filesystem::path& path
+                        );
 
-      public:
         const std::string& name () const;
         const std::string& name (const std::string& name);
+
+        id::ref::specialize clone() const;
+
+      private:
+        std::string _name;
+
+        //! \todo All these should be private wth accessors.
+      public:
         std::string use;
         type_map_type type_map;
         type_get_type type_get;
