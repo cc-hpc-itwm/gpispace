@@ -42,13 +42,29 @@ namespace xml
                     , const std::string & _function
                     , const boost::filesystem::path & path
                     );
+        module_type ( ID_CONS_PARAM(module)
+                    , PARENT_CONS_PARAM(function)
+                    , const std::string& name
+                    , const std::string& function
+                    , const fhg::util::maybe<std::string>& port_return
+                    , const port_args_type& port_arg
+                    , const fhg::util::maybe<std::string>& code
+                    , const cincludes_type& cincludes
+                    , const flags_type& ldflags
+                    , const flags_type& cxxflags
+                    , const links_type& links
+                    , const boost::filesystem::path& path
+                    );
 
         bool operator == (const module_type& other) const;
 
         void sanity_check (const function_type & fun) const;
 
+        id::ref::module clone() const;
+
         friend std::size_t hash_value (const module_type&);
 
+        //! \todo All these should be private with accessors
         std::string name;
         std::string function;
         fhg::util::maybe<std::string> port_return;

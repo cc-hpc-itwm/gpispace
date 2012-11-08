@@ -129,6 +129,36 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      module_type::module_type ( ID_CONS_PARAM(module)
+                               , PARENT_CONS_PARAM(function)
+                               , const std::string& name
+                               , const std::string& function
+                               , const fhg::util::maybe<std::string>& port_return
+                               , const port_args_type& port_arg
+                               , const fhg::util::maybe<std::string>& code
+                               , const cincludes_type& cincludes
+                               , const flags_type& ldflags
+                               , const flags_type& cxxflags
+                               , const links_type& links
+                               , const boost::filesystem::path& path
+                               )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , name (name)
+        , function (function)
+        , port_return (port_return)
+        , port_arg (port_arg)
+        , code (code)
+        , cincludes (cincludes)
+        , ldflags (ldflags)
+        , cxxflags (cxxflags)
+        , links (links)
+        , path (path)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+
       bool module_type::operator == (const module_type& other) const
       {
         return port_return == other.port_return
@@ -173,6 +203,25 @@ namespace xml
               );
           }
         }
+      }
+
+      id::ref::module module_type::clone() const
+      {
+        return module_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , *_parent
+          , name
+          , function
+          , port_return
+          , port_arg
+          , code
+          , cincludes
+          , ldflags
+          , cxxflags
+          , links
+          , path
+          ).make_reference_id();
       }
 
       std::size_t hash_value (const module_type& m)
