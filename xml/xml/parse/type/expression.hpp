@@ -3,9 +3,10 @@
 #ifndef _XML_PARSE_TYPE_EXPRESSION_HPP
 #define _XML_PARSE_TYPE_EXPRESSION_HPP
 
-#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/expression.fwd.hpp>
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -18,15 +19,13 @@ namespace xml
   {
     namespace type
     {
+      //! \todo Move this into class scope.
       typedef std::list<std::string> expressions_type;
 
       struct expression_type
       {
         ID_SIGNATURES(expression);
         PARENT_SIGNATURES(function);
-
-      private:
-        expressions_type _expressions;
 
       public:
         expression_type ( ID_CONS_PARAM(expression)
@@ -45,6 +44,9 @@ namespace xml
         expressions_type& expressions (void);
 
         void append (const expressions_type& other);
+
+      private:
+        expressions_type _expressions;
       };
 
       namespace dump
