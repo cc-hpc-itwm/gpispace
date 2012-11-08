@@ -55,6 +55,17 @@ namespace xml
         return _properties;
       }
 
+      id::ref::connect connect_type::clone() const
+      {
+        return connect_type ( id_mapper()->next_id()
+                            , id_mapper()
+                            , *_parent
+                            , _place
+                            , _port
+                            , _properties
+                            ).make_reference_id();
+      }
+
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s

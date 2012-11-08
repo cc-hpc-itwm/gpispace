@@ -42,6 +42,8 @@ namespace xml
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
 
+        id::ref::connect clone() const;
+
       private:
         //! \todo Should be a id::place and id::port.
         //! \note In principle yes but we do have connections to
