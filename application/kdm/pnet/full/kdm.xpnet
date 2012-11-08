@@ -180,6 +180,8 @@
     <!-- ****************************************************************** -->
 
     <transition name="process">
+      <require key="GPI" />
+      <require key="CPU" />
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume_in_progress"/>
@@ -358,6 +360,8 @@
     <place name="pair_to_reduce" type="pair_to_reduce"/>
 
     <transition name="reduce">
+      <require key="GPI" />
+      <require key="CPU" />
       <defun>
         <in name="config" type="config"/>
         <in name="pair" type="pair_to_reduce"/>
@@ -407,6 +411,8 @@
     <!-- ****************************************************************** -->
 
     <transition name="write">
+      <require key="GPI" />
+      <require key="WRITE" />
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume_with_store"/>
@@ -486,6 +492,8 @@
     <!-- ****************************************************************** -->
 
     <transition name="finalize">
+      <require key="GPI" />
+      <require key="finalize" />
       <defun>
         <in name="config" type="config"/>
         <in name="trigger" type="control"/>
