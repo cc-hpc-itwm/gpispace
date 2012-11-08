@@ -33,11 +33,15 @@ namespace xml
                        , PARENT_CONS_PARAM(transition)
                        , const std::string & _place_virtual
                        , const std::string & _place_real
+                       , const we::type::property::type& prop
+                       = we::type::property::type()
                        );
 
         std::string name() const;
 
-      public:
+        id::ref::place_map clone() const;
+
+        //! \todo These should all be private with accessors.
         std::string place_virtual;
         std::string place_real;
         we::type::property::type prop;
