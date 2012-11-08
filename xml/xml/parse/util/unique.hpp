@@ -6,6 +6,7 @@
 #include <string>
 #include <stdexcept>
 
+#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
@@ -22,6 +23,7 @@ namespace xml
     private:
       typedef ID_TYPE id_type;
       typedef KEY key_type;
+      typedef T value_type;
 
       typedef boost::unordered_set<id_type> ids_type;
       typedef boost::unordered_map<key_type,id_type> by_key_type;
@@ -127,6 +129,20 @@ namespace xml
 
       void clear() { _values._ids.clear(); _by_key.clear(); }
       bool empty() const { return _by_key.empty(); }
+
+      unique<value_type, id_type, key_type> clone
+        ( const boost::optional<typename value_type::parent_id_type>& parent
+        = boost::none
+        ) const
+      {
+        //! \todo Reserve?
+        unique<value_type, id_type, key_type> copy;
+        BOOST_FOREACH (const value_type& value, values())
+        {
+          copy.push (value.clone (parent));
+        }
+        return copy;
+      }
 
     private:
       //! \note Needs to be mutable, as values() must return a
