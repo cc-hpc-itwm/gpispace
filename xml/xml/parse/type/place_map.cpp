@@ -37,7 +37,7 @@ namespace xml
         return place_map_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , *_parent
+          , boost::none
           , place_virtual
           , place_real
           , prop

@@ -59,7 +59,7 @@ namespace xml
       {
         return connect_type ( id_mapper()->next_id()
                             , id_mapper()
-                            , *_parent
+                            , boost::none
                             , _place
                             , _port
                             , _properties
@@ -85,4 +85,3 @@ namespace xml
     }
   }
 }
-

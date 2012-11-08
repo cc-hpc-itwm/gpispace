@@ -79,7 +79,7 @@ namespace xml
         return expression_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , *_parent
+          , boost::none
           , _expressions
           ).make_reference_id();
       }
