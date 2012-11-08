@@ -16,16 +16,16 @@ namespace xml
       tmpl_type::tmpl_type
         ( ID_CONS_PARAM(tmpl)
         , PARENT_CONS_PARAM(net)
-        , const boost::filesystem::path& path
         , const fhg::util::maybe<std::string>& name
         , const names_type& tmpl_parameter
         , const id::ref::function& function
+        , const boost::filesystem::path& path
         )
           : ID_INITIALIZE()
           , PARENT_INITIALIZE()
+          , _name (name)
           , _tmpl_parameter (tmpl_parameter)
           , _function (function)
-          , _name (name)
           , _path (path)
       {
         _id_mapper->put (_id, *this);
@@ -58,6 +58,16 @@ namespace xml
         return _path;
       }
 
+      void tmpl_type::specialize
+        ( const type_map_type & map
+        , const type_get_type & get
+        , const xml::parse::structure_type::set_type & known_structs
+        , state::type & state
+        )
+      {
+        function().get_ref().specialize (map, get, known_structs, state);
+      }
+
       boost::optional<const id::ref::function&>
       tmpl_type::get_function (const std::string& name) const
       {
@@ -69,14 +79,17 @@ namespace xml
         return boost::none;
       }
 
-      void tmpl_type::specialize
-        ( const type_map_type & map
-        , const type_get_type & get
-        , const xml::parse::structure_type::set_type & known_structs
-        , state::type & state
-        )
+      id::ref::tmpl tmpl_type::clone() const
       {
-        function().get_ref().specialize (map, get, known_structs, state);
+        return tmpl_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , boost::none
+          , _name
+          , _tmpl_parameter
+          , _function
+          , _path
+          ).make_reference_id();
       }
 
       namespace dump

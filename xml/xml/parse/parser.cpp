@@ -1190,10 +1190,10 @@ namespace xml
         ( id
         , state.id_mapper()
         , parent
-        , state.file_in_progress()
         , name
         , template_parameter
         , *fun
+        , state.file_in_progress()
         ).make_reference_id();
     }
 

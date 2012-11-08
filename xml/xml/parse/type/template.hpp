@@ -29,19 +29,12 @@ namespace xml
       public:
         typedef boost::unordered_set<std::string> names_type;
 
-      private:
-        names_type _tmpl_parameter;
-        id::ref::function _function;
-        fhg::util::maybe<std::string> _name;
-        boost::filesystem::path _path;
-
-      public:
         tmpl_type ( ID_CONS_PARAM(tmpl)
                   , PARENT_CONS_PARAM(net)
-                  , const boost::filesystem::path& path
                   , const fhg::util::maybe<std::string>& name
-                  , const names_type& names
+                  , const names_type& tmpl_parameter
                   , const id::ref::function& function
+                  , const boost::filesystem::path& path
                   );
 
         const fhg::util::maybe<std::string>& name() const;
@@ -61,6 +54,14 @@ namespace xml
 
         boost::optional<const id::ref::function&>
         get_function (const std::string&) const;
+
+        id::ref::tmpl clone() const;
+
+      private:
+        fhg::util::maybe<std::string> _name;
+        names_type _tmpl_parameter;
+        id::ref::function _function;
+        boost::filesystem::path _path;
       };
 
       namespace dump
