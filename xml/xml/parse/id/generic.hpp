@@ -39,7 +39,7 @@
     boost::optional<id::PARENT> _parent
 
 #define PARENT_CONS_PARAM(PARENT)               \
-  const id::PARENT& parent
+  const boost::optional<id::PARENT>& parent
 
 #define PARENT_INITIALIZE()                     \
   _parent (parent)
