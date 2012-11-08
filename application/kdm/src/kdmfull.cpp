@@ -39,13 +39,12 @@ static unsigned long sizeofJob (void)
 static void get_Job (const value::type & config, MigrationJob & Job)
 {
   const fvmAllocHandle_t & handle_Job (get<long> (config, "handle.job"));
-  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch.job"));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
                              , sizeofJob()
                              , 0
-                             , 0 //scratch_Job
+                             , 0
                              )
            );
 
@@ -59,7 +58,7 @@ static fvmAllocHandle_t alloc ( const long & size
 {
   DMLOG (TRACE, "alloc: " << descr << ": " << size << " bytes");
 
-  const fvmAllocHandle_t h (fvmGlobalAlloc (size, descr.c_str ()));
+  const fvmAllocHandle_t h (fvmGlobalAlloc (size, ("kdm." + descr).c_str ()));
 
   if (h == 0)
     {
@@ -189,12 +188,11 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
                              Job.NOffVol,Job.NtotOffVol,Job.MigFileMode);
 
   const fvmAllocHandle_t handle_Job (alloc (sizeofJob(), "handle_Job", memsizeGPI));
-  const fvmAllocHandle_t scratch_Job (alloc (sizeofJob(), "scratch_Job", memsizeGPI));
 
   memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
 
   for (int p (0); p < fvmGetNodeCount(); ++p)
-    waitComm (fvmPutGlobalData (handle_Job, p * sizeofJob(), sizeofJob(), 0, scratch_Job));
+    waitComm (fvmPutGlobalData (handle_Job, p * sizeofJob(), sizeofJob(), 0, 0));
 
   const fvmAllocHandle_t handle_TT (alloc (Job.globTTbufsizelocal, "handle_TT", memsizeGPI));
 
@@ -213,8 +211,6 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   const fvmAllocHandle_t handle_volume
     (alloc (volumes_per_node * Job.SubVolMemSize, "handle_volume", memsizeGPI));
-
-  const fvmAllocHandle_t scratch_volume (alloc (Job.SubVolMemSize, "scratch_volume", memsizeGPI));
 
   const long work_parts (offsets * per_offset_volumes);
 
@@ -264,15 +260,11 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   const fvmAllocHandle_t handle_bunch
     (alloc ((bunch_store_per_node - 1) * Job.BunchMemSize, "handle_bunch", memsizeGPI));
 
-  const fvmAllocHandle_t scratch_bunch
-    (alloc (Job.BunchMemSize, "scratch_bunch", memsizeGPI));
-
   // machine
   put (output, "config", "threads.N", static_cast<long>(NThreads));
 
   // system
   put (output, "config", "handle.job", static_cast<long>(handle_Job));
-  put (output, "config", "scratch.job", static_cast<long>(scratch_Job));
 
   // problem, derived
   put (output, "config", "offsets", offsets);
@@ -308,9 +300,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   // tuning induced
   put (output, "config", "handle.bunch", static_cast<long>(handle_bunch));
-  put (output, "config", "scratch.bunch", static_cast<long>(scratch_bunch));
   put (output, "config", "handle.volume", static_cast<long>(handle_volume));
-  put (output, "config", "scratch.volume", static_cast<long>(scratch_volume));
 
   // WORK HERE: overcome this by using virtual offsetclasses
   if ( get<long> (output, "config", "size.store.volume")
@@ -404,7 +394,6 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   Bunch.LoadFromDisk_CO_MT(Job);
 
   const fvmAllocHandle_t handle_bunch (get<long> (config, "handle.bunch"));
-  const fvmAllocHandle_t scratch_bunch (get<long> (config, "scratch.bunch"));
 
   const long & sid (get<long> (bunch, "store.id"));
 
@@ -412,7 +401,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
                               , sid * Job.BunchMemSize
                               , Job.BunchMemSize
                               , 0
-                              , scratch_bunch
+                              , 0
                               )
            );
 
@@ -463,7 +452,6 @@ static void initialize_volume (void *, const we::loader::input_t & input, we::lo
   MigSubVol.clear();
 
   const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
-  const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
 
   const long & sid (get<long> (volume, "store.id"));
 
@@ -471,7 +459,7 @@ static void initialize_volume (void *, const we::loader::input_t & input, we::lo
                              , sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , 0
-                             , scratch_volume
+                             , 0
                              )
            );
 
@@ -493,7 +481,6 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
   // load and reconstruct the volume
   const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
-  const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
 
   char * pVMMemSubVol (((char *)fvmGetShmemPtr()));
 
@@ -521,12 +508,11 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
                              , volume_sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , 0
-                             , scratch_volume
+                             , 0
                              )
            );
 
   const fvmAllocHandle_t & handle_bunch (get<long> (config, "handle.bunch"));
-  const fvmAllocHandle_t & scratch_bunch (get<long> (config, "scratch.bunch"));
 
       const long & bid (get<long> (volume, "assigned.bunch.id"));
       const long & sid (get<long> (volume, "assigned.store.id"));
@@ -541,7 +527,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
                                   , sid * Job.BunchMemSize
                                   , Job.BunchMemSize
                                   , Job.SubVolMemSize
-                                  , scratch_bunch
+                                  , 0
                                   )
                );
 
@@ -563,7 +549,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
                              , volume_sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , 0
-                             , scratch_volume
+                             , 0
                              )
            );
 
@@ -587,7 +573,6 @@ static void reduce (void *, const we::loader::input_t & input, we::loader::outpu
   const long & volume_sid (get<long>(volume, "store.id"));
   const long & sum_sid (get<long>(sum, "store.id"));
   const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
-  const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
 
   MigrationJob Job;
 
@@ -624,7 +609,7 @@ static void reduce (void *, const we::loader::input_t & input, we::loader::outpu
                              , volume_sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , 0
-                             , scratch_volume
+                             , 0
                              )
            );
 
@@ -633,7 +618,7 @@ static void reduce (void *, const we::loader::input_t & input, we::loader::outpu
                              , sum_sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , Job.SubVolMemSize
-                             , scratch_volume
+                             , 0
                              )
            );
 
@@ -651,7 +636,7 @@ static void reduce (void *, const we::loader::input_t & input, we::loader::outpu
                              , sum_sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , Job.SubVolMemSize
-                             , scratch_volume
+                             , 0
                              )
            );
 
@@ -672,14 +657,13 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
   get_Job (config, Job);
 
   const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
-  const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
   const long & sid (get<long>(volume, "store.id"));
 
   waitComm ( fvmGetGlobalData ( handle_volume
                               , sid * Job.SubVolMemSize
                               , Job.SubVolMemSize
                               , 0
-                              , scratch_volume
+                              , 0
                               )
            );
 
@@ -732,11 +716,8 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
   MLOG (INFO, "finalize: config " << config);
 
   fvmGlobalFree (get<long> (config, "handle.job"));
-  fvmGlobalFree (get<long> (config, "scratch.job"));
   fvmGlobalFree (get<long> (config, "handle.volume"));
-  fvmGlobalFree (get<long> (config, "scratch.volume"));
   fvmGlobalFree (get<long> (config, "handle.bunch"));
-  fvmGlobalFree (get<long> (config, "scratch.bunch"));
   fvmGlobalFree (get<long> (config, "handle.TT"));
 
   put (output, "trigger", control());

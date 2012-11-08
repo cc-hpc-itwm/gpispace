@@ -135,77 +135,73 @@ void TTVMMemHandler::InitVol ( const MigrationJob& MigJob
   const unsigned long SizePerFile
     (sizeof(SegYHeader) + Nx*Ny*Nz*N_SIGNALS*sizeof(float));
 
-  fvmAllocHandle_t scratch_TT (fvmLocalAlloc (SizePerFile));
-  if (scratch_TT == 0)
-    throw std::runtime_error ("InitVol scratch_TT == 0");
-
   // read all TT files
   if (mtid == 0)
     {
       char FileName[199];
       Acq_geometry<float> Geom(MigJob.geom);
       for (int iSrcx = 0; iSrcx < NSrfx; iSrcx++)
-	{
-	  for (int iSrcy = 0; iSrcy < NSrfy; iSrcy++)
-	    {
-	      const long SrcIndex = iSrcx*NSrfy + iSrcy;
+        {
+          for (int iSrcy = 0; iSrcy < NSrfy; iSrcy++)
+            {
+              const long SrcIndex = iSrcx*NSrfy + iSrcy;
 
-              //	      if ( (SrcIndex % PSize) == PRank )
-	      if (SrcIndex % numPart == myPart)
-		{
-		  const unsigned long HeaderAddress
+              //              if ( (SrcIndex % PSize) == PRank )
+              if (SrcIndex % numPart == myPart)
+                {
+                  const unsigned long HeaderAddress
                     //                    = Ntid*8*TTLength + (SrcIndex/PSize) * TTLength;
                     = 0;
 
-		  sprintf(FileName,"%s_%d_%d.dat", NameBase, iSrcx, iSrcy);
-		  std::ifstream Input(FileName, std::ios::binary);
+                  sprintf(FileName,"%s_%d_%d.dat", NameBase, iSrcx, iSrcy);
+                  std::ifstream Input(FileName, std::ios::binary);
                   //                  std::cout << "FileName = " << FileName << std::endl;
 
-		  if (Input.fail())
-		    {
-		      std::cerr << "Error in TTVMMemHandler::ReadRT: Failed to open file " << FileName << std::endl;
-		      continue;
-		    }
+                  if (Input.fail())
+                    {
+                      std::cerr << "Error in TTVMMemHandler::ReadRT: Failed to open file " << FileName << std::endl;
+                      continue;
+                    }
 
-		  for (int i = 0; i < Nx; i++)
-		    for (int j = 0; j < Ny; j++)
-		      {
-			const unsigned long Address
+                  for (int i = 0; i < Nx; i++)
+                    for (int j = 0; j < Ny; j++)
+                      {
+                        const unsigned long Address
                           = HeaderAddress
                           + sizeof(SegYHeader)
                           + (i * Ny + j)*Nz*N_SIGNALS*sizeof(float);
 
-			SegYHeader* Header =  (SegYHeader*) &(VMem[HeaderAddress]);
-			char* buffer = &(VMem[Address]);
-			Input.read((char*) Header, sizeof(SegYHeader));
-			Input.read(buffer, Nz*N_SIGNALS*sizeof(float));
+                        SegYHeader* Header =  (SegYHeader*) &(VMem[HeaderAddress]);
+                        char* buffer = &(VMem[Address]);
+                        Input.read((char*) Header, sizeof(SegYHeader));
+                        Input.read(buffer, Nz*N_SIGNALS*sizeof(float));
 
-			if (endianess != LITENDIAN)
-			  {
-			    swap_bytes((void*)&(Header->sx), 1, sizeof(int));
-			    swap_bytes((void*)&(Header->sy), 1, sizeof(int));
-			    swap_bytes((void*)&(Header->gx), 1, sizeof(int));
-			    swap_bytes((void*)&(Header->gy), 1, sizeof(int));
-			    swap_bytes((void*)&(Header->scalco), 1, sizeof(short));
-			    swap_bytes((void*)&(Header->selev), 1, sizeof(int));
-			    swap_bytes((void*)&(Header->gelev), 1, sizeof(int));
-			    swap_bytes((void*)&(Header->scalel), 1, sizeof(short));
+                        if (endianess != LITENDIAN)
+                          {
+                            swap_bytes((void*)&(Header->sx), 1, sizeof(int));
+                            swap_bytes((void*)&(Header->sy), 1, sizeof(int));
+                            swap_bytes((void*)&(Header->gx), 1, sizeof(int));
+                            swap_bytes((void*)&(Header->gy), 1, sizeof(int));
+                            swap_bytes((void*)&(Header->scalco), 1, sizeof(short));
+                            swap_bytes((void*)&(Header->selev), 1, sizeof(int));
+                            swap_bytes((void*)&(Header->gelev), 1, sizeof(int));
+                            swap_bytes((void*)&(Header->scalel), 1, sizeof(short));
 
-			    swap_bytes((void*) buffer, Nz*N_SIGNALS, sizeof(float));
-			  }
+                            swap_bytes((void*) buffer, Nz*N_SIGNALS, sizeof(float));
+                          }
 
-			float sx_MOD, sy_MOD, gx_MOD, gy_MOD;
-			Geom.WORLDxy_to_MODxy(Header->sx, Header->sy,
-					      &sx_MOD, &sy_MOD);
-			Geom.WORLDxy_to_MODxy(Header->gx, Header->gy,
-					      &gx_MOD, &gy_MOD);
+                        float sx_MOD, sy_MOD, gx_MOD, gy_MOD;
+                        Geom.WORLDxy_to_MODxy(Header->sx, Header->sy,
+                                              &sx_MOD, &sy_MOD);
+                        Geom.WORLDxy_to_MODxy(Header->gx, Header->gy,
+                                              &gx_MOD, &gy_MOD);
 
                         Header->sx = static_cast<int>(roundf(sx_MOD));
-			Header->sy = static_cast<int>(roundf(sy_MOD));
-			Header->gx = static_cast<int>(roundf(gx_MOD));
-			Header->gy = static_cast<int>(roundf(gy_MOD));
-		      }
-		  Input.close();
+                        Header->sy = static_cast<int>(roundf(sy_MOD));
+                        Header->gx = static_cast<int>(roundf(gx_MOD));
+                        Header->gy = static_cast<int>(roundf(gy_MOD));
+                      }
+                  Input.close();
 
                   const unsigned long off
                     (Ntid*8*TTLength + (SrcIndex/PSize) * TTLength);
@@ -224,15 +220,13 @@ void TTVMMemHandler::InitVol ( const MigrationJob& MigJob
                                        , off + shift
                                        , SizePerFile
                                        , VMemOff
-                                       , scratch_TT
+                                       , 0
                                        )
                     );
-		}
-	    }
-	}
+                }
+            }
+        }
     }
-
-  fvmLocalFree (scratch_TT);
 
   if (mtid == 0)
     {
@@ -249,7 +243,7 @@ void TTVMMemHandler::InitVol ( const MigrationJob& MigJob
 TTVMMemHandler::~TTVMMemHandler()
 {
     if ( PreFileName != NULL )
-	delete[] PreFileName;
+        delete[] PreFileName;
     clear();
 }
 void TTVMMemHandler::clear()
@@ -340,14 +334,6 @@ void TTVMMemHandler::TTVMMemHandleralloc(const int Nx, const int Ny, const int N
 
 //   pthread_mutex_lock (&fvm_mutex);
 
-//   const fvmAllocHandle_t scratch (fvmLocalAlloc (TTLength));
-//   if (scratch == 0)
-//   {
-//     pthread_mutex_unlock (&fvm_mutex);
-
-//     throw std::runtime_error ("ReadRT: scratch == 0");
-//   }
-
 // //   std::cout << "mtid " << mtid
 // //             << " get from handle_TT " << SrcAddress + SrcRank * Job.globTTbufsizelocal
 // //             << " to shmem " << bufferaddress + Job.shift_for_TT
@@ -358,12 +344,10 @@ void TTVMMemHandler::TTVMMemHandleralloc(const int Nx, const int Ny, const int N
 //                              , SrcAddress + SrcRank * Job.globTTbufsizelocal
 //                              , TTLength
 //                              , bufferaddress + Job.shift_for_TT
-//                              , scratch
+//                              , 0
 //                              )
 //            )
 //     ;
-
-//   fvmLocalFree (scratch);
 
 //   pthread_mutex_unlock (&fvm_mutex);
 
@@ -394,33 +378,13 @@ bool TTVMMemHandler::ReadRT ( const int& ix
   // read header
 
   {
-    pthread_mutex_lock (&fvm_mutex);
-
-    const fvmAllocHandle_t scratch (fvmLocalAlloc (sizeof(SegYHeader)));
-    if (scratch == 0)
-    {
-      pthread_mutex_unlock (&fvm_mutex);
-
-      std::ostringstream ss;
-
-      ss << "ReadRT-A: scratch == 0"
-         << ", requested size was " << sizeof(SegYHeader)
-        ;
-
-      throw std::runtime_error (ss.str());
-    }
-
     waitComm (fvmGetGlobalData ( handle_TT
                                , SrcAddress + shift
                                , sizeof(SegYHeader)
                                , bufferaddress + Job.shift_for_TT
-                               , scratch
+                               , 0
                                )
              );
-
-    fvmLocalFree (scratch);
-
-    pthread_mutex_unlock (&fvm_mutex);
 
     //     PE->readMem( bufferaddress
     //                , SrcAddress
@@ -435,43 +399,19 @@ bool TTVMMemHandler::ReadRT ( const int& ix
   {
     const unsigned int TTLengthpart = (Nparty + 1)*Nz*N_SIGNALS*sizeof(float);
 
-    pthread_mutex_lock (&fvm_mutex);
-
-    const fvmAllocHandle_t scratch (fvmLocalAlloc (TTLengthpart));
-    if (scratch == 0)
-    {
-      pthread_mutex_unlock (&fvm_mutex);
-
-      std::ostringstream ss;
-
-      ss << "ReadRT-B: scratch == 0"
-         << ", requested size was " << TTLengthpart
-        ;
-
-      throw std::runtime_error (ss.str());
-    }
-
-    pthread_mutex_unlock (&fvm_mutex);
-
     for (int iVolx = N0x; iVolx < N0x + Npartx + 1; iVolx++)
     {
       const unsigned long addressoffset =  sizeof(SegYHeader) + (iVolx*Ny + N0y)*Nz*N_SIGNALS*sizeof(float);
-
-      pthread_mutex_lock (&fvm_mutex);
 
       waitComm ( fvmGetGlobalData
                  ( handle_TT
                  , SrcAddress + addressoffset + shift
                  , TTLengthpart
                  , bufferaddress + addressoffset + Job.shift_for_TT
-                 , scratch
+                 , 0
                  )
                );
-      pthread_mutex_unlock (&fvm_mutex);
     }
-    pthread_mutex_lock (&fvm_mutex);
-    fvmLocalFree (scratch);
-    pthread_mutex_unlock (&fvm_mutex);
   }
 
 //   std::cout << "mtid " << mtid << " done ReadRT" << std::endl;
@@ -485,8 +425,8 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 // bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS, const int& _ixR, const int& _iyR,
 //                          float* &_Src00, float* &_Src01, float* &_Src10, float* &_Src11,
 //                          float* &_Rcv00, float* &_Rcv01, float* &_Rcv10, float* &_Rcv11,
-// 			 SegYHeader& _HeaderS00, SegYHeader& _HeaderS01, SegYHeader& _HeaderS10, SegYHeader& _HeaderS11,
-// 			 SegYHeader& _HeaderR00, SegYHeader& _HeaderR01, SegYHeader& _HeaderR10, SegYHeader& _HeaderR11, const int mtid
+//                       SegYHeader& _HeaderS00, SegYHeader& _HeaderS01, SegYHeader& _HeaderS10, SegYHeader& _HeaderS11,
+//                       SegYHeader& _HeaderR00, SegYHeader& _HeaderR01, SegYHeader& _HeaderR10, SegYHeader& _HeaderR11, const int mtid
 //                          , const fvmAllocHandle_t handle_TT
 //                          , const MigrationJob & Job
 //                          )
@@ -502,24 +442,24 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 //         float* tmp0 = Src00;
 //         Src00 = Src01;
 //         Src01 = tmp0;
-// 	unsigned long atmp0 = Src00_Address;
-// 	Src00_Address = Src01_Address;
-// 	Src01_Address = atmp0;
-// 	HeaderS00 = HeaderS01;
+//      unsigned long atmp0 = Src00_Address;
+//      Src00_Address = Src01_Address;
+//      Src01_Address = atmp0;
+//      HeaderS00 = HeaderS01;
 
 //         retS00 = retS01;
 
 //         float* tmp1 = Src10;
 //         Src10 = Src11;
 //         Src11 = tmp1;
-// 	unsigned long atmp1 = Src10_Address;
-// 	Src10_Address = Src11_Address;
-// 	Src11_Address = atmp1;
-// 	HeaderS10 = HeaderS11;
+//      unsigned long atmp1 = Src10_Address;
+//      Src10_Address = Src11_Address;
+//      Src11_Address = atmp1;
+//      HeaderS10 = HeaderS11;
 
 //         retS10 =retS11;
 
-// // 	std::cout << " read 2 Sources  ";
+// //   std::cout << " read 2 Sources  ";
 //         retS01 = ReadRT(_ixS, _iyS+1, (float*) Src01, Src01_Address, HeaderS01, mtid, handle_TT, Job);
 //         retS11 = ReadRT(_ixS+1, _iyS+1, (float*) Src11, Src11_Address, HeaderS11, mtid, handle_TT, Job);
 //       }
@@ -528,24 +468,24 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 //         float* tmp0 = Src00;
 //         Src00 = Src01;
 //         Src01 = tmp0;
-// 	unsigned long atmp0 = Src00_Address;
-// 	Src00_Address = Src01_Address;
-// 	Src01_Address = atmp0;
-// 	HeaderS01 = HeaderS00;
+//      unsigned long atmp0 = Src00_Address;
+//      Src00_Address = Src01_Address;
+//      Src01_Address = atmp0;
+//      HeaderS01 = HeaderS00;
 
 //         retS01 = retS00;
 
 //         float* tmp1 = Src10;
 //         Src10 = Src11;
 //         Src11 = tmp1;
-// 	unsigned long atmp1 = Src10_Address;
-// 	Src10_Address = Src11_Address;
-// 	Src11_Address = atmp1;
-// 	HeaderS11 = HeaderS10;
+//      unsigned long atmp1 = Src10_Address;
+//      Src10_Address = Src11_Address;
+//      Src11_Address = atmp1;
+//      HeaderS11 = HeaderS10;
 
 //         retS11 = retS10;
 
-// // 	std::cout << " read 2 Sources  ";
+// //   std::cout << " read 2 Sources  ";
 //         retS00 = ReadRT( _ixS, _iyS, (float*) Src00, Src00_Address, HeaderS00, mtid, handle_TT, Job);
 //         retS10 = ReadRT( _ixS+1, _iyS, (float*) Src10, Src10_Address, HeaderS10, mtid, handle_TT, Job);
 //       }
@@ -554,24 +494,24 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 //         float* tmp0 = Src00;
 //         Src00 = Src10;
 //         Src10 = tmp0;
-// 	unsigned long atmp0 = Src00_Address;
-// 	Src00_Address = Src10_Address;
-// 	Src10_Address = atmp0;
-// 	HeaderS00 = HeaderS10;
+//      unsigned long atmp0 = Src00_Address;
+//      Src00_Address = Src10_Address;
+//      Src10_Address = atmp0;
+//      HeaderS00 = HeaderS10;
 
 //         retS00 =retS10;
 
 //         float* tmp1 = Src01;
 //         Src01 = Src11;
 //         Src11 = tmp1;
-// 	unsigned long atmp1 = Src01_Address;
-// 	Src01_Address = Src11_Address;
-// 	Src11_Address = atmp1;
-// 	HeaderS01 = HeaderS11;
+//      unsigned long atmp1 = Src01_Address;
+//      Src01_Address = Src11_Address;
+//      Src11_Address = atmp1;
+//      HeaderS01 = HeaderS11;
 
 //         retS01 =retS11;
 
-// // 	std::cout << " read 2 Sources  ";
+// //   std::cout << " read 2 Sources  ";
 //         retS10 = ReadRT( _ixS+1, _iyS, (float*) Src10, Src10_Address, HeaderS10, mtid, handle_TT, Job);
 //         retS11 = ReadRT( _ixS+1, _iyS+1, (float*) Src11, Src11_Address, HeaderS11, mtid, handle_TT, Job);
 //       }
@@ -580,30 +520,30 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 //         float* tmp0 = Src00;
 //         Src00 = Src10;
 //         Src10 = tmp0;
-// 	unsigned long atmp0 = Src00_Address;
-// 	Src00_Address = Src10_Address;
-// 	Src10_Address = atmp0;
-// 	HeaderS10 = HeaderS00;
+//      unsigned long atmp0 = Src00_Address;
+//      Src00_Address = Src10_Address;
+//      Src10_Address = atmp0;
+//      HeaderS10 = HeaderS00;
 
 //         retS10 = retS00;
 
 //         float* tmp1 = Src01;
 //         Src01 = Src11;
 //         Src11 = tmp1;
-// 	unsigned long atmp1 = Src01_Address;
-// 	Src01_Address = Src11_Address;
-// 	Src11_Address = atmp1;
-// 	HeaderS11 = HeaderS01;
+//      unsigned long atmp1 = Src01_Address;
+//      Src01_Address = Src11_Address;
+//      Src11_Address = atmp1;
+//      HeaderS11 = HeaderS01;
 
 //         retS11 = retS01;
 
-// // 	std::cout << " read 2 Sources  ";
+// //   std::cout << " read 2 Sources  ";
 //         retS00 = ReadRT( _ixS, _iyS, (float*) Src00, Src00_Address, HeaderS00, mtid, handle_TT, Job);
 //         retS01 = ReadRT( _ixS, _iyS+1, (float*) Src01, Src01_Address, HeaderS01, mtid, handle_TT, Job);
 //       }
 //     else
 //       {
-// // 	std::cout << " read 4 Sources  ";
+// //   std::cout << " read 4 Sources  ";
 //         retS00 = ReadRT( _ixS, _iyS, (float*) Src00, Src00_Address, HeaderS00, mtid, handle_TT, Job);
 //         retS10 = ReadRT( _ixS+1, _iyS, (float*) Src10, Src10_Address, HeaderS10, mtid, handle_TT, Job);
 //         retS01 = ReadRT( _ixS, _iyS+1, (float*) Src01, Src01_Address, HeaderS01, mtid, handle_TT, Job);
@@ -620,24 +560,24 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 //         float* tmp0 = Rcv00;
 //         Rcv00 = Rcv01;
 //         Rcv01 = tmp0;
-// 	unsigned long atmp0 = Rcv00_Address;
-// 	Rcv00_Address = Rcv01_Address;
-// 	Rcv01_Address = atmp0;
-// 	HeaderR00 = HeaderR01;
+//      unsigned long atmp0 = Rcv00_Address;
+//      Rcv00_Address = Rcv01_Address;
+//      Rcv01_Address = atmp0;
+//      HeaderR00 = HeaderR01;
 
 //         retR00 =retR01;
 
 //         float* tmp1 = Rcv10;
 //         Rcv10 = Rcv11;
 //         Rcv11 = tmp1;
-// 	unsigned long atmp1 = Rcv10_Address;
-// 	Rcv10_Address = Rcv11_Address;
-// 	Rcv11_Address = atmp1;
-// 	HeaderR10 = HeaderR11;
+//      unsigned long atmp1 = Rcv10_Address;
+//      Rcv10_Address = Rcv11_Address;
+//      Rcv11_Address = atmp1;
+//      HeaderR10 = HeaderR11;
 
 //         retR10 =retR11;
 
-// // 	std::cout << " read 2 Rcvs\n  ";
+// //   std::cout << " read 2 Rcvs\n  ";
 //         retR01 = ReadRT( _ixR, _iyR+1, (float*) Rcv01, Rcv01_Address, HeaderR01, mtid, handle_TT, Job);
 //         retR11 = ReadRT( _ixR+1, _iyR+1, (float*) Rcv11, Rcv11_Address, HeaderR11, mtid, handle_TT, Job);
 //       }
@@ -646,24 +586,24 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 //         float* tmp0 = Rcv00;
 //         Rcv00 = Rcv01;
 //         Rcv01 = tmp0;
-// 	unsigned long atmp0 = Rcv00_Address;
-// 	Rcv00_Address = Rcv01_Address;
-// 	Rcv01_Address = atmp0;
-// 	HeaderR01 = HeaderR00;
+//      unsigned long atmp0 = Rcv00_Address;
+//      Rcv00_Address = Rcv01_Address;
+//      Rcv01_Address = atmp0;
+//      HeaderR01 = HeaderR00;
 
 //         retR01 = retR00;
 
 //         float* tmp1 = Rcv10;
 //         Rcv10 = Rcv11;
 //         Rcv11 = tmp1;
-// 	unsigned long atmp1 = Rcv10_Address;
-// 	Rcv10_Address = Rcv11_Address;
-// 	Rcv11_Address = atmp1;
-// 	HeaderR11 = HeaderR10;
+//      unsigned long atmp1 = Rcv10_Address;
+//      Rcv10_Address = Rcv11_Address;
+//      Rcv11_Address = atmp1;
+//      HeaderR11 = HeaderR10;
 
 //         retR11 = retR10;
 
-// // 	std::cout << " read 2 Rcvs\n  ";
+// //   std::cout << " read 2 Rcvs\n  ";
 //         retR00 = ReadRT( _ixR, _iyR, (float*) Rcv00, Rcv00_Address, HeaderR00, mtid, handle_TT, Job);
 //         retR10 = ReadRT( _ixR+1, _iyR, (float*) Rcv10, Rcv10_Address, HeaderR10, mtid, handle_TT, Job);
 //       }
@@ -672,24 +612,24 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 //         float* tmp0 = Rcv00;
 //         Rcv00 = Rcv10;
 //         Rcv10 = tmp0;
-// 	unsigned long atmp0 = Rcv00_Address;
-// 	Rcv00_Address = Rcv10_Address;
-// 	Rcv10_Address = atmp0;
-// 	HeaderR00 = HeaderR10;
+//      unsigned long atmp0 = Rcv00_Address;
+//      Rcv00_Address = Rcv10_Address;
+//      Rcv10_Address = atmp0;
+//      HeaderR00 = HeaderR10;
 
 //         retR00 =retR10;
 
 //         float* tmp1 = Rcv01;
 //         Rcv01 = Rcv11;
 //         Rcv11 = tmp1;
-// 	unsigned long atmp1 = Rcv01_Address;
-// 	Rcv01_Address = Rcv11_Address;
-// 	Rcv11_Address = atmp1;
-// 	HeaderR01 = HeaderR11;
+//      unsigned long atmp1 = Rcv01_Address;
+//      Rcv01_Address = Rcv11_Address;
+//      Rcv11_Address = atmp1;
+//      HeaderR01 = HeaderR11;
 
 //         retR01 =retR11;
 
-// // 	std::cout << " read 2 Rcvs\n  ";
+// //   std::cout << " read 2 Rcvs\n  ";
 //         retR10 = ReadRT( _ixR+1, _iyR, (float*) Rcv10, Rcv10_Address, HeaderR10, mtid, handle_TT, Job);
 //         retR11 = ReadRT( _ixR+1, _iyR+1, (float*) Rcv11, Rcv11_Address, HeaderR11, mtid, handle_TT, Job);
 //       }
@@ -698,30 +638,30 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 //         float* tmp0 = Rcv00;
 //         Rcv00 = Rcv10;
 //         Rcv10 = tmp0;
-// 	unsigned long atmp0 = Rcv00_Address;
-// 	Rcv00_Address = Rcv10_Address;
-// 	Rcv10_Address = atmp0;
-// 	HeaderR10 = HeaderR00;
+//      unsigned long atmp0 = Rcv00_Address;
+//      Rcv00_Address = Rcv10_Address;
+//      Rcv10_Address = atmp0;
+//      HeaderR10 = HeaderR00;
 
 //         retR10 = retR00;
 
 //         float* tmp1 = Rcv01;
 //         Rcv01 = Rcv11;
 //         Rcv11 = tmp1;
-// 	unsigned long atmp1 = Rcv01_Address;
-// 	Rcv01_Address = Rcv11_Address;
-// 	Rcv11_Address = atmp1;
-// 	HeaderR11 = HeaderR01;
+//      unsigned long atmp1 = Rcv01_Address;
+//      Rcv01_Address = Rcv11_Address;
+//      Rcv11_Address = atmp1;
+//      HeaderR11 = HeaderR01;
 
 //         retR11 = retR01;
 
-// // 	std::cout << " read 2 Rcvs\n  ";
+// //   std::cout << " read 2 Rcvs\n  ";
 //         retR00 = ReadRT( _ixR, _iyR, (float*) Rcv00, Rcv00_Address, HeaderR00, mtid, handle_TT, Job);
 //         retR01 = ReadRT( _ixR, _iyR+1, (float*) Rcv01, Rcv01_Address, HeaderR01, mtid, handle_TT, Job);
 //       }
 //     else
 //       {
-// // 	std::cout << " read 4 Rcvs\n  ";
+// //   std::cout << " read 4 Rcvs\n  ";
 //         retR00 = ReadRT( _ixR, _iyR, (float*) Rcv00, Rcv00_Address, HeaderR00, mtid, handle_TT, Job);
 //         retR10 = ReadRT( _ixR+1, _iyR, (float*) Rcv10, Rcv10_Address, HeaderR10, mtid, handle_TT, Job);
 //         retR01 = ReadRT( _ixR, _iyR+1, (float*) Rcv01, Rcv01_Address, HeaderR01, mtid, handle_TT, Job);
@@ -757,9 +697,9 @@ bool TTVMMemHandler::ReadRT ( const int& ix
 bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS, const int& _ixR, const int& _iyR,
                          float* &_Src00, float* &_Src01, float* &_Src10, float* &_Src11,
                          float* &_Rcv00, float* &_Rcv01, float* &_Rcv10, float* &_Rcv11,
-			 SegYHeader& _HeaderS00, SegYHeader& _HeaderS01, SegYHeader& _HeaderS10, SegYHeader& _HeaderS11,
-			 SegYHeader& _HeaderR00, SegYHeader& _HeaderR01, SegYHeader& _HeaderR10, SegYHeader& _HeaderR11,
-			 const int N0x, const int Npartx, const int N0y, const int Nparty, const int mtid
+                         SegYHeader& _HeaderS00, SegYHeader& _HeaderS01, SegYHeader& _HeaderS10, SegYHeader& _HeaderS11,
+                         SegYHeader& _HeaderR00, SegYHeader& _HeaderR01, SegYHeader& _HeaderR10, SegYHeader& _HeaderR11,
+                         const int N0x, const int Npartx, const int N0y, const int Nparty, const int mtid
                          , const fvmAllocHandle_t handle_TT
                          , const MigrationJob & Job
                          )
@@ -777,24 +717,24 @@ bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS
         float* tmp0 = Src00;
         Src00 = Src01;
         Src01 = tmp0;
-	unsigned long atmp0 = Src00_Address;
-	Src00_Address = Src01_Address;
-	Src01_Address = atmp0;
-	HeaderS00 = HeaderS01;
+        unsigned long atmp0 = Src00_Address;
+        Src00_Address = Src01_Address;
+        Src01_Address = atmp0;
+        HeaderS00 = HeaderS01;
 
         retS00 = retS01;
 
         float* tmp1 = Src10;
         Src10 = Src11;
         Src11 = tmp1;
-	unsigned long atmp1 = Src10_Address;
-	Src10_Address = Src11_Address;
-	Src11_Address = atmp1;
-	HeaderS10 = HeaderS11;
+        unsigned long atmp1 = Src10_Address;
+        Src10_Address = Src11_Address;
+        Src11_Address = atmp1;
+        HeaderS10 = HeaderS11;
 
         retS10 =retS11;
 
-// 	std::cout << " read 2 Sources  ";
+//      std::cout << " read 2 Sources  ";
         retS01 = ReadRT( _ixS, _iyS+1, (float*) Src01, Src01_Address, HeaderS01, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retS11 = ReadRT( _ixS+1, _iyS+1, (float*) Src11, Src11_Address, HeaderS11, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
       }
@@ -803,24 +743,24 @@ bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS
         float* tmp0 = Src00;
         Src00 = Src01;
         Src01 = tmp0;
-	unsigned long atmp0 = Src00_Address;
-	Src00_Address = Src01_Address;
-	Src01_Address = atmp0;
-	HeaderS01 = HeaderS00;
+        unsigned long atmp0 = Src00_Address;
+        Src00_Address = Src01_Address;
+        Src01_Address = atmp0;
+        HeaderS01 = HeaderS00;
 
         retS01 = retS00;
 
         float* tmp1 = Src10;
         Src10 = Src11;
         Src11 = tmp1;
-	unsigned long atmp1 = Src10_Address;
-	Src10_Address = Src11_Address;
-	Src11_Address = atmp1;
-	HeaderS11 = HeaderS10;
+        unsigned long atmp1 = Src10_Address;
+        Src10_Address = Src11_Address;
+        Src11_Address = atmp1;
+        HeaderS11 = HeaderS10;
 
         retS11 = retS10;
 
-// 	std::cout << " read 2 Sources  ";
+//      std::cout << " read 2 Sources  ";
         retS00 = ReadRT( _ixS, _iyS, (float*) Src00, Src00_Address, HeaderS00, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retS10 = ReadRT( _ixS+1, _iyS, (float*) Src10, Src10_Address, HeaderS10, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
       }
@@ -829,24 +769,24 @@ bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS
         float* tmp0 = Src00;
         Src00 = Src10;
         Src10 = tmp0;
-	unsigned long atmp0 = Src00_Address;
-	Src00_Address = Src10_Address;
-	Src10_Address = atmp0;
-	HeaderS00 = HeaderS10;
+        unsigned long atmp0 = Src00_Address;
+        Src00_Address = Src10_Address;
+        Src10_Address = atmp0;
+        HeaderS00 = HeaderS10;
 
         retS00 =retS10;
 
         float* tmp1 = Src01;
         Src01 = Src11;
         Src11 = tmp1;
-	unsigned long atmp1 = Src01_Address;
-	Src01_Address = Src11_Address;
-	Src11_Address = atmp1;
-	HeaderS01 = HeaderS11;
+        unsigned long atmp1 = Src01_Address;
+        Src01_Address = Src11_Address;
+        Src11_Address = atmp1;
+        HeaderS01 = HeaderS11;
 
         retS01 =retS11;
 
-// 	std::cout << " read 2 Sources  ";
+//      std::cout << " read 2 Sources  ";
         retS10 = ReadRT( _ixS+1, _iyS, (float*) Src10, Src10_Address, HeaderS10, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retS11 = ReadRT( _ixS+1, _iyS+1, (float*) Src11, Src11_Address, HeaderS11, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
       }
@@ -855,30 +795,30 @@ bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS
         float* tmp0 = Src00;
         Src00 = Src10;
         Src10 = tmp0;
-	unsigned long atmp0 = Src00_Address;
-	Src00_Address = Src10_Address;
-	Src10_Address = atmp0;
-	HeaderS10 = HeaderS00;
+        unsigned long atmp0 = Src00_Address;
+        Src00_Address = Src10_Address;
+        Src10_Address = atmp0;
+        HeaderS10 = HeaderS00;
 
         retS10 = retS00;
 
         float* tmp1 = Src01;
         Src01 = Src11;
         Src11 = tmp1;
-	unsigned long atmp1 = Src01_Address;
-	Src01_Address = Src11_Address;
-	Src11_Address = atmp1;
-	HeaderS11 = HeaderS01;
+        unsigned long atmp1 = Src01_Address;
+        Src01_Address = Src11_Address;
+        Src11_Address = atmp1;
+        HeaderS11 = HeaderS01;
 
         retS11 = retS01;
 
-// 	std::cout << " read 2 Sources  ";
+//      std::cout << " read 2 Sources  ";
         retS00 = ReadRT( _ixS, _iyS, (float*) Src00, Src00_Address, HeaderS00, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retS01 = ReadRT( _ixS, _iyS+1, (float*) Src01, Src01_Address, HeaderS01, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
       }
     else
       {
-// 	std::cout << " read 4 Sources  ";
+//      std::cout << " read 4 Sources  ";
         retS00 = ReadRT( _ixS, _iyS, (float*) Src00, Src00_Address, HeaderS00, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retS10 = ReadRT( _ixS+1, _iyS, (float*) Src10, Src10_Address, HeaderS10, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retS01 = ReadRT( _ixS, _iyS+1, (float*) Src01, Src01_Address, HeaderS01, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
@@ -895,24 +835,24 @@ bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS
         float* tmp0 = Rcv00;
         Rcv00 = Rcv01;
         Rcv01 = tmp0;
-	unsigned long atmp0 = Rcv00_Address;
-	Rcv00_Address = Rcv01_Address;
-	Rcv01_Address = atmp0;
-	HeaderR00 = HeaderR01;
+        unsigned long atmp0 = Rcv00_Address;
+        Rcv00_Address = Rcv01_Address;
+        Rcv01_Address = atmp0;
+        HeaderR00 = HeaderR01;
 
         retR00 =retR01;
 
         float* tmp1 = Rcv10;
         Rcv10 = Rcv11;
         Rcv11 = tmp1;
-	unsigned long atmp1 = Rcv10_Address;
-	Rcv10_Address = Rcv11_Address;
-	Rcv11_Address = atmp1;
-	HeaderR10 = HeaderR11;
+        unsigned long atmp1 = Rcv10_Address;
+        Rcv10_Address = Rcv11_Address;
+        Rcv11_Address = atmp1;
+        HeaderR10 = HeaderR11;
 
         retR10 =retR11;
 
-// 	std::cout << " read 2 Rcvs\n  ";
+//      std::cout << " read 2 Rcvs\n  ";
         retR01 = ReadRT( _ixR, _iyR+1, (float*) Rcv01, Rcv01_Address, HeaderR01, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retR11 = ReadRT( _ixR+1, _iyR+1, (float*) Rcv11, Rcv11_Address, HeaderR11, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
       }
@@ -921,24 +861,24 @@ bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS
         float* tmp0 = Rcv00;
         Rcv00 = Rcv01;
         Rcv01 = tmp0;
-	unsigned long atmp0 = Rcv00_Address;
-	Rcv00_Address = Rcv01_Address;
-	Rcv01_Address = atmp0;
-	HeaderR01 = HeaderR00;
+        unsigned long atmp0 = Rcv00_Address;
+        Rcv00_Address = Rcv01_Address;
+        Rcv01_Address = atmp0;
+        HeaderR01 = HeaderR00;
 
         retR01 = retR00;
 
         float* tmp1 = Rcv10;
         Rcv10 = Rcv11;
         Rcv11 = tmp1;
-	unsigned long atmp1 = Rcv10_Address;
-	Rcv10_Address = Rcv11_Address;
-	Rcv11_Address = atmp1;
-	HeaderR11 = HeaderR10;
+        unsigned long atmp1 = Rcv10_Address;
+        Rcv10_Address = Rcv11_Address;
+        Rcv11_Address = atmp1;
+        HeaderR11 = HeaderR10;
 
         retR11 = retR10;
 
-// 	std::cout << " read 2 Rcvs\n  ";
+//      std::cout << " read 2 Rcvs\n  ";
         retR00 = ReadRT( _ixR, _iyR, (float*) Rcv00, Rcv00_Address, HeaderR00, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retR10 = ReadRT( _ixR+1, _iyR, (float*) Rcv10, Rcv10_Address, HeaderR10, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
       }
@@ -947,24 +887,24 @@ bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS
         float* tmp0 = Rcv00;
         Rcv00 = Rcv10;
         Rcv10 = tmp0;
-	unsigned long atmp0 = Rcv00_Address;
-	Rcv00_Address = Rcv10_Address;
-	Rcv10_Address = atmp0;
-	HeaderR00 = HeaderR10;
+        unsigned long atmp0 = Rcv00_Address;
+        Rcv00_Address = Rcv10_Address;
+        Rcv10_Address = atmp0;
+        HeaderR00 = HeaderR10;
 
         retR00 =retR10;
 
         float* tmp1 = Rcv01;
         Rcv01 = Rcv11;
         Rcv11 = tmp1;
-	unsigned long atmp1 = Rcv01_Address;
-	Rcv01_Address = Rcv11_Address;
-	Rcv11_Address = atmp1;
-	HeaderR01 = HeaderR11;
+        unsigned long atmp1 = Rcv01_Address;
+        Rcv01_Address = Rcv11_Address;
+        Rcv11_Address = atmp1;
+        HeaderR01 = HeaderR11;
 
         retR01 =retR11;
 
-// 	std::cout << " read 2 Rcvs\n  ";
+//      std::cout << " read 2 Rcvs\n  ";
         retR10 = ReadRT( _ixR+1, _iyR, (float*) Rcv10, Rcv10_Address, HeaderR10, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retR11 = ReadRT( _ixR+1, _iyR+1, (float*) Rcv11, Rcv11_Address, HeaderR11, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
       }
@@ -973,30 +913,30 @@ bool TTVMMemHandler::Init(const char* NameBase, const int& _ixS, const int& _iyS
         float* tmp0 = Rcv00;
         Rcv00 = Rcv10;
         Rcv10 = tmp0;
-	unsigned long atmp0 = Rcv00_Address;
-	Rcv00_Address = Rcv10_Address;
-	Rcv10_Address = atmp0;
-	HeaderR10 = HeaderR00;
+        unsigned long atmp0 = Rcv00_Address;
+        Rcv00_Address = Rcv10_Address;
+        Rcv10_Address = atmp0;
+        HeaderR10 = HeaderR00;
 
         retR10 = retR00;
 
         float* tmp1 = Rcv01;
         Rcv01 = Rcv11;
         Rcv11 = tmp1;
-	unsigned long atmp1 = Rcv01_Address;
-	Rcv01_Address = Rcv11_Address;
-	Rcv11_Address = atmp1;
-	HeaderR11 = HeaderR01;
+        unsigned long atmp1 = Rcv01_Address;
+        Rcv01_Address = Rcv11_Address;
+        Rcv11_Address = atmp1;
+        HeaderR11 = HeaderR01;
 
         retR11 = retR01;
 
-// 	std::cout << " read 2 Rcvs\n  ";
+//      std::cout << " read 2 Rcvs\n  ";
         retR00 = ReadRT( _ixR, _iyR, (float*) Rcv00, Rcv00_Address, HeaderR00, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retR01 = ReadRT( _ixR, _iyR+1, (float*) Rcv01, Rcv01_Address, HeaderR01, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
       }
     else
       {
-// 	std::cout << " read 4 Rcvs\n  ";
+//      std::cout << " read 4 Rcvs\n  ";
         retR00 = ReadRT( _ixR, _iyR, (float*) Rcv00, Rcv00_Address, HeaderR00, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retR10 = ReadRT( _ixR+1, _iyR, (float*) Rcv10, Rcv10_Address, HeaderR10, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
         retR01 = ReadRT( _ixR, _iyR+1, (float*) Rcv01, Rcv01_Address, HeaderR01, N0x, Npartx, N0y, Nparty, mtid, handle_TT, Job);
