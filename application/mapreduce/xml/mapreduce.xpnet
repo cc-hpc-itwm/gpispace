@@ -969,7 +969,7 @@
 					  );
 					  
 					  std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
-					  std::sort( arr_items.begin(), arr_items.end(), ::mapreduce::util::comp ); 
+					  std::sort( arr_items.begin(), arr_items.end() /*, ::mapreduce::util::comp*/ ); 
 					  BOOST_FOREACH(std::string& item, arr_items)
 					  {
 					  	ofs<<item<<std::endl;
