@@ -43,6 +43,8 @@ namespace xml
 
         void append (const expressions_type& other);
 
+        id::ref::expression clone() const;
+
       private:
         expressions_type _expressions;
       };
