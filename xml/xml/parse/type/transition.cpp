@@ -491,16 +491,17 @@ namespace xml
       id::ref::transition transition_type::clone
         (boost::optional<id::net> parent) const
       {
+        id::transition new_id (id_mapper()->next_id());
         return transition_type
-          ( id_mapper()->next_id()
+          ( new_id
           , id_mapper()
           , parent
           , _function_or_use
           , _name
-          , _in
-          , _out
-          , _read
-          , _place_map
+          , _in.clone (new_id)
+          , _out.clone (new_id)
+          , _read.clone (new_id)
+          , _place_map.clone (new_id)
           , structs
           , cond
           , requirements
