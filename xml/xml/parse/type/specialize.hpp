@@ -29,10 +29,6 @@ namespace xml
       public:
         specialize_type ( ID_CONS_PARAM(specialize)
                         , PARENT_CONS_PARAM(net)
-                        );
-
-        specialize_type ( ID_CONS_PARAM(specialize)
-                        , PARENT_CONS_PARAM(net)
                         , const std::string& name
                         , const std::string& use
                         , const type_map_type& type_map

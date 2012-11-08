@@ -14,20 +14,6 @@ namespace xml
     {
       specialize_type::specialize_type ( ID_CONS_PARAM(specialize)
                                        , PARENT_CONS_PARAM(net)
-                                       )
-        : ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _name()
-        , use()
-        , type_map()
-        , type_get()
-        , path()
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      specialize_type::specialize_type ( ID_CONS_PARAM(specialize)
-                                       , PARENT_CONS_PARAM(net)
                                        , const std::string& name
                                        , const std::string& use
                                        , const type_map_type& type_map
