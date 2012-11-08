@@ -18,69 +18,60 @@ namespace fhg
     {
       namespace
       {
-        ::xml::parse::id::function make_function
+        ::xml::parse::id::ref::function make_function
           (const internal_type::kind& kind, ::xml::parse::state::type& state)
         {
-          const ::xml::parse::id::function function_id (state.id_mapper()->next_id());
+          const ::xml::parse::id::function function_id
+            (state.id_mapper()->next_id());
           switch (kind)
           {
           case internal_type::expression:
             {
-              const ::xml::parse::id::expression id (state.id_mapper()->next_id());
-
-              const ::xml::parse::type::expression_type expression
-                (id, state.id_mapper(), function_id);
-
-              const ::xml::parse::type::function_type fun
+              return ::xml::parse::type::function_type
                 ( function_id
                 , state.id_mapper()
-                , ::xml::parse::id::ref::expression (id, state.id_mapper())
+                , ::xml::parse::type::expression_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
                 , boost::none
-                );
-              break;
+                ).make_reference_id();
             }
           case internal_type::module_call:
             {
-              const ::xml::parse::id::module id (state.id_mapper()->next_id());
-
-              const ::xml::parse::type::module_type mod
-                (id, state.id_mapper(), function_id);
-
-              const ::xml::parse::type::function_type fun
+              return ::xml::parse::type::function_type
                 ( function_id
                 , state.id_mapper()
-                , ::xml::parse::id::ref::module (id, state.id_mapper())
+                , ::xml::parse::type::module_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
                 , boost::none
-                );
-              break;
+                ).make_reference_id();
             }
           case internal_type::net:
             {
-              const ::xml::parse::id::net id (state.id_mapper()->next_id());
-
-              const ::xml::parse::type::net_type net
-                (id, state.id_mapper(), function_id);
-
-              const ::xml::parse::type::function_type fun
+              return ::xml::parse::type::function_type
                 ( function_id
                 , state.id_mapper()
-                , ::xml::parse::id::ref::net (id, state.id_mapper())
+                , ::xml::parse::type::net_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
                 , boost::none
-                );
-              break;
-            }
-          default:
-            {
-              throw std::runtime_error ("make_function of unknown kind!?");
+                ).make_reference_id();
             }
           }
-          return function_id;
+          throw std::runtime_error ("make_function of unknown kind!?");
         }
       }
 
       internal_type::internal_type (const kind& kind_)
         : _state ()
-        , _function (make_function (kind_, _state), _state.id_mapper())
+        , _function (make_function (kind_, _state))
         , _change_manager (_state)
         , _root_proxy (*create_proxy())
       {}
