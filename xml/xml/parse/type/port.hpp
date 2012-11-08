@@ -37,6 +37,8 @@ namespace xml
                   , const std::string & name
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
+                  , const we::type::property::type& prop
+                  = we::type::property::type()
                   );
 
         void specialize ( const type::type_map_type & map_in
@@ -49,11 +51,15 @@ namespace xml
                         , const function_type& fun
                         ) const;
 
+        const std::string& name() const;
+
+        id::ref::port clone() const;
+
       private:
         std::string _name;
 
+        //! \todo All these should be private with accessors.
       public:
-        const std::string& name() const;
         std::string type;
         fhg::util::maybe<std::string> place;
         we::type::property::type prop;

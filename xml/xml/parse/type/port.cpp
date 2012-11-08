@@ -18,13 +18,14 @@ namespace xml
                            , const std::string & name
                            , const std::string & _type
                            , const fhg::util::maybe<std::string> & _place
+                           , const we::type::property::type& prop
                            )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , type (_type)
         , place (_place)
-        , prop ()
+        , prop (prop)
       {
         _id_mapper->put (_id, *this);
       }
@@ -144,6 +145,19 @@ namespace xml
       {
         boost::apply_visitor
           (port_type_check_visitor (direction, *this, path, state), fun.f);
+      }
+
+      id::ref::port port_type::clone() const
+      {
+        return port_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , *_parent
+          , _name
+          , type
+          , place
+          , prop
+          ).make_reference_id();
       }
 
       namespace dump
