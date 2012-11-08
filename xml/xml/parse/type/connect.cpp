@@ -26,6 +26,21 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      connect_type::connect_type ( ID_CONS_PARAM(connect)
+                                 , PARENT_CONS_PARAM(transition)
+                                 , const std::string& place
+                                 , const std::string& port
+                                 , const we::type::property::type& properties
+                                 )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _place (place)
+        , _port (port)
+        , _properties (properties)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
       const std::string& connect_type::place() const
       {
         return _place;

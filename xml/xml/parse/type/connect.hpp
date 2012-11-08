@@ -31,6 +31,13 @@ namespace xml
                      , const std::string& port
                      );
 
+        connect_type ( ID_CONS_PARAM(connect)
+                     , PARENT_CONS_PARAM(transition)
+                     , const std::string& place
+                     , const std::string& port
+                     , const we::type::property::type& properties
+                     );
+
         const std::string& place() const;
         const std::string& port() const;
         std::string name() const;
