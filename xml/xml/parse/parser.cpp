@@ -375,7 +375,7 @@ namespace xml
                  , const id::transition& parent
                  )
     {
-      const id::connect id (state.next_id());
+      const id::connect id (state.id_mapper()->next_id());
 
       const id::ref::connect connection
         ( type::connect_type
@@ -446,7 +446,7 @@ namespace xml
                                    , const id::transition& parent
                                    )
       {
-        const id::place_map id (state.next_id());
+        const id::place_map id (state.id_mapper()->next_id());
 
         {
           type::place_map_type place_map
@@ -517,7 +517,7 @@ namespace xml
                     , const id::net& parent
                     )
     {
-      const id::transition id (state.next_id());
+      const id::transition id (state.id_mapper()->next_id());
 
       const id::ref::transition transition
         ( type::transition_type
@@ -589,7 +589,7 @@ namespace xml
               else if (child_name == "use")
                 {
                   transition.get_ref().function_or_use
-                    ( type::use_type ( id::use (state.next_id())
+                    ( type::use_type ( id::use (state.id_mapper()->next_id())
                                      , state.id_mapper()
                                      , id
                                      , required ( "transition_type"
@@ -710,7 +710,7 @@ namespace xml
                     , const id::net& parent
                     )
     {
-      const id::specialize id (state.next_id());
+      const id::specialize id (state.id_mapper()->next_id());
 
       const id::ref::specialize specialize
         ( type::specialize_type
@@ -1000,7 +1000,7 @@ namespace xml
             {
               if (child_name == "value")
                 {
-                  return type::token_type ( id::token (state.next_id())
+                  return type::token_type ( id::token (state.id_mapper()->next_id())
                                           , state.id_mapper()
                                           , parent
                                           , std::string (child->value())
@@ -1022,7 +1022,7 @@ namespace xml
             }
         }
 
-      return type::token_type ( id::token (state.next_id())
+      return type::token_type ( id::token (state.id_mapper()->next_id())
                               , state.id_mapper()
                               , parent
                               , boost::get<signature::structured_t>
@@ -1147,7 +1147,7 @@ namespace xml
       type::tmpl_type::names_type template_parameter;
       fhg::util::maybe<std::string> name (optional (node, "name"));
 
-      const id::tmpl id (state.next_id());
+      const id::tmpl id (state.id_mapper()->next_id());
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1228,13 +1228,13 @@ namespace xml
       , const boost::optional<type::function_type::id_parent>& parent
       )
     {
-      const id::function id (state.next_id());
+      const id::function id (state.id_mapper()->next_id());
 
       const id::ref::function function
         ( type::function_type
           ( id
           , state.id_mapper()
-          , type::expression_type ( state.next_id()
+          , type::expression_type ( state.id_mapper()->next_id()
                                   , state.id_mapper()
                                   , id
                                   ).make_reference_id()
@@ -1384,7 +1384,7 @@ namespace xml
                 , const id::function& parent
                 )
     {
-      const id::module id (state.next_id());
+      const id::module id (state.id_mapper()->next_id());
 
       const id::ref::module module
         ( type::module_type
@@ -1476,7 +1476,7 @@ namespace xml
                , const id::function& parent
                )
     {
-      const id::net id (state.next_id());
+      const id::net id (state.id_mapper()->next_id());
 
       const id::ref::net net
         ( type::net_type
@@ -1624,7 +1624,7 @@ namespace xml
                               , const id::net& parent
                               )
     {
-      const id::place id (state.next_id());
+      const id::place id (state.id_mapper()->next_id());
 
       const std::string name
         (required ("place_type", node, "name", state.file_in_progress()));
@@ -1709,7 +1709,7 @@ namespace xml
               , const id::function& parent
               )
     {
-      const id::port id (state.next_id());
+      const id::port id (state.id_mapper()->next_id());
 
       const id::ref::port port
         ( type::port_type
@@ -1888,7 +1888,7 @@ namespace xml
                 )
     {
       type::structure_type s
-        ( id::structure (state.next_id())
+        ( id::structure (state.id_mapper()->next_id())
         , state.id_mapper()
         , parent
         , validate_field_name ( required ( "struct_type"

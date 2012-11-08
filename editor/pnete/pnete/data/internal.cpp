@@ -21,12 +21,12 @@ namespace fhg
         ::xml::parse::id::function make_function
           (const internal_type::kind& kind, ::xml::parse::state::type& state)
         {
-          const ::xml::parse::id::function function_id (state.next_id());
+          const ::xml::parse::id::function function_id (state.id_mapper()->next_id());
           switch (kind)
           {
           case internal_type::expression:
             {
-              const ::xml::parse::id::expression id (state.next_id());
+              const ::xml::parse::id::expression id (state.id_mapper()->next_id());
 
               const ::xml::parse::type::expression_type expression
                 (id, state.id_mapper(), function_id);
@@ -41,7 +41,7 @@ namespace fhg
             }
           case internal_type::module_call:
             {
-              const ::xml::parse::id::module id (state.next_id());
+              const ::xml::parse::id::module id (state.id_mapper()->next_id());
 
               const ::xml::parse::type::module_type mod
                 (id, state.id_mapper(), function_id);
@@ -56,7 +56,7 @@ namespace fhg
             }
           case internal_type::net:
             {
-              const ::xml::parse::id::net id (state.next_id());
+              const ::xml::parse::id::net id (state.id_mapper()->next_id());
 
               const ::xml::parse::type::net_type net
                 (id, state.id_mapper(), function_id);

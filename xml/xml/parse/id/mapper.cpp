@@ -68,6 +68,7 @@ namespace xml
 
       mapper::mapper()
         : _maps (new maps)
+        , _counter()
       { }
       mapper::~mapper()
       { }
@@ -174,7 +175,10 @@ namespace xml
 #undef STRINIGFY
 #undef EXPAND_AND_STRINGIFY
 
+      id::base_id_type mapper::next_id()
+      {
+        return _counter.next();
+      }
     }
   }
 }
-

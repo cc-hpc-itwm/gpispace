@@ -5,7 +5,7 @@
 
 #include <xml/parse/id/mapper.fwd.hpp>
 
-#include <xml/parse/id/types.fwd.hpp>
+#include <xml/parse/id/types.hpp>
 
 #include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/expression.fwd.hpp>
@@ -21,6 +21,8 @@
 #include <xml/parse/type/token.fwd.hpp>
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/use.fwd.hpp>
+
+#include <fhg/util/counter.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -66,6 +68,8 @@ namespace xml
 #include <xml/parse/id/helper.lst>
 #undef ITEM
 
+        id::base_id_type next_id();
+
       private:
 
 #define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                            \
@@ -82,6 +86,7 @@ namespace xml
         //! \todo C++11: std::unique_ptr
         struct maps;
         boost::scoped_ptr<maps> _maps;
+        ::fhg::util::counter<id::base_id_type> _counter;
       };
     }
   }
