@@ -324,12 +324,8 @@ namespace xml
       {
         namespace st = xml::parse::structure_type;
 
-        BOOST_FOREACH( const id::ref::specialize& id_specialize
-                     , specializes().ids()
-                     )
+        BOOST_FOREACH (specialize_type& specialize, specializes().values())
         {
-          specialize_type& specialize (id_specialize.get_ref());
-
           boost::optional<const id::ref::tmpl&> id_tmpl
             (get_template (specialize.use));
 
@@ -344,7 +340,9 @@ namespace xml
 
           type_map_apply (map, specialize.type_map);
 
-          id_tmpl->get_ref().specialize
+          const id::ref::tmpl specialized_tmpl (id_tmpl->get().clone());
+
+          specialized_tmpl.get_ref().specialize
             ( specialize.type_map
             , specialize.type_get
             , st::join (known_structs, st::make (structs), state)
@@ -352,17 +350,16 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , id_tmpl->get().function().get_ref().structs
+                        , specialized_tmpl.get().function().get_ref().structs
                         , structs
                         , specialize.type_get
                         , state
                         );
 
-          id_tmpl->get().function().get_ref().name (specialize.name());
+          specialized_tmpl.get().function().get_ref().name
+            (specialize.name());
 
-          push_function ( id_tmpl->get().function().get().clone
-                            (function_type::make_parent (id()))
-                        );
+          push_function (specialized_tmpl.get().function());
         }
 
         _specializes.clear();
