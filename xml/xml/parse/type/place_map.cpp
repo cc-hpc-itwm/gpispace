@@ -29,7 +29,7 @@ namespace xml
 
       std::string place_map_type::name() const
       {
-        return _place_virtual + " <-> " + _place_real;
+        return place_virtual + " <-> " + place_real;
       }
 
       id::ref::place_map place_map_type::clone() const
