@@ -30,6 +30,8 @@ namespace xml
 
         const std::string& name() const;
 
+        id::ref::use clone() const;
+
       private:
         std::string _name;
       };

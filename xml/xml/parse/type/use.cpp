@@ -28,6 +28,16 @@ namespace xml
         return _name;
       }
 
+      id::ref::use use_type::clone() const
+      {
+        return use_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , boost::none
+          , _name
+          ).make_reference_id();
+      }
+
       namespace dump
       {
         void dump (::fhg::util::xml::xmlstream& s, const use_type& u)
