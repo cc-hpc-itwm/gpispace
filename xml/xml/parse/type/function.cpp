@@ -839,11 +839,16 @@ namespace xml
           : public boost::static_visitor<function_type::type>
         {
         public:
+          visitor_clone (const id::function& new_id)
+            : _new_id (new_id)
+          { }
           template<typename ID_TYPE>
             function_type::type operator() (const ID_TYPE& id) const
           {
-            return id.get().clone();
+            return id.get().clone (_new_id);
           }
+        private:
+          id::function _new_id;
         };
       }
 
@@ -865,7 +870,7 @@ namespace xml
           , structs
           , cond
           , requirements
-          , boost::apply_visitor (visitor_clone(), f)
+          , boost::apply_visitor (visitor_clone (new_id), f)
           , structs_resolved
           , prop
           , path
