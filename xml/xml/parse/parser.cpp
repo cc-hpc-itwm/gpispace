@@ -180,10 +180,10 @@ namespace xml
                                         , state::type &
                                         , const id::net& parent
                                         );
-    int property_map_type ( we::type::property::type &
-                          , const xml_node_type *
-                          , state::type &
-                          );
+    void property_map_type ( we::type::property::type &
+                           , const xml_node_type *
+                           , state::type &
+                           );
     we::type::property::type
     property_maps_type (const xml_node_type *, state::type &);
 
@@ -902,7 +902,7 @@ namespace xml
         }
     }
 
-    int
+    void
     property_map_type ( we::type::property::type & prop
                       , const xml_node_type * node
                       , state::type & state
@@ -923,8 +923,6 @@ namespace xml
 
           state.prop_path().pop_back ();
         }
-
-      return 0;
     }
 
     // ********************************************************************* //
