@@ -3,15 +3,12 @@
 #include <xml/parse/type/expression.hpp>
 
 #include <xml/parse/id/mapper.hpp>
-#include <xml/parse/type/function.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/split.hpp> // fhg::util::lines
 #include <fhg/util/xml.hpp>
 
 #include <stdexcept>
-
-#include <boost/variant.hpp>
 
 namespace xml
 {
@@ -35,16 +32,6 @@ namespace xml
 
           return list;
         }
-      }
-
-      expression_type::expression_type ( ID_CONS_PARAM(expression)
-                                       , PARENT_CONS_PARAM(function)
-                                       )
-        : ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _expressions()
-      {
-        _id_mapper->put (_id, *this);
       }
 
       expression_type::expression_type ( ID_CONS_PARAM(expression)

@@ -30,10 +30,8 @@ namespace xml
       public:
         expression_type ( ID_CONS_PARAM(expression)
                         , PARENT_CONS_PARAM(function)
-                        );
-        expression_type ( ID_CONS_PARAM(expression)
-                        , PARENT_CONS_PARAM(function)
-                        , const expressions_type & exps
+                        , const expressions_type& exps
+                        = expressions_type()
                         );
 
         void set (const std::string& exps);
