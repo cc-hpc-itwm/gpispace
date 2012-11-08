@@ -81,6 +81,12 @@ namespace xml
         return _expressions;
       }
 
+      void expression_type::append (const expressions_type& other)
+      {
+        expressions().insert
+          (expressions().end(), other.begin(), other.end());
+      }
+
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
@@ -98,39 +104,6 @@ namespace xml
 
           s.close ();
         }
-      }
-
-      namespace
-      {
-        class join_visitor : public boost::static_visitor<void>
-        {
-        private:
-          const expressions_type& _es;
-
-        public:
-          join_visitor ( const expressions_type & es)
-            : _es (es)
-          {}
-
-          void operator () (id::ref::expression & id_expression) const
-          {
-            boost::optional<expression_type&> exp (id_expression.get_ref());
-
-            exp->expressions().insert
-              (exp->expressions().end(), _es.begin(), _es.end());
-          }
-
-          template<typename T>
-          void operator () (T &) const
-          {
-            throw std::runtime_error ("BUMMER: join for non expression!");
-          }
-        };
-      }
-
-      void join (const expressions_type& es, function_type& fun)
-      {
-        boost::apply_visitor (join_visitor (es), fun.f);
       }
     }
   }

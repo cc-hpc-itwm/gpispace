@@ -188,9 +188,35 @@ namespace xml
 
       // ***************************************************************** //
 
+      namespace
+      {
+        class visitor_append_expressions
+          : public boost::static_visitor<void>
+        {
+        private:
+          const expressions_type& _expressions;
+
+        public:
+          visitor_append_expressions (const expressions_type& expressions)
+            : _expressions (expressions)
+          { }
+
+          void operator () (id::ref::expression & id_expression) const
+          {
+            id_expression.get_ref().append (_expressions);
+          }
+
+          template<typename T>
+          void operator () (T &) const
+          {
+            throw std::runtime_error ("BUMMER: join for non expression!");
+          }
+        };
+      }
+
       void function_type::add_expression (const expressions_type & es)
       {
-        join (es, *this);
+        boost::apply_visitor (visitor_append_expressions (es), f);
       }
 
       // ***************************************************************** //

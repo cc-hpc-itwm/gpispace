@@ -43,6 +43,8 @@ namespace xml
 
         const expressions_type& expressions (void) const;
         expressions_type& expressions (void);
+
+        void append (const expressions_type& other);
       };
 
       namespace dump
@@ -51,8 +53,6 @@ namespace xml
                   , const expression_type & e
                   );
       }
-
-      void join (const expressions_type& es, function_type& fun);
     }
   }
 }
