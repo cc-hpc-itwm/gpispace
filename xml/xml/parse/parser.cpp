@@ -702,61 +702,49 @@ namespace xml
                     , const id::net& parent
                     )
     {
-      const id::specialize id (state.id_mapper()->next_id());
-
-      const id::ref::specialize specialize
-        ( type::specialize_type
-          ( id
-          , state.id_mapper()
-          , parent
-          ).make_reference_id()
-        );
-
-      const boost::filesystem::path& path (state.file_in_progress());
-
-      specialize.get_ref().path = path;
-      specialize.get_ref().name
-        (required ("specialize_type", node, "name", path));
-      specialize.get_ref().use
-        = required ("specialize_type", node, "use", path);
+      type::type_map_type type_map;
+      type::type_get_type type_get;
 
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
           )
+      {
+        const std::string child_name
+          (name_element (child, state.file_in_progress()));
+
+        if (child)
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
-
-          if (child)
-            {
-              if (child_name == "type-map")
-                {
-                  set_type_map ( child
-                               , state
-                               , specialize.get_ref().type_map
-                               );
-                }
-              else if (child_name == "type-get")
-                {
-                  set_type_get ( child
-                               , state
-                               , specialize.get_ref().type_get
-                               );
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "specialize_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
+          if (child_name == "type-map")
+          {
+            set_type_map (child, state, type_map);
+          }
+          else if (child_name == "type-get")
+          {
+            set_type_get (child, state, type_get);
+          }
+          else
+          {
+            state.warn
+              ( warning::unexpected_element ( child_name
+                                            , "specialize_type"
+                                            , state.file_in_progress()
+                                            )
+              );
+          }
         }
+      }
 
-      return specialize;
+      return type::specialize_type
+        ( state.id_mapper()->next_id()
+        , state.id_mapper()
+        , parent
+        , required ("specialize_type", node, "name", state.file_in_progress())
+        , required ("specialize_type", node, "use", state.file_in_progress())
+        , type_map
+        , type_get
+        , state.file_in_progress()
+        ).make_reference_id();
     }
 
     // ********************************************************************* //
