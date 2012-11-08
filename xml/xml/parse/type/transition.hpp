@@ -10,6 +10,7 @@
 #include <xml/parse/type/net.fwd.hpp>
 
 #include <xml/parse/id/generic.hpp>
+#include <xml/parse/id/types.hpp>
 
 namespace xml
 {
@@ -34,9 +35,28 @@ namespace xml
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
                         );
+
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
-                        , const function_or_use_type& function_or_use
+                        , const function_or_use_type&
+                        );
+
+        transition_type ( ID_CONS_PARAM(transition)
+                        , PARENT_CONS_PARAM(net)
+                        , const boost::optional<function_or_use_type>&
+                        , const std::string& name
+                        , const connections_type& in
+                        , const connections_type& out
+                        , const connections_type& read
+                        , const place_maps_type& place_map
+                        , const structs_type& structs
+                        , const conditions_type& cond
+                        , const requirements_type& requirements
+                        , const fhg::util::maybe<petri_net::prio_t>& priority
+                        , const fhg::util::maybe<bool>& finline
+                        , const fhg::util::maybe<bool>& internal
+                        , const we::type::property::type& prop
+                        , const boost::filesystem::path& path
                         );
 
         const function_or_use_type& function_or_use() const;
@@ -46,22 +66,6 @@ namespace xml
 
         const std::string& name() const;
         const std::string& name(const std::string& name);
-
-        boost::filesystem::path path;
-
-        we::type::property::type prop;
-
-        structs_type structs;
-
-        conditions_type cond;
-
-        requirements_type requirements;
-
-        fhg::util::maybe<petri_net::prio_t> priority;
-
-        fhg::util::maybe<bool> finline;
-
-        fhg::util::maybe<bool> internal;
 
         // ***************************************************************** //
 
@@ -119,6 +123,8 @@ namespace xml
 
         void type_check (const net_type & net, const state::type & state) const;
 
+        id::ref::transition clone() const;
+
       private:
         boost::optional<function_or_use_type> _function_or_use;
 
@@ -128,14 +134,23 @@ namespace xml
         connections_type _out;
         connections_type _read;
         place_maps_type _place_map;
+
+        //! \todo All below should be private with accessors.
+      public:
+        structs_type structs;
+        conditions_type cond;
+        requirements_type requirements;
+
+        fhg::util::maybe<petri_net::prio_t> priority;
+        fhg::util::maybe<bool> finline;
+        fhg::util::maybe<bool> internal;
+
+        we::type::property::type prop;
+
+        boost::filesystem::path path;
       };
 
       // ******************************************************************* //
-
-      using petri_net::connection_t;
-      using petri_net::edge::PT;
-      using petri_net::edge::PT_READ;
-      using petri_net::edge::TP;
 
       void transition_synthesize
         ( const id::ref::transition & id_transition

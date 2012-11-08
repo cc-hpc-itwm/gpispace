@@ -20,33 +20,63 @@ namespace xml
   {
     namespace type
     {
-      transition_type::transition_type ( ID_CONS_PARAM(transition)
-                                       , PARENT_CONS_PARAM(net)
-                                       )
+      transition_type::transition_type
+        ( ID_CONS_PARAM(transition)
+        , PARENT_CONS_PARAM(net)
+        )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _function_or_use (boost::none)
-        , _name()
-        , _in()
-        , _out()
-        , _read()
-        , _place_map()
       {
         _id_mapper->put (_id, *this);
       }
 
-      transition_type::transition_type ( ID_CONS_PARAM(transition)
-                                       , PARENT_CONS_PARAM(net)
-                                       , const function_or_use_type& function_or_use
-                                       )
+      transition_type::transition_type
+        ( ID_CONS_PARAM(transition)
+        , PARENT_CONS_PARAM(net)
+        , const function_or_use_type& function_or_use
+        )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _function_or_use (function_or_use)
-        , _name()
-        , _in()
-        , _out()
-        , _read()
-        , _place_map()
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      transition_type::transition_type
+        ( ID_CONS_PARAM(transition)
+        , PARENT_CONS_PARAM(net)
+        , const boost::optional<function_or_use_type>& fun_or_use
+        , const std::string& name
+        , const connections_type& in
+        , const connections_type& out
+        , const connections_type& read
+        , const place_maps_type& place_map
+        , const structs_type& structs
+        , const conditions_type& cond
+        , const requirements_type& requirements
+        , const fhg::util::maybe<petri_net::prio_t>& priority
+        , const fhg::util::maybe<bool>& finline
+        , const fhg::util::maybe<bool>& internal
+        , const we::type::property::type& prop
+        , const boost::filesystem::path& path
+        )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _function_or_use (fun_or_use)
+        , _name (name)
+        , _in (in)
+        , _out (out)
+        , _read (read)
+        , _place_map (place_map)
+        , structs (structs)
+        , cond (cond)
+        , requirements (requirements)
+        , priority (priority)
+        , finline (finline)
+        , internal (internal)
+        , prop (prop)
+        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -454,6 +484,31 @@ namespace xml
         boost::apply_visitor ( transition_type_check (state)
                              , function_or_use()
                              );
+      }
+
+      // ******************************************************************* //
+
+      id::ref::transition transition_type::clone() const
+      {
+        return transition_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , boost::none
+          , _function_or_use
+          , _name
+          , _in
+          , _out
+          , _read
+          , _place_map
+          , structs
+          , cond
+          , requirements
+          , priority
+          , finline
+          , internal
+          , prop
+          , path
+          ).make_reference_id();
       }
 
       // ******************************************************************* //
