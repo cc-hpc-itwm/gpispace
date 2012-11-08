@@ -82,13 +82,14 @@ namespace xml
       id::ref::tmpl tmpl_type::clone
         (const boost::optional<parent_id_type>& parent) const
       {
+        const id::tmpl new_id (id_mapper()->next_id());
         return tmpl_type
-          ( id_mapper()->next_id()
+          ( new_id
           , id_mapper()
           , parent
           , _name
           , _tmpl_parameter
-          , _function
+          , _function.get().clone (function_type::make_parent (new_id))
           , _path
           ).make_reference_id();
       }
