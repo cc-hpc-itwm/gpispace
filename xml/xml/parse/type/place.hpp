@@ -74,7 +74,8 @@ namespace xml
         const fhg::util::maybe<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
 
-        id::ref::place clone() const;
+        id::ref::place clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
         fhg::util::maybe<bool> _is_virtual;

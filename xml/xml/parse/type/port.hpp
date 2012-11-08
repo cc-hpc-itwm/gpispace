@@ -53,7 +53,8 @@ namespace xml
 
         const std::string& name() const;
 
-        id::ref::port clone() const;
+        id::ref::port clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
         std::string _name;

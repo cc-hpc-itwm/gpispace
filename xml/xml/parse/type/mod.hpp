@@ -60,7 +60,8 @@ namespace xml
 
         void sanity_check (const function_type & fun) const;
 
-        id::ref::module clone() const;
+        id::ref::module clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
         friend std::size_t hash_value (const module_type&);
 

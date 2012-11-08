@@ -43,7 +43,8 @@ namespace xml
 
         void append (const expressions_type& other);
 
-        id::ref::expression clone() const;
+        id::ref::expression clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
         expressions_type _expressions;

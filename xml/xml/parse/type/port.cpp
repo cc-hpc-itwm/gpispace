@@ -147,12 +147,13 @@ namespace xml
           (port_type_check_visitor (direction, *this, path, state), fun.f);
       }
 
-      id::ref::port port_type::clone() const
+      id::ref::port port_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
         return port_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , _name
           , type
           , place

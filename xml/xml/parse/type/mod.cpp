@@ -205,12 +205,13 @@ namespace xml
         }
       }
 
-      id::ref::module module_type::clone() const
+      id::ref::module module_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
         return module_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , name
           , function
           , port_return

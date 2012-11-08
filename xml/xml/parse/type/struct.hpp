@@ -48,7 +48,8 @@ namespace xml
 
         const boost::filesystem::path& path() const;
 
-        id::ref::structure clone() const;
+        id::ref::structure clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
         std::string _name;

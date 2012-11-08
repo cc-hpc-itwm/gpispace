@@ -40,12 +40,13 @@ namespace xml
         return _name = name;
       }
 
-      id::ref::specialize specialize_type::clone() const
+      id::ref::specialize specialize_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
         return specialize_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , _name
           , use
           , type_map

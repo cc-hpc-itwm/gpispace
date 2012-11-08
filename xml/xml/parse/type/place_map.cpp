@@ -32,12 +32,13 @@ namespace xml
         return place_virtual + " <-> " + place_real;
       }
 
-      id::ref::place_map place_map_type::clone() const
+      id::ref::place_map place_map_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
         return place_map_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , place_virtual
           , place_real
           , prop

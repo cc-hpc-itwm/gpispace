@@ -74,12 +74,13 @@ namespace xml
           (expressions().end(), other.begin(), other.end());
       }
 
-      id::ref::expression expression_type::clone() const
+      id::ref::expression expression_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
         return expression_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , _expressions
           ).make_reference_id();
       }

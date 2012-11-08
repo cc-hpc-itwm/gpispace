@@ -79,12 +79,13 @@ namespace xml
         return boost::none;
       }
 
-      id::ref::tmpl tmpl_type::clone() const
+      id::ref::tmpl tmpl_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
         return tmpl_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , _name
           , _tmpl_parameter
           , _function

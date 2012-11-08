@@ -28,12 +28,13 @@ namespace xml
         return _name;
       }
 
-      id::ref::use use_type::clone() const
+      id::ref::use use_type::clone
+                  (const boost::optional<parent_id_type>& parent) const
       {
         return use_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , _name
           ).make_reference_id();
       }

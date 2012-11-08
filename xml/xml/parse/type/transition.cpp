@@ -488,12 +488,13 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::transition transition_type::clone() const
+      id::ref::transition transition_type::clone
+        (boost::optional<id::net> parent) const
       {
         return transition_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , _function_or_use
           , _name
           , _in

@@ -55,7 +55,8 @@ namespace xml
         boost::optional<const id::ref::function&>
         get_function (const std::string&) const;
 
-        id::ref::tmpl clone() const;
+        id::ref::tmpl clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
         fhg::util::maybe<std::string> _name;

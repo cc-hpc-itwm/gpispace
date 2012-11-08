@@ -44,7 +44,8 @@ namespace xml
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
 
-        id::ref::connect clone() const;
+        id::ref::connect clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
         //! \todo Should be a id::place and id::port.

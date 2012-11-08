@@ -39,7 +39,8 @@ namespace xml
         const std::string& name () const;
         const std::string& name (const std::string& name);
 
-        id::ref::specialize clone() const;
+        id::ref::specialize clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
         std::string _name;

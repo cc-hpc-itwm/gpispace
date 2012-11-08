@@ -39,7 +39,8 @@ namespace xml
 
         std::string name() const;
 
-        id::ref::place_map clone() const;
+        id::ref::place_map clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
         //! \todo These should all be private with accessors.
         std::string place_virtual;

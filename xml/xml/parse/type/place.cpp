@@ -282,12 +282,13 @@ namespace xml
         return _is_virtual.get_with_default (false);
       }
 
-      id::ref::place place_type::clone() const
+      id::ref::place place_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
         return place_type
           ( id_mapper()->next_id()
           , id_mapper()
-          , boost::none
+          , parent
           , _is_virtual
           , _name
           , type

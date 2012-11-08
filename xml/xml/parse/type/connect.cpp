@@ -55,11 +55,12 @@ namespace xml
         return _properties;
       }
 
-      id::ref::connect connect_type::clone() const
+      id::ref::connect connect_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
         return connect_type ( id_mapper()->next_id()
                             , id_mapper()
-                            , boost::none
+                            , parent
                             , _place
                             , _port
                             , _properties
