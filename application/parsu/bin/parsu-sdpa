@@ -41,7 +41,7 @@ usage: $(basename $0) [options]
 EOF
 }
 
-while getopts ":hf:I:C:s:c:m:T:" opt; do
+while getopts ":hf:I:C:s:c:m:T:S:" opt; do
     case $opt in
         h)
             usage
@@ -58,6 +58,9 @@ while getopts ":hf:I:C:s:c:m:T:" opt; do
             ;;
         s)
             shm_mem=$OPTARG
+            ;;
+        S)
+            ini_fin_mem=$OPTARG
             ;;
         c)
             echo >& "ignoring obsolete option -c $OPTARG"
