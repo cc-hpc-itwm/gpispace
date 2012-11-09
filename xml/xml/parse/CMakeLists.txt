@@ -20,6 +20,7 @@ set (fwd_hdrs
 )
 
 set (sources
+  error.cpp
   state.cpp
   parser.cpp
 )

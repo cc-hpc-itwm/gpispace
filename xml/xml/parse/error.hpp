@@ -628,30 +628,12 @@ namespace xml
 
       class duplicate_connect : public generic
       {
-      private:
-        std::string nice ( const std::string & type
-                         , const std::string & name
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate " << "connect-" << type << " " << name
-            << " for transition " << trans
-            << " in " << path;
-
-          return s.str();
-        }
-
       public:
         duplicate_connect ( const std::string & type
                           , const std::string & name
                           , const std::string & trans
                           , const boost::filesystem::path & path
-                          )
-          : generic (nice (type, name, trans, path))
-        {}
+                          );
       };
 
       // ******************************************************************* //
