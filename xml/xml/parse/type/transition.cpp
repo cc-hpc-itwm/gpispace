@@ -521,8 +521,9 @@ namespace xml
           ( new_id
           , id_mapper()
           , parent
-          , _fun_or_use
-          ? boost::apply_visitor (visitor_clone (new_id), *_fun_or_use)
+          , _function_or_use
+          ? boost::make_optional
+          (boost::apply_visitor (visitor_clone (new_id), *_function_or_use))
           : boost::none
           , _name
           , _in.clone (new_id)
