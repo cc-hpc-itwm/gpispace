@@ -6,6 +6,8 @@
 #include <string>
 #include <sstream>
 
+#include <xml/parse/id/types.hpp>
+
 #include <we/we.hpp>
 
 #include <fhg/util/join.hpp>
@@ -629,11 +631,20 @@ namespace xml
       class duplicate_connect : public generic
       {
       public:
-        duplicate_connect ( const std::string & type
-                          , const std::string & name
-                          , const std::string & trans
-                          , const boost::filesystem::path & path
+        duplicate_connect ( const std::string& type
+                          , const id::ref::connect& connection
+                          , const id::ref::connect& old_connection
+                          , const id::ref::transition& transition
+                          , const boost::filesystem::path& path
                           );
+        virtual ~duplicate_connect() throw() { }
+
+      private:
+        const std::string _type;
+        const id::ref::connect _connection;
+        const id::ref::connect _old_connection;
+        const id::ref::transition _transition;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

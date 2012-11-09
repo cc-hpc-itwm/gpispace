@@ -155,8 +155,9 @@ namespace xml
         if (not (id_old == id))
         {
           throw error::duplicate_connect ( "in"
-                                         , id.get().name()
-                                         , name()
+                                         , id
+                                         , id_old
+                                         , make_reference_id()
                                          , path
                                          );
         }
@@ -169,8 +170,9 @@ namespace xml
         if (not (id_old == id))
         {
           throw error::duplicate_connect ( "out"
-                                         , id.get().name()
-                                         , name()
+                                         , id
+                                         , id_old
+                                         , make_reference_id()
                                          , path
                                          );
         }
@@ -183,8 +185,9 @@ namespace xml
         if (not (id_old == id))
         {
           throw error::duplicate_connect ( "read"
-                                         , id.get().name()
-                                         , name()
+                                         , id
+                                         , id_old
+                                         , make_reference_id()
                                          , path
                                          );
         }
