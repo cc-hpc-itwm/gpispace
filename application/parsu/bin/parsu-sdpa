@@ -169,10 +169,12 @@ function rexec ()
     err=$($cmd </dev/null 2>&1)
     rc=$?
     if [ $rc -ne 0 ] ; then
-        echo $err >&2
+        echo "$err" >&2
         return $rc
     else
-        echo $err
+	if [ -n "$err" ] ; then
+          echo >&2 "$err"
+	fi
         return 0
     fi
 }

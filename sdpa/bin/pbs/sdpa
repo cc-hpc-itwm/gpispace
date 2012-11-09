@@ -1343,18 +1343,18 @@ function node_loop ()
             for p in $procs ; do
                 wait $p
                 rc=$(( rc + $? ))
-                echo
-                echo -n "   " >&2
             done
             procs=
             count=0
+            echo
+            echo -n "   " >&2
         fi
     done
     for p in $procs ; do
         wait $p
         rc=$(( rc + $? ))
-        echo >&2
     done
+    echo >&2
     return $rc
 }
 
