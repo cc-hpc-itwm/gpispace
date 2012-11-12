@@ -425,18 +425,15 @@ namespace xml
                                    , state::type & state
                                    , const id::transition& parent
                                    )
-      {
-        const id::place_map id (state.id_mapper()->next_id());
 
-        {
-          type::place_map_type place_map
-            ( id
-            , state.id_mapper()
-            , parent
-            , required ("place_map_type", node, "virtual", state.file_in_progress())
-            , required ("place_map_type", node, "real", state.file_in_progress())
-            );
-        }
+
+
+      id::ref::place_map place_map_type ( const xml_node_type * node
+                                        , state::type & state
+                                        , const id::transition& parent
+                                        )
+      {
+        we::type::property::type properties;
 
         for ( xml_node_type * child (node->first_node())
             ; child
@@ -450,27 +447,20 @@ namespace xml
           {
             if (child_name == "properties")
             {
-              property_map_type ( state.id_mapper()->get_ref (id)->prop
-                                , child
-                                , state
-                                );
+              property_map_type (properties, child, state);
             }
             else if (child_name == "include-properties")
             {
-              const we::type::property::type deeper
-                ( properties_include ( required ( "connect_type"
+              util::property::join
+                ( state
+                , properties
+                , properties_include ( required ( "place_map_type"
                                                 , child
                                                 , "href"
                                                 , state.file_in_progress()
                                                 )
                                      , state
                                      )
-                );
-
-              util::property::join
-                ( state
-                , state.id_mapper()->get_ref (id)->prop
-                , deeper
                 );
             }
             else
@@ -485,7 +475,14 @@ namespace xml
           }
         }
 
-        return id;
+        return type::place_map_type
+          ( state.id_mapper()->next_id()
+          , state.id_mapper()
+          , parent
+          , required ("place_map_type", node, "virtual", state.file_in_progress())
+          , required ("place_map_type", node, "real", state.file_in_progress())
+          , properties
+          ).make_reference_id();
       }
     }
 
@@ -592,12 +589,8 @@ namespace xml
                 }
               else if (child_name == "place-map")
                 {
-                  transition.get_ref().push_place_map
-                    ( id::ref::place_map
-                      ( place_map_type (child, state, id)
-                      , state.id_mapper()
-                      )
-                    );
+                  transition.get_ref()
+                    .push_place_map (place_map_type (child, state, id));
                 }
               else if (child_name == "connect-in")
                 {
