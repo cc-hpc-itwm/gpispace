@@ -9,30 +9,8 @@
 
   <net>
 
-<!--
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL"
-    <properties name="pnetc">
-      <properties name="context">
-        <property key="file">
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model"
-        </property>
-      </properties>
-    </properties>
--->
-
-    <place name="config_file" type="string">
-<!--
-      <token><value>${file} + ".xml"</value></token>
--->
-    </place>
-
-    <place name="memsizeGPI" type="long">
-      <token>
-        <value>
-          5*2^30
-        </value>
-      </token>
-    </place>
+    <place name="config_file" type="string" />
+    <place name="memsizeGPI" type="long" />
 
     <place name="done" type="control"/>
     <place name="config_initialized" type="config"/>
