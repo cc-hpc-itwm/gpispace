@@ -3,12 +3,12 @@
 #ifndef _FHG_UTIL_XML_HPP
 #define _FHG_UTIL_XML_HPP 1
 
-#include <fhg/util/maybe.hpp>
-
 #include <iostream>
 #include <string>
 #include <stack>
 #include <stdexcept>
+
+#include <boost/optional.hpp>
 
 namespace fhg
 {
@@ -87,7 +87,7 @@ namespace fhg
         }
 
         template<typename Key, typename Val>
-        void attr (const Key & key, const fhg::util::maybe<Val> & val) const
+          void attr (const Key & key, const boost::optional<Val> & val) const
         {
           if (val)
             {
