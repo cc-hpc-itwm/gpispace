@@ -665,7 +665,7 @@ namespace xml
             ( name()
             , we_expr_type (expr, parsed_expression)
             , condition()
-            , fun.internal.get_with_default (true)
+            , fun.internal.get_value_or (true)
             , fun.prop
             );
 
@@ -685,7 +685,7 @@ namespace xml
             ( name()
             , we_module_type (mod.name, mod.function)
             , condition()
-            , fun.internal.get_with_default (false)
+            , fun.internal.get_value_or (false)
             , fun.prop
             );
 
@@ -721,7 +721,7 @@ namespace xml
             ( name()
             , we_net
             , condition()
-            , fun.internal.get_with_default (true)
+            , fun.internal.get_value_or (true)
             , fun.prop
             );
 

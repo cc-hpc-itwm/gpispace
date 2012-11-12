@@ -50,10 +50,7 @@ namespace fhg
           return;
         }
 
-        set_title ( name.isEmpty()
-                  ? fhg::util::Nothing<std::string>()
-                  : fhg::util::Just<std::string> (name.toStdString())
-                  );
+        set_title (boost::make_optional (!name.isEmpty(), name.toStdString()));
       }
       void document_view::visibility_changed (bool visible)
       {

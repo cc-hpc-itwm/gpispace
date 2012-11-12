@@ -686,7 +686,7 @@ namespace xml
                && !trans.place_map().empty()
                )
                || (  !state.no_inline()
-                  && trans.finline.get_with_default(false)
+                  && trans.finline.get_value_or(false)
                   && fun.is_net()
                   )
               )

@@ -279,7 +279,7 @@ namespace xml
       }
       bool place_type::is_virtual (void) const
       {
-        return _is_virtual.get_with_default (false);
+        return _is_virtual.get_value_or (false);
       }
 
       const place_type::unique_key_type& place_type::unique_key() const

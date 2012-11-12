@@ -372,7 +372,7 @@ namespace fhg
         }
         else
         {
-          fun.name(fhg::util::Nothing<std::string>());
+          fun.name (boost::none);
         }
 
         emit_signal ( &change_manager_t::signal_set_function_name

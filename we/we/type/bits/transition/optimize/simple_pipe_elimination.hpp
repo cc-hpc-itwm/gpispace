@@ -115,7 +115,7 @@ namespace we { namespace type {
 
         if (map_in.size() != map_out.size())
           {
-            return fhg::util::Nothing<pid_pair_vec_type>();
+            return boost::none;
           }
 
         pid_pair_vec_type pid_pair_vec;
@@ -139,7 +139,7 @@ namespace we { namespace type {
 
             if (out == map_out.end())
               {
-                return fhg::util::Nothing<pid_pair_vec_type>();
+                return boost::none;
               }
 
             const petri_net::pid_t pid_A (in->second);
@@ -157,7 +157,7 @@ namespace we { namespace type {
 
             if (petri_net::edge::is_pt_read (net.get_edge_info (eid).type))
               {
-                return fhg::util::Nothing<pid_pair_vec_type>();
+                return boost::none;
               }
 
             port_t port_A;
@@ -170,7 +170,7 @@ namespace we { namespace type {
                || (ass_A && port_A.is_output() && ass_B && port_B.is_output())
                )
               {
-                return fhg::util::Nothing<pid_pair_vec_type>();
+                return boost::none;
               }
 
             if (  (( net.out_of_place (pid_A).size()
@@ -180,7 +180,7 @@ namespace we { namespace type {
                && (ass_B && port_B.is_output())
                )
               {
-                return fhg::util::Nothing<pid_pair_vec_type>();
+                return boost::none;
               }
 
             pid_pair_vec.push_back
@@ -195,7 +195,7 @@ namespace we { namespace type {
 
         if (!(all_in_equals_one || all_out_equals_one))
           {
-            return fhg::util::Nothing<pid_pair_vec_type>();
+            return boost::none;
           }
         else
           {
@@ -206,7 +206,7 @@ namespace we { namespace type {
               {
                 if (suc_out.find (*t) != suc_out.end())
                   {
-                    return fhg::util::Nothing<pid_pair_vec_type>();
+                    return boost::none;
                   }
               }
 
@@ -217,12 +217,12 @@ namespace we { namespace type {
               {
                 if (pred_out.find (*t) != pred_out.end())
                   {
-                    return fhg::util::Nothing<pid_pair_vec_type>();
+                    return boost::none;
                   }
               }
           }
 
-        return fhg::util::Just<pid_pair_vec_type> (pid_pair_vec);
+        return pid_pair_vec;
       }
 
       // ******************************************************************* //

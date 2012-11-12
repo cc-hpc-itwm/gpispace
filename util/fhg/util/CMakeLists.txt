@@ -15,6 +15,7 @@ endif()
 
 set (hdrs
   join.hpp
+  boost.hpp
   maybe.hpp
   read_bool.hpp
   read.hpp
