@@ -11,8 +11,6 @@
 
 #include <rewrite/validprefix.hpp>
 
-#include <fhg/util/maybe.hpp>
-
 namespace we { namespace type {
     namespace optimize
     {

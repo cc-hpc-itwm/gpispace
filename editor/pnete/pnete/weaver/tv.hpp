@@ -9,9 +9,9 @@ class QString;
 #include <string>
 #include <stack>
 
-#include <fhg/util/maybe.hpp>
-
 #include <pnete/weaver/weaver.hpp>
+
+#include <boost/optional.hpp>
 
 namespace fhg
 {
