@@ -69,7 +69,7 @@ namespace fhg
         dock_widget::setWidget (widget);
       }
       void
-      document_view::set_title (const fhg::util::maybe<std::string>& name)
+      document_view::set_title (const boost::optional<std::string>& name)
       {
         setWindowTitle ( name
                        ? QString::fromStdString (*name)
