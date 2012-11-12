@@ -95,6 +95,11 @@ namespace fhg
             }
         }
 
+        template<typename Key>
+          void attr (const Key&, const boost::none_t&) const
+        {
+        }
+
         template<typename T>
         void content (T x)
         {
