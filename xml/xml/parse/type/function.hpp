@@ -32,6 +32,8 @@ namespace xml
         typedef boost::unordered_set<std::string> typenames_type;
 
       public:
+        typedef std::string unique_key_type;
+
         typedef xml::util::unique<port_type,id::ref::port> ports_type;
 
         //! \todo net is only in this list as specialize not yet
@@ -188,6 +190,8 @@ namespace xml
                         , const xml::parse::structure_type::set_type & known_structs
                         , state::type & state
                         );
+
+        const unique_key_type& unique_key() const;
 
         id::ref::function clone
           (const boost::optional<parent_id_type>& parent = boost::none) const;

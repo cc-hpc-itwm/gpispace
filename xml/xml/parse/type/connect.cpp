@@ -36,10 +36,6 @@ namespace xml
       {
         return _port;
       }
-      std::string connect_type::name() const
-      {
-        return _place + " <-> " + _port;
-      }
 
       const std::string& connect_type::place (const std::string& place)
       {
@@ -54,6 +50,12 @@ namespace xml
       {
         return _properties;
       }
+
+      connect_type::unique_key_type connect_type::unique_key() const
+      {
+        return std::make_pair (_place, _port);
+      }
+
 
       id::ref::connect connect_type::clone
         (const boost::optional<parent_id_type>& parent) const

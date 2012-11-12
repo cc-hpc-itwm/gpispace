@@ -492,6 +492,14 @@ namespace xml
 
       // ******************************************************************* //
 
+      const transition_type::unique_key_type&
+        transition_type::unique_key() const
+      {
+        return name();
+      }
+
+      // ******************************************************************* //
+
       namespace
       {
         typedef transition_type::function_or_use_type function_or_use_type;

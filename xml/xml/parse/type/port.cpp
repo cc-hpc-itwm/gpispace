@@ -147,6 +147,11 @@ namespace xml
           (port_type_check_visitor (direction, *this, path, state), fun.f);
       }
 
+      const port_type::unique_key_type& port_type::unique_key() const
+      {
+        return name();
+      }
+
       id::ref::port port_type::clone
         (const boost::optional<parent_id_type>& parent) const
       {

@@ -282,6 +282,11 @@ namespace xml
         return _is_virtual.get_with_default (false);
       }
 
+      const place_type::unique_key_type& place_type::unique_key() const
+      {
+        return name();
+      }
+
       id::ref::place place_type::clone
         (const boost::optional<parent_id_type>& parent) const
       {

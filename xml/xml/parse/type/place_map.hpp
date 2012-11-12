@@ -29,6 +29,8 @@ namespace xml
         PARENT_SIGNATURES(transition);
 
       public:
+        typedef std::pair<std::string, std::string> unique_key_type;
+
         place_map_type ( ID_CONS_PARAM(place_map)
                        , PARENT_CONS_PARAM(transition)
                        , const std::string & _place_virtual
@@ -40,6 +42,8 @@ namespace xml
         const std::string& place_real() const;
         const std::string& place_real(const std::string&);
         const we::type::property::type& properties() const;
+
+        unique_key_type unique_key() const;
 
         id::ref::place_map clone
           (const boost::optional<parent_id_type>& parent = boost::none) const;

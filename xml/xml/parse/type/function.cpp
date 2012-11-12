@@ -833,6 +833,13 @@ namespace xml
           );
       }
 
+      const function_type::unique_key_type& function_type::unique_key() const
+      {
+        //! \note anonymous functions can't be stored in unqiue, thus
+        //! just indirect.
+        return *name();
+      }
+
       namespace
       {
         class visitor_clone

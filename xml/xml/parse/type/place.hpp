@@ -32,6 +32,8 @@ namespace xml
         PARENT_SIGNATURES(net);
 
       public:
+        typedef std::string unique_key_type;
+
         typedef signature::desc_t token_type;
         typedef std::list<value::type> values_type;
 
@@ -73,6 +75,8 @@ namespace xml
 
         const fhg::util::maybe<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
+
+        const unique_key_type& unique_key() const;
 
         id::ref::place clone
           (const boost::optional<parent_id_type>& parent = boost::none) const;

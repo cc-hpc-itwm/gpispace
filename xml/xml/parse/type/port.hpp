@@ -32,6 +32,8 @@ namespace xml
         PARENT_SIGNATURES(function);
 
       public:
+        typedef std::string unique_key_type;
+
         port_type ( ID_CONS_PARAM(port)
                   , PARENT_CONS_PARAM(function)
                   , const std::string & name
@@ -52,6 +54,8 @@ namespace xml
                         ) const;
 
         const std::string& name() const;
+
+        const unique_key_type& unique_key() const;
 
         id::ref::port clone
           (const boost::optional<parent_id_type>& parent = boost::none) const;

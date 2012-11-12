@@ -27,6 +27,8 @@ namespace xml
         PARENT_SIGNATURES(transition);
 
       public:
+        typedef std::pair<std::string, std::string> unique_key_type;
+
         connect_type ( ID_CONS_PARAM(connect)
                      , PARENT_CONS_PARAM(transition)
                      , const std::string& place
@@ -37,12 +39,13 @@ namespace xml
 
         const std::string& place() const;
         const std::string& port() const;
-        std::string name() const;
 
         const std::string& place (const std::string&);
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
+
+        unique_key_type unique_key() const;
 
         id::ref::connect clone
           (const boost::optional<parent_id_type>& parent = boost::none) const;

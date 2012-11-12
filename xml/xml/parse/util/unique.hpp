@@ -17,13 +17,13 @@ namespace xml
 {
   namespace util
   {
-    template<typename T, typename ID_TYPE, typename KEY = std::string>
+    template<typename VALUE_TYPE, typename ID_TYPE>
     class unique
     {
     private:
+      typedef VALUE_TYPE value_type;
       typedef ID_TYPE id_type;
-      typedef KEY key_type;
-      typedef T value_type;
+      typedef typename value_type::unique_key_type key_type;
 
       typedef boost::unordered_set<id_type> ids_type;
       typedef boost::unordered_map<key_type,id_type> by_key_type;
@@ -31,7 +31,7 @@ namespace xml
       class values_type
       {
       public:
-        typedef T value_type;
+        typedef VALUE_TYPE value_type;
 
         typedef boost::transform_iterator
           < boost::function<value_type& (const id_type&)>
@@ -64,7 +64,7 @@ namespace xml
         //! but they need to be in here to work around boost ticket #5473.
         //! See c3fbafa and https://svn.boost.org/trac/boost/ticket/5473
       private:
-        friend class unique<value_type, id_type, key_type>;
+        friend class unique<value_type, id_type>;
 
         values_type()
           : _ids()
@@ -98,7 +98,7 @@ namespace xml
 
       const id_type& push (const id_type& id)
       {
-        const key_type& name (id.get().name());
+        const key_type& name (id.get().unique_key());
 
         boost::optional<const id_type&> id_old (get (name));
 
@@ -120,7 +120,7 @@ namespace xml
         {
           throw std::out_of_range ("unique::erase called with bad id");
         }
-        _by_key.erase (id.get().name());
+        _by_key.erase (id.get().unique_key());
         _values._ids.erase (it);
       }
 
@@ -130,13 +130,13 @@ namespace xml
       void clear() { _values._ids.clear(); _by_key.clear(); }
       bool empty() const { return _by_key.empty(); }
 
-      unique<value_type, id_type, key_type> clone
+      unique<value_type, id_type> clone
         ( const boost::optional<typename value_type::parent_id_type>& parent
         = boost::none
         ) const
       {
         //! \todo Reserve?
-        unique<value_type, id_type, key_type> copy;
+        unique<value_type, id_type> copy;
         BOOST_FOREACH (const value_type& value, values())
         {
           copy.push (value.clone (parent));

@@ -45,6 +45,11 @@ namespace xml
         return _properties;
       }
 
+      place_map_type::unique_key_type place_map_type::unique_key() const
+      {
+        return std::make_pair (place_virtual(), place_real());
+      }
+
       id::ref::place_map place_map_type::clone
         (const boost::optional<parent_id_type>& parent) const
       {

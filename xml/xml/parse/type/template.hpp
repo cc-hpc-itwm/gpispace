@@ -27,6 +27,7 @@ namespace xml
         PARENT_SIGNATURES(net);
 
       public:
+        typedef std::string unique_key_type;
         typedef boost::unordered_set<std::string> names_type;
 
         tmpl_type ( ID_CONS_PARAM(tmpl)
@@ -54,6 +55,8 @@ namespace xml
 
         boost::optional<const id::ref::function&>
         get_function (const std::string&) const;
+
+        const unique_key_type& unique_key() const;
 
         id::ref::tmpl clone
           (const boost::optional<parent_id_type>& parent = boost::none) const;

@@ -24,6 +24,8 @@ namespace xml
         PARENT_SIGNATURES(net);
 
       public:
+        typedef std::string unique_key_type;
+
         typedef xml::util::unique<connect_type,id::ref::connect>
           connections_type;
         typedef xml::util::unique<place_map_type,id::ref::place_map>
@@ -122,6 +124,8 @@ namespace xml
                         ) const;
 
         void type_check (const net_type & net, const state::type & state) const;
+
+        const unique_key_type& unique_key() const;
 
         id::ref::transition clone
           (boost::optional<parent_id_type> parent = boost::none) const;

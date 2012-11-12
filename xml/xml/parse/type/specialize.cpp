@@ -40,6 +40,12 @@ namespace xml
         return _name = name;
       }
 
+      const specialize_type::unique_key_type&
+        specialize_type::unique_key() const
+      {
+        return name();
+      }
+
       id::ref::specialize specialize_type::clone
         (const boost::optional<parent_id_type>& parent) const
       {

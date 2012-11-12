@@ -79,6 +79,14 @@ namespace xml
         return boost::none;
       }
 
+      const tmpl_type::unique_key_type& tmpl_type::unique_key() const
+      {
+        //! \note Anonymous templates can't be stored in unique, thus
+        //! just indirect.
+        return *name();
+      }
+
+
       id::ref::tmpl tmpl_type::clone
         (const boost::optional<parent_id_type>& parent) const
       {
