@@ -651,29 +651,19 @@ namespace xml
 
       class duplicate_place_map : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate place-map " << name
-            << " for transition " << trans
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        duplicate_place_map ( const std::string & name
-                            , const std::string & trans
+        duplicate_place_map ( const id::ref::place_map& place_map
+                            , const id::ref::place_map& old_place_map
+                            , const id::ref::transition& transition
                             , const boost::filesystem::path & path
-                            )
-          : generic (nice (name, trans, path))
-        {}
+                            );
+        virtual ~duplicate_place_map() throw() { }
+
+      private:
+        const id::ref::place_map _place_map;
+        const id::ref::place_map _old_place_map;
+        const id::ref::transition _transition;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

@@ -199,8 +199,9 @@ namespace xml
 
         if (not (id_old == id))
         {
-          throw error::duplicate_place_map ( id.get().name()
-                                           , name()
+          throw error::duplicate_place_map ( id
+                                           , id_old
+                                           , make_reference_id()
                                            , path
                                            );
         }

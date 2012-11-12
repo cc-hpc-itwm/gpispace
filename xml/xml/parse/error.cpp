@@ -3,6 +3,7 @@
 #include <xml/parse/error.hpp>
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/transition.hpp>
 
 #include <boost/format.hpp>
@@ -29,11 +30,32 @@ namespace xml
                     % transition.get().name()
                     % path
                     )
-        , _type (type)
-        , _connection (connection)
-        , _old_connection (old_connection)
-        , _transition (transition)
-        , _path (path)
+          , _type (type)
+          , _connection (connection)
+          , _old_connection (old_connection)
+          , _transition (transition)
+          , _path (path)
+      { }
+
+
+      duplicate_place_map::duplicate_place_map
+        ( const id::ref::place_map& place_map
+        , const id::ref::place_map& old_place_map
+        , const id::ref::transition& transition
+        , const boost::filesystem::path& path
+        )
+          : generic ( boost::format ( "duplicate place-map %1% <-> %2% for "
+                                      "transition %3% in %4%"
+                                    )
+                    % place_map.get().place_virtual()
+                    % place_map.get().place_real()
+                    % transition.get().name()
+                    % path
+                    )
+          , _place_map (place_map)
+          , _old_place_map (old_place_map)
+          , _transition (transition)
+          , _path (path)
       { }
     }
   }
