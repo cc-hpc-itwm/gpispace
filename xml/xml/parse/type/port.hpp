@@ -10,12 +10,12 @@
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
 
-#include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/property.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
 #include <string>
@@ -38,7 +38,7 @@ namespace xml
                   , PARENT_CONS_PARAM(function)
                   , const std::string & name
                   , const std::string & _type
-                  , const fhg::util::maybe<std::string> & _place
+                  , const boost::optional<std::string> & _place
                   , const we::type::property::type& prop
                   = we::type::property::type()
                   );
@@ -66,7 +66,7 @@ namespace xml
         //! \todo All these should be private with accessors.
       public:
         std::string type;
-        fhg::util::maybe<std::string> place;
+        boost::optional<std::string> place;
         we::type::property::type prop;
       };
 

@@ -9,13 +9,12 @@
 #include <we/type/bits/transition/optimize/merge_places.hpp>
 #include <we/type/bits/transition/optimize/is_associated.hpp>
 
-#include <fhg/util/maybe.hpp>
-
 #include <stack>
 #include <vector>
 
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
 
 namespace we { namespace type {
     namespace optimize { namespace simple_pipe_elimination
@@ -67,7 +66,7 @@ namespace we { namespace type {
       typedef std::vector<pid_pair_type> pid_pair_vec_type;
 
       template<typename P, typename E, typename T>
-      inline fhg::util::maybe<pid_pair_vec_type>
+      inline boost::optional<pid_pair_vec_type>
       pid_pairs ( const transition_t<P, E, T> & trans
                 , const petri_net::tid_t & tid
                 , const petri_net::net<P, transition_t<P, E, T>, E, T> & net
@@ -260,7 +259,7 @@ namespace we { namespace type {
                && trans.condition().is_const_true()
                )
               {
-                const fhg::util::maybe<pid_pair_vec_type>
+                const boost::optional<pid_pair_vec_type>
                   pid_pair_vec (pid_pairs (trans, tid, net, trans_parent));
 
                 if (pid_pair_vec)

@@ -8,7 +8,6 @@
 #include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 
-#include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/property.hpp>
@@ -19,6 +18,7 @@
 #include <list>
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -45,12 +45,12 @@ namespace xml
                    , PARENT_CONS_PARAM(net)
                    , const std::string & name
                    , const std::string & _type
-                   , const fhg::util::maybe<bool> is_virtual
+                   , const boost::optional<bool> is_virtual
                    );
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
-                   , const fhg::util::maybe<bool>& _is_virtual
+                   , const boost::optional<bool>& _is_virtual
                    , const std::string& name
                    , const std::string& type
                    , const std::list<token_type>& tokens
@@ -73,7 +73,7 @@ namespace xml
                         , const state::type &
                         );
 
-        const fhg::util::maybe<bool>& get_is_virtual (void) const;
+        const boost::optional<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
 
         const unique_key_type& unique_key() const;
@@ -82,7 +82,7 @@ namespace xml
           (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
-        fhg::util::maybe<bool> _is_virtual;
+        boost::optional<bool> _is_virtual;
 
         std::string _name;
 

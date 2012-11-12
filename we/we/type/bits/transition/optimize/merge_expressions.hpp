@@ -8,10 +8,11 @@
 
 #include <we/type/bits/transition/optimize/is_associated.hpp>
 
-#include <fhg/util/maybe.hpp>
 #include <rewrite/validprefix.hpp>
 
 #include <stack>
+
+#include <boost/optional.hpp>
 
 namespace we { namespace type {
     namespace optimize { namespace merge_expressions
@@ -19,7 +20,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template<typename P, typename E, typename T>
-      inline fhg::util::maybe<const typename transition_t<P, E, T>::port_t>
+      inline boost::optional<const typename transition_t<P, E, T>::port_t>
       input_port_by_pid ( const transition_t<P, E, T> & trans
                         , const petri_net::pid_t & pid
                         )
@@ -57,7 +58,7 @@ namespace we { namespace type {
       };
 
       template<typename P, typename E, typename T>
-      inline fhg::util::maybe<trans_info<P, E, T> >
+      inline boost::optional<trans_info<P, E, T> >
       expression_predecessor
       ( const transition_t<P, E, T> & trans
       , const petri_net::tid_t & tid
@@ -268,7 +269,7 @@ namespace we { namespace type {
               }
             else
               {
-                const fhg::util::maybe<const port_t>
+                const boost::optional<const port_t>
                   maybe_pred_in (input_port_by_pid (pred, *p));
 
                 if (maybe_pred_in)
@@ -499,7 +500,7 @@ namespace we { namespace type {
                 typedef trans_info<P, E, T> trans_info;
                 typedef typename trans_info::pid_set_type pid_set_type;
 
-                const fhg::util::maybe<trans_info>
+                const boost::optional<trans_info>
                   maybe_pred (expression_predecessor (trans, tid_trans, net));
 
                 if (maybe_pred)

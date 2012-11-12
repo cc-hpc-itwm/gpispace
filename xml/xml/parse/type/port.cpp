@@ -17,7 +17,7 @@ namespace xml
                            , PARENT_CONS_PARAM(function)
                            , const std::string & name
                            , const std::string & _type
-                           , const fhg::util::maybe<std::string> & _place
+                           , const boost::optional<std::string> & _place
                            , const we::type::property::type& prop
                            )
         : ID_INITIALIZE()

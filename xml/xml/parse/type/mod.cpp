@@ -133,9 +133,9 @@ namespace xml
                                , PARENT_CONS_PARAM(function)
                                , const std::string& name
                                , const std::string& function
-                               , const fhg::util::maybe<std::string>& port_return
+                               , const boost::optional<std::string>& port_return
                                , const port_args_type& port_arg
-                               , const fhg::util::maybe<std::string>& code
+                               , const boost::optional<std::string>& code
                                , const cincludes_type& cincludes
                                , const flags_type& ldflags
                                , const flags_type& cxxflags

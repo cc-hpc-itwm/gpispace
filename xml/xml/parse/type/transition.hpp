@@ -12,6 +12,8 @@
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/id/types.hpp>
 
+#include <boost/optional.hpp>
+
 namespace xml
 {
   namespace parse
@@ -54,9 +56,9 @@ namespace xml
                         , const structs_type& structs
                         , const conditions_type& cond
                         , const requirements_type& requirements
-                        , const fhg::util::maybe<petri_net::prio_t>& priority
-                        , const fhg::util::maybe<bool>& finline
-                        , const fhg::util::maybe<bool>& internal
+                        , const boost::optional<petri_net::prio_t>& priority
+                        , const boost::optional<bool>& finline
+                        , const boost::optional<bool>& internal
                         , const we::type::property::type& prop
                         , const boost::filesystem::path& path
                         );
@@ -146,9 +148,9 @@ namespace xml
         conditions_type cond;
         requirements_type requirements;
 
-        fhg::util::maybe<petri_net::prio_t> priority;
-        fhg::util::maybe<bool> finline;
-        fhg::util::maybe<bool> internal;
+        boost::optional<petri_net::prio_t> priority;
+        boost::optional<bool> finline;
+        boost::optional<bool> internal;
 
         we::type::property::type prop;
 

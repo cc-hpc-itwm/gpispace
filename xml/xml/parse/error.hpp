@@ -17,6 +17,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -1553,7 +1554,7 @@ namespace xml
       class template_without_function : public generic
       {
       public:
-        template_without_function ( const fhg::util::maybe<std::string>& name
+        template_without_function ( const boost::optional<std::string>& name
                                   , const boost::filesystem::path& path
                                   )
           : generic ( boost::format

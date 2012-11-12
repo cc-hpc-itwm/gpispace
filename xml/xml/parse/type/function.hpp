@@ -16,6 +16,8 @@
 
 #include <we/we.hpp>
 
+#include <boost/optional.hpp>
+
 namespace xml
 {
   namespace parse
@@ -66,13 +68,13 @@ namespace xml
 
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
-                      , const fhg::util::maybe<std::string>& name
+                      , const boost::optional<std::string>& name
                       , const ports_type& in
                       , const ports_type& out
                       , const ports_type& tunnel
                       , const typenames_type& typenames
                       , const bool& contains_a_module_call
-                      , const fhg::util::maybe<bool>& internal
+                      , const boost::optional<bool>& internal
                       , const structs_type& structs
                       , const conditions_type& cond
                       , const requirements_type& requirements
@@ -88,10 +90,10 @@ namespace xml
 
         // ***************************************************************** //
 
-        const fhg::util::maybe<std::string>& name() const;
+        const boost::optional<std::string>& name() const;
         const std::string& name (const std::string& name);
-        const fhg::util::maybe<std::string>&
-        name (const fhg::util::maybe<std::string>& name);
+        const boost::optional<std::string>&
+        name (const boost::optional<std::string>& name);
 
         const boost::optional<parent_id_type>& parent() const;
 
@@ -199,7 +201,7 @@ namespace xml
       private:
         boost::optional<parent_id_type> _parent;
 
-        fhg::util::maybe<std::string> _name;
+        boost::optional<std::string> _name;
 
         ports_type _in;
         ports_type _out;
@@ -210,7 +212,7 @@ namespace xml
       public:
         bool contains_a_module_call;
 
-        fhg::util::maybe<bool> internal;
+        boost::optional<bool> internal;
 
         structs_type structs;
         conditions_type cond;

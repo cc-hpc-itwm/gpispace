@@ -7,7 +7,6 @@
 
 #include <xml/parse/type/function.fwd.hpp>
 
-#include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <string>
@@ -15,6 +14,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/unordered/unordered_map_fwd.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -46,9 +46,9 @@ namespace xml
                     , PARENT_CONS_PARAM(function)
                     , const std::string& name
                     , const std::string& function
-                    , const fhg::util::maybe<std::string>& port_return
+                    , const boost::optional<std::string>& port_return
                     , const port_args_type& port_arg
-                    , const fhg::util::maybe<std::string>& code
+                    , const boost::optional<std::string>& code
                     , const cincludes_type& cincludes
                     , const flags_type& ldflags
                     , const flags_type& cxxflags
@@ -68,10 +68,10 @@ namespace xml
         //! \todo All these should be private with accessors
         std::string name;
         std::string function;
-        fhg::util::maybe<std::string> port_return;
+        boost::optional<std::string> port_return;
         port_args_type port_arg;
 
-        fhg::util::maybe<std::string> code;
+        boost::optional<std::string> code;
         cincludes_type cincludes;
         flags_type ldflags;
         flags_type cxxflags;

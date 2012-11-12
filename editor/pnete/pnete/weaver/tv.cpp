@@ -79,7 +79,7 @@ namespace fhg
       template<typename T>
       void tv::append_maybe_key_value ( const std::string & key
                                       , const std::string & fmt
-                                      , const fhg::util::maybe<T> & val
+                                      , const boost::optional<T> & val
                                       )
       {
         if (val)
@@ -88,7 +88,7 @@ namespace fhg
           }
       }
       void tv::append_maybe_bool ( const std::string & key
-                                 , const fhg::util::maybe<bool> & val
+                                 , const boost::optional<bool> & val
                                  )
       {
         if (val)
@@ -101,7 +101,7 @@ namespace fhg
       }
 
       void tv::append_maybe ( const std::string & key
-                            , const fhg::util::maybe<std::string> & val
+                            , const boost::optional<std::string> & val
                             )
       {
         if (val)

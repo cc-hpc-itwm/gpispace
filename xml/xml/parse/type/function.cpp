@@ -42,13 +42,13 @@ namespace xml
       function_type::function_type
         ( ID_CONS_PARAM(function)
         , const boost::optional<parent_id_type>& parent
-        , const fhg::util::maybe<std::string>& name
+        , const boost::optional<std::string>& name
         , const ports_type& in
         , const ports_type& out
         , const ports_type& tunnel
         , const typenames_type& typenames
         , const bool& contains_a_module_call
-        , const fhg::util::maybe<bool>& internal
+        , const boost::optional<bool>& internal
         , const structs_type& structs
         , const conditions_type& cond
         , const requirements_type& requirements
@@ -130,7 +130,7 @@ namespace xml
           }
       }
 
-      const fhg::util::maybe<std::string>& function_type::name() const
+      const boost::optional<std::string>& function_type::name() const
       {
         return _name;
       }
@@ -138,8 +138,8 @@ namespace xml
       {
         return *(_name = name);
       }
-      const fhg::util::maybe<std::string>&
-        function_type::name (const fhg::util::maybe<std::string>& name)
+      const boost::optional<std::string>&
+        function_type::name (const boost::optional<std::string>& name)
       {
         return _name = name;
       }
@@ -1537,7 +1537,7 @@ namespace xml
         template<typename Stream>
         void
         mod_signature ( Stream& s
-                      , const fhg::util::maybe<port_with_type> & port_return
+                      , const boost::optional<port_with_type> & port_return
                       , const ports_with_type_type & ports_const
                       , const ports_with_type_type & ports_mutable
                       , const ports_with_type_type & ports_out
@@ -1613,7 +1613,7 @@ namespace xml
                     , const ports_with_type_type & ports_const
                     , const ports_with_type_type & ports_mutable
                     , const ports_with_type_type & ports_out
-                    , const fhg::util::maybe<port_with_type> & port_return
+                    , const boost::optional<port_with_type> & port_return
                     )
         {
           namespace cpp_util = ::fhg::util::cpp;
@@ -1862,7 +1862,7 @@ namespace xml
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
             ports_with_type_type ports_out;
-            fhg::util::maybe<port_with_type> port_return;
+            boost::optional<port_with_type> port_return;
             types_type types;
 
             if (mod.port_return)

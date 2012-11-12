@@ -16,7 +16,7 @@ namespace xml
       tmpl_type::tmpl_type
         ( ID_CONS_PARAM(tmpl)
         , PARENT_CONS_PARAM(net)
-        , const fhg::util::maybe<std::string>& name
+        , const boost::optional<std::string>& name
         , const names_type& tmpl_parameter
         , const id::ref::function& function
         , const boost::filesystem::path& path
@@ -31,7 +31,7 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      const fhg::util::maybe<std::string>&
+      const boost::optional<std::string>&
       tmpl_type::name() const
       {
         return _name;

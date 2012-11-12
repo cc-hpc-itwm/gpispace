@@ -26,8 +26,8 @@
 #include <xml/parse/type/use.hpp>
 
 #include <fhg/util/join.hpp>
-#include <fhg/util/maybe.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/boost.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
@@ -285,10 +285,10 @@ namespace xml
     {
       const std::string key
         (required ("require_type", node, "key", state.file_in_progress()));
-      const fhg::util::maybe<bool> mmandatory
-        ( fhg::util::fmap<std::string, bool>( fhg::util::read_bool
-                                            , optional (node, "mandatory")
-                                            )
+      const boost::optional<bool> mmandatory
+        ( fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
+                                                   , optional (node, "mandatory")
+                                                   )
         );
       const bool mandatory (mmandatory ? *mmandatory : true);
 
@@ -512,17 +512,17 @@ namespace xml
                         )
         );
       transition.get_ref().priority
-        = fhg::util::fmap<std::string, petri_net::prio_t>
+        = fhg::util::boost::fmap<std::string, petri_net::prio_t>
           ( boost::lexical_cast<petri_net::prio_t>
           , optional (node, "priority")
           );
       transition.get_ref().finline
-        = fhg::util::fmap<std::string, bool>
+        = fhg::util::boost::fmap<std::string, bool>
           ( fhg::util::read_bool
           , optional (node, "inline")
           );
       transition.get_ref().internal
-        = fhg::util::fmap<std::string, bool>
+        = fhg::util::boost::fmap<std::string, bool>
           ( fhg::util::read_bool
           , optional (node, "internal")
           );
@@ -748,7 +748,7 @@ namespace xml
                                                    , state.file_in_progress()
                                                    )
                                         );
-                  const fhg::util::maybe<std::string>
+                  const boost::optional<std::string>
                     value (optional (child, "value"));
 
                   typedef std::vector<std::string> cdatas_container_type;
@@ -1042,7 +1042,7 @@ namespace xml
     {
       boost::optional<id::ref::function> fun;
       type::tmpl_type::names_type template_parameter;
-      fhg::util::maybe<std::string> name (optional (node, "name"));
+      boost::optional<std::string> name (optional (node, "name"));
 
       const id::tmpl id (state.id_mapper()->next_id());
 
@@ -1142,7 +1142,7 @@ namespace xml
       function.get_ref().path = state.file_in_progress();
       function.get_ref().name (optional (node, "name"));
       function.get_ref().internal =
-        fhg::util::fmap<std::string, bool>( fhg::util::read_bool
+        fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
                                           , optional (node, "internal")
                                           );
       for ( xml_node_type * child (node->first_node())
@@ -1446,7 +1446,7 @@ namespace xml
                                                     , state.file_in_progress()
                                                     )
                                          );
-                  const fhg::util::maybe<std::string> as
+                  const boost::optional<std::string> as
                     (optional (child, "as"));
 
                   id::ref::tmpl tmpl (template_include (file, state, id));
@@ -1579,9 +1579,9 @@ namespace xml
                           , state.file_in_progress()
                           )
           , required ("place_type", node, "type", state.file_in_progress())
-          , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
-                                               , optional (node, "virtual")
-                                               )
+          , fhg::util::boost::fmap<std::string, bool> ( fhg::util::read_bool
+                                                      , optional (node, "virtual")
+                                                      )
           ).make_reference_id()
         );
 

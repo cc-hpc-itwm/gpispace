@@ -43,9 +43,6 @@ namespace xml
         ID_SIGNATURES(net);
         PARENT_SIGNATURES(function);
 
-      private:
-        typedef fhg::util::maybe<std::string> maybe_string_type;
-
       public:
         typedef xml::util::unique<function_type,id::ref::function> functions_type;
         typedef xml::util::unique<place_type,id::ref::place> places_type;

@@ -8,12 +8,11 @@
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 
-#include <boost/filesystem.hpp>
-#include <boost/unordered_set.hpp>
-
 #include <string>
 
-#include <fhg/util/maybe.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace xml
 {
@@ -32,13 +31,13 @@ namespace xml
 
         tmpl_type ( ID_CONS_PARAM(tmpl)
                   , PARENT_CONS_PARAM(net)
-                  , const fhg::util::maybe<std::string>& name
+                  , const boost::optional<std::string>& name
                   , const names_type& tmpl_parameter
                   , const id::ref::function& function
                   , const boost::filesystem::path& path
                   );
 
-        const fhg::util::maybe<std::string>& name() const;
+        const boost::optional<std::string>& name() const;
         const std::string& name (const std::string& name);
 
         const names_type& tmpl_parameter () const;
@@ -62,7 +61,7 @@ namespace xml
           (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
-        fhg::util::maybe<std::string> _name;
+        boost::optional<std::string> _name;
         names_type _tmpl_parameter;
         id::ref::function _function;
         boost::filesystem::path _path;

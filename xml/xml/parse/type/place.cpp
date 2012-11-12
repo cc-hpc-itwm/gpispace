@@ -197,7 +197,7 @@ namespace xml
                              , PARENT_CONS_PARAM(net)
                              , const std::string & name
                              , const std::string & _type
-                             , const fhg::util::maybe<bool> is_virtual
+                             , const boost::optional<bool> is_virtual
                              )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
@@ -210,7 +210,7 @@ namespace xml
 
       place_type::place_type ( ID_CONS_PARAM(place)
                              , PARENT_CONS_PARAM(net)
-                             , const fhg::util::maybe<bool>& is_virtual
+                             , const boost::optional<bool>& is_virtual
                              , const std::string& name
                              , const std::string& type
                              , const std::list<token_type>& tokens
@@ -273,7 +273,7 @@ namespace xml
         }
       }
 
-      const fhg::util::maybe<bool>& place_type::get_is_virtual (void) const
+      const boost::optional<bool>& place_type::get_is_virtual (void) const
       {
         return _is_virtual;
       }
