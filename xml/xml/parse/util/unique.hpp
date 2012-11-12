@@ -98,9 +98,9 @@ namespace xml
 
       const id_type& push (const id_type& id)
       {
-        const key_type& name (id.get().unique_key());
+        const key_type& key (id.get().unique_key());
 
-        boost::optional<const id_type&> id_old (get (name));
+        boost::optional<const id_type&> id_old (get (key));
 
         if (id_old)
           {
@@ -108,7 +108,7 @@ namespace xml
           }
 
         _values._ids.insert (id);
-        _by_key.insert (std::make_pair (name, id));
+        _by_key.insert (std::make_pair (key, id));
 
         return id;
       }
