@@ -272,23 +272,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      void struct_to_cpp ( const structure_type & s
-                         , const state::type & state
-                         );
-
-      void structs_to_cpp ( const structs_type & structs
-                          , const state::type & state
-                          );
-
-      // ***************************************************************** //
-
-      void struct_to_cpp (const state::type &, const function_type &);
-
-      // ***************************************************************** //
-
-      void struct_to_cpp ( const state::type & state
-                         , const function_type & f
-                         );
+      void struct_to_cpp (const state::type &, const id::ref::function &);
 
       // ******************************************************************* //
 

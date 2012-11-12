@@ -2102,22 +2102,17 @@ namespace xml
         stream.commit();
       }
 
-      void structs_to_cpp ( const structs_type & structs
-                          , const state::type & state
+      void structs_to_cpp ( const structs_type& structs
+                          , const state::type& state
                           )
       {
-        for ( structs_type::const_iterator pos (structs.begin())
-            ; pos != structs.end()
-            ; ++pos
-            )
-          {
-            struct_to_cpp (*pos, state);
-          }
+        BOOST_FOREACH (const structure_type& structure, structs)
+        {
+          struct_to_cpp (structure, state);
+        }
       }
 
       // ***************************************************************** //
-
-      void struct_to_cpp (const state::type &, const function_type &);
 
       namespace
       {
@@ -2132,12 +2127,12 @@ namespace xml
             : state (_state)
           {}
 
-          void operator () (const function_type & f) const
+          void operator() (const id::ref::function& f) const
           {
             struct_to_cpp (state, f);
           }
 
-          template<typename T> void operator () (const T &) const {}
+          void operator() (const use_type&) const { }
         };
 
         class struct_to_cpp_visitor : public boost::static_visitor<void>
@@ -2150,55 +2145,52 @@ namespace xml
             : state (_state)
           {}
 
-          void operator () (const id::ref::net & id) const
+          void operator() (const id::ref::net& id) const
           {
             const net_type& n (id.get());
 
-            if (!n.contains_a_module_call)
+            if (n.contains_a_module_call)
+            {
+              structs_to_cpp (n.structs, state);
+
+              BOOST_FOREACH ( const id::ref::function& id_function
+                            , n.functions().ids()
+                            )
               {
-                return;
+                struct_to_cpp (state, id_function);
               }
 
-            structs_to_cpp (n.structs, state);
-
-
-            BOOST_FOREACH ( const id::ref::function& id_function
-                          , n.functions().ids()
-                          )
-              {
-                struct_to_cpp (state, id_function.get());
-              }
-
-
-            BOOST_FOREACH ( const id::ref::transition& id_transition
-                          , n.transitions().ids()
-                          )
+              BOOST_FOREACH ( const transition_type& transition
+                            , n.transitions().values()
+                            )
               {
                 boost::apply_visitor
                   ( transition_struct_to_cpp_visitor (state)
-                  , id_transition.get().function_or_use()
+                  , transition.function_or_use()
                   );
               }
+            }
           }
 
-          template<typename T> void operator () (const T &) const {}
+          void operator() (const id::ref::module&) const { }
+          void operator() (const id::ref::expression&) const { }
         };
       }
 
       // ***************************************************************** //
 
-      void struct_to_cpp ( const state::type & state
-                         , const function_type & f
+      void struct_to_cpp ( const state::type& state
+                         , const id::ref::function& function_id
                          )
       {
-        if (!f.contains_a_module_call)
-          {
-            return;
-          }
+        const function_type& function (function_id.get());
 
-        structs_to_cpp (f.structs, state);
+        if (function.contains_a_module_call)
+        {
+          structs_to_cpp (function.structs, state);
 
-        boost::apply_visitor (struct_to_cpp_visitor (state), f.f);
+          boost::apply_visitor (struct_to_cpp_visitor (state), function.f);
+        }
       }
 
       // ******************************************************************* //

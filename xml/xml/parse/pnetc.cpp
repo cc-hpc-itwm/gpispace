@@ -295,7 +295,7 @@ main (int argc, char ** argv)
         xml::parse::includes::mks (descrs);
         xml::parse::includes::we_header_gen (state, descrs);
 
-        xml::parse::type::struct_to_cpp (state, function.get_ref());
+        xml::parse::type::struct_to_cpp (state, function);
       }
 
     if (state.dump_dependenciesD())
