@@ -2080,68 +2080,43 @@ namespace xml
         return id_function.get().contains_a_module_call;
       }
 
-      // ***************************************************************** //
-
-      void struct_to_cpp ( const structure_type & s
-                         , const state::type & state
-                         )
-      {
-        namespace cpp_util = ::fhg::util::cpp;
-
-        typedef boost::filesystem::path path_t;
-
-        const path_t prefix (state.path_to_cpp());
-        const path_t file
-          (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name()));
-
-        util::check_no_change_fstream stream (state, file);
-
-        signature::cpp::cpp_header
-          (stream, s.signature(), s.name(), s.path(), cpp_util::path::type());
-
-        stream.commit();
-      }
-
-      void structs_to_cpp ( const structs_type& structs
-                          , const state::type& state
-                          )
-      {
-        BOOST_FOREACH (const structure_type& structure, structs)
-        {
-          struct_to_cpp (structure, state);
-        }
-      }
-
-      // ***************************************************************** //
+      // **************************************************************** //
 
       namespace
       {
-        class transition_struct_to_cpp_visitor
-          : public boost::static_visitor<void>
+        void to_cpp (const structure_type& s, const state::type & state)
         {
-        private:
-          const state::type & state;
+          namespace cpp_util = ::fhg::util::cpp;
 
-        public:
-          transition_struct_to_cpp_visitor (const state::type & _state)
-            : state (_state)
-          {}
+          typedef boost::filesystem::path path_t;
 
-          void operator() (const id::ref::function& f) const
+          const path_t prefix (state.path_to_cpp());
+          const path_t file
+            (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name()));
+
+          util::check_no_change_fstream stream (state, file);
+
+          signature::cpp::cpp_header
+            (stream, s.signature(), s.name(), s.path(), cpp_util::path::type());
+
+          stream.commit();
+        }
+
+        void to_cpp (const structs_type& structs, const state::type& state)
+        {
+          BOOST_FOREACH (const structure_type& structure, structs)
           {
-            struct_to_cpp (state, f);
+            to_cpp (structure, state);
           }
+        }
 
-          void operator() (const use_type&) const { }
-        };
-
-        class struct_to_cpp_visitor : public boost::static_visitor<void>
+        class visitor_to_cpp : public boost::static_visitor<void>
         {
         private:
           const state::type & state;
 
         public:
-          struct_to_cpp_visitor (const state::type & _state)
+          visitor_to_cpp (const state::type & _state)
             : state (_state)
           {}
 
@@ -2151,7 +2126,7 @@ namespace xml
 
             if (n.contains_a_module_call)
             {
-              structs_to_cpp (n.structs, state);
+              to_cpp (n.structs, state);
 
               BOOST_FOREACH ( const id::ref::function& id_function
                             , n.functions().ids()
@@ -2164,20 +2139,21 @@ namespace xml
                             , n.transitions().values()
                             )
               {
-                boost::apply_visitor
-                  ( transition_struct_to_cpp_visitor (state)
-                  , transition.function_or_use()
-                  );
+                boost::apply_visitor (*this, transition.function_or_use());
               }
             }
           }
 
+          void operator() (const id::ref::function& f) const
+          {
+            struct_to_cpp (state, f);
+          }
+
+          void operator() (const use_type&) const { }
           void operator() (const id::ref::module&) const { }
           void operator() (const id::ref::expression&) const { }
         };
       }
-
-      // ***************************************************************** //
 
       void struct_to_cpp ( const state::type& state
                          , const id::ref::function& function_id
@@ -2187,13 +2163,13 @@ namespace xml
 
         if (function.contains_a_module_call)
         {
-          structs_to_cpp (function.structs, state);
+          to_cpp (function.structs, state);
 
-          boost::apply_visitor (struct_to_cpp_visitor (state), function.f);
+          boost::apply_visitor (visitor_to_cpp (state), function.f);
         }
       }
 
-      // ******************************************************************* //
+      // **************************************************************** //
 
       namespace dump
       {
