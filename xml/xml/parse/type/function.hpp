@@ -88,7 +88,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        const fhg::util::maybe<std::string> name() const;
+        const fhg::util::maybe<std::string>& name() const;
         const std::string& name (const std::string& name);
         const fhg::util::maybe<std::string>&
         name (const fhg::util::maybe<std::string>& name);

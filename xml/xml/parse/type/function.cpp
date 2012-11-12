@@ -130,7 +130,7 @@ namespace xml
           }
       }
 
-      const fhg::util::maybe<std::string> function_type::name() const
+      const fhg::util::maybe<std::string>& function_type::name() const
       {
         return _name;
       }
