@@ -188,11 +188,10 @@ num_hosts=$(cat "$nodefile" | uniq | wc -l)
 rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "init" -m aggregator -C "init" -M ${ini_fin_mem} &
 rexec $master "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i 1 -n "finalize" -m aggregator -C "finalize" -M ${ini_fin_mem} &
 
-for host in $hosts ; do
-    wait
-
+function start_procs_on()
+{
+    local host="$1"; shift
     echo >&2 "I: starting workers on host: $host"
-    count=0
     for i in $(seq 1 ${num_calc_per_node}) ; do
         rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "calc" -m aggregator -C "CPU" &
         count=$(( count + 1 ))
@@ -211,5 +210,17 @@ for host in $hosts ; do
     for i in $(seq 1 ${num_io_per_node}) ; do
         rexec $host "${SDPA_HOME}/libexec/sdpa/scripts/start-drts" -D -i $i -n "write" -m aggregator -C "WRITE" &
     done
+    wait
+    return 0
+}
+
+count=0
+for host in $hosts ; do
+  start_procs_on "$host" &
+  count=$(( count + 1 ))
+  if [ $count -gt 8 ] ; then
+      wait
+      count=0
+  fi
 done
 wait
