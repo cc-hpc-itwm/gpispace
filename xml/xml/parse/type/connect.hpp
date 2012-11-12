@@ -40,8 +40,11 @@ namespace xml
         const std::string& place() const;
         const std::string& port() const;
 
+      private:
+        friend struct net_type;
         const std::string& place (const std::string&);
 
+      public:
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
 
