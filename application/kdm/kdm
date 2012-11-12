@@ -34,7 +34,7 @@ abspath ()
   return 0
 }
 
-abspath ${inf}
+abspath "${inf}"
 abs_inf="$REPLY"
 
 if [ ! -e "${kdm_pnet}" ] ; then
@@ -46,7 +46,7 @@ pnet_file=$(mktemp "/var/tmp/kdm.pnet.XXXXXX")
 trap 'rm -f "$pnet_file"' EXIT
 
 echo >&2 -n "-: putting parameters on input places... "
-pnetput -p "config_file=\"${inf}\""         \
+pnetput -p "config_file=\"${abs_inf}\""         \
         -p "memsizeGPI=${gpi_mem_per_node}" \
         < "${kdm_pnet}" > "${pnet_file}"
 
