@@ -36,15 +36,19 @@ namespace xml
                        , const we::type::property::type& properties
                        );
 
-        std::string name() const;
+        const std::string& place_virtual() const;
+        const std::string& place_real() const;
+        const std::string& place_real(const std::string&);
+        const we::type::property::type& properties() const;
 
         id::ref::place_map clone
           (const boost::optional<parent_id_type>& parent = boost::none) const;
 
-        //! \todo These should all be private with accessors.
-        std::string place_virtual;
-        std::string place_real;
-        we::type::property::type prop;
+      private:
+        std::string _place_virtual;
+        std::string _place_real;
+
+        we::type::property::type _properties;
       };
 
       typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;

@@ -14,22 +14,35 @@ namespace xml
     {
       place_map_type::place_map_type ( ID_CONS_PARAM(place_map)
                                      , PARENT_CONS_PARAM(transition)
-                                     , const std::string & _place_virtual
-                                     , const std::string & _place_real
+                                     , const std::string & place_virtual
+                                     , const std::string & place_real
                                      , const we::type::property::type& prop
                                      )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , place_virtual (_place_virtual)
-        , place_real (_place_real)
-        , prop (prop)
+        , _place_virtual (place_virtual)
+        , _place_real (place_real)
+        , _properties (prop)
       {
         _id_mapper->put (_id, *this);
       }
 
-      std::string place_map_type::name() const
+      const std::string& place_map_type::place_virtual() const
       {
-        return place_virtual + " <-> " + place_real;
+        return _place_virtual;
+      }
+      const std::string& place_map_type::place_real() const
+      {
+        return _place_real;
+      }
+      const std::string& place_map_type::place_real (const std::string& v)
+      {
+        return _place_real = v;
+      }
+
+      const we::type::property::type& place_map_type::properties() const
+      {
+        return _properties;
       }
 
       id::ref::place_map place_map_type::clone
@@ -39,9 +52,9 @@ namespace xml
           ( id_mapper()->next_id()
           , id_mapper()
           , parent
-          , place_virtual
-          , place_real
-          , prop
+          , _place_virtual
+          , _place_real
+          , _properties
           ).make_reference_id();
       }
 
@@ -52,10 +65,10 @@ namespace xml
                   )
         {
           s.open ("place-map");
-          s.attr ("virtual", p.place_virtual);
-          s.attr ("real", p.place_real);
+          s.attr ("virtual", p.place_virtual());
+          s.attr ("real", p.place_real());
 
-          ::we::type::property::dump::dump (s, p.prop);
+          ::we::type::property::dump::dump (s, p.properties());
 
           s.close ();
         }

@@ -695,19 +695,19 @@ namespace xml
                           )
               {
                 const place_map_map_type::const_iterator pid
-                  (pids.find (place_map.place_real));
+                  (pids.find (place_map.place_real()));
 
                 if (pid == pids.end())
                   {
                     throw
-                      error::real_place_missing ( place_map.place_virtual
-                                                , place_map.place_real
+                      error::real_place_missing ( place_map.place_virtual()
+                                                , place_map.place_real()
                                                 , trans.name()
                                                 , state.file_in_progress()
                                                 );
                   }
 
-                place_map_map[prefix + place_map.place_virtual] = pid->second;
+                place_map_map[prefix + place_map.place_virtual()] = pid->second;
               }
 
             net_type& net ((boost::get<id::ref::net> (fun.f)).get_ref());
@@ -953,13 +953,13 @@ namespace xml
                           )
               {
                 const place_map_map_type::const_iterator pid
-                  (pids.find (place_map.place_real));
+                  (pids.find (place_map.place_real()));
 
                 if (pid == pids.end())
                   {
                     throw
-                      error::real_place_missing ( place_map.place_virtual
-                                                , place_map.place_real
+                      error::real_place_missing ( place_map.place_virtual()
+                                                , place_map.place_real()
                                                 , trans.name()
                                                 , state.file_in_progress()
                                                 );
@@ -972,7 +972,7 @@ namespace xml
                 path << "real" << "." << trans.name();
 
                 we_place.property().set ( path.str()
-                                        , place_map.place_virtual
+                                        , place_map.place_virtual()
                                         );
 
                 we_net.modify_place (pid->second, we_place);

@@ -556,7 +556,7 @@ namespace xml
                         , transition.place_map().values()
                         )
             {
-              place_map.place_real = prefix + place_map.place_real;
+              place_map.place_real (prefix + place_map.place_real());
             }
         }
       }
@@ -601,8 +601,8 @@ namespace xml
                         , transition.place_map().values()
                         )
           {
-            place_map.place_real =
-              fhg::util::remove_prefix (prefix, place_map.place_real);
+            place_map.place_real
+              (fhg::util::remove_prefix (prefix, place_map.place_real()));
           }
         }
       }
