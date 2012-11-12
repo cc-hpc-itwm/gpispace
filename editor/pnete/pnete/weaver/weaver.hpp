@@ -680,9 +680,9 @@ namespace fhg
         FUN(place_map, XMLTYPE(place_map_type), pm)
         {
           WEAVE(place_map::open, XMLTYPE(place_map_type))(pm);
-          WEAVE(place_map::place_virtual, std::string)(pm.place_virtual);
-          WEAVE(place_map::place_real, std::string)(pm.place_real);
-          WEAVE(place_map::properties, WETYPE(property::type))(pm.prop);
+          WEAVE(place_map::place_virtual, std::string)(pm.place_virtual());
+          WEAVE(place_map::place_real, std::string)(pm.place_real());
+          WEAVE(place_map::properties, WETYPE(property::type))(pm.properties());
           WEAVEE(place_map::close)();
         }
 
