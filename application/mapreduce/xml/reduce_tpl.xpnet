@@ -236,61 +236,52 @@
 			  // memcpy(reduced_buff, local_buff, total_size);
 
 			  std::list<std::string> list_in_values;
-
-			  size_t split_pos = arr_items.begin()->find(':');
-			  std::string last_key(arr_items.begin()->substr(0, split_pos));
-
+			  ::mapreduce::util::key_val_pair_t kv_pair = ::mapreduce::util::get_key_val(arr_items[0]);
+			  std::string last_key = kv_pair.first;
+			  
 			  size_t last_pos = 0;
-
-			  //BOOST_FOREACH(const std::string& str_item, arr_items)
+			  
 			  for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
-			  {
+              {
+                 ::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
 
-			    split_pos = it->find(':');
-			  	std::string key=it->substr(0,split_pos);
-			  	std::string value=it->substr(split_pos+1, it->size());
+                //std::cout<<"last_key: "<<last_key<<", key: "<<key<<", value: "<<value<<std::endl;
+                
+                if( kv_pair_next.first != last_key )
+                {
+                    std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
 
-			  	//std::cout<<"last_key: "<<last_key<<", key: "<<key<<", value: "<<value<<std::endl;
+                    try {
+                        last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
+                    }
+                    catch(const std::exception& exc)
+                    {
+                        throw("Reduce slot "+boost::lexical_cast<std::string>(reduce_slot.id)+":"+exc.what());
+                    }
 
-			  	if( last_key==key )
-			  		list_in_values.push_back(value);
+                    //std::cout<<"The content of the shared memory buffer:\n"<<ptr_shmem<<std::endl<<std::endl;
 
-			  	if( key!=last_key || boost::next(it) == arr_items.end() )
-			  	{
-			  		/*std::cout<<"STOP! Time to do a reduce for the key \""<<last_key<<"\" and the values [";
-			  		BOOST_FOREACH(std::string& val, list_in_values)
-			  			std::cout<<val<<" ";
-			  		std::cout<<"]"<<std::endl;*/
+                    last_key = kv_pair_next.first;
+                    list_in_values.clear();
+                    list_in_values.push_back(kv_pair_next.second);
+                }
+                else
+                  list_in_values.push_back(kv_pair_next.second);
+              }
 
-			  		std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
+            if(!list_in_values.empty())
+            {
+                std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
 
-			  		/*std::stringstream sstr;
-			  		sstr<<"reduce("<<last_key<<", [";
-			  		BOOST_FOREACH(std::string& item, list_in_values)
-			  			sstr<<item<<" ";
-			  		sstr<<"]= -> [";
-
-			  		BOOST_FOREACH(std::string& item, list_out_values)
-			  			sstr<<item<<" ";
-			  		sstr<<"]";
-
-			  		MLOG(INFO, sstr.str());*/
-
-			  		try {
-			  			last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
-					}
-					catch(const std::exception& exc)
-					{
-						throw("Reduce slot "+boost::lexical_cast<std::string>(reduce_slot.id)+":"+exc.what());
-					}
-
-			  		//std::cout<<"The content of the shared memory buffer:\n"<<ptr_shmem<<std::endl<<std::endl;
-
-			  		last_key=key;
-			  		list_in_values.clear();
-			  		list_in_values.push_back(value);
-			  	}
-			  }
+                try {
+                    last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
+                }
+                catch(const std::exception& exc)
+                {
+                    throw("Reduce slot "+boost::lexical_cast<std::string>(reduce_slot.id)+":"+exc.what());
+                }
+            }
+			
 
 			 waitComm ( fvmPutGlobalData
 	         ( static_cast<fvmAllocHandle_t> (config.handle.reduce)

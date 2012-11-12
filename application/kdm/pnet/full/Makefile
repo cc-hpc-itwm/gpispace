@@ -1,6 +1,6 @@
 
 ifndef MAIN
-  MAIN = mapreduce
+  MAIN = kdm
 endif
 
 ###############################################################################
@@ -17,17 +17,7 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 ###############################################################################
 
-PUT_PORT += input_file=\"$(PWD)/../example/loremipsum.txt\"
-PUT_PORT += output_file=\"$(PWD)/out.txt\"
-PUT_PORT += read_chunk_size=102400
-PUT_PORT += map_chunk_size=204800
-PUT_PORT += partition_slot_size=20000000
-PUT_PORT += reduce_slot_size=20000000
-PUT_PORT += n_part=5
-PUT_PORT += input_n_read_slots=20
-PUT_PORT += input_n_map_slots=10
-
--include example.mk
+#PUT_PORT += input_n_map_slots=10
 
 ###############################################################################
 

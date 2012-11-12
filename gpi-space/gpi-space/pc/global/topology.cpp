@@ -13,6 +13,8 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/assert.hpp>
 
+#include <fhgcom/kvs/kvsc.hpp>
+
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 
@@ -152,11 +154,21 @@ namespace gpi
 
         ++m_waiting_for_go;
 
+        boost::system_time const timeout
+          (boost::get_system_time()+boost::posix_time::seconds(30));
+
         while (not m_go_received)
         {
           if (m_shutting_down)
             break;
-          m_go_received_event.wait (lock);
+          if (not m_go_received_event.timed_wait (lock, timeout))
+          {
+            if (not m_go_received)
+            {
+              --m_waiting_for_go;
+              throw std::runtime_error ("did not receive GO within 30 seconds");
+            }
+          }
         }
 
         --m_waiting_for_go;
@@ -510,7 +522,7 @@ namespace gpi
           if (++child.error_counter > 10)
           {
             MLOG (ERROR, "exceeded error counter for " << child.name);
-            this->stop ();
+            m_peer->stop ();
           }
           else
           {
@@ -787,6 +799,17 @@ namespace gpi
           }
 
           del_child (rank);
+
+          // delete my kvs entry and the one from the child in case it couldn't
+          gpi::rank_t rnks [] = { m_rank , rank };
+          for (size_t i = 0 ; i < 2 ; ++i)
+          {
+            std::string peer_name = fhg::com::p2p::to_string
+              (fhg::com::p2p::address_t (detail::rank_to_name (rnks[i])));
+            std::string kvs_key = "p2p.peer." + peer_name;
+            fhg::com::kvs::del (kvs_key);
+          }
+
           kill(getpid(), SIGTERM);
         }
       }

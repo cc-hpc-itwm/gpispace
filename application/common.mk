@@ -78,6 +78,10 @@ ifndef WE_EXEC_WORKER
   WE_EXEC_WORKER = 2
 endif
 
+ifndef SDPA
+  SDPA = $(SDPA_BIN)/sdpa
+endif
+
 ###############################################################################
 
 ifndef XML
@@ -168,11 +172,19 @@ ifndef PS_NOINLINE
   endif
 endif
 
-ifndef LIB_DESTDIR
+ifndef DESTDIR
   ifndef MAIN
-    $(error variable MAIN undefined but needed to derive variable LIB_DESTDIR)
+    $(error variable MAIN undefined but needed to derive variable DESTDIR)
   else
-    LIB_DESTDIR = $(SDPA_LIBEXEC)/$(MAIN)
+    DESTDIR = $(SDPA_LIBEXEC)/apps/$(MAIN)
+  endif
+endif
+
+ifndef LIB_DESTDIR
+  ifndef DESTDIR
+    $(error variable DESTDIR undefined but needed to derive variable LIB_DESTDIR)
+  else
+    LIB_DESTDIR = $(DESTDIR)/modules
   endif
 endif
 
@@ -226,7 +238,7 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default ps net verify validate put gen lib run
+.PHONY: default ps net verify validate put gen lib run submit
 
 default: run
 
@@ -332,6 +344,11 @@ endif
 
 ###############################################################################
 
+submit: $(PUT)
+	$(SDPA) submit $(PUT) $(OUT)
+
+###############################################################################
+
 .PHONY: install modinstall
 
 install: modinstall
@@ -378,6 +395,7 @@ help:
 	@echo "gen         generate code into gen"
 	@echo "lib         'gen' & build libs from code in gen"
 	@echo "run         'lib' & 'put' & execute workflow"
+	@echo "submit      'put' & submit to a running SDPA system"
 	@echo
 	@echo "validate    validate the xml"
 	@echo
@@ -413,6 +431,7 @@ showconfig:
 	@echo
 	@echo "*** GPI-Space paths and files:"
 	@echo
+	@echo "DESTDIR         = $(DESTDIR)"
 	@echo "SDPA_INCLUDE    = $(SDPA_INCLUDE)"
 	@echo "SDPA_BIN        = $(SDPA_BIN)"
 	@echo "SDPA_XML_LIB    = $(SDPA_XML_LIB)"
@@ -471,4 +490,5 @@ showconfig:
 	@echo "PNETPUT                 = $(PNETPUT)"
 	@echo "PNETV                   = $(PNETV)"
 	@echo "WE_EXEC                 = $(WE_EXEC)"
+	@echo "SDPA                    = $(SDPA)"
 	@echo "XMLLINT                 = $(XMLLINT)"

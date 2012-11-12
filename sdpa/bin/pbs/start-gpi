@@ -129,6 +129,8 @@ if [ -z "$gpi_bin_path" ] ; then
     exit 1
 fi
 
+log_file="${state_dir}/log/gpi-space.log"
+
 if [ -z "$gpi_exe" ] ; then
     gpi_exe=$(which gpi-space)
 fi
@@ -230,6 +232,9 @@ if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
     fi
     if test -n "$socket_path" ; then
         cmdline="$cmdline --socket $socket_path"
+    fi
+    if test -n "$log_file" ; then
+        cmdline="$cmdline --log-file $log_file"
     fi
 
     log "executing $cmdline"

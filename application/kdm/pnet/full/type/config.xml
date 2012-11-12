@@ -35,12 +35,6 @@
       <field name="volume" type="long"/>
     </struct>
 
-    <struct name="scratch">
-      <field name="job" type="long"/>
-      <field name="bunch" type="long"/>
-      <field name="volume" type="long"/>
-    </struct>
-
     <struct name="threads">
       <field name="N" type="long"/>
     </struct>

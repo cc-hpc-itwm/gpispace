@@ -10,10 +10,14 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+#include <fvm-pc/pc.hpp>
+#include <util/types.hpp>
 
 const int KEY_MAX_SIZE = 50;
 const std::string delimiters=" \n";
 char SPCHAR = '#';
+
+typedef  std::pair<std::string, std::string> key_val_pair_t;
 
 namespace mapreduce
 {
@@ -201,6 +205,41 @@ namespace mapreduce
       sstr<<"   border_used = "<<t.border_used<<std::endl;
 
       MLOG(INFO, sstr.str());
+    }
+
+    void print_partitions(long handle, long slot_size, const std::string& part_used)
+    {
+      /*************************************************************************************************************************/
+      std::vector<int> arr_used = ::mapreduce::util::get_array(part_used);
+      for(int k=0; k<arr_used.size(); k++)
+      {
+        long vm_part_offset = k*slot_size;
+
+        char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
+        bzero(ptr_shmem, arr_used[k]+1);
+
+        waitComm ( fvmGetGlobalData
+        ( static_cast<fvmAllocHandle_t> (handle)
+                          , vm_part_offset
+                          , arr_used[k]
+                          , 0
+                          , 0
+                        )
+        );
+
+        std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
+        MLOG(INFO,"Partition "<<k<<", of size "<<arr_used[k]<<", contains "<<arr_items.size()<<" items: "<<ptr_shmem<<std::endl);
+      }
+      /*************************************************************************************************************************/
+    }
+
+    key_val_pair_t get_key_val(const std::string& str_map)
+    {
+      size_t split_pos = str_map.find(':');
+      std::string key = str_map.substr(0,split_pos);
+      std::string val = str_map.substr(split_pos+1, str_map.size());
+
+      return key_val_pair_t(key, val);
     }
 
     long ceil(long a, long b)

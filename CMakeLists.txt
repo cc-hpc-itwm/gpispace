@@ -181,7 +181,7 @@ if (ENABLE_PNET_EDITOR)
   add_subdirectory(editor)
 endif (ENABLE_PNET_EDITOR)
 
-include(TargetDoc.cmake OPTIONAL)
+include(TargetDoc)
 
 if (INSTALL_AS_BUNDLE)
   add_subdirectory(bundle)
