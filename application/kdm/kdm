@@ -7,7 +7,7 @@ if [ -z "$SDPA_HOME" ] ; then
     exit 1
 fi
 
-kdm_pnet="${SDPA_HOME}/libexec/sdpa/apps/kdm/kdm.pnet"
+kdm_pnet="${SDPA_HOME}/libexec/sdpa/apps/kdm/kdmopt.pnet"
 
 gpi_mem_per_node_default=$(echo segment-list | gpish | grep -E '^ +1 ' | awk '{print $5}')
 shmem_per_node_default=$(echo segment-list | gpish | grep -e 'calc.*-shm' | head -n1 | awk '{print $6}')
