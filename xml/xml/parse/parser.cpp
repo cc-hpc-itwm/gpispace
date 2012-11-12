@@ -421,13 +421,6 @@ namespace xml
 
       // **************************************************************** //
 
-      id::place_map place_map_type ( const xml_node_type * node
-                                   , state::type & state
-                                   , const id::transition& parent
-                                   )
-
-
-
       id::ref::place_map place_map_type ( const xml_node_type * node
                                         , state::type & state
                                         , const id::transition& parent
