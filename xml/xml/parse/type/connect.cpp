@@ -60,13 +60,14 @@ namespace xml
       id::ref::connect connect_type::clone
         (const boost::optional<parent_id_type>& parent) const
       {
-        return connect_type ( id_mapper()->next_id()
-                            , id_mapper()
-                            , parent
-                            , _place
-                            , _port
-                            , _properties
-                            ).make_reference_id();
+        return connect_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , _place
+          , _port
+          , _properties
+          ).make_reference_id();
       }
 
       namespace dump
