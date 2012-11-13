@@ -1111,10 +1111,10 @@
 		      // end recovering of the border keys
               std::sort( arr_items.begin(), arr_items.end());
 
-              std::cout<<"The sorted join(partition, reduce slot):\n ";
+              /*std::cout<<"The sorted join(partition, reduce slot):\n ";
               BOOST_FOREACH(std::string& item, arr_items)
                 std::cout<<item<<std::endl;
-              std::cout<<std::endl;
+              std::cout<<std::endl;*/
 
               bzero(ptr_shmem, total_size);
 
@@ -1141,7 +1141,7 @@
                     }
                     catch(const std::exception& exc)
                     {
-                        throw("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
+                        throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
                     }
 
                     //std::cout<<"The content of the shared memory buffer:\n"<<ptr_shmem<<std::endl<<std::endl;
@@ -1163,7 +1163,7 @@
                 }
                 catch(const std::exception& exc)
                 {
-                    throw("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
+                    throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
                 }
             }
             
