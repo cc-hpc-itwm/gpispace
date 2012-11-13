@@ -60,7 +60,7 @@ namespace fhg
           }
           ::xml::parse::type::function_type& function()
           {
-            return _function_with_mapping.function();
+            return _function_with_mapping.function().get_ref();
           }
           ::xml::parse::type::type_map_type& type_map()
           {

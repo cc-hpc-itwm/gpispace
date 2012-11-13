@@ -89,7 +89,9 @@ namespace fhg
       proxy::type* internal_type::create_proxy()
       {
         return weaver::function
-          (weaver::function_with_mapping_type (function()), this).proxy();
+          ( weaver::function_with_mapping_type (function().make_reference_id())
+          , this
+          ).proxy();
       }
 
       ::xml::parse::type::function_type & internal_type::function ()

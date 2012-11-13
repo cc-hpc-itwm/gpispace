@@ -232,16 +232,16 @@ namespace xml
       class function_with_mapping_type
       {
       private:
-        function_type& _function;
+        id::ref::function _function;
         boost::optional<type_map_type&> _type_map;
 
       public:
         explicit function_with_mapping_type
-          ( function_type& function
+          ( const id::ref::function& function
           , boost::optional<type_map_type&> type_map = boost::none
           );
 
-        function_type& function();
+        const id::ref::function& function() const;
         boost::optional<type_map_type&> type_map();
       };
 

@@ -34,14 +34,14 @@ namespace fhg
           function_with_mapping_type
             operator() (const xml::parse::id::ref::function& fun) const
           {
-            return function_with_mapping_type (fun.get_ref());
+            return function_with_mapping_type (fun);
           }
 
           function_with_mapping_type
           operator() (const XMLTYPE(use_type)& use) const
           {
             return function_with_mapping_type
-              (_net.get_function (use.name())->get_ref());
+              (*_net.get_function (use.name()));
           }
         };
       }
@@ -56,7 +56,7 @@ namespace fhg
         , _scene (NULL)
         , _root (root)
       {
-        FROM (function<function> (this, _function_with_mapping.function()));
+        FROM (function<function> (this, _function_with_mapping.function().get_ref()));
       }
       data::proxy::type* function::proxy () const { return _proxy; }
       XMLTYPE(function_type::ports_type)& function::in ()

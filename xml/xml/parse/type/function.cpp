@@ -887,14 +887,14 @@ namespace xml
       // ***************************************************************** //
 
       function_with_mapping_type::function_with_mapping_type
-        ( function_type& function
+        ( const id::ref::function& function
         , boost::optional<type_map_type&> type_map
         )
           : _function (function)
           , _type_map (type_map)
       { }
 
-      function_type& function_with_mapping_type::function()
+      const id::ref::function& function_with_mapping_type::function() const
       {
         return _function;
       }
