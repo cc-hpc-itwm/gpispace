@@ -58,6 +58,21 @@ namespace xml
           , _path (path)
       { }
 
+      duplicate_transition::duplicate_transition
+        ( const id::ref::transition& transition
+        , const id::ref::transition& old_transition
+        )
+          : generic ( boost::format ( "duplicate transition %1% in %2%. "
+                                      "first definition was in %3%"
+                                    )
+                    % transition.get().name()
+                    % transition.get().path
+                    % old_transition.get().path
+                    )
+          , _transition (transition)
+          , _old_transition (old_transition)
+      { }
+
       duplicate_function::duplicate_function
         ( const id::ref::function& function
         , const id::ref::function& old_function

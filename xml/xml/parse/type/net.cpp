@@ -191,8 +191,7 @@ namespace xml
 
         if (id_old != id)
         {
-          throw error::duplicate_transition<transition_type>
-            (id.get(), id_old.get());
+          throw error::duplicate_transition (id, id_old);
         }
 
         return id;

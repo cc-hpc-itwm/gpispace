@@ -693,24 +693,17 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_transition : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate transition " << t.name() << " in " << t.path
-            << " first definition was in " << old.path
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_transition (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_transition ( const id::ref::transition& transition
+                             , const id::ref::transition& old_transition
+                             );
+        ~duplicate_transition() throw() { }
+
+      private:
+        id::ref::transition _transition;
+        id::ref::transition _old_transition;
       };
 
       // ******************************************************************* //
