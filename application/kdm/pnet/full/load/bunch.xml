@@ -12,6 +12,8 @@
     <place name="bunch_loaded" type="bunch_loaded"/>
 
     <transition name="load">
+      <require key="GPI" />
+      <require key="LOAD" />
       <defun>
         <in name="config" type="config"/>
         <in name="bunch" type="bunch_with_store"/>

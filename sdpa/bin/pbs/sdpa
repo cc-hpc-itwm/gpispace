@@ -194,7 +194,7 @@ function rexec ()
         echo "ssh could not connect to $node: $err: $rc" >&2
         return $rc
     else
-        echo $err
+        echo "$err"
         return $rc
     fi
 }
@@ -1221,7 +1221,7 @@ function stop_agent ()
     elif [ $ec -eq 2 ] ; then
         return 0 # not found
     else
-        echo $err >&2
+        echo "$err" >&2
         return $ec
     fi
 }
@@ -1343,18 +1343,18 @@ function node_loop ()
             for p in $procs ; do
                 wait $p
                 rc=$(( rc + $? ))
-                echo
-                echo -n "   " >&2
             done
             procs=
             count=0
+            echo
+            echo -n "   " >&2
         fi
     done
     for p in $procs ; do
         wait $p
         rc=$(( rc + $? ))
-        echo >&2
     done
+    echo >&2
     return $rc
 }
 
@@ -1474,10 +1474,10 @@ function start_drts ()
         node_loop start_drts_on_node "$master" "" $force $@
         ec=$?
         if [ -n "$err" ] ; then
-            echo $err
+            echo "$err"
         fi
         if [ $ec -ne 0 ] ; then
-            echo $err
+            echo "$err"
             return $ec
         fi
     else
@@ -1527,7 +1527,7 @@ function stop_drts ()
         node_loop stop_drts_on_node $@
         ec=$?
         if [ $ec -ne 0 ] ; then
-            echo $err
+            echo "$err"
             return $ec
         fi
     else
@@ -1576,7 +1576,7 @@ function status_drts ()
         node_loop status_drts_on_node $@
         ec=$?
         if [ $ec -ne 0 ] ; then
-            echo $err
+            echo "$err"
             return $ec
         fi
     else

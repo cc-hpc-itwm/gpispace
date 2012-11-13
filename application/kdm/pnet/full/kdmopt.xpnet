@@ -2,37 +2,15 @@
 
   <include-structs href="types.xml"/>
 
-  <in name="file_config" type="string" place="file_config"/>
+  <in name="config_file" type="string" place="file_config"/>
   <in name="memsizeGPI" type="long" place="memsizeGPI"/>
 
   <out name="done" type="control" place="done"/>
 
   <net>
 
-<!--
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL"
-          "/fhgfs/HPC/rahn/kdm/Kirchhoff_C3NA.rahn"
--->
-
-    <properties name="pnetc">
-      <properties name="context">
-        <property key="file">
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model"
-        </property>
-      </properties>
-    </properties>
-
-    <place name="file_config" type="string">
-      <token><value>${file} + ".xml"</value></token>
-    </place>
-
-    <place name="memsizeGPI" type="long">
-      <token>
-        <value>
-          5*2^30
-        </value>
-      </token>
-    </place>
+    <place name="file_config" type="string" />
+    <place name="memsizeGPI" type="long" />
 
     <place name="done" type="control"/>
     <place name="config_initialized" type="config"/>
@@ -329,6 +307,8 @@
     <!-- ****************************************************************** -->
 
     <transition name="process">
+      <require key="GPI" />
+      <require key="CPU" />
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume_in_progress"/>
@@ -729,6 +709,8 @@
     <place name="pair_to_reduce" type="pair_to_reduce"/>
 
     <transition name="reduce">
+      <require key="GPI" />
+      <require key="CPU" />
       <defun>
         <in name="config" type="config"/>
         <in name="pair" type="pair_to_reduce"/>
@@ -778,6 +760,8 @@
     <!-- ****************************************************************** -->
 
     <transition name="write">
+      <require key="GPI" />
+      <require key="WRITE" />
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume_with_store"/>
@@ -857,6 +841,8 @@
     <!-- ****************************************************************** -->
 
     <transition name="finalize">
+      <require key="GPI" />
+      <require key="finalize" />
       <defun>
         <in name="config" type="config"/>
         <in name="trigger" type="control"/>

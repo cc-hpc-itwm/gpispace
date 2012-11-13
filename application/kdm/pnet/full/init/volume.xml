@@ -10,6 +10,8 @@
     <place name="volume_in_progress" type="volume_in_progress"/>
 
     <transition name="initialize_volume">
+      <require key="GPI" />
+      <require key="init" />
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume_with_store"/>

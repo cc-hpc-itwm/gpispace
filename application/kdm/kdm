@@ -1,0 +1,75 @@
+#!/bin/bash
+
+kdm_dir=$(dirname $(dirname $(which "$0")))/kdm
+
+if [ -z "$SDPA_HOME" ] ; then
+    echo >&2 "SDPA is not loaded!"
+    exit 1
+fi
+
+kdm_pnet="${SDPA_HOME}/libexec/sdpa/apps/kdm/kdmopt.pnet"
+
+gpi_mem_per_node_default=$(echo segment-list | gpish | grep -E '^ +1 ' | awk '{print $5}')
+shmem_per_node_default=$(echo segment-list | gpish | grep -e 'calc.*-shm' | head -n1 | awk '{print $6}')
+
+if [ $# -lt 1 ]; then
+  echo >&2 "usage: $0 <input-file> [gpi-mem-per-node:${gpi_mem_per_node_default}]"
+  exit 1
+fi
+
+inf="${1}" ; shift
+gpi_mem_per_node=${1:-${gpi_mem_per_node_default}} ; shift
+
+abspath ()
+{
+  p="$1"
+  case "$p" in
+        /*)
+          REPLY="$p"
+          ;;
+        *)
+          REPLY="`pwd`/$p"
+          ;;
+  esac
+  return 0
+}
+
+abspath "${inf}"
+abs_inf="$REPLY"
+
+if [ ! -e "${kdm_pnet}" ] ; then
+    echo >&2 "KDM pnet not found in '$kdm_pnet'"
+    exit 2
+fi
+
+pnet_file=$(mktemp "/var/tmp/kdm.pnet.XXXXXX")
+trap 'rm -f "$pnet_file"' EXIT
+
+echo >&2 -n "-: putting parameters on input places... "
+pnetput -p "config_file=\"${abs_inf}\""         \
+        -p "memsizeGPI=${gpi_mem_per_node}" \
+        < "${kdm_pnet}" > "${pnet_file}"
+
+if [ $? -ne 0 ] ; then
+  echo >&2 "E: generating failed!"
+  exit 2
+fi
+echo >&2 "ok"
+
+jobid=$(sdpac submit ${pnet_file} 2>&1)
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo >&2 "Could not submit job: $jobid"
+  exit $ec
+fi
+echo "JOB-ID := $jobid"
+sdpac wait "$jobid"
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Job execution failed: $ec" >/dev/stderr
+else
+  echo "Success."
+fi
+sdpac delete "$jobid"
+rm -f "${pnet_file}"
+exit $ec

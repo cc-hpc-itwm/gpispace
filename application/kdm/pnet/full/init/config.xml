@@ -16,6 +16,8 @@
     <place name="volumes_left" type="long"/>
 
     <transition name="init">
+      <require key="GPI" />
+      <require key="init" />
       <defun>
         <in name="config_file" type="string"/>
         <in name="memsizeGPI" type="long"/>
