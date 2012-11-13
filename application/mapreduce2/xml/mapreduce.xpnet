@@ -85,7 +85,7 @@
           <cinclude href="cmath"/>
           <code><![CDATA[
 	
-	          MLOG (INFO, "Get the size of the file " << input_file);
+	          //MLOG (INFO, "Get the size of the file " << input_file);
 	          FILE *pf;
 	          if((pf = fopen(input_file.c_str(), "r"))== NULL)
 	          {
@@ -119,10 +119,10 @@
 			  // take a reserve of chunk slots-> store in chunks only complete words!
 			  n_chunks = ::mapreduce::util::ceil(input_file_size,read_chunk_size); 
 	         	          
-	          MLOG (INFO, "The file should be splitted into " <<n_chunks<<" chunks, where read_chunk_size ="<<read_chunk_size<<"!");
+	          //MLOG (INFO, "The file should be splitted into " <<n_chunks<<" chunks, where read_chunk_size ="<<read_chunk_size<<"!");
 	
 	          long n_nodes = fvmGetNodeCount();
-	          MLOG (INFO, "The number of nodes used by GPI: "<<n_nodes);
+	          //MLOG (INFO, "The number of nodes used by GPI: "<<n_nodes);
 	
 	          size_t size_read_area  = ::mapreduce::util::ceil(read_chunk_size*input_n_read_slots,n_nodes);
 	          size_t size_map_area = ::mapreduce::util::ceil(map_chunk_size*input_n_map_slots,n_nodes);
@@ -132,7 +132,7 @@
 	
 	          MLOG (INFO, "Size of the read area to be allocated: "<<size_read_area);
 	          MLOG (INFO, "Size of the map area to be allocated: "<<size_map_area);
-			  MLOG (INFO, "Size of the partition area to be allocated: "<<size_partition_area);
+		  MLOG (INFO, "Size of the partition area to be allocated: "<<size_partition_area);
 	          MLOG (INFO, "Size of the reduce area to be allocated: "<<size_reduce_area);
 	          MLOG (INFO, "Size of the border area to be allocated: "<<size_border_area);
 	
@@ -332,7 +332,7 @@
           <cinclude href="boost/lexical_cast.hpp"/>
           <cinclude href="fstream"/>
           <code><![CDATA[
-	          MLOG (INFO, "Read the chunk "<<chunk_and_slot.chunk<<" from the file " << config.file.input<<" into slot " << chunk_and_slot.slot);
+//	          MLOG (INFO, "Read the chunk "<<chunk_and_slot.chunk<<" from the file " << config.file.input<<" into slot " << chunk_and_slot.slot);
 	
 	          FILE *file_ptr;
 	          int num;
@@ -361,8 +361,7 @@
 	          
 	          if( config.size.chunk.read > avail_shmem )
 	          {
-		  	 	MLOG(FATAL, "Not enough shared memory reserved for reading a chunk ");
-		  	 	throw("Not enough shared memory reserved for reading a chunk ");
+                      throw std::runtime_error("Not enough shared memory reserved for reading a chunk ");
 	          }
 	          
 	          char* read_buff = static_cast<char*> (fvmGetShmemPtr());
@@ -382,7 +381,7 @@
 	          								)
 	          );
 	
-	          LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully put into the virtual memory");
+//	          LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully put into the virtual memory");
 	
 	          pnetc::type::read_chunk_info::read_chunk_info c_r_info;
 	
@@ -579,7 +578,6 @@
     <connect-out port="map_slot_id" place="map_slot_id"/>
     </transition>
     
-    <place name="reduce_info" type="partition_info"/>
     <place name="partition_result" type="partition_result"/>
     <transition name="copy_into_partition_slot" inline="true">
     <defun>
@@ -600,14 +598,6 @@
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/map.hpp"/>    
           <code><![CDATA[
-             LOG (INFO, "The set of unhandled partitions is not empty:");
-             std::cout<<"[";
-             for(literal::set_type::iterator it = map_chunk_info.unhandled_part_set.begin(); it!=map_chunk_info.unhandled_part_set.end(); it++)
-                std::cout<<*it<<" ";
-             std::cout<<"]"<<std::endl;
-             
-             LOG(INFO, "The partition id \""<<partition_info.part_id<<"\" is an element of the above set!");
-             
              // do partitioning copy from the map_chunk store in map_slot_id
              // the data corresponding to the partition partition_result.partition_info.part_id
              
@@ -629,8 +619,6 @@
              bzero(local_map_chunk, size);
              memcpy(local_map_chunk, ptr_shmem, map_chunk_info.used);
              
-             MLOG(INFO, "The map chunk is: "<<local_map_chunk);
-              
              std::vector<std::string> list_pairs = ::mapreduce::util::get_list_items(local_map_chunk);
              
              // if it's a special item -> put it into a special partition -> border region
@@ -662,8 +650,6 @@
                 }
               }
                
-              MLOG(INFO, "The partition "<<partition_info.part_id<<":"<<ptr_shmem);
-             
               long vm_part_offset = partition_info.part_id*config.size.partition.slot + partition_info.part_used;
               long needed = ptr_next-ptr_shmem;
               
@@ -691,13 +677,6 @@
 	             partition_result.succeeded = 1;
 	             partition_result.map_chunk_info.unhandled_part_set.erase(partition_info.part_id);
 	             partition_result.partition_info.part_used += needed; 
-	             
-	             LOG (INFO, "After erasing the element "<<partition_info.part_id<<" the set is:");
-	             std::cout<<"[";
-	             for(literal::set_type::iterator it =  partition_result.map_chunk_info.unhandled_part_set.begin(); 
-	                                             it!=  partition_result.map_chunk_info.unhandled_part_set.end(); it++)
-	                std::cout<<*it<<" ";
-	             std::cout<<"]"<<std::endl;
             }
             else // the partitioning didn't succeed -> should do a reduction first and emptying the partition
             {
@@ -775,8 +754,6 @@
           <cinclude href="algorithm"/>
 
           <code><![CDATA[
-              LOG (INFO, "Call the reduce method here ...");
-
               pnetc::type::partition_info::partition_info old_part_info = partition_result.partition_info;
               partition_info = old_part_info;
               map_chunk_info = partition_result.map_chunk_info;
@@ -804,7 +781,6 @@
 
 
                 memcpy(local_buff, ptr_shmem, old_part_info.part_used);
-                MLOG(INFO, "Partition "<<old_part_info.part_id<<", size: "<<old_part_info.part_used<<", content: "<<ptr_shmem);
               }
               else // nothing to be done
               { 
@@ -833,8 +809,6 @@
                 }
                 else
                     memcpy(local_buff, ptr_shmem, old_part_info.red_used);
-
-                MLOG(INFO, "reduce_slot "<<old_part_info.part_id<<", local_buff="<<ptr_shmem);
               }
 
               std::stringstream sstr(local_buff);
@@ -981,8 +955,6 @@
           <cinclude href="algorithm"/>
 
           <code><![CDATA[
-              LOG (INFO, "Call the reduce method here ...");
-
               pnetc::type::partition_info::partition_info old_part_info = partition_info;
               
               LOG (INFO, "Reduce the partition "<<old_part_info.part_id<<", partition space used: "<<old_part_info.part_used<<", reduce space used: "<<old_part_info.red_used);
@@ -1008,7 +980,6 @@
 
 
                 memcpy(local_buff, ptr_shmem, old_part_info.part_used);
-                MLOG(INFO, "Partition "<<old_part_info.part_id<<", size: "<<old_part_info.part_used<<", content: "<<ptr_shmem);
               }
               else // nothing to be done
               { 
@@ -1038,8 +1009,6 @@
                 }
                 else
                     memcpy(local_buff, ptr_shmem, old_part_info.red_used);
-
-                MLOG(INFO, "reduce_slot "<<old_part_info.part_id<<", local_buff="<<ptr_shmem);
               }
 
               std::stringstream sstr(local_buff);
@@ -1056,7 +1025,6 @@
 		          	std::string keyval_pair = arr_items[k];
 		          	if(::mapreduce::util::is_special_item(keyval_pair))
 		          	{
-		          	    MLOG(INFO, "The item "<<keyval_pair<<" is special");
 		          	    list_border_keys.push_back(keyval_pair);
 		          	}
 		          }
@@ -1065,7 +1033,6 @@
 		           {		          	    
 						std::string keyval_pair = list_border_keys.front();
 						list_border_keys.pop_front();
-		          	    MLOG(INFO, "The item "<<keyval_pair<<" is special");
 		          	    
 		          		// check if matches
 		          		std::string matching_pair;
@@ -1079,7 +1046,6 @@
 		          			arr_items.erase(it_items);
 		          				
 		          			// recover the original key from the two parts
-		          			MLOG(INFO, "Recovered the key "<<recovered_key<<" from \""<<keyval_pair<<"\" and \""<<matching_pair<<"\"");
 		          			// map the key
 		          			
 							::mapreduce::util::list_key_val_pairs_t list_key_val_pairs = ::mapreduce::util::map(recovered_key, "");
@@ -1166,8 +1132,6 @@
                     throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
                 }
             }
-            
-            MLOG(INFO, "The reduce slot "<<old_part_info.part_id<<" contains the following items: "<<ptr_shmem);
             
            	arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
            	    
