@@ -259,8 +259,11 @@ namespace xml
 
       // ***************************************************************** //
 
-      signature::type net_type::type_of_place (const place_type & place) const
+      signature::type net_type::type_of_place
+        (const id::ref::place& place_id) const
       {
+        const place_type& place (place_id.get());
+
         if (literal::valid_name (place.type))
         {
           return signature::type (place.type);
@@ -445,7 +448,7 @@ namespace xml
 
         BOOST_FOREACH(id::ref::place id_place, places().ids())
         {
-          id_place.get_ref().sig = type_of_place (id_place.get());
+          id_place.get_ref().sig = type_of_place (id_place);
           id_place.get_ref().translate (path(), state);
         }
       }
@@ -635,9 +638,10 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        BOOST_FOREACH (const place_type& place, net.places().values())
+        BOOST_FOREACH (const id::ref::place& place_id, net.places().ids())
             {
-              const signature::type type (net.type_of_place (place));
+              const signature::type type (net.type_of_place (place_id));
+              const place_type& place (place_id.get());
 
               if (!state.synthesize_virtual_places() && place.is_virtual())
                 {
