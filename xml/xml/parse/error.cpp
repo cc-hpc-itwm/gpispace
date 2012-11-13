@@ -4,6 +4,7 @@
 
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
 #include <boost/format.hpp>
@@ -70,6 +71,21 @@ namespace xml
                     )
           , _function (function)
           , _old_function (old_function)
+      { }
+
+      duplicate_template::duplicate_template
+        ( const id::ref::tmpl& tmpl
+        , const id::ref::tmpl& old_template
+        )
+          : generic ( boost::format ( "duplicate template %1% in %2%. "
+                                      "first definition was in %3%"
+                                    )
+                    % tmpl.get().name()
+                    % tmpl.get().path()
+                    % old_template.get().path()
+                    )
+          , _template (tmpl)
+          , _old_template (old_template)
       { }
     }
   }

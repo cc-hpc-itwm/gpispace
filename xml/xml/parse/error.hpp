@@ -730,24 +730,17 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_template : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate template " << t.name() << " in " << t.path()
-            << " first definition was in " << old.path()
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_template (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_template ( const id::ref::tmpl& tmpl
+                           , const id::ref::tmpl& old_template
+                           );
+        ~duplicate_template() throw() { }
+
+      private:
+        id::ref::tmpl _template;
+        id::ref::tmpl _old_template;
       };
 
       // ******************************************************************* //

@@ -178,8 +178,7 @@ namespace xml
 
         if (id_old != id)
           {
-            throw error::duplicate_template<tmpl_type>
-              (id.get(), id_old.get());
+            throw error::duplicate_template (id, id_old);
           }
 
         return id;
