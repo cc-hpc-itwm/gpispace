@@ -13,23 +13,6 @@ namespace xml
   {
     namespace type
     {
-      function_with_mapping_type::function_with_mapping_type
-        ( function_type& function
-        , boost::optional<type_map_type&> type_map
-        )
-          : _function (function)
-          , _type_map (type_map)
-      { }
-
-      function_type& function_with_mapping_type::function()
-      {
-        return _function;
-      }
-      boost::optional<type_map_type&> function_with_mapping_type::type_map()
-      {
-        return _type_map;
-      }
-
       net_type::net_type ( ID_CONS_PARAM(net)
                          , PARENT_CONS_PARAM(function)
                          , const boost::filesystem::path& path

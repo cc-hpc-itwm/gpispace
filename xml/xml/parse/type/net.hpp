@@ -22,22 +22,6 @@ namespace xml
   {
     namespace type
     {
-      class function_with_mapping_type
-      {
-      private:
-        function_type& _function;
-        boost::optional<type_map_type&> _type_map;
-
-      public:
-        explicit function_with_mapping_type
-          ( function_type& function
-          , boost::optional<type_map_type&> type_map = boost::none
-          );
-
-        function_type& function();
-        boost::optional<type_map_type&> type_map();
-      };
-
       struct net_type
       {
         ID_SIGNATURES(net);

@@ -886,6 +886,25 @@ namespace xml
 
       // ***************************************************************** //
 
+      function_with_mapping_type::function_with_mapping_type
+        ( function_type& function
+        , boost::optional<type_map_type&> type_map
+        )
+          : _function (function)
+          , _type_map (type_map)
+      { }
+
+      function_type& function_with_mapping_type::function()
+      {
+        return _function;
+      }
+      boost::optional<type_map_type&> function_with_mapping_type::type_map()
+      {
+        return _type_map;
+      }
+
+      // ***************************************************************** //
+
       fun_info_type::fun_info_type ( const std::string & _name
                                    , const std::string & _code
                                    , const module_type::flags_type & _ldflags

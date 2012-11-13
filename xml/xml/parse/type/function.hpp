@@ -229,6 +229,24 @@ namespace xml
 
       // ***************************************************************** //
 
+      class function_with_mapping_type
+      {
+      private:
+        function_type& _function;
+        boost::optional<type_map_type&> _type_map;
+
+      public:
+        explicit function_with_mapping_type
+          ( function_type& function
+          , boost::optional<type_map_type&> type_map = boost::none
+          );
+
+        function_type& function();
+        boost::optional<type_map_type&> type_map();
+      };
+
+      // ***************************************************************** //
+
       struct fun_info_type
       {
         std::string name;
