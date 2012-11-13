@@ -137,8 +137,7 @@ namespace xml
 
         if (id_old != id)
           {
-            throw error::duplicate_function<function_type>
-              (id.get(), id_old.get());
+            throw error::duplicate_function (id, id_old);
           }
 
         return id;

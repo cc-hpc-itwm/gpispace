@@ -37,7 +37,6 @@ namespace xml
           , _path (path)
       { }
 
-
       duplicate_place_map::duplicate_place_map
         ( const id::ref::place_map& place_map
         , const id::ref::place_map& old_place_map
@@ -56,6 +55,21 @@ namespace xml
           , _old_place_map (old_place_map)
           , _transition (transition)
           , _path (path)
+      { }
+
+      duplicate_function::duplicate_function
+        ( const id::ref::function& function
+        , const id::ref::function& old_function
+        )
+          : generic ( boost::format ( "duplicate function %1% in %2%. "
+                                      "first definition was in %3%"
+                                    )
+                    % function.get().name()
+                    % function.get().path
+                    % old_function.get().path
+                    )
+          , _function (function)
+          , _old_function (old_function)
       { }
     }
   }

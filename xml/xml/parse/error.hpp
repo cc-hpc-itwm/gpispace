@@ -715,24 +715,17 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_function : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate function " << t.name() << " in " << t.path
-            << " first definition was in " << old.path
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_function (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_function ( const id::ref::function& function
+                           , const id::ref::function& old_function
+                           );
+        ~duplicate_function() throw() { }
+
+      private:
+        id::ref::function _function;
+        id::ref::function _old_function;
       };
 
       // ******************************************************************* //
