@@ -868,9 +868,9 @@ namespace xml
           , id_mapper()
           , parent
           , _name
-          , _in.clone()
-          , _out.clone()
-          , _tunnel.clone()
+          , _in.clone (new_id)
+          , _out.clone (new_id)
+          , _tunnel.clone (new_id)
           , _typenames
           , contains_a_module_call
           , internal

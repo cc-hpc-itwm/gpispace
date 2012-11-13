@@ -322,7 +322,7 @@ namespace xml
 
           type_map_apply (map, specialize.type_map);
 
-          const id::ref::tmpl specialized_tmpl (id_tmpl->get().clone());
+          const id::ref::tmpl specialized_tmpl (id_tmpl->get().clone (id()));
 
           specialized_tmpl.get_ref().specialize
             ( specialize.type_map
