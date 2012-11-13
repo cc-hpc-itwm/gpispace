@@ -62,7 +62,8 @@ namespace xml
 
         std::size_t k (0);
         std::string::const_iterator begin (_function.begin());
-        fhg::util::parse::position pos (k, begin, _function.end());
+        std::string::const_iterator end (_function.end ());
+        fhg::util::parse::position pos (k, begin, end);
 
         function = parse_name (pos);
 
