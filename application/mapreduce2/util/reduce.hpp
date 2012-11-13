@@ -7,7 +7,7 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
-#include <sstream>
+#include <fstream>
 #include <list>
 #include <stdexcept>
 
@@ -61,6 +61,21 @@ namespace mapreduce
           return new_pos;
         }
       }
+
+    void write(std::string& key, std::list<std::string>& list_values, std::ofstream& ofs )
+	{
+		ofs<<key<<":[";
+
+		for( std::list<std::string>::iterator it=list_values.begin(); it!=list_values.end(); it++ )
+		{
+			ofs<<*it;
+
+			if( boost::next(it) != list_values.end() )
+				ofs<<" ";
+			else
+				ofs<<"] "<<std::endl;
+		}
+	}
   }
 }
 
