@@ -1316,6 +1316,11 @@ namespace xml
         stream.commit();
       }
 
+      typedef boost::unordered_map<std::string, module_type>
+        mc_by_function_type;
+      typedef boost::unordered_map<std::string, mc_by_function_type>
+        mcs_type;
+
       bool find_module_calls ( const state::type &
                              , const id::ref::function &
                              , fun_info_map &

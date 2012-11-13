@@ -79,9 +79,6 @@ namespace xml
         boost::filesystem::path path;
       };
 
-      typedef boost::unordered_map<std::string, module_type> mc_by_function_type;
-      typedef boost::unordered_map<std::string, mc_by_function_type> mcs_type;
-
       std::size_t hash_value (const module_type& m);
 
       namespace dump
