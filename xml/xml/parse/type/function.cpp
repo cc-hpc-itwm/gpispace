@@ -97,39 +97,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      void function_type::push ( const id::ref::port & id
-                               , ports_type & ports
-                               , const ports_type & others
-                               , const std::string descr
-                               )
-      {
-        const id::ref::port& id_old (ports.push (id));
-
-        if (not (id_old == id))
-        {
-          throw error::duplicate_port (descr, id.get().name(), path);
-        }
-
-        const port_type& port (id.get());
-
-        boost::optional<const id::ref::port&> id_other
-          (others.get (port.name()));
-
-        if (id_other)
-          {
-            const port_type& other (id_other->get());
-
-            if (port.type != other.type)
-              {
-                throw error::port_type_mismatch ( port.name()
-                                                , port.type
-                                                , other.type
-                                                , path
-                                                );
-              }
-          }
-      }
-
       const boost::optional<std::string>& function_type::name() const
       {
         return _name;
@@ -308,6 +275,39 @@ namespace xml
       }
 
       // ***************************************************************** //
+
+      void function_type::push ( const id::ref::port & id
+                               , ports_type & ports
+                               , const ports_type & others
+                               , const std::string& descr
+                               )
+      {
+        const id::ref::port& id_old (ports.push (id));
+
+        if (not (id_old == id))
+        {
+          throw error::duplicate_port (descr, id.get().name(), path);
+        }
+
+        const port_type& port (id.get());
+
+        boost::optional<const id::ref::port&> id_other
+          (others.get (port.name()));
+
+        if (id_other)
+          {
+            const port_type& other (id_other->get());
+
+            if (port.type != other.type)
+              {
+                throw error::port_type_mismatch ( port.name()
+                                                , port.type
+                                                , other.type
+                                                , path
+                                                );
+              }
+          }
+      }
 
       void function_type::push_in (const id::ref::port& id)
       {

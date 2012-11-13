@@ -112,14 +112,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        void push ( const id::ref::port & p
-                  , ports_type & ports
-                  , const ports_type & others
-                  , const std::string descr
-                  );
-
-        // ***************************************************************** //
-
         const typenames_type& typenames () const;
         void insert_typename (const std::string& tn);
 
@@ -144,6 +136,14 @@ namespace xml
 
         // ***************************************************************** //
 
+      private:
+        void push ( const id::ref::port & p
+                  , ports_type & ports
+                  , const ports_type & others
+                  , const std::string& descr
+                  );
+
+      public:
         void push_in (const id::ref::port&);
         void push_out (const id::ref::port&);
         void push_inout (const id::ref::port&);
