@@ -65,7 +65,7 @@
         <in name="input_n_map_slots" type="long"/>
         <in name="n_part" type="long"/>
         <in name="partition_slot_size" type="long"/>
-	<in name="reduce_slot_size" type="long"/>
+		<in name="reduce_slot_size" type="long"/>
         <out name="config" type="config"/>
         <out name="n_read_slots" type="long"/>
         <out name="n_map_slots" type="long"/>
@@ -135,7 +135,7 @@
 	
 	          MLOG (INFO, "Size of the read area to be allocated: "<<size_read_area);
 	          MLOG (INFO, "Size of the map area to be allocated: "<<size_map_area);
-		  MLOG (INFO, "Size of the partition area to be allocated: "<<size_partition_area);
+		  	  MLOG (INFO, "Size of the partition area to be allocated: "<<size_partition_area);
 	          MLOG (INFO, "Size of the reduce area to be allocated: "<<size_reduce_area);
 	          MLOG (INFO, "Size of the border area to be allocated: "<<size_border_area);
 	
@@ -724,23 +724,7 @@
         <in name="partition_result" type="partition_result"/>
         <out name="map_chunk_info" type="map_chunk_info"/>
         <out name="partition_info" type="partition_info"/>
-<!--
-         <module name="post_partition" function="post_partition(partition_result, map_chunk_info, partition_info)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-           <cinclude href="util/helper.hpp"/>
-          <cinclude href="sstream"/>
-          <code><![CDATA[
-	          MLOG (INFO, "Post partition ...");
-	          //::mapreduce::util::dump_iter_red_info("partition_result.iterator_red_info", partition_result.iterator_red_info);
-	         
-	          map_chunk_info = partition_result.map_chunk_info;
-			  partition_info = partition_result.partition_info;  
-				
-			  //::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
-				
-          ]]></code>
-        </module>
--->
+
 	    <expression>			  
 	          ${map_chunk_info} := ${partition_result.map_chunk_info};
 		  ${partition_info} := ${partition_result.partition_info};  
@@ -833,10 +817,10 @@
 
               std::sort( arr_items.begin(), arr_items.end());
 
-              std::cout<<"The sorted join(partition, reduce slot):\n ";
+              /*std::cout<<"The sorted join(partition, reduce slot):\n ";
               BOOST_FOREACH(std::string& item, arr_items)
                 std::cout<<item<<std::endl;
-              std::cout<<std::endl;
+              std::cout<<std::endl;*/
 
               bzero(ptr_shmem, total_size);
 
@@ -1031,11 +1015,16 @@
               std::stringstream sstr(local_buff);
               std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
               
+              /*std::cout<<"Before reduce:\n ";
+              BOOST_FOREACH(std::string& item, arr_items)
+                std::cout<<item<<" ";
+              std::cout<<std::endl;*/
+              
               // before sorting, check if it is the last partition
               // stick the partial keys
               
               std::list<std::string> list_border_keys;
-              if( old_part_info.part_id == config.num.part - 1 )
+              //if( old_part_info.part_id == config.num.part - 1 )
               {
               	  for(int k=0; k<arr_items.size(); k++ )
 		          {
@@ -1061,6 +1050,8 @@
 		          		{        			
 		          			std::vector<std::string>::iterator it_items = find (arr_items.begin(), arr_items.end(), keyval_pair);
 		          			arr_items.erase(it_items);
+		          			
+		          			MLOG(INFO, "Recovered the key "<<recovered_key<<" from \""<<keyval_pair<<"\" and \""<<matching_pair<<"\"");
 		          				
 		          			// recover the original key from the two parts
 		          			// map the key
@@ -1096,7 +1087,7 @@
 
               /*std::cout<<"The sorted join(partition, reduce slot):\n ";
               BOOST_FOREACH(std::string& item, arr_items)
-                std::cout<<item<<std::endl;
+                std::cout<<item<<" ";
               std::cout<<std::endl;*/
 
               bzero(ptr_shmem, total_size);
@@ -1107,12 +1098,15 @@
               
               size_t last_pos = 0;
               
+              std::ofstream ofs;
+              ofs.open(config.file.output.data(), std::ios_base::app );
+              
               for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
               {
                  ::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
-
 				std::string key = kv_pair_next.first;
 				
+									
                 //std::cout<<"last_key: "<<last_key<<", key: "<<key<<", value: "<<value<<std::endl;
                 
                 if( key != last_key )
@@ -1120,14 +1114,13 @@
                     std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
 
                     try {
-                        last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
+                        ::mapreduce::util::write(last_key, list_out_values, ofs );
                     }
                     catch(const std::exception& exc)
                     {
-                        throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
+                    	ofs.close();
+                        throw std::runtime_error(exc.what());
                     }
-
-                    //std::cout<<"The content of the shared memory buffer:\n"<<ptr_shmem<<std::endl<<std::endl;
 
                     last_key = key;
                     list_in_values.clear();
@@ -1142,22 +1135,15 @@
              	std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
              
                try {
-                    last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
+                    ::mapreduce::util::write(last_key, list_out_values, ofs );
                 }
                 catch(const std::exception& exc)
                 {
-                    throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
+                	ofs.close();
+                    throw std::runtime_error(exc.what());
                 }
             }
             
-           	arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
-           	    
-            std::ofstream ofs;
-            ofs.open(config.file.output.data(), std::ios_base::app );
-            BOOST_FOREACH(const std::string& item, arr_items)
-            {
-            	ofs<<item<<std::endl;
-            }
             ofs.close();
             
              if(local_buff)
@@ -1175,6 +1161,14 @@
       <connect-out port="all_reduce_and_write_done" place="all_reduce_and_write_done"/>
     </transition>
    
+   	 <place name="write_done" type="control"/>
+    <transition name="check_all_reduce_and_write_done" inline="true">
+      <include-function href="check_update_counter.xpnet"/>
+      <place-map real="n_part_slots_cnt" virtual="counter"/>
+      <connect-in port="trigger" place="all_reduce_and_write_done"/>
+      <connect-out port="done" place="write_done"/>
+    </transition>
+    
     <transition name="finalize">
       <defun>
         <in name="config" type="config"/>
