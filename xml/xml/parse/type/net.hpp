@@ -131,7 +131,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        void sanity_check (const state::type & state, const function_type& outerfun) const;
+        void sanity_check (const state::type & state) const;
 
         // ***************************************************************** //
 

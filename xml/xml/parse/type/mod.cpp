@@ -171,18 +171,21 @@ namespace xml
           ;
       }
 
-      void module_type::sanity_check (const function_type & fun) const
+      void module_type::sanity_check() const
       {
+        assert (has_parent());
+
+        const function_type& outer_function (*parent());
         if (port_return)
         {
-          if (!fun.is_known_port (*port_return))
+          if (!outer_function.is_known_port (*port_return))
           {
             throw error::function_description_with_unknown_port
               ( "return"
               , *port_return
               , name
               , function
-              , fun.path
+              , outer_function.path
               );
           }
         }
@@ -192,14 +195,14 @@ namespace xml
             ; ++port
             )
         {
-          if (!fun.is_known_port (*port))
+          if (!outer_function.is_known_port (*port))
           {
             throw error::function_description_with_unknown_port
               ( "argument"
               , *port
               , name
               , function
-              , fun.path
+              , outer_function.path
               );
           }
         }

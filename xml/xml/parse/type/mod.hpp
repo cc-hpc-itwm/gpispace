@@ -58,7 +58,7 @@ namespace xml
 
         bool operator == (const module_type& other) const;
 
-        void sanity_check (const function_type & fun) const;
+        void sanity_check() const;
 
         id::ref::module clone
           (const boost::optional<parent_id_type>& parent = boost::none) const;

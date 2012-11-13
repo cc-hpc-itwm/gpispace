@@ -457,31 +457,27 @@ namespace xml
         {
         private:
           const state::type & state;
-          const function_type & fun;
 
         public:
-          function_sanity_check ( const state::type & _state
-                                , const function_type & _fun
-                                )
+          function_sanity_check (const state::type & _state)
             : state (_state)
-            , fun (_fun)
           {}
 
           void operator () (const id::ref::expression &) const { return; }
           void operator () (const id::ref::module& id) const
           {
-            id.get().sanity_check (fun);
+            id.get().sanity_check();
           }
           void operator () (const id::ref::net& id) const
           {
-            id.get().sanity_check (state, fun);
+            id.get().sanity_check (state);
           }
         };
       }
 
       void function_type::sanity_check (const state::type & state) const
       {
-        boost::apply_visitor (function_sanity_check (state, *this), f);
+        boost::apply_visitor (function_sanity_check (state), f);
       }
 
       // ***************************************************************** //
@@ -509,15 +505,15 @@ namespace xml
       {
         BOOST_FOREACH (const port_type& port, in().values())
         {
-          port.type_check ("in", path, state, *this);
+          port.type_check ("in", path, state);
         }
         BOOST_FOREACH (const port_type& port, out().values())
         {
-          port.type_check ("out", path, state, *this);
+          port.type_check ("out", path, state);
         }
         BOOST_FOREACH (const port_type& port, tunnel().values())
         {
-          port.type_check ("tunnel", path, state, *this);
+          port.type_check ("tunnel", path, state);
         }
 
         boost::apply_visitor (function_type_check (state), f);

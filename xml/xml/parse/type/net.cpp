@@ -452,8 +452,10 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::sanity_check (const state::type & state, const function_type& outerfun) const
+      void net_type::sanity_check (const state::type & state) const
       {
+        assert (has_parent());
+
         BOOST_FOREACH ( const id::ref::transition& id_transition
                       , transitions().ids()
                       )
@@ -468,15 +470,19 @@ namespace xml
           id_function.get().sanity_check (state);
         }
 
+        const function_type& outer_function (*parent());
+
         BOOST_FOREACH (const id::ref::place& id_place, places().ids())
         {
           const place_type& place (id_place.get());
 
-          if (place.is_virtual() && !outerfun.is_known_tunnel (place.name()))
+          if ( place.is_virtual()
+            && !outer_function.is_known_tunnel (place.name())
+             )
           {
             state.warn
               ( warning::virtual_place_not_tunneled ( place.name()
-                                                    , outerfun.path
+                                                    , outer_function.path
                                                     )
               );
           }

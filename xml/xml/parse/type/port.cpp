@@ -140,11 +140,14 @@ namespace xml
       void port_type::type_check ( const std::string & direction
                                  , const boost::filesystem::path & path
                                  , const state::type & state
-                                 , const function_type& fun
                                  ) const
       {
+        assert (has_parent());
+
         boost::apply_visitor
-          (port_type_check_visitor (direction, *this, path, state), fun.f);
+          ( port_type_check_visitor (direction, *this, path, state)
+          , parent()->f
+          );
       }
 
       const port_type::unique_key_type& port_type::unique_key() const

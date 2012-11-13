@@ -50,7 +50,6 @@ namespace xml
         void type_check ( const std::string & direction
                         , const boost::filesystem::path & path
                         , const state::type & state
-                        , const function_type& fun
                         ) const;
 
         const std::string& name() const;
