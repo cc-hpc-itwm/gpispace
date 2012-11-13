@@ -1399,21 +1399,13 @@ namespace xml
 
         n.contains_a_module_call = false;
 
-
-        BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , n.transitions().ids()
-                      )
+        BOOST_FOREACH (transition_type& transition, n.transitions().values())
           {
             n.contains_a_module_call
               |= boost::apply_visitor
               ( transition_find_module_calls_visitor
-                ( state
-                , id_net
-                , id_transition.get_ref()
-                , m
-                , mcs
-                )
-              , id_transition.get_ref().function_or_use()
+                (state, id_net, transition, m, mcs)
+              , transition.function_or_use()
               );
           }
 
