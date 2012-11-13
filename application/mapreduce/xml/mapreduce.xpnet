@@ -798,6 +798,7 @@
         <out name="map_slot_id" type="long"/>
         <out name="chunk_partitioned" type="control"/>
         <out name="iterator_red_info" type="iterator_red_info"/>
+<!--
          <module name="post_partition" function="post_partition(partition_result, map_slot_id, chunk_partitioned, iterator_red_info)">
           <cinclude href="fhglog/fhglog.hpp"/>
            <cinclude href="util/helper.hpp"/>
@@ -814,11 +815,12 @@
 				
           ]]></code>
         </module>
-	    <!-- <expression>			  
-			${map_slot_id}:=${partition_result.map_chunk_info.map_slot_id};
-			${chunk_partitioned} := [];  
-			${iterator_red_info} := ${partition_result.iterator_red_info};  
-        </expression> -->
+-->
+	    <expression>			  
+	          ${map_slot_id} := ${partition_result.map_chunk_info.map_slot_id};
+		  ${chunk_partitioned} := [];
+		  ${iterator_red_info} := ${partition_result.iterator_red_info};
+            </expression>
         <condition>
             ${partition_result.succeeded}:gt:0L
         </condition>
