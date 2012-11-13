@@ -252,8 +252,8 @@ namespace xml
               , forbidden (_forbidden)
           { }
 
-          void operator () (use_type &) const { return; }
-          void operator () (id::ref::function& id_function) const
+          void operator () (const id::ref::use&) const { return; }
+          void operator () (const id::ref::function& id_function) const
           {
             id_function.get_ref().resolve (global, state, forbidden);
           }
@@ -300,8 +300,8 @@ namespace xml
               , state (_state)
           {}
 
-          void operator () (use_type &) const { return; }
-          void operator () (id::ref::function& id_function) const
+          void operator () (const id::ref::use&) const { return; }
+          void operator () (const id::ref::function& id_function) const
           {
             id_function.get_ref().specialize (map, get, known_structs, state);
           }
@@ -338,7 +338,7 @@ namespace xml
             : state (_state)
           { }
 
-          void operator () (const use_type &) const { return; }
+          void operator () (const id::ref::use&) const { return; }
           void operator () (const id::ref::function& id_function) const
           {
             id_function.get().sanity_check (state);
@@ -382,15 +382,15 @@ namespace xml
           }
 
           const id::ref::function&
-          operator () (const use_type & use) const
+            operator() (const id::ref::use& use) const
           {
             boost::optional<const id::ref::function&>
-              id_function (net.get_function (use.name()));
+              id_function (net.get_function (use.get().name()));
 
             if (not id_function)
             {
               throw error::unknown_function
-                (use.name(), trans.name(), trans.path);
+                (use.get().name(), trans.name(), trans.path);
             }
 
             //            fun->name (trans.name());
@@ -463,7 +463,7 @@ namespace xml
             : state (_state)
           { }
 
-          void operator () (const use_type &) const { return; }
+          void operator () (const id::ref::use&) const { return; }
           void operator () (const id::ref::function & id_function) const
           {
             id_function.get().type_check (state);
@@ -517,9 +517,9 @@ namespace xml
           {
             return id.get().clone (function_type::make_parent (_new_id));
           }
-          function_or_use_type operator() (const use_type& use) const
+          function_or_use_type operator() (const id::ref::use& use) const
           {
-            return use;
+            return use.get().clone (_new_id);
           }
         private:
           id::transition _new_id;
@@ -1074,9 +1074,9 @@ namespace xml
               : s (_s)
             {}
 
-            void operator () (const use_type& use) const
+            void operator () (const id::ref::use& use) const
             {
-              ::xml::parse::type::dump::dump (s, use);
+              ::xml::parse::type::dump::dump (s, use.get());
             }
             void operator () (const id::ref::function& id_function) const
             {

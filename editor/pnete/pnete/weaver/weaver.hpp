@@ -391,6 +391,13 @@ namespace fhg
               WEAVEE(expression::close)();
             }
             template<typename State>
+              void weave (State* _state, const XMLTYPE(use_type)& use)
+            {
+              WEAVE(use::open, XMLTYPE(use_type))(use);
+              WEAVE(use::name, std::string)(use.name());
+              WEAVEE(use::close)();
+            }
+            template<typename State>
               void weave (State* _state, const XMLTYPE(net_type)& net)
             {
               FROM(net) (_state, net);
@@ -400,7 +407,6 @@ namespace fhg
             {
               FROM(function) (_state, fun);
             }
-
           }
 
           template<typename State>
@@ -413,29 +419,6 @@ namespace fhg
             explicit deref_variant (State * state)
               : _state (state)
             { }
-
-            template <typename ID_TYPE>
-              void operator () (const ID_TYPE& id) const
-            {
-              weave (_state, id.get());
-            }
-          };
-
-          template<typename State>
-            class function_type : public boost::static_visitor<void>
-          {
-          private:
-            State * _state;
-
-          public:
-            explicit function_type (State * state) : _state (state) {}
-
-            void operator () (const XMLTYPE(use_type) & use) const
-            {
-              WEAVE(use::open, XMLTYPE(use_type))(use);
-              WEAVE(use::name, std::string)(use.name());
-              WEAVEE(use::close)();
-            }
 
             template <typename ID_TYPE>
               void operator () (const ID_TYPE& id) const

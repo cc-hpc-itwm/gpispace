@@ -567,7 +567,7 @@ namespace xml
                                                 , "name"
                                                 , state.file_in_progress()
                                                 )
-                                     )
+                                     ).make_reference_id()
                     );
                 }
               else if (child_name == "defun")

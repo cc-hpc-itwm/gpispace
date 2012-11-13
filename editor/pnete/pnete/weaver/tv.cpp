@@ -218,7 +218,7 @@ namespace fhg
       }
       WSIG(tv, transition::function, XMLTYPE(transition_type::function_or_use_type), fun)
       {
-        boost::apply_visitor (FROM(visitor::function_type<tv>) (this), fun);
+        boost::apply_visitor (FROM(visitor::deref_variant<tv>) (this), fun);
       }
       WSIG(tv, transition::place_map, XMLTYPE(transition_type::place_maps_type), pm)
       {

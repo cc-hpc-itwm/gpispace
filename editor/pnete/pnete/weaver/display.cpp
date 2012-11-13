@@ -38,10 +38,10 @@ namespace fhg
           }
 
           function_with_mapping_type
-          operator() (const XMLTYPE(use_type)& use) const
+            operator() (const xml::parse::id::ref::use& use) const
           {
             return function_with_mapping_type
-              (*_net.get_function (use.name()));
+              (*_net.get_function (use.get().name()));
           }
         };
       }

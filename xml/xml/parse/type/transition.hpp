@@ -33,8 +33,8 @@ namespace xml
         typedef xml::util::unique<place_map_type,id::ref::place_map>
           place_maps_type;
 
-        typedef boost::variant <id::ref::function, use_type>
-                function_or_use_type;
+        typedef boost::variant <id::ref::function, id::ref::use>
+          function_or_use_type;
 
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
