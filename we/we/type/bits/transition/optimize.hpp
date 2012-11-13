@@ -15,8 +15,6 @@
 #include <boost/program_options.hpp>
 #include <boost/variant.hpp>
 
-#include <fhg/util/maybe.hpp>
-
 #include <we/expr/parse/util/get_names.hpp>
 
 namespace we

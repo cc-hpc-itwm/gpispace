@@ -23,11 +23,12 @@
     <place name="n_chunks" type="long"/>
 
     <!-- template specializations -->
-    <include-template href="dup.xml" />
-    <specialize name="dup_counter" use="dup">
+    <include-template href="dup.xml" as="dup_counterT"/>
+    <specialize name="dup_counter" use="dup_counterT">
       <type-map replace="T" with="long" />
     </specialize>
-    <specialize name="dup_control" use="dup">
+    <include-template href="dup.xml" as="dup_controlT"/>
+    <specialize name="dup_control" use="dup_controlT">
       <type-map replace="T" with="control"/>
     </specialize>
 

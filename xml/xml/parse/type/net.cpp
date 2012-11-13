@@ -5,256 +5,242 @@
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/id/mapper.hpp>
 
+#include <fhg/util/remove_prefix.hpp>
+
 namespace xml
 {
   namespace parse
   {
     namespace type
     {
-      function_with_mapping_type::function_with_mapping_type
-        ( function_type& function
-        , boost::optional<type_map_type&> type_map
-        )
-          : _function (function)
-          , _type_map (type_map)
-      { }
-
-      function_type& function_with_mapping_type::function()
-      {
-        return _function;
-      }
-      boost::optional<type_map_type&> function_with_mapping_type::type_map()
-      {
-        return _type_map;
-      }
-
-      net_type::net_type ( const id::net& id
-                         , const id::function& parent
-                         , id::mapper* id_mapper
+      net_type::net_type ( ID_CONS_PARAM(net)
+                         , PARENT_CONS_PARAM(function)
+                         , const boost::filesystem::path& path
                          )
-        : _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _path (path)
       {
         _id_mapper->put (_id, *this);
       }
 
-      const id::net& net_type::id() const
+      net_type::net_type ( ID_CONS_PARAM(net)
+                         , PARENT_CONS_PARAM(function)
+                         , const functions_type& functions
+                         , const places_type& places
+                         , const specializes_type& specializes
+                         , const templates_type& templates
+                         , const transitions_type& transitions
+                         , const structs_type& structs
+                         , const bool& contains_a_module_call
+                         , const xml::parse::structure_type::set_type& resol
+                         , const we::type::property::type& properties
+                         , const boost::filesystem::path& path
+                         )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _functions (functions)
+        , _places (places)
+        , _specializes (specializes)
+        , _templates (templates)
+        , _transitions (transitions)
+        , structs (structs)
+        , contains_a_module_call (contains_a_module_call)
+        , structs_resolved (resol)
+        , prop (properties)
+        , _path (path)
       {
-        return _id;
+        _id_mapper->put (_id, *this);
       }
 
-      const id::function& net_type::parent() const
+      const boost::filesystem::path& net_type::path () const
       {
-        return _parent;
-      }
-
-      bool net_type::is_same (const net_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
+        return _path;
       }
 
       // ***************************************************************** //
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-      net_type & net_type::operator= (net_type const &rhs)
+      const net_type::functions_type& net_type::functions() const
       {
-        if (this != &rhs)
+        return _functions;
+      }
+      const net_type::places_type& net_type::places() const
+      {
+        return _places;
+      }
+      const net_type::specializes_type& net_type::specializes() const
+      {
+        return _specializes;
+      }
+      const net_type::templates_type& net_type::templates() const
+      {
+        return _templates;
+      }
+      const net_type::transitions_type& net_type::transitions() const
+      {
+        return _transitions;
+      }
+
+      // ***************************************************************** //
+
+      boost::optional<const id::ref::function&>
+      net_type::get_function (const std::string& name) const
+      {
+        boost::optional<const id::ref::function&>
+          id_function (functions().get (name));
+
+        if (id_function)
+          {
+            return id_function;
+          }
+        else if (has_parent())
+          {
+            return parent()->get_function (name);
+          }
+
+        return boost::none;
+      }
+
+      //! \todo The logic should be like this: Just when a function is
+      //! requested by some transition it is lookup up recursively up
+      //! the tree and on each level, it is checked
+      //! 1. if there is such a function known, then take it
+      //! 2. if there is a specialize, then
+      //!    2.1 search for the template and do the specialization
+      //! So this would be a lazy specialization.
+      //! The shadowing could be done by going further up the tree
+      boost::optional<const id::ref::tmpl&>
+      net_type::get_template (const std::string & name) const
+      {
+        boost::optional<const id::ref::tmpl&>
+          id_tmpl (templates().get (name));
+
+        if (id_tmpl)
+          {
+            return id_tmpl;
+          }
+        else if (has_parent())
+          {
+            std::cerr << "IMPLEMENT THE LOOKUP FOR TEMPLATES IN FUNCTION" << std::endl;
+            // return parent()->get_template (name);
+          }
+
+        return boost::none;
+      }
+
+      // ***************************************************************** //
+
+      const id::ref::function&
+      net_type::push_function (const id::ref::function& id)
+      {
+        const id::ref::function& id_old (_functions.push (id));
+
+        if (id_old != id)
+          {
+            throw error::duplicate_function (id, id_old);
+          }
+
+        return id;
+      }
+
+      const id::ref::place&
+      net_type::push_place (const id::ref::place& id)
+      {
+        const id::ref::place& id_old (_places.push (id));
+
+        if (id_old != id)
         {
-          _places = rhs._places;
-          _transitions = rhs._transitions;
-          _functions = rhs._functions;
-          _templates = rhs._templates;
-          _specializes = rhs._specializes;
-          _id = rhs._id;
-          _parent = rhs._parent;
-
-          contains_a_module_call = rhs.contains_a_module_call;
-          structs = rhs.structs;
-          path = rhs.path;
-          prop = rhs.prop;
-          structs_resolved = rhs.structs_resolved;
+          throw error::duplicate_place (id.get().name(), path());
         }
-        return *this;
+
+        return id;
       }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+
+      const id::ref::specialize&
+      net_type::push_specialize (const id::ref::specialize& id)
+      {
+        const id::ref::specialize& id_old (_specializes.push (id));
+
+        if (id_old != id)
+        {
+          const specialize_type& spec (id.get());
+
+          throw error::duplicate_specialize (spec.name(), spec.path);
+        }
+
+        return id;
+      }
+
+      const id::ref::tmpl&
+      net_type::push_template (const id::ref::tmpl& id)
+      {
+        const id::ref::tmpl& id_old (_templates.push (id));
+
+        if (id_old != id)
+          {
+            throw error::duplicate_template (id, id_old);
+          }
+
+        return id;
+      }
+
+      const id::ref::transition&
+      net_type::push_transition (const id::ref::transition& id)
+      {
+        const id::ref::transition& id_old (_transitions.push (id));
+
+        if (id_old != id)
+        {
+          throw error::duplicate_transition (id, id_old);
+        }
+
+        return id;
+      }
 
       // ***************************************************************** //
 
+      bool net_type::has_function (const std::string& name) const
+      {
+        return _functions.has (name);
+      }
       bool net_type::has_place (const std::string& name) const
       {
-        return _places.is_element (name);
+        return _places.has (name);
       }
-
-      boost::optional<place_type> net_type::get_place (const std::string & name) const
+      bool net_type::has_specialize (const std::string& name) const
       {
-        return _places.copy_by_key (name);
+        return _specializes.has (name);
       }
-
-      boost::optional<place_type> net_type::place_by_id (const id::place& id) const
+      bool net_type::has_template (const std::string& name) const
       {
-        return _places.copy_by_id (id);
+        return _templates.has (name);
       }
-
-      boost::optional<transition_type> net_type::transition_by_id
-        (const id::transition& id) const
-      {
-        return _transitions.copy_by_id (id);
-      }
-
       bool net_type::has_transition (const std::string& name) const
       {
-        return _transitions.is_element (name);
-      }
-
-      boost::optional<function_type> net_type::get_function (const std::string & name) const
-      {
-        return _functions.copy_by_key (maybe_string_type(name));
-      }
-
-      boost::optional<template_type> net_type::get_template (const std::string & name) const
-      {
-        return _templates.copy_by_key (name);
+        return _transitions.has (name);
       }
 
       // ***************************************************************** //
 
-      function_with_mapping_type net_type::get_function
-        (const std::string & name)
+      void net_type::erase_function (const id::ref::function& id)
       {
-        boost::optional<function_type&>
-          fun (_functions.ref_by_key (maybe_string_type (name)));
-
-        if (fun)
-        {
-          return function_with_mapping_type (*fun);
-        }
-
-        boost::optional<specialize_type &> spec
-          (_specializes.ref_by_key (name));
-
-        if (spec)
-        {
-          boost::optional<template_type&>
-            spec_fun (_templates.ref_by_key (spec->use));
-
-          if (spec_fun)
-          {
-            return function_with_mapping_type
-              ( (*spec_fun).function()
-              , spec->type_map
-              );
-          }
-        }
-
-        throw std::runtime_error ("STRANGE: function " + name + " unknown");
+        _functions.erase (id);
       }
-
-      // ***************************************************************** //
-
-      net_type::places_type & net_type::places (void)
+      void net_type::erase_place (const id::ref::place& id)
       {
-        return _places;
+        _places.erase (id);
       }
-      const net_type::places_type & net_type::places (void) const
+      void net_type::erase_specialize (const id::ref::specialize& id)
       {
-        return _places;
+        _specializes.erase (id);
       }
-
-      const net_type::transitions_type & net_type::transitions (void) const
+      void net_type::erase_template (const id::ref::tmpl& id)
       {
-        return _transitions.elements();
+        _templates.erase (id);
       }
-      net_type::transitions_type & net_type::transitions (void)
+      void net_type::erase_transition (const id::ref::transition& id)
       {
-        return _transitions.elements();
-      }
-
-      const functions_type & net_type::functions (void) const
-      {
-        return _functions.elements();
-      }
-
-      const specializes_type & net_type::specializes (void) const
-      {
-        return _specializes.elements();
-      }
-
-      const templates_type & net_type::templates (void) const
-      {
-        return _templates.elements();
-      }
-
-      // ***************************************************************** //
-
-      void net_type::push_place (const place_type & p)
-      {
-        boost::optional<place_type&> place (_places.push (p));
-
-        if (!place)
-        {
-          throw error::duplicate_place (p.name(), path);
-        }
-      }
-
-      void net_type::erase_place (const place_type& t)
-      {
-        _places.erase (t);
-      }
-
-      transition_type& net_type::push_transition (const transition_type & t)
-      {
-        xml::util::unique<transition_type,id::transition>::push_return_type trans
-          (_transitions.push_and_get_old_value (t));
-
-        if (!trans.first)
-        {
-          throw error::duplicate_transition<transition_type>
-            (t, *trans.second);
-        }
-
-        return *trans.first;
-      }
-
-      void net_type::erase_transition (const transition_type& t)
-      {
-        _transitions.erase (t);
-      }
-
-      void net_type::push_function (const function_type & f)
-      {
-        xml::util::unique<function_type,id::function>::push_return_type fun
-          (_functions.push_and_get_old_value (f));
-
-        if (!fun.first)
-        {
-          throw error::duplicate_function<function_type>
-            (f, *fun.second);
-        }
-      }
-
-      void net_type::push_template (const template_type & t)
-      {
-        xml::util::unique<template_type,id::tmpl>::push_return_type templ
-          (_templates.push_and_get_old_value (t));
-
-        if (!templ.first)
-        {
-          throw error::duplicate_template<template_type>
-            (t, *templ.second);
-        }
-      }
-
-      void net_type::push_specialize ( const specialize_type & s
-                                     , const state::type & state
-                                     )
-      {
-        if (!_specializes.push (s))
-        {
-          throw error::duplicate_specialize ( s.name()
-                                            , state.file_in_progress()
-                                            );
-        }
+        _transitions.erase (id);
       }
 
       // ***************************************************************** //
@@ -271,19 +257,22 @@ namespace xml
 
       // ***************************************************************** //
 
-      signature::type net_type::type_of_place (const place_type & place) const
+      signature::type net_type::type_of_place
+        (const id::ref::place& place_id) const
       {
+        const place_type& place (place_id.get());
+
         if (literal::valid_name (place.type))
         {
           return signature::type (place.type);
         }
 
-        const xml::parse::struct_t::set_type::const_iterator sig
+        const xml::parse::structure_type::set_type::const_iterator sig
           (structs_resolved.find (place.type));
 
         if (sig == structs_resolved.end())
         {
-          throw error::place_type_unknown (place.name(), place.type, path);
+          throw error::place_type_unknown (place.name(), place.type, path());
         }
 
         return signature::type (sig->second.signature(), sig->second.name());
@@ -312,55 +301,58 @@ namespace xml
 
       void net_type::specialize ( const type::type_map_type & map
                                 , const type::type_get_type & get
-                                , const xml::parse::struct_t::set_type & known_structs
-                                , const state::type & state
+                                , const xml::parse::structure_type::set_type & known_structs
+                                , state::type & state
                                 )
       {
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
-        for ( specializes_type::iterator
-                specialize (_specializes.elements().begin())
-            ; specialize != _specializes.elements().end()
-            ; ++specialize
-            )
+        BOOST_FOREACH (specialize_type& specialize, specializes().values())
         {
-          boost::optional<template_type> tmpl
-            (get_template (specialize->use));
+          boost::optional<const id::ref::tmpl&> id_tmpl
+            (get_template (specialize.use));
 
-          if (!tmpl)
+          if (not id_tmpl)
           {
-            throw error::unknown_template (specialize->use, path);
+            throw error::unknown_template (specialize.use, path());
           }
 
-          tmpl->function().name (specialize->name());
+          //! \todo generate a new function, with a state.next_id and
+          //! the parent that is the transition that requires the
+          //! specialization -> needs lazy specialization
 
-          type_map_apply (map, specialize->type_map);
+          type_map_apply (map, specialize.type_map);
 
-          tmpl->specialize
-            ( specialize->type_map
-            , specialize->type_get
+          const id::ref::tmpl specialized_tmpl (id_tmpl->get().clone (id()));
+
+          specialized_tmpl.get_ref().specialize
+            ( specialize.type_map
+            , specialize.type_get
             , st::join (known_structs, st::make (structs), state)
             , state
             );
 
           split_structs ( known_structs
-                        , tmpl->function().structs
+                        , specialized_tmpl.get().function().get_ref().structs
                         , structs
-                        , specialize->type_get
+                        , specialize.type_get
                         , state
                         );
 
-          push_function (tmpl->function());
+          specialized_tmpl.get().function().get_ref().name
+            (specialize.name());
+
+          push_function (specialized_tmpl.get().function());
         }
 
         _specializes.clear();
 
-        for ( functions_type::iterator fun (_functions.elements().begin())
-            ; fun != _functions.elements().end()
-            ; ++fun
-            )
+
+        BOOST_FOREACH ( const id::ref::function& id_function
+                      , functions().ids()
+                      )
         {
-          fun->specialize
+          id_function.get_ref().specialize
             ( map
             , get
             , st::join (known_structs, st::make (structs), state)
@@ -368,20 +360,20 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , fun->structs
+                        , id_function.get_ref().structs
                         , structs
                         , get
                         , state
                         );
         }
 
-        for ( transitions_type::iterator
-                trans (_transitions.elements().begin())
-            ; trans != _transitions.elements().end()
-            ; ++trans
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , transitions().ids()
+                      )
         {
-          trans->specialize
+          transition_type& transition (id_transition.get_ref());
+
+          transition.specialize
             ( map
             , get
             , st::join (known_structs, st::make (structs), state)
@@ -389,19 +381,18 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , trans->structs
+                        , transition.structs
                         , structs
                         , get
                         , state
                         );
         }
 
-        for ( places_type::iterator place (places().begin())
-            ; place != places().end()
-            ; ++place
-            )
+        BOOST_FOREACH (const id::ref::place& id_place, places().ids())
         {
-          place->specialize (map, state);
+          place_type& place (id_place.get_ref());
+
+          place.specialize (map, state);
         }
 
         specialize_structs (map, structs, state);
@@ -409,104 +400,19 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::distribute_function ( const state::type& state
-                                         , const functions_type& functions_above
-                                         , const templates_type& templates_above
-                                         , const specializes_type& specializes_above
-                                         )
-      {
-        functions_type funs (functions());
-
-        BOOST_FOREACH (function_type& fun, funs)
-        {
-          fun.distribute_function ( state
-                                  , functions()
-                                  , templates()
-                                  , specializes()
-                                  );
-        }
-
-        templates_type tmpls (templates());
-
-        BOOST_FOREACH (template_type& tmpl, tmpls)
-        {
-          tmpl.distribute_function ( state
-                                   , functions()
-                                   , templates()
-                                   , specializes()
-                                   );
-        }
-
-        BOOST_FOREACH (const function_type& fun, functions_above)
-        {
-          xml::util::unique<function_type,id::function>::push_return_type fun_local
-            (_functions.push_and_get_old_value (fun));
-
-          if (!fun_local.first)
-          {
-            state.warn ( warning::shadow_function ( fun.name()
-                                                  , fun.path
-                                                  , fun_local.second->path
-                                                  )
-                       );
-          }
-        }
-
-        BOOST_FOREACH (const template_type& tmpl, templates_above)
-        {
-          xml::util::unique<template_type,id::tmpl>::push_return_type tmpl_local
-            (_templates.push_and_get_old_value (tmpl));
-
-          if (!tmpl_local.first)
-          {
-            state.warn ( warning::shadow_template ( tmpl.name()
-                                                  , tmpl.path()
-                                                  , tmpl_local.second->path()
-                                                  )
-                       );
-          }
-        }
-
-        BOOST_FOREACH (const specialize_type& spec, specializes_above)
-        {
-          xml::util::unique<specialize_type,id::specialize>::push_return_type spec_local
-            (_specializes.push_and_get_old_value (spec));
-
-          if (!spec_local.first)
-          {
-            state.warn ( warning::shadow_specialize ( spec.name()
-                                                    , spec.path
-                                                    , spec_local.second->path
-                                                    )
-                       );
-          }
-        }
-
-        BOOST_FOREACH (transition_type& transition, transitions())
-        {
-          transition.distribute_function ( state
-                                         , functions()
-                                         , templates()
-                                         , specializes()
-                                         );
-        }
-      }
-
-      // ***************************************************************** //
-
       void net_type::resolve ( const state::type & state
-                             , const xml::parse::struct_t::forbidden_type & forbidden
+                             , const xml::parse::structure_type::forbidden_type & forbidden
                              )
       {
-        resolve (xml::parse::struct_t::set_type(), state, forbidden);
+        resolve (xml::parse::structure_type::set_type(), state, forbidden);
       }
 
-      void net_type::resolve ( const xml::parse::struct_t::set_type & global
+      void net_type::resolve ( const xml::parse::structure_type::set_type & global
                              , const state::type & state
-                             , const xml::parse::struct_t::forbidden_type & forbidden
+                             , const xml::parse::structure_type::forbidden_type & forbidden
                              )
       {
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         structs_resolved =
           st::join (global, st::make (structs), forbidden, state);
@@ -522,60 +428,62 @@ namespace xml
             );
         }
 
-        for ( functions_type::iterator fun (_functions.elements().begin())
-            ; fun != _functions.elements().end()
-            ; ++fun
-            )
+        BOOST_FOREACH ( const id::ref::function& id_function
+                      , functions().ids()
+                      )
         {
-          fun->resolve (structs_resolved, state, st::forbidden_type());
+          id_function.get_ref()
+            .resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        for ( transitions_type::iterator
-                trans (_transitions.elements().begin())
-            ; trans != _transitions.elements().end()
-            ; ++trans
-            )
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , transitions().ids()
+                      )
         {
-          trans->resolve (structs_resolved, state, st::forbidden_type());
+          id_transition.get_ref()
+            .resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        for ( places_type::iterator place (places().begin())
-            ; place != places().end()
-            ; ++place
-            )
+        BOOST_FOREACH(id::ref::place id_place, places().ids())
         {
-          place->sig = type_of_place (*place);
-          place->translate (path, state);
+          id_place.get_ref().sig = type_of_place (id_place);
+          id_place.get_ref().translate (path(), state);
         }
       }
 
       // ***************************************************************** //
 
-      void net_type::sanity_check (const state::type & state, const function_type& outerfun) const
+      void net_type::sanity_check (const state::type & state) const
       {
-        for ( transitions_type::const_iterator trans (transitions().begin())
-            ; trans != transitions().end()
-            ; ++trans
-            )
+        assert (has_parent());
+
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , transitions().ids()
+                      )
         {
-          trans->sanity_check (state);
+          id_transition.get().sanity_check (state);
         }
 
-        for ( functions_type::const_iterator fun (functions().begin())
-            ; fun != functions().end()
-            ; ++fun
-            )
+        BOOST_FOREACH ( const id::ref::function& id_function
+                      , functions().ids()
+                      )
         {
-          fun->sanity_check (state);
+          id_function.get().sanity_check (state);
         }
 
-        BOOST_FOREACH (const place_type& place, places())
+        const function_type& outer_function (*parent());
+
+        BOOST_FOREACH (const id::ref::place& id_place, places().ids())
         {
-          if (place.is_virtual() && !outerfun.is_known_tunnel (place.name()))
+          const place_type& place (id_place.get());
+
+          if ( place.is_virtual()
+            && !outer_function.is_known_tunnel (place.name())
+             )
           {
             state.warn
               ( warning::virtual_place_not_tunneled ( place.name()
-                                                    , outerfun.path
+                                                    , outer_function.path
                                                     )
               );
           }
@@ -586,20 +494,14 @@ namespace xml
 
       void net_type::type_check (const state::type & state) const
       {
-        for ( transitions_type::const_iterator trans (transitions().begin())
-            ; trans != transitions().end()
-            ; ++trans
-            )
+        BOOST_FOREACH (const transition_type& trans, transitions().values())
         {
-          trans->type_check (*this, state);
+          trans.type_check (state);
         }
 
-        for ( functions_type::const_iterator fun (functions().begin())
-            ; fun != functions().end()
-            ; ++fun
-            )
+        BOOST_FOREACH (const function_type& function, functions().values())
         {
-          fun->type_check (state);
+          function.type_check (state);
         }
       }
 
@@ -607,117 +509,108 @@ namespace xml
 
       void net_type::set_prefix (const std::string & prefix)
       {
-        for ( places_type::iterator place (places().begin())
-            ; place != places().end()
-            ; ++place
-            )
+        BOOST_FOREACH (place_type& place, places().values())
         {
-          place->name (prefix + place->name());
+          place.name (prefix + place.name());
         }
 
-        for ( transitions_type::iterator transition (transitions().begin())
-            ; transition != transitions().end()
-            ; ++transition
-            )
+        BOOST_FOREACH (transition_type& transition, transitions().values())
         {
-          transition->name (prefix + transition->name());
+          transition.name (prefix + transition.name());
 
-          for ( connections_type::iterator
-                  connection (transition->in().begin())
-              ; connection != transition->in().end()
-              ; ++connection
-              )
+          BOOST_FOREACH (connect_type& connection, transition.in().values())
+            {
+              connection.place (prefix + connection.place());
+            }
+
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.read().values()
+                        )
+            {
+              connection.place (prefix + connection.place());
+            }
+
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.out().values()
+                        )
+            {
+              connection.place (prefix + connection.place());
+            }
+
+          BOOST_FOREACH ( place_map_type& place_map
+                        , transition.place_map().values()
+                        )
+            {
+              place_map.place_real (prefix + place_map.place_real());
+            }
+        }
+      }
+
+      void net_type::remove_prefix (const std::string & prefix)
+      {
+        BOOST_FOREACH (place_type& place, places().values())
+        {
+          place.name (fhg::util::remove_prefix (prefix, place.name()));
+        }
+
+        BOOST_FOREACH (transition_type& transition, transitions().values())
+        {
+          transition.name
+            (fhg::util::remove_prefix (prefix, transition.name()));
+
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.in().values()
+                        )
           {
-            connection->place = prefix + connection->place;
+            connection.place
+              (fhg::util::remove_prefix (prefix, connection.place()));
           }
 
-          for ( connections_type::iterator
-                  connection (transition->read().begin())
-              ; connection != transition->read().end()
-              ; ++connection
-              )
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.read().values()
+                        )
           {
-            connection->place = prefix + connection->place;
+            connection.place
+              (fhg::util::remove_prefix (prefix, connection.place()));
           }
 
-          for ( connections_type::iterator
-                  connection (transition->out().begin())
-              ; connection != transition->out().end()
-              ; ++connection
-              )
+          BOOST_FOREACH ( connect_type& connection
+                        , transition.out().values()
+                        )
           {
-            connection->place = prefix + connection->place;
+            connection.place
+              (fhg::util::remove_prefix (prefix, connection.place()));
           }
 
-          for ( place_maps_type::iterator
-                  place_map (transition->place_map().begin())
-              ; place_map != transition->place_map().end()
-              ; ++place_map
-              )
+          BOOST_FOREACH ( place_map_type& place_map
+                        , transition.place_map().values()
+                        )
           {
-            place_map->place_real = prefix + place_map->place_real;
+            place_map.place_real
+              (fhg::util::remove_prefix (prefix, place_map.place_real()));
           }
         }
       }
 
-      //! \note Does not assert that the names begin with prefix, but
-      //! only trims them.
-      void net_type::remove_prefix (const std::string & prefix)
+      id::ref::net net_type::clone
+        (boost::optional<parent_id_type> parent) const
       {
-        const std::string::size_type prefix_length (prefix.size());
-
-        for ( places_type::iterator place (places().begin())
-            ; place != places().end()
-            ; ++place
-            )
-        {
-          place->name (place->name().substr (prefix_length));
-        }
-
-        for ( transitions_type::iterator transition (transitions().begin())
-            ; transition != transitions().end()
-            ; ++transition
-            )
-        {
-          transition->name (transition->name().substr (prefix_length));
-
-          for ( connections_type::iterator
-                  connection (transition->in().begin())
-              ; connection != transition->in().end()
-              ; ++connection
-              )
-          {
-            connection->place = connection->place.substr (prefix_length);
-          }
-
-          for ( connections_type::iterator
-                  connection (transition->read().begin())
-              ; connection != transition->read().end()
-              ; ++connection
-              )
-          {
-            connection->place = connection->place.substr (prefix_length);
-          }
-
-          for ( connections_type::iterator
-                  connection (transition->out().begin())
-              ; connection != transition->out().end()
-              ; ++connection
-              )
-          {
-            connection->place = connection->place.substr (prefix_length);
-          }
-
-          for ( place_maps_type::iterator
-                  place_map (transition->place_map().begin())
-              ; place_map != transition->place_map().end()
-              ; ++place_map
-              )
-          {
-            place_map->place_real =
-              place_map->place_real.substr (prefix_length);
-          }
-        }
+        const id::net new_id (id_mapper()->next_id());
+        return net_type
+          ( new_id
+          , id_mapper()
+          , parent
+          , _functions.clone (function_type::make_parent (new_id))
+          , _places.clone (new_id)
+          , _specializes.clone (new_id)
+          , _templates.clone (new_id)
+          , _transitions.clone (new_id)
+          , structs
+          , contains_a_module_call
+          , structs_resolved
+          , prop
+          , _path
+          ).make_reference_id();
       }
 
       // ******************************************************************* //
@@ -743,35 +636,36 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        for ( net_type::places_type::const_iterator place (net.places().begin())
-            ; place != net.places().end()
-            ; ++place
-            )
+        BOOST_FOREACH (const id::ref::place& place_id, net.places().ids())
             {
-              const signature::type type (net.type_of_place (*place));
+              const signature::type type (net.type_of_place (place_id));
+              const place_type& place (place_id.get());
 
-              if (!state.synthesize_virtual_places() && place->is_virtual())
+              if (!state.synthesize_virtual_places() && place.is_virtual())
                 {
                   // try to find a mapping
                   const place_map_map_type::const_iterator pid
-                    (place_map_map.find (place->name()));
+                    (place_map_map.find (place.name()));
 
                   if (pid == place_map_map.end())
                     {
                       throw error::no_map_for_virtual_place
-                        (place->name(), state.file_in_progress());
+                        (place.name(), state.file_in_progress());
                     }
 
-                  pid_of_place[place->name()] = pid->second;
+                  pid_of_place.insert (std::make_pair ( place.name()
+                                                      , pid->second
+                                                      )
+                                      );
 
                   const we_place_type place_real
                     (we_net.get_place (pid->second));
 
-                  if (not (place_real.signature() == place->sig))
+                  if (not (place_real.signature() == place.sig))
                     {
                       throw error::port_tunneled_type_error
-                        ( place->name()
-                        , place->sig
+                        ( place.name()
+                        , place.sig
                         , place_real.name()
                         , place_real.signature()
                         , state.file_in_progress()
@@ -780,57 +674,58 @@ namespace xml
                 }
               else
                 {
-                  we::type::property::type prop (place->prop);
+                  we::type::property::type prop (place.prop);
 
-                  if (place->is_virtual())
+                  if (place.is_virtual())
                     {
                       prop.set ("virtual", "true");
                     }
 
                   const pid_t pid
-                    ( we_net.add_place ( we_place_type ( place->name()
+                    ( we_net.add_place ( we_place_type ( place.name()
                                                        , type
                                                        , prop
                                                        )
                                        )
                     );
 
-                  pid_of_place[place->name()] = pid;
+                  pid_of_place.insert (std::make_pair (place.name(), pid));
                 }
             }
 
-          for ( net_type::transitions_type::const_iterator transition
-                  (net.transitions().begin())
-              ; transition != net.transitions().end()
-              ; ++transition
-              )
-            {
-              transition_synthesize
-                (*transition, state, net, we_net, pid_of_place, e);
-            }
+        BOOST_FOREACH ( const id::ref::transition& id_transition
+                      , net.transitions().ids()
+                      )
+          {
+            transition_synthesize
+              ( id_transition
+              , state
+              , net
+              , we_net
+              , pid_of_place
+              , e
+              );
+          }
 
-          for ( net_type::places_type::const_iterator place (net.places().begin())
-              ; place != net.places().end()
-              ; ++place
-              )
-            {
-              const pid_t pid (pid_of_place.at (place->name()));
+        BOOST_FOREACH (const place_type& place, net.places().values())
+          {
+            const pid_t pid (pid_of_place.at (place.name()));
 
-              for ( values_type::const_iterator val (place->values.begin())
-                  ; val != place->values.end()
-                  ; ++val
-                  )
+            for ( place_type::values_type::const_iterator val (place.values.begin())
+                ; val != place.values.end()
+                ; ++val
+                )
                 {
                   token::put (we_net, pid, *val);
                 }
 
               if (  (we_net.in_to_place (pid).size() == 0)
                  && (we_net.out_of_place (pid).size() == 0)
-                 && (!place->is_virtual())
+                 && (!place.is_virtual())
                  )
                 {
                   state.warn
-                    ( warning::independent_place ( place->name()
+                    ( warning::independent_place ( place.name()
                                                  , state.file_in_progress()
                                                  )
                     )
@@ -852,11 +747,11 @@ namespace xml
           ::we::type::property::dump::dump (s, net.prop);
 
           dumps (s, net.structs.begin(), net.structs.end());
-          dumps (s, net.templates().begin(), net.templates().end());
-          dumps (s, net.specializes().begin(), net.specializes().end());
-          dumps (s, net.functions().begin(), net.functions().end());
-          dumps (s, net.places().begin(), net.places().end());
-          dumps (s, net.transitions().begin(), net.transitions().end());
+          dumps (s, net.templates().values());
+          dumps (s, net.specializes().values());
+          dumps (s, net.functions().values());
+          dumps (s, net.places().values());
+          dumps (s, net.transitions().values());
 
           s.close ();
         }

@@ -184,42 +184,51 @@ namespace xml
         };
       }
 
-      place_type::place_type ( const std::string & name
-                             , const std::string & _type
-                             , const fhg::util::maybe<bool> is_virtual
-                             , const id::place& id
-                             , const id::net& parent
-                             , id::mapper* id_mapper
+      place_type::place_type ( ID_CONS_PARAM(place)
+                             , PARENT_CONS_PARAM(net)
                              )
-        : _is_virtual (is_virtual)
-        , _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      place_type::place_type ( ID_CONS_PARAM(place)
+                             , PARENT_CONS_PARAM(net)
+                             , const std::string & name
+                             , const std::string & _type
+                             , const boost::optional<bool> is_virtual
+                             )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _is_virtual (is_virtual)
         , _name (name)
         , type (_type)
       {
         _id_mapper->put (_id, *this);
       }
 
-      place_type::place_type ( const id::place& id
-                             , const id::net& parent
-                             , id::mapper* id_mapper
+      place_type::place_type ( ID_CONS_PARAM(place)
+                             , PARENT_CONS_PARAM(net)
+                             , const boost::optional<bool>& is_virtual
+                             , const std::string& name
+                             , const std::string& type
+                             , const std::list<token_type>& tokens
+                             , const values_type& values
+                             , const signature::type& sig
+                             , const we::type::property::type& prop
                              )
-        : _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _is_virtual (is_virtual)
+        , _name (name)
+        , type (type)
+        , tokens (tokens)
+        , values (values)
+        , sig (sig)
+        , prop (prop)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::place& place_type::id() const
-      {
-        return _id;
-      }
-
-      const id::net& place_type::parent() const
-      {
-        return _parent;
       }
 
       const std::string& place_type::name() const
@@ -231,11 +240,6 @@ namespace xml
         return _name = name;
       }
 
-      bool place_type::is_same (const place_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
-      }
-
       void place_type::push_token (const token_type & t)
       {
         tokens.push_back (t);
@@ -245,15 +249,12 @@ namespace xml
                                  , const state::type & state
                                  )
       {
-        for ( tokens_type::const_iterator tok (tokens.begin())
-            ; tok != tokens.end()
-            ; ++tok
-            )
+        BOOST_FOREACH (const token_type& token, tokens)
         {
           values.push_back
             (boost::apply_visitor ( construct_value (name(), path, "", state)
                                   , sig.desc()
-                                  , *tok
+                                  , token
                                   )
             );
         }
@@ -272,13 +273,35 @@ namespace xml
         }
       }
 
-      const fhg::util::maybe<bool>& place_type::get_is_virtual (void) const
+      const boost::optional<bool>& place_type::get_is_virtual (void) const
       {
         return _is_virtual;
       }
       bool place_type::is_virtual (void) const
       {
-        return _is_virtual.get_with_default (false);
+        return _is_virtual.get_value_or (false);
+      }
+
+      const place_type::unique_key_type& place_type::unique_key() const
+      {
+        return name();
+      }
+
+      id::ref::place place_type::clone
+        (const boost::optional<parent_id_type>& parent) const
+      {
+        return place_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , _is_virtual
+          , _name
+          , type
+          , tokens
+          , values
+          , sig
+          , prop
+          ).make_reference_id();
       }
 
       namespace dump
@@ -292,13 +315,10 @@ namespace xml
 
           ::we::type::property::dump::dump (s, p.prop);
 
-          for ( tokens_type::const_iterator tok (p.tokens.begin())
-              ; tok != p.tokens.end()
-              ; ++tok
-              )
+          BOOST_FOREACH (const place_type::token_type& token, p.tokens)
             {
               boost::apply_visitor ( signature::visitor::dump_token ("", s)
-                                   , *tok
+                                   , token
                                    );
             }
 

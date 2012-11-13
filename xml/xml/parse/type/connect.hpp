@@ -3,8 +3,11 @@
 #ifndef _XML_PARSE_TYPE_CONNECT_HPP
 #define _XML_PARSE_TYPE_CONNECT_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/connect.fwd.hpp>
+
+#include <xml/parse/id/generic.hpp>
+
+#include <xml/parse/type/transition.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -20,35 +23,44 @@ namespace xml
     {
       struct connect_type
       {
+        ID_SIGNATURES(connect);
+        PARENT_SIGNATURES(transition);
+
       public:
-        connect_type ( const std::string & _place
-                     , const std::string & _port
-                     , const id::connect& id
-                     , const id::transition& parent
-                     , id::mapper* id_mapper
+        typedef std::pair<std::string, std::string> unique_key_type;
+
+        connect_type ( ID_CONS_PARAM(connect)
+                     , PARENT_CONS_PARAM(transition)
+                     , const std::string& place
+                     , const std::string& port
+                     , const we::type::property::type& properties
+                     = we::type::property::type()
                      );
 
-        const id::connect& id() const;
-        const id::transition& parent() const;
-
-        bool is_same (const connect_type& other) const;
-
-        //! \todo Should be private with accessors.
-      public:
-        //! \todo Should be a id::place and id::port.
-        std::string place;
-        std::string port;
-
-        std::string _name;
-
-        we::type::property::type prop;
-
-        const std::string& name() const;
+        const std::string& place() const;
+        const std::string& port() const;
 
       private:
-        id::connect _id;
-        id::transition _parent;
-        id::mapper* _id_mapper;
+        friend struct net_type;
+        const std::string& place (const std::string&);
+
+      public:
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
+        unique_key_type unique_key() const;
+
+        id::ref::connect clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
+
+      private:
+        //! \todo Should be a id::place and id::port.
+        //! \note In principle yes but we do have connections to
+        //! not yet parsed places
+        std::string _place;
+        std::string _port;
+
+        we::type::property::type _properties;
       };
 
       namespace dump

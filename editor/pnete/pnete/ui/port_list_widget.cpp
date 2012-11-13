@@ -8,6 +8,8 @@
 
 #include <pnete/ui/ComboItemDelegate.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -15,7 +17,7 @@ namespace fhg
     namespace ui
     {
       port_list_widget::port_list_widget
-        ( ::xml::parse::type::ports_type& ports
+        ( ::xml::parse::type::function_type::ports_type& ports
         , const QStringList& types
         , QWidget* parent
         )
@@ -33,19 +35,17 @@ namespace fhg
 
         verticalHeader()->hide();
 
-        typedef ::xml::parse::type::ports_type::iterator iterator;
-
         int row (0);
 
-        for ( iterator port (_ports.begin()), end (_ports.end())
-            ; port != end
-            ; ++port, ++row
-            )
+        BOOST_FOREACH ( const ::xml::parse::type::port_type& port
+                      , _ports.values()
+                      )
         {
           model->setItem
-            (row, 0, new QStandardItem (QString::fromStdString(port->name())));
+            (row, 0, new QStandardItem (QString::fromStdString(port.name())));
           model->setItem
-            (row, 1, new QStandardItem (QString::fromStdString(port->type)));
+            (row, 1, new QStandardItem (QString::fromStdString(port.type)));
+          ++row;
         }
 
         resizeRowsToContents();

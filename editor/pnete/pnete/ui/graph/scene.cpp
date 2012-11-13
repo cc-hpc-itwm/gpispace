@@ -491,6 +491,12 @@ namespace fhg
           return NULL;
         }
 
+        template<typename handle_type>
+          bool scene_type::is_in_my_net (const handle_type& handle)
+        {
+          return handle.get().parent()->id() == net().id();
+        }
+
         const data::handle::net& scene_type::net() const
         {
           return _net;
@@ -541,7 +547,7 @@ namespace fhg
         void scene_type::transition_added
           (const QObject* origin, const data::handle::transition& transition)
         {
-          if (transition.net() == net())
+          if (is_in_my_net (transition))
           {
             transition_item* item (new transition_item (transition));
 
@@ -552,11 +558,11 @@ namespace fhg
             weaver::transition wt ( _internal
                                   , this
                                   , item
-                                  , transition.net()()
+                                  , transition.parent().get_ref()
                                   , place_by_name
                                   );
 
-            FROM(transition) (&wt, transition());
+            FROM(transition) (&wt, transition.get());
 
             item->repositionChildrenAndResize();
 
@@ -570,7 +576,7 @@ namespace fhg
         void scene_type::transition_deleted
           (const QObject* origin, const data::handle::transition& transition)
         {
-          if (origin != this && transition.net() == net())
+          if (origin != this && is_in_my_net (transition))
           {
             transition_item* item
               (item_with_handle<transition_item> (transition));
@@ -583,7 +589,7 @@ namespace fhg
         void scene_type::place_added
           (const QObject* origin, const data::handle::place& place)
         {
-          if (place.net() == net())
+          if (is_in_my_net (place))
           {
             place_item* item (new place_item (place));
 
@@ -593,7 +599,7 @@ namespace fhg
 
             weaver::place wp (item, place_by_name);
 
-            FROM(place) (&wp, place());
+            FROM(place) (&wp, place.get());
 
             if (origin == this)
             {
@@ -605,7 +611,7 @@ namespace fhg
         void scene_type::place_deleted
           (const QObject* origin, const data::handle::place& place)
         {
-          if (origin != this && place.net() == net())
+          if (origin != this && is_in_my_net (place))
           {
             place_item* item (item_with_handle<place_item> (place));
             removeItem (item);

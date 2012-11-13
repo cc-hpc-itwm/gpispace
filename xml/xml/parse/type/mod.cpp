@@ -17,39 +17,28 @@ namespace xml
   {
     namespace type
     {
-      typedef std::list<std::string> port_args_type;
-      typedef std::list<std::string> cincludes_type;
-      typedef std::list<std::string> flags_type;
-      typedef std::list<std::string> links_type;
-
-      mod_type::mod_type ( const id::module& id
-                         , const id::function& parent
-                         , id::mapper* id_mapper
-                         )
-        : _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+      module_type::module_type ( ID_CONS_PARAM(module)
+                               , PARENT_CONS_PARAM(function)
+                               )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
       {
         _id_mapper->put (_id, *this);
       }
 
-      mod_type::mod_type ( const id::module& id
-                         , const id::function& parent
-                         , id::mapper* id_mapper
-                         , const std::string & _name
-                         , const std::string & _function
-                         , const boost::filesystem::path & path
-                         )
-        : name (_name)
+      module_type::module_type ( ID_CONS_PARAM(module)
+                               , PARENT_CONS_PARAM(function)
+                               , const std::string & _name
+                               , const std::string & _function
+                               , const boost::filesystem::path & path
+                               )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , name (_name)
         , function ()
         , port_return ()
         , port_arg ()
-        , _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
       {
-        _id_mapper->put (_id, *this);
-
         // implement the grammar
         // S -> R F A
         // F -> valid_name
@@ -137,23 +126,41 @@ namespace xml
                                                   );
           }
         }
+
+        _id_mapper->put (_id, *this);
       }
 
-      const id::module& mod_type::id() const
+      module_type::module_type ( ID_CONS_PARAM(module)
+                               , PARENT_CONS_PARAM(function)
+                               , const std::string& name
+                               , const std::string& function
+                               , const boost::optional<std::string>& port_return
+                               , const port_args_type& port_arg
+                               , const boost::optional<std::string>& code
+                               , const cincludes_type& cincludes
+                               , const flags_type& ldflags
+                               , const flags_type& cxxflags
+                               , const links_type& links
+                               , const boost::filesystem::path& path
+                               )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , name (name)
+        , function (function)
+        , port_return (port_return)
+        , port_arg (port_arg)
+        , code (code)
+        , cincludes (cincludes)
+        , ldflags (ldflags)
+        , cxxflags (cxxflags)
+        , links (links)
+        , path (path)
       {
-        return _id;
-      }
-      const id::function& mod_type::parent() const
-      {
-        return _parent;
+        _id_mapper->put (_id, *this);
       }
 
-      bool mod_type::is_same (const mod_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
-      }
 
-      bool mod_type::operator == (const mod_type& other) const
+      bool module_type::operator == (const module_type& other) const
       {
         return port_return == other.port_return
           && port_arg == other.port_arg
@@ -165,18 +172,21 @@ namespace xml
           ;
       }
 
-      void mod_type::sanity_check (const function_type & fun) const
+      void module_type::sanity_check() const
       {
+        assert (has_parent());
+
+        const function_type& outer_function (*parent());
         if (port_return)
         {
-          if (!fun.is_known_port (*port_return))
+          if (!outer_function.is_known_port (*port_return))
           {
             throw error::function_description_with_unknown_port
               ( "return"
               , *port_return
               , name
               , function
-              , fun.path
+              , outer_function.path
               );
           }
         }
@@ -186,20 +196,40 @@ namespace xml
             ; ++port
             )
         {
-          if (!fun.is_known_port (*port))
+          if (!outer_function.is_known_port (*port))
           {
             throw error::function_description_with_unknown_port
               ( "argument"
               , *port
               , name
               , function
-              , fun.path
+              , outer_function.path
               );
           }
         }
       }
 
-      std::size_t hash_value (const mod_type& m)
+      id::ref::module module_type::clone
+        (const boost::optional<parent_id_type>& parent) const
+      {
+        return module_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , name
+          , function
+          , port_return
+          , port_arg
+          , code
+          , cincludes
+          , ldflags
+          , cxxflags
+          , links
+          , path
+          ).make_reference_id();
+      }
+
+      std::size_t hash_value (const module_type& m)
       {
         boost::hash<std::string> hasher;
         return hasher (m.name);
@@ -207,7 +237,7 @@ namespace xml
 
       namespace dump
       {
-        std::string dump_fun (const mod_type & m)
+        std::string dump_fun (const module_type & m)
         {
           std::ostringstream s;
 
@@ -222,7 +252,7 @@ namespace xml
 
           bool first (true);
 
-          for ( port_args_type::const_iterator arg (m.port_arg.begin())
+          for ( module_type::port_args_type::const_iterator arg (m.port_arg.begin())
               ; arg != m.port_arg.end()
               ; ++arg, first = false
               )
@@ -240,13 +270,13 @@ namespace xml
           return s.str();
         }
 
-        void dump (::fhg::util::xml::xmlstream & s, const mod_type & m)
+        void dump (::fhg::util::xml::xmlstream & s, const module_type & m)
         {
           s.open ("module");
           s.attr ("name", m.name);
           s.attr ("function", dump_fun (m));
 
-          for ( cincludes_type::const_iterator inc (m.cincludes.begin())
+          for ( module_type::cincludes_type::const_iterator inc (m.cincludes.begin())
               ; inc != m.cincludes.end()
               ; ++inc
               )
@@ -256,21 +286,21 @@ namespace xml
               s.close ();
             }
 
-          BOOST_FOREACH (flags_type::value_type const& flag, m.ldflags)
+          BOOST_FOREACH (module_type::flags_type::value_type const& flag, m.ldflags)
             {
               s.open ("ld");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (flags_type::value_type const& flag, m.cxxflags)
+          BOOST_FOREACH (module_type::flags_type::value_type const& flag, m.cxxflags)
             {
               s.open ("cxx");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (links_type::value_type const& link, m.links)
+          BOOST_FOREACH (module_type::links_type::value_type const& link, m.links)
             {
               s.open ("link");
               s.attr ("href", link);

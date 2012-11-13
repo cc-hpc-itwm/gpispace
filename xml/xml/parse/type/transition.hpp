@@ -3,12 +3,16 @@
 #ifndef _XML_PARSE_TYPE_TRANSITION_HPP
 #define _XML_PARSE_TYPE_TRANSITION_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/use.hpp>
+#include <xml/parse/type/net.fwd.hpp>
+
+#include <xml/parse/id/generic.hpp>
+#include <xml/parse/id/types.hpp>
+
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -16,45 +20,49 @@ namespace xml
   {
     namespace type
     {
-      typedef xml::util::unique<connect_type,id::connect>::elements_type connections_type;
-
       struct transition_type
       {
-      private:
-        xml::util::unique<connect_type,id::connect> _in;
-        xml::util::unique<connect_type,id::connect> _out;
-        xml::util::unique<connect_type,id::connect> _read;
-        xml::util::unique<place_map_type,id::place_map> _place_map;
-
-        id::transition _id;
-        id::net _parent;
-        id::mapper* _id_mapper;
+        ID_SIGNATURES(transition);
+        PARENT_SIGNATURES(net);
 
       public:
-        typedef boost::variant <function_type, use_type>
-                function_or_use_type;
+        typedef std::string unique_key_type;
 
-        transition_type ( const id::transition& id
-                        , const id::net& parent
-                        , id::mapper* id_mapper
+        typedef xml::util::unique<connect_type,id::ref::connect>
+          connections_type;
+        typedef xml::util::unique<place_map_type,id::ref::place_map>
+          place_maps_type;
+
+        typedef boost::variant <id::ref::function, id::ref::use>
+          function_or_use_type;
+
+        transition_type ( ID_CONS_PARAM(transition)
+                        , PARENT_CONS_PARAM(net)
                         );
-        transition_type ( const function_or_use_type& function_or_use
-                        , const id::transition& id
-                        , const id::net& parent
-                        , id::mapper* id_mapper
+
+        transition_type ( ID_CONS_PARAM(transition)
+                        , PARENT_CONS_PARAM(net)
+                        , const function_or_use_type&
                         );
 
-        const id::transition& id() const;
-        const id::net& parent() const;
+        transition_type ( ID_CONS_PARAM(transition)
+                        , PARENT_CONS_PARAM(net)
+                        , const boost::optional<function_or_use_type>&
+                        , const std::string& name
+                        , const connections_type& in
+                        , const connections_type& out
+                        , const connections_type& read
+                        , const place_maps_type& place_map
+                        , const structs_type& structs
+                        , const conditions_type& cond
+                        , const requirements_type& requirements
+                        , const boost::optional<petri_net::prio_t>& priority
+                        , const boost::optional<bool>& finline
+                        , const boost::optional<bool>& internal
+                        , const we::type::property::type& prop
+                        , const boost::filesystem::path& path
+                        );
 
-        bool is_same (const transition_type& other) const;
-
-      private:
-        boost::optional<function_or_use_type> _function_or_use;
-
-        std::string _name;
-
-      public:
         const function_or_use_type& function_or_use() const;
         function_or_use_type& function_or_use();
         const function_or_use_type& function_or_use
@@ -63,41 +71,24 @@ namespace xml
         const std::string& name() const;
         const std::string& name(const std::string& name);
 
-        boost::filesystem::path path;
+        // ***************************************************************** //
 
-        we::type::property::type prop;
-
-        structs_type structs;
-
-        conditions_type cond;
-
-        requirements_type requirements;
-
-        fhg::util::maybe<petri_net::prio_t> priority;
-
-        fhg::util::maybe<bool> finline;
-
-        fhg::util::maybe<bool> internal;
+        boost::optional<const id::ref::function&>
+        get_function (const std::string&) const;
 
         // ***************************************************************** //
 
-        const connections_type & in (void) const;
-        const connections_type & out (void) const;
-        const connections_type & read (void) const;
-        const place_maps_type & place_map (void) const;
-
-        connections_type & in (void);
-        connections_type & out (void);
-        connections_type & read (void);
-        place_maps_type & place_map (void);
+        const connections_type& in() const;
+        const connections_type& out() const;
+        const connections_type& read() const;
+        const place_maps_type& place_map() const;
 
         // ***************************************************************** //
 
-        void push_in (const connect_type & connect);
-        void push_out (const connect_type & connect);
-        void push_inout (const connect_type& connect);
-        void push_read (const connect_type & connect);
-        void push_place_map (const place_map_type & place_map);
+        void push_in (const id::ref::connect&);
+        void push_out (const id::ref::connect&);
+        void push_read (const id::ref::connect&);
+        void push_place_map (const id::ref::place_map&);
 
         // ***************************************************************** //
 
@@ -107,19 +98,19 @@ namespace xml
         // ***************************************************************** //
 
         void resolve ( const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
-        void resolve ( const xml::parse::struct_t::set_type & global
+        void resolve ( const xml::parse::structure_type::set_type & global
                      , const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
 
         // ***************************************************************** //
 
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
-                        , const xml::parse::struct_t::set_type & known_structs
-                        , const state::type & state
+                        , const xml::parse::structure_type::set_type & known_structs
+                        , state::type & state
                         );
 
         // ***************************************************************** //
@@ -128,32 +119,47 @@ namespace xml
 
         // ***************************************************************** //
 
-        void distribute_function ( const state::type& state
-                                 , const functions_type& functions
-                                 , const templates_type& templates
-                                 , const specializes_type& specializes
-                                 );
-
-        // ***************************************************************** //
-
         void type_check ( const std::string & direction
                         , const connect_type & connect
-                        , const net_type & net
                         , const state::type & state
                         ) const;
 
-        void type_check (const net_type & net, const state::type & state) const;
+        void type_check (const state::type & state) const;
+
+        const unique_key_type& unique_key() const;
+
+        id::ref::transition clone
+          (boost::optional<parent_id_type> parent = boost::none) const;
+
+      private:
+        boost::optional<function_or_use_type> _function_or_use;
+
+        std::string _name;
+
+        connections_type _in;
+        connections_type _out;
+        connections_type _read;
+        place_maps_type _place_map;
+
+        //! \todo All below should be private with accessors.
+      public:
+        structs_type structs;
+        conditions_type cond;
+        requirements_type requirements;
+
+        boost::optional<petri_net::prio_t> priority;
+        boost::optional<bool> finline;
+        boost::optional<bool> internal;
+
+        we::type::property::type prop;
+
+        boost::filesystem::path path;
       };
 
       // ******************************************************************* //
 
-      using petri_net::connection_t;
-      using petri_net::edge::PT;
-      using petri_net::edge::PT_READ;
-      using petri_net::edge::TP;
-
       void transition_synthesize
-        ( const transition_type & trans
+        ( const id::ref::transition & id_transition
         , const state::type & state
         , const net_type & net
         , we::activity_t::transition_type::net_type & we_net

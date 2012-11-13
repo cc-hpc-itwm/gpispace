@@ -2,6 +2,8 @@
 
 #include <xml/parse/parser.hpp>
 
+#include <xml/parse/type/function.hpp>
+
 #include <iostream>
 
 #include <boost/program_options.hpp>
@@ -253,7 +255,8 @@ main (int argc, char ** argv)
 
   try
   {
-    xml::parse::type::function_type f (xml::parse::just_parse (state, input));
+    const xml::parse::id::ref::function function
+      (xml::parse::just_parse (state, input));
 
     if (state.dump_xml_file().size() > 0)
       {
@@ -267,22 +270,22 @@ main (int argc, char ** argv)
 
         fhg::util::xml::xmlstream s (stream);
 
-        xml::parse::type::dump::dump (s, f, state);
+        xml::parse::type::dump::dump (s, function.get(), state);
       }
 
     // set all the collected requirements to the top level function
-    f.requirements = state.requirements();
+    function.get_ref().requirements = state.requirements();
 
-    f.specialize (state);
-    f.resolve (state, f.forbidden_below());
-    f.type_check (state);
-    f.sanity_check (state);
+    function.get_ref().specialize (state);
+    function.get_ref().resolve (state, function.get().forbidden_below());
+    function.get_ref().type_check (state);
+    function.get_ref().sanity_check (state);
 
     if (state.path_to_cpp().size() > 0)
       {
         xml::parse::type::fun_info_map m;
 
-        xml::parse::type::find_module_calls (state, f, m);
+        xml::parse::type::find_module_calls (state, function, m);
 
         xml::parse::type::mk_wrapper (state, m);
         xml::parse::type::mk_makefile (state, m);
@@ -292,7 +295,7 @@ main (int argc, char ** argv)
         xml::parse::includes::mks (descrs);
         xml::parse::includes::we_header_gen (state, descrs);
 
-        xml::parse::type::struct_to_cpp (state, f);
+        xml::parse::type::struct_to_cpp (state, function);
       }
 
     if (state.dump_dependenciesD())
@@ -331,7 +334,7 @@ main (int argc, char ** argv)
           }
       }
 
-    we::transition_t trans (f.synthesize (state));
+    we::transition_t trans (function.get_ref().synthesize (state));
 
     we::type::optimize::optimize (trans, state.options_optimize());
 

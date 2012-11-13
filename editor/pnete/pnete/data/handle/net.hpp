@@ -3,8 +3,12 @@
 #ifndef _FHG_PNETE_DATA_HANDLE_NET_HPP
 #define _FHG_PNETE_DATA_HANDLE_NET_HPP 1
 
-#include <xml/parse/type/net.fwd.hpp>
+#include <pnete/data/handle/net.fwd.hpp>
+
+#include <pnete/data/change_manager.fwd.hpp>
+
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/type/net.fwd.hpp>
 
 namespace fhg
 {
@@ -16,22 +20,23 @@ namespace fhg
       {
         class net
         {
-        private:
-          typedef ::xml::parse::type::net_type net_type;
-
         public:
-          net (const net_type& net);
+          net ( const ::xml::parse::id::ref::net& id
+              , change_manager_t& change_manager
+              );
 
-          net_type& operator()() const;
+          const ::xml::parse::type::net_type& get() const;
+          ::xml::parse::type::net_type& get_ref() const;
 
           bool operator== (const net& other) const;
 
-          const ::xml::parse::id::net& id() const;
+          const ::xml::parse::id::ref::net& id() const;
 
         private:
-          ::xml::parse::id::net _net_id;
-          //! \todo Remove the reference.
-          net_type& _net;
+          change_manager_t& change_manager() const;
+
+          ::xml::parse::id::ref::net _id;
+          change_manager_t& _change_manager;
         };
       }
     }

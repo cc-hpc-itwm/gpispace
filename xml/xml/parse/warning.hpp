@@ -16,6 +16,7 @@
 #include <fhg/util/join.hpp>
 
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
 
 #include <we/type/value/show.hpp>
 
@@ -128,8 +129,8 @@ namespace xml
       class struct_shadowed : public generic
       {
       private:
-        std::string nice ( const type::struct_t & early
-                         , const type::struct_t & late
+        std::string nice ( const type::structure_type & early
+                         , const type::structure_type & late
                          ) const
         {
           std::ostringstream s;
@@ -143,8 +144,8 @@ namespace xml
         }
 
       public:
-        struct_shadowed ( const type::struct_t & early
-                        , const type::struct_t & late
+        struct_shadowed ( const type::structure_type & early
+                        , const type::structure_type & late
                         )
           : generic (nice (early, late))
         {}
@@ -155,7 +156,7 @@ namespace xml
       class shadow_function : public generic
       {
       private:
-        std::string nice ( const ::fhg::util::maybe<std::string>& name
+        std::string nice ( const boost::optional<std::string>& name
                          , const boost::filesystem::path& path_early
                          , const boost::filesystem::path& path_late
                          ) const
@@ -171,7 +172,7 @@ namespace xml
         }
 
       public:
-        shadow_function ( const ::fhg::util::maybe<std::string>& name
+        shadow_function ( const boost::optional<std::string>& name
                         , const boost::filesystem::path& path_early
                         , const boost::filesystem::path& path_late
                         )
@@ -184,7 +185,7 @@ namespace xml
       class shadow_template : public generic
       {
       private:
-        std::string nice ( const ::fhg::util::maybe<std::string>& name
+        std::string nice ( const boost::optional<std::string>& name
                          , const boost::filesystem::path& path_early
                          , const boost::filesystem::path& path_late
                          ) const
@@ -200,7 +201,7 @@ namespace xml
         }
 
       public:
-        shadow_template ( const ::fhg::util::maybe<std::string>& name
+        shadow_template ( const boost::optional<std::string>& name
                         , const boost::filesystem::path& path_early
                         , const boost::filesystem::path& path_late
                         )
@@ -213,7 +214,7 @@ namespace xml
       class shadow_specialize : public generic
       {
       private:
-        std::string nice ( const ::fhg::util::maybe<std::string>& name
+        std::string nice ( const boost::optional<std::string>& name
                          , const boost::filesystem::path& path_early
                          , const boost::filesystem::path& path_late
                          ) const
@@ -229,7 +230,7 @@ namespace xml
         }
 
       public:
-        shadow_specialize ( const ::fhg::util::maybe<std::string>& name
+        shadow_specialize ( const boost::optional<std::string>& name
                           , const boost::filesystem::path& path_early
                           , const boost::filesystem::path& path_late
                           )
@@ -737,7 +738,7 @@ namespace xml
       class duplicate_template_parameter : public generic
       {
       public:
-        duplicate_template_parameter ( const fhg::util::maybe<std::string> name
+        duplicate_template_parameter ( const boost::optional<std::string> name
                                      , const std::string& tn
                                      , const boost::filesystem::path& file
                                      )

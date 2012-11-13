@@ -10,8 +10,6 @@
 #include <xml/parse/type/require.hpp>
 #include <xml/parse/warning.hpp>
 
-#include <fhg/util/counter.hpp>
-
 #include <we/type/bits/transition/optimize.hpp>
 #include <we/type/property.hpp>
 
@@ -169,7 +167,6 @@ namespace xml
 
         std::string _Opath_to_cpp;
 
-        ::fhg::util::counter<id::base_id_type> _id_counter;
         id::mapper _id_mapper;
 
         template<typename W>
@@ -377,7 +374,6 @@ namespace xml
 
         void add_options (boost::program_options::options_description & desc);
 
-        id::base_id_type next_id();
         const id::mapper* id_mapper() const;
         id::mapper* id_mapper();
       };

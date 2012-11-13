@@ -3,8 +3,7 @@
 #ifndef _XML_PARSE_TYPE_FUNCTION_HPP
 #define _XML_PARSE_TYPE_FUNCTION_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/port.hpp>
@@ -17,76 +16,73 @@
 
 #include <we/we.hpp>
 
+#include <boost/optional.hpp>
+
 namespace xml
 {
   namespace parse
   {
     namespace type
     {
-      typedef xml::util::unique<port_type,id::port>::elements_type ports_type;
       typedef std::list<std::string> conditions_type;
-      typedef xml::util::unique<function_type,id::function>::elements_type functions_type;
-      typedef xml::util::unique<template_type,id::tmpl>::elements_type templates_type;
-      typedef xml::util::unique<specialize_type,id::specialize>::elements_type specializes_type;
 
       struct function_type
       {
+        ID_SIGNATURES(function);
+
       private:
-        typedef xml::util::unique<port_type,id::port> unique_port_type;
-
-        unique_port_type _in;
-        unique_port_type _out;
-        unique_port_type _tunnel;
-
-        // ***************************************************************** //
-
-        void push ( const port_type & p
-                  , unique_port_type & ports
-                  , const unique_port_type & others
-                  , const std::string descr
-                  );
-
-        // ***************************************************************** //
-
         typedef boost::unordered_set<std::string> typenames_type;
 
-        typenames_type _typenames;
-
-        id::function _id;
-
       public:
+        typedef std::string unique_key_type;
+
+        typedef xml::util::unique<port_type,id::ref::port> ports_type;
+
+        //! \todo net is only in this list as specialize not yet
+        //! reparents the function to the transition requesting it, as
+        //! specialization is not yet lazy. See net_type::specialize()
         typedef boost::variant< id::transition
                               , id::tmpl
-                              , boost::blank
-                              > id_parent;
-      public:
-        id_parent _parent;
-        id::mapper* _id_mapper;
+                              , id::net
+                              > parent_id_type;
 
-        fhg::util::maybe<std::string> _name;
-
-      public:
-        typedef boost::variant < expression_type
-                               , mod_type
-                               , boost::recursive_wrapper<net_type>
+        typedef boost::variant < id::ref::expression
+                               , id::ref::module
+                               , id::ref::net
                                > type;
 
-        bool contains_a_module_call;
-        structs_type structs;
+        // ***************************************************************** //
 
-        fhg::util::maybe<bool> internal;
+        template<typename T>
+          static boost::optional<parent_id_type> make_parent (const T& id)
+        {
+          return boost::make_optional (parent_id_type (id));
+        }
 
-        conditions_type cond;
+        // ***************************************************************** //
 
-        requirements_type requirements;
+        function_type ( ID_CONS_PARAM(function)
+                      , const boost::optional<parent_id_type>& parent
+                      , const type& _f
+                      );
 
-        we::type::property::type prop;
-
-        type f;
-
-        boost::filesystem::path path;
-
-        xml::parse::struct_t::set_type structs_resolved;
+        function_type ( ID_CONS_PARAM(function)
+                      , const boost::optional<parent_id_type>& parent
+                      , const boost::optional<std::string>& name
+                      , const ports_type& in
+                      , const ports_type& out
+                      , const ports_type& tunnel
+                      , const typenames_type& typenames
+                      , const bool& contains_a_module_call
+                      , const boost::optional<bool>& internal
+                      , const structs_type& structs
+                      , const conditions_type& cond
+                      , const requirements_type& requirements
+                      , const type& f
+                      , const xml::parse::structure_type::set_type& resolved
+                      , const we::type::property::type& prop
+                      , const boost::filesystem::path& path
+                      );
 
         // ***************************************************************** //
 
@@ -94,25 +90,25 @@ namespace xml
 
         // ***************************************************************** //
 
-        const fhg::util::maybe<std::string> name() const;
+        const boost::optional<std::string>& name() const;
         const std::string& name (const std::string& name);
-        const fhg::util::maybe<std::string>&
-        name (const fhg::util::maybe<std::string>& name);
+        const boost::optional<std::string>&
+        name (const boost::optional<std::string>& name);
 
-        function_type ( const type& _f
-                      , const id::function& id
-                      , const id_parent& parent
-                      , id::mapper* id_mapper
-                      );
+        const boost::optional<parent_id_type>& parent() const;
 
-        const id::function& id() const;
-        const id_parent& parent() const;
+        bool has_parent() const;
+        void unparent();
+        void parent (const parent_id_type& parent);
 
-        bool is_same (const function_type& other) const;
+        boost::optional<const id::ref::function&>
+        get_function (const std::string& name) const;
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-        function_type & operator= (function_type const &rhs);
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+        // ***************************************************************** //
+
+        const ports_type& in() const;
+        const ports_type& out() const;
+        const ports_type& tunnel() const;
 
         // ***************************************************************** //
 
@@ -121,16 +117,12 @@ namespace xml
 
         // ***************************************************************** //
 
-        void add_expression (const expression_type & e);
+        void add_expression (const expressions_type & e);
 
         // ***************************************************************** //
 
-        const ports_type& in (void) const;
-        const ports_type& out (void) const;
-        const ports_type& tunnel (void) const;
-
-        boost::optional<port_type> get_port_in (const std::string & name) const;
-        boost::optional<port_type> get_port_out (const std::string & name) const;
+        boost::optional<const id::ref::port&> get_port_in (const std::string & name) const;
+        boost::optional<const id::ref::port&> get_port_out (const std::string & name) const;
 
         bool is_known_port_in (const std::string & name) const;
         bool is_known_port_out (const std::string & name) const;
@@ -144,33 +136,32 @@ namespace xml
 
         // ***************************************************************** //
 
-        void push_in (const port_type & p);
-        void push_out (const port_type & p);
-        void push_inout (const port_type & p);
-        void push_tunnel (const port_type& p);
+      private:
+        void push ( const id::ref::port & p
+                  , ports_type & ports
+                  , const ports_type & others
+                  , const std::string& descr
+                  );
+
+      public:
+        void push_in (const id::ref::port&);
+        void push_out (const id::ref::port&);
+        void push_inout (const id::ref::port&);
+        void push_tunnel (const id::ref::port&);
 
         // ***************************************************************** //
 
-        xml::parse::struct_t::forbidden_type forbidden_below (void) const;
-
-        // ***************************************************************** //
-
-        void distribute_function (const state::type& state);
-        void distribute_function ( const state::type& state
-                                 , const functions_type& functions
-                                 , const templates_type& templates
-                                 , const specializes_type& specializes
-                                 );
+        xml::parse::structure_type::forbidden_type forbidden_below (void) const;
 
         // ***************************************************************** //
 
         void resolve ( const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
         void resolve
-          ( const xml::parse::struct_t::set_type & global
+          ( const xml::parse::structure_type::set_type & global
           , const state::type & state
-          , const xml::parse::struct_t::forbidden_type & forbidden
+          , const xml::parse::structure_type::forbidden_type & forbidden
           );
 
         // ***************************************************************** //
@@ -194,13 +185,64 @@ namespace xml
 
         // ***************************************************************** //
 
-        void specialize (const state::type & state);
+        void specialize (state::type & state);
 
         void specialize ( const type_map_type & map
                         , const type_get_type & get
-                        , const xml::parse::struct_t::set_type & known_structs
-                        , const state::type & state
+                        , const xml::parse::structure_type::set_type & known_structs
+                        , state::type & state
                         );
+
+        const unique_key_type& unique_key() const;
+
+        id::ref::function clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
+
+      private:
+        boost::optional<parent_id_type> _parent;
+
+        boost::optional<std::string> _name;
+
+        ports_type _in;
+        ports_type _out;
+        ports_type _tunnel;
+
+        typenames_type _typenames;
+
+      public:
+        bool contains_a_module_call;
+
+        boost::optional<bool> internal;
+
+        structs_type structs;
+        conditions_type cond;
+        requirements_type requirements;
+
+        type f;
+
+        xml::parse::structure_type::set_type structs_resolved;
+
+        we::type::property::type prop;
+
+        boost::filesystem::path path;
+      };
+
+      // ***************************************************************** //
+
+      class function_with_mapping_type
+      {
+      private:
+        id::ref::function _function;
+        boost::optional<type_map_type&> _type_map;
+
+      public:
+        explicit function_with_mapping_type
+          ( const id::ref::function& function
+          , boost::optional<type_map_type&> type_map = boost::none
+          );
+
+        const id::ref::function& function() const;
+        boost::optional<type_map_type&> type_map();
       };
 
       // ***************************************************************** //
@@ -209,16 +251,16 @@ namespace xml
       {
         std::string name;
         std::string code;
-        flags_type ldflags;
-        flags_type cxxflags;
-        links_type links;
+        module_type::flags_type ldflags;
+        module_type::flags_type cxxflags;
+        module_type::links_type links;
         boost::filesystem::path path;
 
         fun_info_type ( const std::string & _name
                       , const std::string & _code
-                      , const flags_type & _ldflags
-                      , const flags_type & _cxxflags
-                      , const links_type & _links
+                      , const module_type::flags_type & _ldflags
+                      , const module_type::flags_type & _cxxflags
+                      , const module_type::links_type & _links
                       , const boost::filesystem::path & _path
                       );
 
@@ -243,48 +285,14 @@ namespace xml
                        , const fun_info_map & m
                        );
 
-      bool find_module_calls ( const state::type &
-                             , function_type &
-                             , fun_info_map &
-                             , mcs_type &
-                             );
-
       bool find_module_calls ( const state::type & state
-                             , net_type & n
+                             , const id::ref::function&
                              , fun_info_map & m
-                             , mcs_type& mcs
-                             );
-
-      bool find_module_calls ( const state::type & state
-                             , function_type & f
-                             , fun_info_map & m
-                             );
-
-      bool find_module_calls ( const state::type & state
-                             , function_type & f
-                             , fun_info_map & m
-                             , mcs_type& mcs
                              );
 
       // ***************************************************************** //
 
-      void struct_to_cpp ( const struct_t & s
-                         , const state::type & state
-                         );
-
-      void structs_to_cpp ( const structs_type & structs
-                          , const state::type & state
-                          );
-
-      // ***************************************************************** //
-
-      void struct_to_cpp (const state::type &, const function_type &);
-
-      // ***************************************************************** //
-
-      void struct_to_cpp ( const state::type & state
-                         , const function_type & f
-                         );
+      void struct_to_cpp (const state::type &, const id::ref::function &);
 
       // ******************************************************************* //
 

@@ -24,13 +24,13 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        explicit port_list_widget ( ::xml::parse::type::ports_type& ports
+        explicit port_list_widget ( ::xml::parse::type::function_type::ports_type& ports
                                   , const QStringList& list_types
                                   , QWidget* parent = NULL
                                   );
 
       private:
-        ::xml::parse::type::ports_type& _ports;
+        ::xml::parse::type::function_type::ports_type& _ports;
       };
     }
   }

@@ -10,9 +10,10 @@
 #include <pnete/data/handle/place.fwd.hpp>
 
 //! \todo Should not be here.
+#include <xml/parse/id/types.fwd.hpp>
 #include <xml/parse/state.fwd.hpp>
-#include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/expression.fwd.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 
 #include <QUndoStack>
 
@@ -55,7 +56,7 @@ namespace fhg
                             , const data::handle::net&
                             );
         void add_transition ( const QObject*
-                            , const ::xml::parse::type::function_type& fun
+                            , const ::xml::parse::id::ref::function& fun
                             , const data::handle::net&
                             );
 

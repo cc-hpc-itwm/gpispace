@@ -3,7 +3,6 @@
 #ifndef _XML_PARSE_UTIL_OPTIONAL_HPP
 #define _XML_PARSE_UTIL_OPTIONAL_HPP
 
-#include <fhg/util/maybe.hpp>
 #include <xml/parse/rapidxml/types.hpp>
 
 #include <string>
@@ -14,13 +13,14 @@ namespace xml
 {
   namespace parse
   {
-    inline fhg::util::maybe<std::string>
+    inline boost::optional<std::string>
     optional (const xml_node_type * node, const Ch * attr)
     {
-      return node->first_attribute (attr)
-        ? fhg::util::Just<>(std::string(node->first_attribute (attr)->value()))
-        : fhg::util::Nothing<std::string>()
-        ;
+      if (node->first_attribute (attr))
+      {
+        return std::string (node->first_attribute (attr)->value());
+      }
+      return boost::none;
     }
   }
 }
