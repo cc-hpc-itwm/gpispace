@@ -403,13 +403,14 @@ namespace xml
       //! \todo move to connect_type
       void transition_type::type_check ( const std::string & direction
                                        , const connect_type & connect
-                                       , const net_type & net
                                        , const state::type & state
                                        ) const
       {
+        assert (has_parent());
+
         // existence of connect.place
         boost::optional<const id::ref::place&>
-          id_place (net.places().get (connect.place()));
+          id_place (parent()->places().get (connect.place()));
 
         if (not id_place)
         {
@@ -419,7 +420,7 @@ namespace xml
 
         const id::ref::function& id_function
           ( boost::apply_visitor
-            (transition_get_function (net, state, *this), function_or_use())
+            (transition_get_function (*parent(), state, *this), function_or_use())
           );
 
         // existence of connect.port
@@ -470,19 +471,19 @@ namespace xml
         };
       }
 
-      void transition_type::type_check (const net_type & net, const state::type & state) const
+      void transition_type::type_check (const state::type & state) const
       {
         BOOST_FOREACH (const connect_type& connect, in().values())
         {
-          type_check ("in", connect, net, state);
+          type_check ("in", connect, state);
         }
         BOOST_FOREACH (const connect_type& connect, read().values())
         {
-          type_check ("read", connect, net, state);
+          type_check ("read", connect, state);
         }
         BOOST_FOREACH (const connect_type& connect, out().values())
         {
-          type_check ("out", connect, net, state);
+          type_check ("out", connect, state);
         }
 
         boost::apply_visitor ( transition_type_check (state)

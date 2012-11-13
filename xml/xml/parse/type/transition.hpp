@@ -121,11 +121,10 @@ namespace xml
 
         void type_check ( const std::string & direction
                         , const connect_type & connect
-                        , const net_type & net
                         , const state::type & state
                         ) const;
 
-        void type_check (const net_type & net, const state::type & state) const;
+        void type_check (const state::type & state) const;
 
         const unique_key_type& unique_key() const;
 

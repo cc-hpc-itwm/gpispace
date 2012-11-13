@@ -493,18 +493,14 @@ namespace xml
 
       void net_type::type_check (const state::type & state) const
       {
-        BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , transitions().ids()
-                      )
+        BOOST_FOREACH (const transition_type& trans, transitions().values())
         {
-          id_transition.get().type_check (*this, state);
+          trans.type_check (state);
         }
 
-        BOOST_FOREACH ( const id::ref::function& id_function
-                      , functions().ids()
-                      )
+        BOOST_FOREACH (const function_type& function, functions().values())
         {
-          id_function.get().type_check (state);
+          function.type_check (state);
         }
       }
 
