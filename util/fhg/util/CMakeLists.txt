@@ -21,7 +21,6 @@ set (hdrs
   show.hpp
   split.hpp
   starts_with.hpp
-  util.hpp
   warnings.hpp
 
   filesystem.hpp
