@@ -87,10 +87,8 @@ namespace xml
             }
             else
             {
-              const net_type& net (id_net.get());
-
               boost::optional<const id::ref::place&>
-                id_place (net.places().get (*port.place));
+                id_place (id_net.get().places().get (*port.place));
 
               if (not id_place)
               {
