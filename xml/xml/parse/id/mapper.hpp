@@ -5,7 +5,7 @@
 
 #include <xml/parse/id/mapper.fwd.hpp>
 
-#include <xml/parse/id/types.fwd.hpp>
+#include <xml/parse/id/types.hpp>
 
 #include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/expression.fwd.hpp>
@@ -18,9 +18,10 @@
 #include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/type/struct.fwd.hpp>
 #include <xml/parse/type/template.fwd.hpp>
-#include <xml/parse/type/token.fwd.hpp>
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/use.fwd.hpp>
+
+#include <fhg/util/counter.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -41,14 +42,32 @@ namespace xml
         //! is used.
         ~mapper();
 
-#define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                            \
-                                                                      \
-        boost::optional<type::TYPE> get (const NAME&) const;          \
-        boost::optional<type::TYPE> get (const ref::NAME&) const;     \
+#define ITEM(NAME,__IGNORE,TYPE,__IGNORE2)                              \
+                                                                        \
+        boost::optional<const type::TYPE&>                              \
+        get (const boost::optional<NAME>&) const;                       \
+                                                                        \
+        boost::optional<type::TYPE&>                                    \
+        get_ref (const boost::optional<NAME>&) const;                   \
+                                                                        \
+        boost::optional<const type::TYPE&>                              \
+        get (const NAME&) const;                                        \
+                                                                        \
+        boost::optional<type::TYPE&>                                    \
+        get_ref (const NAME&) const;                                    \
+                                                                        \
+        boost::optional<const type::TYPE&>                              \
+        get (const ref::NAME&) const;                                   \
+                                                                        \
+        boost::optional<type::TYPE&>                                    \
+        get_ref (const ref::NAME&) const;                               \
+                                                                        \
         void put (const NAME&, const type::TYPE& elem);
 
 #include <xml/parse/id/helper.lst>
 #undef ITEM
+
+        id::base_id_type next_id();
 
       private:
 
@@ -66,6 +85,7 @@ namespace xml
         //! \todo C++11: std::unique_ptr
         struct maps;
         boost::scoped_ptr<maps> _maps;
+        ::fhg::util::counter<id::base_id_type> _counter;
       };
     }
   }

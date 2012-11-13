@@ -4,19 +4,18 @@
 #define _XML_PARSE_TYPE_PORT_HPP
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
 
-#include <fhg/util/maybe.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/property.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
 #include <string>
@@ -29,43 +28,46 @@ namespace xml
     {
       struct port_type
       {
+        ID_SIGNATURES(port);
+        PARENT_SIGNATURES(function);
+
       public:
-        port_type ( const std::string & name
+        typedef std::string unique_key_type;
+
+        port_type ( ID_CONS_PARAM(port)
+                  , PARENT_CONS_PARAM(function)
+                  , const std::string & name
                   , const std::string & _type
-                  , const fhg::util::maybe<std::string> & _place
-                  , const id::port& id
-                  , const id::function& parent
-                  , id::mapper* id_mapper
+                  , const boost::optional<std::string> & _place
+                  , const we::type::property::type& prop
+                  = we::type::property::type()
                   );
-
-        const id::port& id() const;
-        const id::function& parent() const;
-
-        bool is_same (const port_type& other) const;
 
         void specialize ( const type::type_map_type & map_in
                         , const state::type &
                         );
-      private:
-        id::port _id;
-        id::function _parent;
-        id::mapper* _id_mapper;
 
+        void type_check ( const std::string & direction
+                        , const boost::filesystem::path & path
+                        , const state::type & state
+                        ) const;
+
+        const std::string& name() const;
+
+        const unique_key_type& unique_key() const;
+
+        id::ref::port clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
+
+      private:
         std::string _name;
 
+        //! \todo All these should be private with accessors.
       public:
-        const std::string& name() const;
         std::string type;
-        fhg::util::maybe<std::string> place;
+        boost::optional<std::string> place;
         we::type::property::type prop;
       };
-
-      void port_type_check ( const std::string & direction
-                           , const port_type & port
-                           , const boost::filesystem::path & path
-                           , const state::type & state
-                           , const function_type& fun
-                           );
 
       namespace dump
       {

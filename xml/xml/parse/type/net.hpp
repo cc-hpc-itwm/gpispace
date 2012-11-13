@@ -11,10 +11,10 @@
 #include <xml/parse/type_map_type.hpp>
 
 #include <xml/parse/util/unique.hpp>
-#include <xml/parse/id/types.hpp>
-#include <xml/parse/id/mapper.fwd.hpp>
 
 #include <xml/parse/type/dumps.hpp>
+
+#include <xml/parse/id/generic.hpp>
 
 namespace xml
 {
@@ -22,125 +22,89 @@ namespace xml
   {
     namespace type
     {
-      class function_with_mapping_type
-      {
-      private:
-        function_type& _function;
-        boost::optional<type_map_type&> _type_map;
-
-      public:
-        explicit function_with_mapping_type
-          ( function_type& function
-          , boost::optional<type_map_type&> type_map = boost::none
-          );
-
-        function_type& function();
-        boost::optional<type_map_type&> type_map();
-      };
-
       struct net_type
       {
-      public:
-        typedef xml::util::unique<place_type,id::place> places_type;
-
-      private:
-        typedef fhg::util::maybe<std::string> maybe_string_type;
-
-        places_type _places;
-        xml::util::unique<transition_type,id::transition> _transitions;
-        xml::util::unique<function_type,id::function,maybe_string_type> _functions;
-        xml::util::unique<template_type,id::tmpl,maybe_string_type> _templates;
-        xml::util::unique<specialize_type,id::specialize> _specializes;
-
-        id::net _id;
-        id::function _parent;
-        id::mapper* _id_mapper;
+        ID_SIGNATURES(net);
+        PARENT_SIGNATURES(function);
 
       public:
-        typedef xml::util::unique<transition_type,id::transition>::elements_type transitions_type;
+        typedef xml::util::unique<function_type,id::ref::function> functions_type;
+        typedef xml::util::unique<place_type,id::ref::place> places_type;
+        typedef xml::util::unique<specialize_type,id::ref::specialize> specializes_type;
+        typedef xml::util::unique<tmpl_type,id::ref::tmpl> templates_type;
+        typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
 
-        bool contains_a_module_call;
-        structs_type structs;
 
-        boost::filesystem::path path;
-
-        we::type::property::type prop;
-
-        xml::parse::struct_t::set_type structs_resolved;
-
-        net_type ( const id::net& id
-                 , const id::function& parent
-                 , id::mapper* id_mapper
+        net_type ( ID_CONS_PARAM(net)
+                 , PARENT_CONS_PARAM(function)
+                 , const boost::filesystem::path& path
+                       = boost::filesystem::path()
                  );
 
-        const id::net& id() const;
-        const id::function& parent() const;
+        net_type ( ID_CONS_PARAM(net)
+                 , PARENT_CONS_PARAM(function)
+                 , const functions_type& functions
+                 , const places_type& places
+                 , const specializes_type& specializes
+                 , const templates_type& templates
+                 , const transitions_type& transitions
+                 , const structs_type& structs
+                 , const bool& contains_a_module_call
+                 , const xml::parse::structure_type::set_type& resol
+                 , const we::type::property::type& properties
+                 , const boost::filesystem::path& path
+                 );
 
-        bool is_same (const net_type& other) const;
+        const boost::filesystem::path& path() const;
 
         // ***************************************************************** //
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-        net_type & operator= (net_type const &rhs);
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+        const functions_type& functions() const;
+        const places_type& places() const;
+        const specializes_type& specializes() const;
+        const templates_type& templates() const;
+        const transitions_type& transitions() const;
 
         // ***************************************************************** //
 
+        boost::optional<const id::ref::function&>
+        get_function (const std::string& name) const;
+
+        boost::optional<const id::ref::tmpl&>
+        get_template (const std::string& name) const;
+
+        // ***************************************************************** //
+
+        const id::ref::function& push_function (const id::ref::function&);
+        const id::ref::place& push_place (const id::ref::place&);
+        const id::ref::specialize& push_specialize (const id::ref::specialize&);
+        const id::ref::tmpl& push_template (const id::ref::tmpl&);
+        const id::ref::transition& push_transition (const id::ref::transition&);
+
+        // ***************************************************************** //
+
+        bool has_function (const std::string& name) const;
         bool has_place (const std::string& name) const;
-        boost::optional<place_type> get_place (const std::string & name) const;
-        boost::optional<place_type> place_by_id (const id::place& id) const;
-
-        boost::optional<transition_type> transition_by_id
-          (const id::transition& id) const;
+        bool has_specialize (const std::string& name) const;
+        bool has_template (const std::string& name) const;
         bool has_transition (const std::string& name) const;
 
-        boost::optional<function_type> get_function (const std::string & name) const;
-
-        boost::optional<template_type> get_template (const std::string & name) const;
-
         // ***************************************************************** //
 
-        function_with_mapping_type get_function (const std::string & name);
-
-        // ***************************************************************** //
-
-        places_type & places (void);
-        const places_type & places (void) const;
-
-        const transitions_type & transitions (void) const;
-        transitions_type & transitions (void);
-
-        const functions_type & functions (void) const;
-
-        const specializes_type & specializes (void) const;
-
-        const templates_type & templates (void) const;
-
-        // ***************************************************************** //
-
-        void push_place (const place_type & p);
-        void erase_place (const place_type& t);
-
-        transition_type& push_transition (const transition_type & t);
-        void erase_transition (const transition_type& t);
-
-        void push_function (const function_type & f);
-
-        void push_template (const template_type & t);
-
-        void push_specialize ( const specialize_type & s
-                             , const state::type & state
-                             );
+        void erase_function (const id::ref::function&);
+        void erase_place (const id::ref::place&);
+        void erase_specialize (const id::ref::specialize&);
+        void erase_template (const id::ref::tmpl&);
+        void erase_transition (const id::ref::transition&);
 
         // ***************************************************************** //
 
         void clear_places (void);
-
         void clear_transitions (void);
 
         // ***************************************************************** //
 
-        signature::type type_of_place (const place_type & place) const;
+        signature::type type_of_place (const id::ref::place& place_id) const;
 
         // ***************************************************************** //
 
@@ -150,32 +114,24 @@ namespace xml
 
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
-                        , const xml::parse::struct_t::set_type & known_structs
-                        , const state::type & state
+                        , const xml::parse::structure_type::set_type & known_structs
+                        , state::type & state
                         );
 
         // ***************************************************************** //
 
-        void distribute_function ( const state::type& state
-                                 , const functions_type& functions_above
-                                 , const templates_type& templates_above
-                                 , const specializes_type& specializes_above
-                                 );
-
-        // ***************************************************************** //
-
         void resolve ( const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
 
-        void resolve ( const xml::parse::struct_t::set_type & global
+        void resolve ( const xml::parse::structure_type::set_type & global
                      , const state::type & state
-                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::structure_type::forbidden_type & forbidden
                      );
 
         // ***************************************************************** //
 
-        void sanity_check (const state::type & state, const function_type& outerfun) const;
+        void sanity_check (const state::type & state) const;
 
         // ***************************************************************** //
 
@@ -183,6 +139,28 @@ namespace xml
 
         void set_prefix (const std::string & prefix);
         void remove_prefix (const std::string & prefix);
+
+        id::ref::net clone
+          (boost::optional<parent_id_type> parent = boost::none) const;
+
+      private:
+        functions_type _functions;
+        places_type _places;
+        specializes_type _specializes;
+        templates_type _templates;
+        transitions_type _transitions;
+
+        //! \todo Everything below should be private with accessors.
+      public:
+        structs_type structs;
+        bool contains_a_module_call;
+
+        xml::parse::structure_type::set_type structs_resolved;
+
+        we::type::property::type prop;
+
+      private:
+        boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

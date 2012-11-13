@@ -3,10 +3,10 @@
 #ifndef _XML_PARSE_TYPE_STRUCT_HPP
 #define _XML_PARSE_TYPE_STRUCT_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -26,19 +26,18 @@ namespace xml
   {
     namespace type
     {
-      struct struct_t
+      struct structure_type
       {
-      public:
-        struct_t ( const id::structure& id
-                 , const id::function& parent
-                 , id::mapper* id_mapper
-                 , const std::string& name
-                 , const signature::desc_t& sig
-                 , const boost::filesystem::path& path
-                 );
+        ID_SIGNATURES(structure);
+        PARENT_SIGNATURES(function);
 
-        const id::structure& id() const;
-        const id::function& parent() const;
+      public:
+        structure_type ( ID_CONS_PARAM(structure)
+                       , PARENT_CONS_PARAM(function)
+                       , const std::string& name
+                       , const signature::desc_t& sig
+                       , const boost::filesystem::path& path
+                       );
 
         const signature::desc_t& signature() const;
         signature::desc_t& signature();
@@ -49,33 +48,32 @@ namespace xml
 
         const boost::filesystem::path& path() const;
 
-      private:
-        id::structure _id;
-        id::function _parent;
-        id::mapper* _id_mapper;
+        id::ref::structure clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
+      private:
         std::string _name;
         signature::desc_t _sig;
         boost::filesystem::path _path;
       };
 
-      bool operator == (const struct_t & a, const struct_t & b);
-      bool operator != (const struct_t & a, const struct_t & b);
+      bool operator == (const structure_type & a, const structure_type & b);
+      bool operator != (const structure_type & a, const structure_type & b);
 
-      typedef std::list<struct_t> structs_type;
+      typedef std::list<structure_type> structs_type;
 
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const struct_t & st
+                  , const structure_type & st
                   );
       }
     }
 
-    namespace struct_t
+    namespace structure_type
     {
       typedef boost::unordered_map< signature::field_name_t
-                                  , type::struct_t
+                                  , type::structure_type
                                   > set_type;
       typedef boost::unordered_map< signature::field_name_t
                                   , std::string

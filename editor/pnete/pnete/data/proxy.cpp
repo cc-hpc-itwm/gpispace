@@ -83,8 +83,8 @@ namespace fhg
         {
           expression_type::expression_type
             ( xml_type::expression_type& expression
-            , xml_type::ports_type& in
-            , xml_type::ports_type& out
+            , xml_type::function_type::ports_type& in
+            , xml_type::function_type::ports_type& out
             )
               : _expression (expression)
               , _in (in)
@@ -94,20 +94,20 @@ namespace fhg
           {
             return _expression;
           }
-          xml_type::ports_type& expression_type::in () { return _in; }
-          xml_type::ports_type& expression_type::out () { return _out; }
+          xml_type::function_type::ports_type& expression_type::in () { return _in; }
+          xml_type::function_type::ports_type& expression_type::out () { return _out; }
 
-          mod_type::mod_type ( xml_type::mod_type& mod
-                             , xml_type::ports_type& in
-                             , xml_type::ports_type& out
+          module_type::module_type ( xml_type::module_type& mod
+                             , xml_type::function_type::ports_type& in
+                             , xml_type::function_type::ports_type& out
                              )
             : _mod (mod)
             , _in (in)
             , _out (out)
           {}
-          xml_type::mod_type& mod_type::mod () { return _mod; }
-          xml_type::ports_type& mod_type::in () { return _in; }
-          xml_type::ports_type& mod_type::out () { return _out; }
+          xml_type::module_type& module_type::mod () { return _mod; }
+          xml_type::function_type::ports_type& module_type::in () { return _in; }
+          xml_type::function_type::ports_type& module_type::out () { return _out; }
 
           net_type::net_type ( xml_type::net_type& net
                              )

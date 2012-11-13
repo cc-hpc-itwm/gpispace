@@ -42,12 +42,12 @@ namespace fhg
 
         const std::string& place_item::we_type() const
         {
-          return connectable_item::we_type (_handle().type);
+          return connectable_item::we_type (handle().get().type);
         }
 
         std::string place_item::name() const
         {
-          return _handle().name();
+          return handle().get().name();
         }
 
         void place_item::refresh_content()
@@ -148,4 +148,3 @@ namespace fhg
     }
   }
 }
-

@@ -1,303 +1,157 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_UTIL_UNIQUE_HPP
-#define _XML_UTIL_UNIQUE_HPP
+#ifndef _XML_PARSE_UTIL_UNIQUE_HPP
+#define _XML_PARSE_UTIL_UNIQUE_HPP
 
-#include <list>
 #include <string>
 #include <stdexcept>
-#include <iterator>
 
-#include <boost/unordered_map.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace xml
 {
   namespace util
   {
-    template<typename UNIQUE>
-    class unique_iterator : public std::iterator< std::forward_iterator_tag
-                                                , typename UNIQUE::value_type
-                                                >
+    template<typename VALUE_TYPE, typename ID_TYPE>
+    class unique
     {
-      typedef UNIQUE unique_type;
-
-      typedef typename unique_type::elements_type::iterator
-        actual_iterator_type;
-      actual_iterator_type _actual_iterator;
-
-    public:
-      unique_iterator(const actual_iterator_type& actual_iterator)
-        : _actual_iterator (actual_iterator)
-      { }
-
-      unique_iterator& operator++()
-      {
-        ++_actual_iterator;
-        return *this;
-      }
-      unique_iterator operator++ (int)
-      {
-        unique_iterator<UNIQUE> tmp (*this);
-        operator++();
-        return tmp;
-      }
-      bool operator== (const unique_iterator& rhs)
-      {
-        return _actual_iterator == rhs._actual_iterator;
-      }
-      bool operator!= (const unique_iterator& rhs)
-      {
-        return !(operator== (rhs));
-      }
-      typename UNIQUE::value_type& operator*() const
-      {
-        return *_actual_iterator;
-      }
-      typename UNIQUE::value_type* operator->() const
-      {
-        return &*_actual_iterator;
-      }
-    };
-
-    template<typename UNIQUE>
-    class const_unique_iterator
-      : public std::iterator< std::forward_iterator_tag
-                            , const typename UNIQUE::value_type
-                            >
-    {
-      typedef UNIQUE unique_type;
-
-      typedef typename unique_type::elements_type::const_iterator
-        actual_iterator_type;
-      actual_iterator_type _actual_iterator;
-
-    public:
-      const_unique_iterator(const actual_iterator_type& actual_iterator)
-        : _actual_iterator (actual_iterator)
-      { }
-
-      const_unique_iterator& operator++()
-      {
-        ++_actual_iterator;
-        return *this;
-      }
-      const_unique_iterator operator++ (int)
-      {
-        const_unique_iterator<UNIQUE> tmp (*this);
-        operator++();
-        return tmp;
-      }
-      bool operator== (const const_unique_iterator& rhs)
-      {
-        return _actual_iterator == rhs._actual_iterator;
-      }
-      bool operator!= (const const_unique_iterator& rhs)
-      {
-        return !(operator== (rhs));
-      }
-      const typename UNIQUE::value_type& operator*() const
-      {
-        return *_actual_iterator;
-      }
-      const typename UNIQUE::value_type* operator->() const
-      {
-        return &*_actual_iterator;
-      }
-    };
-
-    template<typename T, typename ID_TYPE, typename Key = std::string>
-    struct unique
-    {
-    public:
-      typedef T value_type;
+    private:
+      typedef VALUE_TYPE value_type;
       typedef ID_TYPE id_type;
-      typedef Key key_type;
+      typedef typename value_type::unique_key_type key_type;
 
-      typedef std::list<value_type> elements_type;
+      typedef boost::unordered_set<id_type> ids_type;
+      typedef boost::unordered_map<key_type,id_type> by_key_type;
 
-      typedef unique_iterator<unique<value_type, id_type, key_type> >
-        iterator;
-      typedef const_unique_iterator<unique<value_type, id_type, key_type> >
-        const_iterator;
+      class values_type
+      {
+      public:
+        typedef VALUE_TYPE value_type;
+
+        typedef boost::transform_iterator
+          < boost::function<value_type& (const id_type&)>
+          , typename ids_type::iterator
+          > iterator;
+        typedef boost::transform_iterator
+          < boost::function<const value_type& (const id_type&)>
+          , typename ids_type::const_iterator
+          > const_iterator;
+
+        iterator begin()
+        {
+          return iterator (_ids.begin(), &id_type::get_ref);
+        }
+        iterator end()
+        {
+          return iterator (_ids.end(), &id_type::get_ref);
+        }
+
+        const_iterator begin() const
+        {
+          return const_iterator (_ids.begin(), &id_type::get);
+        }
+        const_iterator end() const
+        {
+          return const_iterator (_ids.end(), &id_type::get);
+        }
+
+        //! \note These are private, as only unique shall access them,
+        //! but they need to be in here to work around boost ticket #5473.
+        //! See c3fbafa and https://svn.boost.org/trac/boost/ticket/5473
+      private:
+        friend class unique<value_type, id_type>;
+
+        values_type()
+          : _ids()
+        { }
+
+        ids_type _ids;
+      };
+
+    public:
+      unique()
+        : _values()
+        , _by_key()
+      {}
+
+      boost::optional<const id_type&> get (const key_type& key) const
+      {
+        const typename by_key_type::const_iterator pos (_by_key.find (key));
+
+        if (pos != _by_key.end())
+          {
+            return pos->second;
+          }
+
+        return boost::none;
+      }
+
+      bool has (const key_type& key) const
+      {
+        return _by_key.find (key) != _by_key.end();
+      }
+
+      const id_type& push (const id_type& id)
+      {
+        const key_type& key (id.get().unique_key());
+
+        boost::optional<const id_type&> id_old (get (key));
+
+        if (id_old)
+          {
+            return *id_old;
+          }
+
+        _values._ids.insert (id);
+        _by_key.insert (std::make_pair (key, id));
+
+        return id;
+      }
+
+      void erase (const id_type& id)
+      {
+        const typename ids_type::const_iterator it (_values._ids.find (id));
+        if (it == _values._ids.end())
+        {
+          throw std::out_of_range ("unique::erase called with bad id");
+        }
+        _by_key.erase (id.get().unique_key());
+        _values._ids.erase (it);
+      }
+
+      const ids_type& ids() const { return _values._ids; }
+      values_type& values() const { return _values; }
+
+      void clear() { _values._ids.clear(); _by_key.clear(); }
+      bool empty() const { return _by_key.empty(); }
+
+      unique<value_type, id_type> clone
+        ( const boost::optional<typename value_type::parent_id_type>& parent
+        = boost::none
+        ) const
+      {
+        //! \todo Reserve?
+        unique<value_type, id_type> copy;
+        BOOST_FOREACH (const value_type& value, values())
+        {
+          copy.push (value.clone (parent));
+        }
+        return copy;
+      }
 
     private:
-      typedef boost::unordered_map< key_type
-                                  , typename elements_type::iterator
-                                  > names_type;
+      //! \note Needs to be mutable, as values() must return a
+      //! non-const reference from a const method. Else, would need to
+      //! const_cast this, which is ugly as well. See note in
+      //! values_type.
+      mutable values_type _values;
 
-      typedef boost::unordered_map< id_type
-                                  , typename elements_type::iterator
-                                  > ids_type;
-
-      elements_type _elements;
-      names_type _names;
-      ids_type _ids;
-
-      inline value_type& insert (const value_type& x)
-      {
-        typename elements_type::iterator
-          pos (_elements.insert (_elements.end(), x));
-
-        _names.insert (typename names_type::value_type (x.name(), pos));
-        _ids.insert (typename ids_type::value_type (x.id(), pos));
-
-        return *pos;
-      }
-
-    public:
-      unique ()
-        : _elements ()
-        , _names ()
-        , _ids ()
-      {}
-      unique (const unique & old)
-        : _elements ()
-        , _names ()
-        , _ids ()
-      { *this = old; }
-
-      unique & operator = (const unique & other)
-      {
-        if (this != &other)
-          {
-            clear();
-
-            for ( typename elements_type::const_iterator
-                    element (other._elements.begin())
-                ; element != other._elements.end()
-                ; ++element
-                )
-              {
-                push (*element);
-              }
-          }
-
-        return *this;
-      }
-
-      //! \todo This is not really nice, but the only way to do it,
-      //! when wanting a copy of the old value back without pointer or
-      //! default constructing.
-
-      //! \note .first is new, .second is old.
-#define RETURN_PAIR_TYPE boost::optional<value_type&>, boost::optional<value_type>
-      typedef std::pair<RETURN_PAIR_TYPE >
-              push_return_type;
-
-      push_return_type push_and_get_old_value (const value_type& x)
-      {
-        const typename names_type::const_iterator pos (_names.find (x.name()));
-
-        if (pos != _names.end())
-          {
-            return std::make_pair<RETURN_PAIR_TYPE >
-              (boost::none, *(pos->second));
-          }
-
-        return std::make_pair<RETURN_PAIR_TYPE >
-          (insert (x), boost::none);
-      }
-
-#undef RETURN_PAIR_TYPE
-
-      boost::optional<value_type&> push (const value_type& x)
-      {
-        if (is_element (x.name()))
-          {
-            return boost::none;
-          }
-
-        return insert (x);
-      }
-
-      boost::optional<value_type> copy_by_id (const id_type & id) const
-      {
-        const typename ids_type::const_iterator pos (_ids.find (id));
-
-        if (pos != _ids.end())
-        {
-          return *(pos->second);
-        }
-
-        return boost::none;
-      }
-
-      //! \todo Most likely, there was never an intended difference
-      //! between copy_by_key and ref_by_key. When rewriting
-      //! copy_by_key, it was passing out a copy via a value_type&
-      //! argument though. The only difference now is the name and
-      //! returning an ?value_type or a ?value_type&. ?value_type& is
-      //! only used in weaver of the editor and seems to not be
-      //! needed.
-      boost::optional<value_type> copy_by_key (const key_type & key) const
-      {
-        const typename names_type::const_iterator pos (_names.find (key));
-
-        if (pos != _names.end())
-        {
-          return *(pos->second);
-        }
-
-        return boost::none;
-      }
-
-      boost::optional<value_type&> ref_by_key (const key_type & key) const
-      {
-        const typename names_type::const_iterator pos (_names.find (key));
-
-        if (pos != _names.end())
-          {
-            return *(pos->second);
-          }
-
-        return boost::none;
-      }
-
-      bool is_element (const key_type & key) const
-      {
-        return _names.find (key) != _names.end();
-      }
-
-      void erase (const value_type& x)
-      {
-        typename names_type::iterator pos (_names.find (x.name()));
-
-        if (pos != _names.end())
-        {
-          _elements.erase (pos->second);
-          _names.erase (pos);
-          _ids.erase (_ids.find (x.id()));
-        }
-      }
-
-      void clear (void)
-      {
-        _elements.clear();
-        _names.clear();
-        _ids.clear();
-      }
-
-      elements_type & elements (void) { return _elements; }
-      const elements_type & elements (void) const { return _elements; }
-
-      iterator begin()
-      {
-        return elements().begin();
-      }
-      iterator end()
-      {
-        return elements().end();
-      }
-
-      const_iterator begin() const
-      {
-        return elements().begin();
-      }
-      const_iterator end() const
-      {
-        return elements().end();
-      }
+      by_key_type _by_key;
     };
   }
 }

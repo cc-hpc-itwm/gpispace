@@ -13,42 +13,26 @@ namespace xml
   {
     namespace type
     {
-      port_type::port_type ( const std::string & name
+      port_type::port_type ( ID_CONS_PARAM(port)
+                           , PARENT_CONS_PARAM(function)
+                           , const std::string & name
                            , const std::string & _type
-                           , const fhg::util::maybe<std::string> & _place
-                           , const id::port& id
-                           , const id::function& parent
-                           , id::mapper* id_mapper
+                           , const boost::optional<std::string> & _place
+                           , const we::type::property::type& prop
                            )
-        : _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _name (name)
         , type (_type)
         , place (_place)
-        , prop ()
+        , prop (prop)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::port& port_type::id() const
-      {
-        return _id;
       }
 
       const std::string& port_type::name() const
       {
         return _name;
-      }
-
-      const id::function& port_type::parent() const
-      {
-        return _parent;
-      }
-
-      bool port_type::is_same (const port_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
       }
 
       void port_type::specialize ( const type::type_map_type & map_in
@@ -87,7 +71,7 @@ namespace xml
           { }
 
 
-          void operator () (const net_type & net) const
+          void operator () (const id::ref::net & id_net) const
           {
             if (not port.place)
             {
@@ -103,35 +87,37 @@ namespace xml
             }
             else
             {
-              boost::optional<place_type> place
-                (net.get_place (*port.place));
+              boost::optional<const id::ref::place&>
+                id_place (id_net.get().places().get (*port.place));
 
-              if (!place)
+              if (not id_place)
               {
                 throw error::port_connected_place_nonexistent
                   (direction, port.name(), *port.place, path);
               }
 
-              if (place->type != port.type)
+              const place_type& place (id_place->get());
+
+              if (place.type != port.type)
               {
                 throw error::port_connected_type_error ( direction
                                                        , port
-                                                       , *place
+                                                       , place
                                                        , path
                                                        );
               }
 
               if (direction == "tunnel")
               {
-                if (not place->is_virtual())
+                if (not place.is_virtual())
                 {
                   throw
-                    error::tunnel_connected_non_virtual (port, *place, path);
+                    error::tunnel_connected_non_virtual (port, place, path);
                 }
 
-                if (port.name() != place->name())
+                if (port.name() != place.name())
                 {
-                  throw error::tunnel_name_mismatch (port, *place, path);
+                  throw error::tunnel_name_mismatch (port, place, path);
                 }
               }
             }
@@ -149,15 +135,36 @@ namespace xml
         };
       }
 
-      void port_type_check ( const std::string & direction
-                           , const port_type & port
-                           , const boost::filesystem::path & path
-                           , const state::type & state
-                           , const function_type& fun
-                           )
+      void port_type::type_check ( const std::string & direction
+                                 , const boost::filesystem::path & path
+                                 , const state::type & state
+                                 ) const
       {
+        assert (has_parent());
+
         boost::apply_visitor
-          (port_type_check_visitor (direction, port, path, state), fun.f);
+          ( port_type_check_visitor (direction, *this, path, state)
+          , parent()->f
+          );
+      }
+
+      const port_type::unique_key_type& port_type::unique_key() const
+      {
+        return name();
+      }
+
+      id::ref::port port_type::clone
+        (const boost::optional<parent_id_type>& parent) const
+      {
+        return port_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , _name
+          , type
+          , place
+          , prop
+          ).make_reference_id();
       }
 
       namespace dump

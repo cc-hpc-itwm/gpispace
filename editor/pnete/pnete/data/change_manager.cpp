@@ -6,6 +6,7 @@
 #include <pnete/data/handle/transition.hpp>
 #include <pnete/data/handle/place.hpp>
 
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/place.hpp>
@@ -63,14 +64,14 @@ namespace fhg
           add_transition
             ( change_manager_t& change_manager
             , const QObject* origin
-            , const handle::net& net
-            , const ::xml::parse::type::transition_type& transition
+            , const ::xml::parse::id::ref::net& net
+            , const ::xml::parse::id::ref::transition& transition
             )
             : QUndoCommand (QObject::tr ("add_transition_action"))
             , _change_manager (change_manager)
             , _origin (origin)
-            , _handle (net)
             , _transition (transition)
+            , _net (net)
           { }
 
           virtual void undo()
@@ -78,20 +79,20 @@ namespace fhg
             _change_manager.emit_signal
               ( &change_manager_t::transition_deleted
               , _origin
-              , handle::transition (_transition, _handle)
+              , handle::transition (_transition, _change_manager)
               );
 
-            _handle().erase_transition (_transition);
+            _net.get_ref().erase_transition (_transition);
           }
 
           virtual void redo()
           {
-            _handle().push_transition (_transition);
+            _net.get_ref().push_transition (_transition);
 
             _change_manager.emit_signal
               ( &change_manager_t::transition_added
               , NULL
-              , handle::transition (_transition, _handle)
+              , handle::transition (_transition, _change_manager)
               );
 
             _origin = NULL;
@@ -100,8 +101,8 @@ namespace fhg
         private:
           change_manager_t& _change_manager;
           const QObject* _origin;
-          handle::net _handle;
-          ::xml::parse::type::transition_type _transition;
+          ::xml::parse::id::ref::transition _transition;
+          ::xml::parse::id::ref::net _net;
         };
 
         class remove_transition : public QUndoCommand
@@ -110,23 +111,23 @@ namespace fhg
           remove_transition
             ( change_manager_t& change_manager
             , const QObject* origin
-            , const handle::transition& transition
+            , const ::xml::parse::id::ref::transition& transition
             )
             : QUndoCommand (QObject::tr ("remove_transition_action"))
             , _change_manager (change_manager)
             , _origin (origin)
-            , _handle (transition)
-            , _transition (_handle())
+            , _transition (transition)
+            , _net (_transition.get().parent()->make_reference_id())
           { }
 
           virtual void undo()
           {
-            _handle.net()().push_transition (_transition);
+            _net.get_ref().push_transition (_transition);
 
             _change_manager.emit_signal
               ( &change_manager_t::transition_added
               , NULL
-              , _handle
+              , handle::transition (_transition, _change_manager)
               );
           }
 
@@ -135,10 +136,10 @@ namespace fhg
             _change_manager.emit_signal
               ( &change_manager_t::transition_deleted
               , _origin
-              , _handle
+              , handle::transition (_transition, _change_manager)
               );
 
-            _handle.net()().erase_transition (_transition);
+            _net.get_ref().erase_transition (_transition);
 
             _origin = NULL;
           }
@@ -146,8 +147,8 @@ namespace fhg
         private:
           change_manager_t& _change_manager;
           const QObject* _origin;
-          handle::transition _handle;
-          ::xml::parse::type::transition_type _transition;
+          ::xml::parse::id::ref::transition _transition;
+          ::xml::parse::id::ref::net _net;
         };
 
         // -- place --------------------------------------------------
@@ -157,14 +158,14 @@ namespace fhg
           add_place
             ( change_manager_t& change_manager
             , const QObject* origin
-            , const handle::net& net
-            , const ::xml::parse::type::place_type& place
+            , const ::xml::parse::id::ref::net& net
+            , const ::xml::parse::id::ref::place& place
             )
             : QUndoCommand (QObject::tr ("add_place_action"))
             , _change_manager (change_manager)
             , _origin (origin)
-            , _handle (net)
             , _place (place)
+            , _net (net)
           { }
 
           virtual void undo()
@@ -172,20 +173,20 @@ namespace fhg
             _change_manager.emit_signal
               ( &change_manager_t::place_deleted
               , _origin
-              , handle::place (_place, _handle, _change_manager)
+              , handle::place (_place, _change_manager)
               );
 
-            _handle().erase_place (_place);
+            _net.get_ref().erase_place (_place);
           }
 
           virtual void redo()
           {
-            _handle().push_place (_place);
+            _net.get_ref().push_place (_place);
 
             _change_manager.emit_signal
               ( &change_manager_t::place_added
               , NULL
-              , handle::place (_place, _handle, _change_manager)
+              , handle::place (_place, _change_manager)
               );
 
             _origin = NULL;
@@ -194,8 +195,8 @@ namespace fhg
         private:
           change_manager_t& _change_manager;
           const QObject* _origin;
-          handle::net _handle;
-          ::xml::parse::type::place_type _place;
+          ::xml::parse::id::ref::place _place;
+          ::xml::parse::id::ref::net _net;
         };
 
         class remove_place : public QUndoCommand
@@ -204,23 +205,23 @@ namespace fhg
           remove_place
             ( change_manager_t& change_manager
             , const QObject* origin
-            , const handle::place& place
+            , const ::xml::parse::id::ref::place& place
             )
             : QUndoCommand (QObject::tr ("remove_place_action"))
             , _change_manager (change_manager)
             , _origin (origin)
-            , _handle (place)
-            , _place (_handle())
+            , _place (place)
+            , _net (_place.get().parent()->make_reference_id())
           { }
 
           virtual void undo()
           {
-            _handle.net()().push_place (_place);
+            _net.get_ref().push_place (_place);
 
             _change_manager.emit_signal
               ( &change_manager_t::place_added
               , NULL
-              , _handle
+              , handle::place (_place, _change_manager)
               );
           }
 
@@ -229,10 +230,10 @@ namespace fhg
             _change_manager.emit_signal
               ( &change_manager_t::place_deleted
               , _origin
-              , _handle
+              , handle::place (_place, _change_manager)
               );
 
-            _handle.net()().erase_place (_handle());
+            _net.get_ref().erase_place (_place);
 
             _origin = NULL;
           }
@@ -240,8 +241,8 @@ namespace fhg
         private:
           change_manager_t& _change_manager;
           const QObject* _origin;
-          handle::place _handle;
-          ::xml::parse::type::place_type _place;
+          ::xml::parse::id::ref::place _place;
+          ::xml::parse::id::ref::net _net;
         };
 
         // - function ------------------------------------------------
@@ -254,25 +255,31 @@ namespace fhg
       // -- transition -----------------------------------------------
       void change_manager_t::add_transition
         ( const QObject* origin
-        , const ::xml::parse::type::function_type& fun
+        , const ::xml::parse::id::ref::function& fun
         , const handle::net& net
         )
       {
-        ::xml::parse::type::transition_type transition
-          ( xml::parse::id::transition (_state.next_id())
-          , net.id()
-          , _state.id_mapper()
-          );
-        transition.function_or_use (fun);
-        transition.name (fun.name() ? *fun.name() : "transition");
+        const ::xml::parse::id::transition transition_id (_state.id_mapper()->next_id());
 
-        //! \todo Don't check for duplicate names when fun.name is set?
-        while (net().has_transition (transition.name()))
         {
-          transition.name (inc (transition.name()));
+          const ::xml::parse::type::transition_type transition
+            (transition_id, _state.id_mapper(), net.id().id(), fun);
         }
 
-        push (new action::add_transition (*this, origin, net, transition));
+        const ::xml::parse::id::ref::transition transition
+          (transition_id, _state.id_mapper());
+
+        transition.get_ref().function_or_use (fun);
+        fun.get_ref().parent (transition_id);
+        transition.get_ref().name (fun.get().name() ? *fun.get().name() : "transition");
+
+        //! \todo Don't check for duplicate names when fun.name is set?
+        while (net.get().has_transition (transition.get().name()))
+        {
+          transition.get_ref().name (inc (transition.get().name()));
+        }
+
+        push (new action::add_transition (*this, origin, net.id(), transition));
       }
 
       void change_manager_t::add_transition
@@ -280,33 +287,37 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::expression expression_id (_state.next_id());
-        const ::xml::parse::id::function function_id (_state.next_id());
-        const ::xml::parse::id::transition transition_id (_state.next_id());
+        const ::xml::parse::id::function function_id (_state.id_mapper()->next_id());
+        const ::xml::parse::id::transition transition_id (_state.id_mapper()->next_id());
 
-        ::xml::parse::type::expression_type expression ( expression_id
-                                                       , function_id
-                                                       , _state.id_mapper()
-                                                       );
-        ::xml::parse::type::function_type f ( expression
-                                            , function_id
-                                            , transition_id
-                                            , _state.id_mapper()
-                                            );
+        const ::xml::parse::id::ref::transition transition
+          ( ::xml::parse::type::transition_type
+            ( transition_id
+            , _state.id_mapper()
+            , net.id().id()
+            , ::xml::parse::id::ref::function
+              ( ::xml::parse::type::function_type
+                ( function_id
+                , _state.id_mapper()
+                , ::xml::parse::type::function_type::make_parent (transition_id)
+                , ::xml::parse::type::expression_type ( _state.id_mapper()->next_id()
+                                                      , _state.id_mapper()
+                                                      , function_id
+                                                      ).make_reference_id()
+                ).make_reference_id()
+              )
+            ).make_reference_id()
+          );
 
-        ::xml::parse::type::transition_type transition ( f
-                                                       , transition_id
-                                                       , net.id()
-                                                       , _state.id_mapper()
-                                                       );
-        transition.name ("transition");
+        transition.get_ref().name ("transition");
 
-        while (net().has_transition (transition.name()))
+        //! \todo Don't check for duplicate names when fun.name is set?
+        while (net.get().has_transition (transition.get().name()))
         {
-          transition.name (inc (transition.name()));
+          transition.get_ref().name (inc (transition.get().name()));
         }
 
-        push (new action::add_transition (*this, origin, net, transition));
+        push (new action::add_transition (*this, origin, net.id(), transition));
       }
 
       void change_manager_t::delete_transition
@@ -314,7 +325,7 @@ namespace fhg
         , const handle::transition& transition
         )
       {
-        push (new action::remove_transition (*this, origin, transition));
+        push (new action::remove_transition (*this, origin, transition.id()));
       }
 
       // -- place ----------------------------------------------------
@@ -323,19 +334,21 @@ namespace fhg
         , const handle::net& net
         )
       {
-        ::xml::parse::type::place_type place
-          ( ::xml::parse::id::place (_state.next_id())
-          , net.id()
-          , _state.id_mapper()
-          );
-        place.name ("place");
-
-        while (net().has_place (place.name()))
+        const ::xml::parse::id::place id (_state.id_mapper()->next_id());
         {
-          place.name (inc (place.name()));
+          ::xml::parse::type::place_type place
+            (id, _state.id_mapper(), net.id().id());
         }
 
-        push (new action::add_place (*this, origin, net, place));
+        const ::xml::parse::id::ref::place place (id, _state.id_mapper());
+        place.get_ref().name ("place");
+
+        while (net.get().has_place (place.get().name()))
+        {
+          place.get_ref().name (inc (place.get().name()));
+        }
+
+        push (new action::add_place (*this, origin, net.id(), place));
       }
 
       void change_manager_t::delete_place
@@ -343,7 +356,7 @@ namespace fhg
         , const handle::place& place
         )
       {
-        push (new action::remove_place (*this, origin, place));
+        push (new action::remove_place (*this, origin, place.id()));
       }
 
       // - function --------------------------------------------------
@@ -359,7 +372,7 @@ namespace fhg
         }
         else
         {
-          fun.name(fhg::util::Nothing<std::string>());
+          fun.name (boost::none);
         }
 
         emit_signal ( &change_manager_t::signal_set_function_name

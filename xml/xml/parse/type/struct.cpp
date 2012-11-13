@@ -16,16 +16,14 @@ namespace xml
   {
     namespace type
     {
-      struct_t::struct_t ( const id::structure& id
-                         , const id::function& parent
-                         , id::mapper* id_mapper
-                         , const std::string& name
-                         , const signature::desc_t& sig
-                         , const boost::filesystem::path& path
-                         )
-        : _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+      structure_type::structure_type ( ID_CONS_PARAM(structure)
+                                     , PARENT_CONS_PARAM(function)
+                                     , const std::string& name
+                                     , const signature::desc_t& sig
+                                     , const boost::filesystem::path& path
+                                     )
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _name (name)
         , _sig (sig)
         , _path (path)
@@ -33,48 +31,52 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      const id::structure& struct_t::id() const
-      {
-        return _id;
-      }
-      const id::function& struct_t::parent() const
-      {
-        return _parent;
-      }
-
-      const signature::desc_t& struct_t::signature() const
+      const signature::desc_t& structure_type::signature() const
       {
         return _sig;
       }
-      signature::desc_t& struct_t::signature()
+      signature::desc_t& structure_type::signature()
       {
         return _sig;
       }
-      const signature::desc_t& struct_t::signature (const signature::desc_t& sig)
+      const signature::desc_t& structure_type::signature (const signature::desc_t& sig)
       {
         return _sig = sig;
       }
 
-      const std::string& struct_t::name() const
+      const std::string& structure_type::name() const
       {
         return _name;
       }
-      const std::string& struct_t::name (const std::string& name)
+      const std::string& structure_type::name (const std::string& name)
       {
         return _name = name;
       }
 
-      const boost::filesystem::path& struct_t::path() const
+      const boost::filesystem::path& structure_type::path() const
       {
         return _path;
       }
 
-      bool operator == (const struct_t & a, const struct_t & b)
+      id::ref::structure structure_type::clone
+        (const boost::optional<parent_id_type>& parent) const
+      {
+        return structure_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , _name
+          , _sig
+          , _path
+          ).make_reference_id();
+      }
+
+      bool operator == (const structure_type & a, const structure_type & b)
       {
         return (a.name() == b.name()) && (a.signature() == b.signature());
       }
 
-      bool operator != (const struct_t & a, const struct_t & b)
+      bool operator != (const structure_type & a, const structure_type & b)
       {
         return !(a == b);
       }
@@ -82,7 +84,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const struct_t & st
+                  , const structure_type & st
                   )
         {
           boost::apply_visitor ( signature::visitor::dump (st.name(), s)
@@ -92,7 +94,7 @@ namespace xml
       }
     }
 
-    namespace struct_t
+    namespace structure_type
     {
       set_type make (const type::structs_type & structs)
       {
@@ -107,7 +109,7 @@ namespace xml
 
             if (old != set.end())
               {
-                throw error::struct_redefined<type::struct_t>
+                throw error::struct_redefined<type::structure_type>
                   (old->second, *pos);
               }
 
@@ -130,7 +132,7 @@ namespace xml
             ; ++pos
             )
           {
-            const type::struct_t & strct (pos->second);
+            const type::structure_type & strct (pos->second);
             const set_type::const_iterator old (set.find (strct.name()));
 
             if (old != set.end() && strct != old->second)
@@ -140,7 +142,7 @@ namespace xml
 
                 if (pos != forbidden.end())
                   {
-                    throw error::forbidden_shadowing<type::struct_t>
+                    throw error::forbidden_shadowing<type::structure_type>
                       (old->second, strct, pos->second);
                   }
 

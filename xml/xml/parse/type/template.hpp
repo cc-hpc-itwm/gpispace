@@ -3,17 +3,16 @@
 #ifndef _XML_PARSE_TYPE_TEMPLATE_HPP
 #define _XML_PARSE_TYPE_TEMPLATE_HPP 1
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/template.fwd.hpp>
-
-#include <boost/filesystem.hpp>
-#include <boost/unordered_set.hpp>
+#include <xml/parse/type/net.fwd.hpp>
 
 #include <string>
 
-#include <fhg/util/maybe.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace xml
 {
@@ -21,63 +20,56 @@ namespace xml
   {
     namespace type
     {
-      struct template_type
+      struct tmpl_type
       {
+        ID_SIGNATURES(tmpl);
+        PARENT_SIGNATURES(net);
+
       public:
+        typedef std::string unique_key_type;
         typedef boost::unordered_set<std::string> names_type;
 
-      private:
+        tmpl_type ( ID_CONS_PARAM(tmpl)
+                  , PARENT_CONS_PARAM(net)
+                  , const boost::optional<std::string>& name
+                  , const names_type& tmpl_parameter
+                  , const id::ref::function& function
+                  , const boost::filesystem::path& path
+                  );
 
-        id::tmpl _id;
-        id::net _parent;
-        id::mapper* _id_mapper;
-
-        names_type _template_parameter;
-        function_type _function;
-        fhg::util::maybe<std::string> _name;
-        boost::filesystem::path _path;
-
-      public:
-        template_type ( const id::tmpl& id
-                      , const id::net& parent
-                      , id::mapper* id_mapper
-                      , const boost::filesystem::path& path
-                      , const fhg::util::maybe<std::string>& name
-                      , const names_type& names
-                      , const function_type& function
-                      );
-
-        const id::tmpl& id() const;
-        const id::net& parent() const;
-
-        bool is_same (const template_type& other) const;
-
-        const fhg::util::maybe<std::string>& name() const;
+        const boost::optional<std::string>& name() const;
         const std::string& name (const std::string& name);
 
-        const names_type& template_parameter () const;
+        const names_type& tmpl_parameter () const;
 
-        const function_type& function() const;
-        function_type& function();
+        const id::ref::function& function() const;
 
         const boost::filesystem::path& path() const;
 
-        void distribute_function ( const state::type& state
-                                 , const functions_type& functions
-                                 , const templates_type& templates
-                                 , const specializes_type& specializes
-                                 );
-
         void specialize ( const type_map_type & map
                         , const type_get_type & get
-                        , const xml::parse::struct_t::set_type & known_structs
-                        , const state::type & state
+                        , const xml::parse::structure_type::set_type & known_structs
+                        , state::type & state
                         );
+
+        boost::optional<const id::ref::function&>
+        get_function (const std::string&) const;
+
+        const unique_key_type& unique_key() const;
+
+        id::ref::tmpl clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
+
+      private:
+        boost::optional<std::string> _name;
+        names_type _tmpl_parameter;
+        id::ref::function _function;
+        boost::filesystem::path _path;
       };
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, const template_type&);
+        void dump (::fhg::util::xml::xmlstream&, const tmpl_type&);
       }
     }
   }

@@ -7,10 +7,6 @@
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/transition.hpp>
 
-#include <fhg/util/backtracing_exception.hpp>
-
-#include <boost/optional.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -19,41 +15,37 @@ namespace fhg
     {
       namespace handle
       {
-        transition::transition ( const transition_type& transition
-                               , const handle::net& net
+        transition::transition ( const ::xml::parse::id::ref::transition& id
+                               , change_manager_t& change_manager
                                )
-          : _transition_id (transition.id())
-          , _net (net)
+          : _id (id)
+          , _change_manager (change_manager)
         { }
 
-        transition::transition_type transition::operator()() const
+        const ::xml::parse::type::transition_type& transition::get() const
         {
-          const boost::optional<transition_type> transition
-            (net()().transition_by_id (_transition_id));
-          if (!transition)
-          {
-            throw fhg::util::backtracing_exception
-              ("INVALID HANDLE: transition id not found");
-          }
-          return *transition;
+          return _id.get();
         }
-
-        const handle::net& transition::net() const
+        ::xml::parse::type::transition_type& transition::get_ref() const
         {
-          return _net;
+          return _id.get_ref();
         }
 
         bool transition::operator== (const transition& other) const
         {
-          return _transition_id == other._transition_id && _net == other._net;
+          return _id == other._id;
         }
 
-        const ::xml::parse::id::transition& transition::id() const
+        const ::xml::parse::id::ref::transition& transition::id() const
         {
-          return _transition_id;
+          return _id;
+        }
+
+        net transition::parent() const
+        {
+          return net (get().parent()->make_reference_id(), _change_manager);
         }
       }
     }
   }
 }
-

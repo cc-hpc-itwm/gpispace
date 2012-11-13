@@ -26,12 +26,65 @@ namespace xml
   {
     namespace type
     {
+      // ******************************************************************* //
+
+      function_type::function_type ( ID_CONS_PARAM(function)
+                                   , const boost::optional<parent_id_type>& parent
+                                   , const type& _f
+                                   )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , f (_f)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      function_type::function_type
+        ( ID_CONS_PARAM(function)
+        , const boost::optional<parent_id_type>& parent
+        , const boost::optional<std::string>& name
+        , const ports_type& in
+        , const ports_type& out
+        , const ports_type& tunnel
+        , const typenames_type& typenames
+        , const bool& contains_a_module_call
+        , const boost::optional<bool>& internal
+        , const structs_type& structs
+        , const conditions_type& cond
+        , const requirements_type& requirements
+        , const type& f
+        , const xml::parse::structure_type::set_type& structs_resolved
+        , const we::type::property::type& prop
+        , const boost::filesystem::path& path
+        )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , _name (name)
+        , _in (in)
+        , _out (out)
+        , _tunnel (tunnel)
+        , _typenames (typenames)
+        , contains_a_module_call (contains_a_module_call)
+        , internal (internal)
+        , structs (structs)
+        , cond (cond)
+        , requirements (requirements)
+        , f (f)
+        , structs_resolved (structs_resolved)
+        , prop (prop)
+        , path (path)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      // ******************************************************************* //
+
       namespace
       {
         class function_is_net_visitor : public boost::static_visitor<bool>
         {
         public:
-          bool operator () (const net_type &) const { return true; }
+          bool operator () (const id::ref::net &) const { return true; }
           template<typename T>
           bool operator () (const T &) const { return false; }
         };
@@ -44,30 +97,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      void function_type::push ( const port_type & p
-                               , unique_port_type & ports
-                               , const unique_port_type & others
-                               , const std::string descr
-                               )
-      {
-        if (!ports.push (p))
-        {
-          throw error::duplicate_port (descr, p.name(), path);
-        }
-
-        boost::optional<port_type> other (others.copy_by_key (p.name()));
-
-        if (other && p.type != other->type)
-        {
-          throw error::port_type_mismatch ( p.name()
-                                          , p.type
-                                          , other->type
-                                          , path
-                                          );
-        }
-      }
-
-      const fhg::util::maybe<std::string> function_type::name() const
+      const boost::optional<std::string>& function_type::name() const
       {
         return _name;
       }
@@ -75,64 +105,82 @@ namespace xml
       {
         return *(_name = name);
       }
-      const fhg::util::maybe<std::string>&
-        function_type::name (const fhg::util::maybe<std::string>& name)
+      const boost::optional<std::string>&
+        function_type::name (const boost::optional<std::string>& name)
       {
         return _name = name;
       }
 
-      function_type::function_type ( const type& _f
-                                   , const id::function& id
-                                   , const id_parent& parent
-                                   , id::mapper* id_mapper
-                                   )
-        : _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
-        , f (_f)
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      const id::function& function_type::id() const
-      {
-        return _id;
-      }
-
-      const function_type::id_parent& function_type::parent() const
+      const boost::optional<function_type::parent_id_type>& function_type::parent() const
       {
         return _parent;
       }
 
-      bool function_type::is_same (const function_type& other) const
+      bool function_type::has_parent() const
       {
-        return id() == other.id() && parent() == other.parent();
+        return _parent;
       }
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-      function_type & function_type::operator= (function_type const &rhs)
+      void function_type::unparent()
       {
-        if (this != &rhs)
+        _parent = boost::none;
+      }
+      void function_type::parent (const parent_id_type& parent)
+      {
+        _parent = boost::make_optional (parent);
+      }
+
+      namespace
+      {
+        class visitor_get_function
+          : public boost::static_visitor<boost::optional<const id::ref::function&> >
         {
-          _in = rhs._in;
-          _out = rhs._out;
-          _tunnel = rhs._tunnel;
+        private:
+          const std::string& _name;
+          const id::mapper* _id_mapper;
 
-          contains_a_module_call = rhs.contains_a_module_call;
-          structs = rhs.structs;
-          name = rhs.name;
-          internal = rhs.internal;
-          cond = rhs.cond;
-          requirements = rhs.requirements;
-          prop = rhs.prop;
-          f = rhs.f;
-          path = rhs.path;
-          structs_resolved = rhs.structs_resolved;
-          _typenames = rhs._typenames;
-        }
-        return *this;
+        public:
+          visitor_get_function ( const std::string& name
+                               , const id::mapper* id_mapper
+                               )
+            : _name (name)
+            , _id_mapper (id_mapper)
+          {}
+
+          template<typename ID>
+          boost::optional<const id::ref::function&> operator () (ID id) const
+          {
+            return _id_mapper->get(id)->get_function (_name);
+          }
+        };
       }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
+
+      boost::optional<const id::ref::function&>
+      function_type::get_function (const std::string& name) const
+      {
+        if (has_parent())
+          {
+            return boost::apply_visitor
+              (visitor_get_function (name, id_mapper()), *parent());
+          }
+
+        return boost::none;
+      }
+
+      // ***************************************************************** //
+
+      const function_type::ports_type& function_type::in() const
+      {
+        return _in;
+      }
+      const function_type::ports_type& function_type::out() const
+      {
+        return _out;
+      }
+      const function_type::ports_type& function_type::tunnel() const
+      {
+        return _tunnel;
+      }
 
       // ***************************************************************** //
 
@@ -146,46 +194,59 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::add_expression (const expression_type & e)
+      namespace
       {
-        join (e, *this);
+        class visitor_append_expressions
+          : public boost::static_visitor<void>
+        {
+        private:
+          const expressions_type& _expressions;
+
+        public:
+          visitor_append_expressions (const expressions_type& expressions)
+            : _expressions (expressions)
+          { }
+
+          void operator () (id::ref::expression & id_expression) const
+          {
+            id_expression.get_ref().append (_expressions);
+          }
+
+          template<typename T>
+          void operator () (T &) const
+          {
+            throw std::runtime_error ("BUMMER: join for non expression!");
+          }
+        };
+      }
+
+      void function_type::add_expression (const expressions_type & es)
+      {
+        boost::apply_visitor (visitor_append_expressions (es), f);
       }
 
       // ***************************************************************** //
 
-      const ports_type& function_type::in (void) const
+      boost::optional<const id::ref::port&>
+      function_type::get_port_in (const std::string & name) const
       {
-        return _in.elements();
-      }
-      const ports_type& function_type::out (void) const
-      {
-        return _out.elements();
-      }
-      const ports_type& function_type::tunnel (void) const
-      {
-        return _tunnel.elements();
+        return in().get (name);
       }
 
-      boost::optional<port_type> function_type::get_port_in
-        (const std::string & name) const
+      boost::optional<const id::ref::port&>
+      function_type::get_port_out (const std::string & name) const
       {
-        return _in.copy_by_key (name);
-      }
-
-      boost::optional<port_type> function_type::get_port_out
-        (const std::string & name) const
-      {
-        return _out.copy_by_key (name);
+        return out().get (name);
       }
 
       bool function_type::is_known_port_in (const std::string & name) const
       {
-        return _in.is_element (name);
+        return get_port_in (name);
       }
 
       bool function_type::is_known_port_out (const std::string & name) const
       {
-        return _out.is_element (name);
+        return get_port_out (name);
       }
 
       bool function_type::is_known_port (const std::string & name) const
@@ -200,7 +261,7 @@ namespace xml
 
       bool function_type::is_known_tunnel (const std::string& name) const
       {
-        return _tunnel.is_element (name);
+        return tunnel().get (name);
       }
 
       // ***************************************************************** //
@@ -215,48 +276,80 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::push_in (const port_type & p)
+      void function_type::push ( const id::ref::port & id
+                               , ports_type & ports
+                               , const ports_type & others
+                               , const std::string& descr
+                               )
       {
-        push (p, _in, _out, "in");
-      }
-      void function_type::push_out (const port_type & p)
-      {
-        push (p, _out, _in, "out");
-      }
-      void function_type::push_inout (const port_type & p)
-      {
-        push_in (p);
-        push_out (p);
-      }
-      void function_type::push_tunnel (const port_type& p)
-      {
-        if (!_tunnel.push (p))
+        const id::ref::port& id_old (ports.push (id));
+
+        if (not (id_old == id))
         {
-          throw error::duplicate_port ("tunnel", p.name(), path);
+          throw error::duplicate_port (descr, id.get().name(), path);
+        }
+
+        const port_type& port (id.get());
+
+        boost::optional<const id::ref::port&> id_other
+          (others.get (port.name()));
+
+        if (id_other)
+          {
+            const port_type& other (id_other->get());
+
+            if (port.type != other.type)
+              {
+                throw error::port_type_mismatch ( port.name()
+                                                , port.type
+                                                , other.type
+                                                , path
+                                                );
+              }
+          }
+      }
+
+      void function_type::push_in (const id::ref::port& id)
+      {
+        push (id, _in, _out, "in");
+      }
+      void function_type::push_out (const id::ref::port& id)
+      {
+        push (id, _out, _in, "out");
+      }
+      void function_type::push_inout (const id::ref::port& port_id)
+      {
+        push_in (port_id);
+        push_out (port_id.get().clone (id()));
+      }
+      void function_type::push_tunnel (const id::ref::port& id)
+      {
+        const id::ref::port& id_old (_tunnel.push (id));
+
+        if (not (id_old == id))
+        {
+          throw error::duplicate_port ("tunnel", id.get().name(), path);
         }
       }
 
       // ***************************************************************** //
 
-      xml::parse::struct_t::forbidden_type
+      xml::parse::structure_type::forbidden_type
         function_type::forbidden_below (void) const
       {
-        xml::parse::struct_t::forbidden_type forbidden;
+        xml::parse::structure_type::forbidden_type forbidden;
 
-        for ( ports_type::const_iterator pos (in().begin())
-            ; pos != in().end()
-            ; ++pos
-            )
+        BOOST_FOREACH (const port_type& port, in().values())
         {
-          forbidden[pos->type] = pos->name();
+          forbidden.insert (std::make_pair (port.type, port.name()));
         }
-
-        for ( ports_type::const_iterator pos (out().begin())
-            ; pos != out().end()
-            ; ++pos
-            )
+        BOOST_FOREACH (const port_type& port, out().values())
         {
-          forbidden[pos->type] = pos->name();
+          forbidden.insert (std::make_pair (port.type, port.name()));
+        }
+        BOOST_FOREACH (const port_type& port, tunnel().values())
+        {
+          forbidden.insert (std::make_pair (port.type, port.name()));
         }
 
         return forbidden;
@@ -264,75 +357,11 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::distribute_function (const state::type& state)
-      {
-        distribute_function ( state
-                            , functions_type()
-                            , templates_type()
-                            , specializes_type()
-                            );
-      }
-
-      namespace
-      {
-        class function_distribute_function_visitor
-          : public boost::static_visitor<void>
-        {
-        private:
-          const state::type& _state;
-          const functions_type& _functions;
-          const templates_type& _templates;
-          const specializes_type& _specializes;
-
-        public:
-          function_distribute_function_visitor
-            ( const state::type& state
-            , const functions_type& functions
-            , const templates_type& templates
-            , const specializes_type& specializes
-            )
-              : _state (state)
-              , _functions (functions)
-              , _templates (templates)
-              , _specializes (specializes)
-          {}
-
-          void operator () (expression_type&) const { return; }
-          void operator () (mod_type&) const { return; }
-          void operator () (net_type& net) const
-          {
-            net.distribute_function ( _state
-                                    , _functions
-                                    , _templates
-                                    , _specializes
-                                    );
-          }
-        };
-      }
-
-      void function_type::distribute_function ( const state::type& state
-                                              , const functions_type& functions
-                                              , const templates_type& templates
-                                              , const specializes_type& specializes
-                                              )
-      {
-        boost::apply_visitor
-          ( function_distribute_function_visitor ( state
-                                                 , functions
-                                                 , templates
-                                                 , specializes
-                                                 )
-          , f
-          );
-      }
-
-      // ***************************************************************** //
-
       void function_type::resolve ( const state::type & state
-                                  , const xml::parse::struct_t::forbidden_type & forbidden
+                                  , const xml::parse::structure_type::forbidden_type & forbidden
                                   )
       {
-        const xml::parse::struct_t::set_type empty;
+        const xml::parse::structure_type::set_type empty;
 
         resolve (empty, state, forbidden);
       }
@@ -342,37 +371,37 @@ namespace xml
         class function_resolve : public boost::static_visitor<void>
         {
         private:
-          const xml::parse::struct_t::set_type global;
+          const xml::parse::structure_type::set_type global;
           const state::type & state;
-          const xml::parse::struct_t::forbidden_type & forbidden;
+          const xml::parse::structure_type::forbidden_type & forbidden;
 
         public:
           function_resolve
-            ( const xml::parse::struct_t::set_type & _global
+            ( const xml::parse::structure_type::set_type & _global
             , const state::type & _state
-            , const xml::parse::struct_t::forbidden_type & _forbidden
+            , const xml::parse::structure_type::forbidden_type & _forbidden
             )
               : global (_global)
               , state (_state)
               , forbidden (_forbidden)
           {}
 
-          void operator () (expression_type &) const { return; }
-          void operator () (mod_type &) const { return; }
-          void operator () (net_type & net) const
+          void operator () (id::ref::expression &) const { return; }
+          void operator () (id::ref::module &) const { return; }
+          void operator () (id::ref::net & id) const
           {
-            net.resolve (global, state, forbidden);
+            id.get_ref().resolve (global, state, forbidden);
           }
         };
       }
 
       void function_type::resolve
-        ( const xml::parse::struct_t::set_type & global
+        ( const xml::parse::structure_type::set_type & global
         , const state::type & state
-        , const xml::parse::struct_t::forbidden_type & forbidden
+        , const xml::parse::structure_type::forbidden_type & forbidden
         )
       {
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         structs_resolved =
           st::join (global, st::make (structs), forbidden, state);
@@ -408,7 +437,7 @@ namespace xml
           return signature::type (port.type);
         }
 
-        xml::parse::struct_t::set_type::const_iterator sig
+        xml::parse::structure_type::set_type::const_iterator sig
           (structs_resolved.find (port.type));
 
         if (sig == structs_resolved.end())
@@ -428,28 +457,27 @@ namespace xml
         {
         private:
           const state::type & state;
-          const function_type & fun;
 
         public:
-          function_sanity_check ( const state::type & _state
-                                , const function_type & _fun
-                                )
+          function_sanity_check (const state::type & _state)
             : state (_state)
-            , fun (_fun)
           {}
 
-          void operator () (const expression_type &) const { return; }
-          void operator () (const mod_type & m) const { m.sanity_check (fun); }
-          void operator () (const net_type & net) const
+          void operator () (const id::ref::expression &) const { return; }
+          void operator () (const id::ref::module& id) const
           {
-            net.sanity_check (state, fun);
+            id.get().sanity_check();
+          }
+          void operator () (const id::ref::net& id) const
+          {
+            id.get().sanity_check (state);
           }
         };
       }
 
       void function_type::sanity_check (const state::type & state) const
       {
-        boost::apply_visitor (function_sanity_check (state, *this), f);
+        boost::apply_visitor (function_sanity_check (state), f);
       }
 
       // ***************************************************************** //
@@ -464,52 +492,34 @@ namespace xml
         public:
           function_type_check (const state::type & _state) : state (_state) {}
 
-          void operator () (const expression_type &) const { return; }
-          void operator () (const mod_type &) const { return; }
-          void operator () (const net_type & net) const
+          void operator () (const id::ref::expression &) const { return; }
+          void operator () (const id::ref::module &) const { return; }
+          void operator () (const id::ref::net& id) const
           {
-            net.type_check (state);
+            id.get().type_check (state);
           }
         };
       }
 
       void function_type::type_check (const state::type & state) const
       {
-        for ( ports_type::const_iterator port (in().begin())
-            ; port != in().end()
-            ; ++port
-            )
+        BOOST_FOREACH (const port_type& port, in().values())
         {
-          port_type_check ("in", *port, path, state, *this);
+          port.type_check ("in", path, state);
         }
-
-        for ( ports_type::const_iterator port (out().begin())
-            ; port != out().end()
-            ; ++port
-            )
+        BOOST_FOREACH (const port_type& port, out().values())
         {
-          port_type_check ("out", *port, path, state, *this);
+          port.type_check ("out", path, state);
         }
-
-        BOOST_FOREACH (const port_type& port, tunnel())
+        BOOST_FOREACH (const port_type& port, tunnel().values())
         {
-          port_type_check ("tunnel", port, path, state, *this);
+          port.type_check ("tunnel", path, state);
         }
 
         boost::apply_visitor (function_type_check (state), f);
       }
 
       // ***************************************************************** //
-
-      boost::unordered_map< std::string
-                          , we::activity_t::transition_type::pid_t
-                          >
-      net_synthesize ( we::activity_t::transition_type::net_type &
-                     , const place_map_map_type &
-                     , const net_type &
-                     , const state::type &
-                     , we::activity_t::transition_type::edge_type &
-                     );
 
       class function_synthesize
         : public boost::static_visitor<we::activity_t::transition_type>
@@ -525,7 +535,7 @@ namespace xml
 
         typedef we_transition_type::expr_type we_expr_type;
         typedef we_transition_type::net_type we_net_type;
-        typedef we_transition_type::mod_type we_mod_type;
+        typedef we_transition_type::mod_type we_module_type;
         typedef we_transition_type::preparsed_cond_type we_cond_type;
 
         typedef we_transition_type::requirement_t we_requirement_type;
@@ -535,19 +545,20 @@ namespace xml
         typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
 
         void add_ports ( we_transition_type & trans
-                       , const ports_type & ports
+                       , const function_type::ports_type& ports
                        , const we::type::PortDirection & direction
                        ) const
         {
-          for ( ports_type::const_iterator port (ports.begin())
-              ; port != ports.end()
-              ; ++port
-              )
+          BOOST_FOREACH (const port_type& port, ports.values())
             {
               const signature::type type
-                (fun.type_of_port (direction, *port));
+                (fun.type_of_port (direction, port));
 
-              trans.add_ports () (port->name(), type, direction, port->prop);
+              trans.add_ports () ( port.name()
+                                 , type
+                                 , direction
+                                 , port.prop
+                                 );
             }
         }
 
@@ -557,32 +568,28 @@ namespace xml
         {
           const typename Map::const_iterator pos (pid_of_place.find (name));
 
-          if (pos == pid_of_place.end())
-          {
-            THROW_STRANGE ("missing place " << name << " in pid_of_place");
-          }
-
           return pos->second;
         }
 
         template<typename Map>
         void add_ports ( we_transition_type & trans
-                       , const ports_type & ports
+                       , const function_type::ports_type& ports
                        , const we::type::PortDirection & direction
                        , const Map & pid_of_place
                        ) const
         {
-          for ( ports_type::const_iterator port (ports.begin())
-              ; port != ports.end()
-              ; ++port
-              )
+          BOOST_FOREACH (const port_type& port, ports.values())
             {
               const signature::type type
-                (fun.type_of_port (direction, *port));
+                (fun.type_of_port (direction, port));
 
-              if (not port->place)
+              if (not port.place)
                 {
-                  trans.add_ports () (port->name(), type, direction, port->prop);
+                  trans.add_ports () ( port.name()
+                                     , type
+                                     , direction
+                                     , port.prop
+                                     );
                 }
               else
                 {
@@ -590,11 +597,11 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  trans.add_ports () ( port->name()
+                  trans.add_ports () ( port.name()
                                      , type
                                      , direction
-                                     , get_pid (pid_of_place, *port->place)
-                                     , port->prop
+                                     , get_pid (pid_of_place, *port.place)
+                                     , port.prop
                                      )
                     ;
                 }
@@ -643,9 +650,10 @@ namespace xml
           , fun (_fun)
         {}
 
-        we_transition_type operator () (const expression_type & e) const
+        we_transition_type
+        operator () (const id::ref::expression& id_expression) const
         {
-          const std::string expr (e.expression());
+          const std::string expr (id_expression.get().expression());
           const util::we_parser_t parsed_expression
             (util::we_parse (expr, "expression", "function", name(), fun.path));
 
@@ -653,7 +661,7 @@ namespace xml
             ( name()
             , we_expr_type (expr, parsed_expression)
             , condition()
-            , fun.internal.get_with_default (true)
+            , fun.internal.get_value_or (true)
             , fun.prop
             );
 
@@ -665,13 +673,15 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const mod_type & mod) const
+        we_transition_type operator () (const id::ref::module& id_mod) const
         {
+          const module_type& mod (id_mod.get());
+
           we_transition_type trans
             ( name()
-            , we_mod_type (mod.name, mod.function)
+            , we_module_type (mod.name, mod.function)
             , condition()
-            , fun.internal.get_with_default (false)
+            , fun.internal.get_value_or (false)
             , fun.prop
             );
 
@@ -683,7 +693,7 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const net_type & net) const
+        we_transition_type operator () (const id::ref::net & id_net) const
         {
           we_net_type we_net;
 
@@ -692,19 +702,22 @@ namespace xml
           pid_of_place_type pid_of_place
             ( net_synthesize ( we_net
                              , place_map_map_type()
-                             , net
+                             , id_net.get()
                              , state
                              , e
                              )
             );
 
-          util::property::join (state, fun.prop, net.prop);
+          util::property::join ( state
+                               , fun.prop
+                               , id_net.get().prop
+                               );
 
           we_transition_type trans
             ( name()
             , we_net
             , condition()
-            , fun.internal.get_with_default (true)
+            , fun.internal.get_value_or (true)
             , fun.prop
             );
 
@@ -726,11 +739,11 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::specialize (const state::type & state)
+      void function_type::specialize (state::type & state)
       {
         const type_map_type type_map_empty;
         const type_get_type type_get_empty;
-        const xml::parse::struct_t::set_type known_empty;
+        const xml::parse::structure_type::set_type known_empty;
 
         specialize ( type_map_empty
                    , type_get_empty
@@ -746,16 +759,16 @@ namespace xml
         private:
           const type::type_map_type & map;
           const type::type_get_type & get;
-          const xml::parse::struct_t::set_type & known_structs;
-          const state::type & state;
+          const xml::parse::structure_type::set_type & known_structs;
+          state::type & state;
           function_type & fun;
 
         public:
           function_specialize
             ( const type::type_map_type & _map
             , const type::type_get_type & _get
-            , const xml::parse::struct_t::set_type & _known_structs
-            , const state::type & _state
+            , const xml::parse::structure_type::set_type & _known_structs
+            , state::type & _state
             , function_type & _fun
             )
               : map (_map)
@@ -765,14 +778,14 @@ namespace xml
               , fun (_fun)
           {}
 
-          void operator () (expression_type &) const { return; }
-          void operator () (mod_type &) const { return; }
-          void operator () (net_type & net) const
+          void operator () (id::ref::expression &) const { return; }
+          void operator () (id::ref::module &) const { return; }
+          void operator () (id::ref::net & id) const
           {
-            net.specialize (map, get, known_structs, state);
+            id.get_ref().specialize (map, get, known_structs, state);
 
             split_structs ( known_structs
-                          , net.structs
+                          , id.get_ref().structs
                           , fun.structs
                           , get
                           , state
@@ -783,34 +796,26 @@ namespace xml
 
       void function_type::specialize ( const type_map_type & map
                                      , const type_get_type & get
-                                     , const xml::parse::struct_t::set_type & known_structs
-                                     , const state::type & state
+                                     , const xml::parse::structure_type::set_type & known_structs
+                                     , state::type & state
                                      )
       {
-        for ( ports_type::iterator port (_in.elements().begin())
-            ; port != _in.elements().end()
-            ; ++port
-            )
+        BOOST_FOREACH (port_type& port, in().values())
         {
-          port->specialize (map,  state);
+          port.specialize (map, state);
         }
-
-        for ( ports_type::iterator port (_out.elements().begin())
-            ; port != _out.elements().end()
-            ; ++port
-            )
+        BOOST_FOREACH (port_type& port, out().values())
         {
-          port->specialize (map, state);
+          port.specialize (map, state);
         }
-
-        BOOST_FOREACH (port_type& port, _tunnel.elements())
+        BOOST_FOREACH (port_type& port, tunnel().values())
         {
           port.specialize (map, state);
         }
 
         specialize_structs (map, structs, state);
 
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         boost::apply_visitor
           ( function_specialize
@@ -824,13 +829,83 @@ namespace xml
           );
       }
 
+      const function_type::unique_key_type& function_type::unique_key() const
+      {
+        //! \note anonymous functions can't be stored in unqiue, thus
+        //! just indirect.
+        return *name();
+      }
+
+      namespace
+      {
+        class visitor_clone
+          : public boost::static_visitor<function_type::type>
+        {
+        public:
+          visitor_clone (const id::function& new_id)
+            : _new_id (new_id)
+          { }
+          template<typename ID_TYPE>
+            function_type::type operator() (const ID_TYPE& id) const
+          {
+            return id.get().clone (_new_id);
+          }
+        private:
+          id::function _new_id;
+        };
+      }
+
+      id::ref::function function_type::clone
+        (const boost::optional<parent_id_type>& parent) const
+      {
+        const id::function new_id (id_mapper()->next_id());
+        return function_type
+          ( new_id
+          , id_mapper()
+          , parent
+          , _name
+          , _in.clone (new_id)
+          , _out.clone (new_id)
+          , _tunnel.clone (new_id)
+          , _typenames
+          , contains_a_module_call
+          , internal
+          , structs
+          , cond
+          , requirements
+          , boost::apply_visitor (visitor_clone (new_id), f)
+          , structs_resolved
+          , prop
+          , path
+          ).make_reference_id();
+      }
+
+      // ***************************************************************** //
+
+      function_with_mapping_type::function_with_mapping_type
+        ( const id::ref::function& function
+        , boost::optional<type_map_type&> type_map
+        )
+          : _function (function)
+          , _type_map (type_map)
+      { }
+
+      const id::ref::function& function_with_mapping_type::function() const
+      {
+        return _function;
+      }
+      boost::optional<type_map_type&> function_with_mapping_type::type_map()
+      {
+        return _type_map;
+      }
+
       // ***************************************************************** //
 
       fun_info_type::fun_info_type ( const std::string & _name
                                    , const std::string & _code
-                                   , const flags_type & _ldflags
-                                   , const flags_type & _cxxflags
-                                   , const links_type & _links
+                                   , const module_type::flags_type & _ldflags
+                                   , const module_type::flags_type & _cxxflags
+                                   , const module_type::links_type & _links
                                    , const boost::filesystem::path & _path
                                    )
         : name (_name)
@@ -1048,7 +1123,7 @@ namespace xml
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
 
-                BOOST_FOREACH (links_type::value_type const& link, fun->links)
+                BOOST_FOREACH (module_type::links_type::value_type const& link, fun->links)
                   {
                     stream << objs << " += "
                            << boost::filesystem::absolute
@@ -1058,12 +1133,12 @@ namespace xml
                            << std::endl;
                   }
 
-                BOOST_FOREACH (flags_type::value_type const& flag, fun->ldflags)
+                BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->ldflags)
                   {
                     stream << ldflags << " += " << flag << std::endl;
                   }
 
-                BOOST_FOREACH (flags_type::value_type const& flag, fun->cxxflags)
+                BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->cxxflags)
                   {
                     stream << cxxflags << " += " << flag << std::endl;
                   }
@@ -1256,8 +1331,13 @@ namespace xml
         stream.commit();
       }
 
+      typedef boost::unordered_map<std::string, module_type>
+        mc_by_function_type;
+      typedef boost::unordered_map<std::string, mc_by_function_type>
+        mcs_type;
+
       bool find_module_calls ( const state::type &
-                             , function_type &
+                             , const id::ref::function &
                              , fun_info_map &
                              , mcs_type &
                              );
@@ -1269,63 +1349,63 @@ namespace xml
         {
         private:
           const state::type & state;
-          const net_type & net;
+          const id::ref::net & _id_net;
           const transition_type & trans;
           fun_info_map & m;
           mcs_type& mcs;
 
         public:
           transition_find_module_calls_visitor ( const state::type & _state
-                                               , const net_type & _net
+                                               , const id::ref::net& id_net
                                                , const transition_type & _trans
                                                , fun_info_map & _m
                                                , mcs_type& _mcs
                                        )
             : state (_state)
-            , net (_net)
+            , _id_net (id_net)
             , trans (_trans)
             , m (_m)
             , mcs (_mcs)
           {}
 
-          bool operator () (function_type & f) const
+          bool operator () (const id::ref::function & id_function) const
           {
-            return find_module_calls (state, f, m, mcs);
+            return find_module_calls (state, id_function, m, mcs);
           }
 
-          bool operator () (use_type & u) const
+          bool operator () (const id::ref::use& u) const
           {
-            boost::optional<function_type> fun (net.get_function (u.name()));
+            boost::optional<const id::ref::function&> id_function
+              (_id_net.get_ref().get_function (u.get().name()));
 
-            if (!fun)
+            if (not id_function)
               {
                 throw error::unknown_function
-                  (u.name(), trans.name(), trans.path);
+                  (u.get().name(), trans.name(), trans.path);
               }
 
-            return find_module_calls (state, *fun, m, mcs);
+            return find_module_calls (state, *id_function, m, mcs);
           }
         };
       }
 
       bool find_module_calls ( const state::type & state
-                             , net_type & n
+                             , id::ref::net & id_net
                              , fun_info_map & m
                              , mcs_type& mcs
                              )
       {
+        net_type& n (id_net.get_ref());
+
         n.contains_a_module_call = false;
 
-        for ( net_type::transitions_type::iterator pos
-                (n.transitions().begin())
-            ; pos != n.transitions().end()
-            ; ++pos
-            )
+        BOOST_FOREACH (transition_type& transition, n.transitions().values())
           {
             n.contains_a_module_call
               |= boost::apply_visitor
-              ( transition_find_module_calls_visitor(state, n, *pos, m, mcs)
-              , pos->function_or_use()
+              ( transition_find_module_calls_visitor
+                (state, id_net, transition, m, mcs)
+              , transition.function_or_use()
               );
           }
 
@@ -1375,7 +1455,7 @@ namespace xml
         }
 
         template<typename Stream>
-        void namespace_open (Stream& s, const mod_type& mod)
+        void namespace_open (Stream& s, const module_type& mod)
         {
           s << std::endl
             << "namespace pnetc" << std::endl
@@ -1388,7 +1468,7 @@ namespace xml
         }
 
         template<typename Stream>
-        void namespace_close (Stream& s, const mod_type & mod)
+        void namespace_close (Stream& s, const module_type & mod)
         {
           s << "    } // namespace " << mod.name << std::endl
             << "  } // namespace op" << std::endl
@@ -1469,11 +1549,11 @@ namespace xml
         template<typename Stream>
         void
         mod_signature ( Stream& s
-                      , const fhg::util::maybe<port_with_type> & port_return
+                      , const boost::optional<port_with_type> & port_return
                       , const ports_with_type_type & ports_const
                       , const ports_with_type_type & ports_mutable
                       , const ports_with_type_type & ports_out
-                      , const mod_type & mod
+                      , const module_type & mod
                       )
         {
           std::ostringstream pre;
@@ -1540,12 +1620,12 @@ namespace xml
         template<typename Stream>
         void
         mod_wrapper ( Stream& s
-                    , const mod_type & mod
+                    , const module_type & mod
                     , const path_t file_hpp
                     , const ports_with_type_type & ports_const
                     , const ports_with_type_type & ports_mutable
                     , const ports_with_type_type & ports_out
-                    , const fhg::util::maybe<port_with_type> & port_return
+                    , const boost::optional<port_with_type> & port_return
                     )
         {
           namespace cpp_util = ::fhg::util::cpp;
@@ -1726,35 +1806,37 @@ namespace xml
         {
         private:
           const state::type & state;
-          const function_type & f;
+          const id::ref::function & _id_function;
           fun_info_map & m;
           mcs_type& mcs;
 
         public:
           find_module_calls_visitor ( const state::type & _state
-                                    , const function_type & _f
+                                    , const id::ref::function & id_function
                                     , fun_info_map & _m
                                     , mcs_type& _mcs
                                     )
             : state (_state)
-            , f (_f)
+            , _id_function (id_function)
             , m (_m)
             , mcs (_mcs)
           {}
 
-          bool operator () (expression_type &) const
+          bool operator () (id::ref::expression &) const
           {
             return false;
           }
 
-          bool operator () (net_type & n) const
+          bool operator () (id::ref::net & id) const
           {
-            return find_module_calls (state, n, m, mcs);
+            return find_module_calls (state, id, m, mcs);
           }
 
-          bool operator () (mod_type & mod) const
+          bool operator () (id::ref::module & id) const
           {
             namespace cpp_util = ::fhg::util::cpp;
+
+            const module_type& mod (id.get());
 
             const mcs_type::const_iterator old_map (mcs.find (mod.name));
 
@@ -1768,11 +1850,11 @@ namespace xml
                 if (old_mc->second == mod)
                 {
                   state.warn ( warning::duplicate_external_function
-                             ( mod.function
-                             , mod.name
-                             , old_mc->second.path
-                             , mod.path
-                             )
+                               ( mod.function
+                               , mod.name
+                               , old_mc->second.path
+                               , mod.path
+                               )
                              );
                 }
                 else
@@ -1789,120 +1871,81 @@ namespace xml
 
             mcs[mod.name].insert (std::make_pair (mod.function, mod));
 
-#define STRANGE(msg) THROW_STRANGE(  msg << " in module "     \
-                                  << mod.name << " function " \
-                                  << mod.function             \
-                                  )
-
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
             ports_with_type_type ports_out;
-            fhg::util::maybe<port_with_type> port_return;
+            boost::optional<port_with_type> port_return;
             types_type types;
 
             if (mod.port_return)
             {
-              boost::optional<port_type> port
-                (f.get_port_out (*mod.port_return));
+              boost::optional<const id::ref::port&> id_port
+                (_id_function.get().get_port_out (*mod.port_return));
 
-              if (!port)
-              {
-                STRANGE ("unknown return port " << *mod.port_return);
-              }
+              const port_type& port (id_port->get());
 
-              port_return = port_with_type (*mod.port_return, port->type);
-              types.insert (port->type);
+              port_return = port_with_type (*mod.port_return, port.type);
+              types.insert (port.type);
             }
 
-            for ( port_args_type::const_iterator name (mod.port_arg.begin())
+            for ( module_type::port_args_type::const_iterator name (mod.port_arg.begin())
                 ; name != mod.port_arg.end()
                 ; ++name
                 )
             {
-              if (!f.is_known_port (*name))
+              if (_id_function.get().is_known_port_inout (*name))
               {
-                STRANGE ("unknown arg port " << *name);
-              }
+                boost::optional<const id::ref::port&> id_port_in
+                  (_id_function.get().get_port_in (*name));
+                boost::optional<const id::ref::port&> id_port_out
+                  (_id_function.get().get_port_out (*name));
 
-              if (f.is_known_port_inout (*name))
-              {
-                boost::optional<port_type> port_in
-                  (f.get_port_in (*name));
-                boost::optional<port_type> port_out
-                  (f.get_port_out (*name));
-
-                if (!port_in)
-                {
-                  STRANGE ("failed to get port_in " << *name);
-                }
-
-                if (!port_out)
-                {
-                  STRANGE ("failed to get port_out " << *name);
-                }
-
-                if (port_in->type != port_out->type)
-                {
-                  STRANGE ("in-type " << port_in->type
-                          << " != out-type " << port_out->type
-                          << " for port_inout " << *name
-                          );
-                }
+                const port_type& port_in (id_port_in->get());
+                const port_type& port_out (id_port_out->get());
 
                 if (    mod.port_return
-                   && (*mod.port_return == port_in->name())
+                   && (*mod.port_return == port_in.name())
                    )
                 {
-                  ports_const.push_back (port_with_type (*name, port_in->type));
-                  types.insert (port_in->type);
+                  ports_const.push_back (port_with_type (*name, port_in.type));
+                  types.insert (port_in.type);
                 }
                 else
                 {
-                  ports_mutable.push_back (port_with_type (*name, port_in->type));
-                  types.insert (port_in->type);
+                  ports_mutable.push_back (port_with_type (*name, port_in.type));
+                  types.insert (port_in.type);
                 }
               }
-              else if (f.is_known_port_in (*name))
+              else if (_id_function.get().is_known_port_in (*name))
               {
-                boost::optional<port_type> port_in
-                  (f.get_port_in (*name));
+                boost::optional<const id::ref::port&> id_port_in
+                  (_id_function.get().get_port_in (*name));
 
-                if (!port_in)
-                {
-                  STRANGE ("failed to get port_in " << *name);
-                }
+                const port_type& port_in (id_port_in->get());
 
-                ports_const.push_back (port_with_type (*name, port_in->type));
-                types.insert (port_in->type);
+                ports_const.push_back (port_with_type (*name, port_in.type));
+                types.insert (port_in.type);
               }
-              else if (f.is_known_port_out (*name))
+              else if (_id_function.get().is_known_port_out (*name))
               {
-                boost::optional<port_type> port_out
-                  (f.get_port_out (*name));
+                boost::optional<const id::ref::port&> id_port_out
+                  (_id_function.get().get_port_out (*name));
 
-                if (!port_out)
-                {
-                  STRANGE ("failed to get port_out " << *name);
-                }
+                const port_type& port_out (id_port_out->get());
 
                 if (    mod.port_return
-                   && (*mod.port_return == port_out->name())
+                   && (*mod.port_return == port_out.name())
                    )
                 {
                   // do nothing, it is the return port
                 }
                 else
                 {
-                  ports_out.push_back (port_with_type (*name, port_out->type));
-                  types.insert (port_out->type);
+                  ports_out.push_back (port_with_type (*name, port_out.type));
+                  types.insert (port_out.type);
                 }
               }
-              else
-              {
-                STRANGE ("port " << *name << " is not known at all");
-              }
             }
-#undef STRANGE
 
             const path_t prefix (state.path_to_cpp());
             const path_t path (prefix / cpp_util::path::op() / mod.name);
@@ -1977,7 +2020,7 @@ namespace xml
                                 , cpp_util::path::op() / mod.name / file_hpp
                                 );
 
-              for ( cincludes_type::const_iterator inc
+              for ( module_type::cincludes_type::const_iterator inc
                       (mod.cincludes.begin())
                   ; inc != mod.cincludes.end()
                   ; ++inc
@@ -2025,148 +2068,120 @@ namespace xml
       }
 
       bool find_module_calls ( const state::type & state
-                             , function_type & f
+                             , const id::ref::function& id_function
                              , fun_info_map & m
                              )
       {
         mcs_type mcs;
 
-        return find_module_calls (state, f, m, mcs);
+        return find_module_calls (state, id_function, m, mcs);
       }
 
       bool find_module_calls ( const state::type & state
-                             , function_type & f
+                             , const id::ref::function & id_function
                              , fun_info_map & m
                              , mcs_type& mcs
                              )
       {
-        f.contains_a_module_call
+        id_function.get_ref().contains_a_module_call
           = boost::apply_visitor
-          (find_module_calls_visitor(state, f, m, mcs), f.f);
+          ( find_module_calls_visitor (state, id_function, m, mcs)
+          , id_function.get_ref().f
+          );
 
-        return f.contains_a_module_call;
+        return id_function.get().contains_a_module_call;
       }
 
-      // ***************************************************************** //
-
-      void struct_to_cpp ( const struct_t & s
-                         , const state::type & state
-                         )
-      {
-        namespace cpp_util = ::fhg::util::cpp;
-
-        typedef boost::filesystem::path path_t;
-
-        const path_t prefix (state.path_to_cpp());
-        const path_t file
-          (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name()));
-
-        util::check_no_change_fstream stream (state, file);
-
-        signature::cpp::cpp_header
-          (stream, s.signature(), s.name(), s.path(), cpp_util::path::type());
-
-        stream.commit();
-      }
-
-      void structs_to_cpp ( const structs_type & structs
-                          , const state::type & state
-                          )
-      {
-        for ( structs_type::const_iterator pos (structs.begin())
-            ; pos != structs.end()
-            ; ++pos
-            )
-          {
-            struct_to_cpp (*pos, state);
-          }
-      }
-
-      // ***************************************************************** //
-
-      void struct_to_cpp (const state::type &, const function_type &);
+      // **************************************************************** //
 
       namespace
       {
-        class transition_struct_to_cpp_visitor
-          : public boost::static_visitor<void>
+        void to_cpp (const structure_type& s, const state::type & state)
+        {
+          namespace cpp_util = ::fhg::util::cpp;
+
+          typedef boost::filesystem::path path_t;
+
+          const path_t prefix (state.path_to_cpp());
+          const path_t file
+            (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name()));
+
+          util::check_no_change_fstream stream (state, file);
+
+          signature::cpp::cpp_header
+            (stream, s.signature(), s.name(), s.path(), cpp_util::path::type());
+
+          stream.commit();
+        }
+
+        void to_cpp (const structs_type& structs, const state::type& state)
+        {
+          BOOST_FOREACH (const structure_type& structure, structs)
+          {
+            to_cpp (structure, state);
+          }
+        }
+
+        class visitor_to_cpp : public boost::static_visitor<void>
         {
         private:
           const state::type & state;
 
         public:
-          transition_struct_to_cpp_visitor (const state::type & _state)
+          visitor_to_cpp (const state::type & _state)
             : state (_state)
           {}
 
-          void operator () (const function_type & f) const
+          void operator() (const id::ref::net& id) const
+          {
+            const net_type& n (id.get());
+
+            if (n.contains_a_module_call)
+            {
+              to_cpp (n.structs, state);
+
+              BOOST_FOREACH ( const id::ref::function& id_function
+                            , n.functions().ids()
+                            )
+              {
+                struct_to_cpp (state, id_function);
+              }
+
+              BOOST_FOREACH ( const transition_type& transition
+                            , n.transitions().values()
+                            )
+              {
+                boost::apply_visitor (*this, transition.function_or_use());
+              }
+            }
+          }
+
+          void operator() (const id::ref::function& f) const
           {
             struct_to_cpp (state, f);
           }
 
-          template<typename T> void operator () (const T &) const {}
-        };
-
-        class struct_to_cpp_visitor : public boost::static_visitor<void>
-        {
-        private:
-          const state::type & state;
-
-        public:
-          struct_to_cpp_visitor (const state::type & _state)
-            : state (_state)
-          {}
-
-          void operator () (const net_type & n) const
-          {
-            if (!n.contains_a_module_call)
-              {
-                return;
-              }
-
-            structs_to_cpp (n.structs, state);
-
-            for ( functions_type::const_iterator pos (n.functions().begin())
-                ; pos != n.functions().end()
-                ; ++pos
-                )
-              {
-                struct_to_cpp (state, *pos);
-              }
-
-            for ( net_type::transitions_type::const_iterator pos
-                   (n.transitions().begin())
-                ; pos != n.transitions().end()
-                ; ++pos
-                )
-              {
-                boost::apply_visitor ( transition_struct_to_cpp_visitor (state)
-                                     , pos->function_or_use()
-                                     );
-              }
-          }
-
-          template<typename T> void operator () (const T &) const {}
+          void operator() (const id::ref::use&) const { }
+          void operator() (const id::ref::module&) const { }
+          void operator() (const id::ref::expression&) const { }
         };
       }
 
-      // ***************************************************************** //
-
-      void struct_to_cpp ( const state::type & state
-                         , const function_type & f
+      void struct_to_cpp ( const state::type& state
+                         , const id::ref::function& function_id
                          )
       {
-        if (!f.contains_a_module_call)
-          {
-            return;
-          }
+        const function_type& function (function_id.get());
 
-        structs_to_cpp (f.structs, state);
+        if (function.contains_a_module_call)
+        {
+          to_cpp (function.structs, state);
 
-        boost::apply_visitor (struct_to_cpp_visitor (state), f.f);
+          boost::apply_visitor (visitor_to_cpp (state), function.f);
+        }
       }
 
-      // ******************************************************************* //
+      // **************************************************************** //
 
       namespace dump
       {
@@ -2179,7 +2194,7 @@ namespace xml
                   );
 
         void dump ( ::fhg::util::xml::xmlstream &
-                  , const template_type &
+                  , const tmpl_type &
                   );
 
         namespace
@@ -2190,12 +2205,14 @@ namespace xml
             ::fhg::util::xml::xmlstream & s;
 
           public:
-            function_dump_visitor (::fhg::util::xml::xmlstream & _s) : s (_s) {}
+            function_dump_visitor (::fhg::util::xml::xmlstream & _s)
+              : s (_s)
+            {}
 
-            template<typename T>
-            void operator () (const T & x) const
+            template<typename ID>
+            void operator () (const ID& id) const
             {
-              ::xml::parse::type::dump::dump (s, x);
+              ::xml::parse::type::dump::dump (s, id.get());
             }
           };
         }
@@ -2224,9 +2241,9 @@ namespace xml
 
           xml::parse::type::dump::dump (s, f.requirements);
 
-          dumps (s, f.in().begin(), f.in().end(), "in");
-          dumps (s, f.out().begin(), f.out().end(), "out");
-          dumps (s, f.tunnel().begin(), f.tunnel().end(), "tunnel");
+          dumps (s, f.in().values(), "in");
+          dumps (s, f.out().values(), "out");
+          dumps (s, f.tunnel().values(), "tunnel");
 
           boost::apply_visitor (function_dump_visitor (s), f.f);
 
@@ -2271,4 +2288,3 @@ namespace xml
     }
   }
 }
-

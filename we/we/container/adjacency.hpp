@@ -41,19 +41,6 @@ namespace adjacency
   public:
     table (const ADJ &, const ROW &, const COL &);
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-    table & operator= (table const & rhs)
-    {
-      if (this != &rhs)
-      {
-        invalid = rhs.invalid;
-        row_tab = rhs.row_tab;
-        col_tab = rhs.col_tab;
-      }
-      return *this;
-    }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-
     const const_it<COL,ADJ> row_const_it (const ROW &) const;
     const const_it<ROW,ADJ> col_const_it (const COL &) const;
     const ADJ get_adjacent (const ROW &, const COL &) const;

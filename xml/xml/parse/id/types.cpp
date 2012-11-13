@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include <boost/functional/hash.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -27,6 +28,10 @@ namespace xml
       {                                                                 \
         return _val == other._val;                                      \
       }                                                                 \
+      bool NAME::operator!= (const NAME& other) const                   \
+      {                                                                 \
+        return _val != other._val;                                      \
+      }                                                                 \
                                                                         \
       std::size_t hash_value (const NAME& val)                          \
       {                                                                 \
@@ -35,7 +40,33 @@ namespace xml
       std::ostream& operator<< (std::ostream& os, const NAME& val)      \
       {                                                                 \
         return os << val._val;                                          \
+      }                                                                 \
+                                                                        \
+      bool operator< (const NAME& lhs, const ref::NAME& rhs)            \
+      {                                                                 \
+        return lhs < rhs.id();                                          \
+      }                                                                 \
+      bool operator< (const ref::NAME& lhs, const NAME& rhs)            \
+      {                                                                 \
+        return lhs.id() < rhs;                                          \
+      }                                                                 \
+      bool operator== (const NAME& lhs, const ref::NAME& rhs)           \
+      {                                                                 \
+        return lhs == rhs.id();                                         \
+      }                                                                 \
+      bool operator== (const ref::NAME& lhs, const NAME& rhs)           \
+      {                                                                 \
+        return lhs.id() == rhs;                                         \
+      }                                                                 \
+      bool operator!= (const NAME& lhs, const ref::NAME& rhs)           \
+      {                                                                 \
+        return lhs != rhs.id();                                         \
+      }                                                                 \
+      bool operator!= (const ref::NAME& lhs, const NAME& rhs)           \
+      {                                                                 \
+        return lhs.id() != rhs;                                         \
       }
+
 
 #include <xml/parse/id/helper.lst>
 
@@ -43,7 +74,7 @@ namespace xml
 
       namespace ref
       {
-#define ITEM(NAME,__IGNORE,__IGNORE2,__IGNORE3)                         \
+#define ITEM(NAME,__IGNORE,XML_TYPE,__IGNORE3)                          \
         NAME::NAME (const id::NAME& id, mapper* mapper_)                \
           :  _id (id)                                                   \
           , _mapper (mapper_)                                           \
@@ -77,6 +108,24 @@ namespace xml
         {                                                               \
           return _id == other._id;                                      \
         }                                                               \
+        bool NAME::operator!= (const NAME& other) const                 \
+        {                                                               \
+          return _id != other._id;                                      \
+        }                                                               \
+                                                                        \
+        const type::XML_TYPE& NAME::get() const                         \
+        {                                                               \
+          return *_mapper->get (*this);                                 \
+        }                                                               \
+        type::XML_TYPE& NAME::get_ref() const                           \
+        {                                                               \
+          return *_mapper->get_ref (*this);                             \
+        }                                                               \
+                                                                        \
+        const id::NAME& NAME::id() const                                \
+        {                                                               \
+          return _id;                                                   \
+        }                                                               \
                                                                         \
         std::size_t hash_value (const NAME& ref)                        \
         {                                                               \
@@ -94,4 +143,3 @@ namespace xml
     }
   }
 }
-

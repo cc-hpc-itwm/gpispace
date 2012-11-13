@@ -12,30 +12,23 @@ namespace xml
   {
     namespace type
     {
-      specialize_type::specialize_type ( const id::specialize& id
-                                       , const id::net& parent
-                                       , id::mapper* id_mapper
+      specialize_type::specialize_type ( ID_CONS_PARAM(specialize)
+                                       , PARENT_CONS_PARAM(net)
+                                       , const std::string& name
+                                       , const std::string& use
+                                       , const type_map_type& type_map
+                                       , const type_get_type& type_get
+                                       , const boost::filesystem::path& path
                                        )
-        : _name()
-        , use()
-        , type_map()
-        , type_get()
-        , path()
-        , _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _name (name)
+        , use (use)
+        , type_map (type_map)
+        , type_get (type_get)
+        , path (path)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const id::specialize& specialize_type::id() const
-      {
-        return _id;
-      }
-
-      const id::net& specialize_type::parent() const
-      {
-        return _parent;
       }
 
       const std::string& specialize_type::name() const
@@ -47,19 +40,35 @@ namespace xml
         return _name = name;
       }
 
-      bool specialize_type::is_same (const specialize_type& other) const
+      const specialize_type::unique_key_type&
+        specialize_type::unique_key() const
       {
-        return id() == other.id() && parent() == other.parent();
+        return name();
       }
 
-      void split_structs ( const xml::parse::struct_t::set_type & global
+      id::ref::specialize specialize_type::clone
+        (const boost::optional<parent_id_type>& parent) const
+      {
+        return specialize_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , _name
+          , use
+          , type_map
+          , type_get
+          , path
+          ).make_reference_id();
+      }
+
+      void split_structs ( const xml::parse::structure_type::set_type & global
                          , structs_type & child_structs
                          , structs_type & parent_structs
                          , const type_get_type & type_get
                          , const state::type & state
                          )
       {
-        namespace st = xml::parse::struct_t;
+        namespace st = xml::parse::structure_type;
 
         const st::set_type known_structs
           ( st::join ( global
@@ -111,7 +120,7 @@ namespace xml
         {
           s->signature
             ( boost::apply_visitor
-              ( xml::parse::struct_t::specialize (map, state)
+              ( xml::parse::structure_type::specialize (map, state)
               , s->signature()
               )
             );
@@ -162,4 +171,3 @@ namespace xml
     }
   }
 }
-

@@ -6,6 +6,7 @@
  *  Modified: Alexander Petry (ITWM), 11.10.2011
  *  */
 
+#include <unistd.h> // sleep
 #include <cstdio>
 #include <cstring>
 #include <string>

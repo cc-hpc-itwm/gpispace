@@ -2,10 +2,6 @@
 
 #include <pnete/data/handle/net.hpp>
 
-#include <xml/parse/type/net.hpp>
-
-#include <boost/optional.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -14,28 +10,32 @@ namespace fhg
     {
       namespace handle
       {
-        net::net (const net_type& net)
-          : _net_id (net.id())
-          , _net (const_cast<net_type&> (net))
+        net::net ( const ::xml::parse::id::ref::net& id
+                 , change_manager_t& change_manager
+                 )
+          : _id (id)
+          , _change_manager (change_manager)
         { }
 
-        net::net_type& net::operator()() const
+        const ::xml::parse::type::net_type& net::get() const
         {
-          //! \todo Get net by id.
-          return _net;
+          return _id.get();
+        }
+        ::xml::parse::type::net_type& net::get_ref() const
+        {
+          return _id.get_ref();
         }
 
         bool net::operator== (const net& other) const
         {
-          return _net_id == other._net_id;
+          return _id == other._id;
         }
 
-        const ::xml::parse::id::net& net::id() const
+        const ::xml::parse::id::ref::net& net::id() const
         {
-          return _net_id;
+          return _id;
         }
       }
     }
   }
 }
-

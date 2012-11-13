@@ -60,7 +60,7 @@ namespace fhg
           }
           ::xml::parse::type::function_type& function()
           {
-            return _function_with_mapping.function();
+            return _function_with_mapping.function().get_ref();
           }
           ::xml::parse::type::type_map_type& type_map()
           {
@@ -92,36 +92,38 @@ namespace fhg
           {
           private:
             xml_type::expression_type& _expression;
-            xml_type::ports_type& _in;
-            xml_type::ports_type& _out;
+            xml_type::function_type::ports_type& _in;
+            xml_type::function_type::ports_type& _out;
 
           public:
-            explicit expression_type ( xml_type::expression_type& expression
-                                     , xml_type::ports_type& in
-                                     , xml_type::ports_type& out
-                                     );
+            explicit expression_type
+              ( xml_type::expression_type& expression
+              , xml_type::function_type::ports_type& in
+              , xml_type::function_type::ports_type& out
+              );
 
             xml_type::expression_type& expression ();
-            xml_type::ports_type& in ();
-            xml_type::ports_type& out ();
+            xml_type::function_type::ports_type& in ();
+            xml_type::function_type::ports_type& out ();
           };
 
-          class mod_type
+          class module_type
           {
           private:
-            xml_type::mod_type& _mod;
-            xml_type::ports_type& _in;
-            xml_type::ports_type& _out;
+            xml_type::module_type& _mod;
+            xml_type::function_type::ports_type& _in;
+            xml_type::function_type::ports_type& _out;
 
           public:
-            explicit mod_type ( xml_type::mod_type& mod
-                              , xml_type::ports_type& in
-                              , xml_type::ports_type& out
-                              );
+            explicit module_type
+              ( xml_type::module_type& mod
+              , xml_type::function_type::ports_type& in
+              , xml_type::function_type::ports_type& out
+              );
 
-            xml_type::mod_type& mod ();
-            xml_type::ports_type& in ();
-            xml_type::ports_type& out ();
+            xml_type::module_type& mod ();
+            xml_type::function_type::ports_type& in ();
+            xml_type::function_type::ports_type& out ();
           };
 
           class net_type
@@ -137,7 +139,7 @@ namespace fhg
         }
 
         typedef proxy_base<data::expression_type> expression_proxy;
-        typedef proxy_base<data::mod_type> mod_proxy;
+        typedef proxy_base<data::module_type> mod_proxy;
         typedef proxy_base<data::net_type, ui::graph::scene_type> net_proxy;
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
