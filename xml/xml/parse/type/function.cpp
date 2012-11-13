@@ -317,10 +317,10 @@ namespace xml
       {
         push (id, _out, _in, "out");
       }
-      void function_type::push_inout (const id::ref::port& id)
+      void function_type::push_inout (const id::ref::port& port_id)
       {
-        push_in (id);
-        push_out (id);
+        push_in (port_id);
+        push_out (port_id.get().clone (id()));
       }
       void function_type::push_tunnel (const id::ref::port& id)
       {
