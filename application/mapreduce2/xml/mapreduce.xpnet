@@ -6,7 +6,7 @@
   <in name="output_file" type="string" place="output_file"/>
   <in name="read_chunk_size" type="long" place="read_chunk_size"/>
   <in name="map_chunk_size" type="long" place="map_chunk_size"/>
-  <in name="n_part" type="long" place="n_part"/>
+  <in name="n_part" type="long" place="input_n_part"/>
   <in name="partition_slot_size" type="long" place="partition_slot_size"/>
   <in name="reduce_slot_size" type="long" place="reduce_slot_size"/>
   <in name="input_n_read_slots" type="long" place="input_n_read_slots"/>
@@ -24,11 +24,13 @@
     <place name="config" type="config"/>
     <place name="n_read_slots" type="long"/>
     <place name="n_map_slots" type="long"/>
+    <place name="n_part_slots" type="long"/>
 
     <place name="n_chunks" type="long"/>
-    <place name="n_part" type="long"/>
+
+    <place name="input_n_part" type="long"/>
     <place name="partition_slot_size" type="long"/>
-  	<place name="reduce_slot_size" type="long"/>
+    <place name="reduce_slot_size" type="long"/>
     
     <place name="iterator_red_info" type="iterator_red_info"/>
     <place name="done" type="control"/>
@@ -63,10 +65,11 @@
         <in name="input_n_map_slots" type="long"/>
         <in name="n_part" type="long"/>
         <in name="partition_slot_size" type="long"/>
-  		<in name="reduce_slot_size" type="long"/>
+	<in name="reduce_slot_size" type="long"/>
         <out name="config" type="config"/>
         <out name="n_read_slots" type="long"/>
         <out name="n_map_slots" type="long"/>
+        <out name="n_part_slots" type="long"/>
         <out name="n_chunks" type="long"/>
         <out name="iterator_red_info" type="iterator_red_info"/>
 
@@ -74,7 +77,7 @@
         															read_chunk_size, map_chunk_size,
                                                						input_n_read_slots, input_n_map_slots,
                                                						n_chunks, n_read_slots, n_map_slots,
-                                               						n_part, partition_slot_size, 
+                                               						n_part, partition_slot_size, n_part_slots,
                                                					    reduce_slot_size, iterator_red_info)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
@@ -170,6 +173,7 @@
 	          
 	          n_read_slots = input_n_read_slots;
 	          n_map_slots = input_n_map_slots;
+                  n_part_slots = n_part;
 	
 	          LOG (INFO, "The config is: " << config);
 	          
@@ -182,7 +186,7 @@
       <connect-in  port="output_file"  place="output_file"/>
       <connect-in  port="read_chunk_size" place="read_chunk_size"/>
       <connect-in  port="map_chunk_size" place="map_chunk_size"/>
-      <connect-in  port="n_part" place="n_part"/>
+      <connect-in  port="n_part" place="input_n_part"/>
       <connect-in  port="partition_slot_size" place="partition_slot_size"/>
       <connect-in  port="reduce_slot_size" place="reduce_slot_size"/>
       <connect-in  port="input_n_read_slots" place="input_n_read_slots"/>
@@ -190,11 +194,20 @@
       <connect-out port="config" place="config"/>
       <connect-out port="n_read_slots" place="n_read_slots"/>
       <connect-out port="n_map_slots" place="n_map_slots"/>
+      <connect-out port="n_part_slots" place="n_part_slots"/>
       <connect-out port="n_chunks" place="n_chunks"/>
       <connect-out port="iterator_red_info" place="iterator_red_info"/>
     </transition>
     
     <!-- begin generate partition info tokens, put this into some subnet later -->
+    <place name="n_part_slots_cnt" type="long"/>
+    <place name="n_part_slots_gen" type="long"/>
+    <transition name="dup_n_part_slots" inline="true">
+      <use name="dup_counter" />
+      <connect-in port="in" place="n_part_slots"/>
+      <connect-out port="one" place="n_part_slots_gen"/>
+      <connect-out port="two" place="n_part_slots_cnt"/>
+    </transition>
   
     <place name="iter_gen_part_info" type="long"/> 
     <transition name="init_gen_part_tokens" inline="true">
@@ -205,7 +218,7 @@
                 ${iter_gen_part_info}:=${n_part};
             </expression>
         </defun>
-        <connect-read  port="n_part" place="n_part"/>
+        <connect-in  port="n_part" place="n_part_slots_gen"/>
         <connect-out  port="iter_gen_part_info"  place="iter_gen_part_info"/>
     </transition>
            
@@ -563,21 +576,6 @@
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
     </transition>
     
-    <transition name="release_map_slot_id" inline="true">
-    <defun>
-        <in name="map_chunk_info" type="map_chunk_info"/>
-        <out name="map_slot_id" type="long"/>
-        <expression>
-           ${map_slot_id}:=${map_chunk_info.map_slot_id}
-        </expression>
-        <condition>
-          set_empty(${map_chunk_info.unhandled_part_set})
-        </condition>
-    </defun>
-    <connect-in port="map_chunk_info" place="map_chunk_info"/>
-    <connect-out port="map_slot_id" place="map_slot_id"/>
-    </transition>
-    
     <place name="partition_result" type="partition_result"/>
     <transition name="copy_into_partition_slot" inline="true">
     <defun>
@@ -598,6 +596,7 @@
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/map.hpp"/>    
           <code><![CDATA[
+             MLOG (INFO, "storing map chunk " << map_chunk_info.map_slot_id << " into partition " << partition_info.part_id);
              // do partitioning copy from the map_chunk store in map_slot_id
              // the data corresponding to the partition partition_result.partition_info.part_id
              
@@ -699,14 +698,34 @@
     <connect-out port="partition_result" place="partition_result"/>
     </transition>
 
+    <transition name="check_partitions_done" inline="true" >
+      <defun>
+        <in name="map_chunk_info" type="map_chunk_info" />
+        <out name="slot" type="long" />
+        <out name="result" type="control" />
+
+        <expression>
+          ${slot} := ${map_chunk_info.map_slot_id};
+          ${result} := [];
+        </expression>
+
+        <condition>
+          set_empty(${map_chunk_info.unhandled_part_set})
+        </condition>
+      </defun>
+      <connect-in  port="map_chunk_info" place="map_chunk_info"/>
+      <connect-out port="slot" place="map_slot_id"/>
+      <connect-out port="result" place="chunk_partitioned"/>
+    </transition>
+
     <place name="chunk_partitioned" type="control"/>
     <transition name="post_partition" inline="true">
       <defun>
         <in name="partition_result" type="partition_result"/>
         <out name="map_chunk_info" type="map_chunk_info"/>
         <out name="partition_info" type="partition_info"/>
-        <out name="chunk_partitioned" type="control"/>
-         <module name="post_partition" function="post_partition(partition_result, map_chunk_info, chunk_partitioned, partition_info)">
+<!--
+         <module name="post_partition" function="post_partition(partition_result, map_chunk_info, partition_info)">
           <cinclude href="fhglog/fhglog.hpp"/>
            <cinclude href="util/helper.hpp"/>
           <cinclude href="sstream"/>
@@ -715,18 +734,17 @@
 	          //::mapreduce::util::dump_iter_red_info("partition_result.iterator_red_info", partition_result.iterator_red_info);
 	         
 	          map_chunk_info = partition_result.map_chunk_info;
-			  chunk_partitioned = control();  
 			  partition_info = partition_result.partition_info;  
 				
 			  //::mapreduce::util::dump_iter_red_info("iterator_red_info", iterator_red_info);
 				
           ]]></code>
         </module>
-	    <!-- <expression>			  
-			${map_slot_id}:=${partition_result.map_chunk_info.map_slot_id};
-			${chunk_partitioned} := [];  
-			${iterator_red_info} := ${partition_result.iterator_red_info};  
-        </expression> -->
+-->
+	    <expression>			  
+	          ${map_chunk_info} := ${partition_result.map_chunk_info};
+		  ${partition_info} := ${partition_result.partition_info};  
+        </expression>
         <condition>
             ${partition_result.succeeded}:gt:0L
         </condition>
@@ -734,7 +752,6 @@
       <connect-in port="partition_result" place="partition_result"/>
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
       <connect-out port="partition_info" place="partition_info"/>
-      <connect-out port="chunk_partitioned" place="chunk_partitioned"/>
     </transition> 
     
     <transition name="reduce" inline="true">
@@ -1165,6 +1182,7 @@
         <in name="read_slots_released" type="control"/>
         <in name="all_reduce_and_write_done" type="control"/>
         <in name="end_iter_gen_part_info" type="long"/>
+        <in name="part_slots" type="long"/>
         <out name="done" type="control"/>
         <module name="mapreduce_done" function="done finalize_mapreduce(config)">
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -1189,6 +1207,7 @@
     	<connect-in port="read_slots_released" place="read_slots_released"/>
     	<connect-in port="all_reduce_and_write_done" place="all_reduce_and_write_done"/>
     	<connect-in port="end_iter_gen_part_info" place="end_iter_gen_part_info"/>
+    	<connect-in port="part_slots" place="n_part_slots_cnt"/>
     	<connect-out port="done" place="done"/>
     </transition>   
     
