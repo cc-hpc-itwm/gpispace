@@ -66,14 +66,6 @@ namespace fhg
 
       namespace action
       {
-        // ## editing actions ########################################
-        template<typename HANDLE_TYPE>
-          class meta_set_property : public QUndoCommand
-        {
-        private:
-          typedef HANDLE_TYPE handle_type;
-          typedef void (change_manager_t::* signal_type)
-
         template<typename T>
           ::we::type::property::value_type to_property_type (const T& t)
         {
@@ -87,6 +79,14 @@ namespace fhg
           return
             boost::lexical_cast<T> (v);
         }
+
+        // ## editing actions ########################################
+        template<typename HANDLE_TYPE>
+          class meta_set_property : public QUndoCommand
+        {
+        private:
+          typedef HANDLE_TYPE handle_type;
+          typedef void (change_manager_t::* signal_type)
             ( const QObject*
             , const handle_type&
             , const ::we::type::property::key_type&
