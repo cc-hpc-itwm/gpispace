@@ -34,7 +34,16 @@ namespace mapreduce
         	v.assign(tok.begin(), tok.end());
 
         	for(int k=0;k<v.size();k++)
-        		total += boost::lexical_cast<int>(v[k]);
+                {
+                   try
+                   {
+                     total += boost::lexical_cast<int>(v[k]);
+                   }
+                   catch (boost::bad_lexical_cast const &)
+                   {
+                     throw std::runtime_error ("could not reduce: key := " + key + " val := " + v[k]);
+                   }
+                }
         }
 
        // MLOG(INFO, "After reduction, "<<key<<" -> "<<total<<" ");
