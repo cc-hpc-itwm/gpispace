@@ -1364,15 +1364,17 @@ function start_nre ()
     if [ x"$with_mediator" == x"true" ] ; then
         log "nres" >&2
         node_loop start_nre_on_node $@
-    else
-        log "nres (deactivated)" >&2
     fi
 }
 
 function stop_nre ()
 {
-    log "nres" >&2
-    node_loop stop_nre_on_node $@
+    with_mediator=$(get "topology.with-mediator" "true")
+    if [ x"$with_mediator" == x"true" ] ; then
+        log "nres" >&2
+        node_loop stop_nre_on_node $@
+        ec=$?
+    fi
 }
 
 function status_nre ()
