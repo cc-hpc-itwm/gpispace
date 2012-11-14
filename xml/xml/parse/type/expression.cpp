@@ -3,15 +3,12 @@
 #include <xml/parse/type/expression.hpp>
 
 #include <xml/parse/id/mapper.hpp>
-#include <xml/parse/type/function.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/split.hpp> // fhg::util::lines
 #include <fhg/util/xml.hpp>
 
 #include <stdexcept>
-
-#include <boost/variant.hpp>
 
 namespace xml
 {
@@ -37,44 +34,15 @@ namespace xml
         }
       }
 
-      expression_type::expression_type ( const id::expression& id
-                                       , const id::function& parent
-                                       , id::mapper* id_mapper
+      expression_type::expression_type ( ID_CONS_PARAM(expression)
+                                       , PARENT_CONS_PARAM(function)
+                                       , const expressions_type & exps
                                        )
-        : _expressions()
-        , _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _expressions (split (exps))
       {
         _id_mapper->put (_id, *this);
-      }
-
-      expression_type::expression_type ( const expressions_type & exps
-                                       , const id::expression& id
-                                       , const id::function& parent
-                                       , id::mapper* id_mapper
-                                       )
-        : _expressions (split (exps))
-        , _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-
-      const id::expression& expression_type::id() const
-      {
-        return _id;
-      }
-      const id::function& expression_type::parent() const
-      {
-        return _parent;
-      }
-
-      bool expression_type::is_same (const expression_type& other) const
-      {
-        return id() == other.id() && parent() == other.parent();
       }
 
       void expression_type::set (const std::string& exps)
@@ -100,6 +68,23 @@ namespace xml
         return _expressions;
       }
 
+      void expression_type::append (const expressions_type& other)
+      {
+        expressions().insert
+          (expressions().end(), other.begin(), other.end());
+      }
+
+      id::ref::expression expression_type::clone
+        (const boost::optional<parent_id_type>& parent) const
+      {
+        return expression_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , _expressions
+          ).make_reference_id();
+      }
+
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
@@ -117,37 +102,6 @@ namespace xml
 
           s.close ();
         }
-      }
-
-      namespace
-      {
-        class join_visitor : public boost::static_visitor<void>
-        {
-        private:
-          const expression_type & e;
-
-        public:
-          join_visitor (const expression_type & _e) : e(_e) {}
-
-          void operator () (expression_type & x) const
-          {
-            x.expressions().insert ( x.expressions().end()
-                                   , e.expressions().begin()
-                                   , e.expressions().end()
-                                   );
-          }
-
-          template<typename T>
-          void operator () (T &) const
-          {
-            throw std::runtime_error ("BUMMER: join for non expression!");
-          }
-        };
-      }
-
-      void join (const expression_type& e, function_type& fun)
-      {
-        boost::apply_visitor (join_visitor (e), fun.f);
       }
     }
   }

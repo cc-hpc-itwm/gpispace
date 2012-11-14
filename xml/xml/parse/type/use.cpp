@@ -12,14 +12,12 @@ namespace xml
   {
     namespace type
     {
-      use_type::use_type ( const id::use& id
-                         , const id::transition& parent
-                         , id::mapper* id_mapper
+      use_type::use_type ( ID_CONS_PARAM(use)
+                         , PARENT_CONS_PARAM(transition)
                          , const std::string& name
                          )
-        : _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
         , _name (name)
       {
         _id_mapper->put (_id, *this);
@@ -28,6 +26,17 @@ namespace xml
       const std::string& use_type::name() const
       {
         return _name;
+      }
+
+      id::ref::use use_type::clone
+                  (const boost::optional<parent_id_type>& parent) const
+      {
+        return use_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , _name
+          ).make_reference_id();
       }
 
       namespace dump

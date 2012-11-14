@@ -13,7 +13,6 @@
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
-#include <xml/parse/type/token.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 
@@ -68,29 +67,71 @@ namespace xml
 
       mapper::mapper()
         : _maps (new maps)
+        , _counter()
       { }
       mapper::~mapper()
       { }
+
+#define BODY(NAME,MEMBER_NAME,IT,VALUE)                                 \
+                                                                        \
+      const maps::NAME ## _map_type::IT elem                            \
+        (_maps->MEMBER_NAME.find (VALUE));                              \
+                                                                        \
+        if (elem == _maps->MEMBER_NAME.end())                           \
+          {                                                             \
+            return boost::none;                                         \
+          }                                                             \
+                                                                        \
+        return elem->second;                                            \
+
+#define BODY_OPTIONAL(NAME,MEMBER_NAME,IT)                              \
+                                                                        \
+      if (id)                                                           \
+        {                                                               \
+          BODY(NAME,MEMBER_NAME,IT,id->_val);                           \
+        }                                                               \
+                                                                        \
+      return boost::none;
 
 #define STRINGIFY(s) #s
 #define EXPAND_AND_STRINGIFY(s) STRINGIFY(s)
 
 #define ITEM(NAME,MEMBER_NAME,TYPE,__IGNORE)                            \
                                                                         \
-      boost::optional<type::TYPE>                                       \
-        mapper::get (const NAME& id) const                              \
+      boost::optional<const type::TYPE&>                                \
+        mapper::get (const boost::optional<NAME>& id) const             \
       {                                                                 \
-        const maps::NAME ## _map_type::const_iterator elem              \
-          (_maps->MEMBER_NAME.find (id._val));                          \
-        return boost::make_optional ( elem != _maps->MEMBER_NAME.end()  \
-                                    , elem->second                      \
-                                    );                                  \
+        BODY_OPTIONAL(NAME,MEMBER_NAME,const_iterator);                 \
       }                                                                 \
                                                                         \
-      boost::optional<type::TYPE>                                       \
+      boost::optional<type::TYPE&>                                      \
+        mapper::get_ref (const boost::optional<NAME>& id) const         \
+      {                                                                 \
+        BODY_OPTIONAL(NAME,MEMBER_NAME,iterator);                       \
+      }                                                                 \
+                                                                        \
+      boost::optional<const type::TYPE&>                                \
+        mapper::get (const NAME& id) const                              \
+      {                                                                 \
+        BODY(NAME,MEMBER_NAME,const_iterator,id._val);                  \
+      }                                                                 \
+                                                                        \
+      boost::optional<type::TYPE&>                                      \
+        mapper::get_ref (const NAME& id) const                          \
+      {                                                                 \
+        BODY(NAME,MEMBER_NAME,iterator,id._val);                        \
+      }                                                                 \
+                                                                        \
+      boost::optional<const type::TYPE&>                                \
         mapper::get (const ref::NAME& ref) const                        \
       {                                                                 \
-        return get (ref._id);                                           \
+        return get (ref.id());                                          \
+      }                                                                 \
+                                                                        \
+      boost::optional<type::TYPE&>                                      \
+        mapper::get_ref (const ref::NAME& ref) const                    \
+      {                                                                 \
+        return get_ref (ref.id());                                      \
       }                                                                 \
                                                                         \
       void mapper::put (const NAME& id, const type::TYPE& elem)         \
@@ -127,10 +168,16 @@ namespace xml
 #include <xml/parse/id/helper.lst>
 #undef ITEM
 
+#undef BODY
+#undef BODY_OPTIONAL
+
 #undef STRINIGFY
 #undef EXPAND_AND_STRINGIFY
 
+      id::base_id_type mapper::next_id()
+      {
+        return _counter.next();
+      }
     }
   }
 }
-

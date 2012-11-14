@@ -12,40 +12,55 @@ namespace xml
   {
     namespace type
     {
-      place_map_type::place_map_type ( const std::string & _place_virtual
-                                     , const std::string & _place_real
-                                     , const id::place_map& id
-                                     , const id::transition& parent
-                                     , id::mapper* id_mapper
+      place_map_type::place_map_type ( ID_CONS_PARAM(place_map)
+                                     , PARENT_CONS_PARAM(transition)
+                                     , const std::string & place_virtual
+                                     , const std::string & place_real
+                                     , const we::type::property::type& prop
                                      )
-        : _name (_place_virtual + " <-> " + _place_real)
-        , place_virtual (_place_virtual)
-        , place_real (_place_real)
-        , _id (id)
-        , _parent (parent)
-        , _id_mapper (id_mapper)
+        : ID_INITIALIZE()
+        , PARENT_INITIALIZE()
+        , _place_virtual (place_virtual)
+        , _place_real (place_real)
+        , _properties (prop)
       {
         _id_mapper->put (_id, *this);
       }
 
-      const id::place_map& place_map_type::id() const
+      const std::string& place_map_type::place_virtual() const
       {
-        return _id;
+        return _place_virtual;
+      }
+      const std::string& place_map_type::place_real() const
+      {
+        return _place_real;
+      }
+      const std::string& place_map_type::place_real (const std::string& v)
+      {
+        return _place_real = v;
       }
 
-      const id::transition& place_map_type::parent() const
+      const we::type::property::type& place_map_type::properties() const
       {
-        return _parent;
+        return _properties;
       }
 
-      const std::string& place_map_type::name() const
+      place_map_type::unique_key_type place_map_type::unique_key() const
       {
-        return _name;
+        return std::make_pair (place_virtual(), place_real());
       }
 
-      bool place_map_type::is_same (const place_map_type& other) const
+      id::ref::place_map place_map_type::clone
+        (const boost::optional<parent_id_type>& parent) const
       {
-        return id() == other.id() && parent() == other.parent();
+        return place_map_type
+          ( id_mapper()->next_id()
+          , id_mapper()
+          , parent
+          , _place_virtual
+          , _place_real
+          , _properties
+          ).make_reference_id();
       }
 
       namespace dump
@@ -55,10 +70,10 @@ namespace xml
                   )
         {
           s.open ("place-map");
-          s.attr ("virtual", p.place_virtual);
-          s.attr ("real", p.place_real);
+          s.attr ("virtual", p.place_virtual());
+          s.attr ("real", p.place_real());
 
-          ::we::type::property::dump::dump (s, p.prop);
+          ::we::type::property::dump::dump (s, p.properties());
 
           s.close ();
         }
@@ -66,4 +81,3 @@ namespace xml
     }
   }
 }
-

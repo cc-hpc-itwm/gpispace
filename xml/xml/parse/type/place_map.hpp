@@ -3,9 +3,10 @@
 #ifndef _XML_PARSE_TYPE_PLACE_MAP_HPP
 #define _XML_PARSE_TYPE_PLACE_MAP_HPP
 
-#include <xml/parse/id/mapper.fwd.hpp>
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/util/unique.hpp>
+
+#include <xml/parse/type/transition.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -24,35 +25,36 @@ namespace xml
     {
       struct place_map_type
       {
+        ID_SIGNATURES(place_map);
+        PARENT_SIGNATURES(transition);
+
       public:
-        place_map_type ( const std::string & _place_virtual
+        typedef std::pair<std::string, std::string> unique_key_type;
+
+        place_map_type ( ID_CONS_PARAM(place_map)
+                       , PARENT_CONS_PARAM(transition)
+                       , const std::string & _place_virtual
                        , const std::string & _place_real
-                       , const id::place_map& id
-                       , const id::transition& parent
-                       , id::mapper* id_mapper
+                       , const we::type::property::type& properties
                        );
 
-        const id::place_map& id() const;
-        const id::transition& parent() const;
+        const std::string& place_virtual() const;
+        const std::string& place_real() const;
+        const std::string& place_real(const std::string&);
+        const we::type::property::type& properties() const;
 
-        bool is_same (const place_map_type& other) const;
+        unique_key_type unique_key() const;
 
-        std::string _name;
-
-      public:
-        std::string place_virtual;
-        std::string place_real;
-        we::type::property::type prop;
-
-        const std::string& name() const;
+        id::ref::place_map clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
 
       private:
-        id::place_map _id;
-        id::transition _parent;
-        id::mapper* _id_mapper;
+        std::string _place_virtual;
+        std::string _place_real;
+
+        we::type::property::type _properties;
       };
 
-      typedef xml::util::unique<place_map_type,id::place_map>::elements_type place_maps_type;
       typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
 
       namespace dump

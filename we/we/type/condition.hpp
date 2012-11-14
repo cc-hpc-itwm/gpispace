@@ -196,20 +196,6 @@ namespace condition
       , translate (_translate)
     {}
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-    type & operator= (type const & other)
-    {
-      if (this != &other)
-      {
-        expression_ = other.expression_;
-        parser = other.parser;
-        context = other.context;
-        translate = other.translate;
-      }
-      return *this;
-    }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-
     bool operator () (traits::choices_t & choices) const
     {
 #ifdef STATISTICS_CONDITION

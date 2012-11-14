@@ -1,0 +1,2 @@
+#!/bin/bash
+tr ' ' '\n' | sort | sed -e '/^ *$/d' | uniq -c | awk '{print $2":["$1"]"}'

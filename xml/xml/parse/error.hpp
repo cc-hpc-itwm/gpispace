@@ -6,6 +6,8 @@
 #include <string>
 #include <sstream>
 
+#include <xml/parse/id/types.hpp>
+
 #include <we/we.hpp>
 
 #include <fhg/util/join.hpp>
@@ -15,6 +17,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -628,59 +631,40 @@ namespace xml
 
       class duplicate_connect : public generic
       {
-      private:
-        std::string nice ( const std::string & type
-                         , const std::string & name
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate " << "connect-" << type << " " << name
-            << " for transition " << trans
-            << " in " << path;
-
-          return s.str();
-        }
-
       public:
-        duplicate_connect ( const std::string & type
-                          , const std::string & name
-                          , const std::string & trans
-                          , const boost::filesystem::path & path
-                          )
-          : generic (nice (type, name, trans, path))
-        {}
+        duplicate_connect ( const std::string& type
+                          , const id::ref::connect& connection
+                          , const id::ref::connect& old_connection
+                          , const id::ref::transition& transition
+                          , const boost::filesystem::path& path
+                          );
+        virtual ~duplicate_connect() throw() { }
+
+      private:
+        const std::string _type;
+        const id::ref::connect _connection;
+        const id::ref::connect _old_connection;
+        const id::ref::transition _transition;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
 
       class duplicate_place_map : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate place-map " << name
-            << " for transition " << trans
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        duplicate_place_map ( const std::string & name
-                            , const std::string & trans
+        duplicate_place_map ( const id::ref::place_map& place_map
+                            , const id::ref::place_map& old_place_map
+                            , const id::ref::transition& transition
                             , const boost::filesystem::path & path
-                            )
-          : generic (nice (name, trans, path))
-        {}
+                            );
+        virtual ~duplicate_place_map() throw() { }
+
+      private:
+        const id::ref::place_map _place_map;
+        const id::ref::place_map _old_place_map;
+        const id::ref::transition _transition;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -709,68 +693,47 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_transition : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate transition " << t.name() << " in " << t.path
-            << " first definition was in " << old.path
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_transition (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_transition ( const id::ref::transition& transition
+                             , const id::ref::transition& old_transition
+                             );
+        ~duplicate_transition() throw() { }
+
+      private:
+        id::ref::transition _transition;
+        id::ref::transition _old_transition;
       };
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_function : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate function " << t.name() << " in " << t.path
-            << " first definition was in " << old.path
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_function (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_function ( const id::ref::function& function
+                           , const id::ref::function& old_function
+                           );
+        ~duplicate_function() throw() { }
+
+      private:
+        id::ref::function _function;
+        id::ref::function _old_function;
       };
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_template : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate template " << t.name() << " in " << t.path()
-            << " first definition was in " << old.path()
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_template (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_template ( const id::ref::tmpl& tmpl
+                           , const id::ref::tmpl& old_template
+                           );
+        ~duplicate_template() throw() { }
+
+      private:
+        id::ref::tmpl _template;
+        id::ref::tmpl _old_template;
       };
 
       // ******************************************************************* //
@@ -1570,7 +1533,7 @@ namespace xml
       class template_without_function : public generic
       {
       public:
-        template_without_function ( const fhg::util::maybe<std::string>& name
+        template_without_function ( const boost::optional<std::string>& name
                                   , const boost::filesystem::path& path
                                   )
           : generic ( boost::format

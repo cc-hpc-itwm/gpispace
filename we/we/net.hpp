@@ -401,27 +401,6 @@ public:
     , out_of_transition_size_map ()
   {}
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-  net & operator= (net const & other)
-  {
-    if (this != &other)
-    {
-      pmap = other.pmap;
-      tmap = other.tmap;
-      emap = other.emap;
-      connection_map = other.connection_map;
-      adj_pt = other.adj_pt;
-      adj_tp = other.adj_tp;
-      token_place_rel = other.token_place_rel;
-      enabled = other.enabled;
-      enabled_choice_consume = other.enabled_choice_consume;
-      enabled_choice_read = other.enabled_choice_read;
-      in_map = other.in_map;
-    }
-    return *this;
-  }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-
   // numbers of elements
   size_type get_num_places (void) const { return places().size(); }
   size_type get_num_transitions (void) const { return transitions().size(); }
@@ -665,7 +644,7 @@ public:
         delete_edge (stack.top()); stack.pop();
       }
 
-         
+
     pmap.erase (pid);
 
     return pid;

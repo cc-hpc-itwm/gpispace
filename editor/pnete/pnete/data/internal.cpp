@@ -18,41 +18,54 @@ namespace fhg
     {
       namespace
       {
-        ::xml::parse::type::function_type make_function
-          (const internal_type::kind& t, ::xml::parse::state::type& state)
+        ::xml::parse::id::ref::function make_function
+          (const internal_type::kind& kind, ::xml::parse::state::type& state)
         {
-          const ::xml::parse::id::function function_id (state.next_id());
-          switch (t)
+          const ::xml::parse::id::function function_id
+            (state.id_mapper()->next_id());
+          switch (kind)
           {
           case internal_type::expression:
             {
-              const ::xml::parse::id::expression id (state.next_id());
-              const ::xml::parse::type::expression_type expression
-                (id, function_id, state.id_mapper());
               return ::xml::parse::type::function_type
-                (expression, function_id, boost::blank(), state.id_mapper());
+                ( function_id
+                , state.id_mapper()
+                , boost::none
+                , ::xml::parse::type::expression_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
+                ).make_reference_id();
             }
           case internal_type::module_call:
             {
-              const ::xml::parse::id::module id (state.next_id());
-              const ::xml::parse::type::mod_type mod
-                (id, function_id, state.id_mapper());
               return ::xml::parse::type::function_type
-                (mod, function_id, boost::blank(), state.id_mapper());
+                ( function_id
+                , state.id_mapper()
+                , boost::none
+                , ::xml::parse::type::module_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
+                ).make_reference_id();
             }
           case internal_type::net:
             {
-              const ::xml::parse::id::net id (state.next_id());
-              const ::xml::parse::type::net_type net
-                (id, function_id, state.id_mapper());
               return ::xml::parse::type::function_type
-                (net, function_id, boost::blank(), state.id_mapper());
-            }
-          default:
-            {
-              throw std::runtime_error ("make_function of unknown kind!?");
+                ( function_id
+                , state.id_mapper()
+                , boost::none
+                , ::xml::parse::type::net_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
+                ).make_reference_id();
             }
           }
+          throw std::runtime_error ("make_function of unknown kind!?");
         }
       }
 
@@ -65,9 +78,9 @@ namespace fhg
 
       internal_type::internal_type (const QString& filename)
         : _state ()
-        , _function (::xml::parse::just_parse ( _state
-                                              , filename.toStdString()
-                                              )
+        , _function ( ::xml::parse::just_parse ( _state
+                                               , filename.toStdString()
+                                               )
                     )
         , _change_manager (_state)
         , _root_proxy (*create_proxy())
@@ -76,18 +89,20 @@ namespace fhg
       proxy::type* internal_type::create_proxy()
       {
         return weaver::function
-          (weaver::function_with_mapping_type (function()), this).proxy();
+          ( weaver::function_with_mapping_type (function().make_reference_id())
+          , this
+          ).proxy();
       }
 
       ::xml::parse::type::function_type & internal_type::function ()
       {
-        return const_cast< ::xml::parse::type::function_type &> (_function);
+        return _function.get_ref();
       }
-
       const ::xml::parse::type::function_type & internal_type::function () const
       {
-        return _function;
+        return _function.get();
       }
+
       const ::xml::parse::state::key_values_t & internal_type::context () const
       {
         return _state.key_values();

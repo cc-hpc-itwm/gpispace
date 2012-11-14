@@ -8,10 +8,11 @@
 
 #include <we/type/bits/transition/optimize/is_associated.hpp>
 
-#include <fhg/util/maybe.hpp>
 #include <rewrite/validprefix.hpp>
 
 #include <stack>
+
+#include <boost/optional.hpp>
 
 namespace we { namespace type {
     namespace optimize { namespace merge_expressions
@@ -19,7 +20,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template<typename P, typename E, typename T>
-      inline fhg::util::maybe<const typename transition_t<P, E, T>::port_t>
+      inline boost::optional<const typename transition_t<P, E, T>::port_t>
       input_port_by_pid ( const transition_t<P, E, T> & trans
                         , const petri_net::pid_t & pid
                         )
@@ -29,12 +30,11 @@ namespace we { namespace type {
 
         try
           {
-            return fhg::util::Just<const port_t>
-              (trans.get_port (trans.input_port_by_pid (pid).first));
+            return trans.get_port (trans.input_port_by_pid (pid).first);
           }
         catch (const we::type::exception::not_connected<petri_net::pid_t> &)
           {
-            return fhg::util::Nothing<const port_t>();
+            return boost::none;
           }
       }
 
@@ -58,7 +58,7 @@ namespace we { namespace type {
       };
 
       template<typename P, typename E, typename T>
-      inline fhg::util::maybe<trans_info<P, E, T> >
+      inline boost::optional<trans_info<P, E, T> >
       expression_predecessor
       ( const transition_t<P, E, T> & trans
       , const petri_net::tid_t & tid
@@ -109,7 +109,7 @@ namespace we { namespace type {
           {
             if (names_out.find (*n) != names_out.end())
               {
-                return fhg::util::Nothing<trans_info>();
+                return boost::none;
               }
           }
 
@@ -159,7 +159,7 @@ namespace we { namespace type {
                           {
                             if (pid_out.find (*tp) != pid_out.end())
                               {
-                                return fhg::util::Nothing<trans_info>();
+                                return boost::none;
                               }
                           }
                      }
@@ -170,7 +170,7 @@ namespace we { namespace type {
                // WORK HERE: possible optimization: make the place an
                // input place of the only one predecessor
                // BEWARE: check the conditions!
-               return fhg::util::Nothing<trans_info>();
+               return boost::none;
              }
             else
               {
@@ -184,7 +184,7 @@ namespace we { namespace type {
 
                     if (not content::is_expression (trans))
                       {
-                        return fhg::util::Nothing<trans_info>();
+                        return boost::none;
                       }
 
                     for ( adj_place_const_it tp (net.out_of_transition (*t))
@@ -194,7 +194,7 @@ namespace we { namespace type {
                       {
                         if (pid_out.find (*tp) != pid_out.end())
                           {
-                            return fhg::util::Nothing<trans_info>();
+                            return boost::none;
                           }
 
                         max_successors_of_pred =
@@ -212,7 +212,7 @@ namespace we { namespace type {
            || (!preds_read.empty() && max_successors_of_pred > 1)
            )
           {
-            return fhg::util::Nothing<trans_info>();
+            return boost::none;
           }
 
         const pair_type p (*preds.begin());
@@ -269,7 +269,7 @@ namespace we { namespace type {
               }
             else
               {
-                const fhg::util::maybe<const port_t>
+                const boost::optional<const port_t>
                   maybe_pred_in (input_port_by_pid (pred, *p));
 
                 if (maybe_pred_in)
@@ -500,7 +500,7 @@ namespace we { namespace type {
                 typedef trans_info<P, E, T> trans_info;
                 typedef typename trans_info::pid_set_type pid_set_type;
 
-                const fhg::util::maybe<trans_info>
+                const boost::optional<trans_info>
                   maybe_pred (expression_predecessor (trans, tid_trans, net));
 
                 if (maybe_pred)

@@ -35,7 +35,7 @@ namespace fhg
         {
           if (style::predicate::is_transition (i))
           {
-            const fhg::util::maybe<std::string>& n
+            const boost::optional<std::string>& n
               (qgraphicsitem_cast<const transition_item*>(i)->name());
 
             if (n && *n == name.toStdString())
@@ -114,7 +114,7 @@ namespace fhg
 
         std::string transition_item::name() const
         {
-          return handle()().name();
+          return handle().get().name();
         }
 
         // void slot_change_name (QString name)

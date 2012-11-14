@@ -26,7 +26,7 @@ namespace fhg
         {}
 
         std::string rest (void) { return std::string (_pos, _end); }
-        char operator * (void) const { return *_pos; }
+        const char & operator * (void) const { return *_pos; }
         void operator ++ (void) { ++_k; ++_pos; }
         bool end (void) const { return _pos == _end; }
         const std::size_t & operator () (void) const { return _k; }

@@ -15,13 +15,12 @@ endif()
 
 set (hdrs
   join.hpp
-  maybe.hpp
+  boost.hpp
   read_bool.hpp
   read.hpp
   show.hpp
   split.hpp
   starts_with.hpp
-  util.hpp
   warnings.hpp
 
   filesystem.hpp

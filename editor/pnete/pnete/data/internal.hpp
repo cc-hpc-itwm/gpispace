@@ -23,7 +23,7 @@ namespace fhg
       {
       private:
         ::xml::parse::state::type _state;
-        ::xml::parse::type::function_type _function;
+        ::xml::parse::id::ref::function _function;
         change_manager_t _change_manager;
         proxy::type _root_proxy;
 

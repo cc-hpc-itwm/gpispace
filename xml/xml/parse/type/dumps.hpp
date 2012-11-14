@@ -8,15 +8,6 @@
 
 #include <fhg/util/xml.hpp>
 
-// #include <xml/parse/type/function.hpp>
-// #include <xml/parse/type/place.hpp>
-// #include <xml/parse/type/place_map.hpp>
-// #include <xml/parse/type/port.hpp>
-// #include <xml/parse/type/specialize.hpp>
-// #include <xml/parse/type/struct.hpp>
-// #include <xml/parse/type/template.hpp>
-// #include <xml/parse/type/transition.hpp>
-
 namespace xml
 {
   namespace parse
@@ -47,6 +38,29 @@ namespace xml
           for (; pos != end; ++pos)
           {
             ::xml::parse::type::dump::dump (s, *pos, x);
+          }
+        }
+
+        template<typename Container>
+        void dumps ( ::fhg::util::xml::xmlstream& s
+                   , Container container
+                   )
+        {
+          BOOST_FOREACH (const typename Container::value_type val, container)
+          {
+            ::xml::parse::type::dump::dump (s, val);
+          }
+        }
+
+        template<typename Container, typename T>
+        void dumps ( ::fhg::util::xml::xmlstream& s
+                   , Container container
+                   , const T& x
+                   )
+        {
+          BOOST_FOREACH (const typename Container::value_type val, container)
+          {
+            ::xml::parse::type::dump::dump (s, val, x);
           }
         }
       }

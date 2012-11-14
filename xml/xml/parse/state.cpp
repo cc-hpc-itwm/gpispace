@@ -194,7 +194,6 @@ namespace xml
 
         , _Opath_to_cpp ("path-to-cpp,g")
 
-        , _id_counter()
         , _id_mapper()
       {}
 
@@ -747,11 +746,6 @@ namespace xml
         desc.add (generate);
         desc.add (file);
         desc.add (warnings);
-      }
-
-      id::base_id_type type::next_id()
-      {
-        return _id_counter;
       }
 
       const id::mapper* type::id_mapper() const

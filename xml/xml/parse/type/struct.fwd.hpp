@@ -15,12 +15,12 @@ namespace xml
   {
     namespace type
     {
-      struct struct_t;
+      struct structure_type;
 
       // typedef std::list<struct_t> structs_type;
     }
 
-    namespace struct_t
+    namespace structure_type
     {
       // typedef boost::unordered_map< signature::field_name_t
       //                             , type::struct_t

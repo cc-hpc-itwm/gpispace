@@ -3,9 +3,9 @@
 #ifndef _XML_PARSE_TYPE_EXPRESSION_HPP
 #define _XML_PARSE_TYPE_EXPRESSION_HPP
 
-#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/expression.fwd.hpp>
 
-#include <xml/parse/id/mapper.fwd.hpp>
+#include <xml/parse/id/generic.hpp>
 #include <xml/parse/id/types.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
@@ -19,32 +19,20 @@ namespace xml
   {
     namespace type
     {
+      //! \todo Move this into class scope.
       typedef std::list<std::string> expressions_type;
 
       struct expression_type
       {
-      private:
-        expressions_type _expressions;
-
-        id::expression _id;
-        id::function _parent;
-        id::mapper* _id_mapper;
+        ID_SIGNATURES(expression);
+        PARENT_SIGNATURES(function);
 
       public:
-        expression_type ( const id::expression& id
-                        , const id::function& parent
-                        , id::mapper* id_mapper
+        expression_type ( ID_CONS_PARAM(expression)
+                        , PARENT_CONS_PARAM(function)
+                        , const expressions_type& exps
+                        = expressions_type()
                         );
-        expression_type ( const expressions_type & exps
-                        , const id::expression& id
-                        , const id::function& parent
-                        , id::mapper* id_mapper
-                        );
-
-        const id::expression& id() const;
-        const id::function& parent() const;
-
-        bool is_same (const expression_type& other) const;
 
         void set (const std::string& exps);
 
@@ -52,6 +40,14 @@ namespace xml
 
         const expressions_type& expressions (void) const;
         expressions_type& expressions (void);
+
+        void append (const expressions_type& other);
+
+        id::ref::expression clone
+          (const boost::optional<parent_id_type>& parent = boost::none) const;
+
+      private:
+        expressions_type _expressions;
       };
 
       namespace dump
@@ -60,8 +56,6 @@ namespace xml
                   , const expression_type & e
                   );
       }
-
-      void join (const expression_type& e, function_type& fun);
     }
   }
 }

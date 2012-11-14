@@ -50,10 +50,7 @@ namespace fhg
           return;
         }
 
-        set_title ( name.isEmpty()
-                  ? fhg::util::Nothing<std::string>()
-                  : fhg::util::Just<std::string> (name.toStdString())
-                  );
+        set_title (boost::make_optional (!name.isEmpty(), name.toStdString()));
       }
       void document_view::visibility_changed (bool visible)
       {
@@ -72,7 +69,7 @@ namespace fhg
         dock_widget::setWidget (widget);
       }
       void
-      document_view::set_title (const fhg::util::maybe<std::string>& name)
+      document_view::set_title (const boost::optional<std::string>& name)
       {
         setWindowTitle ( name
                        ? QString::fromStdString (*name)

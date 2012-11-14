@@ -22,6 +22,7 @@ set (xml_parse_util_fwd_headers
 
 set (xml_parse_util_sources
   mk_fstream.cpp
+  valid_name.cpp
 )
 
 add_library (xml_parse_util

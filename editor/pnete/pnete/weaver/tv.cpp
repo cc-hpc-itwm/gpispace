@@ -79,7 +79,7 @@ namespace fhg
       template<typename T>
       void tv::append_maybe_key_value ( const std::string & key
                                       , const std::string & fmt
-                                      , const fhg::util::maybe<T> & val
+                                      , const boost::optional<T> & val
                                       )
       {
         if (val)
@@ -88,7 +88,7 @@ namespace fhg
           }
       }
       void tv::append_maybe_bool ( const std::string & key
-                                 , const fhg::util::maybe<bool> & val
+                                 , const boost::optional<bool> & val
                                  )
       {
         if (val)
@@ -100,12 +100,50 @@ namespace fhg
           }
       }
 
+      void tv::append_maybe ( const std::string & key
+                            , const boost::optional<std::string> & val
+                            )
+      {
+        if (val)
+        {
+          append_key_value (key, "%s", *val);
+        }
+      }
+
+      template<typename IT>
+        void tv::append_list (const QString& name, IT pos, const IT& end)
+      {
+        push (append (name));
+        while (pos != end)
+        {
+          append (*pos);
+          ++pos;
+        }
+        pop();
+      }
+      template<typename C>
+        void tv::append_list (const QString& name, const C& collection)
+      {
+        append_list (name, collection.begin(), collection.end());
+      }
+
       template<typename T> QStandardItem * tv::append (const T & x)
       {
         QStandardItem* x_item (new QStandardItem (x));
         x_item->setEditable (false);
         top()->appendRow (x_item);
         return x_item;
+      }
+      template<typename U, typename V>
+        QStandardItem* tv::append (const std::pair<U,V>& x)
+      {
+        return append ( QString::fromStdString
+                        ((boost::lexical_cast<std::string> (x.first)))
+                      . append (": ")
+                      . append ( QString::fromStdString
+                                (boost::lexical_cast<std::string> (x.second))
+                               )
+                      );
       }
 
       template<typename IT>
@@ -180,31 +218,30 @@ namespace fhg
       }
       WSIG(tv, transition::function, XMLTYPE(transition_type::function_or_use_type), fun)
       {
-        boost::apply_visitor
-          (FROM(visitor::function_type<tv>) (this), fun);
+        boost::apply_visitor (FROM(visitor::deref_variant<tv>) (this), fun);
       }
-      WSIG(tv, transition::place_map, XMLTYPE(place_maps_type), pm)
+      WSIG(tv, transition::place_map, XMLTYPE(transition_type::place_maps_type), pm)
       {
-        xs ("place-map", pm, FROM(place_map));
+        xs ("place-map", pm.values(), FROM(place_map));
       }
-      WSIG(tv, transition::connect_read, XMLTYPE(connections_type), cs)
+      WSIG(tv, transition::connect_read, XMLTYPE(transition_type::connections_type), cs)
       {
-        xs ("connect-read", cs, FROM(connection));
+        xs ("connect-read", cs.values(), FROM(connection));
       }
-      WSIG(tv, transition::connect_in, XMLTYPE(connections_type), cs)
+      WSIG(tv, transition::connect_in, XMLTYPE(transition_type::connections_type), cs)
       {
-        xs ("connect-in", cs, FROM(connection));
+        xs ("connect-in", cs.values(), FROM(connection));
       }
-      WSIG(tv, transition::connect_out, XMLTYPE(connections_type), cs)
+      WSIG(tv, transition::connect_out, XMLTYPE(transition_type::connections_type), cs)
       {
-        xs ("connect-out", cs, FROM(connection));
+        xs ("connect-out", cs.values(), FROM(connection));
       }
       WSIG(tv, transition::condition, XMLTYPE(conditions_type), cond)
       {
         FROM(conditions) (this, cond);
       }
 
-      WSIG(tv, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
+      WSIG(tv, place::open, XMLTYPE(place_type), place)
       {
         push (append ("<<place>>"));
       }
@@ -221,7 +258,7 @@ namespace fhg
       {
         append_maybe_bool ("virtual", is_virtual);
       }
-      WSIG(tv, place::token, ITVAL(XMLTYPE(tokens_type)), token)
+      WSIG(tv, place::token, XMLTYPE(place_type::token_type), token)
       {
         push (append ("token"));
         boost::apply_visitor (FROM(visitor::token<tv>) (this), token);
@@ -262,7 +299,7 @@ namespace fhg
         xs ("struct", structs, FROM(_struct));
       }
 
-      WSIG(tv, port::open, ITVAL(XMLTYPE(ports_type)), port)
+      WSIG(tv, port::open, XMLTYPE(port_type), port)
       {
         push (append ("<<port>>"));
       }
@@ -284,34 +321,6 @@ namespace fhg
         FROM(properties) (this, prop);
       }
 
-      WSIG(tv, cinclude::open, ITVAL(XMLTYPE(cincludes_type)), cinclude)
-      {
-        append (cinclude);
-      }
-      WSIG(tv
-          , template_parameter::open
-          , ITVAL(XMLTYPE(template_type::names_type))
-          , template_parameter
-          )
-      {
-        append (template_parameter);
-      }
-
-      WSIG(tv, ldflag::open, ITVAL(XMLTYPE(flags_type)), flag)
-      {
-        append (flag);
-      }
-
-      WSIG(tv, cxxflag::open, ITVAL(XMLTYPE(flags_type)), flag)
-      {
-        append (flag);
-      }
-
-      WSIG(tv, link::open, ITVAL(XMLTYPE(links_type)), link)
-      {
-        append (link);
-      }
-
       WSIG(tv, expression_sequence::line, std::string, line)
       {
         append (line);
@@ -327,7 +336,7 @@ namespace fhg
         append_key_value (tm.first, "%s", tm.second);
       }
 
-      WSIG(tv, specialize::open, ITVAL(XMLTYPE(specializes_type)), specialize)
+      WSIG(tv, specialize::open, XMLTYPE(specialize_type), specialize)
       {
         push (append ("<<specialize>>"));
       }
@@ -354,7 +363,7 @@ namespace fhg
         xs ("condition", cs, FROM(expression_sequence));
       }
 
-      WSIG(tv, tmpl::open, ITVAL(XMLTYPE(templates_type)), t)
+      WSIG(tv, tmpl::open, XMLTYPE(tmpl_type), t)
       {
         push (append ("<<template>>"));
       }
@@ -365,9 +374,9 @@ namespace fhg
             set_text (*name);
           }
       }
-      WSIG(tv, tmpl::template_parameter, XMLTYPE(template_type::names_type), templates)
+      WSIG(tv, tmpl::template_parameter, XMLTYPE(tmpl_type::names_type), templates)
       {
-        xs ("template-parameter", templates, FROM(template_parameter));
+        append_list ("template-parameter", templates);
       }
       WSIG(tv, tmpl::function, XMLTYPE(function_type), fun)
       {
@@ -375,11 +384,7 @@ namespace fhg
       }
       WSIGE(tv, tmpl::close) { pop(); }
 
-      WSIG( tv
-          , function::open
-          , ITVAL(XMLTYPE(functions_type))
-          , fun
-          )
+      WSIG(tv, function::open, XMLTYPE(function_type), fun)
       {
         push (append ("<<function>>"));
       }
@@ -397,7 +402,7 @@ namespace fhg
       }
       WSIG(tv, function::require, XMLTYPE(requirements_type), reqs)
       {
-        xs ("require", reqs, FROM(require));
+        append_list ("require", reqs);
       }
       WSIG(tv, function::properties, WETYPE(property::type), prop)
       {
@@ -407,24 +412,24 @@ namespace fhg
       {
         FROM(structs) (this, structs);
       }
-      WSIG(tv, function::in, XMLTYPE(ports_type), ports)
+      WSIG(tv, function::in, XMLTYPE(function_type::ports_type), ports)
       {
-        xs ("in", ports, FROM(port));
+        xs ("in", ports.values(), FROM(port));
       }
-      WSIG(tv, function::out, XMLTYPE(ports_type), ports)
+      WSIG(tv, function::out, XMLTYPE(function_type::ports_type), ports)
       {
-        xs ("out", ports, FROM(port));
+        xs ("out", ports.values(), FROM(port));
       }
       WSIG(tv, function::fun, XMLTYPE(function_type::type), fun)
       {
-        boost::apply_visitor (FROM(visitor::net_type<tv>) (this), fun);
+        boost::apply_visitor (FROM(visitor::deref_variant<tv>) (this), fun);
       }
       WSIG(tv, function::conditions, XMLTYPE(conditions_type), cs)
       {
         FROM(conditions) (this, cs);
       }
 
-      WSIG(tv, place_map::open, ITVAL(XMLTYPE(place_maps_type)), pm)
+      WSIG(tv, place_map::open, XMLTYPE(place_map_type), pm)
       {
         push (append ("<<place_map>>"));
       }
@@ -442,11 +447,7 @@ namespace fhg
         FROM(properties) (this, prop);
       }
 
-      WSIG( tv
-          , connection::open
-          , ITVAL(XMLTYPE(connections_type))
-          , connection
-          )
+      WSIG(tv, connection::open, XMLTYPE(connect_type), connection)
       {
         push (append ("<<connection>>"));
       }
@@ -460,26 +461,12 @@ namespace fhg
         add_something (" -> place: ", place);
       }
 
-      WSIG(tv, requirement::open, ITVAL(XMLTYPE(requirements_type)), req)
-      {
-        push (append ("requirement"));
-      }
-      WSIGE(tv, requirement::close) { pop(); }
-      WSIG(tv, requirement::key, std::string, key)
-      {
-        add_something("", key);
-      }
-      WSIG(tv, requirement::value, bool, val)
-      {
-        add_something(": ", boost::lexical_cast<std::string> (val));
-      }
-
       WSIG(tv, expression::open, XMLTYPE(expression_type), exp)
       {
         xs ("expression", exp.expressions(), FROM(expression_sequence));
       }
 
-      WSIG(tv, mod::open, XMLTYPE(mod_type), mod)
+      WSIG(tv, mod::open, XMLTYPE(module_type), mod)
       {
         push (append ("module"));
       }
@@ -492,30 +479,25 @@ namespace fhg
       {
         add_something (" -> ", fun);
       }
-      WSIG(tv, mod::cincludes, XMLTYPE(cincludes_type), cincludes)
+      WSIG(tv, mod::cincludes, XMLTYPE(module_type::cincludes_type), cincludes)
       {
-        xs ("cinclude", cincludes, FROM(cinclude));
+        append_list ("cinclude", cincludes);
       }
-      WSIG(tv, mod::ldflags, XMLTYPE(flags_type), ldflags)
+      WSIG(tv, mod::ldflags, XMLTYPE(module_type::flags_type), ldflags)
       {
-        xs ("ldflag", ldflags, FROM(ldflag));
+        append_list ("ldflag", ldflags);
       }
-      WSIG(tv, mod::cxxflags, XMLTYPE(flags_type), cxxflags)
+      WSIG(tv, mod::cxxflags, XMLTYPE(module_type::flags_type), cxxflags)
       {
-        xs ("cxxflag", cxxflags, FROM(cxxflag));
+        append_list ("cxxflag", cxxflags);
       }
-      WSIG(tv, mod::links, XMLTYPE(flags_type), links)
+      WSIG(tv, mod::links, XMLTYPE(module_type::flags_type), links)
       {
-        xs ("link", links, FROM(link));
+        append_list ("link", links);
       }
       WSIG(tv, mod::code, MAYBE(std::string), code)
       {
-        if (code)
-          {
-            push (append ("code"));
-            append (*code);
-            pop();
-          }
+        append_maybe ("code", code);
       }
 
       WSIG(tv, token::literal::name, ::literal::type_name_t, token)
@@ -546,25 +528,21 @@ namespace fhg
       {
         FROM(structs) (this, structs);
       }
-      WSIG(tv, net::templates, XMLTYPE(templates_type), templates)
+      WSIG(tv, net::templates, XMLTYPE(net_type::templates_type), templates)
       {
-        xs ("template", templates, FROM(tmpl));
+        xs ("template", templates.values(), FROM(tmpl));
       }
-      WSIG(tv, net::specializes, XMLTYPE(specializes_type), specializes)
+      WSIG(tv, net::specializes, XMLTYPE(net_type::specializes_type), specializes)
       {
-        xs ("specialize", specializes, FROM(specialize));
+        xs ("specialize", specializes.values(), FROM(specialize));
       }
-      WSIG( tv
-          , net::functions
-          , XMLTYPE(functions_type)
-          , functions
-          )
+      WSIG(tv, net::functions, XMLTYPE(net_type::functions_type), functions)
       {
-        xs ("function", functions, FROM(function));
+        xs ("function", functions.values(), FROM(function));
       }
       WSIG(tv, net::places, XMLTYPE(net_type::places_type), places)
       {
-        xs ("place", places, FROM(place));
+        xs ("place", places.values(), FROM(place));
       }
       WSIG( tv
           , net::transitions
@@ -572,7 +550,7 @@ namespace fhg
           , transitions
           )
       {
-        xs ("transition", transitions, FROM(transition));
+        xs ("transition", transitions.values(), FROM(transition));
       }
 
       WSIG(tv, use::name, std::string, name)

@@ -3,6 +3,7 @@
 set (xml_parse_id_headers
   types.hpp
   mapper.hpp
+  generic.hpp
 )
 
 set (xml_parse_id_fwd_headers
@@ -13,6 +14,7 @@ set (xml_parse_id_fwd_headers
 set (xml_parse_id_sources
   types.cpp
   mapper.cpp
+  generic.cpp
 )
 
 add_library (xml_parse_id
