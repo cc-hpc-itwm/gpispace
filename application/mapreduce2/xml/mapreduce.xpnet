@@ -132,11 +132,11 @@
 	          config.file.input = input_file;
 	          config.file.output = output_file;
 	
-	          config.handle.read = vm::alloc(size_read_area, "read_area");
-	          config.handle.map  = vm::alloc(size_map_area, "map_area");
-	          config.handle.partition = vm::alloc(size_partition_area, "partition_area");
-	          config.handle.reduce = vm::alloc(size_reduce_area, "partition_area");
-	          config.handle.border = vm::alloc(size_border_area, "border_area");
+	          config.handle.read = vm::alloc(size_read_area, "mapred.read_area");
+	          config.handle.map  = vm::alloc(size_map_area, "mapred.map_area");
+	          config.handle.partition = vm::alloc(size_partition_area, "mapred.partition_area");
+	          config.handle.reduce = vm::alloc(size_reduce_area, "mapred.reduce_area");
+	          config.handle.border = vm::alloc(size_border_area, "mapred.border_area");
 	          
 	          MLOG(INFO, "The number of chunks is: "<<n_chunks);
 	          config.num.chunks = n_chunks;
