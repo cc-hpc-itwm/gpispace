@@ -43,6 +43,14 @@ namespace fhg
           change_manager().delete_place (sender, *this);
         }
 
+        void place::set_property ( const QObject* sender
+                                 , const ::we::type::property::key_type&
+                                 , const ::we::type::property::value_type&
+                                 ) const
+        {
+          change_manager().set_property (sender, *this, key, val);
+        }
+
         const ::xml::parse::id::ref::place& place::id() const
         {
           return _id;

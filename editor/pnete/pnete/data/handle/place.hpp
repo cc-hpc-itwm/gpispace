@@ -36,6 +36,11 @@ namespace fhg
 
           void remove (const QObject* sender) const;
 
+          virtual void set_property ( const QObject* sender
+                                    , const ::we::type::property::key_type&
+                                    , const ::we::type::property::value_type&
+                                    ) const;
+
           const ::xml::parse::id::ref::place& id() const;
 
           net parent() const;

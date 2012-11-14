@@ -34,6 +34,11 @@ namespace fhg
 
           const ::xml::parse::id::ref::transition& id() const;
 
+          virtual void set_property ( const QObject* sender
+                                    , const ::we::type::property::key_type&
+                                    , const ::we::type::property::value_type&
+                                    ) const;
+
           net parent() const;
 
         private:

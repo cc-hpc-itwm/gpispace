@@ -2,6 +2,7 @@
 
 #include <pnete/data/handle/transition.hpp>
 
+#include <pnete/data/change_manager.hpp>
 #include <pnete/data/handle/net.hpp>
 
 #include <xml/parse/type/net.hpp>
@@ -34,6 +35,14 @@ namespace fhg
         bool transition::operator== (const transition& other) const
         {
           return _id == other._id;
+        }
+
+        void transition::set_property ( const QObject* sender
+                                      , const ::we::type::property::key_type&
+                                      , const ::we::type::property::value_type&
+                                      ) const
+        {
+          change_manager().set_property (sender, *this, key, val);
         }
 
         const ::xml::parse::id::ref::transition& transition::id() const

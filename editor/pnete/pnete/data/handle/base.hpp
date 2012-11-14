@@ -7,6 +7,10 @@
 
 #include <pnete/data/change_manager.fwd.hpp>
 
+#include <we/type/property.fwd.hpp>
+
+class QObject;
+
 namespace fhg
 {
   namespace pnete
@@ -20,6 +24,11 @@ namespace fhg
         public:
           base (change_manager_t& change_manager );
           virtual ~base() { }
+
+          virtual void set_property ( const QObject* sender
+                                    , const ::we::type::property::key_type&
+                                    , const ::we::type::property::value_type&
+                                    ) const;
 
         protected:
           change_manager_t& change_manager() const;
