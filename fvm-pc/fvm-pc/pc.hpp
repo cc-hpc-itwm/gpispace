@@ -1,7 +1,9 @@
 #ifndef _PC_H_
 #define _PC_H_
 
-#ifdef __GNUC__
+#define ENABLE_DEPRECATE_API
+
+#if defined (__GNUC__) && ! defined (ENABLE_DEPRECATE_API)
 //#  define DEPRECATE_API(msg) __attribute__((deprecated(msg)))
 #  define DEPRECATE_API(msg) __attribute__((deprecated))
 #else
