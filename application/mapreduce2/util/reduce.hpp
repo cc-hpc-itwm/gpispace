@@ -5,8 +5,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
+#include <fhglog/fhglog.hpp>
 #include <fstream>
 #include <list>
 #include <stdexcept>
@@ -24,9 +26,18 @@ namespace mapreduce
 
         BOOST_FOREACH(const std::string& str_val, list_in_values)
         {
-          total += boost::lexical_cast<int>(str_val);
+        	//MLOG(INFO, "Reduce the item "<<str_val);
+
+        	boost::char_separator<char> sep("[] ");
+        	boost::tokenizer<boost::char_separator<char> > tok(str_val, sep);
+        	std::vector<std::string> v;
+        	v.assign(tok.begin(), tok.end());
+
+        	for(int k=0;k<v.size();k++)
+        		total += boost::lexical_cast<int>(v[k]);
         }
 
+       // MLOG(INFO, "After reduction, "<<key<<" -> "<<total<<" ");
         std::string str_total(boost::lexical_cast<std::string>(total));
         list_out_values.push_back(str_total);
 
