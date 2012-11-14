@@ -112,12 +112,12 @@ namespace fhg
               , _handle (handle)
               , _key (key)
               , _new_value (val)
-              , _old_value (handle().prop.get_val (key))
+              , _old_value (handle.get().prop.get_val (key))
           { }
 
           virtual void undo()
           {
-            _handle().prop.set (_key, _old_value);
+            _handle.get_ref().prop.set (_key, _old_value);
             _change_manager.emit_signal<signal_type>
               ( &change_manager_t::property_changed
               , NULL, _handle, _key, _new_value, _old_value
@@ -126,7 +126,7 @@ namespace fhg
 
           virtual void redo()
           {
-            _handle().prop.set (_key, _new_value);
+            _handle.get_ref().prop.set (_key, _new_value);
             _change_manager.emit_signal<signal_type>
               ( &change_manager_t::property_changed
               , _origin, _handle, _key, _old_value, _new_value
