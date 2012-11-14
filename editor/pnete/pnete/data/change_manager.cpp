@@ -56,6 +56,65 @@ namespace fhg
       namespace action
       {
         // ## editing actions ########################################
+        template<typename HANDLE_TYPE>
+          class meta_set_property : public QUndoCommand
+        {
+        private:
+          typedef HANDLE_TYPE handle_type;
+          typedef void (change_manager_t::* signal_type)
+            ( const QObject*
+            , const handle_type&
+            , const ::we::type::property::key_type&
+            , const ::we::type::property::value_type& from
+            , const ::we::type::property::value_type& to
+            );
+
+        public:
+          meta_set_property
+            ( const QString& name
+            , change_manager_t& change_manager
+            , const QObject* origin
+            , const handle_type& handle
+            , const ::we::type::property::key_type& key
+            , const ::we::type::property::value_type& val
+            )
+              : QUndoCommand (name)
+              , _change_manager (change_manager)
+              , _origin (origin)
+              , _handle (handle)
+              , _key (key)
+              , _new_value (val)
+              , _old_value (handle().prop.get_val (key))
+          { }
+
+          virtual void undo()
+          {
+            _handle().prop.set (_key, _old_value);
+            _change_manager.emit_signal<signal_type>
+              ( &change_manager_t::property_changed
+              , NULL, _handle, _key, _old_value, _new_value
+              );
+          }
+
+          virtual void redo()
+          {
+            _handle().prop.set (_key, _new_value);
+            _change_manager.emit_signal<signal_type>
+              ( &change_manager_t::property_changed
+              , _origin, _handle, _key, _old_value, _new_value
+              );
+            _origin = NULL;
+          }
+
+        private:
+          change_manager_t& _change_manager;
+          const QObject* _origin;
+          const handle_type _handle;
+          const ::we::type::property::key_type _key;
+          const ::we::type::property::value_type _new_value;
+          const ::we::type::property::value_type _old_value;
+        };
+
         // - net -----------------------------------------------------
         // -- transition ---------------------------------------------
         class add_transition : public QUndoCommand
@@ -328,6 +387,20 @@ namespace fhg
         push (new action::remove_transition (*this, origin, transition.id()));
       }
 
+      void change_manager_t::set_property
+        ( const QObject* origin
+        , const data::handle::transition& transition
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        push ( new action::meta_set_property<handle::transition>
+               ( "set_transition_property_action"
+               , *this, origin, transition, key, val
+               )
+             );
+      }
+
       // -- place ----------------------------------------------------
       void change_manager_t::add_place
         ( const QObject* origin
@@ -357,6 +430,20 @@ namespace fhg
         )
       {
         push (new action::remove_place (*this, origin, place.id()));
+      }
+
+      void change_manager_t::set_property
+        ( const QObject* origin
+        , const data::handle::place& place
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        push ( new action::meta_set_property<handle::place>
+               ( "set_place_property_action"
+               , *this, origin, place, key, val
+               )
+             );
       }
 
       // - function --------------------------------------------------

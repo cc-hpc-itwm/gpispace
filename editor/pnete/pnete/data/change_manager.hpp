@@ -9,6 +9,8 @@
 #include <pnete/data/handle/transition.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
 
+#include <we/type/property.fwd.hpp>
+
 //! \todo Should not be here.
 #include <xml/parse/id/types.fwd.hpp>
 #include <xml/parse/state.fwd.hpp>
@@ -29,6 +31,7 @@ namespace fhg
       namespace action
       {
         // ## editing action forward declarations ####################
+        template<typename handle_type> class meta_set_property;
         // - net -----------------------------------------------------
         // -- transition ---------------------------------------------
         class add_transition;
@@ -64,6 +67,12 @@ namespace fhg
                                , const data::handle::transition&
                                );
 
+        void set_property ( const QObject*
+                          , const data::handle::transition&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+
         // -- place --------------------------------------------------
         void add_place ( const QObject*
                        , const data::handle::net&
@@ -71,6 +80,12 @@ namespace fhg
 
         void delete_place ( const QObject*
                           , const data::handle::place&
+                          );
+
+        void set_property ( const QObject*
+                          , const data::handle::place&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
                           );
 
         // - function ------------------------------------------------
@@ -97,10 +112,22 @@ namespace fhg
         void transition_deleted ( const QObject*
                                 , const data::handle::transition&
                                 );
+        void property_changed ( const QObject*
+                              , const data::handle::transition&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type& from
+                              , const ::we::type::property::value_type& to
+                              );
 
         // -- place --------------------------------------------------
         void place_added (const QObject*, const data::handle::place&);
         void place_deleted (const QObject*, const data::handle::place&);
+        void property_changed ( const QObject*
+                              , const data::handle::place&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type& from
+                              , const ::we::type::property::value_type& to
+                              );
 
         // - function ------------------------------------------------
         void signal_set_function_name ( const QObject*
@@ -125,9 +152,11 @@ namespace fhg
         // -- transition ---------------------------------------------
         friend class action::add_transition;
         friend class action::remove_transition;
+        friend class action::meta_set_property<handle::transition>;
         // -- place --------------------------------------------------
         friend class action::add_place;
         friend class action::remove_place;
+        friend class action::meta_set_property<handle::place>;
         // - function ------------------------------------------------
         // - expression ----------------------------------------------
 
