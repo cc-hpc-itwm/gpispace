@@ -55,6 +55,8 @@
     </specialize>
     
     <transition name="init" inline="true">
+      <require key="GPI" />
+      <require key="INI" />
       <defun>
         <in name="input_file" type="string"/>
         <in name="output_file" type="string"/>
@@ -309,6 +311,8 @@
     <place name="read_slot_id" type="long"/>
     
     <transition name="load_chunk" inline="true">
+      <require key="GPI" />
+      <require key="LOAD" />
       <defun>
         <in name="chunk_and_slot" type="chunk_and_slot"/>
         <in name="config" type="config"/>
@@ -394,6 +398,8 @@
 
     <place name="map_chunk_info" type="map_chunk_info"/>
     <transition name="map_chunk" inline="true">
+      <require key="GPI" />
+      <require key="MAP" />
       <defun>
         <in name="map_slot_id" type="long"/>
         <in name="read_chunk_info" type="read_chunk_info"/>
@@ -558,6 +564,8 @@
     
     <place name="partition_result" type="partition_result"/>
     <transition name="copy_into_partition_slot" inline="true">
+      <require key="GPI" />
+      <require key="PAR" />
     <defun>
         <in name="map_chunk_info" type="map_chunk_info"/>
         <in name="partition_info" type="partition_info"/>
@@ -728,6 +736,8 @@
     </transition> 
     
     <transition name="reduce" inline="true">
+      <require key="GPI" />
+      <require key="RED" />
       <defun>
         <in name="partition_result" type="partition_result"/>
         <in name="config" type="config"/>
@@ -959,6 +969,8 @@
     
     <place name="reduce_and_write_done" type="control"/> 
     <transition name="reduce_and_write">
+      <require key="GPI" />
+      <require key="WRITE" />
       <defun>
         <in name="map_slots_released" type="control"/>
         <in name="read_slots_released" type="control"/>
@@ -1216,13 +1228,14 @@
     </transition>
     
     <transition name="finalize">
+      <require key="GPI" />
+      <require key="FIN" />
       <defun>
         <in name="config" type="config"/>
         <in name="map_slots_released" type="control"/>
         <in name="read_slots_released" type="control"/>
-        <in name="reduce_and_write_done" type="control"/>
+        <in name="write_done" type="control"/>
         <in name="end_iter_gen_part_info" type="long"/>
-        <in name="part_slots" type="long"/>
         <out name="done" type="control"/>
         <module name="mapreduce_done" function="done finalize_mapreduce(config)">
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -1245,9 +1258,8 @@
       	<connect-in port="config" place="config"/>
     	<connect-in port="map_slots_released" place="map_slots_released"/>
     	<connect-in port="read_slots_released" place="read_slots_released"/>
-    	<connect-in port="reduce_and_write_done" place="reduce_and_write_done"/>
+    	<connect-in port="write_done" place="write_done"/>
     	<connect-in port="end_iter_gen_part_info" place="end_iter_gen_part_info"/>
-    	<connect-in port="part_slots" place="n_part_slots_cnt"/>
     	<connect-out port="done" place="done"/>
     </transition>   
     
