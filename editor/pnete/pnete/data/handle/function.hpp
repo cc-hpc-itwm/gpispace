@@ -33,6 +33,8 @@ namespace fhg
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
+
+          using meta_base::operator==;
         };
       }
     }

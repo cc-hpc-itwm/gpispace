@@ -38,7 +38,7 @@ namespace fhg
             return id().get_ref();
           }
 
-          bool operator== (const meta_base<id_type, xml_type>& other)
+          bool operator== (const meta_base<id_type, xml_type>& other) const
           {
             return id() == other.id();
           }

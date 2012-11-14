@@ -27,6 +27,8 @@ namespace fhg
           net ( const meta_base::id_type& id
               , change_manager_t& change_manager
               );
+
+          using meta_base::operator==;
         };
       }
     }

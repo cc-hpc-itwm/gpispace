@@ -41,6 +41,8 @@ namespace fhg
                             ) const;
 
           function parent() const;
+
+          using meta_base::operator==;
         };
       }
     }

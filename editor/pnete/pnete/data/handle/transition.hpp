@@ -40,6 +40,8 @@ namespace fhg
                             ) const;
 
           net parent() const;
+
+          using meta_base::operator==;
         };
       }
     }
