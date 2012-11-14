@@ -134,7 +134,7 @@ namespace fhg
                        , const_cast< XMLTYPE(net_type) &> (net)
                        , in()
                        , out()
-                       , _function_with_mapping.function()
+                       , _function_with_mapping.function().get_ref()
                        );
 
         FROM(net) (&wn, net);
@@ -188,7 +188,7 @@ namespace fhg
         weaver::function sub (function_with_mapping, _root);
 
         _type_map = function_with_mapping.type_map();
-        _function = function_with_mapping.function();
+        _function = function_with_mapping.function().get_ref();
 
         _transition->set_proxy (sub.proxy());
 
