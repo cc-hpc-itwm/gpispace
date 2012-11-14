@@ -19,8 +19,8 @@ namespace fhg
         place::place ( const ::xml::parse::id::ref::place& id
                      , change_manager_t& change_manager
                      )
-          : _id (id)
-          , _change_manager (change_manager)
+          : base (change_manager)
+          , _id (id)
         { }
 
 
@@ -43,11 +43,6 @@ namespace fhg
           change_manager().delete_place (sender, *this);
         }
 
-        change_manager_t& place::change_manager() const
-        {
-          return _change_manager;
-        }
-
         const ::xml::parse::id::ref::place& place::id() const
         {
           return _id;
@@ -55,7 +50,7 @@ namespace fhg
 
         net place::parent() const
         {
-          return net (get().parent()->make_reference_id(), _change_manager);
+          return net (get().parent()->make_reference_id(), change_manager());
         }
       }
     }

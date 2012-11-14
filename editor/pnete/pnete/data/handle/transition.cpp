@@ -18,8 +18,8 @@ namespace fhg
         transition::transition ( const ::xml::parse::id::ref::transition& id
                                , change_manager_t& change_manager
                                )
-          : _id (id)
-          , _change_manager (change_manager)
+          : base (change_manager)
+          , _id (id)
         { }
 
         const ::xml::parse::type::transition_type& transition::get() const
@@ -43,7 +43,7 @@ namespace fhg
 
         net transition::parent() const
         {
-          return net (get().parent()->make_reference_id(), _change_manager);
+          return net (get().parent()->make_reference_id(), change_manager());
         }
       }
     }

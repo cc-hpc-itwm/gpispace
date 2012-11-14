@@ -6,6 +6,7 @@
 #include <pnete/data/handle/transition.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/handle/base.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
@@ -19,7 +20,7 @@ namespace fhg
     {
       namespace handle
       {
-        class transition
+        class transition : public base
         {
         public:
           transition ( const ::xml::parse::id::ref::transition& id
@@ -37,7 +38,6 @@ namespace fhg
 
         private:
           ::xml::parse::id::ref::transition _id;
-          change_manager_t& _change_manager;
         };
       }
     }

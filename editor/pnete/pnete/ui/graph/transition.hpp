@@ -37,7 +37,7 @@ namespace fhg
                                    , base_item* parent = NULL
                                    );
 
-          const data::handle::transition& handle() const;
+          virtual const data::handle::transition& handle() const;
 
           virtual QPainterPath shape() const;
           QRectF rectangle() const;

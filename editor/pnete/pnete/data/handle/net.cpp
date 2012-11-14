@@ -13,8 +13,8 @@ namespace fhg
         net::net ( const ::xml::parse::id::ref::net& id
                  , change_manager_t& change_manager
                  )
-          : _id (id)
-          , _change_manager (change_manager)
+          : base (change_manager)
+          , _id (id)
         { }
 
         const ::xml::parse::type::net_type& net::get() const

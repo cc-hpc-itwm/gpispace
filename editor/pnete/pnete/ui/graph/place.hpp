@@ -40,7 +40,7 @@ namespace fhg
             , base_item* parent = NULL
             );
 
-          const data::handle::place& handle() const;
+          virtual const data::handle::place& handle() const;
 
           std::string name() const;
           const std::string& we_type() const;

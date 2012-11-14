@@ -2,14 +2,17 @@
 
 #include <pnete/ui/graph/base_item.hpp>
 
-#include <QGraphicsSceneHoverEvent>
-#include <QGraphicsSceneMouseEvent>
-
+#include <pnete/data/handle/base.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
-#include <util/qt/cast.hpp>
 #include <util/property.hpp>
+#include <util/qt/cast.hpp>
+
+#include <fhg/util/backtracing_exception.hpp>
 
 #include <we/type/property.hpp>
+
+#include <QGraphicsSceneHoverEvent>
+#include <QGraphicsSceneMouseEvent>
 
 namespace fhg
 {
@@ -172,6 +175,12 @@ namespace fhg
         QRectF base_item::boundingRect () const
         {
           return shape().controlPointRect();
+        }
+
+        const data::handle::base& base_item::handle() const
+        {
+          throw fhg::util::backtracing_exception
+            ("base_item::handle() called: sub-class didn't define handle()");
         }
       }
     }

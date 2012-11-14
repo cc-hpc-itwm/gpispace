@@ -1,6 +1,7 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
 set (handle_SRCS
+  base.cpp
   net.cpp
   place.cpp
   transition.cpp

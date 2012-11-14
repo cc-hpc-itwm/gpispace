@@ -3,24 +3,23 @@
 #ifndef _PNETE_UI_GRAPH_ITEM_HPP
 #define _PNETE_UI_GRAPH_ITEM_HPP 1
 
+#include <pnete/data/handle/base.fwd.hpp>
+#include <pnete/ui/graph/mode.hpp>
+#include <pnete/ui/graph/orientation.hpp>
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/graph/style/type.hpp>
+
+#include <we/type/property.hpp>
+
+#include <stack>
+
 #include <QGraphicsObject>
 #include <QPointF>
 #include <QRectF>
 #include <QLinkedList>
 
-#include <pnete/ui/graph/scene.hpp>
-
-#include <pnete/ui/graph/orientation.hpp>
-
-#include <pnete/ui/graph/style/type.hpp>
-#include <pnete/ui/graph/mode.hpp>
-
-#include <we/type/property.hpp>
-
 class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
-
-#include <stack>
 
 namespace fhg
 {
@@ -46,6 +45,7 @@ namespace fhg
           };
 
           base_item (base_item* parent = NULL);
+          virtual ~base_item() { }
 
           scene_type* scene() const;
 
@@ -87,6 +87,8 @@ namespace fhg
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
           virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
           virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
+
+          virtual const data::handle::base& handle() const;
         };
       }
     }
