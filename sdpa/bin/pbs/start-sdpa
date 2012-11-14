@@ -16,7 +16,7 @@ usage: $(basename $0) [options]
   -C: capability specification
 
         format:
-           <CAP>[:N[xM][,shm]]
+           <CAP>[+CAP1...][:N[xM][,shm]]
 
         examples:
            INIT:1x1,0
@@ -297,12 +297,12 @@ dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start agg
 #       - check maximum worker limit, break
 #       - start additional workers, up to N
 
-sizeof_capstruct=4
-for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
-    capability=${capabilities[   $(( i+0 )) ]}
-    num_per_node=${capabilities[ $(( i+1 )) ]}
-    max_nodes=${capabilities[    $(( i+2 )) ]}
-    shm_size=${capabilities[     $(( i+3 )) ]}
+function start_workers_for_capability
+{
+    local capability="$1"   ; shift
+    local num_per_node="$1" ; shift
+    local max_nodes="$1"    ; shift
+    local shm_size="$1"     ; shift
 
     human_max="global max: $max_nodes"
     if [ $max_nodes -eq 0 ] ; then
@@ -314,13 +314,14 @@ for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
 
     num_nodes=0
     start_drts="${SDPA_HOME}/libexec/sdpa/scripts/start-drts"
+    caps_arg=$(echo "$capability" | tr '+' '\n' | xargs -n1 echo '-C')
 
     for host in ${hosts[@]} ; do
         id=1
 
         for (( j = 0 ; j < $num_per_node ; j += 1 )) ; do
             dry_run rexec $host "$start_drts" -D -i ${id} -n "$capability" \
-                                              -m aggregator -C "$capability" \
+                                              -m aggregator $caps_arg \
                                               -s "$state_dir" \
                                               -F "$config_file" \
                                               -M "$shm_size" \
@@ -335,4 +336,15 @@ for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
         fi
         wait
     done
+}
+
+sizeof_capstruct=4
+for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
+    capability=${capabilities[   $(( i+0 )) ]}
+    num_per_node=${capabilities[ $(( i+1 )) ]}
+    max_nodes=${capabilities[    $(( i+2 )) ]}
+    shm_size=${capabilities[     $(( i+3 )) ]}
+
+    start_workers_for_capability "$capability" "$num_per_node" "$max_nodes" "$shm_size" &
 done
+wait
