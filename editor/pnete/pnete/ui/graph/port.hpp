@@ -46,7 +46,7 @@ namespace fhg
 
           virtual const data::handle::port& handle() const;
 
-          std::string name() const;
+          const std::string& name() const;
           const std::string& we_type () const;
 
           const port::orientation::type& orientation() const;

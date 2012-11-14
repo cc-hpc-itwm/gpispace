@@ -285,13 +285,13 @@ namespace fhg
           return _length;
         }
 
-        std::string port_item::name() const
+        const std::string& port_item::name() const
         {
-          return handle()().name();
+          return handle().get().name();
         }
         const std::string& port_item::we_type() const
         {
-          return connectable_item::we_type (handle()().type);
+          return connectable_item::we_type (handle().get().type);
         }
 
         const port::orientation::type&

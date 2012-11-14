@@ -66,7 +66,7 @@ namespace fhg
 
             namespace port
             {
-              std::string name (const base_item * gi)
+              const std::string& name (const base_item * gi)
               {
                 return
                   qgraphicsitem_cast<const graph::port_item*> (gi)->name();
