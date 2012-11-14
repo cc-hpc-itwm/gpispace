@@ -8,9 +8,11 @@
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
 
-#include <pnete/data/internal.hpp>
+#include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/port.hpp>
+#include <pnete/data/internal.hpp>
 
 #include <QtGlobal>
 
@@ -200,11 +202,7 @@ namespace fhg
       {
         ui::graph::port_item* port_item
           ( new ui::graph::port_item
-            ( data::handle::port ( port
-                                 , data::handle::function ( *_function
-                                                          , _transition->handle()
-                                                          , _root->change_manager()
-                                                          )
+            ( data::handle::port ( port.make_reference_id()
                                  , _root->change_manager()
                                  )
             , _current_port_direction
@@ -502,11 +500,7 @@ namespace fhg
       WSIG(port_toplevel, port::open, XMLTYPE(port_type), port)
       {
         _port_item = new ui::graph::top_level_port_item
-          ( data::handle::port ( port
-                               , data::handle::function ( _function
-                                                        , boost::none
-                                                        , _root->change_manager()
-                                                        )
+          ( data::handle::port ( port.make_reference_id()
                                , _root->change_manager()
                                )
           , _direction
