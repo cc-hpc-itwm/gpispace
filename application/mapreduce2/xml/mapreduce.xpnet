@@ -32,7 +32,6 @@
     <place name="partition_slot_size" type="long"/>
     <place name="reduce_slot_size" type="long"/>
     
-    <place name="iterator_red_info" type="iterator_red_info"/>
     <place name="done" type="control"/>
 
     <!-- template specializations -->
@@ -71,14 +70,13 @@
         <out name="n_map_slots" type="long"/>
         <out name="n_part_slots" type="long"/>
         <out name="n_chunks" type="long"/>
-        <out name="iterator_red_info" type="iterator_red_info"/>
 
         <module name="create_config" function="config create_config(input_file, output_file, 
         															read_chunk_size, map_chunk_size,
                                                						input_n_read_slots, input_n_map_slots,
                                                						n_chunks, n_read_slots, n_map_slots,
-                                               						n_part, partition_slot_size, n_part_slots,
-                                               					    reduce_slot_size, iterator_red_info)">
+                                               						n_part, partition_slot_size, 
+                                               						n_part_slots, reduce_slot_size)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
            <cinclude href="util/helper.hpp"/>
@@ -101,16 +99,6 @@
 	          fseek(pf, 0L, SEEK_END);
 	          long input_file_size = ftell(pf);
 	          fclose(pf);
-	
-	          // truncate output file
-	          {
-	            std::ofstream f (output_file.c_str());
-	
-	            if (not f)
-	            {
-	              throw std::runtime_error ("could not create output file " + output_file);
-	            }
-	          }
 	
 	          ::pnetc::type::config::config config;
 	          printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
@@ -159,21 +147,14 @@
 	          config.size.partition.slot = partition_slot_size;
 	          config.size.reduce.slot = reduce_slot_size;
 	          		        
-	          iterator_red_info.avail_slots = n_part;
-	          
 	          std::vector<int> v;
 	          v.resize(n_part);
 	          for(int k=0;k<n_part;k++)
 	          	v[k]=0;
 			  
-			  std::string str_init = ::mapreduce::util::get_string(v);
-	          iterator_red_info.part_used = str_init;
-	          iterator_red_info.red_used  = str_init;
-	          iterator_red_info.border_used = 0L;
-	          
 	          n_read_slots = input_n_read_slots;
 	          n_map_slots = input_n_map_slots;
-                  n_part_slots = n_part;
+			  n_part_slots = n_part;
 	
 	          LOG (INFO, "The config is: " << config);
 	          
@@ -196,7 +177,6 @@
       <connect-out port="n_map_slots" place="n_map_slots"/>
       <connect-out port="n_part_slots" place="n_part_slots"/>
       <connect-out port="n_chunks" place="n_chunks"/>
-      <connect-out port="iterator_red_info" place="iterator_red_info"/>
     </transition>
     
     <!-- begin generate partition info tokens, put this into some subnet later -->
@@ -935,21 +915,22 @@
       <connect-out port="done" place="read_slots_released"/>
     </transition>
     
-    <place name="all_reduce_and_write_done" type="control"/> 
-    <transition name="reduce_all_and_write">
+    <place name="reduce_and_write_done" type="control"/> 
+    <transition name="reduce_and_write">
       <defun>
         <in name="map_slots_released" type="control"/>
         <in name="read_slots_released" type="control"/>
         <in name="partition_info" type="partition_info"/>
         <in name="config" type="config"/>
-        <out name="all_reduce_and_write_done" type="control"/>
-	     <module name="mapred" function="reduce_all_and_write(config, map_slots_released, read_slots_released, partition_info, all_reduce_and_write_done)">
+        <out name="reduce_and_write_done" type="control"/>
+	     <module name="mapred" function="reduce_and_write(config, map_slots_released, read_slots_released, partition_info, reduce_and_write_done)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="util/map.hpp"/>
           <cinclude href="boost/utility.hpp"/>
+          <cinclude href="boost/algorithm/string.hpp"/>
           <cinclude href="fstream"/>
           <cinclude href="sstream"/>
           <cinclude href="cstdio"/>
@@ -984,7 +965,7 @@
               }
               else // nothing to be done
               { 
-                all_reduce_and_write_done = control();
+                reduce_and_write_done = control();
                 return;
               }
 
@@ -1098,8 +1079,15 @@
               
               size_t last_pos = 0;
               
-              std::ofstream ofs;
-              ofs.open(config.file.output.data(), std::ios_base::app );
+          
+			  std::vector<std::string> name_and_ext;
+			  boost::split(name_and_ext, config.file.output, boost::is_any_of("."));
+              std::ostringstream sstr_part_out_file;
+              sstr_part_out_file<<name_and_ext[0]<<"_";
+              sstr_part_out_file<<partition_info.part_id<<"."<<name_and_ext[1];
+              std::ofstream ofs(sstr_part_out_file.str().data());
+              
+              MLOG(INFO, "Reduce and store the partition "<<partition_info.part_id<<" into the file "<<sstr_part_out_file.str());
               
               for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
               {
@@ -1149,7 +1137,7 @@
              if(local_buff)
                 delete[] local_buff;
                 
-             all_reduce_and_write_done = control();
+             reduce_and_write_done = control();
 
           ]]></code>
         </module>
@@ -1158,14 +1146,14 @@
       <connect-read port="read_slots_released" place="read_slots_released"/>
       <connect-in port="partition_info" place="partition_info"/>
       <connect-read port="config" place="config"/>
-      <connect-out port="all_reduce_and_write_done" place="all_reduce_and_write_done"/>
+      <connect-out port="reduce_and_write_done" place="reduce_and_write_done"/>
     </transition>
    
    	 <place name="write_done" type="control"/>
-    <transition name="check_all_reduce_and_write_done" inline="true">
+    <transition name="check_reduce_and_write_done" inline="true">
       <include-function href="check_update_counter.xpnet"/>
       <place-map real="n_part_slots_cnt" virtual="counter"/>
-      <connect-in port="trigger" place="all_reduce_and_write_done"/>
+      <connect-in port="trigger" place="reduce_and_write_done"/>
       <connect-out port="done" place="write_done"/>
     </transition>
     
@@ -1174,7 +1162,7 @@
         <in name="config" type="config"/>
         <in name="map_slots_released" type="control"/>
         <in name="read_slots_released" type="control"/>
-        <in name="all_reduce_and_write_done" type="control"/>
+        <in name="reduce_and_write_done" type="control"/>
         <in name="end_iter_gen_part_info" type="long"/>
         <in name="part_slots" type="long"/>
         <out name="done" type="control"/>
@@ -1199,7 +1187,7 @@
       	<connect-in port="config" place="config"/>
     	<connect-in port="map_slots_released" place="map_slots_released"/>
     	<connect-in port="read_slots_released" place="read_slots_released"/>
-    	<connect-in port="all_reduce_and_write_done" place="all_reduce_and_write_done"/>
+    	<connect-in port="reduce_and_write_done" place="reduce_and_write_done"/>
     	<connect-in port="end_iter_gen_part_info" place="end_iter_gen_part_info"/>
     	<connect-in port="part_slots" place="n_part_slots_cnt"/>
     	<connect-out port="done" place="done"/>
