@@ -1,3 +1,8 @@
+# Start SDPA
+#
+#           #proc   GPI-mem    SHM-mem    init     finalize        read_chunk_size  def-shm 4xdef 2xdef-shm 4xdef-shm
+# sdpa boot -p 4 -m 5*2**30 -s 64*2**20 INI:1x1,0 FIN:1x1,0 LOAD:2,8*2**20          WRITE:2 MAP RED:2   PAR
+#
 
 ifndef MAIN
   MAIN = mapreduce
@@ -17,7 +22,13 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 ###############################################################################
 
-PUT_PORT += input_file=\"$(PWD)/../example/loremipsum.txt\"
+# Start SDPA
+#
+#           #proc   GPI-mem    SHM-mem    init     finalize        read_chunk_size  def-shm 4xdef 2xdef-shm 4xdef-shm
+# sdpa boot -p 4 -m 5*2**30 -s 64*2**20 INI:1x1,0 FIN:1x1,0 LOAD:2,8*2**20          WRITE:2 MAP RED:2   PAR
+#
+
+PUT_PORT += input_file=\"$(PWD)/american.100\"
 PUT_PORT += output_file=\"$(PWD)/out.txt\"
 PUT_PORT += read_chunk_size=1024
 PUT_PORT += map_chunk_size=2048
