@@ -4,13 +4,6 @@
 
 #include <pnete/data/change_manager.hpp>
 
-#include <fhg/util/backtracing_exception.hpp>
-
-#include <xml/parse/type/transition.hpp>
-#include <xml/parse/type/function.hpp>
-
-#include <boost/optional.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -19,47 +12,11 @@ namespace fhg
     {
       namespace handle
       {
-        function::function ( const function_type& function
-                           , boost::optional<const handle::transition&>
-                               transition
+        function::function ( const meta_base::id_type& id
                            , change_manager_t& change_manager
                            )
-          : base (change_manager)
-          , _function_id (function.id())
-          , _transition (transition)
-          , _BAD_BAD_FUNCTION_REFERENCE (const_cast<function_type&> (function))
+          : meta_base (id, change_manager)
         { }
-
-        function::function_type& function::operator()() const
-        {
-          //! \todo This needs to be either resolved via parent
-          //! (transition) or the global id_mapper.
-          return _BAD_BAD_FUNCTION_REFERENCE;
-          // const boost::optional<function_type&> function
-          //   (transition()().function_by_id_ref (_function_id));
-          // if (!function)
-          // {
-          //   throw fhg::util::backtracing_exception
-          //     ("INVALID HANDLE: function id not found");
-          // }
-          // return *function;
-        }
-
-        const handle::transition& function::transition() const
-        {
-          return *_transition;
-        }
-
-        bool function::operator== (const function& other) const
-        {
-          return _function_id == other._function_id
-            && _transition == other._transition;
-        }
-
-        const ::xml::parse::id::function& function::id() const
-        {
-          return _function_id;
-        }
 
         void function::set_property ( const QObject* sender
                                     , const ::we::type::property::key_type& key

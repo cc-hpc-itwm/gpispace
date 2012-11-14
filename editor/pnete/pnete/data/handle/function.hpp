@@ -5,14 +5,10 @@
 
 #include <pnete/data/handle/function.fwd.hpp>
 
-#include <pnete/data/change_manager.fwd.hpp>
-#include <pnete/data/handle/base.hpp>
-#include <pnete/data/handle/transition.hpp>
+#include <pnete/data/handle/meta_base.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/function.fwd.hpp>
-
-#include <boost/optional.hpp>
 
 class QObject;
 
@@ -24,34 +20,19 @@ namespace fhg
     {
       namespace handle
       {
-        class function : public base
+        class function : public meta_base < ::xml::parse::id::ref::function
+                                          , ::xml::parse::type::function_type
+                                          >
         {
-        private:
-          typedef ::xml::parse::type::function_type function_type;
-
         public:
-          function ( const function_type& function
-                   , boost::optional<const handle::transition&> transition
+          function ( const meta_base::id_type& id
                    , change_manager_t& change_manager
                    );
-
-          function_type& operator()() const;
-
-          const handle::transition& transition() const;
-
-          bool operator== (const function& other) const;
-
-          const ::xml::parse::id::function& id() const;
 
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
-
-        private:
-          ::xml::parse::id::function _function_id;
-          boost::optional<handle::transition> _transition;
-          ::xml::parse::type::function_type& _BAD_BAD_FUNCTION_REFERENCE;
         };
       }
     }

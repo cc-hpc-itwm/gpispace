@@ -10,31 +10,11 @@ namespace fhg
     {
       namespace handle
       {
-        net::net ( const ::xml::parse::id::ref::net& id
+        net::net ( const meta_base::id_type& id
                  , change_manager_t& change_manager
                  )
-          : base (change_manager)
-          , _id (id)
+          : meta_base (id, change_manager)
         { }
-
-        const ::xml::parse::type::net_type& net::get() const
-        {
-          return _id.get();
-        }
-        ::xml::parse::type::net_type& net::get_ref() const
-        {
-          return _id.get_ref();
-        }
-
-        bool net::operator== (const net& other) const
-        {
-          return _id == other._id;
-        }
-
-        const ::xml::parse::id::ref::net& net::id() const
-        {
-          return _id;
-        }
       }
     }
   }

@@ -16,26 +16,11 @@ namespace fhg
     {
       namespace handle
       {
-        transition::transition ( const ::xml::parse::id::ref::transition& id
+        transition::transition ( const meta_base::id_type& id
                                , change_manager_t& change_manager
                                )
-          : base (change_manager)
-          , _id (id)
+          : meta_base (id, change_manager)
         { }
-
-        const ::xml::parse::type::transition_type& transition::get() const
-        {
-          return _id.get();
-        }
-        ::xml::parse::type::transition_type& transition::get_ref() const
-        {
-          return _id.get_ref();
-        }
-
-        bool transition::operator== (const transition& other) const
-        {
-          return _id == other._id;
-        }
 
         void transition::set_property
           ( const QObject* sender
@@ -51,11 +36,6 @@ namespace fhg
                               ) const
         {
           change_manager().move_item (sender, *this, position);
-        }
-
-        const ::xml::parse::id::ref::transition& transition::id() const
-        {
-          return _id;
         }
 
         net transition::parent() const

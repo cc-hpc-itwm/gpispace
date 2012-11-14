@@ -6,8 +6,8 @@
 #include <pnete/data/handle/port.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
-#include <pnete/data/handle/base.hpp>
-#include <pnete/data/handle/function.hpp>
+#include <pnete/data/handle/meta_base.hpp>
+#include <pnete/data/handle/function.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/port.fwd.hpp>
@@ -22,24 +22,14 @@ namespace fhg
     {
       namespace handle
       {
-        class port : public base
+        class port : public meta_base < ::xml::parse::id::ref::port
+                                      , ::xml::parse::type::port_type
+                                      >
         {
-        private:
-          typedef ::xml::parse::type::port_type port_type;
-
         public:
-          port ( const port_type& port
-               , const handle::function& function
+          port ( const meta_base::id_type& id
                , change_manager_t& change_manager
                );
-
-          port_type& operator()() const;
-
-          const handle::function& function() const;
-
-          bool operator== (const port& other) const;
-
-          const ::xml::parse::id::port& id() const;
 
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&
@@ -50,9 +40,7 @@ namespace fhg
                             , const QPointF& position
                             ) const;
 
-        private:
-          ::xml::parse::id::port _port_id;
-          handle::function _function;
+          function parent() const;
         };
       }
     }

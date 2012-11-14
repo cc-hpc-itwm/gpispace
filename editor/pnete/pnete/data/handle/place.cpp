@@ -16,27 +16,11 @@ namespace fhg
     {
       namespace handle
       {
-        place::place ( const ::xml::parse::id::ref::place& id
+        place::place ( const meta_base::id_type& id
                      , change_manager_t& change_manager
                      )
-          : base (change_manager)
-          , _id (id)
+          : meta_base (id, change_manager)
         { }
-
-
-        const ::xml::parse::type::place_type& place::get() const
-        {
-          return _id.get();
-        }
-        ::xml::parse::type::place_type& place::get_ref() const
-        {
-          return _id.get_ref();
-        }
-
-        bool place::operator== (const place& other) const
-        {
-          return _id == other._id;
-        }
 
         void place::remove (const QObject* sender) const
         {
@@ -57,11 +41,6 @@ namespace fhg
                          ) const
         {
           change_manager().move_item (sender, *this, position);
-        }
-
-        const ::xml::parse::id::ref::place& place::id() const
-        {
-          return _id;
         }
 
         net place::parent() const
