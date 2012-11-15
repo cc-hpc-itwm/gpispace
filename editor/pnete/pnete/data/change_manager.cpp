@@ -21,6 +21,7 @@
 #include <xml/parse/error.hpp>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/smart_ptr.hpp>
 
 #include <QPointF>
 
@@ -198,11 +199,6 @@ namespace fhg
                                 )
                               )
           { }
-          ~meta_move_item()
-          {
-            delete _set_x_action;
-            delete _set_y_action;
-          }
 
           virtual void undo()
           {
@@ -243,8 +239,8 @@ namespace fhg
           change_manager_t& _change_manager;
           const QObject* _origin;
           const handle_type _handle;
-          meta_set_property<handle_type>* _set_x_action;
-          meta_set_property<handle_type>* _set_y_action;
+          boost::scoped_ptr<meta_set_property<handle_type> > _set_x_action;
+          boost::scoped_ptr<meta_set_property<handle_type> > _set_y_action;
         };
 
         // -- transition ---------------------------------------------
