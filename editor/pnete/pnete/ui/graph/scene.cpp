@@ -564,11 +564,10 @@ namespace fhg
 
             FROM(transition) (&wt, transition.get());
 
-            item->repositionChildrenAndResize();
-
             if (origin == this)
             {
-              item->setPos (mouse_position());
+              item->no_undo_setPos (mouse_position());
+              item->repositionChildrenAndResize();
             }
           }
         }
