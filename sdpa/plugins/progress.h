@@ -3,18 +3,12 @@
 
 #include <stddef.h>
 
-#ifdef __GNUC__
-#  define DEPRECATE_API(msg) __attribute__((deprecated))
-#else
-#  define DEPRECATE_API(msg)
-#endif
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-  size_t set_progress(const char *name, size_t value) DEPRECATE_API ("please use progress_reset(name, phase, max) and progress_tick(name) instead");
-  size_t get_progress(const char *name) DEPRECATE_API ("please use progress_reset(name, max) and progress_tick(name) instead");
+  size_t set_progress(const char *name, size_t value);
+  size_t get_progress(const char *name);
 
   /**
      Resets a progress counter.
