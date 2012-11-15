@@ -264,7 +264,7 @@ namespace fhg
           {
             _change_manager.emit_signal
               ( &change_manager_t::transition_deleted
-              , _origin
+              , NULL
               , handle::transition (_transition, _change_manager)
               );
 
@@ -277,7 +277,7 @@ namespace fhg
 
             _change_manager.emit_signal
               ( &change_manager_t::transition_added
-              , NULL
+              , _origin
               , handle::transition (_transition, _change_manager)
               );
 
