@@ -222,7 +222,7 @@ namespace fhg
       }
       WSIG(tv, transition::place_map, XMLTYPE(transition_type::place_maps_type), pm)
       {
-        xs ("place-map", pm.values(), from::place_map);
+        xs ("place-map", pm.ids(), from::place_map);
       }
       WSIG(tv, transition::connect_read, XMLTYPE(transition_type::connections_type), cs)
       {
@@ -429,7 +429,7 @@ namespace fhg
         from::conditions (this, cs);
       }
 
-      WSIG(tv, place_map::open, XMLTYPE(place_map_type), pm)
+      WSIG(tv, place_map::open, ::xml::parse::id::ref::place_map, pm)
       {
         push (append ("<<place_map>>"));
       }

@@ -304,6 +304,7 @@ namespace fhg
         SIG(module, ::xml::parse::id::ref::module);
         SIG(net, ::xml::parse::id::ref::net);
         SIG(place, ::xml::parse::id::ref::place);
+        SIG(place_map, ::xml::parse::id::ref::place_map);
         SIG(port, ::xml::parse::id::ref::port);
         SIG(specialize, ::xml::parse::id::ref::specialize);
         SIG(tmpl, ::xml::parse::id::ref::tmpl);
@@ -316,7 +317,6 @@ namespace fhg
         SIG(_struct           , XMLTYPE(structure_type));
         SIG(type_get          , ITVAL(XMLTYPE(type_get_type)));
         SIG(type_map          , ITVAL(XMLTYPE(type_map_type)));
-        SIG(place_map         , XMLTYPE(place_map_type));
 
         SIG(properties, WETYPE(property::type));
         SIG(property, ITVAL(WETYPE(property::map_type)));
@@ -653,9 +653,10 @@ namespace fhg
           WEAVE(place::close)();
         }
 
-        FUN(place_map, XMLTYPE(place_map_type), pm)
+        FUN(place_map, ::xml::parse::id::ref::place_map, id)
         {
-          WEAVE(place_map::open) (pm);
+          WEAVE(place_map::open) (id);
+          const ::xml::parse::type::place_map_type& pm (id.get());
           WEAVE(place_map::place_virtual) (pm.place_virtual());
           WEAVE(place_map::place_real) (pm.place_real());
           WEAVE(place_map::properties) (pm.properties());
