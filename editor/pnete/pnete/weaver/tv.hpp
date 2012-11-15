@@ -112,9 +112,9 @@ namespace fhg
       WSIG(tv, property::open, WETYPE(property::key_type), key);
       WSIGE(tv, property::close);
       WSIG(tv, property::value, WETYPE(property::value_type), val);
-      WSIG(tv, _struct::open, std::string, name);
-      WSIGE(tv, _struct::close);
-      WSIG(tv, _struct::type, ::literal::type_name_t, type);
+      WSIG(tv, structure::open, std::string, name);
+      WSIGE(tv, structure::close);
+      WSIG(tv, structure::type, ::literal::type_name_t, type);
       WSIG(tv, structs::open, XMLTYPE(structs_type), structs);
       WSIG(tv, port::open, XMLTYPE(port_type), port);
       WSIGE(tv, port::close);

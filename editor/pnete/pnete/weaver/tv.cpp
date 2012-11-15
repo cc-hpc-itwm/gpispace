@@ -284,19 +284,19 @@ namespace fhg
         add_value (val);
       }
 
-      WSIG(tv, _struct::open, std::string, name)
+      WSIG(tv, structure::open, std::string, name)
       {
         push (append (name));
       }
-      WSIGE(tv, _struct::close) { pop(); }
-      WSIG(tv, _struct::type, ::literal::type_name_t, type)
+      WSIGE(tv, structure::close) { pop(); }
+      WSIG(tv, structure::type, ::literal::type_name_t, type)
       {
         add_type (type);
       }
 
       WSIG(tv, structs::open, XMLTYPE(structs_type), structs)
       {
-        xs ("struct", structs, from::_struct);
+        xs ("struct", structs, from::structure);
       }
 
       WSIG(tv, port::open, ::xml::parse::id::ref::port, port)

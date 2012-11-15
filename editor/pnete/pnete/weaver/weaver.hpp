@@ -128,7 +128,7 @@ namespace fhg
             };
         }
 
-        namespace _struct
+        namespace structure
         {
           enum
             { first = properties::last + 1
@@ -140,7 +140,7 @@ namespace fhg
         namespace port
         {
           enum
-            { first = _struct::last + 1
+            { first = structure::last + 1
             , open, close, name, type, place, properties
             , last
             };
@@ -307,6 +307,7 @@ namespace fhg
         SIG(place_map, ::xml::parse::id::ref::place_map);
         SIG(port, ::xml::parse::id::ref::port);
         SIG(specialize, ::xml::parse::id::ref::specialize);
+        SIG(structure           , XMLTYPE(structure_type));
         SIG(tmpl, ::xml::parse::id::ref::tmpl);
         SIG(transition, ::xml::parse::id::transition);
         SIG(use, ::xml::parse::id::ref::use);
@@ -314,7 +315,6 @@ namespace fhg
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
         SIG(require           , ITVAL(XMLTYPE(requirements_type)));
-        SIG(_struct           , XMLTYPE(structure_type));
         SIG(type_get          , ITVAL(XMLTYPE(type_get_type)));
         SIG(type_map          , ITVAL(XMLTYPE(type_map_type)));
 
@@ -392,17 +392,17 @@ namespace fhg
           };
 
           template<typename State>
-          class _struct : public boost::static_visitor<void>
+          class structure : public boost::static_visitor<void>
           {
           private:
             State * _state;
 
           public:
-            explicit _struct (State * state) : _state (state) {}
+            explicit structure (State * state) : _state (state) {}
 
             void operator () (const ::literal::type_name_t & t) const
             {
-              WEAVE(_struct::type) (t);
+              WEAVE(structure::type) (t);
             }
 
             void operator () (const ::signature::structured_t & m) const
@@ -413,9 +413,9 @@ namespace fhg
                   ; ++field
                   )
                 {
-                  WEAVE(_struct::open) (field->first);
+                  WEAVE(structure::open) (field->first);
                   boost::apply_visitor (*this, field->second);
-                  WEAVE(_struct::close) ();
+                  WEAVE(structure::close) ();
                 }
             }
           };
@@ -463,11 +463,11 @@ namespace fhg
           WEAVE(properties::close)();
         }
 
-        FUN(_struct, XMLTYPE(structure_type), s)
+        FUN(structure, XMLTYPE(structure_type), s)
         {
-          WEAVE(_struct::open) (s.name());
-          boost::apply_visitor(visitor::_struct<State>(_state),s.signature());
-          WEAVE(_struct::close) ();
+          WEAVE(structure::open) (s.name());
+          boost::apply_visitor(visitor::structure<State>(_state),s.signature());
+          WEAVE(structure::close) ();
         }
 
         FUN(structs, XMLTYPE(structs_type), structs)
