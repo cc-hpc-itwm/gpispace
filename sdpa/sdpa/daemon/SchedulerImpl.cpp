@@ -618,14 +618,13 @@ void SchedulerImpl::stop()
 
   m_thread_feed.interrupt();
   DLOG(TRACE, "Feeding thread before join ...");
-  m_thread_feed.join();
-  DLOG(TRACE, "Feeding thread before join ...");
+  if (m_thread_feed.joinable ())
+    m_thread_feed.join();
 
   m_thread_run.interrupt();
   DLOG(TRACE, "Scheduler thread before join ...");
-  m_thread_run.join();
-
-  DLOG(TRACE, "Scheduler thread joined ...");
+  if (m_thread_run.joinable ())
+    m_thread_run.join();
 
   if( jobs_to_be_scheduled.size() )
   {
