@@ -34,6 +34,7 @@ namespace xml
                                    )
         : ID_INITIALIZE()
         , _parent (parent)
+        , contains_a_module_call (false)
         , f (_f)
       {
         _id_mapper->put (_id, *this);
