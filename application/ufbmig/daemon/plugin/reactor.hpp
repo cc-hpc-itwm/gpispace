@@ -5,13 +5,20 @@ namespace isim
 {
   typedef struct _msg_t msg_t;
 
-  typedef msg_t* (*MessageReactor)(msg_t *);
+  class IMessageHandler
+  {
+  public:
+    virtual ~IMessageHandler () {}
+
+    virtual msg_t *on_message (msg_t *) = 0;
+  };
 
   class Reactor
   {
   public:
-    virtual void set_reactor (MessageReactor r) = 0;
     virtual ~Reactor () {}
+
+    virtual void set_handler (IMessageHandler *) = 0;
   };
 }
 
