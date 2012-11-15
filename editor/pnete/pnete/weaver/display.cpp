@@ -58,7 +58,7 @@ namespace fhg
         , _scene (NULL)
         , _root (root)
       {
-        FROM (function<function> (this, _function_with_mapping.function()));
+        from::function (this, _function_with_mapping.function());
       }
       data::proxy::type* function::proxy () const { return _proxy; }
       XMLTYPE(function_type::ports_type)& function::in ()
@@ -149,7 +149,7 @@ namespace fhg
       }
       WSIG(function, function::fun, XMLTYPE(function_type::type), fun)
       {
-        boost::apply_visitor (FROM(visitor::deref_variant<function>) (this), fun);
+        boost::apply_visitor (from::visitor::deref_variant<function> (this), fun);
       }
 
 
@@ -193,10 +193,10 @@ namespace fhg
         _transition->set_proxy (sub.proxy());
 
         _current_port_direction = ui::graph::connectable::direction::IN;
-        from::many (this, sub.in().values(), FROM(port));
+        from::many (this, sub.in().values(), from::port);
 
         _current_port_direction = ui::graph::connectable::direction::OUT;
-        from::many (this, sub.out().values(), FROM(port));
+        from::many (this, sub.out().values(), from::port);
       }
       WSIG(transition, port::open, XMLTYPE(port_type), port)
       {
@@ -217,7 +217,7 @@ namespace fhg
                         : _port_out_item_by_name
                         );
 
-        FROM(port) (&wp, port);
+        from::port (&wp, port);
       }
       WSIGE(transition, transition::close)
       {
@@ -233,7 +233,7 @@ namespace fhg
                               , true
                               );
 
-        from::many (&wc, cs.values(), FROM(connection));
+        from::many (&wc, cs.values(), from::connection);
       }
       WSIG(transition, transition::connect_in, XMLTYPE(transition_type::connections_type), cs)
       {
@@ -243,7 +243,7 @@ namespace fhg
                               , ui::graph::connectable::direction::IN
                               );
 
-        from::many (&wc, cs.values(), FROM(connection));
+        from::many (&wc, cs.values(), from::connection);
       }
       WSIG(transition, transition::connect_out, XMLTYPE(transition_type::connections_type), cs)
       {
@@ -253,13 +253,13 @@ namespace fhg
                               , ui::graph::connectable::direction::OUT
                               );
 
-        from::many (&wc, cs.values(), FROM(connection));
+        from::many (&wc, cs.values(), from::connection);
       }
       WSIG(transition, transition::properties, WETYPE(property::type), props)
       {
         weaver::property wp (_transition);
 
-        FROM (properties) (&wp, props);
+        from::properties (&wp, props);
       }
 
       property::property (ui::graph::base_item* item)
@@ -268,7 +268,7 @@ namespace fhg
       {}
       WSIG(property, properties::open, WETYPE(property::type), props)
       {
-        from::many (this, props.get_map(), FROM(property));
+        from::many (this, props.get_map(), from::property);
       }
       WSIG(property, property::open, WETYPE(property::key_type), key)
       {
@@ -391,7 +391,7 @@ namespace fhg
                                      , _root
                                      , _function
                                      );
-          from::many (&wptl, _in.values(), FROM(port));
+          from::many (&wptl, _in.values(), from::port);
         }
 
         {
@@ -401,16 +401,16 @@ namespace fhg
                                      , _root
                                      , _function
                                      );
-          from::many (&wptl, _out.values(), FROM(port));
+          from::many (&wptl, _out.values(), from::port);
         }
       }
       WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
       {
-        from::many (this, transitions.values(), FROM(transition));
+        from::many (this, transitions.values(), from::transition);
       }
       WSIG(net, net::places, XMLTYPE(net_type::places_type), places)
       {
-        from::many (this, places.ids(), FROM(place));
+        from::many (this, places.ids(), from::place);
       }
       WSIG(net, place::open, ::xml::parse::id::ref::place, place)
       {
@@ -420,7 +420,7 @@ namespace fhg
           );
         weaver::place wp (place_item, _place_item_by_name);
         _scene->addItem (place_item);
-        FROM(place) (&wp, place);
+        from::place (&wp, place);
       }
       WSIG(net, transition::open, XMLTYPE(transition_type), transition)
       {
@@ -438,7 +438,7 @@ namespace fhg
                               , _net
                               , _place_item_by_name
                               );
-        FROM(transition) (&wt, transition);
+        from::transition (&wt, transition);
       }
 
 
@@ -457,7 +457,7 @@ namespace fhg
       {
         weaver::property wp (_port);
 
-        FROM (properties) (&wp, props);
+        from::properties (&wp, props);
       }
 
       place::place ( ui::graph::place_item* place
@@ -475,7 +475,7 @@ namespace fhg
       {
         weaver::property wp (_place);
 
-        FROM(properties) (&wp, props);
+        from::properties (&wp, props);
       }
 
       port_toplevel::port_toplevel
@@ -553,7 +553,7 @@ namespace fhg
       {
         weaver::property wp (_port_item);
 
-        FROM (properties) (&wp, props);
+        from::properties (&wp, props);
       }
     }
   }

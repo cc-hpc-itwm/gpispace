@@ -34,7 +34,6 @@
     || defined GENFUN   \
     || defined FUN      \
     || defined SIG      \
-    || defined FROM     \
     )
 #error "Macro already defined"
 #endif
@@ -59,8 +58,6 @@
         static void _name (State * _state, const _type & _var)
 #define FUN(_name,_type,_var) GENFUN(_name,_type,_state,_var)
 #define SIG(_name,_type) GENFUN(_name,_type,,)
-
-#define FROM(_fun) ::fhg::pnete::weaver::from::_fun
 
 namespace fhg
 {
@@ -626,8 +623,8 @@ namespace fhg
 
         FUN(function, ::xml::parse::id::ref::function, id)
         {
-          FROM(function_head) (_state, id);
-          FROM(function_tail) (_state, id);
+          function_head (_state, id);
+          function_tail (_state, id);
         }
 
         FUN(tmpl, ::xml::parse::id::ref::tmpl, id)
@@ -654,9 +651,9 @@ namespace fhg
 
         FUN(function_context, WNAME(function_context_type), fs)
         {
-          FROM(function_head) (_state, fs.fun());
-          FROM(context) (_state, fs.context());
-          FROM(function_tail) (_state, fs.fun());
+          function_head (_state, fs.fun());
+          context (_state, fs.context());
+          function_tail (_state, fs.fun());
         }
 
         FUN(place, ::xml::parse::id::ref::place, place_id)
