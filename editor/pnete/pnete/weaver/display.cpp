@@ -233,7 +233,7 @@ namespace fhg
                               , true
                               );
 
-        from::many (&wc, cs.values(), from::connection);
+        from::many (&wc, cs.ids(), from::connection);
       }
       WSIG(transition, transition::connect_in, XMLTYPE(transition_type::connections_type), cs)
       {
@@ -243,7 +243,7 @@ namespace fhg
                               , ui::graph::connectable::direction::IN
                               );
 
-        from::many (&wc, cs.values(), from::connection);
+        from::many (&wc, cs.ids(), from::connection);
       }
       WSIG(transition, transition::connect_out, XMLTYPE(transition_type::connections_type), cs)
       {
@@ -253,7 +253,7 @@ namespace fhg
                               , ui::graph::connectable::direction::OUT
                               );
 
-        from::many (&wc, cs.values(), from::connection);
+        from::many (&wc, cs.ids(), from::connection);
       }
       WSIG(transition, transition::properties, WETYPE(property::type), props)
       {

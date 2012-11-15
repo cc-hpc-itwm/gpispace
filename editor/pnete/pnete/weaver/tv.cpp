@@ -226,15 +226,15 @@ namespace fhg
       }
       WSIG(tv, transition::connect_read, XMLTYPE(transition_type::connections_type), cs)
       {
-        xs ("connect-read", cs.values(), from::connection);
+        xs ("connect-read", cs.ids(), from::connection);
       }
       WSIG(tv, transition::connect_in, XMLTYPE(transition_type::connections_type), cs)
       {
-        xs ("connect-in", cs.values(), from::connection);
+        xs ("connect-in", cs.ids(), from::connection);
       }
       WSIG(tv, transition::connect_out, XMLTYPE(transition_type::connections_type), cs)
       {
-        xs ("connect-out", cs.values(), from::connection);
+        xs ("connect-out", cs.ids(), from::connection);
       }
       WSIG(tv, transition::condition, XMLTYPE(conditions_type), cond)
       {

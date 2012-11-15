@@ -307,7 +307,7 @@ namespace fhg
         SIG(structs   , XMLTYPE(structs_type));
         SIG(net       , ::xml::parse::id::ref::net);
 
-        SIG(connection        , XMLTYPE(connect_type));
+        SIG(connection, ::xml::parse::id::ref::connect);
         SIG(port, ::xml::parse::id::ref::port);
         SIG(require           , ITVAL(XMLTYPE(requirements_type)));
         SIG(_struct           , XMLTYPE(structure_type));
@@ -672,9 +672,10 @@ namespace fhg
           WEAVE(place_map::close)();
         }
 
-        FUN(connection, XMLTYPE(connect_type), connection)
+        FUN(connection, ::xml::parse::id::ref::connect, id)
         {
-          WEAVE(connection::open) (connection);
+          WEAVE(connection::open) (id);
+          const ::xml::parse::type::connect_type& connection (id.get());
           WEAVE(connection::port) (connection.port());
           WEAVE(connection::place) (connection.place());
           WEAVE(connection::close)();
