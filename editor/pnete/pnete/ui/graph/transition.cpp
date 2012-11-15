@@ -150,14 +150,14 @@ namespace fhg
               if (p->direction() == connectable::direction::IN)
               {
                 p->orientation (port::orientation::WEST);
-                p->setPos_no_collision_detection
+                p->no_undo_setPos
                   (style::raster::snap (positionIn));
                 positionIn.ry() += step + padding;
               }
               else
               {
                 p->orientation (port::orientation::EAST);
-                p->setPos_no_collision_detection
+                p->no_undo_setPos
                   (style::raster::snap (positionOut));
                 positionOut.ry() += step + padding;
               }
