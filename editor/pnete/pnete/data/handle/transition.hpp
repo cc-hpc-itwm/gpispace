@@ -39,6 +39,10 @@ namespace fhg
                             , const QPointF& position
                             ) const;
 
+          virtual void no_undo_move ( const QObject* sender
+                                    , const QPointF& position
+                                    ) const;
+
           net parent() const;
 
           using meta_base::operator==;

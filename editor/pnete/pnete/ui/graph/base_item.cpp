@@ -52,6 +52,18 @@ namespace fhg
         {
           setPos (QPointF (x, y));
         }
+        void base_item::no_undo_setPos (const QPointF& new_pos)
+        {
+          QPointF snapped (style::raster::snap (new_pos));
+
+          handle().no_undo_move (this, new_pos);
+
+          set_just_pos_but_not_in_property (snapped);
+        }
+        void base_item::no_undo_setPos (qreal x, qreal y)
+        {
+          no_undo_setPos (QPointF (x, y));
+        }
         void base_item::set_just_pos_but_not_in_property (qreal x, qreal y)
         {
           set_just_pos_but_not_in_property (QPointF (x, y));

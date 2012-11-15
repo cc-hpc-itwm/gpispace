@@ -38,6 +38,13 @@ namespace fhg
           change_manager().move_item (sender, *this, position);
         }
 
+        void transition::no_undo_move ( const QObject* sender
+                                      , const QPointF& position
+                                      ) const
+        {
+          change_manager().no_undo_move_item (sender, *this, position);
+        }
+
         net transition::parent() const
         {
           return net (get().parent()->make_reference_id(), change_manager());

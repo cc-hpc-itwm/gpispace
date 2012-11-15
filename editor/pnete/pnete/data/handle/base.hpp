@@ -36,6 +36,10 @@ namespace fhg
                             , const QPointF& position
                             ) const;
 
+          virtual void no_undo_move ( const QObject* sender
+                                    , const QPointF& position
+                                    ) const;
+
           void connect_to_change_mgr ( const QObject* object
                                      , const char* signal
                                      , const char* slot
