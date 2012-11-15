@@ -92,6 +92,10 @@ namespace fhg
                        , const handle::transition&
                        , const QPointF&
                        );
+        void no_undo_move_item ( const QObject*
+                               , const handle::transition&
+                               , const QPointF&
+                               );
 
         // -- place --------------------------------------------------
         void add_place ( const QObject*
@@ -116,6 +120,10 @@ namespace fhg
                        , const handle::place&
                        , const QPointF&
                        );
+        void no_undo_move_item ( const QObject*
+                               , const handle::place&
+                               , const QPointF&
+                               );
 
         // -- port ---------------------------------------------------
         void set_property ( const QObject*
@@ -132,6 +140,10 @@ namespace fhg
                        , const handle::port&
                        , const QPointF&
                        );
+        void no_undo_move_item ( const QObject*
+                               , const handle::port&
+                               , const QPointF&
+                               );
 
         // - function ------------------------------------------------
         void set_function_name ( const QObject*

@@ -550,6 +550,26 @@ namespace fhg
              );
       }
 
+      void change_manager_t::no_undo_move_item
+        ( const QObject* origin
+        , const handle::transition& transition
+        , const QPointF& position
+        )
+      {
+         action::set_property ( transition
+                              , "fhg.pnete.position.x"
+                              , action::to_property_type (position.x())
+                              , *this
+                              , origin
+                              );
+         action::set_property ( transition
+                              , "fhg.pnete.position.y"
+                              , action::to_property_type (position.y())
+                              , *this
+                              , origin
+                              );
+      }
+
 
       // -- place ----------------------------------------------------
       void change_manager_t::add_place
@@ -618,6 +638,26 @@ namespace fhg
              );
       }
 
+      void change_manager_t::no_undo_move_item
+        ( const QObject* origin
+        , const handle::place& place
+        , const QPointF& position
+        )
+      {
+         action::set_property ( place
+                              , "fhg.pnete.position.x"
+                              , action::to_property_type (position.x())
+                              , *this
+                              , origin
+                              );
+         action::set_property ( place
+                              , "fhg.pnete.position.y"
+                              , action::to_property_type (position.y())
+                              , *this
+                              , origin
+                              );
+      }
+
       // - port ------------------------------------------------------
       void change_manager_t::set_property
         ( const QObject* origin
@@ -653,6 +693,26 @@ namespace fhg
                , *this, origin, port, position
                )
              );
+      }
+
+      void change_manager_t::no_undo_move_item
+        ( const QObject* origin
+        , const handle::port& port
+        , const QPointF& position
+        )
+      {
+         action::set_property ( port
+                              , "fhg.pnete.position.x"
+                              , action::to_property_type (position.x())
+                              , *this
+                              , origin
+                              );
+         action::set_property ( port
+                              , "fhg.pnete.position.y"
+                              , action::to_property_type (position.y())
+                              , *this
+                              , origin
+                              );
       }
 
       // - function --------------------------------------------------
