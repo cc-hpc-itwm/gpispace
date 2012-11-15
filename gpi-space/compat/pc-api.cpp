@@ -6,7 +6,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
-#warning "the pc module should not require the loader"
 #include <we/loader/macros.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
