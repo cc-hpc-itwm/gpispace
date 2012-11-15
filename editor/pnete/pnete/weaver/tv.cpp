@@ -378,7 +378,7 @@ namespace fhg
       {
         append_list ("template-parameter", templates);
       }
-      WSIG(tv, tmpl::function, XMLTYPE(function_type), fun)
+      WSIG(tv, tmpl::function, ::xml::parse::id::ref::function, fun)
       {
         FROM(function) (this, fun);
       }
@@ -538,7 +538,7 @@ namespace fhg
       }
       WSIG(tv, net::functions, XMLTYPE(net_type::functions_type), functions)
       {
-        xs ("function", functions.values(), FROM(function));
+        xs ("function", functions.ids(), FROM(function));
       }
       WSIG(tv, net::places, XMLTYPE(net_type::places_type), places)
       {

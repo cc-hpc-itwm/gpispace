@@ -73,18 +73,18 @@ namespace fhg
         struct function_context_type
         {
         private:
-          const XMLTYPE(function_type) & _fun;
+          const ::xml::parse::id::ref::function& _fun;
           const XMLPARSE(state::key_values_t) & _context;
 
         public:
-          function_context_type ( const XMLTYPE(function_type) & fun
+          function_context_type ( const ::xml::parse::id::ref::function& fun
                                 , const XMLPARSE(state::key_values_t) & context
                                 )
             : _fun (fun)
             , _context (context)
           {}
 
-          const XMLTYPE(function_type) & fun () const { return _fun; }
+          const ::xml::parse::id::ref::function& fun () const { return _fun; }
           const XMLPARSE(state::key_values_t) & context () const { return _context; }
         };
 
@@ -306,7 +306,7 @@ namespace fhg
       namespace from
       {
         SIG(place     , ::xml::parse::id::ref::place);
-        SIG(function  , XMLTYPE(function_type));
+        SIG(function  , ::xml::parse::id::ref::function);
         SIG(tmpl      , XMLTYPE(tmpl_type));
         SIG(specialize, XMLTYPE(specialize_type));
 
@@ -418,7 +418,7 @@ namespace fhg
                          , const ::xml::parse::id::ref::function& id
                          )
             {
-              from::function (_state, id.get());
+              from::function (_state, id);
             }
           }
 
@@ -601,15 +601,17 @@ namespace fhg
           WEAVEE(conditions::close)();
         }
 
-        FUN(function_head, XMLTYPE(function_type), fun)
+        FUN(function_head, ::xml::parse::id::ref::function, id)
         {
-          WEAVE(function::open, XMLTYPE(function_type))(fun);
+          WEAVE(function::open, ::xml::parse::id::ref::function)(id);
+          const ::xml::parse::type::function_type& fun (id.get());
           WEAVE(function::name, MAYBE(std::string))(fun.name());
           WEAVE(function::internal, MAYBE(bool))(fun.internal);
         }
 
-        FUN(function_tail, XMLTYPE(function_type), fun)
+        FUN(function_tail, ::xml::parse::id::ref::function, id)
         {
+          const ::xml::parse::type::function_type& fun (id.get());
           WEAVE(function::properties, WETYPE(property::type))(fun.prop);
           WEAVE(function::structs, XMLTYPE(structs_type))(fun.structs);
           WEAVE(function::require, XMLTYPE(requirements_type))
@@ -622,10 +624,10 @@ namespace fhg
           WEAVEE(function::close)();
         }
 
-        FUN(function, XMLTYPE(function_type), fun)
+        FUN(function, ::xml::parse::id::ref::function, id)
         {
-          FROM(function_head) (_state, fun);
-          FROM(function_tail) (_state, fun);
+          FROM(function_head) (_state, id);
+          FROM(function_tail) (_state, id);
         }
 
         FUN(tmpl, XMLTYPE(tmpl_type), t)
@@ -634,7 +636,7 @@ namespace fhg
           WEAVE(tmpl::name, MAYBE(std::string))(t.name());
           WEAVE(tmpl::template_parameter, XMLTYPE(tmpl_type::names_type))
             (t.tmpl_parameter());
-          WEAVE(tmpl::function, XMLTYPE(function_type))(t.function().get());
+          WEAVE(tmpl::function, ::xml::parse::id::ref::function)(t.function());
           WEAVEE(tmpl::close)();
         }
 

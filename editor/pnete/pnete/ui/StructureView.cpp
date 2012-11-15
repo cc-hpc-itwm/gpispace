@@ -44,14 +44,12 @@ namespace fhg
         _datas.push_back (data);
 
         weaver::tv w (_root);
-
-        FROM( function_context<weaver::tv>
-              ( &w
-              , WNAME(function_context_type) ( data->function()
-                                             , data->context()
-                                             )
-              )
-            );
+        weaver::from::function_context<weaver::tv>
+          ( &w
+          , WNAME(function_context_type) ( data->function().make_reference_id()
+                                         , data->context()
+                                         )
+          );
       }
 
       void StructureView::clear()

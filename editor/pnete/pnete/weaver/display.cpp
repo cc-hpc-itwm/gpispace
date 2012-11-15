@@ -58,7 +58,7 @@ namespace fhg
         , _scene (NULL)
         , _root (root)
       {
-        FROM (function<function> (this, _function_with_mapping.function().get_ref()));
+        FROM (function<function> (this, _function_with_mapping.function()));
       }
       data::proxy::type* function::proxy () const { return _proxy; }
       XMLTYPE(function_type::ports_type)& function::in ()
