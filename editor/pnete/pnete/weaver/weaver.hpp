@@ -301,7 +301,7 @@ namespace fhg
         SIG(place     , ::xml::parse::id::ref::place);
         SIG(function  , ::xml::parse::id::ref::function);
         SIG(tmpl      , ::xml::parse::id::ref::tmpl);
-        SIG(specialize, XMLTYPE(specialize_type));
+        SIG(specialize, ::xml::parse::id::ref::specialize);
 
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
@@ -573,9 +573,10 @@ namespace fhg
           WEAVE(type_map::close)();
         }
 
-        FUN(specialize, XMLTYPE(specialize_type), spec)
+        FUN(specialize, ::xml::parse::id::ref::specialize, id)
         {
-          WEAVE(specialize::open) (spec);
+          WEAVE(specialize::open) (id);
+          const ::xml::parse::type::specialize_type& spec (id.get());
           WEAVE(specialize::name) (spec.name());
           WEAVE(specialize::use) (spec.use);
           WEAVE(specialize::type_map) (spec.type_map);

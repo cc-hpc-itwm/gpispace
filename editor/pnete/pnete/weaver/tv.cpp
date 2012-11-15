@@ -534,7 +534,7 @@ namespace fhg
       }
       WSIG(tv, net::specializes, XMLTYPE(net_type::specializes_type), specializes)
       {
-        xs ("specialize", specializes.values(), from::specialize);
+        xs ("specialize", specializes.ids(), from::specialize);
       }
       WSIG(tv, net::functions, XMLTYPE(net_type::functions_type), functions)
       {
