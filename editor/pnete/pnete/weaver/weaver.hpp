@@ -305,7 +305,7 @@ namespace fhg
 
       namespace from
       {
-        SIG(place     , XMLTYPE(place_type));
+        SIG(place     , ::xml::parse::id::ref::place);
         SIG(function  , XMLTYPE(function_type));
         SIG(tmpl      , XMLTYPE(tmpl_type));
         SIG(specialize, XMLTYPE(specialize_type));
@@ -643,9 +643,10 @@ namespace fhg
           FROM(function_tail) (_state, fs.fun());
         }
 
-        FUN(place, XMLTYPE(place_type), place)
+        FUN(place, ::xml::parse::id::ref::place, place_id)
         {
-          WEAVE(place::open, XMLTYPE(place_type))(place);
+          WEAVE(place::open, ::xml::parse::id::ref::place)(place_id);
+          const ::xml::parse::type::place_type& place (place_id.get());
           WEAVE(place::name, std::string)(place.name());
           WEAVE(place::type, std::string)(place.type);
           WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());

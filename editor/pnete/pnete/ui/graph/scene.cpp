@@ -562,7 +562,7 @@ namespace fhg
                                   , place_by_name
                                   );
 
-            FROM(transition) (&wt, transition.get());
+            weaver::from::transition (&wt, transition.get());
 
             if (origin == this)
             {
@@ -597,8 +597,7 @@ namespace fhg
             weaver::item_by_name_type place_by_name;
 
             weaver::place wp (item, place_by_name);
-
-            FROM(place) (&wp, place.get());
+            weaver::from::place (&wp, place.id());
 
             if (origin == this)
             {

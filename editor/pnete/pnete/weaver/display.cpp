@@ -410,16 +410,13 @@ namespace fhg
       }
       WSIG(net, net::places, XMLTYPE(net_type::places_type), places)
       {
-        from::many (this, places.values(), FROM(place));
+        from::many (this, places.ids(), FROM(place));
       }
-      WSIG(net, place::open, XMLTYPE(place_type), place)
+      WSIG(net, place::open, ::xml::parse::id::ref::place, place)
       {
         ui::graph::place_item* place_item
           ( new ui::graph::place_item
-            ( data::handle::place ( place.make_reference_id()
-                                  , _root->change_manager()
-                                  )
-            )
+            (data::handle::place (place, _root->change_manager()))
           );
         weaver::place wp (place_item, _place_item_by_name);
         _scene->addItem (place_item);

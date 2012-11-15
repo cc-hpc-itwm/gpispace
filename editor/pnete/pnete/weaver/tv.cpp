@@ -542,7 +542,7 @@ namespace fhg
       }
       WSIG(tv, net::places, XMLTYPE(net_type::places_type), places)
       {
-        xs ("place", places.values(), FROM(place));
+        xs ("place", places.ids(), FROM(place));
       }
       WSIG( tv
           , net::transitions
