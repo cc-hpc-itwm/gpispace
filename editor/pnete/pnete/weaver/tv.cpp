@@ -530,7 +530,7 @@ namespace fhg
       }
       WSIG(tv, net::templates, XMLTYPE(net_type::templates_type), templates)
       {
-        xs ("template", templates.values(), FROM(tmpl));
+        xs ("template", templates.ids(), from::tmpl);
       }
       WSIG(tv, net::specializes, XMLTYPE(net_type::specializes_type), specializes)
       {
