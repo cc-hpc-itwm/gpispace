@@ -137,7 +137,7 @@ namespace fhg
                        , _function_with_mapping.function().get_ref()
                        );
 
-        FROM(net) (&wn, net);
+        from::net (&wn, net.make_reference_id());
       }
       WSIG(function, function::in, XMLTYPE(function_type::ports_type), in)
       {

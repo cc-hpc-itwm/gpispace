@@ -312,7 +312,7 @@ namespace fhg
 
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
-        SIG(net       , XMLTYPE(net_type));
+        SIG(net       , ::xml::parse::id::ref::net);
 
         SIG(connection        , XMLTYPE(connect_type));
         SIG(port              , XMLTYPE(port_type));
@@ -398,9 +398,11 @@ namespace fhg
               WEAVEE(use::close)();
             }
             template<typename State>
-              void weave (State* _state, const XMLTYPE(net_type)& net)
+              void weave ( State* _state
+                         , const ::xml::parse::id::ref::net& id
+                         )
             {
-              FROM(net) (_state, net);
+              from::net (_state, id);
             }
             template<typename State>
               void weave (State* _state, const XMLTYPE(function_type)& fun)
@@ -424,6 +426,11 @@ namespace fhg
               void operator () (const ID_TYPE& id) const
             {
               weave (_state, id.get());
+            }
+
+            void operator () (const ::xml::parse::id::ref::net& id) const
+            {
+              weave (_state, id);
             }
           };
 
@@ -699,9 +706,10 @@ namespace fhg
           WEAVEE(transition::close)();
         }
 
-        FUN(net, XMLTYPE(net_type), net)
+        FUN(net, ::xml::parse::id::ref::net, net_id)
         {
-          WEAVE(net::open, XMLTYPE(net_type))(net);
+          WEAVE(net::open, ::xml::parse::id::ref::net) (net_id);
+          const ::xml::parse::type::net_type& net (net_id.get());
           WEAVE(net::properties, WETYPE(property::type))(net.prop);
           WEAVE(net::structs, XMLTYPE(structs_type))(net.structs);
           WEAVE(net::templates, XMLTYPE(net_type::templates_type))
