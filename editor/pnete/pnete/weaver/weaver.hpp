@@ -25,7 +25,6 @@
 #if (  defined WNAME    \
     || defined WSIG     \
     || defined WEAVE    \
-    || defined WEAVEE   \
     || defined XMLPARSE \
     || defined XMLTYPE  \
     || defined WETYPE   \
@@ -43,8 +42,7 @@
 #define WSIG(_class,_tag,_type,_var) \
         template<> \
         void _class::weave< WNAME(_tag), _type > (const _type & _var)
-#define WEAVE(_tag,_type) _state->template weave< WNAME(_tag), _type >
-#define WEAVEE(_tag) _state->template weave < WNAME(_tag) >
+#define WEAVE(_tag) _state->template weave < WNAME(_tag) >
 
 #define XMLPARSE(_x) ::xml::parse::_x
 #define XMLTYPE(_type) XMLPARSE(type::_type)
@@ -340,26 +338,24 @@ namespace fhg
 
             void operator () (const ::literal::type_name_t & t) const
             {
-              WEAVE(token::literal::open, ::literal::type_name_t)(t);
-              WEAVE(token::literal::name, ::literal::type_name_t)(t);
-              WEAVEE(token::literal::close)();
+              WEAVE(token::literal::open) (t);
+              WEAVE(token::literal::name) (t);
+              WEAVE(token::literal::close)();
             }
 
             void operator () (const ::signature::structured_t & m) const
             {
-              WEAVE(token::structured::open, ::signature::structured_t)(m);
+              WEAVE(token::structured::open) (m);
 
               for ( ::signature::structured_t::const_iterator field (m.begin())
                   ; field != m.end()
                   ; ++field
                   )
                 {
-                  WEAVE( token::structured::field
-                       , ITVAL(::signature::structured_t)
-                       )(*field);
+                  WEAVE(token::structured::field) (*field);
                 }
 
-              WEAVEE(token::structured::close)();
+              WEAVE(token::structured::close)();
             }
           };
 
@@ -371,18 +367,15 @@ namespace fhg
                          )
             {
               const ::xml::parse::type::module_type& mod (id.get());
-              WEAVE(mod::open, XMLTYPE(module_type))(mod);
-              WEAVE(mod::name, std::string)(mod.name);
-              WEAVE(mod::fun, std::string)(XMLTYPE(dump::dump_fun(mod)));
-              WEAVE(mod::cincludes, XMLTYPE(module_type::cincludes_type))
-                (mod.cincludes);
-              WEAVE(mod::ldflags, XMLTYPE(module_type::flags_type))
-                (mod.ldflags);
-              WEAVE(mod::cxxflags, XMLTYPE(module_type::flags_type))
-                (mod.cxxflags);
-              WEAVE(mod::links, XMLTYPE(module_type::links_type))(mod.links);
-              WEAVE(mod::code, MAYBE(std::string))(mod.code);
-              WEAVEE(mod::close)();
+              WEAVE(mod::open) (mod);
+              WEAVE(mod::name) (mod.name);
+              WEAVE(mod::fun) (XMLTYPE(dump::dump_fun(mod)));
+              WEAVE(mod::cincludes) (mod.cincludes);
+              WEAVE(mod::ldflags) (mod.ldflags);
+              WEAVE(mod::cxxflags) (mod.cxxflags);
+              WEAVE(mod::links) (mod.links);
+              WEAVE(mod::code) (mod.code);
+              WEAVE(mod::close)();
             }
             template<typename State>
               void weave ( State* _state
@@ -390,8 +383,8 @@ namespace fhg
                          )
             {
               const ::xml::parse::type::expression_type& exp (id.get());
-              WEAVE(expression::open, XMLTYPE(expression_type))(exp);
-              WEAVEE(expression::close)();
+              WEAVE(expression::open)(exp);
+              WEAVE(expression::close)();
             }
             template<typename State>
               void weave ( State* _state
@@ -399,9 +392,9 @@ namespace fhg
                          )
             {
               const ::xml::parse::type::use_type& use (id.get());
-              WEAVE(use::open, XMLTYPE(use_type))(use);
-              WEAVE(use::name, std::string)(use.name());
-              WEAVEE(use::close)();
+              WEAVE(use::open) (use);
+              WEAVE(use::name) (use.name());
+              WEAVE(use::close)();
             }
             template<typename State>
               void weave ( State* _state
@@ -448,7 +441,7 @@ namespace fhg
 
             void operator () (const ::literal::type_name_t & t) const
             {
-              WEAVE(_struct::type, ::literal::type_name_t)(t);
+              WEAVE(_struct::type) (t);
             }
 
             void operator () (const ::signature::structured_t & m) const
@@ -459,9 +452,9 @@ namespace fhg
                   ; ++field
                   )
                 {
-                  WEAVE(_struct::open, std::string)(field->first);
+                  WEAVE(_struct::open) (field->first);
                   boost::apply_visitor (*this, field->second);
-                  WEAVEE(_struct::close) ();
+                  WEAVE(_struct::close) ();
                 }
             }
           };
@@ -477,7 +470,7 @@ namespace fhg
 
             void operator () (const WETYPE(property::value_type) & v) const
             {
-              WEAVE(property::value, WETYPE(property::value_type))(v);
+              WEAVE(property::value) (v);
             }
 
             void operator () (const WETYPE(property::type) & props) const
@@ -488,9 +481,9 @@ namespace fhg
                   ; ++p
                   )
                 {
-                  WEAVE(property::open, WETYPE(property::key_type))(p->first);
+                  WEAVE(property::open) (p->first);
                   boost::apply_visitor(*this, p->second);
-                  WEAVEE(property::close) ();
+                  WEAVE(property::close) ();
                 }
             }
           };
@@ -498,43 +491,43 @@ namespace fhg
 
         FUN(property, ITVAL(WETYPE(property::map_type)), prop)
         {
-          WEAVE(property::open, WETYPE(property::key_type))(prop.first);
+          WEAVE(property::open) (prop.first);
           boost::apply_visitor(visitor::property<State>(_state),prop.second);
-          WEAVEE(property::close) ();
+          WEAVE(property::close)();
         }
 
         FUN(properties, WETYPE(property::type), props)
         {
-          WEAVE(properties::open, WETYPE(property::type))(props);
-          WEAVEE(properties::close) ();
+          WEAVE(properties::open) (props);
+          WEAVE(properties::close)();
         }
 
         FUN(_struct, XMLTYPE(structure_type), s)
         {
-          WEAVE(_struct::open, std::string)(s.name());
+          WEAVE(_struct::open) (s.name());
           boost::apply_visitor(visitor::_struct<State>(_state),s.signature());
-          WEAVEE(_struct::close) ();
+          WEAVE(_struct::close) ();
         }
 
         FUN(structs, XMLTYPE(structs_type), structs)
         {
-          WEAVE(structs::open, XMLTYPE(structs_type))(structs);
-          WEAVEE(structs::close)();
+          WEAVE(structs::open) (structs);
+          WEAVE(structs::close)();
         }
 
         FUN(port, XMLTYPE(port_type), port)
         {
-          WEAVE(port::open, XMLTYPE(port_type))(port);
-          WEAVE(port::name, std::string)(port.name());
-          WEAVE(port::type, std::string)(port.type);
-          WEAVE(port::place, MAYBE(std::string))(port.place);
-          WEAVE(port::properties, WETYPE(property::type))(port.prop);
-          WEAVEE(port::close)();
+          WEAVE(port::open) (port);
+          WEAVE(port::name) (port.name());
+          WEAVE(port::type) (port.type);
+          WEAVE(port::place) (port.place);
+          WEAVE(port::properties) (port.prop);
+          WEAVE(port::close)();
         }
 
         FUN(expression_sequence, std::string, lines)
         {
-          WEAVE(expression_sequence::open, std::string)(lines);
+          WEAVE(expression_sequence::open) (lines);
 
           const char b (';');
           std::string::const_iterator pos (lines.begin());
@@ -547,7 +540,7 @@ namespace fhg
               switch (*pos)
                 {
                 case b:
-                  WEAVE(expression_sequence::line, std::string)(line);
+                  WEAVE(expression_sequence::line) (line);
                   line.clear();
                   ++pos;
                   while (pos != end && (isspace (*pos) || *pos == b))
@@ -564,170 +557,158 @@ namespace fhg
 
           if (line.size())
             {
-              WEAVE(expression_sequence::line, std::string)(line);
+              WEAVE(expression_sequence::line)(line);
             }
 
-          WEAVEE(expression_sequence::close)();
+          WEAVE(expression_sequence::close)();
         }
 
         FUN(type_get, ITVAL(XMLTYPE(type_get_type)), tg)
         {
-          WEAVE(type_get::open, ITVAL(XMLTYPE(type_get_type)))(tg);
-          WEAVEE(type_get::close)();
+          WEAVE(type_get::open) (tg);
+          WEAVE(type_get::close)();
         }
 
         FUN(type_map, ITVAL(XMLTYPE(type_map_type)), tm)
         {
-          WEAVE(type_map::open, ITVAL(XMLTYPE(type_map_type)))(tm);
-          WEAVEE(type_map::close)();
+          WEAVE(type_map::open)(tm);
+          WEAVE(type_map::close)();
         }
 
         FUN(specialize, XMLTYPE(specialize_type), spec)
         {
-          WEAVE(specialize::open, XMLTYPE(specialize_type))(spec);
-          WEAVE(specialize::name, std::string)(spec.name());
-          WEAVE(specialize::use, std::string)(spec.use);
-          WEAVE(specialize::type_map, XMLTYPE(type_map_type))(spec.type_map);
-          WEAVE(specialize::type_get, XMLTYPE(type_get_type))(spec.type_get);
-          WEAVEE(specialize::close)();
+          WEAVE(specialize::open) (spec);
+          WEAVE(specialize::name) (spec.name());
+          WEAVE(specialize::use) (spec.use);
+          WEAVE(specialize::type_map) (spec.type_map);
+          WEAVE(specialize::type_get) (spec.type_get);
+          WEAVE(specialize::close)();
         }
 
         FUN(conditions, XMLTYPE(conditions_type), cs)
         {
-          WEAVE(conditions::open, XMLTYPE(conditions_type))(cs);
-          WEAVEE(conditions::close)();
+          WEAVE(conditions::open) (cs);
+          WEAVE(conditions::close)();
         }
 
         FUN(function_head, ::xml::parse::id::ref::function, id)
         {
-          WEAVE(function::open, ::xml::parse::id::ref::function)(id);
+          WEAVE(function::open) (id);
           const ::xml::parse::type::function_type& fun (id.get());
-          WEAVE(function::name, MAYBE(std::string))(fun.name());
-          WEAVE(function::internal, MAYBE(bool))(fun.internal);
+          WEAVE(function::name) (fun.name());
+          WEAVE(function::internal) (fun.internal);
         }
 
         FUN(function_tail, ::xml::parse::id::ref::function, id)
         {
           const ::xml::parse::type::function_type& fun (id.get());
-          WEAVE(function::properties, WETYPE(property::type))(fun.prop);
-          WEAVE(function::structs, XMLTYPE(structs_type))(fun.structs);
-          WEAVE(function::require, XMLTYPE(requirements_type))
-            (fun.requirements);
-          WEAVE(function::in, XMLTYPE(function_type::ports_type))(fun.in());
-          WEAVE(function::out, XMLTYPE(function_type::ports_type))(fun.out());
-          WEAVE(function::fun, XMLTYPE(function_type::type))(fun.f);
-          WEAVE(function::conditions, XMLTYPE(conditions_type))
-            (fun.cond);
-          WEAVEE(function::close)();
+          WEAVE(function::properties) (fun.prop);
+          WEAVE(function::structs) (fun.structs);
+          WEAVE(function::require) (fun.requirements);
+          WEAVE(function::in) (fun.in());
+          WEAVE(function::out) (fun.out());
+          WEAVE(function::fun) (fun.f);
+          WEAVE(function::conditions) (fun.cond);
+          WEAVE(function::close)();
         }
 
         FUN(function, ::xml::parse::id::ref::function, id)
         {
-          function_head (_state, id);
-          function_tail (_state, id);
+          from::function_head (_state, id);
+          from::function_tail (_state, id);
         }
 
         FUN(tmpl, ::xml::parse::id::ref::tmpl, id)
         {
-          WEAVE(tmpl::open, ::xml::parse::id::ref::tmpl)(id);
+          WEAVE(tmpl::open) (id);
           const ::xml::parse::type::tmpl_type& t (id.get());
-          WEAVE(tmpl::name, MAYBE(std::string))(t.name());
-          WEAVE(tmpl::template_parameter, XMLTYPE(tmpl_type::names_type))
-            (t.tmpl_parameter());
-          WEAVE(tmpl::function, ::xml::parse::id::ref::function)(t.function());
-          WEAVEE(tmpl::close)();
+          WEAVE(tmpl::name) (t.name());
+          WEAVE(tmpl::template_parameter) (t.tmpl_parameter());
+          WEAVE(tmpl::function) (t.function());
+          WEAVE(tmpl::close)();
         }
 
         FUN(context_key_value, ITVAL(XMLPARSE(state::key_values_t)), kv)
         {
-          WEAVE(context::key_value, ITVAL(XMLPARSE(state::key_values_t)))(kv);
+          WEAVE(context::key_value) (kv);
         }
 
         FUN(context, XMLPARSE(state::key_values_t), context)
         {
-          WEAVE(context::open, XMLPARSE(state::key_values_t))(context);
-          WEAVEE(context::close)();
+          WEAVE(context::open) (context);
+          WEAVE(context::close)();
         }
 
         FUN(function_context, WNAME(function_context_type), fs)
         {
-          function_head (_state, fs.fun());
-          context (_state, fs.context());
-          function_tail (_state, fs.fun());
+          from::function_head (_state, fs.fun());
+          from::context (_state, fs.context());
+          from::function_tail (_state, fs.fun());
         }
 
         FUN(place, ::xml::parse::id::ref::place, place_id)
         {
-          WEAVE(place::open, ::xml::parse::id::ref::place)(place_id);
+          WEAVE(place::open) (place_id);
           const ::xml::parse::type::place_type& place (place_id.get());
-          WEAVE(place::name, std::string)(place.name());
-          WEAVE(place::type, std::string)(place.type);
-          WEAVE(place::is_virtual, MAYBE(bool))(place.is_virtual());
-          WEAVE(place::properties, WETYPE(property::type))(place.prop);
+          WEAVE(place::name) (place.name());
+          WEAVE(place::type) (place.type);
+          WEAVE(place::is_virtual) (place.is_virtual());
+          WEAVE(place::properties) (place.prop);
 
           BOOST_FOREACH (const XMLTYPE(place_type::token_type)& tok, place.tokens)
           {
-            WEAVE(place::token, XMLTYPE(place_type::token_type))(tok);
+            WEAVE(place::token) (tok);
           }
 
-          WEAVEE(place::close)();
+          WEAVE(place::close)();
         }
 
         FUN(place_map, XMLTYPE(place_map_type), pm)
         {
-          WEAVE(place_map::open, XMLTYPE(place_map_type))(pm);
-          WEAVE(place_map::place_virtual, std::string)(pm.place_virtual());
-          WEAVE(place_map::place_real, std::string)(pm.place_real());
-          WEAVE(place_map::properties, WETYPE(property::type))(pm.properties());
-          WEAVEE(place_map::close)();
+          WEAVE(place_map::open) (pm);
+          WEAVE(place_map::place_virtual) (pm.place_virtual());
+          WEAVE(place_map::place_real) (pm.place_real());
+          WEAVE(place_map::properties) (pm.properties());
+          WEAVE(place_map::close)();
         }
 
         FUN(connection, XMLTYPE(connect_type), connection)
         {
-          WEAVE(connection::open, XMLTYPE(connect_type))(connection);
-          WEAVE(connection::port, std::string)(connection.port());
-          WEAVE(connection::place, std::string)(connection.place());
-          WEAVEE(connection::close)();
+          WEAVE(connection::open) (connection);
+          WEAVE(connection::port) (connection.port());
+          WEAVE(connection::place) (connection.place());
+          WEAVE(connection::close)();
         }
 
         FUN(transition, XMLTYPE(transition_type), trans)
         {
-          WEAVE(transition::open,XMLTYPE(transition_type))(trans);
-          WEAVE(transition::name,std::string)(trans.name());
-          WEAVE(transition::priority,MAYBE(petri_net::prio_t))
-            (trans.priority);
-          WEAVE(transition::internal, MAYBE(bool))(trans.internal);
-          WEAVE(transition::properties, WETYPE(property::type))(trans.prop);
-          WEAVE(transition::structs, XMLTYPE(structs_type))(trans.structs);
-          WEAVE(transition::function, XMLTYPE(transition_type::function_or_use_type))
-            (trans.function_or_use());
-          WEAVE(transition::place_map, XMLTYPE(transition_type::place_maps_type))
-            (trans.place_map());
-          WEAVE(transition::connect_read, XMLTYPE(transition_type::connections_type))
-            (trans.read());
-          WEAVE(transition::connect_in, XMLTYPE(transition_type::connections_type))(trans.in());
-          WEAVE(transition::connect_out, XMLTYPE(transition_type::connections_type))
-            (trans.out());
-          WEAVE(transition::condition, XMLTYPE(conditions_type))(trans.cond);
-          WEAVEE(transition::close)();
+          WEAVE(transition::open) (trans);
+          WEAVE(transition::name) (trans.name());
+          WEAVE(transition::priority) (trans.priority);
+          WEAVE(transition::internal) (trans.internal);
+          WEAVE(transition::properties) (trans.prop);
+          WEAVE(transition::structs) (trans.structs);
+          WEAVE(transition::function) (trans.function_or_use());
+          WEAVE(transition::place_map) (trans.place_map());
+          WEAVE(transition::connect_read) (trans.read());
+          WEAVE(transition::connect_in) (trans.in());
+          WEAVE(transition::connect_out) (trans.out());
+          WEAVE(transition::condition) (trans.cond);
+          WEAVE(transition::close)();
         }
 
         FUN(net, ::xml::parse::id::ref::net, net_id)
         {
-          WEAVE(net::open, ::xml::parse::id::ref::net) (net_id);
+          WEAVE(net::open) (net_id);
           const ::xml::parse::type::net_type& net (net_id.get());
-          WEAVE(net::properties, WETYPE(property::type))(net.prop);
-          WEAVE(net::structs, XMLTYPE(structs_type))(net.structs);
-          WEAVE(net::templates, XMLTYPE(net_type::templates_type))
-            (net.templates());
-          WEAVE(net::specializes, XMLTYPE(net_type::specializes_type))
-            (net.specializes());
-          WEAVE(net::functions, XMLTYPE(net_type::functions_type))
-            (net.functions());
-          WEAVE(net::places, XMLTYPE(net_type::places_type))(net.places());
-          WEAVE(net::transitions, XMLTYPE(net_type::transitions_type))
-            (net.transitions());
-          WEAVEE(net::close)();
+          WEAVE(net::properties) (net.prop);
+          WEAVE(net::structs) (net.structs);
+          WEAVE(net::templates) (net.templates());
+          WEAVE(net::specializes) (net.specializes());
+          WEAVE(net::functions) (net.functions());
+          WEAVE(net::places) (net.places());
+          WEAVE(net::transitions) (net.transitions());
+          WEAVE(net::close)();
         }
 
         template<typename WEAVER, typename IT>
