@@ -11,6 +11,7 @@ namespace isim
   {
   public:
     virtual void set_reactor (MessageReactor r) = 0;
+    virtual ~Reactor () {}
   };
 }
 
