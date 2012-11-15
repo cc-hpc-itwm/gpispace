@@ -1,4 +1,4 @@
-ditc// mirko.rahn@itwm.fraunhofer.de
+// mirko.rahn@itwm.fraunhofer.de
 
 #ifndef _WE_TYPE_PROPERTY_HPP
 #define _WE_TYPE_PROPERTY_HPP
