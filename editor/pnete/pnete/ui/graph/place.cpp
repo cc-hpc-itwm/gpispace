@@ -40,7 +40,6 @@ namespace fhg
             , "  const data::handle::place&"
               ", const ::we::type::property::key_type&"
               ", const ::we::type::property::value_type&"
-              ", const ::we::type::property::value_type&"
             );
         }
 
@@ -132,13 +131,12 @@ namespace fhg
           ( const QObject* origin
           , const data::handle::place& changed_handle
           , const ::we::type::property::key_type& key
-          , const ::we::type::property::value_type& from
-          , const ::we::type::property::value_type& to
+          , const ::we::type::property::value_type& value
           )
         {
           if (origin != this && changed_handle == handle())
           {
-            handle_property_change (key, from, to);
+            handle_property_change (key, value);
           }
         }
 

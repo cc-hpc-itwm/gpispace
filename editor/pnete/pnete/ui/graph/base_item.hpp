@@ -79,8 +79,7 @@ namespace fhg
 
           virtual void handle_property_change
             ( const ::we::type::property::key_type& key
-            , const ::we::type::property::value_type& from
-            , const ::we::type::property::value_type& to
+            , const ::we::type::property::value_type& value
             );
 
         private:

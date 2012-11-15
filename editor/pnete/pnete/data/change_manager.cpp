@@ -93,8 +93,7 @@ namespace fhg
             ( const QObject*
             , const handle_type&
             , const ::we::type::property::key_type&
-            , const ::we::type::property::value_type& from
-            , const ::we::type::property::value_type& to
+            , const ::we::type::property::value_type&
             );
 
         public:
@@ -120,7 +119,7 @@ namespace fhg
             _handle.get_ref().prop.set (_key, _old_value);
             _change_manager.emit_signal<signal_type>
               ( &change_manager_t::property_changed
-              , NULL, _handle, _key, _new_value, _old_value
+              , NULL, _handle, _key, _old_value
               );
           }
 
@@ -129,7 +128,7 @@ namespace fhg
             _handle.get_ref().prop.set (_key, _new_value);
             _change_manager.emit_signal<signal_type>
               ( &change_manager_t::property_changed
-              , _origin, _handle, _key, _old_value, _new_value
+              , _origin, _handle, _key, _new_value
               );
             _origin = NULL;
           }

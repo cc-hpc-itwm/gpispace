@@ -144,8 +144,7 @@ namespace fhg
         void property_changed ( const QObject*
                               , const data::handle::transition&
                               , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type& from
-                              , const ::we::type::property::value_type& to
+                              , const ::we::type::property::value_type&
                               );
 
         // -- place --------------------------------------------------
@@ -154,16 +153,14 @@ namespace fhg
         void property_changed ( const QObject*
                               , const data::handle::place&
                               , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type& from
-                              , const ::we::type::property::value_type& to
+                              , const ::we::type::property::value_type&
                               );
 
         // - port ----------------------------------------------------
         void property_changed ( const QObject*
                               , const data::handle::port&
                               , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type& from
-                              , const ::we::type::property::value_type& to
+                              , const ::we::type::property::value_type&
                               );
 
 
@@ -176,8 +173,7 @@ namespace fhg
         void property_changed ( const QObject*
                               , const data::handle::function&
                               , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type& from
-                              , const ::we::type::property::value_type& to
+                              , const ::we::type::property::value_type&
                               );
 
         // - expression ----------------------------------------------

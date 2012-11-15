@@ -170,7 +170,6 @@ namespace fhg
 
         void base_item::handle_property_change
           ( const ::we::type::property::key_type& key
-          , const ::we::type::property::value_type& old_value
           , const ::we::type::property::value_type& value
           )
         {
