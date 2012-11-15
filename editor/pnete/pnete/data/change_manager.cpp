@@ -528,6 +528,16 @@ namespace fhg
              );
       }
 
+      void change_manager_t::no_undo_set_property
+        ( const QObject* origin
+        , const data::handle::transition& transition
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        action::set_property (transition, key, val, *this, origin);
+      }
+
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::transition& transition
                                        , const QPointF& position
@@ -586,6 +596,16 @@ namespace fhg
              );
       }
 
+      void change_manager_t::no_undo_set_property
+        ( const QObject* origin
+        , const data::handle::place& place
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        action::set_property (place, key, val, *this, origin);
+      }
+
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::place& place
                                        , const QPointF& position
@@ -611,6 +631,16 @@ namespace fhg
                , *this, origin, port, key, val
                )
              );
+      }
+
+      void change_manager_t::no_undo_set_property
+        ( const QObject* origin
+        , const data::handle::port& port
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        action::set_property (port, key, val, *this, origin);
       }
 
       void change_manager_t::move_item ( const QObject* origin
@@ -660,6 +690,16 @@ namespace fhg
                , *this, origin, function, key, val
                )
              );
+      }
+
+      void change_manager_t::no_undo_set_property
+        ( const QObject* origin
+        , const data::handle::function& function
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        action::set_property (function, key, val, *this, origin);
       }
 
       // - expression ------------------------------------------------

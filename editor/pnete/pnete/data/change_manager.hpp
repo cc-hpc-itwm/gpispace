@@ -83,6 +83,11 @@ namespace fhg
                           , const ::we::type::property::key_type&
                           , const ::we::type::property::value_type&
                           );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::transition&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
         void move_item ( const QObject*
                        , const handle::transition&
                        , const QPointF&
@@ -102,6 +107,11 @@ namespace fhg
                           , const ::we::type::property::key_type&
                           , const ::we::type::property::value_type&
                           );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::place&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
         void move_item ( const QObject*
                        , const handle::place&
                        , const QPointF&
@@ -113,6 +123,11 @@ namespace fhg
                           , const ::we::type::property::key_type&
                           , const ::we::type::property::value_type&
                           );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::port&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
         void move_item ( const QObject*
                        , const handle::port&
                        , const QPointF&
@@ -128,6 +143,11 @@ namespace fhg
                           , const ::we::type::property::key_type&
                           , const ::we::type::property::value_type&
                           );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::function&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
 
         // - expression ----------------------------------------------
         void set_expression ( const QObject*
