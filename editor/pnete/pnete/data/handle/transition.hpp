@@ -20,13 +20,13 @@ namespace fhg
     {
       namespace handle
       {
-        class transition
-          : public meta_base < ::xml::parse::id::ref::transition
-                             , ::xml::parse::type::transition_type
-                             >
+        typedef meta_base < ::xml::parse::id::ref::transition
+                          , ::xml::parse::type::transition_type
+                          > transition_meta_base;
+        class transition : public transition_meta_base
         {
         public:
-          transition ( const meta_base::id_type& id
+          transition ( const transition_meta_base::id_type& id
                      , change_manager_t& change_manager
                      );
 
@@ -45,7 +45,7 @@ namespace fhg
 
           net parent() const;
 
-          using meta_base::operator==;
+          using transition_meta_base::operator==;
         };
       }
     }

@@ -22,12 +22,13 @@ namespace fhg
     {
       namespace handle
       {
-        class port : public meta_base < ::xml::parse::id::ref::port
-                                      , ::xml::parse::type::port_type
-                                      >
+        typedef meta_base < ::xml::parse::id::ref::port
+                          , ::xml::parse::type::port_type
+                          > port_meta_base;
+        class port : public port_meta_base
         {
         public:
-          port ( const meta_base::id_type& id
+          port ( const port_meta_base::id_type& id
                , change_manager_t& change_manager
                );
 
@@ -46,7 +47,7 @@ namespace fhg
 
           function parent() const;
 
-          using meta_base::operator==;
+          using port_meta_base::operator==;
         };
       }
     }

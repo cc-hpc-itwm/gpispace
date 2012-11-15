@@ -22,12 +22,13 @@ namespace fhg
     {
       namespace handle
       {
-        class place : public meta_base < ::xml::parse::id::ref::place
-                                       , ::xml::parse::type::place_type
-                                       >
+        typedef meta_base < ::xml::parse::id::ref::place
+                          , ::xml::parse::type::place_type
+                          > place_meta_base;
+        class place : public place_meta_base
         {
         public:
-          place ( const meta_base::id_type& id
+          place ( const place_meta_base::id_type& id
                 , change_manager_t& change_manager
                 );
 
@@ -48,7 +49,7 @@ namespace fhg
 
           net parent() const;
 
-          using meta_base::operator==;
+          using place_meta_base::operator==;
         };
       }
     }

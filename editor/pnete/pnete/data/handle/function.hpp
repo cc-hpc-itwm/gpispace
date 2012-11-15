@@ -20,12 +20,13 @@ namespace fhg
     {
       namespace handle
       {
-        class function : public meta_base < ::xml::parse::id::ref::function
-                                          , ::xml::parse::type::function_type
-                                          >
+        typedef meta_base < ::xml::parse::id::ref::function
+                          , ::xml::parse::type::function_type
+                          > function_meta_base;
+        class function : public function_meta_base
         {
         public:
-          function ( const meta_base::id_type& id
+          function ( const function_meta_base::id_type& id
                    , change_manager_t& change_manager
                    );
 
@@ -34,7 +35,7 @@ namespace fhg
                                     , const ::we::type::property::value_type&
                                     ) const;
 
-          using meta_base::operator==;
+          using function_meta_base::operator==;
         };
       }
     }

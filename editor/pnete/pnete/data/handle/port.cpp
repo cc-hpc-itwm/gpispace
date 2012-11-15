@@ -16,10 +16,10 @@ namespace fhg
     {
       namespace handle
       {
-        port::port ( const meta_base::id_type& id
+        port::port ( const port_meta_base::id_type& id
                    , change_manager_t& change_manager
                    )
-          : meta_base (id, change_manager)
+          : port_meta_base (id, change_manager)
         { }
 
         void port::set_property ( const QObject* sender

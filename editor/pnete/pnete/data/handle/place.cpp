@@ -16,10 +16,10 @@ namespace fhg
     {
       namespace handle
       {
-        place::place ( const meta_base::id_type& id
+        place::place ( const place_meta_base::id_type& id
                      , change_manager_t& change_manager
                      )
-          : meta_base (id, change_manager)
+          : place_meta_base (id, change_manager)
         { }
 
         void place::remove (const QObject* sender) const

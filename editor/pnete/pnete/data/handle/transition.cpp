@@ -16,10 +16,10 @@ namespace fhg
     {
       namespace handle
       {
-        transition::transition ( const meta_base::id_type& id
+        transition::transition ( const transition_meta_base::id_type& id
                                , change_manager_t& change_manager
                                )
-          : meta_base (id, change_manager)
+          : transition_meta_base (id, change_manager)
         { }
 
         void transition::set_property

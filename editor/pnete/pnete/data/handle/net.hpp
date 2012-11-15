@@ -19,16 +19,17 @@ namespace fhg
     {
       namespace handle
       {
-        class net : public meta_base < ::xml::parse::id::ref::net
-                                     , ::xml::parse::type::net_type
-                                     >
+        typedef meta_base < ::xml::parse::id::ref::net
+                          , ::xml::parse::type::net_type
+                          > net_meta_base;
+        class net : public net_meta_base
         {
         public:
-          net ( const meta_base::id_type& id
+          net ( const net_meta_base::id_type& id
               , change_manager_t& change_manager
               );
 
-          using meta_base::operator==;
+          using net_meta_base::operator==;
         };
       }
     }
