@@ -561,8 +561,7 @@ namespace fhg
                                   , transition.parent().get_ref()
                                   , place_by_name
                                   );
-
-            weaver::from::transition (&wt, transition.get());
+            weaver::from::transition (&wt, transition.id());
 
             if (origin == this)
             {

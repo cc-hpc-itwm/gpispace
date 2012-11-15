@@ -311,7 +311,7 @@ namespace fhg
         SIG(port, ::xml::parse::id::ref::port);
         SIG(require           , ITVAL(XMLTYPE(requirements_type)));
         SIG(_struct           , XMLTYPE(structure_type));
-        SIG(transition        , XMLTYPE(transition_type));
+        SIG(transition, ::xml::parse::id::transition);
         SIG(type_get          , ITVAL(XMLTYPE(type_get_type)));
         SIG(type_map          , ITVAL(XMLTYPE(type_map_type)));
         SIG(place_map         , XMLTYPE(place_map_type));
@@ -681,9 +681,10 @@ namespace fhg
           WEAVE(connection::close)();
         }
 
-        FUN(transition, XMLTYPE(transition_type), trans)
+        FUN(transition, ::xml::parse::id::ref::transition, id)
         {
-          WEAVE(transition::open) (trans);
+          WEAVE(transition::open) (id);
+          const ::xml::parse::type::transition_type& trans (id.get());
           WEAVE(transition::name) (trans.name());
           WEAVE(transition::priority) (trans.priority);
           WEAVE(transition::internal) (trans.internal);

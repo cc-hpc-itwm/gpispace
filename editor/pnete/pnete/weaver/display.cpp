@@ -406,7 +406,7 @@ namespace fhg
       }
       WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
       {
-        from::many (this, transitions.values(), from::transition);
+        from::many (this, transitions.ids(), from::transition);
       }
       WSIG(net, net::places, XMLTYPE(net_type::places_type), places)
       {
@@ -422,14 +422,11 @@ namespace fhg
         _scene->addItem (place_item);
         from::place (&wp, place);
       }
-      WSIG(net, transition::open, XMLTYPE(transition_type), transition)
+      WSIG(net, transition::open, ::xml::parse::id::ref::transition, id)
       {
         ui::graph::transition_item* trans
           ( new ui::graph::transition_item
-            ( data::handle::transition ( transition.make_reference_id()
-                                       , _root->change_manager()
-                                       )
-            )
+            (data::handle::transition (id, _root->change_manager()))
           );
         _scene->addItem (trans);
         weaver::transition wt ( _root
@@ -438,7 +435,7 @@ namespace fhg
                               , _net
                               , _place_item_by_name
                               );
-        from::transition (&wt, transition);
+        from::transition (&wt, id);
       }
 
 

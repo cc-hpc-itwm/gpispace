@@ -550,7 +550,7 @@ namespace fhg
           , transitions
           )
       {
-        xs ("transition", transitions.values(), from::transition);
+        xs ("transition", transitions.ids(), from::transition);
       }
 
       WSIG(tv, use::name, std::string, name)
