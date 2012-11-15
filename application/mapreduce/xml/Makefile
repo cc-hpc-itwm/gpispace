@@ -22,21 +22,18 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 ###############################################################################
 
-# Start SDPA
-#
-#           #proc   GPI-mem    SHM-mem    init     finalize        read_chunk_size  def-shm 4xdef 2xdef-shm 4xdef-shm
-# sdpa boot -p 4 -m 5*2**30 -s 64*2**20 INI:1x1,0 FIN:1x1,0 LOAD:2,8*2**20          WRITE:2 MAP RED:2   PAR
-#
-
-PUT_PORT += input_file=\"$(PWD)/american.100\"
-PUT_PORT += output_file=\"$(PWD)/out.txt\"
-PUT_PORT += read_chunk_size=1024
-PUT_PORT += map_chunk_size=2048
-PUT_PORT += partition_slot_size=200000
-PUT_PORT += reduce_slot_size=200000
-PUT_PORT += n_part=5
-PUT_PORT += input_n_read_slots=10
-PUT_PORT += input_n_map_slots=10
+PUT_PORT += input_file=\"/fhgfs/HPC/rotaru/data/american.100\"
+PUT_PORT += output_file=\"/fhgfs/HPC/rotaru/data/out.txt\"
+PUT_PORT += read_chunk_size=4194304
+#PUT_PORT += map_chunk_size=4194304
+PUT_PORT += map_chunk_size=12582912
+#PUT_PORT += partition_slot_size=33554432
+PUT_PORT += partition_slot_size=16777216
+#PUT_PORT += reduce_slot_size=33554432
+PUT_PORT += reduce_slot_size=67108864
+PUT_PORT += n_part=13
+PUT_PORT += input_n_read_slots=12
+PUT_PORT += input_n_map_slots=50
 
 -include example.mk
 
