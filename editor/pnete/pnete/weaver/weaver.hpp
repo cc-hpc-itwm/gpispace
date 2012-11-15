@@ -298,20 +298,22 @@ namespace fhg
 
       namespace from
       {
-        SIG(place, ::xml::parse::id::ref::place);
+        SIG(connection, ::xml::parse::id::ref::connect);
+        SIG(expression, ::xml::parse::id::ref::expression);
         SIG(function, ::xml::parse::id::ref::function);
-        SIG(tmpl, ::xml::parse::id::ref::tmpl);
+        SIG(module, ::xml::parse::id::ref::module);
+        SIG(net, ::xml::parse::id::ref::net);
+        SIG(place, ::xml::parse::id::ref::place);
+        SIG(port, ::xml::parse::id::ref::port);
         SIG(specialize, ::xml::parse::id::ref::specialize);
+        SIG(tmpl, ::xml::parse::id::ref::tmpl);
+        SIG(transition, ::xml::parse::id::transition);
+        SIG(use, ::xml::parse::id::ref::use);
 
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
-        SIG(net       , ::xml::parse::id::ref::net);
-
-        SIG(connection, ::xml::parse::id::ref::connect);
-        SIG(port, ::xml::parse::id::ref::port);
         SIG(require           , ITVAL(XMLTYPE(requirements_type)));
         SIG(_struct           , XMLTYPE(structure_type));
-        SIG(transition, ::xml::parse::id::transition);
         SIG(type_get          , ITVAL(XMLTYPE(type_get_type)));
         SIG(type_map          , ITVAL(XMLTYPE(type_map_type)));
         SIG(place_map         , XMLTYPE(place_map_type));
@@ -357,59 +359,6 @@ namespace fhg
             }
           };
 
-          namespace
-          {
-            template<typename State>
-              void weave ( State* _state
-                         , const ::xml::parse::id::ref::module& id
-                         )
-            {
-              const ::xml::parse::type::module_type& mod (id.get());
-              WEAVE(mod::open) (mod);
-              WEAVE(mod::name) (mod.name);
-              WEAVE(mod::fun) (XMLTYPE(dump::dump_fun(mod)));
-              WEAVE(mod::cincludes) (mod.cincludes);
-              WEAVE(mod::ldflags) (mod.ldflags);
-              WEAVE(mod::cxxflags) (mod.cxxflags);
-              WEAVE(mod::links) (mod.links);
-              WEAVE(mod::code) (mod.code);
-              WEAVE(mod::close)();
-            }
-            template<typename State>
-              void weave ( State* _state
-                         , const ::xml::parse::id::ref::expression& id
-                         )
-            {
-              const ::xml::parse::type::expression_type& exp (id.get());
-              WEAVE(expression::open)(exp);
-              WEAVE(expression::close)();
-            }
-            template<typename State>
-              void weave ( State* _state
-                         , const ::xml::parse::id::ref::use& id
-                         )
-            {
-              const ::xml::parse::type::use_type& use (id.get());
-              WEAVE(use::open) (use);
-              WEAVE(use::name) (use.name());
-              WEAVE(use::close)();
-            }
-            template<typename State>
-              void weave ( State* _state
-                         , const ::xml::parse::id::ref::net& id
-                         )
-            {
-              from::net (_state, id);
-            }
-            template<typename State>
-              void weave ( State* _state
-                         , const ::xml::parse::id::ref::function& id
-                         )
-            {
-              from::function (_state, id);
-            }
-          }
-
           template<typename State>
           class deref_variant : public boost::static_visitor<void>
           {
@@ -420,6 +369,20 @@ namespace fhg
             explicit deref_variant (State * state)
               : _state (state)
             { }
+
+#define DEREF_OP(_type)                                                    \
+            void operator() (const ::xml::parse::id::ref::_type& id) const \
+            {                                                              \
+              from::_type (_state, id);                                    \
+            }
+
+            DEREF_OP (expression)
+            DEREF_OP (function)
+            DEREF_OP (module)
+            DEREF_OP (net)
+            DEREF_OP (use)
+
+#undef DEREF_OP
 
             template <typename ID_TYPE>
               void operator () (const ID_TYPE& id) const
@@ -583,6 +546,33 @@ namespace fhg
           WEAVE(specialize::type_map) (spec.type_map);
           WEAVE(specialize::type_get) (spec.type_get);
           WEAVE(specialize::close)();
+        }
+
+        FUN(expression, ::xml::parse::id::ref::expression, id)
+        {
+          WEAVE(expression::open)(id);
+          WEAVE(expression::close)();
+        }
+
+        FUN(module, ::xml::parse::id::ref::module, id)
+        {
+          WEAVE(mod::open) (id);
+          const ::xml::parse::type::module_type& mod (id.get());
+          WEAVE(mod::name) (mod.name);
+          WEAVE(mod::fun) (XMLTYPE(dump::dump_fun(mod)));
+          WEAVE(mod::cincludes) (mod.cincludes);
+          WEAVE(mod::ldflags) (mod.ldflags);
+          WEAVE(mod::cxxflags) (mod.cxxflags);
+          WEAVE(mod::links) (mod.links);
+          WEAVE(mod::code) (mod.code);
+          WEAVE(mod::close)();
+        }
+
+        FUN(use, ::xml::parse::id::ref::use, id)
+        {
+          WEAVE(use::open) (id);
+          WEAVE(use::name) (id.get().name());
+          WEAVE(use::close)();
         }
 
         FUN(conditions, XMLTYPE(conditions_type), cs)
