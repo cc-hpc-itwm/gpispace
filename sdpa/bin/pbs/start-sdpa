@@ -339,6 +339,7 @@ function start_workers_for_capability
 }
 
 sizeof_capstruct=4
+count=0
 for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
     capability=${capabilities[   $(( i+0 )) ]}
     num_per_node=${capabilities[ $(( i+1 )) ]}
@@ -346,5 +347,10 @@ for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
     shm_size=${capabilities[     $(( i+3 )) ]}
 
     start_workers_for_capability "$capability" "$num_per_node" "$max_nodes" "$shm_size" &
+    count=$((count+1))
+    if [ $count -gt 2 ] ; then
+      count=0
+      wait
+    fi
 done
 wait
