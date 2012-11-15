@@ -508,7 +508,7 @@ namespace fhg
       {
         _name = name;
       }
-      WSIG(port_toplevel, port::place, MAYBE(std::string), place)
+      WSIG(port_toplevel, port::place, boost::optional<std::string>, place)
       {
         if (place)
         {

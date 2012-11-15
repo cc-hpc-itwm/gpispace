@@ -241,7 +241,7 @@ namespace fhg
 
       WSIG(port_toplevel, port::open, XMLTYPE(port_type), port);
       WSIG(port_toplevel, port::name, std::string, name);
-      WSIG(port_toplevel, port::place, MAYBE(std::string), place);
+      WSIG(port_toplevel, port::place, boost::optional<std::string>, place);
       WSIG(port_toplevel, port::properties, WETYPE(property::type), props);
 
       class place

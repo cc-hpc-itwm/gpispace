@@ -28,7 +28,6 @@
     || defined XMLPARSE \
     || defined XMLTYPE  \
     || defined WETYPE   \
-    || defined MAYBE    \
     || defined ITVAL    \
     || defined GENFUN   \
     || defined FUN      \
@@ -47,7 +46,6 @@
 #define XMLPARSE(_x) ::xml::parse::_x
 #define XMLTYPE(_type) XMLPARSE(type::_type)
 #define WETYPE(_type) ::we::type::_type
-#define MAYBE(_type) boost::optional< _type >
 
 #define ITVAL(_type) _type::const_iterator::value_type
 

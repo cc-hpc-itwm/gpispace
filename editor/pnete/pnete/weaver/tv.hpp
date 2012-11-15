@@ -90,9 +90,9 @@ namespace fhg
 
       WSIG(tv, transition::name, std::string, name);
       WSIGE(tv, transition::close);
-      WSIG(tv, transition::priority, MAYBE(petri_net::prio_t), prio);
-      WSIG(tv, transition::internal, MAYBE(bool), internal);
-      WSIG(tv, transition::_inline, MAYBE(bool), _inline);
+      WSIG(tv, transition::priority, boost::optional<petri_net::prio_t>, prio);
+      WSIG(tv, transition::internal, boost::optional<bool>, internal);
+      WSIG(tv, transition::_inline, boost::optional<bool>, _inline);
       WSIG(tv, transition::properties, WETYPE(property::type), prop);
       WSIG(tv, transition::structs, XMLTYPE(structs_type), structs);
       WSIG(tv, transition::function, XMLTYPE(transition_type::function_or_use_type), fun);
@@ -105,7 +105,7 @@ namespace fhg
       WSIGE(tv, place::close);
       WSIG(tv, place::name, std::string, name);
       WSIG(tv, place::type, std::string, type);
-      WSIG(tv, place::is_virtual, MAYBE(bool), is_virtual);
+      WSIG(tv, place::is_virtual, boost::optional<bool>, is_virtual);
       WSIG(tv, place::token, XMLTYPE(place_type::token_type), token);
       WSIG(tv, place::properties, WETYPE(property::type), prop);
       WSIG(tv, properties::open, WETYPE(property::type), props);
@@ -120,7 +120,7 @@ namespace fhg
       WSIGE(tv, port::close);
       WSIG(tv, port::name, std::string, name);
       WSIG(tv, port::type, std::string, type);
-      WSIG(tv, port::place, MAYBE(std::string), place);
+      WSIG(tv, port::place, boost::optional<std::string>, place);
       WSIG(tv, port::properties, WETYPE(property::type), prop);
       WSIG(tv, expression_sequence::line, std::string, line);
       WSIG(tv, type_get::open, ITVAL(XMLTYPE(type_get_type)), tg);
@@ -134,8 +134,8 @@ namespace fhg
       WSIG(tv, conditions::open, XMLTYPE(conditions_type), cs);
       WSIG(tv, function::open, XMLTYPE(function_type), fun);
       WSIGE(tv, function::close);
-      WSIG(tv, function::name, MAYBE(std::string), name);
-      WSIG(tv, function::internal, MAYBE(bool), internal);
+      WSIG(tv, function::name, boost::optional<std::string>, name);
+      WSIG(tv, function::internal, boost::optional<bool>, internal);
       WSIG(tv, function::require, XMLTYPE(requirements_type), reqs);
       WSIG(tv, function::properties, WETYPE(property::type), prop);
       WSIG(tv, function::structs, XMLTYPE(structs_type), structs);
@@ -144,7 +144,7 @@ namespace fhg
       WSIG(tv, function::fun, XMLTYPE(function_type::type), fun);
       WSIG(tv, function::conditions, XMLTYPE(conditions_type), cs);
       WSIG(tv, tmpl::open, XMLTYPE(tmpl_type), t);
-      WSIG(tv, tmpl::name, MAYBE(std::string), name);
+      WSIG(tv, tmpl::name, boost::optional<std::string>, name);
       WSIG(tv, tmpl::template_parameter, XMLTYPE(tmpl_type::names_type), templates);
       WSIG(tv, tmpl::function, XMLTYPE(function_type), fun);
       WSIGE(tv, tmpl::close);
@@ -164,7 +164,7 @@ namespace fhg
       WSIG(tv, mod::fun, std::string, fun);
       WSIG(tv, mod::cincludes, XMLTYPE(module_type::cincludes_type), cincludes);
       WSIG(tv, mod::ldflags, XMLTYPE(module_type::flags_type), ldflags);
-      WSIG(tv, mod::code, MAYBE(std::string), code);
+      WSIG(tv, mod::code, boost::optional<std::string>, code);
       WSIG(tv, token::literal::name, ::literal::type_name_t, token);
       WSIG(tv, token::structured::field, ::signature::structured_t::const_iterator::value_type, field);
       WSIG(tv, net::open, XMLTYPE(net_type), net);

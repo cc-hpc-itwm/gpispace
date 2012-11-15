@@ -196,15 +196,15 @@ namespace fhg
         push (append (name));
       }
       WSIGE(tv, transition::close) { pop(); }
-      WSIG(tv, transition::priority, MAYBE(petri_net::prio_t), prio)
+      WSIG(tv, transition::priority, boost::optional<petri_net::prio_t>, prio)
       {
         append_maybe_key_value ("priority", "%i", prio);
       }
-      WSIG(tv, transition::internal, MAYBE(bool), internal)
+      WSIG(tv, transition::internal, boost::optional<bool>, internal)
       {
         append_maybe_bool ("internal", internal);
       }
-      WSIG(tv, transition::_inline, MAYBE(bool), _inline)
+      WSIG(tv, transition::_inline, boost::optional<bool>, _inline)
       {
         append_maybe_bool ("inline", _inline);
       }
@@ -254,7 +254,7 @@ namespace fhg
       {
         add_type (type);
       }
-      WSIG(tv, place::is_virtual, MAYBE(bool), is_virtual)
+      WSIG(tv, place::is_virtual, boost::optional<bool>, is_virtual)
       {
         append_maybe_bool ("virtual", is_virtual);
       }
@@ -312,7 +312,7 @@ namespace fhg
       {
         add_type (type);
       }
-      WSIG(tv, port::place, MAYBE(std::string), place)
+      WSIG(tv, port::place, boost::optional<std::string>, place)
       {
         append_maybe_key_value ("place", "%s", place);
       }
@@ -367,7 +367,7 @@ namespace fhg
       {
         push (append ("<<template>>"));
       }
-      WSIG(tv, tmpl::name, MAYBE(std::string), name)
+      WSIG(tv, tmpl::name, boost::optional<std::string>, name)
       {
         if (name)
           {
@@ -389,14 +389,14 @@ namespace fhg
         push (append ("<<function>>"));
       }
       WSIGE(tv, function::close) { pop(); }
-      WSIG(tv, function::name, MAYBE(std::string), name)
+      WSIG(tv, function::name, boost::optional<std::string>, name)
       {
         if (name)
           {
             set_text (*name);
           }
       }
-      WSIG(tv, function::internal, MAYBE(bool), internal)
+      WSIG(tv, function::internal, boost::optional<bool>, internal)
       {
         append_maybe_bool ("internal", internal);
       }
@@ -495,7 +495,7 @@ namespace fhg
       {
         append_list ("link", links);
       }
-      WSIG(tv, mod::code, MAYBE(std::string), code)
+      WSIG(tv, mod::code, boost::optional<std::string>, code)
       {
         append_maybe ("code", code);
       }
