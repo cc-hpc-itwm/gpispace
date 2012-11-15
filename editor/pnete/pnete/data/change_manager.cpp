@@ -83,11 +83,14 @@ namespace fhg
             boost::lexical_cast<T> (v);
         }
 
-        // ## editing actions ########################################
         template<typename HANDLE_TYPE>
-          class meta_set_property : public QUndoCommand
+          void set_property ( const HANDLE_TYPE& handle
+                            , const ::we::type::property::key_type& key
+                            , const ::we::type::property::value_type& val
+                            , change_manager_t& change_manager
+                            , const QObject* origin
+                            )
         {
-        private:
           typedef HANDLE_TYPE handle_type;
           typedef void (change_manager_t::* signal_type)
             ( const QObject*
@@ -95,6 +98,20 @@ namespace fhg
             , const ::we::type::property::key_type&
             , const ::we::type::property::value_type&
             );
+
+          handle.get_ref().prop.set (key, val);
+          change_manager.emit_signal<signal_type>
+            ( &change_manager_t::property_changed, origin
+            , handle, key, val
+            );
+        }
+
+        // ## editing actions ########################################
+        template<typename HANDLE_TYPE>
+          class meta_set_property : public QUndoCommand
+        {
+        private:
+          typedef HANDLE_TYPE handle_type;
 
         public:
           meta_set_property
@@ -116,20 +133,13 @@ namespace fhg
 
           virtual void undo()
           {
-            _handle.get_ref().prop.set (_key, _old_value);
-            _change_manager.emit_signal<signal_type>
-              ( &change_manager_t::property_changed
-              , NULL, _handle, _key, _old_value
-              );
+            set_property (_handle, _key, _old_value, _change_manager, NULL);
           }
 
           virtual void redo()
           {
-            _handle.get_ref().prop.set (_key, _new_value);
-            _change_manager.emit_signal<signal_type>
-              ( &change_manager_t::property_changed
-              , _origin, _handle, _key, _new_value
-              );
+            set_property
+              (_handle, _key, _new_value, _change_manager, _origin);
             _origin = NULL;
           }
 

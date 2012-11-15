@@ -35,7 +35,13 @@ namespace fhg
       namespace action
       {
         // ## editing action forward declarations ####################
-        template<typename handle_type> class meta_set_property;
+        template<typename handle_type>
+          void set_property ( const handle_type& handle
+                            , const ::we::type::property::key_type& key
+                            , const ::we::type::property::value_type& val
+                            , change_manager_t& change_manager
+                            , const QObject* origin
+                            );
         // - net -----------------------------------------------------
         template<typename handle_type> class meta_move_item;
         // -- transition ---------------------------------------------
@@ -193,18 +199,42 @@ namespace fhg
         // -- transition ---------------------------------------------
         friend class action::add_transition;
         friend class action::remove_transition;
-        friend class action::meta_set_property<handle::transition>;
+        friend void action::set_property<handle::transition>
+          ( const handle::transition& handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& val
+          , change_manager_t& change_manager
+          , const QObject* origin
+          );
         friend class action::meta_move_item<handle::transition>;
         // -- place --------------------------------------------------
         friend class action::add_place;
         friend class action::remove_place;
-        friend class action::meta_set_property<handle::place>;
+        friend void action::set_property<handle::place>
+          ( const handle::place& handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& val
+          , change_manager_t& change_manager
+          , const QObject* origin
+          );
         friend class action::meta_move_item<handle::place>;
         // -- port ---------------------------------------------------
-        friend class action::meta_set_property<handle::port>;
+        friend void action::set_property<handle::port>
+          ( const handle::port& handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& val
+          , change_manager_t& change_manager
+          , const QObject* origin
+          );
         friend class action::meta_move_item<handle::port>;
         // - function ------------------------------------------------
-        friend class action::meta_set_property<handle::function>;
+        friend void action::set_property<handle::function>
+          ( const handle::function& handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& val
+          , change_manager_t& change_manager
+          , const QObject* origin
+          );
         // - expression ----------------------------------------------
 
 #define ARG_TYPE(function_type,n)                                       \
