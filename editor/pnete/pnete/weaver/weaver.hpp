@@ -369,8 +369,11 @@ namespace fhg
           namespace
           {
             template<typename State>
-              void weave (State* _state, const XMLTYPE(module_type)& mod)
+              void weave ( State* _state
+                         , const ::xml::parse::id::ref::module& id
+                         )
             {
+              const ::xml::parse::type::module_type& mod (id.get());
               WEAVE(mod::open, XMLTYPE(module_type))(mod);
               WEAVE(mod::name, std::string)(mod.name);
               WEAVE(mod::fun, std::string)(XMLTYPE(dump::dump_fun(mod)));
@@ -385,14 +388,20 @@ namespace fhg
               WEAVEE(mod::close)();
             }
             template<typename State>
-              void weave (State* _state, const XMLTYPE(expression_type)& exp)
+              void weave ( State* _state
+                         , const ::xml::parse::id::ref::expression& id
+                         )
             {
+              const ::xml::parse::type::expression_type& exp (id.get());
               WEAVE(expression::open, XMLTYPE(expression_type))(exp);
               WEAVEE(expression::close)();
             }
             template<typename State>
-              void weave (State* _state, const XMLTYPE(use_type)& use)
+              void weave ( State* _state
+                         , const ::xml::parse::id::ref::use& id
+                         )
             {
+              const ::xml::parse::type::use_type& use (id.get());
               WEAVE(use::open, XMLTYPE(use_type))(use);
               WEAVE(use::name, std::string)(use.name());
               WEAVEE(use::close)();
@@ -405,9 +414,11 @@ namespace fhg
               from::net (_state, id);
             }
             template<typename State>
-              void weave (State* _state, const XMLTYPE(function_type)& fun)
+              void weave ( State* _state
+                         , const ::xml::parse::id::ref::function& id
+                         )
             {
-              FROM(function) (_state, fun);
+              from::function (_state, id.get());
             }
           }
 
@@ -424,11 +435,6 @@ namespace fhg
 
             template <typename ID_TYPE>
               void operator () (const ID_TYPE& id) const
-            {
-              weave (_state, id.get());
-            }
-
-            void operator () (const ::xml::parse::id::ref::net& id) const
             {
               weave (_state, id);
             }
