@@ -465,6 +465,24 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
       }
       else // there are requirements specified for that job
       {
+        std::string required_capabilities_as_string ("n/a");
+        {
+          requirement_list_t::const_iterator begin (job_req_list.begin ());
+          const requirement_list_t::const_iterator end (job_req_list.end ());
+
+          ostringstream ossReq;
+          bool first = true;
+          while (begin != end)
+          {
+            if (first) first = false;
+            else       ossReq << ", ";
+
+            ossReq << begin->value();
+            ++begin;
+          }
+          required_capabilities_as_string = ossReq.str ();
+        }
+
         try
         {
           // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
@@ -483,15 +501,9 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
             return true;
           }
 
-          ostringstream ossReq;
-          BOOST_FOREACH(const requirement_t& req, job_req_list)
-          {
-            ossReq<<req.value()<<",";
-          }
-
           LOG(  TRACE
                 , "The best worker matching the requirements: "
-                << ossReq.str()
+                << required_capabilities_as_string
                 <<" for the job  " << jobId
                 <<" is " << ptrBestWorker->name()
                 <<" degree " << matching_degree
@@ -511,14 +523,17 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         }
         catch(const NoWorkerFoundException& ex1)
         {
-          LOG(WARN, "No worker meets the requirements for the job " << jobId.str()<<" found!");
+          LOG ( ERROR
+              , "No worker meets the requirements: "
+              << required_capabilities_as_string
+              );
           ptr_comm_handler_->activityFailed( ""
                                             , jobId
                                             // TODO: this should contain the job desc
                                             , ""
                                             , fhg::error::CAPABILITY_MISMATCH
-                                            , "TODO: insert the missing capabilities"
-                                          );
+                                            , "capability combination missing: " + required_capabilities_as_string
+                                           );
 
           return false;
         }
