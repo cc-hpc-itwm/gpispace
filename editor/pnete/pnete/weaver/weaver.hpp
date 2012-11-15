@@ -298,9 +298,9 @@ namespace fhg
 
       namespace from
       {
-        SIG(place     , ::xml::parse::id::ref::place);
-        SIG(function  , ::xml::parse::id::ref::function);
-        SIG(tmpl      , ::xml::parse::id::ref::tmpl);
+        SIG(place, ::xml::parse::id::ref::place);
+        SIG(function, ::xml::parse::id::ref::function);
+        SIG(tmpl, ::xml::parse::id::ref::tmpl);
         SIG(specialize, ::xml::parse::id::ref::specialize);
 
         SIG(conditions, XMLTYPE(conditions_type));
@@ -308,7 +308,7 @@ namespace fhg
         SIG(net       , ::xml::parse::id::ref::net);
 
         SIG(connection        , XMLTYPE(connect_type));
-        SIG(port              , XMLTYPE(port_type));
+        SIG(port, ::xml::parse::id::ref::port);
         SIG(require           , ITVAL(XMLTYPE(requirements_type)));
         SIG(_struct           , XMLTYPE(structure_type));
         SIG(transition        , XMLTYPE(transition_type));
@@ -513,9 +513,10 @@ namespace fhg
           WEAVE(structs::close)();
         }
 
-        FUN(port, XMLTYPE(port_type), port)
+        FUN(port, ::xml::parse::id::ref::port, id)
         {
-          WEAVE(port::open) (port);
+          WEAVE(port::open) (id);
+          const ::xml::parse::type::port_type& port (id.get());
           WEAVE(port::name) (port.name());
           WEAVE(port::type) (port.type);
           WEAVE(port::place) (port.place);

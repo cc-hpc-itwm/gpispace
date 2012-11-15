@@ -193,16 +193,16 @@ namespace fhg
         _transition->set_proxy (sub.proxy());
 
         _current_port_direction = ui::graph::connectable::direction::IN;
-        from::many (this, sub.in().values(), from::port);
+        from::many (this, sub.in().ids(), from::port);
 
         _current_port_direction = ui::graph::connectable::direction::OUT;
-        from::many (this, sub.out().values(), from::port);
+        from::many (this, sub.out().ids(), from::port);
       }
-      WSIG(transition, port::open, XMLTYPE(port_type), port)
+      WSIG(transition, port::open, ::xml::parse::id::ref::port, port)
       {
         ui::graph::port_item* port_item
           ( new ui::graph::port_item
-            ( data::handle::port ( port.make_reference_id()
+            ( data::handle::port ( port
                                  , _root->change_manager()
                                  )
             , _current_port_direction
@@ -391,7 +391,7 @@ namespace fhg
                                      , _root
                                      , _function
                                      );
-          from::many (&wptl, _in.values(), from::port);
+          from::many (&wptl, _in.ids(), from::port);
         }
 
         {
@@ -401,7 +401,7 @@ namespace fhg
                                      , _root
                                      , _function
                                      );
-          from::many (&wptl, _out.values(), from::port);
+          from::many (&wptl, _out.ids(), from::port);
         }
       }
       WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
