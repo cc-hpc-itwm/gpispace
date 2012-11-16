@@ -31,7 +31,6 @@
     || defined ITVAL    \
     || defined GENFUN   \
     || defined FUN      \
-    || defined SIG      \
     )
 #error "Macro already defined"
 #endif
@@ -53,7 +52,6 @@
         template<typename State> \
         static void _name (State * _state, const _type & _var)
 #define FUN(_name,_type,_var) GENFUN(_name,_type,_state,_var)
-#define SIG(_name,_type) GENFUN(_name,_type,,)
 
 namespace fhg
 {
@@ -298,33 +296,6 @@ namespace fhg
 
       namespace from
       {
-        SIG(connection, ::xml::parse::id::ref::connect);
-        SIG(expression, ::xml::parse::id::ref::expression);
-        SIG(function, ::xml::parse::id::ref::function);
-        SIG(module, ::xml::parse::id::ref::module);
-        SIG(net, ::xml::parse::id::ref::net);
-        SIG(place, ::xml::parse::id::ref::place);
-        SIG(place_map, ::xml::parse::id::ref::place_map);
-        SIG(port, ::xml::parse::id::ref::port);
-        SIG(specialize, ::xml::parse::id::ref::specialize);
-        SIG(structure           , XMLTYPE(structure_type));
-        SIG(tmpl, ::xml::parse::id::ref::tmpl);
-        SIG(transition, ::xml::parse::id::transition);
-        SIG(use, ::xml::parse::id::ref::use);
-
-        SIG(conditions, XMLTYPE(conditions_type));
-        SIG(structs   , XMLTYPE(structs_type));
-        SIG(require           , ITVAL(XMLTYPE(requirements_type)));
-        SIG(type_get          , ITVAL(XMLTYPE(type_get_type)));
-        SIG(type_map          , ITVAL(XMLTYPE(type_map_type)));
-
-        SIG(properties, WETYPE(property::type));
-        SIG(property, ITVAL(WETYPE(property::map_type)));
-
-        SIG(structured, ITVAL(::signature::structured_t));
-
-        SIG(expression_sequence, std::string);
-
         namespace visitor
         {
           template<typename State>
