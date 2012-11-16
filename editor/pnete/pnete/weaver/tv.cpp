@@ -241,7 +241,7 @@ namespace fhg
         from::conditions (this, cond);
       }
 
-      WSIG(tv, place::open, XMLTYPE(place_type), place)
+      WSIG(tv, place::open, ::xml::parse::id::ref::place, place)
       {
         push (append ("<<place>>"));
       }
@@ -336,7 +336,7 @@ namespace fhg
         append_key_value (tm.first, "%s", tm.second);
       }
 
-      WSIG(tv, specialize::open, XMLTYPE(specialize_type), specialize)
+      WSIG(tv, specialize::open, ::xml::parse::id::ref::specialize, id)
       {
         push (append ("<<specialize>>"));
       }
@@ -363,7 +363,7 @@ namespace fhg
         xs ("condition", cs, from::expression_sequence);
       }
 
-      WSIG(tv, tmpl::open, XMLTYPE(tmpl_type), t)
+      WSIG(tv, tmpl::open, ::xml::parse::id::ref::tmpl, t)
       {
         push (append ("<<template>>"));
       }
@@ -384,7 +384,7 @@ namespace fhg
       }
       WSIGE(tv, tmpl::close) { pop(); }
 
-      WSIG(tv, function::open, XMLTYPE(function_type), fun)
+      WSIG(tv, function::open, ::xml::parse::id::ref::function, fun)
       {
         push (append ("<<function>>"));
       }
@@ -447,7 +447,7 @@ namespace fhg
         from::properties (this, prop);
       }
 
-      WSIG(tv, connection::open, XMLTYPE(connect_type), connection)
+      WSIG(tv, connection::open, ::xml::parse::id::ref::connect, connection)
       {
         push (append ("<<connection>>"));
       }
@@ -461,12 +461,12 @@ namespace fhg
         add_something (" -> place: ", place);
       }
 
-      WSIG(tv, expression::open, XMLTYPE(expression_type), exp)
+      WSIG(tv, expression::open, ::xml::parse::id::ref::expression, id)
       {
-        xs ("expression", exp.expressions(), from::expression_sequence);
+        xs ("expression", id.get().expressions(), from::expression_sequence);
       }
 
-      WSIG(tv, mod::open, XMLTYPE(module_type), mod)
+      WSIG(tv, mod::open, ::xml::parse::id::ref::module, mod)
       {
         push (append ("module"));
       }
@@ -515,7 +515,7 @@ namespace fhg
         pop ();
       }
 
-      WSIG(tv, net::open, XMLTYPE(net_type), net)
+      WSIG(tv, net::open, ::xml::parse::id::ref::net, net)
       {
         push (append ("net"));
       }

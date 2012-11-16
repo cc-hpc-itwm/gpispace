@@ -555,12 +555,13 @@ namespace fhg
 
             weaver::item_by_name_type place_by_name;
 
-            weaver::transition wt ( _internal
-                                  , this
-                                  , item
-                                  , transition.parent().get_ref()
-                                  , place_by_name
-                                  );
+            weaver::transition wt
+              ( _internal
+              , this
+              , item
+              , transition.parent().get().make_reference_id()
+              , place_by_name
+              );
             weaver::from::transition (&wt, transition.id());
 
             if (origin == this)

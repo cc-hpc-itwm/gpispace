@@ -28,10 +28,10 @@ namespace fhg
           : public boost::static_visitor<function_with_mapping_type>
         {
         private:
-          XMLTYPE(net_type)& _net;
+          ::xml::parse::id::ref::net _net;
 
         public:
-          get_function (XMLTYPE(net_type)& net) : _net (net) {}
+          get_function (const ::xml::parse::id::ref::net& id) : _net (id) {}
 
           function_with_mapping_type
             operator() (const xml::parse::id::ref::function& fun) const
@@ -43,7 +43,7 @@ namespace fhg
             operator() (const xml::parse::id::ref::use& use) const
           {
             return function_with_mapping_type
-              (*_net.get_function (use.get().name()));
+              (*_net.get().get_function (use.get().name()));
           }
         };
       }
@@ -58,6 +58,7 @@ namespace fhg
         , _scene (NULL)
         , _root (root)
       {
+        std::cerr << "function::function" << std::endl;
         from::function (this, _function_with_mapping.function());
       }
       data::proxy::type* function::proxy () const { return _proxy; }
@@ -82,48 +83,34 @@ namespace fhg
         return *_ports.out;
       }
 
-      WSIG(function, expression::open, XMLTYPE(expression_type), exp)
+      WSIG(function, expression::open, ::xml::parse::id::ref::expression, id)
       {
         _proxy = new data::proxy::type
           ( data::proxy::expression_proxy
             ( _root
-            , data::proxy::data::expression_type
-              ( const_cast< XMLTYPE(expression_type) &> (exp)
-              , in()
-              , out()
-              )
+            , data::proxy::data::expression_type (id.get_ref(), in(), out())
             , _function_with_mapping
             )
           );
       }
-      WSIG(function, mod::open, XMLTYPE(module_type), mod)
+      WSIG(function, mod::open, ::xml::parse::id::ref::module, id)
       {
         _proxy = new data::proxy::type
           ( data::proxy::mod_proxy
             ( _root
-            , data::proxy::data::module_type
-              ( const_cast< XMLTYPE(module_type) &> (mod)
-              , in()
-              , out()
-              )
+            , data::proxy::data::module_type (id.get_ref(), in(), out())
             , _function_with_mapping
             )
           );
       }
-      WSIG(function, net::open, XMLTYPE(net_type), net)
+      WSIG(function, net::open, ::xml::parse::id::ref::net, id)
       {
         _scene = new ui::graph::scene_type
-          ( data::handle::net ( net.make_reference_id()
-                              , _root->change_manager()
-                              )
-          , _root
-          );
+          (data::handle::net (id, _root->change_manager()), _root);
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
             ( _root
-            , data::proxy::data::net_type
-              ( const_cast< XMLTYPE(net_type) &> (net)
-              )
+            , data::proxy::data::net_type (id.get_ref())
             , _function_with_mapping
             , _scene
             )
@@ -131,13 +118,13 @@ namespace fhg
 
         weaver::net wn ( _root
                        , _scene
-                       , const_cast< XMLTYPE(net_type) &> (net)
+                       , id
                        , in()
                        , out()
-                       , _function_with_mapping.function().get_ref()
+                       , _function_with_mapping.function()
                        );
 
-        from::net (&wn, net.make_reference_id());
+        from::net (&wn, id);
       }
       WSIG(function, function::in, XMLTYPE(function_type::ports_type), in)
       {
@@ -156,7 +143,7 @@ namespace fhg
       transition::transition ( data::internal_type* root
                              , ui::graph::scene_type* scene
                              , ui::graph::transition_item* transition
-                             , XMLTYPE(net_type)& net
+                             , const ::xml::parse::id::ref::net& net
                              , item_by_name_type& place_item_by_name
                              )
         : _scene (scene)
@@ -369,10 +356,10 @@ namespace fhg
 
       net::net ( data::internal_type* root
                , ui::graph::scene_type* scene
-               , XMLTYPE(net_type)& net
+               , const ::xml::parse::id::ref::net& net
                , XMLTYPE(function_type::ports_type)& in
                , XMLTYPE(function_type::ports_type)& out
-               , XMLTYPE(function_type)& function
+               , const ::xml::parse::id::ref::function& function
                )
         : _scene (scene)
         , _net (net)
@@ -480,7 +467,7 @@ namespace fhg
         , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
         , data::internal_type* root
-        , XMLTYPE(function_type)& function
+        , const ::xml::parse::id::ref::function& function
         )
           : _scene (scene)
           , _place_item_by_name (place_item_by_name)
@@ -491,14 +478,10 @@ namespace fhg
           , _function (function)
       {}
 
-      WSIG(port_toplevel, port::open, XMLTYPE(port_type), port)
+      WSIG(port_toplevel, port::open, ::xml::parse::id::ref::port, id)
       {
         _port_item = new ui::graph::top_level_port_item
-          ( data::handle::port ( port.make_reference_id()
-                               , _root->change_manager()
-                               )
-          , _direction
-          );
+          (data::handle::port (id, _root->change_manager()), _direction);
         _scene->addItem (_port_item);
       }
       WSIG(port_toplevel, port::name, std::string, name)

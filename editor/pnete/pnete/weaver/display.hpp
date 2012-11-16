@@ -81,10 +81,10 @@ namespace fhg
       public:
         explicit net ( data::internal_type*
                      , ui::graph::scene_type* scene
-                     , XMLTYPE(net_type)& net
+                     , const ::xml::parse::id::ref::net& net
                      , XMLTYPE(function_type::ports_type)& in
                      , XMLTYPE(function_type::ports_type)& out
-                     , XMLTYPE(function_type)& function
+                     , const ::xml::parse::id::ref::function& function
                      );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -93,10 +93,10 @@ namespace fhg
       private:
         ui::graph::scene_type* _scene;
 
-        XMLTYPE(net_type)& _net;
+        ::xml::parse::id::ref::net _net;
         XMLTYPE(function_type::ports_type)& _in;
         XMLTYPE(function_type::ports_type)& _out;
-        XMLTYPE(function_type)& _function;
+        ::xml::parse::id::ref::function _function;
 
         item_by_name_type _place_item_by_name;
         data::internal_type* _root;
@@ -118,7 +118,7 @@ namespace fhg
         explicit transition ( data::internal_type*
                             , ui::graph::scene_type*
                             , ui::graph::transition_item*
-                            , XMLTYPE(net_type)&
+                            , const ::xml::parse::id::ref::net&
                             , item_by_name_type&
                             );
 
@@ -129,7 +129,7 @@ namespace fhg
         ui::graph::scene_type* _scene;
         ui::graph::transition_item* _transition;
         ui::graph::connectable::direction::type _current_port_direction;
-        XMLTYPE(net_type)& _net;
+        ::xml::parse::id::ref::net _net;
 
         item_by_name_type& _place_item_by_name;
         item_by_name_type _port_in_item_by_name;
@@ -223,7 +223,7 @@ namespace fhg
                                , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                , data::internal_type* root
-                               , XMLTYPE(function_type)&
+                               , const ::xml::parse::id::ref::function&
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -236,7 +236,7 @@ namespace fhg
         const ui::graph::connectable::direction::type _direction;
         ui::graph::port_item* _port_item;
         data::internal_type* _root;
-        XMLTYPE(function_type)& _function;
+        ::xml::parse::id::ref::function _function;
       };
 
       WSIG(port_toplevel, port::open, XMLTYPE(port_type), port);
