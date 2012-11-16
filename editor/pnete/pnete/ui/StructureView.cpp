@@ -2,20 +2,10 @@
 
 #include <pnete/ui/StructureView.hpp>
 
-#include <pnete/weaver/weaver.hpp>
 #include <pnete/weaver/tv.hpp>
 
-#include <QStandardItem>
 #include <QStandardItemModel>
-#include <QWidget>
 #include <QHeaderView>
-#include <QString>
-
-#include <boost/format.hpp>
-
-#include <stack>
-
-#include <stdexcept>
 
 #include <pnete/data/internal.hpp>
 
