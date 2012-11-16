@@ -1364,15 +1364,17 @@ function start_nre ()
     if [ x"$with_mediator" == x"true" ] ; then
         log "nres" >&2
         node_loop start_nre_on_node $@
-    else
-        log "nres (deactivated)" >&2
     fi
 }
 
 function stop_nre ()
 {
-    log "nres" >&2
-    node_loop stop_nre_on_node $@
+    with_mediator=$(get "topology.with-mediator" "true")
+    if [ x"$with_mediator" == x"true" ] ; then
+        log "nres" >&2
+        node_loop stop_nre_on_node $@
+        ec=$?
+    fi
 }
 
 function status_nre ()
@@ -2271,8 +2273,12 @@ case "$1" in
         restart drts
         ;;
     boot)
+        "$0" -s "$state_dir" -c "$config_file" init || {
+            echo >&2 "sdpa: could not initialize!"
+            exit 1
+        }
         shift
-        "${SDPA_SCRIPT_DIR}/start-sdpa" "$@"
+        "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -F "$config_file" "$@"
         ;;
     selftest)
         if ! on_master_node ; then

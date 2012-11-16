@@ -287,16 +287,23 @@ static void require_gpi_state (std::string const & fun_name)
   }
 }
 
-fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name)
+fvmAllocHandle_t fvmGlobalAllocExact (fvmSize_t size, const char *name)
 {
   require_gpi_state ("fvmGlobalAlloc");
 
   return gpi_compat->api->alloc ( 1 // GPI
-                                , size * gpi_compat->gpi_info.nodes
+                                , size
                                 , name
                                 , gpi::pc::F_GLOBAL
                                 | gpi::pc::F_PERSISTENT
                                 );
+}
+
+fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name)
+{
+  return fvmGlobalAllocExact ( size * gpi_compat->gpi_info.nodes
+                             , name
+                             );
 }
 
 fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)

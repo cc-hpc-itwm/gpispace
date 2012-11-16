@@ -8,6 +8,7 @@ pnet_compile( mapreduce mapreduce.xpnet
   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/..
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/util
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -I${CMAKE_SOURCE_DIR}/sdpa/plugin
            -I${CMAKE_SOURCE_DIR}/sdpa

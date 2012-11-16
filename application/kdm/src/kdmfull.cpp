@@ -204,8 +204,10 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   MLOG(INFO, "offsets = " << offsets);
   MLOG(INFO, "node_count = " << node_count);
 
+  const int nproc_per_node = 4;
+
   // WORK HERE: overcome this by using virtual offsetclasses
-  const long volumes_per_node (4 * divru (per_offset_volumes, node_count));
+  const long volumes_per_node (nproc_per_node * divru (per_offset_volumes, node_count));
 
   MLOG(INFO, "volumes_per_node = " << volumes_per_node);
 

@@ -45,17 +45,18 @@
 	<field name="map_slot_id" type="long"/>
     <field name="chunk_id" type="long"/>
     <field name="used" type="long"/>
+    <field name="unhandled_part_set" type="set"/>
   </struct>
   
- <!-- <struct name="partition_info">
-	<field name="n_part" type="long"/> 
-    <field name="part_used" type="string"/>
-    <field name="red_used" type="string"/>
-  </struct> -->
+  <struct name="partition_info">
+	<field name="part_id" type="long"/> 
+    <field name="part_used" type="long"/>
+    <field name="red_used" type="long"/>
+  </struct>
   
   <struct name="partition_result">
 	<field name="succeeded" type="long"/>
-    <field name="iterator_red_info" type="iterator_red_info"/>
+    <field name="partition_info" type="partition_info"/>
     <field name="map_chunk_info" type="map_chunk_info"/>
   </struct>
  

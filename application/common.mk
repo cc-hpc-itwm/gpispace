@@ -238,12 +238,13 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default ps net verify validate put gen lib run submit
+.PHONY: default all ps net verify validate put gen lib run submit
 
-default: run
+default: all
+
+all: net put gen lib
 
 ps: $(PS) $(PS_NOINLINE)
-
 net: $(NET)
 put: $(PUT)
 gen: $(GEN)
@@ -345,6 +346,7 @@ endif
 ###############################################################################
 
 submit: $(PUT)
+	@-rm -f $(OUT)
 	$(SDPA) submit $(PUT) $(OUT)
 
 ###############################################################################

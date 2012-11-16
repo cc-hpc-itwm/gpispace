@@ -67,7 +67,7 @@ namespace gpifs
       catch (std::exception const & ex)
       {
         LOG( "could not connect to gpi-space at "
-           << path
+           << socket_path
            << ": "
            << ex.what ()
            );

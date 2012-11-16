@@ -33,7 +33,7 @@ class ISIM_Dummy : FHG_PLUGIN
 {
 public:
   ISIM_Dummy ()
-    : m_msg_reactor (0)
+    : m_msg_handler (0)
   {}
 
   ~ISIM_Dummy () {}
@@ -90,9 +90,9 @@ public:
 
     MLOG (TRACE, "sending message: " << msg_type (msg));
 
-    if (m_msg_reactor)
+    if (m_msg_handler)
     {
-      msg_t *reply = m_msg_reactor (msg);
+      msg_t *reply = m_msg_handler->on_message (msg);
       if (reply)
       {
         reply_with (reply);
@@ -112,9 +112,9 @@ public:
   void idle () {}
   void busy () {}
 
-  void set_reactor (isim::MessageReactor r)
+  void set_handler (isim::IMessageHandler *h)
   {
-    m_msg_reactor = r;
+    m_msg_handler = h;
   }
 
   msg_t *msg_new (int type, size_t size)
@@ -264,7 +264,7 @@ private:
   mutable condition_type m_msg_available;
   msg_queue_t m_msg_queue;
 
-  isim::MessageReactor m_msg_reactor;
+  isim::IMessageHandler *m_msg_handler;
 };
 
 EXPORT_FHG_PLUGIN( isim
