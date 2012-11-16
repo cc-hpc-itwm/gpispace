@@ -418,41 +418,6 @@ namespace fhg
           };
         } // namespace visitor
 
-        namespace
-        {
-          template<typename State>
-          class visitor_from_variant : public boost::static_visitor<void>
-          {
-          private:
-            State * _state;
-
-          public:
-            explicit visitor_from_variant (State * state)
-              : _state (state)
-            { }
-
-#define DEREF_OP(_type)                                                    \
-            void operator() (const ::xml::parse::id::ref::_type& id) const \
-            {                                                              \
-              from::_type (_state, id);                                    \
-            }
-
-            DEREF_OP (expression)
-            DEREF_OP (function)
-            DEREF_OP (module)
-            DEREF_OP (net)
-            DEREF_OP (use)
-
-#undef DEREF_OP
-          };
-        }
-
-        template<typename State, typename Variant>
-          void variant (State* _state, const Variant& _variant)
-        {
-          boost::apply_visitor (visitor_from_variant<State> (_state), _variant);
-        }
-
         FUN(property, ITVAL(WETYPE(property::map_type)), prop)
         {
           WEAVE(property::open) (prop.first);
@@ -735,6 +700,41 @@ namespace fhg
                   )
         {
           many (weaver, collection.begin(), collection.end(), fun);
+        }
+
+        namespace
+        {
+          template<typename State>
+          class visitor_from_variant : public boost::static_visitor<void>
+          {
+          private:
+            State * _state;
+
+          public:
+            explicit visitor_from_variant (State * state)
+              : _state (state)
+            { }
+
+#define DEREF_OP(_type)                                                    \
+            void operator() (const ::xml::parse::id::ref::_type& id) const \
+            {                                                              \
+              from::_type (_state, id);                                    \
+            }
+
+            DEREF_OP (expression)
+            DEREF_OP (function)
+            DEREF_OP (module)
+            DEREF_OP (net)
+            DEREF_OP (use)
+
+#undef DEREF_OP
+          };
+        }
+
+        template<typename State, typename Variant>
+          void variant (State* _state, const Variant& _variant)
+        {
+          boost::apply_visitor (visitor_from_variant<State> (_state), _variant);
         }
       } // namespace from
     } // namespace weaver
