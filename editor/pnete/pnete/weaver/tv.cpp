@@ -218,7 +218,7 @@ namespace fhg
       }
       WSIG(tv, transition::function, XMLTYPE(transition_type::function_or_use_type), fun)
       {
-        boost::apply_visitor (from::visitor::deref_variant<tv> (this), fun);
+        from::variant (this, fun);
       }
       WSIG(tv, transition::place_map, XMLTYPE(transition_type::place_maps_type), pm)
       {
@@ -422,7 +422,7 @@ namespace fhg
       }
       WSIG(tv, function::fun, XMLTYPE(function_type::type), fun)
       {
-        boost::apply_visitor (from::visitor::deref_variant<tv> (this), fun);
+        from::variant (this, fun);
       }
       WSIG(tv, function::conditions, XMLTYPE(conditions_type), cs)
       {

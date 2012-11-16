@@ -135,7 +135,7 @@ namespace fhg
       }
       WSIG(function, function::fun, XMLTYPE(function_type::type), fun)
       {
-        boost::apply_visitor (from::visitor::deref_variant<function> (this), fun);
+        from::variant (this, fun);
       }
 
 
