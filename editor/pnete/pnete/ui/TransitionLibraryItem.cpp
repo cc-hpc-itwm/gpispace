@@ -93,8 +93,8 @@ namespace fhg
         //! \todo better handling for the anonymous case
         return is_folder()
           ? fileinfo().baseName()
-          : QString::fromStdString ( data()->function().name()
-                                   ? *data()->function().name()
+          : QString::fromStdString ( data()->function().get().name()
+                                   ? *data()->function().get().name()
                                    : "<<anonymous>>"
                                    )
           ;

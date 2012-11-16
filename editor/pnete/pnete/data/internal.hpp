@@ -35,8 +35,7 @@ namespace fhg
         explicit internal_type (const kind& = internal_type::expression);
         explicit internal_type (const QString& filename);
 
-        ::xml::parse::type::function_type & function ();
-        const ::xml::parse::type::function_type & function () const;
+        const ::xml::parse::id::ref::function& function() const;
         const ::xml::parse::state::key_values_t & context () const;
         const ::xml::parse::state::type & state () const;
         ::xml::parse::state::type & state ();

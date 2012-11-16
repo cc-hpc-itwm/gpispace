@@ -46,9 +46,7 @@ namespace fhg
         weaver::tv w (_root);
         weaver::from::function_context
           ( &w
-          , WNAME(function_context_type) ( data->function().make_reference_id()
-                                         , data->context()
-                                         )
+          , WNAME(function_context_type) (data->function(), data->context())
           );
       }
 

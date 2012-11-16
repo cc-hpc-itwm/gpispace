@@ -103,10 +103,7 @@ namespace fhg
                 (data::manager::instance().load (path));
 
               scene()->change_manager()
-                .add_transition ( scene()
-                                , data->function().make_reference_id()
-                                , scene()->net()
-                                );
+                .add_transition (scene(), data->function(), scene()->net());
             }
 
           event->acceptProposedAction();
