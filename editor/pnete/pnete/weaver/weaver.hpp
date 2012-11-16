@@ -421,13 +421,13 @@ namespace fhg
         namespace
         {
           template<typename State>
-          class deref_variant : public boost::static_visitor<void>
+          class visitor_from_variant : public boost::static_visitor<void>
           {
           private:
             State * _state;
 
           public:
-            explicit deref_variant (State * state)
+            explicit visitor_from_variant (State * state)
               : _state (state)
             { }
 
@@ -450,7 +450,7 @@ namespace fhg
         template<typename State, typename Variant>
           void variant (State* _state, const Variant& _variant)
         {
-          boost::apply_visitor (deref_variant<State> (_state), _variant);
+          boost::apply_visitor (visitor_from_variant<State> (_state), _variant);
         }
 
         FUN(property, ITVAL(WETYPE(property::map_type)), prop)
