@@ -383,12 +383,6 @@ namespace fhg
             DEREF_OP (use)
 
 #undef DEREF_OP
-
-            template <typename ID_TYPE>
-              void operator () (const ID_TYPE& id) const
-            {
-              weave (_state, id);
-            }
           };
 
           template<typename State>
