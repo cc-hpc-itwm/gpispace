@@ -58,7 +58,6 @@ namespace fhg
         , _scene (NULL)
         , _root (root)
       {
-        std::cerr << "function::function" << std::endl;
         from::function (this, _function_with_mapping.function());
       }
       data::proxy::type* function::proxy () const { return _proxy; }
