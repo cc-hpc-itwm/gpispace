@@ -405,9 +405,9 @@ namespace fhg
                )
             {
               nodes.insert ( nodes_map_type::value_type
-                           ( qgraphicsitem_cast<base_item*> (i)
-                           , graph.add_node (i)
-                           )
+                             ( qgraphicsitem_cast<base_item*> (i)
+                             , graph.add_node (i)
+                             )
                            );
             }
           }
