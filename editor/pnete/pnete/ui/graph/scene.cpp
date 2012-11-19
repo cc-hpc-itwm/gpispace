@@ -601,7 +601,7 @@ namespace fhg
 
             if (origin == this)
             {
-              item->setPos (mouse_position());
+              item->no_undo_setPos (mouse_position());
             }
           }
         }
