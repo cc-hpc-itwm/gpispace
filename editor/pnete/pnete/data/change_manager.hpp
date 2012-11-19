@@ -5,6 +5,7 @@
 
 #include <pnete/data/change_manager.fwd.hpp>
 
+#include <pnete/data/handle/connect.fwd.hpp>
 #include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
@@ -64,6 +65,18 @@ namespace fhg
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------
+
+        // -- connection ---------------------------------------------
+        void set_property ( const QObject*
+                          , const data::handle::connect&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::connect&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
 
         // -- transition ---------------------------------------------
         void add_transition ( const QObject*
@@ -171,6 +184,12 @@ namespace fhg
 
         // ## signals after edit  ####################################
         // - net -----------------------------------------------------
+        // -- connection ---------------------------------------------
+        void property_changed ( const QObject*
+                              , const data::handle::connect&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type&
+                              );
 
         // -- transition ---------------------------------------------
         void transition_added ( const QObject*
@@ -228,6 +247,15 @@ namespace fhg
 
         // ## friend classes  ########################################
         // - net -----------------------------------------------------
+        // -- connection ---------------------------------------------
+        friend void action::set_property<handle::connect>
+          ( const handle::connect& handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& val
+          , change_manager_t& change_manager
+          , const QObject* origin
+          );
+
         // -- transition ---------------------------------------------
         friend class action::add_transition;
         friend class action::remove_transition;

@@ -2,6 +2,7 @@
 
 #include <pnete/data/change_manager.hpp>
 
+#include <pnete/data/handle/connect.hpp>
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
@@ -437,6 +438,30 @@ namespace fhg
 
       // ## editing methods ##########################################
       // - net -------------------------------------------------------
+      // -- connection -----------------------------------------------
+      void change_manager_t::set_property
+        ( const QObject* origin
+        , const data::handle::connect& connect
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        push ( new action::meta_set_property<handle::connect>
+               ( "set_connect_property_action"
+               , *this, origin, connect, key, val
+               )
+             );
+      }
+
+      void change_manager_t::no_undo_set_property
+        ( const QObject* origin
+        , const data::handle::connect& connect
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        action::set_property (connect, key, val, *this, origin);
+      }
 
       // -- transition -----------------------------------------------
       void change_manager_t::add_transition
