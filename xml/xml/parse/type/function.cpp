@@ -55,7 +55,7 @@ namespace xml
         , const requirements_type& requirements
         , const type& f
         , const xml::parse::structure_type::set_type& structs_resolved
-        , const we::type::property::type& prop
+        , const we::type::property::type& properties
         , const boost::filesystem::path& path
         )
         : ID_INITIALIZE()
@@ -72,7 +72,7 @@ namespace xml
         , requirements (requirements)
         , f (f)
         , structs_resolved (structs_resolved)
-        , prop (prop)
+        , _properties (properties)
         , path (path)
       {
         _id_mapper->put (_id, *this);
@@ -558,7 +558,7 @@ namespace xml
               trans.add_ports () ( port.name()
                                  , type
                                  , direction
-                                 , port.prop
+                                 , port.properties()
                                  );
             }
         }
@@ -589,7 +589,7 @@ namespace xml
                   trans.add_ports () ( port.name()
                                      , type
                                      , direction
-                                     , port.prop
+                                     , port.properties()
                                      );
                 }
               else
@@ -602,7 +602,7 @@ namespace xml
                                      , type
                                      , direction
                                      , get_pid (pid_of_place, *port.place)
-                                     , port.prop
+                                     , port.properties()
                                      )
                     ;
                 }
@@ -663,7 +663,7 @@ namespace xml
             , we_expr_type (expr, parsed_expression)
             , condition()
             , fun.internal.get_value_or (true)
-            , fun.prop
+            , fun.properties()
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
@@ -683,7 +683,7 @@ namespace xml
             , we_module_type (mod.name, mod.function)
             , condition()
             , fun.internal.get_value_or (false)
-            , fun.prop
+            , fun.properties()
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
@@ -710,8 +710,8 @@ namespace xml
             );
 
           util::property::join ( state
-                               , fun.prop
-                               , id_net.get().prop
+                               , fun.properties()
+                               , id_net.get().properties()
                                );
 
           we_transition_type trans
@@ -719,7 +719,7 @@ namespace xml
             , we_net
             , condition()
             , fun.internal.get_value_or (true)
-            , fun.prop
+            , fun.properties()
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN, pid_of_place);
@@ -830,6 +830,15 @@ namespace xml
           );
       }
 
+      const we::type::property::type& function_type::properties() const
+      {
+        return _properties;
+      }
+      we::type::property::type& function_type::properties()
+      {
+        return _properties;
+      }
+
       const function_type::unique_key_type& function_type::unique_key() const
       {
         //! \note anonymous functions can't be stored in unqiue, thus
@@ -876,7 +885,7 @@ namespace xml
           , requirements
           , boost::apply_visitor (visitor_clone (new_id), f)
           , structs_resolved
-          , prop
+          , _properties
           , path
           ).make_reference_id();
       }
@@ -2270,7 +2279,7 @@ namespace xml
 
           state.dump_context (s);
 
-          ::we::type::property::dump::dump (s, f.prop);
+          ::we::type::property::dump::dump (s, f.properties());
 
           dump_after_property (s, f);
         }
@@ -2281,7 +2290,7 @@ namespace xml
         {
           dump_before_property (s, f);
 
-          ::we::type::property::dump::dump (s, f.prop);
+          ::we::type::property::dump::dump (s, f.properties());
 
           dump_after_property (s, f);
         }

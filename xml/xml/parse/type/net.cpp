@@ -47,10 +47,19 @@ namespace xml
         , structs (structs)
         , contains_a_module_call (contains_a_module_call)
         , structs_resolved (resol)
-        , prop (properties)
+        , _properties (properties)
         , _path (path)
       {
         _id_mapper->put (_id, *this);
+      }
+
+      const we::type::property::type& net_type::properties() const
+      {
+        return _properties;
+      }
+      we::type::property::type& net_type::properties()
+      {
+        return _properties;
       }
 
       const boost::filesystem::path& net_type::path () const
@@ -608,7 +617,7 @@ namespace xml
           , structs
           , contains_a_module_call
           , structs_resolved
-          , prop
+          , _properties
           , _path
           ).make_reference_id();
       }
@@ -674,7 +683,7 @@ namespace xml
                 }
               else
                 {
-                  we::type::property::type prop (place.prop);
+                  we::type::property::type prop (place.properties());
 
                   if (place.is_virtual())
                     {
@@ -744,7 +753,7 @@ namespace xml
         {
           s.open ("net");
 
-          ::we::type::property::dump::dump (s, net.prop);
+          ::we::type::property::dump::dump (s, net.properties());
 
           dumps (s, net.structs.begin(), net.structs.end());
           dumps (s, net.templates().values());

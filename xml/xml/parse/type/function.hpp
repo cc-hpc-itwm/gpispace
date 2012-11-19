@@ -80,7 +80,7 @@ namespace xml
                       , const requirements_type& requirements
                       , const type& f
                       , const xml::parse::structure_type::set_type& resolved
-                      , const we::type::property::type& prop
+                      , const we::type::property::type& properties
                       , const boost::filesystem::path& path
                       );
 
@@ -196,6 +196,9 @@ namespace xml
                         , state::type & state
                         );
 
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
         const unique_key_type& unique_key() const;
 
         id::ref::function clone
@@ -225,8 +228,10 @@ namespace xml
 
         xml::parse::structure_type::set_type structs_resolved;
 
-        we::type::property::type prop;
+      private:
+        we::type::property::type _properties;
 
+      public:
         boost::filesystem::path path;
       };
 

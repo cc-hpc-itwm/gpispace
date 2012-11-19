@@ -58,7 +58,7 @@ namespace xml
         , const boost::optional<petri_net::prio_t>& priority
         , const boost::optional<bool>& finline
         , const boost::optional<bool>& internal
-        , const we::type::property::type& prop
+        , const we::type::property::type& properties
         , const boost::filesystem::path& path
         )
         : ID_INITIALIZE()
@@ -75,7 +75,7 @@ namespace xml
         , priority (priority)
         , finline (finline)
         , internal (internal)
-        , prop (prop)
+        , _properties (properties)
         , path (path)
       {
         _id_mapper->put (_id, *this);
@@ -556,6 +556,15 @@ namespace xml
                              );
       }
 
+      const we::type::property::type& transition_type::properties() const
+      {
+        return _properties;
+      }
+      we::type::property::type& transition_type::properties()
+      {
+        return _properties;
+      }
+
       // ******************************************************************* //
 
       const transition_type::unique_key_type&
@@ -614,7 +623,7 @@ namespace xml
           , priority
           , finline
           , internal
-          , prop
+          , _properties
           , path
           ).make_reference_id();
       }
@@ -741,7 +750,7 @@ namespace xml
 
         fun.requirements.join (trans.requirements);
 
-        util::property::join (state, fun.prop, trans.prop);
+        util::property::join (state, fun.properties(), trans.properties());
 
         //! \todo implement boost::optional<net_type> fun.as_net()
         // and use this instead of is_net and boost::get some lines below
@@ -810,7 +819,7 @@ namespace xml
               , we_expr_type ()
               , we_cond_type (cond_in, parsed_condition_in)
               , true
-              , fun.prop
+              , fun.properties()
               );
 
             BOOST_FOREACH (const port_type& port, fun.in().values())
@@ -821,12 +830,12 @@ namespace xml
                 trans_in.add_ports () ( port.name()
                                       , type
                                       , we::type::PORT_IN
-                                      , port.prop
+                                      , port.properties()
                                       );
                 trans_in.add_ports () ( port.name()
                                       , type
                                       , we::type::PORT_OUT
-                                      , port.prop
+                                      , port.properties()
                                       );
 
                 if (port.place)
@@ -834,7 +843,7 @@ namespace xml
                     trans_in.add_connections ()
                       ( port.name()
                       , get_pid (pid_of_place , prefix + *port.place)
-                      , port.prop
+                      , port.properties()
                       )
                       ;
                   }
@@ -920,7 +929,7 @@ namespace xml
               , we_expr_type ()
               , we_cond_type (cond_out, parsed_condition_out)
               , true
-              , fun.prop
+              , fun.properties()
               );
 
             BOOST_FOREACH (const port_type& port, fun.out().values())
@@ -931,12 +940,12 @@ namespace xml
                 trans_out.add_ports () ( port.name()
                                        , type
                                        , we::type::PORT_IN
-                                       , port.prop
+                                       , port.properties()
                                        );
                 trans_out.add_ports () ( port.name()
                                        , type
                                        , we::type::PORT_OUT
-                                       , port.prop
+                                       , port.properties()
                                        );
 
                 if (port.place)
@@ -944,7 +953,7 @@ namespace xml
                     trans_out.add_connections ()
                       ( get_pid (pid_of_place , prefix + *port.place)
                       , port.name()
-                      , port.prop
+                      , port.properties()
                       )
                       ;
                   }
@@ -971,7 +980,7 @@ namespace xml
                 const std::string
                   key ("pnetc.warning.inline-many-output-ports");
                 const boost::optional<const ::we::type::property::value_type&>
-                  warning_switch (fun.prop.get_maybe_val (key));
+                  warning_switch (fun.properties().get_maybe_val (key));
 
                 if (!warning_switch || *warning_switch != "off")
                   {
@@ -1160,7 +1169,7 @@ namespace xml
           s.attr ("inline", t.finline);
           s.attr ("internal", t.internal);
 
-          ::we::type::property::dump::dump (s, t.prop);
+          ::we::type::property::dump::dump (s, t.properties());
           ::xml::parse::type::dump::dump (s, t.requirements);
 
           boost::apply_visitor (dump_visitor (s), t.function_or_use());

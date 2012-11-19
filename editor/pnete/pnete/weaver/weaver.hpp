@@ -422,7 +422,7 @@ namespace fhg
           WEAVE(port::name) (port.name());
           WEAVE(port::type) (port.type);
           WEAVE(port::place) (port.place);
-          WEAVE(port::properties) (port.prop);
+          WEAVE(port::properties) (port.properties());
           WEAVE(port::close)();
         }
 
@@ -531,7 +531,7 @@ namespace fhg
         FUN(function_tail, ::xml::parse::id::ref::function, id)
         {
           const ::xml::parse::type::function_type& fun (id.get());
-          WEAVE(function::properties) (fun.prop);
+          WEAVE(function::properties) (fun.properties());
           WEAVE(function::structs) (fun.structs);
           WEAVE(function::require) (fun.requirements);
           WEAVE(function::in) (fun.in());
@@ -582,7 +582,7 @@ namespace fhg
           WEAVE(place::name) (place.name());
           WEAVE(place::type) (place.type);
           WEAVE(place::is_virtual) (place.is_virtual());
-          WEAVE(place::properties) (place.prop);
+          WEAVE(place::properties) (place.properties());
 
           BOOST_FOREACH (const XMLTYPE(place_type::token_type)& tok, place.tokens)
           {
@@ -618,7 +618,7 @@ namespace fhg
           WEAVE(transition::name) (trans.name());
           WEAVE(transition::priority) (trans.priority);
           WEAVE(transition::internal) (trans.internal);
-          WEAVE(transition::properties) (trans.prop);
+          WEAVE(transition::properties) (trans.properties());
           WEAVE(transition::structs) (trans.structs);
           WEAVE(transition::function) (trans.function_or_use());
           WEAVE(transition::place_map) (trans.place_map());
@@ -633,7 +633,7 @@ namespace fhg
         {
           WEAVE(net::open) (net_id);
           const ::xml::parse::type::net_type& net (net_id.get());
-          WEAVE(net::properties) (net.prop);
+          WEAVE(net::properties) (net.properties());
           WEAVE(net::structs) (net.structs);
           WEAVE(net::templates) (net.templates());
           WEAVE(net::specializes) (net.specializes());

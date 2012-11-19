@@ -100,7 +100,7 @@ namespace fhg
             , const ::we::type::property::value_type&
             );
 
-          handle.get_ref().prop.set (key, val);
+          handle.get_ref().properties().set (key, val);
           change_manager.emit_signal<signal_type>
             ( &change_manager_t::property_changed, origin
             , handle, key, val
@@ -129,7 +129,7 @@ namespace fhg
               , _handle (handle)
               , _key (key)
               , _new_value (val)
-              , _old_value (handle.get().prop.get_val (key))
+              , _old_value (handle.get().properties().get_val (key))
           { }
 
           virtual void undo()

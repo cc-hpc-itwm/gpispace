@@ -59,7 +59,7 @@ namespace xml
                         , const boost::optional<petri_net::prio_t>& priority
                         , const boost::optional<bool>& finline
                         , const boost::optional<bool>& internal
-                        , const we::type::property::type& prop
+                        , const we::type::property::type& properties
                         , const boost::filesystem::path& path
                         );
 
@@ -131,6 +131,9 @@ namespace xml
 
         void type_check (const state::type & state) const;
 
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
         const unique_key_type& unique_key() const;
 
         id::ref::transition clone
@@ -156,8 +159,10 @@ namespace xml
         boost::optional<bool> finline;
         boost::optional<bool> internal;
 
-        we::type::property::type prop;
+      private:
+        we::type::property::type _properties;
 
+      public:
         boost::filesystem::path path;
       };
 

@@ -55,6 +55,9 @@ namespace xml
                  , const boost::filesystem::path& path
                  );
 
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
         const boost::filesystem::path& path() const;
 
         // ***************************************************************** //
@@ -157,9 +160,9 @@ namespace xml
 
         xml::parse::structure_type::set_type structs_resolved;
 
-        we::type::property::type prop;
-
       private:
+        we::type::property::type _properties;
+
         boost::filesystem::path _path;
       };
 
