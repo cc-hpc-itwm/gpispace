@@ -329,65 +329,65 @@
           <cinclude href="boost/lexical_cast.hpp"/>
           <cinclude href="fstream"/>
           <code><![CDATA[
-//	          MLOG (INFO, "Read the chunk "<<chunk_and_slot.chunk<<" from the file " << config.file.input<<" into slot " << chunk_and_slot.slot);
+            // MLOG (INFO, "Read the chunk "<<chunk_and_slot.chunk<<" from the file " << config.file.input<<" into slot " << chunk_and_slot.slot);
 	
-	          FILE *file_ptr;
-	          int num;
+            FILE *file_ptr;
+	        int num;
 	
-	 		  size_t avail_shmem(fvmGetShmemSize());
+	 		size_t avail_shmem(fvmGetShmemSize());
 	 
-	          if((file_ptr = fopen(config.file.input.c_str(), "r"))== NULL)
-	          {
-	          	std::ostringstream oss;
+	        if((file_ptr = fopen(config.file.input.c_str(), "r"))== NULL)
+	        {
+                std::ostringstream oss;
 	          	oss<<"  Could not open the file " << config.file.input << "!";
 	          	MLOG(ERROR, oss.str());
 	          	throw std::runtime_error(oss.str());
-	          }
+            }
 	
-	          long offset = chunk_and_slot.chunk * config.size.chunk.read;
-	          if( (fseek(file_ptr, offset, SEEK_SET)) != 0)
-	          {
-	          	printf("Error in seek operation: errno \n");
+	        long offset = chunk_and_slot.chunk * config.size.chunk.read;
+	        if( (fseek(file_ptr, offset, SEEK_SET)) != 0)
+	        {
+                printf("Error in seek operation: errno \n");
 	          	exit(1);
-	          }
+            }
 	
-	          size_t chunk_size = sizeof(char)*config.size.chunk.read;
+            size_t chunk_size = sizeof(char)*config.size.chunk.read;
 	
-	          // copy it first into the shared memory
-	          // put into the read_area
+            // copy it first into the shared memory
+            // put into the read_area
 	          
-	          if( config.size.chunk.read > avail_shmem )
-	          {
-                      throw std::runtime_error("Not enough shared memory reserved for reading a chunk ");
-	          }
+            if( config.size.chunk.read > avail_shmem )
+	        {
+                throw std::runtime_error("Not enough shared memory reserved for reading a chunk ");
+            }
 	          
-	          char* read_buff = static_cast<char*> (fvmGetShmemPtr());
-	          bzero(read_buff, chunk_size);
+	        char* read_buff = static_cast<char*> (fvmGetShmemPtr());
+	        bzero(read_buff, chunk_size);
 	
-	          // copy the file into the buffer:
-	          size_t used = fread (read_buff, 1, chunk_size, file_ptr);
+	        // copy the file into the buffer:
+	        size_t used = fread (read_buff, 1, chunk_size, file_ptr);
 	          
-	          //MLOG(INFO, "The content of the chunk "<<chunk_and_slot.chunk<<":\n"<<read_buff);
+	        //MLOG(INFO, "The content of the chunk "<<chunk_and_slot.chunk<<":\n"<<read_buff);
 	
-	          waitComm ( fvmPutGlobalData
-	          ( static_cast<fvmAllocHandle_t> (config.handle.read)
+	        waitComm ( fvmPutGlobalData
+	        ( static_cast<fvmAllocHandle_t> (config.handle.read)
 	          									, chunk_and_slot.slot*config.size.chunk.read
 	          									, used
 	          									, 0
 	          									, 0
 	          								)
-	          );
+	        );
 	
-//	          LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully put into the virtual memory");
+            // LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully put into the virtual memory");
 	
-	          pnetc::type::read_chunk_info::read_chunk_info c_r_info;
+            pnetc::type::read_chunk_info::read_chunk_info c_r_info;
 	
-	          c_r_info.read_slot_id = chunk_and_slot.slot;
-	          c_r_info.chunk_id = chunk_and_slot.chunk;
-	          c_r_info.used = used;
+	        c_r_info.read_slot_id = chunk_and_slot.slot;
+	        c_r_info.chunk_id = chunk_and_slot.chunk;
+	        c_r_info.used = used;
 		        
-	          fclose(file_ptr);
-	          return c_r_info;
+	        fclose(file_ptr);
+	        return c_r_info;
           ]]></code>
         </module>
       </defun>
@@ -789,7 +789,7 @@
 
               if(partition_info.part_used)
               {
-//				bzero( ptr_shmem, partition_info.part_used+1);
+                // bzero( ptr_shmem, partition_info.part_used+1);
                 long part_offset = partition_info.part_id*config.size.partition.slot;
                 waitComm ( fvmGetGlobalData
                 ( static_cast<fvmAllocHandle_t> (config.handle.partition)
@@ -830,6 +830,7 @@
 	
 				std::stringstream sstr(local_buff);
 				std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
+				delete[] local_buff;
 				
 				std::sort( arr_items.begin(), arr_items.end());
 				
@@ -860,7 +861,6 @@
 				        }
 				        catch(const std::exception& exc)
 				        {
-                                            delete [] local_buff;
 				            throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(partition_info.part_id)+":"+exc.what());
 				        }
 				
@@ -883,7 +883,6 @@
 	                }
 	                catch(const std::exception& exc)
 	                {
-                                            delete [] local_buff;
 	                    throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(partition_info.part_id)+":"+exc.what());
 	                }
 	            }
@@ -903,16 +902,15 @@
 			}
             else // partition_info.part_used == 0, nothing to be done
             { 
-		MLOG_IF (WARN, partition_result.succeeded, "condition is incorrect");
-              	MLOG (ERROR, "The partition "<<partition_info.part_id<<" is empty, there is nothing to reduce!");
-                                            delete [] local_buff;
-		throw std::runtime_error ( "partition "
+                MLOG_IF (WARN, partition_result.succeeded, "condition is incorrect");
+                MLOG (ERROR, "The partition "<<partition_info.part_id<<" is empty, there is nothing to reduce!");
+                                            
+                throw std::runtime_error ( "partition "
                                          + boost::lexical_cast<std::string>(partition_info.part_id)
                                          + " is empty!"
                                          );
             }
  
-            delete[] local_buff;
 
           ]]></code>
         </module>
@@ -1059,30 +1057,25 @@
 
               std::stringstream sstr(local_buff);
               std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
-              
-              /*std::cout<<"Before reduce:\n ";
-              BOOST_FOREACH(std::string& item, arr_items)
-                std::cout<<item<<" ";
-              std::cout<<std::endl;*/
+              delete[] local_buff;
               
               // before sorting, check if it is the last partition
               // stick the partial keys
               
-              /*
               std::list<std::string> list_border_keys;
               if( old_part_info.part_id == config.num.part - 1 )
               {
-              	  for(int k=0; k<arr_items.size(); k++ )
-		          {
-		          	std::string keyval_pair = arr_items[k];
+                for(int k=0; k<arr_items.size(); k++ )
+		        {
+                    std::string keyval_pair = arr_items[k];
 		          	if(::mapreduce::util::is_special_item(keyval_pair))
 		          	{
-		          	    list_border_keys.push_back(keyval_pair);
+		          	   list_border_keys.push_back(keyval_pair);
 		          	}
-		          }
-		          		
-	           while( !list_border_keys.empty() )
-	           {		          	    
+		        }
+		          				        
+                while( !list_border_keys.empty() )
+                {		          	    
 					std::string keyval_pair = list_border_keys.front();
 					list_border_keys.pop_front();
 	          	    
@@ -1090,18 +1083,14 @@
 	          		std::string matching_pair;
 	          		int cid = -1;
 	          		int end = -1;
-	          		std:: string recovered_key = ::mapreduce::util::match_keys(keyval_pair, arr_items, matching_pair, cid, end );
+	          		
+	          		std:: string recovered_key = ::mapreduce::util::match_keys(keyval_pair, list_border_keys, matching_pair, cid, end );
 	          		
 	          		if(!recovered_key.empty())
 	          		{        			
 	          			std::vector<std::string>::iterator it_items = find (arr_items.begin(), arr_items.end(), keyval_pair);
 	          			arr_items.erase(it_items);
-	          			
-	          			MLOG(INFO, "Recovered the key "<<recovered_key<<" from \""<<keyval_pair<<"\" and \""<<matching_pair<<"\"");
 	          				
-	          			// recover the original key from the two parts
-	          			// map the key
-	          			
 						::mapreduce::util::list_key_val_pairs_t list_key_val_pairs = ::mapreduce::util::map(recovered_key, "");
 						
 						BOOST_FOREACH(::mapreduce::util::key_val_pair_t& pair, list_key_val_pairs)
@@ -1125,44 +1114,31 @@
 						}	          		
 					}
 	          	}
-		          	
               }
-			*/
 			
-		      // end recovering of the border keys
-              std::sort( arr_items.begin(), arr_items.end());
+            // end recovering of the border keys
+            std::sort( arr_items.begin(), arr_items.end());
+            bzero(ptr_shmem, total_size);
 
-              /*std::cout<<"The sorted join(partition, reduce slot):\n ";
-              BOOST_FOREACH(std::string& item, arr_items)
-                std::cout<<item<<" ";
-              std::cout<<std::endl;*/
-
-              bzero(ptr_shmem, total_size);
-
-              std::list<std::string> list_in_values;
-              ::mapreduce::util::key_val_pair_t kv_pair = ::mapreduce::util::get_key_val(arr_items[0]);
-              std::string last_key = kv_pair.first;
+            std::list<std::string> list_in_values;
+            ::mapreduce::util::key_val_pair_t kv_pair = ::mapreduce::util::get_key_val(arr_items[0]);
+            std::string last_key = kv_pair.first;
               
-              size_t last_pos = 0;
+            size_t last_pos = 0;
+            
+            std::vector<std::string> name_and_ext;
+			boost::split(name_and_ext, config.file.output, boost::is_any_of("."));
+            std::ostringstream sstr_part_out_file;
+            sstr_part_out_file<<name_and_ext[0]<<"_";
+            sstr_part_out_file<<partition_info.part_id<<"."<<name_and_ext[1];
+            std::ofstream ofs(sstr_part_out_file.str().data());
               
-          
-			  std::vector<std::string> name_and_ext;
-			  boost::split(name_and_ext, config.file.output, boost::is_any_of("."));
-              std::ostringstream sstr_part_out_file;
-              sstr_part_out_file<<name_and_ext[0]<<"_";
-              sstr_part_out_file<<partition_info.part_id<<"."<<name_and_ext[1];
-              std::ofstream ofs(sstr_part_out_file.str().data());
+            MLOG(INFO, "Write the partition "<<partition_info.part_id<<" into the file "<<sstr_part_out_file.str());
               
-              MLOG(INFO, "Reduce and store the partition "<<partition_info.part_id<<" into the file "<<sstr_part_out_file.str());
-              
-              for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
-              {
-                 ::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
-				std::string key = kv_pair_next.first;
-				if(key[0]=='#')
-					continue;
-				
-									
+            for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
+            {
+				::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
+                std::string key = kv_pair_next.first;
                 //std::cout<<"last_key: "<<last_key<<", key: "<<key<<", value: "<<value<<std::endl;
                 
                 if( key != last_key )
@@ -1175,7 +1151,6 @@
                     catch(const std::exception& exc)
                     {
                     	ofs.close();
-                        delete [] local_buff;
                         throw std::runtime_error(exc.what());
                     }
 
@@ -1185,29 +1160,25 @@
                 }
                 else
                   list_in_values.push_back(kv_pair_next.second);
-              }
+            }
 
             if(!list_in_values.empty())
             {
-             	std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
+                std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
              
-               try {
+                try {
                     ::mapreduce::util::write(last_key, list_out_values, ofs );
                 }
                 catch(const std::exception& exc)
                 {
                 	ofs.close();
-                        delete [] local_buff;
                     throw std::runtime_error(exc.what());
                 }
             }
             
             ofs.close();
             
-             if(local_buff)
-                delete[] local_buff;
-                
-             reduce_and_write_done = control();
+            reduce_and_write_done = control();
 
           ]]></code>
         </module>
