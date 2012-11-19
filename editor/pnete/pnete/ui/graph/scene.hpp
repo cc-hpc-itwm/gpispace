@@ -92,9 +92,6 @@ namespace fhg
           virtual void keyPressEvent (QKeyEvent* event);
 
         private:
-          void change_mgr_link
-            (const char* signal, const char* slot, const char* arguments);
-
           template<typename item_type, typename handle_type>
             item_type* item_with_handle (const handle_type&);
 

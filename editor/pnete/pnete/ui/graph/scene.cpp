@@ -55,38 +55,28 @@ namespace fhg
           init_menu_context();
 
           // transition
-          change_mgr_link ( "transition_added", "transition_added"
-                          , "const data::handle::transition&"
-                          );
-          change_mgr_link ( "transition_deleted", "transition_deleted"
-                          , "const data::handle::transition&"
-                          );
+          _net.connect_to_change_mgr
+            ( this
+            , "transition_added" , "transition_added"
+            , "const data::handle::transition&"
+            );
+          _net.connect_to_change_mgr
+            ( this
+            , "transition_deleted", "transition_deleted"
+            , "const data::handle::transition&"
+            );
 
           // place
-          change_mgr_link ( "place_added", "place_added"
-                          , "const data::handle::place&"
-                          );
-          change_mgr_link ( "place_deleted", "place_deleted"
-                          , "const data::handle::place&"
-                          );
-        }
-
-        void scene_type::change_mgr_link ( const char* signal
-                                         , const char* slot
-                                         , const char* arguments
-                                         )
-        {
-          connect ( &change_manager()
-                  , ( std::string (QTOSTRING (QSIGNAL_CODE))
-                    + signal
-                    + "(const QObject*," + arguments + ")"
-                    ).c_str()
-                  , ( std::string (QTOSTRING (QSLOT_CODE))
-                    + slot
-                    + "(const QObject*," + arguments + ")"
-                    ).c_str()
-                  , Qt::DirectConnection
-                  );
+          _net.connect_to_change_mgr
+            ( this
+            , "place_added", "place_added"
+            , "const data::handle::place&"
+            );
+          _net.connect_to_change_mgr
+            ( this
+            , "place_deleted", "place_deleted"
+            , "const data::handle::place&"
+            );
         }
 
         //! \todo This is duplicate code, also available in main window.
