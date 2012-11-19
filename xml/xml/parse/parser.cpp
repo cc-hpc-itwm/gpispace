@@ -1700,7 +1700,7 @@ namespace xml
                     );
 
                   util::property::join ( state
-                                       , state.id_mapper()->get_ref (id)->prop
+                                       , port.get_ref().prop
                                        , deeper
                                        );
                 }
