@@ -23,28 +23,30 @@ namespace mapreduce
 {
   namespace util
   {
-    void print_keys(const std::string& msg, const std::vector<std::string>& arr_keys )
+  	template <typename T>
+    void print_keys(const std::string& msg, T& arr_keys )
     {
       std::ostringstream osstr;
-      if( arr_keys.empty() )
-      {
-        MLOG(INFO, "No border key cached!");
-      }
 
-      for( int k=0;k<arr_keys.size(); k++ )
+      int k=0;
+      for( typename T::iterator it = arr_keys.begin(); it!= arr_keys.end(); it++ )
       {
-        osstr<<arr_keys[k]<<" ";
+        osstr<<*it<<" ";
+        if(k++%4 == 0)
+        	osstr<<std::endl;
       }
 
       MLOG(INFO, msg<<" "<<osstr.str());
     }
 
-    std::string match_keys(const std::string& keyval_pair, const std::vector<std::string>& arr_border_keys, std::string& matching_pair, int& cid, int& end)
+
+    std::string match_keys(const std::string& keyval_pair, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
     {
       std::string w;
       bool bMatching = false;
 
-      MLOG(TRACE, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
+      //MLOG(INFO, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
+
       boost::char_separator<char> sep("#:");
       boost::tokenizer<boost::char_separator<char> > tok_v(keyval_pair, sep);
       std::vector<std::string> v(3,"");
@@ -53,16 +55,16 @@ namespace mapreduce
       cid = boost::lexical_cast<long>(v[0]);
       end = boost::lexical_cast<long>(v[1]);
 
-      if( arr_border_keys.size() == 0 )
+      if( list_border_keys.empty() )
       {
            MLOG(WARN, "The array of border keys is empty ...");
            matching_pair = "";
            return "";
       }
 
-      for( int k=0;k<arr_border_keys.size() && !bMatching; k++ )
+      for(std::list<std::string>::const_iterator it = list_border_keys.begin(); it != list_border_keys.end(); it++ )
       {
-        boost::tokenizer<boost::char_separator<char> > tok_u(arr_border_keys[k], sep);
+        boost::tokenizer<boost::char_separator<char> > tok_u(*it, sep);
         std::vector<std::string> u(3, "");
         u.assign(tok_u.begin(), tok_u.end());
 
@@ -75,17 +77,15 @@ namespace mapreduce
         if( v0 == u0+1 && u1 == v1+1 )
         {
           w = u[2]+v[2];
-          MLOG(INFO, "The recovered word from "<<keyval_pair<<" and "<<arr_border_keys[k]<<" is "<<w);
           bMatching = true;
-          matching_pair = arr_border_keys[k];
+          matching_pair = *it;
         }
         else
           if( u0 == v0+1 && v1 == u1+1 )
           {
             w = v[2]+u[2];
-            MLOG(INFO, "The recovered word from "<<keyval_pair<<" and "<<arr_border_keys[k]<<" is "<<w);
             bMatching = true;
-            matching_pair = arr_border_keys[k];
+            matching_pair = *it;
           }
       }
 
