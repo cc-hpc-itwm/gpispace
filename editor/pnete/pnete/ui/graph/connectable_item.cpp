@@ -1,9 +1,10 @@
 #include <pnete/ui/graph/connectable_item.hpp>
 
-#include <QDebug>
-
 #include <pnete/ui/graph/connection.hpp>
 #include <pnete/ui/graph/scene.hpp>
+
+#include <QGraphicsSceneMouseEvent>
+#include <QDebug>
 
 namespace fhg
 {
@@ -101,11 +102,18 @@ namespace fhg
           }
         }
 
-//      void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
-//      {
-//        scene()->create_connection (this);
-//        //! \todo Start a new connection!
-//      }
+        void connectable_item::mousePressEvent
+          (QGraphicsSceneMouseEvent* event)
+        {
+          if (event->modifiers() == Qt::ShiftModifier)
+          {
+            scene()->create_connection (this);
+          }
+          else
+          {
+            base_item::mousePressEvent (event);
+          }
+        }
       }
     }
   }

@@ -60,7 +60,7 @@ namespace fhg
 
           virtual const std::string& we_type() const = 0;
 
-//        virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
           virtual QLinkedList<base_item*> childs() const;
 
