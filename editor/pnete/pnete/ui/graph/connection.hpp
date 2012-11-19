@@ -3,12 +3,15 @@
 #ifndef _PNETE_UI_GRAPH_CONNECTION_HPP
 #define _PNETE_UI_GRAPH_CONNECTION_HPP 1
 
+#include <pnete/data/handle/connect.hpp>
+#include <pnete/ui/graph/base_item.hpp>
+
+#include <boost/optional.hpp>
+
 #include <QList>
 #include <QPointF>
 #include <QRectF>
 #include <QObject>
-
-#include <pnete/ui/graph/base_item.hpp>
 
 class QPainter;
 class QStyleOptionGraphicsItem;
@@ -29,9 +32,11 @@ namespace fhg
         class connection_item : public base_item
         {
           Q_OBJECT;
-          
+
         public:
-          connection_item (bool read = false);
+          connection_item ( const boost::optional<data::handle::connect>& handle
+                          , bool read = false
+                          );
           ~connection_item();
 
           connectable_item* start() const;
@@ -57,6 +62,8 @@ namespace fhg
           virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
 
         private:
+          boost::optional<data::handle::connect> _handle;
+
           connectable_item* _start;
           connectable_item* _end;
 

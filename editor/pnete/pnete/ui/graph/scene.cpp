@@ -238,7 +238,7 @@ namespace fhg
 
         connection_item* scene_type::create_connection (bool only_reading)
         {
-          connection_item * c (new connection_item (only_reading));
+          connection_item * c (new connection_item (boost::none, only_reading));
           addItem (c);
           c->set_just_pos_but_not_in_property (0.0, 0.0);
           return c;

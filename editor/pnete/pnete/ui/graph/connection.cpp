@@ -19,12 +19,16 @@ namespace fhg
     {
       namespace graph
       {
-        connection_item::connection_item (bool read)
-          : base_item()
-          , _start (NULL)
-          , _end (NULL)
-          , _fixed_points()
-          , _read (read)
+        connection_item::connection_item
+          ( const boost::optional<data::handle::connect>& handle
+          , bool read
+          )
+            : base_item()
+            , _handle (handle)
+            , _start (NULL)
+            , _end (NULL)
+            , _fixed_points()
+            , _read (read)
         {
           setZValue (-1);                                                          // hardcoded constant
         }
@@ -270,4 +274,3 @@ namespace fhg
     }
   }
 }
-
