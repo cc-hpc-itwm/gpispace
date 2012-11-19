@@ -40,41 +40,6 @@ namespace fhg
           }
         }
 
-        static boost::optional<const qreal&>
-        thicker_if_name (const std::string type, const base_item* gi)
-        {
-          static const qreal v (4.0);
-
-          return style::predicate::generic_if<qreal>
-            ( style::predicate::_and
-              ( style::predicate::predicate (&style::predicate::is_port)
-              , style::predicate::on<std::string>
-                ( &style::predicate::port::name
-                , boost::bind (&style::predicate::equals, type, _1)
-                )
-              )
-            , v
-            , gi
-            );
-        }
-
-        static boost::optional<const QColor&>
-        color_if_type ( const std::string& type
-                      , const QColor& color
-                      , const base_item* gi
-                      )
-        {
-          if (style::predicate::is_port (gi))
-          {
-            if (qgraphicsitem_cast<const port_item*>(gi)->we_type() == type)
-            {
-              return boost::optional<const QColor&> (color);
-            }
-          }
-
-          return boost::none;
-        }
-
         port_item::port_item
           ( const data::handle::port& handle
           , connectable::direction::type direction
@@ -92,52 +57,6 @@ namespace fhg
             , "  const data::handle::port&"
               ", const ::we::type::property::key_type&"
               ", const ::we::type::property::value_type&"
-            );
-
-          access_style().push<qreal>
-            ( "border_thickness"
-            , mode::NORMAL
-            , boost::bind (&thicker_if_name, "in", _1)
-            );
-
-          static const QColor background_color_long (Qt::darkBlue);
-          static const QColor background_color_string (Qt::yellow);
-          static const QColor background_color_control (Qt::red);
-          static const QColor backgr (Qt::green);
-
-          access_style().push<QColor>
-            ( "background_color"
-            , mode::NORMAL
-            , boost::bind (&color_if_type, "long", background_color_long, _1)
-            );
-          access_style().push<QColor>
-            ( "background_color"
-            , mode::HIGHLIGHT
-            , boost::bind (&color_if_type, "long", backgr, _1)
-            );
-          access_style().push<QColor>
-            ( "background_color"
-            , mode::NORMAL
-            , boost::bind (&color_if_type, "string", background_color_string, _1)
-            );
-//             access_style().push<QColor>
-//               ( "background_color"
-//               , mode::NORMAL
-//               , boost::bind (&color_if_type, "control", background_color_control, _1)
-//               );
-
-          static const QColor text_color_long (Qt::white);
-          static const QColor text_color_string (Qt::gray);
-
-          access_style().push<QColor>
-            ( "text_color"
-            , mode::NORMAL
-            , boost::bind (&color_if_type, "long", text_color_long, _1)
-            );
-          access_style().push<QColor>
-            ( "text_color"
-            , mode::NORMAL
-            , boost::bind (&color_if_type, "string", text_color_string, _1)
             );
 
           set_just_orientation_but_not_in_property

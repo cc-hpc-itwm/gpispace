@@ -27,26 +27,6 @@ namespace fhg
     {
       namespace graph
       {
-        static boost::optional<const QColor&>
-        color_if_name ( const QString& name
-                      , const QColor& color
-                      , const base_item* i
-                      )
-        {
-          if (style::predicate::is_transition (i))
-          {
-            const boost::optional<std::string>& n
-              (qgraphicsitem_cast<const transition_item*>(i)->name());
-
-            if (n && *n == name.toStdString())
-            {
-              return boost::optional<const QColor&> (color);
-            }
-          }
-
-          return boost::none;
-        }
-
         transition_item::transition_item
           (const data::handle::transition& handle, base_item* parent)
           : base_item (parent)
@@ -56,22 +36,6 @@ namespace fhg
         {
           //            new cogwheel_button (this);
           setFlag (ItemIsSelectable);
-
-          static const QColor border_color_normal (Qt::yellow);
-
-          access_style().push<QColor>
-            ( "border_color_normal"
-            , mode::NORMAL
-            , boost::bind (&color_if_name, "t", border_color_normal, _1)
-            );
-
-          static const QColor background_color (Qt::blue);
-
-          access_style().push<QColor>
-            ( "background_color"
-            , mode::NORMAL
-            , boost::bind (&color_if_name, "double", background_color, _1)
-            );
 
           handle.connect_to_change_mgr
             ( this
