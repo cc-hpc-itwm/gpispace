@@ -71,6 +71,14 @@ namespace fhg
                            , Qt::DirectConnection
                            );
         }
+
+        void base::connect_to_change_mgr ( const QObject* object
+                                         , const char* signal_slot
+                                         , const char* arguments
+                                         ) const
+        {
+          connect_to_change_mgr (object, signal_slot, signal_slot, arguments);
+        }
       }
     }
   }
