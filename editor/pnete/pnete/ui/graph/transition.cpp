@@ -75,7 +75,7 @@ namespace fhg
 
           handle.connect_to_change_mgr
             ( this
-            , "property_changed", "property_changed"
+            , "property_changed"
             , "  const data::handle::transition&"
               ", const ::we::type::property::key_type&"
               ", const ::we::type::property::value_type&"

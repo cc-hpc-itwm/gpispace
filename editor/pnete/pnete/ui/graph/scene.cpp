@@ -57,24 +57,24 @@ namespace fhg
           // transition
           _net.connect_to_change_mgr
             ( this
-            , "transition_added" , "transition_added"
+            , "transition_added"
             , "const data::handle::transition&"
             );
           _net.connect_to_change_mgr
             ( this
-            , "transition_deleted", "transition_deleted"
+            , "transition_deleted"
             , "const data::handle::transition&"
             );
 
           // place
           _net.connect_to_change_mgr
             ( this
-            , "place_added", "place_added"
+            , "place_added"
             , "const data::handle::place&"
             );
           _net.connect_to_change_mgr
             ( this
-            , "place_deleted", "place_deleted"
+            , "place_deleted"
             , "const data::handle::place&"
             );
         }
