@@ -34,9 +34,6 @@ namespace fhg
 
       namespace proxy
       {
-        typedef ::xml::parse::type::function_with_mapping_type
-                function_with_mapping_type;
-
         template<typename DATA, typename DISPLAY = void>
         class proxy_base
         {
@@ -46,11 +43,11 @@ namespace fhg
 
           proxy_base ( internal_type* root
                      , data_type data
-                     , function_with_mapping_type& function_with_mapping
+                     , const ::xml::parse::id::ref::function& function
                      , display_type* display = NULL
                      )
             : _data (data)
-            , _function_with_mapping (function_with_mapping)
+            , _function (function)
             , _display (display)
             , _root (root)
           {}
@@ -60,7 +57,7 @@ namespace fhg
           }
           ::xml::parse::type::function_type& function()
           {
-            return _function_with_mapping.function().get_ref();
+            return _function.get_ref();
           }
 
           display_type* display()
@@ -74,7 +71,7 @@ namespace fhg
 
         private:
           data_type _data;
-          function_with_mapping_type _function_with_mapping;
+          ::xml::parse::id::ref::function _function;
           display_type* _display;
 
           internal_type* _root;

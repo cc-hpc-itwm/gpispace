@@ -88,7 +88,7 @@ namespace fhg
           ( data::proxy::expression_proxy
             ( _root
             , data::proxy::data::expression_type (id.get_ref(), in(), out())
-            , _function_with_mapping
+            , _function_with_mapping.function()
             )
           );
       }
@@ -98,7 +98,7 @@ namespace fhg
           ( data::proxy::mod_proxy
             ( _root
             , data::proxy::data::module_type (id.get_ref(), in(), out())
-            , _function_with_mapping
+            , _function_with_mapping.function()
             )
           );
       }
@@ -108,7 +108,7 @@ namespace fhg
           (data::handle::net (id, _root->change_manager()), _root);
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
-            ( _root, id, _function_with_mapping, _scene)
+            ( _root, id, _function_with_mapping.function(), _scene)
           );
 
         weaver::net wn ( _root
