@@ -127,7 +127,7 @@ namespace fhg
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
-        ::xml::parse::type::function_type& function (const type&);
+        ::xml::parse::id::ref::function function (const type&);
         ::fhg::pnete::data::internal_type* root (const type&);
 
         ui::document_view* document_view_factory (type&);

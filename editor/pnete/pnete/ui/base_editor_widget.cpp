@@ -28,7 +28,7 @@ namespace fhg
       {
         return root()->change_manager();
       }
-      ::xml::parse::type::function_type& base_editor_widget::function () const
+      ::xml::parse::id::ref::function base_editor_widget::function() const
       {
         return data::proxy::function (proxy());
       }

@@ -26,7 +26,7 @@ namespace fhg
                                          , this
                                          )
                   );
-        set_title (data::proxy::function (proxy).name());
+        set_title (data::proxy::function (proxy).get().name());
       }
       QString expression_view::fallback_title () const
       {

@@ -21,7 +21,7 @@ namespace fhg
       {
         //! \todo submit known types
         setWidget (new net_widget (proxy, net, scene, QStringList(), this));
-        set_title (data::proxy::function (proxy).name());
+        set_title (data::proxy::function (proxy).get().name());
       }
       QString net_view::fallback_title () const
       {

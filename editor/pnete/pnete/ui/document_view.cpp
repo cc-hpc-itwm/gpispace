@@ -45,7 +45,7 @@ namespace fhg
       , const QString& name
       )
       {
-        if (&function != &data::proxy::function (widget()->proxy()))
+        if (function.id() != data::proxy::function (widget()->proxy()))
         {
           return;
         }

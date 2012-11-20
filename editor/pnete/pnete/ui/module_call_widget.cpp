@@ -25,7 +25,7 @@ namespace fhg
         )
           : base_editor_widget (proxy, parent)
           , _mod (mod)
-          , _port_lists (new port_lists_widget (mod.in(), mod.out(), types))
+          , _port_lists (new port_lists_widget (function(), types))
       {
         QGroupBox* group_box (new QGroupBox (tr ("module call")));
         QHBoxLayout* group_box_layout (new QHBoxLayout());

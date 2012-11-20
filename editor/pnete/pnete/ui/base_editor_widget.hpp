@@ -32,7 +32,7 @@ namespace fhg
         data::proxy::type& proxy () const;
         data::change_manager_t& change_manager () const;
         data::internal_type* root () const;
-        ::xml::parse::type::function_type& function() const;
+        ::xml::parse::id::ref::function function() const;
 
       signals:
         void focus_gained (QWidget*);

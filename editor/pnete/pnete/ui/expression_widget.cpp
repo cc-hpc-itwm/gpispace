@@ -30,11 +30,7 @@ namespace fhg
         )
           : base_editor_widget (proxy, parent)
           , _expression (expression)
-          , _port_lists (new port_lists_widget ( expression.in()
-                                               , expression.out()
-                                               , types
-                                               )
-                        )
+          , _port_lists (new port_lists_widget (function(), types))
           , _expression_edit (new QTextEdit())
           , _name_edit (new QLineEdit())
           , _parse_result (new QTextEdit())
@@ -126,7 +122,7 @@ namespace fhg
                 , SLOT (expression_changed ())
                 );
 
-        set_name (function().name());
+        set_name (function().get().name());
         set_expression (expression.expression().get().expression("\n"));
         expression_changed();
       }
@@ -198,7 +194,7 @@ namespace fhg
       void expression_widget::name_changed (const QString& name_)
       {
         change_manager().set_function_name ( this
-                                           , function()
+                                           , function().get_ref()
                                            , name_
                                            )
           ;
@@ -216,7 +212,7 @@ namespace fhg
       bool expression_widget::is_my_function
       (const ::xml::parse::type::function_type& f)
       {
-        return f.id() == function().id();
+        return f.id() == function();
       }
       bool expression_widget::is_my_expression
       (const ::xml::parse::type::expression_type& e)

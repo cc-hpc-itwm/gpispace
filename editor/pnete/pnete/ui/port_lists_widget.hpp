@@ -3,13 +3,13 @@
 #ifndef _FHG_PNETE_UI_PORT_LISTS_WIDGET_HPP
 #define _FHG_PNETE_UI_PORT_LISTS_WIDGET_HPP 1
 
+#include <xml/parse/id/types.hpp>
+
 #include <QObject>
 #include <QWidget>
 
 class QStringList;
 class QWidget;
-
-#include <xml/parse/type/function.hpp> // ports_type..
 
 namespace fhg
 {
@@ -22,17 +22,10 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        explicit port_lists_widget ( ::xml::parse::type::function_type::ports_type& in
-                                   , ::xml::parse::type::function_type::ports_type& out
+        explicit port_lists_widget ( const ::xml::parse::id::ref::function&
                                    , const QStringList& types
                                    , QWidget* parent = NULL
                                    );
-
-      private:
-        ::xml::parse::type::function_type::ports_type& _in;
-        ::xml::parse::type::function_type::ports_type& _out;
-
-        const QStringList& _types;
       };
     }
   }

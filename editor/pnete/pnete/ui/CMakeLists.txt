@@ -17,7 +17,6 @@ set(ui_SRCS
   net_widget.cpp
   module_call_widget.cpp
   expression_widget.cpp
-  port_list_widget.cpp
   port_lists_widget.cpp
   ComboItemDelegate.cpp
   size.cpp
@@ -50,7 +49,6 @@ set(ui_HDRS
   net_widget.hpp
   module_call_widget.hpp
   expression_widget.hpp
-  port_list_widget.hpp
   port_lists_widget.hpp
   size.hpp
   transition_library_view.hpp
@@ -82,7 +80,6 @@ set(ui_TOMOC
   net_widget.hpp
   module_call_widget.hpp
   expression_widget.hpp
-  port_list_widget.hpp
   port_lists_widget.hpp
 
   expression_view.hpp

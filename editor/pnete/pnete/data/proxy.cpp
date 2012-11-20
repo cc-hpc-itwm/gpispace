@@ -43,9 +43,9 @@ namespace fhg
           };
         }
 
-        ::xml::parse::type::function_type& function (const type& proxy)
+        ::xml::parse::id::ref::function function (const type& proxy)
         {
-          return boost::apply_visitor (visitor_function(), proxy).get_ref();
+          return boost::apply_visitor (visitor_function(), proxy);
         }
 
         ::fhg::pnete::data::internal_type* root (const type& proxy)
