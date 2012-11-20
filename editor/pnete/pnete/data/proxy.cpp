@@ -32,38 +32,26 @@ namespace fhg
               }
           };
 
-          template<typename RES>
-          class function : public boost::static_visitor<RES>
+          class function
+            : public boost::static_visitor< ::xml::parse::type::function_type&>
           {
           public:
-            template<typename T> RES operator () (T& x) const
+            template<typename T>
+              ::xml::parse::type::function_type& operator() (T& x) const
             {
               return x.function();
-            }
-          };
-
-          template<typename RES>
-          class type_map : public boost::static_visitor<RES>
-          {
-          public:
-            template<typename T> RES operator () (T& x) const
-            {
-              return x.type_map();
             }
           };
         }
 
         ::xml::parse::type::function_type& function (type& proxy)
         {
-          return boost::apply_visitor
-            ( visitor::function< ::xml::parse::type::function_type&> ()
-            , proxy
-            );
+          return boost::apply_visitor (visitor::function(), proxy);
         }
 
         ::fhg::pnete::data::internal_type* root (const type& proxy)
         {
-          return boost::apply_visitor (visitor::root (), proxy);
+          return boost::apply_visitor (visitor::root(), proxy);
         }
 
         namespace data
