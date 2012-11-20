@@ -6,6 +6,7 @@
 #include <pnete/data/change_manager.fwd.hpp>
 
 #include <pnete/data/handle/connect.fwd.hpp>
+#include <pnete/data/handle/expression.fwd.hpp>
 #include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
@@ -176,7 +177,7 @@ namespace fhg
 
         // - expression ----------------------------------------------
         void set_expression ( const QObject*
-                            , ::xml::parse::type::expression_type&
+                            , data::handle::expression&
                             , const QString&
                             );
 
@@ -235,11 +236,11 @@ namespace fhg
 
         // - expression ----------------------------------------------
         void signal_set_expression ( const QObject*
-                                   , const ::xml::parse::type::expression_type&
+                                   , const data::handle::expression&
                                    , const QString&
                                    );
         void signal_set_expression_parse_result ( const QObject*
-                                                , const ::xml::parse::type::expression_type&
+                                                , const data::handle::expression&
                                                 , const QString&
                                                 );
 

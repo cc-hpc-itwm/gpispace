@@ -1,5 +1,14 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
+#include <pnete/ui/expression_widget.hpp>
+
+#include <pnete/data/change_manager.hpp>
+#include <pnete/ui/port_lists_widget.hpp>
+
+#include <xml/parse/type/function.hpp>
+
+#include <util/qt/scoped_signal_block.hpp>
+
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -9,13 +18,6 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include <pnete/ui/expression_widget.hpp>
-#include <pnete/ui/port_lists_widget.hpp>
-
-#include <pnete/data/internal.hpp>
-
-#include <util/qt/scoped_signal_block.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -24,7 +26,7 @@ namespace fhg
     {
       expression_widget::expression_widget
         ( data::proxy::type& proxy
-        , data::proxy::expression_proxy::data_type& expression
+        , const data::handle::expression& expression
         , const QStringList& types
         , QWidget* parent
         )
@@ -86,13 +88,13 @@ namespace fhg
         connect ( &change_manager()
                 , SIGNAL ( signal_set_expression
                            ( const QObject*
-                           , const ::xml::parse::type::expression_type&
+                           , const data::handle::expression&
                            , const QString&
                            )
                          )
                 , SLOT ( slot_set_expression
                          ( const QObject*
-                         , const ::xml::parse::type::expression_type&
+                         , const data::handle::expression&
                          , const QString&
                          )
                        )
@@ -100,13 +102,13 @@ namespace fhg
         connect ( &change_manager()
                 , SIGNAL ( signal_set_expression_parse_result
                            ( const QObject*
-                           , const ::xml::parse::type::expression_type&
+                           , const data::handle::expression&
                            , const QString&
                            )
                          )
                 , SLOT ( slot_set_expression_parse_result
                          ( const QObject*
-                         , const ::xml::parse::type::expression_type&
+                         , const data::handle::expression&
                          , const QString&
                          )
                        )
@@ -141,7 +143,7 @@ namespace fhg
 
       void expression_widget::slot_set_expression
       ( const QObject* origin
-      , const ::xml::parse::type::expression_type& expression
+      , const data::handle::expression& expression
       , const QString& text
       )
       {
@@ -153,7 +155,7 @@ namespace fhg
 
       void expression_widget::slot_set_expression_parse_result
       ( const QObject*
-      , const ::xml::parse::type::expression_type& expression
+      , const data::handle::expression& expression
       , const QString& text
       )
       {
@@ -202,11 +204,8 @@ namespace fhg
 
       void expression_widget::expression_changed ()
       {
-        change_manager().set_expression ( this
-                                        , _expression.get_ref()
-                                        , _expression_edit->toPlainText()
-                                        )
-          ;
+        change_manager().set_expression
+          (this, _expression, _expression_edit->toPlainText());
       }
 
       bool expression_widget::is_my_function
@@ -215,9 +214,9 @@ namespace fhg
         return f.id() == function();
       }
       bool expression_widget::is_my_expression
-      (const ::xml::parse::type::expression_type& e)
+      (const data::handle::expression& e)
       {
-        return e.id() == _expression;
+        return e == _expression;
       }
     }
   }

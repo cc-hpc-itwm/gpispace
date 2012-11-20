@@ -2,14 +2,16 @@
 
 #include <pnete/data/proxy.hpp>
 
-#include <QObject>
-
-#include <boost/variant.hpp>
-
+#include <pnete/data/handle/expression.hpp>
+#include <pnete/data/internal.hpp>
 #include <pnete/ui/document_view.hpp>
 #include <pnete/ui/expression_view.hpp>
 #include <pnete/ui/mod_view.hpp>
 #include <pnete/ui/net_view.hpp>
+
+#include <boost/variant.hpp>
+
+#include <QObject>
 
 namespace fhg
 {
@@ -68,7 +70,11 @@ namespace fhg
 
             ui::document_view* operator() (expression_proxy& proxy) const
             {
-              return new ui::expression_view (_proxy, proxy.data());
+              return new ui::expression_view
+                ( _proxy, handle::expression ( proxy.data()
+                                             , root (_proxy)->change_manager()
+                                             )
+                );
             }
 
             ui::document_view* operator() (mod_proxy& proxy) const

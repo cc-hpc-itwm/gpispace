@@ -17,7 +17,7 @@ namespace fhg
     {
       expression_view::expression_view
         ( data::proxy::type& proxy
-        , data::proxy::expression_proxy::data_type & expression
+        , const data::handle::expression& expression
         )
           : document_view (proxy)
       {

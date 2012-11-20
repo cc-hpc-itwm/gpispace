@@ -3,6 +3,7 @@
 #include <pnete/data/change_manager.hpp>
 
 #include <pnete/data/handle/connect.hpp>
+#include <pnete/data/handle/expression.hpp>
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
@@ -790,11 +791,11 @@ namespace fhg
       // - expression ------------------------------------------------
       void change_manager_t::set_expression
         ( const QObject* origin
-        , ::xml::parse::type::expression_type& expression
+        , data::handle::expression& expression
         , const QString& text
         )
       {
-        expression.set (text.toStdString());
+        expression.get_ref().set (text.toStdString());
 
         emit_signal ( &change_manager_t::signal_set_expression
                     , origin
