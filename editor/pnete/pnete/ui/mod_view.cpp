@@ -17,7 +17,7 @@ namespace fhg
     {
       mod_view::mod_view
         ( data::proxy::type& proxy
-        , data::proxy::mod_proxy::data_type& mod
+        , const ::xml::parse::id::ref::module& mod
         )
           : document_view (proxy)
       {

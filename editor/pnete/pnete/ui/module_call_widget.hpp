@@ -25,14 +25,10 @@ namespace fhg
 
       public:
         module_call_widget ( data::proxy::type& proxy
-                           , data::proxy::mod_proxy::data_type& mod
+                           , const ::xml::parse::id::ref::module& mod
                            , const QStringList& types
                            , QWidget* parent = NULL
                            );
-
-      private:
-        data::proxy::mod_proxy::data_type& _mod;
-        port_lists_widget* _port_lists;
       };
     }
   }
