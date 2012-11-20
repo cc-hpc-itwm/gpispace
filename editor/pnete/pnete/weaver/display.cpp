@@ -37,19 +37,19 @@ namespace fhg
       WSIG(function, expression::open, ::xml::parse::id::ref::expression, id)
       {
         _proxy = new data::proxy::type
-          (data::proxy::expression_proxy(_root, id, _function));
+          (data::proxy::expression_proxy (_root, _function, id));
       }
       WSIG(function, mod::open, ::xml::parse::id::ref::module, id)
       {
         _proxy = new data::proxy::type
-          (data::proxy::mod_proxy (_root, id, _function));
+          (data::proxy::mod_proxy (_root, _function, id));
       }
       WSIG(function, net::open, ::xml::parse::id::ref::net, id)
       {
         _scene = new ui::graph::scene_type
           (data::handle::net (id, _root->change_manager()), _root);
         _proxy = new data::proxy::type
-          (data::proxy::net_proxy (_root, id, _function, _scene));
+          (data::proxy::net_proxy (_root, _function, id, _scene));
 
         weaver::net wn (_root, _scene, id, _function);
         from::net (&wn, id);

@@ -27,46 +27,45 @@ namespace fhg
 
       namespace proxy
       {
-        template<typename DATA, typename DISPLAY = void>
+        template<typename data_type, typename display_type = void>
         class proxy_base
         {
         public:
-          typedef DATA data_type;
-          typedef DISPLAY display_type;
-
           proxy_base ( internal_type* root
-                     , data_type data
                      , const ::xml::parse::id::ref::function& function
+                     , data_type data
                      , display_type* display = NULL
                      )
-            : _data (data)
+            : _root (root)
             , _function (function)
+            , _data (data)
             , _display (display)
-            , _root (root)
-          {}
-          data_type& data()
+          { }
+
+          internal_type* root() const
           {
-            return _data;
+            return _root;
           }
           const ::xml::parse::id::ref::function& function() const
           {
             return _function;
           }
+
+          data_type& data()
+          {
+            return _data;
+          }
           display_type* display() const
           {
             return _display;
           }
-          internal_type* root() const
-          {
-            return _root;
-          }
 
         private:
-          data_type _data;
-          ::xml::parse::id::ref::function _function;
-          display_type* _display;
-
           internal_type* _root;
+          ::xml::parse::id::ref::function _function;
+
+          data_type _data;
+          display_type* _display;
         };
 
         typedef proxy_base< ::xml::parse::id::ref::expression> expression_proxy;
