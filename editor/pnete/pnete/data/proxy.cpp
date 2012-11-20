@@ -36,14 +36,14 @@ namespace fhg
           {
           public:
             template<typename T>
-              const ::xml::parse::id::ref::function& operator() (T& x) const
+              const ::xml::parse::id::ref::function& operator() (const T& x) const
             {
               return x.function();
             }
           };
         }
 
-        ::xml::parse::type::function_type& function (type& proxy)
+        ::xml::parse::type::function_type& function (const type& proxy)
         {
           return boost::apply_visitor (visitor_function(), proxy).get_ref();
         }
