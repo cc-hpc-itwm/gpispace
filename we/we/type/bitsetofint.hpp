@@ -95,7 +95,6 @@ namespace bitsetofint
     friend type operator | (const type &, const type &);
     friend type operator & (const type &, const type &);
     friend type operator ^ (const type &, const type &);
-    friend type operator ~ (const type &);
 
     friend std::ostream & operator << (std::ostream &, const type &);
     friend std::size_t hash_value (const type &);
@@ -150,18 +149,6 @@ namespace bitsetofint
          ^
          (i < rhs.container.size() ? rhs.container[i] : 0)
         );
-    }
-
-    return result;
-  }
-
-  inline type operator~ (const type & other)
-  {
-    type result (other.container.size());
-
-    for (size_t i (0); i < result.container.size(); ++i)
-    {
-      result.container [i] = ~other.container[i];
     }
 
     return result;
