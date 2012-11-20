@@ -51,19 +51,6 @@ namespace fhg
               return x.type_map();
             }
           };
-
-          class document_view_factory
-            : public boost::static_visitor<ui::document_view*>
-          {
-          private:
-            type& _proxy;
-
-          public:
-            document_view_factory (type& proxy);
-            ui::document_view * operator () (expression_proxy &) const;
-            ui::document_view * operator () (mod_proxy &) const;
-            ui::document_view * operator () (net_proxy &) const;
-          };
         }
 
         ::xml::parse::type::function_type& function (type& proxy)
@@ -110,42 +97,39 @@ namespace fhg
           xml_type::function_type::ports_type& module_type::out () { return _out; }
         }
 
-        ui::document_view* document_view_factory (type& proxy)
+        namespace
         {
-          return boost::apply_visitor
-            (visitor::document_view_factory (proxy), proxy);
+          class document_view_for_proxy
+            : public boost::static_visitor<ui::document_view*>
+          {
+          private:
+            type& _proxy;
+
+          public:
+            document_view_for_proxy (type& proxy)
+              : _proxy (proxy)
+            { }
+
+            ui::document_view* operator() (expression_proxy& proxy) const
+            {
+              return new ui::expression_view (_proxy, proxy.data());
+            }
+
+            ui::document_view* operator() (mod_proxy& proxy) const
+            {
+              return new ui::mod_view (_proxy, proxy.data());
+            }
+
+            ui::document_view* operator() (net_proxy& proxy) const
+            {
+              return new ui::net_view (_proxy, proxy.data(), proxy.display());
+            }
+          };
         }
 
-        namespace visitor
+        ui::document_view* document_view_factory (type& proxy)
         {
-          document_view_factory::document_view_factory (type & proxy)
-            : _proxy (proxy)
-          {}
-
-          ui::document_view*
-          document_view_factory::operator () (expression_proxy & proxy) const
-          {
-            return new ui::expression_view ( _proxy
-                                           , proxy.data()
-                                           );
-          }
-
-          ui::document_view*
-          document_view_factory::operator () (mod_proxy & proxy) const
-          {
-            return new ui::mod_view ( _proxy
-                                    , proxy.data()
-                                    );
-          }
-
-          ui::document_view*
-          document_view_factory::operator () (net_proxy & proxy) const
-          {
-            return new ui::net_view ( _proxy
-                                    , proxy.data()
-                                    , proxy.display()
-                                    );
-          }
+          return boost::apply_visitor (document_view_for_proxy (proxy), proxy);
         }
       }
     }
