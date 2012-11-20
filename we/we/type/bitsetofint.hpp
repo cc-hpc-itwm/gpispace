@@ -76,7 +76,27 @@ namespace bitsetofint
         && ((container[the_container(x)] & (1UL << the_slot(x))) != 0);
     }
 
+    std::size_t count () const
+    {
+      std::size_t cnt = 0;
+
+      for (size_t c = 0; c < container.size(); ++c)
+      {
+        element_type block = container[c];
+        for (size_t bit = 0 ; bit < bits_per_block ; ++bit)
+        {
+          cnt += (block >> bit) & 0x1;
+        }
+      }
+
+      return cnt;
+    }
+
     friend type operator | (const type &, const type &);
+    friend type operator & (const type &, const type &);
+    friend type operator ^ (const type &, const type &);
+    friend type operator ~ (const type &);
+
     friend std::ostream & operator << (std::ostream &, const type &);
     friend std::size_t hash_value (const type &);
     friend bool operator == (const type &, const type &);
@@ -96,6 +116,52 @@ namespace bitsetofint
          |
          (i < rhs.container.size() ? rhs.container[i] : 0)
         );
+    }
+
+    return result;
+  }
+
+  inline type operator& (const type & lhs, const type & rhs)
+  {
+    type result (std::max (lhs.container.size(), rhs.container.size()));
+
+    for (size_t i (0); i < result.container.size(); ++i)
+    {
+      result.container [i] =
+        (
+         (i < lhs.container.size() ? lhs.container[i] : 0)
+         &
+         (i < rhs.container.size() ? rhs.container[i] : 0)
+        );
+    }
+
+    return result;
+  }
+
+  inline type operator^ (const type & lhs, const type & rhs)
+  {
+    type result (std::max (lhs.container.size(), rhs.container.size()));
+
+    for (size_t i (0); i < result.container.size(); ++i)
+    {
+      result.container [i] =
+        (
+         (i < lhs.container.size() ? lhs.container[i] : 0)
+         ^
+         (i < rhs.container.size() ? rhs.container[i] : 0)
+        );
+    }
+
+    return result;
+  }
+
+  inline type operator~ (const type & other)
+  {
+    type result (other.container.size());
+
+    for (size_t i (0); i < result.container.size(); ++i)
+    {
+      result.container [i] = ~other.container[i];
     }
 
     return result;
@@ -135,7 +201,7 @@ namespace bitsetofint
   }
 
   template<typename IT>
-  inline boost::optional<type> from_hex (IT& pos, const IT& end)
+  inline boost::optional<type> from_hex (IT& pos, IT const &end)
   {
     if (  (pos + 0) != end && *(pos + 0) == '0'
        && (pos + 1) != end && *(pos + 1) == 'x'
