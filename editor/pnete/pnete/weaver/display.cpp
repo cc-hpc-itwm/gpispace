@@ -27,33 +27,12 @@ namespace fhg
                          )
         : _proxy (NULL)
         , _function (function)
-        , _ports ()
         , _scene (NULL)
         , _root (root)
       {
         from::function (this, _function);
       }
       data::proxy::type* function::proxy () const { return _proxy; }
-      XMLTYPE(function_type::ports_type)& function::in ()
-      {
-        if (!_ports.in)
-          {
-            throw std::runtime_error
-              ("STRANGE! function without an portlist!?");
-          }
-
-        return *_ports.in;
-      }
-      XMLTYPE(function_type::ports_type)& function::out ()
-      {
-        if (!_ports.out)
-          {
-            throw std::runtime_error
-              ("STRANGE! function without an portlist!?");
-          }
-
-        return *_ports.out;
-      }
 
       WSIG(function, expression::open, ::xml::parse::id::ref::expression, id)
       {
@@ -74,14 +53,6 @@ namespace fhg
 
         weaver::net wn (_root, _scene, id, _function);
         from::net (&wn, id);
-      }
-      WSIG(function, function::in, XMLTYPE(function_type::ports_type), in)
-      {
-        _ports.in = const_cast<XMLTYPE(function_type::ports_type)*> (&in);
-      }
-      WSIG(function, function::out, XMLTYPE(function_type::ports_type), out)
-      {
-        _ports.out = const_cast<XMLTYPE(function_type::ports_type)*> (&out);
       }
       WSIG(function, function::fun, XMLTYPE(function_type::type), fun)
       {
@@ -136,24 +107,24 @@ namespace fhg
           , fun
           )
       {
-        weaver::function sub
-          (boost::apply_visitor (get_function (_net), fun), _root);
+        const ::xml::parse::id::ref::function function
+          (boost::apply_visitor (get_function (_net), fun));
+
+        weaver::function sub (function, _root);
 
         _transition->set_proxy (sub.proxy());
 
         _current_port_direction = ui::graph::connectable::direction::IN;
-        from::many (this, sub.in().ids(), from::port);
+        from::many (this, function.get().in().ids(), from::port);
 
         _current_port_direction = ui::graph::connectable::direction::OUT;
-        from::many (this, sub.out().ids(), from::port);
+        from::many (this, function.get().out().ids(), from::port);
       }
       WSIG(transition, port::open, ::xml::parse::id::ref::port, port)
       {
         ui::graph::port_item* port_item
           ( new ui::graph::port_item
-            ( data::handle::port ( port
-                                 , _root->change_manager()
-                                 )
+            ( data::handle::port (port, _root->change_manager())
             , _current_port_direction
             , _transition
             )

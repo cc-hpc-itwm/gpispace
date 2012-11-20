@@ -48,20 +48,9 @@ namespace fhg
 
         data::proxy::type* proxy () const;
 
-        XMLTYPE(function_type::ports_type)& in ();
-        XMLTYPE(function_type::ports_type)& out ();
-
       private:
         data::proxy::type* _proxy;
         ::xml::parse::id::ref::function _function;
-
-        struct ports_type
-        {
-          XMLTYPE(function_type::ports_type)* in;
-          XMLTYPE(function_type::ports_type)* out;
-
-          ports_type() : in (NULL), out (NULL) {}
-        } _ports;
 
         ui::graph::scene_type* _scene;
         data::internal_type* _root;
