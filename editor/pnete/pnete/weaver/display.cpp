@@ -80,8 +80,7 @@ namespace fhg
         _scene = new ui::graph::scene_type
           (data::handle::net (id, _root->change_manager()), _root);
         _proxy = new data::proxy::type
-          ( data::proxy::net_proxy (_root, id, _function, _scene)
-          );
+          (data::proxy::net_proxy (_root, id, _function, _scene));
 
         weaver::net wn (_root, _scene, id, _function);
         from::net (&wn, id);
