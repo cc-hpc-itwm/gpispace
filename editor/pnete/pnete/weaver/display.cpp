@@ -22,43 +22,16 @@ namespace fhg
   {
     namespace weaver
     {
-      namespace visitor
-      {
-        class get_function
-          : public boost::static_visitor<function_with_mapping_type>
-        {
-        private:
-          ::xml::parse::id::ref::net _net;
-
-        public:
-          get_function (const ::xml::parse::id::ref::net& id) : _net (id) {}
-
-          function_with_mapping_type
-            operator() (const xml::parse::id::ref::function& fun) const
-          {
-            return function_with_mapping_type (fun);
-          }
-
-          function_with_mapping_type
-            operator() (const xml::parse::id::ref::use& use) const
-          {
-            return function_with_mapping_type
-              (*_net.get().get_function (use.get().name()));
-          }
-        };
-      }
-
-
-      function::function ( function_with_mapping_type function_with_mapping
+      function::function ( const ::xml::parse::id::ref::function& function
                          , data::internal_type* root
                          )
         : _proxy (NULL)
-        , _function_with_mapping (function_with_mapping)
+        , _function (function)
         , _ports ()
         , _scene (NULL)
         , _root (root)
       {
-        from::function (this, _function_with_mapping.function());
+        from::function (this, _function);
       }
       data::proxy::type* function::proxy () const { return _proxy; }
       XMLTYPE(function_type::ports_type)& function::in ()
@@ -88,7 +61,7 @@ namespace fhg
           ( data::proxy::expression_proxy
             ( _root
             , data::proxy::data::expression_type (id.get_ref(), in(), out())
-            , _function_with_mapping.function()
+            , _function
             )
           );
       }
@@ -98,7 +71,7 @@ namespace fhg
           ( data::proxy::mod_proxy
             ( _root
             , data::proxy::data::module_type (id.get_ref(), in(), out())
-            , _function_with_mapping.function()
+            , _function
             )
           );
       }
@@ -107,18 +80,10 @@ namespace fhg
         _scene = new ui::graph::scene_type
           (data::handle::net (id, _root->change_manager()), _root);
         _proxy = new data::proxy::type
-          ( data::proxy::net_proxy
-            ( _root, id, _function_with_mapping.function(), _scene)
+          ( data::proxy::net_proxy (_root, id, _function, _scene)
           );
 
-        weaver::net wn ( _root
-                       , _scene
-                       , id
-                       , in()
-                       , out()
-                       , _function_with_mapping.function()
-                       );
-
+        weaver::net wn (_root, _scene, id, in(), out(), _function);
         from::net (&wn, id);
       }
       WSIG(function, function::in, XMLTYPE(function_type::ports_type), in)
@@ -150,22 +115,40 @@ namespace fhg
         , _port_out_item_by_name ()
         , _root (root)
       {}
-      function_with_mapping_type
-      transition::get_function (XMLTYPE(transition_type::function_or_use_type)& f)
+
+      namespace
       {
-        return boost::apply_visitor (visitor::get_function(_net), f);
+        class get_function
+          : public boost::static_visitor< ::xml::parse::id::ref::function>
+        {
+        private:
+          ::xml::parse::id::ref::net _net;
+
+        public:
+          get_function (const ::xml::parse::id::ref::net& id) : _net (id) {}
+
+          ::xml::parse::id::ref::function
+            operator() (const xml::parse::id::ref::function& fun) const
+          {
+            return fun;
+          }
+
+          ::xml::parse::id::ref::function
+            operator() (const xml::parse::id::ref::use& use) const
+          {
+            return *_net.get().get_function (use.get().name());
+          }
+        };
       }
 
       WSIG( transition
           , transition::function
-          , XMLTYPE(transition_type::function_or_use_type)
+          , ::xml::parse::type::transition_type::function_or_use_type
           , fun
           )
       {
-        function_with_mapping_type function_with_mapping
-          (get_function (const_cast<XMLTYPE(transition_type::function_or_use_type)&>(fun)));
-
-        weaver::function sub (function_with_mapping, _root);
+        weaver::function sub
+          (boost::apply_visitor (get_function (_net), fun), _root);
 
         _transition->set_proxy (sub.proxy());
 

@@ -36,12 +36,10 @@ namespace fhg
                                   , ui::graph::connectable_item*
                                   > item_by_name_type;
 
-      typedef XMLTYPE(function_with_mapping_type) function_with_mapping_type;
-
       class function
       {
       public:
-        explicit function ( function_with_mapping_type
+        explicit function ( const ::xml::parse::id::ref::function&
                           , data::internal_type*
                           );
 
@@ -55,7 +53,7 @@ namespace fhg
 
       private:
         data::proxy::type* _proxy;
-        function_with_mapping_type _function_with_mapping;
+        ::xml::parse::id::ref::function _function;
 
         struct ports_type
         {
@@ -118,9 +116,6 @@ namespace fhg
         item_by_name_type _port_in_item_by_name;
         item_by_name_type _port_out_item_by_name;
         data::internal_type* _root;
-
-        function_with_mapping_type
-        get_function (XMLTYPE(transition_type::function_or_use_type)& f);
       };
 
       class property
