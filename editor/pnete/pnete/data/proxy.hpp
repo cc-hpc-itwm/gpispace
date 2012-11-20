@@ -126,15 +126,16 @@ namespace fhg
             xml_type::function_type::ports_type& out ();
           };
 
+          //! \note Nobody uses net() or anything from this!
           class net_type
           {
-          private:
-            xml_type::net_type& _net;
-
           public:
-            explicit net_type (xml_type::net_type& net);
+            explicit net_type (const ::xml::parse::id::ref::net& net);
 
-            xml_type::net_type& net ();
+            const ::xml::parse::id::ref::net& net();
+
+          private:
+            ::xml::parse::id::ref::net _net;
           };
         }
 

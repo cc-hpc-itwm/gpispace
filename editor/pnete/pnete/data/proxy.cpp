@@ -109,11 +109,10 @@ namespace fhg
           xml_type::function_type::ports_type& module_type::in () { return _in; }
           xml_type::function_type::ports_type& module_type::out () { return _out; }
 
-          net_type::net_type ( xml_type::net_type& net
-                             )
+          net_type::net_type (const ::xml::parse::id::ref::net& net)
             : _net (net)
           {}
-          xml_type::net_type& net_type::net () { return _net; }
+          const ::xml::parse::id::ref::net& net_type::net () { return _net; }
         }
 
         ui::document_view* document_view_factory (type& proxy)
