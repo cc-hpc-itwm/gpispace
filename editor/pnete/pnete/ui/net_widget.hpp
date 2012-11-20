@@ -34,15 +34,9 @@ namespace fhg
 
       public:
         net_widget ( data::proxy::type& proxy
-                   , data::proxy::net_proxy::data_type& net
                    , graph::scene_type* scene
-                   , const QStringList& types
                    , QWidget* parent = NULL
                    );
-
-      private:
-        data::proxy::net_proxy::data_type& _net;
-        ui::GraphView* _view;
       };
     }
   }

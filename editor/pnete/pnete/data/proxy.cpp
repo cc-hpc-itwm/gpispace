@@ -78,7 +78,7 @@ namespace fhg
 
             ui::document_view* operator() (net_proxy& proxy) const
             {
-              return new ui::net_view (_proxy, proxy.data(), proxy.display());
+              return new ui::net_view (_proxy, proxy.display());
             }
           };
         }

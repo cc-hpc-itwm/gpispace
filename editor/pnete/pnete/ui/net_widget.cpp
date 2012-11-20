@@ -16,17 +16,13 @@ namespace fhg
     {
       net_widget::net_widget
         ( data::proxy::type& proxy
-        , data::proxy::net_proxy::data_type& net
         , graph::scene_type* scene
-        , const QStringList& types
         , QWidget* parent
         )
           : base_editor_widget (proxy, parent)
-          , _net (net)
-          , _view (new ui::GraphView (scene))
       {
         QHBoxLayout* layout (new QHBoxLayout());
-        layout->addWidget (_view);
+        layout->addWidget (new ui::GraphView (scene));
         layout->setContentsMargins (0, 0, 0, 0);
         setLayout (layout);
       }
