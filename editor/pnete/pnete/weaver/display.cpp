@@ -149,7 +149,6 @@ namespace fhg
         , _port_in_item_by_name ()
         , _port_out_item_by_name ()
         , _root (root)
-        , _function (boost::none)
       {}
       function_with_mapping_type
       transition::get_function (XMLTYPE(transition_type::function_or_use_type)& f)
@@ -167,8 +166,6 @@ namespace fhg
           (get_function (const_cast<XMLTYPE(transition_type::function_or_use_type)&>(fun)));
 
         weaver::function sub (function_with_mapping, _root);
-
-        _function = function_with_mapping.function().get_ref();
 
         _transition->set_proxy (sub.proxy());
 

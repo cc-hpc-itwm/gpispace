@@ -119,8 +119,6 @@ namespace fhg
         item_by_name_type _port_out_item_by_name;
         data::internal_type* _root;
 
-        boost::optional< ::xml::parse::type::function_type&> _function;
-
         function_with_mapping_type
         get_function (XMLTYPE(transition_type::function_or_use_type)& f);
       };
