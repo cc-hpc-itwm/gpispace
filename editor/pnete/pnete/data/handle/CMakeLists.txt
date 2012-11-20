@@ -3,6 +3,7 @@
 set (pnete_data_handle_headers
   base.hpp
   connect.hpp
+  expression.hpp
   function.hpp
   meta_base.hpp
   net.hpp
@@ -14,6 +15,7 @@ set (pnete_data_handle_headers
 set (pnete_data_handle_fwd_headers
   base.fwd.hpp
   connect.fwd.hpp
+  expression.fwd.hpp
   function.fwd.hpp
   meta_base.fwd.hpp
   net.fwd.hpp
@@ -25,6 +27,7 @@ set (pnete_data_handle_fwd_headers
 set (handle_SRCS
   base.cpp
   connect.cpp
+  expression.cpp
   function.cpp
   net.cpp
   place.cpp
