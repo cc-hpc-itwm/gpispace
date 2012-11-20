@@ -19,20 +19,19 @@ namespace fhg
     {
       namespace proxy
       {
-        namespace visitor
+        namespace
         {
-          class root
-            : public boost::static_visitor<internal_type*>
+          class visitor_root : public boost::static_visitor<internal_type*>
           {
           public:
             template<typename T>
             internal_type* operator () (const T& x) const
-              {
-                return x.root();
-              }
+            {
+              return x.root();
+            }
           };
 
-          class function
+          class visitor_function
             : public boost::static_visitor< ::xml::parse::type::function_type&>
           {
           public:
@@ -46,12 +45,12 @@ namespace fhg
 
         ::xml::parse::type::function_type& function (type& proxy)
         {
-          return boost::apply_visitor (visitor::function(), proxy);
+          return boost::apply_visitor (visitor_function(), proxy);
         }
 
         ::fhg::pnete::data::internal_type* root (const type& proxy)
         {
-          return boost::apply_visitor (visitor::root(), proxy);
+          return boost::apply_visitor (visitor_root(), proxy);
         }
 
         namespace data
