@@ -3,12 +3,11 @@
 #ifndef _PNETE_UI_NET_WIDGET_HPP
 #define _PNETE_UI_NET_WIDGET_HPP 1
 
+#include <pnete/data/proxy.hpp>
+#include <pnete/ui/base_editor_widget.hpp>
+
 #include <QObject>
 #include <QGraphicsView>
-
-#include <pnete/data/proxy.hpp>
-
-#include <pnete/ui/base_editor_widget.hpp>
 
 class QWidget;
 
