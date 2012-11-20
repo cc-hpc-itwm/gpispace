@@ -43,10 +43,9 @@ namespace fhg
         port_item::port_item
           ( const data::handle::port& handle
           , connectable::direction::type direction
-          , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , transition_item* parent
           )
-            : connectable_item (direction, type_map, parent)
+            : connectable_item (direction, parent)
             , _handle (handle)
             , _orientation ()
             , _length (size::port::width())

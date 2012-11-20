@@ -12,8 +12,6 @@
 
 #include <string>
 
-#include <xml/parse/type_map_type.hpp>
-
 #include <boost/optional.hpp>
 
 class QPainter;
@@ -35,8 +33,6 @@ namespace fhg
         public:
           place_item
             ( const data::handle::place& handle
-            , boost::optional< ::xml::parse::type::type_map_type&> type_map
-            = boost::none
             , base_item* parent = NULL
             );
 

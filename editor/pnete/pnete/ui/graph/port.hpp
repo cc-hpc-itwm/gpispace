@@ -13,8 +13,6 @@
 
 #include <boost/optional.hpp>
 
-#include <xml/parse/type_map_type.hpp>
-
 class QAction;
 class QMenu;
 class QGraphicsSceneContextMenuEvent;
@@ -37,8 +35,6 @@ namespace fhg
         public:
           port_item ( const data::handle::port& handle
                     , connectable::direction::type direction
-                    , boost::optional< ::xml::parse::type::type_map_type&> type_map
-                    = boost::none
                     , transition_item* parent = NULL
                     );
 
@@ -95,11 +91,9 @@ namespace fhg
         public:
           top_level_port_item ( const data::handle::port& handle
                               , connectable::direction::type direction
-                              , boost::optional< ::xml::parse::type::type_map_type&> type_map
-                              = boost::none
                               , transition_item* parent = NULL
                               )
-            : port_item (handle, direction, type_map, parent)
+            : port_item (handle, direction, parent)
             {}
 
           enum { Type = top_level_port_graph_type };

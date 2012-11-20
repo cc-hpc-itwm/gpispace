@@ -22,11 +22,9 @@ namespace fhg
       {
         place_item::place_item
           ( const data::handle::place& handle
-          , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , base_item* parent
           )
             : connectable_item ( connectable::direction::BOTH
-                               , type_map
                                , parent
                                )
             , _handle (handle)

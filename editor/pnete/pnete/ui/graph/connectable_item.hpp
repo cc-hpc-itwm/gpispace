@@ -11,8 +11,6 @@
 
 #include <boost/optional.hpp>
 
-#include <xml/parse/type_map_type.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -43,8 +41,6 @@ namespace fhg
         public:
           connectable_item
             ( connectable::direction::type direction
-            , boost::optional< ::xml::parse::type::type_map_type&>
-            = boost::none
             , base_item* parent = NULL
             );
 
@@ -67,7 +63,6 @@ namespace fhg
         protected:
           QSet<connection_item*> _connections;
           connectable::direction::type _direction;
-          boost::optional< ::xml::parse::type::type_map_type&> _type_map;
 
           const std::string& we_type (const std::string&) const;
         };

@@ -16,13 +16,11 @@ namespace fhg
       {
         connectable_item::connectable_item
           ( connectable::direction::type direction
-          , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , base_item* parent
           )
           : base_item (parent)
           , _connections ()
           , _direction (direction)
-          , _type_map (type_map)
         {}
 
         void connectable_item::add_connection (connection_item* c)
@@ -63,17 +61,10 @@ namespace fhg
 
         const std::string& connectable_item::we_type (const std::string& unmapped) const
         {
-          if (_type_map)
-          {
-            ::xml::parse::type::type_map_type::const_iterator type_mapping
-              (_type_map->find (unmapped));
-
-            if (type_mapping != _type_map->end())
-            {
-              return type_mapping->second;
-            }
-          }
-
+          //! \todo Reimplement with getting type_map at call-time from handle.
+          // - get type_map
+          // - it = type_map.find (unmapped)
+          // - it ? return it->mapped_type : unmapped
           return unmapped;
         }
 

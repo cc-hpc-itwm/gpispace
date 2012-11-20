@@ -149,7 +149,6 @@ namespace fhg
         , _port_in_item_by_name ()
         , _port_out_item_by_name ()
         , _root (root)
-        , _type_map (boost::none)
         , _function (boost::none)
       {}
       function_with_mapping_type
@@ -169,7 +168,6 @@ namespace fhg
 
         weaver::function sub (function_with_mapping, _root);
 
-        _type_map = function_with_mapping.type_map();
         _function = function_with_mapping.function().get_ref();
 
         _transition->set_proxy (sub.proxy());
@@ -188,7 +186,6 @@ namespace fhg
                                  , _root->change_manager()
                                  )
             , _current_port_direction
-            , _type_map
             , _transition
             )
           );
