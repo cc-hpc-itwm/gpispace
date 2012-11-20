@@ -27,8 +27,6 @@ namespace fhg
         change_manager_t _change_manager;
         proxy::type _root_proxy;
 
-        proxy::type* create_proxy();
-
       public:
         enum kind {expression, module_call, net};
 

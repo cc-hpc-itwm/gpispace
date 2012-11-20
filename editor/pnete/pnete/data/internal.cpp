@@ -73,7 +73,7 @@ namespace fhg
         : _state ()
         , _function (make_function (kind_, _state))
         , _change_manager (_state)
-        , _root_proxy (*create_proxy())
+        , _root_proxy (*weaver::function (_function, this).proxy())
       {}
 
       internal_type::internal_type (const QString& filename)
@@ -83,13 +83,8 @@ namespace fhg
                                                )
                     )
         , _change_manager (_state)
-        , _root_proxy (*create_proxy())
+        , _root_proxy (*weaver::function (_function, this).proxy())
       {}
-
-      proxy::type* internal_type::create_proxy()
-      {
-        return weaver::function (function(), this).proxy();
-      }
 
       const ::xml::parse::id::ref::function& internal_type::function() const
       {
