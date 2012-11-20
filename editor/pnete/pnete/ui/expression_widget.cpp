@@ -123,7 +123,7 @@ namespace fhg
                 );
 
         set_name (function().get().name());
-        set_expression (expression.expression().get().expression("\n"));
+        set_expression (expression.get().expression("\n"));
         expression_changed();
       }
 
@@ -203,7 +203,7 @@ namespace fhg
       void expression_widget::expression_changed ()
       {
         change_manager().set_expression ( this
-                                        , _expression.expression().get_ref()
+                                        , _expression.get_ref()
                                         , _expression_edit->toPlainText()
                                         )
           ;
@@ -217,7 +217,7 @@ namespace fhg
       bool expression_widget::is_my_expression
       (const ::xml::parse::type::expression_type& e)
       {
-        return e.id() == _expression.expression();
+        return e.id() == _expression;
       }
     }
   }

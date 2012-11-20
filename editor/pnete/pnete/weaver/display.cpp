@@ -58,22 +58,12 @@ namespace fhg
       WSIG(function, expression::open, ::xml::parse::id::ref::expression, id)
       {
         _proxy = new data::proxy::type
-          ( data::proxy::expression_proxy
-            ( _root
-            , data::proxy::data::expression_type (id)
-            , _function
-            )
-          );
+          (data::proxy::expression_proxy(_root, id, _function));
       }
       WSIG(function, mod::open, ::xml::parse::id::ref::module, id)
       {
         _proxy = new data::proxy::type
-          ( data::proxy::mod_proxy
-            ( _root
-            , data::proxy::data::module_type (id)
-            , _function
-            )
-          );
+          (data::proxy::mod_proxy (_root, id, _function));
       }
       WSIG(function, net::open, ::xml::parse::id::ref::net, id)
       {

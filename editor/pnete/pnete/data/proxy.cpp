@@ -53,25 +53,6 @@ namespace fhg
           return boost::apply_visitor (visitor_root(), proxy);
         }
 
-        namespace data
-        {
-          expression_type::expression_type
-            ( const ::xml::parse::id::ref::expression& expression
-            )
-              : _expression (expression)
-          {}
-          const ::xml::parse::id::ref::expression& expression_type::expression() const
-          {
-            return _expression;
-          }
-
-          module_type::module_type ( const ::xml::parse::id::ref::module& mod
-                                   )
-            : _mod (mod)
-          {}
-          const ::xml::parse::id::ref::module& module_type::mod () const { return _mod; }
-        }
-
         namespace
         {
           class document_view_for_proxy

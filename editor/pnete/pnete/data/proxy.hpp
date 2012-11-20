@@ -76,39 +76,8 @@ namespace fhg
           internal_type* _root;
         };
 
-        namespace data
-        {
-          namespace xml_type = ::xml::parse::type;
-
-          class expression_type
-          {
-          private:
-            ::xml::parse::id::ref::expression _expression;
-
-          public:
-            explicit expression_type
-              ( const ::xml::parse::id::ref::expression& expression
-              );
-
-            const ::xml::parse::id::ref::expression& expression() const;
-          };
-
-          class module_type
-          {
-          private:
-            ::xml::parse::id::ref::module _mod;
-
-          public:
-            explicit module_type
-              ( const ::xml::parse::id::ref::module& mod
-              );
-
-            const ::xml::parse::id::ref::module& mod() const;
-          };
-        }
-
-        typedef proxy_base<data::expression_type> expression_proxy;
-        typedef proxy_base<data::module_type> mod_proxy;
+        typedef proxy_base< ::xml::parse::id::ref::expression> expression_proxy;
+        typedef proxy_base< ::xml::parse::id::ref::module> mod_proxy;
         typedef proxy_base< ::xml::parse::id::ref::net
                           , ui::graph::scene_type
                           > net_proxy;
