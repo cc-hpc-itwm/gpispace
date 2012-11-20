@@ -55,12 +55,11 @@ namespace fhg
           {
             return _data;
           }
-          ::xml::parse::type::function_type& function()
+          const ::xml::parse::id::ref::function& function() const
           {
-            return _function.get_ref();
+            return _function;
           }
-
-          display_type* display()
+          display_type* display() const
           {
             return _display;
           }

@@ -32,11 +32,11 @@ namespace fhg
           };
 
           class visitor_function
-            : public boost::static_visitor< ::xml::parse::type::function_type&>
+            : public boost::static_visitor<const ::xml::parse::id::ref::function&>
           {
           public:
             template<typename T>
-              ::xml::parse::type::function_type& operator() (T& x) const
+              const ::xml::parse::id::ref::function& operator() (T& x) const
             {
               return x.function();
             }
@@ -45,7 +45,7 @@ namespace fhg
 
         ::xml::parse::type::function_type& function (type& proxy)
         {
-          return boost::apply_visitor (visitor_function(), proxy);
+          return boost::apply_visitor (visitor_function(), proxy).get_ref();
         }
 
         ::fhg::pnete::data::internal_type* root (const type& proxy)
