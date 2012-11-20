@@ -108,11 +108,7 @@ namespace fhg
           (data::handle::net (id, _root->change_manager()), _root);
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
-            ( _root
-            , data::proxy::data::net_type (id)
-            , _function_with_mapping
-            , _scene
-            )
+            ( _root, id, _function_with_mapping, _scene)
           );
 
         weaver::net wn ( _root

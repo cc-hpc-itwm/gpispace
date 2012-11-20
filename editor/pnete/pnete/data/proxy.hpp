@@ -125,23 +125,13 @@ namespace fhg
             xml_type::function_type::ports_type& in ();
             xml_type::function_type::ports_type& out ();
           };
-
-          //! \note Nobody uses net() or anything from this!
-          class net_type
-          {
-          public:
-            explicit net_type (const ::xml::parse::id::ref::net& net);
-
-            const ::xml::parse::id::ref::net& net();
-
-          private:
-            ::xml::parse::id::ref::net _net;
-          };
         }
 
         typedef proxy_base<data::expression_type> expression_proxy;
         typedef proxy_base<data::module_type> mod_proxy;
-        typedef proxy_base<data::net_type, ui::graph::scene_type> net_proxy;
+        typedef proxy_base< ::xml::parse::id::ref::net
+                          , ui::graph::scene_type
+                          > net_proxy;
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
