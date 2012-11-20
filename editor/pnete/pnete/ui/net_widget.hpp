@@ -7,7 +7,6 @@
 #include <pnete/ui/base_editor_widget.hpp>
 
 #include <QObject>
-#include <QGraphicsView>
 
 class QWidget;
 
@@ -17,8 +16,6 @@ namespace fhg
   {
     namespace ui
     {
-      class GraphView;
-
       namespace graph
       {
         class scene_type;

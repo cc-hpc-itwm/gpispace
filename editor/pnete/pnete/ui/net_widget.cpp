@@ -2,10 +2,8 @@
 
 #include <pnete/ui/net_widget.hpp>
 
-#include <QWidget>
 #include <QHBoxLayout>
 
-#include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/GraphView.hpp>
 
 namespace fhg
