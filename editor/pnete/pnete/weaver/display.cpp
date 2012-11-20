@@ -83,7 +83,7 @@ namespace fhg
           ( data::proxy::net_proxy (_root, id, _function, _scene)
           );
 
-        weaver::net wn (_root, _scene, id, in(), out(), _function);
+        weaver::net wn (_root, _scene, id, _function);
         from::net (&wn, id);
       }
       WSIG(function, function::in, XMLTYPE(function_type::ports_type), in)
@@ -329,14 +329,10 @@ namespace fhg
       net::net ( data::internal_type* root
                , ui::graph::scene_type* scene
                , const ::xml::parse::id::ref::net& net
-               , XMLTYPE(function_type::ports_type)& in
-               , XMLTYPE(function_type::ports_type)& out
                , const ::xml::parse::id::ref::function& function
                )
         : _scene (scene)
         , _net (net)
-        , _in (in)
-        , _out (out)
         , _function (function)
         , _place_item_by_name ()
         , _root (root)
@@ -350,7 +346,7 @@ namespace fhg
                                      , _root
                                      , _function
                                      );
-          from::many (&wptl, _in.ids(), from::port);
+          from::many (&wptl, _function.get().in().ids(), from::port);
         }
 
         {
@@ -360,7 +356,7 @@ namespace fhg
                                      , _root
                                      , _function
                                      );
-          from::many (&wptl, _out.ids(), from::port);
+          from::many (&wptl, _function.get().out().ids(), from::port);
         }
       }
       WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)

@@ -73,8 +73,6 @@ namespace fhg
         explicit net ( data::internal_type*
                      , ui::graph::scene_type* scene
                      , const ::xml::parse::id::ref::net& net
-                     , XMLTYPE(function_type::ports_type)& in
-                     , XMLTYPE(function_type::ports_type)& out
                      , const ::xml::parse::id::ref::function& function
                      );
 
@@ -85,8 +83,6 @@ namespace fhg
         ui::graph::scene_type* _scene;
 
         ::xml::parse::id::ref::net _net;
-        XMLTYPE(function_type::ports_type)& _in;
-        XMLTYPE(function_type::ports_type)& _out;
         ::xml::parse::id::ref::function _function;
 
         item_by_name_type _place_item_by_name;
