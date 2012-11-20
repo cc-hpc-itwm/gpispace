@@ -56,7 +56,7 @@ namespace fhg
         namespace data
         {
           expression_type::expression_type
-            ( xml_type::expression_type& expression
+            ( const ::xml::parse::id::ref::expression& expression
             , xml_type::function_type::ports_type& in
             , xml_type::function_type::ports_type& out
             )
@@ -64,22 +64,22 @@ namespace fhg
               , _in (in)
               , _out (out)
           {}
-          xml_type::expression_type& expression_type::expression ()
+          const ::xml::parse::id::ref::expression& expression_type::expression() const
           {
             return _expression;
           }
           xml_type::function_type::ports_type& expression_type::in () { return _in; }
           xml_type::function_type::ports_type& expression_type::out () { return _out; }
 
-          module_type::module_type ( xml_type::module_type& mod
-                             , xml_type::function_type::ports_type& in
-                             , xml_type::function_type::ports_type& out
-                             )
+          module_type::module_type ( const ::xml::parse::id::ref::module& mod
+                                   , xml_type::function_type::ports_type& in
+                                   , xml_type::function_type::ports_type& out
+                                   )
             : _mod (mod)
             , _in (in)
             , _out (out)
           {}
-          xml_type::module_type& module_type::mod () { return _mod; }
+          const ::xml::parse::id::ref::module& module_type::mod () const { return _mod; }
           xml_type::function_type::ports_type& module_type::in () { return _in; }
           xml_type::function_type::ports_type& module_type::out () { return _out; }
         }
