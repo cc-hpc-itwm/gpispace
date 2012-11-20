@@ -60,7 +60,7 @@ namespace fhg
         _proxy = new data::proxy::type
           ( data::proxy::expression_proxy
             ( _root
-            , data::proxy::data::expression_type (id, in(), out())
+            , data::proxy::data::expression_type (id)
             , _function
             )
           );
@@ -70,7 +70,7 @@ namespace fhg
         _proxy = new data::proxy::type
           ( data::proxy::mod_proxy
             ( _root
-            , data::proxy::data::module_type (id, in(), out())
+            , data::proxy::data::module_type (id)
             , _function
             )
           );

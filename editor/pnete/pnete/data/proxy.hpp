@@ -84,38 +84,26 @@ namespace fhg
           {
           private:
             ::xml::parse::id::ref::expression _expression;
-            xml_type::function_type::ports_type& _in;
-            xml_type::function_type::ports_type& _out;
 
           public:
             explicit expression_type
               ( const ::xml::parse::id::ref::expression& expression
-              , xml_type::function_type::ports_type& in
-              , xml_type::function_type::ports_type& out
               );
 
             const ::xml::parse::id::ref::expression& expression() const;
-            xml_type::function_type::ports_type& in ();
-            xml_type::function_type::ports_type& out ();
           };
 
           class module_type
           {
           private:
             ::xml::parse::id::ref::module _mod;
-            xml_type::function_type::ports_type& _in;
-            xml_type::function_type::ports_type& _out;
 
           public:
             explicit module_type
               ( const ::xml::parse::id::ref::module& mod
-              , xml_type::function_type::ports_type& in
-              , xml_type::function_type::ports_type& out
               );
 
             const ::xml::parse::id::ref::module& mod() const;
-            xml_type::function_type::ports_type& in ();
-            xml_type::function_type::ports_type& out ();
           };
         }
 
