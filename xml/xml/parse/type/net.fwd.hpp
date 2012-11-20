@@ -9,8 +9,6 @@ namespace xml
   {
     namespace type
     {
-      class function_with_mapping_type;
-
       struct net_type;
     }
   }

@@ -3,6 +3,8 @@
 #ifndef _XML_PARSE_TYPE_NET_HPP
 #define _XML_PARSE_TYPE_NET_HPP
 
+#include <xml/parse/type/net.fwd.hpp>
+
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
