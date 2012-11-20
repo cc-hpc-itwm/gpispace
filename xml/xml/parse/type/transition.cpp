@@ -274,7 +274,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      void transition_type::clear_ports ()
+      void transition_type::clear_connections ()
       {
         _in.clear();
         _out.clear();
