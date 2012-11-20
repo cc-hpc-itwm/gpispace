@@ -21,6 +21,8 @@
 
 #include <util/property.hpp>
 
+#include <xml/parse/type/port.hpp>
+
 namespace fhg
 {
   namespace pnete

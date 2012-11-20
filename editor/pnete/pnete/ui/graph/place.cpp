@@ -10,6 +10,8 @@
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/transition.hpp>
 
+#include <xml/parse/type/place.hpp>
+
 #include <QPainter>
 
 namespace fhg

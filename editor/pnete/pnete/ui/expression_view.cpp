@@ -2,10 +2,12 @@
 
 #include <pnete/ui/expression_view.hpp>
 
+#include <pnete/ui/expression_widget.hpp>
+
+#include <xml/parse/type/function.hpp>
+
 #include <QStringList>
 #include <QString>
-
-#include <pnete/ui/expression_widget.hpp>
 
 namespace fhg
 {

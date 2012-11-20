@@ -19,6 +19,8 @@
 #include <pnete/ui/graph/style/size.hpp>
 #include <pnete/ui/graph/style/predicate.hpp>
 
+#include <xml/parse/type/transition.hpp>
+
 namespace fhg
 {
   namespace pnete

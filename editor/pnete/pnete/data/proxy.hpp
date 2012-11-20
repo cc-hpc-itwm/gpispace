@@ -3,16 +3,9 @@
 #ifndef _PNETE_DATA_PROXY_HPP
 #define _PNETE_DATA_PROXY_HPP 1
 
+#include <xml/parse/id/types.hpp>
+
 #include <boost/variant.hpp>
-
-#include <xml/parse/type/function.hpp>
-#include <xml/parse/type/expression.hpp>
-#include <xml/parse/type/mod.hpp>
-#include <xml/parse/type/net.hpp>
-#include <xml/parse/type/port.hpp>
-#include <xml/parse/type_map_type.hpp>
-
-#include <QString>
 
 namespace fhg
 {
