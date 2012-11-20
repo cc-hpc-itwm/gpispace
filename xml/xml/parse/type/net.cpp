@@ -266,11 +266,8 @@ namespace xml
 
       // ***************************************************************** //
 
-      signature::type net_type::type_of_place
-        (const id::ref::place& place_id) const
+      signature::type net_type::type_of_place (const place_type& place) const
       {
-        const place_type& place (place_id.get());
-
         if (literal::valid_name (place.type))
         {
           return signature::type (place.type);
@@ -357,11 +354,9 @@ namespace xml
         _specializes.clear();
 
 
-        BOOST_FOREACH ( const id::ref::function& id_function
-                      , functions().ids()
-                      )
+        BOOST_FOREACH (function_type& function, functions().values())
         {
-          id_function.get_ref().specialize
+          function.specialize
             ( map
             , get
             , st::join (known_structs, st::make (structs), state)
@@ -369,19 +364,15 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , id_function.get_ref().structs
+                        , function.structs
                         , structs
                         , get
                         , state
                         );
         }
 
-        BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , transitions().ids()
-                      )
+        BOOST_FOREACH (transition_type& transition, transitions().values())
         {
-          transition_type& transition (id_transition.get_ref());
-
           transition.specialize
             ( map
             , get
@@ -397,10 +388,8 @@ namespace xml
                         );
         }
 
-        BOOST_FOREACH (const id::ref::place& id_place, places().ids())
+        BOOST_FOREACH (place_type& place, places().values())
         {
-          place_type& place (id_place.get_ref());
-
           place.specialize (map, state);
         }
 
@@ -437,26 +426,20 @@ namespace xml
             );
         }
 
-        BOOST_FOREACH ( const id::ref::function& id_function
-                      , functions().ids()
-                      )
+        BOOST_FOREACH (function_type& function, functions().values())
         {
-          id_function.get_ref()
-            .resolve (structs_resolved, state, st::forbidden_type());
+          function.resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , transitions().ids()
-                      )
+        BOOST_FOREACH (transition_type& transition, transitions().values())
         {
-          id_transition.get_ref()
-            .resolve (structs_resolved, state, st::forbidden_type());
+          transition.resolve (structs_resolved, state, st::forbidden_type());
         }
 
-        BOOST_FOREACH(id::ref::place id_place, places().ids())
+        BOOST_FOREACH(place_type& place, places().values())
         {
-          id_place.get_ref().sig = type_of_place (id_place);
-          id_place.get_ref().translate (path(), state);
+          place.sig = type_of_place (place);
+          place.translate (path(), state);
         }
       }
 
@@ -466,26 +449,20 @@ namespace xml
       {
         assert (has_parent());
 
-        BOOST_FOREACH ( const id::ref::transition& id_transition
-                      , transitions().ids()
-                      )
+        BOOST_FOREACH (const transition_type& transition, transitions().values())
         {
-          id_transition.get().sanity_check (state);
+          transition.sanity_check (state);
         }
 
-        BOOST_FOREACH ( const id::ref::function& id_function
-                      , functions().ids()
-                      )
+        BOOST_FOREACH (const function_type& function, functions().values())
         {
-          id_function.get().sanity_check (state);
+          function.sanity_check (state);
         }
 
         const function_type& outer_function (*parent());
 
-        BOOST_FOREACH (const id::ref::place& id_place, places().ids())
+        BOOST_FOREACH (const place_type& place, places().values())
         {
-          const place_type& place (id_place.get());
-
           if ( place.is_virtual()
             && !outer_function.is_known_tunnel (place.name())
              )
@@ -645,10 +622,9 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        BOOST_FOREACH (const id::ref::place& place_id, net.places().ids())
+        BOOST_FOREACH (const place_type& place, net.places().values())
             {
-              const signature::type type (net.type_of_place (place_id));
-              const place_type& place (place_id.get());
+              const signature::type type (net.type_of_place (place));
 
               if (!state.synthesize_virtual_places() && place.is_virtual())
                 {

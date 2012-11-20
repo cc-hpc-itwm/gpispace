@@ -107,7 +107,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        signature::type type_of_place (const id::ref::place& place_id) const;
+        signature::type type_of_place (const place_type&) const;
 
         // ***************************************************************** //
 
