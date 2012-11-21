@@ -20,13 +20,18 @@ install(CODE "
          \"\${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/*.so\")
   execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
+                          -d
                           -x \"libgcc_s\"
                           -x \"libc.so\"
                           -x \"libdl.so\"
                           -x \"libstdc++.so\"
                           -x \"libpthread.so\"
+                          -x \"libgthread.so\"
+                          -x \"libglib.so\"
                           -x \"libfontconfig.so\"
                           -x \"libibverbs.so\"
+                          -w \"libQt.*.so\"
+                          -w \"libboost.*.so\"
                           -v
                            ${APPS} \${PLUGINS}
   )
