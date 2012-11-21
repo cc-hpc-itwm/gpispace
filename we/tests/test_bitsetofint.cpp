@@ -588,5 +588,45 @@ main ()
     REQUIRE (res == exp);
   }
 
+  {
+    bitsetofint::type b;
+
+    std::ostringstream s;
+
+    b.list (s);
+
+    REQUIRE (s.str() == "");
+  }
+
+  {
+    bitsetofint::type b (bitsetofint::type().ins (0));
+
+    std::ostringstream s;
+
+    b.list (s);
+
+    REQUIRE (s.str() == "0\n");
+  }
+
+  {
+    bitsetofint::type b (bitsetofint::type().ins (3141));
+
+    std::ostringstream s;
+
+    b.list (s);
+
+    REQUIRE (s.str() == "3141\n");
+  }
+
+  {
+    bitsetofint::type b (bitsetofint::type().ins (0).ins (1).ins (13).ins (42));
+
+    std::ostringstream s;
+
+    b.list (s);
+
+    REQUIRE (s.str() == "0\n1\n13\n42\n");
+  }
+
   return ec;
 }

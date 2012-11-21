@@ -92,6 +92,24 @@ namespace bitsetofint
       return cnt;
     }
 
+    void list (std::ostream& s) const
+    {
+      size_t x (0);
+
+      for (size_t c (0); c < container.size(); ++c)
+        {
+          element_type block (container[c]);
+
+          for (size_t bit (0); bit < bits_per_block; ++x, ++bit, block >>= 1)
+            {
+              if (block & 0x1)
+                {
+                  s << x << std::endl;
+                }
+            }
+        }
+    }
+
     friend type operator | (const type &, const type &);
     friend type operator & (const type &, const type &);
     friend type operator ^ (const type &, const type &);
