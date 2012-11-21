@@ -15,6 +15,7 @@
 
 namespace xml
 {
+  //! \todo Missing namespace parse
   namespace util
   {
     template<typename VALUE_TYPE, typename ID_TYPE>
