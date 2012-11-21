@@ -302,20 +302,15 @@ namespace fhg
 
         void scene_type::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
         {
-          _mouse_position = mouseEvent->scenePos();
-
           if (_pending_connection)
           {
-            const QRectF old_area (_pending_connection->boundingRect());
-            update (old_area);
-            update ( QRectF ( QPointF ( qMin (0.0, _mouse_position.x())
-                                      , qMin (0.0, _mouse_position.y())
-                                      )
-                            , QPointF ( qMax (0.0, _mouse_position.x())
-                                      , qMax (0.0, _mouse_position.y())
-                                      )
-                            )
-                   );
+            update (_pending_connection->boundingRect());
+            _mouse_position = mouseEvent->scenePos();
+            update (_pending_connection->boundingRect());
+          }
+          else
+          {
+            _mouse_position = mouseEvent->scenePos();
           }
 
           QGraphicsScene::mouseMoveEvent (mouseEvent);
