@@ -369,7 +369,7 @@ clean:
 
 else
 
-clean:
+clean: $(CLEAN)
 	-$(RM) -f -r $(GEN)
 	-$(RM) -f $(NET)
 	-$(RM) -f $(PUT)
