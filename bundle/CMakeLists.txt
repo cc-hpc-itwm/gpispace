@@ -32,6 +32,7 @@ install(CODE "
                           -x \"libibverbs.so\"
                           -w \"libQt.*.so\"
                           -w \"libboost.*.so\"
+                          -w \"libhwloc.*.so\"
                           -v
                            ${APPS} \${PLUGINS}
   )
