@@ -8,6 +8,7 @@ dry=false
 force=false
 keep_going=false
 dst=lib # folder within prefix where libs shall be copied to
+delete=false
 
 function usage ()
 {
@@ -19,6 +20,7 @@ usage: $(basename $0) [options]
   -n : dry run
   -k : keep going in case of errors
   -f : force (overwrite existing files)
+  -d : delete filtered files from target
   -p : installation prefix (=$prefix)
   -x : exclude pattern (can occur multiple times)
   -w : include pattern (can occur multiple times)
@@ -109,12 +111,20 @@ function bundle_dependencies ()
     for dep_and_path in $(ldd "$file" | grep '=>' | grep '/' | awk '{printf("%s:%s\n", $1, $3)}') ; do
         dep=$(echo "$dep_and_path" | cut -d: -f 1)
         pth=$(echo "$dep_and_path" | cut -d: -f 2)
+
         if is_filtered "$dep" ; then
             debug $(printf "%${indent}s" "") "$file >- $pth  (filtered)"
+
+            if $delete && test -e "$dst/$dep"
+            then
+                debug $(printf "%${indent}s" "") "rm $dst/$dep"
+                dry_run rm -f "$dst/$dep"
+            fi
             continue
         else
             debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
+
         path="$pth"
         if [ -n "$path" ] ; then
             if test "$path" -nt "$dst/$dep" || $force ; then
