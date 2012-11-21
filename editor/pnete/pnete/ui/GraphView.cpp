@@ -2,23 +2,23 @@
 
 #include <pnete/ui/GraphView.hpp>
 
+#include <pnete/data/manager.hpp>
+#include <pnete/ui/TransitionLibraryItem.hpp>
+#include <pnete/ui/TransitionLibraryModel.hpp>
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/graph/style/raster.hpp>
+#include <pnete/ui/graph/transition.hpp>
+#include <pnete/ui/size.hpp>
+
+#include <util/phi.hpp>
+
+#include <xml/parse/type/net.hpp>
+
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QWheelEvent>
-
-#include <pnete/ui/TransitionLibraryModel.hpp>
-#include <pnete/ui/TransitionLibraryItem.hpp>
-#include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/size.hpp>
-
-#include <pnete/data/manager.hpp>
-
-#include <util/phi.hpp>
-
-#include <pnete/ui/graph/style/raster.hpp>
 
 namespace fhg
 {
