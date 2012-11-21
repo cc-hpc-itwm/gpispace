@@ -27,13 +27,8 @@ namespace fhg
 
       manager& manager::instance()
       {
-        static manager* _instance_ptr (0);
-
-        if (!_instance_ptr)
-        {
-          _instance_ptr = new manager();
-        }
-        return *_instance_ptr;
+        static manager _instance;
+        return _instance;
       }
 
       internal_type* manager::load (const QString& filename)
