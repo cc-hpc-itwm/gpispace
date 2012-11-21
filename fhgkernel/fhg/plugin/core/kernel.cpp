@@ -583,7 +583,7 @@ namespace fhg
       }
     }
 
-    int kernel_t::run ()
+    int kernel_t::run (bool unload_at_end)
     {
       struct timeval tv_start;
       struct timeval tv_diff;
@@ -646,7 +646,10 @@ namespace fhg
       m_task_handler.interrupt();
       m_task_handler.join();
 
-      unload_all ();
+      if (unload_at_end)
+      {
+        unload_all ();
+      }
 
       m_running = false;
 
