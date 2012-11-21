@@ -2,6 +2,7 @@
 
 prefix=/usr/local
 exclude=()
+whitelist=()
 verbose=false
 dry=false
 force=false
@@ -20,6 +21,7 @@ usage: $(basename $0) [options]
   -f : force (overwrite existing files)
   -p : installation prefix (=$prefix)
   -x : exclude pattern (can occur multiple times)
+  -w : include pattern (can occur multiple times)
 
   -o  : output destination  folder  for  dependencies, if  not  absolute,  interpreted
         as a relative to <prefix> (=$dst)
@@ -50,14 +52,49 @@ function locate_file ()
   IFS="$OLDIFS"
 }
 
-function is_filtered_by ()
+function is_in_whitelist ()
 {
-    for ((p=0 ; p < ${#exclude[@]}; ++p)) ; do
-        if echo $(basename "$1") | grep -q "${exclude[$p]}" ; then
-            return $p
+    local name="$1"
+    for ((p=0 ; p < ${#whitelist[@]}; ++p)) ; do
+        if echo "$name" | grep -q "${whitelist[$p]}"
+        then
+            return 0
         fi
     done
-    return ${#exclude[@]}
+    return 1
+}
+
+function is_in_blacklist ()
+{
+    local name="$1"
+    for ((p=0 ; p < ${#exclude[@]}; ++p)) ; do
+        if echo "$name" | grep -q "${exclude[$p]}" ; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+function is_filtered ()
+{
+    local name=$(basename "$1")
+
+    if is_in_blacklist "$name"
+    then
+        return 0
+    fi
+
+    if [ ${#whitelist[@]} -gt 0 ]
+    then
+        if is_in_whitelist "$name"
+        then
+            return 1
+        else
+            return 0
+        fi
+    fi
+
+    return 1
 }
 
 function bundle_dependencies ()
@@ -72,10 +109,8 @@ function bundle_dependencies ()
     for dep_and_path in $(ldd "$file" | grep '=>' | grep '/' | awk '{printf("%s:%s\n", $1, $3)}') ; do
         dep=$(echo "$dep_and_path" | cut -d: -f 1)
         pth=$(echo "$dep_and_path" | cut -d: -f 2)
-        is_filtered_by "$dep"
-        res_pattern=$?
-        if [ $res_pattern -lt ${#exclude[@]} ] ; then
-            debug $(printf "%${indent}s" "") "$file >- $pth  (filtered by pattern: '${exclude[$res_pattern]}')"
+        if is_filtered "$dep" ; then
+            debug $(printf "%${indent}s" "") "$file >- $pth  (filtered)"
             continue
         else
             debug $(printf "%${indent}s" "") "$file <- $pth"
@@ -93,7 +128,7 @@ function bundle_dependencies ()
 }
 
 shiftcount=0
-while getopts ":hvnkfp:x:o:" opt ; do
+while getopts ":hvnkfp:x:w:o:d" opt ; do
     case $opt in
         h)
             usage
@@ -123,8 +158,17 @@ while getopts ":hvnkfp:x:o:" opt ; do
             exclude=( ${exclude[@]} $OPTARG )
             shiftcount=$(( shiftcount + 2 ))
             ;;
+        w)
+            whitelist=( ${whitelist[@]} $OPTARG )
+            shiftcount=$(( shiftcount + 2 ))
+            ;;
         o)
             dst=$OPTARG
+            shiftcount=$(( shiftcount + 2 ))
+            ;;
+        d)
+            delete=true
+            shiftcount=$(( shiftcount + 1 ))
             ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
