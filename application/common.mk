@@ -238,11 +238,11 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default all ps net verify validate put gen lib run submit
+.PHONY: default build ps net verify validate put gen lib run submit
 
-default: all
+default: build
 
-all: net put gen lib
+build: put lib $(BUILD)
 
 ps: $(PS) $(PS_NOINLINE)
 net: $(NET)
@@ -388,7 +388,9 @@ endif
 .PHONY: help
 
 help:
-	@echo "default     'run'"
+	@echo "default     'build'"
+	@echo
+	@echo "build       'put' & 'lib'"
 	@echo
 	@echo "net         build pnet from xml"
 	@echo "put         'net' & put tokens into the workflow"
@@ -481,6 +483,9 @@ showconfig:
 	@echo "WE_EXEC_LOAD     = $(WE_EXEC_LOAD)"
 	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
 	@echo "WE_EXEC_OPTS     = $(WE_EXEC_OPTS)"
+	@echo
+	@echo "BUILD            = $(BUILD)"
+	@echo "CLEAN            = $(CLEAN)"
 	@echo
 	@echo "*** Derived commands:"
 	@echo
