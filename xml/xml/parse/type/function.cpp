@@ -1229,7 +1229,9 @@ namespace xml
         stream << "install:"                                       << std::endl;
         stream << "\t$(error variable LIB_DESTDIR empty.)"         << std::endl;
         stream                                                     << std::endl;
-        stream << "else ifeq \"$(CP)\" \"\""                       << std::endl;
+        stream << "else"                                           << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifeq \"$(CP)\" \"\""                            << std::endl;
         stream                                                     << std::endl;
         stream << "install:"                                       << std::endl;
         stream << "\t$(error variable CP empty.)"                  << std::endl;
@@ -1275,6 +1277,8 @@ namespace xml
         stream                                                     << std::endl;
         stream << "install: $(MODULES_INSTALL)"                    << std::endl;
 
+        stream                                                     << std::endl;
+        stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;

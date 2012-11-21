@@ -139,10 +139,12 @@ namespace expr
               ++pos; require ("itset_");
               if (is_eof())
                 throw exception::parse::expected
-                  ("'insert', 'delete', 'is_element', 'or', 'tohex' or 'fromhex'", pos());
+                  ("'insert', 'delete', 'is_element', 'or', 'and', 'xor', 'count', 'tohex' or 'fromhex'", pos());
               else
                 switch (*pos)
                   {
+                  case 'a': ++pos; require ("nd"); token = _bitset_and; break;
+                  case 'c': ++pos; require ("ount"); token = _bitset_count; break;
                   case 'd': ++pos; require ("elete"); token = _bitset_delete; break;
                   case 'f': ++pos; require ("romhex"); unary (_bitset_fromhex, "bitset_fromhex"); break;
                   case 'i':
@@ -170,9 +172,10 @@ namespace expr
                     break;
                   case 'o': ++pos; require ("r"); token = _bitset_or; break;
                   case 't': ++pos; require ("ohex"); unary (_bitset_tohex, "bitset_tohex"); break;
+                  case 'x': ++pos; require ("or"); token = _bitset_xor; break;
                   default:
                     throw exception::parse::expected
-                      ("'insert', 'delete', 'is_element', 'or', 'tohex' or 'fromhex'", pos());
+                      ("'insert', 'delete', 'is_element', 'or', 'and', 'xor', 'count', 'tohex' or 'fromhex'", pos());
                   }
               break;
             case 'c':

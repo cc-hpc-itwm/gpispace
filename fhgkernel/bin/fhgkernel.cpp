@@ -416,11 +416,12 @@ int main(int ac, char **av)
 
   atexit(&shutdown_kernel);
 
-  int rc = kernel->run();
-  MLOG(TRACE, "shutting down... (" << rc << ")");
-  MLOG(TRACE, "killing children...");
+  int rc = kernel->run (false);
+  MLOG (TRACE, "killing children...");
 
   kill (0, SIGTERM);
+
+  MLOG (DEBUG, "shutting down... (" << rc << ")");
 
   kernel->unload_all();
 

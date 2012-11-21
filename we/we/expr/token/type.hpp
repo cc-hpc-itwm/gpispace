@@ -31,7 +31,9 @@ namespace expr
     , _sqrt, _log
     , _tolong, _todouble
     , _bitset_insert, _bitset_delete, _bitset_is_element
-    , _bitset_or, _bitset_tohex, _bitset_fromhex
+    , _bitset_or, _bitset_and, _bitset_xor
+    , _bitset_count
+    , _bitset_tohex, _bitset_fromhex
     , _stack_empty, _stack_top, _stack_push, _stack_pop, _stack_size
     , _stack_join
     , _map_assign, _map_unassign, _map_is_assigned, _map_get_assignment
@@ -92,6 +94,9 @@ namespace expr
         case _bitset_delete: return s << "bitset_delete";
         case _bitset_is_element: return s << "bitset_is_element";
         case _bitset_or: return s << "bitset_or";
+        case _bitset_and: return s << "bitset_and";
+        case _bitset_xor: return s << "bitset_xor";
+        case _bitset_count: return s << "bitset_count";
         case _bitset_tohex: return s << "bitset_tohex";
         case _bitset_fromhex: return s << "bitset_fromhex";
         case _stack_empty: return s << "stack_empty";

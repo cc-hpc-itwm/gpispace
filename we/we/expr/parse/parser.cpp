@@ -245,9 +245,12 @@ namespace expr
         case token::_bitset_insert:
         case token::_bitset_delete:
         case token::_bitset_is_element:
-        case token::_bitset_or: binary (op_stack.top(), k); break;
+        case token::_bitset_or:
+        case token::_bitset_and:
+        case token::_bitset_xor: binary (op_stack.top(), k); break;
         case token::_bitset_tohex:
-        case token::_bitset_fromhex: unary (op_stack.top(), k); break;
+        case token::_bitset_fromhex:
+        case token::_bitset_count: unary (op_stack.top(), k); break;
         case token::_stack_empty:
         case token::_stack_top: unary (op_stack.top(), k); break;
         case token::_stack_push: binary (op_stack.top(), k); break;

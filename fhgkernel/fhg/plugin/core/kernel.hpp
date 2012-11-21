@@ -119,7 +119,7 @@ namespace fhg
       kernel_t (std::string const &state_path = "");
       ~kernel_t ();
 
-      int run ();
+      int run (bool unload_at_end = true);
       void stop ();
       void reset ();
 
