@@ -1952,7 +1952,7 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac -o "$output" results "$jobid"
+        sdpac -o "$output" --force results "$jobid"
         sdpac delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"

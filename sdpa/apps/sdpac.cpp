@@ -503,7 +503,7 @@ int main (int argc, char **argv) {
     }
 
     LOG(INFO, "***************************************************");
-    LOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
+    LOG(INFO, "GPI-Space - productive parallel programming and efficient execution (" << api->version() << ")");
     LOG(INFO, "***************************************************");
 
     try
