@@ -1056,122 +1056,130 @@
             }
 
             local_buff[used_size] = 0;
-            std::stringstream sstr(local_buff);
-            std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
             
-            delete[] local_buff;
-              
-            std::list<std::string> list_border_keys;
-            
-            for(int k=0; k<arr_items.size(); k++ )
+            if(used_size>0)
             {
-                std::string keyval_pair = arr_items[k];
-                if(::mapreduce::util::is_special_item(keyval_pair))
-                {
-                    list_border_keys.push_back(keyval_pair);
-                }
+	            std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
+	            delete[] local_buff;
+	              
+	            std::list<std::string> list_border_keys;
+	            
+	            for(int k=0; k<arr_items.size(); k++ )
+	            {
+	                std::string keyval_pair = arr_items[k];
+	                if(::mapreduce::util::is_special_item(keyval_pair))
+	                {
+	                    list_border_keys.push_back(keyval_pair);
+	                }
+	            }
+	                                    
+	            while( !list_border_keys.empty() )
+	            {                       
+	                std::string keyval_pair = list_border_keys.front();
+	                list_border_keys.pop_front();
+	                
+	                // check if matches
+	                std::string matching_pair;
+	                int cid = -1;
+	                int end = -1;
+	                
+	                std:: string recovered_key = ::mapreduce::util::match_keys(keyval_pair, list_border_keys, matching_pair, cid, end );
+	                
+	                if(!recovered_key.empty())
+	                {                   
+	                    std::vector<std::string>::iterator it_items = find (arr_items.begin(), arr_items.end(), keyval_pair);
+	                    arr_items.erase(it_items);
+	                        
+	                    ::mapreduce::util::list_key_val_pairs_t list_key_val_pairs = ::mapreduce::util::map(recovered_key, "");
+	                    
+	                    BOOST_FOREACH(::mapreduce::util::key_val_pair_t& pair, list_key_val_pairs)
+	                    {
+	                        // put it into the right partition
+	                        std::string key = pair.first;
+	                        std::string val = pair.second;
+	                                                        
+	                        std::string str_pair = mapreduce::util::make_string(pair);
+	                        
+	                        arr_items.push_back(str_pair);
+	                    }
+	                                            
+	                    if(!matching_pair.empty())
+	                    {
+	                        std::list<std::string>::iterator it_brd_matching_pair = find (list_border_keys.begin(), list_border_keys.end(), matching_pair);
+	                        list_border_keys.erase(it_brd_matching_pair);
+	                        
+	                        std::vector<std::string>::iterator it_items_matching_pair = find (arr_items.begin(), arr_items.end(), matching_pair);
+	                        arr_items.erase(it_items_matching_pair);
+	                    }                   
+	                }
+	            }
+	                        
+	            std::sort( arr_items.begin(), arr_items.end());
+	            bzero(ptr_shmem, total_size);
+	
+	            std::list<std::string> list_in_values;
+	            ::mapreduce::util::key_val_pair_t kv_pair = ::mapreduce::util::get_key_val(arr_items[0]);
+	            std::string last_key = kv_pair.first;
+	              
+	            size_t last_pos = 0;
+	              
+	            for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
+	            {
+	                ::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
+	                  
+	                if( kv_pair_next.first != last_key )
+	                {
+	                    std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
+	            
+	                    try {
+	                        last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
+	                    }
+	                    catch(const std::exception& exc)
+	                    {
+	                        throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
+	                    }
+	            
+	                    last_key = kv_pair_next.first;
+	                    list_in_values.clear();
+	                    list_in_values.push_back(kv_pair_next.second);
+	                }
+	                else
+	                  list_in_values.push_back(kv_pair_next.second);
+	            }
+	            
+	            if(!list_in_values.empty())
+	            {
+	                std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
+	
+	                try {
+	                    last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
+	                }
+	                catch(const std::exception& exc)
+	                {
+	                    throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
+	                }
+	            }
+	            
+	
+	            waitComm ( fvmPutGlobalData
+	            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
+	                                                , old_part_info.part_id*config.size.reduce.slot
+	                                                , last_pos
+	                                                , 0
+	                                                , 0
+	                                            )
+	            );
+	            
+	            new_part_info.part_id = old_part_info.part_id;
+	            new_part_info.red_used = last_pos;
+	            new_part_info.part_used = 0;
             }
-                                    
-            while( !list_border_keys.empty() )
-            {                       
-                std::string keyval_pair = list_border_keys.front();
-                list_border_keys.pop_front();
-                
-                // check if matches
-                std::string matching_pair;
-                int cid = -1;
-                int end = -1;
-                
-                std:: string recovered_key = ::mapreduce::util::match_keys(keyval_pair, list_border_keys, matching_pair, cid, end );
-                
-                if(!recovered_key.empty())
-                {                   
-                    std::vector<std::string>::iterator it_items = find (arr_items.begin(), arr_items.end(), keyval_pair);
-                    arr_items.erase(it_items);
-                        
-                    ::mapreduce::util::list_key_val_pairs_t list_key_val_pairs = ::mapreduce::util::map(recovered_key, "");
-                    
-                    BOOST_FOREACH(::mapreduce::util::key_val_pair_t& pair, list_key_val_pairs)
-                    {
-                        // put it into the right partition
-                        std::string key = pair.first;
-                        std::string val = pair.second;
-                                                        
-                        std::string str_pair = mapreduce::util::make_string(pair);
-                        
-                        arr_items.push_back(str_pair);
-                    }
-                                            
-                    if(!matching_pair.empty())
-                    {
-                        std::list<std::string>::iterator it_brd_matching_pair = find (list_border_keys.begin(), list_border_keys.end(), matching_pair);
-                        list_border_keys.erase(it_brd_matching_pair);
-                        
-                        std::vector<std::string>::iterator it_items_matching_pair = find (arr_items.begin(), arr_items.end(), matching_pair);
-                        arr_items.erase(it_items_matching_pair);
-                    }                   
-                }
-            }
-                        
-            std::sort( arr_items.begin(), arr_items.end());
-            bzero(ptr_shmem, total_size);
-
-            std::list<std::string> list_in_values;
-            ::mapreduce::util::key_val_pair_t kv_pair = ::mapreduce::util::get_key_val(arr_items[0]);
-            std::string last_key = kv_pair.first;
-              
-            size_t last_pos = 0;
-              
-            for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
+            else
             {
-                ::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
-                  
-                if( kv_pair_next.first != last_key )
-                {
-                    std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
-            
-                    try {
-                        last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
-                    }
-                    catch(const std::exception& exc)
-                    {
-                        throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
-                    }
-            
-                    last_key = kv_pair_next.first;
-                    list_in_values.clear();
-                    list_in_values.push_back(kv_pair_next.second);
-                }
-                else
-                  list_in_values.push_back(kv_pair_next.second);
+                MLOG(INFO, "The last partition is empty, no border keys!");
+                new_part_info = old_part_info;
+                delete[] local_buff;
             }
-            
-            if(!list_in_values.empty())
-            {
-                std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
-
-                try {
-                    last_pos = ::mapreduce::util::store(last_key, list_out_values, ptr_shmem, last_pos, config.size.reduce.slot );
-                }
-                catch(const std::exception& exc)
-                {
-                    throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(old_part_info.part_id)+":"+exc.what());
-                }
-            }
-            
-
-            waitComm ( fvmPutGlobalData
-            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
-                                                , old_part_info.part_id*config.size.reduce.slot
-                                                , last_pos
-                                                , 0
-                                                , 0
-                                            )
-            );
-
-            new_part_info.part_id = old_part_info.part_id;
-            new_part_info.red_used = last_pos;
-            new_part_info.part_used = 0;
             
             reduce_and_write_done = control();
              
@@ -1286,94 +1294,101 @@
 			        }
 			    }
             }
-                        
-            local_buff[used_size] = 0;
-            std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
-            delete[] local_buff;
             
-            if(special_partition_info.red_used)
+            if(used_size>0)
             {
-                bzero( ptr_shmem, special_partition_info.red_used+1);
-                long last_red_slot_offset = (config.num.part-1)*config.size.reduce.slot;
-
-                waitComm ( fvmGetGlobalData
-                ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
-                                                    , last_red_slot_offset
-                                                    , special_partition_info.red_used
-                                                    , 0
-                                                    , 0
-                                                )
-                );
+	            local_buff[used_size] = 0;
+	            std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(local_buff);
+	            delete[] local_buff;
+	            
+	            if(special_partition_info.red_used)
+	            {
+	                bzero( ptr_shmem, special_partition_info.red_used+1);
+	                long last_red_slot_offset = (config.num.part-1)*config.size.reduce.slot;
+	
+	                waitComm ( fvmGetGlobalData
+	                ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
+	                                                    , last_red_slot_offset
+	                                                    , special_partition_info.red_used
+	                                                    , 0
+	                                                    , 0
+	                                                )
+	                );
+	                
+	                std::vector<std::string> arr_special_items = ::mapreduce::util::get_list_items(ptr_shmem);
+		            BOOST_FOREACH(const std::string& spec_item, arr_special_items)
+		            {
+		                if(::mapreduce::util::hash(spec_item, config.num.part) == partition_info.part_id )
+		                    arr_items.push_back(spec_item);
+		            }
+		            
+		            arr_special_items.clear();
+	            }
+	            
+	            std::sort( arr_items.begin(), arr_items.end());
+	            bzero(ptr_shmem, total_size);
+	
+	            std::list<std::string> list_in_values;
+	            ::mapreduce::util::key_val_pair_t kv_pair = ::mapreduce::util::get_key_val(arr_items[0]);
+	            std::string last_key = kv_pair.first;
+	              
+	            size_t last_pos = 0;
+	            
+	            std::vector<std::string> name_and_ext;
+				boost::split(name_and_ext, config.file.output, boost::is_any_of("."));
+	            std::ostringstream sstr_part_out_file;
+	            sstr_part_out_file<<name_and_ext[0]<<"_";
+	            sstr_part_out_file<<partition_info.part_id<<"."<<name_and_ext[1];
+	            std::ofstream ofs(sstr_part_out_file.str().data());
+	              
+	            MLOG(INFO, "Write the partition "<<partition_info.part_id<<" into the file "<<sstr_part_out_file.str());
+	              
+	            for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
+	            {
+					::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
+	                std::string key = kv_pair_next.first;
+	                
+	                if( key != last_key )
+	                {
+	                    std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
+	
+	                    try {
+	                        ::mapreduce::util::write(last_key, list_out_values, ofs );
+	                    }
+	                    catch(const std::exception& exc)
+	                    {
+	                    	ofs.close();
+	                        throw std::runtime_error(exc.what());
+	                    }
+	
+	                    last_key = key;
+	                    list_in_values.clear();
+	                    list_in_values.push_back(kv_pair_next.second);
+	                }
+	                else
+	                  list_in_values.push_back(kv_pair_next.second);
+	            }
+	
+	            if(!list_in_values.empty())
+	            {
+	                std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
+	             
+	                try {
+	                    ::mapreduce::util::write(last_key, list_out_values, ofs );
+	                }
+	                catch(const std::exception& exc)
+	                {
+	                	ofs.close();
+	                    throw std::runtime_error(exc.what());
+	                }
+	            }
+	            
+	            ofs.close();
             }
-            
-            std::vector<std::string> arr_special_items = ::mapreduce::util::get_list_items(ptr_shmem);
-            BOOST_FOREACH(const std::string& spec_item, arr_special_items)
+            else
             {
-                if(::mapreduce::util::hash(spec_item, config.num.part) == partition_info.part_id )
-                    arr_items.push_back(spec_item);
+                delete[] local_buff;
             }
-            
-            arr_special_items.clear();
-              
-            std::sort( arr_items.begin(), arr_items.end());
-            bzero(ptr_shmem, total_size);
-
-            std::list<std::string> list_in_values;
-            ::mapreduce::util::key_val_pair_t kv_pair = ::mapreduce::util::get_key_val(arr_items[0]);
-            std::string last_key = kv_pair.first;
-              
-            size_t last_pos = 0;
-            
-            std::vector<std::string> name_and_ext;
-			boost::split(name_and_ext, config.file.output, boost::is_any_of("."));
-            std::ostringstream sstr_part_out_file;
-            sstr_part_out_file<<name_and_ext[0]<<"_";
-            sstr_part_out_file<<partition_info.part_id<<"."<<name_and_ext[1];
-            std::ofstream ofs(sstr_part_out_file.str().data());
-              
-            MLOG(INFO, "Write the partition "<<partition_info.part_id<<" into the file "<<sstr_part_out_file.str());
-              
-            for(std::vector<std::string>::iterator it=arr_items.begin(); it != arr_items.end(); it++ )
-            {
-				::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
-                std::string key = kv_pair_next.first;
-                
-                if( key != last_key )
-                {
-                    std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
-
-                    try {
-                        ::mapreduce::util::write(last_key, list_out_values, ofs );
-                    }
-                    catch(const std::exception& exc)
-                    {
-                    	ofs.close();
-                        throw std::runtime_error(exc.what());
-                    }
-
-                    last_key = key;
-                    list_in_values.clear();
-                    list_in_values.push_back(kv_pair_next.second);
-                }
-                else
-                  list_in_values.push_back(kv_pair_next.second);
-            }
-
-            if(!list_in_values.empty())
-            {
-                std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
-             
-                try {
-                    ::mapreduce::util::write(last_key, list_out_values, ofs );
-                }
-                catch(const std::exception& exc)
-                {
-                	ofs.close();
-                    throw std::runtime_error(exc.what());
-                }
-            }
-            
-            ofs.close();
             
             reduce_and_write_done = control();
 
