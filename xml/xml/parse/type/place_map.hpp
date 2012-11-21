@@ -46,7 +46,9 @@ namespace xml
         unique_key_type unique_key() const;
 
         id::ref::place_map clone
-          (const boost::optional<parent_id_type>& parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         std::string _place_virtual;

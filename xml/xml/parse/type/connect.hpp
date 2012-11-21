@@ -51,7 +51,9 @@ namespace xml
         unique_key_type unique_key() const;
 
         id::ref::connect clone
-          (const boost::optional<parent_id_type>& parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         //! \todo Should be a id::place and id::port.

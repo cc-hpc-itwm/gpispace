@@ -583,40 +583,52 @@ namespace xml
           : public boost::static_visitor<function_or_use_type>
         {
         public:
-          visitor_clone (const id::transition& new_id)
+          visitor_clone ( const id::transition& new_id
+                        , id::mapper* const mapper
+                        )
             : _new_id (new_id)
+            , _mapper (mapper)
           { }
-          function_or_use_type
-            operator() (const id::ref::function& id) const
+
+          function_or_use_type operator() (const id::ref::function& id) const
           {
-            return id.get().clone (function_type::make_parent (_new_id));
+            return id.get().clone
+              (function_type::make_parent (_new_id), _mapper);
           }
           function_or_use_type operator() (const id::ref::use& use) const
           {
-            return use.get().clone (_new_id);
+            return use.get().clone (_new_id, _mapper);
           }
+
         private:
-          id::transition _new_id;
+          const id::transition& _new_id;
+          id::mapper* const _mapper;
         };
       }
 
       id::ref::transition transition_type::clone
-        (boost::optional<id::net> parent) const
+        ( const boost::optional<parent_id_type>& parent
+        , const boost::optional<id::mapper*>& mapper
+        ) const
       {
-        const id::transition new_id (id_mapper()->next_id());
+        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
+        const id_type new_id (new_mapper->next_id());
         return transition_type
           ( new_id
-          , id_mapper()
+          , new_mapper
           , parent
           , _function_or_use
           ? boost::make_optional
-          (boost::apply_visitor (visitor_clone (new_id), *_function_or_use))
+            ( boost::apply_visitor ( visitor_clone (new_id, new_mapper)
+                                   , *_function_or_use
+                                   )
+            )
           : boost::none
           , _name
-          , _in.clone (new_id)
-          , _out.clone (new_id)
-          , _read.clone (new_id)
-          , _place_map.clone (new_id)
+          , _in.clone (new_id, new_mapper)
+          , _out.clone (new_id, new_mapper)
+          , _read.clone (new_id, new_mapper)
+          , _place_map.clone (new_id, new_mapper)
           , structs
           , cond
           , requirements

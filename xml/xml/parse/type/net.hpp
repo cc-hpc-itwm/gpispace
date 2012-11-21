@@ -146,7 +146,9 @@ namespace xml
         void remove_prefix (const std::string & prefix);
 
         id::ref::net clone
-          (boost::optional<parent_id_type> parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         functions_type _functions;

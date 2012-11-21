@@ -58,11 +58,15 @@ namespace xml
 
 
       id::ref::connect connect_type::clone
-        (const boost::optional<parent_id_type>& parent) const
+        ( const boost::optional<parent_id_type>& parent
+        , const boost::optional<id::mapper*>& mapper
+        ) const
       {
+        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
+        const id_type new_id (new_mapper->next_id());
         return connect_type
-          ( id_mapper()->next_id()
-          , id_mapper()
+          ( new_id
+          , new_mapper
           , parent
           , _place
           , _port

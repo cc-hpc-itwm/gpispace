@@ -579,18 +579,21 @@ namespace xml
       }
 
       id::ref::net net_type::clone
-        (boost::optional<parent_id_type> parent) const
+        ( const boost::optional<parent_id_type>& parent
+        , const boost::optional<id::mapper*>& mapper
+        ) const
       {
-        const id::net new_id (id_mapper()->next_id());
+        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
+        const id_type new_id (new_mapper->next_id());
         return net_type
           ( new_id
-          , id_mapper()
+          , new_mapper
           , parent
-          , _functions.clone (function_type::make_parent (new_id))
-          , _places.clone (new_id)
-          , _specializes.clone (new_id)
-          , _templates.clone (new_id)
-          , _transitions.clone (new_id)
+          , _functions.clone (function_type::make_parent (new_id), new_mapper)
+          , _places.clone (new_id, new_mapper)
+          , _specializes.clone (new_id, new_mapper)
+          , _templates.clone (new_id, new_mapper)
+          , _transitions.clone (new_id, new_mapper)
           , structs
           , contains_a_module_call
           , structs_resolved

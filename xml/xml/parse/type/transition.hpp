@@ -137,7 +137,9 @@ namespace xml
         const unique_key_type& unique_key() const;
 
         id::ref::transition clone
-          (boost::optional<parent_id_type> parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         boost::optional<function_or_use_type> _function_or_use;

@@ -133,13 +133,14 @@ namespace xml
       unique<value_type, id_type> clone
         ( const boost::optional<typename value_type::parent_id_type>& parent
         = boost::none
+        , const boost::optional<parse::id::mapper*>& mapper = boost::none
         ) const
       {
         //! \todo Reserve?
         unique<value_type, id_type> copy;
         BOOST_FOREACH (const value_type& value, values())
         {
-          copy.push (value.clone (parent));
+          copy.push (value.clone (parent, mapper));
         }
         return copy;
       }

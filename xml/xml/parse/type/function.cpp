@@ -852,38 +852,46 @@ namespace xml
           : public boost::static_visitor<function_type::type>
         {
         public:
-          visitor_clone (const id::function& new_id)
+          visitor_clone ( const id::function& new_id
+                        , id::mapper* const mapper
+                        )
             : _new_id (new_id)
+            , _mapper (mapper)
           { }
           template<typename ID_TYPE>
             function_type::type operator() (const ID_TYPE& id) const
           {
-            return id.get().clone (_new_id);
+            return id.get().clone (_new_id, _mapper);
           }
+
         private:
-          id::function _new_id;
+          const id::function& _new_id;
+          id::mapper* const _mapper;
         };
       }
 
       id::ref::function function_type::clone
-        (const boost::optional<parent_id_type>& parent) const
+        ( const boost::optional<parent_id_type>& parent
+        , const boost::optional<id::mapper*>& mapper
+        ) const
       {
-        const id::function new_id (id_mapper()->next_id());
+        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
+        const id_type new_id (new_mapper->next_id());
         return function_type
           ( new_id
-          , id_mapper()
+          , new_mapper
           , parent
           , _name
-          , _in.clone (new_id)
-          , _out.clone (new_id)
-          , _tunnel.clone (new_id)
+          , _in.clone (new_id, new_mapper)
+          , _out.clone (new_id, new_mapper)
+          , _tunnel.clone (new_id, new_mapper)
           , _typenames
           , contains_a_module_call
           , internal
           , structs
           , cond
           , requirements
-          , boost::apply_visitor (visitor_clone (new_id), f)
+          , boost::apply_visitor (visitor_clone (new_id, new_mapper), f)
           , structs_resolved
           , _properties
           , path
