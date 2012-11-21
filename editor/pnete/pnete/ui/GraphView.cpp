@@ -102,8 +102,15 @@ namespace fhg
               data::internal_type* data
                 (data::manager::instance().load (path));
 
-              scene()->change_manager()
-                .add_transition (scene(), data->function(), scene()->net());
+              scene()->change_manager().add_transition
+                ( scene()
+                , data->function().get().clone
+                  ( ::xml::parse::type::function_type::make_parent
+                    (scene()->net().id().id())
+                  , scene()->internal()->state().id_mapper()
+                  )
+                , scene()->net()
+                );
             }
 
           event->acceptProposedAction();

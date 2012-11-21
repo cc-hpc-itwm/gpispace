@@ -221,9 +221,14 @@ namespace fhg
           }
         }
 
-        data::change_manager_t& scene_type::change_manager()
+        data::internal_type* scene_type::internal() const
         {
-          return _internal->change_manager();
+          return _internal;
+        }
+
+        data::change_manager_t& scene_type::change_manager() const
+        {
+          return internal()->change_manager();
         }
 
         void scene_type::slot_add_struct ()
