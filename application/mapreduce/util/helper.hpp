@@ -235,11 +235,18 @@ namespace mapreduce
 
     key_val_pair_t get_key_val(const std::string& str_map)
     {
-      size_t split_pos = str_map.find(':');
-      std::string key = str_map.substr(0,split_pos);
-      std::string val = str_map.substr(split_pos+1, str_map.size());
+    	boost::char_separator<char> sep(":");
+    	boost::tokenizer<boost::char_separator<char> > tok(str_map, sep);
 
-      return key_val_pair_t(key, val);
+    	std::vector<std::string> v;
+    	v.assign(tok.begin(), tok.end());
+    	if(v.size() != 2)
+    	{
+    		throw std::runtime_error("invalid key:value item: " + str_map);
+    	}
+
+
+    	return key_val_pair_t(v[0], v[1]);
     }
 
     long ceil(long a, long b)
