@@ -5,11 +5,10 @@
 
 #include <pnete/data/proxy.fwd.hpp>
 
+#include <pnete/data/handle/function.hpp>
 #include <pnete/data/internal.fwd.hpp>
 #include <pnete/ui/document_view.fwd.hpp>
 #include <pnete/ui/graph/scene.fwd.hpp>
-
-#include <xml/parse/id/types.hpp>
 
 #include <boost/variant.hpp>
 
@@ -26,7 +25,7 @@ namespace fhg
         {
         public:
           proxy_base ( internal_type* root
-                     , const ::xml::parse::id::ref::function& function
+                     , const handle::function& function
                      , data_type data
                      , display_type* display = NULL
                      )
@@ -40,7 +39,7 @@ namespace fhg
           {
             return _root;
           }
-          const ::xml::parse::id::ref::function& function() const
+          const handle::function& function() const
           {
             return _function;
           }
@@ -56,7 +55,7 @@ namespace fhg
 
         private:
           internal_type* _root;
-          ::xml::parse::id::ref::function _function;
+          handle::function _function;
 
           data_type _data;
           display_type* _display;
@@ -70,8 +69,8 @@ namespace fhg
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
-        ::xml::parse::id::ref::function function (const type&);
-        ::fhg::pnete::data::internal_type* root (const type&);
+        handle::function function (const type&);
+        internal_type* root (const type&);
 
         ui::document_view* document_view_factory (type&);
       }

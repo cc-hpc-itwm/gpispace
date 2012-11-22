@@ -31,8 +31,7 @@ namespace fhg
       }
       data::handle::function base_editor_widget::function() const
       {
-        return data::handle::function
-          (data::proxy::function (proxy()), root()->change_manager());
+        return data::proxy::function (proxy());
       }
     }
   }
