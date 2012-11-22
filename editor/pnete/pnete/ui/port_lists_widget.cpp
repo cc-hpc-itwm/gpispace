@@ -8,7 +8,7 @@
 
 #include <QObject>
 #include <QTableWidget>
-#include <xml/parse/type/function.hpp> // ports_type..
+#include <xml/parse/type/function.hpp>
 #include <QHeaderView>
 #include <QStandardItem>
 #include <QStandardItemModel>
@@ -57,14 +57,14 @@ namespace fhg
 
           int row (0);
 
-          const ::xml::parse::type::function_type& function (function_id.get());
-
+          //! \todo Should use handles and special items to allow
+          //! editing. Also, this should be weaved in, not pulled.
           BOOST_FOREACH ( const ::xml::parse::type::port_type& port
                         , ( which == in
-                          ? function.in()
+                          ? function_id.get().in()
                           : ( which == out
-                            ? function.out()
-                            : function.tunnel()
+                            ? function_id.get().out()
+                            : function_id.get().tunnel()
                             )
                           ).values()
                         )
