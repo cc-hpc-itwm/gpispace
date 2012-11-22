@@ -7,7 +7,6 @@
 
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/internal.fwd.hpp>
-#include <pnete/ui/document_view.fwd.hpp>
 #include <pnete/ui/graph/scene.fwd.hpp>
 
 #include <boost/variant.hpp>
@@ -71,8 +70,6 @@ namespace fhg
 
         handle::function function (const type&);
         internal_type* root (const type&);
-
-        ui::document_view* document_view_factory (type&);
       }
     }
   }

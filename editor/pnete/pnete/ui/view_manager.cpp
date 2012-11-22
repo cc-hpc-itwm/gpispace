@@ -2,6 +2,18 @@
 
 #include <pnete/ui/view_manager.hpp>
 
+#include <pnete/data/manager.hpp>
+#include <pnete/data/handle/expression.hpp>
+#include <pnete/ui/GraphView.hpp>
+#include <pnete/ui/base_editor_widget.hpp>
+#include <pnete/ui/document_view.hpp>
+#include <pnete/ui/editor_window.hpp>
+#include <pnete/ui/expression_view.hpp>
+#include <pnete/ui/mod_view.hpp>
+#include <pnete/ui/net_view.hpp>
+
+#include <util/qt/parent.hpp>
+
 #include <stdexcept>
 #include <iostream>
 
@@ -11,15 +23,6 @@
 #include <QString>
 #include <QWidget>
 #include <QUndoView>
-
-#include <pnete/ui/editor_window.hpp>
-#include <pnete/ui/document_view.hpp>
-#include <pnete/ui/base_editor_widget.hpp>
-#include <pnete/ui/GraphView.hpp>
-
-#include <pnete/data/manager.hpp>
-
-#include <util/qt/parent.hpp>
 
 namespace fhg
 {
@@ -177,12 +180,54 @@ namespace fhg
             }
         }
       }
+
+      namespace
+      {
+        using namespace data::proxy;
+
+        class document_view_for_proxy
+          : public boost::static_visitor<document_view*>
+        {
+        private:
+          type& _proxy;
+
+        public:
+          document_view_for_proxy (type& proxy)
+            : _proxy (proxy)
+          { }
+
+          document_view* operator() (expression_proxy& proxy) const
+          {
+            return new expression_view
+              ( _proxy, data::handle::expression
+                ( proxy.data()
+                , root (_proxy)->change_manager()
+                )
+              );
+          }
+
+          document_view* operator() (mod_proxy& proxy) const
+          {
+            return new mod_view (_proxy, proxy.data());
+          }
+
+          document_view* operator() (net_proxy& proxy) const
+          {
+            return new net_view (_proxy, proxy.display());
+          }
+        };
+
+        document_view* document_view_factory (type& proxy)
+        {
+          return boost::apply_visitor (document_view_for_proxy (proxy), proxy);
+        }
+      }
+
       void view_manager::create_widget (data::proxy::type& proxy)
       {
         _undo_group->addStack (&data::proxy::root (proxy)->change_manager());
 
-        add_on_top_of_current_widget
-          (data::proxy::document_view_factory (proxy));
+        add_on_top_of_current_widget (document_view_factory (proxy));
 
         _action_save_current_file->setEnabled (true);
       }
