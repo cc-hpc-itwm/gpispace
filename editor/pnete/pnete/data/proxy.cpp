@@ -2,12 +2,7 @@
 
 #include <pnete/data/proxy.hpp>
 
-#include <pnete/data/handle/expression.hpp>
-#include <pnete/data/internal.hpp>
-
 #include <boost/variant.hpp>
-
-#include <QObject>
 
 namespace fhg
 {
