@@ -73,15 +73,15 @@ namespace fhg
         setLayout (hbox);
 
         connect ( &change_manager()
-                , SIGNAL ( signal_set_function_name
+                , SIGNAL ( function_name_changed
                            ( const QObject*
-                           , const ::xml::parse::type::function_type&
+                           , const data::handle::function&
                            , const QString&
                            )
                          )
                 , SLOT ( slot_set_function_name
                          ( const QObject*
-                         , const ::xml::parse::type::function_type&
+                         , const data::handle::function&
                          , const QString&
                          )
                        )

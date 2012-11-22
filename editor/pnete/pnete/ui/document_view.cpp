@@ -25,7 +25,7 @@ namespace fhg
                 );
 
         connect ( &data::proxy::root (proxy)->change_manager()
-                , SIGNAL ( signal_set_function_name
+                , SIGNAL ( function_name_changed
                            ( const QObject*
                            , const data::handle::function&
                            , const QString&
