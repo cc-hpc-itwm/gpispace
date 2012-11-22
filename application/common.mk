@@ -190,7 +190,6 @@ endif
 
 ###############################################################################
 
-DEP += $(CURDIR)/Makefile
 PATH_LIB += $(GEN)/pnetc/op
 WE_EXEC_LIBPATHS += $(PATH_LIB)
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
