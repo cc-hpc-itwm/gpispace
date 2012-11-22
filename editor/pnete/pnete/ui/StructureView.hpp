@@ -3,38 +3,20 @@
 #ifndef _FHG_PNETE_UI_STRUCTURE_VIEW_HPP
 #define _FHG_PNETE_UI_STRUCTURE_VIEW_HPP 1
 
+#include <pnete/data/internal.fwd.hpp>
+
 #include <QTreeView>
 
-#include <string>
 #include <list>
-
-#include <pnete/weaver/weaver.hpp>
 
 class QStandardItem;
 class QStandardItemModel;
 class QWidget;
-class QString;
-
-namespace xml
-{
-  namespace parse
-  {
-    namespace type
-    {
-      struct function_type;
-    }
-  }
-}
 
 namespace fhg
 {
   namespace pnete
   {
-    namespace data
-    {
-      class internal_type;
-    }
-
     namespace ui
     {
       class StructureView : public QTreeView
