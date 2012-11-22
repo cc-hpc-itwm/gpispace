@@ -63,6 +63,9 @@ public:
   FHG_PLUGIN_START()
   {
     m_shutting_down = false;
+    m_job_in_progress = false;
+    m_graceful_shutdown_requested = false;
+
     m_reconnect_counter = 0;
     m_my_name =      fhg_kernel()->get("name", "drts");
     try
@@ -373,6 +376,28 @@ public:
       }
 
       m_capabilities.erase(cap);
+    }
+  }
+
+  FHG_ON_SIGNAL(sig, info, ctxt)
+  {
+    if (sig != SIGUSR2)
+      return;
+
+    MLOG (INFO, "initiating graceful shutdown due to signal := " << sig);
+    bool something_running;
+    {
+      lock_type lck (m_job_in_progress_mutex);
+      something_running = m_job_in_progress;
+    }
+
+    if (something_running)
+    {
+      m_graceful_shutdown_requested = true;
+    }
+    else
+    {
+      fhg_kernel ()->terminate ();
     }
   }
 
@@ -864,7 +889,18 @@ private:
 
     for (;;)
     {
+      if (m_graceful_shutdown_requested)
+      {
+        fhg_kernel ()->terminate ();
+        break;
+      }
+
+      { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = false; }
+
       job_ptr_t job = m_pending_jobs.get();
+
+      { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = true; }
+
       if (drts::Job::PENDING == job->cmp_and_swp_state( drts::Job::PENDING
                                                       , drts::Job::RUNNING
                                                       )
@@ -1320,6 +1356,9 @@ private:
   mutable mutex_type m_job_arrived_mutex;
   mutable mutex_type m_reconnect_counter_mutex;
   condition_type     m_job_arrived;
+  mutable mutex_type m_job_in_progress_mutex;
+  bool               m_job_in_progress;
+  bool               m_graceful_shutdown_requested;
 
   fhg::util::thread::event<std::string> m_connected_event;
 
