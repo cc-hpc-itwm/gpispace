@@ -3,10 +3,11 @@
 #include <pnete/ui/document_view.hpp>
 
 #include <pnete/data/handle/function.hpp>
-#include <pnete/data/internal.hpp>
 #include <pnete/ui/base_editor_widget.hpp>
 
 #include <util/qt/cast.hpp>
+
+#include <boost/optional.hpp>
 
 #include <QStringList>
 
@@ -24,20 +25,11 @@ namespace fhg
                 , SLOT (visibility_changed (bool))
                 );
 
-        connect ( &data::proxy::root (proxy)->change_manager()
-                , SIGNAL ( function_name_changed
-                           ( const QObject*
-                           , const data::handle::function&
-                           , const QString&
-                           )
-                         )
-                , SLOT ( function_name_changed
-                         ( const QObject*
-                         , const data::handle::function&
-                         , const QString&
-                         )
-                       )
-                );
+        data::proxy::function (proxy).connect_to_change_mgr
+          ( this
+          , "function_name_changed"
+          , "const data::handle::function&, const QString&"
+          );
       }
 
       void document_view::function_name_changed
@@ -46,7 +38,7 @@ namespace fhg
         , const QString& name
         )
       {
-        if (function.id() == data::proxy::function (widget()->proxy()).id())
+        if (function == widget()->function())
         {
           set_title
             (boost::make_optional (!name.isEmpty(), name.toStdString()));
