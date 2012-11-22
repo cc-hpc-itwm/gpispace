@@ -19,7 +19,7 @@ namespace fhg
         ( data::proxy::type& proxy
         , const ::xml::parse::id::ref::module& mod
         )
-          : document_view (proxy)
+          : document_view (data::proxy::function (proxy))
       {
         //! \todo submit known types
         setWidget (new module_call_widget (proxy, mod, QStringList(), this));

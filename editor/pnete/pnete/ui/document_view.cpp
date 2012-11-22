@@ -17,7 +17,7 @@ namespace fhg
   {
     namespace ui
     {
-      document_view::document_view (const data::proxy::type& proxy)
+      document_view::document_view (const data::handle::function& function)
         : dock_widget()
       {
         connect ( this
@@ -25,7 +25,7 @@ namespace fhg
                 , SLOT (visibility_changed (bool))
                 );
 
-        data::proxy::function (proxy).connect_to_change_mgr
+        function.connect_to_change_mgr
           ( this
           , "function_name_changed"
           , "const data::handle::function&, const QString&"

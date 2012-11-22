@@ -27,7 +27,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        document_view (const data::proxy::type& proxy);
+        document_view (const data::handle::function&);
 
         base_editor_widget* widget() const;
         void setWidget (base_editor_widget* widget);
