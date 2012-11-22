@@ -1,17 +1,20 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_PORT_HPP
-#define _PNETE_UI_GRAPH_PORT_HPP 1
+#ifndef PNETE_UI_GRAPH_PORT_HPP
+#define PNETE_UI_GRAPH_PORT_HPP
+
+#include <pnete/ui/graph/port.fwd.hpp>
+
+#include <pnete/data/handle/port.hpp>
+#include <pnete/ui/graph/base_item.hpp>
+#include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/orientation.hpp>
+#include <pnete/ui/graph/transition.fwd.hpp>
+
+#include <boost/optional.hpp>
 
 #include <QObject>
 #include <QMenu>
-
-#include <pnete/ui/graph/connectable_item.hpp>
-#include <pnete/ui/graph/base_item.hpp>
-#include <pnete/ui/graph/orientation.hpp>
-#include <pnete/data/handle/port.hpp>
-
-#include <boost/optional.hpp>
 
 class QAction;
 class QMenu;
@@ -26,8 +29,6 @@ namespace fhg
     {
       namespace graph
       {
-        class transition_item;
-
         class port_item : public connectable_item
         {
           Q_OBJECT;

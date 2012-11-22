@@ -1,7 +1,9 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_ITEM_HPP
-#define _PNETE_UI_GRAPH_ITEM_HPP 1
+#ifndef PNETE_UI_GRAPH_ITEM_HPP
+#define PNETE_UI_GRAPH_ITEM_HPP
+
+#include <pnete/ui/graph/base_item.fwd.hpp>
 
 #include <pnete/data/handle/base.fwd.hpp>
 #include <pnete/ui/graph/mode.hpp>

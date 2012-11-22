@@ -7,23 +7,23 @@
 #include <QDebug>
 #include <QApplication>
 
-#include <pnete/ui/graph/connectable_item.hpp>
-#include <pnete/ui/graph/connection.hpp>
-#include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/port.hpp>
-#include <pnete/ui/graph/place.hpp>
-#include <pnete/ui/graph/base_item.hpp>
-
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/transition.hpp>
-
-#include <pnete/ui/graph/style/raster.hpp>
-
-#include <pnete/ui/util/action.hpp>
-
 #include <pnete/data/internal.hpp>
-
+#include <pnete/ui/graph/base_item.hpp>
+#include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/place.hpp>
+#include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/style/raster.hpp>
+#include <pnete/ui/graph/transition.hpp>
+#include <pnete/ui/util/action.hpp>
 #include <pnete/weaver/display.hpp>
+#include <pnete/weaver/weaver.hpp>
+
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/transition.hpp>
 
 #include <util/qt/cast.hpp>
 #include <util/graphviz.hpp>

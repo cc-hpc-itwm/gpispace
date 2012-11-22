@@ -1,14 +1,21 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_WEAVER_DISPLAY_HPP
-#define _FHG_PNETE_WEAVER_DISPLAY_HPP 1
+#ifndef FHG_PNETE_WEAVER_DISPLAY_HPP
+#define FHG_PNETE_WEAVER_DISPLAY_HPP
 
-#include <pnete/data/proxy.hpp>
+#include <pnete/data/proxy.fwd.hpp>
+#include <pnete/data/internal.fwd.hpp>
 
-#include <pnete/weaver/weaver.hpp>
-
-#include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/base_item.fwd.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/place.fwd.hpp>
+#include <pnete/ui/graph/port.fwd.hpp>
+#include <pnete/ui/graph/scene.fwd.hpp>
+#include <pnete/ui/graph/transition.fwd.hpp>
+
+#include <we/type/property.fwd.hpp>
+
+#include <xml/parse/id/types.hpp>
 
 #include <boost/unordered_map.hpp>
 
@@ -16,20 +23,6 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace data
-    {
-      class internal_type;
-    }
-
-    namespace ui
-    {
-      namespace graph
-      {
-        class place_item;
-        class transition_item;
-        class scene_type;
-      }
-    }
     namespace weaver
     {
       typedef boost::unordered_map< std::string
@@ -112,7 +105,7 @@ namespace fhg
 
       private:
         ui::graph::base_item* _item;
-        WETYPE(property::path_type) _path;
+        ::we::type::property::path_type _path;
       };
 
       class connection

@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _FHG_PNETE_WEAVER_TV_HPP
 #define _FHG_PNETE_WEAVER_TV_HPP 1
@@ -9,9 +9,7 @@ class QString;
 #include <string>
 #include <stack>
 
-#include <pnete/weaver/weaver.hpp>
-
-#include <boost/optional.hpp>
+#include <boost/optional/optional_fwd.hpp>
 
 namespace fhg
 {

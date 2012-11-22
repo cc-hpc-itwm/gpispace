@@ -1,8 +1,9 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/StructureView.hpp>
 
 #include <pnete/weaver/tv.hpp>
+#include <pnete/weaver/weaver.hpp>
 
 #include <QStandardItemModel>
 #include <QHeaderView>

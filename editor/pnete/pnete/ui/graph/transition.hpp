@@ -1,7 +1,13 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_TRANSITION_HPP
-#define _FHG_PNETE_UI_GRAPH_TRANSITION_HPP 1
+#ifndef FHG_PNETE_UI_GRAPH_TRANSITION_HPP
+#define FHG_PNETE_UI_GRAPH_TRANSITION_HPP
+
+#include <pnete/ui/graph/transition.fwd.hpp>
+
+#include <pnete/data/handle/transition.hpp>
+#include <pnete/data/proxy.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 #include <QPainterPath>
 #include <QRectF>
@@ -13,12 +19,6 @@ class QPainter;
 class QStyleOptionGraphicsItem;
 class QWidget;
 class QAction;
-
-#include <pnete/ui/graph/base_item.hpp>
-
-#include <pnete/data/handle/transition.hpp>
-
-#include <pnete/data/proxy.hpp>
 
 namespace fhg
 {

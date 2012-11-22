@@ -1,18 +1,20 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_PLACE_HPP
-#define _FHG_PNETE_UI_GRAPH_PLACE_HPP 1
+#ifndef FHG_PNETE_UI_GRAPH_PLACE_HPP
+#define FHG_PNETE_UI_GRAPH_PLACE_HPP
 
-#include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/place.fwd.hpp>
+
 #include <pnete/data/handle/place.hpp>
-
-#include <QStaticText>
-#include <QPointF>
-#include <QSizeF>
+#include <pnete/ui/graph/connectable_item.hpp>
 
 #include <string>
 
 #include <boost/optional.hpp>
+
+#include <QStaticText>
+#include <QPointF>
+#include <QSizeF>
 
 class QPainter;
 class QWidget;

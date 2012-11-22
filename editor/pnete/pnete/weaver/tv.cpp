@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/weaver/tv.hpp>
 #include <pnete/weaver/weaver.hpp>
@@ -7,6 +7,7 @@
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 namespace fhg
 {
