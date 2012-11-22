@@ -160,7 +160,6 @@ static void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
   if (kernel)
   {
-    kernel->schedule("kernel", "wait_on_child", &handle_sig_child);
     kernel->handle_signal (sig_num, info, ucontext);
   }
 }
