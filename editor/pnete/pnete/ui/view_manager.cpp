@@ -71,9 +71,7 @@ namespace fhg
         }
 
         data::manager::instance().save
-          ( data::proxy::root (_accessed_widgets.top()->widget()->proxy())
-          , filename
-          );
+          (_accessed_widgets.top()->widget()->root(), filename);
       }
 
       void view_manager::focus_changed (QWidget* widget)
@@ -95,8 +93,7 @@ namespace fhg
         }
         _accessed_widgets.push (current_view);
 
-        data::proxy::root (current_view->widget()->proxy())->change_manager()
-          .setActive(true);
+        current_view->widget()->change_manager().setActive(true);
 
         //! \todo enable and disable actions
 
