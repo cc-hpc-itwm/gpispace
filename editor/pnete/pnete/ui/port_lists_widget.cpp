@@ -2,18 +2,20 @@
 
 #include <pnete/ui/port_lists_widget.hpp>
 
+#include <pnete/data/handle/function.hpp>
 #include <pnete/ui/ComboItemDelegate.hpp>
+
+#include <xml/parse/type/function.hpp>
 
 #include <boost/foreach.hpp>
 
-#include <QObject>
-#include <QTableWidget>
-#include <xml/parse/type/function.hpp>
+#include <QGroupBox>
 #include <QHeaderView>
+#include <QObject>
+#include <QSplitter>
 #include <QStandardItem>
 #include <QStandardItemModel>
-#include <QGroupBox>
-#include <QSplitter>
+#include <QTableWidget>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -34,7 +36,7 @@ namespace fhg
 
         QGroupBox* port_list_box
           ( const which_ports& which
-          , const ::xml::parse::id::ref::function& function_id
+          , const data::handle::function& function
           , const QStringList& types
           )
         {
@@ -61,10 +63,10 @@ namespace fhg
           //! editing. Also, this should be weaved in, not pulled.
           BOOST_FOREACH ( const ::xml::parse::type::port_type& port
                         , ( which == in
-                          ? function_id.get().in()
+                          ? function.get().in()
                           : ( which == out
-                            ? function_id.get().out()
-                            : function_id.get().tunnel()
+                            ? function.get().out()
+                            : function.get().tunnel()
                             )
                           ).values()
                         )
@@ -102,7 +104,7 @@ namespace fhg
       }
 
       port_lists_widget::port_lists_widget
-        ( const ::xml::parse::id::ref::function& function
+        ( const data::handle::function& function
         , const QStringList& types
         , QWidget* parent
         )

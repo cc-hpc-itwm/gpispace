@@ -49,7 +49,7 @@ namespace fhg
         void expression_changed ();
 
         void slot_set_function_name ( const QObject*
-                                    , const ::xml::parse::type::function_type&
+                                    , const data::handle::function&
                                     , const QString&
                                     );
         void slot_set_expression ( const QObject*
@@ -63,7 +63,7 @@ namespace fhg
              );
 
       private:
-        bool is_my_function (const ::xml::parse::type::function_type&);
+        bool is_my_function (const data::handle::function&);
         bool is_my_expression (const data::handle::expression&);
 
         data::handle::expression _expression;

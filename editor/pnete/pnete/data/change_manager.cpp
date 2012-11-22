@@ -744,20 +744,20 @@ namespace fhg
       // - function --------------------------------------------------
       void change_manager_t::set_function_name
         ( const QObject* origin
-        , ::xml::parse::type::function_type& fun
+        , const data::handle::function& fun
         , const QString& name
         )
       {
         if (!name.isEmpty())
         {
-          fun.name (name.toStdString());
+          fun.get_ref().name (name.toStdString());
         }
         else
         {
-          fun.name (boost::none);
+          fun.get_ref().name (boost::none);
         }
 
-        emit_signal ( &change_manager_t::signal_set_function_name
+        emit_signal ( &change_manager_t::function_name_changed
                     , origin
                     , fun
                     , name

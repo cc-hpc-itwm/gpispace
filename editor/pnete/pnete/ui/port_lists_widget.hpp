@@ -1,9 +1,9 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _FHG_PNETE_UI_PORT_LISTS_WIDGET_HPP
 #define _FHG_PNETE_UI_PORT_LISTS_WIDGET_HPP 1
 
-#include <xml/parse/id/types.hpp>
+#include <pnete/data/handle/function.fwd.hpp>
 
 #include <QObject>
 #include <QWidget>
@@ -22,7 +22,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        explicit port_lists_widget ( const ::xml::parse::id::ref::function&
+        explicit port_lists_widget ( const data::handle::function&
                                    , const QStringList& types
                                    , QWidget* parent = NULL
                                    );

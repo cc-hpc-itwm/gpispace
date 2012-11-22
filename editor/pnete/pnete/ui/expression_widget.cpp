@@ -3,6 +3,7 @@
 #include <pnete/ui/expression_widget.hpp>
 
 #include <pnete/data/change_manager.hpp>
+#include <pnete/data/handle/function.hpp>
 #include <pnete/ui/port_lists_widget.hpp>
 
 #include <xml/parse/type/function.hpp>
@@ -130,10 +131,10 @@ namespace fhg
       }
 
       void expression_widget::slot_set_function_name
-      ( const QObject* origin
-      , const ::xml::parse::type::function_type& fun
-      , const QString& name
-      )
+        ( const QObject* origin
+        , const data::handle::function& fun
+        , const QString& name
+        )
       {
         if (origin != this && is_my_function (fun))
           {
@@ -142,10 +143,10 @@ namespace fhg
       }
 
       void expression_widget::slot_set_expression
-      ( const QObject* origin
-      , const data::handle::expression& expression
-      , const QString& text
-      )
+        ( const QObject* origin
+        , const data::handle::expression& expression
+        , const QString& text
+        )
       {
         if (origin != this && is_my_expression (expression))
           {
@@ -154,10 +155,10 @@ namespace fhg
       }
 
       void expression_widget::slot_set_expression_parse_result
-      ( const QObject*
-      , const data::handle::expression& expression
-      , const QString& text
-      )
+        ( const QObject*
+        , const data::handle::expression& expression
+        , const QString& text
+        )
       {
         if (is_my_expression (expression))
           {
@@ -195,11 +196,7 @@ namespace fhg
       }
       void expression_widget::name_changed (const QString& name_)
       {
-        change_manager().set_function_name ( this
-                                           , function().get_ref()
-                                           , name_
-                                           )
-          ;
+        change_manager().set_function_name (this, function(), name_);
       }
 
       void expression_widget::expression_changed ()
@@ -209,12 +206,12 @@ namespace fhg
       }
 
       bool expression_widget::is_my_function
-      (const ::xml::parse::type::function_type& f)
+        (const data::handle::function& f)
       {
-        return f.id() == function();
+        return f == function();
       }
       bool expression_widget::is_my_expression
-      (const data::handle::expression& e)
+        (const data::handle::expression& e)
       {
         return e == _expression;
       }

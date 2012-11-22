@@ -6,6 +6,7 @@
 #include <pnete/ui/base_editor_widget.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/internal.fwd.hpp>
 #include <pnete/data/proxy.hpp>
 
@@ -30,7 +31,7 @@ namespace fhg
         data::proxy::type& proxy () const;
         data::change_manager_t& change_manager () const;
         data::internal_type* root () const;
-        ::xml::parse::id::ref::function function() const;
+        data::handle::function function() const;
 
       signals:
         void focus_gained (QWidget*);

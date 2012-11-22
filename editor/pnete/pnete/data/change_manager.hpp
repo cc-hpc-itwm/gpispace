@@ -161,7 +161,7 @@ namespace fhg
 
         // - function ------------------------------------------------
         void set_function_name ( const QObject*
-                               , ::xml::parse::type::function_type&
+                               , const data::handle::function&
                                , const QString&
                                );
         void set_property ( const QObject*
@@ -223,10 +223,10 @@ namespace fhg
 
 
         // - function ------------------------------------------------
-        void signal_set_function_name ( const QObject*
-                                      , const ::xml::parse::type::function_type&
-                                      , const QString&
-                                      );
+        void function_name_changed ( const QObject*
+                                   , const data::handle::function&
+                                   , const QString&
+                                   );
 
         void property_changed ( const QObject*
                               , const data::handle::function&

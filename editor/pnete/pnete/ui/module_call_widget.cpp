@@ -1,5 +1,10 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
+#include <pnete/ui/module_call_widget.hpp>
+
+#include <pnete/data/handle/function.hpp>
+#include <pnete/ui/port_lists_widget.hpp>
+
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QGroupBox>
@@ -7,9 +12,6 @@
 
 // remove me
 #include <QTextEdit>
-
-#include <pnete/ui/module_call_widget.hpp>
-#include <pnete/ui/port_lists_widget.hpp>
 
 namespace fhg
 {
