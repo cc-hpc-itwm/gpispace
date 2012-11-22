@@ -1,23 +1,21 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_BASE_EDITOR_WIDGET_HPP
-#define _PNETE_UI_BASE_EDITOR_WIDGET_HPP 1
+#ifndef PNETE_UI_BASE_EDITOR_WIDGET_HPP
+#define PNETE_UI_BASE_EDITOR_WIDGET_HPP
+
+#include <pnete/ui/base_editor_widget.fwd.hpp>
+
+#include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/internal.fwd.hpp>
+#include <pnete/data/proxy.hpp>
 
 #include <QObject>
 #include <QWidget>
-
-#include <pnete/data/proxy.hpp>
 
 namespace fhg
 {
   namespace pnete
   {
-    namespace data
-    {
-      class internal_type;
-      class change_manager_t;
-    }
-
     namespace ui
     {
       class base_editor_widget : public QWidget

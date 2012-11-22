@@ -3,6 +3,12 @@
 #ifndef _PNETE_DATA_PROXY_HPP
 #define _PNETE_DATA_PROXY_HPP 1
 
+#include <pnete/data/proxy.fwd.hpp>
+
+#include <pnete/data/internal.fwd.hpp>
+#include <pnete/ui/document_view.fwd.hpp>
+#include <pnete/ui/graph/scene.fwd.hpp>
+
 #include <xml/parse/id/types.hpp>
 
 #include <boost/variant.hpp>
@@ -11,23 +17,11 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace ui
-    {
-      class document_view;
-
-      namespace graph
-      {
-        class scene_type;
-      }
-    }
-
     namespace data
     {
-      class internal_type;
-
       namespace proxy
       {
-        template<typename data_type, typename display_type = void>
+        template<typename data_type, typename display_type>
         class proxy_base
         {
         public:

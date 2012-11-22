@@ -1,15 +1,18 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_DOCUMENT_VIEW_HPP
-#define _PNETE_UI_DOCUMENT_VIEW_HPP 1
+#ifndef PNETE_UI_DOCUMENT_VIEW_HPP
+#define PNETE_UI_DOCUMENT_VIEW_HPP
 
-#include <QObject>
+#include <pnete/ui/document_view.fwd.hpp>
 
-#include <pnete/data/proxy.hpp>
-
+#include <pnete/data/handle/function.fwd.hpp>
+#include <pnete/data/proxy.fwd.hpp>
+#include <pnete/ui/base_editor_widget.fwd.hpp>
 #include <pnete/ui/dock_widget.hpp>
 
-#include <boost/optional.hpp>
+#include <boost/optional/optional_fwd.hpp>
+
+#include <QObject>
 
 class QString;
 
@@ -19,8 +22,6 @@ namespace fhg
   {
     namespace ui
     {
-      class base_editor_widget;
-
       class document_view : public dock_widget
       {
         Q_OBJECT;

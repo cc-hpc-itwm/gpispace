@@ -1,3 +1,5 @@
+# bernd.loerwald@itwm.fraunhofer.de
+
 include(${QT_USE_FILE})
 
 set(data_SRCS
@@ -17,6 +19,7 @@ set(data_HDRS
 set (data_FWDS
   change_manager.fwd.hpp
   internal.fwd.hpp
+  proxy.fwd.hpp>
 )
 
 set(data_UIS
