@@ -3,84 +3,14 @@
   <out name="out" type="long" place="id"/>
 
   <net>
-    <struct name="state">
-      <field name="id" type="long"/>
-      <field name="max" type="long"/>
-    </struct>
-
     <place name="N" type="long"/>
-    <place name="state" type="state"/>
     <place name="id" type="long"/>
-    <place name="check_break" type="state"/>
-    <place name="credit_check_break" type="control">
-      <token><value>[]</value></token>
-    </place>
-
-    <transition name="init">
-      <defun>
-        <in name="N" type="long"/>
-        <in name="credit_check_break" type="control"/>
-        <out name="state" type="state"/>
-        <expression>
-          ${state.id} := 0L; ${state.max} := ${N}
-        </expression>
-      </defun>
-      <connect-in place="N" port="N"/>
-      <connect-in port="credit_check_break" place="credit_check_break"/>
-      <connect-out port="state" place="check_break"/>
-    </transition>
-
-    <transition name="break">
-      <defun>
-        <in name="state" type="state"/>
-        <out name="credit_check_break" type="control"/>
-        <expression>
-          ${credit_check_break} := []
-        </expression>
-        <condition>
-          ${state.id} :ge: ${state.max}
-        </condition>
-      </defun>
-      <connect-in place="check_break" port="state"/>
-      <connect-out port="credit_check_break" place="credit_check_break"/>
-    </transition>
-
-    <transition name="not_break">
-      <properties name="fhg">
-        <properties name="pnetv">
-          <property key="firings_limit">1</property>
-        </properties>
-      </properties>
-      <defun>
-        <in name="state" type="state"/>
-        <out name="state" type="state"/>
-        <out name="credit_check_break" type="control"/>
-        <expression>
-          ${credit_check_break} := []
-        </expression>
-        <condition>
-          ${state.id} :lt: ${state.max}
-        </condition>
-      </defun>
-      <connect-in place="check_break" port="state"/>
-      <connect-out place="state" port="state"/>
-      <connect-out port="credit_check_break" place="credit_check_break"/>
-    </transition>
-
-    <transition name="step">
-      <defun>
-        <in name="state" type="state"/>
-        <in name="credit_check_break" type="control"/>
-        <out name="state" type="state"/>
-        <out name="id" type="long"/>
-        <expression>
-          ${id} := ${state.id}; ${state.id} := ${state.id} + 1
-        </expression>
-      </defun>
-      <connect-in place="state" port="state"/>
-      <connect-in port="credit_check_break" place="credit_check_break"/>
-      <connect-out place="check_break" port="state"/>
-      <connect-out place="id" port="id"/>
+    <place name="left" type="long"><token><value>0L</value></token></place>
+    <transition name="ntom" inline="true">
+      <include-function href="sequence/ntom.xpnet"/>
+      <connect-in port="right" place="N"/>
+      <connect-read port="left" place="left"/>
+      <connect-out port="out" place="id"/>
     </transition>
   </net>
 </defun>
