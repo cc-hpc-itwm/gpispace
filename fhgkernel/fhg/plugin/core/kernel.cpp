@@ -303,6 +303,29 @@ namespace fhg
       return m_plugins.find(name) != m_plugins.end();
     }
 
+    int kernel_t::handle_signal (int signum, siginfo_t *info, void *ctxt)
+    {
+      MLOG (DEBUG, "handling signal: " << signum);
+      plugin_map_t to_signal;
+      {
+        lock_type plugins_lock (m_mtx_plugins);
+        to_signal = m_plugins;
+      }
+
+      for ( plugin_map_t::iterator it = to_signal.begin ()
+          ; it != to_signal.end()
+          ; ++it
+          )
+      {
+        it->second->plugin()->handle_plugin_signal ( signum
+                                                   , info
+                                                   , ctxt
+                                                   );
+      }
+
+      return 0;
+    }
+
     static bool is_owner_of_task ( const std::string & p
                                  , const task_info_t & info
                                  )
