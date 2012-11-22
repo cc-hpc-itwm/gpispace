@@ -606,7 +606,12 @@ namespace fhg
       }
     }
 
-    int kernel_t::run (bool unload_at_end)
+    int kernel_t::run ()
+    {
+      return this->run_and_unload (true);
+    }
+
+    int kernel_t::run_and_unload (bool unload_at_end)
     {
       struct timeval tv_start;
       struct timeval tv_diff;

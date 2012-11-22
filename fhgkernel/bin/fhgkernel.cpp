@@ -160,6 +160,7 @@ static void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
   if (kernel)
   {
+    kernel->schedule("kernel", "wait_on_child", &handle_sig_child);
     kernel->handle_signal (sig_num, info, ucontext);
   }
 }
@@ -458,7 +459,8 @@ int main(int ac, char **av)
 
   atexit(&shutdown_kernel);
 
-  int rc = kernel->run (false);
+  int rc = kernel->run_and_unload (false);
+
   MLOG (TRACE, "killing children...");
 
   kill (0, SIGTERM);
