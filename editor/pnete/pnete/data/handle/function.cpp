@@ -25,6 +25,11 @@ namespace fhg
         {
           change_manager().set_property (sender, *this, key, val);
         }
+
+        void function::set_name (const QObject* sender, const QString& name)
+        {
+          change_manager().set_function_name (sender, *this, name);
+        }
       }
     }
   }

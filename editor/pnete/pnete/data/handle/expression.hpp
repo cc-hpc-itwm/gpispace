@@ -11,6 +11,7 @@
 #include <xml/parse/type/expression.fwd.hpp>
 
 class QObject;
+class QString;
 
 namespace fhg
 {
@@ -29,6 +30,8 @@ namespace fhg
           expression ( const expression_meta_base::id_type& id
                      , change_manager_t& change_manager
                      );
+
+          void set_content (const QObject* sender, const QString& content);
 
           using expression_meta_base::operator==;
         };

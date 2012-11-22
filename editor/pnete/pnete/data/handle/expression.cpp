@@ -17,6 +17,12 @@ namespace fhg
                                )
           : expression_meta_base (id, change_manager)
         { }
+
+        void expression::set_content
+          (const QObject* sender, const QString& content)
+        {
+          change_manager().set_expression (sender, *this, content);
+        }
       }
     }
   }

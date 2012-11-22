@@ -11,6 +11,7 @@
 #include <xml/parse/type/function.fwd.hpp>
 
 class QObject;
+class QString;
 
 namespace fhg
 {
@@ -34,6 +35,8 @@ namespace fhg
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
+
+          void set_name (const QObject* sender, const QString& name);
 
           using function_meta_base::operator==;
         };
