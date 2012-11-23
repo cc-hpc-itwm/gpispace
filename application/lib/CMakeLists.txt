@@ -14,6 +14,7 @@ set (xmls
   trigger_when.xml
   triple.xml
   wait.xml
+  sequence/ntom.xpnet
   )
 
 install (FILES ${xmls}
