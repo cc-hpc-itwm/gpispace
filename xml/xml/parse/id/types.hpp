@@ -84,6 +84,7 @@ namespace xml
           type::XML_TYPE& get_ref() const;                              \
                                                                         \
           const id::NAME& id() const;                                   \
+          mapper* id_mapper() const;                                    \
                                                                         \
           friend std::size_t hash_value (const NAME&);                  \
           friend std::ostream& operator<< (std::ostream&, const NAME&); \
