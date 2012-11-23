@@ -1,16 +1,28 @@
 <defun name="sequence">
+  <include-structs href="sequence/interval.xpnet"/>
   <in name="amount" type="long" place="N"/>
   <out name="out" type="long" place="id"/>
 
   <net>
     <place name="N" type="long"/>
     <place name="id" type="long"/>
-    <place name="left" type="long"><token><value>0L</value></token></place>
+    <place name="interval" type="interval"/>
+    <transition name="make_interval">
+      <defun>
+        <in name="N" type="long"/>
+        <out name="interval" type="interval"/>
+        <expression>
+          ${interval.left} := 0L;
+          ${interval.right} := ${N};
+        </expression>
+      </defun>
+      <connect-in port="N" place="N"/>
+      <connect-out port="interval" place="interval"/>
+    </transition>
     <transition name="ntom" inline="true">
       <include-function href="sequence/ntom.xpnet"/>
-      <connect-in port="right" place="N"/>
-      <connect-read port="left" place="left"/>
-      <connect-out port="out" place="id"/>
+      <connect-in port="interval" place="interval"/>
+      <connect-out port="value" place="id"/>
     </transition>
   </net>
 </defun>
