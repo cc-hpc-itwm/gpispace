@@ -7,5 +7,4 @@ endif
 
 include $(SDPA_HOME)/share/sdpa/make/common.mk
 
-PUT_PORT += left=5L
-PUT_PORT += right=12L
+PUT_PORT += interval="[left:=5L,right:=12L]"

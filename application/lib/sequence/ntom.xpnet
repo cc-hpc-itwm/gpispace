@@ -1,51 +1,40 @@
 <defun name="ntom">
-  <in name="left" type="long" place="left"/>
-  <in name="right" type="long" place="right"/>
-  <out name="out" type="long" place="id"/>
+  <include-structs href="interval.xpnet"/>
+  <in name="interval" type="interval" place="interval_IN"/>
+  <out name="value" type="long" place="value"/>
 
   <net>
-    <struct name="state">
-      <field name="id" type="long"/>
-      <field name="max" type="long"/>
-    </struct>
-
-    <place name="left" type="long"/>
-    <place name="right" type="long"/>
-    <place name="state" type="state"/>
-    <place name="id" type="long"/>
-    <place name="check_break" type="state"/>
+    <place name="interval_IN" type="interval"/>
+    <place name="interval" type="interval"/>
+    <place name="value" type="long"/>
+    <place name="check_break" type="interval"/>
     <place name="credit_check_break" type="control">
       <token><value>[]</value></token>
     </place>
 
     <transition name="init">
       <defun>
-        <in name="left" type="long"/>
-        <in name="right" type="long"/>
+        <inout name="interval" type="interval"/>
         <in name="credit_check_break" type="control"/>
-        <out name="state" type="state"/>
-        <expression>
-          ${state.id} := ${left}; ${state.max} := ${right}
-        </expression>
+        <expression/>
       </defun>
-      <connect-in port="left" place="left"/>
-      <connect-in port="right" place="right"/>
+      <connect-in port="interval" place="interval_IN"/>
+      <connect-out port="interval" place="check_break"/>
       <connect-in port="credit_check_break" place="credit_check_break"/>
-      <connect-out port="state" place="check_break"/>
     </transition>
 
     <transition name="break">
       <defun>
-        <in name="state" type="state"/>
+        <in name="interval" type="interval"/>
         <out name="credit_check_break" type="control"/>
         <expression>
           ${credit_check_break} := []
         </expression>
         <condition>
-          ${state.id} :ge: ${state.max}
+          ${interval.left} :ge: ${interval.right}
         </condition>
       </defun>
-      <connect-in place="check_break" port="state"/>
+      <connect-in place="check_break" port="interval"/>
       <connect-out port="credit_check_break" place="credit_check_break"/>
     </transition>
 
@@ -56,35 +45,34 @@
         </properties>
       </properties>
       <defun>
-        <in name="state" type="state"/>
-        <out name="state" type="state"/>
+        <inout name="interval" type="interval"/>
         <out name="credit_check_break" type="control"/>
         <expression>
           ${credit_check_break} := []
         </expression>
         <condition>
-          ${state.id} :lt: ${state.max}
+          ${interval.left} :lt: ${interval.right}
         </condition>
       </defun>
-      <connect-in place="check_break" port="state"/>
-      <connect-out place="state" port="state"/>
+      <connect-in place="check_break" port="interval"/>
+      <connect-out place="interval" port="interval"/>
       <connect-out port="credit_check_break" place="credit_check_break"/>
     </transition>
 
     <transition name="step">
       <defun>
-        <in name="state" type="state"/>
+        <inout name="interval" type="interval"/>
         <in name="credit_check_break" type="control"/>
-        <out name="state" type="state"/>
-        <out name="id" type="long"/>
+        <out name="value" type="long"/>
         <expression>
-          ${id} := ${state.id}; ${state.id} := ${state.id} + 1
+          ${value} := ${interval.left};
+          ${interval.left} := ${interval.left} + 1L
         </expression>
       </defun>
-      <connect-in place="state" port="state"/>
+      <connect-in place="interval" port="interval"/>
       <connect-in port="credit_check_break" place="credit_check_break"/>
-      <connect-out place="check_break" port="state"/>
-      <connect-out place="id" port="id"/>
+      <connect-out place="check_break" port="interval"/>
+      <connect-out place="value" port="value"/>
     </transition>
   </net>
 </defun>
