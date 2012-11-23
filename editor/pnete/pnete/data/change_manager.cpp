@@ -49,7 +49,7 @@ namespace fhg
           };
         }
 
-        static std::string inc (const std::string& s)
+        std::string inc (const std::string& s)
         {
           unsigned long num (0);
 
