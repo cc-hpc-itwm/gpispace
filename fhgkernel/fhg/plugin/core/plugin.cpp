@@ -206,6 +206,24 @@ namespace fhg
       m_plugin->fhg_on_plugin_preunload (name);
     }
 
+    void plugin_t::handle_plugin_signal (int sig, siginfo_t *info, void *ctxt)
+    {
+      assert (m_plugin);
+      assert (m_started);
+      try
+      {
+        m_plugin->fhg_on_plugin_signal (sig, info, ctxt);
+      }
+      catch (std::exception const &ex)
+      {
+        MLOG ( WARN
+             , "plugin '" << name () << "' failed to handle"
+             << " signal := " << sig
+             << " reason := " << ex.what ()
+             );
+      }
+    }
+
     plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force)
     {
       return create(filename, force, RTLD_GLOBAL | RTLD_LAZY);

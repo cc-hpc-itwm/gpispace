@@ -122,24 +122,46 @@ static void handle_sig_child()
 
 void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
+  if (kernel)
+  {
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
   shutdown_kernel();
 }
 
 void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
   if (kernel)
+  {
     kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
 }
 
 void sigchild_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
   if (kernel)
+  {
     kernel->schedule("kernel", "wait_on_child", &handle_sig_child);
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
 }
 
 void sigint_hdlr(int sig_num, siginfo_t *info, void *ucontext)
 {
+  if (kernel)
+  {
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
   shutdown_kernel ();
+}
+
+static void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)
+{
+  if (kernel)
+  {
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
 }
 
 void install_signal_handler()
@@ -225,6 +247,26 @@ void install_signal_handler()
   {
     fprintf(stderr, "error setting signal handler for %d (%s)\n",
            SIGPIPE, strsignal(SIGPIPE));
+
+    exit(EXIT_FAILURE);
+  }
+
+  sigact.sa_sigaction = sigusr_hdlr;
+  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+  if (sigaction(SIGUSR1, &sigact, (struct sigaction *)NULL) != 0)
+  {
+    fprintf(stderr, "error setting signal handler for %d (%s)\n",
+           SIGCHLD, strsignal(SIGUSR1));
+
+    exit(EXIT_FAILURE);
+  }
+
+  sigact.sa_sigaction = sigusr_hdlr;
+  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+  if (sigaction(SIGUSR2, &sigact, (struct sigaction *)NULL) != 0)
+  {
+    fprintf(stderr, "error setting signal handler for %d (%s)\n",
+           SIGCHLD, strsignal(SIGUSR1));
 
     exit(EXIT_FAILURE);
   }
@@ -416,11 +458,13 @@ int main(int ac, char **av)
 
   atexit(&shutdown_kernel);
 
-  int rc = kernel->run();
-  MLOG(TRACE, "shutting down... (" << rc << ")");
-  MLOG(TRACE, "killing children...");
+  int rc = kernel->run_and_unload (false);
+
+  MLOG (TRACE, "killing children...");
 
   kill (0, SIGTERM);
+
+  MLOG (DEBUG, "shutting down... (" << rc << ")");
 
   kernel->unload_all();
 

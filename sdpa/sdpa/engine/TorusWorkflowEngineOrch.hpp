@@ -119,7 +119,7 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
 
         std::stringstream sstr;
         boost::archive::text_oarchive ar(sstr);
-        ar << m_product;
+        ar << (matrix_t const&)(m_product);
 
         SDPA_LOG_INFO("All partial results have been computed. Inform the orchestrator that the workflow "<<m_wfid<<" finished!");
         pIAgent_->finished(m_wfid, sstr.str());

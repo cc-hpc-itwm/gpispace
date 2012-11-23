@@ -31,6 +31,9 @@ namespace expr
         case _bitset_tohex:
         case _bitset_fromhex:
         case _bitset_or:
+        case _bitset_and:
+        case _bitset_xor:
+        case _bitset_count:
         case _stack_top:
         case _stack_push:
         case _stack_pop:

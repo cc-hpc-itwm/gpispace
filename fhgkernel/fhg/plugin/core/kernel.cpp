@@ -303,6 +303,29 @@ namespace fhg
       return m_plugins.find(name) != m_plugins.end();
     }
 
+    int kernel_t::handle_signal (int signum, siginfo_t *info, void *ctxt)
+    {
+      MLOG (DEBUG, "handling signal: " << signum);
+      plugin_map_t to_signal;
+      {
+        lock_type plugins_lock (m_mtx_plugins);
+        to_signal = m_plugins;
+      }
+
+      for ( plugin_map_t::iterator it = to_signal.begin ()
+          ; it != to_signal.end()
+          ; ++it
+          )
+      {
+        it->second->plugin()->handle_plugin_signal ( signum
+                                                   , info
+                                                   , ctxt
+                                                   );
+      }
+
+      return 0;
+    }
+
     static bool is_owner_of_task ( const std::string & p
                                  , const task_info_t & info
                                  )
@@ -585,6 +608,11 @@ namespace fhg
 
     int kernel_t::run ()
     {
+      return this->run_and_unload (true);
+    }
+
+    int kernel_t::run_and_unload (bool unload_at_end)
+    {
       struct timeval tv_start;
       struct timeval tv_diff;
       struct timeval tv_end;
@@ -646,7 +674,10 @@ namespace fhg
       m_task_handler.interrupt();
       m_task_handler.join();
 
-      unload_all ();
+      if (unload_at_end)
+      {
+        unload_all ();
+      }
 
       m_running = false;
 

@@ -1,6 +1,8 @@
 #ifndef FHG_PLUGIN_BASE_HPP
 #define FHG_PLUGIN_BASE_HPP 1
 
+#include <csignal>
+
 namespace fhg
 {
   namespace plugin
@@ -29,6 +31,7 @@ namespace fhg
       virtual void fhg_on_plugin_loaded (std::string const & name) {}
       virtual void fhg_on_plugin_unload (std::string const & name) {}
       virtual void fhg_on_plugin_preunload (std::string const & name) {}
+      virtual void fhg_on_plugin_signal (int sig, siginfo_t *info, void *uctxt) {}
     protected:
       Plugin ()
         : m_kernel (0)

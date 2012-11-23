@@ -31,6 +31,9 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 #define FHG_ON_PLUGIN_UNLOAD(p) void fhg_on_plugin_unload(std::string const &p)
 #define FHG_ON_PLUGIN_PREUNLOAD(p) void fhg_on_plugin_preunload(std::string const &p)
 
+#define FHG_ON_SIGNAL(sig, info, ctxt) \
+  void fhg_on_plugin_signal(int sig, siginfo_t *info, void *ctxt)
+
 #ifdef FHG_STATIC_PLUGIN
 #  define EXPORT_FHG_PLUGIN(name, cls, provides, desc, author, version, license, depends, key) \
   const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name()   \

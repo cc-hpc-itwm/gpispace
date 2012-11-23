@@ -189,6 +189,7 @@ namespace literal
         switch (token)
           {
           case expr::token::_bitset_tohex: return bitsetofint::to_hex (b);
+          case expr::token::_bitset_count: return long(b.count());
           default:
             throw expr::exception::eval::type_error
               (fhg::util::show (token) + " (" + fhg::util::show(b) + ")");
@@ -450,6 +451,8 @@ namespace literal
           {
           case expr::token::eq: return l == r ? true : false;
           case expr::token::_bitset_or: return l | r;
+          case expr::token::_bitset_and: return l & r;
+          case expr::token::_bitset_xor: return l ^ r;
           default:
             throw expr::exception::eval::type_error
               ( fhg::util::show (token) +
