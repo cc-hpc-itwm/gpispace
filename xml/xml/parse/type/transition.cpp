@@ -31,6 +31,39 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      namespace
+      {
+        typedef transition_type::function_or_use_type function_or_use_type;
+
+        class visitor_reparent : public boost::static_visitor<void>
+        {
+        public:
+          visitor_reparent (const id::transition& parent)
+            : _parent (parent)
+          { }
+
+          void operator() (const id::ref::function& id) const
+          {
+            id.get_ref().parent (_parent);
+          }
+          void operator() (const id::ref::use& id) const
+          {
+            id.get_ref().parent (_parent);
+          }
+
+        private:
+          const id::transition& _parent;
+        };
+
+        const function_or_use_type& reparent ( const function_or_use_type& fun
+                                             , const id::transition& parent
+                                             )
+        {
+          boost::apply_visitor (visitor_reparent (parent), fun);
+          return fun;
+        }
+      }
+
       transition_type::transition_type
         ( ID_CONS_PARAM(transition)
         , PARENT_CONS_PARAM(net)
@@ -38,7 +71,7 @@ namespace xml
         )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _function_or_use (function_or_use)
+        , _function_or_use (reparent (function_or_use, _id))
       {
         _id_mapper->put (_id, *this);
       }
@@ -63,12 +96,15 @@ namespace xml
         )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _function_or_use (fun_or_use)
+        , _function_or_use ( fun_or_use
+                           ? boost::make_optional (reparent (*fun_or_use, _id))
+                           : boost::none
+                           )
         , _name (name)
-        , _in (in)
-        , _out (out)
-        , _read (read)
-        , _place_map (place_map)
+        , _in (in, _id)
+        , _out (out, _id)
+        , _read (read, _id)
+        , _place_map (place_map, _id)
         , structs (structs)
         , cond (cond)
         , requirements (requirements)
@@ -105,7 +141,7 @@ namespace xml
         transition_type::function_or_use
         (const function_or_use_type& function_or_use_)
       {
-        return *(_function_or_use = function_or_use_);
+        return *(_function_or_use = reparent (function_or_use_, id()));
       }
 
       namespace
@@ -172,63 +208,67 @@ namespace xml
 
       // ***************************************************************** //
 
-      void transition_type::push_in (const id::ref::connect& id)
+      void transition_type::push_in (const id::ref::connect& connect_id)
       {
-        const id::ref::connect& id_old (_in.push (id));
+        const id::ref::connect& id_old (_in.push (connect_id));
 
-        if (not (id_old == id))
+        if (not (id_old == connect_id))
         {
           throw error::duplicate_connect ( "in"
-                                         , id
+                                         , connect_id
                                          , id_old
                                          , make_reference_id()
                                          , path
                                          );
         }
+        connect_id.get_ref().parent (id());
       }
 
-      void transition_type::push_out (const id::ref::connect& id)
+      void transition_type::push_out (const id::ref::connect& connect_id)
       {
-        const id::ref::connect& id_old (_out.push (id));
+        const id::ref::connect& id_old (_out.push (connect_id));
 
-        if (not (id_old == id))
+        if (not (id_old == connect_id))
         {
           throw error::duplicate_connect ( "out"
-                                         , id
+                                         , connect_id
                                          , id_old
                                          , make_reference_id()
                                          , path
                                          );
         }
+        connect_id.get_ref().parent (id());
       }
 
-      void transition_type::push_read (const id::ref::connect& id)
+      void transition_type::push_read (const id::ref::connect& connect_id)
       {
-        const id::ref::connect& id_old (_read.push (id));
+        const id::ref::connect& id_old (_read.push (connect_id));
 
-        if (not (id_old == id))
+        if (not (id_old == connect_id))
         {
           throw error::duplicate_connect ( "read"
-                                         , id
+                                         , connect_id
                                          , id_old
                                          , make_reference_id()
                                          , path
                                          );
         }
+        connect_id.get_ref().parent (id());
       }
 
-      void transition_type::push_place_map (const id::ref::place_map& id)
+      void transition_type::push_place_map (const id::ref::place_map& pm_id)
       {
-        const id::ref::place_map& id_old (_place_map.push (id));
+        const id::ref::place_map& id_old (_place_map.push (pm_id));
 
-        if (not (id_old == id))
+        if (not (id_old == pm_id))
         {
-          throw error::duplicate_place_map ( id
+          throw error::duplicate_place_map ( pm_id
                                            , id_old
                                            , make_reference_id()
                                            , path
                                            );
         }
+        pm_id.get_ref().parent (id());
       }
 
       // ***************************************************************** //
