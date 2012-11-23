@@ -16,8 +16,6 @@
 #include <we/type/property.fwd.hpp>
 
 #include <xml/parse/id/types.fwd.hpp>
-#include <xml/parse/type/expression.fwd.hpp>
-#include <xml/parse/type/function.fwd.hpp>
 
 #include <QUndoStack>
 
