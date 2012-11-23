@@ -496,8 +496,10 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::function function_id (net.id().id_mapper()->next_id());
-        const ::xml::parse::id::transition transition_id (net.id().id_mapper()->next_id());
+        const ::xml::parse::id::function function_id
+          (net.id().id_mapper()->next_id());
+        const ::xml::parse::id::transition transition_id
+          (net.id().id_mapper()->next_id());
 
         const ::xml::parse::id::ref::transition transition
           ( ::xml::parse::type::transition_type
@@ -509,10 +511,11 @@ namespace fhg
                 ( function_id
                 , net.id().id_mapper()
                 , ::xml::parse::type::function_type::make_parent (transition_id)
-                , ::xml::parse::type::expression_type ( net.id().id_mapper()->next_id()
-                                                      , net.id().id_mapper()
-                                                      , function_id
-                                                      ).make_reference_id()
+                , ::xml::parse::type::expression_type
+                  ( net.id().id_mapper()->next_id()
+                  , net.id().id_mapper()
+                  , function_id
+                  ).make_reference_id()
                 ).make_reference_id()
               )
             ).make_reference_id()
