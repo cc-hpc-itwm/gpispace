@@ -76,7 +76,7 @@ namespace fhg
       internal_type::internal_type (const kind& kind_)
         : _state ()
         , _function (make_function (kind_, _state))
-        , _change_manager (_state)
+        , _change_manager (NULL)
         , _root_proxy (*weaver::function (_function, this).proxy())
       {}
 
@@ -86,7 +86,7 @@ namespace fhg
                                                , filename.toStdString()
                                                )
                     )
-        , _change_manager (_state)
+        , _change_manager (NULL)
         , _root_proxy (*weaver::function (_function, this).proxy())
       {}
 

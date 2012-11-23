@@ -33,9 +33,9 @@ namespace fhg
   {
     namespace data
     {
-      change_manager_t::change_manager_t (::xml::parse::state::type& state)
-        : _state (state)
-      {}
+      change_manager_t::change_manager_t (QObject* parent)
+        : QUndoStack (parent)
+      { }
 
       namespace
       {
@@ -471,24 +471,22 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::transition transition_id (_state.id_mapper()->next_id());
-
         const ::xml::parse::id::ref::transition transition
           ( ::xml::parse::type::transition_type
-            ( transition_id
-            , _state.id_mapper()
+            ( net.id().id_mapper()->next_id()
+            , net.id().id_mapper()
             , net.id().id()
             , fun
             ).make_reference_id()
           );
 
-        transition.get_ref().name (fun.get().name() ? *fun.get().name() : "transition");
-
+        std::string name (fun.get().name() ? *fun.get().name() : "transition");
         //! \todo Don't check for duplicate names when fun.name is set?
-        while (net.get().has_transition (transition.get().name()))
+        while (net.get().has_transition (name))
         {
-          transition.get_ref().name (inc (transition.get().name()));
+          name = inc (name);
         }
+        transition.get_ref().name (name);
 
         push (new action::add_transition (*this, origin, net.id(), transition));
       }
@@ -498,21 +496,21 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::function function_id (_state.id_mapper()->next_id());
-        const ::xml::parse::id::transition transition_id (_state.id_mapper()->next_id());
+        const ::xml::parse::id::function function_id (net.id().id_mapper()->next_id());
+        const ::xml::parse::id::transition transition_id (net.id().id_mapper()->next_id());
 
         const ::xml::parse::id::ref::transition transition
           ( ::xml::parse::type::transition_type
             ( transition_id
-            , _state.id_mapper()
+            , net.id().id_mapper()
             , net.id().id()
             , ::xml::parse::id::ref::function
               ( ::xml::parse::type::function_type
                 ( function_id
-                , _state.id_mapper()
+                , net.id().id_mapper()
                 , ::xml::parse::type::function_type::make_parent (transition_id)
-                , ::xml::parse::type::expression_type ( _state.id_mapper()->next_id()
-                                                      , _state.id_mapper()
+                , ::xml::parse::type::expression_type ( net.id().id_mapper()->next_id()
+                                                      , net.id().id_mapper()
                                                       , function_id
                                                       ).make_reference_id()
                 ).make_reference_id()
@@ -520,13 +518,13 @@ namespace fhg
             ).make_reference_id()
           );
 
-        transition.get_ref().name ("transition");
-
+        std::string name ("transition");
         //! \todo Don't check for duplicate names when fun.name is set?
-        while (net.get().has_transition (transition.get().name()))
+        while (net.get().has_transition (name))
         {
-          transition.get_ref().name (inc (transition.get().name()));
+          name = inc (name);
         }
+        transition.get_ref().name (name);
 
         push (new action::add_transition (*this, origin, net.id(), transition));
       }
@@ -602,19 +600,20 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::place id (_state.id_mapper()->next_id());
-        {
-          ::xml::parse::type::place_type place
-            (id, _state.id_mapper(), net.id().id());
-        }
+        const ::xml::parse::id::ref::place place
+          ( ::xml::parse::type::place_type
+            ( net.id().id_mapper()->next_id()
+            , net.id().id_mapper()
+            , net.id().id()
+            ).make_reference_id()
+          );
 
-        const ::xml::parse::id::ref::place place (id, _state.id_mapper());
-        place.get_ref().name ("place");
-
-        while (net.get().has_place (place.get().name()))
+        std::string name ("place");
+        while (net.get().has_place (name))
         {
-          place.get_ref().name (inc (place.get().name()));
+          name = inc (name);
         }
+        place.get_ref().name (name);
 
         push (new action::add_place (*this, origin, net.id(), place));
       }

@@ -15,9 +15,7 @@
 
 #include <we/type/property.fwd.hpp>
 
-//! \todo Should not be here.
 #include <xml/parse/id/types.fwd.hpp>
-#include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/expression.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 
@@ -61,8 +59,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        //! \todo This is only a hack. There should not be a link to the state!
-        change_manager_t (::xml::parse::state::type& state);
+        change_manager_t (QObject* parent = NULL);
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------
@@ -329,8 +326,6 @@ namespace fhg
                                  , typename ARG_TYPE(Fun,5)
                                  , typename ARG_TYPE(Fun,6));
 #undef ARG_TYPE
-
-        ::xml::parse::state::type& _state;
       };
     }
   }
