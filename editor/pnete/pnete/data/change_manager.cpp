@@ -519,7 +519,7 @@ namespace fhg
           virtual void undo()
           {
             set_expression_content_impl
-              (_change_manager, NULL, _expression, _new_content);
+              (_change_manager, NULL, _expression, _old_content);
           }
 
           virtual void redo()
