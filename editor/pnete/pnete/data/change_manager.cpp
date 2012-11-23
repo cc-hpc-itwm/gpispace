@@ -473,13 +473,14 @@ namespace fhg
       {
         const ::xml::parse::id::transition transition_id (_state.id_mapper()->next_id());
 
-        {
-          const ::xml::parse::type::transition_type transition
-            (transition_id, _state.id_mapper(), net.id().id(), fun);
-        }
-
         const ::xml::parse::id::ref::transition transition
-          (transition_id, _state.id_mapper());
+          ( ::xml::parse::type::transition_type
+            ( transition_id
+            , _state.id_mapper()
+            , net.id().id()
+            , fun
+            ).make_reference_id()
+          );
 
         transition.get_ref().function_or_use (fun);
         fun.get_ref().parent (transition_id);
