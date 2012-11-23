@@ -478,6 +478,57 @@ namespace fhg
         };
 
         // - function ------------------------------------------------
+        void set_function_name_impl
+          ( ACTION_ARG_LIST
+          , const data::handle::function& function
+          , const boost::optional<std::string>& name
+          )
+        {
+          function.get_ref().name (name);
+
+          change_manager.emit_signal
+            ( &signal::function_name_changed
+            , origin
+            , function
+            , QString::fromStdString (name.get_value_or (""))
+            );
+        }
+
+        class set_function_name : public QUndoCommand
+        {
+        public:
+          set_function_name
+            ( ACTION_ARG_LIST
+            , const handle::function& function
+            , const QString& name
+            )
+              : ACTION_INIT ("set_function_name")
+              , _function (function)
+              , _old_name (function.get().name())
+              , _new_name
+                (boost::make_optional (!name.isEmpty(), name.toStdString()))
+          { }
+
+          virtual void undo()
+          {
+            set_function_name_impl
+              (_change_manager, NULL, _function, _old_name);
+          }
+
+          virtual void redo()
+          {
+            set_function_name_impl
+              (_change_manager, _origin, _function, _new_name);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const data::handle::function _function;
+          const boost::optional<std::string> _old_name;
+          const boost::optional<std::string> _new_name;
+        };
+
         // - expression ----------------------------------------------
         void set_expression_content_impl
           ( ACTION_ARG_LIST
@@ -854,20 +905,7 @@ namespace fhg
         , const QString& name
         )
       {
-        if (!name.isEmpty())
-        {
-          fun.get_ref().name (name.toStdString());
-        }
-        else
-        {
-          fun.get_ref().name (boost::none);
-        }
-
-        emit_signal ( &signal::function_name_changed
-                    , origin
-                    , fun
-                    , name
-                    );
+        push (new action::set_function_name (*this, origin, fun, name));
       }
 
       void change_manager_t::set_property
