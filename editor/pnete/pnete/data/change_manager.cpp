@@ -482,8 +482,6 @@ namespace fhg
             ).make_reference_id()
           );
 
-        transition.get_ref().function_or_use (fun);
-        fun.get_ref().parent (transition_id);
         transition.get_ref().name (fun.get().name() ? *fun.get().name() : "transition");
 
         //! \todo Don't check for duplicate names when fun.name is set?
