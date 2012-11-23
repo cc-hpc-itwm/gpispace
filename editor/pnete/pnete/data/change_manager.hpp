@@ -22,6 +22,15 @@
 #include <boost/function_types/function_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
 
+#include <boost/preprocessor/arithmetic/add.hpp>
+#include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/config/limits.hpp>
+#include <boost/preprocessor/facilities/empty.hpp>
+#include <boost/preprocessor/punctuation/comma_if.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
+
 class QPointF;
 
 namespace fhg
@@ -154,37 +163,25 @@ namespace fhg
                             , const QString&
                             );
 
-#define ARG_TYPE(function_type,n)                                       \
-  boost::mpl::at_c<boost::function_types::parameter_types<function_type>,n>::type
+#define EMITTER_ARGS(Z,N,TEXT) BOOST_PP_COMMA_IF(N)                     \
+      typename boost::mpl::at_c                                         \
+        < boost::function_types::parameter_types<Fun>                   \
+        , BOOST_PP_ADD (N, 1)                                           \
+        >::type
 
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4)
-                                 , typename ARG_TYPE(Fun,5));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4)
-                                 , typename ARG_TYPE(Fun,5)
-                                 , typename ARG_TYPE(Fun,6));
-#undef ARG_TYPE
+#define EMITTER_BODY(Z,ARGC,TEXT)                                       \
+      template<typename Fun>                                            \
+      void emit_signal                                                  \
+        ( Fun fun                                                       \
+        , BOOST_PP_REPEAT ( BOOST_PP_ADD (1, ARGC)                      \
+                          , EMITTER_ARGS, BOOST_PP_EMPTY                \
+                          )                                             \
+        );
+
+      BOOST_PP_REPEAT_FROM_TO (1, 10, EMITTER_BODY, BOOST_PP_EMPTY)
+
+#undef EMITTER_ARGS
+#undef EMITTER_BODY
 
       signals:
 

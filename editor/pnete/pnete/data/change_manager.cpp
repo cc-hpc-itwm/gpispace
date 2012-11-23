@@ -944,59 +944,30 @@ namespace fhg
              );
       }
 
+#define EMITTER_ARGS(Z,N,TEXT) BOOST_PP_COMMA_IF(N)                     \
+      typename boost::mpl::at_c                                         \
+        < boost::function_types::parameter_types<Fun>                   \
+        , BOOST_PP_ADD (N, 1)                                           \
+        >::type BOOST_PP_CAT (arg, N)
 
+#define EMITTER_BODY(Z,ARGC,TEXT)                                       \
+      template<typename Fun>                                            \
+      void change_manager_t::emit_signal                                \
+        ( Fun fun                                                       \
+        , BOOST_PP_REPEAT ( BOOST_PP_ADD (1, ARGC)                      \
+                          , EMITTER_ARGS, BOOST_PP_EMPTY                \
+                          )                                             \
+        )                                                               \
+      {                                                                 \
+        emit (this->*fun)                                               \
+          (BOOST_PP_ENUM_PARAMS (BOOST_PP_ADD (1, ARGC), arg));         \
+      }
 
-      //! \todo This surely can be done cleaner with variadic templates.
+      BOOST_PP_REPEAT_FROM_TO (1, 10, EMITTER_BODY, BOOST_PP_EMPTY)
 
-#define ARG_TYPE(function_type,n)                                       \
-  boost::mpl::at_c<boost::function_types::parameter_types<function_type>,n>::type
+#undef EMITTER_ARGS
+#undef EMITTER_BODY
 
-      template<typename Fun>
-      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1)
-      {
-        emit (this->*fun) (arg1);
-      }
-      template<typename Fun>
-      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
-                                                 , typename ARG_TYPE(Fun,2) arg2)
-      {
-        emit (this->*fun) (arg1, arg2);
-      }
-      template<typename Fun>
-      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
-                                                 , typename ARG_TYPE(Fun,2) arg2
-                                                 , typename ARG_TYPE(Fun,3) arg3)
-      {
-        emit (this->*fun) (arg1, arg2, arg3);
-      }
-      template<typename Fun>
-      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
-                                                 , typename ARG_TYPE(Fun,2) arg2
-                                                 , typename ARG_TYPE(Fun,3) arg3
-                                                 , typename ARG_TYPE(Fun,4) arg4)
-      {
-        emit (this->*fun) (arg1, arg2, arg3, arg4);
-      }
-      template<typename Fun>
-      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
-                                                 , typename ARG_TYPE(Fun,2) arg2
-                                                 , typename ARG_TYPE(Fun,3) arg3
-                                                 , typename ARG_TYPE(Fun,4) arg4
-                                                 , typename ARG_TYPE(Fun,5) arg5)
-      {
-        emit (this->*fun) (arg1, arg2, arg3, arg4, arg5);
-      }
-      template<typename Fun>
-      void change_manager_t::emit_signal (Fun fun, typename ARG_TYPE(Fun,1) arg1
-                                                 , typename ARG_TYPE(Fun,2) arg2
-                                                 , typename ARG_TYPE(Fun,3) arg3
-                                                 , typename ARG_TYPE(Fun,4) arg4
-                                                 , typename ARG_TYPE(Fun,5) arg5
-                                                 , typename ARG_TYPE(Fun,6) arg6)
-      {
-        emit (this->*fun) (arg1, arg2, arg3, arg4, arg5, arg6);
-      }
-#undef ARG_TYPE
     }
   }
 }
