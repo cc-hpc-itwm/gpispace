@@ -132,47 +132,6 @@ namespace xml
         }
       }
 
-      boost::optional<function_type>
-        transition_type::function_by_id (const id::function& id) const
-      {
-        if ( !_function_or_use
-          || !is_of_type<function_type> (*_function_or_use)
-           )
-        {
-          return boost::none;
-        }
-
-        const function_type& f
-          (boost::get<const function_type&> (*_function_or_use));
-
-        if (f.id() != id)
-        {
-          return boost::none;
-        }
-
-        return f;
-      }
-      boost::optional<function_type&>
-        transition_type::function_by_id_ref (const id::function& id) const
-      {
-        if ( !_function_or_use
-          || !is_of_type<function_type> (*_function_or_use)
-           )
-        {
-          return boost::none;
-        }
-
-        function_type& f
-          (boost::get<function_type&> (*_function_or_use));
-
-        if (f.id() != id)
-        {
-          return boost::none;
-        }
-
-        return f;
-      }
-
       const std::string& transition_type::name() const
       {
         return _name;
