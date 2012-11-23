@@ -103,6 +103,19 @@ namespace fhg
 
       namespace action
       {
+#define ACTION_ARG_LIST                             \
+              change_manager_t& change_manager      \
+            , const QObject* origin
+
+#define ACTION_INIT(NAME)                           \
+                QUndoCommand (QObject::tr (NAME))   \
+              , _change_manager (change_manager)    \
+              , _origin (origin)
+
+#define ACTION_MEMBERS                              \
+          change_manager_t& _change_manager;        \
+          const QObject* _origin
+
         template<typename T>
           ::we::type::property::value_type to_property_type (const T& t)
         {
@@ -466,6 +479,67 @@ namespace fhg
 
         // - function ------------------------------------------------
         // - expression ----------------------------------------------
+        void set_expression_content_impl
+          ( ACTION_ARG_LIST
+          , const data::handle::expression& expression
+          , const std::string& content
+          )
+        {
+          expression.get_ref().set (content);
+
+          change_manager.emit_signal
+            ( &signal::signal_set_expression
+            , origin
+            , expression
+            , QString::fromStdString (content)
+            );
+
+          change_manager.emit_signal
+            ( &signal::signal_set_expression_parse_result
+            , origin
+            , expression
+            , QString::fromStdString (expr::parse::parse_result (content))
+            );
+        }
+
+        class set_expression_content : public QUndoCommand
+        {
+        public:
+          set_expression_content
+            ( ACTION_ARG_LIST
+            , const handle::expression& expression
+            , const QString& new_content
+            )
+              : ACTION_INIT ("set_expression_content")
+              , _expression (expression)
+              , _old_content (expression.get().expression())
+              , _new_content (new_content.toStdString())
+          { }
+
+          virtual void undo()
+          {
+            set_expression_content_impl
+              (_change_manager, NULL, _expression, _new_content);
+          }
+
+          virtual void redo()
+          {
+            set_expression_content_impl
+              (_change_manager, _origin, _expression, _new_content);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const data::handle::expression _expression;
+          const std::string _old_content;
+          const std::string _new_content;
+        };
+
+#undef ACTION_ARG_LIST
+#undef ACTION_INIT
+#undef ACTION_MEMBERS
+
       }
 
       // ## editing methods ##########################################
@@ -827,20 +901,9 @@ namespace fhg
         , const QString& text
         )
       {
-        expression.get_ref().set (text.toStdString());
-
-        emit_signal ( &signal::signal_set_expression
-                    , origin
-                    , expression
-                    , text
-                    );
-
-        emit_signal ( &signal::signal_set_expression_parse_result
-                    , origin
-                    , expression
-                    , QString::fromStdString
-                      (expr::parse::parse_result (text.toStdString()))
-                    );
+        push ( new action::set_expression_content
+               (*this, origin, expression, text)
+             );
       }
 
 
