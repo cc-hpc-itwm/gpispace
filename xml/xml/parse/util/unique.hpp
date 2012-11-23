@@ -80,6 +80,15 @@ namespace xml
         , _by_key()
       {}
 
+      unique ( const unique<value_type, id_type>& other
+             , const typename value_type::parent_id_type& parent
+             )
+        : _values (other._values)
+        , _by_key (other._by_key)
+      {
+        reparent (parent);
+      }
+
       boost::optional<const id_type&> get (const key_type& key) const
       {
         const typename by_key_type::const_iterator pos (_by_key.find (key));
@@ -144,6 +153,16 @@ namespace xml
           copy.push (value.clone (parent, mapper));
         }
         return copy;
+      }
+
+      unique<value_type, id_type> reparent
+        (const typename value_type::parent_id_type& parent)
+      {
+        BOOST_FOREACH (value_type& value, values())
+        {
+         value.parent (parent);
+        }
+        return *this;
       }
 
     private:
