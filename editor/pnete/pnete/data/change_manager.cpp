@@ -49,6 +49,37 @@ namespace fhg
           };
         }
 
+        //! \note Uses inheritance, then 'using base::fun' to expose
+        //! protected member functions to non-friends.
+        //! See http://stackoverflow.com/questions/75538#1065606
+        struct signal : change_manager_t
+        {
+#define EXPOSE(NAME) using change_manager_t::NAME
+
+        // - net -----------------------------------------------------
+        // -- connection ---------------------------------------------
+        EXPOSE (property_changed);
+
+        // -- transition ---------------------------------------------
+        EXPOSE (transition_added);
+        EXPOSE (transition_deleted);
+
+        // -- place --------------------------------------------------
+        EXPOSE (place_added);
+        EXPOSE (place_deleted);
+
+        // - port ----------------------------------------------------
+
+        // - function ------------------------------------------------
+        EXPOSE (function_name_changed);
+
+        // - expression ---------------------------------------------
+        EXPOSE (signal_set_expression);
+        EXPOSE (signal_set_expression_parse_result);
+
+#undef EXPOSE
+        };
+
         std::string inc (const std::string& s)
         {
           unsigned long num (0);
@@ -104,7 +135,7 @@ namespace fhg
 
           handle.get_ref().properties().set (key, val);
           change_manager.emit_signal<signal_type>
-            ( &change_manager_t::property_changed, origin
+            ( &signal::property_changed, origin
             , handle, key, val
             );
         }
@@ -265,7 +296,7 @@ namespace fhg
           virtual void undo()
           {
             _change_manager.emit_signal
-              ( &change_manager_t::transition_deleted
+              ( &signal::transition_deleted
               , NULL
               , handle::transition (_transition, _change_manager)
               );
@@ -278,7 +309,7 @@ namespace fhg
             _net.get_ref().push_transition (_transition);
 
             _change_manager.emit_signal
-              ( &change_manager_t::transition_added
+              ( &signal::transition_added
               , _origin
               , handle::transition (_transition, _change_manager)
               );
@@ -313,7 +344,7 @@ namespace fhg
             _net.get_ref().push_transition (_transition);
 
             _change_manager.emit_signal
-              ( &change_manager_t::transition_added
+              ( &signal::transition_added
               , NULL
               , handle::transition (_transition, _change_manager)
               );
@@ -322,7 +353,7 @@ namespace fhg
           virtual void redo()
           {
             _change_manager.emit_signal
-              ( &change_manager_t::transition_deleted
+              ( &signal::transition_deleted
               , _origin
               , handle::transition (_transition, _change_manager)
               );
@@ -359,7 +390,7 @@ namespace fhg
           virtual void undo()
           {
             _change_manager.emit_signal
-              ( &change_manager_t::place_deleted
+              ( &signal::place_deleted
               , NULL
               , handle::place (_place, _change_manager)
               );
@@ -372,7 +403,7 @@ namespace fhg
             _net.get_ref().push_place (_place);
 
             _change_manager.emit_signal
-              ( &change_manager_t::place_added
+              ( &signal::place_added
               , _origin
               , handle::place (_place, _change_manager)
               );
@@ -407,7 +438,7 @@ namespace fhg
             _net.get_ref().push_place (_place);
 
             _change_manager.emit_signal
-              ( &change_manager_t::place_added
+              ( &signal::place_added
               , NULL
               , handle::place (_place, _change_manager)
               );
@@ -416,7 +447,7 @@ namespace fhg
           virtual void redo()
           {
             _change_manager.emit_signal
-              ( &change_manager_t::place_deleted
+              ( &signal::place_deleted
               , _origin
               , handle::place (_place, _change_manager)
               );
@@ -758,7 +789,7 @@ namespace fhg
           fun.get_ref().name (boost::none);
         }
 
-        emit_signal ( &change_manager_t::function_name_changed
+        emit_signal ( &signal::function_name_changed
                     , origin
                     , fun
                     , name
@@ -798,13 +829,13 @@ namespace fhg
       {
         expression.get_ref().set (text.toStdString());
 
-        emit_signal ( &change_manager_t::signal_set_expression
+        emit_signal ( &signal::signal_set_expression
                     , origin
                     , expression
                     , text
                     );
 
-        emit_signal ( &change_manager_t::signal_set_expression_parse_result
+        emit_signal ( &signal::signal_set_expression_parse_result
                     , origin
                     , expression
                     , QString::fromStdString

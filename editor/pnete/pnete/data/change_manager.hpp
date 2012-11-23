@@ -32,28 +32,6 @@ namespace fhg
   {
     namespace data
     {
-      namespace action
-      {
-        // ## editing action forward declarations ####################
-        template<typename handle_type>
-          void set_property ( const handle_type& handle
-                            , const ::we::type::property::key_type& key
-                            , const ::we::type::property::value_type& val
-                            , change_manager_t& change_manager
-                            , const QObject* origin
-                            );
-        // - net -----------------------------------------------------
-        template<typename handle_type> class meta_move_item;
-        // -- transition ---------------------------------------------
-        class add_transition;
-        class remove_transition;
-        // -- place --------------------------------------------------
-        class add_place;
-        class remove_place;
-        // - function ------------------------------------------------
-        // - expression ----------------------------------------------
-      }
-
       class change_manager_t : public QUndoStack
       {
         Q_OBJECT;
@@ -178,6 +156,38 @@ namespace fhg
                             , const QString&
                             );
 
+#define ARG_TYPE(function_type,n)                                       \
+  boost::mpl::at_c<boost::function_types::parameter_types<function_type>,n>::type
+
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2)
+                                 , typename ARG_TYPE(Fun,3));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2)
+                                 , typename ARG_TYPE(Fun,3)
+                                 , typename ARG_TYPE(Fun,4));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2)
+                                 , typename ARG_TYPE(Fun,3)
+                                 , typename ARG_TYPE(Fun,4)
+                                 , typename ARG_TYPE(Fun,5));
+        template<typename Fun>
+        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
+                                 , typename ARG_TYPE(Fun,2)
+                                 , typename ARG_TYPE(Fun,3)
+                                 , typename ARG_TYPE(Fun,4)
+                                 , typename ARG_TYPE(Fun,5)
+                                 , typename ARG_TYPE(Fun,6));
+#undef ARG_TYPE
+
       signals:
 
         // ## signals after edit  ####################################
@@ -240,92 +250,6 @@ namespace fhg
                                                 , const data::handle::expression&
                                                 , const QString&
                                                 );
-
-      private:
-
-        // ## friend classes  ########################################
-        // - net -----------------------------------------------------
-        // -- connection ---------------------------------------------
-        friend void action::set_property<handle::connect>
-          ( const handle::connect& handle
-          , const ::we::type::property::key_type& key
-          , const ::we::type::property::value_type& val
-          , change_manager_t& change_manager
-          , const QObject* origin
-          );
-
-        // -- transition ---------------------------------------------
-        friend class action::add_transition;
-        friend class action::remove_transition;
-        friend void action::set_property<handle::transition>
-          ( const handle::transition& handle
-          , const ::we::type::property::key_type& key
-          , const ::we::type::property::value_type& val
-          , change_manager_t& change_manager
-          , const QObject* origin
-          );
-        friend class action::meta_move_item<handle::transition>;
-        // -- place --------------------------------------------------
-        friend class action::add_place;
-        friend class action::remove_place;
-        friend void action::set_property<handle::place>
-          ( const handle::place& handle
-          , const ::we::type::property::key_type& key
-          , const ::we::type::property::value_type& val
-          , change_manager_t& change_manager
-          , const QObject* origin
-          );
-        friend class action::meta_move_item<handle::place>;
-        // -- port ---------------------------------------------------
-        friend void action::set_property<handle::port>
-          ( const handle::port& handle
-          , const ::we::type::property::key_type& key
-          , const ::we::type::property::value_type& val
-          , change_manager_t& change_manager
-          , const QObject* origin
-          );
-        friend class action::meta_move_item<handle::port>;
-        // - function ------------------------------------------------
-        friend void action::set_property<handle::function>
-          ( const handle::function& handle
-          , const ::we::type::property::key_type& key
-          , const ::we::type::property::value_type& val
-          , change_manager_t& change_manager
-          , const QObject* origin
-          );
-        // - expression ----------------------------------------------
-
-#define ARG_TYPE(function_type,n)                                       \
-  boost::mpl::at_c<boost::function_types::parameter_types<function_type>,n>::type
-
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4)
-                                 , typename ARG_TYPE(Fun,5));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4)
-                                 , typename ARG_TYPE(Fun,5)
-                                 , typename ARG_TYPE(Fun,6));
-#undef ARG_TYPE
       };
     }
   }
