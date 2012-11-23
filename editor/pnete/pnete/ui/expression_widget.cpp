@@ -101,7 +101,6 @@ namespace fhg
 
         set_name (function().get().name());
         set_expression (expression.get().expression("\n"));
-        expression_changed();
       }
 
       void expression_widget::slot_set_function_name
