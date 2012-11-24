@@ -919,9 +919,9 @@ namespace we { namespace mgmt {
                  );
               desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
               desc->set_error_message
-                ( std::string ("in: ")
+                ( std::string ("in: '")
                 + desc->name ()
-                + std::string (" ")
+                + std::string ("' ")
                 + ex.what ()
                 );
               desc->set_result (policy::codec::encode(desc->activity()));
