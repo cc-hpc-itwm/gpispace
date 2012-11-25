@@ -3,6 +3,7 @@
 #include "job.hpp"
 #include "wfe.hpp"
 #include "observable.hpp"
+#include "drts_callbacks.h"
 
 #include <errno.h>
 
@@ -661,6 +662,7 @@ public:
       {
         MLOG(TRACE, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
+        drts_on_cancel ();
       }
       else if (job_it->second->state() == drts::Job::FAILED)
       {
@@ -896,6 +898,7 @@ private:
       }
 
       { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = false; }
+      drts_on_cancel_clear ();
 
       job_ptr_t job = m_pending_jobs.get();
 
