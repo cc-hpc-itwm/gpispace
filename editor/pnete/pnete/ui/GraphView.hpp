@@ -1,18 +1,21 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_VIEW_HPP
-#define _PNETE_UI_GRAPH_VIEW_HPP 1
+#ifndef FHG_PNETE_UI_GRAPH_VIEW_HPP
+#define FHG_PNETE_UI_GRAPH_VIEW_HPP
+
+#include <pnete/ui/graph/scene.fwd.hpp>
+#include <pnete/ui/graph_view.fwd.hpp>
 
 #include <QGraphicsView>
 #include <QObject>
 
-class QWidget;
 class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
+class QFocusEvent;
 class QGraphicsScene;
 class QWheelEvent;
-class QFocusEvent;
+class QWidget;
 
 namespace fhg
 {
@@ -20,11 +23,6 @@ namespace fhg
   {
     namespace ui
     {
-      namespace graph
-      {
-        class scene_type;
-      }
-
       class GraphView : public QGraphicsView
       {
         Q_OBJECT

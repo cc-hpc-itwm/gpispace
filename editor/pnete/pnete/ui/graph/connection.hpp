@@ -3,6 +3,8 @@
 #ifndef PNETE_UI_GRAPH_CONNECTION_HPP
 #define PNETE_UI_GRAPH_CONNECTION_HPP
 
+#include <pnete/ui/graph/connection.fwd.hpp>
+
 #include <pnete/data/handle/connect.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
