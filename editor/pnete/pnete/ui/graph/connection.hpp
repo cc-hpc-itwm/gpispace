@@ -1,10 +1,11 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_CONNECTION_HPP
-#define _PNETE_UI_GRAPH_CONNECTION_HPP 1
+#ifndef PNETE_UI_GRAPH_CONNECTION_HPP
+#define PNETE_UI_GRAPH_CONNECTION_HPP
 
 #include <pnete/data/handle/connect.hpp>
 #include <pnete/ui/graph/base_item.hpp>
+#include <pnete/ui/graph/connectable_item.fwd.hpp>
 
 #include <boost/optional.hpp>
 
@@ -27,8 +28,6 @@ namespace fhg
     {
       namespace graph
       {
-        class connectable_item;
-
         class connection_item : public base_item
         {
           Q_OBJECT;

@@ -1,15 +1,17 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
-#define _PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP 1
+#ifndef PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
+#define PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
 
-#include <QObject>
-#include <QSet>
-#include <QRectF>
+#include <pnete/ui/graph/connectable_item.fwd.hpp>
 
 #include <pnete/ui/graph/base_item.hpp>
 
 #include <boost/optional.hpp>
+
+#include <QObject>
+#include <QSet>
+#include <QRectF>
 
 namespace fhg
 {
