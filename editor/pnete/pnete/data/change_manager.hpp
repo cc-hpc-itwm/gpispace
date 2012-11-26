@@ -50,6 +50,21 @@ namespace fhg
         // - net -----------------------------------------------------
 
         // -- connection ---------------------------------------------
+        //! \note port <- place (in)
+        void add_connection ( const QObject*
+                            , const data::handle::place&
+                            , const data::handle::port&
+                            );
+        //! \note port -> place (out)
+        void add_connection ( const QObject*
+                            , const data::handle::port&
+                            , const data::handle::place&
+                            );
+        //! \note port -> implicit_place -> port (convenience)
+        void add_connection ( const QObject*
+                            , const data::handle::port&
+                            , const data::handle::port&
+                            );
         void set_property ( const QObject*
                           , const data::handle::connect&
                           , const ::we::type::property::key_type&
@@ -193,6 +208,7 @@ namespace fhg
                               , const ::we::type::property::key_type&
                               , const ::we::type::property::value_type&
                               );
+        void connection_added (const QObject*, const data::handle::connect&);
 
         // -- transition ---------------------------------------------
         void transition_added ( const QObject*

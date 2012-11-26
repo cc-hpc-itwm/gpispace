@@ -596,6 +596,123 @@ namespace fhg
       // ## editing methods ##########################################
       // - net -------------------------------------------------------
       // -- connection -----------------------------------------------
+
+          // connect T* fixed, U* with:
+          //   if port (with) && port (fixed)
+          //   then
+          //     macro
+          //       place = create place implicit_#
+          //       connect fixed place
+          //       connect place with
+          //   else
+          //     port = port (with | fixed)
+          //     place = place (with | fixed)
+          //     transition = port.handle.get.parent.parent
+          //     assert transition.parent == place.handle.get.parent
+          //     connection = port.handle.get.name -> place.handle.get.name
+          //     transition.push_ ## port.direction() connection
+          //     emit connection_added (handle (connection))
+
+      void change_manager_t::add_connection ( const QObject* origin
+                                            , const data::handle::place& from
+                                            , const data::handle::port& to
+                                            )
+      {
+        ::xml::parse::id::ref::transition transition
+          (*to.get().parent()->parent_transition());
+
+        if (transition.get().parent()->id() != from.get().parent()->id())
+        {
+          throw std::runtime_error
+            ("tried connecting ports from transitions in different nets.");
+        }
+
+        ::xml::parse::id::ref::connect connection
+          ( ::xml::parse::type::connect_type
+            ( transition.id_mapper()->next_id()
+            , transition.id_mapper()
+            , transition.id()
+            , from.get().name()
+            , to.get().name()
+            ).make_reference_id()
+          );
+
+        transition.get_ref().push_in (connection);
+
+        emit connection_added (origin, handle::connect (connection, *this));
+      }
+
+      void change_manager_t::add_connection ( const QObject* origin
+                                            , const data::handle::port& from
+                                            , const data::handle::place& to
+                                            )
+      {
+        ::xml::parse::id::ref::transition transition
+          (*from.get().parent()->parent_transition());
+
+        if (transition.get().parent()->id()!= to.get().parent()->id())
+        {
+          throw std::runtime_error
+            ("tried connecting ports from transitions in different nets.");
+        }
+
+        ::xml::parse::id::ref::connect connection
+          ( ::xml::parse::type::connect_type
+            ( transition.id_mapper()->next_id()
+            , transition.id_mapper()
+            , transition.id()
+            , from.get().name()
+            , to.get().name()
+            ).make_reference_id()
+          );
+
+        transition.get_ref().push_out (connection);
+
+        emit connection_added (origin, handle::connect (connection, *this));
+      }
+
+      void change_manager_t::add_connection ( const QObject* origin
+                                            , const data::handle::port& from
+                                            , const data::handle::port& to
+                                            )
+      {
+        const ::xml::parse::id::ref::net net
+          ( from.get().parent()->parent_transition()->get().parent()
+          ->make_reference_id()
+          );
+
+        if (net != to.get().parent()->parent_transition()->get().parent()->id())
+        {
+          throw std::runtime_error
+            ("tried connecting ports from transitions in different nets.");
+        }
+
+        beginMacro ("add_connection_with_implicit_place_action");
+
+        const ::xml::parse::id::ref::place place
+          ( ::xml::parse::type::place_type
+            ( net.id_mapper()->next_id()
+            , net.id_mapper()
+            , net.id()
+            ).make_reference_id()
+          );
+
+        std::string name ("implicit");
+        while (net.get().has_place (name))
+        {
+          name = inc (name);
+        }
+        place.get_ref().name (name);
+
+        push (new action::add_place (*this, origin, net, place));
+
+        handle::place place_handle (place, *this);
+        add_connection (origin, from, place_handle);
+        add_connection (origin, place_handle, to);
+
+        endMacro();
+      }
+
       void change_manager_t::set_property
         ( const QObject* origin
         , const data::handle::connect& connect
