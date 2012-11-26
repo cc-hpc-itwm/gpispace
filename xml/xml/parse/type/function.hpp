@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_FUNCTION_HPP
 #define _XML_PARSE_TYPE_FUNCTION_HPP
@@ -100,6 +100,9 @@ namespace xml
         bool has_parent() const;
         void unparent();
         void parent (const parent_id_type& parent);
+
+        boost::optional<id::ref::transition> parent_transition() const;
+        boost::optional<id::ref::tmpl> parent_tmpl() const;
 
         boost::optional<const id::ref::function&>
         get_function (const std::string& name) const;

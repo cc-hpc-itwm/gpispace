@@ -133,6 +133,61 @@ namespace xml
 
       namespace
       {
+        template<typename id_type, typename id_ref_type>
+        class visitor_get_parent
+          : public boost::static_visitor<boost::optional<id_ref_type> >
+        {
+        public:
+          visitor_get_parent (id::mapper* id_mapper)
+            : _id_mapper (id_mapper)
+          { }
+
+          boost::optional<id_ref_type> operator() (const id_type& id) const
+          {
+            return _id_mapper->get (id)->make_reference_id();
+          }
+
+          template<typename other_types>
+            boost::optional<id_ref_type> operator() (const other_types&) const
+          {
+            return boost::none;
+          }
+
+        private:
+          id::mapper* _id_mapper;
+        };
+      }
+
+      boost::optional<id::ref::transition>
+        function_type::parent_transition() const
+      {
+        if (!_parent)
+        {
+          return boost::none;
+        }
+
+        return boost::apply_visitor
+          ( visitor_get_parent<id::transition, id::ref::transition> (id_mapper())
+          , *_parent
+          );
+      }
+
+      boost::optional<id::ref::tmpl>
+        function_type::parent_tmpl() const
+      {
+        if (!_parent)
+        {
+          return boost::none;
+        }
+
+        return boost::apply_visitor
+          ( visitor_get_parent<id::tmpl, id::ref::tmpl> (id_mapper())
+          , *_parent
+          );
+      }
+
+      namespace
+      {
         class visitor_get_function
           : public boost::static_visitor<boost::optional<const id::ref::function&> >
         {
