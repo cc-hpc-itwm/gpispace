@@ -597,22 +597,6 @@ namespace fhg
       // - net -------------------------------------------------------
       // -- connection -----------------------------------------------
 
-          // connect T* fixed, U* with:
-          //   if port (with) && port (fixed)
-          //   then
-          //     macro
-          //       place = create place implicit_#
-          //       connect fixed place
-          //       connect place with
-          //   else
-          //     port = port (with | fixed)
-          //     place = place (with | fixed)
-          //     transition = port.handle.get.parent.parent
-          //     assert transition.parent == place.handle.get.parent
-          //     connection = port.handle.get.name -> place.handle.get.name
-          //     transition.push_ ## port.direction() connection
-          //     emit connection_added (handle (connection))
-
       void change_manager_t::add_connection ( const QObject* origin
                                             , const data::handle::place& from
                                             , const data::handle::port& to
@@ -624,7 +608,7 @@ namespace fhg
         if (transition.get().parent()->id() != from.get().parent()->id())
         {
           throw std::runtime_error
-            ("tried connecting ports from transitions in different nets.");
+            ("tried connecting place and port in different nets.");
         }
 
         ::xml::parse::id::ref::connect connection
@@ -656,7 +640,7 @@ namespace fhg
         if (transition.get().parent()->id()!= to.get().parent()->id())
         {
           throw std::runtime_error
-            ("tried connecting ports from transitions in different nets.");
+            ("tried connecting port and place in different nets.");
         }
 
         ::xml::parse::id::ref::connect connection
