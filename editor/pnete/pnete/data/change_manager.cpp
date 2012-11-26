@@ -664,8 +664,8 @@ namespace fhg
             ( transition.id_mapper()->next_id()
             , transition.id_mapper()
             , transition.id()
-            , from.get().name()
             , to.get().name()
+            , from.get().name()
             ).make_reference_id()
           );
 

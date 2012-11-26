@@ -351,12 +351,12 @@ namespace fhg
               if (as_port->direction() == connectable::direction::IN)
               {
                 change_manager().add_connection
-                  (this, as_port->handle(), pending_as_port->handle());
+                  (this, pending_as_port->handle(), as_port->handle());
               }
               else
               {
                 change_manager().add_connection
-                  (this, pending_as_port->handle(), as_port->handle());
+                  (this, as_port->handle(), pending_as_port->handle());
               }
             }
             else
@@ -367,12 +367,12 @@ namespace fhg
               if (port->direction() == connectable::direction::IN)
               {
                 change_manager().add_connection
-                  (this, port->handle(), place->handle());
+                  (this, place->handle(), port->handle());
               }
               else
               {
                 change_manager().add_connection
-                  (this, place->handle(), port->handle());
+                  (this, port->handle(), place->handle());
               }
             }
 
