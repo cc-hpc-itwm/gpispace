@@ -361,7 +361,7 @@ $(PS) $(SVG): $(DOT)
 	$(CMD_DOT) $^ -Tps -o $@
 
 $(PS_NOINLINE) $(SVG_NOINLINE): $(DOT_NOINLINE)
-	$(CMD_DOT) $^ -Tps -o $@
+	$(CMD_DOT) $^ -Tsvg -o $@
 
 endif
 
