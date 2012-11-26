@@ -1185,10 +1185,7 @@ function start_agent ()
     fi
 
     # name format: name[-node]
-    local node="$(echo $name | cut -d- -f 2)"
-    if [ "$node" == "$name" ] ; then
-        node=localhost
-    fi
+    local node=$(get_master_node)
 
     err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -F "${config_file}" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
     ec=$?
@@ -1208,10 +1205,7 @@ function stop_agent ()
     local name="$1" ; shift
 
     # name format: name[-node[-id]]
-    local node=$(echo $name | cut -d- -f 2)
-    if [ "$node" == "$name" ] ; then
-        node=localhost # maybe we should use the master node?
-    fi
+    local node=$(get_master_node)
     local cmd="rexec $node $SDPA_SCRIPT_DIR/stop-agent -n $name"
     debug $cmd
     err=$($cmd 2>&1)
@@ -1230,11 +1224,7 @@ function status_agent ()
 {
     local name="$1" ; shift
 
-    local node="$(echo $name | cut -d- -f 2)"
-    if [ "$node" == "$name" ] ; then
-        node=localhost # maybe we should use the master node?
-    fi
-
+    local node=$(get_master_node)
     local cmd="rexec $node $SDPA_SCRIPT_DIR/status-agent -n $name"
     debug $cmd
     $cmd </dev/null >/dev/null 2>&1
@@ -1980,6 +1970,15 @@ function on_valid_host ()
         return 2
     fi
     return 1
+}
+
+function get_master_node()
+{
+    if test -r "$state_dir/nodefile" ; then
+        head -n 1 "$state_dir/nodefile"
+    else
+        return 1
+    fi
 }
 
 function on_master_node ()
