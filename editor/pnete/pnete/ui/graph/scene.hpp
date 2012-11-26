@@ -6,8 +6,10 @@
 #include <pnete/ui/graph/scene.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/handle/connect.fwd.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/port.fwd.hpp>
 #include <pnete/data/handle/transition.fwd.hpp>
 #include <pnete/data/internal.fwd.hpp>
 #include <pnete/ui/graph/base_item.fwd.hpp>
@@ -70,6 +72,18 @@ namespace fhg
           void slot_delete_place (base_item*);
 
           // ## react on modification ################################
+          // # connection ############################################
+          void connection_added ( const QObject*
+                                , const data::handle::connect&
+                                , const data::handle::port&
+                                , const data::handle::place&
+                                );
+          void connection_added ( const QObject*
+                                , const data::handle::connect&
+                                , const data::handle::place&
+                                , const data::handle::port&
+                                );
+
           // # transition ############################################
           void transition_added (const QObject*, const data::handle::transition&);
           void transition_deleted (const QObject*, const data::handle::transition&);

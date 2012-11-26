@@ -74,6 +74,28 @@ namespace fhg
             , "place_deleted"
             , "const data::handle::place&"
             );
+
+          // connections
+          //! \note This is not really in responsibility of the net,
+          // but we would need to connect every transition being added
+          // to the signal/slot again, which would be a lot of
+          // reconnection happening, every time when adding or
+          // removing transitions. Thus we just use the net's change
+          // manager (as that should be the same as the transitions'
+          // one) and hook for any connection changing in any
+          // transition.
+          _net.connect_to_change_mgr
+            ( this
+            , "connection_added"
+            , "const data::handle::connect&, "
+              "const data::handle::place&, const data::handle::port&"
+            );
+          _net.connect_to_change_mgr
+            ( this
+            , "connection_added"
+            , "const data::handle::connect&, "
+              "const data::handle::port&, const data::handle::place&"
+            );
         }
 
         //! \todo This is duplicate code, also available in main window.
@@ -558,7 +580,42 @@ namespace fhg
         }
 
         // ## react on modification ##################################
-        // # transition ############################################
+
+        // # connection ##############################################
+        void scene_type::connection_added
+          ( const QObject* origin
+          , const data::handle::connect& connection
+          , const data::handle::place& from
+          , const data::handle::port& to
+          )
+        {
+          if (is_in_my_net (from))
+          {
+            //! \todo Weaver.
+            create_connection ( item_with_handle<place_item> (from)
+                              , item_with_handle<port_item> (to)
+                              , false
+                              );
+          }
+        }
+        void scene_type::connection_added
+          ( const QObject* origin
+          , const data::handle::connect& connection
+          , const data::handle::port& from
+          , const data::handle::place& to
+          )
+        {
+          if (is_in_my_net (to))
+          {
+            //! \todo Weaver.
+            create_connection ( item_with_handle<port_item> (from)
+                              , item_with_handle<place_item> (to)
+                              , false
+                              );
+          }
+        }
+
+        // # transition ##############################################
         void scene_type::transition_added
           (const QObject* origin, const data::handle::transition& transition)
         {
