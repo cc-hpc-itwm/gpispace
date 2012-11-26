@@ -316,13 +316,18 @@ namespace fhg
             return;
           }
 
-          foreach (QGraphicsItem* item, items (event->scenePos()))
+          foreach (const QGraphicsItem* item, items (event->scenePos()))
           {
-            //! \note No, just casting to connectable_item* does NOT work. Qt!
-            port_item* as_port (qgraphicsitem_cast<port_item*> (item));
-            place_item* as_place (qgraphicsitem_cast<place_item*> (item));
+            const port_item* as_port
+              (qgraphicsitem_cast<const port_item*> (item));
+            const place_item* as_place
+              (qgraphicsitem_cast<const place_item*> (item));
 
-            connectable_item* ci (as_port ? as_port : as_place);
+            const connectable_item* ci
+              ( as_port
+              ? static_cast<const connectable_item*> (as_port)
+              : static_cast<const connectable_item*> (as_place)
+              );
             if (!ci)
             {
               continue;
