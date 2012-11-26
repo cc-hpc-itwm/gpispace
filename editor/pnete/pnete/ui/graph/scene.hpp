@@ -5,44 +5,36 @@
 
 #include <pnete/ui/graph/scene.fwd.hpp>
 
-//! \todo Remove
-#include <xml/parse/type/net.fwd.hpp>
-
+#include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
 #include <pnete/data/handle/transition.fwd.hpp>
+#include <pnete/data/internal.fwd.hpp>
+#include <pnete/ui/graph/base_item.fwd.hpp>
+#include <pnete/ui/graph/connectable_item.fwd.hpp>
+#include <pnete/ui/graph/connection.fwd.hpp>
+#include <pnete/ui/graph/pending_connection.fwd.hpp>
+#include <pnete/ui/graph/transition.fwd.hpp>
+#include <pnete/ui/graph_view.fwd.hpp>
 
 #include <QGraphicsScene>
-#include <QPointF>
-#include <QObject>
 #include <QMenu>
+#include <QObject>
+#include <QPointF>
 
 class QGraphicsSceneMouseEvent;
 class QKeyEvent;
-class QRectF;
 class QMenu;
+class QRectF;
 
 namespace fhg
 {
   namespace pnete
   {
-    namespace data
-    {
-      class change_manager_t;
-      class internal_type;
-    }
-
     namespace ui
     {
-      class GraphView;
-
       namespace graph
       {
-        class base_item;
-        class connectable_item;
-        class connection_item;
-        class transition_item;
-
         class scene_type : public QGraphicsScene
         {
           Q_OBJECT;
@@ -108,7 +100,7 @@ namespace fhg
 
           void init_menu_context();
 
-          connection_item* _pending_connection;
+          pending_connection* _pending_connection;
           QPointF _mouse_position;
 
           QMenu _menu_new;

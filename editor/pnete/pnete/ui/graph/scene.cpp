@@ -2,17 +2,13 @@
 
 #include <pnete/ui/graph/scene.hpp>
 
-#include <QGraphicsSceneMouseEvent>
-#include <QKeyEvent>
-#include <QDebug>
-#include <QApplication>
-
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/transition.hpp>
 #include <pnete/data/internal.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/pending_connection.hpp>
 #include <pnete/ui/graph/place.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
@@ -21,17 +17,18 @@
 #include <pnete/weaver/display.hpp>
 #include <pnete/weaver/weaver.hpp>
 
-#include <xml/parse/type/net.hpp>
-#include <xml/parse/type/place.hpp>
-#include <xml/parse/type/transition.hpp>
-
-#include <util/qt/cast.hpp>
 #include <util/graphviz.hpp>
-
-#include <boost/unordered_map.hpp>
-#include <boost/foreach.hpp>
+#include <util/qt/cast.hpp>
 
 #include <list>
+
+#include <boost/foreach.hpp>
+#include <boost/unordered_map.hpp>
+
+#include <QApplication>
+#include <QDebug>
+#include <QGraphicsSceneMouseEvent>
+#include <QKeyEvent>
 
 namespace fhg
 {
@@ -258,15 +255,9 @@ namespace fhg
                                      );
           }
 
-          _pending_connection = create_connection();
-          if (item->direction() == connectable::direction::IN)
-          {
-            _pending_connection->end (item);
-          }
-          else
-          {
-            _pending_connection->start (item);
-          }
+          _pending_connection = new pending_connection (item, _mouse_position);
+          _pending_connection->set_just_pos_but_not_in_property (0.0, 0.0);
+          addItem (_pending_connection);
 
           update (_pending_connection->boundingRect());
         }
@@ -305,7 +296,8 @@ namespace fhg
           if (_pending_connection)
           {
             update (_pending_connection->boundingRect());
-            _mouse_position = mouseEvent->scenePos();
+            _pending_connection->open_end
+              (_mouse_position = mouseEvent->scenePos());
             update (_pending_connection->boundingRect());
           }
           else
@@ -340,16 +332,22 @@ namespace fhg
               continue;
             }
 
-            if (ci->is_connectable_with (_pending_connection->non_free_side()))
+            if (ci->is_connectable_with (_pending_connection->fixed_end()))
             {
               if (qobject_cast<port_item*> (ci) && as_port)
               {
                 //! \todo insert place and connect with that place in between.
               }
 
-              _pending_connection->free_side (ci);
-              update (_pending_connection->boundingRect());
-              _pending_connection = NULL;
+              //! \todo correct direction. Should be a member of
+              //! pending_connection, which also creates a
+              //! handle. (via change manager, ...)
+              create_connection ( const_cast<connectable_item*>
+                                  (_pending_connection->fixed_end())
+                                , ci
+                                , false
+                                );
+              remove_pending_connection();
               event->accept();
               break;
             }
