@@ -152,9 +152,14 @@ namespace fhg
 
         void connection_item::mousePressEvent (QGraphicsSceneMouseEvent* event)
         {
+          //! \todo Add ability to set control points.
           if (event->modifiers() == Qt::ControlModifier)
           {
             event->ignore();
+          }
+          else
+          {
+            base_item::mousePressEvent (event);
           }
         }
       }
