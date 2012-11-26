@@ -172,6 +172,22 @@ ifndef PS_NOINLINE
   endif
 endif
 
+ifndef SVG
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable SVG)
+  else
+    SVG = $(CURDIR)/$(MAIN).svg
+  endif
+endif
+
+ifndef SVG_NOINLINE
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable SVG_NOINLINE)
+  else
+    SVG_NOINLINE = $(CURDIR)/$(MAIN).noinline.svg
+  endif
+endif
+
 ifndef DESTDIR
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable DESTDIR)
@@ -237,13 +253,14 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default build ps net verify validate put gen lib run submit
+.PHONY: default build ps svg net verify validate put gen lib run submit
 
 default: build
 
 build: put lib $(BUILD)
 
 ps: $(PS) $(PS_NOINLINE)
+svg: $(SVG) $(SVG_NOINLINE)
 net: $(NET)
 put: $(PUT)
 gen: $(GEN)
@@ -316,6 +333,10 @@ $(PS):
 $(PS_NOINLINE):
 	$(error Cannot create postscript files: Missing 'dot'.)
 
+$(SVG):
+$(SVG_NOINLINE):
+	$(error Cannot create svg files: Missing 'dot'.)
+
 else
 
 $(PS): $(NET)
@@ -323,6 +344,12 @@ $(PS): $(NET)
 
 $(PS_NOINLINE): $(NET_NOINLINE)
 	$(PNET2DOT) --input $^ | $(DOT) -Tps -o $@
+
+$(SVG): $(NET)
+	$(PNET2DOT) --input $^ | $(DOT) -Tsvg -o $@
+
+$(SVG_NOINLINE): $(NET_NOINLINE)
+	$(PNET2DOT) --input $^ | $(DOT) -Tsvg -o $@
 
 endif
 
@@ -374,6 +401,8 @@ clean: $(CLEAN)
 	-$(RM) -f $(NET_NOINLINE)
 	-$(RM) -f $(PS)
 	-$(RM) -f $(PS_NOINLINE)
+	-$(RM) -f $(SVG)
+	-$(RM) -f $(SVG_NOINLINE)
 	-$(RM) -f $(OUT)
 	-$(RM) -f $(DEP_XML)
 	-$(RM) -f $(NET_VERIFICATION)
@@ -403,6 +432,7 @@ help:
 	@echo
 	@echo "verify      'net' & verify the pnet"
 	@echo "ps          'net' & generate postscript"
+	@echo "svg         'net' & generate svg"
 	@echo
 	@echo "clean       delete all generated files"
 	@echo
@@ -454,6 +484,8 @@ showconfig:
 	@echo "OUT              = $(OUT)"
 	@echo "PS               = $(PS)"
 	@echo "PS_NOINLINE      = $(PS_NOINLINE)"
+	@echo "SVG              = $(SVG)"
+	@echo "SVG_NOINLINE     = $(SVG_NOINLINE)"
 	@echo
 	@echo "*** Dependencies and options:"
 	@echo
