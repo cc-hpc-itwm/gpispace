@@ -1,6 +1,9 @@
+#bernd.loerwald@itwm.fraunhofer.de
+
 include(${QT_USE_FILE})
 
 set(style_SRCS
+  association.cpp
   cap.cpp
   raster.cpp
   size.cpp
@@ -10,6 +13,7 @@ set(style_SRCS
 )
 
 set(style_HDRS
+  association.hpp
   cap.hpp
   raster.hpp
   size.hpp
