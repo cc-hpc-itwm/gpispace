@@ -105,6 +105,8 @@ namespace fhg
           template<typename handle_type>
             bool is_in_my_net (const handle_type&);
 
+          template<typename item_type> QList<item_type*> items_of_type() const;
+
           const data::handle::net& net() const;
 
           void remove_transition_item (transition_item*);

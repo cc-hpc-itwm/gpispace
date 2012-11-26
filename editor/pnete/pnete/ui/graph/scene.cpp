@@ -539,6 +539,37 @@ namespace fhg
           return _net;
         }
 
+        template<typename item_type>
+          QList<item_type*> scene_type::items_of_type() const
+        {
+          QList<item_type*> result;
+
+          foreach (QGraphicsItem* child, items())
+          {
+            if (item_type* item = qgraphicsitem_cast<item_type*> (child))
+            {
+              result << item;
+            }
+          }
+
+          return result;
+        }
+
+        namespace
+        {
+          template<typename item_type>
+            weaver::item_by_name_type
+            name_map_for_items (const QList<item_type*>& items)
+          {
+            weaver::item_by_name_type result;
+            foreach (item_type* item, items)
+            {
+              result[item->handle().get().name()] = item;
+            }
+            return result;
+          }
+        }
+
         // ## trigger modification ###################################
         // # transition ##############################################
         void scene_type::slot_add_transition ()
@@ -625,14 +656,15 @@ namespace fhg
 
             addItem (item);
 
-            weaver::item_by_name_type place_by_name;
+            weaver::item_by_name_type places
+              (name_map_for_items (items_of_type<place_item>()));
 
             weaver::transition wt
               ( _internal
               , this
               , item
               , transition.parent().get().make_reference_id()
-              , place_by_name
+              , places
               );
             weaver::from::transition (&wt, transition.id());
 
@@ -666,6 +698,7 @@ namespace fhg
 
             addItem (item);
 
+            //! \note Does not need actual list, as it only adds itself.
             weaver::item_by_name_type place_by_name;
 
             weaver::place wp (item, place_by_name);
