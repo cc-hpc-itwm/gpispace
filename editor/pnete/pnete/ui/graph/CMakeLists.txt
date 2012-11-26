@@ -1,31 +1,38 @@
+#bernd.loerwald@itwm.fraunhofer.de
+
 include(${QT_USE_FILE})
 
 set(graph_SRCS
-  connection.cpp
+  base_item.cpp
   connectable_item.cpp
+  orientation.cpp
+
+  pending_connection.cpp
+
+  connection.cpp
+  place.cpp
   port.cpp
   scene.cpp
   transition.cpp
-  cogwheel_button.cpp
-  base_item.cpp
-  place.cpp
-  orientation.cpp
 
+  cogwheel_button.cpp
   popover_widget.cpp
 )
 
 set(graph_HDRS
-  connection.hpp
-  connectable_item.hpp
-  port.hpp
-  scene.hpp
-  scene.fwd.hpp
-  transition.hpp
-  cogwheel_button.hpp
   base_item.hpp
-  place.hpp
+  connectable_item.hpp
   orientation.hpp
 
+  pending_connection.hpp
+
+  connection.hpp
+  place.hpp
+  port.hpp
+  scene.hpp
+  transition.hpp
+
+  cogwheel_button.hpp
   popover_widget.hpp
 )
 
@@ -33,13 +40,14 @@ set(graph_UIS
 )
 
 set(graph_TOMOC
-  connection.hpp
+  base_item.hpp
   connectable_item.hpp
+
+  connection.hpp
+  place.hpp
   port.hpp
   scene.hpp
   transition.hpp
-  base_item.hpp
-  place.hpp
 
   popover_widget.hpp
 )
