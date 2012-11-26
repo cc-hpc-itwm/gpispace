@@ -639,7 +639,10 @@ namespace fhg
 
         transition.get_ref().push_in (connection);
 
-        emit connection_added (origin, handle::connect (connection, *this));
+        emit connection_added ( origin
+                              , handle::connect (connection, *this)
+                              , from, to
+                              );
       }
 
       void change_manager_t::add_connection ( const QObject* origin
@@ -668,7 +671,10 @@ namespace fhg
 
         transition.get_ref().push_out (connection);
 
-        emit connection_added (origin, handle::connect (connection, *this));
+        emit connection_added ( origin
+                              , handle::connect (connection, *this)
+                              , from, to
+                              );
       }
 
       void change_manager_t::add_connection ( const QObject* origin
