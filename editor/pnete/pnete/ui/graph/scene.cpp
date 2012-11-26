@@ -316,41 +316,63 @@ namespace fhg
             return;
           }
 
-          foreach (QGraphicsItem* item, items(event->scenePos()))
+          foreach (QGraphicsItem* item, items (event->scenePos()))
           {
             //! \note No, just casting to connectable_item* does NOT work. Qt!
             port_item* as_port (qgraphicsitem_cast<port_item*> (item));
             place_item* as_place (qgraphicsitem_cast<place_item*> (item));
 
-            connectable_item* ci (as_port);
-            if (!ci)
-            {
-              ci = as_place;
-            }
+            connectable_item* ci (as_port ? as_port : as_place);
             if (!ci)
             {
               continue;
             }
 
-            if (ci->is_connectable_with (_pending_connection->fixed_end()))
-            {
-              if (qobject_cast<port_item*> (ci) && as_port)
-              {
-                //! \todo insert place and connect with that place in between.
-              }
+            const connectable_item* pending (_pending_connection->fixed_end());
 
-              //! \todo correct direction. Should be a member of
-              //! pending_connection, which also creates a
-              //! handle. (via change manager, ...)
-              create_connection ( const_cast<connectable_item*>
-                                  (_pending_connection->fixed_end())
-                                , ci
-                                , false
-                                );
-              remove_pending_connection();
-              event->accept();
-              break;
+            if (ci->direction() == pending->direction())
+            {
+              throw std::runtime_error
+                ("connecting two items with same direction");
             }
+
+            const port_item* pending_as_port
+              (qgraphicsitem_cast<const port_item*> (pending));
+            const place_item* pending_as_place
+              (qgraphicsitem_cast<const place_item*> (pending));
+
+            if (as_port && pending_as_port)
+            {
+              if (as_port->direction() == connectable::direction::IN)
+              {
+                change_manager().add_connection
+                  (this, as_port->handle(), pending_as_port->handle());
+              }
+              else
+              {
+                change_manager().add_connection
+                  (this, pending_as_port->handle(), as_port->handle());
+              }
+            }
+            else
+            {
+              const port_item* port (as_port ? as_port : pending_as_port);
+              const place_item* place (as_place ? as_place : pending_as_place);
+
+              if (port->direction() == connectable::direction::IN)
+              {
+                change_manager().add_connection
+                  (this, port->handle(), place->handle());
+              }
+              else
+              {
+                change_manager().add_connection
+                  (this, place->handle(), port->handle());
+              }
+            }
+
+            event->accept();
+            break;
           }
 
           remove_pending_connection();
