@@ -611,8 +611,8 @@ namespace fhg
         }
 
         // ## react on modification ##################################
-
         // # connection ##############################################
+        //! \todo Pass direction, don't pass from and to. Pass net.
         void scene_type::connection_added
           ( const QObject* origin
           , const data::handle::connect& connection
@@ -623,6 +623,20 @@ namespace fhg
           if (is_in_my_net (from))
           {
             //! \todo Weaver.
+            // weaver::item_by_name_type places
+            //   (name_map_for_items (items_of_type<place_item>()));
+            //! \note This can't be easily weaved, as 'ports'
+            //! needs to contain only the ports of the transition
+            //! where the connection's port is in. Getting children
+            //! ports of the scene will yield wrong ones. The weaver
+            //! normally is started inside a transition, thus
+            //! correctly only knows ports inside that transition.
+            // weaver::item_by_name_type ports
+            //   (name_map_for_items (items_of_type<port_item>()));
+
+            // weaver::connection wc
+            //   (this, places, ports, connectable::direction::IN, false);
+            // weaver::from::connection (&wc, connection.id());
             create_connection ( item_with_handle<place_item> (from)
                               , item_with_handle<port_item> (to)
                               , false
@@ -638,7 +652,15 @@ namespace fhg
         {
           if (is_in_my_net (to))
           {
-            //! \todo Weaver.
+            //! \todo Weaver. See above.
+            // weaver::item_by_name_type places
+            //   (name_map_for_items (items_of_type<place_item>()));
+            // weaver::item_by_name_type ports
+            //   (name_map_for_items (items_of_type<port_item>()));
+
+            // weaver::connection wc
+            //   (this, places, ports, connectable::direction::OUT, false);
+            // weaver::from::connection (&wc, connection.id());
             create_connection ( item_with_handle<port_item> (from)
                               , item_with_handle<place_item> (to)
                               , false
