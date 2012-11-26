@@ -1,4 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef PNETE_UI_GRAPH_ITEM_HPP
 #define PNETE_UI_GRAPH_ITEM_HPP
@@ -36,14 +36,13 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          enum ItemTypes
+          enum item_types
           {
-            connection_graph_type       = QGraphicsItem::UserType + 1,
-            port_graph_type             = QGraphicsItem::UserType + 2,
-            transition_graph_type       = QGraphicsItem::UserType + 3,
-            place_graph_type            = QGraphicsItem::UserType + 4,
-            top_level_port_graph_type   = QGraphicsItem::UserType + 5,
-            /* ... */
+            connection_graph_type = QGraphicsItem::UserType + 1,
+            port_graph_type,
+            transition_graph_type,
+            place_graph_type,
+            top_level_port_graph_type,
           };
 
           base_item (base_item* parent = NULL);
