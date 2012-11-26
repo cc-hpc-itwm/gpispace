@@ -1,3 +1,5 @@
+// bernd.loerwald@itwm.fraunhofer.de
+
 #include <pnete/ui/graph/connectable_item.hpp>
 
 #include <pnete/ui/graph/connection.hpp>
@@ -98,6 +100,8 @@ namespace fhg
         {
           if (event->modifiers() == Qt::ShiftModifier)
           {
+            //! \todo Ports can start a connection when they are
+            //! already connected to something!
             scene()->create_connection (this);
           }
           else
