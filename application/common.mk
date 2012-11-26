@@ -14,8 +14,8 @@ ifndef TEE
   TEE = $(shell which tee 2>/dev/null)
 endif
 
-ifndef DOT
-  DOT = $(shell which dot 2>/dev/null)
+ifndef CMD_DOT
+  CMD_DOT = $(shell which dot 2>/dev/null)
 endif
 
 ifndef RM
@@ -327,7 +327,7 @@ lib: $(GEN)
 
 ###############################################################################
 
-ifeq "$(DOT)" ""
+ifeq "$(CMD_DOT)" ""
 
 $(PS):
 $(PS_NOINLINE):
@@ -340,16 +340,16 @@ $(SVG_NOINLINE):
 else
 
 $(PS): $(NET)
-	$(PNET2DOT) --input $^ | $(DOT) -Tps -o $@
+	$(PNET2DOT) --input $^ | $(CMD_DOT) -Tps -o $@
 
 $(PS_NOINLINE): $(NET_NOINLINE)
-	$(PNET2DOT) --input $^ | $(DOT) -Tps -o $@
+	$(PNET2DOT) --input $^ | $(CMD_DOT) -Tps -o $@
 
 $(SVG): $(NET)
-	$(PNET2DOT) --input $^ | $(DOT) -Tsvg -o $@
+	$(PNET2DOT) --input $^ | $(CMD_DOT) -Tsvg -o $@
 
 $(SVG_NOINLINE): $(NET_NOINLINE)
-	$(PNET2DOT) --input $^ | $(DOT) -Tsvg -o $@
+	$(PNET2DOT) --input $^ | $(CMD_DOT) -Tsvg -o $@
 
 endif
 
@@ -456,7 +456,7 @@ showconfig:
 	@echo "*** External programs:"
 	@echo
 	@echo "TEE     = $(TEE)"
-	@echo "DOT     = $(DOT)"
+	@echo "CMD_DOT = $(CMD_DOT)"
 	@echo "RM      = $(RM)"
 	@echo "TOUCH   = $(TOUCH)"
 	@echo "XMLLINT = $(XMLLINT)"
