@@ -51,13 +51,13 @@ namespace fhg
           const bool& read() const;
           const bool& read (const bool&);
 
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
+
           virtual QPainterPath shape() const;
           virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
           enum { Type = connection_graph_type };
           virtual int type() const { return Type; }
-
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
 
         private:
           boost::optional<data::handle::connect> _handle;

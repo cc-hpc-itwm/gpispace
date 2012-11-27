@@ -272,9 +272,9 @@ namespace fhg
         }
 
         void scene_type::create_connection ( connectable_item* from
-                                     , connectable_item* to
-                                     , bool only_reading
-                                     )
+                                           , connectable_item* to
+                                           , bool only_reading
+                                           )
         {
           if (!to->is_connectable_with (from))
           {
@@ -435,16 +435,14 @@ namespace fhg
             }
           }
 
-          typedef boost::unordered_map< connection_item*
-                                        , graphviz::edge_type
-                                        > edges_map_type;
+          typedef boost::unordered_map < connection_item*
+                                       , graphviz::edge_type
+                                       > edges_map_type;
           edges_map_type edges;
 
           foreach (QGraphicsItem* i, items())
           {
-            if ( connection_item* c
-               = qgraphicsitem_cast<connection_item*> (i)
-               )
+            if (connection_item* c = qgraphicsitem_cast<connection_item*> (i))
             {
               QGraphicsItem* start (c->start());
               QGraphicsItem* end (c->end());
@@ -461,11 +459,7 @@ namespace fhg
               {
                 edges.insert
                   ( edges_map_type::value_type
-                  ( c
-                  , graph.add_edge ( start_node->second
-                                   , end_node->second
-                                   )
-                  )
+                    (c, graph.add_edge (start_node->second, end_node->second))
                   );
               }
             }

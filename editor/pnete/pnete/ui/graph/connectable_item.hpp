@@ -6,8 +6,8 @@
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 
 #include <pnete/ui/graph/base_item.hpp>
-
-#include <boost/optional.hpp>
+#include <pnete/ui/graph/connection.fwd.hpp>
+#include <pnete/ui/graph/scene.fwd.hpp>
 
 #include <QObject>
 #include <QSet>
@@ -21,9 +21,6 @@ namespace fhg
     {
       namespace graph
       {
-        class connection_item;
-        class scene_type;
-
         namespace connectable
         {
           namespace direction
