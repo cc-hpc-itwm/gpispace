@@ -534,7 +534,7 @@ namespace fhg
         // # transition ##############################################
         void scene_type::slot_add_transition ()
         {
-          change_manager().add_transition (this, net());
+          net().add_transition (this);
         }
 
         void scene_type::slot_delete_transition (base_item* item)
@@ -546,7 +546,7 @@ namespace fhg
         // # place ###################################################
         void scene_type::slot_add_place ()
         {
-          change_manager().add_place (this, net());
+          net().add_place (this);
         }
 
         void scene_type::slot_delete_place (base_item* item)

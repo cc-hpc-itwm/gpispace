@@ -29,6 +29,9 @@ namespace fhg
               , change_manager_t& change_manager
               );
 
+          void add_transition (const QObject* sender) const;
+          void add_place (const QObject* sender) const;
+
           using net_meta_base::operator==;
         };
       }
