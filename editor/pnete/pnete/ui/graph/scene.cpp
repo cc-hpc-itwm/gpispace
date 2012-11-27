@@ -288,15 +288,8 @@ namespace fhg
 
         void scene_type::remove_pending_connection()
         {
-          if (!_pending_connection)
-          {
-            return;
-          }
-
-          const QRectF area (_pending_connection->boundingRect());
           delete _pending_connection;
           _pending_connection = NULL;
-          update(area);
         }
 
         void scene_type::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
