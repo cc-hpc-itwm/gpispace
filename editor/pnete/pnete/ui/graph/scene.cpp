@@ -472,23 +472,6 @@ namespace fhg
           }
         }
 
-        void scene_type::remove_transition_item (transition_item* transition_item)
-        {
-          foreach (QGraphicsItem* child, transition_item->childItems())
-          {
-            if (port_item* port = qgraphicsitem_cast<port_item*> (child))
-            {
-              foreach (connection_item* c, port->connections())
-              {
-                removeItem (c);
-                delete c;
-              }
-            }
-          }
-
-          removeItem (transition_item);
-        }
-
         template<typename item_type, typename handle_type>
           item_type* scene_type::item_with_handle (const handle_type& handle)
         {
@@ -554,18 +537,10 @@ namespace fhg
           change_manager().add_transition (this, net());
         }
 
-        void scene_type::slot_delete_transition (base_item* graph_item)
+        void scene_type::slot_delete_transition (base_item* item)
         {
-          transition_item* transition_item
-            (fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*> (graph_item));
-
-          remove_transition_item (transition_item);
-
-          change_manager().delete_transition ( this
-                                             , transition_item->handle()
-                                             );
-
-          transition_item->deleteLater();
+          fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*> (item)
+            ->handle().remove (this);
         }
 
         // # place ###################################################
@@ -574,21 +549,10 @@ namespace fhg
           change_manager().add_place (this, net());
         }
 
-        void scene_type::slot_delete_place (base_item* graph_item)
+        void scene_type::slot_delete_place (base_item* item)
         {
-          place_item* place_item
-            (fhg::util::qt::throwing_qgraphicsitem_cast<place_item*> (graph_item));
-
-          foreach (connection_item* c, place_item->connections())
-          {
-            removeItem (c);
-            delete c;
-          }
-          removeItem (place_item);
-
-          place_item->handle().remove (this);
-
-          place_item->deleteLater();
+          fhg::util::qt::throwing_qgraphicsitem_cast<place_item*> (item)
+            ->handle().remove (this);
         }
 
         // ## react on modification ##################################
@@ -682,12 +646,27 @@ namespace fhg
         void scene_type::transition_deleted
           (const QObject* origin, const data::handle::transition& transition)
         {
-          if (origin != this && is_in_my_net (transition))
+          if (is_in_my_net (transition))
           {
             transition_item* item
               (item_with_handle<transition_item> (transition));
-            remove_transition_item (item);
-            item->deleteLater();
+
+            //! \todo Do not delete anything, rather assert that there
+            //! are no connections.
+            foreach (QGraphicsItem* child, item->childItems())
+            {
+              if (port_item* port = qgraphicsitem_cast<port_item*> (child))
+              {
+                foreach (connection_item* c, port->connections())
+                {
+                  removeItem (c);
+                  delete c;
+                }
+              }
+            }
+
+            removeItem (item);
+            delete item;
           }
         }
 
@@ -717,11 +696,18 @@ namespace fhg
         void scene_type::place_deleted
           (const QObject* origin, const data::handle::place& place)
         {
-          if (origin != this && is_in_my_net (place))
+          if (is_in_my_net (place))
           {
             place_item* item (item_with_handle<place_item> (place));
+            //! \todo Do not remove connections, rather assert that
+            //! there are none.
+            foreach (connection_item* c, item->connections())
+            {
+              removeItem (c);
+              delete c;
+            }
             removeItem (item);
-            item->deleteLater();
+            delete item;
           }
         }
       }

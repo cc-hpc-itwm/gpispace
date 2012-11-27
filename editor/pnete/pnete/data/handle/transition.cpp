@@ -22,6 +22,11 @@ namespace fhg
           : transition_meta_base (id, change_manager)
         { }
 
+        void transition::remove (const QObject* sender) const
+        {
+          change_manager().delete_transition (sender, *this);
+        }
+
         void transition::set_property
           ( const QObject* sender
           , const ::we::type::property::key_type& key
