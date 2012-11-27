@@ -86,13 +86,13 @@ namespace fhg
           // transition.
           _net.connect_to_change_mgr
             ( this
-            , "connection_added"
+            , "connection_added_in"
             , "const data::handle::connect&, "
               "const data::handle::place&, const data::handle::port&"
             );
           _net.connect_to_change_mgr
             ( this
-            , "connection_added"
+            , "connection_added_out"
             , "const data::handle::connect&, "
               "const data::handle::port&, const data::handle::place&"
             );
@@ -558,7 +558,7 @@ namespace fhg
         // ## react on modification ##################################
         // # connection ##############################################
         //! \todo Pass direction, don't pass from and to. Pass net.
-        void scene_type::connection_added
+        void scene_type::connection_added_in
           ( const QObject* origin
           , const data::handle::connect& connection
           , const data::handle::place& from
@@ -588,7 +588,7 @@ namespace fhg
                               );
           }
         }
-        void scene_type::connection_added
+        void scene_type::connection_added_out
           ( const QObject* origin
           , const data::handle::connect& connection
           , const data::handle::port& from

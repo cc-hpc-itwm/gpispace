@@ -56,26 +56,28 @@ namespace fhg
         {
 #define EXPOSE(NAME) using change_manager_t::NAME
 
-        // - net -----------------------------------------------------
-        // -- connection ---------------------------------------------
-        EXPOSE (property_changed);
+          // - net -----------------------------------------------------
+          // -- connection ---------------------------------------------
+          EXPOSE (connection_added_in);
+          EXPOSE (connection_added_out);
+          EXPOSE (property_changed);
 
-        // -- transition ---------------------------------------------
-        EXPOSE (transition_added);
-        EXPOSE (transition_deleted);
+          // -- transition ---------------------------------------------
+          EXPOSE (transition_added);
+          EXPOSE (transition_deleted);
 
-        // -- place --------------------------------------------------
-        EXPOSE (place_added);
-        EXPOSE (place_deleted);
+          // -- place --------------------------------------------------
+          EXPOSE (place_added);
+          EXPOSE (place_deleted);
 
-        // - port ----------------------------------------------------
+          // - port ----------------------------------------------------
 
-        // - function ------------------------------------------------
-        EXPOSE (function_name_changed);
+          // - function ------------------------------------------------
+          EXPOSE (function_name_changed);
 
-        // - expression ---------------------------------------------
-        EXPOSE (signal_set_expression);
-        EXPOSE (signal_set_expression_parse_result);
+          // - expression ---------------------------------------------
+          EXPOSE (signal_set_expression);
+          EXPOSE (signal_set_expression_parse_result);
 
 #undef EXPOSE
         };
@@ -288,6 +290,127 @@ namespace fhg
           boost::scoped_ptr<meta_set_property<handle_type> > _set_x_action;
           boost::scoped_ptr<meta_set_property<handle_type> > _set_y_action;
         };
+
+        // -- connection ---------------------------------------------
+        void add_connection_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::transition& transition
+          , const data::handle::place& from
+          , const data::handle::port& to
+          )
+        {
+          const ::xml::parse::id::ref::connect connection
+            ( ::xml::parse::type::connect_type
+               ( transition.id_mapper()->next_id()
+              , transition.id_mapper()
+              , transition.id()
+              , from.get().name()
+              , to.get().name()
+              ).make_reference_id()
+            );
+
+          transition.get_ref().push_in (connection);
+
+          change_manager.emit_signal
+            ( &signal::connection_added_in, origin
+            , handle::connect (connection, change_manager), from, to
+            );
+        }
+
+        void add_connection_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::transition& transition
+          , const data::handle::port& from
+          , const data::handle::place& to
+          )
+        {
+          const ::xml::parse::id::ref::connect connection
+           ( ::xml::parse::type::connect_type
+               ( transition.id_mapper()->next_id()
+              , transition.id_mapper()
+              , transition.id()
+              , to.get().name()
+              , from.get().name()
+              ).make_reference_id()
+            );
+
+          transition.get_ref().push_out (connection);
+
+          change_manager.emit_signal
+            ( &signal::connection_added_out, origin
+            , handle::connect (connection, change_manager), from, to
+            );
+        }
+
+        class add_connection_out : public QUndoCommand
+        {
+        public:
+          add_connection_out
+            ( ACTION_ARG_LIST
+            , const ::xml::parse::id::ref::transition& transition
+            , const data::handle::port& from
+            , const data::handle::place& to
+            )
+              : ACTION_INIT ("add_connection_out_action")
+              , _transition (transition)
+              , _from (from)
+              , _to (to)
+          { }
+
+          virtual void undo()
+          {
+            // remove_connection_impl
+            //   (_change_manager, NULL, _transition, _from, _to);
+          }
+
+          virtual void redo()
+          {
+            add_connection_impl
+              (_change_manager, _origin, _transition, _from, _to);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const ::xml::parse::id::ref::transition _transition;
+          const data::handle::port _from;
+          const data::handle::place _to;
+        };
+        class add_connection_in : public QUndoCommand
+        {
+        public:
+          add_connection_in
+            ( ACTION_ARG_LIST
+            , const ::xml::parse::id::ref::transition& transition
+            , const data::handle::place& from
+            , const data::handle::port& to
+            )
+              : ACTION_INIT ("add_connection_in_action")
+              , _transition (transition)
+              , _from (from)
+              , _to (to)
+          { }
+
+          virtual void undo()
+          {
+            // remove_connection_impl
+            //   (_change_manager, NULL, _transition, _from, _to);
+          }
+
+          virtual void redo()
+          {
+            add_connection_impl
+              (_change_manager, _origin, _transition, _from, _to);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const ::xml::parse::id::ref::transition _transition;
+          const data::handle::place _from;
+          const data::handle::port _to;
+        };
+
 
         // -- transition ---------------------------------------------
         class add_transition : public QUndoCommand
@@ -596,7 +719,6 @@ namespace fhg
       // ## editing methods ##########################################
       // - net -------------------------------------------------------
       // -- connection -----------------------------------------------
-
       void change_manager_t::add_connection ( const QObject* origin
                                             , const data::handle::place& from
                                             , const data::handle::port& to
@@ -611,22 +733,9 @@ namespace fhg
             ("tried connecting place and port in different nets.");
         }
 
-        ::xml::parse::id::ref::connect connection
-          ( ::xml::parse::type::connect_type
-            ( transition.id_mapper()->next_id()
-            , transition.id_mapper()
-            , transition.id()
-            , from.get().name()
-            , to.get().name()
-            ).make_reference_id()
-          );
-
-        transition.get_ref().push_in (connection);
-
-        emit connection_added ( origin
-                              , handle::connect (connection, *this)
-                              , from, to
-                              );
+        push ( new action::add_connection_in
+               (*this, origin, transition, from, to)
+             );
       }
 
       void change_manager_t::add_connection ( const QObject* origin
@@ -643,22 +752,9 @@ namespace fhg
             ("tried connecting port and place in different nets.");
         }
 
-        ::xml::parse::id::ref::connect connection
-          ( ::xml::parse::type::connect_type
-            ( transition.id_mapper()->next_id()
-            , transition.id_mapper()
-            , transition.id()
-            , to.get().name()
-            , from.get().name()
-            ).make_reference_id()
-          );
-
-        transition.get_ref().push_out (connection);
-
-        emit connection_added ( origin
-                              , handle::connect (connection, *this)
-                              , from, to
-                              );
+        push ( new action::add_connection_out
+               (*this, origin, transition, from, to)
+             );
       }
 
       void change_manager_t::add_connection ( const QObject* origin
