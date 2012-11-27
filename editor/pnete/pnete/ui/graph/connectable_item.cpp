@@ -82,19 +82,6 @@ namespace fhg
           return childs;
         }
 
-        void connectable_item::erase_connections (scene_type* scene)
-        {
-          foreach (connection_item* connection, connections())
-          {
-            scene->removeItem (connection);
-
-            if (connection)
-            {
-              delete connection;
-            }
-          }
-        }
-
         void connectable_item::mousePressEvent
           (QGraphicsSceneMouseEvent* event)
         {

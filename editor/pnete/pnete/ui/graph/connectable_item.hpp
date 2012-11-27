@@ -51,7 +51,6 @@ namespace fhg
 
           virtual bool is_connectable_with (const connectable_item*) const;
 
-          void erase_connections (scene_type*);
           const QSet<connection_item*>& connections() const;
           const connectable::direction::type& direction() const;
           const connectable::direction::type& direction (const connectable::direction::type&);

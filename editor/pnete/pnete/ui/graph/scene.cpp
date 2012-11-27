@@ -491,7 +491,11 @@ namespace fhg
           {
             if (port_item* port = qgraphicsitem_cast<port_item*> (child))
             {
-              port->erase_connections (this);
+              foreach (connection_item* c, port->connections())
+              {
+                removeItem (c);
+                delete c;
+              }
             }
           }
 
@@ -588,7 +592,11 @@ namespace fhg
           place_item* place_item
             (fhg::util::qt::throwing_qgraphicsitem_cast<place_item*> (graph_item));
 
-          place_item->erase_connections (this);
+          foreach (connection_item* c, place_item->connections())
+          {
+            removeItem (c);
+            delete c;
+          }
           removeItem (place_item);
 
           place_item->handle().remove (this);
