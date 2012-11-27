@@ -255,19 +255,6 @@ namespace fhg
           qDebug() << "scene_type::add_struct";
         }
 
-        const QPointF& scene_type::mouse_position() const
-        {
-          return _mouse_position;
-        }
-
-        connection_item* scene_type::create_connection (bool only_reading)
-        {
-          connection_item * c (new connection_item (boost::none, only_reading));
-          addItem (c);
-          c->set_just_pos_but_not_in_property (0.0, 0.0);
-          return c;
-        }
-
         void scene_type::create_connection (connectable_item* item)
         {
           if (_pending_connection)
@@ -294,10 +281,9 @@ namespace fhg
             throw std::runtime_error
               ("tried hard-connecting non-connectable items.");
           }
-          connection_item* c (create_connection (only_reading));
-          c->start (from);
-          c->end (to);
-          update (c->boundingRect());
+          connection_item* c
+            (new connection_item (from, to, boost::none, only_reading));
+          addItem (c);
         }
 
         void scene_type::remove_pending_connection()
@@ -692,7 +678,7 @@ namespace fhg
 
             if (origin == this)
             {
-              item->no_undo_setPos (mouse_position());
+              item->no_undo_setPos (_mouse_position);
               item->repositionChildrenAndResize();
             }
           }
@@ -728,7 +714,7 @@ namespace fhg
 
             if (origin == this)
             {
-              item->no_undo_setPos (mouse_position());
+              item->no_undo_setPos (_mouse_position);
             }
           }
         }

@@ -18,88 +18,37 @@ namespace fhg
       namespace graph
       {
         connection_item::connection_item
-          ( const boost::optional<data::handle::connect>& handle
+          ( connectable_item* start
+          , connectable_item* end
+          , const boost::optional<data::handle::connect>& handle
           , bool read
           )
             : base_item()
             , _handle (handle)
-            , _start (NULL)
-            , _end (NULL)
+            , _start (start)
+            , _end (end)
             , _fixed_points()
             , _read (read)
         {
+          start->add_connection (this);
+          end->add_connection (this);
+
           setZValue (-1);                                                          // hardcoded constant
+          set_just_pos_but_not_in_property (0.0, 0.0);
         }
         connection_item::~connection_item()
         {
-          start (NULL);
-          end (NULL);
+          _start->remove_connection (this);
+          _end->remove_connection (this);
         }
 
         connectable_item* connection_item::start() const
         {
           return _start;
         }
-        connectable_item* connection_item::start (connectable_item* start_)
-        {
-          if (_start)
-          {
-            _start->remove_connection (this);
-          }
-          _start = start_;
-          if (_start)
-          {
-            _start->add_connection (this);
-          }
-          return _start;
-        }
         connectable_item* connection_item::end() const
         {
           return _end;
-        }
-        connectable_item* connection_item::end (connectable_item* end_)
-        {
-          if (_end)
-          {
-            _end->remove_connection (this);
-          }
-          _end = end_;
-          if (_end)
-          {
-            _end->add_connection (this);
-          }
-          return _end;
-        }
-
-        connectable_item* connection_item::non_free_side() const
-        {
-          if (_start && _end)
-          {
-            throw std::runtime_error ( "can't get a non_free side as both "
-                                     "sides are connected."
-                                     );
-          }
-          if (!_start && !_end)
-          {
-            throw std::runtime_error ( "can't get a non_free side as both "
-                                     "sides are not connected."
-                                     );
-          }
-          return _start ? _start : _end;
-        }
-        connectable_item* connection_item::free_side(connectable_item* item)
-        {
-          if (_start && _end)
-          {
-            throw std::runtime_error ( "can't connect free side, as there "
-                                     "is none."
-                                     );
-          }
-          if (!_start && !_end)
-          {
-            throw std::runtime_error ("can't connect free side, as both are.");
-          }
-          return _end ? start (item) : end (item);
         }
 
         const QList<QPointF>& connection_item::fixed_points() const
@@ -122,22 +71,15 @@ namespace fhg
           return _read = read_;
         }
 
-        //! \todo this is broken
         QPainterPath connection_item::shape () const
         {
           QList<QPointF> allPoints;
-          allPoints.push_back ( start()
-                              ? start()->scenePos()
-                              : scene()->mouse_position()
-                              );
+          allPoints.push_back (start()->scenePos());
           foreach (QPointF point, fixed_points())
           {
             allPoints.push_back (point);
           }
-          allPoints.push_back ( end()
-                              ? end()->scenePos()
-                              : scene()->mouse_position()
-                              );
+          allPoints.push_back (end()->scenePos());
 
           return association::shape (allPoints);
         }

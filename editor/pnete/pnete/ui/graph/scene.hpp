@@ -47,8 +47,6 @@ namespace fhg
                               , QObject* parent = NULL
                               );
 
-          const QPointF& mouse_position() const;
-
           void create_connection (connectable_item* item);
           void create_connection ( connectable_item* from
                                  , connectable_item* to
@@ -111,7 +109,6 @@ namespace fhg
 
           void remove_transition_item (transition_item*);
 
-          connection_item* create_connection (bool only_reading = false);
           void remove_pending_connection();
 
           void init_menu_context();

@@ -35,18 +35,15 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          connection_item ( const boost::optional<data::handle::connect>& handle
+          connection_item ( connectable_item* start
+                          , connectable_item* end
+                          , const boost::optional<data::handle::connect>& handle
                           , bool read = false
                           );
           ~connection_item();
 
           connectable_item* start() const;
-          connectable_item* start (connectable_item*);
           connectable_item* end() const;
-          connectable_item* end (connectable_item*);
-
-          connectable_item* non_free_side() const;
-          connectable_item* free_side(connectable_item*);
 
           const QList<QPointF>& fixed_points() const;
           const QList<QPointF>& fixed_points (const QList<QPointF>&);
