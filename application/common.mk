@@ -14,8 +14,8 @@ ifndef TEE
   TEE = $(shell which tee 2>/dev/null)
 endif
 
-ifndef DOT
-  DOT = $(shell which dot 2>/dev/null)
+ifndef CMD_DOT
+  CMD_DOT = $(shell which dot 2>/dev/null)
 endif
 
 ifndef RM
@@ -156,6 +156,22 @@ ifndef OUT
   endif
 endif
 
+ifndef DOT
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable DOT)
+  else
+    DOT = $(CURDIR)/$(MAIN).dot
+  endif
+endif
+
+ifndef DOT_NOINLINE
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable DOT_NOINLINE)
+  else
+    DOT_NOINLINE = $(CURDIR)/$(MAIN).noinline.dot
+  endif
+endif
+
 ifndef PS
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable PS)
@@ -169,6 +185,22 @@ ifndef PS_NOINLINE
     $(error variable MAIN undefined but needed to derive variable PS_NOINLINE)
   else
     PS_NOINLINE = $(CURDIR)/$(MAIN).noinline.ps
+  endif
+endif
+
+ifndef SVG
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable SVG)
+  else
+    SVG = $(CURDIR)/$(MAIN).svg
+  endif
+endif
+
+ifndef SVG_NOINLINE
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable SVG_NOINLINE)
+  else
+    SVG_NOINLINE = $(CURDIR)/$(MAIN).noinline.svg
   endif
 endif
 
@@ -237,13 +269,15 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default build ps net verify validate put gen lib run submit
+.PHONY: default build dot ps svg net verify validate put gen lib run submit
 
 default: build
 
 build: put lib $(BUILD)
 
+dot: $(DOT) $(DOT_NOINLINE)
 ps: $(PS) $(PS_NOINLINE)
+svg: $(SVG) $(SVG_NOINLINE)
 net: $(NET)
 put: $(PUT)
 gen: $(GEN)
@@ -310,19 +344,30 @@ lib: $(GEN)
 
 ###############################################################################
 
-ifeq "$(DOT)" ""
+$(DOT): $(NET)
+	$(PNET2DOT) --input $^ --output $@
 
-$(PS):
-$(PS_NOINLINE):
-	$(error Cannot create postscript files: Missing 'dot'.)
+$(DOT_NOINLINE): $(NET_NOINLINE)
+	$(PNET2DOT) --input $^ --output $@
+
+ifeq "$(CMD_DOT)" ""
+
+$(PS) $(PS_NOINLINE) $(SVG) $(SVG_NOINLINE):
+	$(error Cannot create $@: Missing 'dot'.)
 
 else
 
-$(PS): $(NET)
-	$(PNET2DOT) --input $^ | $(DOT) -Tps -o $@
+$(PS): $(DOT)
+	$(CMD_DOT) $^ -Tps -o $@
 
-$(PS_NOINLINE): $(NET_NOINLINE)
-	$(PNET2DOT) --input $^ | $(DOT) -Tps -o $@
+$(SVG): $(DOT)
+	$(CMD_DOT) $^ -Tsvg -o $@
+
+$(PS_NOINLINE): $(DOT_NOINLINE)
+	$(CMD_DOT) $^ -Tps -o $@
+
+$(SVG_NOINLINE): $(DOT_NOINLINE)
+	$(CMD_DOT) $^ -Tsvg -o $@
 
 endif
 
@@ -372,8 +417,12 @@ clean: $(CLEAN)
 	-$(RM) -f $(NET)
 	-$(RM) -f $(PUT)
 	-$(RM) -f $(NET_NOINLINE)
+	-$(RM) -f $(DOT)
+	-$(RM) -f $(DOT_NOINLINE)
 	-$(RM) -f $(PS)
 	-$(RM) -f $(PS_NOINLINE)
+	-$(RM) -f $(SVG)
+	-$(RM) -f $(SVG_NOINLINE)
 	-$(RM) -f $(OUT)
 	-$(RM) -f $(DEP_XML)
 	-$(RM) -f $(NET_VERIFICATION)
@@ -400,9 +449,11 @@ help:
 	@echo "submit      'put' & submit to a running SDPA system"
 	@echo
 	@echo "validate    validate the xml"
-	@echo
 	@echo "verify      'net' & verify the pnet"
-	@echo "ps          'net' & generate postscript"
+	@echo
+	@echo "dot         'net' & generate .dot"
+	@echo "ps          'dot' & generate postscript"
+	@echo "svg         'dot' & generate svg"
 	@echo
 	@echo "clean       delete all generated files"
 	@echo
@@ -426,7 +477,7 @@ showconfig:
 	@echo "*** External programs:"
 	@echo
 	@echo "TEE     = $(TEE)"
-	@echo "DOT     = $(DOT)"
+	@echo "CMD_DOT = $(CMD_DOT)"
 	@echo "RM      = $(RM)"
 	@echo "TOUCH   = $(TOUCH)"
 	@echo "XMLLINT = $(XMLLINT)"
@@ -452,8 +503,12 @@ showconfig:
 	@echo "PUT              = $(PUT)"
 	@echo "GEN              = $(GEN)"
 	@echo "OUT              = $(OUT)"
+	@echo "DOT              = $(DOT)"
+	@echo "DOT_NOINLINE     = $(DOT_NOINLINE)"
 	@echo "PS               = $(PS)"
 	@echo "PS_NOINLINE      = $(PS_NOINLINE)"
+	@echo "SVG              = $(SVG)"
+	@echo "SVG_NOINLINE     = $(SVG_NOINLINE)"
 	@echo
 	@echo "*** Dependencies and options:"
 	@echo

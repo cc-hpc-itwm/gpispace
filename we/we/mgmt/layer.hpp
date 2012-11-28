@@ -917,6 +917,14 @@ namespace we { namespace mgmt {
                  << ": something went wrong during execution of: "
                  << desc->name() << ": " << ex.what()
                  );
+              desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
+              desc->set_error_message
+                ( std::string ("in: '")
+                + desc->name ()
+                + std::string ("' ")
+                + ex.what ()
+                );
+              desc->set_result (policy::codec::encode(desc->activity()));
               post_failed_notification (desc->id());
             }
           }
