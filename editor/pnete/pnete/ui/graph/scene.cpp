@@ -532,24 +532,24 @@ namespace fhg
 
         // ## trigger modification ###################################
         // # transition ##############################################
-        void scene_type::slot_add_transition ()
+        void scene_type::slot_add_transition() const
         {
           net().add_transition (this);
         }
 
-        void scene_type::slot_delete_transition (base_item* item)
+        void scene_type::slot_delete_transition (base_item* item) const
         {
           fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*> (item)
             ->handle().remove (this);
         }
 
         // # place ###################################################
-        void scene_type::slot_add_place ()
+        void scene_type::slot_add_place() const
         {
           net().add_place (this);
         }
 
-        void scene_type::slot_delete_place (base_item* item)
+        void scene_type::slot_delete_place (base_item* item) const
         {
           fhg::util::qt::throwing_qgraphicsitem_cast<place_item*> (item)
             ->handle().remove (this);
