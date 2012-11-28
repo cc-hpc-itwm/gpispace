@@ -2,13 +2,6 @@
 
 #include <pnete/ui/graph/connection.hpp>
 
-#include <pnete/ui/graph/connectable_item.hpp>
-#include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/graph/style/association.hpp>
-
-#include <QGraphicsSceneMouseEvent>
-#include <QPainter>
-
 namespace fhg
 {
   namespace pnete
@@ -42,12 +35,10 @@ namespace fhg
           return association::shape();
         }
 
-        void connection_item::paint ( QPainter* painter
-                                    , const QStyleOptionGraphicsItem* option
-                                    , QWidget* widget
-                                    )
+        void connection_item::paint
+          (QPainter* painter, const QStyleOptionGraphicsItem* opt, QWidget* wid)
         {
-          association::paint (painter, option, widget);
+          association::paint (painter, opt, wid);
         }
       }
     }

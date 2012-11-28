@@ -20,7 +20,6 @@ class QPainter;
 class QStyleOptionGraphicsItem;
 class QWidget;
 class QPainterPath;
-class QGraphicsSceneMouseEvent;
 
 namespace fhg
 {
