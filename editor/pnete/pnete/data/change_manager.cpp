@@ -959,6 +959,8 @@ namespace fhg
         , const handle::transition& transition
         )
       {
+        //! \todo Find all connections to this transition and erase them in
+        //! a macro. Or do that inside the action class.
         push (new action::remove_transition (*this, origin, transition.id()));
       }
 
@@ -1048,6 +1050,8 @@ namespace fhg
         , const handle::place& place
         )
       {
+        //! \todo Find all connections to this place and erase them in
+        //! a macro. Or do that inside the action class.
         push (new action::remove_place (*this, origin, place.id()));
       }
 
