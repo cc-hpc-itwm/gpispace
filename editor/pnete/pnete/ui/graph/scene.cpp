@@ -282,9 +282,7 @@ namespace fhg
             throw std::runtime_error
               ("tried hard-connecting non-connectable items.");
           }
-          connection_item* c
-            (new connection_item (from, to, handle, only_reading));
-          addItem (c);
+          addItem (new connection_item (from, to, handle, only_reading));
         }
 
         void scene_type::remove_pending_connection()
