@@ -16,9 +16,12 @@ namespace fhg
     {
       namespace graph
       {
-        namespace association
+        namespace style
         {
-          QPainterPath shape (const QList<QPointF>& points);
+          namespace association
+          {
+            QPainterPath shape (const QList<QPointF>& points);
+          }
         }
       }
     }

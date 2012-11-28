@@ -33,13 +33,14 @@ namespace fhg
             ? _fixed_end->scenePos()
             : _open_end
             );
+          //! \todo automatic orthogonal lines
           points.push_back
             ( _fixed_end->direction() == connectable::direction::OUT
             ? _open_end
             : _fixed_end->scenePos()
             );
 
-          return association::shape (points);
+          return style::association::shape (points);
         }
         void pending_connection::paint
           (QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
