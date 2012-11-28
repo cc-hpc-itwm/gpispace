@@ -255,13 +255,13 @@ namespace fhg
           qDebug() << "scene_type::add_struct";
         }
 
-        void scene_type::create_connection (connectable_item* item)
+        void scene_type::create_pending_connection (connectable_item* item)
         {
           if (_pending_connection)
           {
-            throw std::runtime_error ( "connection created while a different "
-                                     "connection is still pending. Oo"
-                                     );
+            throw std::runtime_error
+              ( "pending connection created while a different connection is "
+              "still pending. Oo");
           }
 
           _pending_connection = new pending_connection (item, _mouse_position);

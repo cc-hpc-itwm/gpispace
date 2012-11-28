@@ -82,6 +82,7 @@ namespace fhg
           return childs;
         }
 
+        //! \todo This should be in the different connectable items instead.
         void connectable_item::mousePressEvent
           (QGraphicsSceneMouseEvent* event)
         {
@@ -89,7 +90,7 @@ namespace fhg
           {
             //! \todo Ports can start a connection when they are
             //! already connected to something!
-            scene()->create_connection (this);
+            scene()->create_pending_connection (this);
           }
           else
           {

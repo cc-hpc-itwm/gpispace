@@ -47,7 +47,7 @@ namespace fhg
                               , QObject* parent = NULL
                               );
 
-          void create_connection (connectable_item* item);
+          void create_pending_connection (connectable_item* item);
           void create_connection ( connectable_item* from
                                  , connectable_item* to
                                  , bool only_reading
