@@ -105,6 +105,10 @@ namespace xml
       {
         return _by_key.find (key) != _by_key.end();
       }
+      bool has (const id_type& id) const
+      {
+        return _values._ids.find (id) != _values._ids.end();
+      }
 
       const id_type& push (const id_type& id)
       {
