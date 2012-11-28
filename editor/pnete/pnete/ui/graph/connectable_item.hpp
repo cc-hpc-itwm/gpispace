@@ -6,7 +6,7 @@
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 
 #include <pnete/ui/graph/base_item.hpp>
-#include <pnete/ui/graph/connection.fwd.hpp>
+#include <pnete/ui/graph/association.fwd.hpp>
 #include <pnete/ui/graph/scene.fwd.hpp>
 
 #include <QObject>
@@ -43,12 +43,12 @@ namespace fhg
             , base_item* parent = NULL
             );
 
-          void add_connection (connection_item* c);
-          void remove_connection (connection_item * c);
+          void add_association (association* c);
+          void remove_association (association * c);
 
           virtual bool is_connectable_with (const connectable_item*) const;
 
-          const QSet<connection_item*>& connections() const;
+          const QSet<association*>& associations() const;
           const connectable::direction::type& direction() const;
           const connectable::direction::type& direction (const connectable::direction::type&);
 
@@ -59,7 +59,7 @@ namespace fhg
           virtual QLinkedList<base_item*> childs() const;
 
         protected:
-          QSet<connection_item*> _connections;
+          QSet<association*> _associations;
           connectable::direction::type _direction;
 
           const std::string& we_type (const std::string&) const;

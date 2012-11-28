@@ -3,6 +3,7 @@
 include(${QT_USE_FILE})
 
 set(graph_SRCS
+  association.cpp
   base_item.cpp
   connectable_item.cpp
   orientation.cpp
@@ -20,6 +21,7 @@ set(graph_SRCS
 )
 
 set(graph_HDRS
+  association.hpp
   base_item.hpp
   connectable_item.hpp
   orientation.hpp
@@ -40,6 +42,7 @@ set(graph_UIS
 )
 
 set(graph_TOMOC
+  association.hpp
   base_item.hpp
   connectable_item.hpp
 

@@ -23,44 +23,10 @@ namespace fhg
           , const boost::optional<data::handle::connect>& handle
           , bool read
           )
-            : base_item()
+            : association (start, end)
             , _handle (handle)
-            , _start (start)
-            , _end (end)
-            , _fixed_points()
             , _read (read)
-        {
-          start->add_connection (this);
-          end->add_connection (this);
-
-          setZValue (-1);                                                          // hardcoded constant
-          set_just_pos_but_not_in_property (0.0, 0.0);
-        }
-        connection_item::~connection_item()
-        {
-          _start->remove_connection (this);
-          _end->remove_connection (this);
-        }
-
-        connectable_item* connection_item::start() const
-        {
-          return _start;
-        }
-        connectable_item* connection_item::end() const
-        {
-          return _end;
-        }
-
-        const QList<QPointF>& connection_item::fixed_points() const
-        {
-          return _fixed_points;
-        }
-
-        const QList<QPointF>&
-        connection_item::fixed_points (const QList<QPointF>& fixed_points_)
-        {
-          return _fixed_points = fixed_points_;
-        }
+        { }
 
         const bool& connection_item::read() const
         {
@@ -73,36 +39,15 @@ namespace fhg
 
         QPainterPath connection_item::shape () const
         {
-          QList<QPointF> allPoints;
-          allPoints.push_back (start()->scenePos());
-          foreach (QPointF point, fixed_points())
-          {
-            allPoints.push_back (point);
-          }
-          allPoints.push_back (end()->scenePos());
-
-          return association::shape (allPoints);
+          return association::shape();
         }
 
         void connection_item::paint ( QPainter* painter
-                                    , const QStyleOptionGraphicsItem*
-                                    , QWidget*
+                                    , const QStyleOptionGraphicsItem* option
+                                    , QWidget* widget
                                     )
         {
-          style::draw_shape (this, painter);
-        }
-
-        void connection_item::mousePressEvent (QGraphicsSceneMouseEvent* event)
-        {
-          //! \todo Add ability to set control points.
-          if (event->modifiers() == Qt::ControlModifier)
-          {
-            event->ignore();
-          }
-          else
-          {
-            base_item::mousePressEvent (event);
-          }
+          association::paint (painter, option, widget);
         }
       }
     }

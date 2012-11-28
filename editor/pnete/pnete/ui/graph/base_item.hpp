@@ -44,6 +44,7 @@ namespace fhg
             place_graph_type,
             top_level_port_graph_type,
             pending_connection_graph_type,
+            association_graph_type,
           };
 
           base_item (base_item* parent = NULL);

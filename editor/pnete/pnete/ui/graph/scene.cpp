@@ -657,7 +657,7 @@ namespace fhg
             {
               if (port_item* port = qgraphicsitem_cast<port_item*> (child))
               {
-                foreach (connection_item* c, port->connections())
+                foreach (association* c, port->associations())
                 {
                   removeItem (c);
                   delete c;
@@ -701,7 +701,7 @@ namespace fhg
             place_item* item (item_with_handle<place_item> (place));
             //! \todo Do not remove connections, rather assert that
             //! there are none.
-            foreach (connection_item* c, item->connections())
+            foreach (association* c, item->associations())
             {
               removeItem (c);
               delete c;

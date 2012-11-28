@@ -2,7 +2,7 @@
 
 #include <pnete/ui/graph/connectable_item.hpp>
 
-#include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/association.hpp>
 #include <pnete/ui/graph/scene.hpp>
 
 #include <QGraphicsSceneMouseEvent>
@@ -21,25 +21,25 @@ namespace fhg
           , base_item* parent
           )
           : base_item (parent)
-          , _connections ()
+          , _associations ()
           , _direction (direction)
         {}
 
-        void connectable_item::add_connection (connection_item* c)
+        void connectable_item::add_association (association* c)
         {
-          if (_connections.contains (c))
+          if (_associations.contains (c))
           {
-            throw std::runtime_error ("tried adding the same connection twice.");
+            throw std::runtime_error ("tried adding the same association twice.");
           }
-          _connections.insert (c);
+          _associations.insert (c);
         }
-        void connectable_item::remove_connection (connection_item* c)
+        void connectable_item::remove_association (association* c)
         {
-          if (!_connections.contains (c))
+          if (!_associations.contains (c))
           {
-            throw std::runtime_error ("item did not have that connection.");
+            throw std::runtime_error ("item did not have that association.");
           }
-          _connections.remove (c);
+          _associations.remove (c);
         }
 
         bool connectable_item::is_connectable_with (const connectable_item* i) const
@@ -47,9 +47,9 @@ namespace fhg
           return i->we_type() == we_type() && i->direction() != direction();
         }
 
-        const QSet<connection_item*>& connectable_item::connections() const
+        const QSet<association*>& connectable_item::associations() const
         {
-          return _connections;
+          return _associations;
         }
 
         const connectable::direction::type& connectable_item::direction() const
@@ -74,9 +74,9 @@ namespace fhg
         {
           QLinkedList<base_item*> childs;
 
-          foreach (connection_item* connection, connections())
+          foreach (association* association, associations())
           {
-            childs << connection;
+            childs << association;
           }
 
           return childs;

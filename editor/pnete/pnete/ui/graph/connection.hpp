@@ -6,7 +6,7 @@
 #include <pnete/ui/graph/connection.fwd.hpp>
 
 #include <pnete/data/handle/connect.hpp>
-#include <pnete/ui/graph/base_item.hpp>
+#include <pnete/ui/graph/association.hpp>
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 
 #include <boost/optional.hpp>
@@ -30,7 +30,7 @@ namespace fhg
     {
       namespace graph
       {
-        class connection_item : public base_item
+        class connection_item : public association
         {
           Q_OBJECT;
 
@@ -40,32 +40,19 @@ namespace fhg
                           , const boost::optional<data::handle::connect>& handle
                           , bool read = false
                           );
-          ~connection_item();
-
-          connectable_item* start() const;
-          connectable_item* end() const;
-
-          const QList<QPointF>& fixed_points() const;
-          const QList<QPointF>& fixed_points (const QList<QPointF>&);
 
           const bool& read() const;
           const bool& read (const bool&);
 
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
-
           virtual QPainterPath shape() const;
-          virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+          virtual void paint
+            (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
 
           enum { Type = connection_graph_type };
           virtual int type() const { return Type; }
 
         private:
           boost::optional<data::handle::connect> _handle;
-
-          connectable_item* _start;
-          connectable_item* _end;
-
-          QList<QPointF> _fixed_points;
 
           bool _read;
         };

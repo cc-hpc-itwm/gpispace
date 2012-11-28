@@ -130,7 +130,7 @@ namespace fhg
         bool port_item::is_connectable_with (const connectable_item* item) const
         {
           //! \note Only allow one connection on ports.
-          return _connections.isEmpty()
+          return _associations.isEmpty()
             && connectable_item::is_connectable_with (item);
         }
 
