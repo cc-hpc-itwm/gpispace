@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_CONNECT_HPP
 #define _XML_PARSE_TYPE_CONNECT_HPP
@@ -14,6 +14,8 @@
 #include <we/type/property.hpp>
 
 #include <string>
+
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -39,6 +41,8 @@ namespace xml
 
         const std::string& place() const;
         const std::string& port() const;
+        boost::optional<const id::ref::place&> resolved_place() const;
+        boost::optional<const id::ref::port&> resolved_port() const;
 
       private:
         friend struct net_type;
