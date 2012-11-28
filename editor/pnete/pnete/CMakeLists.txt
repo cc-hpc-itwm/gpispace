@@ -1,4 +1,5 @@
-# -*- mode: cmake; -*-
+# bernd.loerwald@itwm.fraunhofer.de
+
 include (${QT_USE_FILE})
 
 set ( pnete_SRCS
@@ -19,11 +20,9 @@ add_subdirectory (data)
 add_subdirectory (ui)
 add_subdirectory (weaver)
 
-# TODO: eliminate the circular dependency
 target_link_libraries ( pnete
                         "${LIB_PREFIX}ui"
                         "${LIB_PREFIX}data"
-                        "${LIB_PREFIX}ui"
                         "${LIB_PREFIX}weaver"
                         ${WE_LIBRARIES}
                         ${FhgLog_LIBRARY}
