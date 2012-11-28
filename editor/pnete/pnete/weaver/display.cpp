@@ -3,16 +3,16 @@
 #include <pnete/weaver/display.hpp>
 #include <pnete/weaver/weaver.hpp>
 
-#include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/port.hpp>
-#include <pnete/ui/graph/place.hpp>
-
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/port.hpp>
 #include <pnete/data/internal.hpp>
+#include <pnete/ui/graph/place.hpp>
+#include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/port_place_association.hpp>
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/graph/transition.hpp>
 
 #include <QtGlobal>
 
@@ -436,41 +436,21 @@ namespace fhg
       {
         if (place)
         {
-          item_by_name_type _port_item_by_name;
+          const item_by_name_type::iterator place_pos
+            (_place_item_by_name.find (*place));
 
-          _port_item_by_name[_name] = _port_item;
-
-          typedef item_by_name_type::iterator iterator_type;
-
-          const iterator_type port_pos (_port_item_by_name.find (_name));
-          const iterator_type place_pos (_place_item_by_name.find (*place));
-
-          if (port_pos == _port_item_by_name.end())
-          {
-            throw
-              std::runtime_error ("connection: port " + _name + " not found");
-          }
           if (place_pos == _place_item_by_name.end())
           {
             throw
               std::runtime_error ("connection: place " + *place + " not found");
           }
 
-          //! \todo Not connection, but association!
-          if (_direction == ui::graph::connectable::direction::IN)
-          {
-            _scene->create_connection ( place_pos->second
-                                      , port_pos->second
-                                      , false
-                                      );
-          }
-          else
-          {
-            _scene->create_connection ( port_pos->second
-                                      , place_pos->second
-                                      , false
-                                      );
-          }
+          _scene->addItem
+            ( new ui::graph::port_place_association
+              ( _port_item
+              , qgraphicsitem_cast<ui::graph::place_item*> (place_pos->second)
+              )
+            );
         }
       }
       WSIG(port_toplevel, port::properties, WETYPE(property::type), props)
