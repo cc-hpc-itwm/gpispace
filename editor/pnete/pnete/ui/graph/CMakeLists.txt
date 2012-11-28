@@ -13,6 +13,7 @@ set(graph_SRCS
   connection.cpp
   place.cpp
   port.cpp
+  port_place_association.cpp
   scene.cpp
   transition.cpp
 
@@ -31,6 +32,7 @@ set(graph_HDRS
   connection.hpp
   place.hpp
   port.hpp
+  port_place_association.hpp
   scene.hpp
   transition.hpp
 
@@ -49,6 +51,7 @@ set(graph_TOMOC
   connection.hpp
   place.hpp
   port.hpp
+  port_place_association.hpp
   scene.hpp
   transition.hpp
 
