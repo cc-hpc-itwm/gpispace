@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_TRANSITION_HPP
 #define _XML_PARSE_TYPE_TRANSITION_HPP
@@ -83,7 +83,13 @@ namespace xml
         const connections_type& read() const;
         const place_maps_type& place_map() const;
 
-        // ***************************************************************** //
+        bool has_in (const id::ref::connect&) const;
+        bool has_out (const id::ref::connect&) const;
+        bool has_read (const id::ref::connect&) const;
+
+        void remove_in (const id::ref::connect&);
+        void remove_out (const id::ref::connect&);
+        void remove_read (const id::ref::connect&);
 
         void push_in (const id::ref::connect&);
         void push_out (const id::ref::connect&);

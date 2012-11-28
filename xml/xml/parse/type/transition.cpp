@@ -207,6 +207,31 @@ namespace xml
       }
 
       // ***************************************************************** //
+      bool transition_type::has_in (const id::ref::connect& id) const
+      {
+        return _in.has (id);
+      }
+      bool transition_type::has_out (const id::ref::connect& id) const
+      {
+        return _out.has (id);
+      }
+      bool transition_type::has_read (const id::ref::connect& id) const
+      {
+        return _read.has (id);
+      }
+
+      void transition_type::remove_in (const id::ref::connect& id)
+      {
+        _in.erase (id);
+      }
+      void transition_type::remove_out (const id::ref::connect& id)
+      {
+        _out.erase (id);
+      }
+      void transition_type::remove_read (const id::ref::connect& id)
+      {
+        _read.erase (id);
+      }
 
       void transition_type::push_in (const id::ref::connect& connect_id)
       {
