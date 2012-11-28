@@ -148,8 +148,6 @@ namespace fhg
           {
             switch (i->type())
             {
-            case base_item::connection_graph_type:
-              break;
             case base_item::port_graph_type:
             case base_item::top_level_port_graph_type:
             {
@@ -218,6 +216,37 @@ namespace fhg
               if (triggered == action_delete)
               {
                 slot_delete_place (i);
+              }
+              else if (!triggered)
+              {
+                //! \todo see QTBUG-21943
+                QPoint p ( event->widget()
+                         ->mapFromGlobal(event->screenPos())
+                         );
+                QMouseEvent mouseEvent( QEvent::MouseMove
+                                      , p
+                                      , Qt::NoButton
+                                      , Qt::NoButton
+                                      , event->modifiers()
+                                      );
+                QApplication::sendEvent(event->widget(), &mouseEvent);
+              }
+
+              event->accept();
+            }
+            break;
+            case base_item::connection_graph_type:
+            {
+              QMenu menu;
+
+              QAction* action_delete (menu.addAction (tr("Delete")));
+
+              QAction* triggered (menu.exec(event->screenPos()));
+
+              if (triggered == action_delete)
+              {
+                fhg::util::qt::throwing_qgraphicsitem_cast<connection_item*> (i)
+                  ->handle().remove (this);
               }
               else if (!triggered)
               {
