@@ -3,6 +3,7 @@
 #include <pnete/weaver/display.hpp>
 #include <pnete/weaver/weaver.hpp>
 
+#include <pnete/data/handle/connect.hpp>
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
@@ -258,7 +259,13 @@ namespace fhg
         , _read (read)
         , _port ()
         , _place ()
+        , _id (boost::none)
       {}
+
+      WSIG (connection, connection::open, ::xml::parse::id::ref::connect, id)
+      {
+        _id = id;
+      }
 
       WSIG(connection, connection::port, std::string, port)
       {
@@ -286,11 +293,14 @@ namespace fhg
               std::runtime_error ("connection: place " + _place + " not found");
           }
 
+        //! \todo Do not take change_manager from scene, but from root.
+        data::handle::connect handle (*_id, _scene->change_manager());
         if (_direction == ui::graph::connectable::direction::IN)
           {
             _scene->create_connection ( place_pos->second
                                       , port_pos->second
                                       , _read
+                                      , handle
                                       );
           }
         else
@@ -298,6 +308,7 @@ namespace fhg
             _scene->create_connection ( port_pos->second
                                       , place_pos->second
                                       , _read
+                                      , handle
                                       );
           }
       }

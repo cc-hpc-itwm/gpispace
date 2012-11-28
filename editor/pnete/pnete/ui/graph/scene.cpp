@@ -274,6 +274,7 @@ namespace fhg
         void scene_type::create_connection ( connectable_item* from
                                            , connectable_item* to
                                            , bool only_reading
+                                           , const data::handle::connect& handle
                                            )
         {
           if (!to->is_connectable_with (from))
@@ -282,7 +283,7 @@ namespace fhg
               ("tried hard-connecting non-connectable items.");
           }
           connection_item* c
-            (new connection_item (from, to, boost::none, only_reading));
+            (new connection_item (from, to, handle, only_reading));
           addItem (c);
         }
 
@@ -585,6 +586,7 @@ namespace fhg
             create_connection ( item_with_handle<place_item> (from)
                               , item_with_handle<port_item> (to)
                               , false
+                              , connection
                               );
           }
         }
@@ -609,6 +611,7 @@ namespace fhg
             create_connection ( item_with_handle<port_item> (from)
                               , item_with_handle<place_item> (to)
                               , false
+                              , connection
                               );
           }
         }

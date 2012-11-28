@@ -9,8 +9,6 @@
 #include <pnete/ui/graph/association.hpp>
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 
-#include <boost/optional.hpp>
-
 #include <QList>
 #include <QPointF>
 #include <QRectF>
@@ -36,7 +34,7 @@ namespace fhg
         public:
           connection_item ( connectable_item* start
                           , connectable_item* end
-                          , const boost::optional<data::handle::connect>& handle
+                          , const data::handle::connect& handle
                           , bool read = false
                           );
 
@@ -51,7 +49,7 @@ namespace fhg
           virtual int type() const { return Type; }
 
         private:
-          boost::optional<data::handle::connect> _handle;
+          data::handle::connect _handle;
 
           bool _read;
         };

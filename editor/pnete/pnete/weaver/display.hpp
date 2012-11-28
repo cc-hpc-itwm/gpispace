@@ -129,6 +129,7 @@ namespace fhg
         const bool _read;
         std::string _port;
         std::string _place;
+        boost::optional< ::xml::parse::id::ref::connect> _id;
       };
 
       class port

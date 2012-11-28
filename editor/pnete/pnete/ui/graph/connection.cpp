@@ -13,7 +13,7 @@ namespace fhg
         connection_item::connection_item
           ( connectable_item* start
           , connectable_item* end
-          , const boost::optional<data::handle::connect>& handle
+          , const data::handle::connect& handle
           , bool read
           )
             : association (start, end)
