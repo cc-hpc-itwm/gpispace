@@ -20,6 +20,11 @@ namespace fhg
           : connect_meta_base (id, change_manager)
         { }
 
+        void connect::remove (const QObject* sender) const
+        {
+          change_manager().remove_connection (sender, *this);
+        }
+
         void connect::set_property
           ( const QObject* sender
           , const ::we::type::property::key_type& key

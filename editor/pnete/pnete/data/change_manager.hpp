@@ -65,6 +65,8 @@ namespace fhg
                             , const data::handle::port&
                             , const data::handle::port&
                             );
+        void remove_connection (const QObject*, const data::handle::connect&);
+
         void set_property ( const QObject*
                           , const data::handle::connect&
                           , const ::we::type::property::key_type&

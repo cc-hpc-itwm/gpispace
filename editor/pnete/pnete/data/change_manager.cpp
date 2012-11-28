@@ -294,125 +294,156 @@ namespace fhg
         };
 
         // -- connection ---------------------------------------------
-        void add_connection_impl
+
+        enum direction { in, out, read };
+
+        void remove_connection_impl
           ( ACTION_ARG_LIST
           , const ::xml::parse::id::ref::transition& transition
-          , const data::handle::place& from
-          , const data::handle::port& to
+          , const ::xml::parse::id::ref::connect& connect
+          , const direction& dir
           )
         {
-          const ::xml::parse::id::ref::connect connection
-            ( ::xml::parse::type::connect_type
-               ( transition.id_mapper()->next_id()
-              , transition.id_mapper()
-              , transition.id()
-              , from.get().name()
-              , to.get().name()
-              ).make_reference_id()
-            );
-
-          transition.get_ref().push_in (connection);
-
           change_manager.emit_signal
-            ( &signal::connection_added_in, origin
-            , handle::connect (connection, change_manager), from, to
+            ( &signal::connection_removed
+            , origin
+            , handle::connect (connect, change_manager)
             );
+
+          switch (dir)
+          {
+          case in:
+            transition.get_ref().remove_in (connect);
+            break;
+
+          case out:
+            transition.get_ref().remove_out (connect);
+            break;
+
+          case read:
+            transition.get_ref().remove_read (connect);
+            break;
+          }
         }
 
         void add_connection_impl
           ( ACTION_ARG_LIST
           , const ::xml::parse::id::ref::transition& transition
-          , const data::handle::port& from
-          , const data::handle::place& to
+          , const ::xml::parse::id::ref::connect& connection
+          , const direction& dir
           )
         {
-          const ::xml::parse::id::ref::connect connection
-           ( ::xml::parse::type::connect_type
-               ( transition.id_mapper()->next_id()
-              , transition.id_mapper()
-              , transition.id()
-              , to.get().name()
-              , from.get().name()
-              ).make_reference_id()
-            );
+          switch (dir)
+          {
+          case in:
+            transition.get_ref().push_in (connection);
+            change_manager.emit_signal
+              ( &signal::connection_added_in, origin
+              , handle::connect (connection, change_manager)
+              , handle::place ( *connection.get().resolved_place()
+                              , change_manager
+                              )
+              , handle::port (*connection.get().resolved_port(), change_manager)
+              );
+            break;
 
-          transition.get_ref().push_out (connection);
+          case out:
+            transition.get_ref().push_out (connection);
+            change_manager.emit_signal
+              ( &signal::connection_added_out, origin
+              , handle::connect (connection, change_manager)
+              , handle::port (*connection.get().resolved_port(), change_manager)
+              , handle::place ( *connection.get().resolved_place()
+                              , change_manager
+                              )
+              );
+            break;
 
-          change_manager.emit_signal
-            ( &signal::connection_added_out, origin
-            , handle::connect (connection, change_manager), from, to
-            );
+          case read:
+            transition.get_ref().push_read (connection);
+            change_manager.emit_signal
+              ( &signal::connection_added_read, origin
+              , handle::connect (connection, change_manager)
+              , handle::place ( *connection.get().resolved_place()
+                              , change_manager
+                              )
+              , handle::port (*connection.get().resolved_port(), change_manager)
+              );
+            break;
+          }
         }
 
-        class add_connection_out : public QUndoCommand
+        class add_connection : public QUndoCommand
         {
         public:
-          add_connection_out
+          add_connection
             ( ACTION_ARG_LIST
             , const ::xml::parse::id::ref::transition& transition
-            , const data::handle::port& from
-            , const data::handle::place& to
+            , const ::xml::parse::id::ref::connect& connect
+            , const direction& dir
             )
-              : ACTION_INIT ("add_connection_out_action")
+              : ACTION_INIT ("add_connection_action")
               , _transition (transition)
-              , _from (from)
-              , _to (to)
+              , _connect (connect)
+              , _dir (dir)
           { }
 
           virtual void undo()
           {
-            // remove_connection_impl
-            //   (_change_manager, NULL, _transition, _from, _to);
+            remove_connection_impl
+              (_change_manager, NULL, _transition, _connect, _dir);
           }
 
           virtual void redo()
           {
             add_connection_impl
-              (_change_manager, _origin, _transition, _from, _to);
+              (_change_manager, _origin, _transition, _connect, _dir);
             _origin = NULL;
           }
 
         private:
           ACTION_MEMBERS;
           const ::xml::parse::id::ref::transition _transition;
-          const data::handle::port _from;
-          const data::handle::place _to;
+          const ::xml::parse::id::ref::connect _connect;
+          const direction _dir;
         };
-        class add_connection_in : public QUndoCommand
+
+        class remove_connection : public QUndoCommand
         {
         public:
-          add_connection_in
-            ( ACTION_ARG_LIST
-            , const ::xml::parse::id::ref::transition& transition
-            , const data::handle::place& from
-            , const data::handle::port& to
-            )
-              : ACTION_INIT ("add_connection_in_action")
-              , _transition (transition)
-              , _from (from)
-              , _to (to)
+          remove_connection
+            (ACTION_ARG_LIST, const ::xml::parse::id::ref::connect& connect)
+              : ACTION_INIT ("remove_connection_action")
+              , _connect (connect)
+              , _transition (_connect.get().parent()->make_reference_id())
+              , _direction ( _transition.get().has_in (connect)
+                           ? in
+                           : ( _transition.get().has_out (connect)
+                             ? out
+                             : read
+                             )
+                           )
           { }
 
           virtual void undo()
           {
-            // remove_connection_impl
-            //   (_change_manager, NULL, _transition, _from, _to);
+            add_connection_impl
+              (_change_manager, _origin, _transition, _connect, _direction);
           }
 
           virtual void redo()
           {
-            add_connection_impl
-              (_change_manager, _origin, _transition, _from, _to);
+            remove_connection_impl
+              (_change_manager, _origin, _transition, _connect, _direction);
             _origin = NULL;
           }
 
         private:
           ACTION_MEMBERS;
+          const ::xml::parse::id::ref::connect _connect;
           const ::xml::parse::id::ref::transition _transition;
-          const data::handle::place _from;
-          const data::handle::port _to;
+          const direction _direction;
         };
-
 
         // -- transition ---------------------------------------------
         class add_transition : public QUndoCommand
@@ -735,8 +766,19 @@ namespace fhg
             ("tried connecting place and port in different nets.");
         }
 
-        push ( new action::add_connection_in
-               (*this, origin, transition, from, to)
+        push ( new action::add_connection
+               ( *this
+               , origin
+               , transition
+               , ::xml::parse::type::connect_type
+                 ( transition.id_mapper()->next_id()
+                 , transition.id_mapper()
+                 , transition.id()
+                 , from.get().name()
+                 , to.get().name()
+                 ).make_reference_id()
+               , action::in
+               )
              );
       }
 
@@ -748,14 +790,25 @@ namespace fhg
         ::xml::parse::id::ref::transition transition
           (*from.get().parent()->parent_transition());
 
-        if (transition.get().parent()->id()!= to.get().parent()->id())
+        if (transition.get().parent()->id() != to.get().parent()->id())
         {
           throw std::runtime_error
             ("tried connecting port and place in different nets.");
         }
 
-        push ( new action::add_connection_out
-               (*this, origin, transition, from, to)
+        push ( new action::add_connection
+               ( *this
+               , origin
+               , transition
+               , ::xml::parse::type::connect_type
+                 ( transition.id_mapper()->next_id()
+                 , transition.id_mapper()
+                 , transition.id()
+                 , to.get().name()
+                 , from.get().name()
+                 ).make_reference_id()
+               , action::out
+               )
              );
       }
 
@@ -799,6 +852,14 @@ namespace fhg
         add_connection (origin, place_handle, to);
 
         endMacro();
+      }
+
+      void change_manager_t::remove_connection
+        ( const QObject* origin
+        , const handle::connect& connect
+        )
+      {
+        push (new action::remove_connection (*this, origin, connect.id()));
       }
 
       void change_manager_t::set_property

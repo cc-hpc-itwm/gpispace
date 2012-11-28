@@ -31,6 +31,8 @@ namespace fhg
                   , change_manager_t& change_manager
                   );
 
+          void remove (const QObject* sender) const;
+
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
