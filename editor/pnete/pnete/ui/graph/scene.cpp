@@ -92,10 +92,18 @@ namespace fhg
             );
           _net.connect_to_change_mgr
             ( this
+            , "connection_added_read"
+            , "const data::handle::connect&, "
+              "const data::handle::place&, const data::handle::port&"
+            );
+          _net.connect_to_change_mgr
+            ( this
             , "connection_added_out"
             , "const data::handle::connect&, "
               "const data::handle::port&, const data::handle::place&"
             );
+          _net.connect_to_change_mgr
+            (this, "connection_removed", "const data::handle::connect&");
         }
 
         //! \todo This is duplicate code, also available in main window.
@@ -605,6 +613,31 @@ namespace fhg
                               );
           }
         }
+        void scene_type::connection_added_read
+          ( const QObject* origin
+          , const data::handle::connect& connection
+          , const data::handle::place& from
+          , const data::handle::port& to
+          )
+        {
+          if (is_in_my_net (from))
+          {
+            //! \todo Weaver. See above.
+            // weaver::item_by_name_type places
+            //   (name_map_for_items (items_of_type<place_item>()));
+            // weaver::item_by_name_type ports
+            //   (name_map_for_items (items_of_type<port_item>()));
+
+            // weaver::connection wc
+            //   (this, places, ports, connectable::direction::IN, true);
+            // weaver::from::connection (&wc, connection.id());
+            create_connection ( item_with_handle<place_item> (from)
+                              , item_with_handle<port_item> (to)
+                              , true
+                              , connection
+                              );
+          }
+        }
         void scene_type::connection_added_out
           ( const QObject* origin
           , const data::handle::connect& connection
@@ -629,6 +662,12 @@ namespace fhg
                               , connection
                               );
           }
+        }
+
+        void scene_type::connection_removed
+          (const QObject* origin, const data::handle::connect& connection)
+        {
+          remove_item_for_handle<connection_item> (connection);
         }
 
         // # transition ##############################################

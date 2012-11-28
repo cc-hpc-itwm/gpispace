@@ -59,7 +59,9 @@ namespace fhg
           // - net -----------------------------------------------------
           // -- connection ---------------------------------------------
           EXPOSE (connection_added_in);
+          EXPOSE (connection_added_read);
           EXPOSE (connection_added_out);
+          EXPOSE (connection_removed);
           EXPOSE (property_changed);
 
           // -- transition ---------------------------------------------

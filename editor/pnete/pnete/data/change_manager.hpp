@@ -218,6 +218,14 @@ namespace fhg
                                  , const data::handle::place&
                                  , const data::handle::port&
                                  );
+        void connection_added_read ( const QObject*
+                                   , const data::handle::connect&
+                                   , const data::handle::place&
+                                   , const data::handle::port&
+                                   );
+        void connection_removed ( const QObject*
+                                , const data::handle::connect&
+                                );
 
         // -- transition ---------------------------------------------
         void transition_added ( const QObject*
