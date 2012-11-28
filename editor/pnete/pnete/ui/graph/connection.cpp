@@ -21,6 +21,11 @@ namespace fhg
             , _read (read)
         { }
 
+        const data::handle::connect& connection_item::handle() const
+        {
+          return _handle;
+        }
+
         const bool& connection_item::read() const
         {
           return _read;

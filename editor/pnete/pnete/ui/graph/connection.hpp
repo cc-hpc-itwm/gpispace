@@ -38,6 +38,8 @@ namespace fhg
                           , bool read = false
                           );
 
+          virtual const data::handle::connect& handle() const;
+
           const bool& read() const;
           const bool& read (const bool&);
 
