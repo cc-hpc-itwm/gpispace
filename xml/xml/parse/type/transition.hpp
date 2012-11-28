@@ -68,6 +68,8 @@ namespace xml
         const function_or_use_type& function_or_use
           (const function_or_use_type& function_or_use_);
 
+        id::ref::function resolved_function() const;
+
         const std::string& name() const;
         const std::string& name(const std::string& name);
 

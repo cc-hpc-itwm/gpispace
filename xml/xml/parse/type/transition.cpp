@@ -146,6 +146,54 @@ namespace xml
 
       namespace
       {
+        class transition_get_function
+          : public boost::static_visitor <const id::ref::function&>
+        {
+        private:
+          const net_type & net;
+          const transition_type & trans;
+
+        public:
+          transition_get_function ( const net_type & _net
+                                  , const transition_type & _trans
+                                  )
+            : net (_net)
+            , trans (_trans)
+          {}
+
+          const id::ref::function&
+          operator () (const id::ref::function& id_function) const
+          {
+            return id_function;
+          }
+
+          const id::ref::function&
+            operator() (const id::ref::use& use) const
+          {
+            boost::optional<const id::ref::function&>
+              id_function (net.get_function (use.get().name()));
+
+            if (not id_function)
+            {
+              throw error::unknown_function
+                (use.get().name(), trans.name(), trans.path);
+            }
+
+            //            fun->name (trans.name());
+
+            return *id_function;
+          }
+        };
+      }
+
+      id::ref::function transition_type::resolved_function() const
+      {
+        return boost::apply_visitor
+          (transition_get_function (*parent(), *this), function_or_use());
+      }
+
+      namespace
+      {
         template<typename T>
           class is_of_type_visitor : public boost::static_visitor<bool>
         {
@@ -444,51 +492,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      namespace
-      {
-        class transition_get_function
-          : public boost::static_visitor <const id::ref::function&>
-        {
-        private:
-          const net_type & net;
-          const state::type & state;
-          const transition_type & trans;
-
-        public:
-          transition_get_function ( const net_type & _net
-                                  , const state::type & _state
-                                  , const transition_type & _trans
-                                  )
-            : net (_net)
-            , state (_state)
-            , trans (_trans)
-          {}
-
-          const id::ref::function&
-          operator () (const id::ref::function& id_function) const
-          {
-            return id_function;
-          }
-
-          const id::ref::function&
-            operator() (const id::ref::use& use) const
-          {
-            boost::optional<const id::ref::function&>
-              id_function (net.get_function (use.get().name()));
-
-            if (not id_function)
-            {
-              throw error::unknown_function
-                (use.get().name(), trans.name(), trans.path);
-            }
-
-            //            fun->name (trans.name());
-
-            return *id_function;
-          }
-        };
-      }
-
       //! \todo move to connect_type
       void transition_type::type_check ( const std::string & direction
                                        , const connect_type & connect
@@ -509,7 +512,7 @@ namespace xml
 
         const id::ref::function& id_function
           ( boost::apply_visitor
-            (transition_get_function (*parent(), state, *this), function_or_use())
+            (transition_get_function (*parent(), *this), function_or_use())
           );
 
         // existence of connect.port
@@ -716,9 +719,7 @@ namespace xml
 
         const id::ref::function& id_function
           ( boost::apply_visitor
-            ( transition_get_function (net, state, trans)
-            , trans.function_or_use()
-            )
+            (transition_get_function (net, trans), trans.function_or_use())
           );
 
         //! \todo keep working with the id_function, deref deeper
