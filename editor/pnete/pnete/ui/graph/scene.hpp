@@ -106,6 +106,9 @@ namespace fhg
 
           template<typename item_type> QList<item_type*> items_of_type() const;
 
+          template<typename item_type, typename handle_type>
+            void remove_item_for_handle (const handle_type& handle);
+
           const data::handle::net& net() const;
 
           void remove_transition_item (transition_item*);

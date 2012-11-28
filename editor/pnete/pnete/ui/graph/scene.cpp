@@ -529,6 +529,17 @@ namespace fhg
           }
         }
 
+        template<typename item_type, typename handle_type>
+          void scene_type::remove_item_for_handle (const handle_type& handle)
+        {
+          if (is_in_my_net (handle))
+          {
+            item_type* item (item_with_handle<item_type> (handle));
+            removeItem (item);
+            delete item;
+          }
+        }
+
         // ## trigger modification ###################################
         // # transition ##############################################
         void scene_type::slot_add_transition() const
@@ -647,28 +658,7 @@ namespace fhg
         void scene_type::transition_deleted
           (const QObject* origin, const data::handle::transition& transition)
         {
-          if (is_in_my_net (transition))
-          {
-            transition_item* item
-              (item_with_handle<transition_item> (transition));
-
-            //! \todo Do not delete anything, rather assert that there
-            //! are no connections.
-            foreach (QGraphicsItem* child, item->childItems())
-            {
-              if (port_item* port = qgraphicsitem_cast<port_item*> (child))
-              {
-                foreach (association* c, port->associations())
-                {
-                  removeItem (c);
-                  delete c;
-                }
-              }
-            }
-
-            removeItem (item);
-            delete item;
-          }
+          remove_item_for_handle<transition_item> (transition);
         }
 
         // # place ###################################################
@@ -697,19 +687,7 @@ namespace fhg
         void scene_type::place_deleted
           (const QObject* origin, const data::handle::place& place)
         {
-          if (is_in_my_net (place))
-          {
-            place_item* item (item_with_handle<place_item> (place));
-            //! \todo Do not remove connections, rather assert that
-            //! there are none.
-            foreach (association* c, item->associations())
-            {
-              removeItem (c);
-              delete c;
-            }
-            removeItem (item);
-            delete item;
-          }
+          remove_item_for_handle<place_item> (place);
         }
       }
     }
