@@ -1,7 +1,5 @@
 #bernd.loerwald@itwm.fraunhofer.de
 
-include(${QT_USE_FILE})
-
 set(graph_SRCS
   association.cpp
   base_item.cpp
@@ -40,9 +38,6 @@ set(graph_HDRS
   popover_widget.hpp
 )
 
-set(graph_UIS
-)
-
 set(graph_TOMOC
   association.hpp
   base_item.hpp
@@ -60,12 +55,9 @@ set(graph_TOMOC
 
 add_subdirectory (style)
 
-#for moced files to get their includes.
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-QT4_WRAP_UI(graph_UIS_H ${graph_UIS})
-QT4_WRAP_CPP(graph_SRCS_MOC ${graph_TOMOC} ${graph_UIS_H})
-
+QT4_WRAP_CPP(graph_SRCS_MOC ${graph_TOMOC})
 qt4_automoc(${graph_SRCS_MOC})
+
 add_library("${LIB_PREFIX}graph" ${graph_SRCS} ${graph_SRCS_MOC})
 target_link_libraries ("${LIB_PREFIX}graph"
                        "${LIB_PREFIX}graphviz-wrapper"

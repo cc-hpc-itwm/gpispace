@@ -30,6 +30,8 @@ include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
 
 set (LIB_PREFIX "fhg_pnete_")
 
+include(${QT_USE_FILE})
+
 add_subdirectory (util)
 add_subdirectory (pnete)
 

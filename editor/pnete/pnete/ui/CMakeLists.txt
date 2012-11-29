@@ -1,4 +1,4 @@
-include(${QT_USE_FILE})
+#bernd.loerwald@itwm.fraunhofer.de
 
 set(ui_SRCS
   editor_window.cpp
@@ -90,11 +90,9 @@ set(ui_TOMOC
 add_subdirectory (graph)
 add_subdirectory (util)
 
-#for moced files to get their includes.
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 QT4_WRAP_UI(ui_UIS_H ${ui_UIS})
 QT4_WRAP_CPP(ui_SRCS_MOC ${ui_TOMOC} ${ui_UIS_H})
-
 qt4_automoc(${ui_SRCS_MOC})
+
 add_library("${LIB_PREFIX}ui" ${ui_SRCS} ${ui_SRCS_MOC})
 target_link_libraries ("${LIB_PREFIX}ui" "${LIB_PREFIX}graph")
