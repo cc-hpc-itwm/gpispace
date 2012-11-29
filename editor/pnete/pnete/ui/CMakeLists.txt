@@ -85,6 +85,8 @@ set(ui_TOMOC
   expression_view.hpp
   mod_view.hpp
   net_view.hpp
+
+  StructureView.hpp
 )
 
 add_subdirectory (graph)

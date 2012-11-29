@@ -10,6 +10,8 @@
 
 #include <pnete/data/internal.hpp>
 
+#include <QDebug>
+
 namespace fhg
 {
   namespace pnete
@@ -28,6 +30,10 @@ namespace fhg
         setEditTriggers (QAbstractItemView::NoEditTriggers);
 
         header()->hide();
+
+        connect ( this, SIGNAL (doubleClicked(QModelIndex))
+                , this, SLOT (doubleClicked(QModelIndex))
+                );
       }
 
       void StructureView::append (data::internal_type* data)
@@ -39,6 +45,28 @@ namespace fhg
           ( &w
           , WNAME(function_context_type) (data->function(), data->context())
           );
+      }
+
+      void StructureView::doubleClicked (const QModelIndex& index)
+      {
+        QStandardItem *item = _model->itemFromIndex (index);
+        while (item->parent())
+        {
+          item = item->parent();
+        }
+
+        const int row (item->row());
+
+        weaver::tv w (_root);
+        weaver::from::function_context
+          ( &w
+          , WNAME(function_context_type) ( _datas.at (row)->function()
+                                         , _datas.at (row)->context()
+                                         )
+          );
+
+        _model->setItem (row, _model->takeItem (_model->rowCount() - 1));
+        _model->setRowCount (_model->rowCount() - 1);
       }
 
       void StructureView::clear()
