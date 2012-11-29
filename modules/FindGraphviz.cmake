@@ -42,13 +42,14 @@ foreach (comp ${Graphviz_FIND_COMPONENTS})
     set (GRAPHVIZ_LIBRARIES ${GRAPHVIZ_${comp}_LIBRARY} ${GRAPHVIZ_LIBRARIES})
   endif()
 
-  mark_as_advanced (GRAPHVIZ_${comp}_LIBRARY Graphviz_${comp}_FOUND)
+  mark_as_advanced (GRAPHVIZ_${comp}_LIBRARIES Graphviz_${comp}_FOUND)
+  set (GRAPHVIZ_REQUIRED_LIBS "GRAPHVIZ_${comp}_LIBRARY" ${GRAPHVIZ_REQUIRED_LIBS})
 endforeach()
 
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args ( Graphviz
                                     REQUIRED_VARS GRAPHVIZ_INCLUDE_DIR
-                                    HANDLE_COMPONENTS
+                                                  ${GRAPHVIZ_REQUIRED_LIBS}
                                   )
 
 mark_as_advanced (GRAPHVIZ_FOUND GRAPHVIZ_INCLUDE_DIR GRAPHVIZ_LIBRARIES)
