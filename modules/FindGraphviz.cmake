@@ -1,104 +1,59 @@
-# -*- mode: cmake; -*-
 # bernd.loerwald@itwm.fraunhofer.de
 
 # GRAPHVIZ_FOUND - system has Graphviz
 # GRAPHVIZ_INCLUDE_DIR - the Graphviz include directory
-# GRAPHVIZ_CDT_LIBRARY, GRAPHVIZ_GVC_LIBRARY, GRAPHVIZ_CGRAPH_LIBRARY
+# GRAPHVIZ_CDT_LIBRARY, GRAPHVIZ_GVC_LIBRARY,
 # GRAPHVIZ_GRAPH_LIBRARY, GRAPHVIZ_PATHPLAN_LIBRARY
 # GRAPHVIZ_LIBRARIES - all of the above for lazy people. (me)
 
-if (GRAPHVIZ_INCLUDE_DIR AND GRAPHVIZ_CDT_LIBRARY AND
-    GRAPHVIZ_CGRAPH_LIBRARY AND GRAPHVIZ_GRAPH_LIBRARY AND
-    GRAPHVIZ_PATHPLAN_LIBRARY)
-    set (GRAPHVIZ_FIND_QUIETLY TRUE)
-endif (GRAPHVIZ_INCLUDE_DIR AND GRAPHVIZ_CDT_LIBRARY AND
-  GRAPHVIZ_CGRAPH_LIBRARY AND GRAPHVIZ_GRAPH_LIBRARY AND
-  GRAPHVIZ_PATHPLAN_LIBRARY)
-
-# set search directories
-set(_graphviz_INCLUDE_SEARCH_DIRS ""
-  )
-set(_graphviz_LIBRARIES_SEARCH_DIRS ""
-  )
-set( _graphviz_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-if(WIN32)
+set (_graphviz_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+if (WIN32)
   set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-else(WIN32)
+else()
   set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-endif(WIN32)
+endif()
 
-if( NOT $ENV{GRAPHVIZ_HOME} STREQUAL "" )
-  set(_graphviz_INCLUDE_SEARCH_DIRS $ENV{GRAPHVIZ_HOME}/include ${_graphviz_INCLUDE_SEARCH_DIRS})
-  set(_graphviz_LIBRARIES_SEARCH_DIRS $ENV{GRAPHVIZ_HOME}/lib ${_graphviz_INCLUDE_SEARCH_DIRS})
-endif( NOT $ENV{GRAPHVIZ_HOME} STREQUAL "" )
+if (NOT $ENV{GRAPHVIZ_HOME} STREQUAL "")
+  set (_graphviz_INCLUDE_SEARCH_DIRS $ENV{GRAPHVIZ_HOME}/include ${_graphviz_INCLUDE_SEARCH_DIRS})
+  set (_graphviz_LIBRARIES_SEARCH_DIRS $ENV{GRAPHVIZ_HOME}/lib ${_graphviz_INCLUDE_SEARCH_DIRS})
+endif()
 
-if( GRAPHVIZ_HOME )
-  set(_graphviz_INCLUDE_SEARCH_DIRS ${GRAPHVIZ_HOME}/include ${_graphviz_INCLUDE_SEARCH_DIRS})
-  set(_graphviz_LIBRARIES_SEARCH_DIRS ${GRAPHVIZ_HOME}/lib ${_graphviz_LIBRARIES_SEARCH_DIRS})
-endif( GRAPHVIZ_HOME )
+if (GRAPHVIZ_HOME)
+  set (_graphviz_INCLUDE_SEARCH_DIRS ${GRAPHVIZ_HOME}/include ${_graphviz_INCLUDE_SEARCH_DIRS})
+  set (_graphviz_LIBRARIES_SEARCH_DIRS ${GRAPHVIZ_HOME}/lib ${_graphviz_LIBRARIES_SEARCH_DIRS})
+endif()
 
-message(STATUS "Inc: ${_graphviz_INCLUDE_SEARCH_DIRS}")
-message(STATUS "Lib: ${_graphviz_LIBRARIES_SEARCH_DIRS}")
 # search include directory
-find_path (GRAPHVIZ_INCLUDE_DIR 
-  NAMES         gvc.h
-  HINTS         ${_graphviz_INCLUDE_SEARCH_DIRS}
+find_path (GRAPHVIZ_INCLUDE_DIR
+  NAMES gvc.h
+  HINTS ${_graphviz_INCLUDE_SEARCH_DIRS}
   PATH_SUFFIXES graphviz
   )
 
-find_library (GRAPHVIZ_CDT_LIBRARY
-  NAMES          cdt
-  HINTS          ${_graphviz_LIBRARIES_SEARCH_DIRS}
-  PATH_SUFFIXES  graphviz
-)
-find_library (GRAPHVIZ_GVC_LIBRARY 
-  NAMES          gvc
-  HINTS          ${_graphviz_LIBRARIES_SEARCH_DIRS}
-  PATH_SUFFIXES  graphviz
-)
-# not in graphviz-2.6
-#find_library (GRAPHVIZ_CGRAPH_LIBRARY NAMES cgraph
-#  PATH_SUFFIXES  graphviz
-#)
-find_library (GRAPHVIZ_GRAPH_LIBRARY
-  NAMES          graph
-  HINTS          ${_graphviz_LIBRARIES_SEARCH_DIRS}
-  PATH_SUFFIXES  graphviz
-)
-find_library (GRAPHVIZ_PATHPLAN_LIBRARY
-  NAMES          pathplan
-  HINTS          ${_graphviz_LIBRARIES_SEARCH_DIRS}
-  PATH_SUFFIXES  graphviz
-)
+foreach (comp ${Graphviz_FIND_COMPONENTS})
+  find_library ( GRAPHVIZ_${comp}_LIBRARY
+                 NAMES ${comp}
+                 HINTS ${_graphviz_LIBRARIES_SEARCH_DIRS}
+                 PATH_SUFFIXES graphviz
+               )
 
-# handle the QUIETLY and REQUIRED arguments and set JPEG_FOUND to TRUE if
-# all listed variables are TRUE
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GRAPHVIZ DEFAULT_MSG GRAPHVIZ_CDT_LIBRARY
-  GRAPHVIZ_GVC_LIBRARY
-  GRAPHVIZ_GRAPH_LIBRARY
-  GRAPHVIZ_PATHPLAN_LIBRARY
-  GRAPHVIZ_INCLUDE_DIR
-)
+  if (GRAPHVIZ_${comp}_LIBRARY)
+    set (Graphviz_${comp}_FOUND YES)
+    set (GRAPHVIZ_LIBRARIES ${GRAPHVIZ_${comp}_LIBRARY} ${GRAPHVIZ_LIBRARIES})
+  endif()
 
-set (GRAPHVIZ_LIBRARIES ${GRAPHVIZ_CDT_LIBRARY} ${GRAPHVIZ_GVC_LIBRARY} ${GRAPHVIZ_GRAPH_LIBRARY} ${GRAPHVIZ_PATHPLAN_LIBRARY})
+  mark_as_advanced (GRAPHVIZ_${comp}_LIBRARY Graphviz_${comp}_FOUND)
+endforeach()
 
-IF (GRAPHVIZ_FOUND)
-  IF (NOT GRAPHVIZ_FIND_QUIETLY)
-    MESSAGE (STATUS "Found Graphviz: ${GRAPHVIZ_INCLUDE_DIR}, ${GRAPHVIZ_CDT_LIBRARY} ${GRAPHVIZ_GVC_LIBRARY} ${GRAPHVIZ_CGRAPH_LIBRARY} ${GRAPHVIZ_GRAPH_LIBRARY} ${GRAPHVIZ_PATHPLAN_LIBRARY}")
-  ENDIF (NOT GRAPHVIZ_FIND_QUIETLY)
-ELSE (GRAPHVIZ_FOUND)
-  IF (GRAPHVIZ_FIND_REQUIRED)
-    MESSAGE (FATAL_ERROR "Could NOT find Graphivz")
-  ENDIF (GRAPHVIZ_FIND_REQUIRED)
-ENDIF (GRAPHVIZ_FOUND)
+include (FindPackageHandleStandardArgs)
+find_package_handle_standard_args ( Graphviz
+                                    REQUIRED_VARS GRAPHVIZ_INCLUDE_DIR
+                                    HANDLE_COMPONENTS
+                                  )
 
-# show the GRAPHVIZ_INCLUDE_DIR AND GRAPHVIZ_LIBRARIES variables only in the advanced view
-MARK_AS_ADVANCED(
-    GRAPHVIZ_FOUND
-    GRAPHVIZ_INCLUDE_DIR
-    GRAPHVIZ_GVC_LIBRARY
-    GRAPHVIZ_CGRAPH_LIBRARY
-    GRAPHVIZ_GRAPH_LIBRARY
-    GRAPHVIZ_LIBRARIES
-)
+mark_as_advanced (GRAPHVIZ_FOUND GRAPHVIZ_INCLUDE_DIR GRAPHVIZ_LIBRARIES)
+
+set (CMAKE_FIND_LIBRARY_SUFFIXES ${_graphviz_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
+unset (_graphviz_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES)
+unset (_graphviz_INCLUDE_SEARCH_DIRS)
+unset (_graphviz_LIBRARY_SEARCH_DIRS)
