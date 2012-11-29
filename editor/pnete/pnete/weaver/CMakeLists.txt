@@ -12,4 +12,3 @@ set(weaver_HDRS
 )
 
 add_library ("${LIB_PREFIX}weaver" ${weaver_SRCS} ${weaver_SRCS_MOC})
-add_dependencies("${LIB_PREFIX}weaver" gen_headerlist)

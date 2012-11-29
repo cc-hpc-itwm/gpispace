@@ -31,5 +31,3 @@ qt4_automoc(${data_SRCS_MOC})
 
 add_library ("${LIB_PREFIX}data" ${data_SRCS} ${data_SRCS_MOC})
 target_link_libraries ("${LIB_PREFIX}data" "${LIB_PREFIX}data_handle")
-
-add_dependencies("${LIB_PREFIX}data" gen_headerlist)
