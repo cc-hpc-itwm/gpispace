@@ -32,7 +32,7 @@ set(Boost_UNIT_TEST_LIBRARIES "${Boost_TEST_EXEC_MONITOR_LIBRARY};${Boost_UNIT_T
 
 if (Boost_MAJOR_VERSION EQUAL 1)
   if (Boost_MINOR_VERSION EQUAL 48)
-    error(STATUS "Incompatible Boost 1.48 detected")
+    message(FATAL_ERROR "Incompatible Boost 1.48 detected")
   endif ()
 endif ()
 
