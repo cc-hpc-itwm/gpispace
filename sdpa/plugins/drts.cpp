@@ -661,7 +661,7 @@ public:
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
-        MLOG(TRACE, "trying to cancel running job " << e->job_id());
+        MLOG (INFO, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
         drts_on_cancel ();
       }
