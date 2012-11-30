@@ -381,15 +381,12 @@ public:
     {
       lock_type lck (m_job_in_progress_mutex);
       something_running = m_job_in_progress;
-    }
-
-    if (something_running)
-    {
       m_graceful_shutdown_requested = true;
     }
-    else
+
+    if (not something_running)
     {
-      fhg_kernel ()->terminate ();
+      fhg_kernel ()->shutdown ();
     }
   }
 
@@ -550,6 +547,19 @@ public:
                                      , e->from()
                                      , sdpa::events::ErrorEvent::SDPA_EPERM
                                      , "you are not yet connected"
+                                     , e->job_id()
+                                     )
+        );
+      return;
+    }
+    else if (m_graceful_shutdown_requested)
+    {
+      MLOG (WARN, "refusing job " << e->job_id () << " : shutting down");
+      send_event
+        (new sdpa::events::ErrorEvent( m_my_name
+                                     , e->from()
+                                     , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
+                                     , "I am going to shut down!"
                                      , e->job_id()
                                      )
         );
@@ -884,7 +894,7 @@ private:
     {
       if (m_graceful_shutdown_requested)
       {
-        fhg_kernel ()->terminate ();
+        fhg_kernel ()->shutdown ();
         break;
       }
 
