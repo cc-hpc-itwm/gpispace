@@ -1,15 +1,18 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_DOCUMENT_VIEW_HPP
-#define _PNETE_UI_DOCUMENT_VIEW_HPP 1
+#ifndef PNETE_UI_DOCUMENT_VIEW_HPP
+#define PNETE_UI_DOCUMENT_VIEW_HPP
 
-#include <QObject>
+#include <pnete/ui/document_view.fwd.hpp>
 
-#include <pnete/data/proxy.hpp>
-
+#include <pnete/data/handle/function.fwd.hpp>
+#include <pnete/data/proxy.fwd.hpp>
+#include <pnete/ui/base_editor_widget.fwd.hpp>
 #include <pnete/ui/dock_widget.hpp>
 
-#include <fhg/util/maybe.hpp>
+#include <boost/optional/optional_fwd.hpp>
+
+#include <QObject>
 
 class QString;
 
@@ -19,29 +22,26 @@ namespace fhg
   {
     namespace ui
     {
-      class base_editor_widget;
-
       class document_view : public dock_widget
       {
         Q_OBJECT;
 
       public:
-        document_view (const data::proxy::type& proxy);
+        document_view (const data::handle::function&);
 
         base_editor_widget* widget() const;
         void setWidget (base_editor_widget* widget);
 
       protected:
-        void set_title (const fhg::util::maybe<std::string>&);
+        void set_title (const boost::optional<std::string>&);
 
       signals:
         void focus_gained (QWidget*);
 
       public slots:
-        void slot_set_function_name ( const QObject*
-                                    , const ::xml::parse::type::function_type&
-                                    , const QString&
-                                    );
+        void function_name_changed
+          (const QObject*, const data::handle::function&, const QString&);
+
       private slots:
         void visibility_changed (bool);
 

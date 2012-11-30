@@ -6,7 +6,7 @@
 class QPainter;
 class QGraphicsSceneMouseEvent;
 
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 namespace fhg
 {
@@ -16,12 +16,12 @@ namespace fhg
     {
       namespace graph
       {
-        namespace transition { class item; }
+        class transition_item;
 
-        class cogwheel_button : public item
+        class cogwheel_button : public base_item
         {
         public:
-          cogwheel_button (transition::item* linked_transition);
+          cogwheel_button (transition_item* linked_transition);
           virtual QRectF boundingRect() const;
           virtual void paint (QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*);
 
@@ -30,7 +30,7 @@ namespace fhg
           virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
         private:
-          transition::item* _linked_transition;
+          transition_item* _linked_transition;
         };
       }
     }

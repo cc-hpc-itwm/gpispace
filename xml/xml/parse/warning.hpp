@@ -7,6 +7,8 @@
 #include <string>
 #include <sstream>
 
+#include <xml/parse/type/struct.hpp>
+
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 #include <we/type/value.hpp>
@@ -14,6 +16,9 @@
 #include <fhg/util/join.hpp>
 
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
+
+#include <we/type/value/show.hpp>
 
 namespace xml
 {
@@ -121,24 +126,27 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class struct_shadowed : public generic
       {
       private:
-        std::string nice (const T & early, const T & late) const
+        std::string nice ( const type::structure_type & early
+                         , const type::structure_type & late
+                         ) const
         {
           std::ostringstream s;
 
-          s << "struct with name " << late.name
-            << " in " << late.path
-            << " shadows definition from " << early.path
+          s << "struct with name " << late.name()
+            << " in " << late.path()
+            << " shadows definition from " << early.path()
             ;
 
           return s.str();
         }
 
       public:
-        struct_shadowed (const T & early, const T & late)
+        struct_shadowed ( const type::structure_type & early
+                        , const type::structure_type & late
+                        )
           : generic (nice (early, late))
         {}
       };
@@ -148,7 +156,7 @@ namespace xml
       class shadow_function : public generic
       {
       private:
-        std::string nice ( const ::fhg::util::maybe<std::string>& name
+        std::string nice ( const boost::optional<std::string>& name
                          , const boost::filesystem::path& path_early
                          , const boost::filesystem::path& path_late
                          ) const
@@ -164,7 +172,7 @@ namespace xml
         }
 
       public:
-        shadow_function ( const ::fhg::util::maybe<std::string>& name
+        shadow_function ( const boost::optional<std::string>& name
                         , const boost::filesystem::path& path_early
                         , const boost::filesystem::path& path_late
                         )
@@ -177,7 +185,7 @@ namespace xml
       class shadow_template : public generic
       {
       private:
-        std::string nice ( const ::fhg::util::maybe<std::string>& name
+        std::string nice ( const boost::optional<std::string>& name
                          , const boost::filesystem::path& path_early
                          , const boost::filesystem::path& path_late
                          ) const
@@ -193,7 +201,7 @@ namespace xml
         }
 
       public:
-        shadow_template ( const ::fhg::util::maybe<std::string>& name
+        shadow_template ( const boost::optional<std::string>& name
                         , const boost::filesystem::path& path_early
                         , const boost::filesystem::path& path_late
                         )
@@ -206,7 +214,7 @@ namespace xml
       class shadow_specialize : public generic
       {
       private:
-        std::string nice ( const ::fhg::util::maybe<std::string>& name
+        std::string nice ( const boost::optional<std::string>& name
                          , const boost::filesystem::path& path_early
                          , const boost::filesystem::path& path_late
                          ) const
@@ -222,7 +230,7 @@ namespace xml
         }
 
       public:
-        shadow_specialize ( const ::fhg::util::maybe<std::string>& name
+        shadow_specialize ( const boost::optional<std::string>& name
                           , const boost::filesystem::path& path_early
                           , const boost::filesystem::path& path_late
                           )
@@ -712,17 +720,6 @@ namespace xml
 
       class virtual_place_not_tunneled : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const boost::filesystem::path & file
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "the virtual place " << name << " is not tunneled in " << file;
-
-          return s.str();
-        }
       public:
         virtual_place_not_tunneled ( const std::string& name
                                    , const boost::filesystem::path& file
@@ -731,6 +728,25 @@ namespace xml
                                       " is not tunneled in %2%."
                                     )
                     % name
+                    % file
+                    )
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class duplicate_template_parameter : public generic
+      {
+      public:
+        duplicate_template_parameter ( const boost::optional<std::string> name
+                                     , const std::string& tn
+                                     , const boost::filesystem::path& file
+                                     )
+          : generic ( boost::format ( "duplicate typename %2%"
+                                      " in the definition of %1% in %3%"
+                                    )
+                    % (name ? *name : "<<noname>>")
+                    % tn
                     % file
                     )
         {}

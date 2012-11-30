@@ -1,0 +1,78 @@
+<defun name="ntom">
+  <include-structs href="interval.xpnet"/>
+  <in name="interval" type="interval" place="interval_IN"/>
+  <out name="value" type="long" place="value"/>
+
+  <net>
+    <place name="interval_IN" type="interval"/>
+    <place name="interval" type="interval"/>
+    <place name="value" type="long"/>
+    <place name="check_break" type="interval"/>
+    <place name="credit_check_break" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <transition name="init">
+      <defun>
+        <inout name="interval" type="interval"/>
+        <in name="credit_check_break" type="control"/>
+        <expression/>
+      </defun>
+      <connect-in port="interval" place="interval_IN"/>
+      <connect-out port="interval" place="check_break"/>
+      <connect-in port="credit_check_break" place="credit_check_break"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="interval" type="interval"/>
+        <out name="credit_check_break" type="control"/>
+        <expression>
+          ${credit_check_break} := []
+        </expression>
+        <condition>
+          ${interval.left} :ge: ${interval.right}
+        </condition>
+      </defun>
+      <connect-in place="check_break" port="interval"/>
+      <connect-out port="credit_check_break" place="credit_check_break"/>
+    </transition>
+
+    <transition name="not_break">
+      <properties name="fhg">
+        <properties name="pnetv">
+          <property key="firings_limit">1</property>
+        </properties>
+      </properties>
+      <defun>
+        <inout name="interval" type="interval"/>
+        <out name="credit_check_break" type="control"/>
+        <expression>
+          ${credit_check_break} := []
+        </expression>
+        <condition>
+          ${interval.left} :lt: ${interval.right}
+        </condition>
+      </defun>
+      <connect-in place="check_break" port="interval"/>
+      <connect-out place="interval" port="interval"/>
+      <connect-out port="credit_check_break" place="credit_check_break"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <inout name="interval" type="interval"/>
+        <in name="credit_check_break" type="control"/>
+        <out name="value" type="long"/>
+        <expression>
+          ${value} := ${interval.left};
+          ${interval.left} := ${interval.left} + 1L
+        </expression>
+      </defun>
+      <connect-in place="interval" port="interval"/>
+      <connect-in port="credit_check_break" place="credit_check_break"/>
+      <connect-out place="check_break" port="interval"/>
+      <connect-out place="value" port="value"/>
+    </transition>
+  </net>
+</defun>

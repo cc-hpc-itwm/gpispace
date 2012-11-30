@@ -1,17 +1,24 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE XMLStream
+#include <boost/test/unit_test.hpp>
 
 #include <fhg/util/xml.hpp>
 
-int main ()
+#include <sstream>
+
+BOOST_AUTO_TEST_CASE (assemble_and_output)
 {
-  fhg::util::xml::xmlstream s (std::cout);
+  std::stringstream output;
+  fhg::util::xml::xmlstream s (output);
 
   s.open ("first");
 
   s.open ("second");
 
   s.attr ("key", "val");
-  s.attr ("maybe_key", fhg::util::maybe<std::string>("Just val"));
-  s.attr ("maybe_key", fhg::util::maybe<std::string>());
+  s.attr ("maybe_key", "Just val");
+  s.attr ("maybe_key", boost::none);
 
   s.close ();
 
@@ -27,5 +34,15 @@ int main ()
 
   s.close();
 
-  return EXIT_SUCCESS;
+  BOOST_REQUIRE_EQUAL ( output.str()
+                      , "<first>\n"
+                        "  <second key=\"val\" maybe_key=\"Just val\"/>\n"
+                        "  <content>\n"
+                        "    23\n"
+                        "  </content>\n"
+                        "  <more>\n"
+                        "    <deeper key=\"23\"/>\n"
+                        "  </more>\n"
+                        "</first>"
+                      );
 }

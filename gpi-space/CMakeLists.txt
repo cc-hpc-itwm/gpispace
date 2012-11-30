@@ -24,20 +24,21 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #set (QUIET_FIND_PACKAGE QUIET)
 
 if(ENABLE_REAL_GPI)
-  find_package (IBVerbs REQUIRED ${QUIET_FIND_PACKAGE})
-  include_directories(${IBverbs_INCLUDE_DIR})
+  find_package (IBVerbs ${QUIET_FIND_PACKAGE})
+  if (IBverbs_FOUND)
+    include_directories(${IBverbs_INCLUDE_DIR})
 
-  set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
-  set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
-  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
-  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBverbs_LIBRARY})
+    set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
+    set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
+    set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
+    set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBverbs_LIBRARY})
 
-  # check if we can actually use the GPI version in ext
-  set(CMAKE_REQUIRED_INCLUDES ${GPI_INCLUDE_DIR})
-  set(CMAKE_REQUIRED_LIBRARIES ${GPI_LIBRARIES})
-  include(CheckCSourceRuns)
-  CHECK_C_SOURCE_RUNS(
-"
+    # check if we can actually use the GPI version in ext
+    set(CMAKE_REQUIRED_INCLUDES ${GPI_INCLUDE_DIR})
+    set(CMAKE_REQUIRED_LIBRARIES ${GPI_LIBRARIES})
+    include(CheckCSourceRuns)
+    CHECK_C_SOURCE_RUNS(
+      "
 #include <stdio.h>
 #include <GPI.h>
 int main ()
@@ -45,13 +46,18 @@ int main ()
    printf(\"%f\", getVersionGPI());
    return 0;
 }"
-  REAL_GPI_CHECK)
-  if("${REAL_GPI_CHECK}" EQUAL 1)
-    add_definitions(-DENABLE_REAL_GPI=1)
-  else("${REAL_GPI_CHECK}" EQUAL 1)
-    message(WARNING "Support for real-GPI requested but not available on your platform!")
+    REAL_GPI_CHECK)
+    if("${REAL_GPI_CHECK}" EQUAL 1)
+      add_definitions(-DENABLE_REAL_GPI=1)
+    else("${REAL_GPI_CHECK}" EQUAL 1)
+      message(WARNING "Support for real-GPI requested but not available on your platform!")
+      set(ENABLE_REAL_GPI OFF CACHE BOOL "Provide api for the *real* GPI" FORCE)
+    endif("${REAL_GPI_CHECK}" EQUAL 1)
+  else (IBverbs_FOUND)
+    message(STATUS "${IBverbs_FOUND}")
+    message(WARNING "Support for real-GPI requested but not available on your platform (ibverbs not installed)!")
     set(ENABLE_REAL_GPI OFF CACHE BOOL "Provide api for the *real* GPI" FORCE)
-  endif("${REAL_GPI_CHECK}" EQUAL 1)
+  endif (IBverbs_FOUND)
 endif(ENABLE_REAL_GPI)
 
 include(CheckCompiler)

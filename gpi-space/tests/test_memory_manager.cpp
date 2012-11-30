@@ -6,6 +6,7 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
@@ -43,17 +44,23 @@ BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 {
-  gpi::pc::segment::segment_t segm ("memory_area_alloc_free_test", 2048);
-  segm.create ();
-  gpi::pc::memory::shm_area_t area ( 2, 0, "memory_area_alloc_free_test"
-                                   , 2048, 0
+  gpi::pc::segment::segment_t segm ( "memory_area_alloc_free_test"
+                                   , 2048
                                    );
-  BOOST_CHECK_EQUAL (2048U, area.descriptor().size);
+  segm.create ();
+  gpi::pc::memory::shm_area_t area ( 0
+                                   , "memory_area_alloc_free_test"
+                                   , 2048
+                                   , gpi::pc::F_NOCREATE
+                                   );
+  area.set_id (2);
+
+  BOOST_CHECK_EQUAL (2048U, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048U, area.descriptor().avail);
 
   gpi::pc::type::handle_t hdl (area.alloc(1, 64, "scratch", 0));
   BOOST_CHECK (hdl != 0);
-  BOOST_CHECK_EQUAL (2048u, area.descriptor().size);
+  BOOST_CHECK_EQUAL (2048u, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048u - 64, area.descriptor().avail);
 
   std::cout << "    handle = " << hdl << std::endl;
@@ -66,13 +73,13 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   BOOST_CHECK_EQUAL (desc.flags, 0u);
 
   gpi::pc::type::handle::list_t list;
-  area.list_allocations (list);
+  area.list_allocations (1, list);
   BOOST_CHECK_EQUAL (list.size(), 1u);
 
   std::cout << "descriptor = " << desc << std::endl;
 
   area.free (hdl);
-  BOOST_CHECK_EQUAL (2048u, area.descriptor().size);
+  BOOST_CHECK_EQUAL (2048u, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048u, area.descriptor().avail);
 }
 

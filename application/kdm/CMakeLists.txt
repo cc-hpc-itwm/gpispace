@@ -11,7 +11,7 @@ if (ENABLE_OBSOLETE_KDM)
   add_subdirectory(obsolete)
 endif (ENABLE_OBSOLETE_KDM)
 
-#add_subdirectory(src/fake)
+add_subdirectory(pnet)
 
 include_directories(./src
 		    ./src/include
@@ -216,7 +216,7 @@ install(FILES ${hdrs}
   COMPONENT headers
   )
 
-install(PROGRAMS kdm.sh
+install(PROGRAMS kdm
   DESTINATION ${SDPA_APPS_DIR}/kdm/bin
   COMPONENT examples
 )

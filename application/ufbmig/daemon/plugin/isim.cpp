@@ -18,6 +18,8 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
+#include <fhg/util/threadname.hpp>
+
 #include <stdexcept>
 
 static void unexpected_handler ()
@@ -173,7 +175,9 @@ public:
 
     m_stop_requested = false;
     m_recv_thread = boost::thread (&ISIM_Real::recv_thread, this);
+    fhg::util::set_threadname (m_recv_thread, "[isim-recv]");
     m_send_thread = boost::thread (&ISIM_Real::send_thread, this);
+    fhg::util::set_threadname (m_recv_thread, "[isim-send]");
 
     FHG_PLUGIN_STARTED();
   }

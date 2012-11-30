@@ -2,7 +2,7 @@
 
 #include <pnete/ui/graph/style/type.hpp>
 
-#include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 #include <QPainter>
 #include <QPen>
@@ -20,7 +20,7 @@ namespace fhg
       {
         namespace style
         {
-          void draw_shape ( const graph::item* item
+          void draw_shape ( const base_item* item
                           , QPainter* painter
                           )
           {

@@ -1,0 +1,452 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<defun name="transform_file">
+  <include-structs href="types.xpnet"/>
+
+  <in name="input_file" type="string" place="input_file"/>
+  <in name="output_file" type="string" place="output_file"/>
+  <in name="chunk_size" type="long" place="chunk_size"/>
+  <in name="input_n_read_slots" type="long" place="input_n_read_slots"/>
+  <in name="input_n_write_slots" type="long" place="input_n_write_slots"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+    <place name="input_file" type="string"/>
+    <place name="output_file" type="string"/>
+    <place name="chunk_size" type="long"/>
+    <place name="input_n_read_slots" type="long"/>
+    <place name="input_n_write_slots" type="long"/>
+
+    <place name="config" type="config"/>
+    <place name="n_read_slots" type="long"/>
+    <place name="n_write_slots" type="long"/>
+
+    <place name="n_chunks" type="long"/>
+
+    <!-- template specializations -->
+    <include-template href="dup.xml" as="dup_counterT"/>
+    <specialize name="dup_counter" use="dup_counterT">
+      <type-map replace="T" with="long" />
+    </specialize>
+    <include-template href="dup.xml" as="dup_controlT"/>
+    <specialize name="dup_control" use="dup_controlT">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <!-- template specializations -->
+    <include-template href="triple.xml" />
+    <specialize name="triple_counter" use="triple">
+      <type-map replace="T" with="long" />
+    </specialize>
+
+    <transition name="init" inline="true">
+      <defun>
+        <in name="input_file" type="string"/>
+        <in name="output_file" type="string"/>
+        <in name="chunk_size" type="long"/>
+        <in name="input_n_read_slots" type="long"/>
+        <in name="input_n_write_slots" type="long"/>
+        <out name="config" type="config"/>
+        <out name="n_read_slots" type="long"/>
+        <out name="n_write_slots" type="long"/>
+        <out name="n_chunks" type="long"/>
+
+        <module name="create_config" function="config create_config (input_file, output_file, chunk_size,
+                                               input_n_read_slots, input_n_write_slots,
+                                               n_chunks, n_read_slots, n_write_slots)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/memory.hpp"/>
+          <cinclude href="cstdio"/>
+          <cinclude href="sstream"/>
+          <cinclude href="fstream"/>
+          <cinclude href="cmath"/>
+          <code><![CDATA[
+          #define DIVRU(a,b) ((a)+(b)-1) / (b)
+
+          MLOG (INFO, "Get the size of the file " << input_file);
+          FILE *pf;
+          if((pf = fopen(input_file.c_str(), "r"))== NULL)
+          {
+          std::ostringstream oss;
+          oss<<"  Could not open the file " <<input_file << "!";
+          MLOG(ERROR, oss.str());
+          throw std::runtime_error(oss.str());
+          }
+
+          fseek(pf, 0L, SEEK_END);
+          long input_file_size = ftell(pf);
+          fclose(pf);
+
+          // truncate output file
+
+          {
+            std::ofstream f (output_file.c_str());
+
+            if (not f)
+            {
+              throw std::runtime_error ("could not create output file " + output_file);
+            }
+          }
+
+          ::pnetc::type::config::config config;
+          printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
+          if(input_file_size<=0)
+          {
+          throw std::runtime_error("invalid size for the input file!!!" );
+          }
+
+          n_chunks = DIVRU(input_file_size,chunk_size);
+          MLOG (INFO, "The file should be splitted into " <<n_chunks<<" chunks, where chunk_size ="<<chunk_size<<"!");
+
+          long n_nodes = fvmGetNodeCount();
+          MLOG (INFO, "The number of nodes used by GPI: "<<n_nodes);
+
+          size_t size_read_area = DIVRU(chunk_size*input_n_read_slots,n_nodes);
+          size_t size_write_area = DIVRU(chunk_size*input_n_write_slots,n_nodes);
+
+          MLOG (INFO, "Size of the read area to be allocated: "<<size_read_area);
+          MLOG (INFO, "Size of thewrite area to be allocated: "<<size_write_area);
+
+          namespace vm = ::transform_file::util::memory::global;
+
+          config.input_file  = input_file;
+          config.output_file = output_file;
+
+          config.read_area  = vm::alloc(size_read_area, "read_area");
+          config.write_area = vm::alloc(size_write_area, "write_area");
+          config.n_chunks   = n_chunks;
+          config.chunk_size = chunk_size;
+
+          n_read_slots  = input_n_read_slots;
+          n_write_slots = input_n_write_slots;
+
+          LOG (INFO, "The config is: " << config);
+
+          return config;
+          ]]></code>
+        </module>
+
+      </defun>
+      <connect-in  port="input_file" place="input_file"/>
+      <connect-in  port="output_file"  place="output_file"/>
+      <connect-in  port="chunk_size" place="chunk_size"/>
+      <connect-in  port="input_n_read_slots" place="input_n_read_slots"/>
+      <connect-in  port="input_n_write_slots" place="input_n_write_slots"/>
+      <connect-out port="config" place="config"/>
+      <connect-out port="n_read_slots" place="n_read_slots"/>
+      <connect-out port="n_write_slots" place="n_write_slots"/>
+      <connect-out port="n_chunks" place="n_chunks"/>
+    </transition>
+
+    <place name="n_write_slots_cnt" type="long"/>
+    <place name="n_write_slots_gen" type="long"/>
+    <transition name="dup_n_write_slots" inline="true">
+      <use name="dup_counter" />
+      <connect-in port="in" place="n_write_slots"/>
+      <connect-out port="one" place="n_write_slots_gen"/>
+      <connect-out port="two" place="n_write_slots_cnt"/>
+    </transition>
+
+    <place name="n_read_slots_gen" type="long"/>
+    <place name="n_read_slots_cnt" type="long"/>
+    <transition name="dup_n_read_slots" inline="true">
+      <use name="dup_counter" />
+      <connect-in port="in" place="n_read_slots"/>
+      <connect-out port="one" place="n_read_slots_gen"/>
+      <connect-out port="two" place="n_read_slots_cnt"/>
+    </transition>
+
+    <place name="n_chunks_left" type="long"/>
+    <place name="n_chunks_gen" type="long"/>
+
+    <transition name="dup_n_chunks" inline="true">
+      <use name="dup_counter" />
+      <connect-in port="in" place="n_chunks"/>
+      <connect-out port="one" place="n_chunks_gen"/>
+      <connect-out port="two" place="n_chunks_left"/>
+    </transition>
+
+    <place name="write_slot_id" type="long"/>
+    <transition name="generate_write_slots" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="n_write_slots_gen"/>
+      <connect-out port="out" place="write_slot_id"/>
+    </transition>
+
+    <transition name="generate_read_slots" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="n_read_slots_gen"/>
+      <connect-out port="out" place="read_slot_id"/>
+    </transition>
+
+    <place name="chunk_and_slot" type="chunk_and_slot"/>
+    <transition name="generate_chunk_and_slots" inline="true">
+      <include-function href="generate_chunk_and_slot.xpnet"/>
+      <connect-in port="amount" place="n_chunks_gen"/>
+      <connect-out port="out" place="chunk_and_slot"/>
+      <place-map virtual="slot" real="read_slot_id"/>
+    </transition>
+
+    <place name="chunk_written" type="control"/>
+    <place name="all_chunks_done" type="control"/>
+
+    <transition name="dup_all_chunks_done" inline="true">
+      <use name="dup_control"/>
+      <connect-in port="in" place="all_chunks_done"/>
+      <connect-out port="one" place="all_chunks_done_write"/>
+      <connect-out port="two" place="all_chunks_done_read"/>
+    </transition>
+
+    <place name="all_chunks_done_write" type="control"/>
+    <place name="all_chunks_done_read" type="control"/>
+
+    <transition name="check_all_chunks_done" inline="true">
+      <include-function href="check_update_counter.xpnet"/>
+      <place-map real="n_chunks_left" virtual="counter"/>
+      <connect-in port="trigger" place="chunk_written"/>
+      <connect-out port="done" place="all_chunks_done"/>
+    </transition>
+
+    <place name="chunk_read_info" type="chunk_read_info"/>
+    <place name="read_slot_id" type="long"/>
+    <transition name="load_chunk" inline="true">
+      <defun>
+        <in name="chunk_and_slot" type="chunk_and_slot"/>
+        <in name="config" type="config"/>
+        <out name="chunk_read_info" type="chunk_read_info"/>
+
+        <module name="load_chunk" function="chunk_read_info read_and_load_chunk(chunk_and_slot, config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/memory.hpp"/>
+          <cinclude href="iostream"/>
+          <cinclude href="stdio.h"/>
+          <cinclude href="cmath"/>
+          <cinclude href="boost/lexical_cast.hpp"/>
+          <cinclude href="fstream"/>
+          <code><![CDATA[
+          MLOG (INFO, "Reading the chunk "<<chunk_and_slot.chunk<<" from the file " << config.input_file<<" into slot " << chunk_and_slot.slot);
+
+          FILE *file_ptr;
+          int num;
+
+          if((file_ptr = fopen(config.input_file.c_str(), "r"))== NULL)
+          {
+          std::ostringstream oss;
+          oss<<"  Could not open the file " << config.input_file << "!";
+          MLOG(ERROR, oss.str());
+          throw std::runtime_error(oss.str());
+          }
+
+          long offset = chunk_and_slot.chunk * config.chunk_size;
+          if( (fseek(file_ptr, offset, SEEK_SET)) != 0)
+          {
+          printf("Error in seek operation: errno \n");
+          exit(1);
+          }
+
+          size_t size = sizeof(char)*config.chunk_size;
+
+          // copy it first into the shared memory
+          // call put and global put into the read_area
+          char* buffer = static_cast<char *> (fvmGetShmemPtr());
+
+          // copy the file into the buffer:
+          size_t result = fread (buffer,1,size,file_ptr);
+
+          waitComm ( fvmPutGlobalData
+          ( static_cast<fvmAllocHandle_t> (config.read_area)
+          , chunk_and_slot.slot*config.chunk_size
+          , result
+          , 0
+          , 0
+          )
+          );
+
+          LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully into the virtual memory");
+
+          pnetc::type::chunk_read_info::chunk_read_info c_r_info;
+
+          c_r_info.read_slot_id = chunk_and_slot.slot;
+          c_r_info.chunk_id = chunk_and_slot.chunk;
+          c_r_info.size = result;
+
+          fclose(file_ptr);
+
+          return c_r_info;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="chunk_and_slot" place="chunk_and_slot"/>
+      <connect-out port="chunk_read_info" place="chunk_read_info"/>
+    </transition>
+
+    <place name="chunk_write_info" type="chunk_write_info"/>
+    <transition name="transform_chunk" inline="true">
+      <defun>
+        <in name="write_slot_id" type="long"/>
+        <in name="chunk_read_info" type="chunk_read_info"/>
+        <in name="config" type="config"/>
+        <out name="chunk_write_info" type="chunk_write_info"/>
+        <out name="read_slot_id" type="long"/>
+
+        <module name="handle_chunk" function="chunk_write_info transform_words(write_slot_id, chunk_read_info, config, read_slot_id)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="ctype.h"/>
+          <code><![CDATA[
+          LOG (INFO, "Transform the chunk now ...");
+
+          pnetc::type::chunk_write_info::chunk_write_info c_w_info;
+
+          waitComm ( fvmGetGlobalData
+          ( static_cast<fvmAllocHandle_t> (config.read_area)
+          , chunk_read_info.read_slot_id*config.chunk_size
+          , chunk_read_info.size
+          , 0
+          , 0
+          )
+          );
+
+          char * chunk = static_cast<char *> (fvmGetShmemPtr());
+
+          // transform chunk
+          for( int k=0; k<chunk_read_info.size; k++ )
+          if( isalpha(*(chunk+k)) )
+          *(chunk+k) = toupper(*(chunk+k));
+
+          c_w_info.write_slot_id = write_slot_id;
+          c_w_info.chunk_id = chunk_read_info.chunk_id;
+          c_w_info.size = chunk_read_info.size;
+
+          waitComm ( fvmPutGlobalData
+          ( static_cast<fvmAllocHandle_t> (config.write_area)
+          , write_slot_id*config.chunk_size
+          , c_w_info.size
+          , 0
+          , 0
+          )
+          );
+
+          // release the read_slot_id
+          read_slot_id = chunk_read_info.read_slot_id;
+
+          return c_w_info;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="write_slot_id" place="write_slot_id"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="chunk_read_info" place="chunk_read_info"/>
+      <connect-out port="read_slot_id" place="read_slot_id"/>
+      <connect-out port="chunk_write_info" place="chunk_write_info"/>
+    </transition>
+
+    <transition name="write" inline="true">
+      <defun>
+        <in name="chunk_write_info" type="chunk_write_info"/>
+        <in name="config" type="config"/>
+        <out name="write_slot_id" type="long"/>
+        <out name="chunk_written" type="control"/>
+
+        <module name="write_chunk" function="chunk_written write_chunk(chunk_write_info, config, write_slot_id)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="iostream"/>
+          <cinclude href="sys/types.h"/>
+          <cinclude href="sys/stat.h"/>
+          <cinclude href="fcntl.h"/>
+          <cinclude href="unistd.h"/>
+          <cinclude href="errno.h"/>
+          <cinclude href="string.h"/>
+          <code><![CDATA[
+          LOG (INFO, "write the chunk " << chunk_write_info.chunk_id << " now ...");
+
+          // get data from vm::write_area
+          waitComm( fvmGetGlobalData
+          ( static_cast<fvmAllocHandle_t> (config.write_area)
+          , chunk_write_info.write_slot_id*config.chunk_size
+          , chunk_write_info.size
+          , 0
+          , 0
+          )
+          );
+
+          char* ptrChunk = static_cast<char *> (fvmGetShmemPtr());
+
+          // write the data into file at the position
+          // chunk_id*config.chunk_size
+
+          int fd = open (config.output_file.c_str (), O_RDWR);
+          if (fd == -1)
+          {
+          throw std::runtime_error
+          ( std::string ("could not open output file '")
+          + config.output_file + "' "
+          + strerror (errno)
+          );
+          }
+          else
+          {
+          lseek (fd, chunk_write_info.chunk_id*config.chunk_size, SEEK_SET);
+          write (fd, ptrChunk, chunk_write_info.size);
+          close (fd);
+          }
+
+          write_slot_id = chunk_write_info.write_slot_id;
+          return control ();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="chunk_write_info" place="chunk_write_info"/>
+      <connect-read port="config" place="config"/>
+      <connect-out port="write_slot_id" place="write_slot_id"/>
+      <connect-out port="chunk_written" place="chunk_written"/>
+    </transition>
+
+    <place name="write_slots_released" type="control"/>
+    <transition name="release_write_slots" inline="true">
+      <include-function href="release_tokens.xpnet"/>
+      <connect-in port="counter" place="n_write_slots_cnt"/>
+      <connect-in port="trigger" place="all_chunks_done_write"/>
+      <place-map virtual="deposit" real="write_slot_id"/>
+      <connect-out port="done" place="write_slots_released"/>
+    </transition>
+
+    <place name="read_slots_released" type="control"/>
+    <transition name="release_read_slots" inline="true">
+      <include-function href="release_tokens.xpnet"/>
+      <connect-in port="counter" place="n_read_slots_cnt"/>
+      <connect-in port="trigger" place="all_chunks_done_read"/>
+      <place-map virtual="deposit" real="read_slot_id"/>
+      <connect-out port="done" place="read_slots_released"/>
+    </transition>
+
+    <place name="done" type="control"/>
+    <transition name="finalize">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="all_chunks_done_write" type="control"/>
+        <in name="all_chunks_done_read" type="control"/>
+        <out name="done" type="control"/>
+        <module name="transformation_done" function="done finalize_transform_file(config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/memory.hpp"/>
+          <code><![CDATA[
+          LOG (INFO, "finalize: " << config);
+
+          namespace vmem = ::transform_file::util::memory::global;
+
+          vmem::free(config.read_area);
+          vmem::free(config.write_area);
+
+          return control();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="all_chunks_done_write" place="write_slots_released"/>
+      <connect-in port="all_chunks_done_read" place="read_slots_released"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+   </net>
+</defun>

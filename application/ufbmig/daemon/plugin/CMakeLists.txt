@@ -36,6 +36,8 @@ set(HEADER_DESTINATION_DIR "include/fhg/plugins")
 fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   EXPORTS UFBMIG_BACK
   LINK_LIBRARIES ${WE_LIBRARIES}
+                 ${FhgLog_LIBRARY_SHARED}
+                 ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
@@ -50,13 +52,15 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
 fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/observable.cpp
   EXPORTS UFBMIG_FRONT
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
+                 ${FhgLog_LIBRARY_SHARED}
                  ${HWLOC_SHARED_LIBRARY}
                  ${LIBIRC_LIBRARY}
                  ${LOG4CPP_LIBRARY}
+                 ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
-  HEADERS ufbmig_front.hpp
+  HEADERS ufbmig_front.hpp ufbmig_msg_types.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
@@ -78,9 +82,10 @@ fhg_add_plugin(ufbmig_test ufbmig_test.cpp
 fhg_add_plugin(isim_dummy isim_dummy.cpp
   EXPORTS ISIM
   LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+                 ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
-  HEADERS isim.hpp
+  HEADERS isim.hpp reactor.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
@@ -90,10 +95,12 @@ fhg_add_plugin(isim_dummy isim_dummy.cpp
 fhg_add_plugin(isim isim.cpp
   EXPORTS ISIM
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
+                 ${FhgLog_LIBRARY_SHARED}
                  ${HWLOC_SHARED_LIBRARY}
                  ${LIBIRC_LIBRARY}
                  ${LOG4CPP_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
+                 ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   HEADERS isim.hpp

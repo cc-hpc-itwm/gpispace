@@ -1,9 +1,12 @@
+// bernd.loerwald@itwm.fraunhofer.de
+
 #include <pnete/ui/graph/connectable_item.hpp>
 
-#include <QDebug>
-
-#include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/association.hpp>
 #include <pnete/ui/graph/scene.hpp>
+
+#include <QGraphicsSceneMouseEvent>
+#include <QDebug>
 
 namespace fhg
 {
@@ -13,102 +16,86 @@ namespace fhg
     {
       namespace graph
       {
-        namespace connectable
-        {
-          item::item
-          ( direction::type direction
-          , boost::optional< ::xml::parse::type::type_map_type&> type_map
-          , graph::item* parent
-          , ::we::type::property::type* property
+        connectable_item::connectable_item
+          ( connectable::direction::type direction
+          , base_item* parent
           )
-            : graph::item (parent, property)
-            , _connections ()
-            , _direction (direction)
-            , _type_map (type_map)
-          {}
+          : base_item (parent)
+          , _associations ()
+          , _direction (direction)
+        {}
 
-          void item::add_connection (connection::item* c)
+        void connectable_item::add_association (association* c)
+        {
+          if (_associations.contains (c))
           {
-            if (_connections.contains (c))
-              {
-                throw std::runtime_error ("tried adding the same connection twice.");
-              }
-            _connections.insert (c);
+            throw std::runtime_error ("tried adding the same association twice.");
           }
-          void item::remove_connection (connection::item* c)
+          _associations.insert (c);
+        }
+        void connectable_item::remove_association (association* c)
+        {
+          if (!_associations.contains (c))
           {
-            if (!_connections.contains (c))
-              {
-                throw std::runtime_error ("item did not have that connection.");
-              }
-            _connections.remove (c);
+            throw std::runtime_error ("item did not have that association.");
           }
+          _associations.remove (c);
+        }
 
-          bool item::is_connectable_with (const item* i) const
+        bool connectable_item::is_connectable_with (const connectable_item* i) const
+        {
+          return i->we_type() == we_type() && i->direction() != direction();
+        }
+
+        const QSet<association*>& connectable_item::associations() const
+        {
+          return _associations;
+        }
+
+        const connectable::direction::type& connectable_item::direction() const
+        {
+          return _direction;
+        }
+        const connectable::direction::type& connectable_item::direction (const connectable::direction::type& direction_)
+        {
+          return _direction = direction_;
+        }
+
+        const std::string& connectable_item::we_type (const std::string& unmapped) const
+        {
+          //! \todo Reimplement with getting type_map at call-time from handle.
+          // - get type_map
+          // - it = type_map.find (unmapped)
+          // - it ? return it->mapped_type : unmapped
+          return unmapped;
+        }
+
+        QLinkedList<base_item*> connectable_item::childs() const
+        {
+          QLinkedList<base_item*> childs;
+
+          foreach (association* association, associations())
           {
-            return i->we_type() == we_type() && i->direction() != direction();
-          }
-
-          const QSet<connection::item*>& item::connections() const
-          {
-            return _connections;
-          }
-
-          const direction::type& item::direction() const
-          {
-            return _direction;
-          }
-          const direction::type& item::direction (const direction::type& direction_)
-          {
-            return _direction = direction_;
-          }
-
-          const std::string& item::we_type (const std::string& unmapped) const
-          {
-            if (_type_map)
-              {
-                ::xml::parse::type::type_map_type::const_iterator type_mapping
-                  (_type_map->find (unmapped));
-
-                if (type_mapping != _type_map->end())
-                  {
-                    return type_mapping->second;
-                  }
-              }
-
-            return unmapped;
-          }
-
-          QLinkedList<graph::item*> item::childs() const
-          {
-            QLinkedList<graph::item*> childs;
-
-            foreach (connection::item* connection, connections())
-              {
-                childs << connection;
-              }
-
-            return childs;
+            childs << association;
           }
 
-          void item::erase_connections (scene::type* scene)
+          return childs;
+        }
+
+        //! \todo This should be in the different connectable items instead.
+        void connectable_item::mousePressEvent
+          (QGraphicsSceneMouseEvent* event)
+        {
+          if (event->modifiers() == Qt::ShiftModifier)
           {
-            foreach (connection::item* connection, connections())
-              {
-                scene->removeItem (connection);
-
-                if (connection)
-                  {
-                    delete connection;
-                  }
-              }
+            //! \todo Ports can start a connection when they are
+            //! already connected to something!
+            scene()->create_pending_connection (this);
           }
-
-//           void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
-//           {
-//             scene()->create_connection (this);
-//             //! \todo Start a new connection!
-//           }
+          else
+          {
+            base_item::mousePressEvent (event);
+          }
         }
       }
     }

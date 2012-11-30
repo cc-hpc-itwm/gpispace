@@ -7,7 +7,6 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition_variable.hpp>
 
-#include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/task_queue.hpp>
 
 namespace gpi
@@ -19,15 +18,11 @@ namespace gpi
       class transfer_queue_t
       {
       public:
-        typedef boost::shared_ptr<task_t> task_ptr;
-        typedef std::set<task_ptr> task_set_t;
-        typedef std::list<task_ptr> task_list_t;
-
         explicit
         transfer_queue_t (const std::size_t id, task_queue_t *async);
         ~transfer_queue_t ();
 
-        void enqueue (memory_transfer_t const &);
+        void enqueue (task_ptr const &);
         void enqueue (task_list_t const &);
 
         // request to pause the queue
@@ -35,9 +30,13 @@ namespace gpi
         //   there might still be requests queued,
         //   use flush to remove them
         void pause ();
-
         // unpause the queue
         void resume ();
+        bool is_paused () const;
+
+        void disable ();
+        void enable ();
+        bool is_disabled () const;
 
         // issue a "wait" on the queue
         //
@@ -53,8 +52,6 @@ namespace gpi
 
         // wait until all queues are empty
         void flush ();
-
-        bool is_paused () const;
       private:
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -63,12 +60,13 @@ namespace gpi
 
         void worker ();
         void wait_until_unpaused () const;
-        task_list_t split (memory_transfer_t const &mt);
 
         mutable mutex_type m_mutex;
         mutable condition_type m_resume_condition;
         std::size_t m_id;
         bool m_paused;
+        bool m_enabled;
+
         task_queue_t & m_blocking_tasks;
         task_queue_t m_task_queue;
         thread_ptr m_thread;

@@ -235,8 +235,9 @@
             // Maybe don't ++trace but trace += random;
             //! \note Skip traces that get a zero size output.
             config.size.trace.output = 0;
+            const long last_available_trace (config.num.trace.input + config.num.trace.skipped);
             for ( long trace (config.num.trace.skipped)
-                ; config.size.trace.output == 0 && trace < config.num.trace.input
+                ; config.size.trace.output == 0 && trace < last_available_trace
                 ; ++trace
                 )
             {

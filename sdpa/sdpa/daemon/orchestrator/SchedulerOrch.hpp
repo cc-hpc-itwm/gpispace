@@ -25,54 +25,53 @@ using namespace sdpa::events;
 using namespace std;
 
 namespace sdpa {
-	namespace daemon {
+        namespace daemon {
   class SchedulerOrch : public SchedulerImpl {
 
   public:
-	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL,  bool bUseReqModel = true):
-		 SchedulerImpl(pCommHandler, bUseReqModel),
-		 SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name()+"::Scheduler":"Scheduler")
-	 {}
+         SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL,  bool bUseReqModel = true):
+                 SchedulerImpl(pCommHandler, bUseReqModel),
+                 SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name()+"::Scheduler":"Scheduler")
+         {}
 
-	 virtual ~SchedulerOrch()
-	 {
-		try
-		{
-			SDPA_LOG_INFO("destructing SchedulerOrch");
-			stop();
-		}
-		catch (std::exception const & ex)
-		{
-			SDPA_LOG_ERROR("could not stop SchedulerOrch: " << ex.what());
-		}
-	 }
+         virtual ~SchedulerOrch()
+         {
+                try
+                {
+                        stop();
+                }
+                catch (std::exception const & ex)
+                {
+                        SDPA_LOG_ERROR("could not stop SchedulerOrch: " << ex.what());
+                }
+         }
 
-	 bool post_request( bool ) { return false; }
-	 void send_life_sign() { /*do nothing*/ }
-	 void check_post_request() { /*do nothing*/ }
+         bool post_request( bool ) { return false; }
+         void send_life_sign() { /*do nothing*/ }
+         void check_post_request() { /*do nothing*/ }
 
-	 template <class Archive>
-	 void serialize(Archive& ar, const unsigned int)
-	 {
-	   ar & boost::serialization::base_object<SchedulerImpl>(*this);
-	 }
+         template <class Archive>
+         void serialize(Archive& ar, const unsigned int)
+         {
+           ar & boost::serialization::base_object<SchedulerImpl>(*this);
+         }
 
-	 friend class boost::serialization::access;
-	 //friend class sdpa::tests::WorkerSerializationTest;
+         friend class boost::serialization::access;
+         //friend class sdpa::tests::WorkerSerializationTest;
 
-	 bool has_job(const sdpa::job_id_t& job_id)
-	 {
-		if( jobs_to_be_scheduled.find(job_id) != jobs_to_be_scheduled.end() )
-		{
-			SDPA_LOG_INFO("The job "<<job_id<<" is still in the jobs_to_be_scheduled queue!");
-			return true;
-		}
+         bool has_job(const sdpa::job_id_t& job_id)
+         {
+                if( jobs_to_be_scheduled.find(job_id) != jobs_to_be_scheduled.end() )
+                {
+                        SDPA_LOG_INFO("The job "<<job_id<<" is still in the jobs_to_be_scheduled queue!");
+                        return true;
+                }
 
-		return ptr_worker_man_->has_job(job_id);
-	 }
+                return ptr_worker_man_->has_job(job_id);
+         }
 
   private:
-	 SDPA_DECLARE_LOGGER();
+         SDPA_DECLARE_LOGGER();
   };
 }}
 

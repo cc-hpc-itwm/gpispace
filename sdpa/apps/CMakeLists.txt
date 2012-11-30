@@ -61,13 +61,3 @@ install(TARGETS sdpac
   RUNTIME
   DESTINATION bin
   COMPONENT runtime)
-
-add_executable(bsdpac blocking_client.cpp)
-target_link_libraries(bsdpac ${client_libs})
-install(TARGETS bsdpac
-  RUNTIME
-  DESTINATION bin
-  )
-
-#add_executable(suca submit_and_cancel.cpp)
-#target_link_libraries(suca ${client_libs})

@@ -1,7 +1,13 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_TRANSITION_HPP
-#define _FHG_PNETE_UI_GRAPH_TRANSITION_HPP 1
+#ifndef FHG_PNETE_UI_GRAPH_TRANSITION_HPP
+#define FHG_PNETE_UI_GRAPH_TRANSITION_HPP
+
+#include <pnete/ui/graph/transition.fwd.hpp>
+
+#include <pnete/data/handle/transition.hpp>
+#include <pnete/data/proxy.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 
 #include <QPainterPath>
 #include <QRectF>
@@ -14,12 +20,6 @@ class QStyleOptionGraphicsItem;
 class QWidget;
 class QAction;
 
-#include <pnete/ui/graph/item.hpp>
-
-#include <pnete/data/proxy.hpp>
-
-#include <pnete/weaver/weaver.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -28,52 +28,54 @@ namespace fhg
     {
       namespace graph
       {
-        namespace transition
+        class transition_item : public base_item
         {
-          class item : public graph::item
-          {
-            Q_OBJECT;
+          Q_OBJECT;
 
-          public:
-            explicit item ( ::xml::parse::type::transition_type& transition
-                          , ::xml::parse::type::net_type& net
-                          , graph::item* parent = NULL
-                          );
+        public:
+          explicit transition_item ( const data::handle::transition& handle
+                                   , base_item* parent = NULL
+                                   );
 
-            const ::xml::parse::type::transition_type& transition() const;
-            ::xml::parse::type::net_type& net();
+          virtual const data::handle::transition& handle() const;
 
-            virtual QPainterPath shape() const;
-            QRectF rectangle() const;
+          virtual QPainterPath shape() const;
+          QRectF rectangle() const;
 
-            const std::string& name() const;
+          std::string name() const;
 
-            void repositionChildrenAndResize();
+          void repositionChildrenAndResize();
 
-            void set_proxy (data::proxy::type*);
-            data::proxy::type* proxy () const;
+          void set_proxy (data::proxy::type*);
+          data::proxy::type* proxy () const;
 
-            enum { Type = transition_graph_type };
-            virtual int type() const { return Type; }
+          enum { Type = transition_graph_type };
+          virtual int type() const { return Type; }
 
-            virtual void setPos (const QPointF&);
+          virtual void setPos (const QPointF&);
 
-          public slots:
-          private slots:
+        public slots:
+          void property_changed
+            ( const QObject* origin
+            , const data::handle::transition& changed_handle
+            , const ::we::type::property::key_type& key
+            , const ::we::type::property::value_type& value
+            );
 
-          protected:
-            virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+        protected:
+          virtual void paint ( QPainter *painter
+                             , const QStyleOptionGraphicsItem *option
+                             , QWidget *widget
+                             );
 
-          private:
-            //! \todo size verstellbar
-            QSizeF _size;
+        private:
+          //! \todo size verstellbar
+          QSizeF _size;
 
-            ::xml::parse::type::transition_type& _transition;
-            ::xml::parse::type::net_type& _net;
+          data::handle::transition _handle;
 
-            data::proxy::type* _proxy;
-          };
-        }
+          data::proxy::type* _proxy;
+        };
       }
     }
   }

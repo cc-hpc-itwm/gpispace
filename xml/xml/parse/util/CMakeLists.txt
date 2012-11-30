@@ -1,6 +1,9 @@
-set (hdrs
+# bernd.loerwald@itwm.fraunhofer.de
+
+set (xml_parse_util_headers
   cdata.hpp
   expect.hpp
+  mk_fstream.hpp
   name_element.hpp
   optional.hpp
   property.hpp
@@ -12,15 +15,20 @@ set (hdrs
   validprefix.hpp
   validstructfield.hpp
   weparse.hpp
-  mk_fstream.hpp
-  )
-
-install (FILES ${hdrs}
-  DESTINATION include/xml/parse/util
-  COMPONENT headers)
-
-set (srcs_mk_fstream
-  mk_fstream.cpp
 )
 
-add_library(xml_util_mk_fstream ${srcs_mk_fstream})
+set (xml_parse_util_fwd_headers
+)
+
+set (xml_parse_util_sources
+  mk_fstream.cpp
+  valid_name.cpp
+)
+
+add_library (xml_parse_util
+  ${xml_parse_util_sources}
+)
+
+install (FILES ${xml_parse_util_headers} ${xml_parse_util_fwd_headers}
+  DESTINATION include/xml/parse/util
+  COMPONENT headers)

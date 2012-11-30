@@ -19,7 +19,7 @@ a:documentation [
 start = element defun { function_type }
       | element props { property_map_list_type }
       | element structs { struct_list_type }
-      | element template { function_type }
+      | element template { template_type }
 transition_include_type = attribute href { xsd:anyURI }
 struct_include_type = attribute href { xsd:anyURI }
 function_include_type =
@@ -78,6 +78,7 @@ use_type = attribute name { xsd:ID }
 require_type =
   attribute key { xsd:string },
   attribute mandatory { xsd:boolean }?
+template_parameter_type = attribute type { xsd:ID }
 place_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
@@ -101,7 +102,11 @@ place_map_type =
    | element include-properties { properties_include_type })*,
   attribute virtual { xsd:string },
   attribute real { xsd:ID }
+template_type =
+  (element template-parameter { template_paramater_type })*,
+  element defun { function_type }
 function_type =
+  element template-parameter { template_parameter_type }*,
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   (element struct { struct_type }
@@ -111,7 +116,7 @@ function_type =
    | element out { port_type }
    | element inout { port_type }
    | element tunnel { port_type })*,
-  (element expression { xsd:string }
+  ((element expression { xsd:string })*
    | element module { mod_type }
    | element net { net_type }),
   element condition { xsd:string }*,
@@ -134,9 +139,7 @@ transition_type =
   attribute inline { xsd:boolean }?,
   attribute internal { xsd:boolean }?
 net_type =
-  (element defun { function_type }
-   | element include-function { function_include_type }
-   | element include-properties { properties_include_type }
+  (element include-properties { properties_include_type }
    | element include-structs { struct_include_type }
    | element include-template { function_include_type }
    | element place { place_type }

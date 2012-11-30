@@ -37,7 +37,6 @@
 
 #include <stdexcept>
 
-using namespace sdpa;
 using namespace std;
 
 template <typename InKey, typename InValue, typename OutValue>
@@ -125,6 +124,26 @@ public:
   InKeyT inKey() { return inKey_; }
   ListInValuesT& listInValues() { return listInValues_; }
   ListOutValuesT& listOutValues() { return listOutValues_; }
+
+  std::string encode()
+  {
+    std::stringstream osstr;
+    boost::archive::text_oarchive ar(osstr);
+    ar << inKey_;
+    ar << listInValues_;
+    ar << listOutValues_;
+    return osstr.str();
+  }
+
+  void decode(const std::string& strWorkflow)
+  {
+    std::stringstream sstr(strWorkflow);
+    boost::archive::text_iarchive ar(sstr);
+    ar >> inKey_;
+    ar >> listInValues_;
+    ar >> listOutValues_;
+  }
+
 
 protected:
   InKeyT inKey_;

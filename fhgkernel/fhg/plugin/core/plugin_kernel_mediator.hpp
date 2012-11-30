@@ -42,6 +42,7 @@ namespace fhg
       int load_plugin (std::string const &path);
       int unload_plugin (std::string const &name);
 
+      int kill ();
       int terminate ();
       int shutdown ();
 

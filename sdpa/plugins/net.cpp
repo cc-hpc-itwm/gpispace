@@ -9,6 +9,7 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/thread/event.hpp>
+#include <fhg/util/threadname.hpp>
 
 class PeerImpl : FHG_PLUGIN
                , public net::Peer
@@ -31,6 +32,8 @@ public:
                                        )
                  );
     m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
+    fhg::util::set_threadname (*m_peer_thread, "[net]");
+
     try
     {
       m_peer->start();

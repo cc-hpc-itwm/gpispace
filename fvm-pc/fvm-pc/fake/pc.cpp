@@ -39,7 +39,7 @@ static void * pcShm(0);
 
 enum FVM_PC_API_ERRORS
 {
-	FVM_EGENERAL   = -1
+        FVM_EGENERAL   = -1
   , FVM_EINVALSZ   = -2
   , FVM_EOUTOFMEM  = -3
   , FVM_ETOOLARGE  = -4
@@ -50,22 +50,22 @@ static void cleanUp()
 {
   if (pcShm)
   {
-	fprintf (stderr, "fvm-pc: removing shared memory segment: %p\n", pcShm);
-	free(pcShm); pcShm = NULL;
-	pcShmSize = 0;
+        fprintf (stderr, "fvm-pc: removing shared memory segment: %p\n", pcShm);
+        free(pcShm); pcShm = NULL;
+        pcShmSize = 0;
   }
   if (pcFVM)
   {
-	fprintf (stderr, "fvm-pc: removing FVM segment: %p\n", pcFVM);
-	free(pcFVM); pcFVM = NULL;
-	pcFVMSize = 0;
+        fprintf (stderr, "fvm-pc: removing FVM segment: %p\n", pcFVM);
+        free(pcFVM); pcFVM = NULL;
+        pcFVMSize = 0;
   }
 
   if (dtmmgr)
   {
     fprintf (stderr, "fvm-pc: finalizing mmgr: %p %p\n", &dtmmgr, dtmmgr);
     Size_t Bytes = dtmmgr_finalize (&dtmmgr);
-	fprintf (stderr, "fvm-pc: mmgr freed bytes = %lu" "\n", Bytes);
+        fprintf (stderr, "fvm-pc: mmgr freed bytes = %lu" "\n", Bytes);
   }
 }
 
@@ -97,29 +97,29 @@ int fvmConnect(fvm_pc_config_t cfg)
     pcShmSize = cfg.shmemsize;
     fprintf(stderr, "fvm-pc: allocating %lu bytes of shared-memory\n", pcShmSize);
     pcShm = malloc(pcShmSize);
-	if (! pcShm)
-	{
-	  fprintf(stderr, "fvm-pc: shared memory allocation failed!");
-	  cleanUp();
-	  return FVM_EOUTOFMEM;
-	}
-	memset(pcShm, 0, pcShmSize);
+        if (! pcShm)
+        {
+          fprintf(stderr, "fvm-pc: shared memory allocation failed!");
+          cleanUp();
+          return FVM_EOUTOFMEM;
+        }
+        memset(pcShm, 0, pcShmSize);
 
     pcFVMSize = cfg.fvmsize;
     fprintf(stderr, "fvm-pc: allocating %lu bytes of VM\n", pcFVMSize);
     pcFVM = malloc(pcFVMSize);
-	if (! pcFVM)
-	{
-	  fprintf(stderr, "fvm-pc: VM memory allocation failed!");
-	  cleanUp();
-	  return FVM_EOUTOFMEM;
-	}
-	memset(pcFVM, 0, pcFVMSize);
+        if (! pcFVM)
+        {
+          fprintf(stderr, "fvm-pc: VM memory allocation failed!");
+          cleanUp();
+          return FVM_EOUTOFMEM;
+        }
+        memset(pcFVM, 0, pcFVMSize);
 
     fprintf(stderr, "fvm-pc: using %lu bytes of VM memory\n", pcFVMSize);
 
     dtmmgr_init (&dtmmgr, pcFVMSize, 2 /* aligned to 2-byte boundary */);
-	dtmmgr_info (dtmmgr);
+        dtmmgr_info (dtmmgr);
 
     return 0;
   }
@@ -129,6 +129,11 @@ int fvmLeave()
 {
   cleanUp();
   return 0;
+}
+
+fvmAllocHandle_t fvmGlobalAllocExact (fvmSize_t size, const char *name)
+{
+  return fvmGlobalAlloc (size, name);
 }
 
 fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *)
@@ -144,21 +149,21 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
   AllocReturn_t AllocReturn = dtmmgr_alloc( &dtmmgr, (Handle_t)ptr, (Arena_t)ARENA_UP, (Size_t)size);
   switch (AllocReturn)
   {
-	case ALLOC_SUCCESS:
-	  return ptr;
-	case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
+        case ALLOC_SUCCESS:
+          return ptr;
+        case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
 #ifndef NDEBUG
           fprintf(stderr, "fvm-pc: global alloc failed: not enough contigiuous memory of size %lu!\n", size);
       dtmmgr_status (dtmmgr);
 #endif
-	  // FIXME: set errno!
-	  return 0;
-	default:
+          // FIXME: set errno!
+          return 0;
+        default:
 #ifndef NDEBUG
           fprintf(stderr, "fvm-pc: global alloc of size %lu failed!\n", size);
       dtmmgr_status (dtmmgr);
 #endif
-	  return 0;
+          return 0;
   }
 }
 
@@ -166,24 +171,24 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
 {
   switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_UP))
   {
-	case RET_SUCCESS:
-	  return 0;
-	case RET_HANDLE_UNKNOWN:
+        case RET_SUCCESS:
+          return 0;
+        case RET_HANDLE_UNKNOWN:
 #ifndef NDEBUG
           dtmmgr_status (dtmmgr);
 #endif
-	  return FVM_ESRCH;
-	case RET_FAILURE:
+          return FVM_ESRCH;
+        case RET_FAILURE:
 #ifndef NDEBUG
           dtmmgr_status (dtmmgr);
 #endif
-	  return FVM_EGENERAL;
-	default:
+          return FVM_EGENERAL;
+        default:
           fprintf(stderr, "fvm-pc: global free failed: unknown return code: %d\n", ret);
 #ifndef NDEBUG
           dtmmgr_status (dtmmgr);
 #endif
-	  return FVM_EGENERAL;
+          return FVM_EGENERAL;
   }
 }
 
@@ -200,21 +205,21 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
   AllocReturn_t AllocReturn = dtmmgr_alloc( &dtmmgr, (Handle_t)ptr, (Arena_t)ARENA_DOWN, (Size_t)size);
   switch (AllocReturn)
   {
-	case ALLOC_SUCCESS:
-	  return ptr;
-	case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
+        case ALLOC_SUCCESS:
+          return ptr;
+        case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
 #ifndef NDEBUG
           fprintf(stderr, "fvm-pc: local alloc failed: not enough contigiuous memory of size %lu!\n", size);
-	  dtmmgr_status (dtmmgr);
+          dtmmgr_status (dtmmgr);
 #endif
-	  // FIXME: set errno!
-	  return 0;
-	default:
+          // FIXME: set errno!
+          return 0;
+        default:
 #ifndef NDEBUG
           fprintf(stderr, "fvm-pc: local alloc of size %lu failed!\n", size);
-	  dtmmgr_status (dtmmgr);
+          dtmmgr_status (dtmmgr);
 #endif
-	  return 0;
+          return 0;
   }
 }
 
@@ -222,25 +227,25 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
 {
   switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_DOWN))
   {
-	case RET_SUCCESS:
-	  return 0;
-	case RET_HANDLE_UNKNOWN:
+        case RET_SUCCESS:
+          return 0;
+        case RET_HANDLE_UNKNOWN:
 #ifndef NDEBUG
-	  dtmmgr_status (dtmmgr);
+          dtmmgr_status (dtmmgr);
 #endif
-	  return FVM_ESRCH;
-	case RET_FAILURE:
+          return FVM_ESRCH;
+        case RET_FAILURE:
 #ifndef NDEBUG
-	  dtmmgr_status (dtmmgr);
+          dtmmgr_status (dtmmgr);
 #endif
-	  return FVM_EGENERAL;
-	default:
+          return FVM_EGENERAL;
+        default:
 #ifndef NDEBUG
-	  dtmmgr_status (dtmmgr);
+          dtmmgr_status (dtmmgr);
 #endif
-	  // FIXME: set errno instead!
+          // FIXME: set errno instead!
           fprintf(stderr, "fvm-pc: local free failed: unknown return code: %d\n", ret);
-	  return FVM_EGENERAL;
+          return FVM_EGENERAL;
   }
 }
 
@@ -262,16 +267,16 @@ static fvmCommHandleState_t check_bounds
     {
     case RET_SUCCESS:
       if ((fvmOffset + size) > HandleSize)
-	{
+        {
 #ifndef NDEBUG
-	  fprintf( stderr
-		 , "fvm-pc: %s out of range: \
+          fprintf( stderr
+                 , "fvm-pc: %s out of range: \
                             handle=%lu offset=%lu size=%lu HandleSize=%lu\n"
-		 , descr, handle, fvmOffset, size, HandleSize
-		 );
+                 , descr, handle, fvmOffset, size, HandleSize
+                 );
 #endif
-	  return COMM_HANDLE_ERROR_INVALID_SIZE;
-	}
+          return COMM_HANDLE_ERROR_INVALID_SIZE;
+        }
       break;
     case RET_HANDLE_UNKNOWN: return COMM_HANDLE_ERROR_INVALID_HANDLE; break;
     default: return COMM_HANDLE_ERROR; break;
@@ -281,89 +286,89 @@ static fvmCommHandleState_t check_bounds
 }
 
 static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
-				   const fvmOffset_t fvmOffset,
-				   const fvmSize_t size,
-				   const fvmShmemOffset_t shmemOffset,
-				   const fvmAllocHandle_t /* scratchHandle */,
-				   const fvmOperation_t op)
+                                   const fvmOffset_t fvmOffset,
+                                   const fvmSize_t size,
+                                   const fvmShmemOffset_t shmemOffset,
+                                   const fvmAllocHandle_t /* scratchHandle */,
+                                   const fvmOperation_t op)
 {
   Offset_t BaseOffset = 0;
   switch (op)
   {
-	// FIXME: implement error handling (size mismatch)
-	//        return COMM_HANDLE_ERROR_SHMEM_BOUNDARY etc as handles
-	case GETGLOBAL:
-	  {
-	    fvmCommHandleState_t fvmCommHandleState =
-	      check_bounds (handle, fvmOffset, size, ARENA_UP, &BaseOffset, "GetGlobalData");
+        // FIXME: implement error handling (size mismatch)
+        //        return COMM_HANDLE_ERROR_SHMEM_BOUNDARY etc as handles
+        case GETGLOBAL:
+          {
+            fvmCommHandleState_t fvmCommHandleState =
+              check_bounds (handle, fvmOffset, size, ARENA_UP, &BaseOffset, "GetGlobalData");
 
-	    if (fvmCommHandleState == COMM_HANDLE_OK)
-	      {
-		memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
-	      }
-	    /* FIXME: encode error into handle */
-	    return fvmCommHandleState;
-	  }
-	  break;
-	case PUTGLOBAL:
-	  {
-	    fvmCommHandleState_t fvmCommHandleState =
-	      check_bounds (handle, fvmOffset, size, ARENA_UP, &BaseOffset, "PutGlobalData");
+            if (fvmCommHandleState == COMM_HANDLE_OK)
+              {
+                memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
+              }
+            /* FIXME: encode error into handle */
+            return fvmCommHandleState;
+          }
+          break;
+        case PUTGLOBAL:
+          {
+            fvmCommHandleState_t fvmCommHandleState =
+              check_bounds (handle, fvmOffset, size, ARENA_UP, &BaseOffset, "PutGlobalData");
 
-	    if (fvmCommHandleState == COMM_HANDLE_OK)
-	      {
-		memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
-	      }
-	    return fvmCommHandleState;
-	  }
-	  break;
-	case GETLOCAL:
-	  {
-	    fvmCommHandleState_t fvmCommHandleState =
-	      check_bounds (handle, fvmOffset, size, ARENA_DOWN, &BaseOffset, "GetLocalData");
+            if (fvmCommHandleState == COMM_HANDLE_OK)
+              {
+                memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
+              }
+            return fvmCommHandleState;
+          }
+          break;
+        case GETLOCAL:
+          {
+            fvmCommHandleState_t fvmCommHandleState =
+              check_bounds (handle, fvmOffset, size, ARENA_DOWN, &BaseOffset, "GetLocalData");
 
-	    if (fvmCommHandleState == COMM_HANDLE_OK)
-	      {
-		memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
-	      }
-	    return fvmCommHandleState;
-	  }
-	  break;
-	case PUTLOCAL:
-	  {
-	    fvmCommHandleState_t fvmCommHandleState =
-	      check_bounds (handle, fvmOffset, size, ARENA_DOWN, &BaseOffset, "PutLocalData");
+            if (fvmCommHandleState == COMM_HANDLE_OK)
+              {
+                memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
+              }
+            return fvmCommHandleState;
+          }
+          break;
+        case PUTLOCAL:
+          {
+            fvmCommHandleState_t fvmCommHandleState =
+              check_bounds (handle, fvmOffset, size, ARENA_DOWN, &BaseOffset, "PutLocalData");
 
-	    if (fvmCommHandleState == COMM_HANDLE_OK)
-	      {
-		memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
-	      }
-	    return fvmCommHandleState;
-	  }
-	  break;
-	default:
-	  fprintf(stderr, "fvm-pc: fvmCommData() unsupported comm-operation:%d\n", op);
-	  return -1;
+            if (fvmCommHandleState == COMM_HANDLE_OK)
+              {
+                memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
+              }
+            return fvmCommHandleState;
+          }
+          break;
+        default:
+          fprintf(stderr, "fvm-pc: fvmCommData() unsupported comm-operation:%d\n", op);
+          return -1;
   }
 
   return COMM_HANDLE_OK;
 }
 
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
-				 const fvmOffset_t fvmOffset,
-				 const fvmSize_t size,
-				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratchHandle)
+                                 const fvmOffset_t fvmOffset,
+                                 const fvmSize_t size,
+                                 const fvmShmemOffset_t shmemOffset,
+                                 const fvmAllocHandle_t scratchHandle)
 {
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, GETGLOBAL);
   return commhandle;
 }
 
 fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
-				 const fvmOffset_t fvmOffset,
-				 const fvmSize_t size,
-				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratchHandle)
+                                 const fvmOffset_t fvmOffset,
+                                 const fvmSize_t size,
+                                 const fvmShmemOffset_t shmemOffset,
+                                 const fvmAllocHandle_t scratchHandle)
 {
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, PUTGLOBAL);
@@ -372,9 +377,9 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 }
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
-				const fvmOffset_t fvmOffset,
-				const fvmSize_t size,
-				const fvmShmemOffset_t shmemOffset)
+                                const fvmOffset_t fvmOffset,
+                                const fvmSize_t size,
+                                const fvmShmemOffset_t shmemOffset)
 {
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, PUTLOCAL);
@@ -383,9 +388,9 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 
 
 fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
-				const fvmOffset_t fvmOffset,
-				const fvmSize_t size,
-				const fvmShmemOffset_t shmemOffset)
+                                const fvmOffset_t fvmOffset,
+                                const fvmSize_t size,
+                                const fvmShmemOffset_t shmemOffset)
 {
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, GETLOCAL);
   return commhandle;

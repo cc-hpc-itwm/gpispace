@@ -5,6 +5,7 @@ add_subdirectory(workflows)
 
 find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 
 set(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/stresstest")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}")
@@ -22,6 +23,9 @@ set(TESTS_N_ATOMIC_TASKS 100)
 
 set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/inotify/inotify/pnetc/op")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
+
+set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_BINARY_DIR}/application/transform_file/xml/transform_file/pnetc/op")
+message(STATUS "example modules are in: ${TESTS_TRANSFORM_FILE_MODULES_PATH}")
 
 get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
 message(STATUS "fvm module is in: ${TESTS_FVM_PC_MODULE}")
@@ -50,7 +54,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/tests_config.hpp)
-
 include(pnet_macros)
 
 get_target_property(PNETPUT_LOCATION pnetput LOCATION)
@@ -156,6 +159,35 @@ add_custom_command(TARGET pnet-inotify-test-wf
 )
 add_dependencies(pnet-inotify-test-wf pnetput)
 ################################################################################################
+#transform
+pnet_compile(transform_file-test-wf ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file-test-wf.in.pnet
+  GENERATE transform_file
+  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/fvm-pc
+           -I${CMAKE_SOURCE_DIR}/application/transform_file
+           -O3
+  BUILD
+  COMPONENT tests
+)
+
+get_target_property(TRANSFORM_FILE_PNET_LOCATION pnet-transform_file-test-wf LOCATION)
+set(command ${PNETPUT_LOCATION} --if "${TRANSFORM_FILE_PNET_LOCATION}" -p input_file=\\"in.txt\\"
+                                                                        -p output_file=\\"out.txt\\"
+                                                                        -p input_n_read_slots="3L"
+                                                                        -p input_n_write_slots="3L"
+                                                                        -p chunk_size="512L"
+                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet")
+
+add_custom_command(TARGET pnet-transform_file-test-wf
+                   POST_BUILD
+                   COMMAND ${command}
+                   COMMENT "putting tokens into transform_file workflow: ${command}"
+)
+add_dependencies(pnet-transform_file-test-wf pnetput)
+################################################################################################
 set (test_srcs
   SchedulerTestImpl.cpp
   test_Config.cpp
@@ -182,7 +214,7 @@ set (tc_srcs
   test_Scheduler.cpp
   test_LoadBalancer.cpp
   test_MapReduce.cpp
-#  test_LostAgentRegistrationAck.cpp
+  #test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
@@ -200,6 +232,7 @@ set (tc_srcs
   test_Subscriber.cpp
   test_CannonOnTorus.cpp
   test_Capabilities.cpp
+  test_TransformFile.cpp
 )
 
 foreach (tc_src ${tc_srcs})
@@ -233,4 +266,5 @@ foreach (tc_src ${tc_srcs})
   add_dependencies(${tc_name} pnet-capabilities_no_mandatory-test-wf)
   add_dependencies(${tc_name} pnet-atomic-test-wf)
   add_dependencies(${tc_name} pnet-inotify-test-wf)
+  add_dependencies(${tc_name} pnet-transform_file-test-wf)
 endforeach(tc_src ${tc_srcs})

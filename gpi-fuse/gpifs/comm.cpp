@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
@@ -22,7 +23,6 @@ static gpi::pc::client::api_t & gpi_api ()
 static gpi::pc::type::info::descriptor_t gpi_info;
 static void *shm_ptr = 0;
 static const size_t shm_size = GPIFS_SHM_SIZE;
-static const size_t scr_size = GPIFS_SHM_SIZE;
 static gpi::pc::type::segment_id_t shm_id = 0;
 static gpi::pc::type::handle_t     shm_hdl = 0;
 static gpi::pc::type::handle_t     scr_hdl = 0;
@@ -67,7 +67,7 @@ namespace gpifs
       catch (std::exception const & ex)
       {
         LOG( "could not connect to gpi-space at "
-           << path
+           << socket_path
            << ": "
            << ex.what ()
            );
@@ -78,24 +78,18 @@ namespace gpifs
 
       // register segment
 
-      shm_id = gpi_api().register_segment ( "gpifs"
+      shm_id = gpi_api().register_segment ( "gpifs-"+boost::lexical_cast<std::string>(getpid ())
                                           , shm_size
-                                          , gpi::pc::type::segment::F_EXCLUSIVE
-                                          | gpi::pc::type::segment::F_FORCE_UNLINK
+                                          , gpi::pc::F_EXCLUSIVE
+                                          | gpi::pc::F_FORCE_UNLINK
                                           );
-
-      scr_hdl = gpi_api().alloc ( gpifs::segment::GPI
-                                , scr_size
-                                , "gpifs-scratch"
-                                , gpi::pc::type::handle::F_EXCLUSIVE
-                                );
 
       shm_hdl = gpi_api().alloc ( shm_id
                                 , shm_size
                                 , "gpifs-transfer"
-                                , gpi::pc::type::handle::F_EXCLUSIVE
+                                , gpi::pc::F_EXCLUSIVE
                                 );
-      shm_ptr = gpi_api().segments()[shm_id]->ptr();
+      shm_ptr = gpi_api ().ptr (shm_hdl);
 
       return res;
     }
@@ -137,8 +131,8 @@ namespace gpifs
         gpi_api().alloc ( descr.segment()
                         , descr.size()
                         , descr.name()
-                        , gpi::pc::type::handle::F_PERSISTENT
-                        | (descr.global() ? gpi::pc::type::handle::F_GLOBAL : 0)
+                        , gpi::pc::F_PERSISTENT
+                        | (descr.global() ? gpi::pc::F_GLOBAL : 0)
                         );
       }
       catch (std::exception const & ex)
@@ -178,7 +172,7 @@ namespace gpifs
 
         // global gpi handles are a bit different
         if (hdl_info.segment == gpifs::segment::GPI
-           && (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
+           && (hdl_info.flags & gpi::pc::F_GLOBAL)
            )
         {
           hdl_info.size *= gpi_info.nodes;
@@ -220,25 +214,13 @@ namespace gpifs
       size_t remaining(size);
       while (remaining)
       {
-        size_t chunk
-          (std::min ( remaining
-                    , std::min (shm_size, scr_size)
-                    )
-          );
+        size_t chunk (std::min (remaining, shm_size));
 
         try
         {
           gpi_api().wait
-            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(scr_hdl, 0)
-                              , gpi::pc::type::memory_location_t(id, offset)
-                              , chunk
-                              , 0
-                              )
-            );
-
-          gpi_api().wait
-            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(shm_hdl, 0)
-                              , gpi::pc::type::memory_location_t(scr_hdl, 0)
+            (gpi_api().memcpy ( gpi::pc::type::memory_location_t (shm_hdl, 0)
+                              , gpi::pc::type::memory_location_t (id, offset)
                               , chunk
                               , 0
                               )
@@ -286,27 +268,15 @@ namespace gpifs
       size_t remaining(size);
       while (remaining)
       {
-        size_t chunk
-          (std::min ( remaining
-                    , std::min (shm_size, scr_size)
-                    )
-          );
+        size_t chunk (std::min (remaining, shm_size));
 
         memcpy (shm_ptr, buf, chunk);
 
         try
         {
           gpi_api().wait
-            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(scr_hdl, 0)
-                              , gpi::pc::type::memory_location_t(shm_hdl, 0)
-                              , chunk
-                              , 0
-                              )
-            );
-
-          gpi_api().wait
-            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(id, offset)
-                              , gpi::pc::type::memory_location_t(scr_hdl, 0)
+            (gpi_api().memcpy ( gpi::pc::type::memory_location_t (id, offset)
+                              , gpi::pc::type::memory_location_t (shm_hdl, 0)
                               , chunk
                               , 0
                               )
@@ -367,7 +337,7 @@ namespace gpifs
 
         // global gpi handles are a bit different
         if (  seg_id == gpifs::segment::GPI
-           && (hdl.flags & gpi::pc::type::handle::F_GLOBAL)
+           && (hdl.flags & gpi::pc::F_GLOBAL)
            )
         {
           size *= gpi_info.nodes;
@@ -378,7 +348,7 @@ namespace gpifs
                             , seg_id
                             , size
                             , name
-                            , (hdl.flags & gpi::pc::type::handle::F_GLOBAL) != 0
+                            , (hdl.flags & gpi::pc::F_GLOBAL) != 0
                             );
       }
     }

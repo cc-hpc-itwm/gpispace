@@ -2,10 +2,12 @@
 
 #include <pnete/ui/expression_view.hpp>
 
+#include <pnete/ui/expression_widget.hpp>
+
+#include <xml/parse/type/function.hpp>
+
 #include <QStringList>
 #include <QString>
-
-#include <pnete/ui/expression_widget.hpp>
 
 namespace fhg
 {
@@ -15,9 +17,9 @@ namespace fhg
     {
       expression_view::expression_view
         ( data::proxy::type& proxy
-        , data::proxy::expression_proxy::data_type & expression
+        , const data::handle::expression& expression
         )
-          : document_view (proxy)
+          : document_view (data::proxy::function (proxy))
       {
         //! \todo submit known types
         setWidget (new expression_widget ( proxy
@@ -26,11 +28,11 @@ namespace fhg
                                          , this
                                          )
                   );
-        set_title (data::proxy::function (proxy).name);
+        set_title (data::proxy::function (proxy).get().name());
       }
       QString expression_view::fallback_title () const
       {
-        return tr("<<anonymous expression>>");
+        return tr ("<<anonymous expression>>");
       }
     }
   }

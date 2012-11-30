@@ -1,20 +1,23 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_CONNECTION_HPP
-#define _PNETE_UI_GRAPH_CONNECTION_HPP 1
+#ifndef PNETE_UI_GRAPH_CONNECTION_HPP
+#define PNETE_UI_GRAPH_CONNECTION_HPP
+
+#include <pnete/ui/graph/connection.fwd.hpp>
+
+#include <pnete/data/handle/connect.hpp>
+#include <pnete/ui/graph/association.hpp>
+#include <pnete/ui/graph/connectable_item.fwd.hpp>
 
 #include <QList>
 #include <QPointF>
 #include <QRectF>
 #include <QObject>
 
-#include <pnete/ui/graph/item.hpp>
-
 class QPainter;
 class QStyleOptionGraphicsItem;
 class QWidget;
 class QPainterPath;
-class QGraphicsSceneMouseEvent;
 
 namespace fhg
 {
@@ -24,49 +27,34 @@ namespace fhg
     {
       namespace graph
       {
-        class connectable_item;
-
-        namespace connection
+        class connection_item : public association
         {
-          class item : public graph::item
-          {
-            Q_OBJECT;
+          Q_OBJECT;
 
-          public:
-            item (bool read = false);
-            ~item();
+        public:
+          connection_item ( connectable_item* start
+                          , connectable_item* end
+                          , const data::handle::connect& handle
+                          , bool read = false
+                          );
 
-            connectable::item* start() const;
-            connectable::item* start (connectable::item*);
-            connectable::item* end() const;
-            connectable::item* end (connectable::item*);
+          virtual const data::handle::connect& handle() const;
 
-            connectable::item* non_free_side() const;
-            connectable::item* free_side(connectable::item*);
+          const bool& read() const;
+          const bool& read (const bool&);
 
-            const QList<QPointF>& fixed_points() const;
-            const QList<QPointF>& fixed_points (const QList<QPointF>&);
+          virtual QPainterPath shape() const;
+          virtual void paint
+            (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
 
-            const bool& read() const;
-            const bool& read (const bool&);
+          enum { Type = connection_graph_type };
+          virtual int type() const { return Type; }
 
-            virtual QPainterPath shape() const;
-            virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+        private:
+          data::handle::connect _handle;
 
-            enum { Type = connection_graph_type };
-            virtual int type() const { return Type; }
-
-            virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
-
-          private:
-            connectable::item* _start;
-            connectable::item* _end;
-
-            QList<QPointF> _fixed_points;
-
-            bool _read;
-          };
-        }
+          bool _read;
+        };
       }
     }
   }

@@ -1,96 +1,99 @@
 <template name="tagged_sequence_bounded">
-  <struct name="PAIR">
-    <field name="tag" type="T"/>
-    <field name="id" type="long"/>
-  </struct>
-
-  <in name="tag" type="T" place="tag"/>
-  <in name="amount" type="long" place="N"/>
-  <out name="pair" type="PAIR" place="pair"/>
-  <tunnel name="credit" type="control" place="credit"/>
-
-  <net>
-    <struct name="state">
-      <field name="pair" type="PAIR"/>
-      <field name="max" type="long"/>
+  <template-parameter type="T"/>
+  <defun>
+    <struct name="PAIR">
+      <field name="tag" type="T"/>
+      <field name="id" type="long"/>
     </struct>
 
-    <place name="tag" type="T"/>
-    <place name="N" type="long"/>
-    <place name="pair" type="PAIR"/>
-    <place name="state" type="state"/>
-    <place name="check_break" type="state"/>
-    <place name="credit_check_break" type="control">
-      <token><value>[]</value></token>
-    </place>
+    <in name="tag" type="T" place="tag"/>
+    <in name="amount" type="long" place="N"/>
+    <out name="pair" type="PAIR" place="pair"/>
+    <tunnel name="credit" type="control" place="credit"/>
 
-    <place name="credit" type="control" virtual="true"/>
+    <net>
+      <struct name="state">
+        <field name="pair" type="PAIR"/>
+        <field name="max" type="long"/>
+      </struct>
 
-    <transition name="init">
-      <defun>
-        <in name="tag" type="T"/>
-        <in name="N" type="long"/>
-        <in name="credit_check_break" type="control"/>
-        <out name="state" type="state"/>
-        <expression>
-          ${state.pair.tag} := ${tag};
-          ${state.pair.id} := 0L;
-          ${state.max} := ${N};
-        </expression>
-      </defun>
-      <connect-in port="tag" place="tag"/>
-      <connect-in port="N" place="N"/>
-      <connect-in port="credit_check_break" place="credit_check_break"/>
-      <connect-out port="state" place="check_break"/>
-    </transition>
+      <place name="tag" type="T"/>
+      <place name="N" type="long"/>
+      <place name="pair" type="PAIR"/>
+      <place name="state" type="state"/>
+      <place name="check_break" type="state"/>
+      <place name="credit_check_break" type="control">
+        <token><value>[]</value></token>
+      </place>
 
-    <transition name="step">
-      <defun>
-        <in name="state" type="state"/>
-        <in name="credit" type="control"/>
-        <in name="credit_check_break" type="control"/>
-        <out name="state" type="state"/>
-        <out name="pair" type="PAIR"/>
-        <expression>
-          ${pair} := ${state.pair};
-          ${state.pair.id} := ${state.pair.id} + 1
-        </expression>
-      </defun>
-      <connect-in port="state" place="state"/>
-      <connect-in port="credit" place="credit"/>
-      <connect-in port="credit_check_break" place="credit_check_break"/>
-      <connect-out port="state" place="check_break"/>
-      <connect-out port="pair" place="pair"/>
-    </transition>
+      <place name="credit" type="control" virtual="true"/>
 
-    <transition name="break">
-      <defun>
-        <in name="state" type="state"/>
-        <out name="credit_check_break" type="control"/>
-        <expression>
-          ${credit_check_break} := []
-        </expression>
-        <condition>${state.pair.id} :ge: ${state.max}</condition>
-      </defun>
-      <connect-in place="check_break" port="state"/>
-      <connect-out port="credit_check_break" place="credit_check_break"/>
-    </transition>
+      <transition name="init">
+        <defun>
+          <in name="tag" type="T"/>
+          <in name="N" type="long"/>
+          <in name="credit_check_break" type="control"/>
+          <out name="state" type="state"/>
+          <expression>
+            ${state.pair.tag} := ${tag};
+            ${state.pair.id} := 0L;
+            ${state.max} := ${N};
+          </expression>
+        </defun>
+        <connect-in port="tag" place="tag"/>
+        <connect-in port="N" place="N"/>
+        <connect-in port="credit_check_break" place="credit_check_break"/>
+        <connect-out port="state" place="check_break"/>
+      </transition>
 
-    <transition name="not_break">
-      <defun>
-        <in name="state" type="state"/>
-        <out name="state" type="state"/>
-        <out name="credit_check_break" type="control"/>
-        <expression>
-          ${credit_check_break} := []
-        </expression>
-        <condition>
-          ${state.pair.id} :lt: ${state.max}
-        </condition>
-      </defun>
-      <connect-in place="check_break" port="state"/>
-      <connect-out place="state" port="state"/>
-      <connect-out port="credit_check_break" place="credit_check_break"/>
-    </transition>
-   </net>
+      <transition name="step">
+        <defun>
+          <in name="state" type="state"/>
+          <in name="credit" type="control"/>
+          <in name="credit_check_break" type="control"/>
+          <out name="state" type="state"/>
+          <out name="pair" type="PAIR"/>
+          <expression>
+            ${pair} := ${state.pair};
+            ${state.pair.id} := ${state.pair.id} + 1
+          </expression>
+        </defun>
+        <connect-in port="state" place="state"/>
+        <connect-in port="credit" place="credit"/>
+        <connect-in port="credit_check_break" place="credit_check_break"/>
+        <connect-out port="state" place="check_break"/>
+        <connect-out port="pair" place="pair"/>
+      </transition>
+
+      <transition name="break">
+        <defun>
+          <in name="state" type="state"/>
+          <out name="credit_check_break" type="control"/>
+          <expression>
+            ${credit_check_break} := []
+          </expression>
+          <condition>${state.pair.id} :ge: ${state.max}</condition>
+        </defun>
+        <connect-in place="check_break" port="state"/>
+        <connect-out port="credit_check_break" place="credit_check_break"/>
+      </transition>
+
+      <transition name="not_break">
+        <defun>
+          <in name="state" type="state"/>
+          <out name="state" type="state"/>
+          <out name="credit_check_break" type="control"/>
+          <expression>
+            ${credit_check_break} := []
+          </expression>
+          <condition>
+            ${state.pair.id} :lt: ${state.max}
+          </condition>
+        </defun>
+        <connect-in place="check_break" port="state"/>
+        <connect-out place="state" port="state"/>
+        <connect-out port="credit_check_break" place="credit_check_break"/>
+      </transition>
+    </net>
+  </defun>
 </template>

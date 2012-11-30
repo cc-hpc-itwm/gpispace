@@ -3,9 +3,9 @@
 #ifndef _PNETE_DATA_INTERNAL_HPP
 #define _PNETE_DATA_INTERNAL_HPP 1
 
-#include <boost/shared_ptr.hpp>
+#include <pnete/data/internal.fwd.hpp>
 
-#include <xml/parse/types.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/state.hpp>
 
 #include <pnete/data/change_manager.hpp>
@@ -19,36 +19,28 @@ namespace fhg
   {
     namespace data
     {
-      namespace internal
+      class internal_type
       {
-        namespace kind
-        {
-          enum type {expression, module_call, net};
-        }
+      private:
+        ::xml::parse::state::type _state;
+        ::xml::parse::id::ref::function _function;
+        change_manager_t _change_manager;
+        proxy::type _root_proxy;
 
-        class type
-        {
-        private:
-          ::xml::parse::state::type _state;
-          ::xml::parse::type::function_type _function;
-          change_manager_t _change_manager;
-          proxy::type _root_proxy;
+      public:
+        enum kind {expression, module_call, net};
 
-          proxy::type* create_proxy();
+        explicit internal_type (const kind& = internal_type::expression);
+        explicit internal_type (const QString& filename);
 
-        public:
-          explicit type (const kind::type& = kind::expression);
-          explicit type (const QString& filename);
-
-          ::xml::parse::type::function_type & function ();
-          const ::xml::parse::type::function_type & function () const;
-          const ::xml::parse::state::key_values_t & context () const;
-          const ::xml::parse::state::type & state () const;
-          change_manager_t& change_manager();
-          const proxy::type& root_proxy() const;
-          proxy::type& root_proxy();
-        };
-      }
+        const ::xml::parse::id::ref::function& function() const;
+        const ::xml::parse::state::key_values_t & context () const;
+        const ::xml::parse::state::type & state () const;
+        ::xml::parse::state::type & state ();
+        change_manager_t& change_manager();
+        const proxy::type& root_proxy() const;
+        proxy::type& root_proxy();
+      };
     }
   }
 }

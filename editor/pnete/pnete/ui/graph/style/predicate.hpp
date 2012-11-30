@@ -16,7 +16,7 @@ namespace fhg
     {
       namespace graph
       {
-        class item;
+        class base_item;
 
         namespace style
         {
@@ -28,7 +28,7 @@ namespace fhg
               class base
               {
               public:
-                bool operator () (const graph::item* gi) const
+                bool operator () (const base_item* gi) const
                 {
                   return static_cast<const Derived*>(this)->operator ()(gi);
                 }
@@ -44,7 +44,7 @@ namespace fhg
               public:
                 explicit _and (const L& l, const R& r) : _l (l), _r (r) {}
 
-                bool operator () (const graph::item* gi) const
+                bool operator () (const base_item* gi) const
                 {
                   return _l (gi) && _r (gi);
                 }
@@ -60,7 +60,7 @@ namespace fhg
               public:
                 explicit _or (const L& l, const R& r) : _l (l), _r (r) {}
 
-                bool operator () (const graph::item* gi) const
+                bool operator () (const base_item* gi) const
                 {
                   return _l (gi) || _r (gi);
                 }
@@ -75,14 +75,14 @@ namespace fhg
               public:
                 explicit _not (const L& l) : _l (l) {}
 
-                bool operator () (const graph::item* gi) const
+                bool operator () (const base_item* gi) const
                 {
                   return !_l (gi);
                 }
               };
             }
 
-            typedef boost::function<bool (const graph::item*)> function_type;
+            typedef boost::function<bool (const base_item*)> function_type;
 
             class predicate : public detail::base<predicate>
             {
@@ -91,14 +91,14 @@ namespace fhg
 
             public:
               explicit predicate (const function_type&);
-              bool operator () (const graph::item*) const;
+              bool operator () (const base_item*) const;
             };
 
             template<typename T>
             class on : public detail::base< on<T> >
             {
             private:
-              typedef boost::function<const T& (const graph::item*)> select_type;
+              typedef boost::function<const T& (const base_item*)> select_type;
               typedef boost::function<bool (const T&)> apply_type;
 
               const select_type _select;
@@ -111,7 +111,7 @@ namespace fhg
                 : _select (select)
                 , _apply (apply)
               {}
-              bool operator () (const graph::item* gi) const
+              bool operator () (const base_item* gi) const
               {
                 return _apply (_select (gi));
               }
@@ -137,7 +137,7 @@ namespace fhg
             boost::optional<const T&>
             generic_if ( const P& pred
                        , const T& x
-                       , const graph::item* item
+                       , const base_item* item
                        )
             {
               if (pred (item))
@@ -148,11 +148,11 @@ namespace fhg
               return boost::none;
             }
 
-            bool is_connection (const graph::item*);
-            bool is_port (const graph::item*);
-            bool is_transition (const graph::item*);
-            bool is_place (const graph::item*);
-            bool is_top_level_port (const graph::item*);
+            bool is_connection (const base_item*);
+            bool is_port (const base_item*);
+            bool is_transition (const base_item*);
+            bool is_place (const base_item*);
+            bool is_top_level_port (const base_item*);
 
             bool starts_with (const std::string&, const std::string&);
             bool ends_with (const std::string&, const std::string&);
@@ -160,25 +160,25 @@ namespace fhg
 
             namespace port
             {
-              const std::string& name (const graph::item *);
-              const std::string& type (const graph::item *);
+              const std::string& name (const base_item *);
+              const std::string& type (const base_item *);
             }
 
             namespace transition
             {
-              const std::string& name (const graph::item *);
-//               const bool internal (const graph::item *);
-//               const bool inline (const graph::item *);
-//               const bool is_expression (const graph::item *);
-//               const bool is_module_call (const graph::item *);
-//               const bool is_subnet (const graph::item *);
+              std::string name (const base_item *);
+//               const bool internal (const base_item *);
+//               const bool inline (const base_item *);
+//               const bool is_expression (const base_item *);
+//               const bool is_module_call (const base_item *);
+//               const bool is_subnet (const base_item *);
             }
 
             namespace place
             {
-//               const std::string& name (const graph::item *);
-//               const std::string& type (const graph::item *);
-//               const bool is_virtual (const graph::item *);
+//               const std::string& name (const base_item *);
+//               const std::string& type (const base_item *);
+//               const bool is_virtual (const base_item *);
             }
 
             namespace connection

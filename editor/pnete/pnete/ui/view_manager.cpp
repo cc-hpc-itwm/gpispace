@@ -2,6 +2,18 @@
 
 #include <pnete/ui/view_manager.hpp>
 
+#include <pnete/data/manager.hpp>
+#include <pnete/data/handle/expression.hpp>
+#include <pnete/ui/GraphView.hpp>
+#include <pnete/ui/base_editor_widget.hpp>
+#include <pnete/ui/document_view.hpp>
+#include <pnete/ui/editor_window.hpp>
+#include <pnete/ui/expression_view.hpp>
+#include <pnete/ui/mod_view.hpp>
+#include <pnete/ui/net_view.hpp>
+
+#include <util/qt/parent.hpp>
+
 #include <stdexcept>
 #include <iostream>
 
@@ -10,15 +22,7 @@
 #include <QDir>
 #include <QString>
 #include <QWidget>
-
-#include <pnete/ui/editor_window.hpp>
-#include <pnete/ui/document_view.hpp>
-#include <pnete/ui/base_editor_widget.hpp>
-#include <pnete/ui/GraphView.hpp>
-
-#include <pnete/data/manager.hpp>
-
-#include <pnete/util.hpp>
+#include <QUndoView>
 
 namespace fhg
 {
@@ -31,6 +35,7 @@ namespace fhg
         , _editor_window (parent)
         , _accessed_widgets()
         , _action_save_current_file (new QAction (tr ("save"), this))
+        , _undo_group (new QUndoGroup (this))
       {
         _action_save_current_file->setShortcuts (QKeySequence::Save);
         _action_save_current_file->setEnabled (false);
@@ -66,15 +71,13 @@ namespace fhg
         }
 
         data::manager::instance().save
-          ( data::proxy::root (_accessed_widgets.top()->widget()->proxy())
-          , filename
-          );
+          (_accessed_widgets.top()->widget()->root(), filename);
       }
 
       void view_manager::focus_changed (QWidget* widget)
       {
         document_view* current_view
-              (util::first_parent_being_a<document_view> (widget));
+          (util::qt::first_parent_being_a<document_view> (widget));
 
         if (!current_view)
         {
@@ -83,7 +86,14 @@ namespace fhg
                                    );
         }
 
+        if (_accessed_widgets.contains (current_view))
+        {
+          _accessed_widgets.remove
+            (_accessed_widgets.indexOf (current_view));
+        }
         _accessed_widgets.push (current_view);
+
+        current_view->widget()->change_manager().setActive(true);
 
         //! \todo enable and disable actions
 
@@ -126,6 +136,10 @@ namespace fhg
                 , SIGNAL (focus_gained (QWidget*))
                 , SLOT (focus_changed (QWidget*))
                 );
+        connect ( w
+                , SIGNAL (focus_gained (QWidget*))
+                , SLOT (focus_changed (QWidget*))
+                );
 
 //         connect ( w->graph()
 //                 , SIGNAL (zoomed (int))
@@ -163,10 +177,54 @@ namespace fhg
             }
         }
       }
+
+      namespace
+      {
+        using namespace data::proxy;
+
+        class document_view_for_proxy
+          : public boost::static_visitor<document_view*>
+        {
+        private:
+          type& _proxy;
+
+        public:
+          document_view_for_proxy (type& proxy)
+            : _proxy (proxy)
+          { }
+
+          document_view* operator() (expression_proxy& proxy) const
+          {
+            return new expression_view
+              ( _proxy, data::handle::expression
+                ( proxy.data()
+                , root (_proxy)->change_manager()
+                )
+              );
+          }
+
+          document_view* operator() (mod_proxy& proxy) const
+          {
+            return new mod_view (_proxy, proxy.data());
+          }
+
+          document_view* operator() (net_proxy& proxy) const
+          {
+            return new net_view (_proxy, proxy.display());
+          }
+        };
+
+        document_view* document_view_factory (type& proxy)
+        {
+          return boost::apply_visitor (document_view_for_proxy (proxy), proxy);
+        }
+      }
+
       void view_manager::create_widget (data::proxy::type& proxy)
       {
-        add_on_top_of_current_widget
-          (data::proxy::document_view_factory (proxy));
+        _undo_group->addStack (&data::proxy::root (proxy)->change_manager());
+
+        add_on_top_of_current_widget (document_view_factory (proxy));
 
         _action_save_current_file->setEnabled (true);
       }
@@ -214,6 +272,16 @@ namespace fhg
       QAction* view_manager::action_save_current_file()
       {
         return _action_save_current_file;
+      }
+
+      QUndoView* view_manager::create_undo_view (QWidget* parent) const
+      {
+        return new QUndoView (undo_group(), parent);
+      }
+
+      QUndoGroup* view_manager::undo_group() const
+      {
+        return _undo_group;
       }
     }
   }

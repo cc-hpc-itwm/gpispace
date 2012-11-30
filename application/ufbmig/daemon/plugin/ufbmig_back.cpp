@@ -189,7 +189,6 @@ public:
 
     // allocate enough to have double buffering
     m_transfer_segment_size = m_chunk_size;
-    m_scratch_size = m_transfer_segment_size;
 
     if (fs::exists(m_file_with_config))
     {
@@ -807,19 +806,7 @@ private:
     {
       if (desc.name == name)
       {
-        // TODO: we need a 'total-size' field to keep track of that
         found = desc;
-        if (desc.flags & gpi::pc::type::handle::F_GLOBAL)
-        {
-          try
-          {
-            found.size *= gpi_api->collect_info().nodes;
-          }
-          catch (std::exception const &ex)
-          {
-            return -EIO;
-          }
-        }
         break;
       }
     }
@@ -1057,31 +1044,29 @@ private:
 
   void clear_my_gpi_state ()
   {
-    m_scratch_handle = 0;
+    if (m_transfer_buffer)
+    {
+      try { gpi_api->free (m_transfer_buffer); } catch (...) {}
+      m_transfer_buffer = 0;
+    }
+    if (m_transfer_segment)
+    {
+      try { gpi_api->unregister_segment (m_transfer_segment); } catch(...) {}
+      m_transfer_segment = 0;
+    }
   }
 
   int setup_my_gpi_state ()
   {
-    m_scratch_handle = gpi_api->alloc ( 1
-                                      , m_scratch_size
-                                      , "ufbmigd transfer space"
-                                      , gpi::pc::type::handle::F_GLOBAL
-                                      );
-    if (0 == m_scratch_handle)
-    {
-      MLOG(ERROR, "could not allocate global GPI memory!");
-      return -EAGAIN;
-    }
-
     m_transfer_segment = gpi_api->register_segment ( "ufbmigd"
                                                    , m_transfer_segment_size
-                                                   , gpi::pc::type::segment::F_FORCE_UNLINK
-                                                   | gpi::pc::type::segment::F_EXCLUSIVE
+                                                   , gpi::pc::F_FORCE_UNLINK
+                                                   | gpi::pc::F_EXCLUSIVE
                                                    );
     m_transfer_buffer = gpi_api->alloc ( m_transfer_segment
                                         , m_chunk_size
                                         , "ufbmigd transfer buffer"
-                                        , gpi::pc::type::handle::F_NONE
+                                        , gpi::pc::F_EXCLUSIVE
                                         );
     return 0;
   }
@@ -1111,7 +1096,7 @@ private:
       }
     }
 
-    if (0 == m_scratch_handle)
+    if (0 == m_transfer_buffer)
     {
       try
       {
@@ -1149,7 +1134,7 @@ private:
     size_t remaining_bytes = len;
 
     num_read = 0;
-    while (remaining_bytes && (s->read_pointer != s->handle.size))
+    while (remaining_bytes && (s->read_pointer < s->handle.size))
     {
       size_t transfer_size =
         std::min ( m_chunk_size
@@ -1162,7 +1147,7 @@ private:
       try
       {
         gpi_api->wait
-          (gpi_api->memcpy( gpi::pc::type::memory_location_t( m_scratch_handle
+          (gpi_api->memcpy( gpi::pc::type::memory_location_t( m_transfer_buffer
                                                             , 0
                                                             )
                           , gpi::pc::type::memory_location_t( s->handle.id
@@ -1179,27 +1164,7 @@ private:
         return -EIO;
       }
 
-      try
-      {
-        gpi_api->wait
-          (gpi_api->memcpy( gpi::pc::type::memory_location_t( m_transfer_buffer
-                                                            , 0
-                                                            )
-                          , gpi::pc::type::memory_location_t( m_scratch_handle
-                                                            , 0
-                                                            )
-                          , transfer_size
-                          , queue
-                          )
-        );
-      }
-      catch (std::exception const & ex)
-      {
-        MLOG(WARN, "could not transfer from scratch to shm: " << ex.what());
-        return -EIO;
-      }
-
-      void *src = gpi_api->ptr(m_transfer_buffer);
+      void *src = gpi_api->ptr (m_transfer_buffer);
       if (src)
       {
         // memcpy to buffer
@@ -1251,10 +1216,6 @@ private:
   gpi::pc::type::segment_id_t m_transfer_segment;
   std::size_t                 m_transfer_segment_size;
   gpi::pc::type::handle_t     m_transfer_buffer;
-
-  // gpi allocations
-  gpi::pc::type::handle_t     m_scratch_handle;
-  std::size_t                 m_scratch_size;
 
   // workflow paths
   std::string m_wf_path_prepare;

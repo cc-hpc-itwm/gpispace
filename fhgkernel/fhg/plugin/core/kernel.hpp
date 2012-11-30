@@ -1,6 +1,8 @@
 #ifndef FHG_PLUGIN_CORE_KERNEL_HPP
 #define FHG_PLUGIN_CORE_KERNEL_HPP 1
 
+#include <csignal>
+
 #include <string>
 #include <list>
 
@@ -120,6 +122,8 @@ namespace fhg
       ~kernel_t ();
 
       int run ();
+      int run_and_unload (bool do_unload);
+
       void stop ();
       void reset ();
 
@@ -132,6 +136,8 @@ namespace fhg
       int load_plugin_from_file (std::string const & file);
       int unload_plugin (std::string const &name);
       bool is_plugin_loaded (std::string const &name);
+
+      int handle_signal (int signum, siginfo_t *info, void *ctxt);
 
       fhg::plugin::Storage * storage();
       fhg::plugin::Storage * plugin_storage();

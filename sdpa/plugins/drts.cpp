@@ -3,6 +3,7 @@
 #include "job.hpp"
 #include "wfe.hpp"
 #include "observable.hpp"
+#include "drts_callbacks.h"
 
 #include <errno.h>
 
@@ -17,6 +18,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <sdpa/uuidgen.hpp>
@@ -62,6 +64,9 @@ public:
   FHG_PLUGIN_START()
   {
     m_shutting_down = false;
+    m_job_in_progress = false;
+    m_graceful_shutdown_requested = false;
+
     m_reconnect_counter = 0;
     m_my_name =      fhg_kernel()->get("name", "drts");
     try
@@ -151,6 +156,7 @@ public:
     assert (! m_event_thread);
 
     m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
+    fhg::util::set_threadname (*m_event_thread, "[drts-events]");
 
     // initialize peer
     m_peer.reset
@@ -160,6 +166,7 @@ public:
                             )
       );
     m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
+    fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
     try
     {
       m_peer->start();
@@ -216,11 +223,15 @@ public:
     restore_jobs ();
 
     if (have_master_with_polling)
+    {
       m_request_thread.reset
         (new boost::thread(&DRTSImpl::job_requestor_thread, this));
+      fhg::util::set_threadname (*m_request_thread, "[drts-requests]");
+    }
 
     m_execution_thread.reset
       (new boost::thread(&DRTSImpl::job_execution_thread, this));
+    fhg::util::set_threadname (*m_execution_thread, "[drts-execute]");
 
     start_connect ();
 
@@ -229,39 +240,29 @@ public:
 
   FHG_PLUGIN_STOP()
   {
-    /*
-    // cancel running jobs etc.
-    {
-      lock_type job_map_lock (m_job_map_mutex);
-      map_of_jobs_t::iterator job_it (m_jobs.begin ());
-      while (job_it != m_jobs.end ())
-      {
-        m_wfe->cancel (job_it->first);
-        ++job_it;
-      }
-    }
-    */
-
     m_shutting_down = true;
 
     if (m_request_thread)
     {
       m_request_thread->interrupt();
-      m_request_thread->join();
+      if (m_request_thread->joinable ())
+        m_request_thread->join();
       m_request_thread.reset();
     }
 
     if (m_execution_thread)
     {
       m_execution_thread->interrupt();
-      m_execution_thread->join ();
+      if (m_execution_thread->joinable ())
+        m_execution_thread->join ();
       m_execution_thread.reset();
     }
 
     if (m_event_thread)
     {
       m_event_thread->interrupt();
-      m_event_thread->join();
+      if (m_event_thread->joinable ())
+        m_event_thread->join();
       m_event_thread.reset();
     }
 
@@ -273,7 +274,8 @@ public:
     if (m_peer_thread)
     {
       m_peer_thread->interrupt();
-      m_peer_thread->join();
+      if (m_peer_thread->joinable ())
+        m_peer_thread->join();
     }
 
     m_peer_thread.reset();
@@ -366,6 +368,25 @@ public:
       }
 
       m_capabilities.erase(cap);
+    }
+  }
+
+  FHG_ON_SIGNAL(sig, info, ctxt)
+  {
+    if (sig != SIGUSR2)
+      return;
+
+    MLOG (INFO, "initiating graceful shutdown due to signal := " << sig);
+    bool something_running;
+    {
+      lock_type lck (m_job_in_progress_mutex);
+      something_running = m_job_in_progress;
+      m_graceful_shutdown_requested = true;
+    }
+
+    if (not something_running)
+    {
+      fhg_kernel ()->shutdown ();
     }
   }
 
@@ -531,6 +552,19 @@ public:
         );
       return;
     }
+    else if (m_graceful_shutdown_requested)
+    {
+      MLOG (WARN, "refusing job " << e->job_id () << " : shutting down");
+      send_event
+        (new sdpa::events::ErrorEvent( m_my_name
+                                     , e->from()
+                                     , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
+                                     , "I am going to shut down!"
+                                     , e->job_id()
+                                     )
+        );
+      return;
+    }
 
     job_ptr_t job (new drts::Job( drts::Job::ID(e->job_id())
                                 , drts::Job::Description(e->description())
@@ -627,8 +661,9 @@ public:
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
-        MLOG(TRACE, "trying to cancel running job " << e->job_id());
+        MLOG (INFO, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
+        drts_on_cancel ();
       }
       else if (job_it->second->state() == drts::Job::FAILED)
       {
@@ -857,7 +892,19 @@ private:
 
     for (;;)
     {
+      if (m_graceful_shutdown_requested)
+      {
+        fhg_kernel ()->shutdown ();
+        break;
+      }
+
+      { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = false; }
+      drts_on_cancel_clear ();
+
       job_ptr_t job = m_pending_jobs.get();
+
+      { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = true; }
+
       if (drts::Job::PENDING == job->cmp_and_swp_state( drts::Job::PENDING
                                                       , drts::Job::RUNNING
                                                       )
@@ -1313,6 +1360,9 @@ private:
   mutable mutex_type m_job_arrived_mutex;
   mutable mutex_type m_reconnect_counter_mutex;
   condition_type     m_job_arrived;
+  mutable mutex_type m_job_in_progress_mutex;
+  bool               m_job_in_progress;
+  bool               m_graceful_shutdown_requested;
 
   fhg::util::thread::event<std::string> m_connected_event;
 

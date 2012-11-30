@@ -1,0 +1,15 @@
+// bernd.loerwald@itwm.fraunhofer.de
+//    id_name, map_member_name, type_name  , number
+ITEM (connect   , _connects   , connect_type   ,  0)
+ITEM (expression, _expressions, expression_type,  1)
+ITEM (function  , _functions  , function_type  ,  2)
+ITEM (module    , _modules    , module_type    ,  3)
+ITEM (net       , _nets       , net_type       ,  4)
+ITEM (place     , _places     , place_type     ,  5)
+ITEM (place_map , _place_maps , place_map_type ,  6)
+ITEM (port      , _ports      , port_type      ,  7)
+ITEM (specialize, _specializes, specialize_type,  8)
+ITEM (structure , _structures , structure_type ,  9)
+ITEM (tmpl      , _templates  , tmpl_type      , 10)
+ITEM (transition, _transitions, transition_type, 11)
+ITEM (use       , _uses       , use_type       , 12)

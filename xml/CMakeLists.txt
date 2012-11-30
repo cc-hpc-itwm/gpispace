@@ -82,3 +82,5 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 include(CTest)
 
 add_subdirectory(xml)
+
+add_subdirectory(xsd)

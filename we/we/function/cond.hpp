@@ -89,20 +89,6 @@ namespace Function { namespace Condition
       , context ()
     {}
 
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-    Expression & operator= (const Expression &rhs)
-    {
-      if (this != &rhs)
-      {
-        expression = rhs.expression;
-        parser = expr::parse::parser (expression);
-        // no  need to  copy  context,  it's only  there  to avoid  construction
-        // overhead
-      }
-      return *this;
-    }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-
     bool operator () (typename Traits<token_type>::choices_t & choices) const
     {
       if (expression == "true")

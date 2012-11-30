@@ -9,13 +9,12 @@
 #include <we/type/bits/transition/optimize/merge_places.hpp>
 #include <we/type/bits/transition/optimize/is_associated.hpp>
 
-#include <fhg/util/maybe.hpp>
-
 #include <stack>
 #include <vector>
 
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
 
 namespace we { namespace type {
     namespace optimize { namespace simple_pipe_elimination
@@ -52,10 +51,22 @@ namespace we { namespace type {
         {}
       };
 
+      namespace detail
+      {
+        template<typename Set>
+        void insert_tids (Set& set, petri_net::adj_transition_const_it it)
+        {
+          for (; it.has_more(); ++it)
+            {
+              set.insert (*it);
+            }
+        }
+      }
+
       typedef std::vector<pid_pair_type> pid_pair_vec_type;
 
       template<typename P, typename E, typename T>
-      inline fhg::util::maybe<pid_pair_vec_type>
+      inline boost::optional<pid_pair_vec_type>
       pid_pairs ( const transition_t<P, E, T> & trans
                 , const petri_net::tid_t & tid
                 , const petri_net::net<P, transition_t<P, E, T>, E, T> & net
@@ -103,7 +114,7 @@ namespace we { namespace type {
 
         if (map_in.size() != map_out.size())
           {
-            return fhg::util::Nothing<pid_pair_vec_type>();
+            return boost::none;
           }
 
         pid_pair_vec_type pid_pair_vec;
@@ -127,7 +138,7 @@ namespace we { namespace type {
 
             if (out == map_out.end())
               {
-                return fhg::util::Nothing<pid_pair_vec_type>();
+                return boost::none;
               }
 
             const petri_net::pid_t pid_A (in->second);
@@ -136,47 +147,16 @@ namespace we { namespace type {
             all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
             all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);
 
-            for ( petri_net::adj_transition_const_it
-                    t (net.out_of_place (pid_A))
-                ; t.has_more()
-                ; ++t
-                )
-              {
-                suc_in.insert (*t);
-              }
-
-            for ( petri_net::adj_transition_const_it
-                    t (net.out_of_place (pid_B))
-                ; t.has_more()
-                ; ++t
-                )
-              {
-                suc_out.insert (*t);
-              }
-
-            for ( petri_net::adj_transition_const_it
-                    t (net.in_to_place (pid_A))
-                ; t.has_more()
-                ; ++t
-                )
-              {
-                pred_in.insert (*t);
-              }
-
-            for ( petri_net::adj_transition_const_it
-                    t (net.in_to_place (pid_B))
-                ; t.has_more()
-                ; ++t
-                )
-              {
-                pred_out.insert (*t);
-              }
+            detail::insert_tids (suc_in, net.out_of_place (pid_A));
+            detail::insert_tids (suc_out, net.out_of_place (pid_B));
+            detail::insert_tids (pred_in, net.in_to_place (pid_A));
+            detail::insert_tids (pred_out, net.in_to_place (pid_B));
 
             const eid_t eid (net.get_eid_in (tid, pid_A));
 
             if (petri_net::edge::is_pt_read (net.get_edge_info (eid).type))
               {
-                return fhg::util::Nothing<pid_pair_vec_type>();
+                return boost::none;
               }
 
             port_t port_A;
@@ -189,22 +169,32 @@ namespace we { namespace type {
                || (ass_A && port_A.is_output() && ass_B && port_B.is_output())
                )
               {
-                return fhg::util::Nothing<pid_pair_vec_type>();
+                return boost::none;
               }
 
-              pid_pair_vec.push_back
-                ( pid_pair_type
-                  ( pid_in_type ( pid_A
-                                , net.is_read_connection (tid, pid_A)
-                                )
-                  , pid_out_type (pid_B, ass_B)
+            if (  (( net.out_of_place (pid_A).size()
+                   + ((ass_A && port_A.is_output()) ? 1 : 0)
+                   ) > 1
                   )
-                );
+               && (ass_B && port_B.is_output())
+               )
+              {
+                return boost::none;
+              }
+
+            pid_pair_vec.push_back
+              ( pid_pair_type
+                ( pid_in_type ( pid_A
+                              , net.is_read_connection (tid, pid_A)
+                              )
+                , pid_out_type (pid_B, ass_B)
+                )
+              );
           }
 
         if (!(all_in_equals_one || all_out_equals_one))
           {
-            return fhg::util::Nothing<pid_pair_vec_type>();
+            return boost::none;
           }
         else
           {
@@ -215,7 +205,7 @@ namespace we { namespace type {
               {
                 if (suc_out.find (*t) != suc_out.end())
                   {
-                    return fhg::util::Nothing<pid_pair_vec_type>();
+                    return boost::none;
                   }
               }
 
@@ -226,12 +216,12 @@ namespace we { namespace type {
               {
                 if (pred_out.find (*t) != pred_out.end())
                   {
-                    return fhg::util::Nothing<pid_pair_vec_type>();
+                    return boost::none;
                   }
               }
           }
 
-        return fhg::util::Just<pid_pair_vec_type> (pid_pair_vec);
+        return pid_pair_vec;
       }
 
       // ******************************************************************* //
@@ -269,10 +259,10 @@ namespace we { namespace type {
                && trans.condition().is_const_true()
                )
               {
-                const fhg::util::maybe<pid_pair_vec_type>
+                const boost::optional<pid_pair_vec_type>
                   pid_pair_vec (pid_pairs (trans, tid, net, trans_parent));
 
-                if (pid_pair_vec.isJust())
+                if (pid_pair_vec)
                   {
                     net.delete_transition (tid);
 

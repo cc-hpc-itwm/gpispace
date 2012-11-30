@@ -1,56 +1,57 @@
 <template name="work_gpi">
+  <template-parameter type="T"/>
+  <defun>
+    <in name="i" type="long_with_credit" place="i"/>
+    <out name="o" type="long_with_credit" place="o"/>
+    <tunnel name="n" type="long" place="n"/>
+    <tunnel name="config" type="T" place="config"/>
 
-  <in name="i" type="long_with_credit" place="i"/>
-  <out name="o" type="long_with_credit" place="o"/>
-  <tunnel name="n" type="long" place="n"/>
-  <tunnel name="config" type="T" place="config"/>
+    <net>
 
-  <net>
+      <place name="i" type="long_with_credit"/>
+      <place name="o" type="long_with_credit"/>
+      <place name="n" type="long" virtual="true"/>
+      <place name="config" type="T" virtual="true"/>
 
-    <place name="i" type="long_with_credit"/>
-    <place name="o" type="long_with_credit"/>
-    <place name="n" type="long" virtual="true"/>
-    <place name="config" type="T" virtual="true"/>
-
-    <transition name="work">
-      <defun>
-        <inout name="v" type="long_with_credit"/>
-        <in name="n" type="long"/>
-        <in name="config" type="T"/>
-        <module name="gpi_work" function="work (v, n, config)">
-          <cinclude href="string.h"/>
-          <cinclude href="iostream"/>
-          <cinclude href="fhglog/minimal.hpp"/>
-          <cinclude href="fvm-pc/pc.hpp"/>
-          <code><![CDATA[
+      <transition name="work">
+        <defun>
+          <inout name="v" type="long_with_credit"/>
+          <in name="n" type="long"/>
+          <in name="config" type="T"/>
+          <module name="gpi_work" function="work (v, n, config)">
+            <cinclude href="string.h"/>
+            <cinclude href="iostream"/>
+            <cinclude href="fhglog/minimal.hpp"/>
+            <cinclude href="fvm-pc/pc.hpp"/>
+            <code><![CDATA[
             LOG (INFO, "### work " << v.id << " of [0.." << n << ")"
-                 << ", credit " << v.credit
-                 << ", config " << config
-                );
+            << ", credit " << v.credit
+            << ", config " << config
+            );
 
             memset (fvmGetShmemPtr(), 0, fvmGetShmemSize());
 
             for (size_t i = 0 ; i < 100 ; ++i)
             {
-               fvmAllocHandle_t handle = fvmGlobalAlloc ((1 << 10));
-               if (handle == 0)
-               {
-                  throw std::runtime_error ("could not allocate memory");
-               }
-
-               waitComm (fvmPutGlobalData (handle, 0, 1 << 10, 0, 0));
-
-               fvmGlobalFree (handle);
+            fvmAllocHandle_t handle = fvmGlobalAlloc ((1 << 10));
+            if (handle == 0)
+            {
+            throw std::runtime_error ("could not allocate memory");
             }
-          ]]></code>
-        </module>
-      </defun>
-      <connect-read port="config" place="config"/>
-      <connect-read port="n" place="n"/>
-      <connect-in port="v" place="i"/>
-      <connect-out port="v" place="o"/>
-    </transition>
 
-  </net>
+            waitComm (fvmPutGlobalData (handle, 0, 1 << 10, 0, 0));
 
+            fvmGlobalFree (handle);
+            }
+            ]]></code>
+          </module>
+        </defun>
+        <connect-read port="config" place="config"/>
+        <connect-read port="n" place="n"/>
+        <connect-in port="v" place="i"/>
+        <connect-out port="v" place="o"/>
+      </transition>
+
+    </net>
+  </defun>
 </template>

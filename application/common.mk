@@ -11,19 +11,23 @@ MAKEFLAGS += -r
 ###############################################################################
 
 ifndef TEE
-  TEE = $(shell which tee)
+  TEE = $(shell which tee 2>/dev/null)
 endif
 
-ifndef DOT
-  DOT = $(shell which dot) -Tps
+ifndef CMD_DOT
+  CMD_DOT = $(shell which dot 2>/dev/null)
 endif
 
 ifndef RM
-  RM = $(shell which rm) -f
+  RM = $(shell which rm 2>/dev/null)
 endif
 
 ifndef TOUCH
-  TOUCH = $(shell which touch)
+  TOUCH = $(shell which touch 2>/dev/null)
+endif
+
+ifndef XMLLINT
+  XMLLINT = $(shell which xmllint 2>/dev/null)
 endif
 
 ###############################################################################
@@ -38,6 +42,14 @@ endif
 
 ifndef SDPA_XML_LIB
   SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
+endif
+
+ifndef SDPA_LIBEXEC
+  SDPA_LIBEXEC = $(SDPA_HOME)/libexec
+endif
+
+ifndef SDPA_XML_SCHEMA
+  SDPA_XML_SCHEMA = $(SDPA_HOME)/share/sdpa/xml/xsd/pnet.xsd
 endif
 
 ###############################################################################
@@ -66,6 +78,10 @@ ifndef WE_EXEC_WORKER
   WE_EXEC_WORKER = 2
 endif
 
+ifndef SDPA
+  SDPA = $(SDPA_BIN)/sdpa
+endif
+
 ###############################################################################
 
 ifndef XML
@@ -78,7 +94,7 @@ endif
 
 ifndef DEP_XML
   ifndef XML
-    $(error variable XMLL undefined but needed to derive variable DEP_XML)
+    $(error variable XML undefined but needed to derive variable DEP_XML)
   else
     DEP_XML = $(XML).d
   endif
@@ -108,6 +124,14 @@ ifndef NET_VERIFICATION
   endif
 endif
 
+ifndef NET_VALIDATION
+  ifndef XML
+    $(error variable XML undefined but needed to derive variable NET_VALIDATION)
+  else
+    NET_VALIDATION = $(NET).validation
+  endif
+endif
+
 ifndef PUT
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable PUT)
@@ -132,6 +156,22 @@ ifndef OUT
   endif
 endif
 
+ifndef DOT
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable DOT)
+  else
+    DOT = $(CURDIR)/$(MAIN).dot
+  endif
+endif
+
+ifndef DOT_NOINLINE
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable DOT_NOINLINE)
+  else
+    DOT_NOINLINE = $(CURDIR)/$(MAIN).noinline.dot
+  endif
+endif
+
 ifndef PS
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable PS)
@@ -148,9 +188,40 @@ ifndef PS_NOINLINE
   endif
 endif
 
+ifndef SVG
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable SVG)
+  else
+    SVG = $(CURDIR)/$(MAIN).svg
+  endif
+endif
+
+ifndef SVG_NOINLINE
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable SVG_NOINLINE)
+  else
+    SVG_NOINLINE = $(CURDIR)/$(MAIN).noinline.svg
+  endif
+endif
+
+ifndef DESTDIR
+  ifndef MAIN
+    $(error variable MAIN undefined but needed to derive variable DESTDIR)
+  else
+    DESTDIR = $(SDPA_LIBEXEC)/apps/$(MAIN)
+  endif
+endif
+
+ifndef LIB_DESTDIR
+  ifndef DESTDIR
+    $(error variable DESTDIR undefined but needed to derive variable LIB_DESTDIR)
+  else
+    LIB_DESTDIR = $(DESTDIR)/modules
+  endif
+endif
+
 ###############################################################################
 
-DEP += $(CURDIR)/Makefile
 PATH_LIB += $(GEN)/pnetc/op
 WE_EXEC_LIBPATHS += $(PATH_LIB)
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
@@ -172,6 +243,8 @@ PNETC_NOINLINE += $(PNETC)
 PNETC_NOINLINE += --no-inline true
 PNETC_NOINLINE += --synthesize-virtual-places true
 
+PNETC_LIST_DEPENDENCIES = $(PNETC) --list-dependencies /dev/stdout
+
 PNETPUT += $(addprefix -p ,$(PUT_PORT))
 PNETPUT += $(PNETPUT_OPTS)
 
@@ -191,23 +264,30 @@ WE_EXEC += $(addprefix -L,$(WE_EXEC_LIBPATHS))
 WE_EXEC += -o /dev/null
 WE_EXEC += $(WE_EXEC_OPTS)
 
+XMLLINT += --noout
+XMLLINT += --schema $(SDPA_XML_SCHEMA)
+
 ###############################################################################
 
-.PHONY: default ps net verify put gen lib run
+.PHONY: default build dot ps svg net verify validate put gen lib run submit
 
-default: run
+default: build
 
+build: put lib $(BUILD)
+
+dot: $(DOT) $(DOT_NOINLINE)
 ps: $(PS) $(PS_NOINLINE)
-
+svg: $(SVG) $(SVG_NOINLINE)
 net: $(NET)
 put: $(PUT)
 gen: $(GEN)
 verify: $(NET_VERIFICATION)
+validate: $(NET_VALIDATION)
 
 ###############################################################################
 
 $(DEP_XML): $(XML)
-	$(PNETC) -i $(XML) -o /dev/null -MM -MP -MT '$(DEP_XML)' > $@
+	$(PNETC) -i $(XML) -o /dev/null -MP -MT '$(DEP_XML)' -MM $@
 
 ifneq "$(wildcard $(DEP_XML))" ""
   include $(DEP_XML)
@@ -231,48 +311,134 @@ $(NET_VERIFICATION): $(NET)
 
 ###############################################################################
 
+ifeq "$(XMLLINT)" ""
+
+$(NET_VALIDATION):
+	$(error Cannot validate: Missing 'xmllint'.)
+
+else
+
+$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
+	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2> $@
+
+endif
+
+###############################################################################
+
+ifeq "$(TOUCH)" ""
+
+$(GEN): $(DEP_XML) $(XML) $(DEP)
+	$(warning Missing 'touch'. Most probably some timestamps will be wrong.)
+	$(PNETC) -i $(XML) -o /dev/null -g $@
+
+else
+
 $(GEN): $(DEP_XML) $(XML) $(DEP)
 	$(PNETC) -i $(XML) -o /dev/null -g $@
 	$(TOUCH) $@
+
+endif
 
 lib: $(GEN)
 	$(MAKE) -C $(GEN)
 
 ###############################################################################
 
-$(PS): $(NET)
-	$(PNET2DOT) --input $^ | $(DOT) -o $@
+$(DOT): $(NET)
+	$(PNET2DOT) --input $^ --output $@
 
-$(PS_NOINLINE): $(NET_NOINLINE)
-	$(PNET2DOT) --input $^ | $(DOT) -o $@
+$(DOT_NOINLINE): $(NET_NOINLINE)
+	$(PNET2DOT) --input $^ --output $@
+
+ifeq "$(CMD_DOT)" ""
+
+$(PS) $(PS_NOINLINE) $(SVG) $(SVG_NOINLINE):
+	$(error Cannot create $@: Missing 'dot'.)
+
+else
+
+$(PS): $(DOT)
+	$(CMD_DOT) $^ -Tps -o $@
+
+$(SVG): $(DOT)
+	$(CMD_DOT) $^ -Tsvg -o $@
+
+$(PS_NOINLINE): $(DOT_NOINLINE)
+	$(CMD_DOT) $^ -Tps -o $@
+
+$(SVG_NOINLINE): $(DOT_NOINLINE)
+	$(CMD_DOT) $^ -Tsvg -o $@
+
+endif
 
 ###############################################################################
 
+ifeq "$(TEE)" ""
+
+run: lib $(PUT)
+	$(warning Missing 'tee'. Save output into $(OUT).)
+	$(warning To watch the output on the fly install 'tee'.)
+	$(WE_EXEC) --net $(PUT) 2>&1 > $(OUT)
+
+else
+
 run: lib $(PUT)
 	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
+
+endif
+
+###############################################################################
+
+submit: $(PUT)
+	$(SDPA) submit $(PUT) $(OUT)
+
+###############################################################################
+
+.PHONY: install modinstall
+
+install: modinstall
+
+modinstall: lib
+	$(MAKE) LIB_DESTDIR=$(LIB_DESTDIR) -C $(GEN) install
 
 ###############################################################################
 
 .PHONY: clean
 
+ifeq "$(RM)" ""
+
 clean:
-	-$(RM) -r $(GEN)
-	-$(RM) $(NET)
-	-$(RM) $(PUT)
-	-$(RM) $(NET_NOINLINE)
-	-$(RM) $(PS)
-	-$(RM) $(PS_NOINLINE)
-	-$(RM) $(OUT)
-	-$(RM) $(DEP_XML)
-	-$(RM) $(NET_VERIFICATION)
-	-$(RM) *~
+	$(error Cannot clean: Missing 'rm'.)
+
+else
+
+clean: $(CLEAN)
+	-$(RM) -f -r $(GEN)
+	-$(RM) -f $(NET)
+	-$(RM) -f $(PUT)
+	-$(RM) -f $(NET_NOINLINE)
+	-$(RM) -f $(DOT)
+	-$(RM) -f $(DOT_NOINLINE)
+	-$(RM) -f $(PS)
+	-$(RM) -f $(PS_NOINLINE)
+	-$(RM) -f $(SVG)
+	-$(RM) -f $(SVG_NOINLINE)
+	-$(RM) -f $(OUT)
+	-$(RM) -f $(DEP_XML)
+	-$(RM) -f $(NET_VERIFICATION)
+	-$(RM) -f $(NET_VALIDATION)
+	-$(RM) -f *~
+
+endif
 
 ###############################################################################
 
 .PHONY: help
 
 help:
-	@echo "default     'run'"
+	@echo "default     'build'"
+	@echo
+	@echo "build       'put' & 'lib'"
 	@echo
 	@echo "net         build pnet from xml"
 	@echo "put         'net' & put tokens into the workflow"
@@ -280,13 +446,22 @@ help:
 	@echo "gen         generate code into gen"
 	@echo "lib         'gen' & build libs from code in gen"
 	@echo "run         'lib' & 'put' & execute workflow"
+	@echo "submit      'put' & submit to a running SDPA system"
 	@echo
+	@echo "validate    validate the xml"
 	@echo "verify      'net' & verify the pnet"
-	@echo "ps          'net' & generate postscript"
+	@echo
+	@echo "dot         'net' & generate .dot"
+	@echo "ps          'dot' & generate postscript"
+	@echo "svg         'dot' & generate svg"
 	@echo
 	@echo "clean       delete all generated files"
 	@echo
 	@echo "showconfig  show the actual configuration"
+	@echo
+	@echo "modinstall  'lib' & install module(s) to $(LIB_DESTDIR)"
+	@echo
+	@echo "install     'modinstall'"
 
 ###############################################################################
 
@@ -295,22 +470,27 @@ help:
 showconfig:
 	@echo "*** Needed parameters:"
 	@echo
-	@echo "MAIN = $(MAIN)"
-	@echo
 	@echo "SDPA_HOME = $(SDPA_HOME)"
+	@echo
+	@echo "MAIN = $(MAIN)"
 	@echo
 	@echo "*** External programs:"
 	@echo
-	@echo "TEE   = $(TEE)"
-	@echo "DOT   = $(DOT)"
-	@echo "RM    = $(RM)"
-	@echo "TOUCH = $(TOUCH)"
+	@echo "TEE     = $(TEE)"
+	@echo "CMD_DOT = $(CMD_DOT)"
+	@echo "RM      = $(RM)"
+	@echo "TOUCH   = $(TOUCH)"
+	@echo "XMLLINT = $(XMLLINT)"
 	@echo
-	@echo "*** GPI-Space paths:"
+	@echo "*** GPI-Space paths and files:"
 	@echo
-	@echo "SDPA_INCLUDE = $(SDPA_INCLUDE)"
-	@echo "SDPA_BIN     = $(SDPA_BIN)"
-	@echo "SDPA_XML_LIB = $(SDPA_XML_LIB)"
+	@echo "DESTDIR         = $(DESTDIR)"
+	@echo "SDPA_INCLUDE    = $(SDPA_INCLUDE)"
+	@echo "SDPA_BIN        = $(SDPA_BIN)"
+	@echo "SDPA_XML_LIB    = $(SDPA_XML_LIB)"
+	@echo "SDPA_LIBEXEC    = $(SDPA_LIBEXEC)"
+	@echo
+	@echo "SDPA_XML_SCHEMA = $(SDPA_XML_SCHEMA)"
 	@echo
 	@echo "*** Files:"
 	@echo
@@ -319,17 +499,23 @@ showconfig:
 	@echo "NET              = $(NET)"
 	@echo "NET_NOINLINE     = $(NET_NOINLINE)"
 	@echo "NET_VERIFICATION = $(NET_VERIFICATION)"
+	@echo "NET_VALIDATION   = $(NET_VALIDATION)"
 	@echo "PUT              = $(PUT)"
 	@echo "GEN              = $(GEN)"
 	@echo "OUT              = $(OUT)"
+	@echo "DOT              = $(DOT)"
+	@echo "DOT_NOINLINE     = $(DOT_NOINLINE)"
 	@echo "PS               = $(PS)"
 	@echo "PS_NOINLINE      = $(PS_NOINLINE)"
+	@echo "SVG              = $(SVG)"
+	@echo "SVG_NOINLINE     = $(SVG_NOINLINE)"
 	@echo
 	@echo "*** Dependencies and options:"
 	@echo
 	@echo "DEP              = $(DEP)"
 	@echo "PATH_LIB         = $(PATH_LIB)"
 	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
+	@echo "LIB_DESTDIR      = $(LIB_DESTDIR)"
 	@echo
 	@echo "CXXINCLUDEPATHS  = $(CXXINCLUDEPATHS)"
 	@echo "CXXLIBRARYPATHS  = $(CXXLIBRARYPATHS)"
@@ -352,11 +538,17 @@ showconfig:
 	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
 	@echo "WE_EXEC_OPTS     = $(WE_EXEC_OPTS)"
 	@echo
+	@echo "BUILD            = $(BUILD)"
+	@echo "CLEAN            = $(CLEAN)"
+	@echo
 	@echo "*** Derived commands:"
 	@echo
-	@echo "PNETC          = $(PNETC)"
-	@echo "PNETC_NOINLINE = $(PNETC_NOINLINE)"
-	@echo "PNET2DOT       = $(PNET2DOT)"
-	@echo "PNETPUT        = $(PNETPUT)"
-	@echo "PNETV          = $(PNETV)"
-	@echo "WE_EXEC        = $(WE_EXEC)"
+	@echo "PNETC                   = $(PNETC)"
+	@echo "PNETC_NOINLINE          = $(PNETC_NOINLINE)"
+	@echo "PNETC_LIST_DEPENDENCIES = $(PNETC_LIST_DEPENDENCIES)"
+	@echo "PNET2DOT                = $(PNET2DOT)"
+	@echo "PNETPUT                 = $(PNETPUT)"
+	@echo "PNETV                   = $(PNETV)"
+	@echo "WE_EXEC                 = $(WE_EXEC)"
+	@echo "SDPA                    = $(SDPA)"
+	@echo "XMLLINT                 = $(XMLLINT)"

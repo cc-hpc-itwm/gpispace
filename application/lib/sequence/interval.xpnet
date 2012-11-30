@@ -1,0 +1,6 @@
+<structs>
+  <struct name="interval">
+    <field name="left" type="long"/>
+    <field name="right" type="long"/>
+  </struct>
+</structs>

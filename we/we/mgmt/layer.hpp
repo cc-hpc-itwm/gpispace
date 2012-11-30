@@ -25,6 +25,7 @@
 #include <fhg/error_codes.hpp>
 #include <fhg/util/show.hpp>
 #include <fhg/util/warnings.hpp>
+#include <fhg/util/threadname.hpp>
 
 #include <we/net.hpp>
 
@@ -168,7 +169,7 @@ namespace we { namespace mgmt {
        */
       bool cancel(const external_id_type & id, const reason_type & reason)
       {
-        DLOG(TRACE, "cancel (" << id << ", " << reason << ")");
+        MLOG (WARN, "cancel ( " << id << " ) := " << reason);
 
         fhg::util::remove_unused_variable_warning(reason);
 
@@ -251,8 +252,6 @@ namespace we { namespace mgmt {
                   , const std::string & error_message
                   )
       {
-        DLOG(TRACE, "failed (" << id << ", " << result << ")");
-
         fhg::util::remove_unused_variable_warning(result);
 
         try
@@ -260,8 +259,10 @@ namespace we { namespace mgmt {
           descriptor_ptr d = lookup(map_to_internal(id));
 
           d->set_error_code(error_code);
-          d->set_error_message(error_message);
+          d->set_error_message (d->name () + ": " + error_message);
           d->set_result(result);
+
+          MLOG (TRACE, "failed ( " << id << " ) := " << error_message);
 
           // TODO:
           //    lookup activity
@@ -274,12 +275,14 @@ namespace we { namespace mgmt {
           //        -> cancel all children
           //        -> wait until all children are done
           //        -> inform parent and so on
-          post_failed_notification (map_to_internal(id));
+          post_failed_notification (d->id ());
           return true;
         }
-        catch (const std::exception &)
+        catch (const std::exception &ex)
         {
-          return false;
+          MLOG (ERROR, "could not mark activity as failed: " << ex.what ());
+          throw;
+          //          return false;
         }
       }
 
@@ -636,20 +639,25 @@ namespace we { namespace mgmt {
         lock_t lock (mutex_);
 
         manager_   = boost::thread(boost::bind(&this_type::manager, this));
+        fhg::util::set_threadname (manager_, "[we-mgr]");
 
         active_nets_ = new active_nets_t[policy::NUM_EXTRACTORS];
-        start_threads (policy::NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
+        start_threads ("we-extract", policy::NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
 
         inj_q_ = new active_nets_t[policy::NUM_INJECTORS];
-        start_threads (policy::NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
+        start_threads ("we-inject", policy::NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
       }
 
       template <typename ThreadList, typename ThreadFunc>
-      void start_threads( const std::size_t num, ThreadList & list, ThreadFunc tf)
+      void start_threads(std::string const & tag, const std::size_t num, ThreadList & list, ThreadFunc tf)
       {
         for (std::size_t rank(0); rank < num; ++rank)
         {
-          list.push_back (new boost::thread (boost::bind (tf, rank)));
+          std::stringstream sstr;
+          sstr << "[" << tag << "-" << rank << "]";
+          boost::thread *thrd = new boost::thread (boost::bind (tf, rank));
+          fhg::util::set_threadname (*thrd, sstr.str ());
+          list.push_back (thrd);
         }
       }
 
@@ -911,6 +919,14 @@ namespace we { namespace mgmt {
                  << ": something went wrong during execution of: "
                  << desc->name() << ": " << ex.what()
                  );
+              desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
+              desc->set_error_message
+                ( std::string ("in: '")
+                + desc->name ()
+                + std::string ("' ")
+                + ex.what ()
+                );
+              desc->set_result (policy::codec::encode(desc->activity()));
               post_failed_notification (desc->id());
             }
           }
@@ -1129,7 +1145,10 @@ namespace we { namespace mgmt {
           descriptor_ptr desc (lookup(internal_id));
           desc->failed();
 
-          DLOG(WARN, "failed (" << desc->name() << ")-" << desc->id());
+          MLOG ( WARN
+               , "failed (" << desc->name() << ")-" << desc->id() << " : "
+               << desc->error_message ()
+               );
 
           if (sig_failed.connected())
             sig_failed ( this
@@ -1150,7 +1169,7 @@ namespace we { namespace mgmt {
             //     - check failure reason
             //         - EAGAIN reschedule (had not been submitted yet)
             //         - ECRASH activity crashed (idempotence criteria)
-            post_cancel_activity_notification (desc->parent());
+            post_cancel_activity_notification (parent_desc->id ());
           }
           else if (desc->came_from_external ())
           {
@@ -1181,9 +1200,14 @@ namespace we { namespace mgmt {
           descriptor_ptr desc (lookup(internal_id));
           desc->cancelled();
 
-          DLOG(INFO, "cancelled (" << desc->name() << ")-" << desc->id());
           if (desc->has_parent ())
           {
+            DLOG ( INFO, "activity "
+                 << desc->name ()
+                 << " cancelled and has a parent: reason := "
+                 << desc->error_message ()
+                 );
+
             descriptor_ptr parent (lookup (desc->parent()));
             parent->child_cancelled(*desc, "TODO: child cancelled reason");
 
@@ -1191,9 +1215,15 @@ namespace we { namespace mgmt {
             {
               post_cancelled_notification (parent->id());
             }
+            else
+            {
+              post_cancel_activity_notification (parent->id ());
+            }
           }
           else if (desc->came_from_external ())
           {
+            LOG(INFO, "notifying agent: failed (" << desc->name() << ")-" << desc->id());
+
             ext_failed ( desc->from_external_id()
                        , policy::codec::encode(desc->activity())
                        , desc->error_code()
@@ -1244,6 +1274,12 @@ namespace we { namespace mgmt {
                   )
                )
             {
+              MLOG ( WARN
+                   , "cancelling external activity " << desc->to_external_id ()
+                   << " name: " << desc->name ()
+                   << " reason: " << desc->error_message ()
+                   );
+
               ext_cancel ( desc->to_external_id()
                          , "WFE policy cancel-on-failure in place"
                          );
@@ -1256,7 +1292,7 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found<internal_id_type> &)
         {
-          LOG(WARN, "got cancel request for old activity: " << internal_id);
+          LOG (WARN, "got cancel request for old activity: " << internal_id);
         }
       }
 

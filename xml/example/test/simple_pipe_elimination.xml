@@ -15,7 +15,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -35,7 +35,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -58,7 +58,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -78,7 +78,7 @@
           <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
           <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -98,7 +98,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -116,7 +116,7 @@
 
           <place name="R" type="control"/>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -137,7 +137,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -155,7 +155,7 @@
           <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
           <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -173,7 +173,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -189,7 +189,7 @@
 
           <place name="R" type="control"/>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -210,7 +210,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -228,7 +228,7 @@
           <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
           <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -246,7 +246,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -262,7 +262,7 @@
 
           <place name="R" type="control"/>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -281,7 +281,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -297,7 +297,7 @@
           <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
           <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -313,7 +313,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -327,7 +327,7 @@
 
           <place name="R" type="control"/>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -349,7 +349,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -367,7 +367,7 @@
           <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
           <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -385,7 +385,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -401,7 +401,7 @@
 
           <place name="R" type="control"/>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -420,7 +420,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -436,7 +436,7 @@
           <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
           <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -452,7 +452,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -466,7 +466,7 @@
 
           <place name="R" type="control"/>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -485,7 +485,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -501,7 +501,7 @@
           <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
           <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -517,7 +517,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -531,7 +531,7 @@
 
           <place name="R" type="control"/>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -548,7 +548,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -562,7 +562,7 @@
           <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
           <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -576,7 +576,7 @@
           <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
           <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>
@@ -588,7 +588,7 @@
 
           <place name="R" type="control"/>
 
-          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="R" place="R"/></transition>
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
         </net>
       </defun>
     </transition>

@@ -365,7 +365,7 @@ int CheckReadTracingJob::CheckExistence()
     }
 }
 
-bool CheckReadTracingJob::ReadXML(XMLReader& Reader, char* VarName, int& Var, bool message)
+bool CheckReadTracingJob::ReadXML(XMLReader& Reader, const char* VarName, int& Var, bool message)
 {
     if (!Reader.getInt(VarName, Var))
     {
@@ -376,7 +376,7 @@ bool CheckReadTracingJob::ReadXML(XMLReader& Reader, char* VarName, int& Var, bo
   return true;
 }
 
-bool CheckReadTracingJob::ReadXML(XMLReader& Reader, char* VarName, float& Var, bool message)
+bool CheckReadTracingJob::ReadXML(XMLReader& Reader, const char* VarName, float& Var, bool message)
 {
   if (!Reader.getFloat(VarName, Var))
     {
@@ -387,7 +387,7 @@ bool CheckReadTracingJob::ReadXML(XMLReader& Reader, char* VarName, float& Var, 
   return true;
 }
 
-bool CheckReadTracingJob::ReadXML(XMLReader& Reader, char* VarName, char* Var, bool message)
+bool CheckReadTracingJob::ReadXML(XMLReader& Reader, const char* VarName, char* Var, bool message)
 {
   if (!Reader.getChar(VarName, Var))
     {
@@ -398,7 +398,7 @@ bool CheckReadTracingJob::ReadXML(XMLReader& Reader, char* VarName, char* Var, b
   return true;
 }
 
-bool CheckReadTracingJob::ReadXML(XMLReader& Reader, char* VarName, bool& Var, bool message)
+bool CheckReadTracingJob::ReadXML(XMLReader& Reader, const char* VarName, bool& Var, bool message)
 {
     char VarString[10];
     if (!Reader.getChar(VarName, VarString))

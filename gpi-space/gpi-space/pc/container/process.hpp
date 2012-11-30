@@ -51,6 +51,8 @@ namespace gpi
         void attach_segment(const gpi::pc::type::segment_id_t id);
         void detach_segment(const gpi::pc::type::segment_id_t id);
         void list_segments (gpi::pc::type::segment::list_t &);
+        gpi::pc::type::segment_id_t add_memory (std::string const &url);
+        void                        del_memory (gpi::pc::type::segment_id_t);
 
         void list_allocations( const gpi::pc::type::segment_id_t seg
                              , gpi::pc::type::handle::list_t & l

@@ -50,6 +50,8 @@
     </transition>
 
     <transition name="loadTT">
+      <require key="GPI" />
+      <require key="LOAD" />
       <defun>
         <in name="config" type="config"/>
         <in name="id" type="long"/>

@@ -25,17 +25,19 @@ namespace gpi
       public:
         typedef boost::shared_ptr<area_t> area_ptr;
 
+        static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
+
         // signals
         typedef boost::signals2::signal
-            <void (const gpi::pc::type::segment_id_t)>
-               memory_signal_t;
+        <void (const gpi::pc::type::segment_id_t)>
+        memory_signal_t;
         typedef boost::signals2::signal
-            <void (const gpi::pc::type::handle_t)>
-               handle_signal_t;
-        typedef boost::signals2::signal
-            <void (const gpi::pc::type::segment_id_t,
-                   const gpi::pc::type::process_id_t
-                  )> process_signal_t;
+        <void (const gpi::pc::type::handle_t)>
+        handle_signal_t;
+        typedef boost::signals2::signal  <void ( const gpi::pc::type::segment_id_t
+                                               , const gpi::pc::type::process_id_t
+                                               )
+                                         > process_signal_t;
 
         memory_signal_t memory_added;
         memory_signal_t memory_removed;
@@ -46,21 +48,22 @@ namespace gpi
         process_signal_t process_attached;
         process_signal_t process_detached;
 
-		static manager_t & get()
-		{
-		  static manager_t m;
-		  return m;
+        static manager_t & get()
+        {
+          static manager_t m;
+          return m;
         }
 
         ~manager_t ();
+
+        void
+        start (gpi::pc::type::id_t ident, gpi::pc::type::size_t num_queues);
 
         void clear ();
 
         gpi::pc::type::segment_id_t
         register_memory( const gpi::pc::type::process_id_t creator
-                       , const std::string & name
-                       , const gpi::pc::type::size_t size
-                       , const gpi::pc::type::flags_t flags
+                       , area_ptr const &area
                        );
         void unregister_memory ( const gpi::pc::type::process_id_t pid
                                , const gpi::pc::type::segment_id_t
@@ -78,7 +81,8 @@ namespace gpi
         remote_alloc ( const gpi::pc::type::segment_id_t
                      , const gpi::pc::type::handle_t
                      , const gpi::pc::type::offset_t
-                     , const gpi::pc::type::size_t
+                     , const gpi::pc::type::size_t size
+                     , const gpi::pc::type::size_t local_size
                      , const std::string & name
                      );
 
@@ -96,10 +100,13 @@ namespace gpi
 
         void garbage_collect () {}
         void garbage_collect (const gpi::pc::type::process_id_t);
-        void list_allocations( const gpi::pc::type::segment_id_t seg
+        void list_allocations( const gpi::pc::type::process_id_t proc_id
+                             , const gpi::pc::type::segment_id_t seg
                              , gpi::pc::type::handle::list_t & l
                              ) const;
-        void list_allocations(gpi::pc::type::handle::list_t & l) const;
+        void list_allocations( const gpi::pc::type::process_id_t proc_id
+                             , gpi::pc::type::handle::list_t & l
+                             ) const;
 
         gpi::pc::type::queue_id_t
         memcpy ( const gpi::pc::type::process_id_t proc_id
@@ -113,6 +120,27 @@ namespace gpi
         wait_on_queue ( const gpi::pc::type::process_id_t proc_id
                       , const gpi::pc::type::queue_id_t queue
                       );
+
+        int
+        remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
+                          , std::string const & url
+                          );
+
+        gpi::pc::type::segment_id_t
+        add_memory ( const gpi::pc::type::process_id_t proc_id
+                   , const std::string & url
+                   , const gpi::pc::type::segment_id_t seg_id = 0
+                   );
+
+        int
+        remote_del_memory (const gpi::pc::type::segment_id_t seg_id);
+
+        void
+        del_memory ( const gpi::pc::type::process_id_t proc_id
+                   , const gpi::pc::type::segment_id_t seg_id
+                   );
+
+        void add_area (area_ptr const &area);
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -126,7 +154,6 @@ namespace gpi
 
         manager_t ();
 
-        void add_gpi_memory ();
         area_ptr get_area (const gpi::pc::type::segment_id_t);
         area_ptr get_area (const gpi::pc::type::segment_id_t) const;
         area_ptr get_area_by_handle (const gpi::pc::type::handle_t);
@@ -136,11 +163,6 @@ namespace gpi
                         );
         void del_handle (const gpi::pc::type::handle_t);
         void unregister_memory (const gpi::pc::type::segment_id_t);
-
-        void check_boundaries ( gpi::pc::type::memory_location_t const & dst
-                              , gpi::pc::type::memory_location_t const & src
-                              , const gpi::pc::type::size_t amount
-                              ) const;
 
         mutable mutex_type m_mutex;
         gpi::pc::type::id_t m_ident;
@@ -158,14 +180,14 @@ namespace gpi
 {
   namespace pc
   {
-  namespace global
-  {
-	inline
-    gpi::pc::memory::manager_t & memory_manager()
+    namespace global
     {
-	  return gpi::pc::memory::manager_t::get();
+      inline
+      gpi::pc::memory::manager_t & memory_manager()
+      {
+        return gpi::pc::memory::manager_t::get();
+      }
     }
-  }
   }
 }
 

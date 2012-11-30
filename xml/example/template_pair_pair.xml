@@ -1,59 +1,64 @@
 <template>
-  <in name="tag" type="T" place="tag"/>
-  <in name="first" type="U" place="first"/>
-  <in name="second" type="V" place="second"/>
-  <out name="pair_pair" type="PAIR_PAIR" place="pp"/>
+  <template-parameter type="T"/>
+  <template-parameter type="U"/>
+  <template-parameter type="V"/>
+  <defun>
+    <in name="tag" type="T" place="tag"/>
+    <in name="first" type="U" place="first"/>
+    <in name="second" type="V" place="second"/>
+    <out name="pair_pair" type="PAIR_PAIR" place="pp"/>
 
-  <net>
-    <include-template href="make_pair.xml" as="make_pair"/>
+    <net>
+      <include-template href="make_pair.xml" as="make_pair"/>
 
-    <place name="tag" type="T"/>
-    <place name="first" type="U"/>
-    <place name="second" type="V"/>
-    <place name="p1" type="PAIR1"/>
-    <place name="p2" type="PAIR2"/>
-    <place name="pp" type="PAIR_PAIR"/>
+      <place name="tag" type="T"/>
+      <place name="first" type="U"/>
+      <place name="second" type="V"/>
+      <place name="p1" type="PAIR1"/>
+      <place name="p2" type="PAIR2"/>
+      <place name="pp" type="PAIR_PAIR"/>
 
-    <specialize name="make_p1" use="make_pair">
-      <type-map replace="T" with="T"/>
-      <type-map replace="U" with="U"/>
-      <type-map replace="PAIR" with="PAIR1"/>
-      <type-get name="PAIR1"/>
-    </specialize>
+      <specialize name="make_p1" use="make_pair">
+        <type-map replace="T" with="T"/>
+        <type-map replace="U" with="U"/>
+        <type-map replace="PAIR" with="PAIR1"/>
+        <type-get name="PAIR1"/>
+      </specialize>
 
-    <transition name="make_p1" inline="true">
-      <use name="make_p1"/>
-      <connect-in port="first" place="tag"/>
-      <connect-in port="second" place="first"/>
-      <connect-out port="pair" place="p1"/>
-    </transition>
+      <transition name="make_p1" inline="true">
+        <use name="make_p1"/>
+        <connect-in port="first" place="tag"/>
+        <connect-in port="second" place="first"/>
+        <connect-out port="pair" place="p1"/>
+      </transition>
 
-    <specialize name="make_p2" use="make_pair">
-      <type-map replace="T" with="T"/>
-      <type-map replace="U" with="V"/>
-      <type-map replace="PAIR" with="PAIR2"/>
-      <type-get name="PAIR2"/>
-    </specialize>
+      <specialize name="make_p2" use="make_pair">
+        <type-map replace="T" with="T"/>
+        <type-map replace="U" with="V"/>
+        <type-map replace="PAIR" with="PAIR2"/>
+        <type-get name="PAIR2"/>
+      </specialize>
 
-    <transition name="make_p2" inline="true">
-      <use name="make_p2"/>
-      <connect-in port="first" place="tag"/>
-      <connect-in port="second" place="second"/>
-      <connect-out port="pair" place="p2"/>
-    </transition>
+      <transition name="make_p2" inline="true">
+        <use name="make_p2"/>
+        <connect-in port="first" place="tag"/>
+        <connect-in port="second" place="second"/>
+        <connect-out port="pair" place="p2"/>
+      </transition>
 
-    <specialize name="make_pp" use="make_pair">
-      <type-map replace="T" with="PAIR1"/>
-      <type-map replace="U" with="PAIR2"/>
-      <type-map replace="PAIR" with="PAIR_PAIR"/>
-      <type-get name="PAIR_PAIR"/>
-    </specialize>
+      <specialize name="make_pp" use="make_pair">
+        <type-map replace="T" with="PAIR1"/>
+        <type-map replace="U" with="PAIR2"/>
+        <type-map replace="PAIR" with="PAIR_PAIR"/>
+        <type-get name="PAIR_PAIR"/>
+      </specialize>
 
-    <transition name="make_pp" inline="true">
-      <use name="make_pp"/>
-      <connect-in port="first" place="p1"/>
-      <connect-in port="second" place="p2"/>
-      <connect-out port="pair" place="pp"/>
-    </transition>
-  </net>
+      <transition name="make_pp" inline="true">
+        <use name="make_pp"/>
+        <connect-in port="first" place="p1"/>
+        <connect-in port="second" place="p2"/>
+        <connect-out port="pair" place="pp"/>
+      </transition>
+    </net>
+  </defun>
 </template>

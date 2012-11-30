@@ -54,6 +54,7 @@ static bool stop_requested = false;
 static char pidfile[MAX_PATH_LEN];
 static char api_name[MAX_PATH_LEN];
 static char socket_path[MAX_PATH_LEN];
+static char logfile[MAX_PATH_LEN];
 static unsigned long long gpi_mem = (1<<26);
 static unsigned short gpi_port = 0;
 static unsigned int gpi_mtu = 0;
@@ -62,6 +63,9 @@ static int gpi_np = -1;
 static int gpi_numa_socket = 0;
 static unsigned int gpi_timeout = 120;
 static int verbose = 0;
+
+static char default_memory_url [MAX_PATH_LEN];
+static std::vector<std::string> mem_urls;
 
 typedef gpi::api::gpi_api_t gpi_api_t;
 gpi::pc::container::manager_t *global_container_mgr(NULL);
@@ -90,6 +94,13 @@ static void long_usage()
   fprintf(stderr, "\n");
   fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
   fprintf(stderr, "      create sockets in this base path\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    --mem-url URL (%s)\n", default_memory_url);
+  fprintf(stderr, "      url of the default memory segment (1)\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "      examples are:\n");
+  fprintf(stderr, "         gpi://?buffers=8&buffer_size=4194304 GPI memory\n");
+  fprintf(stderr, "         sfs://<path>?create=true&size=1073741824\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "KVS options\n");
   fprintf(stderr, "    --kvs-host HOST (%s)\n", config.kvs_host);
@@ -153,12 +164,11 @@ static void receive_config_or_die(config_t *c);
 static void signal_handler (int sig);
 static int configure_logging (const config_t *cfg);
 static int configure_kvs (const config_t *cfg);
+static int cleanup_kvs ();
 static int main_loop (const config_t *cfg, const gpi::rank_t rank);
 
 int main (int ac, char *av[])
 {
-  FHGLOG_SETUP (ac, av);
-
   int i = 0;
   bool daemonize = false;
   bool is_master = true;
@@ -167,6 +177,11 @@ int main (int ac, char *av[])
   snprintf (pidfile, sizeof(pidfile), "%s", "");
   snprintf (api_name, sizeof(api_name), "%s", "auto");
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
+  memset (logfile, 0, sizeof(logfile));
+  snprintf ( default_memory_url
+           , sizeof (default_memory_url)
+           , "gpi://?buffer_size=4194304&buffers=8"
+           );
 
   initialize_config (&config);
 
@@ -245,6 +260,30 @@ int main (int ac, char *av[])
         exit(EX_USAGE);
       }
     }
+    else if (strcmp(av[i], "--mem-url") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen (av[i]) + 1) > MAX_PATH_LEN)
+        {
+          fprintf (stderr, "%s: memory url is too large!\n", program_name);
+          fprintf (stderr, "    at most %d characters are supported\n"
+                  , MAX_PATH_LEN - 1
+                  );
+          exit(EX_INVAL);
+        }
+
+        mem_urls.push_back (av [i]);
+
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --mem-url\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
     else if (strcmp(av[i], "--kvs-host") == 0)
     {
       ++i;
@@ -298,6 +337,30 @@ int main (int ac, char *av[])
       else
       {
         fprintf(stderr, "%s: missing argument to --kvs-retry-count\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
+    else if (strcmp(av[i], "--log-file") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        if ((strlen(av[i] + 1) > sizeof(logfile)))
+        {
+          fprintf(stderr, "%s: logfile is too large!\n", program_name);
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(logfile));
+          exit(EX_INVAL);
+        }
+        strncpy(logfile, av[i], sizeof(logfile));
+        if (strlen (logfile) > 0)
+        {
+          setenv ("FHGLOG_to_file", logfile, true);
+        }
+        ++i;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --log-file\n", program_name);
         exit(EX_USAGE);
       }
     }
@@ -529,6 +592,8 @@ int main (int ac, char *av[])
     }
   }
 
+  FHGLOG_SETUP (ac, av);
+
   snprintf ( config.socket
            , sizeof(config.socket)
            , "%s/S-gpi-space.%d.%d"
@@ -627,6 +692,8 @@ int main (int ac, char *av[])
       gpi_api.clear_caches();
     }
 
+    cleanup_kvs ();
+
     int pidfile_fd = -1;
 
     if (0 != strlen (pidfile))
@@ -657,16 +724,27 @@ int main (int ac, char *av[])
         }
       }
       setsid();
-      close(0); close(1); close(2);
-      int fd = open("/dev/null", O_RDWR);
-      if (dup(fd) == -1)
+      close (0); close (1); close (2);
+      int fd = open ("/dev/null", O_RDWR);
+      // duplicate to stdout
+      if (dup (fd) < 0)
       {
-        LOG(ERROR, "could not duplicate file descriptor: " << strerror(errno));
+        // should never happen actually
+        LOG ( ERROR
+            , "could not duplicate file descriptor to stdout: "
+            << strerror(errno)
+            );
         exit (EXIT_FAILURE);
       }
-      if (dup(fd) == -1)
+
+      // duplicate to stderr
+      if (dup (fd) < 0)
       {
-        LOG(ERROR, "could not duplicate file descriptor: " << strerror(errno));
+        // should never happen actually
+        LOG ( ERROR
+            , "could not duplicate file descriptor to stderr: "
+            << strerror(errno)
+            );
         exit (EXIT_FAILURE);
       }
     }
@@ -821,8 +899,30 @@ static int configure_logging (const config_t *cfg)
   {
     setenv("FHGLOG_level", log_level, true);
   }
+  setenv ("FHGLOG_to_console", "stderr", true);
+
+  if (strlen (logfile) > 0)
+  {
+    setenv ("FHGLOG_to_file", logfile, true);
+  }
+
   FHGLOG_SETUP();
 
+  return 0;
+}
+
+static int cleanup_kvs ()
+{
+  // quick hack to delete old kvs entries
+  // TODO: find a better place
+  gpi_api_t & gpi_api (gpi_api_t::get());
+  for (std::size_t rnk = 0 ; rnk < gpi_api.number_of_nodes (); ++rnk)
+  {
+    std::string peer_name = fhg::com::p2p::to_string
+      (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
+    std::string kvs_key = "p2p.peer." + peer_name;
+    fhg::com::kvs::del (kvs_key);
+  }
   return 0;
 }
 
@@ -848,7 +948,6 @@ static int configure_kvs (const config_t *cfg)
   {
     return -ESRCH;
   }
-
   return 0;
 }
 
@@ -867,7 +966,18 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
 
   try
   {
-    global_container_mgr = new gpi::pc::container::manager_t(cfg->socket);
+    global_container_mgr =
+      new gpi::pc::container::manager_t (cfg->socket);
+    if (mem_urls.empty ())
+      mem_urls.push_back (default_memory_url);
+
+    for ( std::vector<std::string>::iterator url_it = mem_urls.begin ()
+        ; url_it != mem_urls.end ()
+        ; ++url_it
+        )
+    {
+      global_container_mgr->add_default_memory (*url_it);
+    }
     global_container_mgr->start ();
   }
   catch (std::exception const & ex)
@@ -877,7 +987,7 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
        << " rank = " << rank
        << " socket = " << cfg->socket
        );
-    return -EFAULT;
+    return EX_INVAL;
   }
 
   LOG(INFO, "started GPI interface on rank " << rank << " at " << cfg->socket);
@@ -916,8 +1026,14 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
             gpish_cmd += cfg->socket;
 
             int rc = system (gpish_cmd.c_str ());
-            if (rc != 0)
-              std::cerr << "shell failed: " << rc << std::endl;
+            if (rc == -1)
+            {
+              std::cerr << "shell failed: " << strerror (errno) << std::endl;
+            }
+            else if (rc > 0)
+            {
+              std::cerr << "shell failed: " << WEXITSTATUS (rc) << std::endl;
+            }
           }
           break;
         case 'h':

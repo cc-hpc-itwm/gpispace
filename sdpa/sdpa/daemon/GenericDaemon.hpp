@@ -100,6 +100,9 @@ namespace sdpa {
       void addMasters(const agent_id_list_t& );
       void removeMaster(const agent_id_t& masterId);
       void removeMasters(const agent_id_list_t& );
+      size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
+
+      bool isTop() { return false; }
 
       // WE interface
       virtual void submit(const id_type & id, const encoded_type&, const requirement_list_t& = empty_req_list() );
@@ -136,7 +139,6 @@ namespace sdpa {
       virtual void shutdown_network();
 
       // agent info and properties
-      virtual bool isTop() { return false; }
       bool isStarted(){ return m_bStarted;  }
       void setStarted(bool bVal = true){ m_bStarted = bVal; }
 
@@ -258,8 +260,10 @@ namespace sdpa {
       std::string gen_id() { return sdpa::events::id_generator::instance().next(); }
       const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
+    public:
       // scheduler
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
+    protected:
       virtual void createScheduler(bool bUseReqModel) = 0;
       virtual void schedule(const sdpa::job_id_t& job);
       virtual void reschedule(const sdpa::job_id_t& job);
@@ -396,7 +400,7 @@ namespace sdpa {
     template <typename T>
     void GenericDaemon::notifyWorkers(const T& ptrNotEvt)
     {
-      std::list<std::string> workerList;
+      sdpa::worker_id_list_t workerList;
       scheduler()->getWorkerList(workerList);
 
       if(workerList.empty())
@@ -405,10 +409,11 @@ namespace sdpa {
         return;
       }
 
-      for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
+      //for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
+      BOOST_FOREACH(const worker_id_t& workerId, workerList)
       {
-        ptrNotEvt->to() = *iter;
-        SDPA_LOG_INFO("Send notification to the worker "<<*iter);
+        ptrNotEvt->to() = workerId;
+        SDPA_LOG_INFO("Send notification to the worker "<<workerId);
         sendEventToMaster(ptrNotEvt);
       }
 

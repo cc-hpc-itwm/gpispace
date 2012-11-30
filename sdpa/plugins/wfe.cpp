@@ -14,6 +14,9 @@
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/getenv.hpp>
+#include <fhg/util/bool.hpp>
+#include <fhg/util/bool_io.hpp>
+#include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <fhglog/minimal.hpp>
@@ -67,6 +70,8 @@ public:
     assert (! m_worker);
     m_loader = we::loader::loader::create();
 
+    m_auto_unload = fhg_kernel ()->get<fhg::util::bool_t> ("auto_unload", "false");
+
     {
       // initalize loader with paths
       std::string search_path
@@ -92,6 +97,8 @@ public:
     }
 
     m_worker.reset(new boost::thread(&WFEImpl::execution_thread, this));
+    fhg::util::set_threadname (*m_worker, "[wfe]");
+
     FHG_PLUGIN_STARTED();
   }
 
@@ -119,7 +126,6 @@ public:
 
     if (m_loader)
     {
-      m_loader->unload_autoloaded();
       m_loader.reset();
     }
     FHG_PLUGIN_STOPPED();
@@ -324,7 +330,8 @@ private:
           task->errc = fhg::error::MODULE_CALL_FAILED;
           task->error_message = ex.what();
 
-          m_loader->unload_autoloaded();
+          if (m_auto_unload)
+            m_loader->unload_autoloaded();
         }
         catch (...)
         {
@@ -334,7 +341,8 @@ private:
             "UNKNOWN REASON, exception not derived from std::exception";
           task->done.notify(1);
 
-          m_loader->unload_autoloaded();
+          if (m_auto_unload)
+            m_loader->unload_autoloaded();
         }
       }
 
@@ -348,6 +356,8 @@ private:
   task_list_t m_tasks;
   we::loader::loader::ptr_t m_loader;
   boost::shared_ptr<boost::thread> m_worker;
+
+  bool m_auto_unload;
 };
 
 EXPORT_FHG_PLUGIN( wfe

@@ -2,13 +2,17 @@
 
 #include <pnete/data/internal.hpp>
 
+#include <pnete/data/proxy.hpp>
+#include <pnete/weaver/display.hpp>
+
 #include <xml/parse/parser.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.hpp>
 
 #include <QObject>
 #include <QString>
-
-#include <pnete/weaver/display.hpp>
-#include <pnete/data/proxy.hpp>
 
 namespace fhg
 {
@@ -16,74 +20,104 @@ namespace fhg
   {
     namespace data
     {
-      namespace internal
+      namespace
       {
-        namespace kind
+        ::xml::parse::id::ref::function make_function
+          (const internal_type::kind& kind, ::xml::parse::state::type& state)
         {
-          static ::xml::parse::type::function_type::type make (const type& t)
+          const ::xml::parse::id::function function_id
+            (state.id_mapper()->next_id());
+          switch (kind)
           {
-            switch (t)
-              {
-              case expression: return ::xml::parse::type::expression_type();
-              case module_call: return ::xml::parse::type::mod_type();
-              case net: return ::xml::parse::type::net_type();
-              default: throw std::runtime_error ("kind::make of what!?");
-              }
+          case internal_type::expression:
+            {
+              return ::xml::parse::type::function_type
+                ( function_id
+                , state.id_mapper()
+                , boost::none
+                , ::xml::parse::type::expression_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
+                ).make_reference_id();
+            }
+          case internal_type::module_call:
+            {
+              return ::xml::parse::type::function_type
+                ( function_id
+                , state.id_mapper()
+                , boost::none
+                , ::xml::parse::type::module_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
+                ).make_reference_id();
+            }
+          case internal_type::net:
+            {
+              return ::xml::parse::type::function_type
+                ( function_id
+                , state.id_mapper()
+                , boost::none
+                , ::xml::parse::type::net_type
+                  ( state.id_mapper()->next_id()
+                  , state.id_mapper()
+                  , function_id
+                  ).make_reference_id()
+                ).make_reference_id();
+            }
           }
+          throw std::runtime_error ("make_function of unknown kind!?");
         }
+      }
 
-        type::type (const kind::type& kind)
-          : _state ()
-          , _function (kind::make (kind))
-          , _change_manager (*this)
-          , _root_proxy (*create_proxy())
-        {}
+      internal_type::internal_type (const kind& kind_)
+        : _state ()
+        , _function (make_function (kind_, _state))
+        , _change_manager (NULL)
+        , _root_proxy (*weaver::function (_function, this).proxy())
+      {}
 
-        type::type (const QString& filename)
-          : _state ()
-          , _function (::xml::parse::just_parse ( _state
-                                                , filename.toStdString()
-                                                )
-                      )
-          , _change_manager (*this)
-          , _root_proxy (*create_proxy())
-        {}
+      internal_type::internal_type (const QString& filename)
+        : _state ()
+        , _function ( ::xml::parse::just_parse ( _state
+                                               , filename.toStdString()
+                                               )
+                    )
+        , _change_manager (NULL)
+        , _root_proxy (*weaver::function (_function, this).proxy())
+      {}
 
-        proxy::type* type::create_proxy()
-        {
-          return weaver::function
-            (weaver::function_with_mapping_type (function()), this).proxy();
-        }
+      const ::xml::parse::id::ref::function& internal_type::function() const
+      {
+        return _function;
+      }
 
-        ::xml::parse::type::function_type & type::function ()
-        {
-          return const_cast< ::xml::parse::type::function_type &> (_function);
-        }
-
-        const ::xml::parse::type::function_type & type::function () const
-        {
-          return _function;
-        }
-        const ::xml::parse::state::key_values_t & type::context () const
-        {
-          return _state.key_values();
-        }
-        const ::xml::parse::state::type & type::state () const
-        {
-          return _state;
-        }
-        change_manager_t& type::change_manager ()
-        {
-          return _change_manager;
-        }
-        const proxy::type& type::root_proxy() const
-        {
-          return _root_proxy;
-        }
-        proxy::type& type::root_proxy()
-        {
-          return _root_proxy;
-        }
+      const ::xml::parse::state::key_values_t & internal_type::context () const
+      {
+        return _state.key_values();
+      }
+      const ::xml::parse::state::type & internal_type::state () const
+      {
+        return _state;
+      }
+      ::xml::parse::state::type & internal_type::state ()
+      {
+        return _state;
+      }
+      change_manager_t& internal_type::change_manager ()
+      {
+        return _change_manager;
+      }
+      const proxy::type& internal_type::root_proxy() const
+      {
+        return _root_proxy;
+      }
+      proxy::type& internal_type::root_proxy()
+      {
+        return _root_proxy;
       }
     }
   }

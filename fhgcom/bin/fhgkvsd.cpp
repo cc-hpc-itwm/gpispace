@@ -168,8 +168,18 @@ int main(int ac, char *av[])
     setsid();
     close(0); close(1); close(2);
     int fd = open("/dev/null", O_RDWR);
-    dup(fd);
-    dup(fd);
+    if (fd < 0)
+    {
+      LOG (ERROR, "could not open(/dev/null): " << strerror (errno));
+    }
+    if (dup(fd) < 0)
+    {
+      LOG (WARN, "could not dup(): " << strerror (errno));
+    }
+    if (dup(fd) < 0)
+    {
+      LOG (WARN, "could not dup(): " << strerror (errno));
+    }
   }
 
   if (pidfile_fd >= 0)
@@ -183,9 +193,15 @@ int main(int ac, char *av[])
     }
 
     char buf[32];
-    ftruncate(pidfile_fd, 0);
+    if (ftruncate(pidfile_fd, 0) < 0)
+    {
+      LOG (WARN, "could not truncate file: " << strerror (errno));
+    }
     snprintf(buf, sizeof(buf), "%d\n", getpid());
-    write(pidfile_fd, buf, strlen(buf));
+    if (write(pidfile_fd, buf, strlen(buf)) != (ssize_t)strlen (buf))
+    {
+      LOG (WARN, "PID could not be written completely: " << strerror (errno));
+    }
     fsync(pidfile_fd);
   }
 

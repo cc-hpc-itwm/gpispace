@@ -26,13 +26,13 @@ typedef ReduceTask< std::string, unsigned int, unsigned int> WordCountReduceTask
 template <>
 inline void ReduceTask< std::string, unsigned int, unsigned int>::run()
 {
+  listOutValues_.clear();
   unsigned int sum = 0;
   BOOST_FOREACH(const unsigned int& val, listInValues())
   {
     sum += val;
   }
 
-  //listOutValues().push_back(sum);
   emit(sum);
 }
 

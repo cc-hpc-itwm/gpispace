@@ -8,6 +8,8 @@
 
 #include <pnete/data/proxy.hpp>
 
+#include <pnete/data/handle/expression.fwd.hpp>
+
 #include <pnete/ui/document_view.hpp>
 
 namespace fhg
@@ -21,9 +23,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        expression_view ( data::proxy::type&
-                        , data::proxy::expression_proxy::data_type&
-                        );
+        expression_view (data::proxy::type&, const data::handle::expression&);
       private:
         virtual QString fallback_title() const;
       };

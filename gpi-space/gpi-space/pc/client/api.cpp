@@ -21,6 +21,7 @@
 #include <fhg/assert.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 
 static int close_socket (const int fd)
 {
@@ -84,7 +85,10 @@ namespace gpi
 
         if (m_connected)
         {
-          stop ();
+          if (ping ())
+            return;
+          else
+            stop ();
         }
 
         m_socket = open_socket (m_path);
@@ -431,13 +435,13 @@ namespace gpi
         segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
         try
         {
-          if (flags & gpi::pc::type::segment::F_NOCREATE)
+          if (flags & gpi::pc::F_NOCREATE)
           {
             seg->open();
           }
           else
           {
-            if (flags & gpi::pc::type::segment::F_FORCE_UNLINK)
+            if (flags & gpi::pc::F_FORCE_UNLINK)
             {
               seg->unlink();
             }
@@ -455,7 +459,7 @@ namespace gpi
           proto::segment::register_t rqst;
           rqst.name = name;
           rqst.size = sz;
-          rqst.flags = flags;
+          rqst.flags = flags | gpi::pc::F_NOCREATE;
 
           proto::message_t rply (communicate (proto::segment::message_t (rqst)));
           try
@@ -503,6 +507,12 @@ namespace gpi
         assert (m_segments.find (seg->id()) == m_segments.end());
 
         m_segments [seg->id()] = seg;
+
+        if (gpi::flag::is_set (flags, gpi::pc::F_EXCLUSIVE))
+        {
+          seg->unlink();
+        }
+
         return seg->id();
       }
 
@@ -570,7 +580,7 @@ namespace gpi
         }
 
         // open segment
-        segment_ptr seg (new gpi::pc::segment::segment_t(desc->name, desc->size, id));
+        segment_ptr seg (new gpi::pc::segment::segment_t(desc->name, desc->local_size, id));
         try
         {
           seg->open();
@@ -743,6 +753,45 @@ namespace gpi
         {
           DLOG(INFO, "garbage collecting segment: " << **m_garbage_segments.begin());
           m_garbage_segments.erase (m_garbage_segments.begin());
+        }
+      }
+
+      gpi::pc::type::segment_id_t api_t::add_memory (const std::string & url)
+      {
+        gpi::pc::proto::segment::add_memory_t msg (url);
+        gpi::pc::proto::message_t rply;
+        try
+        {
+          rply = communicate (gpi::pc::proto::segment::message_t (msg));
+          gpi::pc::proto::segment::message_t result
+            (boost::get<gpi::pc::proto::segment::message_t>(rply));
+          return
+            boost::get<gpi::pc::proto::segment::register_reply_t>(result).id;
+        }
+        catch (boost::bad_get const &)
+        {
+          proto::error::error_t result
+            (boost::get<proto::error::error_t>(rply));
+          throw
+            std::runtime_error (result.detail);
+        }
+        catch (std::exception const & ex)
+        {
+          throw;
+        }
+      }
+
+      void api_t::del_memory (gpi::pc::type::segment_id_t id)
+      {
+        gpi::pc::proto::segment::del_memory_t msg (id);
+
+        gpi::pc::proto::message_t rply
+          (communicate (gpi::pc::proto::segment::message_t (msg)));
+        proto::error::error_t result
+          (boost::get<proto::error::error_t>(rply));
+        if (result.code != proto::error::success)
+        {
+          throw std::runtime_error (result.detail);
         }
       }
 

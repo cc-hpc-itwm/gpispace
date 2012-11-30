@@ -3,6 +3,8 @@
 #ifndef _WE_TYPE_PROPERTY_HPP
 #define _WE_TYPE_PROPERTY_HPP
 
+#include <we/type/property.fwd.hpp>
+
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
@@ -17,6 +19,7 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
 
+#include <fhg/util/backtracing_exception.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/xml.hpp>
 
@@ -54,7 +57,7 @@ namespace we
 
       namespace exception
       {
-        class missing_binding : public std::runtime_error
+        class missing_binding : public fhg::util::backtracing_exception
         {
         private:
           std::string nice ( path_type::const_iterator pos
@@ -79,7 +82,7 @@ namespace we
           missing_binding ( path_type::const_iterator pos
                           , const path_type::const_iterator end
                           )
-            : std::runtime_error (nice (pos, end))
+            : fhg::util::backtracing_exception (nice (pos, end))
           {}
         };
 
@@ -236,17 +239,6 @@ namespace we
 
       public:
         type () : map () {}
-
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-        type & operator= (type const & other)
-        {
-          if (this != &other)
-          {
-            map = other.map;
-          }
-          return *this;
-        }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
 
         const map_type & get_map (void) const { return map; }
 

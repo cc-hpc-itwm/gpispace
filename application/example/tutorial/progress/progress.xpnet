@@ -10,13 +10,13 @@
 
     <place name="application" type="string">
       <token>
-        <value type="string">"progress-example"</value>
+        <value>"progress-example"</value>
       </token>
     </place>
 
     <place name="phase" type="string">
       <token>
-        <value type="string">"work"</value>
+        <value>"work"</value>
       </token>
     </place>
 
@@ -87,9 +87,8 @@
     <place name="wait_in" type="long" />
 
     <transition name="tick">
-      <require key="PROGRESS" mandatory="true" />
-
       <defun>
+        <require key="PROGRESS" mandatory="true" />
         <in name="trigger" type="long" />
         <in name="app" type="string" />
         <out name="trigger" type="long" />

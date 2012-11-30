@@ -33,9 +33,11 @@ namespace gpi
         typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
         explicit
-        manager_t (std::string const & p);
+        manager_t (std::string const & path_to_socket);
 
         ~manager_t ();
+
+        void add_default_memory (std::string const &);
 
         void start();
         void stop ();
@@ -99,6 +101,15 @@ namespace gpi
         wait_on_queue ( const gpi::pc::type::process_id_t proc_id
                       , const gpi::pc::type::queue_id_t queue
                       );
+
+        gpi::pc::type::segment_id_t
+        add_memory ( const gpi::pc::type::process_id_t proc_id
+                   , std::string const & url
+                   );
+        void
+        del_memory ( const gpi::pc::type::process_id_t proc_id
+                   , const gpi::pc::type::segment_id_t
+                   );
       private:
         typedef boost::shared_ptr<process_type> process_ptr_t;
         typedef boost::unordered_map< gpi::pc::type::process_id_t
@@ -129,6 +140,7 @@ namespace gpi
         state_t m_state;
         connector_type m_connector;
         gpi::pc::type::counter_t m_process_counter;
+        std::vector<std::string> m_default_memory_urls;
 
         process_map_t m_processes;
         process_list_t m_detached_processes;

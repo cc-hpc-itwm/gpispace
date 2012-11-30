@@ -11,6 +11,7 @@
 #include <boost/serialization/vector.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/type/time_stamp.hpp>
 
@@ -22,14 +23,6 @@ namespace gpi
     {
       namespace handle
       {
-        enum flags_type
-          {
-            F_NONE       = 0,
-            F_PERSISTENT = 1 << 0,
-            F_EXCLUSIVE  = 1 << 1,
-            F_GLOBAL     = 1 << 2,
-          };
-
         inline bool is_null (const gpi::pc::type::handle_id_t i)
         {
           return 0 == i;
@@ -41,6 +34,7 @@ namespace gpi
           gpi::pc::type::segment_id_t segment;
           gpi::pc::type::offset_t offset;
           gpi::pc::type::size_t size;
+          gpi::pc::type::size_t local_size;
           gpi::pc::type::size_t nref;
           gpi::pc::type::name_t name;
           gpi::pc::type::process_id_t creator;
@@ -52,6 +46,7 @@ namespace gpi
             , segment (0)
             , offset (0)
             , size (0)
+            , local_size (0)
             , nref (0)
             , name ("")
             , flags (0)
@@ -71,6 +66,7 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( segment );
             ar & BOOST_SERIALIZATION_NVP( offset );
             ar & BOOST_SERIALIZATION_NVP( size );
+            ar & BOOST_SERIALIZATION_NVP (local_size);
             ar & BOOST_SERIALIZATION_NVP( nref );
             ar & BOOST_SERIALIZATION_NVP( name );
             ar & BOOST_SERIALIZATION_NVP( creator );
@@ -113,11 +109,7 @@ namespace gpi
           os << "FLAGS";
           os << " ";
 
-          // OFFSET
-          os.width (12);
-          os << "OFFSET";
-          os << " ";
-
+          // SIZE
           os.width (12);
           os << "SIZE";
           os << " ";
@@ -170,12 +162,6 @@ namespace gpi
           os.fill ('0');
           os << d.flags;
           os.fill (' ');
-          os << " ";
-
-          // OFFSET
-          os.flags (std::ios::right | std::ios::dec);
-          os.width (12);
-          os << d.offset;
           os << " ";
 
           // SIZE

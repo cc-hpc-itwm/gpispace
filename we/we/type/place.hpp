@@ -22,94 +22,83 @@ namespace place
     typedef std::string name_t;
 
   private:
-    name_t name;
-    signature::type signature;
-    we::type::property::type prop;
+    name_t name_;
+    signature::type signature_;
+    we::type::property::type prop_;
 
     friend class boost::serialization::access;
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(name);
-      ar & BOOST_SERIALIZATION_NVP(signature);
-      ar & BOOST_SERIALIZATION_NVP(prop);
+      ar & BOOST_SERIALIZATION_NVP(name_);
+      ar & BOOST_SERIALIZATION_NVP(signature_);
+      ar & BOOST_SERIALIZATION_NVP(prop_);
     }
 
   public:
-    const name_t & get_name (void) const { return name; }
-    const signature::type & get_signature (void) const { return signature; }
-    const we::type::property::type & get_property (void) const { return prop; }
-    we::type::property::type & property (void) { return prop; }
+    const name_t &name() const { return name_; }
+    void set_name(const name_t &name) { name_ = name; }
+
+    const signature::type &signature() const { return signature_; }
+    const we::type::property::type &property() const { return prop_; }
+    we::type::property::type &property() { return prop_; }
 
     type ()
     {}
 
     explicit
-    type ( const name_t & _name
-         , const literal::type_name_t & _type_name = literal::CONTROL()
+    type ( const name_t & name
+         , const literal::type_name_t & signature = literal::CONTROL()
          )
-      : name (_name)
-      , signature (_type_name)
+      : name_ (name)
+      , signature_ (signature)
     {}
 
     template<typename T>
-    type ( const name_t & _name
-         , const T & _signature
-         , const we::type::property::type & _prop = we::type::property::type ()
+    type ( const name_t & name
+         , const T & signature
+         , const we::type::property::type & prop = we::type::property::type ()
          )
-      : name (_name), signature (_signature), prop (_prop)
+      : name_ (name), signature_ (signature), prop_ (prop)
     {}
-
-#ifdef BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
-    type & operator= (const type &other)
-    {
-      if (this != &other)
-      {
-        name = other.name;
-        signature = other.signature;
-        prop = other.prop;
-      }
-      return *this;
-    }
-#endif // BOOST_1_48_ASSIGNMENT_OPERATOR_WORKAROUND
   };
 
   inline std::ostream & operator << (std::ostream & s, const type & p)
   {
-    return s << p.get_name();
+    return s << p.name();
   }
 
   inline bool operator == (const type & a, const type & b)
   {
-    return a.get_name() == b.get_name();
+    return a.name() == b.name();
   }
 
   inline std::size_t hash_value (const type & p)
   {
     boost::hash<type::name_t> h;
 
-    return h(p.get_name());
+    return h(p.name());
   }
 
   template<typename NET>
   static const type::name_t &
   name (const NET & net, const petri_net::pid_t & pid)
   {
-    return net.get_place(pid).get_name();
+    return net.get_place(pid).name();
   }
 
   template<typename NET>
   static const signature::type &
   signature (const NET & net, const petri_net::pid_t & pid)
   {
-    return net.get_place(pid).get_signature();
+    return net.get_place(pid).signature();
   }
 
   template<typename NET>
   static const we::type::property::type &
   property (const NET & net, const petri_net::pid_t & pid)
   {
-    return net.get_place(pid).get_property();
+    return net.get_place(pid).property();
   }
 }
 

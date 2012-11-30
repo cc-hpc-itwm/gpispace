@@ -19,7 +19,7 @@ namespace fhg
     {
       namespace graph
       {
-        namespace scene { class type; }
+        class scene_type;
       }
 
       class net_view : public document_view
@@ -27,10 +27,8 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        net_view ( data::proxy::type&
-                 , data::proxy::net_proxy::data_type&
-                 , graph::scene::type*
-                 );
+        net_view (data::proxy::type&, graph::scene_type*);
+
       private:
         virtual QString fallback_title() const;
       };

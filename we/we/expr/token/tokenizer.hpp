@@ -8,8 +8,8 @@
 
 #include <we/expr/exception.hpp>
 
-#include <we/type/literal.hpp>
-#include <we/type/literal/read.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/read.hpp>
 
 #include <we/type/control.hpp>
 
@@ -35,7 +35,7 @@ namespace expr
       fhg::util::parse::position pos;
 
       token::type token;
-      literal::type tokval;
+      value::type tokval;
       key_vec_t _ref;
 
       inline void set_E (void)
@@ -139,10 +139,12 @@ namespace expr
               ++pos; require ("itset_");
               if (is_eof())
                 throw exception::parse::expected
-                  ("'insert', 'delete', 'is_element', 'or', 'tohex' or 'fromhex'", pos());
+                  ("'insert', 'delete', 'is_element', 'or', 'and', 'xor', 'count', 'tohex' or 'fromhex'", pos());
               else
                 switch (*pos)
                   {
+                  case 'a': ++pos; require ("nd"); token = _bitset_and; break;
+                  case 'c': ++pos; require ("ount"); token = _bitset_count; break;
                   case 'd': ++pos; require ("elete"); token = _bitset_delete; break;
                   case 'f': ++pos; require ("romhex"); unary (_bitset_fromhex, "bitset_fromhex"); break;
                   case 'i':
@@ -170,9 +172,10 @@ namespace expr
                     break;
                   case 'o': ++pos; require ("r"); token = _bitset_or; break;
                   case 't': ++pos; require ("ohex"); unary (_bitset_tohex, "bitset_tohex"); break;
+                  case 'x': ++pos; require ("or"); token = _bitset_xor; break;
                   default:
                     throw exception::parse::expected
-                      ("'insert', 'delete', 'is_element', 'or', 'tohex' or 'fromhex'", pos());
+                      ("'insert', 'delete', 'is_element', 'or', 'and', 'xor', 'count', 'tohex' or 'fromhex'", pos());
                   }
               break;
             case 'c':
@@ -547,7 +550,7 @@ namespace expr
 
                     do
                       {
-                        _ref.push_back (literal::identifier (pos));
+                        _ref.push_back (value::identifier (pos));
 
                         if (pos.end())
                           {
@@ -568,7 +571,7 @@ namespace expr
                   default: throw exception::parse::expected ("'{'", pos());
                   }
               break;
-            default: token = val; literal::read (tokval, pos); break;
+            default: token = val; tokval = value::read (pos); break;
             }
       }
 
@@ -580,7 +583,7 @@ namespace expr
                 , const std::string::const_iterator & _end
                 )
         : pos (_k, _pos,_end), token (eof) {}
-      const literal::type & operator () (void) const { return tokval; }
+      const value::type & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }
       const key_vec_t & get_ref (void) const { return _ref; }

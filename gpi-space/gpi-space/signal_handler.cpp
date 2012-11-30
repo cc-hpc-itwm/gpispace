@@ -126,11 +126,13 @@ namespace gpi
     {
       if (m_worker_thread && (boost::this_thread::get_id() != m_worker_thread->get_id()))
       {
-        m_worker_thread->join ();
+        if (m_worker_thread->joinable ())
+          m_worker_thread->join ();
       }
       if (m_handler_thread && (boost::this_thread::get_id() != m_worker_thread->get_id()))
       {
-        m_handler_thread->join ();
+        if (m_handler_thread->joinable ())
+          m_handler_thread->join ();
       }
     }
 
@@ -240,6 +242,7 @@ namespace gpi
         try
         {
           std::size_t count (0);
+          (void) count;
 
           count = deliver_signal (sig);
           DLOG(TRACE, "delivered signal " << count << " times");

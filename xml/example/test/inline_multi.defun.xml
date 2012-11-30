@@ -1,0 +1,8 @@
+      <defun name="f">
+        <out name="o1" type="control" place="p1"/>
+        <out name="o2" type="control" place="p2"/>
+        <net>
+          <place name="p1" type="control"/>
+          <place name="p2" type="control"/>
+        </net>
+      </defun>

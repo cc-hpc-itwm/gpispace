@@ -43,6 +43,10 @@ namespace gpi
         */
         gpi::pc::type::handle_t
         next (const gpi::pc::type::segment::segment_type);
+
+        void initialize_counter ( const gpi::pc::type::segment::segment_type
+                                , gpi::pc::type::size_t start
+                                );
       private:
         typedef boost::shared_ptr<gpi::pc::type::counter_t> counter_ptr;
 

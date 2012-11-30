@@ -1,17 +1,17 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
-#define _PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP 1
+#ifndef PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
+#define PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
+
+#include <pnete/ui/graph/connectable_item.fwd.hpp>
+
+#include <pnete/ui/graph/base_item.hpp>
+#include <pnete/ui/graph/association.fwd.hpp>
+#include <pnete/ui/graph/scene.fwd.hpp>
 
 #include <QObject>
 #include <QSet>
 #include <QRectF>
-
-#include <pnete/ui/graph/item.hpp>
-
-#include <boost/optional.hpp>
-
-#include <xml/parse/types.hpp>
 
 namespace fhg
 {
@@ -21,9 +21,6 @@ namespace fhg
     {
       namespace graph
       {
-        namespace connection { class item; }
-        namespace scene { class type; }
-
         namespace connectable
         {
           namespace direction
@@ -34,44 +31,39 @@ namespace fhg
               , BOTH = IN | OUT
               };
           }
+        }
 
-          class item : public graph::item
-          {
-            Q_OBJECT;
+        class connectable_item : public base_item
+        {
+          Q_OBJECT;
 
-          public:
-            item
-            ( direction::type direction
-            , boost::optional< ::xml::parse::type::type_map_type&>
-            = boost::none
-            , graph::item* parent = NULL
-            , ::we::type::property::type* property = NULL
+        public:
+          connectable_item
+            ( connectable::direction::type direction
+            , base_item* parent = NULL
             );
 
-            void add_connection (connection::item* c);
-            void remove_connection (connection::item * c);
+          void add_association (association* c);
+          void remove_association (association * c);
 
-            virtual bool is_connectable_with (const item*) const;
+          virtual bool is_connectable_with (const connectable_item*) const;
 
-            void erase_connections (scene::type*);
-            const QSet<connection::item*>& connections() const;
-            const direction::type& direction() const;
-            const direction::type& direction (const direction::type&);
+          const QSet<association*>& associations() const;
+          const connectable::direction::type& direction() const;
+          const connectable::direction::type& direction (const connectable::direction::type&);
 
-            virtual const std::string& we_type() const = 0;
+          virtual const std::string& we_type() const = 0;
 
-//             virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
-            virtual QLinkedList<graph::item*> childs() const;
+          virtual QLinkedList<base_item*> childs() const;
 
-          protected:
-            QSet<connection::item*> _connections;
-            direction::type _direction;
-            boost::optional< ::xml::parse::type::type_map_type&> _type_map;
+        protected:
+          QSet<association*> _associations;
+          connectable::direction::type _direction;
 
-            const std::string& we_type (const std::string&) const;
-          };
-        }
+          const std::string& we_type (const std::string&) const;
+        };
       }
     }
   }

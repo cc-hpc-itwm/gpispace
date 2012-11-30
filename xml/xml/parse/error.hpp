@@ -3,18 +3,21 @@
 #ifndef _XML_PARSE_ERROR_HPP
 #define _XML_PARSE_ERROR_HPP
 
-#include <stdexcept>
 #include <string>
 #include <sstream>
+
+#include <xml/parse/id/types.hpp>
 
 #include <we/we.hpp>
 
 #include <fhg/util/join.hpp>
+#include <fhg/util/backtracing_exception.hpp>
 
 #include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -24,6 +27,23 @@ namespace xml
     {
       // ******************************************************************* //
 
+#ifndef NO_BACKTRACE_ON_PARSE_ERROR
+      class generic : public fhg::util::backtracing_exception
+      {
+      public:
+        generic (const std::string & msg)
+          : fhg::util::backtracing_exception ("ERROR: " + msg)
+        {}
+
+        generic (const boost::format& bf)
+          : fhg::util::backtracing_exception ("ERROR: " + bf.str())
+        {}
+
+        generic (const std::string & msg, const std::string & pre)
+          : fhg::util::backtracing_exception ("ERROR: " + pre + ": " + msg)
+        {}
+      };
+#else
       class generic : public std::runtime_error
       {
       public:
@@ -39,7 +59,7 @@ namespace xml
           : std::runtime_error ("ERROR: " + pre + ": " + msg)
         {}
       };
-
+#endif
       // ******************************************************************* //
 
       class wrong_node : public generic
@@ -357,9 +377,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "redefinition of struct with name " << late.name
-            << " in " << late.path
-            << ", first definition was in " << early.path
+          s << "redefinition of struct with name " << late.name()
+            << " in " << late.path()
+            << ", first definition was in " << early.path()
             ;
 
           return s.str();
@@ -536,9 +556,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "struct with name " << late.name
-            << " in " << late.path
-            << " shadows definition from " << early.path
+          s << "struct with name " << late.name()
+            << " in " << late.path()
+            << " shadows definition from " << early.path()
             << " but this is forbidden, since it is a type used for port "
             << port_name
             ;
@@ -611,59 +631,40 @@ namespace xml
 
       class duplicate_connect : public generic
       {
-      private:
-        std::string nice ( const std::string & type
-                         , const std::string & name
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate " << "connect-" << type << " " << name
-            << " for transition " << trans
-            << " in " << path;
-
-          return s.str();
-        }
-
       public:
-        duplicate_connect ( const std::string & type
-                          , const std::string & name
-                          , const std::string & trans
-                          , const boost::filesystem::path & path
-                          )
-          : generic (nice (type, name, trans, path))
-        {}
+        duplicate_connect ( const std::string& type
+                          , const id::ref::connect& connection
+                          , const id::ref::connect& old_connection
+                          , const id::ref::transition& transition
+                          , const boost::filesystem::path& path
+                          );
+        virtual ~duplicate_connect() throw() { }
+
+      private:
+        const std::string _type;
+        const id::ref::connect _connection;
+        const id::ref::connect _old_connection;
+        const id::ref::transition _transition;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
 
       class duplicate_place_map : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate place-map " << name
-            << " for transition " << trans
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        duplicate_place_map ( const std::string & name
-                            , const std::string & trans
+        duplicate_place_map ( const id::ref::place_map& place_map
+                            , const id::ref::place_map& old_place_map
+                            , const id::ref::transition& transition
                             , const boost::filesystem::path & path
-                            )
-          : generic (nice (name, trans, path))
-        {}
+                            );
+        virtual ~duplicate_place_map() throw() { }
+
+      private:
+        const id::ref::place_map _place_map;
+        const id::ref::place_map _old_place_map;
+        const id::ref::transition _transition;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -692,68 +693,47 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_transition : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate transition " << t.name << " in " << t.path
-            << " first definition was in " << old.path
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_transition (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_transition ( const id::ref::transition& transition
+                             , const id::ref::transition& old_transition
+                             );
+        ~duplicate_transition() throw() { }
+
+      private:
+        id::ref::transition _transition;
+        id::ref::transition _old_transition;
       };
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_function : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate function " << t.name << " in " << t.path
-            << " first definition was in " << old.path
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_function (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_function ( const id::ref::function& function
+                           , const id::ref::function& old_function
+                           );
+        ~duplicate_function() throw() { }
+
+      private:
+        id::ref::function _function;
+        id::ref::function _old_function;
       };
 
       // ******************************************************************* //
 
-      template<typename T>
       class duplicate_template : public generic
       {
-      private:
-        std::string nice (const T & t, const T & old) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate template " << t.name << " in " << t.path
-            << " first definition was in " << old.path
-            ;
-
-          return s.str();
-        }
       public:
-        duplicate_template (const T & t, const T & old)
-          : generic (nice (t, old))
-        {}
+        duplicate_template ( const id::ref::tmpl& tmpl
+                           , const id::ref::tmpl& old_template
+                           );
+        ~duplicate_template() throw() { }
+
+      private:
+        id::ref::tmpl _template;
+        id::ref::tmpl _old_template;
       };
 
       // ******************************************************************* //
@@ -862,8 +842,8 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "tunnel " << port.name
-            << " connected to non-virtual place " << place.name
+          s << "tunnel " << port.name()
+            << " connected to non-virtual place " << place.name()
             << " in " << path
             ;
 
@@ -892,8 +872,8 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "tunnel with name " << port.name
-            << " is connected to place with different name " << place.name
+          s << "tunnel with name " << port.name()
+            << " is connected to place with different name " << place.name()
             << " in " << path
             ;
 
@@ -951,9 +931,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "type error: port-" << direction << " " << port.name
+          s << "type error: port-" << direction << " " << port.name()
             << " of type " << port.type
-            << " connected to place " << place.name
+            << " connected to place " << place.name()
             << " of type " << place.type
             << " in " << path
             ;
@@ -969,6 +949,29 @@ namespace xml
                                   , const boost::filesystem::path & path
                                   )
           : generic (nice (direction, port, place, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class port_tunneled_type_error : public generic
+      {
+      public:
+        port_tunneled_type_error ( const std::string& name_virtual
+                                 , const signature::type& sig_virtual
+                                 , const std::string& name_real
+                                 , const signature::type& sig_real
+                                 , const boost::filesystem::path& path
+                                 )
+          : generic
+            ( boost::format
+              ( "type error: virtual place %1% of type %2%"
+              " identified with real place %3% of type %4% in %5%"
+              )
+              % name_virtual % sig_virtual
+              % name_real % sig_real
+              % path
+            )
         {}
       };
 
@@ -1099,9 +1102,9 @@ namespace xml
 
           s << "in transition " << trans << " in " << path << ": "
             << "type error: connect-" << direction
-            << " place " << place.name
+            << " place " << place.name()
             << " of type " << place.type
-            << " with port " << port.name
+            << " with port " << port.name()
             << " of type " << port.type
             ;
 
@@ -1522,6 +1525,20 @@ namespace xml
                                     , const boost::filesystem::path & file2
                                     )
           : generic (nice (name, mod, file1, file2))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class template_without_function : public generic
+      {
+      public:
+        template_without_function ( const boost::optional<std::string>& name
+                                  , const boost::filesystem::path& path
+                                  )
+          : generic ( boost::format
+                      ("template %1% without a function in %2%") % name % path
+                    )
         {}
       };
 

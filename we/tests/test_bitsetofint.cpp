@@ -472,5 +472,161 @@ main ()
     REQUIRE (std::string (pos, end) == "!0000000000000001/");
   }
 
+  {
+    bitsetofint::type bs = bitsetofint::from_hex ("0x/0000000000000000");
+
+    std::size_t      res = bs.count ();
+
+    std::size_t      exp = 0;
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs = bitsetofint::from_hex ("0x/ffffffffffffffff");
+
+    std::size_t      res = bs.count ();
+
+    std::size_t      exp = 64;
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs = bitsetofint::from_hex ("0x/f0f0f0f0f0f0f0f0");
+
+    std::size_t      res = bs.count ();
+
+    std::size_t      exp = 8*4;
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs = bitsetofint::from_hex ("0x/1111111111111111");
+
+    std::size_t      res = bs.count ();
+
+    std::size_t      exp = 16;
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs = bitsetofint::from_hex ("0x/ffffffffffffffff/1111111111111111");
+
+    std::size_t      res = bs.count ();
+
+    std::size_t      exp = 64 + 16;
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs1 = bitsetofint::from_hex ("0x/0000000000000000");
+    bitsetofint::type bs2 = bitsetofint::from_hex ("0x/0000000000000000");
+
+    bitsetofint::type res = bs1 & bs2;
+
+    bitsetofint::type exp = bitsetofint::from_hex ("0x/0000000000000000");
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs1 = bitsetofint::from_hex ("0x/1010101010101010");
+    bitsetofint::type bs2 = bitsetofint::from_hex ("0x/0000000000000000");
+
+    bitsetofint::type res = bs1 & bs2;
+
+    bitsetofint::type exp = bitsetofint::from_hex ("0x/0000000000000000");
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs1 = bitsetofint::from_hex ("0x/ffffffffffffffff");
+    bitsetofint::type bs2 = bitsetofint::from_hex ("0x/ffffffffffffffff");
+
+    bitsetofint::type res = bs1 & bs2;
+
+    bitsetofint::type exp = bitsetofint::from_hex ("0x/ffffffffffffffff");
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs1 = bitsetofint::from_hex ("0x/0000000000000000");
+    bitsetofint::type bs2 = bitsetofint::from_hex ("0x/1111111111111111");
+
+    bitsetofint::type res = bs1 ^ bs2;
+
+    bitsetofint::type exp = bitsetofint::from_hex ("0x/1111111111111111");
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs1 = bitsetofint::from_hex ("0x/1010101010101010");
+    bitsetofint::type bs2 = bitsetofint::from_hex ("0x/1010101010101010");
+
+    bitsetofint::type res = bs1 ^ bs2;
+
+    bitsetofint::type exp = bitsetofint::from_hex ("0x/0000000000000000");
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type bs1 = bitsetofint::from_hex ("0x/1010101010101010");
+    bitsetofint::type bs2 = bitsetofint::from_hex ("0x/0101010101010101");
+
+    bitsetofint::type res = bs1 ^ bs2;
+
+    bitsetofint::type exp = bitsetofint::from_hex ("0x/1111111111111111");
+
+    REQUIRE (res == exp);
+  }
+
+  {
+    bitsetofint::type b;
+
+    std::ostringstream s;
+
+    b.list (s);
+
+    REQUIRE (s.str() == "");
+  }
+
+  {
+    bitsetofint::type b (bitsetofint::type().ins (0));
+
+    std::ostringstream s;
+
+    b.list (s);
+
+    REQUIRE (s.str() == "0\n");
+  }
+
+  {
+    bitsetofint::type b (bitsetofint::type().ins (3141));
+
+    std::ostringstream s;
+
+    b.list (s);
+
+    REQUIRE (s.str() == "3141\n");
+  }
+
+  {
+    bitsetofint::type b (bitsetofint::type().ins (0).ins (1).ins (13).ins (42));
+
+    std::ostringstream s;
+
+    b.list (s);
+
+    REQUIRE (s.str() == "0\n1\n13\n42\n");
+  }
+
   return ec;
 }

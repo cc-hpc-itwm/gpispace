@@ -20,3 +20,5 @@ install (FILES ${xmls}
   DESTINATION ${PNETC_LIB_DIR}
   COMPONENT examples
   )
+
+add_subdirectory (sequence)

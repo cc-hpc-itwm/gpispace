@@ -40,6 +40,8 @@ struct Combiner
         pReducer->addTask(pairWC.first, reduceTask);
       }
     }
+
+     pReducer->updateCounter();
   }
 };
 

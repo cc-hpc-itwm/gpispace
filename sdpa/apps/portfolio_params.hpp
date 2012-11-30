@@ -443,7 +443,7 @@ struct portfolio_data_t
 		return arrCfgs;
 	}
 
-	std::string encode()
+	std::string encode() const
 	{
 		std::ostringstream sstr;
 		boost::archive::text_oarchive ar(sstr);
@@ -469,7 +469,7 @@ struct portfolio_result_t
 		ar & arr_sim_results;
 	}
 
-	std::string encode()
+	std::string encode() const
 	{
 		 std::ostringstream sstr;
 		 boost::archive::text_oarchive ar(sstr);

@@ -9,6 +9,9 @@
 #include <gpi-space/pc/memory/transfer_queue.hpp>
 #include <gpi-space/pc/memory/task_queue.hpp>
 
+#include <gpi-space/pc/memory/memory_buffer.hpp>
+#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -127,24 +130,32 @@ namespace gpi
       class transfer_manager_t
       {
       public:
+        static const size_t DEF_BUFFER_SIZE = 4194304;
+
         explicit
-        transfer_manager_t ( const std::size_t number_of_queues
-                           , const std::size_t memcpy_pool_size = 2
-                           );
+        transfer_manager_t ();
         ~transfer_manager_t();
+
+        void start ( const std::size_t number_of_queues
+                   , const std::size_t memcpy_pool_size = 2
+                   );
 
         void transfer (memory_transfer_t const &);
         std::size_t wait_on_queue (const std::size_t queue);
+
+        std::size_t num_queues () const { return m_queues.size (); }
       private:
         typedef boost::shared_ptr<transfer_queue_t> queue_ptr;
         typedef std::vector<queue_ptr> transfer_queues_t;
         typedef boost::shared_ptr<task_t> task_ptr;
+        typedef buffer_pool_t<buffer_t> memory_pool_t;
 
         void worker();
 
         transfer_queues_t m_queues;
         task_queue_t m_worker_queue;
         thread_pool_t m_worker_pool;
+        memory_pool_t m_memory_buffer_pool;
       };
     }
   }

@@ -194,7 +194,7 @@ function rexec ()
         echo "ssh could not connect to $node: $err: $rc" >&2
         return $rc
     else
-        echo $err
+        echo "$err"
         return $rc
     fi
 }
@@ -708,15 +708,7 @@ to adjust the amount.
         return 1
     fi
 
-    local com_size=$(get "plugin.gpi_compat.com_size" "${DEFAULT_GPI_COMSIZE:?}")
-    get_user_input "communication buffer size (per worker) [$com_size]:" com_size
-    parse_human_readable_size $com_size com_size
-    if [ $com_size -le 0 ] ; then
-        log "E: size must be larger than 0: $com_size"
-        return 1
-    fi
-
-    local mem_size=$(( $gpi_size + $shm_size + $com_size ))
+    local mem_size=$(( $gpi_size + $shm_size ))
 
     # try to get total memory size
     local total_mem=$( grep ^MemTotal: /proc/meminfo | awk '{print $2}')
@@ -726,7 +718,6 @@ to adjust the amount.
         log "-:     max available: $total_mem"
         log "-:          gpi size: $gpi_size"
         log "-:          shm size: $shm_size"
-        log "-:          com size: $com_size"
         if ! y_n_p "Are you really sure to use these values? [y/N] " ; then
             return 1
         fi
@@ -735,7 +726,6 @@ to adjust the amount.
     put "gpi.memory_size" "$gpi_size"
     put "gpi.priv_dir" "$gpid_dir"
     put "plugin.gpi_compat.shm_size" "$shm_size"
-    put "plugin.gpi_compat.com_size" "$com_size"
 
     put "gpi.api" $(get gpi.api "${DEFAULT_GPI_API:?}")
     put "gpi.timeout" $(get gpi.timeout "30")
@@ -746,7 +736,7 @@ to adjust the amount.
     put "gpi.processes" $(get gpi.processes "default")
 
     local sdpa_temp_dir=$(get "sdpa.temp_dir")
-    local gpi_socket_path=$(get gpi.socket_path "/var/tmp")
+    local gpi_socket_path=$(get gpi.socket_path "${sdpa_temp_dir}")
     put "gpi.socket_path" "$gpi_socket_path"
     if ! test -d "$gpi_socket_path" ; then
         if ! mkdir -p "$gpi_socket_path" ; then
@@ -757,6 +747,11 @@ to adjust the amount.
                 log "E: failed to adjust mode on $gpi_socket_path"
                 return 1
             fi
+        fi
+    else
+        if ! test -w "${gpi_socket_path}" ; then
+            log "E: cannot write to gpi socket path: ${gpi_socket_path}"
+            return 1
         fi
     fi
 }
@@ -1136,7 +1131,8 @@ function start_proc ()
                 fi
             fi
         done
-        echo "- $name (dead)" >&2
+        echo "- $name (dead), check '$log_file' for more - here are the last 3 lines:"
+        tail -n 3 "$log_file" >&2
         return 1
     fi
     return 0
@@ -1189,10 +1185,7 @@ function start_agent ()
     fi
 
     # name format: name[-node]
-    local node="$(echo $name | cut -d- -f 2)"
-    if [ "$node" == "$name" ] ; then
-        node=localhost
-    fi
+    local node=$(get_master_node)
 
     err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -F "${config_file}" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
     ec=$?
@@ -1212,10 +1205,7 @@ function stop_agent ()
     local name="$1" ; shift
 
     # name format: name[-node[-id]]
-    local node=$(echo $name | cut -d- -f 2)
-    if [ "$node" == "$name" ] ; then
-        node=localhost # maybe we should use the master node?
-    fi
+    local node=$(get_master_node)
     local cmd="rexec $node $SDPA_SCRIPT_DIR/stop-agent -n $name"
     debug $cmd
     err=$($cmd 2>&1)
@@ -1225,7 +1215,7 @@ function stop_agent ()
     elif [ $ec -eq 2 ] ; then
         return 0 # not found
     else
-        echo $err >&2
+        echo "$err" >&2
         return $ec
     fi
 }
@@ -1234,11 +1224,7 @@ function status_agent ()
 {
     local name="$1" ; shift
 
-    local node="$(echo $name | cut -d- -f 2)"
-    if [ "$node" == "$name" ] ; then
-        node=localhost # maybe we should use the master node?
-    fi
-
+    local node=$(get_master_node)
     local cmd="rexec $node $SDPA_SCRIPT_DIR/status-agent -n $name"
     debug $cmd
     $cmd </dev/null >/dev/null 2>&1
@@ -1347,18 +1333,18 @@ function node_loop ()
             for p in $procs ; do
                 wait $p
                 rc=$(( rc + $? ))
-                echo
-                echo -n "   " >&2
             done
             procs=
             count=0
+            echo
+            echo -n "   " >&2
         fi
     done
     for p in $procs ; do
         wait $p
         rc=$(( rc + $? ))
-        echo >&2
     done
+    echo >&2
     return $rc
 }
 
@@ -1368,15 +1354,17 @@ function start_nre ()
     if [ x"$with_mediator" == x"true" ] ; then
         log "nres" >&2
         node_loop start_nre_on_node $@
-    else
-        log "nres (deactivated)" >&2
     fi
 }
 
 function stop_nre ()
 {
-    log "nres" >&2
-    node_loop stop_nre_on_node $@
+    with_mediator=$(get "topology.with-mediator" "true")
+    if [ x"$with_mediator" == x"true" ] ; then
+        log "nres" >&2
+        node_loop stop_nre_on_node $@
+        ec=$?
+    fi
 }
 
 function status_nre ()
@@ -1478,10 +1466,10 @@ function start_drts ()
         node_loop start_drts_on_node "$master" "" $force $@
         ec=$?
         if [ -n "$err" ] ; then
-            echo $err
+            echo "$err"
         fi
         if [ $ec -ne 0 ] ; then
-            echo $err
+            echo "$err"
             return $ec
         fi
     else
@@ -1531,7 +1519,7 @@ function stop_drts ()
         node_loop stop_drts_on_node $@
         ec=$?
         if [ $ec -ne 0 ] ; then
-            echo $err
+            echo "$err"
             return $ec
         fi
     else
@@ -1580,7 +1568,7 @@ function status_drts ()
         node_loop status_drts_on_node $@
         ec=$?
         if [ $ec -ne 0 ] ; then
-            echo $err
+            echo "$err"
             return $ec
         fi
     else
@@ -1683,7 +1671,7 @@ function start_gui ()
     fi
     local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
 
-    local cmd="ssh -X $gui_host LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port -r $SDPA_HOME"
+    local cmd="ssh -X $gui_host /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port -r $SDPA_HOME"
     log "I: starting gui with $cmd ..."
     $cmd &
 }
@@ -1775,6 +1763,7 @@ function stop ()
 function restart ()
 {
     if stop $@ ; then
+        sleep 3
         start $@
     else
         log "E: stop failed, not starting!"
@@ -1900,6 +1889,13 @@ function submit ()
         log "E: submit: cannot read file: $net"
         return 42
     fi
+    if [ x"$net" = x"-" ] ; then
+        net="/dev/stdin"
+    fi
+    local output="$1"; shift
+    if [ -z "$output" ] ; then
+        output=/dev/null
+    fi
 
     log "I: checking system status..."
     if ! status kvs >/dev/null 2>&1 || ! status orch >/dev/null 2>&1 ; then
@@ -1946,7 +1942,7 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac results "$jobid"
+        sdpac -o "$output" --force results "$jobid"
         sdpac delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"
@@ -1974,6 +1970,15 @@ function on_valid_host ()
         return 2
     fi
     return 1
+}
+
+function get_master_node()
+{
+    if test -r "$state_dir/nodefile" ; then
+        head -n 1 "$state_dir/nodefile"
+    else
+        return 1
+    fi
 }
 
 function on_master_node ()
@@ -2267,8 +2272,12 @@ case "$1" in
         restart drts
         ;;
     boot)
+        "$0" -s "$state_dir" -c "$config_file" init || {
+            echo >&2 "sdpa: could not initialize!"
+            exit 1
+        }
         shift
-        "${SDPA_SCRIPT_DIR}/start-sdpa" "$@"
+        "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -F "$config_file" "$@"
         ;;
     selftest)
         if ! on_master_node ; then

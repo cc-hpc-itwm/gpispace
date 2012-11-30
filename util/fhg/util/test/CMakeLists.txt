@@ -1,11 +1,18 @@
+# bernd.loerwald@itwm.fraunhofer.de
 
-if (BUILD_TESTING)
+include(fhg_test_macros)
 
-  add_executable (fhg_util_test_xml_stream test_xml_stream.cpp)
-  target_link_libraries(fhg_util_test_xml_stream ${Boost_LIBRARIES})
-  add_test ("test_xml_stream" fhg_util_test_xml_stream)
+fhg_add_test (test_xml_stream.cpp
+  LINK_LIBRARIES fhg-util
+  DESCRIPTION "Tests the xml stream implementation"
+)
 
-  add_executable (fhg_util_test_either test_either.cpp)
-  add_test ("test_either" fhg_util_test_either)
+fhg_add_test (test_either.cpp
+  LINK_LIBRARIES fhg-util
+  DESCRIPTION "Tests the either implementation"
+)
 
-endif (BUILD_TESTING)
+fhg_add_test (test_remove_prefix.cpp
+  LINK_LIBRARIES fhg-util
+  DESCRIPTION "Tests the remove_prefix implementation"
+)

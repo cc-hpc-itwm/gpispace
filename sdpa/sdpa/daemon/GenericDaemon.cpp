@@ -376,43 +376,29 @@ void GenericDaemon::shutdown_network()
  */
 void GenericDaemon::stop()
 {
-  SDPA_LOG_INFO("Shutting down...");
+  MLOG (INFO, name () << " is shutting down...");
 
-  SDPA_LOG_INFO("Stop the scheduler now!");
   scheduler()->stop();
-  SDPA_LOG_INFO("The scheduler was stopped!");
 
-  SDPA_LOG_INFO("Stop the backup service now!");
   m_threadBkpService.stop();
-  SDPA_LOG_INFO("The backup service was stopped!");
 
-  SDPA_LOG_INFO("Shutdown the network...");
   shutdown_network();
 
-  // stop the daemon stage
-  SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
   seda::StageRegistry::instance().lookup(name())->stop();
 
-  // stop the network stage
-  SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
   seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
 
-  SDPA_LOG_INFO("Removing the network stage...");
-  // remove the network stage
   seda::StageRegistry::instance().remove(m_to_master_stage_name_);
 
-  SDPA_LOG_INFO("Removing the daemon stage...");
-  // remove the daemon stage
   seda::StageRegistry::instance().remove(name());
 
   if( hasWorkflowEngine() )
   {
-    SDPA_LOG_DEBUG("Deleting the workflow engine ...");
     delete ptr_workflow_engine_;
     ptr_workflow_engine_ = NULL;
   }
 
-  SDPA_LOG_INFO("The daemon "<<name()<<" was successfully stopped!");
+  MLOG (INFO, name () << " was successfully stopped!");
 }
 
 
@@ -977,7 +963,6 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
               if( masterInfo.getConsecNetFailCnt() < cfg().get<unsigned long>("max_consecutive_net_faults", 360) )
               {
                 const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-                SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s ...");
                 boost::this_thread::sleep(boost::posix_time::seconds(reg_timeout/1000000));
 
                 masterInfo.set_registered(false);
@@ -1131,7 +1116,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc, 
  */
 bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason)
 {
-  SDPA_LOG_INFO ("The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
+  SDPA_LOG_WARN ("The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
 
   // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
   // look for the job_id corresponding to the received workflowId into job_map_

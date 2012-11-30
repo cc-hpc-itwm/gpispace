@@ -54,7 +54,26 @@ inline void WordCountMapTask::run()
   ifs.close();
 }
 
-
 typedef MapReduce<WordCountMapTask> WordCountMapper;
+
+template <>
+inline std::string WordCountMapper::hash(const std::string& key, const std::vector<std::string>& workerIdList )
+{
+  size_t nWorkers = workerIdList.size();
+  int i = 0;
+
+  if((key[0]>=65 && key[0]<=90) )
+  {
+    i = (key[0] - 'a')%nWorkers;
+  }
+  else
+  if( key[0]>=97 && key[0]<=122 )
+  {
+    i = (key[0] - 'A')%nWorkers;
+  }
+
+  // it is guaranteed that at least one worker is selected -> workerIdList[0]
+  return workerIdList[i];
+}
 
 #endif //WORD_COUNT_MAPPER_HPP

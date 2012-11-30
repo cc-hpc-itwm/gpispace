@@ -21,6 +21,7 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/setproctitle.h>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
@@ -121,24 +122,46 @@ static void handle_sig_child()
 
 void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
+  if (kernel)
+  {
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
   shutdown_kernel();
 }
 
 void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
   if (kernel)
+  {
     kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
 }
 
 void sigchild_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
   if (kernel)
+  {
     kernel->schedule("kernel", "wait_on_child", &handle_sig_child);
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
 }
 
 void sigint_hdlr(int sig_num, siginfo_t *info, void *ucontext)
 {
+  if (kernel)
+  {
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
   shutdown_kernel ();
+}
+
+static void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)
+{
+  if (kernel)
+  {
+    kernel->handle_signal (sig_num, info, ucontext);
+  }
 }
 
 void install_signal_handler()
@@ -227,6 +250,26 @@ void install_signal_handler()
 
     exit(EXIT_FAILURE);
   }
+
+  sigact.sa_sigaction = sigusr_hdlr;
+  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+  if (sigaction(SIGUSR1, &sigact, (struct sigaction *)NULL) != 0)
+  {
+    fprintf(stderr, "error setting signal handler for %d (%s)\n",
+           SIGCHLD, strsignal(SIGUSR1));
+
+    exit(EXIT_FAILURE);
+  }
+
+  sigact.sa_sigaction = sigusr_hdlr;
+  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+  if (sigaction(SIGUSR2, &sigact, (struct sigaction *)NULL) != 0)
+  {
+    fprintf(stderr, "error setting signal handler for %d (%s)\n",
+           SIGCHLD, strsignal(SIGUSR1));
+
+    exit(EXIT_FAILURE);
+  }
 }
 
 int main(int ac, char **av)
@@ -250,6 +293,7 @@ int main(int ac, char **av)
     ("help,h", "this message")
     ("verbose,v", "be verbose")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
+    ("settitle,T", "set the program title according to name")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
     ("state,S", po::value<std::string>(&state_path), "state directory to use")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
@@ -289,6 +333,12 @@ int main(int ac, char **av)
     std::cout << std::endl;
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
+  }
+
+  if (vm.count ("settitle"))
+  {
+    std::string title = "[" + kernel_name + "]";
+    setproctitle (title.c_str (), ac, av);
   }
 
   if (vm.count("daemonize"))
@@ -408,11 +458,13 @@ int main(int ac, char **av)
 
   atexit(&shutdown_kernel);
 
-  int rc = kernel->run();
-  MLOG(TRACE, "shutting down... (" << rc << ")");
-  MLOG(TRACE, "killing children...");
+  int rc = kernel->run_and_unload (false);
+
+  MLOG (TRACE, "killing children...");
 
   kill (0, SIGTERM);
+
+  MLOG (DEBUG, "shutting down... (" << rc << ")");
 
   kernel->unload_all();
 

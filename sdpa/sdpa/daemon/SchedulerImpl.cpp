@@ -44,7 +44,6 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler, bool bUseRequest
 
 SchedulerImpl::~SchedulerImpl()
 {
-  SDPA_LOG_INFO( "Called the destructor of  SchedulerImpl ...");
   try  {
     if( jobs_to_be_scheduled.size() )
     {
@@ -465,6 +464,24 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
       }
       else // there are requirements specified for that job
       {
+        std::string required_capabilities_as_string ("n/a");
+        {
+          requirement_list_t::const_iterator begin (job_req_list.begin ());
+          const requirement_list_t::const_iterator end (job_req_list.end ());
+
+          ostringstream ossReq;
+          bool first = true;
+          while (begin != end)
+          {
+            if (first) first = false;
+            else       ossReq << ", ";
+
+            ossReq << begin->value();
+            ++begin;
+          }
+          required_capabilities_as_string = ossReq.str ();
+        }
+
         try
         {
           // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
@@ -483,15 +500,9 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
             return true;
           }
 
-          ostringstream ossReq;
-          BOOST_FOREACH(const requirement_t& req, job_req_list)
-          {
-            ossReq<<req.value()<<",";
-          }
-
           LOG(  TRACE
                 , "The best worker matching the requirements: "
-                << ossReq.str()
+                << required_capabilities_as_string
                 <<" for the job  " << jobId
                 <<" is " << ptrBestWorker->name()
                 <<" degree " << matching_degree
@@ -511,14 +522,17 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
         }
         catch(const NoWorkerFoundException& ex1)
         {
-          LOG(WARN, "No worker meets the requirements for the job " << jobId.str()<<" found!");
+          LOG ( ERROR
+              , "No worker meets the requirements: "
+              << required_capabilities_as_string
+              );
           ptr_comm_handler_->activityFailed( ""
                                             , jobId
                                             // TODO: this should contain the job desc
                                             , ""
                                             , fhg::error::CAPABILITY_MISMATCH
-                                            , "TODO: insert the missing capabilities"
-                                          );
+                                            , "capability combination missing: " + required_capabilities_as_string
+                                           );
 
           return false;
         }
@@ -618,14 +632,13 @@ void SchedulerImpl::stop()
 
   m_thread_feed.interrupt();
   DLOG(TRACE, "Feeding thread before join ...");
-  m_thread_feed.join();
-  DLOG(TRACE, "Feeding thread before join ...");
+  if (m_thread_feed.joinable ())
+    m_thread_feed.join();
 
   m_thread_run.interrupt();
   DLOG(TRACE, "Scheduler thread before join ...");
-  m_thread_run.join();
-
-  DLOG(TRACE, "Scheduler thread joined ...");
+  if (m_thread_run.joinable ())
+    m_thread_run.join();
 
   if( jobs_to_be_scheduled.size() )
   {
@@ -672,9 +685,9 @@ void SchedulerImpl::check_post_request()
   {
     if( !masterInfo.is_registered() )
     {
-      SDPA_LOG_INFO("I'm not yet registered. Try to re-register ...");
+      MLOG (TRACE, "I am not registered yet...");
+
       const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-      SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
       boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
       ptr_comm_handler_->requestRegistration(masterInfo);
@@ -989,7 +1002,7 @@ bool SchedulerImpl::has_job(const sdpa::job_id_t& job_id)
   return ptr_worker_man_->has_job(job_id);
 }
 
-void SchedulerImpl::getWorkerList(std::list<std::string>& workerList)
+void SchedulerImpl::getWorkerList(sdpa::worker_id_list_t& workerList)
 {
   ptr_worker_man_->getWorkerList(workerList);
 }

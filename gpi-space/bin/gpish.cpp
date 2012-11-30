@@ -15,13 +15,14 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
+#include <boost/timer.hpp>
 
 #include <fhglog/minimal.hpp>
 
 #include <gpi-space/version.hpp>
 #include <gpi-space/signal_handler.hpp>
-#include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
+#include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
@@ -91,39 +92,24 @@ struct my_state_t
       return -1;
 
     // register segment
-    m_shm_com = capi.register_segment ( "gpish"
+    m_shm_com = capi.register_segment ( "gpish-" + boost::lexical_cast<std::string>(getpid ())
                                       , m_com_size
-                                      , gpi::pc::type::segment::F_EXCLUSIVE
-                                      | gpi::pc::type::segment::F_FORCE_UNLINK
+                                      , gpi::pc::F_EXCLUSIVE
+                                      | gpi::pc::F_FORCE_UNLINK
                                       );
     m_shm_com_hdl = capi.alloc ( m_shm_com
                                , m_com_size
-                               , "gpish-shm-com"
-                               , gpi::pc::type::handle::F_EXCLUSIVE
+                               , "gpish-"+boost::lexical_cast<std::string>(getpid ())
+                               , gpi::pc::F_EXCLUSIVE
                                );
     m_shm_com_ptr = (char*)capi.ptr(m_shm_com_hdl);
 
-    m_gpi_com_hdl = capi.alloc ( 1 // GPI
-                               , m_com_size
-                               , "gpish-gpi-com"
-                               , 0
-                               );
-
     return 0;
-  }
-
-  size_t adjust_size_to_global_alloc(size_t total_size)
-  {
-    size_t nodes = capi.collect_info().nodes;
-    size_t per_node = (total_size / nodes);
-    per_node       += (total_size - nodes*per_node);
-    return per_node;
   }
 
   char*  com_buffer() { return m_shm_com_ptr; }
   size_t com_size() const   { return m_com_size; }
   gpi::pc::type::handle_t shm_com_hdl() const { return m_shm_com_hdl; }
-  gpi::pc::type::handle_t gpi_com_hdl() const { return m_gpi_com_hdl; }
 
   fs::path socket_dir;
   gpi::pc::client::api_t capi;
@@ -132,13 +118,12 @@ private:
   gpi::pc::type::segment_id_t m_shm_com;
   gpi::pc::type::handle_t     m_shm_com_hdl;
   char                       *m_shm_com_ptr;
-  gpi::pc::type::handle_t     m_gpi_com_hdl;
 };
 
 static void print_progress( FILE *fp
                           , const std::size_t current
                           , const std::size_t total
-                          , const std::size_t width = 77
+                          , const std::size_t width = 73
                           );
 
 typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
@@ -160,10 +145,6 @@ static void initialize_shell (int ac, char *av[]);
 
 static void shutdown_state ();
 static void shutdown_shell ();
-
-static void adjust_global_handle_sizes ( shell_t & sh
-                                       , gpi::pc::type::handle::descriptor_t &
-                                       );
 
 // shell functions
 static int cmd_help (shell_t::argv_t const & av, shell_t & sh);
@@ -194,6 +175,8 @@ static int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh);
 
 int main (int ac, char **av)
 {
@@ -207,18 +190,21 @@ int main (int ac, char **av)
   po::options_description desc("options");
 
   fs::path socket_path;
-  fs::path config_file
-    (std::string(getenv("HOME")) + "/.sdpa/configs/gpi.rc");
-  std::size_t com_size (16 * (1 << 20));
+  typedef std::vector <fs::path> dir_list_t;
+  dir_list_t socket_search_dir;
+  socket_search_dir.push_back ("/tmp");
+  socket_search_dir.push_back ("/var/tmp");
+
+  std::size_t com_size (4 * 1024 * 1024);
 
   desc.add_options ()
     ("help,h", "this message")
 
     ("socket,s", po::value<fs::path>(&socket_path), "path to the gpi socket")
 
-    ( "config,c"
-    , po::value<fs::path>(&config_file)->default_value(config_file)
-    , "path to the config file"
+    ( "socket-dir,d"
+    , po::value<dir_list_t>(&socket_search_dir)
+    , "path to possible socket directories"
     )
 
     ( "com-size"
@@ -256,38 +242,47 @@ int main (int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  gpi_space::parser::config_parser_t cfg_parser;
-  if (fs::exists (config_file))
-  {
-    gpi_space::parser::parse (config_file.string(), boost::ref(cfg_parser));
-  }
-
   if (vm.count ("list"))
   {
-    std::cout
-      << collect_sockets(cfg_parser.get("gpi.socket_path", "/var/tmp"));
+    for ( dir_list_t::iterator it = socket_search_dir.begin ()
+        ; it != socket_search_dir.end ()
+        ; ++it
+        )
+    {
+      std::cout
+        << collect_sockets(*it);
+    }
     return EXIT_SUCCESS;
   }
 
-  std::string socket_dir (cfg_parser.get("gpi.socket_path", "/var/tmp"));
+  fs::path socket_dir;
 
   if (socket_path.empty())
   {
-    path_list_t sockets (collect_sockets(socket_dir));
-    if (sockets.empty())
+    for ( dir_list_t::iterator it = socket_search_dir.begin ()
+        ; it != socket_search_dir.end ()
+        ; ++it
+        )
     {
-      std::cerr << "no sockets available in " << socket_dir << std::endl;
+      socket_dir = *it;
+      path_list_t sockets (collect_sockets(*it));
+
+      if (sockets.size ())
+      {
+        if (sockets.size () > 1)
+        {
+          std::cerr << "There are multiple sockets available: " << std::endl;
+          std::cerr << sockets;
+          std::cerr << std::endl;
+        }
+        socket_path = *sockets.begin ();
+        break;
+      }
     }
-    else if (sockets.size () > 1)
-    {
-      std::cerr << "There are multiple sockets available: " << std::endl;
-      std::cerr << std::endl;
-      std::cerr << sockets;
-    }
-    else
-    {
-      socket_path = *sockets.begin();
-    }
+  }
+  else
+  {
+    socket_dir = socket_path.parent_path ();
   }
 
   initialize_state (socket_dir, socket_path, com_size);
@@ -338,7 +333,7 @@ void initialize_shell (int ac, char *av[])
   if (interactive)
     prompt = "gpish> ";
   fs::path histfile (getenv("HOME"));
-  histfile /= ".sdpa/configs/.history";
+  histfile /= ".gpish_history";
 
   shell_t & sh (shell_t::create (av[0], prompt, histfile.string(), *state));
 
@@ -369,14 +364,20 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("memory-copy", &cmd_memory_copy, "copy memory");
   sh.add_command("memory-wait", &cmd_memory_wait, "wait for a copy to finish");
   sh.add_command("memory-list", &cmd_memory_list, "list allocations");
+  sh.add_command("memory-add", &cmd_memory_add, "add memory segment");
+  sh.add_command("memory-del", &cmd_memory_del, "delete memory segment");
 
   // TODO alias definitions
   sh.add_command("alloc", &cmd_memory_alloc, "allocate memory");
   sh.add_command("free", &cmd_memory_free, "free memory");
   sh.add_command("memcpy", &cmd_memory_copy, "copy memory");
   sh.add_command("wait", &cmd_memory_wait, "wait for copy completion");
-  sh.add_command("list", &cmd_list, "list segments and allocations");
 
+  sh.add_command("list", &cmd_list, "list segments and allocations");
+  sh.add_command("ls", &cmd_list, "list segments and allocations");
+
+  sh.add_command ("add", &cmd_memory_add, "add a memory segment");
+  sh.add_command ("del", &cmd_memory_del, "delete a memory segment");
 
   gpi::signal::handler().connect(SIGINT, &interrupt_shell);
 }
@@ -580,7 +581,6 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     std::cerr << "no such handle: " << src.handle << std::endl;
     return -ESRCH;
   }
-  adjust_global_handle_sizes (sh, d);
 
   fs::path file_path;
   if (av.size() > 2)
@@ -600,8 +600,13 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     return -EIO;
   }
 
-  gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
+  typedef boost::posix_time::ptime time_type;
+  time_type timer_start = boost::posix_time::microsec_clock::local_time();
+
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
+
+  const std::size_t total_to_write =
+    (src.offset < d.size) ? d.size - src.offset : 0;
 
   while (src.offset < d.size)
   {
@@ -610,20 +615,24 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     std::size_t to_write = std::min( sh.state().com_size()
                                    , d.size - src.offset
                                    );
-    // copy&wait to gpi_com area
-    sh.state().capi.memcpy(gpi_com_buf, src,         to_write, 0);
-    sh.state().capi.wait(0);
 
-    // copy&wait to shm_com area
-    sh.state().capi.memcpy(shm_com_buf, gpi_com_buf, to_write, 0);
-    sh.state().capi.wait(0);
+    sh.state ().capi.wait
+      (sh.state().capi.memcpy (shm_com_buf, src, to_write, GPI_PC_INVAL));
 
     ofs.write(sh.state().com_buffer(), to_write);
 
     src.offset += to_write;
   }
+
   print_progress(stderr, src.offset, d.size);
   fprintf(stderr, "\n");
+
+  time_type timer_end = boost::posix_time::microsec_clock::local_time();
+  double elapsed = (timer_end - timer_start).total_milliseconds () / 1000.0;
+  if (elapsed == 0.0)
+    elapsed = 1e-15;
+  std::cerr << (((double)total_to_write/1024/1024) / elapsed) << " MiB/s"
+            << std::endl;
 
   return 0;
 }
@@ -632,7 +641,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size() < 2)
   {
-    std::cerr << "usage: load <path> [handle[+offset]]" << std::endl;
+    std::cerr << "usage: load <path> [segment | [handle[+offset]]]" << std::endl;
     return 1;
   }
 
@@ -652,94 +661,99 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   }
 
   gpi::pc::type::memory_location_t dst;
+  int target_segment = 1;
   if (av.size() > 2)
   {
     try
     {
       dst = boost::lexical_cast<gpi::pc::type::memory_location_t>(av[2]);
-    }
-    catch (std::exception const &ex)
-    {
-      std::cerr << "invalid destination: " << av[1]
-                << ": " << ex.what()
-                << std::endl;
-      return -EINVAL;
-    }
 
-    gpi::pc::type::handle::descriptor_t d;
-    if (sh.state().get_handle_descriptor(dst.handle, d) < 0)
-    {
-      std::cerr << "no such handle: " << dst.handle << std::endl;
-      return -ESRCH;
+      gpi::pc::type::handle::descriptor_t d;
+      if (sh.state().get_handle_descriptor(dst.handle, d) < 0)
+      {
+        std::cerr << "no such handle: " << dst.handle << std::endl;
+        return -ESRCH;
+      }
     }
-
-    adjust_global_handle_sizes(sh, d);
-    if (dst.offset > d.size)
+    catch (std::exception const &ex1)
     {
-      std::cerr << "invalid destination: " << dst
-                << ": " << "offset is larger than size"
-                << std::endl;
-      return -EINVAL;
+      try
+      {
+        target_segment = boost::lexical_cast<int> (av [2]);
+      }
+      catch (std::exception const &ex2)
+      {
+        std::cerr << "invalid destination: '" << av[2] << "'"
+                  << " is neither a handle, nor a segment"
+                  << std::endl;
+        return -EINVAL;
+      }
     }
   }
-  else
+
+  if (0 == dst.handle)
   {
     std::size_t file_size = fs::file_size(path);
 
     dst.handle =
-      sh.state().capi.alloc( 1
-                           , sh.state().adjust_size_to_global_alloc(file_size)
+      sh.state().capi.alloc( target_segment
+                           , file_size
                            , path.string()
-                           , gpi::pc::type::handle::F_GLOBAL
-                           | gpi::pc::type::handle::F_PERSISTENT
+                           , gpi::pc::F_GLOBAL
+                           | gpi::pc::F_PERSISTENT
                            );
     dst.offset = 0;
+
+    std::cout << dst.handle << std::endl;
   }
 
-  std::cout << dst << std::endl;
-
+  typedef boost::posix_time::ptime time_type;
+  time_type timer_start = boost::posix_time::microsec_clock::local_time();
   // read data chunk from file to shm
 
-  std::size_t offset (0);
-  gpi::pc::type::memory_location_t gpi_com_buf(sh.state().gpi_com_hdl(), 0);
+  std::size_t read_count = 0;
   gpi::pc::type::memory_location_t shm_com_buf(sh.state().shm_com_hdl(), 0);
 
   gpi::pc::type::handle::descriptor_t handle_descriptor;
   sh.state().get_handle_descriptor(dst.handle, handle_descriptor);
-  adjust_global_handle_sizes(sh, handle_descriptor);
 
   std::size_t total_to_read = handle_descriptor.size - dst.offset;
 
-  while (ifs.good() && (offset < total_to_read))
+  if (total_to_read)
   {
-    print_progress (stderr, offset, total_to_read);
+    while (ifs.good() && (read_count < total_to_read))
+    {
+      print_progress (stderr, read_count, total_to_read);
 
-    std::size_t to_read = std::min( sh.state().com_size()
-                                  , total_to_read - offset
-                                  );
+      std::size_t to_read = std::min( sh.state().com_size()
+                                    , total_to_read - read_count
+                                    );
 
-    ifs.read(sh.state().com_buffer(), to_read);
-    std::size_t read_bytes = ifs.gcount();
+      ifs.read(sh.state().com_buffer(), to_read);
+      std::size_t read_bytes = ifs.gcount();
 
-    // copy&wait to gpi_com area
-    sh.state().capi.memcpy(gpi_com_buf, shm_com_buf, read_bytes, 0);
-    sh.state().capi.wait(0);
+      sh.state ().capi.wait
+        (sh.state ().capi.memcpy (dst, shm_com_buf, read_bytes, GPI_PC_INVAL));
 
-    // copy&wait to actual dst
-    sh.state().capi.memcpy(dst,         gpi_com_buf, read_bytes, 0);
-    sh.state().capi.wait(0);
+      read_count += read_bytes;
+      dst.offset += read_bytes;
+    }
 
-    offset     += read_bytes;
-    dst.offset += read_bytes;
-  }
+    print_progress (stderr, read_count, total_to_read);
+    fprintf(stderr, "\n");
 
-  print_progress (stderr, offset, total_to_read);
-  fprintf(stderr, "\n");
+    if (read_count < total_to_read)
+    {
+      std::cerr << "warning: handle was not completely filled: "
+                << "read " << read_count << "/" << total_to_read << " bytes"
+                << std::endl;
+    }
 
-  if (offset < total_to_read)
-  {
-    std::cerr << "warning: handle was not completely filled: "
-              << "read " << offset << "/" << total_to_read << " bytes"
+    time_type timer_end = boost::posix_time::microsec_clock::local_time();
+    double elapsed = (timer_end - timer_start).total_milliseconds () / 1000.0;
+    if (elapsed == 0.0)
+      elapsed = 1e-15;
+    std::cerr << (((double)read_count/1024/1024) / elapsed) << " MiB/s"
               << std::endl;
   }
 
@@ -784,13 +798,16 @@ int cmd_socket (shell_t::argv_t const & av, shell_t & sh)
         )
     {
       std::cout << "sockets in " << *dir << ":" << std::endl;
-      std::cout << collect_sockets(sh.state().socket_dir);
+      std::cout << collect_sockets (*dir);
       std::cout << std::endl;
+      sh.state ().socket_dir = *dir;
     }
   }
   else
   {
+    std::cout << "sockets in " << sh.state().socket_dir << ":" << std::endl;
     std::cout << collect_sockets(sh.state().socket_dir);
+    std::cout << std::endl;
   }
   return 0;
 }
@@ -865,19 +882,16 @@ int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh)
         switch (*f)
         {
         case 'x':
-          flags |= gpi::pc::type::segment::F_EXCLUSIVE;
-          break;
-        case 'k':
-          flags |= gpi::pc::type::segment::F_NOUNLINK;
+          flags |= gpi::pc::F_EXCLUSIVE;
           break;
         case 'p':
-          flags |= gpi::pc::type::segment::F_PERSISTENT;
+          flags |= gpi::pc::F_PERSISTENT;
           break;
         case 'o':
-          flags |= gpi::pc::type::segment::F_NOCREATE;
+          flags |= gpi::pc::F_NOCREATE;
           break;
         case 'f':
-          flags |= gpi::pc::type::segment::F_FORCE_UNLINK;
+          flags |= gpi::pc::F_FORCE_UNLINK;
           break;
         default:
           std::cerr << "invalid flag: '" << *f << "'" << std::endl;
@@ -963,19 +977,19 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
         std::cout << desc << std::endl;;
         break;
       case 1:
-        if (gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_SPECIAL))
+        if (gpi::flag::is_set (desc.flags, gpi::pc::F_SPECIAL))
         {
           std::cout << desc << std::endl;
         }
         break;
       case 2:
-        if (! gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_SPECIAL))
+        if (! gpi::flag::is_set (desc.flags, gpi::pc::F_SPECIAL))
         {
           std::cout << desc << std::endl;
         }
         break;
       case 3:
-        if (gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_ATTACHED))
+        if (gpi::flag::is_set (desc.flags, gpi::pc::F_ATTACHED))
         {
           std::cout << desc << std::endl;
         }
@@ -1091,6 +1105,8 @@ int cmd_memory (shell_t::argv_t const & av, shell_t & sh)
     std::cout << "    copy" << std::endl;
     std::cout << "    wait" << std::endl;
     std::cout << "    list" << std::endl;
+    std::cout << "    add" << std::endl;
+    std::cout << "    del" << std::endl;
     return 0;
   }
   else
@@ -1133,7 +1149,7 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
   gpi::pc::type::segment_id_t seg_id (0);
   gpi::pc::type::size_t size (0);
   std::string desc;
-  gpi::pc::type::flags_t flags (gpi::pc::type::handle::F_GLOBAL);
+  gpi::pc::type::flags_t flags (gpi::pc::F_GLOBAL);
 
   size = boost::lexical_cast<size_t>(av[1]);
 
@@ -1163,25 +1179,19 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
       {
       case 'l':
       case 'x':
-        gpi::flag::unset (flags, gpi::pc::type::handle::F_GLOBAL);
+        gpi::flag::unset (flags, gpi::pc::F_GLOBAL);
         break;
       case 'g':
-        gpi::flag::set (flags, gpi::pc::type::handle::F_GLOBAL);
+        gpi::flag::set (flags, gpi::pc::F_GLOBAL);
         break;
       case 'p':
-        gpi::flag::set (flags, gpi::pc::type::handle::F_PERSISTENT);
+        gpi::flag::set (flags, gpi::pc::F_PERSISTENT);
         break;
       default:
           std::cerr << "invalid flag: '" << *f << "'" << std::endl;
           return 2;
         }
     }
-  }
-
-  // adjust sizes in case of global allocations
-  if (gpi::flag::is_set(flags, gpi::pc::type::handle::F_GLOBAL))
-  {
-    size = sh.state().adjust_size_to_global_alloc(size);
   }
 
   gpi::pc::type::handle_id_t handle
@@ -1243,13 +1253,13 @@ int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
   gpi::pc::type::size_t amt
       (boost::lexical_cast<gpi::pc::type::size_t>(av[3]));
 
-  gpi::pc::type::queue_id_t queue (0);
+  gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
   if (av.size() > 4)
   {
     queue = boost::lexical_cast<gpi::pc::type::queue_id_t>(av[4]);
   }
 
-  return sh.state().capi.memcpy (dst, src, amt, queue);
+  return (int)(sh.state().capi.memcpy (dst, src, amt, queue));
 }
 
 int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
@@ -1308,9 +1318,6 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
     std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
     gpi::pc::type::handle::list_t handles (sh.state().capi.list_allocations());
     std::sort (handles.begin(), handles.end());
-    std::for_each ( handles.begin(), handles.end()
-                  , boost::bind(adjust_global_handle_sizes, sh, _1)
-                  );
     std::cout << handles;
   }
   else
@@ -1336,6 +1343,158 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
     }
   }
   return 0;
+}
+
+int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
+{
+  typedef std::vector<std::string> url_list_t;
+  url_list_t urls;
+
+  po::options_description desc ("usage: add [options]");
+  desc.add_options ()
+    ("help,h", "this help message")
+    ( "url,u", po::value<url_list_t>(&urls)
+    , "URL of the new memory\npossible parameters: size, mmap, private, persistent"
+    )
+    ;
+
+  po::positional_options_description pos_opts;
+  pos_opts.add ("url", -1);
+
+  po::variables_map vm;
+  try
+  {
+    po::store (po::command_line_parser (av)
+              .options (desc)
+              .positional (pos_opts)
+              .run ()
+              , vm
+              );
+    po::notify (vm);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "invalid argument: " << ex.what() << std::endl;
+    std::cerr << "try " << av [0] << " -h to get some help" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if (vm.count ("help"))
+  {
+    std::cout << desc << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  /* FIXME:  this  is a  quite  weird  behavior  of boost::program_options  used
+     vectors:
+
+     the original av contains: av[0] -> add av[i] -> params
+
+     when  positional arguments are  used, somehow  av[0] ends  up in  the url
+     array..., i.e. we have to drop urls[0]
+  */
+  if (urls.front () == "add")
+    urls.erase (urls.begin ());
+
+  if (urls.empty ())
+  {
+    std::cerr << "add: url must not be empty" << std::endl;
+    std::cerr << desc << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  int ec = EXIT_SUCCESS;
+  BOOST_FOREACH (std::string const &url, urls)
+  {
+    try
+    {
+      gpi::pc::type::segment_id_t id =
+        sh.state().capi.add_memory (url);
+      std::cout << "[" << id << "] = " << url << std::endl;
+    }
+    catch (std::exception const &ex)
+    {
+      std::cerr << "add: '" << url << "' failed: " << ex.what ()
+                << std::endl;
+      ec = EXIT_FAILURE;
+    }
+  }
+
+  return ec;
+}
+
+int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh)
+{
+  typedef std::vector<std::string> id_list_t;
+  id_list_t ids;
+
+  po::options_description desc ("usage: del [options]");
+  desc.add_options ()
+    ("help,h", "this help message")
+    ( "id,i", po::value<id_list_t>(&ids), "the memory ids to remove")
+    ;
+
+  po::positional_options_description pos_opts;
+  pos_opts.add ("id", -1);
+
+  po::variables_map vm;
+  try
+  {
+    po::store ( po::command_line_parser (av)
+              . options (desc)
+              . positional (pos_opts)
+              . run ()
+              , vm
+              );
+    po::notify (vm);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "invalid argument: " << ex.what() << std::endl;
+    std::cerr << "try " << av [0] << " -h to get some help" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if (vm.count ("help"))
+  {
+    std::cout << desc << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  if (ids.front () == "del")
+    ids.erase (ids.begin ());
+
+  if (ids.empty ())
+  {
+    std::cerr << "del: id missing" << std::endl;
+    std::cerr << desc << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  int ec = EXIT_SUCCESS;
+  BOOST_FOREACH (std::string const &id_s, ids)
+  {
+    try
+    {
+      gpi::pc::type::segment_id_t id =
+        boost::lexical_cast<gpi::pc::type::segment_id_t>(id_s);
+      sh.state().capi.del_memory (id);
+    }
+    catch (boost::bad_lexical_cast &)
+    {
+      std::cerr << "del: '" << id_s << "' failed: not a segment id"
+                << std::endl;
+      ec = EXIT_FAILURE;
+    }
+    catch (std::exception const &ex)
+    {
+      std::cerr << "del: '" << id_s << "' failed: " << ex.what ()
+                << std::endl;
+      ec = EXIT_FAILURE;
+    }
+  }
+
+  return ec;
 }
 
 path_list_t collect_sockets (fs::path const & prefix)
@@ -1368,16 +1527,6 @@ path_list_t collect_sockets (fs::path const & prefix)
   return paths;
 }
 
-static void adjust_global_handle_sizes ( shell_t & sh
-                                       , gpi::pc::type::handle::descriptor_t & d
-                                       )
-{
-  if (gpi::flag::is_set (d.flags, gpi::pc::type::handle::F_GLOBAL))
-  {
-    d.size *= sh.state().capi.collect_info().nodes;
-  }
-}
-
 static void print_progress( FILE *fp
                           , const std::size_t current
                           , const std::size_t total
@@ -1391,7 +1540,7 @@ static void print_progress( FILE *fp
   size_t pos=0;
   for (; pos < filled_part; ++pos)
   {
-    fprintf(stderr, "=");
+    fprintf (stderr, "=");
   }
   for (; pos < bar_length; ++pos)
   {

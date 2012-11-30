@@ -4,12 +4,16 @@
 #include <stdio.h>
 #include <csignal> // kill
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/assert.hpp>
+
+#include <fhgcom/kvs/kvsc.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -121,10 +125,11 @@ namespace gpi
 
       topology_t::topology_t()
         : m_shutting_down (false)
-        , m_rank ((gpi::rank_t)-1)
+        , m_go_received (false)
+        , m_waiting_for_go (0)
         , m_established (false)
-      {
-      }
+        , m_rank ((gpi::rank_t)-1)
+      {}
 
       topology_t::~topology_t()
       {
@@ -136,6 +141,52 @@ namespace gpi
         {
           LOG(ERROR, "could not stop topology: " << ex.what());
         }
+      }
+
+      bool topology_t::is_master () const
+      {
+        return 0 == m_rank;
+      }
+
+      int topology_t::wait_for_go ()
+      {
+        lock_type lock (m_go_event_mutex);
+
+        ++m_waiting_for_go;
+
+        boost::system_time const timeout
+          (boost::get_system_time()+boost::posix_time::seconds(30));
+
+        while (not m_go_received)
+        {
+          if (m_shutting_down)
+            break;
+          if (not m_go_received_event.timed_wait (lock, timeout))
+          {
+            if (not m_go_received)
+            {
+              --m_waiting_for_go;
+              throw std::runtime_error ("did not receive GO within 30 seconds");
+            }
+          }
+        }
+
+        --m_waiting_for_go;
+        if (0 == m_waiting_for_go)
+        {
+          m_go_received = false;
+        }
+
+        if (m_shutting_down)
+          throw std::runtime_error ("shutting down");
+
+        return 0;
+      }
+
+      int topology_t::go ()
+      {
+        broadcast (detail::command_t("GO"));
+        return 0;
       }
 
       void topology_t::add_child(const gpi::rank_t rank)
@@ -270,9 +321,11 @@ namespace gpi
         return result;
       }
 
-      int topology_t::alloc ( const gpi::pc::type::handle_t hdl
+      int topology_t::alloc ( const gpi::pc::type::segment_id_t seg
+                            , const gpi::pc::type::handle_t hdl
                             , const gpi::pc::type::offset_t offset
                             , const gpi::pc::type::size_t size
+                            , const gpi::pc::type::size_t local_size
                             , const std::string & name
                             )
       {
@@ -286,18 +339,25 @@ namespace gpi
         try
         {
           rank_result_t res (all_reduce(  detail::command_t("ALLOC")
+                                       << seg
                                        << hdl
                                        << offset
                                        << size
+                                       << local_size
                                        << name
                                        , reduce::max_result
-                                       , rank_result_t(m_rank, 0) // my result
+                                       , rank_result_t (m_rank, 0) // my result
                                        )
                             );
           if (res.value != 0)
           {
             LOG(ERROR,"allocation on node " << res.rank << " failed: " << res.value);
-            throw std::runtime_error("global allocation failed on at least one node");
+            throw std::runtime_error
+              ( "global allocation failed on at least one node: rank "
+              + boost::lexical_cast<std::string>(res.rank)
+              + " says: "
+              + res.message
+              );
           }
           else
           {
@@ -311,6 +371,69 @@ namespace gpi
         }
       }
 
+      int topology_t::add_memory ( const gpi::pc::type::segment_id_t seg_id
+                                 , const std::string & url
+                                 )
+      {
+        int rc = 0;
+
+        rank_result_t res (all_reduce(  detail::command_t("ADDMEM")
+                                     << seg_id
+                                     << url
+                                     , reduce::max_result
+                                     , rank_result_t (m_rank, 0) // my result
+                                     )
+                          );
+        rc = res.value;
+
+        if (rc != 0)
+        {
+          LOG ( ERROR
+              , "add_memory: failed on node " << res.rank
+              << ": " << res.value
+              << ": " << res.message
+              );
+          throw std::runtime_error
+            ( "add_memory: failed on at least one node: rank "
+            + boost::lexical_cast<std::string>(res.rank)
+            + " says: "
+            + res.message
+            );
+        }
+
+        return rc;
+      }
+
+      int topology_t::del_memory (const gpi::pc::type::segment_id_t seg_id)
+      {
+        int rc = 0;
+
+        rank_result_t res (all_reduce(  detail::command_t("DELMEM")
+                                     << seg_id
+                                     , reduce::max_result
+                                     , rank_result_t (m_rank, 0) // my result
+                                     )
+                          );
+        rc = res.value;
+
+        if (rc != 0)
+        {
+          LOG ( ERROR
+              , "del_memory: failed on node " << res.rank
+              << ": " << res.value
+              << ": " << res.message
+              );
+          throw std::runtime_error
+            ( "del_memory: failed on at least one node: rank "
+            + boost::lexical_cast<std::string>(res.rank)
+            + " says: "
+            + res.message
+            );
+        }
+
+        return rc;
+      }
+
       void topology_t::stop ()
       {
         {
@@ -321,6 +444,7 @@ namespace gpi
           }
           m_shutting_down = true;
         }
+
         m_peer->stop();
         m_peer_thread->join();
         m_peer.reset();
@@ -331,43 +455,33 @@ namespace gpi
       {
         LOG(TRACE, "establishing topology...");
 
-        // this barrier is nice, but barriers are broken: see ticket #251
-        //        gpi::api::gpi_api_t::get().barrier();
-
-        BOOST_FOREACH(child_map_t::value_type const & n, m_children)
+        try
         {
-          useconds_t snooze(500 * 1000);
-          int i = 30;
-          while (i --> 0)
+          rank_result_t res (all_reduce( detail::command_t("CONNECT")
+                                       , reduce::max_result
+                                       , rank_result_t (m_rank, 0) // my result
+                                       )
+                            );
+          if (res.value != 0)
           {
-            try
-            {
-              LOG(TRACE, "trying to connect to " << n.second.name);
-              m_peer->send (n.second.name, detail::command_t("CONNECT"));
-              break;
-            }
-            catch (std::exception const & ex)
-            {
-              if (i > 0)
-              {
-                usleep (snooze);
-                snooze = std::min(10 * 1000 * 1000u, snooze*2);
-              }
-              else
-              {
-                LOG( WARN
-                   , "could not establish connection to rank " << n.first
-                   << ": " << ex.what()
-                   );
-                throw;
-              }
-            }
+            LOG (ERROR,"connection failed: " << res.rank << " failed: " << res.value);
+            throw std::runtime_error
+              ( "connections could not be established to at least one node: rank "
+              + boost::lexical_cast<std::string>(res.rank)
+              + " says: "
+              + res.message
+              );
+          }
+          else
+          {
+            m_established = true;
+            DMLOG(TRACE, "topology established");
           }
         }
-
-        m_established = true;
-
-        LOG(INFO, "topology established");
+        catch (std::exception const & ex)
+        {
+          throw;
+        }
       }
 
       void topology_t::cast( const gpi::rank_t rnk
@@ -398,16 +512,43 @@ namespace gpi
         cast(rnk, std::string(data, len));
       }
 
-      static void message_sent (boost::system::error_code const &ec)
+      void topology_t::message_sent ( child_t & child
+                                    , std::string const & data
+                                    , boost::system::error_code const & ec
+                                    )
       {
-        DLOG_IF(WARN, ec, "message could not be sent: " << ec);
+        if (not m_shutting_down && ec)
+        {
+          if (++child.error_counter > 10)
+          {
+            MLOG (ERROR, "exceeded error counter for " << child.name);
+            m_peer->stop ();
+          }
+          else
+          {
+            usleep (child.error_counter * 200 * 1000);
+            cast (child, data);
+          }
+        }
+        else
+        {
+          child.error_counter = 0;
+        }
       }
 
       void topology_t::cast( const child_t & child
                            , const std::string & data
                            )
       {
-        m_peer->async_send(child.name, data, &message_sent);
+        m_peer->async_send ( child.name
+                           , data
+                           , boost::bind ( &topology_t::message_sent
+                                         , this
+                                         , child
+                                         , data
+                                         , _1
+                                         )
+                           );
       }
 
       void topology_t::broadcast (const std::string &data)
@@ -484,7 +625,9 @@ namespace gpi
         if (rank != m_rank && msg == "CONNECT")
         {
           add_child(rank); // actually set_parent(rank)?
-          cast (rank, detail::command_t("+OK"));
+          cast (rank, detail::command_t("+RES") << 0);
+
+          m_established = true;
         }
         else
         {
@@ -496,29 +639,39 @@ namespace gpi
                                   );
           if (av.empty())
           {
-            LOG(ERROR, "ignoring empty command");
+            LOG (ERROR, "ignoring empty command");
           }
           else if (av[0] == "ALLOC")
           {
             using namespace gpi::pc::type;
-            handle_t hdl (boost::lexical_cast<handle_t>(av[1]));
-            offset_t offset (boost::lexical_cast<offset_t>(av[2]));
-            size_t   size (boost::lexical_cast<size_t>(av[3]));
+            segment_id_t seg (boost::lexical_cast<segment_id_t>(av[1]));
+            handle_t hdl (boost::lexical_cast<handle_t>(av[2]));
+            offset_t offset (boost::lexical_cast<offset_t>(av[3]));
+            size_t   size (boost::lexical_cast<size_t>(av[4]));
+            size_t local_size (boost::lexical_cast<size_t>(av[5]));
             std::string name
-                          (boost::algorithm::trim_copy_if( av[4]
-                                                         , boost::is_any_of("\"")
-                                                                                         )
-                          ); // TODO unquote
+              (boost::algorithm::trim_copy_if( av[6]
+                                             , boost::is_any_of("\"")
+                                             )
+              ); // TODO unquote and join (av[4]...)
 
-            int res
-              (global::memory_manager().remote_alloc( 1
-                                                    , hdl
-                                                    , offset
-                                                    , size
-                                                    , name
-                                                    )
-              );
-            cast (rank, detail::command_t("+RES") << res);
+            try
+            {
+              int res
+                (global::memory_manager().remote_alloc( seg
+                                                      , hdl
+                                                      , offset
+                                                      , size
+                                                      , local_size
+                                                      , name
+                                                      )
+                );
+              cast (rank, detail::command_t("+RES") << res);
+            }
+            catch (std::exception const &ex)
+            {
+              cast (rank, detail::command_t("+RES") << 2 << ex.what ());
+            }
           }
           else if (av[0] == "FREE")
           {
@@ -531,16 +684,66 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              LOG(WARN, "could not free handle: " << ex.what());
-              cast (rank, detail::command_t("+ERR") << 1);
+              MLOG_IF ( WARN
+                      , not m_shutting_down
+                      , "could not free handle: " << ex.what()
+                      );
+              cast (rank, detail::command_t("+ERR") << 1 << ex.what ());
+            }
+          }
+          else if (av [0] == "ADDMEM")
+          {
+            using namespace gpi::pc::type;
+            segment_id_t seg_id = boost::lexical_cast<segment_id_t> (av[1]);
+            std::string url_s
+              (boost::algorithm::trim_copy_if( av [2]
+                                             , boost::is_any_of("\"")
+                                             )
+              ); // TODO unquote and join (av[4]...)
+
+            try
+            {
+              global::memory_manager().remote_add_memory (seg_id, url_s);
+              cast (rank, detail::command_t("+RES") << 0);
+            }
+            catch (std::exception const & ex)
+            {
+              MLOG( ERROR
+                  , "add_memory(" << seg_id << ", '" << url_s << "')"
+                  << " failed: " << ex.what()
+                  );
+              cast (rank, detail::command_t("+RES") << 1 << ex.what ());
+            }
+          }
+          else if (av [0] == "DELMEM")
+          {
+            using namespace gpi::pc::type;
+            segment_id_t seg_id = boost::lexical_cast<segment_id_t> (av[1]);
+
+            try
+            {
+              global::memory_manager().remote_del_memory (seg_id);
+              cast (rank, detail::command_t("+RES") << 0);
+            }
+            catch (std::exception const & ex)
+            {
+              MLOG( ERROR
+                  , "del_memory(" << seg_id <<  ")"
+                  << " failed: " << ex.what()
+                  );
+              cast (rank, detail::command_t("+RES") << 1 << ex.what ());
             }
           }
           else if (av[0] == "+RES")
           {
             lock_type lck(m_result_mutex);
+            std::vector<std::string> msg_vec ( av.begin ()+2
+                                             , av.end ()
+                                             );
             m_current_results.push_back
               (rank_result_t( rank
                             , boost::lexical_cast<int>(av[1])
+                            , boost::algorithm::join (msg_vec, " ")
                             )
               );
             m_request_finished.notify_one();
@@ -551,7 +754,21 @@ namespace gpi
           }
           else if (av[0] == "+ERR")
           {
-            LOG(WARN, "error on node " << rank << ": " << av[1]);
+            std::vector<std::string> msg_vec ( av.begin ()+2
+                                             , av.end ()
+                                             );
+            MLOG_IF ( WARN
+                    , not m_shutting_down
+                    , "error on node " << rank
+                    << ": " << av [1]
+                    << ": " << boost::algorithm::join (msg_vec, " ")
+                    );
+          }
+          else if (av [0] == "GO")
+          {
+            lock_type lck (m_go_event_mutex);
+            m_go_received = true;
+            m_go_received_event.notify_all ();
           }
           else if (av[0] == "SHUTDOWN" && !m_shutting_down)
           {
@@ -562,7 +779,7 @@ namespace gpi
           }
           else
           {
-            LOG(WARN, "result collection not implemented");
+            LOG(WARN, "invalid command: '" << av[0] <<"'");
           }
         }
       }
@@ -571,13 +788,29 @@ namespace gpi
                                     , boost::system::error_code const &ec
                                     )
       {
-        if (m_established)
+        if (m_established || m_waiting_for_go)
         {
-          LOG(WARN, "error on connection to child node " << rank);
-          LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
+          MLOG (DEBUG, "error on connection to " << rank << ": " << ec);
+          MLOG (DEBUG, "node-failover is not available yet, I have to commit Seppuku...");
+          m_shutting_down = true;
+          if (m_waiting_for_go)
+          {
+            m_go_received_event.notify_all ();
+          }
+
           del_child (rank);
+
+          // delete my kvs entry and the one from the child in case it couldn't
+          gpi::rank_t rnks [] = { m_rank , rank };
+          for (size_t i = 0 ; i < 2 ; ++i)
+          {
+            std::string peer_name = fhg::com::p2p::to_string
+              (fhg::com::p2p::address_t (detail::rank_to_name (rnks[i])));
+            std::string kvs_key = "p2p.peer." + peer_name;
+            fhg::com::kvs::del (kvs_key);
+          }
+
           kill(getpid(), SIGTERM);
-          //_exit(15);
         }
       }
     }

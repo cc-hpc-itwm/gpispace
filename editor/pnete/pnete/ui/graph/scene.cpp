@@ -2,32 +2,33 @@
 
 #include <pnete/ui/graph/scene.hpp>
 
-#include <QGraphicsSceneMouseEvent>
-#include <QKeyEvent>
-#include <QDebug>
-#include <QApplication>
-
+#include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/transition.hpp>
+#include <pnete/data/internal.hpp>
+#include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
-#include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/pending_connection.hpp>
 #include <pnete/ui/graph/place.hpp>
-#include <pnete/ui/graph/item.hpp>
-
+#include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
-
+#include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/util/action.hpp>
-
-#include <pnete/data/internal.hpp>
-
 #include <pnete/weaver/display.hpp>
+#include <pnete/weaver/weaver.hpp>
 
 #include <util/graphviz.hpp>
-
-#include <boost/unordered_map.hpp>
-#include <boost/foreach.hpp>
+#include <util/qt/cast.hpp>
 
 #include <list>
+
+#include <boost/foreach.hpp>
+#include <boost/unordered_map.hpp>
+
+#include <QApplication>
+#include <QDebug>
+#include <QGraphicsSceneMouseEvent>
+#include <QKeyEvent>
 
 namespace fhg
 {
@@ -37,536 +38,730 @@ namespace fhg
     {
       namespace graph
       {
-        namespace scene
+        scene_type::scene_type ( const data::handle::net& net
+                               , data::internal_type* internal
+                               , QObject* parent
+                               )
+          : QGraphicsScene (parent)
+          , _pending_connection (NULL)
+          , _mouse_position (QPointF (0.0, 0.0))
+          , _menu_context()
+          , _net (net)
+          , _internal (internal)
         {
-          type::type ( ::xml::parse::type::net_type & n
-                     , data::change_manager_t& cm
-                     , QObject* parent
-                     )
-            : QGraphicsScene (parent)
-            , _pending_connection (NULL)
-            , _mouse_position (QPointF (0.0, 0.0))
-            , _menu_context()
-            , _net (n)
-            , _change_manager (cm)
+          init_menu_context();
+
+          // transition
+          _net.connect_to_change_mgr
+            ( this
+            , "transition_added"
+            , "const data::handle::transition&"
+            );
+          _net.connect_to_change_mgr
+            ( this
+            , "transition_deleted"
+            , "const data::handle::transition&"
+            );
+
+          // place
+          _net.connect_to_change_mgr
+            ( this
+            , "place_added"
+            , "const data::handle::place&"
+            );
+          _net.connect_to_change_mgr
+            ( this
+            , "place_deleted"
+            , "const data::handle::place&"
+            );
+
+          // connections
+          //! \note This is not really in responsibility of the net,
+          // but we would need to connect every transition being added
+          // to the signal/slot again, which would be a lot of
+          // reconnection happening, every time when adding or
+          // removing transitions. Thus we just use the net's change
+          // manager (as that should be the same as the transitions'
+          // one) and hook for any connection changing in any
+          // transition.
+          _net.connect_to_change_mgr
+            ( this
+            , "connection_added_in"
+            , "const data::handle::connect&, "
+              "const data::handle::place&, const data::handle::port&"
+            );
+          _net.connect_to_change_mgr
+            ( this
+            , "connection_added_read"
+            , "const data::handle::connect&, "
+              "const data::handle::place&, const data::handle::port&"
+            );
+          _net.connect_to_change_mgr
+            ( this
+            , "connection_added_out"
+            , "const data::handle::connect&, "
+              "const data::handle::port&, const data::handle::place&"
+            );
+          _net.connect_to_change_mgr
+            (this, "connection_removed", "const data::handle::connect&");
+        }
+
+        //! \todo This is duplicate code, also available in main window.
+        void scene_type::init_menu_context ()
+        {
+          //! \todo This QMenu most likely is leaked.
+          QMenu* menu_new (new QMenu (tr ("new"), NULL));
+          QAction* action_add_transition (menu_new->addAction (tr ("transition")));
+          connect ( action_add_transition
+                  , SIGNAL (triggered())
+                  , SLOT (slot_add_transition())
+                  );
+
+          QAction* action_add_place (menu_new->addAction (tr ("place")));
+          connect ( action_add_place
+                  , SIGNAL (triggered())
+                  , SLOT (slot_add_place())
+                  );
+
+          menu_new->addSeparator();
+
+          QAction* action_add_struct (menu_new->addAction (tr ("struct")));
+          connect ( action_add_struct
+                  , SIGNAL (triggered())
+                  , SLOT (slot_add_struct())
+                  );
+
+          _menu_context.addMenu (menu_new);
+          _menu_context.addSeparator();
+
+          QAction* auto_layout_action
+            (_menu_context.addAction (tr ("auto_layout")));
+          connect ( auto_layout_action
+                  , SIGNAL (triggered())
+                  , SLOT (auto_layout())
+                  );
+        }
+
+        void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
+        {
+          if (base_item* i = qgraphicsitem_cast<base_item*> (itemAt (event->scenePos())))
           {
-            init_menu_context();
+            switch (i->type())
+            {
+            case base_item::port_graph_type:
+            case base_item::top_level_port_graph_type:
+            {
+              QMenu menu;
 
-            connect ( &change_manager()
-                    , SIGNAL ( signal_delete_transition
-                               ( const QObject*
-                               , const ::xml::parse::type::transition_type&
-                               , const ::xml::parse::type::net_type&
-                               )
-                             )
-                    , SLOT ( slot_delete_transition
-                             ( const QObject*
-                             , const ::xml::parse::type::transition_type&
-                             , const ::xml::parse::type::net_type&
-                             )
-                           )
-                    , Qt::DirectConnection
-                    );
-            connect ( &change_manager()
-                    , SIGNAL ( signal_add_transition
-                               ( const QObject*
-                               , ::xml::parse::type::transition_type&
-                               , ::xml::parse::type::net_type&
-                               )
-                             )
-                    , SLOT ( slot_add_transition
-                             ( const QObject*
-                             , ::xml::parse::type::transition_type&
-                             , ::xml::parse::type::net_type&
-                             )
-                           )
-                    , Qt::DirectConnection
-                    );
-            connect ( &change_manager()
-                    , SIGNAL ( signal_add_place
-                               ( const QObject*
-                               , ::xml::parse::type::place_type&
-                               , ::xml::parse::type::net_type&
-                               )
-                             )
-                    , SLOT ( slot_add_place
-                             ( const QObject*
-                             , ::xml::parse::type::place_type&
-                             , ::xml::parse::type::net_type&
-                             )
-                           )
-                    , Qt::DirectConnection
-                    );
-          }
+              QAction* action_set_type
+                (menu.addAction(tr("Set type")));
+              //                      connect (action_set_type, SIGNAL(triggered()), SLOT(slot_set_type()));
 
-          //! \todo This is duplicate code, also available in main window.
-          void type::init_menu_context ()
-          {
-            //! \todo This QMenu most likely is leaked.
-            QMenu* menu_new (new QMenu (tr ("new"), NULL));
-            QAction* action_add_transition (menu_new->addAction (tr ("transition")));
-            connect ( action_add_transition
-                    , SIGNAL (triggered())
-                    , SLOT (slot_add_transition())
-                    );
+              menu.addSeparator();
 
-            QAction* action_add_place (menu_new->addAction (tr ("place")));
-            connect ( action_add_place
-                    , SIGNAL (triggered())
-                    , SLOT (slot_add_place())
-                    );
+              QAction* action_delete (menu.addAction(tr("Delete")));
+              //             connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
 
-            menu_new->addSeparator();
+              menu.exec(event->screenPos());
+              event->accept();
+            }
+            break;
+            case base_item::transition_graph_type:
+            {
+              QMenu menu;
 
-            QAction* action_add_struct (menu_new->addAction (tr ("struct")));
-            connect ( action_add_struct
-                    , SIGNAL (triggered())
-                    , SLOT (slot_add_struct())
-                    );
+              QAction* action_add_port (menu.addAction(tr("Add Port")));
 
-            _menu_context.addMenu (menu_new);
-            _menu_context.addSeparator();
+              menu.addSeparator();
 
-            QAction* auto_layout_action
-              (_menu_context.addAction (tr ("auto_layout")));
-            connect ( auto_layout_action
-                    , SIGNAL (triggered())
-                    , SLOT (auto_layout())
-                    );
-          }
+              QAction* action_delete (menu.addAction (tr("Delete")));
 
-          void type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
-          {
-            if (item* i = qgraphicsitem_cast<item*> (itemAt (event->scenePos())))
+
+              QAction* triggered (menu.exec(event->screenPos()));
+
+              if (triggered == action_delete)
               {
-                switch (i->type())
-                  {
-                  case item::connection_graph_type:
-                    break;
-                  case item::port_graph_type:
-                  case item::top_level_port_graph_type:
-                    {
-                      QMenu menu;
-
-                      QAction* action_set_type
-                        (menu.addAction(tr("Set type")));
-                      //                      connect (action_set_type, SIGNAL(triggered()), SLOT(slot_set_type()));
-
-                      menu.addSeparator();
-
-                      QAction* action_delete (menu.addAction(tr("Delete")));
-                      //             connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
-
-                      menu.exec(event->screenPos());
-                      event->accept();
-                    }
-                    break;
-                  case item::transition_graph_type:
-                    {
-                      QMenu menu;
-
-                      QAction* action_add_port (menu.addAction(tr("Add Port")));
-
-                      menu.addSeparator();
-
-                      QAction* action_delete (menu.addAction (tr("Delete")));
-
-
-                      QAction* triggered (menu.exec(event->screenPos()));
-
-                      if (triggered == action_delete)
-                        {
-                          slot_delete_transition (i);
-                        }
-                      else if (triggered == action_add_port)
-                        {
-                          std::cerr << "add port" << std::endl;
-                        }
-                      else if (!triggered)
-                        {
-                          //! \todo see QTBUG-21943
-                          QPoint p ( event->widget()
-                                   ->mapFromGlobal(event->screenPos())
-                                   );
-                          QMouseEvent mouseEvent( QEvent::MouseMove
-                                                , p
-                                                , Qt::NoButton
-                                                , Qt::NoButton
-                                                , event->modifiers()
-                                                );
-                          QApplication::sendEvent(event->widget(), &mouseEvent);
-                        }
-
-                      event->accept();
-                    }
-                    break;
-                  case item::place_graph_type:
-                    break;
-                  default:
-                    break;
-                  }
+                slot_delete_transition (i);
               }
-            else
+              else if (triggered == action_add_port)
               {
-                _menu_context.popup(event->screenPos());
-                event->accept();
+                std::cerr << "add port" << std::endl;
               }
-          }
-
-          ::xml::parse::type::net_type& type::net()
-          {
-            return _net;
-          }
-          data::change_manager_t& type::change_manager()
-          {
-            return _change_manager;
-          }
-
-
-          void type::slot_add_transition ()
-          {
-            change_manager().add_transition (this, net());
-          }
-          void type::slot_add_transition
-          ( const QObject* origin
-          , ::xml::parse::type::transition_type& t
-          , ::xml::parse::type::net_type& n
-          )
-          {
-            if (is_my_net (n))
+              else if (!triggered)
               {
-                transition::item* trans (new transition::item (t, n));
-
-                addItem (trans);
-
-                weaver::item_by_name_type place_by_name;
-
-                weaver::transition wt ( &change_manager().internal()
-                                      , this
-                                      , trans
-                                      , n
-                                      , place_by_name
+                //! \todo see QTBUG-21943
+                QPoint p ( event->widget()
+                         ->mapFromGlobal(event->screenPos())
+                         );
+                QMouseEvent mouseEvent( QEvent::MouseMove
+                                      , p
+                                      , Qt::NoButton
+                                      , Qt::NoButton
+                                      , event->modifiers()
                                       );
-
-                FROM(transition) (&wt, t);
-
-                trans->repositionChildrenAndResize();
-
-                if (origin == this)
-                  {
-                    trans->setPos (mouse_position());
-                  }
+                QApplication::sendEvent(event->widget(), &mouseEvent);
               }
-          }
 
-          void type::slot_add_place ()
-          {
-            change_manager().add_place (this, net());
-          }
-          void type::slot_add_place ( const QObject* origin
-                                    , ::xml::parse::type::place_type& p
-                                    , ::xml::parse::type::net_type& n
-                                    )
-          {
-            if (is_my_net (n))
+              event->accept();
+            }
+            break;
+            case base_item::place_graph_type:
+            {
+              QMenu menu;
+
+              QAction* action_delete (menu.addAction (tr("Delete")));
+
+              QAction* triggered (menu.exec(event->screenPos()));
+
+              if (triggered == action_delete)
               {
-                place::item* place (new place::item (p));
-
-                addItem (place);
-
-                  if (origin == this)
-                    {
-                      place->setPos (mouse_position());
-                    }
+                slot_delete_place (i);
               }
-          }
-
-          void type::slot_add_struct ()
-          {
-            qDebug() << "type::add_struct";
-          }
-
-          const QPointF& type::mouse_position() const
-          {
-            return _mouse_position;
-          }
-
-          connection::item* type::create_connection (bool only_reading)
-          {
-            connection::item * c (new connection::item (only_reading));
-            addItem (c);
-            c->setPos (QPointF (0.0, 0.0));
-            return c;
-          }
-
-          void type::create_connection (connectable::item* item)
-          {
-            if (_pending_connection)
+              else if (!triggered)
               {
-                throw std::runtime_error ( "connection created while a different "
-                                         "connection is still pending. Oo"
-                                         );
+                //! \todo see QTBUG-21943
+                QPoint p ( event->widget()
+                         ->mapFromGlobal(event->screenPos())
+                         );
+                QMouseEvent mouseEvent( QEvent::MouseMove
+                                      , p
+                                      , Qt::NoButton
+                                      , Qt::NoButton
+                                      , event->modifiers()
+                                      );
+                QApplication::sendEvent(event->widget(), &mouseEvent);
               }
 
-            _pending_connection = create_connection();
-            if (item->direction() == connectable::direction::IN)
+              event->accept();
+            }
+            break;
+            case base_item::connection_graph_type:
+            {
+              QMenu menu;
+
+              QAction* action_delete (menu.addAction (tr("Delete")));
+
+              QAction* triggered (menu.exec(event->screenPos()));
+
+              if (triggered == action_delete)
               {
-                _pending_connection->end (item);
+                fhg::util::qt::throwing_qgraphicsitem_cast<connection_item*> (i)
+                  ->handle().remove (this);
               }
-            else
+              else if (!triggered)
               {
-                _pending_connection->start (item);
+                //! \todo see QTBUG-21943
+                QPoint p ( event->widget()
+                         ->mapFromGlobal(event->screenPos())
+                         );
+                QMouseEvent mouseEvent( QEvent::MouseMove
+                                      , p
+                                      , Qt::NoButton
+                                      , Qt::NoButton
+                                      , event->modifiers()
+                                      );
+                QApplication::sendEvent(event->widget(), &mouseEvent);
               }
 
+              event->accept();
+            }
+            break;
+            default:
+              break;
+            }
+          }
+          else
+          {
+            _menu_context.popup(event->screenPos());
+            event->accept();
+          }
+        }
+
+        data::internal_type* scene_type::internal() const
+        {
+          return _internal;
+        }
+
+        data::change_manager_t& scene_type::change_manager() const
+        {
+          return internal()->change_manager();
+        }
+
+        void scene_type::slot_add_struct ()
+        {
+          qDebug() << "scene_type::add_struct";
+        }
+
+        void scene_type::create_pending_connection (connectable_item* item)
+        {
+          if (_pending_connection)
+          {
+            throw std::runtime_error
+              ( "pending connection created while a different connection is "
+              "still pending. Oo");
+          }
+
+          _pending_connection = new pending_connection (item, _mouse_position);
+          _pending_connection->set_just_pos_but_not_in_property (0.0, 0.0);
+          addItem (_pending_connection);
+
+          update (_pending_connection->boundingRect());
+        }
+
+        void scene_type::create_connection ( connectable_item* from
+                                           , connectable_item* to
+                                           , bool only_reading
+                                           , const data::handle::connect& handle
+                                           )
+        {
+          if (!to->is_connectable_with (from))
+          {
+            throw std::runtime_error
+              ("tried hard-connecting non-connectable items.");
+          }
+          addItem (new connection_item (from, to, handle, only_reading));
+        }
+
+        void scene_type::remove_pending_connection()
+        {
+          delete _pending_connection;
+          _pending_connection = NULL;
+        }
+
+        void scene_type::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
+        {
+          if (_pending_connection)
+          {
+            update (_pending_connection->boundingRect());
+            _pending_connection->open_end
+              (_mouse_position = mouseEvent->scenePos());
             update (_pending_connection->boundingRect());
           }
-
-          void type::create_connection ( connectable::item* from
-                                       , connectable::item* to
-                                       , bool only_reading
-                                       )
-          {
-            if (!to->is_connectable_with (from))
-              {
-                throw std::runtime_error
-                  ("tried hard-connecting non-connectable items.");
-              }
-            connection::item* c (create_connection (only_reading));
-            c->start (from);
-            c->end (to);
-            update (c->boundingRect());
-          }
-
-          void type::remove_pending_connection()
-          {
-            if (!_pending_connection)
-              {
-                return;
-              }
-
-            const QRectF area (_pending_connection->boundingRect());
-            delete _pending_connection;
-            _pending_connection = NULL;
-            update(area);
-          }
-
-          void type::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
+          else
           {
             _mouse_position = mouseEvent->scenePos();
-
-            if (_pending_connection)
-              {
-                const QRectF old_area (_pending_connection->boundingRect());
-                update (old_area);
-                update ( QRectF ( QPointF ( qMin (0.0, _mouse_position.x())
-                                          , qMin (0.0, _mouse_position.y())
-                                          )
-                                , QPointF ( qMax (0.0, _mouse_position.x())
-                                          , qMax (0.0, _mouse_position.y())
-                                          )
-                                )
-                       );
-              }
-
-            QGraphicsScene::mouseMoveEvent (mouseEvent);
           }
 
-          void type::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
+          QGraphicsScene::mouseMoveEvent (mouseEvent);
+        }
+
+        void scene_type::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
+        {
+          if (!_pending_connection)
           {
-            if (!_pending_connection)
-              {
-                QGraphicsScene::mouseReleaseEvent (event);
-                return;
-              }
-
-            foreach (QGraphicsItem* item, items(event->scenePos()))
-              {
-                //! \note No, just casting to connectable::item* does NOT work. Qt!
-                port::item* as_port (qgraphicsitem_cast<port::item*> (item));
-                place::item* as_place (qgraphicsitem_cast<place::item*> (item));
-
-                connectable::item* ci (as_port);
-                if (!ci)
-                  {
-                    ci = as_place;
-                  }
-                if (!ci)
-                  {
-                    continue;
-                  }
-
-                if (ci->is_connectable_with (_pending_connection->non_free_side()))
-                  {
-                    if (qobject_cast<port::item*> (ci) && as_port)
-                      {
-                        //! \todo insert place and connect with that place in between.
-                      }
-
-                    _pending_connection->free_side (ci);
-                    update (_pending_connection->boundingRect());
-                    _pending_connection = NULL;
-                    event->accept();
-                    break;
-                  }
-              }
-
-            remove_pending_connection();
-
             QGraphicsScene::mouseReleaseEvent (event);
+            return;
           }
 
-          void type::keyPressEvent (QKeyEvent* event)
+          foreach (const QGraphicsItem* item, items (event->scenePos()))
           {
-            if (_pending_connection && event->key() == Qt::Key_Escape)
-              {
-                remove_pending_connection();
-                event->accept();
-                return;
-              }
+            const port_item* as_port
+              (qgraphicsitem_cast<const port_item*> (item));
+            const place_item* as_place
+              (qgraphicsitem_cast<const place_item*> (item));
 
-            QGraphicsScene::keyPressEvent (event);
+            const connectable_item* ci
+              ( as_port
+              ? static_cast<const connectable_item*> (as_port)
+              : static_cast<const connectable_item*> (as_place)
+              );
+            if (!ci)
+            {
+              continue;
+            }
+
+            const connectable_item* pending (_pending_connection->fixed_end());
+
+            if (ci->direction() == pending->direction())
+            {
+              throw std::runtime_error
+                ("connecting two items with same direction");
+            }
+
+            const port_item* pending_as_port
+              (qgraphicsitem_cast<const port_item*> (pending));
+            const place_item* pending_as_place
+              (qgraphicsitem_cast<const place_item*> (pending));
+
+            if (as_port && pending_as_port)
+            {
+              if (as_port->direction() == connectable::direction::IN)
+              {
+                change_manager().add_connection
+                  (this, pending_as_port->handle(), as_port->handle());
+              }
+              else
+              {
+                change_manager().add_connection
+                  (this, as_port->handle(), pending_as_port->handle());
+              }
+            }
+            else
+            {
+              const port_item* port (as_port ? as_port : pending_as_port);
+              const place_item* place (as_place ? as_place : pending_as_place);
+
+              if (port->direction() == connectable::direction::IN)
+              {
+                change_manager().add_connection
+                  (this, place->handle(), port->handle());
+              }
+              else
+              {
+                change_manager().add_connection
+                  (this, port->handle(), place->handle());
+              }
+            }
+
+            event->accept();
+            break;
           }
 
-          void type::auto_layout()
+          remove_pending_connection();
+
+          QGraphicsScene::mouseReleaseEvent (event);
+        }
+
+        void scene_type::keyPressEvent (QKeyEvent* event)
+        {
+          if (_pending_connection && event->key() == Qt::Key_Escape)
           {
-            typedef boost::unordered_map< item*
-                                        , graphviz::node_type
-                                        > nodes_map_type;
-            nodes_map_type nodes;
-
-            graphviz::context_type context;
-            graphviz::graph_type graph (context);
-            graph.rankdir ("LR");
-            graph.splines ("ortho");
-
-            foreach (QGraphicsItem* i, items())
-              {
-                if ( (  i->type() == item::port_graph_type
-                     || i->type() == item::transition_graph_type
-                     || i->type() == item::place_graph_type
-                     || i->type() == item::top_level_port_graph_type
-                     )
-                   && i->parentItem() == NULL
-                   )
-                  {
-                    nodes.insert ( nodes_map_type::value_type
-                                   ( qgraphicsitem_cast<item*> (i)
-                                   , graph.add_node (i)
-                                   )
-                                 );
-                  }
-              }
-
-            typedef boost::unordered_map< connection::item*
-                                        , graphviz::edge_type
-                                        > edges_map_type;
-            edges_map_type edges;
-
-            foreach (QGraphicsItem* i, items())
-              {
-                if ( connection::item* c
-                   = qgraphicsitem_cast<connection::item*> (i)
-                   )
-                  {
-                    QGraphicsItem* start (c->start());
-                    QGraphicsItem* end (c->end());
-
-                    start = start->parentItem() ? start->parentItem() : start;
-                    end = end->parentItem() ? end->parentItem() : end;
-
-                    nodes_map_type::iterator start_node
-                      (nodes.find (qgraphicsitem_cast<item*> (start)));
-                    nodes_map_type::iterator end_node
-                      (nodes.find (qgraphicsitem_cast<item*> (end)));
-
-                    if (start_node != nodes.end() && end_node != nodes.end())
-                      {
-                        edges.insert
-                          ( edges_map_type::value_type
-                            ( c
-                            , graph.add_edge ( start_node->second
-                                             , end_node->second
-                                             )
-                            )
-                          );
-                      }
-                  }
-              }
-
-            graph.layout ("dot");
-
-            BOOST_FOREACH (nodes_map_type::value_type& it, nodes)
-              {
-                it.first->setPos (style::raster::snap (it.second.position()));
-              }
-
-            BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
-              {
-                //! \todo enable this, before repair connection::shape
-                //                edge.first->fixed_points (edge.second.points());
-              }
+            remove_pending_connection();
+            event->accept();
+            return;
           }
 
-          void type::slot_delete_transition
+          QGraphicsScene::keyPressEvent (event);
+        }
+
+        void scene_type::auto_layout()
+        {
+          typedef boost::unordered_map< base_item*
+                                      , graphviz::node_type
+                                      > nodes_map_type;
+          nodes_map_type nodes;
+
+          graphviz::context_type context;
+          graphviz::graph_type graph (context);
+          graph.rankdir ("LR");
+          graph.splines ("ortho");
+
+          foreach (QGraphicsItem* i, items())
+          {
+            if ( (  i->type() == base_item::port_graph_type
+                 || i->type() == base_item::transition_graph_type
+                 || i->type() == base_item::place_graph_type
+                 || i->type() == base_item::top_level_port_graph_type
+                 )
+               && i->parentItem() == NULL
+               )
+            {
+              nodes.insert ( nodes_map_type::value_type
+                             ( qgraphicsitem_cast<base_item*> (i)
+                             , graph.add_node (i)
+                             )
+                           );
+            }
+          }
+
+          typedef boost::unordered_map < connection_item*
+                                       , graphviz::edge_type
+                                       > edges_map_type;
+          edges_map_type edges;
+
+          foreach (QGraphicsItem* i, items())
+          {
+            if (connection_item* c = qgraphicsitem_cast<connection_item*> (i))
+            {
+              QGraphicsItem* start (c->start());
+              QGraphicsItem* end (c->end());
+
+              start = start->parentItem() ? start->parentItem() : start;
+              end = end->parentItem() ? end->parentItem() : end;
+
+              nodes_map_type::iterator start_node
+                (nodes.find (qgraphicsitem_cast<base_item*> (start)));
+              nodes_map_type::iterator end_node
+                (nodes.find (qgraphicsitem_cast<base_item*> (end)));
+
+              if (start_node != nodes.end() && end_node != nodes.end())
+              {
+                edges.insert
+                  ( edges_map_type::value_type
+                    (c, graph.add_edge (start_node->second, end_node->second))
+                  );
+              }
+            }
+          }
+
+          graph.layout ("dot");
+
+          BOOST_FOREACH (nodes_map_type::value_type& it, nodes)
+          {
+            it.first->setPos (style::raster::snap (it.second.position()));
+          }
+
+          BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
+          {
+            //! \todo enable this, before repair connection::shape
+            //                edge.first->fixed_points (edge.second.points());
+          }
+        }
+
+        template<typename item_type, typename handle_type>
+          item_type* scene_type::item_with_handle (const handle_type& handle)
+        {
+          foreach (QGraphicsItem* child, items())
+          {
+            if (item_type* item = qgraphicsitem_cast<item_type*> (child))
+            {
+              if (item->handle() == handle)
+              {
+                return item;
+              }
+            }
+          }
+          return NULL;
+        }
+
+        template<typename handle_type>
+          bool scene_type::is_in_my_net (const handle_type& handle)
+        {
+          return handle.get().parent()->id() == net().id();
+        }
+
+        template<>
+          bool scene_type::is_in_my_net (const data::handle::connect& handle)
+        {
+          return handle.get().parent()->parent()->id() == net().id();
+        }
+
+        const data::handle::net& scene_type::net() const
+        {
+          return _net;
+        }
+
+        template<typename item_type>
+          QList<item_type*> scene_type::items_of_type() const
+        {
+          QList<item_type*> result;
+
+          foreach (QGraphicsItem* child, items())
+          {
+            if (item_type* item = qgraphicsitem_cast<item_type*> (child))
+            {
+              result << item;
+            }
+          }
+
+          return result;
+        }
+
+        namespace
+        {
+          template<typename item_type>
+            weaver::item_by_name_type
+            name_map_for_items (const QList<item_type*>& items)
+          {
+            weaver::item_by_name_type result;
+            foreach (item_type* item, items)
+            {
+              result[item->handle().get().name()] = item;
+            }
+            return result;
+          }
+        }
+
+        template<typename item_type, typename handle_type>
+          void scene_type::remove_item_for_handle (const handle_type& handle)
+        {
+          if (is_in_my_net (handle))
+          {
+            item_type* item (item_with_handle<item_type> (handle));
+            removeItem (item);
+            delete item;
+          }
+        }
+
+        // ## trigger modification ###################################
+        // # transition ##############################################
+        void scene_type::slot_add_transition() const
+        {
+          net().add_transition (this);
+        }
+
+        void scene_type::slot_delete_transition (base_item* item) const
+        {
+          fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*> (item)
+            ->handle().remove (this);
+        }
+
+        // # place ###################################################
+        void scene_type::slot_add_place() const
+        {
+          net().add_place (this);
+        }
+
+        void scene_type::slot_delete_place (base_item* item) const
+        {
+          fhg::util::qt::throwing_qgraphicsitem_cast<place_item*> (item)
+            ->handle().remove (this);
+        }
+
+        // ## react on modification ##################################
+        // # connection ##############################################
+        //! \todo Pass direction, don't pass from and to. Pass net.
+        void scene_type::connection_added_in
           ( const QObject* origin
-          , const ::xml::parse::type::transition_type& trans
-          , const ::xml::parse::type::net_type& net
+          , const data::handle::connect& connection
+          , const data::handle::place& from
+          , const data::handle::port& to
           )
+        {
+          if (is_in_my_net (from))
           {
-            if (origin != this && is_my_net (net))
-              {
-                foreach (QGraphicsItem* child, items())
-                  {
-                    if ( transition::item* transition_item
-                       = qgraphicsitem_cast<transition::item*> (child)
-                       )
-                      {
-                        if (&trans == &transition_item->transition())
-                          {
-                            remove_transition_item (transition_item);
-                            transition_item->deleteLater();
-                          }
-                      }
-                  }
-              }
+            //! \todo Weaver.
+            // weaver::item_by_name_type places
+            //   (name_map_for_items (items_of_type<place_item>()));
+            //! \note This can't be easily weaved, as 'ports'
+            //! needs to contain only the ports of the transition
+            //! where the connection's port is in. Getting children
+            //! ports of the scene will yield wrong ones. The weaver
+            //! normally is started inside a transition, thus
+            //! correctly only knows ports inside that transition.
+            // weaver::item_by_name_type ports
+            //   (name_map_for_items (items_of_type<port_item>()));
+
+            // weaver::connection wc
+            //   (this, places, ports, connectable::direction::IN, false);
+            // weaver::from::connection (&wc, connection.id());
+            create_connection ( item_with_handle<place_item> (from)
+                              , item_with_handle<port_item> (to)
+                              , false
+                              , connection
+                              );
           }
-          void type::remove_transition_item (transition::item* transition_item)
+        }
+        void scene_type::connection_added_read
+          ( const QObject* origin
+          , const data::handle::connect& connection
+          , const data::handle::place& from
+          , const data::handle::port& to
+          )
+        {
+          if (is_in_my_net (from))
           {
-            foreach (QGraphicsItem* child, transition_item->childItems())
-              {
-                if (port::item* port = qgraphicsitem_cast<port::item*> (child))
-                  {
-                    port->erase_connections (this);
-                  }
-              }
+            //! \todo Weaver. See above.
+            // weaver::item_by_name_type places
+            //   (name_map_for_items (items_of_type<place_item>()));
+            // weaver::item_by_name_type ports
+            //   (name_map_for_items (items_of_type<port_item>()));
 
-            removeItem (transition_item);
+            // weaver::connection wc
+            //   (this, places, ports, connectable::direction::IN, true);
+            // weaver::from::connection (&wc, connection.id());
+            create_connection ( item_with_handle<place_item> (from)
+                              , item_with_handle<port_item> (to)
+                              , true
+                              , connection
+                              );
           }
-          void type::slot_delete_transition (graph::item* graph_item)
+        }
+        void scene_type::connection_added_out
+          ( const QObject* origin
+          , const data::handle::connect& connection
+          , const data::handle::port& from
+          , const data::handle::place& to
+          )
+        {
+          if (is_in_my_net (to))
           {
-            transition::item* transition_item
-              (qgraphicsitem_cast<transition::item*> (graph_item));
+            //! \todo Weaver. See above.
+            // weaver::item_by_name_type places
+            //   (name_map_for_items (items_of_type<place_item>()));
+            // weaver::item_by_name_type ports
+            //   (name_map_for_items (items_of_type<port_item>()));
 
-            if (!transition_item)
-              {
-                throw std::runtime_error
-                  ("STRANGE: delete_transition for something else!?");
-              }
-
-            remove_transition_item (transition_item);
-
-            change_manager().delete_transition ( this
-                                               , transition_item->transition()
-                                               , transition_item->net()
-                                               );
-
-            transition_item->deleteLater();
+            // weaver::connection wc
+            //   (this, places, ports, connectable::direction::OUT, false);
+            // weaver::from::connection (&wc, connection.id());
+            create_connection ( item_with_handle<port_item> (from)
+                              , item_with_handle<place_item> (to)
+                              , false
+                              , connection
+                              );
           }
+        }
 
-          bool type::is_my_net (const ::xml::parse::type::net_type& n)
+        void scene_type::connection_removed
+          (const QObject* origin, const data::handle::connect& connection)
+        {
+          remove_item_for_handle<connection_item> (connection);
+        }
+
+        // # transition ##############################################
+        void scene_type::transition_added
+          (const QObject* origin, const data::handle::transition& transition)
+        {
+          if (is_in_my_net (transition))
           {
-            return &n == &net();
+            transition_item* item (new transition_item (transition));
+
+            addItem (item);
+
+            weaver::item_by_name_type places
+              (name_map_for_items (items_of_type<place_item>()));
+
+            weaver::transition wt
+              ( _internal
+              , this
+              , item
+              , transition.parent().get().make_reference_id()
+              , places
+              );
+            weaver::from::transition (&wt, transition.id());
+
+            if (origin == this)
+            {
+              item->no_undo_setPos (_mouse_position);
+              item->repositionChildrenAndResize();
+            }
           }
+        }
+
+        void scene_type::transition_deleted
+          (const QObject* origin, const data::handle::transition& transition)
+        {
+          remove_item_for_handle<transition_item> (transition);
+        }
+
+        // # place ###################################################
+        void scene_type::place_added
+          (const QObject* origin, const data::handle::place& place)
+        {
+          if (is_in_my_net (place))
+          {
+            place_item* item (new place_item (place));
+
+            addItem (item);
+
+            //! \note Does not need actual list, as it only adds itself.
+            weaver::item_by_name_type place_by_name;
+
+            weaver::place wp (item, place_by_name);
+            weaver::from::place (&wp, place.id());
+
+            if (origin == this)
+            {
+              item->no_undo_setPos (_mouse_position);
+            }
+          }
+        }
+
+        void scene_type::place_deleted
+          (const QObject* origin, const data::handle::place& place)
+        {
+          remove_item_for_handle<place_item> (place);
         }
       }
     }

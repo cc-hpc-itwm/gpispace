@@ -1,13 +1,26 @@
 # -*- mode: cmake; -*-
+
+# check for 'pthread_setname_np'
+include(CheckCSourceCompiles)
+find_package (Threads)
+set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+check_c_source_compiles("
+#include <pthread.h>
+int main () { pthread_setname_np (pthread_self (), \"test\"); }
+" HAVE_PTHREAD_SETNAME)
+
+if (HAVE_PTHREAD_SETNAME)
+  add_definitions (-DHAVE_PTHREAD_SETNAME)
+endif()
+
 set (hdrs
   join.hpp
-  maybe.hpp
+  boost.hpp
   read_bool.hpp
   read.hpp
   show.hpp
   split.hpp
   starts_with.hpp
-  util.hpp
   warnings.hpp
 
   filesystem.hpp
@@ -25,7 +38,26 @@ set (hdrs
   bool_io.hpp
 
   random.hpp
+
+  counter.hpp
+  backtracing_exception.hpp
+  backtracing_exception.fwd.hpp
+
+  url.hpp
+  setproctitle.h
+  threadname.hpp
+
+  remove_prefix.hpp
 )
+
+set (srcs
+  backtracing_exception.cpp
+  setproctitle.c
+  threadname.cpp
+  remove_prefix.cpp
+)
+
+add_library (fhg-util ${srcs})
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
@@ -35,4 +67,6 @@ add_subdirectory(parse)
 add_subdirectory(thread)
 add_subdirectory(filesystem)
 add_subdirectory(cpp)
-add_subdirectory(test)
+if (BUILD_TESTING)
+  add_subdirectory(test)
+endif ()

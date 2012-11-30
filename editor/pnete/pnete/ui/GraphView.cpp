@@ -2,23 +2,23 @@
 
 #include <pnete/ui/GraphView.hpp>
 
+#include <pnete/data/manager.hpp>
+#include <pnete/ui/TransitionLibraryItem.hpp>
+#include <pnete/ui/TransitionLibraryModel.hpp>
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/graph/style/raster.hpp>
+#include <pnete/ui/graph/transition.hpp>
+#include <pnete/ui/size.hpp>
+
+#include <util/phi.hpp>
+
+#include <xml/parse/type/net.hpp>
+
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QWheelEvent>
-
-#include <pnete/ui/TransitionLibraryModel.hpp>
-#include <pnete/ui/TransitionLibraryItem.hpp>
-#include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/size.hpp>
-
-#include <pnete/data/manager.hpp>
-
-#include <util/phi.hpp>
-
-#include <pnete/ui/graph/style/raster.hpp>
 
 namespace fhg
 {
@@ -26,7 +26,7 @@ namespace fhg
   {
     namespace ui
     {
-      GraphView::GraphView (graph::scene::type* scene, QWidget* parent)
+      GraphView::GraphView (graph::scene_type* scene, QWidget* parent)
       : QGraphicsView (scene, parent)
       , _currentScale (size::zoom::default_value())
       {
@@ -44,9 +44,9 @@ namespace fhg
                      );
       }
 
-      graph::scene::type* GraphView::scene() const
+      graph::scene_type* GraphView::scene() const
       {
-        return qobject_cast<graph::scene::type*> (QGraphicsView::scene());
+        return qobject_cast<graph::scene_type*> (QGraphicsView::scene());
       }
 
       void GraphView::focusInEvent (QFocusEvent* event)
@@ -99,11 +99,18 @@ namespace fhg
 
           foreach (const QString& path, paths)
             {
-              data::internal::type* data
+              data::internal_type* data
                 (data::manager::instance().load (path));
 
-              scene()->change_manager()
-                .add_transition (this, data->function(), scene()->net());
+              scene()->change_manager().add_transition
+                ( scene()
+                , data->function().get().clone
+                  ( ::xml::parse::type::function_type::make_parent
+                    (scene()->net().id().id())
+                  , scene()->internal()->state().id_mapper()
+                  )
+                , scene()->net()
+                );
             }
 
           event->acceptProposedAction();

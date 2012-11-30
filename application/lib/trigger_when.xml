@@ -1,13 +1,16 @@
 <template name="trigger_when">
-  <properties name="pnetc">
-    <properties name="warning">
-      <property key="inline-many-output-ports" value="off"/>
+  <template-parameter type="T"/>
+  <defun>
+    <properties name="pnetc">
+      <properties name="warning">
+        <property key="inline-many-output-ports" value="off"/>
+      </properties>
     </properties>
-  </properties>
-  <in name="object" type="T"/>
-  <out name="object" type="T"/>
-  <out name="trigger" type="control"/>
-  <expression>
-    ${trigger} := []
-  </expression>
+    <in name="object" type="T"/>
+    <out name="object" type="T"/>
+    <out name="trigger" type="control"/>
+    <expression>
+      ${trigger} := []
+    </expression>
+  </defun>
 </template>
