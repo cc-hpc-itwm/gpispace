@@ -2,6 +2,7 @@
 
 #include <pnete/data/handle/transition.hpp>
 
+#include <pnete/data/change_manager.hpp>
 #include <pnete/data/handle/net.hpp>
 
 #include <xml/parse/type/net.hpp>
@@ -15,35 +16,43 @@ namespace fhg
     {
       namespace handle
       {
-        transition::transition ( const ::xml::parse::id::ref::transition& id
+        transition::transition ( const transition_meta_base::id_type& id
                                , change_manager_t& change_manager
                                )
-          : _id (id)
-          , _change_manager (change_manager)
+          : transition_meta_base (id, change_manager)
         { }
 
-        const ::xml::parse::type::transition_type& transition::get() const
+        void transition::remove (const QObject* sender) const
         {
-          return _id.get();
-        }
-        ::xml::parse::type::transition_type& transition::get_ref() const
-        {
-          return _id.get_ref();
+          change_manager().delete_transition (sender, *this);
         }
 
-        bool transition::operator== (const transition& other) const
+        void transition::set_property
+          ( const QObject* sender
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& val
+          ) const
         {
-          return _id == other._id;
+          change_manager().set_property (sender, *this, key, val);
         }
 
-        const ::xml::parse::id::ref::transition& transition::id() const
+        void transition::move ( const QObject* sender
+                              , const QPointF& position
+                              ) const
         {
-          return _id;
+          change_manager().move_item (sender, *this, position);
+        }
+
+        void transition::no_undo_move ( const QObject* sender
+                                      , const QPointF& position
+                                      ) const
+        {
+          change_manager().no_undo_move_item (sender, *this, position);
         }
 
         net transition::parent() const
         {
-          return net (get().parent()->make_reference_id(), _change_manager);
+          return net (get().parent()->make_reference_id(), change_manager());
         }
       }
     }

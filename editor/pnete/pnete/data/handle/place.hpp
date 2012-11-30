@@ -6,6 +6,7 @@
 #include <pnete/data/handle/place.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
@@ -21,29 +22,34 @@ namespace fhg
     {
       namespace handle
       {
-        class place
+        typedef meta_base < ::xml::parse::id::ref::place
+                          , ::xml::parse::type::place_type
+                          > place_meta_base;
+        class place : public place_meta_base
         {
         public:
-          place ( const ::xml::parse::id::ref::place& place
+          place ( const place_meta_base::id_type& id
                 , change_manager_t& change_manager
                 );
 
-          const ::xml::parse::type::place_type& get() const;
-          ::xml::parse::type::place_type& get_ref() const;
-
-          bool operator== (const place& other) const;
-
           void remove (const QObject* sender) const;
 
-          const ::xml::parse::id::ref::place& id() const;
+          virtual void set_property ( const QObject* sender
+                                    , const ::we::type::property::key_type&
+                                    , const ::we::type::property::value_type&
+                                    ) const;
+
+          virtual void move ( const QObject* sender
+                            , const QPointF& position
+                            ) const;
+
+          virtual void no_undo_move ( const QObject* sender
+                                    , const QPointF& position
+                                    ) const;
 
           net parent() const;
 
-        private:
-          change_manager_t& change_manager() const;
-
-          ::xml::parse::id::ref::place _id;
-          change_manager_t& _change_manager;
+          using place_meta_base::operator==;
         };
       }
     }

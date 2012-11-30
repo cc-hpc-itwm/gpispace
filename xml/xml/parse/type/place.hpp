@@ -56,7 +56,7 @@ namespace xml
                    , const std::list<token_type>& tokens
                    , const values_type& values
                    , const signature::type& sig
-                   , const we::type::property::type& prop
+                   , const we::type::property::type& properties
                    );
 
         const std::string& name() const;
@@ -76,10 +76,15 @@ namespace xml
         const boost::optional<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
 
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
         const unique_key_type& unique_key() const;
 
         id::ref::place clone
-          (const boost::optional<parent_id_type>& parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         boost::optional<bool> _is_virtual;
@@ -92,7 +97,9 @@ namespace xml
         std::list<token_type> tokens;
         values_type values;
         signature::type sig;
-        we::type::property::type prop;
+
+      private:
+        we::type::property::type _properties;
       };
 
       namespace dump

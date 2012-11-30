@@ -1,23 +1,16 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/StructureView.hpp>
 
-#include <pnete/weaver/weaver.hpp>
 #include <pnete/weaver/tv.hpp>
+#include <pnete/weaver/weaver.hpp>
 
-#include <QStandardItem>
 #include <QStandardItemModel>
-#include <QWidget>
 #include <QHeaderView>
-#include <QString>
-
-#include <boost/format.hpp>
-
-#include <stack>
-
-#include <stdexcept>
 
 #include <pnete/data/internal.hpp>
+
+#include <QDebug>
 
 namespace fhg
 {
@@ -37,6 +30,10 @@ namespace fhg
         setEditTriggers (QAbstractItemView::NoEditTriggers);
 
         header()->hide();
+
+        connect ( this, SIGNAL (doubleClicked(QModelIndex))
+                , this, SLOT (doubleClicked(QModelIndex))
+                );
       }
 
       void StructureView::append (data::internal_type* data)
@@ -44,14 +41,32 @@ namespace fhg
         _datas.push_back (data);
 
         weaver::tv w (_root);
+        weaver::from::function_context
+          ( &w
+          , WNAME(function_context_type) (data->function(), data->context())
+          );
+      }
 
-        FROM( function_context<weaver::tv>
-              ( &w
-              , WNAME(function_context_type) ( data->function()
-                                             , data->context()
-                                             )
-              )
-            );
+      void StructureView::doubleClicked (const QModelIndex& index)
+      {
+        QStandardItem *item = _model->itemFromIndex (index);
+        while (item->parent())
+        {
+          item = item->parent();
+        }
+
+        const int row (item->row());
+
+        weaver::tv w (_root);
+        weaver::from::function_context
+          ( &w
+          , WNAME(function_context_type) ( _datas.at (row)->function()
+                                         , _datas.at (row)->context()
+                                         )
+          );
+
+        _model->setItem (row, _model->takeItem (_model->rowCount() - 1));
+        _model->setRowCount (_model->rowCount() - 1);
       }
 
       void StructureView::clear()

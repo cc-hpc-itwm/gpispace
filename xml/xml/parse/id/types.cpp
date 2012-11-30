@@ -126,6 +126,10 @@ namespace xml
         {                                                               \
           return _id;                                                   \
         }                                                               \
+        mapper* NAME::id_mapper() const                                 \
+        {                                                               \
+          return _mapper;                                               \
+        }                                                               \
                                                                         \
         std::size_t hash_value (const NAME& ref)                        \
         {                                                               \

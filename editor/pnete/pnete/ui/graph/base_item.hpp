@@ -1,26 +1,27 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_ITEM_HPP
-#define _PNETE_UI_GRAPH_ITEM_HPP 1
+#ifndef PNETE_UI_GRAPH_ITEM_HPP
+#define PNETE_UI_GRAPH_ITEM_HPP
+
+#include <pnete/ui/graph/base_item.fwd.hpp>
+
+#include <pnete/data/handle/base.fwd.hpp>
+#include <pnete/ui/graph/mode.hpp>
+#include <pnete/ui/graph/orientation.hpp>
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/graph/style/type.hpp>
+
+#include <we/type/property.hpp>
+
+#include <stack>
 
 #include <QGraphicsObject>
 #include <QPointF>
 #include <QRectF>
 #include <QLinkedList>
 
-#include <pnete/ui/graph/scene.hpp>
-
-#include <pnete/ui/graph/orientation.hpp>
-
-#include <pnete/ui/graph/style/type.hpp>
-#include <pnete/ui/graph/mode.hpp>
-
-#include <we/type/property.hpp>
-
 class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
-
-#include <stack>
 
 namespace fhg
 {
@@ -35,17 +36,20 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          enum ItemTypes
+          enum item_types
           {
-            connection_graph_type       = QGraphicsItem::UserType + 1,
-            port_graph_type             = QGraphicsItem::UserType + 2,
-            transition_graph_type       = QGraphicsItem::UserType + 3,
-            place_graph_type            = QGraphicsItem::UserType + 4,
-            top_level_port_graph_type   = QGraphicsItem::UserType + 5,
-            /* ... */
+            connection_graph_type = QGraphicsItem::UserType + 1,
+            port_graph_type,
+            transition_graph_type,
+            place_graph_type,
+            top_level_port_graph_type,
+            pending_connection_graph_type,
+            association_graph_type,
+            port_place_association_graph_type,
           };
 
           base_item (base_item* parent = NULL);
+          virtual ~base_item() { }
 
           scene_type* scene() const;
 
@@ -56,6 +60,10 @@ namespace fhg
           (const port::orientation::type&) {}
 
           virtual void setPos (const QPointF&);
+          virtual void setPos (qreal, qreal);
+
+          virtual void no_undo_setPos (const QPointF&);
+          virtual void no_undo_setPos (qreal, qreal);
 
           //! \todo eliminate write acces to _style
           style::type& access_style();
@@ -76,6 +84,11 @@ namespace fhg
           virtual QPainterPath shape() const = 0;
           virtual QRectF boundingRect() const;
 
+          virtual void handle_property_change
+            ( const ::we::type::property::key_type& key
+            , const ::we::type::property::value_type& value
+            );
+
         private:
           style::type _style;
           std::stack<mode::type> _mode;
@@ -87,6 +100,8 @@ namespace fhg
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
           virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
           virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
+
+          virtual const data::handle::base& handle() const;
         };
       }
     }

@@ -632,7 +632,7 @@ namespace xml
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type ( transition.get_ref().prop
+                  property_map_type ( transition.get_ref().properties()
                                     , child
                                     , state
                                     );
@@ -650,7 +650,7 @@ namespace xml
                     );
 
                   util::property::join ( state
-                                       , transition.get_ref().prop
+                                       , transition.get_ref().properties()
                                        , deeper
                                        );
                 }
@@ -1229,7 +1229,7 @@ namespace xml
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type ( function.get_ref().prop
+                  property_map_type ( function.get_ref().properties()
                                     , child
                                     , state
                                     );
@@ -1247,7 +1247,7 @@ namespace xml
                     );
 
                   util::property::join ( state
-                                       , function.get_ref().prop
+                                       , function.get_ref().properties()
                                        , deeper
                                        );
                 }
@@ -1477,7 +1477,7 @@ namespace xml
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type ( net.get_ref().prop
+                  property_map_type ( net.get_ref().properties()
                                     , child
                                     , state
                                     );
@@ -1495,7 +1495,7 @@ namespace xml
                     );
 
                   util::property::join ( state
-                                       , net.get_ref().prop
+                                       , net.get_ref().properties()
                                        , deeper
                                        );
                 }
@@ -1601,7 +1601,7 @@ namespace xml
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type ( place.get_ref().prop
+                  property_map_type ( place.get_ref().properties()
                                     , child
                                     , state
                                     );
@@ -1619,7 +1619,7 @@ namespace xml
                     );
 
                   util::property::join ( state
-                                       , place.get_ref().prop
+                                       , place.get_ref().properties()
                                        , deeper
                                        );
                 }
@@ -1682,7 +1682,7 @@ namespace xml
             {
               if (child_name == "properties")
                 {
-                  property_map_type ( port.get_ref().prop
+                  property_map_type ( port.get_ref().properties()
                                     , child
                                     , state
                                     );
@@ -1700,7 +1700,7 @@ namespace xml
                     );
 
                   util::property::join ( state
-                                       , state.id_mapper()->get_ref (id)->prop
+                                       , port.get_ref().properties()
                                        , deeper
                                        );
                 }

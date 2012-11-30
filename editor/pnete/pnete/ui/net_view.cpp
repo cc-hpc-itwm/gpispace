@@ -2,10 +2,12 @@
 
 #include <pnete/ui/net_view.hpp>
 
+#include <pnete/ui/net_widget.hpp>
+
+#include <xml/parse/type/function.hpp>
+
 #include <QStringList>
 #include <QString>
-
-#include <pnete/ui/net_widget.hpp>
 
 namespace fhg
 {
@@ -14,14 +16,13 @@ namespace fhg
     namespace ui
     {
       net_view::net_view ( data::proxy::type& proxy
-                         , data::proxy::net_proxy::data_type& net
                          , graph::scene_type* scene
                          )
-        : document_view (proxy)
+        : document_view (data::proxy::function (proxy))
       {
         //! \todo submit known types
-        setWidget (new net_widget (proxy, net, scene, QStringList(), this));
-        set_title (data::proxy::function (proxy).name());
+        setWidget (new net_widget (proxy, scene, this));
+        set_title (data::proxy::function (proxy).get().name());
       }
       QString net_view::fallback_title () const
       {

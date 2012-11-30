@@ -22,9 +22,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        mod_view ( data::proxy::type&
-                 , data::proxy::mod_proxy::data_type&
-                 );
+        mod_view (data::proxy::type&, const ::xml::parse::id::ref::module&);
 
       private:
         virtual QString fallback_title() const;

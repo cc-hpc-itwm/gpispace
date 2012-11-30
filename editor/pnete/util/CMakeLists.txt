@@ -1,5 +1,4 @@
-# -*- mode: cmake; -*-
-include (${QT_USE_FILE})
+#bernd.loerwald@itwm.fraunhofer.de
 
 set ( graphviz_wrapper_SRCS
       graphviz.cpp

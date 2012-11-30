@@ -17,7 +17,7 @@ namespace fhg
         , _is_folder (true)
         , _fileinfo (QFileInfo())
         , _trusted (false)
-        , _data (0)
+        , _name()
         , _children ()
         , _parent (qobject_cast<TransitionLibraryItem*>(parent))
       {}
@@ -31,9 +31,12 @@ namespace fhg
         , _is_folder (is_folder)
         , _fileinfo (fileinfo)
         , _trusted (trusted)
-        , _data (_is_folder
-                ? 0
-                : data::manager::instance().load (_fileinfo.absoluteFilePath())
+        , _name ( _is_folder
+                ? _fileinfo.baseName()
+                : QString::fromStdString
+                  ( data::manager::instance().load (_fileinfo.absoluteFilePath())
+                  ->function().get().name().get_value_or ("<<anonymous>>")
+                  )
                 )
         , _children ()
         , _parent (qobject_cast<TransitionLibraryItem*>(parent))
@@ -79,25 +82,13 @@ namespace fhg
         return _fileinfo;
       }
 
-      const data::internal_type* TransitionLibraryItem::data() const
-      {
-        return _data;
-      }
-
       QString TransitionLibraryItem::path() const
       {
         return fileinfo().absoluteFilePath();
       }
       QString TransitionLibraryItem::name() const
       {
-        //! \todo better handling for the anonymous case
-        return is_folder()
-          ? fileinfo().baseName()
-          : QString::fromStdString ( data()->function().name()
-                                   ? *data()->function().name()
-                                   : "<<anonymous>>"
-                                   )
-          ;
+        return _name;
       }
 
       const bool& TransitionLibraryItem::trusted() const

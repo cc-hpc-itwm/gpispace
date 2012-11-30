@@ -6,6 +6,7 @@
 #include <pnete/data/handle/transition.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
@@ -19,25 +20,34 @@ namespace fhg
     {
       namespace handle
       {
-        class transition
+        typedef meta_base < ::xml::parse::id::ref::transition
+                          , ::xml::parse::type::transition_type
+                          > transition_meta_base;
+        class transition : public transition_meta_base
         {
         public:
-          transition ( const ::xml::parse::id::ref::transition& id
+          transition ( const transition_meta_base::id_type& id
                      , change_manager_t& change_manager
                      );
 
-          const ::xml::parse::type::transition_type& get() const;
-          ::xml::parse::type::transition_type& get_ref() const;
+          void remove (const QObject* sender) const;
 
-          bool operator== (const transition& other) const;
+          virtual void set_property ( const QObject* sender
+                                    , const ::we::type::property::key_type&
+                                    , const ::we::type::property::value_type&
+                                    ) const;
 
-          const ::xml::parse::id::ref::transition& id() const;
+          virtual void move ( const QObject* sender
+                            , const QPointF& position
+                            ) const;
+
+          virtual void no_undo_move ( const QObject* sender
+                                    , const QPointF& position
+                                    ) const;
 
           net parent() const;
 
-        private:
-          ::xml::parse::id::ref::transition _id;
-          change_manager_t& _change_manager;
+          using transition_meta_base::operator==;
         };
       }
     }

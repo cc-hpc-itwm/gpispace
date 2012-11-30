@@ -2,6 +2,8 @@
 
 #include <pnete/data/handle/net.hpp>
 
+#include <pnete/data/change_manager.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -10,30 +12,19 @@ namespace fhg
     {
       namespace handle
       {
-        net::net ( const ::xml::parse::id::ref::net& id
+        net::net ( const net_meta_base::id_type& id
                  , change_manager_t& change_manager
                  )
-          : _id (id)
-          , _change_manager (change_manager)
+          : net_meta_base (id, change_manager)
         { }
 
-        const ::xml::parse::type::net_type& net::get() const
+        void net::add_transition (const QObject* sender) const
         {
-          return _id.get();
+          change_manager().add_transition (sender, *this);
         }
-        ::xml::parse::type::net_type& net::get_ref() const
+        void net::add_place (const QObject* sender) const
         {
-          return _id.get_ref();
-        }
-
-        bool net::operator== (const net& other) const
-        {
-          return _id == other._id;
-        }
-
-        const ::xml::parse::id::ref::net& net::id() const
-        {
-          return _id;
+          change_manager().add_place (sender, *this);
         }
       }
     }

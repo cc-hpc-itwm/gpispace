@@ -18,14 +18,14 @@ namespace xml
                            , const std::string & name
                            , const std::string & _type
                            , const boost::optional<std::string> & _place
-                           , const we::type::property::type& prop
+                           , const we::type::property::type& properties
                            )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , type (_type)
         , place (_place)
-        , prop (prop)
+        , _properties (properties)
       {
         _id_mapper->put (_id, *this);
       }
@@ -148,22 +148,35 @@ namespace xml
           );
       }
 
+      const we::type::property::type& port_type::properties() const
+      {
+        return _properties;
+      }
+      we::type::property::type& port_type::properties()
+      {
+        return _properties;
+      }
+
       const port_type::unique_key_type& port_type::unique_key() const
       {
         return name();
       }
 
       id::ref::port port_type::clone
-        (const boost::optional<parent_id_type>& parent) const
+        ( const boost::optional<parent_id_type>& parent
+        , const boost::optional<id::mapper*>& mapper
+        ) const
       {
+        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
+        const id_type new_id (new_mapper->next_id());
         return port_type
-          ( id_mapper()->next_id()
-          , id_mapper()
+          ( new_id
+          , new_mapper
           , parent
           , _name
           , type
           , place
-          , prop
+          , _properties
           ).make_reference_id();
       }
 
@@ -179,7 +192,7 @@ namespace xml
           s.attr ("type", p.type);
           s.attr ("place", p.place);
 
-          ::we::type::property::dump::dump (s, p.prop);
+          ::we::type::property::dump::dump (s, p.properties());
 
           s.close();
         }

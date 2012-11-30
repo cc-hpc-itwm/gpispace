@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_TRANSITION_HPP
 #define _XML_PARSE_TYPE_TRANSITION_HPP
@@ -59,7 +59,7 @@ namespace xml
                         , const boost::optional<petri_net::prio_t>& priority
                         , const boost::optional<bool>& finline
                         , const boost::optional<bool>& internal
-                        , const we::type::property::type& prop
+                        , const we::type::property::type& properties
                         , const boost::filesystem::path& path
                         );
 
@@ -67,6 +67,8 @@ namespace xml
         function_or_use_type& function_or_use();
         const function_or_use_type& function_or_use
           (const function_or_use_type& function_or_use_);
+
+        id::ref::function resolved_function() const;
 
         const std::string& name() const;
         const std::string& name(const std::string& name);
@@ -83,7 +85,13 @@ namespace xml
         const connections_type& read() const;
         const place_maps_type& place_map() const;
 
-        // ***************************************************************** //
+        bool has_in (const id::ref::connect&) const;
+        bool has_out (const id::ref::connect&) const;
+        bool has_read (const id::ref::connect&) const;
+
+        void remove_in (const id::ref::connect&);
+        void remove_out (const id::ref::connect&);
+        void remove_read (const id::ref::connect&);
 
         void push_in (const id::ref::connect&);
         void push_out (const id::ref::connect&);
@@ -92,7 +100,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        void clear_ports ();
+        void clear_connections ();
         void clear_place_map ();
 
         // ***************************************************************** //
@@ -126,10 +134,15 @@ namespace xml
 
         void type_check (const state::type & state) const;
 
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
         const unique_key_type& unique_key() const;
 
         id::ref::transition clone
-          (boost::optional<parent_id_type> parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         boost::optional<function_or_use_type> _function_or_use;
@@ -151,8 +164,10 @@ namespace xml
         boost::optional<bool> finline;
         boost::optional<bool> internal;
 
-        we::type::property::type prop;
+      private:
+        we::type::property::type _properties;
 
+      public:
         boost::filesystem::path path;
       };
 

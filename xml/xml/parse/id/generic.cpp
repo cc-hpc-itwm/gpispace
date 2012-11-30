@@ -87,6 +87,7 @@ namespace xml
       PARENT_IMPL(net,tmpl)
       PARENT_IMPL(net,transition)
       PARENT_IMPL(transition,connect)
+      PARENT_IMPL(transition,place_map)
       PARENT_IMPL(transition,use)
     }
   }

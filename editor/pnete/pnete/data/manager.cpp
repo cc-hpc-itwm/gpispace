@@ -27,13 +27,8 @@ namespace fhg
 
       manager& manager::instance()
       {
-        static manager* _instance_ptr (0);
-
-        if (!_instance_ptr)
-        {
-          _instance_ptr = new manager();
-        }
-        return *_instance_ptr;
+        static manager _instance;
+        return _instance;
       }
 
       internal_type* manager::load (const QString& filename)
@@ -90,7 +85,10 @@ namespace fhg
 
         fhg::util::xml::xmlstream s (fs);
 
-        ::xml::parse::type::dump::dump (s, data->function(), data->state());
+        ::xml::parse::type::dump::dump ( s
+                                       , data->function().get()
+                                       , data->state()
+                                       );
       }
     }
   }

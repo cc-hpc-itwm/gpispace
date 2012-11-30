@@ -36,8 +36,6 @@ namespace fhg
         QString path() const;
         QString name() const;
         const bool& trusted() const;
-        const data::internal_type* data() const;
-
         TransitionLibraryItem* child (int row) const;
         TransitionLibraryItem* child_with_fileinfo (const QFileInfo&) const;
         int childCount() const;
@@ -54,7 +52,7 @@ namespace fhg
         bool _is_folder;
         QFileInfo _fileinfo;
         bool _trusted;
-        data::internal_type* _data;
+        QString _name;
 
         QList<TransitionLibraryItem*> _children;
         TransitionLibraryItem* _parent;

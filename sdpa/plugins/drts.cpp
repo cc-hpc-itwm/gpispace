@@ -240,39 +240,29 @@ public:
 
   FHG_PLUGIN_STOP()
   {
-    /*
-    // cancel running jobs etc.
-    {
-      lock_type job_map_lock (m_job_map_mutex);
-      map_of_jobs_t::iterator job_it (m_jobs.begin ());
-      while (job_it != m_jobs.end ())
-      {
-        m_wfe->cancel (job_it->first);
-        ++job_it;
-      }
-    }
-    */
-
     m_shutting_down = true;
 
     if (m_request_thread)
     {
       m_request_thread->interrupt();
-      m_request_thread->join();
+      if (m_request_thread->joinable ())
+        m_request_thread->join();
       m_request_thread.reset();
     }
 
     if (m_execution_thread)
     {
       m_execution_thread->interrupt();
-      m_execution_thread->join ();
+      if (m_execution_thread->joinable ())
+        m_execution_thread->join ();
       m_execution_thread.reset();
     }
 
     if (m_event_thread)
     {
       m_event_thread->interrupt();
-      m_event_thread->join();
+      if (m_event_thread->joinable ())
+        m_event_thread->join();
       m_event_thread.reset();
     }
 
@@ -284,7 +274,8 @@ public:
     if (m_peer_thread)
     {
       m_peer_thread->interrupt();
-      m_peer_thread->join();
+      if (m_peer_thread->joinable ())
+        m_peer_thread->join();
     }
 
     m_peer_thread.reset();
@@ -390,15 +381,12 @@ public:
     {
       lock_type lck (m_job_in_progress_mutex);
       something_running = m_job_in_progress;
-    }
-
-    if (something_running)
-    {
       m_graceful_shutdown_requested = true;
     }
-    else
+
+    if (not something_running)
     {
-      fhg_kernel ()->terminate ();
+      fhg_kernel ()->shutdown ();
     }
   }
 
@@ -564,6 +552,19 @@ public:
         );
       return;
     }
+    else if (m_graceful_shutdown_requested)
+    {
+      MLOG (WARN, "refusing job " << e->job_id () << " : shutting down");
+      send_event
+        (new sdpa::events::ErrorEvent( m_my_name
+                                     , e->from()
+                                     , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
+                                     , "I am going to shut down!"
+                                     , e->job_id()
+                                     )
+        );
+      return;
+    }
 
     job_ptr_t job (new drts::Job( drts::Job::ID(e->job_id())
                                 , drts::Job::Description(e->description())
@@ -660,7 +661,7 @@ public:
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
-        MLOG(TRACE, "trying to cancel running job " << e->job_id());
+        MLOG (INFO, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
         drts_on_cancel ();
       }
@@ -893,7 +894,7 @@ private:
     {
       if (m_graceful_shutdown_requested)
       {
-        fhg_kernel ()->terminate ();
+        fhg_kernel ()->shutdown ();
         break;
       }
 

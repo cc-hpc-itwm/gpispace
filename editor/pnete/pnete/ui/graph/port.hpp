@@ -1,18 +1,20 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_PORT_HPP
-#define _PNETE_UI_GRAPH_PORT_HPP 1
+#ifndef PNETE_UI_GRAPH_PORT_HPP
+#define PNETE_UI_GRAPH_PORT_HPP
 
-#include <QObject>
-#include <QMenu>
+#include <pnete/ui/graph/port.fwd.hpp>
 
-#include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/data/handle/port.hpp>
 #include <pnete/ui/graph/base_item.hpp>
+#include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/orientation.hpp>
+#include <pnete/ui/graph/transition.fwd.hpp>
 
 #include <boost/optional.hpp>
 
-#include <xml/parse/type_map_type.hpp>
+#include <QObject>
+#include <QMenu>
 
 class QAction;
 class QMenu;
@@ -27,25 +29,19 @@ namespace fhg
     {
       namespace graph
       {
-        class transition_item;
-
         class port_item : public connectable_item
         {
           Q_OBJECT;
 
         public:
-          typedef ::xml::parse::type::port_type port_type;
-
-          port_item ( port_type& port
+          port_item ( const data::handle::port& handle
                     , connectable::direction::type direction
-                    , boost::optional< ::xml::parse::type::type_map_type&> type_map
-                    = boost::none
                     , transition_item* parent = NULL
                     );
 
           const qreal& length() const;
 
-          const port_type& port () const { return _port; }
+          virtual const data::handle::port& handle() const;
 
           const std::string& name() const;
           const std::string& we_type () const;
@@ -74,8 +70,15 @@ namespace fhg
           void slot_set_type();
           void refresh_tooltip();
 
+          void property_changed
+            ( const QObject* origin
+            , const data::handle::port& changed_handle
+            , const ::we::type::property::key_type& key
+            , const ::we::type::property::value_type& value
+            );
+
         private:
-          port_type& _port;
+          data::handle::port _handle;
 
           QPointF fitting_position (QPointF position);
 
@@ -87,13 +90,11 @@ namespace fhg
         class top_level_port_item : public port_item
         {
         public:
-          top_level_port_item ( port_type& port
+          top_level_port_item ( const data::handle::port& handle
                               , connectable::direction::type direction
-                              , boost::optional< ::xml::parse::type::type_map_type&> type_map
-                              = boost::none
                               , transition_item* parent = NULL
                               )
-            : port_item (port, direction, type_map, parent)
+            : port_item (handle, direction, parent)
             {}
 
           enum { Type = top_level_port_graph_type };

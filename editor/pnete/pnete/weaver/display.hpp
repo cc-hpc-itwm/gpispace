@@ -1,14 +1,21 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_WEAVER_DISPLAY_HPP
-#define _FHG_PNETE_WEAVER_DISPLAY_HPP 1
+#ifndef FHG_PNETE_WEAVER_DISPLAY_HPP
+#define FHG_PNETE_WEAVER_DISPLAY_HPP
 
-#include <pnete/data/proxy.hpp>
+#include <pnete/data/proxy.fwd.hpp>
+#include <pnete/data/internal.fwd.hpp>
 
-#include <pnete/weaver/weaver.hpp>
-
-#include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/base_item.fwd.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/place.fwd.hpp>
+#include <pnete/ui/graph/port.fwd.hpp>
+#include <pnete/ui/graph/scene.fwd.hpp>
+#include <pnete/ui/graph/transition.fwd.hpp>
+
+#include <we/type/property.fwd.hpp>
+
+#include <xml/parse/id/types.hpp>
 
 #include <boost/unordered_map.hpp>
 
@@ -16,32 +23,16 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace data
-    {
-      class internal_type;
-    }
-
-    namespace ui
-    {
-      namespace graph
-      {
-        class place_item;
-        class transition_item;
-        class scene_type;
-      }
-    }
     namespace weaver
     {
       typedef boost::unordered_map< std::string
                                   , ui::graph::connectable_item*
                                   > item_by_name_type;
 
-      typedef XMLTYPE(function_with_mapping_type) function_with_mapping_type;
-
       class function
       {
       public:
-        explicit function ( function_with_mapping_type
+        explicit function ( const ::xml::parse::id::ref::function&
                           , data::internal_type*
                           );
 
@@ -50,40 +41,21 @@ namespace fhg
 
         data::proxy::type* proxy () const;
 
-        XMLTYPE(function_type::ports_type)& in ();
-        XMLTYPE(function_type::ports_type)& out ();
-
       private:
         data::proxy::type* _proxy;
-        function_with_mapping_type _function_with_mapping;
-
-        struct ports_type
-        {
-          XMLTYPE(function_type::ports_type)* in;
-          XMLTYPE(function_type::ports_type)* out;
-
-          ports_type() : in (NULL), out (NULL) {}
-        } _ports;
+        ::xml::parse::id::ref::function _function;
 
         ui::graph::scene_type* _scene;
         data::internal_type* _root;
       };
-
-      WSIG(function, expression::open, XMLTYPE(expression_type), exp);
-      WSIG(function, mod::open, XMLTYPE(module_type), mod);
-      WSIG(function, net::open, XMLTYPE(net_type), net);
-      WSIG(function, function::in, XMLTYPE(function_type::ports_type), in);
-      WSIG(function, function::out, XMLTYPE(function_type::ports_type), out);
-      WSIG(function, function::fun, XMLTYPE(function_type::type), fun);
 
       class net
       {
       public:
         explicit net ( data::internal_type*
                      , ui::graph::scene_type* scene
-                     , XMLTYPE(net_type)& net
-                     , XMLTYPE(function_type::ports_type)& in
-                     , XMLTYPE(function_type::ports_type)& out
+                     , const ::xml::parse::id::ref::net& net
+                     , const ::xml::parse::id::ref::function& function
                      );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -92,23 +64,12 @@ namespace fhg
       private:
         ui::graph::scene_type* _scene;
 
-        XMLTYPE(net_type)& _net;
-        XMLTYPE(function_type::ports_type)& _in;
-        XMLTYPE(function_type::ports_type)& _out;
+        ::xml::parse::id::ref::net _net;
+        ::xml::parse::id::ref::function _function;
 
         item_by_name_type _place_item_by_name;
         data::internal_type* _root;
       };
-
-      WSIG( net
-          , net::transitions
-          , XMLTYPE(net_type::transitions_type)
-          , transitions
-          );
-      WSIG(net, net::places, XMLTYPE(net_type::places_type), places);
-      WSIG(net, place::open, XMLTYPE(place_type), place);
-      WSIG(net, transition::open, XMLTYPE(transition_type), transition);
-      WSIGE(net, net::close);
 
       class transition
       {
@@ -116,7 +77,7 @@ namespace fhg
         explicit transition ( data::internal_type*
                             , ui::graph::scene_type*
                             , ui::graph::transition_item*
-                            , XMLTYPE(net_type)&
+                            , const ::xml::parse::id::ref::net&
                             , item_by_name_type&
                             );
 
@@ -127,30 +88,13 @@ namespace fhg
         ui::graph::scene_type* _scene;
         ui::graph::transition_item* _transition;
         ui::graph::connectable::direction::type _current_port_direction;
-        XMLTYPE(net_type)& _net;
+        ::xml::parse::id::ref::net _net;
 
         item_by_name_type& _place_item_by_name;
         item_by_name_type _port_in_item_by_name;
         item_by_name_type _port_out_item_by_name;
         data::internal_type* _root;
-
-        boost::optional< ::xml::parse::type::type_map_type&> _type_map;
-
-        function_with_mapping_type
-        get_function (XMLTYPE(transition_type::function_or_use_type)& f);
       };
-
-      WSIGE(transition, transition::close);
-      WSIG( transition
-          , transition::function
-          , XMLTYPE(transition_type::function_or_use_type)
-          , fun
-          );
-      WSIG(transition, port::open, XMLTYPE(port_type), port);
-      WSIG(transition, transition::connect_read, XMLTYPE(transition_type::connections_type), cs);
-      WSIG(transition, transition::connect_in, XMLTYPE(transition_type::connections_type), cs);
-      WSIG(transition, transition::connect_out, XMLTYPE(transition_type::connections_type), cs);
-      WSIG(transition, transition::properties, WETYPE(property::type), prop);
 
       class property
       {
@@ -161,13 +105,8 @@ namespace fhg
 
       private:
         ui::graph::base_item* _item;
-        WETYPE(property::path_type) _path;
+        ::we::type::property::path_type _path;
       };
-
-      WSIG(property, properties::open, WETYPE(property::type), prop);
-      WSIG(property, property::open, WETYPE(property::key_type), key);
-      WSIG(property, property::value, WETYPE(property::value_type), value);
-      WSIGE(property, property::close);
 
       class connection
       {
@@ -190,11 +129,8 @@ namespace fhg
         const bool _read;
         std::string _port;
         std::string _place;
+        boost::optional< ::xml::parse::id::ref::connect> _id;
       };
-
-      WSIG(connection, connection::port, std::string, port);
-      WSIG(connection, connection::place, std::string, place);
-      WSIGE(connection, connection::close);
 
       class port
       {
@@ -210,9 +146,6 @@ namespace fhg
         item_by_name_type& _port_item_by_name;
       };
 
-      WSIG(port, port::name, std::string, name);
-      WSIG(port, port::properties, WETYPE(property::type), props);
-
       class port_toplevel
       {
       public:
@@ -220,6 +153,7 @@ namespace fhg
                                , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                , data::internal_type* root
+                               , const ::xml::parse::id::ref::function&
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -232,12 +166,8 @@ namespace fhg
         const ui::graph::connectable::direction::type _direction;
         ui::graph::port_item* _port_item;
         data::internal_type* _root;
+        ::xml::parse::id::ref::function _function;
       };
-
-      WSIG(port_toplevel, port::open, XMLTYPE(port_type), port);
-      WSIG(port_toplevel, port::name, std::string, name);
-      WSIG(port_toplevel, port::place, MAYBE(std::string), place);
-      WSIG(port_toplevel, port::properties, WETYPE(property::type), props);
 
       class place
       {
@@ -252,9 +182,6 @@ namespace fhg
 
         item_by_name_type& _place_item_by_name;
       };
-
-      WSIG(place, place::name, std::string, name);
-      WSIG(place, place::properties, WETYPE(property::type), props);
     }
   }
 }

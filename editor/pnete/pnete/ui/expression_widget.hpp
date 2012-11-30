@@ -7,6 +7,8 @@
 
 #include <pnete/data/proxy.hpp>
 
+#include <pnete/data/handle/expression.hpp>
+
 #include <pnete/ui/base_editor_widget.hpp>
 
 #include <boost/optional.hpp>
@@ -29,7 +31,7 @@ namespace fhg
 
       public:
         expression_widget ( data::proxy::type& proxy
-                          , data::proxy::expression_proxy::data_type& expression
+                          , const data::handle::expression& expression
                           , const QStringList& types
                           , QWidget* parent = NULL
                           );
@@ -47,24 +49,24 @@ namespace fhg
         void expression_changed ();
 
         void slot_set_function_name ( const QObject*
-                                    , const ::xml::parse::type::function_type&
+                                    , const data::handle::function&
                                     , const QString&
                                     );
         void slot_set_expression ( const QObject*
-                                 , const ::xml::parse::type::expression_type&
+                                 , const data::handle::expression&
                                  , const QString&
                                  );
         void slot_set_expression_parse_result
              ( const QObject*
-             , const ::xml::parse::type::expression_type&
+             , const data::handle::expression&
              , const QString&
              );
 
       private:
-        bool is_my_function (const ::xml::parse::type::function_type&);
-        bool is_my_expression (const ::xml::parse::type::expression_type&);
+        bool is_my_function (const data::handle::function&);
+        bool is_my_expression (const data::handle::expression&);
 
-        data::proxy::expression_proxy::data_type& _expression;
+        data::handle::expression _expression;
         port_lists_widget* _port_lists;
         QTextEdit* _expression_edit;
         QLineEdit* _name_edit;

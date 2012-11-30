@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
 
 #include <fhgcom/kvs/exception.hpp>
 #include <fhgcom/kvs/message/type.hpp>
@@ -280,7 +281,7 @@ namespace fhg
             : file_(file)
             , write_through_enabled_(write_through)
           {
-            if (! file_.empty())
+            if (! file_.empty() && boost::filesystem::exists (file_))
             {
               try
               {
@@ -289,7 +290,7 @@ namespace fhg
               }
               catch (std::exception const & ex)
               {
-                LOG(WARN, "could not load file storage: " << ex.what());
+                LOG (WARN, "could not load file storage: " << ex.what());
               }
             }
           }
@@ -413,7 +414,7 @@ namespace fhg
 
             write_through ();
 
-            LOG(INFO, "cleared " << count << " entries");
+            LOG_IF(INFO, count > 0, "cleared " << count << " entries");
           }
 
           void del (key_type const & k)
@@ -458,7 +459,7 @@ namespace fhg
               std::map<key_type, entry_type> tmp_map_ (store_.begin(), store_.end());
               ar << boost::serialization::make_nvp("kvsd", tmp_map_);
 
-              LOG(INFO, "saved " << store_.size() << " entries");
+              MLOG (DEBUG, "saved " << store_.size() << " entries");
             }
             else
             {

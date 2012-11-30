@@ -55,11 +55,6 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
   sdpa::job_id_t jobId = ptrEvt->job_id();
 
-  if(!m_listSubscribers.size())
-  {
-    SDPA_LOG_INFO("No subscriber found for the job "<<jobId<<"!");
-  }
-
   BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;

@@ -2,23 +2,23 @@
 
 #include <pnete/ui/GraphView.hpp>
 
+#include <pnete/data/manager.hpp>
+#include <pnete/ui/TransitionLibraryItem.hpp>
+#include <pnete/ui/TransitionLibraryModel.hpp>
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/graph/style/raster.hpp>
+#include <pnete/ui/graph/transition.hpp>
+#include <pnete/ui/size.hpp>
+
+#include <util/phi.hpp>
+
+#include <xml/parse/type/net.hpp>
+
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QWheelEvent>
-
-#include <pnete/ui/TransitionLibraryModel.hpp>
-#include <pnete/ui/TransitionLibraryItem.hpp>
-#include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/size.hpp>
-
-#include <pnete/data/manager.hpp>
-
-#include <util/phi.hpp>
-
-#include <pnete/ui/graph/style/raster.hpp>
 
 namespace fhg
 {
@@ -102,11 +102,15 @@ namespace fhg
               data::internal_type* data
                 (data::manager::instance().load (path));
 
-              scene()->change_manager()
-                .add_transition ( this
-                                , data->function().make_reference_id()
-                                , scene()->net()
-                                );
+              scene()->change_manager().add_transition
+                ( scene()
+                , data->function().get().clone
+                  ( ::xml::parse::type::function_type::make_parent
+                    (scene()->net().id().id())
+                  , scene()->internal()->state().id_mapper()
+                  )
+                , scene()->net()
+                );
             }
 
           event->acceptProposedAction();

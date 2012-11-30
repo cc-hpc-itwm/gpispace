@@ -3,6 +3,8 @@
 #ifndef _XML_PARSE_TYPE_NET_HPP
 #define _XML_PARSE_TYPE_NET_HPP
 
+#include <xml/parse/type/net.fwd.hpp>
+
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
@@ -55,6 +57,9 @@ namespace xml
                  , const boost::filesystem::path& path
                  );
 
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
         const boost::filesystem::path& path() const;
 
         // ***************************************************************** //
@@ -104,7 +109,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        signature::type type_of_place (const id::ref::place& place_id) const;
+        signature::type type_of_place (const place_type&) const;
 
         // ***************************************************************** //
 
@@ -141,7 +146,9 @@ namespace xml
         void remove_prefix (const std::string & prefix);
 
         id::ref::net clone
-          (boost::optional<parent_id_type> parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         functions_type _functions;
@@ -157,9 +164,9 @@ namespace xml
 
         xml::parse::structure_type::set_type structs_resolved;
 
-        we::type::property::type prop;
-
       private:
+        we::type::property::type _properties;
+
         boost::filesystem::path _path;
       };
 

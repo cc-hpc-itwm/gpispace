@@ -16,46 +16,43 @@ namespace fhg
     {
       namespace handle
       {
-        place::place ( const ::xml::parse::id::ref::place& id
+        place::place ( const place_meta_base::id_type& id
                      , change_manager_t& change_manager
                      )
-          : _id (id)
-          , _change_manager (change_manager)
+          : place_meta_base (id, change_manager)
         { }
-
-
-        const ::xml::parse::type::place_type& place::get() const
-        {
-          return _id.get();
-        }
-        ::xml::parse::type::place_type& place::get_ref() const
-        {
-          return _id.get_ref();
-        }
-
-        bool place::operator== (const place& other) const
-        {
-          return _id == other._id;
-        }
 
         void place::remove (const QObject* sender) const
         {
           change_manager().delete_place (sender, *this);
         }
 
-        change_manager_t& place::change_manager() const
+        void place::set_property
+          ( const QObject* sender
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& val
+          ) const
         {
-          return _change_manager;
+          change_manager().set_property (sender, *this, key, val);
         }
 
-        const ::xml::parse::id::ref::place& place::id() const
+        void place::move ( const QObject* sender
+                         , const QPointF& position
+                         ) const
         {
-          return _id;
+          change_manager().move_item (sender, *this, position);
+        }
+
+        void place::no_undo_move ( const QObject* sender
+                                 , const QPointF& position
+                                 ) const
+        {
+          change_manager().no_undo_move_item (sender, *this, position);
         }
 
         net place::parent() const
         {
-          return net (get().parent()->make_reference_id(), _change_manager);
+          return net (get().parent()->make_reference_id(), change_manager());
         }
       }
     }

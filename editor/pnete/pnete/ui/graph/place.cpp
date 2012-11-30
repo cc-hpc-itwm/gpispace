@@ -10,6 +10,8 @@
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/transition.hpp>
 
+#include <xml/parse/type/place.hpp>
+
 #include <QPainter>
 
 namespace fhg
@@ -22,17 +24,23 @@ namespace fhg
       {
         place_item::place_item
           ( const data::handle::place& handle
-          , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , base_item* parent
           )
             : connectable_item ( connectable::direction::BOTH
-                               , type_map
                                , parent
                                )
             , _handle (handle)
             , _content()
         {
           refresh_content();
+
+          handle.connect_to_change_mgr
+            ( this
+            , "property_changed"
+            , "  const data::handle::place&"
+              ", const ::we::type::property::key_type&"
+              ", const ::we::type::property::value_type&"
+            );
         }
 
         const data::handle::place& place_item::handle() const
@@ -118,6 +126,20 @@ namespace fhg
             }
           }
         }
+
+        void place_item::property_changed
+          ( const QObject* origin
+          , const data::handle::place& changed_handle
+          , const ::we::type::property::key_type& key
+          , const ::we::type::property::value_type& value
+          )
+        {
+          if (origin != this && changed_handle == handle())
+          {
+            handle_property_change (key, value);
+          }
+        }
+
 
 //           void place_item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
 //           {

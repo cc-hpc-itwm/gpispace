@@ -5,20 +5,33 @@
 
 #include <pnete/data/change_manager.fwd.hpp>
 
+#include <pnete/data/handle/connect.fwd.hpp>
+#include <pnete/data/handle/expression.fwd.hpp>
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
-#include <pnete/data/handle/transition.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/port.fwd.hpp>
+#include <pnete/data/handle/transition.fwd.hpp>
 
-//! \todo Should not be here.
+#include <we/type/property.fwd.hpp>
+
 #include <xml/parse/id/types.fwd.hpp>
-#include <xml/parse/state.fwd.hpp>
-#include <xml/parse/type/expression.fwd.hpp>
-#include <xml/parse/type/function.fwd.hpp>
 
 #include <QUndoStack>
 
 #include <boost/function_types/function_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
+
+#include <boost/preprocessor/arithmetic/add.hpp>
+#include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/config/limits.hpp>
+#include <boost/preprocessor/facilities/empty.hpp>
+#include <boost/preprocessor/punctuation/comma_if.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
+
+class QPointF;
 
 namespace fhg
 {
@@ -26,30 +39,44 @@ namespace fhg
   {
     namespace data
     {
-      namespace action
-      {
-        // ## editing action forward declarations ####################
-        // - net -----------------------------------------------------
-        // -- transition ---------------------------------------------
-        class add_transition;
-        class remove_transition;
-        // -- place --------------------------------------------------
-        class add_place;
-        class remove_place;
-        // - function ------------------------------------------------
-        // - expression ----------------------------------------------
-      }
-
       class change_manager_t : public QUndoStack
       {
         Q_OBJECT;
 
       public:
-        //! \todo This is only a hack. There should not be a link to the state!
-        change_manager_t (::xml::parse::state::type& state);
+        change_manager_t (QObject* parent = NULL);
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------
+
+        // -- connection ---------------------------------------------
+        //! \note port <- place (in)
+        void add_connection ( const QObject*
+                            , const data::handle::place&
+                            , const data::handle::port&
+                            );
+        //! \note port -> place (out)
+        void add_connection ( const QObject*
+                            , const data::handle::port&
+                            , const data::handle::place&
+                            );
+        //! \note port -> implicit_place -> port (convenience)
+        void add_connection ( const QObject*
+                            , const data::handle::port&
+                            , const data::handle::port&
+                            );
+        void remove_connection (const QObject*, const data::handle::connect&);
+
+        void set_property ( const QObject*
+                          , const data::handle::connect&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::connect&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
 
         // -- transition ---------------------------------------------
         void add_transition ( const QObject*
@@ -64,6 +91,25 @@ namespace fhg
                                , const data::handle::transition&
                                );
 
+        void set_property ( const QObject*
+                          , const data::handle::transition&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::transition&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
+        void move_item ( const QObject*
+                       , const handle::transition&
+                       , const QPointF&
+                       );
+        void no_undo_move_item ( const QObject*
+                               , const handle::transition&
+                               , const QPointF&
+                               );
+
         // -- place --------------------------------------------------
         void add_place ( const QObject*
                        , const data::handle::net&
@@ -73,22 +119,115 @@ namespace fhg
                           , const data::handle::place&
                           );
 
+        void set_property ( const QObject*
+                          , const data::handle::place&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::place&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
+        void move_item ( const QObject*
+                       , const handle::place&
+                       , const QPointF&
+                       );
+        void no_undo_move_item ( const QObject*
+                               , const handle::place&
+                               , const QPointF&
+                               );
+
+        // -- port ---------------------------------------------------
+        void set_property ( const QObject*
+                          , const data::handle::port&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::port&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
+        void move_item ( const QObject*
+                       , const handle::port&
+                       , const QPointF&
+                       );
+        void no_undo_move_item ( const QObject*
+                               , const handle::port&
+                               , const QPointF&
+                               );
+
         // - function ------------------------------------------------
         void set_function_name ( const QObject*
-                               , ::xml::parse::type::function_type&
+                               , const data::handle::function&
                                , const QString&
                                );
+        void set_property ( const QObject*
+                          , const data::handle::function&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::function&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
 
         // - expression ----------------------------------------------
         void set_expression ( const QObject*
-                            , ::xml::parse::type::expression_type&
+                            , data::handle::expression&
                             , const QString&
                             );
+
+#define EMITTER_ARGS(Z,N,TEXT) BOOST_PP_COMMA_IF(N)                     \
+      typename boost::mpl::at_c                                         \
+        < boost::function_types::parameter_types<Fun>                   \
+        , BOOST_PP_ADD (N, 1)                                           \
+        >::type
+
+#define EMITTER_BODY(Z,ARGC,TEXT)                                       \
+      template<typename Fun>                                            \
+      void emit_signal                                                  \
+        ( Fun fun                                                       \
+        , BOOST_PP_REPEAT ( BOOST_PP_ADD (1, ARGC)                      \
+                          , EMITTER_ARGS, BOOST_PP_EMPTY                \
+                          )                                             \
+        );
+
+      BOOST_PP_REPEAT_FROM_TO (1, 10, EMITTER_BODY, BOOST_PP_EMPTY)
+
+#undef EMITTER_ARGS
+#undef EMITTER_BODY
 
       signals:
 
         // ## signals after edit  ####################################
         // - net -----------------------------------------------------
+        // -- connection ---------------------------------------------
+        void property_changed ( const QObject*
+                              , const data::handle::connect&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type&
+                              );
+        void connection_added_out ( const QObject*
+                                  , const data::handle::connect&
+                                  , const data::handle::port&
+                                  , const data::handle::place&
+                                  );
+        void connection_added_in ( const QObject*
+                                 , const data::handle::connect&
+                                 , const data::handle::place&
+                                 , const data::handle::port&
+                                 );
+        void connection_added_read ( const QObject*
+                                   , const data::handle::connect&
+                                   , const data::handle::place&
+                                   , const data::handle::port&
+                                   );
+        void connection_removed ( const QObject*
+                                , const data::handle::connect&
+                                );
 
         // -- transition ---------------------------------------------
         void transition_added ( const QObject*
@@ -97,73 +236,50 @@ namespace fhg
         void transition_deleted ( const QObject*
                                 , const data::handle::transition&
                                 );
+        void property_changed ( const QObject*
+                              , const data::handle::transition&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type&
+                              );
 
         // -- place --------------------------------------------------
         void place_added (const QObject*, const data::handle::place&);
         void place_deleted (const QObject*, const data::handle::place&);
+        void property_changed ( const QObject*
+                              , const data::handle::place&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type&
+                              );
+
+        // - port ----------------------------------------------------
+        void property_changed ( const QObject*
+                              , const data::handle::port&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type&
+                              );
+
 
         // - function ------------------------------------------------
-        void signal_set_function_name ( const QObject*
-                                      , const ::xml::parse::type::function_type&
-                                      , const QString&
-                                      );
+        void function_name_changed ( const QObject*
+                                   , const data::handle::function&
+                                   , const QString&
+                                   );
+
+        void property_changed ( const QObject*
+                              , const data::handle::function&
+                              , const ::we::type::property::key_type&
+                              , const ::we::type::property::value_type&
+                              );
 
         // - expression ----------------------------------------------
         void signal_set_expression ( const QObject*
-                                   , const ::xml::parse::type::expression_type&
+                                   , const data::handle::expression&
                                    , const QString&
                                    );
         void signal_set_expression_parse_result ( const QObject*
-                                                , const ::xml::parse::type::expression_type&
+                                                , const data::handle::expression&
                                                 , const QString&
                                                 );
-
-      private:
-
-        // ## friend classes  ########################################
-        // - net -----------------------------------------------------
-        // -- transition ---------------------------------------------
-        friend class action::add_transition;
-        friend class action::remove_transition;
-        // -- place --------------------------------------------------
-        friend class action::add_place;
-        friend class action::remove_place;
-        // - function ------------------------------------------------
-        // - expression ----------------------------------------------
-
-#define ARG_TYPE(function_type,n)                                       \
-  boost::mpl::at_c<boost::function_types::parameter_types<function_type>,n>::type
-
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4)
-                                 , typename ARG_TYPE(Fun,5));
-        template<typename Fun>
-        void emit_signal (Fun fun, typename ARG_TYPE(Fun,1)
-                                 , typename ARG_TYPE(Fun,2)
-                                 , typename ARG_TYPE(Fun,3)
-                                 , typename ARG_TYPE(Fun,4)
-                                 , typename ARG_TYPE(Fun,5)
-                                 , typename ARG_TYPE(Fun,6));
-#undef ARG_TYPE
-
-        ::xml::parse::state::type& _state;
       };
     }
   }

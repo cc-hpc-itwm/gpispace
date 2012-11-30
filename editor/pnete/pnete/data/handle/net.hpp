@@ -6,6 +6,7 @@
 #include <pnete/data/handle/net.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/handle/meta_base.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -18,25 +19,20 @@ namespace fhg
     {
       namespace handle
       {
-        class net
+        typedef meta_base < ::xml::parse::id::ref::net
+                          , ::xml::parse::type::net_type
+                          > net_meta_base;
+        class net : public net_meta_base
         {
         public:
-          net ( const ::xml::parse::id::ref::net& id
+          net ( const net_meta_base::id_type& id
               , change_manager_t& change_manager
               );
 
-          const ::xml::parse::type::net_type& get() const;
-          ::xml::parse::type::net_type& get_ref() const;
+          void add_transition (const QObject* sender) const;
+          void add_place (const QObject* sender) const;
 
-          bool operator== (const net& other) const;
-
-          const ::xml::parse::id::ref::net& id() const;
-
-        private:
-          change_manager_t& change_manager() const;
-
-          ::xml::parse::id::ref::net _id;
-          change_manager_t& _change_manager;
+          using net_meta_base::operator==;
         };
       }
     }

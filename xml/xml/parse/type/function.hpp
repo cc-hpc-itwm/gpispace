@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_FUNCTION_HPP
 #define _XML_PARSE_TYPE_FUNCTION_HPP
@@ -80,7 +80,7 @@ namespace xml
                       , const requirements_type& requirements
                       , const type& f
                       , const xml::parse::structure_type::set_type& resolved
-                      , const we::type::property::type& prop
+                      , const we::type::property::type& properties
                       , const boost::filesystem::path& path
                       );
 
@@ -100,6 +100,9 @@ namespace xml
         bool has_parent() const;
         void unparent();
         void parent (const parent_id_type& parent);
+
+        boost::optional<id::ref::transition> parent_transition() const;
+        boost::optional<id::ref::tmpl> parent_tmpl() const;
 
         boost::optional<const id::ref::function&>
         get_function (const std::string& name) const;
@@ -123,6 +126,9 @@ namespace xml
 
         boost::optional<const id::ref::port&> get_port_in (const std::string & name) const;
         boost::optional<const id::ref::port&> get_port_out (const std::string & name) const;
+
+        boost::optional<port_type> port_by_id (const id::port& id) const;
+        boost::optional<port_type&> port_by_id_ref (const id::port& id) const;
 
         bool is_known_port_in (const std::string & name) const;
         bool is_known_port_out (const std::string & name) const;
@@ -193,10 +199,15 @@ namespace xml
                         , state::type & state
                         );
 
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
         const unique_key_type& unique_key() const;
 
         id::ref::function clone
-          (const boost::optional<parent_id_type>& parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         boost::optional<parent_id_type> _parent;
@@ -222,27 +233,11 @@ namespace xml
 
         xml::parse::structure_type::set_type structs_resolved;
 
-        we::type::property::type prop;
-
-        boost::filesystem::path path;
-      };
-
-      // ***************************************************************** //
-
-      class function_with_mapping_type
-      {
       private:
-        id::ref::function _function;
-        boost::optional<type_map_type&> _type_map;
+        we::type::property::type _properties;
 
       public:
-        explicit function_with_mapping_type
-          ( const id::ref::function& function
-          , boost::optional<type_map_type&> type_map = boost::none
-          );
-
-        const id::ref::function& function() const;
-        boost::optional<type_map_type&> type_map();
+        boost::filesystem::path path;
       };
 
       // ***************************************************************** //

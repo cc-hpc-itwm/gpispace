@@ -2,8 +2,9 @@
 
 #include <pnete/ui/base_editor_widget.hpp>
 
-#include <pnete/data/internal.hpp>
 #include <pnete/data/change_manager.hpp>
+#include <pnete/data/handle/function.hpp>
+#include <pnete/data/internal.hpp>
 
 namespace fhg
 {
@@ -28,7 +29,7 @@ namespace fhg
       {
         return root()->change_manager();
       }
-      ::xml::parse::type::function_type& base_editor_widget::function () const
+      data::handle::function base_editor_widget::function() const
       {
         return data::proxy::function (proxy());
       }

@@ -15,6 +15,7 @@
 
 namespace xml
 {
+  //! \todo Missing namespace parse
   namespace util
   {
     template<typename VALUE_TYPE, typename ID_TYPE>
@@ -79,6 +80,15 @@ namespace xml
         , _by_key()
       {}
 
+      unique ( const unique<value_type, id_type>& other
+             , const typename value_type::parent_id_type& parent
+             )
+        : _values (other._values)
+        , _by_key (other._by_key)
+      {
+        reparent (parent);
+      }
+
       boost::optional<const id_type&> get (const key_type& key) const
       {
         const typename by_key_type::const_iterator pos (_by_key.find (key));
@@ -94,6 +104,10 @@ namespace xml
       bool has (const key_type& key) const
       {
         return _by_key.find (key) != _by_key.end();
+      }
+      bool has (const id_type& id) const
+      {
+        return _values._ids.find (id) != _values._ids.end();
       }
 
       const id_type& push (const id_type& id)
@@ -133,15 +147,26 @@ namespace xml
       unique<value_type, id_type> clone
         ( const boost::optional<typename value_type::parent_id_type>& parent
         = boost::none
+        , const boost::optional<parse::id::mapper*>& mapper = boost::none
         ) const
       {
         //! \todo Reserve?
         unique<value_type, id_type> copy;
         BOOST_FOREACH (const value_type& value, values())
         {
-          copy.push (value.clone (parent));
+          copy.push (value.clone (parent, mapper));
         }
         return copy;
+      }
+
+      unique<value_type, id_type> reparent
+        (const typename value_type::parent_id_type& parent)
+      {
+        BOOST_FOREACH (value_type& value, values())
+        {
+         value.parent (parent);
+        }
+        return *this;
       }
 
     private:

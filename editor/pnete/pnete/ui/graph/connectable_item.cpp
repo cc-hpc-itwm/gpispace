@@ -1,9 +1,12 @@
+// bernd.loerwald@itwm.fraunhofer.de
+
 #include <pnete/ui/graph/connectable_item.hpp>
 
-#include <QDebug>
-
-#include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/association.hpp>
 #include <pnete/ui/graph/scene.hpp>
+
+#include <QGraphicsSceneMouseEvent>
+#include <QDebug>
 
 namespace fhg
 {
@@ -15,30 +18,28 @@ namespace fhg
       {
         connectable_item::connectable_item
           ( connectable::direction::type direction
-          , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , base_item* parent
           )
           : base_item (parent)
-          , _connections ()
+          , _associations ()
           , _direction (direction)
-          , _type_map (type_map)
         {}
 
-        void connectable_item::add_connection (connection_item* c)
+        void connectable_item::add_association (association* c)
         {
-          if (_connections.contains (c))
+          if (_associations.contains (c))
           {
-            throw std::runtime_error ("tried adding the same connection twice.");
+            throw std::runtime_error ("tried adding the same association twice.");
           }
-          _connections.insert (c);
+          _associations.insert (c);
         }
-        void connectable_item::remove_connection (connection_item* c)
+        void connectable_item::remove_association (association* c)
         {
-          if (!_connections.contains (c))
+          if (!_associations.contains (c))
           {
-            throw std::runtime_error ("item did not have that connection.");
+            throw std::runtime_error ("item did not have that association.");
           }
-          _connections.remove (c);
+          _associations.remove (c);
         }
 
         bool connectable_item::is_connectable_with (const connectable_item* i) const
@@ -46,9 +47,9 @@ namespace fhg
           return i->we_type() == we_type() && i->direction() != direction();
         }
 
-        const QSet<connection_item*>& connectable_item::connections() const
+        const QSet<association*>& connectable_item::associations() const
         {
-          return _connections;
+          return _associations;
         }
 
         const connectable::direction::type& connectable_item::direction() const
@@ -62,17 +63,10 @@ namespace fhg
 
         const std::string& connectable_item::we_type (const std::string& unmapped) const
         {
-          if (_type_map)
-          {
-            ::xml::parse::type::type_map_type::const_iterator type_mapping
-              (_type_map->find (unmapped));
-
-            if (type_mapping != _type_map->end())
-            {
-              return type_mapping->second;
-            }
-          }
-
+          //! \todo Reimplement with getting type_map at call-time from handle.
+          // - get type_map
+          // - it = type_map.find (unmapped)
+          // - it ? return it->mapped_type : unmapped
           return unmapped;
         }
 
@@ -80,32 +74,29 @@ namespace fhg
         {
           QLinkedList<base_item*> childs;
 
-          foreach (connection_item* connection, connections())
+          foreach (association* association, associations())
           {
-            childs << connection;
+            childs << association;
           }
 
           return childs;
         }
 
-        void connectable_item::erase_connections (scene_type* scene)
+        //! \todo This should be in the different connectable items instead.
+        void connectable_item::mousePressEvent
+          (QGraphicsSceneMouseEvent* event)
         {
-          foreach (connection_item* connection, connections())
+          if (event->modifiers() == Qt::ShiftModifier)
           {
-            scene->removeItem (connection);
-
-            if (connection)
-            {
-              delete connection;
-            }
+            //! \todo Ports can start a connection when they are
+            //! already connected to something!
+            scene()->create_pending_connection (this);
+          }
+          else
+          {
+            base_item::mousePressEvent (event);
           }
         }
-
-//      void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
-//      {
-//        scene()->create_connection (this);
-//        //! \todo Start a new connection!
-//      }
       }
     }
   }

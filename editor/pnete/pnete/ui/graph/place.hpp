@@ -1,20 +1,20 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_PLACE_HPP
-#define _FHG_PNETE_UI_GRAPH_PLACE_HPP 1
+#ifndef FHG_PNETE_UI_GRAPH_PLACE_HPP
+#define FHG_PNETE_UI_GRAPH_PLACE_HPP
 
-#include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/place.fwd.hpp>
+
 #include <pnete/data/handle/place.hpp>
+#include <pnete/ui/graph/connectable_item.hpp>
+
+#include <string>
+
+#include <boost/optional.hpp>
 
 #include <QStaticText>
 #include <QPointF>
 #include <QSizeF>
-
-#include <string>
-
-#include <xml/parse/type_map_type.hpp>
-
-#include <boost/optional.hpp>
 
 class QPainter;
 class QWidget;
@@ -35,12 +35,10 @@ namespace fhg
         public:
           place_item
             ( const data::handle::place& handle
-            , boost::optional< ::xml::parse::type::type_map_type&> type_map
-            = boost::none
             , base_item* parent = NULL
             );
 
-          const data::handle::place& handle() const;
+          virtual const data::handle::place& handle() const;
 
           std::string name() const;
           const std::string& we_type() const;
@@ -50,6 +48,13 @@ namespace fhg
 
         public slots:
           void refresh_content();
+
+          void property_changed
+            ( const QObject* origin
+            , const data::handle::place& changed_handle
+            , const ::we::type::property::key_type& key
+            , const ::we::type::property::value_type& value
+            );
 
         public:
           virtual void paint ( QPainter* painter

@@ -19,6 +19,7 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
 
+#include <fhg/util/backtracing_exception.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/xml.hpp>
 
@@ -56,7 +57,7 @@ namespace we
 
       namespace exception
       {
-        class missing_binding : public std::runtime_error
+        class missing_binding : public fhg::util::backtracing_exception
         {
         private:
           std::string nice ( path_type::const_iterator pos
@@ -81,7 +82,7 @@ namespace we
           missing_binding ( path_type::const_iterator pos
                           , const path_type::const_iterator end
                           )
-            : std::runtime_error (nice (pos, end))
+            : fhg::util::backtracing_exception (nice (pos, end))
           {}
         };
 

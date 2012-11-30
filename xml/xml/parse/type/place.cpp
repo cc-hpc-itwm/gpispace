@@ -216,7 +216,7 @@ namespace xml
                              , const std::list<token_type>& tokens
                              , const values_type& values
                              , const signature::type& sig
-                             , const we::type::property::type& prop
+                             , const we::type::property::type& properties
                              )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
@@ -226,7 +226,7 @@ namespace xml
         , tokens (tokens)
         , values (values)
         , sig (sig)
-        , prop (prop)
+        , _properties (properties)
       {
         _id_mapper->put (_id, *this);
       }
@@ -282,17 +282,30 @@ namespace xml
         return _is_virtual.get_value_or (false);
       }
 
+      const we::type::property::type& place_type::properties() const
+      {
+        return _properties;
+      }
+      we::type::property::type& place_type::properties()
+      {
+        return _properties;
+      }
+
       const place_type::unique_key_type& place_type::unique_key() const
       {
         return name();
       }
 
       id::ref::place place_type::clone
-        (const boost::optional<parent_id_type>& parent) const
+        ( const boost::optional<parent_id_type>& parent
+        , const boost::optional<id::mapper*>& mapper
+        ) const
       {
+        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
+        const id_type new_id (new_mapper->next_id());
         return place_type
-          ( id_mapper()->next_id()
-          , id_mapper()
+          ( new_id
+          , new_mapper
           , parent
           , _is_virtual
           , _name
@@ -300,7 +313,7 @@ namespace xml
           , tokens
           , values
           , sig
-          , prop
+          , _properties
           ).make_reference_id();
       }
 
@@ -313,7 +326,7 @@ namespace xml
           s.attr ("type", p.type);
           s.attr ("virtual", p.get_is_virtual());
 
-          ::we::type::property::dump::dump (s, p.prop);
+          ::we::type::property::dump::dump (s, p.properties());
 
           BOOST_FOREACH (const place_type::token_type& token, p.tokens)
             {

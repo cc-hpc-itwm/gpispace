@@ -34,6 +34,7 @@ namespace xml
                                    )
         : ID_INITIALIZE()
         , _parent (parent)
+        , contains_a_module_call (false)
         , f (_f)
       {
         _id_mapper->put (_id, *this);
@@ -54,7 +55,7 @@ namespace xml
         , const requirements_type& requirements
         , const type& f
         , const xml::parse::structure_type::set_type& structs_resolved
-        , const we::type::property::type& prop
+        , const we::type::property::type& properties
         , const boost::filesystem::path& path
         )
         : ID_INITIALIZE()
@@ -71,7 +72,7 @@ namespace xml
         , requirements (requirements)
         , f (f)
         , structs_resolved (structs_resolved)
-        , prop (prop)
+        , _properties (properties)
         , path (path)
       {
         _id_mapper->put (_id, *this);
@@ -128,6 +129,61 @@ namespace xml
       void function_type::parent (const parent_id_type& parent)
       {
         _parent = boost::make_optional (parent);
+      }
+
+      namespace
+      {
+        template<typename id_type, typename id_ref_type>
+        class visitor_get_parent
+          : public boost::static_visitor<boost::optional<id_ref_type> >
+        {
+        public:
+          visitor_get_parent (id::mapper* id_mapper)
+            : _id_mapper (id_mapper)
+          { }
+
+          boost::optional<id_ref_type> operator() (const id_type& id) const
+          {
+            return _id_mapper->get (id)->make_reference_id();
+          }
+
+          template<typename other_types>
+            boost::optional<id_ref_type> operator() (const other_types&) const
+          {
+            return boost::none;
+          }
+
+        private:
+          id::mapper* _id_mapper;
+        };
+      }
+
+      boost::optional<id::ref::transition>
+        function_type::parent_transition() const
+      {
+        if (!_parent)
+        {
+          return boost::none;
+        }
+
+        return boost::apply_visitor
+          ( visitor_get_parent<id::transition, id::ref::transition> (id_mapper())
+          , *_parent
+          );
+      }
+
+      boost::optional<id::ref::tmpl>
+        function_type::parent_tmpl() const
+      {
+        if (!_parent)
+        {
+          return boost::none;
+        }
+
+        return boost::apply_visitor
+          ( visitor_get_parent<id::tmpl, id::ref::tmpl> (id_mapper())
+          , *_parent
+          );
       }
 
       namespace
@@ -557,7 +613,7 @@ namespace xml
               trans.add_ports () ( port.name()
                                  , type
                                  , direction
-                                 , port.prop
+                                 , port.properties()
                                  );
             }
         }
@@ -588,7 +644,7 @@ namespace xml
                   trans.add_ports () ( port.name()
                                      , type
                                      , direction
-                                     , port.prop
+                                     , port.properties()
                                      );
                 }
               else
@@ -601,7 +657,7 @@ namespace xml
                                      , type
                                      , direction
                                      , get_pid (pid_of_place, *port.place)
-                                     , port.prop
+                                     , port.properties()
                                      )
                     ;
                 }
@@ -662,7 +718,7 @@ namespace xml
             , we_expr_type (expr, parsed_expression)
             , condition()
             , fun.internal.get_value_or (true)
-            , fun.prop
+            , fun.properties()
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
@@ -682,7 +738,7 @@ namespace xml
             , we_module_type (mod.name, mod.function)
             , condition()
             , fun.internal.get_value_or (false)
-            , fun.prop
+            , fun.properties()
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
@@ -709,8 +765,8 @@ namespace xml
             );
 
           util::property::join ( state
-                               , fun.prop
-                               , id_net.get().prop
+                               , fun.properties()
+                               , id_net.get().properties()
                                );
 
           we_transition_type trans
@@ -718,7 +774,7 @@ namespace xml
             , we_net
             , condition()
             , fun.internal.get_value_or (true)
-            , fun.prop
+            , fun.properties()
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN, pid_of_place);
@@ -829,6 +885,15 @@ namespace xml
           );
       }
 
+      const we::type::property::type& function_type::properties() const
+      {
+        return _properties;
+      }
+      we::type::property::type& function_type::properties()
+      {
+        return _properties;
+      }
+
       const function_type::unique_key_type& function_type::unique_key() const
       {
         //! \note anonymous functions can't be stored in unqiue, thus
@@ -842,61 +907,50 @@ namespace xml
           : public boost::static_visitor<function_type::type>
         {
         public:
-          visitor_clone (const id::function& new_id)
+          visitor_clone ( const id::function& new_id
+                        , id::mapper* const mapper
+                        )
             : _new_id (new_id)
+            , _mapper (mapper)
           { }
           template<typename ID_TYPE>
             function_type::type operator() (const ID_TYPE& id) const
           {
-            return id.get().clone (_new_id);
+            return id.get().clone (_new_id, _mapper);
           }
+
         private:
-          id::function _new_id;
+          const id::function& _new_id;
+          id::mapper* const _mapper;
         };
       }
 
       id::ref::function function_type::clone
-        (const boost::optional<parent_id_type>& parent) const
+        ( const boost::optional<parent_id_type>& parent
+        , const boost::optional<id::mapper*>& mapper
+        ) const
       {
-        const id::function new_id (id_mapper()->next_id());
+        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
+        const id_type new_id (new_mapper->next_id());
         return function_type
           ( new_id
-          , id_mapper()
+          , new_mapper
           , parent
           , _name
-          , _in.clone (new_id)
-          , _out.clone (new_id)
-          , _tunnel.clone (new_id)
+          , _in.clone (new_id, new_mapper)
+          , _out.clone (new_id, new_mapper)
+          , _tunnel.clone (new_id, new_mapper)
           , _typenames
           , contains_a_module_call
           , internal
           , structs
           , cond
           , requirements
-          , boost::apply_visitor (visitor_clone (new_id), f)
+          , boost::apply_visitor (visitor_clone (new_id, new_mapper), f)
           , structs_resolved
-          , prop
+          , _properties
           , path
           ).make_reference_id();
-      }
-
-      // ***************************************************************** //
-
-      function_with_mapping_type::function_with_mapping_type
-        ( const id::ref::function& function
-        , boost::optional<type_map_type&> type_map
-        )
-          : _function (function)
-          , _type_map (type_map)
-      { }
-
-      const id::ref::function& function_with_mapping_type::function() const
-      {
-        return _function;
-      }
-      boost::optional<type_map_type&> function_with_mapping_type::type_map()
-      {
-        return _type_map;
       }
 
       // ***************************************************************** //
@@ -2273,7 +2327,7 @@ namespace xml
 
           state.dump_context (s);
 
-          ::we::type::property::dump::dump (s, f.prop);
+          ::we::type::property::dump::dump (s, f.properties());
 
           dump_after_property (s, f);
         }
@@ -2284,7 +2338,7 @@ namespace xml
         {
           dump_before_property (s, f);
 
-          ::we::type::property::dump::dump (s, f.prop);
+          ::we::type::property::dump::dump (s, f.properties());
 
           dump_after_property (s, f);
         }

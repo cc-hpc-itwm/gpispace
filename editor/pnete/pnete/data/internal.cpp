@@ -2,13 +2,17 @@
 
 #include <pnete/data/internal.hpp>
 
+#include <pnete/data/proxy.hpp>
+#include <pnete/weaver/display.hpp>
+
 #include <xml/parse/parser.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.hpp>
 
 #include <QObject>
 #include <QString>
-
-#include <pnete/weaver/display.hpp>
-#include <pnete/data/proxy.hpp>
 
 namespace fhg
 {
@@ -72,8 +76,8 @@ namespace fhg
       internal_type::internal_type (const kind& kind_)
         : _state ()
         , _function (make_function (kind_, _state))
-        , _change_manager (_state)
-        , _root_proxy (*create_proxy())
+        , _change_manager (NULL)
+        , _root_proxy (*weaver::function (_function, this).proxy())
       {}
 
       internal_type::internal_type (const QString& filename)
@@ -82,25 +86,13 @@ namespace fhg
                                                , filename.toStdString()
                                                )
                     )
-        , _change_manager (_state)
-        , _root_proxy (*create_proxy())
+        , _change_manager (NULL)
+        , _root_proxy (*weaver::function (_function, this).proxy())
       {}
 
-      proxy::type* internal_type::create_proxy()
+      const ::xml::parse::id::ref::function& internal_type::function() const
       {
-        return weaver::function
-          ( weaver::function_with_mapping_type (function().make_reference_id())
-          , this
-          ).proxy();
-      }
-
-      ::xml::parse::type::function_type & internal_type::function ()
-      {
-        return _function.get_ref();
-      }
-      const ::xml::parse::type::function_type & internal_type::function () const
-      {
-        return _function.get();
+        return _function;
       }
 
       const ::xml::parse::state::key_values_t & internal_type::context () const

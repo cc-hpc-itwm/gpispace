@@ -39,7 +39,7 @@ namespace xml
                   , const std::string & name
                   , const std::string & _type
                   , const boost::optional<std::string> & _place
-                  , const we::type::property::type& prop
+                  , const we::type::property::type& properties
                   = we::type::property::type()
                   );
 
@@ -54,10 +54,15 @@ namespace xml
 
         const std::string& name() const;
 
+        const we::type::property::type& properties() const;
+        we::type::property::type& properties();
+
         const unique_key_type& unique_key() const;
 
         id::ref::port clone
-          (const boost::optional<parent_id_type>& parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         std::string _name;
@@ -66,7 +71,9 @@ namespace xml
       public:
         std::string type;
         boost::optional<std::string> place;
-        we::type::property::type prop;
+
+      private:
+        we::type::property::type _properties;
       };
 
       namespace dump

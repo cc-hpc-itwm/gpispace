@@ -44,7 +44,6 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler, bool bUseRequest
 
 SchedulerImpl::~SchedulerImpl()
 {
-  SDPA_LOG_INFO( "Called the destructor of  SchedulerImpl ...");
   try  {
     if( jobs_to_be_scheduled.size() )
     {
@@ -686,9 +685,9 @@ void SchedulerImpl::check_post_request()
   {
     if( !masterInfo.is_registered() )
     {
-      SDPA_LOG_INFO("I'm not yet registered. Try to re-register ...");
+      MLOG (TRACE, "I am not registered yet...");
+
       const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-      SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
       boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
       ptr_comm_handler_->requestRegistration(masterInfo);

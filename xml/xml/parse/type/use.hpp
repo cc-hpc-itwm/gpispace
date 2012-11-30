@@ -31,7 +31,9 @@ namespace xml
         const std::string& name() const;
 
         id::ref::use clone
-          (const boost::optional<parent_id_type>& parent = boost::none) const;
+          ( const boost::optional<parent_id_type>& parent = boost::none
+          , const boost::optional<id::mapper*>& mapper = boost::none
+          ) const;
 
       private:
         std::string _name;
