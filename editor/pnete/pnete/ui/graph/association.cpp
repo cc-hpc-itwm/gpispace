@@ -25,6 +25,7 @@ namespace fhg
             , _start (start)
             , _end (end)
             , _fixed_points()
+            , _dragged_point (boost::none)
         {
           start->add_association (this);
           end->add_association (this);
@@ -58,17 +59,16 @@ namespace fhg
           return _fixed_points = fixed_points_;
         }
 
+        QList<QPointF> association::all_points() const
+        {
+          QList<QPointF> result;
+          result << start()->scenePos() << fixed_points() << end()->scenePos();
+          return result;
+        }
+
         QPainterPath association::shape () const
         {
-          QList<QPointF> allPoints;
-          allPoints.push_back (start()->scenePos());
-          foreach (QPointF point, fixed_points())
-          {
-            allPoints.push_back (point);
-          }
-          allPoints.push_back (end()->scenePos());
-
-          return style::association::shape (allPoints);
+          return style::association::shape (all_points());
         }
 
         void association::paint ( QPainter* painter
@@ -81,14 +81,96 @@ namespace fhg
 
         void association::mousePressEvent (QGraphicsSceneMouseEvent* event)
         {
-          //! \todo Add ability to set control points.
           if (event->modifiers() == Qt::ControlModifier)
           {
-            event->ignore();
+            boost::optional<std::pair<int,qreal> > nearest_point (boost::none);
+
+            {
+              int i (0);
+              for ( QList<QPointF>::const_iterator it (fixed_points().begin())
+                  ; it != fixed_points().end()
+                  ; ++it, ++i
+                  )
+              {
+                static const qreal still_clicking_point_dist (30.0);
+                const qreal dist (QLineF (event->pos(), *it).length());
+                if ( dist < still_clicking_point_dist
+                   && (!nearest_point || nearest_point->second < dist)
+                   )
+                {
+                  nearest_point = std::make_pair (i, dist);
+                }
+              }
+            }
+
+            if (!nearest_point)
+            {
+              QList<QPointF> points (all_points());
+              int i (0);
+              for ( QList<QPointF>::const_iterator first (points.begin())
+                  , second (points.begin() + 1)
+                  ; second != points.end()
+                  ; ++first, ++second, ++i
+                  )
+              {
+                const QLineF segment (*first, *second);
+                // get a unit vector from event->pos() with angle like normal
+                QLineF fake_normal ( QLineF ( event->pos()
+                                            , event->pos() + QPointF (1., 0.)
+                                            )
+                                   );
+                fake_normal.setAngle (segment.normalVector().angle());
+                QPointF intersection;
+                // get point where both intersect
+                if ( fake_normal.intersect (segment, &intersection)
+                   != QLineF::NoIntersection
+                   )
+                {
+                  // scale normal from [0,1] to [-dist - 1, dist + 1]
+                  fake_normal.setLength
+                    (QLineF (event->pos(), intersection).length() + 1.);
+                  fake_normal.setPoints (fake_normal.p2(), fake_normal.p1());
+                  fake_normal.setLength (2 * fake_normal.length());
+                  // check, if they intersect within the segment
+                  if ( fake_normal.intersect (segment, NULL)
+                     == QLineF::BoundedIntersection
+                     )
+                  {
+                    _fixed_points.insert (i, intersection);
+                    _dragged_point = i;
+                    break;
+                  }
+                }
+              }
+            }
+            else
+            {
+              _dragged_point = nearest_point->first;
+            }
+
+            mode_push (mode::DRAG);
           }
           else
           {
             base_item::mousePressEvent (event);
+          }
+        }
+
+        void association::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
+        {
+          if (mode() == mode::DRAG)
+          {
+            mode_pop();
+            _dragged_point = boost::none;
+          }
+        }
+        void association::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
+        {
+          if (mode() == mode::DRAG)
+          {
+            const QRectF old (boundingRect());
+            _fixed_points[*_dragged_point] = event->pos();
+            scene()->update (old.united (boundingRect()));
           }
         }
       }
