@@ -1131,7 +1131,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc, 
  */
 bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason)
 {
-  SDPA_LOG_INFO ("The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
+  SDPA_LOG_WARN ("The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
 
   // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
   // look for the job_id corresponding to the received workflowId into job_map_
