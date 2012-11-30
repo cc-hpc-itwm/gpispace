@@ -240,39 +240,29 @@ public:
 
   FHG_PLUGIN_STOP()
   {
-    /*
-    // cancel running jobs etc.
-    {
-      lock_type job_map_lock (m_job_map_mutex);
-      map_of_jobs_t::iterator job_it (m_jobs.begin ());
-      while (job_it != m_jobs.end ())
-      {
-        m_wfe->cancel (job_it->first);
-        ++job_it;
-      }
-    }
-    */
-
     m_shutting_down = true;
 
     if (m_request_thread)
     {
       m_request_thread->interrupt();
-      m_request_thread->join();
+      if (m_request_thread->joinable ())
+        m_request_thread->join();
       m_request_thread.reset();
     }
 
     if (m_execution_thread)
     {
       m_execution_thread->interrupt();
-      m_execution_thread->join ();
+      if (m_execution_thread->joinable ())
+        m_execution_thread->join ();
       m_execution_thread.reset();
     }
 
     if (m_event_thread)
     {
       m_event_thread->interrupt();
-      m_event_thread->join();
+      if (m_event_thread->joinable ())
+        m_event_thread->join();
       m_event_thread.reset();
     }
 
@@ -284,7 +274,8 @@ public:
     if (m_peer_thread)
     {
       m_peer_thread->interrupt();
-      m_peer_thread->join();
+      if (m_peer_thread->joinable ())
+        m_peer_thread->join();
     }
 
     m_peer_thread.reset();
