@@ -459,7 +459,7 @@ namespace fhg
               std::map<key_type, entry_type> tmp_map_ (store_.begin(), store_.end());
               ar << boost::serialization::make_nvp("kvsd", tmp_map_);
 
-              LOG(INFO, "saved " << store_.size() << " entries");
+              MLOG (DEBUG, "saved " << store_.size() << " entries");
             }
             else
             {

@@ -265,7 +265,7 @@ namespace we {
       module_table_t::iterator unload(module_table_t::iterator mod)
       {
         assert(mod != module_table_.end());
-        LOG(INFO, "unloading " << mod->first);
+        MLOG (TRACE, "unloading " << mod->first);
         return module_table_.erase(mod);
       }
 

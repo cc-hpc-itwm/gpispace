@@ -25,7 +25,6 @@ using namespace sdpa::events;
 
 Agent::~Agent()
 {
-  SDPA_LOG_INFO("Agent's destructor called ...");
 }
 
 void Agent::action_configure(const StartUpEvent &se)
@@ -34,7 +33,7 @@ void Agent::action_configure(const StartUpEvent &se)
 
   // should be overriden by the orchestrator, aggregator and NRE
   cfg().put("nmax_ext_job_req", 10U);
-  SDPA_LOG_INFO("Configuring myself (agent)...");
+  MLOG (TRACE, "Configuring myself (agent)...");
 }
 
 void Agent::action_config_ok(const ConfigOkEvent& e)
