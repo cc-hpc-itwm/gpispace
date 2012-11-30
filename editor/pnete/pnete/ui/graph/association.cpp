@@ -163,6 +163,10 @@ namespace fhg
             mode_pop();
             _dragged_point = boost::none;
           }
+          else
+          {
+            base_item::mouseReleaseEvent (event);
+          }
         }
         void association::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
         {
@@ -171,6 +175,10 @@ namespace fhg
             const QRectF old (boundingRect());
             _fixed_points[*_dragged_point] = event->pos();
             scene()->update (old.united (boundingRect()));
+          }
+          else
+          {
+            base_item::mouseMoveEvent (event);
           }
         }
       }
