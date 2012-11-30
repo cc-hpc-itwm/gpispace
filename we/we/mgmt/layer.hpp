@@ -275,12 +275,14 @@ namespace we { namespace mgmt {
           //        -> cancel all children
           //        -> wait until all children are done
           //        -> inform parent and so on
-          post_failed_notification (map_to_internal(id));
+          post_failed_notification (d->id ());
           return true;
         }
-        catch (const std::exception &)
+        catch (const std::exception &ex)
         {
-          return false;
+          MLOG (ERROR, "could not mark activity as failed: " << ex.what ());
+          throw;
+          //          return false;
         }
       }
 
@@ -1167,7 +1169,7 @@ namespace we { namespace mgmt {
             //     - check failure reason
             //         - EAGAIN reschedule (had not been submitted yet)
             //         - ECRASH activity crashed (idempotence criteria)
-            post_cancel_activity_notification (desc->parent());
+            post_cancel_activity_notification (parent_desc->id ());
           }
           else if (desc->came_from_external ())
           {
@@ -1212,6 +1214,10 @@ namespace we { namespace mgmt {
             if (! parent->has_children ())
             {
               post_cancelled_notification (parent->id());
+            }
+            else
+            {
+              post_cancel_activity_notification (parent->id ());
             }
           }
           else if (desc->came_from_external ())
