@@ -8,6 +8,8 @@
 #include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 
+#include <boost/optional.hpp>
+
 #include <QList>
 #include <QPointF>
 #include <QObject>
@@ -42,8 +44,6 @@ namespace fhg
 
           QList<QPointF> all_points() const;
 
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
-
           virtual QPainterPath shape() const;
           virtual void paint
             (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
@@ -51,11 +51,17 @@ namespace fhg
           enum { Type = association_graph_type };
           virtual int type() const { return Type; }
 
+        protected:
+          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
+
         private:
           connectable_item* _start;
           connectable_item* _end;
 
           QList<QPointF> _fixed_points;
+          boost::optional<int> _dragged_point;
         };
       }
     }
