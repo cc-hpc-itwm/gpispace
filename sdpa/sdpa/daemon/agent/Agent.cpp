@@ -630,6 +630,12 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
   catch(const JobNotFoundException &)
   {
     SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+
+    if (pEvt->from () == sdpa::daemon::WE)
+    {
+      workflowEngine()->cancelled (pEvt->job_id ());
+    }
+
     return;
   }
 
