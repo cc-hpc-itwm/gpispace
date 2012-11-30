@@ -414,7 +414,7 @@ namespace fhg
 
             write_through ();
 
-            LOG(INFO, "cleared " << count << " entries");
+            LOG_IF(INFO, count > 0, "cleared " << count << " entries");
           }
 
           void del (key_type const & k)
