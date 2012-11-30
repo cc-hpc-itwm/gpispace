@@ -40,6 +40,8 @@ namespace fhg
           const QList<QPointF>& fixed_points() const;
           const QList<QPointF>& fixed_points (const QList<QPointF>&);
 
+          QList<QPointF> all_points() const;
+
           virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
 
           virtual QPainterPath shape() const;

@@ -58,17 +58,16 @@ namespace fhg
           return _fixed_points = fixed_points_;
         }
 
+        QList<QPointF> association::all_points() const
+        {
+          QList<QPointF> result;
+          result << start()->scenePos() << fixed_points() << end()->scenePos();
+          return result;
+        }
+
         QPainterPath association::shape () const
         {
-          QList<QPointF> allPoints;
-          allPoints.push_back (start()->scenePos());
-          foreach (QPointF point, fixed_points())
-          {
-            allPoints.push_back (point);
-          }
-          allPoints.push_back (end()->scenePos());
-
-          return style::association::shape (allPoints);
+          return style::association::shape (all_points());
         }
 
         void association::paint ( QPainter* painter
