@@ -199,12 +199,32 @@ namespace fhg
       }
     }
 
+    int PluginKernelMediator::kill ()
+    {
+      if (has_permission(permission::TERMINATE))
+      {
+        LOG (WARN
+            , "plugin `" << m_plugin->name()
+            << "' requested to terminate the kernel!"
+            );
+        ::kill (SIGKILL, getpid ());
+        return 0;
+      }
+      else
+      {
+        return -EPERM;
+      }
+    }
+
     int PluginKernelMediator::terminate ()
     {
       if (has_permission(permission::TERMINATE))
       {
-        LOG(WARN, "plugin `" << m_plugin->name() << "' requested to kill the kernel!");
-        _exit (9);
+        LOG (WARN
+            , "plugin `" << m_plugin->name()
+            << "' requested to terminate the kernel!"
+            );
+        ::kill (SIGTERM, getpid ());
         return 0;
       }
       else
