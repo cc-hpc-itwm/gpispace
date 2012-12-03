@@ -53,6 +53,7 @@ if(NOT TARGET we-exec)
       message (FATAL_ERROR "WE could not be found!")
     endif (WE_FIND_REQUIRED)
   endif (WE_INCLUDE_DIR)
+  #! \todo find we_type
 else(NOT TARGET we-exec)
 # else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(WE_FOUND true)
