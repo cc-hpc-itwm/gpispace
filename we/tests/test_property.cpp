@@ -588,3 +588,131 @@ BOOST_AUTO_TEST_CASE (visit_all_leafs)
     correct.pop();
   }
 }
+
+namespace boost
+{
+  namespace test_tools
+  {
+    template<typename T> struct print_log_value<std::vector<T> >
+    {
+      void operator()( std::ostream& ostr, const std::vector<T>& p)
+      {
+        ostr << fhg::util::join (p, ",", "{", "}");
+      }
+    };
+    template<typename T> struct print_log_value<std::list<T> >
+    {
+      void operator()( std::ostream& ostr, const std::list<T>& p)
+      {
+        ostr << fhg::util::join (p, ",", "{", "}");
+      }
+    };
+  }
+}
+
+BOOST_AUTO_TEST_CASE (store_int_vector)
+{
+  typedef std::vector<int> vector_type;
+
+  int values[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  vector_type orig (values, values + sizeof (values)/sizeof (*values));
+
+  std::string where ("int_vec");
+
+  p.set_container (where, orig);
+
+  BOOST_REQUIRE_EQUAL (orig, p.get_container<vector_type> (where));
+}
+
+struct point
+{
+  int _x, _y;
+
+  point (int x, int y) : _x (x), _y (y) { }
+  bool operator== (const point& o) const { return _x == o._x && _y == o._y; }
+};
+
+std::ostream& operator<< (std::ostream& s, const point& p)
+{
+  s << "(" << p._x << ", " << p._y << ")";
+  return s;
+}
+
+namespace we
+{
+  namespace type
+  {
+    namespace property
+    {
+      template<> void store_value
+        (type* properties, const key_type& key, const point& t)
+      {
+        properties->set (key + ".x", to_property (t._x));
+        properties->set (key + ".y", to_property (t._y));
+      }
+
+      template<> point retrieve_value
+        (const type& properties, const key_type& key)
+      {
+        return point ( from_property<int> (properties.get_val (key + ".x"))
+                     , from_property<int> (properties.get_val (key + ".y"))
+                     );
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (store_struct_list)
+{
+  typedef std::list<point> list_type;
+
+  point values[] = {point (0, 0), point (-1, 1), point (-2, 2), point (-3, 3)};
+  list_type orig (values, values + sizeof (values)/sizeof (*values));
+
+  std::string where ("struct_list");
+
+  p.set_container (where, orig);
+
+  BOOST_REQUIRE_EQUAL (orig, p.get_container<list_type> (where));
+}
+
+namespace we
+{
+  namespace type
+  {
+    namespace property
+    {
+      template<> void store_value
+        (type* properties, const key_type& key, const std::pair<const int,int>& t)
+      {
+        properties->set (key + ".first", to_property (t.first));
+        properties->set (key + ".second", to_property (t.second));
+      }
+
+      template<> std::pair<const int,int> retrieve_value
+        (const type& properties, const key_type& key)
+      {
+        return std::make_pair
+          ( from_property<int> (properties.get_val (key + ".first"))
+          , from_property<int> (properties.get_val (key + ".second"))
+          );
+      }
+    }
+  }
+}
+
+typedef std::map<int,int> map_type;
+BOOST_TEST_DONT_PRINT_LOG_VALUE (map_type);
+
+BOOST_AUTO_TEST_CASE (store_map)
+{
+  map_type orig;
+  orig[1] = -1;
+  orig[2] = -2;
+
+  std::string where ("map");
+
+  p.set_container (where, orig);
+
+  BOOST_REQUIRE_EQUAL (orig, p.get_container<map_type> (where));
+}
