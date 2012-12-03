@@ -160,6 +160,7 @@ namespace we
       namespace dump
       {
         void dump (::fhg::util::xml::xmlstream &, const type &);
+        void ordered_dump (::fhg::util::xml::xmlstream&, const type&);
       }
 
       std::ostream & operator << (std::ostream & s, const type & t);

@@ -366,13 +366,44 @@ namespace we
               s.close ();
             }
 
-            template<typename T>
-            void operator () (const T& x) const
+            void operator () (const type& x) const
             {
               s.open ("properties");
               s.attr ("name", key);
 
               dump (s, x);
+
+              s.close ();
+            }
+          };
+
+          class visitor_ordered_dump : public boost::static_visitor<void>
+          {
+          private:
+            ::fhg::util::xml::xmlstream& s;
+            const key_type& key;
+
+          public:
+            visitor_ordered_dump
+              (::fhg::util::xml::xmlstream& _s, const key_type& _key)
+              : s (_s)
+              , key (_key)
+            {}
+
+            void operator () (const value_type& v) const
+            {
+              s.open ("property");
+              s.attr ("key", key);
+              s.content (v);
+              s.close ();
+            }
+
+            void operator () (const type& x) const
+            {
+              s.open ("properties");
+              s.attr ("name", key);
+
+              ordered_dump (s, x);
 
               s.close ();
             }
@@ -388,6 +419,20 @@ namespace we
             {
               boost::apply_visitor (visitor_dump (s, pos->first), pos->second);
             }
+        }
+        void ordered_dump (::fhg::util::xml::xmlstream& s, const type& p)
+        {
+          typedef std::map<key_type, mapped_type> ordered_map_type;
+          ordered_map_type ordered (p.get_map().begin(), p.get_map().end());
+
+          for ( ordered_map_type::const_iterator pos (ordered.begin())
+              ; pos != ordered.end()
+              ; ++pos
+              )
+          {
+            boost::apply_visitor
+              (visitor_ordered_dump (s, pos->first), pos->second);
+          }
         }
       }
 
