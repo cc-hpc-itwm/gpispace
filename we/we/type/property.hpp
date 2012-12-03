@@ -41,6 +41,7 @@ namespace we
                              > mapped_type;
 
       typedef std::vector<key_type> path_type;
+      typedef path_type::const_iterator path_iterator;
       typedef boost::unordered_map<key_type, mapped_type> map_type;
 
       // ******************************************************************* //
@@ -178,8 +179,10 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        template<typename IT>
-        const mapped_type & get (IT pos, IT end, IT zero) const
+        const mapped_type& get ( const path_iterator& pos
+                               , const path_iterator& end
+                               , const path_iterator& zero
+                               ) const
         {
           if (pos == end)
             {
@@ -209,17 +212,21 @@ namespace we
             }
         }
 
-        template<typename IT>
-        const value_type & get_val (IT pos, IT end, IT zero) const
+        const value_type& get_val ( const path_iterator& pos
+                                  , const path_iterator& end
+                                  , const path_iterator& zero
+                                  ) const
         {
           return boost::apply_visitor ( visitor::get_val()
                                       , get (pos, end, zero)
                                       );
         }
 
-        template<typename IT>
         const boost::optional<const value_type &>
-        get_maybe_val (IT pos, IT end, IT zero) const
+          get_maybe_val ( const path_iterator& pos
+                        , const path_iterator& end
+                        , const path_iterator& zero
+                        ) const
         {
           try
             {
@@ -244,9 +251,8 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        template<typename IT>
-        boost::optional<mapped_type> set ( IT pos
-                                         , IT end
+        boost::optional<mapped_type> set ( const path_iterator& pos
+                                         , const path_iterator&  end
                                          , const value_type & val
                                          )
         {
@@ -300,8 +306,8 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        template<typename IT>
-        const mapped_type & get (IT pos, IT end) const
+        const mapped_type & get
+          (const path_iterator& pos, const path_iterator& end) const
         {
           return get (pos, end, pos);
         }
@@ -321,8 +327,8 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        template<typename IT>
-        const value_type & get_val (IT pos, IT end) const
+        const value_type & get_val
+          (const path_iterator& pos, const path_iterator& end) const
         {
           return get_val (pos, end, pos);
         }
@@ -342,9 +348,8 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        template<typename IT>
-        const boost::optional<const value_type &>
-        get_maybe_val (IT pos, IT end) const
+        const boost::optional<const value_type &> get_maybe_val
+          (const path_iterator& pos, const path_iterator& end) const
         {
           return get_maybe_val (pos, end, pos);
         }
@@ -367,9 +372,10 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        template<typename IT>
-        const value_type &
-        get_with_default (IT pos, IT end, const value_type & dflt) const
+        const value_type& get_with_default ( const path_iterator& pos
+                                           , const path_iterator& end
+                                           , const value_type & dflt
+                                           ) const
         {
           return get_maybe_val (pos, end, pos).get_value_or (dflt);
         }
@@ -393,8 +399,7 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        template<typename IT>
-        void del (IT pos, IT end)
+        void del (const path_iterator& pos, const path_iterator& end)
         {
           if (pos == end)
             {
