@@ -1,27 +1,20 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _WE_TYPE_PROPERTY_HPP
 #define _WE_TYPE_PROPERTY_HPP
 
 #include <we/type/property.fwd.hpp>
 
-#include <boost/variant.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/optional.hpp>
+#include <fhg/util/backtracing_exception.hpp>
+#include <fhg/util/xml.fwd.hpp>
 
-#include <vector>
-#include <algorithm>
-#include <stdexcept>
-#include <sstream>
-#include <iostream>
 #include <stack>
 
-#include <boost/serialization/nvp.hpp>
+#include <boost/optional/optional_fwd.hpp>
 #include <boost/serialization/map.hpp>
-
-#include <fhg/util/backtracing_exception.hpp>
-#include <fhg/util/split.hpp>
-#include <fhg/util/xml.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/variant.hpp>
 
 namespace we
 {
