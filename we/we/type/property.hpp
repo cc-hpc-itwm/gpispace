@@ -48,7 +48,7 @@ namespace we
 
       namespace util
       {
-        path_type split (const key_type & s, const char & sep = '.');
+        path_type split (const key_type& s, const char& sep = '.');
       }
 
       // ******************************************************************* //
@@ -71,19 +71,19 @@ namespace we
         class empty_path : public std::runtime_error
         {
         public:
-          empty_path (const std::string & pre);
+          empty_path (const std::string& pre);
         };
 
         class not_a_map : public std::runtime_error
         {
         public:
-          not_a_map (const std::string & pre);
+          not_a_map (const std::string& pre);
         };
 
         class not_a_val : public std::runtime_error
         {
         public:
-          not_a_val (const std::string & pre);
+          not_a_val (const std::string& pre);
         };
       }
 
@@ -94,7 +94,7 @@ namespace we
 
         friend class boost::serialization::access;
         template<typename Archive>
-        void serialize (Archive & ar, const unsigned int)
+        void serialize (Archive& ar, const unsigned int)
         {
           ar & BOOST_SERIALIZATION_NVP(map);
         }
@@ -111,7 +111,7 @@ namespace we
                                   , const path_iterator& zero
                                   ) const;
 
-        const boost::optional<const value_type &>
+        const boost::optional<const value_type&>
           get_maybe_val ( const path_iterator& pos
                         , const path_iterator& end
                         , const path_iterator& zero
@@ -122,16 +122,16 @@ namespace we
       public:
         type();
 
-        const map_type & get_map (void) const;
+        const map_type& get_map (void) const;
 
         boost::optional<mapped_type> set ( const path_iterator& pos
-                                         , const path_iterator&  end
-                                         , const value_type & val
+                                         , const path_iterator& end
+                                         , const value_type& val
                                          );
         boost::optional<mapped_type>
-          set (const path_type & path, const value_type & val);
+          set (const path_type& path, const value_type& val);
         boost::optional<mapped_type>
-          set (const std::string & path, const value_type & val);
+          set (const std::string& path, const value_type& val);
 
         template <typename C>
           void set_container (const key_type& key, const C& c)
@@ -173,37 +173,37 @@ namespace we
           return result;
         }
 
-        const mapped_type & get
+        const mapped_type& get
           (const path_iterator& pos, const path_iterator& end) const;
-        const mapped_type & get (const path_type & path) const;
-        const mapped_type & get (const std::string & path) const;
+        const mapped_type& get (const path_type& path) const;
+        const mapped_type& get (const std::string& path) const;
 
-        const value_type & get_val
+        const value_type& get_val
           (const path_iterator& pos, const path_iterator& end) const;
-        const value_type & get_val (const path_type & path) const;
-        const value_type & get_val (const std::string & path) const;
+        const value_type& get_val (const path_type& path) const;
+        const value_type& get_val (const std::string& path) const;
 
-        const boost::optional<const value_type &> get_maybe_val
+        const boost::optional<const value_type&> get_maybe_val
           (const path_iterator& pos, const path_iterator& end) const;
-        const boost::optional<const value_type &>
-          get_maybe_val (const path_type & path) const;
-        const boost::optional<const value_type &>
-          get_maybe_val (const std::string & path) const;
+        const boost::optional<const value_type&>
+          get_maybe_val (const path_type& path) const;
+        const boost::optional<const value_type&>
+          get_maybe_val (const std::string& path) const;
 
         const value_type& get_with_default ( const path_iterator& pos
                                            , const path_iterator& end
-                                           , const value_type & dflt
+                                           , const value_type& dflt
                                            ) const;
-        const value_type& get_with_default ( const path_type & path
-                                           , const value_type & dflt
+        const value_type& get_with_default ( const path_type& path
+                                           , const value_type& dflt
                                            ) const;
-        const value_type& get_with_default ( const std::string & path
-                                           , const value_type & dflt
+        const value_type& get_with_default ( const std::string& path
+                                           , const value_type& dflt
                                            ) const;
 
         void del (const path_iterator& pos, const path_iterator& end);
-        void del (const path_type & path);
-        void del (const std::string & path);
+        void del (const path_type& path);
+        void del (const std::string& path);
       };
 
       template <typename T> value_type to_property (const T& t)
@@ -230,11 +230,11 @@ namespace we
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream &, const type &);
+        void dump (::fhg::util::xml::xmlstream&, const type&);
         void ordered_dump (::fhg::util::xml::xmlstream&, const type&);
       }
 
-      std::ostream & operator << (std::ostream & s, const type & t);
+      std::ostream& operator<< (std::ostream& s, const type& t);
 
       // ******************************************************************* //
 
@@ -243,13 +243,13 @@ namespace we
         typedef std::pair<path_type, value_type> pair_type;
         typedef std::stack<pair_type> stack_type;
 
-        stack_type dfs (const type & t);
-        stack_type dfs ( const type & t
+        stack_type dfs (const type& t);
+        stack_type dfs ( const type& t
                        , const path_iterator pre_pos
                        , const path_iterator pre_end
                        );
-        stack_type dfs (const type & t, const path_type & path);
-        stack_type dfs (const type & t, const std::string & path);
+        stack_type dfs (const type& t, const path_type& path);
+        stack_type dfs (const type& t, const std::string& path);
       }
     }
   }

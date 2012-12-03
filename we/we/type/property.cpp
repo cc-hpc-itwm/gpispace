@@ -180,7 +180,7 @@ namespace we
       // ----------------------------------------------------------------- //
 
       boost::optional<mapped_type> type::set ( const path_iterator& pos
-                                             , const path_iterator&  end
+                                             , const path_iterator& end
                                              , const value_type& val
                                              )
       {
