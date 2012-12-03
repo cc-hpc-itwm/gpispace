@@ -23,8 +23,6 @@
 #include <fhg/util/split.hpp>
 #include <fhg/util/xml.hpp>
 
-namespace xml_util = ::fhg::util::xml;
-
 namespace we
 {
   namespace type
@@ -439,7 +437,7 @@ namespace we
 
       namespace dump
       {
-        inline void dump ( xml_util::xmlstream &
+        inline void dump ( ::fhg::util::xml::xmlstream &
                          , const type &
                          );
 
@@ -448,11 +446,11 @@ namespace we
           class dump : public boost::static_visitor<void>
           {
           private:
-            xml_util::xmlstream & s;
+            ::fhg::util::xml::xmlstream & s;
             const key_type & key;
 
           public:
-            dump (xml_util::xmlstream & _s, const key_type & _key)
+            dump (::fhg::util::xml::xmlstream & _s, const key_type & _key)
               : s (_s)
               , key (_key)
             {}
@@ -478,7 +476,7 @@ namespace we
           };
         }
 
-        inline void dump ( xml_util::xmlstream & s
+        inline void dump ( ::fhg::util::xml::xmlstream & s
                          , const type & p
                          )
         {
@@ -496,7 +494,7 @@ namespace we
 
       inline std::ostream & operator << (std::ostream & s, const type & t)
       {
-        xml_util::xmlstream xs (s);
+        ::fhg::util::xml::xmlstream xs (s);
 
         dump::dump (xs, t);
 
