@@ -1,13 +1,14 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/graph/base_item.hpp>
 
 #include <pnete/data/handle/base.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
-#include <util/property.hpp>
 #include <util/qt/cast.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
+
+#include <boost/lexical_cast.hpp>
 
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>

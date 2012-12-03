@@ -19,8 +19,6 @@
 #include <pnete/ui/graph/style/cap.hpp>
 #include <pnete/ui/graph/style/predicate.hpp>
 
-#include <util/property.hpp>
-
 #include <xml/parse/type/port.hpp>
 
 namespace fhg
@@ -31,16 +29,16 @@ namespace fhg
     {
       namespace graph
       {
-        namespace detail
-        {
-          static void set_orientation ( ::we::type::property::type* prop
-                                      , const port::orientation::type& o
-                                      )
-          {
-            static util::property::setter s ("orientation");
-            s.set (prop, port::orientation::show (o));
-          }
-        }
+        // namespace detail
+        // {
+        //   static void set_orientation ( ::we::type::property::type* prop
+        //                               , const port::orientation::type& o
+        //                               )
+        //   {
+        //     static util::property::setter s ("orientation");
+        //     s.set (prop, port::orientation::show (o));
+        //   }
+        // }
 
         port_item::port_item
           ( const data::handle::port& handle
