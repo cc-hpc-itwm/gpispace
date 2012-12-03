@@ -11,6 +11,7 @@
 #include <pnete/ui/graph/pending_connection.hpp>
 #include <pnete/ui/graph/place.hpp>
 #include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/port_place_association.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/util/action.hpp>
@@ -464,14 +465,17 @@ namespace fhg
             }
           }
 
-          typedef boost::unordered_map < connection_item*
+          typedef boost::unordered_map < association*
                                        , graphviz::edge_type
                                        > edges_map_type;
           edges_map_type edges;
 
+          association* c = NULL;
           foreach (QGraphicsItem* i, items())
           {
-            if (connection_item* c = qgraphicsitem_cast<connection_item*> (i))
+            if ( (c = qgraphicsitem_cast<connection_item*> (i))
+              || (c = qgraphicsitem_cast<port_place_association*> (i))
+               )
             {
               QGraphicsItem* start (c->start());
               QGraphicsItem* end (c->end());
