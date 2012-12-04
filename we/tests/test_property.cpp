@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (set_value)
     (p.set ("A.A.A", "value_of (A.A.A)"));
 
   BOOST_REQUIRE_EQUAL (!!old, false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE (set_value)
 
 BOOST_AUTO_TEST_CASE (get_value)
 {
-  BOOST_REQUIRE_EQUAL (dump (p.get ("A.A.A")), "value_of (A.A.A)");
+  BOOST_REQUIRE_EQUAL (::dump (p.get ("A.A.A")), "value_of (A.A.A)");
   BOOST_REQUIRE_EQUAL (p.get_val ("A.A.A"), "value_of (A.A.A)");
   const boost::optional<const prop::value_type &> maybe_val
     (p.get_maybe_val ("A.A.A"));
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE (missing_binding)
 
 BOOST_AUTO_TEST_CASE (not_a_value)
 {
-  BOOST_REQUIRE_EQUAL ( dump (p.get ("A"))
+  BOOST_REQUIRE_EQUAL ( ::dump (p.get ("A"))
                       , "<properties name=\"A\">\n"
                         "  <property key=\"A\">\n"
                         "    value_of (A.A.A)\n"
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE (not_a_value)
   BOOST_REQUIRE_EQUAL
     (p.get_with_default ("A", default_value), default_value);
 
-  BOOST_REQUIRE_EQUAL ( dump (p.get ("A.A"))
+  BOOST_REQUIRE_EQUAL ( ::dump (p.get ("A.A"))
                       , "<property key=\"A\">\n"
                         "  value_of (A.A.A)\n"
                         "</property>\n"
@@ -121,8 +121,8 @@ BOOST_AUTO_TEST_CASE (overwrite_subtree)
       (p.set ("A.A", "value_of (A.A)"));
 
     BOOST_REQUIRE_EQUAL (!!old, true);
-    BOOST_REQUIRE_EQUAL (dump (*old), dump (old_value));
-    BOOST_REQUIRE_EQUAL ( dump (p)
+    BOOST_REQUIRE_EQUAL (::dump (*old), ::dump (old_value));
+    BOOST_REQUIRE_EQUAL ( ::dump (p)
                         , "<properties name=\"A\">\n"
                           "  <property key=\"A\">\n"
                           "    value_of (A.A)\n"
@@ -138,8 +138,8 @@ BOOST_AUTO_TEST_CASE (overwrite_subtree)
       (p.set ("A", "value_of (A)"));
 
     BOOST_REQUIRE_EQUAL (!!old, true);
-    BOOST_REQUIRE_EQUAL (dump (*old), dump (old_value));
-    BOOST_REQUIRE_EQUAL ( dump (p)
+    BOOST_REQUIRE_EQUAL (::dump (*old), ::dump (old_value));
+    BOOST_REQUIRE_EQUAL ( ::dump (p)
                         , "<property key=\"A\">\n"
                           "  value_of (A)\n"
                           "</property>\n"
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE (overwrite_subtree)
 BOOST_AUTO_TEST_CASE (overwriting_a_whole_tree_does_not_count_as_overwriting)
 {
   BOOST_REQUIRE_EQUAL (!!p.set ("A.A.A", "value_of (A.A.A)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE (overwriting_a_whole_tree_does_not_count_as_overwriting)
                       );
 
   BOOST_REQUIRE_EQUAL (!!p.set ("A.A.B", "value_of (A.A.B)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE (overwriting_a_whole_tree_does_not_count_as_overwriting)
                       );
 
   BOOST_REQUIRE_EQUAL (!!p.set ("A.A.C", "value_of (A.A.C)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE (overwriting_a_whole_tree_does_not_count_as_overwriting)
 BOOST_AUTO_TEST_CASE (a_lot_of_trees)
 {
   BOOST_REQUIRE_EQUAL (!!p.set ("A.B.A", "value_of (A.B.A)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE (a_lot_of_trees)
                       );
 
   BOOST_REQUIRE_EQUAL (!!p.set ("A.B.B", "value_of (A.B.B)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE (a_lot_of_trees)
                       );
 
   BOOST_REQUIRE_EQUAL (!!p.set ("A.C.A", "value_of (A.C.A)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE (a_lot_of_trees)
                       );
 
   BOOST_REQUIRE_EQUAL (!!p.set ("A.C.B", "value_of (A.C.B)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE (a_lot_of_trees)
 BOOST_AUTO_TEST_CASE (multiple_top_level_trees)
 {
   BOOST_REQUIRE_EQUAL (!!p.set ("B.A.A", "value_of (B.A.A)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE (multiple_top_level_trees)
 
 BOOST_AUTO_TEST_CASE (remove_tree)
 {
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -389,7 +389,7 @@ BOOST_AUTO_TEST_CASE (remove_tree)
 
   p.del ("A.B");
 
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE (remove_tree)
 
 BOOST_AUTO_TEST_CASE (remove_value)
 {
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"A\">\n"
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE (remove_value)
 
   p.del ("A.A.A");
 
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <property key=\"B\">\n"
@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE (remove_value)
 
 BOOST_AUTO_TEST_CASE (get_value_second_top_level_tree)
 {
-  BOOST_REQUIRE_EQUAL (dump (p.get ("B.A.A")), "value_of (B.A.A)");
+  BOOST_REQUIRE_EQUAL (::dump (p.get ("B.A.A")), "value_of (B.A.A)");
   BOOST_REQUIRE_EQUAL (p.get_val ("B.A.A"), "value_of (B.A.A)");
   const boost::optional<const prop::value_type &> maybe_val
     (p.get_maybe_val ("B.A.A"));
@@ -496,7 +496,7 @@ BOOST_AUTO_TEST_CASE (get_value_second_top_level_tree)
 
 BOOST_AUTO_TEST_CASE (get_subtree_second_top_level_tree)
 {
-  BOOST_REQUIRE_EQUAL ( dump (p.get ("B.A"))
+  BOOST_REQUIRE_EQUAL ( ::dump (p.get ("B.A"))
                       , "<property key=\"A\">\n"
                         "  value_of (B.A.A)\n"
                         "</property>\n"
@@ -510,7 +510,7 @@ BOOST_AUTO_TEST_CASE (get_subtree_second_top_level_tree)
 BOOST_AUTO_TEST_CASE (overwrite_tree_with_value)
 {
   BOOST_REQUIRE_EQUAL (!!p.set ("A.A.B.A", "value_of (A.A.B.A)"), false);
-  BOOST_REQUIRE_EQUAL ( dump (p)
+  BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
                         "    <properties name=\"B\">\n"
