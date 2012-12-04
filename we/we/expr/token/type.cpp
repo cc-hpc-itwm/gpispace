@@ -86,7 +86,7 @@ namespace expr
         case _then: return s << " then ";
         case _else: return s << " else ";
         case _endif: return s << " endif";
-        case _ite: throw exception::strange ("<< (token _ite)");
+        case _ite: return s << "_ite";
         default: throw  exception::strange ("<< (unknown token)");
         }
     }
