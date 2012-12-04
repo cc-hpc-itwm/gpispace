@@ -828,22 +828,29 @@ namespace fhg
             ("tried connecting ports from transitions in different nets.");
         }
 
-        beginMacro ("add_connection_with_implicit_place_action");
+        if (from.get().type != to.get().type)
+        {
+          throw std::runtime_error ("different types for connected ports");
+        }
 
-        const ::xml::parse::id::ref::place place
-          ( ::xml::parse::type::place_type
-            ( net.id_mapper()->next_id()
-            , net.id_mapper()
-            , net.id()
-            ).make_reference_id()
-          );
+        beginMacro ("add_connection_with_implicit_place_action");
 
         std::string name ("implicit");
         while (net.get().has_place (name))
         {
           name = inc (name);
         }
-        place.get_ref().name (name);
+
+        const ::xml::parse::id::ref::place place
+          ( ::xml::parse::type::place_type
+            ( net.id_mapper()->next_id()
+            , net.id_mapper()
+            , net.id()
+            , name
+            , from.get().type
+            , boost::none
+            ).make_reference_id()
+          );
 
         push (new action::add_place (*this, origin, net, place));
 
