@@ -371,7 +371,7 @@ namespace we
               s.open ("properties");
               s.attr ("name", key);
 
-              dump (s, x);
+              ::we::type::property::dump::dump (s, x);
 
               s.close ();
             }
