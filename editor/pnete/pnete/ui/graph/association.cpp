@@ -83,6 +83,7 @@ namespace fhg
         {
           if (event->modifiers() == Qt::ControlModifier)
           {
+            _dragged_point = boost::none;
             boost::optional<std::pair<int,qreal> > nearest_point (boost::none);
 
             {
@@ -147,7 +148,10 @@ namespace fhg
             {
               _dragged_point = nearest_point->first;
             }
+          }
 
+          if (_dragged_point)
+          {
             mode_push (mode::DRAG);
           }
           else
