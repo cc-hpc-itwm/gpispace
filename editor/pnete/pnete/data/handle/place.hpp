@@ -49,6 +49,8 @@ namespace fhg
 
           net parent() const;
 
+          bool is_implicit() const;
+
           using place_meta_base::operator==;
         };
       }

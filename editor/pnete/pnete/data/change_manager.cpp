@@ -852,6 +852,9 @@ namespace fhg
             ).make_reference_id()
           );
 
+        place.get_ref().properties().set
+          ("fhg.pnete.is_implicit_place", "true");
+
         push (new action::add_place (*this, origin, net, place));
 
         handle::place place_handle (place, *this);

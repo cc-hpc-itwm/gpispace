@@ -8,6 +8,8 @@
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 
+#include <fhg/util/read_bool.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -53,6 +55,23 @@ namespace fhg
         net place::parent() const
         {
           return net (get().parent()->make_reference_id(), change_manager());
+        }
+
+        bool place::is_implicit() const
+        {
+          try
+          {
+            return fhg::util::read_bool
+              ( get().properties().get_with_default
+                ("fhg.pnete.is_implicit_place", "false")
+              );
+          }
+          //! \note read_bool throws on invalid input while we want
+          //! false for anything not evaluating to true.
+          catch (...)
+          {
+            return false;
+          }
         }
       }
     }
