@@ -58,6 +58,10 @@ namespace fhg
 
           virtual QLinkedList<base_item*> childs() const;
 
+        signals:
+          void association_added (association* c);
+          void association_removed (association* c);
+
         protected:
           QSet<association*> _associations;
           connectable::direction::type _direction;

@@ -32,6 +32,7 @@ namespace fhg
             throw std::runtime_error ("tried adding the same association twice.");
           }
           _associations.insert (c);
+          emit association_added (c);
         }
         void connectable_item::remove_association (association* c)
         {
@@ -39,6 +40,7 @@ namespace fhg
           {
             throw std::runtime_error ("item did not have that association.");
           }
+          emit association_removed (c);
           _associations.remove (c);
         }
 
