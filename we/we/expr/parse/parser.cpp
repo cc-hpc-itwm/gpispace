@@ -127,11 +127,7 @@ namespace expr
 
       nd_t c (tmp_stack.back()); tmp_stack.pop_back();
 
-      if (  constant_folding()
-         && boost::apply_visitor (node::visitor::is_value(), c)
-         )
-        //! \todo use c++0x to write this as
-        // if (node::is_value(c))
+      if (constant_folding() && node::is_value (c))
         {
           tmp_stack.push_back
             (nd_t (boost::apply_visitor ( value::function::unary (token)
@@ -158,10 +154,7 @@ namespace expr
 
       nd_t l (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (  constant_folding()
-         && boost::apply_visitor (node::visitor::is_value(), l)
-         && boost::apply_visitor (node::visitor::is_value(), r)
-         )
+      if (constant_folding() && node::is_value(l) && node::is_value(r))
         tmp_stack.push_back
           (nd_t (boost::apply_visitor ( value::function::binary (token)
                                       , boost::get<value::type> (l)
@@ -212,9 +205,7 @@ namespace expr
 
       nd_t c (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (  constant_folding()
-         && boost::apply_visitor (node::visitor::is_value(), c)
-         )
+      if (constant_folding() && node::is_value(c))
         {
           if (value::function::is_true(boost::get<value::type> (c)))
             tmp_stack.push_back (t);
@@ -329,9 +320,7 @@ namespace expr
                   break;
                 case token::define:
                   if (  tmp_stack.empty()
-                     || (! boost::apply_visitor
-                        (node::visitor::is_ref (), tmp_stack.back())
-                        )
+                     || (not node::is_ref (tmp_stack.back()))
                      )
                     throw exception::parse::exception
                       ( "left hand of "

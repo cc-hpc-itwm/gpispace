@@ -15,8 +15,6 @@
 
 #include <we/type/value/container/type.hpp>
 
-#include <fhg/util/show.hpp>
-
 #include <string>
 #include <iostream>
 #include <vector>
@@ -588,19 +586,6 @@ namespace expr
       void operator ++ (void) { get(); }
       const key_vec_t & get_ref (void) const { return _ref; }
     };
-
-    static std::string show_key_vec (const key_vec_t & key_vec)
-    {
-      std::string s;
-
-      for ( key_vec_t::const_iterator pos (key_vec.begin())
-          ; pos != key_vec.end()
-          ; ++pos
-          )
-        s += ((pos != key_vec.begin()) ? "." : "") + fhg::util::show (*pos);
-
-      return s;
-    }
   }
 }
 

@@ -7,6 +7,7 @@ set (hdrs
 
 set (srcs
   parser.cpp
+  node.cpp
 )
 
 add_library(we_expr_parser ${srcs})
