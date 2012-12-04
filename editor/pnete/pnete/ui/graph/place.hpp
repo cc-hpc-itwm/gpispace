@@ -56,6 +56,10 @@ namespace fhg
             , const ::we::type::property::value_type& value
             );
 
+          void slot_association_added (association* c);
+          void slot_association_removed (association* c);
+          void association_changed_in_any_way();
+
         public:
           virtual void paint ( QPainter* painter
                              , const QStyleOptionGraphicsItem* option

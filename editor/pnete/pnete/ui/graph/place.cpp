@@ -7,6 +7,7 @@
 
 #include <pnete/ui/graph/style/raster.hpp>
 
+#include <pnete/ui/graph/association.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/transition.hpp>
 
@@ -41,6 +42,19 @@ namespace fhg
               ", const ::we::type::property::key_type&"
               ", const ::we::type::property::value_type&"
             );
+
+          connect ( this, SIGNAL (association_added (association*))
+                  , this, SLOT (slot_association_added (association*))
+                  );
+          connect ( this, SIGNAL (association_removed (association*))
+                  , this, SLOT (slot_association_removed (association*))
+                  );
+          connect ( this, SIGNAL (association_added (association*))
+                  , this, SLOT (association_changed_in_any_way())
+                  );
+          connect ( this, SIGNAL (association_removed (association*))
+                  , this, SLOT (association_changed_in_any_way())
+                  );
         }
 
         const data::handle::place& place_item::handle() const
@@ -137,6 +151,74 @@ namespace fhg
           if (origin != this && changed_handle == handle())
           {
             handle_property_change (key, value);
+          }
+        }
+
+        void place_item::slot_association_added (association* c)
+        {
+          connectable_item* other_side
+            (c->start() != this ? c->start() : c->end());
+          //! \note port
+          connect ( other_side, SIGNAL (scaleChanged())
+                  , this, SLOT (association_changed_in_any_way())
+                  );
+          connect ( other_side, SIGNAL (xChanged())
+                  , this, SLOT (association_changed_in_any_way())
+                  );
+          connect ( other_side, SIGNAL (yChanged())
+                  , this, SLOT (association_changed_in_any_way())
+                  );
+          connect ( other_side, SIGNAL (zChanged())
+                  , this, SLOT (association_changed_in_any_way())
+                  );
+          //! \note transition
+          for ( QGraphicsObject* parent = other_side->parentObject()
+              ; parent
+              ; parent = parent->parentObject()
+              )
+          {
+            connect ( parent, SIGNAL (scaleChanged())
+                    , this, SLOT (association_changed_in_any_way())
+                    );
+            connect ( parent, SIGNAL (xChanged())
+                    , this, SLOT (association_changed_in_any_way())
+                    );
+            connect ( parent, SIGNAL (yChanged())
+                    , this, SLOT (association_changed_in_any_way())
+                    );
+            connect ( parent, SIGNAL (zChanged())
+                    , this, SLOT (association_changed_in_any_way())
+                    );
+          }
+        }
+        void place_item::slot_association_removed (association* c)
+        {
+          connectable_item* other_side
+            (c->start() != this ? c->start() : c->end());
+          other_side->disconnect (this);
+          for ( QGraphicsObject* parent = other_side->parentObject()
+              ; parent
+              ; parent = parent->parentObject()
+              )
+          {
+            parent->disconnect (this);
+          }
+        }
+
+        void place_item::association_changed_in_any_way()
+        {
+          if (handle().is_implicit())
+          {
+            QPointF center (0.0, 0.0);
+            int points (0);
+            foreach (association* item, associations())
+            {
+              center += item->start() != this
+                      ? item->start()->scenePos()
+                      : item->end()->scenePos();
+              ++points;
+            }
+            no_undo_setPos (center / qreal (points));
           }
         }
 
