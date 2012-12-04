@@ -98,16 +98,18 @@ namespace fhg
         QPainterPath place_item::shape () const
         {
           QPainterPath path;
-          const qreal d (3.0);
+          if (!handle().is_implicit())
+          {
+            static const qreal d (3.0);
 
-          path.addRoundRect ( QRectF
-                            ( content_pos() - QPointF (d, d)
-                            , content_size() + QSizeF (2*d, 2*d)
-                            )
-                            , 2*d
-                            , 2*d
-                            );
-
+            path.addRoundRect ( QRectF
+                                ( content_pos() - QPointF (d, d)
+                                , content_size() + QSizeF (2 * d, 2 * d)
+                                )
+                              , 2 * d
+                              , 2 * d
+                              );
+          }
           return path;
         }
 
@@ -116,9 +118,12 @@ namespace fhg
                                , QWidget* widget
                                )
         {
-          style::draw_shape (this, painter);
+          if (!handle().is_implicit())
+          {
+            style::draw_shape (this, painter);
 
-          painter->drawStaticText (content_pos(), content());
+            painter->drawStaticText (content_pos(), content());
+          }
         }
 
         void place_item::setPos (const QPointF& new_position)
