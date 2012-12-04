@@ -1,7 +1,6 @@
 # -*- mode: cmake; -*-
 set (hdrs
   exception.hpp
-  expr.hpp
   )
 install(FILES ${hdrs}
   DESTINATION include/we/expr
