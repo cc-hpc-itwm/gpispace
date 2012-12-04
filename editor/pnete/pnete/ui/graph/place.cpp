@@ -218,7 +218,7 @@ namespace fhg
                       : item->end()->scenePos();
               ++points;
             }
-            no_undo_setPos (center / qreal (points));
+            no_undo_no_raster_setPos (center / qreal (points));
           }
         }
 
