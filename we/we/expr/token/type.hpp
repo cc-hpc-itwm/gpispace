@@ -3,7 +3,7 @@
 #ifndef _EXPR_TOKEN_TYPE_HPP
 #define _EXPR_TOKEN_TYPE_HPP
 
-#include <we/expr/exception.hpp>
+#include <iosfwd>
 
 namespace expr
 {

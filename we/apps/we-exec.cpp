@@ -10,6 +10,7 @@
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/type/literal.hpp>
+#include <we/type/literal/read.hpp>
 
 #include <fhg/util/parse/position.hpp>
 

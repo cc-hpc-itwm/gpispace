@@ -10,7 +10,7 @@ namespace expr
 {
   namespace token
   {
-    std::ostream& operator << (std::ostream& s, const type & token)
+    std::ostream& operator << (std::ostream& s, const type& token)
     {
       switch (token)
         {

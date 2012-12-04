@@ -2,6 +2,10 @@
 
 #include <we/expr/parse/node.hpp>
 
+#include <we/expr/token/prop.hpp>
+
+#include <we/expr/exception.hpp>
+
 #include <we/type/value/show.hpp>
 
 #include <fhg/util/show.hpp>

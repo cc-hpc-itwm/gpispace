@@ -8,6 +8,10 @@ set (hdrs
   )
 
 set (srcs
+  assoc.cpp
+  prec.cpp
+  prop.cpp
+  tokenizer.cpp
   type.cpp
   )
 
