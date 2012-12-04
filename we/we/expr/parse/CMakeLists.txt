@@ -8,10 +8,11 @@ set (hdrs
 set (srcs
   parser.cpp
   node.cpp
+  action.cpp
 )
 
-add_library(we_expr_parser ${srcs})
-add_we_library (we_expr_parser)
+add_library (we_expr_parse ${srcs})
+add_we_library (we_expr_parse)
 
 install(FILES ${hdrs}
   DESTINATION include/we/expr/parse

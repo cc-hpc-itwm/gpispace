@@ -3,6 +3,9 @@
 #ifndef _EXPR_EVAL_EVAL_HPP
 #define _EXPR_EVAL_EVAL_HPP
 
+#include <we/expr/token/assoc.hpp>
+#include <we/expr/token/prop.hpp>
+
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/node.hpp>
 
