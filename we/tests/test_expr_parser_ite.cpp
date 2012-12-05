@@ -4,6 +4,7 @@
 #include <we/expr/eval/context.hpp>
 #include <we/type/literal/function.hpp>
 #include <we/type/value/function.hpp>
+#include <we/type/value/show.hpp>
 
 #include <iostream>
 #include <string>
