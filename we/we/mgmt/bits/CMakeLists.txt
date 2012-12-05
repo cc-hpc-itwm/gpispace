@@ -8,7 +8,6 @@ set (hdrs
   queue.hpp
   set.hpp
   signal.hpp
-  synch_net.hpp
   traits.hpp
   transition_visitors.hpp
   types.hpp
