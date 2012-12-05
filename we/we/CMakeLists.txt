@@ -8,7 +8,6 @@ install(FILES ${hdrs}
   DESTINATION include/we
   COMPONENT headers)
 
-add_subdirectory (concurrent)
 add_subdirectory (container)
 add_subdirectory (expr)
 add_subdirectory (function)

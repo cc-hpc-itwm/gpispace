@@ -43,7 +43,6 @@
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/policy.hpp>
 #include <we/mgmt/bits/commands.hpp>
-#include <we/mgmt/bits/synch_net.hpp>
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
