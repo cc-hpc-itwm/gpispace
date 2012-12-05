@@ -111,7 +111,7 @@ public:
   typedef multirel::right_const_it<token_type, pid_t> token_place_it;
 
   typedef std::pair<pid_t, eid_t> place_via_edge_t;
-  typedef std::pair<Token, place_via_edge_t> token_input_t;
+  typedef std::pair<token_type, place_via_edge_t> token_input_t;
   typedef std::vector<token_input_t> input_t;
 
   typedef boost::unordered_map<pid_t,eid_t> output_descr_t;
@@ -210,7 +210,7 @@ private:
   {
     return adjacent_size
       ( in_to_transition_size_map
-      , boost::bind ( &net<Place,Transition,Edge,Token>::in_to_transition
+      , boost::bind ( &net<Place,Transition,Edge,token_type>::in_to_transition
                     , this
                     , _1
                     )
@@ -222,7 +222,7 @@ private:
   {
     return adjacent_size
       ( out_of_transition_size_map
-      , boost::bind ( &net<Place,Transition,Edge,Token>::out_of_transition
+      , boost::bind ( &net<Place,Transition,Edge,token_type>::out_of_transition
                     , this
                     , _1
                     )
