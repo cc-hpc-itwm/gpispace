@@ -33,10 +33,9 @@ namespace we
   using petri_net::edge::TP;
 
   typedef place::type place_t;
-  typedef token::type token_t;
   typedef unsigned int edge_t;
-  typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
-  typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+  typedef we::type::transition_t<place_t, edge_t> transition_t;
+  typedef petri_net::net<place_t, transition_t, edge_t> pnet_t;
   typedef we::mgmt::type::activity_t<transition_t> activity_t;
   typedef activity_t::input_t input_t;
   typedef we::mgmt::pref::preference_t<std::string> preference_t;

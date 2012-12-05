@@ -25,6 +25,7 @@
 #include <we/we.hpp>
 #include <we/util/codec.hpp>
 #include <we/loader/putget.hpp>
+#include <we/type/token.hpp>
 
 #include <sdpa-gui/taskview/taskscene.hpp>
 #include <sdpa-gui/taskview/taskview.hpp>
@@ -254,7 +255,7 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
           )
       {
         using namespace we::loader;
-        we::token_t token (it->first);
+        token::type token (it->first);
 
         long rowId (get<long>(token.value, "rowID"));
         double pv (get<double>(token.value, "pv"));

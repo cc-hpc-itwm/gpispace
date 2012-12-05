@@ -29,15 +29,15 @@ namespace {
  * Except iterators: nobody refers them anyway, so we can apply reference counting to them.
  */
 
-template<class P, class E, class T>
+template<class P, class E>
 class Optimizer {
     typedef petri_net::pid_t pid_t;
     typedef P place_t;
 
     typedef petri_net::tid_t tid_t;
-    typedef we::type::transition_t<P, E, T> transition_t;
+    typedef we::type::transition_t<P, E> transition_t;
 
-    typedef petri_net::net<P, transition_t, E, T> pnet_t;
+    typedef petri_net::net<P, transition_t, E> pnet_t;
 
     typedef typename transition_t::port_id_t port_id_t;
     typedef typename transition_t::port_t port_t;
@@ -906,9 +906,9 @@ class Optimizer {
 
 } // anonymous namespace
 
-template<class P, class E, class T>
-void do_optimize(we::type::transition_t<P, E, T> &transition, const char *script) {
-    Optimizer<P, E, T> optimizer(transition);
+template<class P, class E>
+void do_optimize(we::type::transition_t<P, E> &transition, const char *script) {
+    Optimizer<P, E> optimizer(transition);
     optimizer(script);
 }
 

@@ -9,6 +9,7 @@
 
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
+#include <we/type/token.hpp>
 #include <we/type/literal.hpp>
 #include <we/type/literal/read.hpp>
 
@@ -190,7 +191,7 @@ int main (int argc, char **argv)
 
     act.add_input (
                    we::input_t::value_type
-                   ( we::token_t ( port_name
+                   ( token::type ( port_name
                                  , boost::apply_visitor (literal::visitor::type_name(), tokval)
                                  , tokval
                                  )

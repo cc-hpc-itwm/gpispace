@@ -58,12 +58,12 @@ namespace we
             return expr.simplify(needed_bindings);
           }
 
-          template<typename P, typename E, typename T>
+          template<typename P, typename E>
           bool operator ()
-          (petri_net::net<P, transition_t<P,E,T>, E, T> & net) const
+          (petri_net::net<P, transition_t<P,E>, E> & net) const
           {
-            typedef transition_t<P, E, T> transition_t;
-            typedef petri_net::net<P, transition_t, E, T> pnet_t;
+            typedef transition_t<P, E> transition_t;
+            typedef petri_net::net<P, transition_t, E> pnet_t;
             typedef typename pnet_t::transition_const_it transition_const_it;
             typedef petri_net::tid_t tid_t;
 
@@ -120,12 +120,12 @@ namespace we
           bool operator () (expression_t &) const { return false; }
           bool operator () (module_call_t &) const { return false; }
 
-          template<typename P, typename E, typename T>
+          template<typename P, typename E>
           bool operator ()
-          (petri_net::net<P, transition_t<P,E,T>, E, T> & net) const
+          (petri_net::net<P, transition_t<P,E>, E> & net) const
           {
-            typedef transition_t<P, E, T> transition_t;
-            typedef petri_net::net<P, transition_t, E, T> pnet_t;
+            typedef transition_t<P, E> transition_t;
+            typedef petri_net::net<P, transition_t, E> pnet_t;
             typedef typename pnet_t::transition_const_it transition_const_it;
             typedef petri_net::tid_t tid_t;
 
@@ -173,10 +173,10 @@ namespace we
         };
       } // namespace visitor
 
-      template<typename P, typename E, typename T>
-      inline bool optimize (transition_t<P,E,T> & t, const options::type & opts)
+      template<typename P, typename E>
+      inline bool optimize (transition_t<P,E> & t, const options::type & opts)
       {
-        typedef transition_t<P, E, T> transition_t;
+        typedef transition_t<P, E> transition_t;
 
         return
           boost::apply_visitor

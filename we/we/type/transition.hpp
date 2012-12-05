@@ -28,6 +28,7 @@
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
 #include <we/type/requirement.hpp>
+#include <we/type/token.hpp>
 
 #include <fhg/util/show.hpp>
 #include <fhg/util/xml.hpp>
@@ -279,17 +280,16 @@ namespace we { namespace type {
       };
     }
 
-    template <typename Place, typename Edge, typename Token>
+    template <typename Place, typename Edge>
     struct transition_t
     {
       typedef Place place_type;
       typedef Edge edge_type;
-      typedef Token token_type;
 
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
-      typedef transition_t<Place, Edge, Token> this_type;
-      typedef petri_net::net<Place, this_type, Edge, Token> net_type;
+      typedef transition_t<Place, Edge> this_type;
+      typedef petri_net::net<Place, this_type, Edge> net_type;
       typedef detail::condition<std::string> cond_type;
       typedef detail::preparsed_condition< std::string
                                          , condition::type::parser_t
@@ -1184,9 +1184,9 @@ namespace we { namespace type {
       requirements_t m_requirements;
 
     private:
-      template <typename P, typename E, typename T>
+      template <typename P, typename E>
       friend std::ostream & operator<< ( std::ostream &
-                                       , const transition_t<P,E,T> &
+                                       , const transition_t<P,E> &
                                        );
 
       friend class boost::serialization::access;
@@ -1234,13 +1234,13 @@ namespace we { namespace type {
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
 
-    template <typename P, typename E, typename T>
-    inline bool operator==(const transition_t<P,E,T> & a, const transition_t<P,E,T> & b)
+    template <typename P, typename E>
+    inline bool operator==(const transition_t<P,E> & a, const transition_t<P,E> & b)
     {
       return a.name() == b.name();
     }
-    template <typename P, typename E, typename T>
-    inline std::size_t hash_value(transition_t<P,E,T> const & t)
+    template <typename P, typename E>
+    inline std::size_t hash_value(transition_t<P,E> const & t)
     {
       boost::hash<std::string> hasher;
       return hasher(t.name());
@@ -1263,11 +1263,10 @@ namespace we { namespace type {
             , _p (p)
           {}
 
-          template <typename P, typename E, typename T>
+          template <typename P, typename E>
           void operator () ( const petri_net::net< P
-                                                 , transition_t<P, E, T>
+                                                 , transition_t<P, E>
                                                  , E
-                                                 , T
                                                  > & net
                            ) const
           {
@@ -1282,12 +1281,12 @@ namespace we { namespace type {
         };
       }
 
-      template<typename P, typename E, typename T>
+      template<typename P, typename E>
       inline void dump ( xml_util::xmlstream & s
-                       , const transition_t<P,E,T> & t
+                       , const transition_t<P,E> & t
                        )
       {
-        typedef transition_t<P,E,T> trans_t;
+        typedef transition_t<P,E> trans_t;
 
         s.open ("defun");
         s.attr ("name", t.name());
@@ -1326,11 +1325,10 @@ namespace we { namespace type {
           return "{mod, " + fhg::util::show (mod_call) + "}";
         }
 
-        template <typename Place, typename Edge, typename Token>
+        template <typename Place, typename Edge>
         std::string operator () ( const petri_net::net< Place
-                                , transition_t<Place, Edge, Token>
+                                , transition_t<Place, Edge>
                                 , Edge
-                                , Token
                                 > & net
                                 ) const
         {
@@ -1339,12 +1337,12 @@ namespace we { namespace type {
       };
     }
 
-    template <typename P, typename E, typename T>
+    template <typename P, typename E>
     inline std::ostream & operator<< ( std::ostream & s
-                                     , const transition_t<P,E,T> & t
+                                     , const transition_t<P,E> & t
                                      )
     {
-      typedef transition_t<P,E,T> trans_t;
+      typedef transition_t<P,E> trans_t;
       s << "{";
       s << "trans";
       s << ", ";
@@ -1378,18 +1376,18 @@ namespace we { namespace type {
       return s;
     }
 
-    template<typename P, typename E, typename T>
+    template<typename P, typename E>
     std::ostream & operator << ( std::ostream & s
-                               , const petri_net::net<P, transition_t<P, E, T>, E, T> & n
+                               , const petri_net::net<P, transition_t<P, E>, E> & n
                                )
     {
-      typedef petri_net::net<P, transition_t<P, E, T>, E, T> pnet_t;
+      typedef petri_net::net<P, transition_t<P, E>, E> pnet_t;
 
       for (typename pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
       {
         s << "[" << n.get_place (*p) << ":";
 
-        typedef boost::unordered_map<T, size_t> token_cnt_t;
+        typedef boost::unordered_map<token::type, size_t> token_cnt_t;
         token_cnt_t token;
         for (typename pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         {
@@ -1443,26 +1441,26 @@ namespace we { namespace type {
           return modcall;
         }
 
-        template <typename P, typename E, typename T>
+        template <typename P, typename E>
         kind operator ()
-        (const petri_net::net<P, transition_t<P, E, T>, E, T> &) const
+        (const petri_net::net<P, transition_t<P, E>, E> &) const
         {
           return subnet;
         }
       };
 
-      template <typename P, typename E, typename T>
-      bool is_expression (const transition_t<P, E, T> & t)
+      template <typename P, typename E>
+      bool is_expression (const transition_t<P, E> & t)
       {
         return boost::apply_visitor (visitor(), t.data()) == expression;
       }
-      template <typename P, typename E, typename T>
-      bool is_modcall (const transition_t<P, E, T> & t)
+      template <typename P, typename E>
+      bool is_modcall (const transition_t<P, E> & t)
       {
         return boost::apply_visitor (visitor(), t.data()) == modcall;
       }
-      template <typename P, typename E, typename T>
-      bool is_subnet (const transition_t<P, E, T> & t)
+      template <typename P, typename E>
+      bool is_subnet (const transition_t<P, E> & t)
       {
         return boost::apply_visitor (visitor(), t.data()) == subnet;
       }
@@ -1472,8 +1470,8 @@ namespace we { namespace type {
 
 namespace boost {
   namespace serialization {
-    template <typename P, typename E, typename T>
-    struct version< we::type::transition_t<P,E,T> >
+    template <typename P, typename E>
+    struct version< we::type::transition_t<P,E> >
     {
       typedef mpl::int_<1> type;
       typedef mpl::integral_c_tag tag;

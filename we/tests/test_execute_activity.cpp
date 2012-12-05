@@ -17,10 +17,9 @@ using petri_net::edge::PT_READ;
 using petri_net::edge::TP;
 
 typedef place::type place_t;
-typedef token::type token_t;
 typedef unsigned int edge_t;
-typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef we::type::transition_t<place_t, edge_t> transition_t;
+typedef petri_net::net<place_t, transition_t, edge_t> pnet_t;
 typedef we::mgmt::type::activity_t<transition_t> activity_t;
 typedef activity_t::input_t input_t;
 
@@ -74,7 +73,6 @@ namespace module
     typedef expr::eval::context context_t;
     typedef activity_t::input_t input_t;
     typedef activity_t::output_t output_t;
-    typedef activity_t::token_type token_type;
     typedef activity_t::transition_type::port_id_t port_id_t;
     typedef activity_t::transition_type::port_t port_t;
     typedef activity_t::transition_type::const_iterator port_iterator;
@@ -85,7 +83,7 @@ namespace module
         ; ++top
         )
     {
-      const token_type token   = top->first;
+      const token::type token   = top->first;
       const port_id_t  port_id = top->second;
 
       context.bind
@@ -114,7 +112,7 @@ namespace module
 
       act.add_output
         ( output_t::value_type
-          ( token_type ( port.name()
+          ( token::type ( port.name()
                        , port.signature()
                        , ton->first
                        )
