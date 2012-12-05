@@ -10,20 +10,100 @@
 #include <we/container/multirel.hpp>
 #include <we/container/priostore.hpp>
 #include <we/function/cond.hpp>
-#include <we/function/trans.traits.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/util/cross.hpp>
 
-#include <petri_net/edge.hpp>
-#include <petri_net/exception.hpp>
-
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <vector>
 #include <stack>
+
+#include <stdexcept>
+
+namespace petri_net
+{
+  namespace exception
+  {
+    class generic : public std::runtime_error
+    {
+    public:
+      explicit generic (const std::string& msg)
+        : std::runtime_error ("net: " + msg)
+      {}
+    };
+
+    class transition_not_enabled : public generic
+    {
+    public:
+      explicit transition_not_enabled (const std::string & msg)
+        : generic ("transition_not_enabled: " + msg)
+      {}
+    };
+
+    class no_such : public generic
+    {
+    public:
+      explicit no_such (const std::string & msg)
+        : generic ("no_such: " + msg)
+      {}
+    };
+  }
+} // namespace petri_net
+
+namespace petri_net
+{
+  namespace edge
+  {
+    enum type {PT,PT_READ,TP};
+
+    static inline bool is_pt_read (const type & e)
+    {
+      return e == PT_READ;
+    }
+
+    static inline bool is_PT (const type & et)
+    {
+      return (et == PT || et == PT_READ);
+    }
+
+    static inline type pt_read (void)
+    {
+      return PT_READ;
+    }
+  }
+} // namespace petri_net
+
+namespace Function { namespace Transition
+{
+  typedef petri_net::pid_t pid_t;
+  typedef petri_net::eid_t eid_t;
+
+  template<typename Token>
+  struct Traits
+  {
+  public:
+    // a transition gets a number of input tokens, taken from places,
+    // connected to the transition via edges
+    // so input is of type: [(Token,(Place,Edge))]
+    // the same holds true for the output, but the tokens are to be produced
+    typedef std::pair<pid_t, eid_t> place_via_edge_t;
+    typedef std::pair<Token, place_via_edge_t> token_input_t;
+    typedef std::vector<token_input_t> input_t;
+
+    typedef boost::unordered_map<pid_t,eid_t> output_descr_t;
+    typedef std::pair<Token, pid_t> token_on_place_t;
+    typedef std::vector<token_on_place_t> output_t;
+
+    typedef boost::function<output_t ( const input_t &
+                                     , const output_descr_t &
+                                     )
+                           > fun_t;
+  };
+}}
 
 namespace petri_net
 {
