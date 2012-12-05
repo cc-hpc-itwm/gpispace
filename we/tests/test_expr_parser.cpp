@@ -3,6 +3,8 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
+#include <we/type/value/show.hpp>
+
 #include "timer.hpp"
 
 #include <iostream>
