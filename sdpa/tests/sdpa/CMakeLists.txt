@@ -78,12 +78,13 @@ pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabili
 )
 
 get_target_property(CAPABILITY_PNET_LOCATION pnet-capabilities-test-wf LOCATION)
+get_target_property(__PNET_GEN_OUTPUTS pnet-capabilities-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=100L -p time_A=500000L -p n_B=50L -p time_B=500000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
 
-add_custom_command(TARGET pnet-capabilities-test-wf
-                   POST_BUILD
+add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMAND ${command}
                    COMMENT "putting tokens into capabilities workflow: ${command}"
+                   APPEND
 )
 add_dependencies(pnet-capabilities-test-wf pnetput)
 ###########################################################################################
@@ -100,12 +101,13 @@ pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workf
 )
 
 get_target_property(CAPABILITY_NO_MANDATORY_PNET_LOCATION pnet-capabilities_no_mandatory-test-wf LOCATION)
+get_target_property(__PNET_GEN_OUTPUTS pnet-capabilities_no_mandatory-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=500L -p n_B=10L -p time_B=500L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
 
-add_custom_command(TARGET pnet-capabilities_no_mandatory-test-wf
-                   POST_BUILD
+add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMAND ${command}
                    COMMENT "putting tokens into capabilities_no_mandatory workflow: ${command}"
+                   APPEND
 )
 add_dependencies(pnet-capabilities_no_mandatory-test-wf pnetput)
 ############################################################################################
@@ -122,6 +124,7 @@ pnet_compile(atomic-test-wf ${CMAKE_SOURCE_DIR}/application/example/atomic/atomi
 )
 
 get_target_property(ATOMIC_PNET_LOCATION pnet-atomic-test-wf LOCATION)
+get_target_property(__PNET_GEN_OUTPUTS pnet-atomic-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION}
        --if  "${ATOMIC_PNET_LOCATION}"
        -p n_A=${TESTS_N_ATOMIC_TASKS}L
@@ -130,10 +133,10 @@ set(command ${PNETPUT_LOCATION}
        --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
    )
 
-add_custom_command(TARGET pnet-atomic-test-wf
-                   POST_BUILD
+add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMAND ${command}
                    COMMENT "putting tokens into atomic workflow: ${command}"
+                   APPEND
 )
 add_dependencies(pnet-atomic-test-wf pnetput)
 ################################################################################################
@@ -150,12 +153,13 @@ pnet_compile(inotify-test-wf ${CMAKE_SOURCE_DIR}/application/example/inotify/ino
 )
 
 get_target_property(INOTIFY_PNET_LOCATION pnet-inotify-test-wf LOCATION)
+get_target_property(__PNET_GEN_OUTPUTS pnet-inotify-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if  "${INOTIFY_PNET_LOCATION}" -p N=5L -p watched_file=\\"inotify_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet")
 
-add_custom_command(TARGET pnet-inotify-test-wf
-                   POST_BUILD
+add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMAND ${command}
                    COMMENT "putting tokens into inotify workflow: ${command}"
+                   APPEND
 )
 add_dependencies(pnet-inotify-test-wf pnetput)
 ################################################################################################
@@ -174,6 +178,7 @@ pnet_compile(transform_file-test-wf ${CMAKE_SOURCE_DIR}/application/transform_fi
 )
 
 get_target_property(TRANSFORM_FILE_PNET_LOCATION pnet-transform_file-test-wf LOCATION)
+get_target_property(__PNET_GEN_OUTPUTS pnet-transform_file-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if "${TRANSFORM_FILE_PNET_LOCATION}" -p input_file=\\"in.txt\\"
                                                                         -p output_file=\\"out.txt\\"
                                                                         -p input_n_read_slots="3L"
@@ -181,10 +186,10 @@ set(command ${PNETPUT_LOCATION} --if "${TRANSFORM_FILE_PNET_LOCATION}" -p input_
                                                                         -p chunk_size="512L"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet")
 
-add_custom_command(TARGET pnet-transform_file-test-wf
-                   POST_BUILD
+add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMAND ${command}
                    COMMENT "putting tokens into transform_file workflow: ${command}"
+                   APPEND
 )
 add_dependencies(pnet-transform_file-test-wf pnetput)
 ################################################################################################
