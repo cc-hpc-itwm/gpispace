@@ -11,7 +11,6 @@ set(tc_srcs
     test_adjacency.cpp
     test_bitset.cpp
     test_bitsetofint.cpp
-    test_count_number_of_copies.cpp
     test_cross.cpp
     test_execute_activity.cpp
     test_expr_parser.cpp
