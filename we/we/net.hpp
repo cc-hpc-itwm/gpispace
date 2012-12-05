@@ -9,7 +9,6 @@
 #include <we/container/bijection.hpp>
 #include <we/container/multirel.hpp>
 #include <we/container/priostore.hpp>
-#include <we/function/cond.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
@@ -77,6 +76,29 @@ namespace petri_net
   }
 } // namespace petri_net
 
+namespace Function { namespace Condition
+{
+  typedef petri_net::pid_t pid_t;
+  typedef petri_net::eid_t eid_t;
+
+  template<typename token_type>
+  struct Traits
+  {
+  public:
+    typedef std::pair<token_type,eid_t> token_via_edge_t;
+    // typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
+    //    typedef std::list<token_via_edge_t> vec_token_via_edge_t;
+    typedef std::deque<token_via_edge_t> vec_token_via_edge_t;
+    typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
+
+    typedef cross::cross<pid_in_map_t> choices_t;
+    typedef cross::iterator<pid_in_map_t> choice_it_t;
+
+    // set the cross product either to the end or to some valid choice
+    typedef boost::function<bool (choices_t &)> choice_cond_t;
+  };
+}}
+
 namespace petri_net
 {
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
@@ -113,8 +135,6 @@ public:
   typedef std::pair<pid_t, eid_t> place_via_edge_t;
   typedef std::pair<Token, place_via_edge_t> token_input_t;
   typedef std::vector<token_input_t> input_t;
-  typedef std::pair<Token, pid_t> token_on_place_t;
-  typedef std::vector<token_on_place_t> output_t;
 
   typedef boost::unordered_map<pid_t,eid_t> output_descr_t;
 

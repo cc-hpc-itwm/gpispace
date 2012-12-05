@@ -3,8 +3,6 @@
 #ifndef _WE_TYPE_CONDITION_HPP
 #define _WE_TYPE_CONDITION_HPP
 
-#include <we/function/cond.hpp>
-
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
