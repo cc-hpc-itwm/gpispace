@@ -10,7 +10,6 @@ namespace we {
 
       typedef typename transition_type::place_type place_type;
       typedef typename transition_type::edge_type edge_type;
-      typedef typename transition_type::token_type token_type;
 
       typedef typename transition_type::net_type net_type;
       typedef typename transition_type::mod_type mod_type;

@@ -65,15 +65,15 @@ namespace we { namespace type {
 
       typedef std::vector<pid_pair_type> pid_pair_vec_type;
 
-      template<typename P, typename E, typename T>
+      template<typename P, typename E>
       inline boost::optional<pid_pair_vec_type>
-      pid_pairs ( const transition_t<P, E, T> & trans
+      pid_pairs ( const transition_t<P, E> & trans
                 , const petri_net::tid_t & tid
-                , const petri_net::net<P, transition_t<P, E, T>, E, T> & net
-                , const transition_t<P, E, T> & trans_parent
+                , const petri_net::net<P, transition_t<P, E>, E> & net
+                , const transition_t<P, E> & trans_parent
                 )
       {
-        typedef transition_t<P, E, T> transition_t;
+        typedef transition_t<P, E> transition_t;
         typedef typename transition_t::port_t port_t;
         typedef typename port_t::name_type name_type;
         typedef petri_net::pid_t pid_t;
@@ -226,14 +226,14 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E, typename T>
+      template<typename P, typename E>
       inline bool run
-      ( transition_t<P, E, T> & trans_parent
-      , petri_net::net<P, transition_t<P,E,T>, E, T> & net
+      ( transition_t<P, E> & trans_parent
+      , petri_net::net<P, transition_t<P,E>, E> & net
       )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef petri_net::net<P, transition_t, E, T> pnet_t;
+        typedef transition_t<P, E> transition_t;
+        typedef petri_net::net<P, transition_t, E> pnet_t;
         typedef typename pnet_t::transition_const_it transition_const_it;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::tid_t tid_t;

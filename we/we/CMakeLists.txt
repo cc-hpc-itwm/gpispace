@@ -8,10 +8,8 @@ install(FILES ${hdrs}
   DESTINATION include/we
   COMPONENT headers)
 
-add_subdirectory (concurrent)
 add_subdirectory (container)
 add_subdirectory (expr)
-add_subdirectory (function)
 add_subdirectory (mgmt)
 add_subdirectory (serialize)
 add_subdirectory (type)

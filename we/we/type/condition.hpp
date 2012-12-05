@@ -3,14 +3,14 @@
 #ifndef _WE_TYPE_CONDITION_HPP
 #define _WE_TYPE_CONDITION_HPP
 
-#include <we/function/cond.hpp>
-
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/token.hpp>
 #include <we/type/signature.hpp>
+
+#include <we/util/cross.hpp>
 
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -126,6 +126,23 @@ namespace statistics
 }
 #endif
 
+namespace Function { namespace Condition
+{
+  typedef petri_net::pid_t pid_t;
+  typedef petri_net::eid_t eid_t;
+
+  struct Traits
+  {
+  public:
+    typedef std::pair<token::type,eid_t> token_via_edge_t;
+    typedef std::deque<token_via_edge_t> vec_token_via_edge_t;
+    typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
+
+    typedef cross::cross<pid_in_map_t> choices_t;
+    typedef cross::iterator<pid_in_map_t> choice_it_t;
+  };
+}}
+
 namespace condition
 {
   namespace exception
@@ -156,7 +173,7 @@ namespace condition
     typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
     translate_t translate;
 
-    typedef Function::Condition::Traits<token::type> traits;
+    typedef Function::Condition::Traits traits;
 
     friend class boost::serialization::access;
     template<typename Archive>

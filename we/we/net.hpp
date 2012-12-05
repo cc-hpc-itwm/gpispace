@@ -9,21 +9,74 @@
 #include <we/container/bijection.hpp>
 #include <we/container/multirel.hpp>
 #include <we/container/priostore.hpp>
-#include <we/function/cond.hpp>
-#include <we/function/trans.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
+#include <we/type/condition.hpp>
 #include <we/type/id.hpp>
+#include <we/type/token.hpp>
 #include <we/util/cross.hpp>
-
-#include <petri_net/edge.hpp>
-#include <petri_net/exception.hpp>
 
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <vector>
 #include <stack>
+
+#include <stdexcept>
+
+namespace petri_net
+{
+  namespace exception
+  {
+    class generic : public std::runtime_error
+    {
+    public:
+      explicit generic (const std::string& msg)
+        : std::runtime_error ("net: " + msg)
+      {}
+    };
+
+    class transition_not_enabled : public generic
+    {
+    public:
+      explicit transition_not_enabled (const std::string & msg)
+        : generic ("transition_not_enabled: " + msg)
+      {}
+    };
+
+    class no_such : public generic
+    {
+    public:
+      explicit no_such (const std::string & msg)
+        : generic ("no_such: " + msg)
+      {}
+    };
+  }
+} // namespace petri_net
+
+namespace petri_net
+{
+  namespace edge
+  {
+    enum type {PT,PT_READ,TP};
+
+    static inline bool is_pt_read (const type & e)
+    {
+      return e == PT_READ;
+    }
+
+    static inline bool is_PT (const type & et)
+    {
+      return (et == PT || et == PT_READ);
+    }
+
+    static inline type pt_read (void)
+    {
+      return PT_READ;
+    }
+  }
+} // namespace petri_net
 
 namespace petri_net
 {
@@ -40,7 +93,7 @@ namespace petri_net
 // condition of already enabled transitions is not neccessary
 
 // the net itself
-template<typename Place, typename Transition, typename Edge, typename Token>
+template<typename Place, typename Transition, typename Edge>
 class net
 {
 
@@ -49,26 +102,22 @@ public:
   typedef Place place_type;
   typedef Transition transition_type;
   typedef Edge edge_type;
-  typedef Token token_type;
 
   typedef bijection::const_it<place_type,pid_t> place_const_it;
   typedef bijection::const_it<transition_type,tid_t> transition_const_it;
   typedef bijection::const_it<edge_type,eid_t> edge_const_it;
   typedef typename place_const_it::size_type size_type;
 
-  typedef multirel::right_const_it<token_type, pid_t> token_place_it;
+  typedef multirel::right_const_it<token::type, pid_t> token_place_it;
+
+  typedef std::pair<pid_t, eid_t> place_via_edge_t;
+  typedef std::pair<token::type, place_via_edge_t> token_input_t;
+  typedef std::vector<token_input_t> input_t;
+
+  typedef boost::unordered_map<pid_t,eid_t> output_descr_t;
 
   // TODO: traits should be template parameters (with default values)
-  typedef Function::Transition::Traits<token_type> tf_traits;
-  typedef typename tf_traits::place_via_edge_t place_via_edge_t;
-  typedef typename tf_traits::token_input_t token_input_t;
-  typedef typename tf_traits::input_t input_t;
-  typedef typename tf_traits::output_t output_t;
-
-  typedef typename tf_traits::output_descr_t output_descr_t;
-
-  // TODO: traits should be template parameters (with default values)
-  typedef Function::Condition::Traits<token_type> cd_traits;
+  typedef Function::Condition::Traits cd_traits;
 
   typedef typename cd_traits::token_via_edge_t token_via_edge_t;
   typedef typename cd_traits::vec_token_via_edge_t vec_token_via_edge_t;
@@ -82,7 +131,7 @@ public:
   // *********************************************************************** //
 private:
   typedef boost::unordered_map<eid_t, connection_t> connection_map_t;
-  typedef typename multirel::multirel<token_type,pid_t> token_place_rel_t;
+  typedef typename multirel::multirel<token::type,pid_t> token_place_rel_t;
 
   typedef typename cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
   typedef boost::unordered_map<tid_t, choice_vec_t> enabled_choice_t;
@@ -161,7 +210,7 @@ private:
   {
     return adjacent_size
       ( in_to_transition_size_map
-      , boost::bind ( &net<Place,Transition,Edge,Token>::in_to_transition
+      , boost::bind ( &net<Place,Transition,Edge>::in_to_transition
                     , this
                     , _1
                     )
@@ -173,7 +222,7 @@ private:
   {
     return adjacent_size
       ( out_of_transition_size_map
-      , boost::bind ( &net<Place,Transition,Edge,Token>::out_of_transition
+      , boost::bind ( &net<Place,Transition,Edge>::out_of_transition
                     , this
                     , _1
                     )
@@ -320,7 +369,7 @@ private:
   void update_enabled_put_token ( const tid_t & tid
                                 , const pid_t & pid
                                 , const eid_t & eid
-                                , const token_type & token
+                                , const token::type & token
                                 )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
@@ -335,7 +384,7 @@ private:
 
   void update_enabled_del_one_token ( const tid_t & tid
                                     , const pid_t & pid
-                                    , const token_type & token
+                                    , const token::type & token
                                     )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
@@ -358,7 +407,7 @@ private:
 
   void update_enabled_del_all_token ( const tid_t & tid
                                     , const pid_t & pid
-                                    , const token_type & token
+                                    , const token::type & token
                                     )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
@@ -765,7 +814,7 @@ protected:
   }
 
 public:
-  void put_token (const pid_t & pid, const token_type & token)
+  void put_token (const pid_t & pid, const token::type & token)
   {
     token_place_rel.add (token, pid);
 
@@ -775,7 +824,7 @@ public:
 
   void put_token (const pid_t & pid)
   {
-    put_token (pid, token_type());
+    put_token (pid, token::type());
   }
 
   token_place_it get_token (const pid_t & pid) const
@@ -793,7 +842,7 @@ public:
     return token_place_rel.left_of(pid).size();
   }
 
-  std::size_t delete_one_token (const pid_t & pid, const token_type & token)
+  std::size_t delete_one_token (const pid_t & pid, const token::type & token)
   {
     const std::size_t ret (token_place_rel.delete_one (token, pid));
 
@@ -803,7 +852,7 @@ public:
     return ret;
   }
 
-  std::size_t delete_all_token (const pid_t & pid, const token_type & token)
+  std::size_t delete_all_token (const pid_t & pid, const token::type & token)
   {
     const std::size_t ret (token_place_rel.delete_all (token, pid));
 
@@ -824,7 +873,7 @@ public:
 
   // WORK HERE: implement more efficient?
   std::size_t replace_one_token
-  (const pid_t & pid, const token_type & old_token, const token_type & new_token)
+  (const pid_t & pid, const token::type & old_token, const token::type & new_token)
   {
     const std::size_t k (delete_one_token (pid, old_token));
 
@@ -836,7 +885,7 @@ public:
 
   // WORK HERE: implement more efficient?
   std::size_t replace_all_token
-  (const pid_t & pid, const token_type & old_token, const token_type & new_token)
+  (const pid_t & pid, const token::type & old_token, const token::type & new_token)
   {
     const std::size_t k (delete_all_token (pid, old_token));
 
@@ -913,7 +962,7 @@ protected:
       {
         const pid_t & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
-        const token_type & token (token_via_edge.first);
+        const token::type & token (token_via_edge.first);
         const eid_t & eid (token_via_edge.second);
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
@@ -931,7 +980,7 @@ protected:
       {
         const pid_t & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
-        const token_type & token (token_via_edge.first);
+        const token::type & token (token_via_edge.first);
         const eid_t & eid (token_via_edge.second);
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));

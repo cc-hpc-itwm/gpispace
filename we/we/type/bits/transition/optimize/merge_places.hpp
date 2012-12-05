@@ -14,16 +14,16 @@
 namespace we { namespace type {
     namespace optimize
     {
-      template<typename P, typename E, typename T>
+      template<typename P, typename E>
       inline void merge_places
-      ( petri_net::net<P, transition_t<P,E,T>, E, T> & net
+      ( petri_net::net<P, transition_t<P,E>, E> & net
       , const petri_net::pid_t & pid_A
       , const bool & is_read
       , const petri_net::pid_t & pid_B
       )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef petri_net::net<P, transition_t, E, T> pnet_t;
+        typedef transition_t<P, E> transition_t;
+        typedef petri_net::net<P, transition_t, E> pnet_t;
         typedef typename pnet_t::transition_const_it transition_const_it;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;

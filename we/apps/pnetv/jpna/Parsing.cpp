@@ -65,10 +65,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
     void operator()(const we::type::module_call_t & mod_call) { return; }
 
-    template<class P, class E, class T>
-    void operator()(const petri_net::net<P, we::type::transition_t<P, E, T>, E, T> &net) {
-        typedef petri_net::net<P, we::type::transition_t<P, E, T>, E, T> pnet_t;
-        typedef we::type::transition_t<P, E, T> transition_t;
+    template<class P, class E>
+    void operator()(const petri_net::net<P, we::type::transition_t<P, E>, E> &net) {
+        typedef petri_net::net<P, we::type::transition_t<P, E>, E> pnet_t;
+        typedef we::type::transition_t<P, E> transition_t;
 
         /* Translate places. */
         for (typename pnet_t::place_const_it it = net.places(); it.has_more(); ++it) {
@@ -149,9 +149,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
     }
 
-    template<class P, class E, class T>
-    void operator()(const we::type::transition_t<P, E, T> &transition) {
-        typedef we::type::transition_t<P, E, T> transition_t;
+    template<class P, class E>
+    void operator()(const we::type::transition_t<P, E> &transition) {
+        typedef we::type::transition_t<P, E> transition_t;
 
         boost::apply_visitor(*this, transition.data());
 

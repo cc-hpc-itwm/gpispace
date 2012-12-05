@@ -9,18 +9,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(tc_srcs
     test_activity.cpp
     test_adjacency.cpp
-    test_bignet.cpp
     test_bitset.cpp
     test_bitsetofint.cpp
-    test_bitset_token.cpp
-    test_choice_cond_loop.cpp
-    test_choice_mapreduce.cpp
-    test_cond.cpp
-    test_control_loop_exp.cpp
-    test_control_loop_with_choice_and_read.cpp
-    test_control_loop_with_choice.cpp
-    test_control_loop_with_choice_no_max_place.cpp
-    test_count_number_of_copies.cpp
     test_cross.cpp
     test_execute_activity.cpp
     test_expr_parser.cpp
@@ -28,31 +18,18 @@ set(tc_srcs
     test_expr_rename.cpp
     test_expr_get_names.cpp
     test_expr_simplify.cpp
-    test_generic_permute.cpp
-    test_independent_loops.cpp
-    test_kirchhoff.cpp
-    test_kirchhoff_v2.cpp
-    test_kirchhoff_v3.cpp
-    test_kirchhoff_v4.cpp
     test_layer_atomics.cpp
     test_layer_cancel.cpp
     test_loader.cpp
     test_load_module.cpp
     test_multirel.cpp
-    test_net_basics.cpp
-    test_parallel_execution_factored_out.cpp
-    test_parallel_execution_with_extractor_and_injector.cpp
     test_port.cpp
 #    test_requirements.cpp
     test_property.cpp
     test_queue.cpp
     test_signal.cpp
-    test_structured_token.cpp
-    test_swap.cpp
-    test_timed_parallel_execution.cpp
     test_trans.cpp
     test_unordered_map.cpp
-    test_user_defined_transition_function.cpp
     test_sig_cpp.cpp
     test_try_gen.cpp
     test_gen.cpp

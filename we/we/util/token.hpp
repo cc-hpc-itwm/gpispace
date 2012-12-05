@@ -3,6 +3,8 @@
 
 #include <list>
 
+#include <we/type/token.hpp>
+
 #include <we/we.hpp>
 
 namespace we
@@ -24,10 +26,10 @@ namespace we
         const port_id_t pid (act.transition().input_port_by_name(port));
 
         act.add_input
-          (we::input_t::value_type( we::token_t ( port
-                                                , act.transition().get_port(pid).signature()
-                                                , value
-                                                )
+          (we::input_t::value_type( ::token::type ( port
+                                                  , act.transition().get_port(pid).signature()
+                                                  , value
+                                                  )
                                   , pid
                                   )
           );

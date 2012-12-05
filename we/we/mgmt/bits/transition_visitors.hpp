@@ -46,8 +46,8 @@ namespace we { namespace mgmt { namespace visitor {
   public:
     can_fire () {}
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
-    bool operator () (const petri_net::net<Place, Trans, Edge, Token> & net) const
+    template <typename Place, typename Trans, typename Edge>
+    bool operator () (const petri_net::net<Place, Trans, Edge> & net) const
     {
       return net.can_fire();
     }
@@ -65,11 +65,10 @@ namespace we { namespace mgmt { namespace visitor {
   public:
     type_to_string_visitor () {}
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     std::string operator () (const petri_net::net < Place
                                                   , Trans
                                                   , Edge
-                                                  , Token
                                                   > & ) const
     {
       return "net";
@@ -105,11 +104,10 @@ namespace we { namespace mgmt { namespace visitor {
     , original_input_ (input)
     {}
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     void operator () (petri_net::net < Place
                                      , Trans
                                      , Edge
-                                     , Token
                                      > & )
     {
       // TODO beautify this
@@ -163,17 +161,15 @@ namespace we { namespace mgmt { namespace visitor {
       : engine_(engine)
     {}
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     Activity operator () (petri_net::net < Place
                                          , Trans
                                          , Edge
-                                         , Token
                                          > & net)
     {
       typedef petri_net::net < Place
                              , Trans
                              , Edge
-                             , Token
                              > pnet_t;
 
       typedef typename pnet_t::activity_t activity_t;
@@ -210,22 +206,19 @@ namespace we { namespace mgmt { namespace visitor {
       : activity_(activity)
     {}
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     void operator () ( petri_net::net < Place
                                       , Trans
                                       , Edge
-                                      , Token
                                       > & net
                      )
     {
       typedef petri_net::net < Place
                              , Trans
                              , Edge
-                             , Token
                              > pnet_t;
 
       typedef typename Activity::output_t output_t;
-      typedef typename Activity::token_type token_type;
       typedef typename Activity::transition_type::port_id_t port_id_t;
       typedef typename Activity::transition_type::pid_t     pid_t;
       typedef typename Activity::transition_type::const_iterator port_iterator;
@@ -328,17 +321,15 @@ namespace we { namespace mgmt { namespace visitor {
       , child_(child)
     {}
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     void operator () ( petri_net::net < Place
                                       , Trans
                                       , Edge
-                                      , Token
                                       > & parent_net
 
                      , const petri_net::net < Place
                                             , Trans
                                             , Edge
-                                            , Token
                                             > & /* child_net */
                      )
     {
@@ -354,11 +345,10 @@ namespace we { namespace mgmt { namespace visitor {
                            );
     }
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     void operator () ( petri_net::net < Place
                                       , Trans
                                       , Edge
-                                      , Token
                                       > & parent_net
 
                      , const we::type::module_call_t &
@@ -370,11 +360,10 @@ namespace we { namespace mgmt { namespace visitor {
                            );
     }
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     void operator () ( petri_net::net < Place
                                       , Trans
                                       , Edge
-                                      , Token
                                       > & parent_net
 
                      , const we::type::expression_t &
@@ -429,11 +418,10 @@ namespace we { namespace mgmt { namespace visitor {
       , input_(input)
     {}
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     void operator () (petri_net::net < Place
                                      , Trans
                                      , Edge
-                                     , Token
                                      > & net)
     {
       inject_input_to_net (net, activity_.transition(), input_);
@@ -467,11 +455,10 @@ namespace we { namespace mgmt { namespace visitor {
       , internal_(activity.transition().is_internal())
     {}
 
-    template <typename Place, typename Trans, typename Edge, typename Token>
+    template <typename Place, typename Trans, typename Edge>
     result_type operator () (petri_net::net < Place
                                      , Trans
                                      , Edge
-                                     , Token
                                      > & net)
     {
       if (internal_)
@@ -497,7 +484,6 @@ namespace we { namespace mgmt { namespace visitor {
 
       typedef typename Activity::input_t input_t;
       typedef typename Activity::output_t output_t;
-      typedef typename Activity::token_type token_type;
       typedef typename Activity::transition_type::port_id_t port_id_t;
       typedef typename Activity::transition_type::const_iterator port_iterator;
 
@@ -506,7 +492,7 @@ namespace we { namespace mgmt { namespace visitor {
           ; ++top
           )
       {
-        const token_type token   = top->first;
+        const token::type token   = top->first;
         const port_id_t  port_id = top->second;
 
         context.bind
@@ -529,7 +515,7 @@ namespace we { namespace mgmt { namespace visitor {
         if (port_it->second.is_output())
         {
           const port_id_t port_id = port_it->first;
-          const token_type token ( port_it->second.name()
+          const token::type token ( port_it->second.name()
                                  , port_it->second.signature()
                                  , context
                                  );

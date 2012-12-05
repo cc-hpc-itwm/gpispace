@@ -14,7 +14,6 @@ namespace module
     typedef we::loader::input_t context_t;
     typedef we::activity_t::input_t input_t;
     typedef we::activity_t::output_t output_t;
-    typedef we::activity_t::token_type token_type;
     typedef we::activity_t::transition_type::port_id_t port_id_t;
     typedef we::activity_t::transition_type::port_t port_t;
     typedef we::activity_t::transition_type::const_iterator port_iterator;
@@ -25,7 +24,7 @@ namespace module
         ; ++top
         )
     {
-      const token_type token   = top->first;
+      const token::type token   = top->first;
       const port_id_t  port_id = top->second;
 
       we::loader::put
@@ -60,10 +59,10 @@ namespace module
 
         act.add_output
           ( output_t::value_type
-            ( token_type ( port.name()
-                         , port.signature()
-                         , ton->second
-                         )
+            ( token::type ( port.name()
+                          , port.signature()
+                          , ton->second
+                          )
             , port_id
             )
           );

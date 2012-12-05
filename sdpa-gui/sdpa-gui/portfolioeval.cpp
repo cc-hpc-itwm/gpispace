@@ -20,6 +20,8 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+#include <we/type/token.hpp>
+
 static int enable_disable_event_type = QEvent::registerEventType();
 
 class Enable_Disable_Controls : public QEvent
@@ -286,7 +288,7 @@ void Portfolio::PrepareInputData( portfolio_data_t& job_data  )
 	}
 }
 
-static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job_data, const int row, const long nThreads )
+static token::type make_token( const QString& qstrBackend, portfolio_data_t& job_data, const int row, const long nThreads )
 {
   signature::structured_t sig;
   sig["bin"]=literal::STRING();
@@ -329,7 +331,7 @@ static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job
   param["FixingsProJahr"]=job_data.arr_row_params[row].Fixings();
   param["nThreads"]=nThreads;
 
-  return we::token_t ( "param", sig, value::type(param) );
+  return token::type ( "param", sig, value::type(param) );
 }
 
 std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
