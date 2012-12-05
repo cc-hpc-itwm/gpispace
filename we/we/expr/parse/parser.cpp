@@ -65,7 +65,7 @@ namespace expr
 
     value::type parser::eval_front (eval::context & context) const
     {
-      return boost::apply_visitor (eval::visitor::eval (context), front());
+      return eval::eval (context, front());
     }
 
     bool parser::eval_front_bool (eval::context & context) const
@@ -91,7 +91,7 @@ namespace expr
 
       for (nd_const_it_t it (begin()); it != end(); ++it)
         {
-          v = boost::apply_visitor (eval::visitor::eval (context), *it);
+          v = eval::eval (context, *it);
         }
 
       return v;

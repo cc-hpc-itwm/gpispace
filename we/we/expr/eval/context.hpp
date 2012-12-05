@@ -5,13 +5,9 @@
 
 #include <we/expr/parse/node.hpp>
 
-#include <iostream>
-#include <stdexcept>
-
 #include <we/type/value/container/container.hpp>
-#include <we/type/value/container/bind.hpp>
-#include <we/type/value/container/value.hpp>
-#include <we/type/value/container/show.hpp>
+
+#include <iosfwd>
 
 namespace expr
 {
@@ -19,72 +15,35 @@ namespace expr
   {
     struct context
     {
-    public:
-      typedef value::container::key_vec_t key_vec_t;
-
     private:
       typedef value::container::type container_t;
       container_t container;
 
     public:
+      typedef value::container::key_vec_t key_vec_t;
       typedef container_t::const_iterator const_iterator;
-      typedef container_t::iterator iterator;
 
-      inline void bind (const key_vec_t & key_vec, const value::type & value)
-      {
-        value::container::bind (container, key_vec, value);
-      }
+      void bind (const key_vec_t&, const value::type&);
+      void bind (const std::string&, const value::type&);
 
-      inline void bind (const std::string & key, const value::type & value)
-      {
-        value::container::bind (container, key, value);
-      }
+      const value::type& value (const std::string&) const;
+      const value::type& value (const key_vec_t&) const;
 
-      inline const value::type &
-      value (const std::string & key) const
-      {
-        return value::container::value (container, key);
-      }
+      value::type clear();
 
-      inline const value::type &
-      value (const key_vec_t & key_vec) const
-      {
-        return value::container::value (container, key_vec);
-      }
+      const_iterator begin() const;
+      const_iterator end() const;
+      std::size_t size() const;
 
-      inline value::type clear ()
-      {
-        container.clear();
-        return control();
-      }
-
-      const_iterator begin (void) const { return container.begin(); }
-      const_iterator end (void) const { return container.end(); }
-      std::size_t size (void) const { return container.size(); }
-
-      friend std::ostream & operator << (std::ostream &, const context &);
+      friend std::ostream& operator<< (std::ostream&, const context&);
     };
 
-    inline std::ostream & operator << (std::ostream & s, const context & cntx)
-    {
-      value::container::show (s, cntx.container);
+    std::ostream& operator<< (std::ostream&, const context&);
 
-      return s;
-    }
-
-    inline parse::node::type
-    refnode_value ( const context & context
-                  , const context::key_vec_t & key_vec
-                  )
-    {
-      return parse::node::type (context.value(key_vec));
-    }
-
-    inline parse::node::type
-    refnode_name (const context::key_vec_t & key_vec)
-    {
-      return parse::node::type (key_vec);
-    }
+    parse::node::type refnode_value ( const context&
+                                    , const context::key_vec_t&
+                                    );
+    parse::node::type refnode_name (const context::key_vec_t&);
   }
 }
 
