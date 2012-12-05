@@ -10,7 +10,7 @@
 #include <we/container/multirel.hpp>
 #include <we/container/priostore.hpp>
 #include <we/function/cond.hpp>
-#include <we/function/trans.hpp>
+#include <we/function/trans.traits.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
