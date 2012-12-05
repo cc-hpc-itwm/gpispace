@@ -77,34 +77,6 @@ namespace petri_net
   }
 } // namespace petri_net
 
-namespace Function { namespace Transition
-{
-  typedef petri_net::pid_t pid_t;
-  typedef petri_net::eid_t eid_t;
-
-  template<typename Token>
-  struct Traits
-  {
-  public:
-    // a transition gets a number of input tokens, taken from places,
-    // connected to the transition via edges
-    // so input is of type: [(Token,(Place,Edge))]
-    // the same holds true for the output, but the tokens are to be produced
-    typedef std::pair<pid_t, eid_t> place_via_edge_t;
-    typedef std::pair<Token, place_via_edge_t> token_input_t;
-    typedef std::vector<token_input_t> input_t;
-
-    typedef boost::unordered_map<pid_t,eid_t> output_descr_t;
-    typedef std::pair<Token, pid_t> token_on_place_t;
-    typedef std::vector<token_on_place_t> output_t;
-
-    typedef boost::function<output_t ( const input_t &
-                                     , const output_descr_t &
-                                     )
-                           > fun_t;
-  };
-}}
-
 namespace petri_net
 {
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
@@ -138,14 +110,13 @@ public:
 
   typedef multirel::right_const_it<token_type, pid_t> token_place_it;
 
-  // TODO: traits should be template parameters (with default values)
-  typedef Function::Transition::Traits<token_type> tf_traits;
-  typedef typename tf_traits::place_via_edge_t place_via_edge_t;
-  typedef typename tf_traits::token_input_t token_input_t;
-  typedef typename tf_traits::input_t input_t;
-  typedef typename tf_traits::output_t output_t;
+  typedef std::pair<pid_t, eid_t> place_via_edge_t;
+  typedef std::pair<Token, place_via_edge_t> token_input_t;
+  typedef std::vector<token_input_t> input_t;
+  typedef std::pair<Token, pid_t> token_on_place_t;
+  typedef std::vector<token_on_place_t> output_t;
 
-  typedef typename tf_traits::output_descr_t output_descr_t;
+  typedef boost::unordered_map<pid_t,eid_t> output_descr_t;
 
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits<token_type> cd_traits;
