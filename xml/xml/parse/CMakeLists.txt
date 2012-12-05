@@ -48,14 +48,10 @@ set (headerlist_hpp
     )
 add_custom_command(OUTPUT ${headerlist_hpp}
   COMMAND ${GEN_INCLUDE_EXE} -o ${headerlist_hpp}
-  DEPENDS gen-includes
+  DEPENDS gen-includes ${CMAKE_CURRENT_BINARY_DIR}/includes.hpp
   COMMENT "generating internal pnetc headerlist"
   )
 
-add_custom_target(gen_headerlist ALL
-  DEPENDS ${headerlist_hpp}
-  COMMENT "generating internal pnetc/pnete headerlist"
-  )
 set_source_files_properties(pnetc.cpp OBJECT_DEPENDS ${headerlist_hpp})
 
 add_executable(pnetc pnetc.cpp)
