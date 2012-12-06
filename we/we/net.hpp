@@ -79,7 +79,7 @@ namespace petri_net
       return PT_READ;
     }
 
-    std::string enum_to_string (const type& e)
+    inline std::string enum_to_string (const type& e)
     {
       switch (e)
       {
