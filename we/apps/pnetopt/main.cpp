@@ -29,17 +29,16 @@ namespace {
  * Except iterators: nobody refers them anyway, so we can apply reference counting to them.
  */
 
-template<class E>
 class Optimizer {
     typedef petri_net::pid_t pid_t;
 
     typedef petri_net::tid_t tid_t;
-    typedef we::type::transition_t<E> transition_t;
+    typedef we::type::transition_t transition_t;
 
-    typedef petri_net::net<transition_t, E> pnet_t;
+    typedef petri_net::net<transition_t> pnet_t;
 
-    typedef typename transition_t::port_id_t port_id_t;
-    typedef typename transition_t::port_t port_t;
+    typedef transition_t::port_id_t port_id_t;
+    typedef transition_t::port_t port_t;
 
     lua_State *L;
 
@@ -58,17 +57,17 @@ class Optimizer {
 
         luabridge::getGlobalNamespace(L)
             .beginNamespace("pnetopt")
-                .template beginClass<pnetopt::Invalidatable>("Invalidatable")
+                .beginClass<pnetopt::Invalidatable>("Invalidatable")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("valid", &pnetopt::Invalidatable::valid)
                 .endClass()
-                .template deriveClass<PetriNet, pnetopt::Invalidatable>("PetriNet")
+                .deriveClass<PetriNet, pnetopt::Invalidatable>("PetriNet")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PetriNet::toString)
                     .addFunction("places", &PetriNet::placesIterator)
                     .addFunction("transitions", &PetriNet::transitionIterator)
                 .endClass()
-                .template deriveClass<Place, pnetopt::Invalidatable>("Place")
+                .deriveClass<Place, pnetopt::Invalidatable>("Place")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Place::name)
                     .addFunction("name", &Place::name)
@@ -77,29 +76,29 @@ class Optimizer {
                     .addFunction("associatedPorts", &Place::associatedPortsIterator)
                     .addFunction("remove", &Place::remove)
                 .endClass()
-                .template deriveClass<PlacesIterator, pnetopt::Invalidatable>("PlacesIterator")
+                .deriveClass<PlacesIterator, pnetopt::Invalidatable>("PlacesIterator")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PlacesIterator::toString)
                     .addFunction("__call", &PlacesIterator::call)
                     .addFunction("__len", &PlacesIterator::size)
                 .endClass()
-                .template deriveClass<ConnectedPortsIterator, pnetopt::Invalidatable>("ConnectedPortsIterator")
+                .deriveClass<ConnectedPortsIterator, pnetopt::Invalidatable>("ConnectedPortsIterator")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &ConnectedPortsIterator::toString)
                     .addFunction("__call", &ConnectedPortsIterator::call)
                     .addFunction("__len", &ConnectedPortsIterator::size)
                 .endClass()
-                .template deriveClass<Expression, pnetopt::Invalidatable>("Expression")
+                .deriveClass<Expression, pnetopt::Invalidatable>("Expression")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Expression::toString)
                     .addFunction("isEmpty", &Expression::isEmpty)
                 .endClass()
-                .template deriveClass<Condition, pnetopt::Invalidatable>("Condition")
+                .deriveClass<Condition, pnetopt::Invalidatable>("Condition")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Condition::toString)
                     .addFunction("isConstTrue", &Condition::isConstTrue)
                 .endClass()
-                .template deriveClass<Transition, pnetopt::Invalidatable>("Transition")
+                .deriveClass<Transition, pnetopt::Invalidatable>("Transition")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Transition::name)
                     .addFunction("name", &Transition::name)
@@ -110,13 +109,13 @@ class Optimizer {
                     .addFunction("condition", &Transition::condition)
                     .addFunction("remove", &Transition::remove)
                 .endClass()
-                .template deriveClass<TransitionsIterator, pnetopt::Invalidatable>("TransitionsIterator")
+                .deriveClass<TransitionsIterator, pnetopt::Invalidatable>("TransitionsIterator")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &TransitionsIterator::toString)
                     .addFunction("__call", &TransitionsIterator::call)
                     .addFunction("__len", &TransitionsIterator::size)
                 .endClass()
-                .template deriveClass<Port, pnetopt::Invalidatable>("Port")
+                .deriveClass<Port, pnetopt::Invalidatable>("Port")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Port::name)
                     .addFunction("transition", &Port::transition)
@@ -132,7 +131,7 @@ class Optimizer {
                     .addFunction("associate", &Port::associate)
                     .addFunction("unassociate", &Port::unassociate)
                 .endClass()
-                .template deriveClass<PortsIterator, pnetopt::Invalidatable>("PortsIterator")
+                .deriveClass<PortsIterator, pnetopt::Invalidatable>("PortsIterator")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PortsIterator::toString)
                     .addFunction("__call", &PortsIterator::call)
@@ -196,10 +195,10 @@ class Optimizer {
         PetriNet(pnet_t &pnet):
             pnet_(pnet)
         {
-            for (typename pnet_t::place_const_it it = pnet_.places(); it.has_more(); ++it) {
+            for (pnet_t::place_const_it it = pnet_.places(); it.has_more(); ++it) {
                 getPlace(*it);
             }
-            for (typename pnet_t::transition_const_it it = pnet_.transitions(); it.has_more(); ++it) {
+            for (pnet_t::transition_const_it it = pnet_.transitions(); it.has_more(); ++it) {
                 getTransition(*it);
             }
         }
@@ -535,7 +534,7 @@ class Optimizer {
         Transition(PetriNet *petriNet, tid_t tid, transition_t &transition):
             petriNet_(petriNet), tid_(tid), transition_(transition)
         {
-            for (typename transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
+            for (transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
                 port_id_t portId = i->first;
                 port_t &port = transition_.get_port(portId);
                 if (port.is_input()) {
@@ -548,7 +547,7 @@ class Optimizer {
                     getPort(portId, TUNNEL);
                 }
             }
-            for (typename transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
+            for (transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
                 port_id_t portId = i->first;
                 pid_t placeId = i->second.first;
 
@@ -557,7 +556,7 @@ class Optimizer {
 
                 getPort(portId, OUTPUT)->setConnectedPlace(petriNet->getPlace(placeId));
             }
-            for (typename transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
+            for (transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
                 pid_t placeId = i->first;
                 port_id_t portId = i->second.first;
 
@@ -905,9 +904,8 @@ class Optimizer {
 
 } // anonymous namespace
 
-template<class E>
-void do_optimize(we::type::transition_t<E> &transition, const char *script) {
-    Optimizer<E> optimizer(transition);
+void do_optimize(we::type::transition_t &transition, const char *script) {
+    Optimizer optimizer(transition);
     optimizer(script);
 }
 

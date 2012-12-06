@@ -34,9 +34,9 @@ int main (int, char **)
 {
   typedef unsigned int edge_t;
 
-  typedef we::type::transition_t<edge_t> transition_t;
+  typedef we::type::transition_t transition_t;
 
-  typedef petri_net::net<transition_t, edge_t> pnet_t;
+  typedef petri_net::net<transition_t> pnet_t;
 
   // ************************************ //
   pnet_t net;

@@ -58,13 +58,11 @@ namespace we
             return expr.simplify(needed_bindings);
           }
 
-          template<typename E>
           bool operator ()
-          (petri_net::net<transition_t<E>, E> & net) const
+          (petri_net::net<transition_t> & net) const
           {
-            typedef transition_t<E> transition_t;
-            typedef petri_net::net<transition_t, E> pnet_t;
-            typedef typename pnet_t::transition_const_it transition_const_it;
+            typedef petri_net::net<transition_t> pnet_t;
+            typedef pnet_t::transition_const_it transition_const_it;
             typedef petri_net::tid_t tid_t;
 
             bool modified (false);
@@ -120,13 +118,11 @@ namespace we
           bool operator () (expression_t &) const { return false; }
           bool operator () (module_call_t &) const { return false; }
 
-          template<typename E>
           bool operator ()
-          (petri_net::net<transition_t<E>, E> & net) const
+          (petri_net::net<transition_t> & net) const
           {
-            typedef transition_t<E> transition_t;
-            typedef petri_net::net<transition_t, E> pnet_t;
-            typedef typename pnet_t::transition_const_it transition_const_it;
+            typedef petri_net::net<transition_t> pnet_t;
+            typedef pnet_t::transition_const_it transition_const_it;
             typedef petri_net::tid_t tid_t;
 
             bool modified (false);
@@ -173,11 +169,8 @@ namespace we
         };
       } // namespace visitor
 
-      template<typename E>
-      inline bool optimize (transition_t<E> & t, const options::type & opts)
+      inline bool optimize (transition_t& t, const options::type & opts)
       {
-        typedef transition_t<E> transition_t;
-
         return
           boost::apply_visitor
           ( visitor::optimize<transition_t> (opts, t)

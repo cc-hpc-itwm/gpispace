@@ -94,14 +94,14 @@ namespace petri_net
 // condition of already enabled transitions is not neccessary
 
 // the net itself
-template<typename Transition, typename Edge>
+template<typename Transition>
 class net
 {
 
   // *********************************************************************** //
 public:
   typedef Transition transition_type;
-  typedef Edge edge_type;
+  typedef unsigned int edge_type;
 
   typedef bijection::const_it<place::type,pid_t> place_const_it;
   typedef bijection::const_it<transition_type,tid_t> transition_const_it;
@@ -210,7 +210,7 @@ private:
   {
     return adjacent_size
       ( in_to_transition_size_map
-      , boost::bind ( &net<Transition,Edge>::in_to_transition
+      , boost::bind ( &net<Transition>::in_to_transition
                     , this
                     , _1
                     )
@@ -222,7 +222,7 @@ private:
   {
     return adjacent_size
       ( out_of_transition_size_map
-      , boost::bind ( &net<Transition,Edge>::out_of_transition
+      , boost::bind ( &net<Transition>::out_of_transition
                     , this
                     , _1
                     )

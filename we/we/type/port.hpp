@@ -233,25 +233,6 @@ namespace we
         }
       }
 
-      template<typename Sig, typename Id, typename Net>
-      inline void dump ( xml_util::xmlstream & s
-                       , const port<Sig,Id> & p
-                       , const Net & net
-                       )
-      {
-        if (p.has_associated_place())
-          {
-            const std::string & place_name
-              (net.get_place (p.associated_place()).get_name());
-
-            detail::dump_with_optional_place_name (s, p, place_name);
-          }
-        else
-          {
-            detail::dump_with_optional_place_name (s, p);
-          }
-      }
-
       template<typename Sig, typename Id>
       inline void dump ( xml_util::xmlstream & s
                        , const port<Sig,Id> & p

@@ -280,15 +280,14 @@ namespace we { namespace type {
       };
     }
 
-    template <typename Edge>
     struct transition_t
     {
-      typedef Edge edge_type;
+      typedef unsigned int edge_type;
 
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
-      typedef transition_t<Edge> this_type;
-      typedef petri_net::net<this_type, Edge> net_type;
+      typedef transition_t this_type;
+      typedef petri_net::net<this_type> net_type;
       typedef detail::condition<std::string> cond_type;
       typedef detail::preparsed_condition< std::string
                                          , condition::type::parser_t
@@ -313,8 +312,8 @@ namespace we { namespace type {
       typedef signature::type signature_type;
       typedef port<signature_type> port_t;
       typedef boost::unordered_map<port_id_t, port_t> port_map_t;
-      typedef typename port_map_t::const_iterator const_iterator;
-      typedef typename port_map_t::iterator port_iterator;
+      typedef port_map_t::const_iterator const_iterator;
+      typedef port_map_t::iterator port_iterator;
       typedef boost::unordered_set<port_t::name_type> port_names_t;
 
       typedef we::type::requirement_t<std::string> requirement_t;
@@ -678,25 +677,25 @@ namespace we { namespace type {
         return gen_inner_to_outer (inner).second;
       }
 
-      typename inner_to_outer_t::const_iterator
+      inner_to_outer_t::const_iterator
       inner_to_outer_begin (void) const
       {
         return inner_to_outer_.begin();
       }
 
-      typename inner_to_outer_t::const_iterator
+      inner_to_outer_t::const_iterator
       inner_to_outer_end (void) const
       {
         return inner_to_outer_.end();
       }
 
-      typename outer_to_inner_t::const_iterator
+      outer_to_inner_t::const_iterator
       outer_to_inner_begin (void) const
       {
         return outer_to_inner_.begin();
       }
 
-      typename outer_to_inner_t::const_iterator
+      outer_to_inner_t::const_iterator
       outer_to_inner_end (void) const
       {
         return outer_to_inner_.end();
@@ -1183,9 +1182,8 @@ namespace we { namespace type {
       requirements_t m_requirements;
 
     private:
-      template <typename E>
       friend std::ostream & operator<< ( std::ostream &
-                                       , const transition_t<E> &
+                                       , const transition_t &
                                        );
 
       friend class boost::serialization::access;
@@ -1233,13 +1231,11 @@ namespace we { namespace type {
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
 
-    template <typename E>
-    inline bool operator==(const transition_t<E> & a, const transition_t<E> & b)
+    inline bool operator==(const transition_t & a, const transition_t & b)
     {
       return a.name() == b.name();
     }
-    template <typename E>
-    inline std::size_t hash_value(transition_t<E> const & t)
+    inline std::size_t hash_value(transition_t const & t)
     {
       boost::hash<std::string> hasher;
       return hasher(t.name());
@@ -1247,57 +1243,21 @@ namespace we { namespace type {
 
     namespace dump
     {
-      namespace visitor
-      {
-        template<typename Port>
-        class dump_port : public boost::static_visitor<void>
-        {
-        private:
-          xml_util::xmlstream & _s;
-          const Port & _p;
-
-        public:
-          dump_port (xml_util::xmlstream & s, const Port & p)
-            : _s (s)
-            , _p (p)
-          {}
-
-          template <typename E>
-          void operator () ( const petri_net::net< transition_t<E>
-                                                 , E
-                                                 > & net
-                           ) const
-          {
-            ::we::type::dump::dump (_s, _p, net);
-          }
-
-          template<typename Other>
-          void operator () (const Other & _) const
-          {
-            ::we::type::dump::dump (_s, _p);
-          }
-        };
-      }
-
-      template<typename E>
       inline void dump ( xml_util::xmlstream & s
-                       , const transition_t<E> & t
+                       , const transition_t & t
                        )
       {
-        typedef transition_t<E> trans_t;
+        typedef transition_t trans_t;
 
         s.open ("defun");
         s.attr ("name", t.name());
 
-        for ( typename trans_t::port_map_t::const_iterator p (t.ports().begin())
+        for ( trans_t::port_map_t::const_iterator p (t.ports().begin())
             ; p != t.ports().end()
             ; ++p
             )
           {
-            boost::apply_visitor
-              ( visitor::dump_port<typename trans_t::port_t> (s, p->second)
-              , t.data())
-              ;
+            ::we::type::dump::dump (s, p->second);
           }
 
         s.open ("condition");
@@ -1323,9 +1283,7 @@ namespace we { namespace type {
           return "{mod, " + fhg::util::show (mod_call) + "}";
         }
 
-        template <typename Edge>
-        std::string operator () ( const petri_net::net< transition_t<Edge>
-                                                      , Edge
+        std::string operator () ( const petri_net::net< transition_t
                                                       > & net
                                 ) const
         {
@@ -1334,12 +1292,11 @@ namespace we { namespace type {
       };
     }
 
-    template <typename E>
     inline std::ostream & operator<< ( std::ostream & s
-                                     , const transition_t<E> & t
+                                     , const transition_t & t
                                      )
     {
-      typedef transition_t<E> trans_t;
+      typedef transition_t trans_t;
       s << "{";
       s << "trans";
       s << ", ";
@@ -1351,10 +1308,10 @@ namespace we { namespace type {
       s << ", {cond, " << t.condition() << "}";
       s << ", {ports, ";
       s << "[";
-      for ( typename trans_t::port_map_t::const_iterator p (t.ports_.begin())
-              ; p != t.ports_.end()
-              ; ++p
-            )
+      for ( trans_t::port_map_t::const_iterator p (t.ports_.begin())
+          ; p != t.ports_.end()
+          ; ++p
+          )
       {
         if (p != t.ports_.begin())
           s << ", ";
@@ -1373,25 +1330,24 @@ namespace we { namespace type {
       return s;
     }
 
-    template<typename E>
-    std::ostream & operator << ( std::ostream & s
-                               , const petri_net::net<transition_t<E>, E> & n
-                               )
+    inline std::ostream & operator << ( std::ostream & s
+                                      , const petri_net::net<transition_t> & n
+                                      )
     {
-      typedef petri_net::net<transition_t<E>, E> pnet_t;
+      typedef petri_net::net<transition_t> pnet_t;
 
-      for (typename pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
+      for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
       {
         s << "[" << n.get_place (*p) << ":";
 
         typedef boost::unordered_map<token::type, size_t> token_cnt_t;
         token_cnt_t token;
-        for (typename pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+        for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         {
           token[*tp]++;
         }
 
-        for (typename token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
+        for (token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
         {
           if (t->second > 1)
           {
@@ -1405,7 +1361,7 @@ namespace we { namespace type {
         s << "]";
       }
 
-      for (typename pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+      for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
       {
         s << "/";
         s << n.get_transition (*t);
@@ -1438,26 +1394,18 @@ namespace we { namespace type {
           return modcall;
         }
 
-        template <typename E>
-        kind operator ()
-        (const petri_net::net<transition_t<E>, E> &) const
+        kind operator () (const petri_net::net<transition_t> &) const
         {
           return subnet;
         }
       };
 
-      template <typename E>
-      bool is_expression (const transition_t<E> & t)
+      inline bool is_expression (const transition_t & t)
       {
         return boost::apply_visitor (visitor(), t.data()) == expression;
       }
-      template <typename E>
-      bool is_modcall (const transition_t<E> & t)
-      {
-        return boost::apply_visitor (visitor(), t.data()) == modcall;
-      }
-      template <typename E>
-      bool is_subnet (const transition_t<E> & t)
+
+      inline bool is_subnet (const transition_t & t)
       {
         return boost::apply_visitor (visitor(), t.data()) == subnet;
       }
@@ -1465,10 +1413,11 @@ namespace we { namespace type {
   }
 }
 
+//! \todo is this used somewhere?
 namespace boost {
   namespace serialization {
-    template <typename E>
-    struct version< we::type::transition_t<E> >
+    template<>
+    struct version<we::type::transition_t>
     {
       typedef mpl::int_<1> type;
       typedef mpl::integral_c_tag tag;

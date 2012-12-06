@@ -46,8 +46,8 @@ namespace we { namespace mgmt { namespace visitor {
   public:
     can_fire () {}
 
-    template <typename Trans, typename Edge>
-    bool operator () (const petri_net::net<Trans, Edge> & net) const
+    template <typename Trans>
+    bool operator () (const petri_net::net<Trans> & net) const
     {
       return net.can_fire();
     }
@@ -65,9 +65,8 @@ namespace we { namespace mgmt { namespace visitor {
   public:
     type_to_string_visitor () {}
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     std::string operator () (const petri_net::net < Trans
-                                                  , Edge
                                                   > & ) const
     {
       return "net";
@@ -103,9 +102,8 @@ namespace we { namespace mgmt { namespace visitor {
     , original_input_ (input)
     {}
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     void operator () (petri_net::net < Trans
-                                     , Edge
                                      > & )
     {
       // TODO beautify this
@@ -159,13 +157,11 @@ namespace we { namespace mgmt { namespace visitor {
       : engine_(engine)
     {}
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     Activity operator () (petri_net::net < Trans
-                                         , Edge
                                          > & net)
     {
       typedef petri_net::net < Trans
-                             , Edge
                              > pnet_t;
 
       typedef typename pnet_t::activity_t activity_t;
@@ -202,14 +198,12 @@ namespace we { namespace mgmt { namespace visitor {
       : activity_(activity)
     {}
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     void operator () ( petri_net::net < Trans
-                                      , Edge
                                       > & net
                      )
     {
       typedef petri_net::net < Trans
-                             , Edge
                              > pnet_t;
 
       typedef typename Activity::output_t output_t;
@@ -315,13 +309,11 @@ namespace we { namespace mgmt { namespace visitor {
       , child_(child)
     {}
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     void operator () ( petri_net::net < Trans
-                                      , Edge
                                       > & parent_net
 
                      , const petri_net::net < Trans
-                                            , Edge
                                             > & /* child_net */
                      )
     {
@@ -337,9 +329,8 @@ namespace we { namespace mgmt { namespace visitor {
                            );
     }
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     void operator () ( petri_net::net < Trans
-                                      , Edge
                                       > & parent_net
 
                      , const we::type::module_call_t &
@@ -351,9 +342,8 @@ namespace we { namespace mgmt { namespace visitor {
                            );
     }
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     void operator () ( petri_net::net < Trans
-                                      , Edge
                                       > & parent_net
 
                      , const we::type::expression_t &
@@ -408,9 +398,8 @@ namespace we { namespace mgmt { namespace visitor {
       , input_(input)
     {}
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     void operator () (petri_net::net < Trans
-                                     , Edge
                                      > & net)
     {
       inject_input_to_net (net, activity_.transition(), input_);
@@ -444,9 +433,8 @@ namespace we { namespace mgmt { namespace visitor {
       , internal_(activity.transition().is_internal())
     {}
 
-    template <typename Trans, typename Edge>
+    template <typename Trans>
     result_type operator () (petri_net::net <  Trans
-                                            , Edge
                                             > & net)
     {
       if (internal_)

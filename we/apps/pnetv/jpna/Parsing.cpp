@@ -65,13 +65,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
     void operator()(const we::type::module_call_t & mod_call) { return; }
 
-    template<class E>
-    void operator()(const petri_net::net<we::type::transition_t<E>, E> &net) {
-        typedef petri_net::net<we::type::transition_t<E>, E> pnet_t;
-        typedef we::type::transition_t<E> transition_t;
+    void operator()(const petri_net::net<we::type::transition_t> &net) {
+        typedef petri_net::net<we::type::transition_t> pnet_t;
+        typedef we::type::transition_t transition_t;
 
         /* Translate places. */
-        for (typename pnet_t::place_const_it it = net.places(); it.has_more(); ++it) {
+        for (pnet_t::place_const_it it = net.places(); it.has_more(); ++it) {
             petri_net::pid_t pid = *it;
             const place::type &p = net.get_place(pid);
 
@@ -81,7 +80,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         /* Translate transitions. */
-        for (typename pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
+        for (pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
             petri_net::pid_t tid = *it;
             const transition_t &t = net.get_transition(tid);
 
@@ -104,8 +103,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        for (typename pnet_t::edge_const_it it = net.edges(); it.has_more(); ++it) {
-            const typename petri_net::connection_t &connection = net.get_edge_info(*it);
+        for (pnet_t::edge_const_it it = net.edges(); it.has_more(); ++it) {
+            const petri_net::connection_t &connection = net.get_edge_info(*it);
 
             switch (connection.type) {
                 case petri_net::edge::PT: {
@@ -140,7 +139,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        for (typename pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
+        for (pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
             petri_net::pid_t id = *it;
             const transition_t &transition = net.get_transition(id);
 
@@ -149,14 +148,13 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
     }
 
-    template<class E>
-    void operator()(const we::type::transition_t<E> &transition) {
-        typedef we::type::transition_t<E> transition_t;
+    void operator()(const we::type::transition_t &transition) {
+        typedef we::type::transition_t transition_t;
 
         boost::apply_visitor(*this, transition.data());
 
-        FOREACH(const typename transition_t::port_map_t::value_type &item, transition.ports()) {
-            const typename transition_t::port_t &port = item.second;
+        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports()) {
+            const transition_t::port_t &port = item.second;
 
             if (port.has_associated_place()) {
                 petri_net::pid_t pid = port.associated_place();
