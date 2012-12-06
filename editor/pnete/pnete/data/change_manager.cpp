@@ -58,9 +58,7 @@ namespace fhg
 
           // - net -----------------------------------------------------
           // -- connection ---------------------------------------------
-          EXPOSE (connection_added_in);
-          EXPOSE (connection_added_read);
-          EXPOSE (connection_added_out);
+          EXPOSE (connection_added);
           EXPOSE (connection_removed);
           EXPOSE (property_changed);
 
@@ -319,42 +317,14 @@ namespace fhg
         {
           transition.get_ref().push_connection (connection);
 
-          switch (connection.get().direction())
-          {
-            //! \todo All emit the same signal, the slot checks the type.
-          case petri_net::edge::PT:
-            change_manager.emit_signal
-              ( &signal::connection_added_in, origin
-              , handle::connect (connection, change_manager)
-              , handle::place ( *connection.get().resolved_place()
-                              , change_manager
-                              )
-              , handle::port (*connection.get().resolved_port(), change_manager)
-              );
-            break;
-
-          case petri_net::edge::TP:
-            change_manager.emit_signal
-              ( &signal::connection_added_out, origin
-              , handle::connect (connection, change_manager)
-              , handle::port (*connection.get().resolved_port(), change_manager)
-              , handle::place ( *connection.get().resolved_place()
-                              , change_manager
-                              )
-              );
-            break;
-
-          case petri_net::edge::PT_READ:
-            change_manager.emit_signal
-              ( &signal::connection_added_read, origin
-              , handle::connect (connection, change_manager)
-              , handle::place ( *connection.get().resolved_place()
-                              , change_manager
-                              )
-              , handle::port (*connection.get().resolved_port(), change_manager)
-              );
-            break;
-          }
+          change_manager.emit_signal
+            ( &signal::connection_added, origin
+            , handle::connect (connection, change_manager)
+            , handle::place ( *connection.get().resolved_place()
+                            , change_manager
+                            )
+            , handle::port (*connection.get().resolved_port(), change_manager)
+            );
         }
 
         class add_connection : public QUndoCommand

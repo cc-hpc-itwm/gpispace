@@ -88,21 +88,9 @@ namespace fhg
           // transition.
           _net.connect_to_change_mgr
             ( this
-            , "connection_added_in"
+            , "connection_added"
             , "const data::handle::connect&, "
               "const data::handle::place&, const data::handle::port&"
-            );
-          _net.connect_to_change_mgr
-            ( this
-            , "connection_added_read"
-            , "const data::handle::connect&, "
-              "const data::handle::place&, const data::handle::port&"
-            );
-          _net.connect_to_change_mgr
-            ( this
-            , "connection_added_out"
-            , "const data::handle::connect&, "
-              "const data::handle::port&, const data::handle::place&"
             );
           _net.connect_to_change_mgr
             (this, "connection_removed", "const data::handle::connect&");
@@ -615,15 +603,15 @@ namespace fhg
 
         // ## react on modification ##################################
         // # connection ##############################################
-        //! \todo Pass direction, don't pass from and to. Pass net.
-        void scene_type::connection_added_in
+        //! \todo Don't pass from and to. Pass net.
+        void scene_type::connection_added
           ( const QObject* origin
           , const data::handle::connect& connection
-          , const data::handle::place& from
-          , const data::handle::port& to
+          , const data::handle::place& place
+          , const data::handle::port& port
           )
         {
-          if (is_in_my_net (from))
+          if (is_in_my_net (place))
           {
             //! \todo Weaver.
             // weaver::item_by_name_type places
@@ -634,67 +622,25 @@ namespace fhg
             //! ports of the scene will yield wrong ones. The weaver
             //! normally is started inside a transition, thus
             //! correctly only knows ports inside that transition.
-            // weaver::item_by_name_type ports
-            //   (name_map_for_items (items_of_type<port_item>()));
+            if (petri_net::edge::is_PT (connection.get().direction()))
+            {
+              create_connection ( item_with_handle<place_item> (place)
+                                , item_with_handle<port_item> (port)
+                                , petri_net::edge::is_pt_read
+                                  (connection.get().direction())
+                                , connection
+                                );
+            }
+            else
+            {
+              create_connection ( item_with_handle<port_item> (port)
+                                , item_with_handle<place_item> (place)
+                                , false
+                                , connection
+                                );
+            }
 
-            // weaver::connection wc
-            //   (this, places, ports, connectable::direction::IN, false);
-            // weaver::from::connection (&wc, connection.id());
-            create_connection ( item_with_handle<place_item> (from)
-                              , item_with_handle<port_item> (to)
-                              , false
-                              , connection
-                              );
-          }
-        }
-        void scene_type::connection_added_read
-          ( const QObject* origin
-          , const data::handle::connect& connection
-          , const data::handle::place& from
-          , const data::handle::port& to
-          )
-        {
-          if (is_in_my_net (from))
-          {
-            //! \todo Weaver. See above.
-            // weaver::item_by_name_type places
-            //   (name_map_for_items (items_of_type<place_item>()));
-            // weaver::item_by_name_type ports
-            //   (name_map_for_items (items_of_type<port_item>()));
 
-            // weaver::connection wc
-            //   (this, places, ports, connectable::direction::IN, true);
-            // weaver::from::connection (&wc, connection.id());
-            create_connection ( item_with_handle<place_item> (from)
-                              , item_with_handle<port_item> (to)
-                              , true
-                              , connection
-                              );
-          }
-        }
-        void scene_type::connection_added_out
-          ( const QObject* origin
-          , const data::handle::connect& connection
-          , const data::handle::port& from
-          , const data::handle::place& to
-          )
-        {
-          if (is_in_my_net (to))
-          {
-            //! \todo Weaver. See above.
-            // weaver::item_by_name_type places
-            //   (name_map_for_items (items_of_type<place_item>()));
-            // weaver::item_by_name_type ports
-            //   (name_map_for_items (items_of_type<port_item>()));
-
-            // weaver::connection wc
-            //   (this, places, ports, connectable::direction::OUT, false);
-            // weaver::from::connection (&wc, connection.id());
-            create_connection ( item_with_handle<port_item> (from)
-                              , item_with_handle<place_item> (to)
-                              , false
-                              , connection
-                              );
           }
         }
 
