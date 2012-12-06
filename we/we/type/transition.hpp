@@ -19,7 +19,6 @@
 #ifndef WE_TYPE_TRANSITION_HPP
 #define WE_TYPE_TRANSITION_HPP 1
 
-#include <we/net.hpp>
 #include <we/type/port.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
@@ -48,6 +47,11 @@ namespace xml_util = ::fhg::util::xml;
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/version.hpp>
+
+namespace petri_net
+{
+  class net;
+}
 
 namespace we { namespace type {
     namespace exception {
@@ -280,6 +284,8 @@ namespace we { namespace type {
       };
     }
 
+
+
     struct transition_t
     {
       typedef unsigned int edge_type;
@@ -287,7 +293,7 @@ namespace we { namespace type {
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
       typedef transition_t this_type;
-      typedef petri_net::net<this_type> net_type;
+      typedef petri_net::net net_type;
       typedef detail::condition<std::string> cond_type;
       typedef detail::preparsed_condition< std::string
                                          , condition::type::parser_t
@@ -1256,8 +1262,7 @@ namespace we { namespace type {
           return "{mod, " + fhg::util::show (mod_call) + "}";
         }
 
-        std::string operator () ( const petri_net::net< transition_t
-                                                      > & net
+        std::string operator () ( const petri_net::net& net
                                 ) const
         {
           return std::string("{net, ") + fhg::util::show(net) + "}";
@@ -1303,47 +1308,6 @@ namespace we { namespace type {
       return s;
     }
 
-    inline std::ostream & operator << ( std::ostream & s
-                                      , const petri_net::net<transition_t> & n
-                                      )
-    {
-      typedef petri_net::net<transition_t> pnet_t;
-
-      for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
-      {
-        s << "[" << n.get_place (*p) << ":";
-
-        typedef boost::unordered_map<token::type, size_t> token_cnt_t;
-        token_cnt_t token;
-        for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-        {
-          token[*tp]++;
-        }
-
-        for (token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
-        {
-          if (t->second > 1)
-          {
-            s << " " << t->second << "x " << t->first;
-          }
-          else
-          {
-            s << " " << t->first;
-          }
-        }
-        s << "]";
-      }
-
-      for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-      {
-        s << "/";
-        s << n.get_transition (*t);
-        s << "/";
-      }
-
-      return s;
-    }
-
     // ********************************************************************* //
 
     namespace content
@@ -1367,7 +1331,7 @@ namespace we { namespace type {
           return modcall;
         }
 
-        kind operator () (const petri_net::net<transition_t> &) const
+        kind operator () (const petri_net::net &) const
         {
           return subnet;
         }

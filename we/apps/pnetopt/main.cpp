@@ -35,7 +35,7 @@ class Optimizer {
     typedef petri_net::tid_t tid_t;
     typedef we::type::transition_t transition_t;
 
-    typedef petri_net::net<transition_t> pnet_t;
+    typedef petri_net::net pnet_t;
 
     typedef transition_t::port_id_t port_id_t;
     typedef transition_t::port_t port_t;

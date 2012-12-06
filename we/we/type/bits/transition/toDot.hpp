@@ -398,9 +398,9 @@ namespace we { namespace type {
         // ----------------------------------------------------------------- //
 
         std::string operator ()
-        (const petri_net::net<transition_t> & net) const
+        (const petri_net::net & net) const
         {
-          typedef petri_net::net<transition_t> pnet_t;
+          typedef petri_net::net pnet_t;
           typedef typename pnet_t::place_const_it place_const_it;
           typedef petri_net::adj_place_const_it adj_place_const_it;
           typedef typename pnet_t::transition_const_it transition_const_it;

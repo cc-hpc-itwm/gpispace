@@ -46,8 +46,7 @@ namespace we { namespace mgmt { namespace visitor {
   public:
     can_fire () {}
 
-    template <typename Trans>
-    bool operator () (const petri_net::net<Trans> & net) const
+    bool operator () (const petri_net::net& net) const
     {
       return net.can_fire();
     }
@@ -65,9 +64,7 @@ namespace we { namespace mgmt { namespace visitor {
   public:
     type_to_string_visitor () {}
 
-    template <typename Trans>
-    std::string operator () (const petri_net::net < Trans
-                                                  > & ) const
+    std::string operator () (const petri_net::net&) const
     {
       return "net";
     }
@@ -102,9 +99,7 @@ namespace we { namespace mgmt { namespace visitor {
     , original_input_ (input)
     {}
 
-    template <typename Trans>
-    void operator () (petri_net::net < Trans
-                                     > & )
+    void operator () (petri_net::net&)
     {
       // TODO beautify this
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
@@ -157,12 +152,9 @@ namespace we { namespace mgmt { namespace visitor {
       : engine_(engine)
     {}
 
-    template <typename Trans>
-    Activity operator () (petri_net::net < Trans
-                                         > & net)
+    Activity operator () (petri_net::net& net)
     {
-      typedef petri_net::net < Trans
-                             > pnet_t;
+      typedef petri_net::net pnet_t;
 
       typedef typename pnet_t::activity_t activity_t;
       typedef typename pnet_t::input_t input_t;
@@ -198,13 +190,9 @@ namespace we { namespace mgmt { namespace visitor {
       : activity_(activity)
     {}
 
-    template <typename Trans>
-    void operator () ( petri_net::net < Trans
-                                      > & net
-                     )
+    void operator () (petri_net::net& net)
     {
-      typedef petri_net::net < Trans
-                             > pnet_t;
+      typedef petri_net::net pnet_t;
 
       typedef typename Activity::output_t output_t;
       typedef typename Activity::transition_type::port_id_t port_id_t;
@@ -309,12 +297,9 @@ namespace we { namespace mgmt { namespace visitor {
       , child_(child)
     {}
 
-    template <typename Trans>
-    void operator () ( petri_net::net < Trans
-                                      > & parent_net
+    void operator () ( petri_net::net& parent_net
 
-                     , const petri_net::net < Trans
-                                            > & /* child_net */
+                     , const petri_net::net& /* child_net */
                      )
     {
       /*
@@ -329,9 +314,7 @@ namespace we { namespace mgmt { namespace visitor {
                            );
     }
 
-    template <typename Trans>
-    void operator () ( petri_net::net < Trans
-                                      > & parent_net
+    void operator () ( petri_net::net& parent_net
 
                      , const we::type::module_call_t &
                      )
@@ -342,9 +325,7 @@ namespace we { namespace mgmt { namespace visitor {
                            );
     }
 
-    template <typename Trans>
-    void operator () ( petri_net::net < Trans
-                                      > & parent_net
+    void operator () ( petri_net::net& parent_net
 
                      , const we::type::expression_t &
                      )
@@ -398,9 +379,7 @@ namespace we { namespace mgmt { namespace visitor {
       , input_(input)
     {}
 
-    template <typename Trans>
-    void operator () (petri_net::net < Trans
-                                     > & net)
+    void operator () (petri_net::net& net)
     {
       inject_input_to_net (net, activity_.transition(), input_);
     }
@@ -433,9 +412,7 @@ namespace we { namespace mgmt { namespace visitor {
       , internal_(activity.transition().is_internal())
     {}
 
-    template <typename Trans>
-    result_type operator () (petri_net::net <  Trans
-                                            > & net)
+    result_type operator () (petri_net::net& net)
     {
       if (internal_)
       {

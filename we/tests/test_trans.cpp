@@ -36,7 +36,7 @@ int main (int, char **)
 
   typedef we::type::transition_t transition_t;
 
-  typedef petri_net::net<transition_t> pnet_t;
+  typedef petri_net::net pnet_t;
 
   // ************************************ //
   pnet_t net;
