@@ -48,6 +48,8 @@ namespace xml_util = ::fhg::util::xml;
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/version.hpp>
 
+#include <boost/format.hpp>
+
 namespace petri_net
 {
   class net;
@@ -97,23 +99,13 @@ namespace we { namespace type {
         const from_type from;
       };
 
-      template <typename From, typename To>
       struct already_connected : std::runtime_error
       {
-        typedef From from_type;
-        typedef To to_type;
-
-        explicit already_connected(const std::string & msg, const from_type from_, const to_type to_)
+        explicit already_connected (const std::string& msg)
           : std::runtime_error (msg)
-          , from(from_)
-          , to(to_)
         {}
-
         ~already_connected () throw ()
         {}
-
-        const from_type from;
-        const to_type to;
       };
     }
 
@@ -464,37 +456,43 @@ namespace we { namespace type {
 
       ~transition_t () { }
 
-      template <typename Outer, typename Inner>
-      void connect_outer_to_inner ( const Outer outer
-                                  , const Inner inner
+      void connect_outer_to_inner ( const pid_t& pid
+                                  , const port_id_t& port
                                   , const we::type::property::type & prop
                                   )
       {
-        if (outer_to_inner_.find (outer) != outer_to_inner_.end())
+        if (outer_to_inner_.find (pid) != outer_to_inner_.end())
         {
-          throw exception::already_connected<Outer, Inner>("already connected", outer, inner);
+          throw exception::already_connected
+            ( (boost::format ("already connected: place %1% -> port %2%")
+                             % pid % port
+              ).str()
+            );
         }
         else
         {
           outer_to_inner_.insert
-            (outer_to_inner_t::value_type (outer, std::make_pair(inner, prop)));
+            (outer_to_inner_t::value_type (pid, std::make_pair(port, prop)));
         }
       }
 
-      template <typename Inner, typename Outer>
-      void connect_inner_to_outer ( const Inner inner
-                                  , const Outer outer
+      void connect_inner_to_outer ( const port_id_t& port
+                                  , const pid_t& pid
                                   , const we::type::property::type & prop
                                   )
       {
-        if (inner_to_outer_.find (inner) != inner_to_outer_.end())
+        if (inner_to_outer_.find (port) != inner_to_outer_.end())
         {
-          throw exception::already_connected<Inner, Outer>("already connected", inner, outer);
+          throw exception::already_connected
+            ( (boost::format ("already connected: port %1% -> place %2%")
+                             % port % pid
+              ).str()
+            );
         }
         else
         {
           inner_to_outer_.insert
-            (inner_to_outer_t::value_type (inner, std::make_pair(outer, prop)));
+            (inner_to_outer_t::value_type (port, std::make_pair(pid, prop)));
         }
       }
 
