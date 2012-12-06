@@ -2,7 +2,7 @@
 #define FHG_PLUGIN_MAGIC_HPP 1
 
 #  define FHG_PLUGIN_API_VERSION       "1.1"
-#  define FHG_PLUGIN_BUILD_REV         "@PROJECT_REVISION@"
+#  define FHG_PLUGIN_BUILD_REV         "n/a"
 #  define FHG_PLUGIN_BUILD_COMPILER    __VERSION__
 
 #endif

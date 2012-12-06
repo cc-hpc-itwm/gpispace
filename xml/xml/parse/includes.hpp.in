@@ -49,6 +49,7 @@ namespace pnetc
         includes () : _names ()
         {
           _names.push_back (fs::path ("we/loader/IModule.hpp"));
+          _names.push_back (fs::path ("we/loader/api-guard.hpp"));
           _names.push_back (fs::path ("we/loader/macros.hpp"));
           _names.push_back (fs::path ("we/loader/types.hpp"));
           _names.push_back (fs::path ("we/type/bitsetofint.hpp"));

@@ -28,11 +28,12 @@
      void we_mod_initialize(::we::loader::IModule *mod, unsigned int)                \
      {\
         (void)(mod);                               \
+        {volatile int _ = WE_GUARD_SYMBOL;}        \
         mod->name (#modname)
 
-#define WE_REGISTER_FUN_START(fun)\
-        {\
-           ::we::loader::param_names_list_t params
+#define WE_REGISTER_FUN_START(fun)                \
+  {                                               \
+    ::we::loader::param_names_list_t params
 
 #define WE_ADD_INP(p, typ)\
            params.push_back(p)
