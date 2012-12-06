@@ -64,11 +64,9 @@ namespace fhg
           // ## trigger modification #################################
           // # transition ############################################
           void slot_add_transition() const;
-          void slot_delete_transition (base_item*) const;
 
           // # place #################################################
           void slot_add_place() const;
-          void slot_delete_place (base_item*) const;
 
           // ## react on modification ################################
           // # connection ############################################

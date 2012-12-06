@@ -203,7 +203,8 @@ namespace fhg
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_delete)
               {
-                slot_delete_transition (item_below_cursor);
+                fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*>
+                  (item_below_cursor)->handle().remove (this);
               }
               else if (triggered == action_add_port)
               {
@@ -220,12 +221,19 @@ namespace fhg
 
             case base_item::place_graph_type:
             {
+              QAction* action_set_type (menu.addAction(tr("Set type")));
+              menu.addSeparator();
               QAction* action_delete (menu.addAction (tr("Delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
-              if (triggered == action_delete)
+              if (triggered == action_set_type)
               {
-                slot_delete_place (item_below_cursor);
+                qDebug() << "NYI: place: action_set_type";
+              }
+              else if (triggered == action_delete)
+              {
+                fhg::util::qt::throwing_qgraphicsitem_cast<place_item*>
+                  (item_below_cursor)->handle().remove (this);
               }
               else if (!triggered)
               {
@@ -579,22 +587,10 @@ namespace fhg
           net().add_transition (this);
         }
 
-        void scene_type::slot_delete_transition (base_item* item) const
-        {
-          fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*> (item)
-            ->handle().remove (this);
-        }
-
         // # place ###################################################
         void scene_type::slot_add_place() const
         {
           net().add_place (this);
-        }
-
-        void scene_type::slot_delete_place (base_item* item) const
-        {
-          fhg::util::qt::throwing_qgraphicsitem_cast<place_item*> (item)
-            ->handle().remove (this);
         }
 
         // ## react on modification ##################################
