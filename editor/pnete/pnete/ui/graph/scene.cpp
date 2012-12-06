@@ -222,6 +222,11 @@ namespace fhg
 
             case base_item::place_graph_type:
             {
+              const data::handle::place handle
+                ( fhg::util::qt::throwing_qgraphicsitem_cast<place_item*>
+                  (item_below_cursor)->handle()
+                );
+
               QAction* action_set_type (menu.addAction(tr("Set type")));
               menu.addSeparator();
               QAction* action_delete (menu.addAction (tr("Delete")));
@@ -229,11 +234,6 @@ namespace fhg
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_set_type)
               {
-                const data::handle::place handle
-                  ( fhg::util::qt::throwing_qgraphicsitem_cast<place_item*>
-                    (item_below_cursor)->handle()
-                  );
-
                  bool ok;
                  const QString text
                    ( QInputDialog::getText
@@ -253,8 +253,7 @@ namespace fhg
               }
               else if (triggered == action_delete)
               {
-                fhg::util::qt::throwing_qgraphicsitem_cast<place_item*>
-                  (item_below_cursor)->handle().remove (this);
+                handle.remove (this);
               }
               else if (!triggered)
               {
