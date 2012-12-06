@@ -49,9 +49,7 @@ namespace xml
                         , PARENT_CONS_PARAM(net)
                         , const boost::optional<function_or_use_type>&
                         , const std::string& name
-                        , const connections_type& in
-                        , const connections_type& out
-                        , const connections_type& read
+                        , const connections_type& connections
                         , const place_maps_type& place_map
                         , const structs_type& structs
                         , const conditions_type& cond
@@ -80,22 +78,12 @@ namespace xml
 
         // ***************************************************************** //
 
-        const connections_type& in() const;
-        const connections_type& out() const;
-        const connections_type& read() const;
+        const connections_type& connections() const;
         const place_maps_type& place_map() const;
 
-        bool has_in (const id::ref::connect&) const;
-        bool has_out (const id::ref::connect&) const;
-        bool has_read (const id::ref::connect&) const;
+        void remove_connection (const id::ref::connect&);
 
-        void remove_in (const id::ref::connect&);
-        void remove_out (const id::ref::connect&);
-        void remove_read (const id::ref::connect&);
-
-        void push_in (const id::ref::connect&);
-        void push_out (const id::ref::connect&);
-        void push_read (const id::ref::connect&);
+        void push_connection (const id::ref::connect&);
         void push_place_map (const id::ref::place_map&);
 
         // ***************************************************************** //
@@ -127,11 +115,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        void type_check ( const std::string & direction
-                        , const connect_type & connect
-                        , const state::type & state
-                        ) const;
-
+        void type_check (const connect_type&, const state::type&) const;
         void type_check (const state::type & state) const;
 
         const we::type::property::type& properties() const;
@@ -149,9 +133,7 @@ namespace xml
 
         std::string _name;
 
-        connections_type _in;
-        connections_type _out;
-        connections_type _read;
+        connections_type _connections;
         place_maps_type _place_map;
 
         //! \todo All below should be private with accessors.

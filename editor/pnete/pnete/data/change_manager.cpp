@@ -308,20 +308,7 @@ namespace fhg
             , handle::connect (connect, change_manager)
             );
 
-          switch (connect.get().direction())
-          {
-          case petri_net::edge::PT:
-            transition.get_ref().remove_in (connect);
-            break;
-
-          case petri_net::edge::TP:
-            transition.get_ref().remove_out (connect);
-            break;
-
-          case petri_net::edge::PT_READ:
-            transition.get_ref().remove_read (connect);
-            break;
-          }
+          transition.get_ref().remove_connection (connect);
         }
 
         void add_connection_impl
@@ -330,10 +317,12 @@ namespace fhg
           , const ::xml::parse::id::ref::connect& connection
           )
         {
+          transition.get_ref().push_connection (connection);
+
           switch (connection.get().direction())
           {
+            //! \todo All emit the same signal, the slot checks the type.
           case petri_net::edge::PT:
-            transition.get_ref().push_in (connection);
             change_manager.emit_signal
               ( &signal::connection_added_in, origin
               , handle::connect (connection, change_manager)
@@ -345,7 +334,6 @@ namespace fhg
             break;
 
           case petri_net::edge::TP:
-            transition.get_ref().push_out (connection);
             change_manager.emit_signal
               ( &signal::connection_added_out, origin
               , handle::connect (connection, change_manager)
@@ -357,7 +345,6 @@ namespace fhg
             break;
 
           case petri_net::edge::PT_READ:
-            transition.get_ref().push_read (connection);
             change_manager.emit_signal
               ( &signal::connection_added_read, origin
               , handle::connect (connection, change_manager)

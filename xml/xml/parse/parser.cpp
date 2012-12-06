@@ -589,12 +589,12 @@ namespace xml
                 }
               else if (child_name == "connect-in")
                 {
-                  transition.get_ref().push_in
+                  transition.get_ref().push_connection
                     (connect_type (child, state, id, petri_net::edge::PT));
                 }
               else if (child_name == "connect-out")
                 {
-                  transition.get_ref().push_out
+                  transition.get_ref().push_connection
                     (connect_type (child, state, id, petri_net::edge::TP));
                 }
               else if (child_name == "connect-inout")
@@ -605,12 +605,12 @@ namespace xml
                     (connection_in.get().clone (id));
                   connection_out.get_ref().direction (petri_net::edge::TP);
 
-                  transition.get_ref().push_in (connection_in);
-                  transition.get_ref().push_out (connection_out);
+                  transition.get_ref().push_connection (connection_in);
+                  transition.get_ref().push_connection (connection_out);
                 }
               else if (child_name == "connect-read")
                 {
-                  transition.get_ref().push_read
+                  transition.get_ref().push_connection
                     (connect_type (child, state, id, petri_net::edge::PT_READ));
                 }
               else if (child_name == "condition")

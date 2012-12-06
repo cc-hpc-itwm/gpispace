@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_ERROR_HPP
 #define _XML_PARSE_ERROR_HPP
@@ -632,8 +632,7 @@ namespace xml
       class duplicate_connect : public generic
       {
       public:
-        duplicate_connect ( const std::string& type
-                          , const id::ref::connect& connection
+        duplicate_connect ( const id::ref::connect& connection
                           , const id::ref::connect& old_connection
                           , const id::ref::transition& transition
                           , const boost::filesystem::path& path
@@ -641,7 +640,6 @@ namespace xml
         virtual ~duplicate_connect() throw() { }
 
       private:
-        const std::string _type;
         const id::ref::connect _connection;
         const id::ref::connect _old_connection;
         const id::ref::transition _transition;
