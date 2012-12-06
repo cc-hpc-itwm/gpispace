@@ -14,6 +14,7 @@
 #include <we/type/condition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/token.hpp>
+#include <we/type/place.hpp>
 #include <we/util/cross.hpp>
 
 #include <boost/function.hpp>
@@ -93,17 +94,16 @@ namespace petri_net
 // condition of already enabled transitions is not neccessary
 
 // the net itself
-template<typename Place, typename Transition, typename Edge>
+template<typename Transition, typename Edge>
 class net
 {
 
   // *********************************************************************** //
 public:
-  typedef Place place_type;
   typedef Transition transition_type;
   typedef Edge edge_type;
 
-  typedef bijection::const_it<place_type,pid_t> place_const_it;
+  typedef bijection::const_it<place::type,pid_t> place_const_it;
   typedef bijection::const_it<transition_type,tid_t> transition_const_it;
   typedef bijection::const_it<edge_type,eid_t> edge_const_it;
   typedef typename place_const_it::size_type size_type;
@@ -145,7 +145,7 @@ private:
 
   // *********************************************************************** //
 
-  bijection::bijection<place_type,pid_t> pmap; // place_type <-> internal id
+  bijection::bijection<place::type,pid_t> pmap; // place::type <-> internal id
   bijection::bijection<transition_type,tid_t> tmap; // transition_type <-> internal id
   bijection::bijection<edge_type,eid_t> emap; // edge_type <-> internal id
 
@@ -210,7 +210,7 @@ private:
   {
     return adjacent_size
       ( in_to_transition_size_map
-      , boost::bind ( &net<Place,Transition,Edge>::in_to_transition
+      , boost::bind ( &net<Transition,Edge>::in_to_transition
                     , this
                     , _1
                     )
@@ -222,7 +222,7 @@ private:
   {
     return adjacent_size
       ( out_of_transition_size_map
-      , boost::bind ( &net<Place,Transition,Edge>::out_of_transition
+      , boost::bind ( &net<Transition,Edge>::out_of_transition
                     , this
                     , _1
                     )
@@ -456,7 +456,7 @@ public:
   size_type get_num_edges (void) const { return edges().size(); }
 
   // get id
-  const pid_t & get_place_id (const place_type & place) const
+  const pid_t & get_place_id (const place::type & place) const
   {
     return pmap.get_id (place);
   }
@@ -472,7 +472,7 @@ public:
   }
 
   // get element
-  const place_type & get_place (const pid_t & pid) const
+  const place::type & get_place (const pid_t & pid) const
   {
     return pmap.get_elem (pid);
   }
@@ -488,7 +488,7 @@ public:
   }
 
   // add element
-  pid_t add_place (const place_type & place)
+  pid_t add_place (const place::type & place)
   {
     return pmap.add (place);
   }
@@ -739,7 +739,7 @@ public:
 
   // modify and replace
   // erased in case of conflict after modification
-  pid_t modify_place (const pid_t & pid, const place_type & place)
+  pid_t modify_place (const pid_t & pid, const place::type & place)
   {
     const pid_t new_pid (pmap.modify (pid, place));
 
@@ -749,7 +749,7 @@ public:
   }
 
   // kept old value in case of conflict after modification
-  pid_t replace_place (const pid_t & pid, const place_type & place)
+  pid_t replace_place (const pid_t & pid, const place::type & place)
   {
     const pid_t new_pid (pmap.replace (pid, place));
 

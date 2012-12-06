@@ -15,10 +15,9 @@ using petri_net::edge::PT;
 using petri_net::edge::PT_READ;
 using petri_net::edge::TP;
 
-typedef place::type place_t;
 typedef unsigned int edge_t;
-typedef we::type::transition_t<place_t, edge_t> transition_t;
-typedef petri_net::net<place_t, transition_t, edge_t> pnet_t;
+typedef we::type::transition_t<edge_t> transition_t;
+typedef petri_net::net<transition_t, edge_t> pnet_t;
 typedef we::mgmt::type::activity_t<transition_t> activity_t;
 
 struct exec_context : public we::mgmt::context<>
@@ -59,7 +58,7 @@ int main (int, char **)
   // ************************************ //
   pnet_t net;
 
-  petri_net::pid_t pid_vid (net.add_place (place_t ("vid","long")));
+  petri_net::pid_t pid_vid (net.add_place (place::type ("vid","long")));
 
   signature::structured_t sig_store;
   sig_store["bid"] = "long";

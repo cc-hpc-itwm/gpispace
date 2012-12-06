@@ -15,7 +15,6 @@ namespace we
     {
       typedef typename Activity::transition_type transition_type;
 
-      typedef typename transition_type::place_type place_type;
       typedef typename transition_type::edge_type edge_type;
 
       typedef typename transition_type::net_type net_type;
