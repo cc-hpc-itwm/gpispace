@@ -143,6 +143,21 @@ namespace fhg
                   );
         }
 
+        namespace
+        {
+          void qtbug_21943_workaround (QGraphicsSceneContextMenuEvent* event)
+          {
+            //! \todo see QTBUG-21943
+            const QPoint p (event->widget()->mapFromGlobal(event->screenPos()));
+            QMouseEvent mouseEvent ( QEvent::MouseMove
+                                   , p
+                                   , Qt::NoButton, Qt::NoButton
+                                   , event->modifiers()
+                                   );
+            QApplication::sendEvent (event->widget(), &mouseEvent);
+          }
+        }
+
         void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
           if (base_item* i = qgraphicsitem_cast<base_item*> (itemAt (event->scenePos())))
@@ -190,17 +205,7 @@ namespace fhg
               }
               else if (!triggered)
               {
-                //! \todo see QTBUG-21943
-                QPoint p ( event->widget()
-                         ->mapFromGlobal(event->screenPos())
-                         );
-                QMouseEvent mouseEvent( QEvent::MouseMove
-                                      , p
-                                      , Qt::NoButton
-                                      , Qt::NoButton
-                                      , event->modifiers()
-                                      );
-                QApplication::sendEvent(event->widget(), &mouseEvent);
+                qtbug_21943_workaround (event);
               }
 
               event->accept();
@@ -220,17 +225,7 @@ namespace fhg
               }
               else if (!triggered)
               {
-                //! \todo see QTBUG-21943
-                QPoint p ( event->widget()
-                         ->mapFromGlobal(event->screenPos())
-                         );
-                QMouseEvent mouseEvent( QEvent::MouseMove
-                                      , p
-                                      , Qt::NoButton
-                                      , Qt::NoButton
-                                      , event->modifiers()
-                                      );
-                QApplication::sendEvent(event->widget(), &mouseEvent);
+                qtbug_21943_workaround (event);
               }
 
               event->accept();
@@ -251,17 +246,7 @@ namespace fhg
               }
               else if (!triggered)
               {
-                //! \todo see QTBUG-21943
-                QPoint p ( event->widget()
-                         ->mapFromGlobal(event->screenPos())
-                         );
-                QMouseEvent mouseEvent( QEvent::MouseMove
-                                      , p
-                                      , Qt::NoButton
-                                      , Qt::NoButton
-                                      , event->modifiers()
-                                      );
-                QApplication::sendEvent(event->widget(), &mouseEvent);
+                qtbug_21943_workaround (event);
               }
 
               event->accept();
