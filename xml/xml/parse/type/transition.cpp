@@ -12,6 +12,8 @@
 
 #include <xml/parse/type/dumps.hpp>
 
+#include <we/type/place.hpp>
+
 #include <boost/variant.hpp>
 
 namespace xml
@@ -701,8 +703,6 @@ namespace xml
       {
         typedef we::activity_t::transition_type we_transition_type;
         typedef we_transition_type::expr_type we_expr_type;
-        typedef we_transition_type::place_type we_place_type;
-        typedef we_transition_type::place_type we_place_type;
         typedef we_transition_type::preparsed_cond_type we_cond_type;
         typedef petri_net::tid_t tid_t;
 
@@ -1085,7 +1085,7 @@ namespace xml
                                                 );
                   }
 
-                we_place_type we_place (we_net.get_place (pid->second));
+                place::type we_place (we_net.get_place (pid->second));
 
                 std::ostringstream path;
 

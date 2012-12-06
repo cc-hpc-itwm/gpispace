@@ -19,13 +19,13 @@ namespace we { namespace type {
     {
       // ******************************************************************* //
 
-      template<typename P, typename E>
-      inline boost::optional<const typename transition_t<P, E>::port_t>
-      input_port_by_pid ( const transition_t<P, E> & trans
+      template<typename E>
+      inline boost::optional<const typename transition_t<E>::port_t>
+      input_port_by_pid ( const transition_t<E> & trans
                         , const petri_net::pid_t & pid
                         )
       {
-        typedef transition_t<P, E> transition_t;
+        typedef transition_t<E> transition_t;
         typedef typename transition_t::port_t port_t;
 
         try
@@ -40,16 +40,16 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E>
+      template<typename E>
       struct trans_info
       {
         typedef boost::unordered_set<petri_net::pid_t> pid_set_type;
 
-        const transition_t<P, E> pred;
+        const transition_t<E> pred;
         const petri_net::tid_t tid_pred;
         const pid_set_type pid_read;
 
-        trans_info ( const transition_t<P, E> & _pred
+        trans_info ( const transition_t<E> & _pred
                    , const petri_net::tid_t & _tid_pred
                    , const pid_set_type & _pid_read
                    )
@@ -57,22 +57,22 @@ namespace we { namespace type {
         {}
       };
 
-      template<typename P, typename E>
-      inline boost::optional<trans_info<P, E> >
+      template<typename E>
+      inline boost::optional<trans_info<E> >
       expression_predecessor
-      ( const transition_t<P, E> & trans
+      ( const transition_t<E> & trans
       , const petri_net::tid_t & tid
-      , const petri_net::net<P, transition_t<P, E>, E> & net
+      , const petri_net::net<transition_t<E>, E> & net
       )
       {
-        typedef transition_t<P, E> transition_t;
-        typedef petri_net::net<P, transition_t, E> pnet_t;
+        typedef transition_t<E> transition_t;
+        typedef petri_net::net<transition_t, E> pnet_t;
         typedef petri_net::adj_place_const_it adj_place_const_it;
         typedef petri_net::adj_transition_const_it adj_transition_const_it;
         typedef petri_net::tid_t tid_t;
         typedef petri_net::connection_t connection_t;
         typedef typename transition_t::const_iterator const_iterator;
-        typedef trans_info<P, E> trans_info;
+        typedef trans_info<E> trans_info;
         typedef typename trans_info::pid_set_type pid_set_type;
 
         typedef std::pair<const transition_t, const tid_t> pair_type;
@@ -233,19 +233,19 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E>
+      template<typename E>
       inline void resolve_ports
-      ( transition_t<P, E> & trans
+      ( transition_t<E> & trans
       , const petri_net::tid_t & tid_trans
-      , const transition_t<P, E> & pred
-      , const petri_net::net<P, transition_t<P, E>, E> & net
-      , const typename trans_info<P, E>::pid_set_type & pid_read
+      , const transition_t<E> & pred
+      , const petri_net::net<transition_t<E>, E> & net
+      , const typename trans_info<E>::pid_set_type & pid_read
       )
       {
-        typedef transition_t<P, E> transition_t;
+        typedef transition_t<E> transition_t;
         typedef typename transition_t::port_id_t port_id_t;
         typedef typename transition_t::port_t port_t;
-        typedef petri_net::net<P, transition_t, E> pnet_t;
+        typedef petri_net::net<transition_t, E> pnet_t;
         typedef petri_net::adj_place_const_it adj_place_const_it;
 
         expression_t & expression (boost::get<expression_t &> (trans.data()));
@@ -289,13 +289,13 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E>
+      template<typename E>
       inline void rename_ports
-      ( transition_t<P, E> & trans
-      , const transition_t<P, E> & other
+      ( transition_t<E> & trans
+      , const transition_t<E> & other
       )
       {
-        typedef transition_t<P, E> transition_t;
+        typedef transition_t<E> transition_t;
         typedef typename transition_t::port_iterator port_iterator;
         typedef typename transition_t::const_iterator const_iterator;
         typedef typename transition_t::port_t port_t;
@@ -329,17 +329,17 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E>
+      template<typename E>
       inline void take_ports
-      ( const transition_t<P, E> & trans
+      ( const transition_t<E> & trans
       , const petri_net::tid_t tid_trans
-      , transition_t<P, E> & pred
+      , transition_t<E> & pred
       , const petri_net::tid_t tid_pred
-      , petri_net::net<P, transition_t<P, E>, E> & net
-      , const typename trans_info<P, E>::pid_set_type pid_read
+      , petri_net::net<transition_t<E>, E> & net
+      , const typename trans_info<E>::pid_set_type pid_read
       )
       {
-        typedef transition_t<P, E> transition_t;
+        typedef transition_t<E> transition_t;
         typedef typename transition_t::const_iterator const_iterator;
         typedef typename transition_t::port_t port_t;
         typedef typename transition_t::port_id_t port_id_t;
@@ -410,15 +410,15 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E>
+      template<typename E>
       inline void clear_ports
-      ( transition_t<P, E> & trans
+      ( transition_t<E> & trans
       , const petri_net::tid_t /* tid_trans */
-      , const transition_t<P, E> & trans_parent
-      , petri_net::net<P, transition_t<P, E>, E> & net
+      , const transition_t<E> & trans_parent
+      , petri_net::net<transition_t<E>, E> & net
       )
       {
-        typedef transition_t<P, E> transition_t;
+        typedef transition_t<E> transition_t;
         typedef typename transition_t::const_iterator const_iterator;
         typedef typename transition_t::port_t port_t;
         typedef typename transition_t::port_id_t port_id_t;
@@ -467,14 +467,14 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E>
+      template<typename E>
       inline bool run_once
-      ( transition_t<P, E> & trans_parent
-      , petri_net::net<P, transition_t<P,E>, E> & net
+      ( transition_t<E> & trans_parent
+      , petri_net::net<transition_t<E>, E> & net
       )
       {
-        typedef transition_t<P, E> transition_t;
-        typedef petri_net::net<P, transition_t, E> pnet_t;
+        typedef transition_t<E> transition_t;
+        typedef petri_net::net<transition_t, E> pnet_t;
         typedef typename pnet_t::transition_const_it transition_const_it;
         typedef petri_net::tid_t tid_t;
 
@@ -497,7 +497,7 @@ namespace we { namespace type {
                && trans.condition().is_const_true()
                )
               {
-                typedef trans_info<P, E> trans_info;
+                typedef trans_info<E> trans_info;
                 typedef typename trans_info::pid_set_type pid_set_type;
 
                 const boost::optional<trans_info>
@@ -510,9 +510,9 @@ namespace we { namespace type {
 
                     pid_set_type pid_read ((*maybe_pred).pid_read);
 
-                    rename_ports<P, E> (trans, pred);
+                    rename_ports<E> (trans, pred);
 
-                    resolve_ports<P, E>(trans, tid_trans, pred, net, pid_read);
+                    resolve_ports<E>(trans, tid_trans, pred, net, pid_read);
 
                     expression_t & exp_trans
                       (boost::get<expression_t &> (trans.data()));
@@ -522,11 +522,11 @@ namespace we { namespace type {
 
                     exp_pred.add (exp_trans);
 
-                    take_ports<P, E> (trans, tid_trans, pred, tid_pred, net, pid_read);
+                    take_ports<E> (trans, tid_trans, pred, tid_pred, net, pid_read);
 
                     net.delete_transition (tid_trans);
 
-                    clear_ports<P, E> (pred, tid_pred, trans_parent, net);
+                    clear_ports<E> (pred, tid_pred, trans_parent, net);
 
                     net.modify_transition (tid_pred, pred);
 
@@ -540,10 +540,10 @@ namespace we { namespace type {
         return modified;
       }
 
-      template<typename P, typename E>
+      template<typename E>
       inline bool run
-      ( transition_t<P, E> & trans_parent
-      , petri_net::net<P, transition_t<P,E>, E> & net
+      ( transition_t<E> & trans_parent
+      , petri_net::net<transition_t<E>, E> & net
       )
       {
         bool modified (false);

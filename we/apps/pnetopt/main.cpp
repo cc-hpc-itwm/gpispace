@@ -29,15 +29,14 @@ namespace {
  * Except iterators: nobody refers them anyway, so we can apply reference counting to them.
  */
 
-template<class P, class E>
+template<class E>
 class Optimizer {
     typedef petri_net::pid_t pid_t;
-    typedef P place_t;
 
     typedef petri_net::tid_t tid_t;
-    typedef we::type::transition_t<P, E> transition_t;
+    typedef we::type::transition_t<E> transition_t;
 
-    typedef petri_net::net<P, transition_t, E> pnet_t;
+    typedef petri_net::net<transition_t, E> pnet_t;
 
     typedef typename transition_t::port_id_t port_id_t;
     typedef typename transition_t::port_t port_t;
@@ -223,7 +222,7 @@ class Optimizer {
             Place *&result = id2place_[pid];
 
             if (!result) {
-                place_t &place = const_cast<place_t &>(pnet_.get_place(pid));
+              place::type &place = const_cast<place::type &>(pnet_.get_place(pid));
 
                 places_.reserve(places_.size() + 1);
                 result = new Place(this, pid, place);
@@ -336,7 +335,7 @@ class Optimizer {
         pid_t pid_;
 
         /** Reference to the place. */
-        place_t &place_;
+        place::type &place_;
 
         /** Ports to which this place is connected. */
         ConnectedPorts connectedPorts_;
@@ -352,7 +351,7 @@ class Optimizer {
 
         public:
 
-        Place(PetriNet *petriNet, pid_t pid, place_t &place):
+        Place(PetriNet *petriNet, pid_t pid, place::type &place):
             petriNet_(petriNet), pid_(pid), place_(place)
         {}
 
@@ -906,9 +905,9 @@ class Optimizer {
 
 } // anonymous namespace
 
-template<class P, class E>
-void do_optimize(we::type::transition_t<P, E> &transition, const char *script) {
-    Optimizer<P, E> optimizer(transition);
+template<class E>
+void do_optimize(we::type::transition_t<E> &transition, const char *script) {
+    Optimizer<E> optimizer(transition);
     optimizer(script);
 }
 

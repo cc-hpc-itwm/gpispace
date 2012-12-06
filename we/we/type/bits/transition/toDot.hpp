@@ -339,9 +339,9 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template <typename P, typename E, typename Pred>
+      template <typename E, typename Pred>
       inline std::string to_dot
-      ( const transition_t<P,E> &
+      ( const transition_t<E> &
       , id_type &
       , const options<Pred> &
       , const level_type = 1
@@ -397,12 +397,12 @@ namespace we { namespace type {
 
         // ----------------------------------------------------------------- //
 
-        template <typename P, typename E>
+        template <typename E>
         std::string operator ()
-        (const petri_net::net<P, transition_t<P, E>, E> & net) const
+        (const petri_net::net<transition_t<E>, E> & net) const
         {
-          typedef transition_t<P, E> transition_t;
-          typedef petri_net::net<P, transition_t, E> pnet_t;
+          typedef transition_t<E> transition_t;
+          typedef petri_net::net<transition_t, E> pnet_t;
           typedef typename pnet_t::place_const_it place_const_it;
           typedef petri_net::adj_place_const_it adj_place_const_it;
           typedef typename pnet_t::transition_const_it transition_const_it;
@@ -429,7 +429,7 @@ namespace we { namespace type {
 
           for (place_const_it p (net.places()); p.has_more(); ++p)
             {
-              const P place (net.get_place (*p));
+              const place::type place (net.get_place (*p));
               const place_dot_name_type place_dot_name
                 (name (id_net, "place_" + fhg::util::show (*p)));
 
@@ -547,7 +547,7 @@ namespace we { namespace type {
               const id_type id_trans (++id);
               const petri_net::prio_t prio (net.get_transition_priority (*t));
 
-              s << to_dot<P, E> (trans, id, opts, l + 1, prio);
+              s << to_dot<E> (trans, id, opts, l + 1, prio);
 
               if (opts.show_tunnel_connection)
                 {
@@ -647,16 +647,16 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template <typename P, typename E, typename Pred>
+      template <typename E, typename Pred>
       inline std::string to_dot
-      ( const transition_t<P,E> & t
+      ( const transition_t<E> & t
       , id_type & id
       , const options<Pred> & opts
       , const level_type l
       , const petri_net::prio_t & prio
       )
       {
-        typedef transition_t<P,E> trans_t;
+        typedef transition_t<E> trans_t;
 
         std::ostringstream s;
 

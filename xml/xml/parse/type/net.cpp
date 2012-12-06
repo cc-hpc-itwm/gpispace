@@ -5,6 +5,8 @@
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/id/mapper.hpp>
 
+#include <we/type/place.hpp>
+
 #include <fhg/util/remove_prefix.hpp>
 
 namespace xml
@@ -616,7 +618,6 @@ namespace xml
       {
         typedef we::activity_t::transition_type we_transition_type;
 
-        typedef we_transition_type::place_type we_place_type;
         typedef we_transition_type::edge_type we_edge_type;
 
         typedef we_transition_type::pid_t pid_t;
@@ -646,7 +647,7 @@ namespace xml
                                                       )
                                       );
 
-                  const we_place_type place_real
+                  const place::type place_real
                     (we_net.get_place (pid->second));
 
                   if (not (place_real.signature() == place.sig))
@@ -670,10 +671,10 @@ namespace xml
                     }
 
                   const pid_t pid
-                    ( we_net.add_place ( we_place_type ( place.name()
-                                                       , type
-                                                       , prop
-                                                       )
+                    ( we_net.add_place ( place::type ( place.name()
+                                                     , type
+                                                     , prop
+                                                     )
                                        )
                     );
 

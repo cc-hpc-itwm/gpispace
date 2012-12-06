@@ -32,17 +32,16 @@ using petri_net::edge::TP;
 
 int main (int, char **)
 {
-  typedef place::type place_t;
   typedef unsigned int edge_t;
 
-  typedef we::type::transition_t<place_t, edge_t> transition_t;
+  typedef we::type::transition_t<edge_t> transition_t;
 
-  typedef petri_net::net<place_t, transition_t, edge_t> pnet_t;
+  typedef petri_net::net<transition_t, edge_t> pnet_t;
 
   // ************************************ //
   pnet_t net;
 
-  petri_net::pid_t pid_vid (net.add_place (place_t ("vid","long")));
+  petri_net::pid_t pid_vid (net.add_place (place::type ("vid","long")));
 
   signature::structured_t sig_store;
 

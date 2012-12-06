@@ -586,7 +586,6 @@ namespace xml
 
         typedef we::activity_t::transition_type we_transition_type;
 
-        typedef we_transition_type::place_type we_place_type;
         typedef we_transition_type::edge_type we_edge_type;
 
         typedef we_transition_type::expr_type we_expr_type;
