@@ -1241,33 +1241,6 @@ namespace we { namespace type {
       return hasher(t.name());
     }
 
-    namespace dump
-    {
-      inline void dump ( xml_util::xmlstream & s
-                       , const transition_t & t
-                       )
-      {
-        typedef transition_t trans_t;
-
-        s.open ("defun");
-        s.attr ("name", t.name());
-
-        for ( trans_t::port_map_t::const_iterator p (t.ports().begin())
-            ; p != t.ports().end()
-            ; ++p
-            )
-          {
-            ::we::type::dump::dump (s, p->second);
-          }
-
-        s.open ("condition");
-        s.content (t.condition());
-        s.close();
-
-        s.close();
-      }
-    }
-
     namespace detail
     {
       class transition_visitor_show : public boost::static_visitor<std::string>
