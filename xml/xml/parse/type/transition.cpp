@@ -888,7 +888,6 @@ namespace xml
                   }
               }
 
-            //! \todo Wat?
             std::size_t num_outport (0);
 
             BOOST_FOREACH ( const connect_type& connect
@@ -902,6 +901,8 @@ namespace xml
                   , get_pid (pids, connect.place())
                   , connect.properties()
                   );
+
+                ++num_outport;
               }
             }
 
