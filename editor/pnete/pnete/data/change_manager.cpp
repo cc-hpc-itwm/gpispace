@@ -296,13 +296,10 @@ namespace fhg
 
         // -- connection ---------------------------------------------
 
-        enum direction { in, out, read };
-
         void remove_connection_impl
           ( ACTION_ARG_LIST
           , const ::xml::parse::id::ref::transition& transition
           , const ::xml::parse::id::ref::connect& connect
-          , const direction& dir
           )
         {
           change_manager.emit_signal
@@ -311,17 +308,17 @@ namespace fhg
             , handle::connect (connect, change_manager)
             );
 
-          switch (dir)
+          switch (connect.get().direction())
           {
-          case in:
+          case petri_net::edge::PT:
             transition.get_ref().remove_in (connect);
             break;
 
-          case out:
+          case petri_net::edge::TP:
             transition.get_ref().remove_out (connect);
             break;
 
-          case read:
+          case petri_net::edge::PT_READ:
             transition.get_ref().remove_read (connect);
             break;
           }
@@ -331,12 +328,11 @@ namespace fhg
           ( ACTION_ARG_LIST
           , const ::xml::parse::id::ref::transition& transition
           , const ::xml::parse::id::ref::connect& connection
-          , const direction& dir
           )
         {
-          switch (dir)
+          switch (connection.get().direction())
           {
-          case in:
+          case petri_net::edge::PT:
             transition.get_ref().push_in (connection);
             change_manager.emit_signal
               ( &signal::connection_added_in, origin
@@ -348,7 +344,7 @@ namespace fhg
               );
             break;
 
-          case out:
+          case petri_net::edge::TP:
             transition.get_ref().push_out (connection);
             change_manager.emit_signal
               ( &signal::connection_added_out, origin
@@ -360,7 +356,7 @@ namespace fhg
               );
             break;
 
-          case read:
+          case petri_net::edge::PT_READ:
             transition.get_ref().push_read (connection);
             change_manager.emit_signal
               ( &signal::connection_added_read, origin
@@ -381,24 +377,22 @@ namespace fhg
             ( ACTION_ARG_LIST
             , const ::xml::parse::id::ref::transition& transition
             , const ::xml::parse::id::ref::connect& connect
-            , const direction& dir
             )
               : ACTION_INIT ("add_connection_action")
               , _transition (transition)
               , _connect (connect)
-              , _dir (dir)
           { }
 
           virtual void undo()
           {
             remove_connection_impl
-              (_change_manager, NULL, _transition, _connect, _dir);
+              (_change_manager, NULL, _transition, _connect);
           }
 
           virtual void redo()
           {
             add_connection_impl
-              (_change_manager, _origin, _transition, _connect, _dir);
+              (_change_manager, _origin, _transition, _connect);
             _origin = NULL;
           }
 
@@ -406,7 +400,6 @@ namespace fhg
           ACTION_MEMBERS;
           const ::xml::parse::id::ref::transition _transition;
           const ::xml::parse::id::ref::connect _connect;
-          const direction _dir;
         };
 
         class remove_connection : public QUndoCommand
@@ -417,25 +410,18 @@ namespace fhg
               : ACTION_INIT ("remove_connection_action")
               , _connect (connect)
               , _transition (_connect.get().parent()->make_reference_id())
-              , _direction ( _transition.get().has_in (connect)
-                           ? in
-                           : ( _transition.get().has_out (connect)
-                             ? out
-                             : read
-                             )
-                           )
           { }
 
           virtual void undo()
           {
             add_connection_impl
-              (_change_manager, _origin, _transition, _connect, _direction);
+              (_change_manager, _origin, _transition, _connect);
           }
 
           virtual void redo()
           {
             remove_connection_impl
-              (_change_manager, _origin, _transition, _connect, _direction);
+              (_change_manager, _origin, _transition, _connect);
             _origin = NULL;
           }
 
@@ -443,7 +429,6 @@ namespace fhg
           ACTION_MEMBERS;
           const ::xml::parse::id::ref::connect _connect;
           const ::xml::parse::id::ref::transition _transition;
-          const direction _direction;
         };
 
         // -- transition ---------------------------------------------
@@ -819,7 +804,6 @@ namespace fhg
                  , to.get().name()
                  , petri_net::edge::PT
                  ).make_reference_id()
-               , action::in
                )
              );
       }
@@ -850,7 +834,6 @@ namespace fhg
                  , from.get().name()
                  , petri_net::edge::TP
                  ).make_reference_id()
-               , action::out
                )
              );
       }
