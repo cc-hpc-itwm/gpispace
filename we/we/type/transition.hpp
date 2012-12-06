@@ -657,9 +657,9 @@ namespace we { namespace type {
         inner_to_outer_.erase (port_id);
       }
 
-      template <typename SignatureType, typename Direction>
+      template <typename Direction>
       void add_port ( const std::string & name
-                    , SignatureType const & sig
+                    , signature_type const & sig
                     , Direction direction
                     , const we::type::property::type & prop
                       = we::type::property::type()
@@ -677,9 +677,9 @@ namespace we { namespace type {
           }
       }
 
-      template <typename SignatureType, typename Direction, typename PlaceId>
+      template <typename Direction, typename PlaceId>
       void add_port ( const std::string & name
-                    , SignatureType const & sig
+                    , signature_type const & sig
                     , const Direction direction
                     , const PlaceId pid
                     , const we::type::property::type & prop
@@ -698,9 +698,8 @@ namespace we { namespace type {
           }
       }
 
-      template <typename SignatureType>
       pid_t add_input_port ( const std::string & port_name
-                           , const SignatureType & signature
+                           , const signature_type & signature
                            , const we::type::property::type & prop
                            )
       {
@@ -718,9 +717,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType, typename PlaceId>
+      template <typename PlaceId>
       pid_t add_input_port ( const std::string & port_name
-                           , const SignatureType & signature
+                           , const signature_type & signature
                            , const PlaceId associated_place
                            , const we::type::property::type & prop
                            )
@@ -740,9 +739,8 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType>
       pid_t add_read_port ( const std::string & port_name
-                          , const SignatureType & signature
+                          , const signature_type & signature
                           , const we::type::property::type & prop
                           )
       {
@@ -760,9 +758,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType, typename PlaceId>
+      template <typename PlaceId>
       pid_t add_read_port ( const std::string & port_name
-                          , const SignatureType & signature
+                          , const signature_type & signature
                           , const PlaceId associated_place
                           , const we::type::property::type & prop
                           )
@@ -781,9 +779,8 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType>
       pid_t add_output_port ( const std::string & port_name
-                            , const SignatureType & signature
+                            , const signature_type & signature
                             , const we::type::property::type & prop
                             )
       {
@@ -801,9 +798,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType, typename PlaceId>
+      template <typename PlaceId>
       pid_t add_tunnel ( const std::string & port_name
-                       , const SignatureType & signature
+                       , const signature_type & signature
                        , const PlaceId associated_place
                        , const we::type::property::type & prop
                        )
@@ -823,9 +820,8 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType>
       pid_t add_tunnel ( const std::string & port_name
-                       , const SignatureType & signature
+                       , const signature_type & signature
                        , const we::type::property::type & prop
                        )
       {
@@ -843,9 +839,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType, typename PlaceId>
+      template <typename PlaceId>
       pid_t add_output_port ( const std::string & port_name
-                            , const SignatureType & signature
+                            , const signature_type & signature
                             , const PlaceId associated_place
                             , const we::type::property::type & prop
                             )
@@ -866,9 +862,8 @@ namespace we { namespace type {
 
 
 
-      template <typename SignatureType>
       void add_input_output_port ( const std::string & port_name
-                                 , const SignatureType & signature
+                                 , const signature_type & signature
                                  , const we::type::property::type & prop
                                  )
       {
@@ -890,9 +885,9 @@ namespace we { namespace type {
         }
       }
 
-      template <typename SignatureType, typename PlaceId>
+      template <typename PlaceId>
       void add_input_output_port ( const std::string & port_name
-                                 , const SignatureType & signature
+                                 , const signature_type & signature
                                  , const PlaceId associated_place
                                  , const we::type::property::type & prop
                                  )
@@ -987,8 +982,7 @@ namespace we { namespace type {
         throw exception::not_connected<pid_t>("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
-      template <typename PortId>
-      const port_t & get_port (const PortId port_id) const
+      const port_t& get_port (const port_id_t& port_id) const
       {
         try
         {
@@ -1001,8 +995,7 @@ namespace we { namespace type {
         }
       }
 
-      template <typename PortId>
-      port_t & get_port (const PortId port_id)
+      port_t& get_port (const port_id_t& port_id)
       {
         try
         {
