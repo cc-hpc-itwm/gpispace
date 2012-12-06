@@ -546,6 +546,9 @@ bool Agent::failed( const id_type& wfid
 
 void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
+  if(hasWorkflowEngine())
+    workflowEngine()->cancelled(evt.job_id ());
+
   try
   {
     sdpa::job_id_t jobId = evt.job_id();
@@ -559,9 +562,6 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 
     try
     {
-      if(hasWorkflowEngine())
-        workflowEngine()->cancelled(jobId);
-
       if(!isTop())
         jobManager()->deleteJob(jobId);
     }
