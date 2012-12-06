@@ -5,12 +5,6 @@ project(KDM_SDPA)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
 
-option(ENABLE_OBSOLETE_KDM "Build obsolete generator binaries" No)
-
-if (ENABLE_OBSOLETE_KDM)
-  add_subdirectory(obsolete)
-endif (ENABLE_OBSOLETE_KDM)
-
 add_subdirectory(pnet)
 
 include_directories(./src
