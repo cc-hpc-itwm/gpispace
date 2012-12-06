@@ -2,6 +2,7 @@
 
 set (hdrs
   optional.hpp
+  tuple.hpp
 )
 
 set (srcs
