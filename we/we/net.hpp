@@ -106,7 +106,6 @@ public:
   typedef bijection::const_it<place::type,pid_t> place_const_it;
   typedef bijection::const_it<transition_type,tid_t> transition_const_it;
   typedef bijection::const_it<edge_type,eid_t> edge_const_it;
-  typedef typename place_const_it::size_type size_type;
 
   typedef multirel::right_const_it<token::type, pid_t> token_place_it;
 
@@ -450,27 +449,6 @@ public:
     , out_of_transition_size_map ()
   {}
 
-  // numbers of elements
-  size_type get_num_places (void) const { return places().size(); }
-  size_type get_num_transitions (void) const { return transitions().size(); }
-  size_type get_num_edges (void) const { return edges().size(); }
-
-  // get id
-  const pid_t & get_place_id (const place::type & place) const
-  {
-    return pmap.get_id (place);
-  }
-
-  const tid_t & get_transition_id (const transition_type & transition) const
-  {
-    return tmap.get_id (transition);
-  }
-
-  const eid_t & get_edge_id (const edge_type & edge) const
-  {
-    return emap.get_id (edge);
-  }
-
   // get element
   const place::type & get_place (const pid_t & pid) const
   {
@@ -737,21 +715,10 @@ public:
     return tid;
   }
 
-  // modify and replace
   // erased in case of conflict after modification
   pid_t modify_place (const pid_t & pid, const place::type & place)
   {
     const pid_t new_pid (pmap.modify (pid, place));
-
-    recalculate_enabled_by_place (new_pid);
-
-    return new_pid;
-  }
-
-  // kept old value in case of conflict after modification
-  pid_t replace_place (const pid_t & pid, const place::type & place)
-  {
-    const pid_t new_pid (pmap.replace (pid, place));
 
     recalculate_enabled_by_place (new_pid);
 
@@ -765,31 +732,7 @@ public:
     return tmap.modify (tid, transition);
   }
 
-  tid_t replace_transition ( const tid_t & tid
-                           , const transition_type & transition
-                           )
-  {
-    return tmap.replace (tid, transition);
-  }
-
-  eid_t modify_edge (const eid_t & eid, const edge_type & edge)
-  {
-    const eid_t new_eid (emap.modify (eid, edge));
-
-    recalculate_enabled_by_edge (new_eid);
-
-    return new_eid;
-  }
-
-  eid_t replace_edge (const eid_t & eid, const edge_type & edge)
-  {
-    const eid_t new_eid (emap.replace (eid, edge));
-
-    recalculate_enabled_by_edge (new_eid);
-
-    return new_eid;
-  }
-
+ private:
   // deal with tokens
   const pid_in_map_t & get_pid_in_map (const tid_t & tid) const
   {
@@ -801,7 +744,6 @@ public:
     return m->second;
   }
 
-protected:
   const tid_t& enabled_first (void) const
   {
     return enabled.first();
@@ -837,11 +779,7 @@ public:
     return token_place_rel.contains_right (pid);
   }
 
-  std::size_t num_token (const pid_t & pid) const
-  {
-    return token_place_rel.left_of(pid).size();
-  }
-
+private:
   std::size_t delete_one_token (const pid_t & pid, const token::type & token)
   {
     const std::size_t ret (token_place_rel.delete_one (token, pid));
@@ -852,16 +790,7 @@ public:
     return ret;
   }
 
-  std::size_t delete_all_token (const pid_t & pid, const token::type & token)
-  {
-    const std::size_t ret (token_place_rel.delete_all (token, pid));
-
-    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_enabled_del_all_token (*t, pid, token);
-
-    return ret;
-  }
-
+public:
   std::size_t delete_all_token (const pid_t & pid)
   {
     const std::size_t ret (token_place_rel.delete_right (pid));
@@ -871,44 +800,10 @@ public:
     return ret;
   }
 
-  // WORK HERE: implement more efficient?
-  std::size_t replace_one_token
-  (const pid_t & pid, const token::type & old_token, const token::type & new_token)
-  {
-    const std::size_t k (delete_one_token (pid, old_token));
-
-    if (k > 0)
-      put_token (pid, new_token);
-
-    return k;
-  }
-
-  // WORK HERE: implement more efficient?
-  std::size_t replace_all_token
-  (const pid_t & pid, const token::type & old_token, const token::type & new_token)
-  {
-    const std::size_t k (delete_all_token (pid, old_token));
-
-    for (std::size_t i (0); i < k; ++i)
-      put_token (pid, new_token);
-
-    return k;
-  }
-
   // FIRE
-  std::size_t num_can_fire (void) const
-  {
-    return enabled.size();
-  }
-
   bool can_fire () const
   {
     return not enabled.empty();
-  }
-
-  bool get_can_fire (const tid_t & tid) const
-  {
-    return enabled.elem(tid);
   }
 
   struct activity_t
@@ -928,17 +823,7 @@ public:
     {}
   };
 
-  template <typename Output>
-  void inject_activity_result (Output const & output)
-  {
-    for ( typename Output::const_iterator out (output.begin())
-        ; out != output.end()
-        ; ++out
-        )
-      put_token (out->second, out->first);
-  }
-
-protected:
+private:
   activity_t extract_activity (const tid_t tid)
   {
     input_t input;
