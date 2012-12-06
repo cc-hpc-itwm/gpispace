@@ -568,12 +568,6 @@ namespace we { namespace type {
         return gen_outer_to_inner (outer).first;
       }
 
-      template <typename Outer>
-      const we::type::property::type & outer_to_inner_prop (Outer outer) const
-      {
-        return gen_outer_to_inner (outer).second;
-      }
-
       template <typename Inner>
       typename inner_to_outer_t::mapped_type
       gen_inner_to_outer (Inner inner) const
@@ -591,12 +585,6 @@ namespace we { namespace type {
       pid_t inner_to_outer (Inner inner) const
       {
         return gen_inner_to_outer (inner).first;
-      }
-
-      template <typename Inner>
-      const we::type::property::type & inner_to_outer_prop (Inner inner) const
-      {
-        return gen_inner_to_outer (inner).second;
       }
 
       inner_to_outer_t::const_iterator
