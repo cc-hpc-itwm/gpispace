@@ -9,6 +9,7 @@ set (hdrs
   module_traits.hpp
   types.hpp
   putget.hpp
+  api-guard.hpp
   )
 
 set (srcs

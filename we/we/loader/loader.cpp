@@ -5,6 +5,8 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/show.hpp>
 
+const int WE_GUARD_SYMBOL = 0xDEADBEEF;
+
 namespace we {
   namespace loader {
     loader::ptr_t loader::create() { return ptr_t(new loader()); }
