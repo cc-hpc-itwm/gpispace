@@ -11,6 +11,20 @@ set (hdrs
   putget.hpp
   )
 
+set (srcs
+  loader.cpp
+)
+
+add_library (we-loader STATIC ${srcs})
+
+add_we_library (we-loader)
+
 install(FILES ${hdrs}
   DESTINATION include/we/loader
   COMPONENT headers)
+
+install (TARGETS we-loader
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT static-libraries
+  )
