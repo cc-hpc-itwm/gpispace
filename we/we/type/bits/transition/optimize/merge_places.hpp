@@ -14,17 +14,15 @@
 namespace we { namespace type {
     namespace optimize
     {
-      template<typename E>
       inline void merge_places
-      ( petri_net::net<transition_t<E>, E> & net
+      ( petri_net::net<transition_t> & net
       , const petri_net::pid_t & pid_A
       , const bool & is_read
       , const petri_net::pid_t & pid_B
       )
       {
-        typedef transition_t<E> transition_t;
-        typedef petri_net::net<transition_t, E> pnet_t;
-        typedef typename pnet_t::transition_const_it transition_const_it;
+        typedef petri_net::net<transition_t> pnet_t;
+        typedef pnet_t::transition_const_it transition_const_it;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;
         typedef petri_net::tid_t tid_t;
@@ -50,7 +48,7 @@ namespace we { namespace type {
             const tid_t & tid_trans_out_B (pair.first);
             const eid_t & eid_out_B (pair.second);
 
-            const E edge (net.get_edge (eid_out_B));
+            const unsigned int edge (net.get_edge (eid_out_B));
             connection_t connection (net.get_edge_info (eid_out_B));
 
             net.delete_edge (eid_out_B);
@@ -66,7 +64,7 @@ namespace we { namespace type {
 
             transition_t trans_out_B (net.get_transition (tid_trans_out_B));
 
-            typename transition_t::port_id_with_prop_t port_id_with_prop
+            transition_t::port_id_with_prop_t port_id_with_prop
               (trans_out_B.input_port_by_pid (pid_B));
 
             trans_out_B.re_connect_outer_to_inner
@@ -96,7 +94,7 @@ namespace we { namespace type {
             const tid_t & tid_trans_in_B (pair.first);
             const eid_t & eid_in_B (pair.second);
 
-            const E edge (net.get_edge (eid_in_B));
+            const unsigned int edge (net.get_edge (eid_in_B));
             connection_t connection (net.get_edge_info (eid_in_B));
 
             net.delete_edge (eid_in_B);
@@ -107,7 +105,7 @@ namespace we { namespace type {
 
             transition_t trans_in_B (net.get_transition (tid_trans_in_B));
 
-            typename transition_t::port_id_with_prop_t port_id_with_prop
+            transition_t::port_id_with_prop_t port_id_with_prop
               (trans_in_B.output_port_by_pid (pid_B));
 
             trans_in_B.re_connect_inner_to_outer

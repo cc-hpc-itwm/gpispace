@@ -9,10 +9,9 @@
 namespace we { namespace type {
     namespace optimize
     {
-      template<typename E>
-      inline bool is_associated ( const transition_t<E> & trans
+      inline bool is_associated ( const transition_t & trans
                                 , const petri_net::pid_t & pid
-                                , typename transition_t<E>::port_t & port
+                                , transition_t::port_t & port
                                 )
       {
         try
@@ -27,12 +26,11 @@ namespace we { namespace type {
           }
       }
 
-      template<typename E>
-      inline bool is_associated ( const transition_t<E> & trans
+      inline bool is_associated ( const transition_t & trans
                                 , const petri_net::pid_t & pid
                                 )
       {
-        typename transition_t<E>::port_t port;
+        transition_t::port_t port;
 
         return is_associated (trans, pid, port);
       }

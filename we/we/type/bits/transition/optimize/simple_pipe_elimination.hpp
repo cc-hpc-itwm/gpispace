@@ -65,30 +65,28 @@ namespace we { namespace type {
 
       typedef std::vector<pid_pair_type> pid_pair_vec_type;
 
-      template<typename E>
       inline boost::optional<pid_pair_vec_type>
-      pid_pairs ( const transition_t<E> & trans
+      pid_pairs ( const transition_t & trans
                 , const petri_net::tid_t & tid
-                , const petri_net::net<transition_t<E>, E> & net
-                , const transition_t<E> & trans_parent
+                , const petri_net::net<transition_t> & net
+                , const transition_t & trans_parent
                 )
       {
-        typedef transition_t<E> transition_t;
-        typedef typename transition_t::port_t port_t;
-        typedef typename port_t::name_type name_type;
+        typedef transition_t::port_t port_t;
+        typedef port_t::name_type name_type;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;
         typedef petri_net::tid_t tid_t;
         typedef petri_net::connection_t connection_t;
-        typedef typename transition_t::outer_to_inner_t outer_to_inner;
-        typedef typename transition_t::inner_to_outer_t inner_to_outer;
+        typedef transition_t::outer_to_inner_t outer_to_inner;
+        typedef transition_t::inner_to_outer_t inner_to_outer;
         typedef boost::unordered_map<name_type, pid_t> map_type;
         typedef boost::unordered_set<tid_t> tid_set_type;
 
         map_type map_in;
         map_type map_out;
 
-        for ( typename outer_to_inner::const_iterator
+        for ( outer_to_inner::const_iterator
                 oi (trans.outer_to_inner_begin())
             ; oi != trans.outer_to_inner_end()
             ; ++oi
@@ -100,7 +98,7 @@ namespace we { namespace type {
             map_in[port.name()] = pid;
           }
 
-        for ( typename inner_to_outer::const_iterator
+        for ( inner_to_outer::const_iterator
                 io (trans.inner_to_outer_begin())
             ; io != trans.inner_to_outer_end()
             ; ++io
@@ -128,12 +126,12 @@ namespace we { namespace type {
         tid_set_type pred_in;
         tid_set_type pred_out;
 
-        for ( typename map_type::const_iterator in (map_in.begin())
+        for ( map_type::const_iterator in (map_in.begin())
             ; in != map_in.end()
             ; ++in
             )
           {
-            const typename map_type::const_iterator out
+            const map_type::const_iterator out
               (map_out.find (in->first));
 
             if (out == map_out.end())
@@ -226,18 +224,16 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename E>
       inline bool run
-      ( transition_t<E> & trans_parent
-      , petri_net::net<transition_t<E>, E> & net
+      ( transition_t & trans_parent
+      , petri_net::net<transition_t> & net
       )
       {
-        typedef transition_t<E> transition_t;
-        typedef petri_net::net<transition_t, E> pnet_t;
-        typedef typename pnet_t::transition_const_it transition_const_it;
+        typedef petri_net::net<transition_t> pnet_t;
+        typedef pnet_t::transition_const_it transition_const_it;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::tid_t tid_t;
-        typedef typename transition_t::port_t port_t;
+        typedef transition_t::port_t port_t;
 
         bool modified (false);
 
