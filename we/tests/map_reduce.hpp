@@ -35,10 +35,8 @@ namespace we
           , transition_type::external
           );
 
-        map_reduce.add_ports ()
-          ("in", literal::STRING(), we::type::PORT_IN)
-          ("out", literal::STRING(), we::type::PORT_OUT)
-          ;
+        map_reduce.add_port ("in", literal::STRING(), we::type::PORT_IN);
+        map_reduce.add_port ("out", literal::STRING(), we::type::PORT_OUT);
 
         return map_reduce;
       }

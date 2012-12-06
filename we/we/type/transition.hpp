@@ -118,53 +118,6 @@ namespace we { namespace type {
     }
 
     namespace detail {
-      template <typename Transition>
-      struct port_adder
-      {
-        explicit port_adder (Transition & t)
-          : transition_(t)
-        {}
-
-        template <typename SignatureType, typename Direction>
-        port_adder<Transition> &
-        operator()
-          ( const std::string & name
-          , SignatureType const & signature
-          , Direction direction
-          , const we::type::property::type & prop = we::type::property::type()
-          )
-        {
-          transition_.add_port ( name
-                               , signature
-                               , direction
-                               , prop
-                               );
-          return *this;
-        }
-
-        template <typename SignatureType, typename Direction, typename PlaceId>
-        port_adder<Transition> &
-        operator ()
-          ( const std::string & name
-          , SignatureType const & signature
-          , Direction direction
-          , const PlaceId associated_place
-          , const we::type::property::type & prop = we::type::property::type()
-          )
-        {
-          transition_.add_port ( name
-                               , signature
-                               , direction
-                               , associated_place
-                               , prop
-                               );
-          return *this;
-        }
-
-      private:
-        Transition & transition_;
-      };
-
       template <typename Transition, typename From, typename To>
       struct connection_adder
       {
@@ -712,11 +665,6 @@ namespace we { namespace type {
         return detail::connection_adder<this_type, pid_t, port_id_t>(*this);
       }
 
-      detail::port_adder<this_type> add_ports()
-      {
-        return detail::port_adder<this_type>(*this);
-      }
-
       // UNSAFE: does not check for already existing port, use with care
       port_id_t UNSAFE_add_port (const port_t & port)
       {
@@ -738,6 +686,7 @@ namespace we { namespace type {
                     , SignatureType const & sig
                     , Direction direction
                     , const we::type::property::type & prop
+                      = we::type::property::type()
                     )
       {
         switch (direction)
@@ -758,6 +707,7 @@ namespace we { namespace type {
                     , const Direction direction
                     , const PlaceId pid
                     , const we::type::property::type & prop
+                      = we::type::property::type()
                     )
       {
         switch (direction)

@@ -864,16 +864,16 @@ namespace xml
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_IN, port));
 
-                trans_in.add_ports () ( port.name()
-                                      , type
-                                      , we::type::PORT_IN
-                                      , port.properties()
-                                      );
-                trans_in.add_ports () ( port.name()
-                                      , type
-                                      , we::type::PORT_OUT
-                                      , port.properties()
-                                      );
+                trans_in.add_port ( port.name()
+                                  , type
+                                  , we::type::PORT_IN
+                                  , port.properties()
+                                  );
+                trans_in.add_port ( port.name()
+                                  , type
+                                  , we::type::PORT_OUT
+                                  , port.properties()
+                                  );
 
                 if (port.place)
                   {
@@ -974,16 +974,16 @@ namespace xml
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_OUT, port));
 
-                trans_out.add_ports () ( port.name()
-                                       , type
-                                       , we::type::PORT_IN
-                                       , port.properties()
-                                       );
-                trans_out.add_ports () ( port.name()
-                                       , type
-                                       , we::type::PORT_OUT
-                                       , port.properties()
-                                       );
+                trans_out.add_port ( port.name()
+                                   , type
+                                   , we::type::PORT_IN
+                                   , port.properties()
+                                   );
+                trans_out.add_port ( port.name()
+                                   , type
+                                   , we::type::PORT_OUT
+                                   , port.properties()
+                                   );
 
                 if (port.place)
                   {

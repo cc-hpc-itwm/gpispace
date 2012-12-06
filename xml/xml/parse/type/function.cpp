@@ -609,11 +609,11 @@ namespace xml
               const signature::type type
                 (fun.type_of_port (direction, port));
 
-              trans.add_ports () ( port.name()
-                                 , type
-                                 , direction
-                                 , port.properties()
-                                 );
+              trans.add_port ( port.name()
+                             , type
+                             , direction
+                             , port.properties()
+                             );
             }
         }
 
@@ -640,11 +640,11 @@ namespace xml
 
               if (not port.place)
                 {
-                  trans.add_ports () ( port.name()
-                                     , type
-                                     , direction
-                                     , port.properties()
-                                     );
+                  trans.add_port ( port.name()
+                                 , type
+                                 , direction
+                                 , port.properties()
+                                 );
                 }
               else
                 {
@@ -652,12 +652,12 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  trans.add_ports () ( port.name()
-                                     , type
-                                     , direction
-                                     , get_pid (pid_of_place, *port.place)
-                                     , port.properties()
-                                     )
+                  trans.add_port ( port.name()
+                                 , type
+                                 , direction
+                                 , get_pid (pid_of_place, *port.place)
+                                 , port.properties()
+                                 )
                     ;
                 }
             }

@@ -46,8 +46,9 @@ namespace we { namespace tests { namespace gen {
           , "true"
           , true
           );
-        trans_incr.add_ports ()
-          ("i", "long", we::type::PORT_IN)
+        trans_incr.add_port
+          ("i", "long", we::type::PORT_IN);
+        trans_incr.add_port
           ("o", "long", we::type::PORT_OUT)
           ;
         trans_incr.add_connections ()
@@ -61,8 +62,9 @@ namespace we { namespace tests { namespace gen {
           ( "module call"
           , mod_type ("dummy", "dummy")
           );
-        trans_mod.add_ports ()
-          ("input", "long", we::type::PORT_IN)
+        trans_mod.add_port
+          ("input", "long", we::type::PORT_IN);
+        trans_mod.add_port
           ("output", "long", we::type::PORT_OUT)
           ;
         trans_mod.add_connections ()
@@ -91,8 +93,9 @@ namespace we { namespace tests { namespace gen {
         pid_t pid_o (net_inner.add_place (place_type ("output", "long")));
 
         transition_type trans_subnet ("subnet", net_subnet);
-        trans_subnet.add_ports ()
-          ("input", "long", we::type::PORT_IN, pid_input)
+        trans_subnet.add_port
+          ("input", "long", we::type::PORT_IN, pid_input);
+        trans_subnet.add_port
           ("output", "long", we::type::PORT_OUT, pid_output)
           ;
         trans_subnet.add_connections ()
@@ -115,8 +118,9 @@ namespace we { namespace tests { namespace gen {
 
         // create the visible transition
         transition_type trans_net ("net", net_inner, "true", transition_type::external);
-        trans_net.add_ports ()
-          ("input", "long", we::type::PORT_IN,   pid_i)
+        trans_net.add_port
+          ("input", "long", we::type::PORT_IN,   pid_i);
+        trans_net.add_port
           ("output", "long", we::type::PORT_OUT, pid_o)
           ;
         return trans_net;

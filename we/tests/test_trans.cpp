@@ -69,9 +69,11 @@ int main (int, char **)
 
   petri_net::pid_t pid_pair (net.add_place (place::type("pair", sig_pair)));
 
-  trans_inner.add_ports ()
-    ("vid","long",we::type::PORT_IN)
-    ("store",sig_store,we::type::PORT_IN_OUT)
+  trans_inner.add_port
+    ("vid","long",we::type::PORT_IN);
+  trans_inner.add_port
+    ("store",sig_store,we::type::PORT_IN_OUT);
+  trans_inner.add_port
     ("pair",sig_pair,we::type::PORT_OUT)
     ;
 
@@ -104,9 +106,11 @@ int main (int, char **)
   // ************************************ //
 
   transition_t tnet ("tnet", transition_t::net_type (net));
-  tnet.add_ports()
-    ("vid", "long", we::type::PORT_IN, pid_vid)
-    ("store", sig_store, we::type::PORT_IN_OUT, pid_store)
+  tnet.add_port
+    ("vid", "long", we::type::PORT_IN, pid_vid);
+  tnet.add_port
+    ("store", sig_store, we::type::PORT_IN_OUT, pid_store);
+  tnet.add_port
     ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
   ;
 
@@ -132,8 +136,7 @@ int main (int, char **)
 
   transition_t t1 ("t1", transition_t::mod_type ("m", "f"));
 
-  t1.add_ports()
-    ("i", "long", we::type::PORT_IN_OUT)
+  t1.add_port
     ("max", "long", we::type::PORT_IN)
   ;
 
@@ -149,8 +152,9 @@ int main (int, char **)
   std::cout << "t1.p0 = " << t1.get_port (t1.input_port_by_name ("i")) << std::endl;
 
   transition_t t2 ("t2", transition_t::expr_type ("true"));
-  t2.add_ports()
-    ("i", "long", we::type::PORT_IN)
+  t2.add_port
+    ("i", "long", we::type::PORT_IN);
+  t2.add_port
     ("sum", "long", we::type::PORT_IN_OUT)
   ;
 
