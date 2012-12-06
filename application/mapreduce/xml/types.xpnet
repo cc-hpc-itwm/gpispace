@@ -45,6 +45,7 @@
 	<field name="map_slot_id" type="long"/>
     <field name="chunk_id" type="long"/>
     <field name="used" type="long"/>
+    <field name="part_used" type="string"/>
     <field name="unhandled_part_set" type="set"/>
   </struct>
   

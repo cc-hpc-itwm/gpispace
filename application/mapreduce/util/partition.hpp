@@ -23,12 +23,12 @@ namespace mapreduce
 
     	  if((first_char>='A' && first_char<='Z') )
     	  {
-    		  i = ((key[0] - 'A')*(N-3))/('Z'-'A');
+    		  i = ((key[0] - 'A')*(N-2))/('Z'-'A');
     	  }
     	  else
     		  if( first_char>='a' && first_char<='z' )
     		  {
-    			  i = ((key[0] - 'a')*(N-3))/('z'-'a');
+    			  i = ((key[0] - 'a')*(N-2))/('z'-'a');
     		  }
     		  else
     			  if(is_special_item(key))
