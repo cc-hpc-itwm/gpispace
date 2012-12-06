@@ -43,6 +43,12 @@ namespace fhg
               ", const ::we::type::property::value_type&"
             );
 
+          handle.connect_to_change_mgr
+            ( this
+            , "place_type_set", "type_changed"
+            , "const data::handle::place&, const QString&"
+            );
+
           connect ( this, SIGNAL (association_added (association*))
                   , this, SLOT (slot_association_added (association*))
                   );
@@ -143,6 +149,19 @@ namespace fhg
 
               return;
             }
+          }
+        }
+
+        void place_item::type_changed
+          ( const QObject* origin
+          , const data::handle::place& changed_handle
+          , const QString&
+          )
+        {
+          if (changed_handle == handle())
+          {
+            refresh_content();
+            update();
           }
         }
 
