@@ -158,50 +158,56 @@ namespace fhg
           }
         }
 
-        void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
+        void scene_type::contextMenuEvent
+          (QGraphicsSceneContextMenuEvent* event)
         {
-          if (base_item* i = qgraphicsitem_cast<base_item*> (itemAt (event->scenePos())))
+          if ( base_item* item_below_cursor
+             = qgraphicsitem_cast<base_item*> (itemAt (event->scenePos()))
+             )
           {
-            switch (i->type())
+            QMenu menu;
+
+            switch (item_below_cursor->type())
             {
             case base_item::port_graph_type:
             case base_item::top_level_port_graph_type:
             {
-              QMenu menu;
-
-              QAction* action_set_type
-                (menu.addAction(tr("Set type")));
-              //                      connect (action_set_type, SIGNAL(triggered()), SLOT(slot_set_type()));
-
+              QAction* action_set_type (menu.addAction(tr("Set type")));
               menu.addSeparator();
-
               QAction* action_delete (menu.addAction(tr("Delete")));
-              //             connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
 
-              menu.exec(event->screenPos());
+              QAction* triggered (menu.exec(event->screenPos()));
+              if (triggered == action_set_type)
+              {
+                qDebug() << "NYI: port: action_set_type";
+              }
+              else if (triggered == action_delete)
+              {
+                qDebug() << "NYI: port: action_delete";
+              }
+              else if (!triggered)
+              {
+                qtbug_21943_workaround (event);
+              }
+
               event->accept();
             }
             break;
+
             case base_item::transition_graph_type:
             {
-              QMenu menu;
-
               QAction* action_add_port (menu.addAction(tr("Add Port")));
-
               menu.addSeparator();
-
               QAction* action_delete (menu.addAction (tr("Delete")));
 
-
               QAction* triggered (menu.exec(event->screenPos()));
-
               if (triggered == action_delete)
               {
-                slot_delete_transition (i);
+                slot_delete_transition (item_below_cursor);
               }
               else if (triggered == action_add_port)
               {
-                std::cerr << "add port" << std::endl;
+                qDebug() << "NYI: transition: action_add_port";
               }
               else if (!triggered)
               {
@@ -211,17 +217,15 @@ namespace fhg
               event->accept();
             }
             break;
+
             case base_item::place_graph_type:
             {
-              QMenu menu;
-
               QAction* action_delete (menu.addAction (tr("Delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
-
               if (triggered == action_delete)
               {
-                slot_delete_place (i);
+                slot_delete_place (item_below_cursor);
               }
               else if (!triggered)
               {
@@ -231,18 +235,16 @@ namespace fhg
               event->accept();
             }
             break;
+
             case base_item::connection_graph_type:
             {
-              QMenu menu;
-
               QAction* action_delete (menu.addAction (tr("Delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
-
               if (triggered == action_delete)
               {
-                fhg::util::qt::throwing_qgraphicsitem_cast<connection_item*> (i)
-                  ->handle().remove (this);
+                fhg::util::qt::throwing_qgraphicsitem_cast<connection_item*>
+                  (item_below_cursor)->handle().remove (this);
               }
               else if (!triggered)
               {
@@ -252,8 +254,6 @@ namespace fhg
               event->accept();
             }
             break;
-            default:
-              break;
             }
           }
           else
