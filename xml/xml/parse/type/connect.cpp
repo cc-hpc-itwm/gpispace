@@ -91,7 +91,8 @@ namespace xml
 
       connect_type::unique_key_type connect_type::unique_key() const
       {
-        return std::make_pair (_place, _port);
+        return boost::make_tuple
+          (_place, _port, petri_net::edge::is_PT (_direction));
       }
 
 
