@@ -116,12 +116,9 @@ namespace xml
 
       namespace dump
       {
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const connect_type & c
-                  , const std::string & type
-                  )
+        void dump (::fhg::util::xml::xmlstream& s, const connect_type& c)
         {
-          s.open ("connect-" + type);
+          s.open ("connect-" + petri_net::edge::enum_to_string (c.direction()));
           s.attr ("port", c.port());
           s.attr ("place", c.place());
 

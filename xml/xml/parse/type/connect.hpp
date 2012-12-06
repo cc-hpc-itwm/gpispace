@@ -83,10 +83,7 @@ namespace xml
 
       namespace dump
       {
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const connect_type & c
-                  , const std::string & type
-                  );
+        void dump (::fhg::util::xml::xmlstream&, const connect_type&);
       }
     }
   }

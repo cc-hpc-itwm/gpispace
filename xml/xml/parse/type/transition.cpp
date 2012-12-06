@@ -1212,9 +1212,9 @@ namespace xml
           boost::apply_visitor (dump_visitor (s), t.function_or_use());
 
           dumps (s, t.place_map().values());
-          dumps (s, t.read().values(), "read");
-          dumps (s, t.in().values(), "in");
-          dumps (s, t.out().values(), "out");
+          dumps (s, t.read().values());
+          dumps (s, t.in().values());
+          dumps (s, t.out().values());
 
           for ( conditions_type::const_iterator cond (t.cond.begin())
               ; cond != t.cond.end()
