@@ -29,6 +29,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
+#include <QInputDialog>
 #include <QKeyEvent>
 
 namespace fhg
@@ -228,7 +229,27 @@ namespace fhg
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_set_type)
               {
-                qDebug() << "NYI: place: action_set_type";
+                const data::handle::place handle
+                  ( fhg::util::qt::throwing_qgraphicsitem_cast<place_item*>
+                    (item_below_cursor)->handle()
+                  );
+
+                 bool ok;
+                 const QString text
+                   ( QInputDialog::getText
+                     ( event->widget()
+                     , tr("Set type of place %1%").arg
+                       (QString::fromStdString (handle.get().name()))
+                     , tr("Type:")
+                     , QLineEdit::Normal
+                     , QString::fromStdString (handle.get().type)
+                     , &ok
+                     )
+                   );
+                 if (ok && !text.isEmpty())
+                 {
+                   handle.set_type (this, text);
+                 }
               }
               else if (triggered == action_delete)
               {
