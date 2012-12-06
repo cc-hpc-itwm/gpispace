@@ -51,8 +51,9 @@ namespace we { namespace tests { namespace gen {
         trans_incr.add_port
           ("o", "long", we::type::PORT_OUT)
           ;
-        trans_incr.add_connections ()
-          (pid_input, "i")
+        trans_incr.add_connection
+          (pid_input, "i");
+        trans_incr.add_connection
           ("o", pid_work)
           ;
         tid_t tid_incr (net_subnet.add_transition (trans_incr));
@@ -67,8 +68,9 @@ namespace we { namespace tests { namespace gen {
         trans_mod.add_port
           ("output", "long", we::type::PORT_OUT)
           ;
-        trans_mod.add_connections ()
-          (pid_work, "input")
+        trans_mod.add_connection
+          (pid_work, "input");
+        trans_mod.add_connection
           ("output", pid_output)
           ;
         tid_t tid_mod (net_subnet.add_transition (trans_mod));
@@ -98,8 +100,9 @@ namespace we { namespace tests { namespace gen {
         trans_subnet.add_port
           ("output", "long", we::type::PORT_OUT, pid_output)
           ;
-        trans_subnet.add_connections ()
-          (pid_i, "input")
+        trans_subnet.add_connection
+          (pid_i, "input");
+        trans_subnet.add_connection
           ("output", pid_o)
           ;
         tid_t tid_sub (net_inner.add_transition (trans_subnet));

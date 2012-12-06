@@ -877,7 +877,7 @@ namespace xml
 
                 if (port.place)
                   {
-                    trans_in.add_connections ()
+                    trans_in.add_connection
                       ( port.name()
                       , get_pid (pid_of_place , prefix + *port.place)
                       , port.properties()
@@ -888,7 +888,7 @@ namespace xml
 
             BOOST_FOREACH (const connect_type& connect, trans.in().values())
               {
-                trans_in.add_connections ()
+                trans_in.add_connection
                   ( get_pid (pids, connect.place())
                   , connect.port()
                   , connect.properties()
@@ -899,7 +899,7 @@ namespace xml
                           , trans.read().values()
                           )
               {
-                trans_in.add_connections ()
+                trans_in.add_connection
                   ( get_pid (pids, connect.place())
                   , connect.port()
                   , connect.properties()
@@ -987,7 +987,7 @@ namespace xml
 
                 if (port.place)
                   {
-                    trans_out.add_connections ()
+                    trans_out.add_connection
                       ( get_pid (pid_of_place , prefix + *port.place)
                       , port.name()
                       , port.properties()
@@ -1004,7 +1004,7 @@ namespace xml
                           , trans.out().values()
                           )
               {
-                trans_out.add_connections ()
+                trans_out.add_connection
                   ( connect.port()
                   , get_pid (pids, connect.place())
                   , connect.properties()
@@ -1102,7 +1102,7 @@ namespace xml
 
             BOOST_FOREACH (const connect_type& connect, trans.in().values())
               {
-                we_trans.add_connections ()
+                we_trans.add_connection
                   ( get_pid (pids, connect.place())
                   , connect.port()
                   , connect.properties()
@@ -1112,7 +1112,7 @@ namespace xml
                           , trans.read().values()
                           )
               {
-                we_trans.add_connections ()
+                we_trans.add_connection
                   ( get_pid (pids, connect.place())
                   , connect.port()
                   , connect.properties()
@@ -1122,7 +1122,7 @@ namespace xml
                           , trans.out().values()
                           )
               {
-                we_trans.add_connections ()
+                we_trans.add_connection
                   ( connect.port()
                   , get_pid (pids, connect.place())
                   , connect.properties()

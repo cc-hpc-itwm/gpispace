@@ -118,41 +118,6 @@ namespace we { namespace type {
     }
 
     namespace detail {
-      template <typename Transition, typename From, typename To>
-      struct connection_adder
-      {
-        typedef From from_type;
-        typedef To to_type;
-
-        explicit connection_adder (Transition & t)
-          : transition_(t)
-        {}
-
-        connection_adder<Transition, from_type, to_type> & operator()
-          ( const from_type outer
-          , const std::string & name
-          , const we::type::property::type & prop = we::type::property::type()
-          )
-        {
-          transition_.connect_outer_to_inner
-            (outer, transition_.input_port_by_name (name), prop);
-          return *this;
-        }
-
-        connection_adder<Transition, from_type, to_type> & operator()
-          ( const std::string & name
-          , const from_type outer
-          , const we::type::property::type & prop = we::type::property::type()
-          )
-        {
-          transition_.connect_inner_to_outer
-            (transition_.output_port_by_name (name), outer, prop);
-          return *this;
-        }
-      private:
-        Transition & transition_;
-      };
-
       template <typename Transition, typename Pid>
       std::string translate_place_to_port_name (const Transition & trans, const Pid pid)
       {
@@ -660,9 +625,22 @@ namespace we { namespace type {
         return outer_to_inner_.end();
       }
 
-      detail::connection_adder<this_type, pid_t, port_id_t> add_connections()
+      void add_connection ( const pid_t& pid
+                          , const std::string& name
+                          , const we::type::property::type& prop
+                          = we::type::property::type()
+                          )
       {
-        return detail::connection_adder<this_type, pid_t, port_id_t>(*this);
+        connect_outer_to_inner (pid, input_port_by_name (name), prop);
+      }
+
+      void add_connection ( const std::string& name
+                          , const pid_t& pid
+                          , const we::type::property::type& prop
+                          = we::type::property::type()
+                          )
+      {
+        connect_inner_to_outer (output_port_by_name (name), pid, prop);
       }
 
       // UNSAFE: does not check for already existing port, use with care

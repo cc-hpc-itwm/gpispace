@@ -77,10 +77,13 @@ int main (int, char **)
     ("pair",sig_pair,we::type::PORT_OUT)
     ;
 
-  trans_inner.add_connections ()
-    (pid_vid,"vid")
-    (pid_store,"store")
-    ("pair",pid_pair)
+  trans_inner.add_connection
+    (pid_vid,"vid");
+  trans_inner.add_connection
+    (pid_store,"store");
+  trans_inner.add_connection
+    ("pair",pid_pair);
+  trans_inner.add_connection
     ("store",pid_store)
     ;
 
@@ -140,9 +143,11 @@ int main (int, char **)
     ("max", "long", we::type::PORT_IN)
   ;
 
-  t1.add_connections()
-    (transition_t::pid_t(0), "i")
-    (transition_t::pid_t(1), "max")
+  t1.add_connection
+    (transition_t::pid_t(0), "i");
+  t1.add_connection
+    (transition_t::pid_t(1), "max");
+  t1.add_connection
     ("i", transition_t::pid_t(0))
   ;
 

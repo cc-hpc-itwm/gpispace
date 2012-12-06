@@ -359,7 +359,7 @@ namespace we { namespace type {
 
                 net.add_edge (edge, connection);
 
-                pred.add_connections ()
+                pred.add_connection
                   (p->second.name(), pid, p->second.property())
                   ;
               }
@@ -385,7 +385,7 @@ namespace we { namespace type {
 
                             net.add_edge (edge, connection);
 
-                            pred.add_connections ()
+                            pred.add_connection
                               (pid, p->second.name(), p->second.property())
                               ;
                           }

@@ -93,10 +93,13 @@ int main (int, char **)
     ("pair",sig_pair,we::type::PORT_OUT)
     ;
 
-  trans_inner.add_connections ()
-    (pid_vid,"vid")
-    (pid_store,"store")
-    ("pair",pid_pair)
+  trans_inner.add_connection
+    (pid_vid,"vid");
+  trans_inner.add_connection
+    (pid_store,"store");
+  trans_inner.add_connection
+    ("pair",pid_pair);
+  trans_inner.add_connection
     ("store",pid_store)
     ;
 
