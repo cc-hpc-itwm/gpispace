@@ -677,11 +677,11 @@ namespace we { namespace type {
           }
       }
 
-      template <typename Direction, typename PlaceId>
+      template <typename Direction>
       void add_port ( const std::string & name
                     , signature_type const & sig
                     , const Direction direction
-                    , const PlaceId pid
+                    , const pid_t& pid
                     , const we::type::property::type & prop
                       = we::type::property::type()
                     )
@@ -717,10 +717,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename PlaceId>
       pid_t add_input_port ( const std::string & port_name
                            , const signature_type & signature
-                           , const PlaceId associated_place
+                           , const pid_t& associated_place
                            , const we::type::property::type & prop
                            )
       {
@@ -758,10 +757,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename PlaceId>
       pid_t add_read_port ( const std::string & port_name
                           , const signature_type & signature
-                          , const PlaceId associated_place
+                          , const pid_t& associated_place
                           , const we::type::property::type & prop
                           )
       {
@@ -798,10 +796,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename PlaceId>
       pid_t add_tunnel ( const std::string & port_name
                        , const signature_type & signature
-                       , const PlaceId associated_place
+                       , const pid_t& associated_place
                        , const we::type::property::type & prop
                        )
       {
@@ -839,10 +836,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename PlaceId>
       pid_t add_output_port ( const std::string & port_name
                             , const signature_type & signature
-                            , const PlaceId associated_place
+                            , const pid_t& associated_place
                             , const we::type::property::type & prop
                             )
       {
@@ -885,10 +881,9 @@ namespace we { namespace type {
         }
       }
 
-      template <typename PlaceId>
       void add_input_output_port ( const std::string & port_name
                                  , const signature_type & signature
-                                 , const PlaceId associated_place
+                                 , const pid_t& associated_place
                                  , const we::type::property::type & prop
                                  )
       {
