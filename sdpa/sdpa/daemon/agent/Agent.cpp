@@ -707,6 +707,9 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   catch (std::exception const & ex)
   {
     LOG(WARN, "could not find job: " << ex.what());
+
+    workflowEngine()->cancelled (pEvt->job_id ());
+
     return;
   }
 
