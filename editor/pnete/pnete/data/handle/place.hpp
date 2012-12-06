@@ -13,6 +13,7 @@
 #include <xml/parse/type/place.fwd.hpp>
 
 class QObject;
+class QString;
 
 namespace fhg
 {
@@ -33,6 +34,8 @@ namespace fhg
                 );
 
           void remove (const QObject* sender) const;
+
+          void set_type (const QObject* sender, const QString& type) const;
 
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&

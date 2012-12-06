@@ -10,6 +10,8 @@
 
 #include <fhg/util/read_bool.hpp>
 
+#include <QString>
+
 namespace fhg
 {
   namespace pnete
@@ -27,6 +29,11 @@ namespace fhg
         void place::remove (const QObject* sender) const
         {
           change_manager().delete_place (sender, *this);
+        }
+
+        void place::set_type (const QObject* sender, const QString& type) const
+        {
+          change_manager().set_type (sender, *this, type);
         }
 
         void place::set_property
