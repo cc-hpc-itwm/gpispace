@@ -11,6 +11,7 @@
 
 #include <fhg/util/xml.fwd.hpp>
 
+#include <we/net.hpp>
 #include <we/type/property.hpp>
 
 #include <string>
@@ -35,6 +36,7 @@ namespace xml
                      , PARENT_CONS_PARAM(transition)
                      , const std::string& place
                      , const std::string& port
+                     , const ::petri_net::edge::type& direction
                      , const we::type::property::type& properties
                      = we::type::property::type()
                      );
@@ -43,6 +45,10 @@ namespace xml
         const std::string& port() const;
         boost::optional<const id::ref::place&> resolved_place() const;
         boost::optional<const id::ref::port&> resolved_port() const;
+
+        const ::petri_net::edge::type& direction() const;
+        const ::petri_net::edge::type& direction
+          (const ::petri_net::edge::type&);
 
       private:
         friend struct net_type;
@@ -65,6 +71,8 @@ namespace xml
         //! not yet parsed places
         std::string _place;
         std::string _port;
+
+        ::petri_net::edge::type _direction;
 
         we::type::property::type _properties;
       };

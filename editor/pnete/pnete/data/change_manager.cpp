@@ -817,6 +817,7 @@ namespace fhg
                  , transition.id()
                  , from.get().name()
                  , to.get().name()
+                 , petri_net::edge::PT
                  ).make_reference_id()
                , action::in
                )
@@ -847,6 +848,7 @@ namespace fhg
                  , transition.id()
                  , to.get().name()
                  , from.get().name()
+                 , petri_net::edge::TP
                  ).make_reference_id()
                , action::out
                )

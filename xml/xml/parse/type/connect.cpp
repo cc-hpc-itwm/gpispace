@@ -18,12 +18,14 @@ namespace xml
                                  , PARENT_CONS_PARAM(transition)
                                  , const std::string& place
                                  , const std::string& port
+                                 , const ::petri_net::edge::type& direction
                                  , const we::type::property::type& properties
                                  )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _place (place)
         , _port (port)
+        , _direction (direction)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
@@ -63,6 +65,16 @@ namespace xml
           ("connection that is not in any of the parent's lists");
       }
 
+      const ::petri_net::edge::type& connect_type::direction() const
+      {
+        return _direction;
+      }
+      const ::petri_net::edge::type& connect_type::direction
+        (const ::petri_net::edge::type& direction_)
+      {
+        return _direction = direction_;
+      }
+
       const std::string& connect_type::place (const std::string& place)
       {
         return _place = place;
@@ -96,6 +108,7 @@ namespace xml
           , parent
           , _place
           , _port
+          , _direction
           , _properties
           ).make_reference_id();
       }
