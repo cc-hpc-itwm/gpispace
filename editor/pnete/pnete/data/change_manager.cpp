@@ -699,7 +699,7 @@ namespace fhg
             , const handle::function& function
             , const QString& name
             )
-              : ACTION_INIT ("set_function_name")
+              : ACTION_INIT ("set_function_name_action")
               , _function (function)
               , _old_name (function.get().name())
               , _new_name
@@ -758,7 +758,7 @@ namespace fhg
             , const handle::expression& expression
             , const QString& new_content
             )
-              : ACTION_INIT ("set_expression_content")
+              : ACTION_INIT ("set_expression_content_action")
               , _expression (expression)
               , _old_content (expression.get().expression())
               , _new_content (new_content.toStdString())
