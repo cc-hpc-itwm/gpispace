@@ -657,10 +657,9 @@ namespace we { namespace type {
         inner_to_outer_.erase (port_id);
       }
 
-      template <typename Direction>
       void add_port ( const std::string & name
                     , signature_type const & sig
-                    , Direction direction
+                    , const we::type::PortDirection& direction
                     , const we::type::property::type & prop
                       = we::type::property::type()
                     )
@@ -677,10 +676,9 @@ namespace we { namespace type {
           }
       }
 
-      template <typename Direction>
       void add_port ( const std::string & name
                     , signature_type const & sig
-                    , const Direction direction
+                    , const we::type::PortDirection& direction
                     , const pid_t& pid
                     , const we::type::property::type & prop
                       = we::type::property::type()
@@ -1061,7 +1059,7 @@ namespace we { namespace type {
         return names;
       }
 
-      port_names_t port_names (const PortDirection & d) const
+      port_names_t port_names (const we::type::PortDirection & d) const
       {
         port_names_t names;
 
