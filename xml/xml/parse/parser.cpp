@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <xml/parse/parser.hpp>
 
@@ -27,7 +27,7 @@
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/read_bool.hpp>
-#include <fhg/util/boost.hpp>
+#include <fhg/util/boost/optional.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
