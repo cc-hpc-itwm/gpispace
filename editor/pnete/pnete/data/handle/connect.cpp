@@ -20,6 +20,20 @@ namespace fhg
           : connect_meta_base (id, change_manager)
         { }
 
+        bool connect::is_in() const
+        {
+          return petri_net::edge::is_PT (get().direction());
+        }
+        bool connect::is_out() const
+        {
+          return !is_in();
+        }
+        bool connect::is_read() const
+        {
+          return petri_net::edge::is_pt_read (get().direction());
+        }
+
+
         void connect::remove (const QObject* sender) const
         {
           change_manager().remove_connection (sender, *this);

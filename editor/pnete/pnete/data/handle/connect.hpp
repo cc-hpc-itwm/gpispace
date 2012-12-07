@@ -31,6 +31,10 @@ namespace fhg
                   , change_manager_t& change_manager
                   );
 
+          bool is_in() const;
+          bool is_out() const;
+          bool is_read() const;
+
           void remove (const QObject* sender) const;
 
           virtual void set_property ( const QObject* sender
