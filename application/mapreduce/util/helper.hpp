@@ -12,10 +12,13 @@
 #include <boost/foreach.hpp>
 #include <fvm-pc/pc.hpp>
 #include <util/types.hpp>
+#include <algorithm>
+#include <boost/regex.hpp>
 
 const int KEY_MAX_SIZE = 50;
 const std::string delimiters=" \n";
-char SPCHAR = '#';
+const char SHRPCH = '#';
+const char SPCH = ' ';
 
 typedef  std::pair<std::string, std::string> key_val_pair_t;
 
@@ -23,83 +26,136 @@ namespace mapreduce
 {
   namespace util
   {
-  	template <typename T>
-    void print_keys(const std::string& msg, T& arr_keys )
-    {
-      std::ostringstream osstr;
+	  void insert_element(vector<std::string>& arr_items, std::string element )
+	  {
+		  size_t size = arr_items.size();
+		  arr_items.resize(size+1);
+		  int i = size;
 
-      int k=0;
-      for( typename T::iterator it = arr_keys.begin(); it!= arr_keys.end(); it++ )
-      {
-        osstr<<*it<<" ";
-        if(k++%4 == 0)
-        	osstr<<std::endl;
-      }
+		  for(; i > 0 && arr_items[i-1]>element; --i)
+		  {
+			  arr_items[i] = arr_items[i-1];
+		  }
 
-      MLOG(INFO, msg<<" "<<osstr.str());
-    }
+		  arr_items[i] = element;
+	  }
 
+  	  std::string make_spec_left_prefix(const long& chunk_id)
+  	  {
+  		std::ostringstream oss;
+  		oss<<SHRPCH<<chunk_id<<SHRPCH<<"0";
+  		return oss.str();
+  	  }
 
-    std::string match_keys(const std::string& keyval_pair, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
-    {
-      std::string w;
-      bool bMatching = false;
+  	  std::string make_spec_right_prefix(const long& chunk_id)
+	  {
+		std::ostringstream oss;
+		oss<<SHRPCH<<chunk_id<<SHRPCH<<"1";
+		return oss.str();
+	  }
 
-      //MLOG(INFO, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
+  	  void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
+  	  {
+  		  std::sort(iter_beg, iter_end);
+  	  }
 
-      boost::char_separator<char> sep("#:");
-      boost::tokenizer<boost::char_separator<char> > tok_v(keyval_pair, sep);
-      std::vector<std::string> v(3,"");
-      v.assign(tok_v.begin(), tok_v.end());
+  	  template <typename T>
+  	  void print_keys(const std::string& msg, T& arr_keys )
+  	  {
+  		  std::ostringstream osstr;
 
-      cid = boost::lexical_cast<long>(v[0]);
-      end = boost::lexical_cast<long>(v[1]);
+  		  int k=0;
+  		  for( typename T::iterator it = arr_keys.begin(); it!= arr_keys.end(); it++ )
+  		  {
+  			  osstr<<*it<<" ";
+  			  if(k++%4 == 0)
+  				  osstr<<std::endl;
+  		  }
 
-      if( list_border_keys.empty() )
-      {
-           MLOG(WARN, "The array of border keys is empty ...");
-           matching_pair = "";
-           return "";
-      }
-
-      for(std::list<std::string>::const_iterator it = list_border_keys.begin(); it != list_border_keys.end(); it++ )
-      {
-        boost::tokenizer<boost::char_separator<char> > tok_u(*it, sep);
-        std::vector<std::string> u(3, "");
-        u.assign(tok_u.begin(), tok_u.end());
-
-        int v0 = cid;
-        int u0 = boost::lexical_cast<long>(u[0]);
-
-        int v1 = end;
-        int u1 = boost::lexical_cast<long>(u[1]);
-
-        if( v0 == u0+1 && u1 == v1+1 )
-        {
-          w = u[2]+v[2];
-          bMatching = true;
-          matching_pair = *it;
-        }
-        else
-          if( u0 == v0+1 && v1 == u1+1 )
-          {
-            w = v[2]+u[2];
-            bMatching = true;
-            matching_pair = *it;
-          }
-      }
-
-      if(w.empty())
-        MLOG(INFO, "No matching pair was found!");
-
-      return w;
-    }
+  		  MLOG(INFO, msg<<" "<<osstr.str());
+  	  }
 
 
-    bool is_special_item(const std::string& str_item)
-    {
-      return str_item.find(SPCHAR) != std::string::npos; // true if it begins with #
-    }
+  	  std::string match_keys(const std::string& keyval_pair, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
+  	  {
+  		  std::string w;
+  		  bool bMatching = false;
+
+  		  //MLOG(INFO, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
+
+  		  boost::char_separator<char> sep("#:");
+  		  boost::tokenizer<boost::char_separator<char> > tok_v(keyval_pair, sep);
+  		  std::vector<std::string> v(3,"");
+  		  v.assign(tok_v.begin(), tok_v.end());
+
+  		  cid = boost::lexical_cast<long>(v[0]);
+  		  end = boost::lexical_cast<long>(v[1]);
+
+  		  if( list_border_keys.empty() )
+  		  {
+  			  MLOG(WARN, "The array of border keys is empty ...");
+  			  matching_pair = "";
+  			  return "";
+  		  }
+
+  		  for(std::list<std::string>::const_iterator it = list_border_keys.begin(); it != list_border_keys.end(); it++ )
+  		  {
+  			  boost::tokenizer<boost::char_separator<char> > tok_u(*it, sep);
+  			  std::vector<std::string> u(3, "");
+  			  u.assign(tok_u.begin(), tok_u.end());
+
+  			  int v0 = cid;
+  			  int u0 = boost::lexical_cast<long>(u[0]);
+
+  			  int v1 = end;
+  			  int u1 = boost::lexical_cast<long>(u[1]);
+
+  			  if( v0 == u0+1 && u1 == v1+1 )
+  			  {
+  				  w = u[2]+v[2];
+  				  bMatching = true;
+  				  matching_pair = *it;
+  			  }
+  			  else
+  				  if( u0 == v0+1 && v1 == u1+1 )
+  				  {
+  					  w = v[2]+u[2];
+  					  bMatching = true;
+  					  matching_pair = *it;
+  				  }
+  		  }
+
+  		  if(w.empty())
+  			  MLOG(INFO, "No matching pair was found!");
+
+  		  return w;
+  	  }
+
+
+  	  bool is_special_item(const std::string& str_item)
+  	  {
+  		  if (str_item[0] != SHRPCH)
+  			  return false;
+
+  		  // further checks are necessary
+  		  boost::char_separator<char> sep("#:");
+  		  boost::tokenizer<boost::char_separator<char> > tok(str_item, sep);
+  		  std::vector<std::string> u(3, "");
+  		  u.assign(tok.begin(), tok.end());
+
+  		  try {
+  			  int u0 = boost::lexical_cast<long>(u[0]);
+  			  int u1 = boost::lexical_cast<long>(u[1]);
+  			  return true;
+  		  }
+  		  catch(const boost::bad_lexical_cast& ex)
+  		  {
+  			  return false;
+  		  }
+
+  		  // const boost::regex pattern("#\\d+#\\d+:\\w*");
+  		  // return boost::regex_match(str_item, pattern);
+  	  }
 
     bool is_delimiter(char x)
     {
@@ -235,18 +291,19 @@ namespace mapreduce
 
     key_val_pair_t get_key_val(const std::string& str_map)
     {
-    	boost::char_separator<char> sep(":");
-    	boost::tokenizer<boost::char_separator<char> > tok(str_map, sep);
+      size_t split_pos = str_map.find_last_of(":");
+      std::string key = str_map.substr(0,split_pos);
+      std::string val = str_map.substr(split_pos+1, str_map.size());
 
-    	std::vector<std::string> v;
-    	v.assign(tok.begin(), tok.end());
-    	if(v.size() != 2)
-    	{
-    		throw std::runtime_error("invalid key:value item: " + str_map);
-    	}
+      return key_val_pair_t(key, val);
+    }
 
+    std::string make_string(const key_val_pair_t& pair)
+    {
+    	std::ostringstream osstr;
+    	osstr<<pair.first<<":"<<pair.second;
 
-    	return key_val_pair_t(v[0], v[1]);
+    	return osstr.str();;
     }
 
     long ceil(long a, long b)
