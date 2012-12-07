@@ -33,6 +33,10 @@ namespace fhg
           return petri_net::edge::is_pt_read (get().direction());
         }
 
+        void connect::is_read (const QObject* origin, const bool& s) const
+        {
+          change_manager().connection_is_read (origin, *this, s);
+        }
 
         void connect::remove (const QObject* sender) const
         {

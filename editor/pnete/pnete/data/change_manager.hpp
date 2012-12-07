@@ -66,6 +66,8 @@ namespace fhg
                             , const data::handle::port&
                             );
         void remove_connection (const QObject*, const data::handle::connect&);
+        void connection_is_read
+          (const QObject*, const data::handle::connect&, const bool&);
 
         void set_property ( const QObject*
                           , const data::handle::connect&
@@ -221,6 +223,8 @@ namespace fhg
         void connection_removed ( const QObject*
                                 , const data::handle::connect&
                                 );
+        void connection_direction_changed
+          (const QObject*, const data::handle::connect&);
 
         // -- transition ---------------------------------------------
         void transition_added ( const QObject*

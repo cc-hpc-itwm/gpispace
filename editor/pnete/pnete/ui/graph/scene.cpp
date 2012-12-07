@@ -254,13 +254,30 @@ namespace fhg
 
             case base_item::connection_graph_type:
             {
+              const data::handle::connect handle
+                ( fhg::util::qt::throwing_qgraphicsitem_cast<connection_item*>
+                  (item_below_cursor)->handle()
+                );
+
+              QAction* action_read (NULL);
+              if (handle.is_in())
+              {
+                action_read = menu.addAction(tr("is_read_connect"));
+                action_read->setCheckable (true);
+                action_read->setChecked (handle.is_read());
+                menu.addSeparator();
+              }
               QAction* action_delete (menu.addAction (tr("Delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_delete)
               {
-                fhg::util::qt::throwing_qgraphicsitem_cast<connection_item*>
-                  (item_below_cursor)->handle().remove (this);
+                handle.remove (this);
+              }
+              //! \note check for handle.is_in(), as action_read would be null
+              else if (handle.is_in() && triggered == action_read)
+              {
+                handle.is_read (this, action_read->isChecked());
               }
               else if (!triggered)
               {
@@ -312,7 +329,6 @@ namespace fhg
 
         void scene_type::create_connection ( connectable_item* from
                                            , connectable_item* to
-                                           , bool only_reading
                                            , const data::handle::connect& handle
                                            )
         {
@@ -321,7 +337,7 @@ namespace fhg
             throw std::runtime_error
               ("tried hard-connecting non-connectable items.");
           }
-          addItem (new connection_item (from, to, handle, only_reading));
+          addItem (new connection_item (from, to, handle));
         }
 
         void scene_type::remove_pending_connection()
@@ -626,8 +642,6 @@ namespace fhg
             {
               create_connection ( item_with_handle<place_item> (place)
                                 , item_with_handle<port_item> (port)
-                                , petri_net::edge::is_pt_read
-                                  (connection.get().direction())
                                 , connection
                                 );
             }
@@ -635,7 +649,6 @@ namespace fhg
             {
               create_connection ( item_with_handle<port_item> (port)
                                 , item_with_handle<place_item> (place)
-                                , false
                                 , connection
                                 );
             }
