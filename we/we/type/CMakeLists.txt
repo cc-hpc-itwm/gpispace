@@ -21,6 +21,8 @@ set (hdrs
   )
 set (sources
   property.cpp
+  port.cpp
+  id.cpp
 )
 
 install(FILES ${hdrs}

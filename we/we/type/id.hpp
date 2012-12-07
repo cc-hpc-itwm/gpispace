@@ -5,8 +5,6 @@
 
 #include <stdint.h>
 
-#include <limits>
-
 namespace petri_net
 {
   // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
@@ -18,29 +16,14 @@ namespace petri_net
   typedef uint64_t rid_t; // port
   typedef int16_t prio_t; // priority
 
-  namespace traits
-  {
-    template <typename IdType>
-    struct id_traits
-    {
-      typedef IdType type;
+#define INVALID(_type)                          \
+  const _type ## _t& _type ## _invalid();
 
-      inline static type invalid()
-      {
-        return std::numeric_limits<type>::max();
-      }
-    };
-  }
+  INVALID(eid);
+  INVALID(pid);
+  INVALID(prio);
 
-  // deprecated?
-  static const eid_t eid_invalid (traits::id_traits<eid_t>::invalid());
-
-  static const pid_t& pid_invalid()
-  {
-    static const pid_t i (std::numeric_limits<pid_t>::max());
-
-    return i;
-  }
+#undef INVALID
 }
 
 #endif

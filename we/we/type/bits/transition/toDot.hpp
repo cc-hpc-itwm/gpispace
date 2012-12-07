@@ -346,8 +346,7 @@ namespace we { namespace type {
       , id_type &
       , const options<Pred> &
       , const level_type = 1
-      , const petri_net::prio_t &
-      = petri_net::traits::id_traits<petri_net::prio_t>::invalid()
+      , const petri_net::prio_t& = petri_net::prio_invalid()
       );
 
       template<typename Pred>
@@ -669,7 +668,7 @@ namespace we { namespace type {
 
         if (opts.show_priority)
           {
-            if (prio != petri_net::traits::id_traits<petri_net::prio_t>::invalid())
+            if (prio != petri_net::prio_invalid())
               {
                 if (prio > 0)
                   {

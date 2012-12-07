@@ -253,7 +253,7 @@ private:
                      , const tid_t& tid
                      )
   {
-    if (m.get_adjacent (r, c) != eid_invalid)
+    if (m.get_adjacent (r, c) != eid_invalid())
       throw bijection::exception::already_there ("adjacency");
 
     const eid_t eid (emap.add (edge));
@@ -452,8 +452,8 @@ public:
     , tmap ("transition")
     , emap ("edge name")
     , connection_map ()
-    , adj_pt (eid_invalid, _places, _transitions)
-    , adj_tp (eid_invalid, _transitions, _places)
+    , adj_pt (eid_invalid(), _places, _transitions)
+    , adj_tp (eid_invalid(), _transitions, _places)
     , token_place_rel ()
     , enabled ()
     , enabled_choice_consume ()

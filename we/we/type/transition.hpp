@@ -178,7 +178,7 @@ namespace we { namespace type {
       typedef boost::unordered_map<port_id_t, port_t> port_map_t;
       typedef port_map_t::const_iterator const_iterator;
       typedef port_map_t::iterator port_iterator;
-      typedef boost::unordered_set<port_t::name_type> port_names_t;
+      typedef boost::unordered_set<std::string> port_names_t;
 
       typedef we::type::requirement_t<std::string> requirement_t;
       typedef std::list<requirement_t> requirements_t;
