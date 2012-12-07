@@ -153,8 +153,6 @@ namespace we { namespace type {
 
     struct transition_t
     {
-      typedef unsigned int edge_type;
-
       typedef std::string cond_type;
       typedef detail::preparsed_condition preparsed_cond_type;
       typedef boost::variant< module_call_t

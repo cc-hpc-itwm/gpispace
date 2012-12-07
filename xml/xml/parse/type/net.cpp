@@ -591,7 +591,7 @@ namespace xml
       {
         typedef we::activity_t::transition_type we_transition_type;
 
-        typedef we_transition_type::edge_type we_edge_type;
+        typedef unsigned int we_edge_type;
 
         typedef we_transition_type::pid_t pid_t;
 

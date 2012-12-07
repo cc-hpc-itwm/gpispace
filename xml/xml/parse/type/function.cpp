@@ -757,7 +757,7 @@ namespace xml
         {
           we_net_type we_net;
 
-          we::activity_t::transition_type::edge_type e (0);
+          unsigned int e (0);
 
           pid_of_place_type pid_of_place
             ( net_synthesize ( we_net
