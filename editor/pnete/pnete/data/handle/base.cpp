@@ -58,18 +58,26 @@ namespace fhg
                                          , const char* arguments
                                          ) const
         {
+
+#define STRINGIFY_HELPER(s) #s
+#define STRINGIFY(s) STRINGIFY_HELPER(s)
+
           QObject::connect ( &change_manager()
-                           , ( std::string (QTOSTRING (QSIGNAL_CODE))
+                           , ( std::string (STRINGIFY (QSIGNAL_CODE))
                              + signal
                              + "(const QObject*," + arguments + ")"
                              ).c_str()
                            , object
-                           , ( std::string (QTOSTRING (QSLOT_CODE))
+                           , ( std::string (STRINGIFY (QSLOT_CODE))
                              + slot
                              + "(const QObject*," + arguments + ")"
                              ).c_str()
                            , Qt::DirectConnection
                            );
+
+#undef STRINGIFY
+#undef STRINGIFY_HELPER
+
         }
 
         void base::connect_to_change_mgr ( const QObject* object

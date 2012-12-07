@@ -10,6 +10,9 @@
 #include <QHBoxLayout>
 #include <QDoubleSpinBox>
 #include <QSlider>
+#include <QSplitter>
+#include <QMessageBox>
+#include <QScrollBar>
 #include <QFileDialog>
 
 #include <boost/lexical_cast.hpp>

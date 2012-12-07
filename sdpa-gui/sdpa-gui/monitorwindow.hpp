@@ -17,6 +17,9 @@
 
 #include <we/we.hpp>
 
+class QGraphicsView;
+class QGraphicsScene;
+
 namespace Ui {
     class MonitorWindow;
 }

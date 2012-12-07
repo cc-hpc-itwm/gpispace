@@ -276,20 +276,13 @@ namespace fhg
         data::handle::connect handle (*_id, _scene->change_manager());
         if (!is_out)
         {
-          _scene->create_connection ( place_pos->second
-                                    , port_pos->second
-                                    , petri_net::edge::is_pt_read
-                                    (_id->get().direction())
-                                    , handle
-                                    );
+          _scene->create_connection
+            (place_pos->second, port_pos->second, handle);
         }
         else
         {
-          _scene->create_connection ( port_pos->second
-                                    , place_pos->second
-                                    , false
-                                    , handle
-                                    );
+          _scene->create_connection
+            (port_pos->second, place_pos->second, handle);
         }
       }
 
@@ -440,6 +433,7 @@ namespace fhg
             ( new ui::graph::port_place_association
               ( _port_item
               , qgraphicsitem_cast<ui::graph::place_item*> (place_pos->second)
+              , _port_item->handle()
               )
             );
         }

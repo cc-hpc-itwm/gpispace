@@ -60,6 +60,7 @@ namespace fhg
           // -- connection ---------------------------------------------
           EXPOSE (connection_added);
           EXPOSE (connection_removed);
+          EXPOSE (connection_direction_changed);
           EXPOSE (property_changed);
 
           // -- transition ---------------------------------------------
@@ -372,7 +373,7 @@ namespace fhg
           virtual void undo()
           {
             add_connection_impl
-              (_change_manager, _origin, _transition, _connect);
+              (_change_manager, NULL, _transition, _connect);
           }
 
           virtual void redo()
@@ -386,6 +387,48 @@ namespace fhg
           ACTION_MEMBERS;
           const ::xml::parse::id::ref::connect _connect;
           const ::xml::parse::id::ref::transition _transition;
+        };
+
+        void connection_is_read_impl
+          (ACTION_ARG_LIST, const handle::connect& connect, bool read)
+        {
+          connect.get_ref().direction ( read
+                                      ? petri_net::edge::PT_READ
+                                      : petri_net::edge::PT
+                                      );
+          change_manager.emit_signal
+            (&signal::connection_direction_changed, origin, connect);
+        }
+
+        class connection_is_read : public QUndoCommand
+        {
+        public:
+          connection_is_read
+            (ACTION_ARG_LIST, const handle::connect& connect, bool read)
+              : ACTION_INIT ("remove_connection_action")
+              , _connect (connect)
+              , _old_value (connect.is_read())
+              , _new_value (read)
+          { }
+
+          virtual void undo()
+          {
+            connection_is_read_impl
+              (_change_manager, NULL, _connect, _old_value);
+          }
+
+          virtual void redo()
+          {
+            connection_is_read_impl
+              (_change_manager, NULL, _connect, _new_value);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const handle::connect _connect;
+          const bool _old_value;
+          const bool _new_value;
         };
 
         // -- transition ---------------------------------------------
@@ -854,6 +897,21 @@ namespace fhg
       {
         push (new action::remove_connection (*this, origin, connect.id()));
       }
+
+      void change_manager_t::connection_is_read
+        ( const QObject* origin
+        , const data::handle::connect& connect
+        , const bool& read
+        )
+      {
+        if (connect.is_out())
+        {
+          throw std::runtime_error ("tried setting is_read on out-connection");
+        }
+
+        push (new action::connection_is_read (*this, origin, connect, read));
+      }
+
 
       void change_manager_t::set_property
         ( const QObject* origin

@@ -35,13 +35,9 @@ namespace fhg
           connection_item ( connectable_item* start
                           , connectable_item* end
                           , const data::handle::connect& handle
-                          , bool read = false
                           );
 
           virtual const data::handle::connect& handle() const;
-
-          const bool& read() const;
-          const bool& read (const bool&);
 
           virtual QPainterPath shape() const;
           virtual void paint
@@ -50,10 +46,12 @@ namespace fhg
           enum { Type = connection_graph_type };
           virtual int type() const { return Type; }
 
+        public slots:
+          void connection_direction_changed
+            (const QObject*, const data::handle::connect&);
+
         private:
           data::handle::connect _handle;
-
-          bool _read;
         };
       }
     }
