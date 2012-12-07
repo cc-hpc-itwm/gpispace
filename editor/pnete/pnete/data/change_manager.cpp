@@ -373,7 +373,7 @@ namespace fhg
           virtual void undo()
           {
             add_connection_impl
-              (_change_manager, _origin, _transition, _connect);
+              (_change_manager, NULL, _transition, _connect);
           }
 
           virtual void redo()
