@@ -281,7 +281,7 @@ private:
         // call the global condition function here, that sets the
         // cross product either to the end or to some valid choice
 
-        if (not get_transition (tid).condition (cs))
+        if (not get_transition (tid).condition()(cs))
           {
             enabled.erase (tid);
           }

@@ -315,12 +315,6 @@ namespace we { namespace type {
         , m_requirements (other.m_requirements)
       { }
 
-      template <typename Choices>
-      bool condition (Choices & choices) const
-      {
-        return condition_ (choices);
-      }
-
       const condition::type & condition() const
       {
         return condition_;
