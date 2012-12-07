@@ -23,13 +23,6 @@ namespace mapreduce
        list_key_val_pairs.push_back(key_val_pair_t(key,"1"));
        return list_key_val_pairs;
     }
-
-    std::string make_string(key_val_pair_t& pair)
-    {
-      std::ostringstream osstr;
-      osstr<<pair.first<<":"<<pair.second;
-      return osstr.str();
-    }
   }
 }
 
