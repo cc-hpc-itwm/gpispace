@@ -151,7 +151,10 @@ namespace fhg
           (QGraphicsSceneContextMenuEvent* event)
         {
           if ( base_item* item_below_cursor
-             = qgraphicsitem_cast<base_item*> (itemAt (event->scenePos()))
+             = qgraphicsitem_cast<base_item*> ( itemAt ( event->scenePos()
+                                                       , QTransform()
+                                                       )
+                                              )
              )
           {
             QMenu menu;
