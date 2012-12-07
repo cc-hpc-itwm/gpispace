@@ -549,42 +549,28 @@ namespace we { namespace type {
         connect_outer_to_inner (outer_new, inner, prop);
       }
 
-      template <typename Outer>
-      typename outer_to_inner_t::mapped_type
-      gen_outer_to_inner (Outer outer) const
+      const port_id_t& outer_to_inner (const pid_t& pid) const
       {
         try
         {
-          return outer_to_inner_.at(outer);
-        } catch (const std::out_of_range &)
+          return outer_to_inner_.at (pid).first;
+        }
+        catch (const std::out_of_range&)
         {
-          throw exception::not_connected<Outer> ("trans: " + name() + ": not connected: " + fhg::util::show(outer), outer);
+          throw exception::not_connected<pid_t> ("trans: " + name() + ": place not connected: " + fhg::util::show (pid), pid);
         }
       }
 
-      template <typename Outer>
-      port_id_t outer_to_inner (Outer outer) const
-      {
-        return gen_outer_to_inner (outer).first;
-      }
-
-      template <typename Inner>
-      typename inner_to_outer_t::mapped_type
-      gen_inner_to_outer (Inner inner) const
+      const pid_t& inner_to_outer (const port_id_t& port) const
       {
         try
         {
-          return inner_to_outer_.at(inner);
-        } catch (const std::out_of_range &)
-        {
-          throw exception::not_connected<Inner> ("trans: " + name() + ": port not connected: " + fhg::util::show(inner), inner);
+          return inner_to_outer_.at (port).first;
         }
-      }
-
-      template <typename Inner>
-      pid_t inner_to_outer (Inner inner) const
-      {
-        return gen_inner_to_outer (inner).first;
+        catch (const std::out_of_range &)
+        {
+          throw exception::not_connected<port_id_t> ("trans: " + name() + ": port not connected: " + fhg::util::show (port), port);
+        }
       }
 
       inner_to_outer_t::const_iterator
