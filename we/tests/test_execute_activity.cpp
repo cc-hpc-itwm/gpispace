@@ -97,11 +97,10 @@ namespace module
         ; ++ton
         )
     {
-      const port_id_t port_id =
-        we::type::detail::translate_name_to_output_port (act.transition(), ton->second);
+      const port_id_t& port_id
+        (act.transition().output_port_by_name (ton->second));
 
-      const port_t & port =
-        act.transition().get_port (port_id);
+      const port_t & port (act.transition().get_port (port_id));
 
       act.add_output
         ( output_t::value_type

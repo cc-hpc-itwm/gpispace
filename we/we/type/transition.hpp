@@ -122,14 +122,6 @@ namespace we { namespace type {
       }
 
       template <typename Transition>
-      const port_id_t& translate_name_to_output_port ( const Transition& trans
-                                                     , const std::string& name
-                                                     )
-      {
-        return trans.output_port_by_name (name);
-      }
-
-      template <typename Transition>
       const port_id_t& translate_name_to_input_port ( const Transition& trans
                                                     , const std::string& name
                                                     )

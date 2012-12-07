@@ -44,10 +44,8 @@ namespace module
     {
       try
       {
-        const port_id_t port_id =
-          we::type::detail::translate_name_to_output_port ( act.transition()
-                                                          , ton->first
-                                                          );
+        const port_id_t& port_id
+          (act.transition().output_port_by_name (ton->first));
 
         const port_t & port =
           act.transition().get_port (port_id);
