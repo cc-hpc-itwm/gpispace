@@ -61,7 +61,7 @@ int main (int, char **)
          ${pair.bid}   := ${store.bid}                         ; \
          ${pair.vid}   := ${vid}                                 "
       )
-    , transition_t::cond_type ("!bitset_is_element (${store.seen}, ${vid})")
+    , "!bitset_is_element (${store.seen}, ${vid})"
     , true
     );
 

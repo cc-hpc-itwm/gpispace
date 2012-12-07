@@ -153,7 +153,6 @@ namespace we { namespace type {
 
     struct transition_t
     {
-      typedef std::string cond_type;
       typedef detail::preparsed_condition preparsed_cond_type;
       typedef boost::variant< module_call_t
                             , expression_t
@@ -199,7 +198,7 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string & name
                    , Type const & typ
-                   , cond_type const & _condition = "true"
+                   , const std::string& _condition = "true"
                    )
         : name_ (name)
         , data_ (typ)
@@ -230,7 +229,7 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string & name
                    , Type const & typ
-                   , cond_type const & _condition
+                   , const std::string& _condition
                    , bool intern
                    )
         : name_ (name)
