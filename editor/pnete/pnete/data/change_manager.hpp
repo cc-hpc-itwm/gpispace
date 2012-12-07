@@ -119,6 +119,9 @@ namespace fhg
                           , const data::handle::place&
                           );
 
+        void set_type
+          (const QObject*, const data::handle::place&, const QString&);
+
         void set_property ( const QObject*
                           , const data::handle::place&
                           , const ::we::type::property::key_type&
@@ -210,21 +213,11 @@ namespace fhg
                               , const ::we::type::property::key_type&
                               , const ::we::type::property::value_type&
                               );
-        void connection_added_out ( const QObject*
-                                  , const data::handle::connect&
-                                  , const data::handle::port&
-                                  , const data::handle::place&
-                                  );
-        void connection_added_in ( const QObject*
-                                 , const data::handle::connect&
-                                 , const data::handle::place&
-                                 , const data::handle::port&
-                                 );
-        void connection_added_read ( const QObject*
-                                   , const data::handle::connect&
-                                   , const data::handle::place&
-                                   , const data::handle::port&
-                                   );
+        void connection_added ( const QObject*
+                              , const data::handle::connect&
+                              , const data::handle::place&
+                              , const data::handle::port&
+                              );
         void connection_removed ( const QObject*
                                 , const data::handle::connect&
                                 );
@@ -250,6 +243,8 @@ namespace fhg
                               , const ::we::type::property::key_type&
                               , const ::we::type::property::value_type&
                               );
+        void place_type_set
+          (const QObject*, const data::handle::place&, const QString&);
 
         // - port ----------------------------------------------------
         void property_changed ( const QObject*

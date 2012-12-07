@@ -160,33 +160,12 @@ namespace fhg
         //! \todo do something if not already set
         //        _transition->repositionChildrenAndResize();
       }
-      WSIG(transition, transition::connect_read, XMLTYPE(transition_type::connections_type), cs)
+      WSIG(transition, transition::connection, XMLTYPE(transition_type::connections_type), cs)
       {
         weaver::connection wc ( _scene
                               , _place_item_by_name
                               , _port_in_item_by_name
-                              , ui::graph::connectable::direction::IN
-                              , true
-                              );
-
-        from::many (&wc, cs.ids(), from::connection);
-      }
-      WSIG(transition, transition::connect_in, XMLTYPE(transition_type::connections_type), cs)
-      {
-        weaver::connection wc ( _scene
-                              , _place_item_by_name
-                              , _port_in_item_by_name
-                              , ui::graph::connectable::direction::IN
-                              );
-
-        from::many (&wc, cs.ids(), from::connection);
-      }
-      WSIG(transition, transition::connect_out, XMLTYPE(transition_type::connections_type), cs)
-      {
-        weaver::connection wc ( _scene
-                              , _place_item_by_name
                               , _port_out_item_by_name
-                              , ui::graph::connectable::direction::OUT
                               );
 
         from::many (&wc, cs.ids(), from::connection);
@@ -248,15 +227,13 @@ namespace fhg
 
       connection::connection ( ui::graph::scene_type* scene
                              , item_by_name_type& place_item_by_name
-                             , item_by_name_type& port_item_by_name
-                             , const ui::graph::connectable::direction::type& direction
-                             , const bool& read
+                             , item_by_name_type& ports_in
+                             , item_by_name_type& ports_out
                              )
         : _scene (scene)
         , _place_item_by_name (place_item_by_name)
-        , _port_item_by_name (port_item_by_name)
-        , _direction (direction)
-        , _read (read)
+        , _ports_in (ports_in)
+        , _ports_out (ports_out)
         , _port ()
         , _place ()
         , _id (boost::none)
@@ -277,40 +254,43 @@ namespace fhg
       }
       WSIGE(connection, connection::close)
       {
+        const bool is_out (!petri_net::edge::is_PT (_id->get().direction()));
+
         typedef item_by_name_type::iterator iterator_type;
 
-        const iterator_type port_pos (_port_item_by_name.find (_port));
-        const iterator_type place_pos (_place_item_by_name.find (_place));
+        const iterator_type port_pos
+          ((is_out ? _ports_out : _ports_in).find (_port));
+        if (port_pos == (is_out ? _ports_out : _ports_in).end())
+        {
+          throw std::runtime_error ("connection: port " + _port + " not found");
+        }
 
-        if (port_pos == _port_item_by_name.end())
-          {
-            throw
-              std::runtime_error ("connection: port " + _port + " not found");
-          }
+        const iterator_type place_pos (_place_item_by_name.find (_place));
         if (place_pos == _place_item_by_name.end())
-          {
-            throw
-              std::runtime_error ("connection: place " + _place + " not found");
-          }
+        {
+          throw
+            std::runtime_error ("connection: place " + _place + " not found");
+        }
 
         //! \todo Do not take change_manager from scene, but from root.
         data::handle::connect handle (*_id, _scene->change_manager());
-        if (_direction == ui::graph::connectable::direction::IN)
-          {
-            _scene->create_connection ( place_pos->second
-                                      , port_pos->second
-                                      , _read
-                                      , handle
-                                      );
-          }
+        if (!is_out)
+        {
+          _scene->create_connection ( place_pos->second
+                                    , port_pos->second
+                                    , petri_net::edge::is_pt_read
+                                    (_id->get().direction())
+                                    , handle
+                                    );
+        }
         else
-          {
-            _scene->create_connection ( port_pos->second
-                                      , place_pos->second
-                                      , _read
-                                      , handle
-                                      );
-          }
+        {
+          _scene->create_connection ( port_pos->second
+                                    , place_pos->second
+                                    , false
+                                    , handle
+                                    );
+        }
       }
 
       net::net ( data::internal_type* root

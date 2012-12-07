@@ -15,7 +15,6 @@ endif()
 
 set (hdrs
   join.hpp
-  boost.hpp
   read_bool.hpp
   read.hpp
   show.hpp
@@ -63,6 +62,7 @@ install(FILES ${hdrs}
   DESTINATION include/fhg/util
   COMPONENT headers)
 
+add_subdirectory (boost)
 add_subdirectory(parse)
 add_subdirectory(thread)
 add_subdirectory(filesystem)

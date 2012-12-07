@@ -33,7 +33,7 @@ namespace we
   using petri_net::edge::TP;
 
   typedef we::type::transition_t transition_t;
-  typedef petri_net::net<transition_t> pnet_t;
+  typedef petri_net::net pnet_t;
   typedef we::mgmt::type::activity_t<transition_t> activity_t;
   typedef activity_t::input_t input_t;
   typedef we::mgmt::pref::preference_t<std::string> preference_t;

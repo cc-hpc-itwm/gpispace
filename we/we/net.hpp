@@ -17,6 +17,8 @@
 #include <we/type/place.hpp>
 #include <we/util/cross.hpp>
 
+#include <we/type/transition.hpp>
+
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
@@ -76,6 +78,17 @@ namespace petri_net
     {
       return PT_READ;
     }
+
+    inline std::string enum_to_string (const type& e)
+    {
+      switch (e)
+      {
+      case PT: return "in";
+      case PT_READ: return "read";
+      case TP: return "out";
+      }
+      throw std::runtime_error ("enum_to_string for invalid enum value");
+    }
   }
 } // namespace petri_net
 
@@ -94,19 +107,17 @@ namespace petri_net
 // condition of already enabled transitions is not neccessary
 
 // the net itself
-template<typename Transition>
 class net
 {
 
   // *********************************************************************** //
 public:
-  typedef Transition transition_type;
+  typedef we::type::transition_t transition_type;
   typedef unsigned int edge_type;
 
   typedef bijection::const_it<place::type,pid_t> place_const_it;
   typedef bijection::const_it<transition_type,tid_t> transition_const_it;
   typedef bijection::const_it<edge_type,eid_t> edge_const_it;
-  typedef typename place_const_it::size_type size_type;
 
   typedef multirel::right_const_it<token::type, pid_t> token_place_it;
 
@@ -119,23 +130,23 @@ public:
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits cd_traits;
 
-  typedef typename cd_traits::token_via_edge_t token_via_edge_t;
-  typedef typename cd_traits::vec_token_via_edge_t vec_token_via_edge_t;
-  typedef typename cd_traits::pid_in_map_t pid_in_map_t;
-  typedef typename cd_traits::choices_t choices_t;
+  typedef cd_traits::token_via_edge_t token_via_edge_t;
+  typedef cd_traits::vec_token_via_edge_t vec_token_via_edge_t;
+  typedef cd_traits::pid_in_map_t pid_in_map_t;
+  typedef cd_traits::choices_t choices_t;
 
-  typedef typename cross::iterator<pid_in_map_t> choice_it;
+  typedef cross::iterator<pid_in_map_t> choice_it;
 
   typedef priostore::type<tid_t> enabled_t;
 
   // *********************************************************************** //
 private:
   typedef boost::unordered_map<eid_t, connection_t> connection_map_t;
-  typedef typename multirel::multirel<token::type,pid_t> token_place_rel_t;
+  typedef multirel::multirel<token::type,pid_t> token_place_rel_t;
 
-  typedef typename cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
+  typedef cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
   typedef boost::unordered_map<tid_t, choice_vec_t> enabled_choice_t;
-  typedef typename enabled_choice_t::iterator choice_iterator_t;
+  typedef enabled_choice_t::iterator choice_iterator_t;
 
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
 
@@ -210,7 +221,7 @@ private:
   {
     return adjacent_size
       ( in_to_transition_size_map
-      , boost::bind ( &net<Transition>::in_to_transition
+      , boost::bind ( &net::in_to_transition
                     , this
                     , _1
                     )
@@ -222,7 +233,7 @@ private:
   {
     return adjacent_size
       ( out_of_transition_size_map
-      , boost::bind ( &net<Transition>::out_of_transition
+      , boost::bind ( &net::out_of_transition
                     , this
                     , _1
                     )
@@ -281,7 +292,7 @@ private:
             enabled_choice_consume[tid].clear();
             enabled_choice_read[tid].clear();
 
-            for ( typename cross::iterator<pid_in_map_t> choice (*cs)
+            for ( cross::iterator<pid_in_map_t> choice (*cs)
                 ; choice.has_more()
                 ; ++choice
                 )
@@ -389,7 +400,7 @@ private:
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-    typename vec_token_via_edge_t::iterator it (vec_token_via_edge.begin());
+    vec_token_via_edge_t::iterator it (vec_token_via_edge.begin());
 
     while (it != vec_token_via_edge.end() && it->first != token)
       ++it;
@@ -416,7 +427,7 @@ private:
 
     vec_token_via_edge.clear();
 
-    for ( typename vec_token_via_edge_t::const_iterator it (old.begin())
+    for ( vec_token_via_edge_t::const_iterator it (old.begin())
         ; it != old.end()
         ; ++it
         )
@@ -449,27 +460,6 @@ public:
     , in_to_transition_size_map ()
     , out_of_transition_size_map ()
   {}
-
-  // numbers of elements
-  size_type get_num_places (void) const { return places().size(); }
-  size_type get_num_transitions (void) const { return transitions().size(); }
-  size_type get_num_edges (void) const { return edges().size(); }
-
-  // get id
-  const pid_t & get_place_id (const place::type & place) const
-  {
-    return pmap.get_id (place);
-  }
-
-  const tid_t & get_transition_id (const transition_type & transition) const
-  {
-    return tmap.get_id (transition);
-  }
-
-  const eid_t & get_edge_id (const edge_type & edge) const
-  {
-    return emap.get_id (edge);
-  }
 
   // get element
   const place::type & get_place (const pid_t & pid) const
@@ -567,7 +557,7 @@ public:
   // get edge info
   connection_t get_edge_info (const eid_t & eid) const
   {
-    const typename connection_map_t::const_iterator it
+    const connection_map_t::const_iterator it
       (connection_map.find (eid));
 
     if (it == connection_map.end())
@@ -627,7 +617,7 @@ public:
   // delete elements
   const eid_t & delete_edge (const eid_t & eid)
   {
-    const typename connection_map_t::iterator it (connection_map.find (eid));
+    const connection_map_t::iterator it (connection_map.find (eid));
 
     if (it == connection_map.end())
       throw exception::no_such ("connection");
@@ -685,7 +675,7 @@ public:
       {
         stack.push (tit());
 	// TODO: get port and remove place from there
-	// typename transition_t::port_id_t portId = transition->transition().input_port_by_pid(place_.id()).first;
+	// transition_t::port_id_t portId = transition->transition().input_port_by_pid(place_.id()).first;
       }
 
     while (!stack.empty())
@@ -737,21 +727,10 @@ public:
     return tid;
   }
 
-  // modify and replace
   // erased in case of conflict after modification
   pid_t modify_place (const pid_t & pid, const place::type & place)
   {
     const pid_t new_pid (pmap.modify (pid, place));
-
-    recalculate_enabled_by_place (new_pid);
-
-    return new_pid;
-  }
-
-  // kept old value in case of conflict after modification
-  pid_t replace_place (const pid_t & pid, const place::type & place)
-  {
-    const pid_t new_pid (pmap.replace (pid, place));
 
     recalculate_enabled_by_place (new_pid);
 
@@ -765,35 +744,11 @@ public:
     return tmap.modify (tid, transition);
   }
 
-  tid_t replace_transition ( const tid_t & tid
-                           , const transition_type & transition
-                           )
-  {
-    return tmap.replace (tid, transition);
-  }
-
-  eid_t modify_edge (const eid_t & eid, const edge_type & edge)
-  {
-    const eid_t new_eid (emap.modify (eid, edge));
-
-    recalculate_enabled_by_edge (new_eid);
-
-    return new_eid;
-  }
-
-  eid_t replace_edge (const eid_t & eid, const edge_type & edge)
-  {
-    const eid_t new_eid (emap.replace (eid, edge));
-
-    recalculate_enabled_by_edge (new_eid);
-
-    return new_eid;
-  }
-
+ private:
   // deal with tokens
   const pid_in_map_t & get_pid_in_map (const tid_t & tid) const
   {
-    const typename in_map_t::const_iterator m (in_map.find (tid));
+    const in_map_t::const_iterator m (in_map.find (tid));
 
     if (m == in_map.end())
       throw exception::no_such ("transition in in_map");
@@ -801,7 +756,6 @@ public:
     return m->second;
   }
 
-protected:
   const tid_t& enabled_first (void) const
   {
     return enabled.first();
@@ -837,11 +791,7 @@ public:
     return token_place_rel.contains_right (pid);
   }
 
-  std::size_t num_token (const pid_t & pid) const
-  {
-    return token_place_rel.left_of(pid).size();
-  }
-
+private:
   std::size_t delete_one_token (const pid_t & pid, const token::type & token)
   {
     const std::size_t ret (token_place_rel.delete_one (token, pid));
@@ -852,16 +802,7 @@ public:
     return ret;
   }
 
-  std::size_t delete_all_token (const pid_t & pid, const token::type & token)
-  {
-    const std::size_t ret (token_place_rel.delete_all (token, pid));
-
-    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_enabled_del_all_token (*t, pid, token);
-
-    return ret;
-  }
-
+public:
   std::size_t delete_all_token (const pid_t & pid)
   {
     const std::size_t ret (token_place_rel.delete_right (pid));
@@ -871,44 +812,10 @@ public:
     return ret;
   }
 
-  // WORK HERE: implement more efficient?
-  std::size_t replace_one_token
-  (const pid_t & pid, const token::type & old_token, const token::type & new_token)
-  {
-    const std::size_t k (delete_one_token (pid, old_token));
-
-    if (k > 0)
-      put_token (pid, new_token);
-
-    return k;
-  }
-
-  // WORK HERE: implement more efficient?
-  std::size_t replace_all_token
-  (const pid_t & pid, const token::type & old_token, const token::type & new_token)
-  {
-    const std::size_t k (delete_all_token (pid, old_token));
-
-    for (std::size_t i (0); i < k; ++i)
-      put_token (pid, new_token);
-
-    return k;
-  }
-
   // FIRE
-  std::size_t num_can_fire (void) const
-  {
-    return enabled.size();
-  }
-
   bool can_fire () const
   {
     return not enabled.empty();
-  }
-
-  bool get_can_fire (const tid_t & tid) const
-  {
-    return enabled.elem(tid);
   }
 
   struct activity_t
@@ -928,17 +835,7 @@ public:
     {}
   };
 
-  template <typename Output>
-  void inject_activity_result (Output const & output)
-  {
-    for ( typename Output::const_iterator out (output.begin())
-        ; out != output.end()
-        ; ++out
-        )
-      put_token (out->second, out->first);
-  }
-
-protected:
+private:
   activity_t extract_activity (const tid_t tid)
   {
     input_t input;
@@ -954,7 +851,7 @@ protected:
     enabled_choice_consume.erase (choice_consume);
     const choice_vec_t choice_vec_read (choice_read->second);
 
-    for ( typename choice_vec_t::const_iterator choice
+    for ( choice_vec_t::const_iterator choice
             (choice_vec_consume.begin())
         ; choice != choice_vec_consume.end()
         ; ++choice
@@ -972,7 +869,7 @@ protected:
         delete_one_token (pid, token);
       }
 
-    for ( typename choice_vec_t::const_iterator choice
+    for ( choice_vec_t::const_iterator choice
             (choice_vec_read.begin())
         ; choice != choice_vec_read.end()
         ; ++choice
@@ -1006,6 +903,47 @@ public:
     return extract_activity (enabled.random (engine));
   }
 };
+
+    inline std::ostream & operator << ( std::ostream & s
+                                      , const net & n
+                                      )
+    {
+      typedef net pnet_t;
+
+      for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
+      {
+        s << "[" << n.get_place (*p) << ":";
+
+        typedef boost::unordered_map<token::type, size_t> token_cnt_t;
+        token_cnt_t token;
+        for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+        {
+          token[*tp]++;
+        }
+
+        for (token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
+        {
+          if (t->second > 1)
+          {
+            s << " " << t->second << "x " << t->first;
+          }
+          else
+          {
+            s << " " << t->first;
+          }
+        }
+        s << "]";
+      }
+
+      for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+      {
+        s << "/";
+        s << n.get_transition (*t);
+        s << "/";
+      }
+
+      return s;
+    }
 } // namespace petri_net
 
 #endif // _NET_HPP

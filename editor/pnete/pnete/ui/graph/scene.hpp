@@ -64,29 +64,17 @@ namespace fhg
           // ## trigger modification #################################
           // # transition ############################################
           void slot_add_transition() const;
-          void slot_delete_transition (base_item*) const;
 
           // # place #################################################
           void slot_add_place() const;
-          void slot_delete_place (base_item*) const;
 
           // ## react on modification ################################
           // # connection ############################################
-          void connection_added_out ( const QObject*
-                                    , const data::handle::connect&
-                                    , const data::handle::port&
-                                    , const data::handle::place&
-                                    );
-          void connection_added_in ( const QObject*
-                                   , const data::handle::connect&
-                                   , const data::handle::place&
-                                   , const data::handle::port&
-                                   );
-          void connection_added_read ( const QObject*
-                                     , const data::handle::connect&
-                                     , const data::handle::place&
-                                     , const data::handle::port&
-                                     );
+          void connection_added ( const QObject*
+                                , const data::handle::connect&
+                                , const data::handle::place&
+                                , const data::handle::port&
+                                );
           void connection_removed ( const QObject*
                                   , const data::handle::connect&
                                   );

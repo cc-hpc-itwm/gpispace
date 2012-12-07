@@ -83,9 +83,7 @@ namespace xml
         , PARENT_CONS_PARAM(net)
         , const boost::optional<function_or_use_type>& fun_or_use
         , const std::string& name
-        , const connections_type& in
-        , const connections_type& out
-        , const connections_type& read
+        , const connections_type& connections
         , const place_maps_type& place_map
         , const structs_type& structs
         , const conditions_type& cond
@@ -103,9 +101,7 @@ namespace xml
                            : boost::none
                            )
         , _name (name)
-        , _in (in, _id)
-        , _out (out, _id)
-        , _read (read, _id)
+        , _connections (connections, _id)
         , _place_map (place_map, _id)
         , structs (structs)
         , cond (cond)
@@ -227,17 +223,10 @@ namespace xml
         return _name = name;
       }
 
-      const transition_type::connections_type& transition_type::in() const
+      const transition_type::connections_type&
+        transition_type::connections() const
       {
-        return _in;
-      }
-      const transition_type::connections_type& transition_type::out() const
-      {
-        return _out;
-      }
-      const transition_type::connections_type& transition_type::read() const
-      {
-        return _read;
+        return _connections;
       }
       const transition_type::place_maps_type&
         transition_type::place_map() const
@@ -257,76 +246,19 @@ namespace xml
       }
 
       // ***************************************************************** //
-      bool transition_type::has_in (const id::ref::connect& id) const
+      void transition_type::remove_connection (const id::ref::connect& id)
       {
-        return _in.has (id);
-      }
-      bool transition_type::has_out (const id::ref::connect& id) const
-      {
-        return _out.has (id);
-      }
-      bool transition_type::has_read (const id::ref::connect& id) const
-      {
-        return _read.has (id);
+        _connections.erase (id);
       }
 
-      void transition_type::remove_in (const id::ref::connect& id)
+      void transition_type::push_connection (const id::ref::connect& connect_id)
       {
-        _in.erase (id);
-      }
-      void transition_type::remove_out (const id::ref::connect& id)
-      {
-        _out.erase (id);
-      }
-      void transition_type::remove_read (const id::ref::connect& id)
-      {
-        _read.erase (id);
-      }
-
-      void transition_type::push_in (const id::ref::connect& connect_id)
-      {
-        const id::ref::connect& id_old (_in.push (connect_id));
+        const id::ref::connect& id_old (_connections.push (connect_id));
 
         if (not (id_old == connect_id))
         {
-          throw error::duplicate_connect ( "in"
-                                         , connect_id
-                                         , id_old
-                                         , make_reference_id()
-                                         , path
-                                         );
-        }
-        connect_id.get_ref().parent (id());
-      }
-
-      void transition_type::push_out (const id::ref::connect& connect_id)
-      {
-        const id::ref::connect& id_old (_out.push (connect_id));
-
-        if (not (id_old == connect_id))
-        {
-          throw error::duplicate_connect ( "out"
-                                         , connect_id
-                                         , id_old
-                                         , make_reference_id()
-                                         , path
-                                         );
-        }
-        connect_id.get_ref().parent (id());
-      }
-
-      void transition_type::push_read (const id::ref::connect& connect_id)
-      {
-        const id::ref::connect& id_old (_read.push (connect_id));
-
-        if (not (id_old == connect_id))
-        {
-          throw error::duplicate_connect ( "read"
-                                         , connect_id
-                                         , id_old
-                                         , make_reference_id()
-                                         , path
-                                         );
+          throw error::duplicate_connect
+            (connect_id, id_old, make_reference_id(), path);
         }
         connect_id.get_ref().parent (id());
       }
@@ -337,11 +269,8 @@ namespace xml
 
         if (not (id_old == pm_id))
         {
-          throw error::duplicate_place_map ( pm_id
-                                           , id_old
-                                           , make_reference_id()
-                                           , path
-                                           );
+          throw error::duplicate_place_map
+            (pm_id, id_old, make_reference_id(), path);
         }
         pm_id.get_ref().parent (id());
       }
@@ -350,9 +279,7 @@ namespace xml
 
       void transition_type::clear_connections ()
       {
-        _in.clear();
-        _out.clear();
-        _read.clear();
+        _connections.clear();
       }
 
       void transition_type::clear_place_map ()
@@ -495,16 +422,18 @@ namespace xml
       // ***************************************************************** //
 
       //! \todo move to connect_type
-      void transition_type::type_check ( const std::string & direction
-                                       , const connect_type & connect
+      void transition_type::type_check ( const connect_type & connect
                                        , const state::type & state
                                        ) const
       {
         assert (has_parent());
 
+        const std::string direction
+          (petri_net::edge::enum_to_string (connect.direction()));
+
         // existence of connect.place
-        boost::optional<const id::ref::place&>
-          id_place (parent()->places().get (connect.place()));
+        const boost::optional<const id::ref::place&> id_place
+          (connect.resolved_place());
 
         if (not id_place)
         {
@@ -512,17 +441,9 @@ namespace xml
             (direction, name(), connect.place(), path);
         }
 
-        const id::ref::function& id_function
-          ( boost::apply_visitor
-            (transition_get_function (*parent(), *this), function_or_use())
-          );
-
         // existence of connect.port
-        boost::optional<const id::ref::port&> id_port
-          ( (direction == "out")
-          ? id_function.get().get_port_out (connect.port())
-          : id_function.get().get_port_in (connect.port())
-          );
+        const boost::optional<const id::ref::port&> id_port
+          (connect.resolved_port());
 
         if (not id_port)
         {
@@ -567,22 +488,12 @@ namespace xml
 
       void transition_type::type_check (const state::type & state) const
       {
-        BOOST_FOREACH (const connect_type& connect, in().values())
+        BOOST_FOREACH (const connect_type& connect, connections().values())
         {
-          type_check ("in", connect, state);
-        }
-        BOOST_FOREACH (const connect_type& connect, read().values())
-        {
-          type_check ("read", connect, state);
-        }
-        BOOST_FOREACH (const connect_type& connect, out().values())
-        {
-          type_check ("out", connect, state);
+          type_check (connect, state);
         }
 
-        boost::apply_visitor ( transition_type_check (state)
-                             , function_or_use()
-                             );
+        boost::apply_visitor (transition_type_check (state), function_or_use());
       }
 
       const we::type::property::type& transition_type::properties() const
@@ -654,9 +565,7 @@ namespace xml
             )
           : boost::none
           , _name
-          , _in.clone (new_id, new_mapper)
-          , _out.clone (new_id, new_mapper)
-          , _read.clone (new_id, new_mapper)
+          , _connections.clone (new_id, new_mapper)
           , _place_map.clone (new_id, new_mapper)
           , structs
           , cond
@@ -708,7 +617,7 @@ namespace xml
 
         const transition_type& trans (id_transition.get());
 
-        if (trans.in().empty() and trans.out().empty())
+        if (trans.connections().empty())
           {
             state.warn
               ( warning::independent_transition ( trans.name()
@@ -864,20 +773,20 @@ namespace xml
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_IN, port));
 
-                trans_in.add_ports () ( port.name()
-                                      , type
-                                      , we::type::PORT_IN
-                                      , port.properties()
-                                      );
-                trans_in.add_ports () ( port.name()
-                                      , type
-                                      , we::type::PORT_OUT
-                                      , port.properties()
-                                      );
+                trans_in.add_port ( port.name()
+                                  , type
+                                  , we::type::PORT_IN
+                                  , port.properties()
+                                  );
+                trans_in.add_port ( port.name()
+                                  , type
+                                  , we::type::PORT_OUT
+                                  , port.properties()
+                                  );
 
                 if (port.place)
                   {
-                    trans_in.add_connections ()
+                    trans_in.add_connection
                       ( port.name()
                       , get_pid (pid_of_place , prefix + *port.place)
                       , port.properties()
@@ -886,25 +795,18 @@ namespace xml
                   }
               }
 
-            BOOST_FOREACH (const connect_type& connect, trans.in().values())
-              {
-                trans_in.add_connections ()
-                  ( get_pid (pids, connect.place())
-                  , connect.port()
-                  , connect.properties()
-                  );
-              }
-
             BOOST_FOREACH ( const connect_type& connect
-                          , trans.read().values()
+                          , trans.connections().values()
                           )
+            {
+              if (petri_net::edge::is_PT (connect.direction()))
               {
-                trans_in.add_connections ()
-                  ( get_pid (pids, connect.place())
-                  , connect.port()
-                  , connect.properties()
-                  );
+                trans_in.add_connection ( get_pid (pids, connect.place())
+                                        , connect.port()
+                                        , connect.properties()
+                                        );
               }
+            }
 
             const tid_t tid_in (we_net.add_transition (trans_in));
 
@@ -924,30 +826,20 @@ namespace xml
                   }
               }
 
-            BOOST_FOREACH (const connect_type& connect, trans.in().values())
-              {
-                we_net.add_edge
-                  ( e++
-                  , connection_t ( PT
-                                 , tid_in
-                                 , get_pid (pids, connect.place())
-                                 )
-                  )
-                  ;
-              }
-
             BOOST_FOREACH ( const connect_type& connect
-                          , trans.read().values()
+                          , trans.connections().values()
                           )
+            {
+              if (petri_net::edge::is_PT (connect.direction()))
               {
-                we_net.add_edge
-                  ( e++, connection_t ( PT_READ
-                                      , tid_in
-                                      , get_pid (pids, connect.place())
-                                      )
-                  )
-                  ;
+                we_net.add_edge ( e++
+                                , connection_t ( connect.direction()
+                                               , tid_in
+                                               , get_pid (pids, connect.place())
+                                               )
+                                );
               }
+            }
 
             // going out of the subnet
             const std::string cond_out ("true");
@@ -974,20 +866,20 @@ namespace xml
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_OUT, port));
 
-                trans_out.add_ports () ( port.name()
-                                       , type
-                                       , we::type::PORT_IN
-                                       , port.properties()
-                                       );
-                trans_out.add_ports () ( port.name()
-                                       , type
-                                       , we::type::PORT_OUT
-                                       , port.properties()
-                                       );
+                trans_out.add_port ( port.name()
+                                   , type
+                                   , we::type::PORT_IN
+                                   , port.properties()
+                                   );
+                trans_out.add_port ( port.name()
+                                   , type
+                                   , we::type::PORT_OUT
+                                   , port.properties()
+                                   );
 
                 if (port.place)
                   {
-                    trans_out.add_connections ()
+                    trans_out.add_connection
                       ( get_pid (pid_of_place , prefix + *port.place)
                       , port.name()
                       , port.properties()
@@ -996,21 +888,23 @@ namespace xml
                   }
               }
 
-            //! \todo Wat?
             std::size_t num_outport (0);
 
-
             BOOST_FOREACH ( const connect_type& connect
-                          , trans.out().values()
+                          , trans.connections().values()
                           )
+            {
+              if (!petri_net::edge::is_PT (connect.direction()))
               {
-                trans_out.add_connections ()
+                trans_out.add_connection
                   ( connect.port()
                   , get_pid (pids, connect.place())
                   , connect.properties()
-                  )
-                  ;
+                  );
+
+                ++num_outport;
               }
+            }
 
             if (num_outport > 1)
               {
@@ -1049,18 +943,19 @@ namespace xml
                 }
 
             BOOST_FOREACH ( const connect_type& connect
-                          , trans.out().values()
+                          , trans.connections().values()
                           )
+            {
+              if (!petri_net::edge::is_PT (connect.direction()))
               {
-                we_net.add_edge
-                  ( e++
-                  , connection_t ( TP
-                                 , tid_out
-                                 , get_pid (pids, connect.place())
-                                 )
-                  )
-                  ;
+                we_net.add_edge ( e++
+                                , connection_t ( connect.direction()
+                                               , tid_out
+                                               , get_pid (pids, connect.place())
+                                               )
+                                );
               }
+            }
           } // unfold
 
         else
@@ -1100,34 +995,27 @@ namespace xml
 
             we_transition_type we_trans (fun.synthesize (state));
 
-            BOOST_FOREACH (const connect_type& connect, trans.in().values())
+            BOOST_FOREACH ( const connect_type& connect
+                          , trans.connections().values()
+                          )
+            {
+              if (petri_net::edge::is_PT (connect.direction()))
               {
-                we_trans.add_connections ()
+                we_trans.add_connection
                   ( get_pid (pids, connect.place())
                   , connect.port()
                   , connect.properties()
                   );
               }
-            BOOST_FOREACH ( const connect_type& connect
-                          , trans.read().values()
-                          )
+              else
               {
-                we_trans.add_connections ()
-                  ( get_pid (pids, connect.place())
-                  , connect.port()
-                  , connect.properties()
-                  );
-              }
-            BOOST_FOREACH ( const connect_type& connect
-                          , trans.out().values()
-                          )
-              {
-                we_trans.add_connections ()
+                we_trans.add_connection
                   ( connect.port()
                   , get_pid (pids, connect.place())
                   , connect.properties()
                   );
               }
+            }
 
             const tid_t tid (we_net.add_transition (we_trans));
 
@@ -1136,34 +1024,17 @@ namespace xml
                 we_net.set_transition_priority (tid, *trans.priority);
               }
 
-            BOOST_FOREACH (const connect_type& connect, trans.in().values())
-              {
-                we_net.add_edge
-                  (e++, connection_t (PT, tid, get_pid (pids, connect.place())))
-                  ;
-              }
             BOOST_FOREACH ( const connect_type& connect
-                          , trans.read().values()
+                          , trans.connections().values()
                           )
-              {
-                we_net.add_edge
-                  (e++, connection_t ( PT_READ
-                                     , tid
-                                     , get_pid (pids, connect.place())
-                                     )
-                  );
-              }
-            BOOST_FOREACH ( const connect_type& connect
-                          , trans.out().values()
-                          )
-              {
-                we_net.add_edge
-                  (e++, connection_t ( TP
-                                     , tid
-                                     , get_pid (pids, connect.place())
-                                     )
-                  );
-              }
+            {
+              we_net.add_edge ( e++
+                              , connection_t ( connect.direction()
+                                             , tid
+                                             , get_pid (pids, connect.place())
+                                             )
+                              );
+            }
           } // not unfold
 
         return;
@@ -1212,9 +1083,7 @@ namespace xml
           boost::apply_visitor (dump_visitor (s), t.function_or_use());
 
           dumps (s, t.place_map().values());
-          dumps (s, t.read().values(), "read");
-          dumps (s, t.in().values(), "in");
-          dumps (s, t.out().values(), "out");
+          dumps (s, t.connections().values());
 
           for ( conditions_type::const_iterator cond (t.cond.begin())
               ; cond != t.cond.end()

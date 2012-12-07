@@ -7,6 +7,8 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
+#include <we/net.hpp>
+
 #include <boost/format.hpp>
 
 namespace xml
@@ -16,22 +18,24 @@ namespace xml
     namespace error
     {
       duplicate_connect::duplicate_connect
-        ( const std::string& type
-        , const id::ref::connect& connection
+        ( const id::ref::connect& connection
         , const id::ref::connect& old_connection
         , const id::ref::transition& transition
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "duplicate connect-%1% %2% <-> %3% "
                                       "for transition %4% in %5%"
+                                      " (existing connection is connect-%6%)"
                                     )
-                    % type
+                    % petri_net::edge::enum_to_string
+                      (connection.get().direction())
                     % connection.get().place()
                     % connection.get().port()
                     % transition.get().name()
                     % path
+                    % petri_net::edge::enum_to_string
+                      (old_connection.get().direction())
                     )
-          , _type (type)
           , _connection (connection)
           , _old_connection (old_connection)
           , _transition (transition)

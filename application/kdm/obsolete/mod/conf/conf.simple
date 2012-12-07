@@ -1,7 +1,0 @@
-OFFSETS                30
-SUBVOLUMES_PER_OFFSET  30
-BUNCHES_PER_OFFSET     30
-NThreads               4
-scratch_Job      1
-handle_TT        2
-handle_Job       3

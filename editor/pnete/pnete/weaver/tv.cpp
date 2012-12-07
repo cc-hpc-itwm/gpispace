@@ -225,17 +225,9 @@ namespace fhg
       {
         xs ("place-map", pm.ids(), from::place_map);
       }
-      WSIG(tv, transition::connect_read, XMLTYPE(transition_type::connections_type), cs)
+      WSIG(tv, transition::connection, XMLTYPE(transition_type::connections_type), cs)
       {
-        xs ("connect-read", cs.ids(), from::connection);
-      }
-      WSIG(tv, transition::connect_in, XMLTYPE(transition_type::connections_type), cs)
-      {
-        xs ("connect-in", cs.ids(), from::connection);
-      }
-      WSIG(tv, transition::connect_out, XMLTYPE(transition_type::connections_type), cs)
-      {
-        xs ("connect-out", cs.ids(), from::connection);
+        xs ("connections", cs.ids(), from::connection);
       }
       WSIG(tv, transition::condition, XMLTYPE(conditions_type), cond)
       {
@@ -450,12 +442,13 @@ namespace fhg
 
       WSIG(tv, connection::open, ::xml::parse::id::ref::connect, connection)
       {
-        push (append ("<<connection>>"));
+        push (append (petri_net::edge::enum_to_string (connection.get().direction())));
       }
       WSIGE(tv, connection::close) { pop(); }
       WSIG(tv, connection::port, std::string, port)
       {
-        set_text (QString ("port: ").append (QString::fromStdString (port)));
+        add_something
+          (": ", QString ("port: ").append (QString::fromStdString (port)).toStdString());
       }
       WSIG(tv, connection::place, std::string, place)
       {

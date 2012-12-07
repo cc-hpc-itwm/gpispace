@@ -9,13 +9,17 @@
 
 #include <xml/parse/type/transition.fwd.hpp>
 
+#include <fhg/util/boost/tuple.hpp> //! \note To allow storing in unique.
 #include <fhg/util/xml.fwd.hpp>
 
+#include <we/net.hpp>
 #include <we/type/property.hpp>
 
 #include <string>
 
 #include <boost/optional.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp> //! \note To allow storing in unique.
 
 namespace xml
 {
@@ -29,12 +33,14 @@ namespace xml
         PARENT_SIGNATURES(transition);
 
       public:
-        typedef std::pair<std::string, std::string> unique_key_type;
+        //! \note         place,       port,        PT||PT_READ
+        typedef boost::tuple<std::string, std::string, bool> unique_key_type;
 
         connect_type ( ID_CONS_PARAM(connect)
                      , PARENT_CONS_PARAM(transition)
                      , const std::string& place
                      , const std::string& port
+                     , const ::petri_net::edge::type& direction
                      , const we::type::property::type& properties
                      = we::type::property::type()
                      );
@@ -43,6 +49,10 @@ namespace xml
         const std::string& port() const;
         boost::optional<const id::ref::place&> resolved_place() const;
         boost::optional<const id::ref::port&> resolved_port() const;
+
+        const ::petri_net::edge::type& direction() const;
+        const ::petri_net::edge::type& direction
+          (const ::petri_net::edge::type&);
 
       private:
         friend struct net_type;
@@ -66,15 +76,14 @@ namespace xml
         std::string _place;
         std::string _port;
 
+        ::petri_net::edge::type _direction;
+
         we::type::property::type _properties;
       };
 
       namespace dump
       {
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const connect_type & c
-                  , const std::string & type
-                  );
+        void dump (::fhg::util::xml::xmlstream&, const connect_type&);
       }
     }
   }

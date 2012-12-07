@@ -506,31 +506,19 @@ namespace xml
         {
           transition.name (prefix + transition.name());
 
-          BOOST_FOREACH (connect_type& connection, transition.in().values())
-            {
-              connection.place (prefix + connection.place());
-            }
-
           BOOST_FOREACH ( connect_type& connection
-                        , transition.read().values()
+                        , transition.connections().values()
                         )
-            {
-              connection.place (prefix + connection.place());
-            }
-
-          BOOST_FOREACH ( connect_type& connection
-                        , transition.out().values()
-                        )
-            {
-              connection.place (prefix + connection.place());
-            }
+          {
+            connection.place (prefix + connection.place());
+          }
 
           BOOST_FOREACH ( place_map_type& place_map
                         , transition.place_map().values()
                         )
-            {
-              place_map.place_real (prefix + place_map.place_real());
-            }
+          {
+            place_map.place_real (prefix + place_map.place_real());
+          }
         }
       }
 
@@ -547,23 +535,7 @@ namespace xml
             (fhg::util::remove_prefix (prefix, transition.name()));
 
           BOOST_FOREACH ( connect_type& connection
-                        , transition.in().values()
-                        )
-          {
-            connection.place
-              (fhg::util::remove_prefix (prefix, connection.place()));
-          }
-
-          BOOST_FOREACH ( connect_type& connection
-                        , transition.read().values()
-                        )
-          {
-            connection.place
-              (fhg::util::remove_prefix (prefix, connection.place()));
-          }
-
-          BOOST_FOREACH ( connect_type& connection
-                        , transition.out().values()
+                        , transition.connections().values()
                         )
           {
             connection.place

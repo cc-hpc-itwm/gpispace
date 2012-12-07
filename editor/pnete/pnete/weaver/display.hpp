@@ -113,9 +113,8 @@ namespace fhg
       public:
         explicit connection ( ui::graph::scene_type*
                             , item_by_name_type& place_item_by_name
-                            , item_by_name_type& port_item_by_name
-                            , const ui::graph::connectable::direction::type& direction
-                            , const bool& read = false
+                            , item_by_name_type& ports_in
+                            , item_by_name_type& ports_out
                             );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -124,9 +123,8 @@ namespace fhg
       private:
         ui::graph::scene_type* _scene;
         item_by_name_type& _place_item_by_name;
-        item_by_name_type& _port_item_by_name;
-        const ui::graph::connectable::direction::type _direction;
-        const bool _read;
+        item_by_name_type& _ports_in;
+        item_by_name_type& _ports_out;
         std::string _port;
         std::string _place;
         boost::optional< ::xml::parse::id::ref::connect> _id;

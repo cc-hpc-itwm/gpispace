@@ -7,6 +7,8 @@
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
 
+#include <we/net.hpp>
+
 #include <stack>
 
 #include <rewrite/validprefix.hpp>
@@ -15,13 +17,13 @@ namespace we { namespace type {
     namespace optimize
     {
       inline void merge_places
-      ( petri_net::net<transition_t> & net
+      ( petri_net::net & net
       , const petri_net::pid_t & pid_A
       , const bool & is_read
       , const petri_net::pid_t & pid_B
       )
       {
-        typedef petri_net::net<transition_t> pnet_t;
+        typedef petri_net::net pnet_t;
         typedef pnet_t::transition_const_it transition_const_it;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;

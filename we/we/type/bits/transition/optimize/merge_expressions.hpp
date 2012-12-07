@@ -6,6 +6,8 @@
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
 
+#include <we/net.hpp>
+
 #include <we/type/bits/transition/optimize/is_associated.hpp>
 
 #include <rewrite/validprefix.hpp>
@@ -58,10 +60,10 @@ namespace we { namespace type {
       expression_predecessor
       ( const transition_t & trans
       , const petri_net::tid_t & tid
-      , const petri_net::net<transition_t> & net
+      , const petri_net::net & net
       )
       {
-        typedef petri_net::net<transition_t> pnet_t;
+        typedef petri_net::net pnet_t;
         typedef petri_net::adj_place_const_it adj_place_const_it;
         typedef petri_net::adj_transition_const_it adj_transition_const_it;
         typedef petri_net::tid_t tid_t;
@@ -231,13 +233,13 @@ namespace we { namespace type {
       ( transition_t & trans
       , const petri_net::tid_t & tid_trans
       , const transition_t & pred
-      , const petri_net::net<transition_t> & net
+      , const petri_net::net & net
       , const trans_info::pid_set_type & pid_read
       )
       {
         typedef transition_t::port_id_t port_id_t;
         typedef transition_t::port_t port_t;
-        typedef petri_net::net<transition_t> pnet_t;
+        typedef petri_net::net pnet_t;
         typedef petri_net::adj_place_const_it adj_place_const_it;
 
         expression_t & expression (boost::get<expression_t &> (trans.data()));
@@ -325,7 +327,7 @@ namespace we { namespace type {
       , const petri_net::tid_t tid_trans
       , transition_t & pred
       , const petri_net::tid_t tid_pred
-      , petri_net::net<transition_t> & net
+      , petri_net::net & net
       , const trans_info::pid_set_type pid_read
       )
       {
@@ -357,7 +359,7 @@ namespace we { namespace type {
 
                 net.add_edge (edge, connection);
 
-                pred.add_connections ()
+                pred.add_connection
                   (p->second.name(), pid, p->second.property())
                   ;
               }
@@ -383,7 +385,7 @@ namespace we { namespace type {
 
                             net.add_edge (edge, connection);
 
-                            pred.add_connections ()
+                            pred.add_connection
                               (pid, p->second.name(), p->second.property())
                               ;
                           }
@@ -403,7 +405,7 @@ namespace we { namespace type {
       ( transition_t & trans
       , const petri_net::tid_t /* tid_trans */
       , const transition_t & trans_parent
-      , petri_net::net<transition_t> & net
+      , petri_net::net & net
       )
       {
         typedef transition_t::const_iterator const_iterator;
@@ -456,10 +458,10 @@ namespace we { namespace type {
 
       inline bool run_once
       ( transition_t & trans_parent
-      , petri_net::net<transition_t> & net
+      , petri_net::net & net
       )
       {
-        typedef petri_net::net<transition_t> pnet_t;
+        typedef petri_net::net pnet_t;
         typedef pnet_t::transition_const_it transition_const_it;
         typedef petri_net::tid_t tid_t;
 
@@ -526,7 +528,7 @@ namespace we { namespace type {
 
       inline bool run
       ( transition_t & trans_parent
-      , petri_net::net<transition_t> & net
+      , petri_net::net & net
       )
       {
         bool modified (false);

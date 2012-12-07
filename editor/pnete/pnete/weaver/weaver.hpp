@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _PNETE_TRAVERSE_WEAVER_HPP
 #define _PNETE_TRAVERSE_WEAVER_HPP 1
@@ -93,8 +93,7 @@ namespace fhg
           enum
             { first = context::first + 1
             , open, close, name, priority, internal, _inline, properties
-            , structs, function, place_map, connect_read, connect_in
-            , connect_out, condition
+            , structs, function, place_map, connection, condition
             , last
             };
         }
@@ -622,9 +621,7 @@ namespace fhg
           WEAVE(transition::structs) (trans.structs);
           WEAVE(transition::function) (trans.function_or_use());
           WEAVE(transition::place_map) (trans.place_map());
-          WEAVE(transition::connect_read) (trans.read());
-          WEAVE(transition::connect_in) (trans.in());
-          WEAVE(transition::connect_out) (trans.out());
+          WEAVE(transition::connection) (trans.connections());
           WEAVE(transition::condition) (trans.cond);
           WEAVE(transition::close)();
         }

@@ -58,9 +58,7 @@ namespace fhg
 
           // - net -----------------------------------------------------
           // -- connection ---------------------------------------------
-          EXPOSE (connection_added_in);
-          EXPOSE (connection_added_read);
-          EXPOSE (connection_added_out);
+          EXPOSE (connection_added);
           EXPOSE (connection_removed);
           EXPOSE (property_changed);
 
@@ -71,6 +69,7 @@ namespace fhg
           // -- place --------------------------------------------------
           EXPOSE (place_added);
           EXPOSE (place_deleted);
+          EXPOSE (place_type_set);
 
           // - port ----------------------------------------------------
 
@@ -295,13 +294,10 @@ namespace fhg
 
         // -- connection ---------------------------------------------
 
-        enum direction { in, out, read };
-
         void remove_connection_impl
           ( ACTION_ARG_LIST
           , const ::xml::parse::id::ref::transition& transition
           , const ::xml::parse::id::ref::connect& connect
-          , const direction& dir
           )
         {
           change_manager.emit_signal
@@ -310,67 +306,25 @@ namespace fhg
             , handle::connect (connect, change_manager)
             );
 
-          switch (dir)
-          {
-          case in:
-            transition.get_ref().remove_in (connect);
-            break;
-
-          case out:
-            transition.get_ref().remove_out (connect);
-            break;
-
-          case read:
-            transition.get_ref().remove_read (connect);
-            break;
-          }
+          transition.get_ref().remove_connection (connect);
         }
 
         void add_connection_impl
           ( ACTION_ARG_LIST
           , const ::xml::parse::id::ref::transition& transition
           , const ::xml::parse::id::ref::connect& connection
-          , const direction& dir
           )
         {
-          switch (dir)
-          {
-          case in:
-            transition.get_ref().push_in (connection);
-            change_manager.emit_signal
-              ( &signal::connection_added_in, origin
-              , handle::connect (connection, change_manager)
-              , handle::place ( *connection.get().resolved_place()
-                              , change_manager
-                              )
-              , handle::port (*connection.get().resolved_port(), change_manager)
-              );
-            break;
+          transition.get_ref().push_connection (connection);
 
-          case out:
-            transition.get_ref().push_out (connection);
-            change_manager.emit_signal
-              ( &signal::connection_added_out, origin
-              , handle::connect (connection, change_manager)
-              , handle::port (*connection.get().resolved_port(), change_manager)
-              , handle::place ( *connection.get().resolved_place()
-                              , change_manager
-                              )
-              );
-            break;
-
-          case read:
-            transition.get_ref().push_read (connection);
-            change_manager.emit_signal
-              ( &signal::connection_added_read, origin
-              , handle::connect (connection, change_manager)
-              , handle::place ( *connection.get().resolved_place()
-                              , change_manager
-                              )
-              , handle::port (*connection.get().resolved_port(), change_manager)
-              );
-            break;
-          }
+          change_manager.emit_signal
+            ( &signal::connection_added, origin
+            , handle::connect (connection, change_manager)
+            , handle::place ( *connection.get().resolved_place()
+                            , change_manager
+                            )
+            , handle::port (*connection.get().resolved_port(), change_manager)
+            );
         }
 
         class add_connection : public QUndoCommand
@@ -380,24 +334,22 @@ namespace fhg
             ( ACTION_ARG_LIST
             , const ::xml::parse::id::ref::transition& transition
             , const ::xml::parse::id::ref::connect& connect
-            , const direction& dir
             )
               : ACTION_INIT ("add_connection_action")
               , _transition (transition)
               , _connect (connect)
-              , _dir (dir)
           { }
 
           virtual void undo()
           {
             remove_connection_impl
-              (_change_manager, NULL, _transition, _connect, _dir);
+              (_change_manager, NULL, _transition, _connect);
           }
 
           virtual void redo()
           {
             add_connection_impl
-              (_change_manager, _origin, _transition, _connect, _dir);
+              (_change_manager, _origin, _transition, _connect);
             _origin = NULL;
           }
 
@@ -405,7 +357,6 @@ namespace fhg
           ACTION_MEMBERS;
           const ::xml::parse::id::ref::transition _transition;
           const ::xml::parse::id::ref::connect _connect;
-          const direction _dir;
         };
 
         class remove_connection : public QUndoCommand
@@ -416,25 +367,18 @@ namespace fhg
               : ACTION_INIT ("remove_connection_action")
               , _connect (connect)
               , _transition (_connect.get().parent()->make_reference_id())
-              , _direction ( _transition.get().has_in (connect)
-                           ? in
-                           : ( _transition.get().has_out (connect)
-                             ? out
-                             : read
-                             )
-                           )
           { }
 
           virtual void undo()
           {
             add_connection_impl
-              (_change_manager, _origin, _transition, _connect, _direction);
+              (_change_manager, _origin, _transition, _connect);
           }
 
           virtual void redo()
           {
             remove_connection_impl
-              (_change_manager, _origin, _transition, _connect, _direction);
+              (_change_manager, _origin, _transition, _connect);
             _origin = NULL;
           }
 
@@ -442,7 +386,6 @@ namespace fhg
           ACTION_MEMBERS;
           const ::xml::parse::id::ref::connect _connect;
           const ::xml::parse::id::ref::transition _transition;
-          const direction _direction;
         };
 
         // -- transition ---------------------------------------------
@@ -633,6 +576,46 @@ namespace fhg
           ::xml::parse::id::ref::net _net;
         };
 
+        void place_set_type_impl
+          (ACTION_ARG_LIST, const handle::place& place, const QString& type)
+        {
+          place.get_ref().type = type.toStdString();
+          change_manager.emit_signal
+            (&signal::place_type_set, origin, place, type);
+        }
+
+        class place_set_type : public QUndoCommand
+        {
+        public:
+          place_set_type
+            ( ACTION_ARG_LIST
+            , const handle::place& place
+            , const QString& type
+            )
+              : ACTION_INIT ("place_set_type_action")
+              , _place (place)
+              , _old_type (QString::fromStdString (place.get().type))
+              , _new_type (type)
+          { }
+
+          virtual void undo()
+          {
+            place_set_type_impl (_change_manager, NULL, _place, _old_type);
+          }
+
+          virtual void redo()
+          {
+            place_set_type_impl (_change_manager, _origin, _place, _new_type);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const handle::place _place;
+          const QString _old_type;
+          const QString _new_type;
+        };
+
         // - function ------------------------------------------------
         void set_function_name_impl
           ( ACTION_ARG_LIST
@@ -658,7 +641,7 @@ namespace fhg
             , const handle::function& function
             , const QString& name
             )
-              : ACTION_INIT ("set_function_name")
+              : ACTION_INIT ("set_function_name_action")
               , _function (function)
               , _old_name (function.get().name())
               , _new_name
@@ -717,7 +700,7 @@ namespace fhg
             , const handle::expression& expression
             , const QString& new_content
             )
-              : ACTION_INIT ("set_expression_content")
+              : ACTION_INIT ("set_expression_content_action")
               , _expression (expression)
               , _old_content (expression.get().expression())
               , _new_content (new_content.toStdString())
@@ -776,8 +759,8 @@ namespace fhg
                  , transition.id()
                  , from.get().name()
                  , to.get().name()
+                 , petri_net::edge::PT
                  ).make_reference_id()
-               , action::in
                )
              );
       }
@@ -806,8 +789,8 @@ namespace fhg
                  , transition.id()
                  , to.get().name()
                  , from.get().name()
+                 , petri_net::edge::TP
                  ).make_reference_id()
-               , action::out
                )
              );
       }
@@ -1064,6 +1047,15 @@ namespace fhg
         //! a macro. Or do that inside the action class.
         push (new action::remove_place (*this, origin, place.id()));
       }
+
+      void change_manager_t::set_type ( const QObject* origin
+                                      , const data::handle::place& place
+                                      , const QString& type
+                                      )
+      {
+        push (new action::place_set_type (*this, origin, place, type));
+      }
+
 
       void change_manager_t::set_property
         ( const QObject* origin

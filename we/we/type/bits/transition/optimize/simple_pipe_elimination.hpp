@@ -68,7 +68,7 @@ namespace we { namespace type {
       inline boost::optional<pid_pair_vec_type>
       pid_pairs ( const transition_t & trans
                 , const petri_net::tid_t & tid
-                , const petri_net::net<transition_t> & net
+                , const petri_net::net & net
                 , const transition_t & trans_parent
                 )
       {
@@ -226,10 +226,10 @@ namespace we { namespace type {
 
       inline bool run
       ( transition_t & trans_parent
-      , petri_net::net<transition_t> & net
+      , petri_net::net & net
       )
       {
-        typedef petri_net::net<transition_t> pnet_t;
+        typedef petri_net::net pnet_t;
         typedef pnet_t::transition_const_it transition_const_it;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::tid_t tid_t;

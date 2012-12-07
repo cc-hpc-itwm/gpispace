@@ -19,7 +19,6 @@
 #ifndef WE_TYPE_TRANSITION_HPP
 #define WE_TYPE_TRANSITION_HPP 1
 
-#include <we/net.hpp>
 #include <we/type/port.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
@@ -48,6 +47,13 @@ namespace xml_util = ::fhg::util::xml;
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/version.hpp>
+
+#include <boost/format.hpp>
+
+namespace petri_net
+{
+  class net;
+}
 
 namespace we { namespace type {
     namespace exception {
@@ -93,109 +99,17 @@ namespace we { namespace type {
         const from_type from;
       };
 
-      template <typename From, typename To>
       struct already_connected : std::runtime_error
       {
-        typedef From from_type;
-        typedef To to_type;
-
-        explicit already_connected(const std::string & msg, const from_type from_, const to_type to_)
+        explicit already_connected (const std::string& msg)
           : std::runtime_error (msg)
-          , from(from_)
-          , to(to_)
         {}
-
         ~already_connected () throw ()
         {}
-
-        const from_type from;
-        const to_type to;
       };
     }
 
     namespace detail {
-      template <typename Transition>
-      struct port_adder
-      {
-        explicit port_adder (Transition & t)
-          : transition_(t)
-        {}
-
-        template <typename SignatureType, typename Direction>
-        port_adder<Transition> &
-        operator()
-          ( const std::string & name
-          , SignatureType const & signature
-          , Direction direction
-          , const we::type::property::type & prop = we::type::property::type()
-          )
-        {
-          transition_.add_port ( name
-                               , signature
-                               , direction
-                               , prop
-                               );
-          return *this;
-        }
-
-        template <typename SignatureType, typename Direction, typename PlaceId>
-        port_adder<Transition> &
-        operator ()
-          ( const std::string & name
-          , SignatureType const & signature
-          , Direction direction
-          , const PlaceId associated_place
-          , const we::type::property::type & prop = we::type::property::type()
-          )
-        {
-          transition_.add_port ( name
-                               , signature
-                               , direction
-                               , associated_place
-                               , prop
-                               );
-          return *this;
-        }
-
-      private:
-        Transition & transition_;
-      };
-
-      template <typename Transition, typename From, typename To>
-      struct connection_adder
-      {
-        typedef From from_type;
-        typedef To to_type;
-
-        explicit connection_adder (Transition & t)
-          : transition_(t)
-        {}
-
-        connection_adder<Transition, from_type, to_type> & operator()
-          ( const from_type outer
-          , const std::string & name
-          , const we::type::property::type & prop = we::type::property::type()
-          )
-        {
-          transition_.connect_outer_to_inner
-            (outer, transition_.input_port_by_name (name), prop);
-          return *this;
-        }
-
-        connection_adder<Transition, from_type, to_type> & operator()
-          ( const std::string & name
-          , const from_type outer
-          , const we::type::property::type & prop = we::type::property::type()
-          )
-        {
-          transition_.connect_inner_to_outer
-            (transition_.output_port_by_name (name), outer, prop);
-          return *this;
-        }
-      private:
-        Transition & transition_;
-      };
-
       template <typename Transition, typename Pid>
       std::string translate_place_to_port_name (const Transition & trans, const Pid pid)
       {
@@ -280,6 +194,8 @@ namespace we { namespace type {
       };
     }
 
+
+
     struct transition_t
     {
       typedef unsigned int edge_type;
@@ -287,7 +203,7 @@ namespace we { namespace type {
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
       typedef transition_t this_type;
-      typedef petri_net::net<this_type> net_type;
+      typedef petri_net::net net_type;
       typedef detail::condition<std::string> cond_type;
       typedef detail::preparsed_condition< std::string
                                          , condition::type::parser_t
@@ -540,37 +456,43 @@ namespace we { namespace type {
 
       ~transition_t () { }
 
-      template <typename Outer, typename Inner>
-      void connect_outer_to_inner ( const Outer outer
-                                  , const Inner inner
+      void connect_outer_to_inner ( const pid_t& pid
+                                  , const port_id_t& port
                                   , const we::type::property::type & prop
                                   )
       {
-        if (outer_to_inner_.find (outer) != outer_to_inner_.end())
+        if (outer_to_inner_.find (pid) != outer_to_inner_.end())
         {
-          throw exception::already_connected<Outer, Inner>("already connected", outer, inner);
+          throw exception::already_connected
+            ( (boost::format ("already connected: place %1% -> port %2%")
+                             % pid % port
+              ).str()
+            );
         }
         else
         {
           outer_to_inner_.insert
-            (outer_to_inner_t::value_type (outer, std::make_pair(inner, prop)));
+            (outer_to_inner_t::value_type (pid, std::make_pair(port, prop)));
         }
       }
 
-      template <typename Inner, typename Outer>
-      void connect_inner_to_outer ( const Inner inner
-                                  , const Outer outer
+      void connect_inner_to_outer ( const port_id_t& port
+                                  , const pid_t& pid
                                   , const we::type::property::type & prop
                                   )
       {
-        if (inner_to_outer_.find (inner) != inner_to_outer_.end())
+        if (inner_to_outer_.find (port) != inner_to_outer_.end())
         {
-          throw exception::already_connected<Inner, Outer>("already connected", inner, outer);
+          throw exception::already_connected
+            ( (boost::format ("already connected: port %1% -> place %2%")
+                             % port % pid
+              ).str()
+            );
         }
         else
         {
           inner_to_outer_.insert
-            (inner_to_outer_t::value_type (inner, std::make_pair(outer, prop)));
+            (inner_to_outer_t::value_type (port, std::make_pair(pid, prop)));
         }
       }
 
@@ -646,12 +568,6 @@ namespace we { namespace type {
         return gen_outer_to_inner (outer).first;
       }
 
-      template <typename Outer>
-      const we::type::property::type & outer_to_inner_prop (Outer outer) const
-      {
-        return gen_outer_to_inner (outer).second;
-      }
-
       template <typename Inner>
       typename inner_to_outer_t::mapped_type
       gen_inner_to_outer (Inner inner) const
@@ -669,12 +585,6 @@ namespace we { namespace type {
       pid_t inner_to_outer (Inner inner) const
       {
         return gen_inner_to_outer (inner).first;
-      }
-
-      template <typename Inner>
-      const we::type::property::type & inner_to_outer_prop (Inner inner) const
-      {
-        return gen_inner_to_outer (inner).second;
       }
 
       inner_to_outer_t::const_iterator
@@ -701,14 +611,22 @@ namespace we { namespace type {
         return outer_to_inner_.end();
       }
 
-      detail::connection_adder<this_type, pid_t, port_id_t> add_connections()
+      void add_connection ( const pid_t& pid
+                          , const std::string& name
+                          , const we::type::property::type& prop
+                          = we::type::property::type()
+                          )
       {
-        return detail::connection_adder<this_type, pid_t, port_id_t>(*this);
+        connect_outer_to_inner (pid, input_port_by_name (name), prop);
       }
 
-      detail::port_adder<this_type> add_ports()
+      void add_connection ( const std::string& name
+                          , const pid_t& pid
+                          , const we::type::property::type& prop
+                          = we::type::property::type()
+                          )
       {
-        return detail::port_adder<this_type>(*this);
+        connect_inner_to_outer (output_port_by_name (name), pid, prop);
       }
 
       // UNSAFE: does not check for already existing port, use with care
@@ -727,11 +645,11 @@ namespace we { namespace type {
         inner_to_outer_.erase (port_id);
       }
 
-      template <typename SignatureType, typename Direction>
       void add_port ( const std::string & name
-                    , SignatureType const & sig
-                    , Direction direction
+                    , signature_type const & sig
+                    , const we::type::PortDirection& direction
                     , const we::type::property::type & prop
+                      = we::type::property::type()
                     )
       {
         switch (direction)
@@ -746,12 +664,12 @@ namespace we { namespace type {
           }
       }
 
-      template <typename SignatureType, typename Direction, typename PlaceId>
       void add_port ( const std::string & name
-                    , SignatureType const & sig
-                    , const Direction direction
-                    , const PlaceId pid
+                    , signature_type const & sig
+                    , const we::type::PortDirection& direction
+                    , const pid_t& pid
                     , const we::type::property::type & prop
+                      = we::type::property::type()
                     )
       {
         switch (direction)
@@ -766,9 +684,8 @@ namespace we { namespace type {
           }
       }
 
-      template <typename SignatureType>
       pid_t add_input_port ( const std::string & port_name
-                           , const SignatureType & signature
+                           , const signature_type & signature
                            , const we::type::property::type & prop
                            )
       {
@@ -786,10 +703,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType, typename PlaceId>
       pid_t add_input_port ( const std::string & port_name
-                           , const SignatureType & signature
-                           , const PlaceId associated_place
+                           , const signature_type & signature
+                           , const pid_t& associated_place
                            , const we::type::property::type & prop
                            )
       {
@@ -808,9 +724,8 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType>
       pid_t add_read_port ( const std::string & port_name
-                          , const SignatureType & signature
+                          , const signature_type & signature
                           , const we::type::property::type & prop
                           )
       {
@@ -828,10 +743,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType, typename PlaceId>
       pid_t add_read_port ( const std::string & port_name
-                          , const SignatureType & signature
-                          , const PlaceId associated_place
+                          , const signature_type & signature
+                          , const pid_t& associated_place
                           , const we::type::property::type & prop
                           )
       {
@@ -849,9 +763,8 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType>
       pid_t add_output_port ( const std::string & port_name
-                            , const SignatureType & signature
+                            , const signature_type & signature
                             , const we::type::property::type & prop
                             )
       {
@@ -869,10 +782,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType, typename PlaceId>
       pid_t add_tunnel ( const std::string & port_name
-                       , const SignatureType & signature
-                       , const PlaceId associated_place
+                       , const signature_type & signature
+                       , const pid_t& associated_place
                        , const we::type::property::type & prop
                        )
       {
@@ -891,9 +803,8 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType>
       pid_t add_tunnel ( const std::string & port_name
-                       , const SignatureType & signature
+                       , const signature_type & signature
                        , const we::type::property::type & prop
                        )
       {
@@ -911,10 +822,9 @@ namespace we { namespace type {
         return port_id;
       }
 
-      template <typename SignatureType, typename PlaceId>
       pid_t add_output_port ( const std::string & port_name
-                            , const SignatureType & signature
-                            , const PlaceId associated_place
+                            , const signature_type & signature
+                            , const pid_t& associated_place
                             , const we::type::property::type & prop
                             )
       {
@@ -934,9 +844,8 @@ namespace we { namespace type {
 
 
 
-      template <typename SignatureType>
       void add_input_output_port ( const std::string & port_name
-                                 , const SignatureType & signature
+                                 , const signature_type & signature
                                  , const we::type::property::type & prop
                                  )
       {
@@ -958,10 +867,9 @@ namespace we { namespace type {
         }
       }
 
-      template <typename SignatureType, typename PlaceId>
       void add_input_output_port ( const std::string & port_name
-                                 , const SignatureType & signature
-                                 , const PlaceId associated_place
+                                 , const signature_type & signature
+                                 , const pid_t& associated_place
                                  , const we::type::property::type & prop
                                  )
       {
@@ -1055,8 +963,7 @@ namespace we { namespace type {
         throw exception::not_connected<pid_t>("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
-      template <typename PortId>
-      const port_t & get_port (const PortId port_id) const
+      const port_t& get_port (const port_id_t& port_id) const
       {
         try
         {
@@ -1069,8 +976,7 @@ namespace we { namespace type {
         }
       }
 
-      template <typename PortId>
-      port_t & get_port (const PortId port_id)
+      port_t& get_port (const port_id_t& port_id)
       {
         try
         {
@@ -1141,7 +1047,7 @@ namespace we { namespace type {
         return names;
       }
 
-      port_names_t port_names (const PortDirection & d) const
+      port_names_t port_names (const we::type::PortDirection & d) const
       {
         port_names_t names;
 
@@ -1241,33 +1147,6 @@ namespace we { namespace type {
       return hasher(t.name());
     }
 
-    namespace dump
-    {
-      inline void dump ( xml_util::xmlstream & s
-                       , const transition_t & t
-                       )
-      {
-        typedef transition_t trans_t;
-
-        s.open ("defun");
-        s.attr ("name", t.name());
-
-        for ( trans_t::port_map_t::const_iterator p (t.ports().begin())
-            ; p != t.ports().end()
-            ; ++p
-            )
-          {
-            ::we::type::dump::dump (s, p->second);
-          }
-
-        s.open ("condition");
-        s.content (t.condition());
-        s.close();
-
-        s.close();
-      }
-    }
-
     namespace detail
     {
       class transition_visitor_show : public boost::static_visitor<std::string>
@@ -1283,8 +1162,7 @@ namespace we { namespace type {
           return "{mod, " + fhg::util::show (mod_call) + "}";
         }
 
-        std::string operator () ( const petri_net::net< transition_t
-                                                      > & net
+        std::string operator () ( const petri_net::net& net
                                 ) const
         {
           return std::string("{net, ") + fhg::util::show(net) + "}";
@@ -1330,47 +1208,6 @@ namespace we { namespace type {
       return s;
     }
 
-    inline std::ostream & operator << ( std::ostream & s
-                                      , const petri_net::net<transition_t> & n
-                                      )
-    {
-      typedef petri_net::net<transition_t> pnet_t;
-
-      for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
-      {
-        s << "[" << n.get_place (*p) << ":";
-
-        typedef boost::unordered_map<token::type, size_t> token_cnt_t;
-        token_cnt_t token;
-        for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-        {
-          token[*tp]++;
-        }
-
-        for (token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
-        {
-          if (t->second > 1)
-          {
-            s << " " << t->second << "x " << t->first;
-          }
-          else
-          {
-            s << " " << t->first;
-          }
-        }
-        s << "]";
-      }
-
-      for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-      {
-        s << "/";
-        s << n.get_transition (*t);
-        s << "/";
-      }
-
-      return s;
-    }
-
     // ********************************************************************* //
 
     namespace content
@@ -1394,7 +1231,7 @@ namespace we { namespace type {
           return modcall;
         }
 
-        kind operator () (const petri_net::net<transition_t> &) const
+        kind operator () (const petri_net::net &) const
         {
           return subnet;
         }

@@ -18,12 +18,14 @@ namespace xml
                                  , PARENT_CONS_PARAM(transition)
                                  , const std::string& place
                                  , const std::string& port
+                                 , const ::petri_net::edge::type& direction
                                  , const we::type::property::type& properties
                                  )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _place (place)
         , _port (port)
+        , _direction (direction)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
@@ -44,23 +46,19 @@ namespace xml
       }
       boost::optional<const id::ref::port&> connect_type::resolved_port() const
       {
-        const id::ref::function fun (parent()->resolved_function());
+        return petri_net::edge::is_PT (direction())
+          ? parent()->resolved_function().get().in().get (port())
+          : parent()->resolved_function().get().out().get (port());
+      }
 
-        //! \note We need to take the correct port, depending on our
-        //! direction. Our direction is stored in the parent though. Yay!
-
-        const id::ref::connect this_id (make_reference_id());
-        if (parent()->has_in (this_id) || parent()->has_read (this_id))
-        {
-          return fun.get().in().get (port());
-        }
-        else if (parent()->has_out (this_id))
-        {
-          return fun.get().out().get (port());
-        }
-
-        throw std::runtime_error
-          ("connection that is not in any of the parent's lists");
+      const ::petri_net::edge::type& connect_type::direction() const
+      {
+        return _direction;
+      }
+      const ::petri_net::edge::type& connect_type::direction
+        (const ::petri_net::edge::type& direction_)
+      {
+        return _direction = direction_;
       }
 
       const std::string& connect_type::place (const std::string& place)
@@ -79,7 +77,8 @@ namespace xml
 
       connect_type::unique_key_type connect_type::unique_key() const
       {
-        return std::make_pair (_place, _port);
+        return boost::make_tuple
+          (_place, _port, petri_net::edge::is_PT (_direction));
       }
 
 
@@ -96,18 +95,16 @@ namespace xml
           , parent
           , _place
           , _port
+          , _direction
           , _properties
           ).make_reference_id();
       }
 
       namespace dump
       {
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const connect_type & c
-                  , const std::string & type
-                  )
+        void dump (::fhg::util::xml::xmlstream& s, const connect_type& c)
         {
-          s.open ("connect-" + type);
+          s.open ("connect-" + petri_net::edge::enum_to_string (c.direction()));
           s.attr ("port", c.port());
           s.attr ("place", c.place());
 
