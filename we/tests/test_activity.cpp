@@ -10,6 +10,10 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/expression.hpp>
+#include <we/type/net.fwd.hpp>
+
 using petri_net::connection_t;
 using petri_net::edge::PT;
 using petri_net::edge::PT_READ;
@@ -22,10 +26,9 @@ typedef we::mgmt::type::activity_t<transition_t> activity_t;
 
 struct exec_context : public we::mgmt::context<>
 {
-  typedef transition_t::net_type net_t;
-  typedef transition_t::mod_type mod_t;
-  typedef transition_t::expr_type expr_t;
-  typedef transition_t::cond_type cond_t;
+  typedef petri_net::net net_t;
+  typedef we::type::module_call_t mod_t;
+  typedef we::type::expression_t expr_t;
 
   void handle_internally ( activity_t & , const net_t & )
   {
@@ -68,13 +71,13 @@ int main (int, char **)
 
   transition_t trans_inner
     ( "trans_inner"
-      , transition_t::expr_type
+    , we::type::expression_t
       ( "${store.seen} := bitset_insert (${store.seen}, ${vid});"
         "${store.bid}  := ${store.bid}                         ;"
         "${pair.bid}   := ${store.bid}                         ;"
         "${pair.vid}   := ${vid}                               "
       )
-      , transition_t::cond_type ("!bitset_is_element (${store.seen}, ${vid})")
+      , "!bitset_is_element (${store.seen}, ${vid})"
       , true
     );
 
@@ -128,7 +131,7 @@ int main (int, char **)
   }
   // ************************************ //
 
-  transition_t tnet ("tnet", transition_t::net_type (net));
+  transition_t tnet ("tnet", net);
   tnet.add_port
     ("vid", "long", we::type::PORT_IN, pid_vid);
   tnet.add_port

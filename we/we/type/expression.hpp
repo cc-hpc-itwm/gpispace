@@ -19,6 +19,8 @@
 #ifndef WE_TYPE_EXPRESSION_HPP
 #define WE_TYPE_EXPRESSION_HPP
 
+#include <we/type/expression.fwd.hpp>
+
 #include <string>
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/parse/util/get_names.hpp>

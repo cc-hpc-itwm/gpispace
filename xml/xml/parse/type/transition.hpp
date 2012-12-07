@@ -12,6 +12,8 @@
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/id/types.hpp>
 
+#include <we/type/net.fwd.hpp>
+
 #include <boost/optional.hpp>
 
 namespace xml
@@ -159,9 +161,9 @@ namespace xml
         ( const id::ref::transition & id_transition
         , const state::type & state
         , const net_type & net
-        , we::activity_t::transition_type::net_type & we_net
+        , petri_net::net& we_net
         , const place_map_map_type & pids
-        , we::activity_t::transition_type::edge_type & e
+        , unsigned int & e
         );
 
       // ******************************************************************* //

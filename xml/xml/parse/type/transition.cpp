@@ -13,6 +13,7 @@
 #include <xml/parse/type/dumps.hpp>
 
 #include <we/type/place.hpp>
+#include <we/type/expression.hpp>
 
 #include <boost/variant.hpp>
 
@@ -605,13 +606,13 @@ namespace xml
         ( const id::ref::transition & id_transition
         , const state::type & state
         , const net_type & net
-        , we::activity_t::transition_type::net_type & we_net
+        , petri_net::net & we_net
         , const place_map_map_type & pids
-        , we::activity_t::transition_type::edge_type & e
+        , unsigned int & e
         )
       {
         typedef we::activity_t::transition_type we_transition_type;
-        typedef we_transition_type::expr_type we_expr_type;
+        typedef we::type::expression_t we_expr_type;
         typedef we_transition_type::preparsed_cond_type we_cond_type;
         typedef petri_net::tid_t tid_t;
 

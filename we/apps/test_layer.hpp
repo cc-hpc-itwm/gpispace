@@ -34,6 +34,11 @@
 
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/type/requirement.hpp>
+
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/net.fwd.hpp>
+
 #include <list>
 
 namespace test {
@@ -66,9 +71,9 @@ namespace test {
     struct context : public we::mgmt::context<>
     {
       typedef IdType id_type;
-      typedef we::transition_t::net_type net_t;
-      typedef we::transition_t::mod_type mod_t;
-      typedef we::transition_t::expr_type expr_t;
+      typedef petri_net::net net_t;
+      typedef we::type::module_call_t mod_t;
+      typedef we::type::expression_t expr_t;
 
       void handle_internally ( we::activity_t &act, net_t &n)
       {

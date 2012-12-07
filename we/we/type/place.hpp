@@ -7,6 +7,7 @@
 #include <we/type/literal/name.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
+#include <we/type/id.hpp>
 
 #include <we/serialize/unordered_map.hpp>
 

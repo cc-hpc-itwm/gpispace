@@ -19,9 +19,12 @@
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/expression.hpp>
+#include <we/type/module_call.hpp>
 #include <we/type/place.hpp>
 #include <we/type/token.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/id.hpp>
 
 #include <we/net.hpp>
 
@@ -52,7 +55,7 @@ int main (int, char **)
 
   transition_t trans_inner
     ( "trans_inner"
-    , transition_t::expr_type
+    , we::type::expression_t
       ( "${store.seen} := bitset_insert (${store.seen}, ${vid}); \
          ${store.bid}  := ${store.bid}                         ; \
          ${pair.bid}   := ${store.bid}                         ; \
@@ -108,7 +111,7 @@ int main (int, char **)
   }
   // ************************************ //
 
-  transition_t tnet ("tnet", transition_t::net_type (net));
+  transition_t tnet ("tnet", net);
   tnet.add_port
     ("vid", "long", we::type::PORT_IN, pid_vid);
   tnet.add_port
@@ -137,7 +140,7 @@ int main (int, char **)
     std::cout << "tnet (deserialized): " << std::endl << tnet_d << std::endl;
   }
 
-  transition_t t1 ("t1", transition_t::mod_type ("m", "f"));
+  transition_t t1 ("t1", we::type::module_call_t ("m", "f"));
 
   t1.add_port
     ("max", "long", we::type::PORT_IN)
@@ -156,7 +159,7 @@ int main (int, char **)
   std::cout << "i (out) = " << t1.output_port_by_name ("i") << std::endl;
   std::cout << "t1.p0 = " << t1.get_port (t1.input_port_by_name ("i")) << std::endl;
 
-  transition_t t2 ("t2", transition_t::expr_type ("true"));
+  transition_t t2 ("t2", we::type::expression_t ("true"));
   t2.add_port
     ("i", "long", we::type::PORT_IN);
   t2.add_port

@@ -17,8 +17,15 @@
 
 #include <fhg/util/cpp.hpp>
 
+
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/net.fwd.hpp>
+
 #include <we/type/literal/cpp.hpp>
 #include <we/type/signature/cpp.hpp>
+
+#include <we/type/id.hpp>
 
 namespace xml
 {
@@ -586,16 +593,14 @@ namespace xml
 
         typedef we::activity_t::transition_type we_transition_type;
 
-        typedef we_transition_type::edge_type we_edge_type;
-
-        typedef we_transition_type::expr_type we_expr_type;
-        typedef we_transition_type::net_type we_net_type;
-        typedef we_transition_type::mod_type we_module_type;
+        typedef petri_net::net we_net_type;
+        typedef we::type::module_call_t we_module_type;
+        typedef we::type::expression_t we_expr_type;
         typedef we_transition_type::preparsed_cond_type we_cond_type;
 
         typedef we_transition_type::requirement_t we_requirement_type;
 
-        typedef we_transition_type::pid_t pid_t;
+        typedef petri_net::pid_t pid_t;
 
         typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
 

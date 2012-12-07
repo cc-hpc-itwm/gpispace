@@ -3,6 +3,8 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
+#include <we/type/net.fwd.hpp>
+
 #include <fhg/assert.hpp>
 
 #include <we/container/adjacency.hpp>

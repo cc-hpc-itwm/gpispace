@@ -4,6 +4,10 @@
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/type/requirement.hpp>
+
+#include <we/type/module_call.hpp>
+#include <we/type/expression.hpp>
+
 #include <list>
 
 typedef uint64_t id_type;
@@ -66,7 +70,7 @@ int main ()
   {
     we::transition_t mod_call
       ( "module call"
-      , we::transition_t::mod_type ("m", "f")
+      , we::type::module_call_t ("m", "f")
       );
     we::activity_t act (mod_call);
     layer.submit (generate_id(), layer_t::policy::codec::encode(act));
@@ -76,10 +80,9 @@ int main ()
   }
 
   {
-    we::transition_t expr
-      ( "expression"
-      , we::transition_t::expr_type ("${out} := 3L")
-      );
+    we::transition_t expr ( "expression"
+                          , we::type::expression_t ("${out} := 3L")
+                          );
     we::activity_t act (expr);
     layer.submit (generate_id(), layer_t::policy::codec::encode(act));
 

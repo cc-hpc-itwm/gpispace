@@ -5,13 +5,18 @@
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
 
+#include <we/type/module_call.hpp>
+
+#include <we/type/expression.fwd.hpp>
+#include <we/type/net.fwd.hpp>
+
 #include "wfe_task.hpp"
 
 struct wfe_exec_context : public we::mgmt::context<>
 {
-  typedef we::transition_t::net_type net_t;
-  typedef we::transition_t::mod_type mod_t;
-  typedef we::transition_t::expr_type expr_t;
+  typedef petri_net::net net_t;
+  typedef we::type::module_call_t mod_t;
+  typedef we::type::expression_t expr_t;
 
   wfe_exec_context (we::loader::loader & module_loader, wfe_task_t & target)
     : loader (module_loader)

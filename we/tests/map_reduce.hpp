@@ -1,6 +1,10 @@
 #ifndef WE_TESTS_MAP_REDUCE_HPP
 #define WE_TESTS_MAP_REDUCE_HPP 1
 
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/net.fwd.hpp>
+
 namespace we
 {
   namespace tests
@@ -15,15 +19,16 @@ namespace we
     {
       typedef typename Activity::transition_type transition_type;
 
-      typedef typename transition_type::edge_type edge_type;
+      typedef unsigned int edge_type;
 
-      typedef typename transition_type::net_type net_type;
-      typedef typename transition_type::mod_type mod_type;
-      typedef typename transition_type::expr_type expr_type;
-      typedef typename transition_type::cond_type cond_type;
+      typedef petri_net::net net_type;
+      typedef we::type::module_call_t mod_type;
+      typedef we::type::expression_t expr_type;
+      typedef std::string cond_type;
 
-      typedef typename transition_type::pid_t pid_t;
-      typedef typename petri_net::tid_t tid_t;
+      typedef petri_net::pid_t pid_t;
+      typedef petri_net::tid_t tid_t;
+
       typedef typename transition_type::port_id_t port_id_t;
 
       static transition_type generate ()

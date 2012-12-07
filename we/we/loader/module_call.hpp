@@ -4,9 +4,11 @@
 #include <we/loader/loader.hpp>
 #include <we/loader/types.hpp>
 
+#include <we/type/module_call.hpp>
+
 namespace module
 {
-  static void call (we::loader::loader & loader, we::activity_t & act, const we::transition_t::mod_type & module_call)
+  static void call (we::loader::loader & loader, we::activity_t & act, const we::type::module_call_t & module_call)
   {
     we::mgmt::type::detail::printer<we::activity_t, std::ostream> printer (act, std::cout);
 

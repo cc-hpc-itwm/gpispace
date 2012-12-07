@@ -3,6 +3,10 @@
 
 #include <we/mgmt/context.hpp>
 
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/net.fwd.hpp>
+
 namespace we
 {
   namespace mgmt
@@ -25,9 +29,9 @@ namespace we
         typedef Activity activity_t;
         typedef typename activity_t::id_t id_type;
 
-        typedef typename activity_t::transition_type::net_type net_t;
-        typedef typename activity_t::transition_type::mod_type mod_t;
-        typedef typename activity_t::transition_type::expr_type expr_t;
+        typedef petri_net::net net_t;
+        typedef we::type::module_call_t mod_t;
+        typedef we::type::expression_t expr_t;
 
         static const int EXTRACT = 0;
         static const int INJECT = 1;

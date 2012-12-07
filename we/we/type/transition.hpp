@@ -29,6 +29,8 @@
 #include <we/type/requirement.hpp>
 #include <we/type/token.hpp>
 
+#include <we/type/net.fwd.hpp>
+
 #include <fhg/util/show.hpp>
 #include <fhg/util/xml.hpp>
 
@@ -49,11 +51,6 @@ namespace xml_util = ::fhg::util::xml;
 #include <boost/serialization/version.hpp>
 
 #include <boost/format.hpp>
-
-namespace petri_net
-{
-  class net;
-}
 
 namespace we { namespace type {
     namespace exception {
@@ -158,15 +155,11 @@ namespace we { namespace type {
     {
       typedef unsigned int edge_type;
 
-      typedef module_call_t mod_type;
-      typedef expression_t expr_type;
-      typedef transition_t this_type;
-      typedef petri_net::net net_type;
       typedef std::string cond_type;
       typedef detail::preparsed_condition preparsed_cond_type;
-      typedef boost::variant< mod_type
-                            , expr_type
-                            , boost::recursive_wrapper<net_type>
+      typedef boost::variant< module_call_t
+                            , expression_t
+                            , boost::recursive_wrapper<petri_net::net>
                             > data_type;
 
       typedef petri_net::pid_t pid_t;
@@ -270,7 +263,7 @@ namespace we { namespace type {
         , prop_(prop)
       { }
 
-      transition_t (const this_type &other)
+      transition_t (const transition_t &other)
         : name_(other.name_)
         , data_(other.data_)
         , internal_ (other.internal_)
@@ -326,7 +319,7 @@ namespace we { namespace type {
         return m_requirements;
       }
 
-      this_type & operator=(const this_type & other)
+      transition_t & operator=(const transition_t & other)
       {
         if (this != &other)
         {

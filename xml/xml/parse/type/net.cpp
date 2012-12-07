@@ -6,6 +6,7 @@
 #include <xml/parse/id/mapper.hpp>
 
 #include <we/type/place.hpp>
+#include <we/type/net.fwd.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
 
@@ -581,11 +582,11 @@ namespace xml
       boost::unordered_map< std::string
                           , we::activity_t::transition_type::pid_t
                           >
-      net_synthesize ( we::activity_t::transition_type::net_type & we_net
+      net_synthesize ( petri_net::net& we_net
                      , const place_map_map_type & place_map_map
                      , const net_type& net
                      , const state::type & state
-                     , we::activity_t::transition_type::edge_type & e
+                     , unsigned int& e
                      )
       {
         typedef we::activity_t::transition_type we_transition_type;

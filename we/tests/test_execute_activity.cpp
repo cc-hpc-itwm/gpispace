@@ -11,6 +11,10 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/net.fwd.hpp>
+
 using petri_net::connection_t;
 using petri_net::edge::PT;
 using petri_net::edge::PT_READ;
@@ -63,7 +67,7 @@ namespace module
     }
   }
 
-  static void call (activity_t & act, const transition_t::mod_type & module_call)
+  static void call (activity_t & act, const we::type::module_call_t & module_call)
   {
     we::mgmt::type::detail::printer<activity_t, std::ostream> printer (act, std::cout);
 
@@ -117,9 +121,9 @@ namespace module
 
 struct exec_context : public we::mgmt::context<>
 {
-  typedef transition_t::net_type net_t;
-  typedef transition_t::mod_type mod_t;
-  typedef transition_t::expr_type expr_t;
+  typedef petri_net::net net_t;
+  typedef we::type::module_call_t mod_t;
+  typedef we::type::expression_t expr_t;
 
   void handle_internally ( activity_t & act, net_t &)
   {
