@@ -950,18 +950,6 @@ namespace we { namespace type {
 
       const port_map_t & ports () const { return ports_; }
 
-      port_names_t port_names() const
-      {
-        port_names_t names;
-
-        for (const_iterator port (ports_begin()); port != ports_end(); ++port)
-          {
-            names.insert (port->second.name());
-          }
-
-        return names;
-      }
-
       port_names_t port_names (const we::type::PortDirection & d) const
       {
         port_names_t names;
