@@ -56,16 +56,16 @@ namespace mapreduce
       size_t store(std::string& key, std::list<std::string>& list_values, char* reduce_buff, size_t last_pos, const long& n_max_size)
       {
         std::stringstream sstr;
-        sstr<<key<<":[";
+        sstr<<key<<PAIRSEP<<"[";
 
         for( std::list<std::string>::iterator it=list_values.begin(); it!=list_values.end(); it++ )
         {
           sstr<<*it;
 
           if( boost::next(it) != list_values.end() )
-            sstr<<" ";
+            sstr<<SPCH;
           else
-            sstr<<"] ";
+            sstr<<"]"<<SPCH;
         }
 
         size_t item_size = sstr.str().size();
@@ -84,16 +84,16 @@ namespace mapreduce
 
 		void write(std::string& key, std::list<std::string>& list_values, std::ofstream& ofs )
 		{
-			ofs<<key<<":[";
+			ofs<<key<<PAIRSEP<<"[";
 
 			for( std::list<std::string>::iterator it=list_values.begin(); it!=list_values.end(); it++ )
 			{
 				ofs<<*it;
 
 				if( boost::next(it) != list_values.end() )
-					ofs<<" ";
+					ofs<<SPCH;
 				else
-					ofs<<"] "<<std::endl;
+					ofs<<"]"<<SPCH<<std::endl;
 			}
 		}
 

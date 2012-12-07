@@ -16,9 +16,14 @@
 #include <boost/regex.hpp>
 
 const int KEY_MAX_SIZE = 50;
-const std::string delimiters=" \n";
-const char SHRPCH = '#';
-const char SPCH = ' ';
+
+const char SHRPCH 	= '#';
+const char NLCH 	= '\n';
+const char SPCH 	= ' ';
+const char PAIRSEP 	= '@';
+
+std::string DELIMITERS = " \n";
+
 
 typedef  std::pair<std::string, std::string> key_val_pair_t;
 
@@ -82,8 +87,9 @@ namespace mapreduce
   		  bool bMatching = false;
 
   		  //MLOG(INFO, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
-
-  		  boost::char_separator<char> sep("#:");
+  		  std::ostringstream oss;
+  		  oss<<SHRPCH<<PAIRSEP;
+  		  boost::char_separator<char> sep(oss.str().data());
   		  boost::tokenizer<boost::char_separator<char> > tok_v(keyval_pair, sep);
   		  std::vector<std::string> v(3,"");
   		  v.assign(tok_v.begin(), tok_v.end());
@@ -138,28 +144,30 @@ namespace mapreduce
   			  return false;
 
   		  // further checks are necessary
-  		  boost::char_separator<char> sep("#:");
-  		  boost::tokenizer<boost::char_separator<char> > tok(str_item, sep);
-  		  std::vector<std::string> u(3, "");
-  		  u.assign(tok.begin(), tok.end());
+  		 std::ostringstream oss;
+  		 oss<<SHRPCH<<PAIRSEP;
+  		 boost::char_separator<char> sep(oss.str().data());
+  		 boost::tokenizer<boost::char_separator<char> > tok(str_item, sep);
+  		 std::vector<std::string> u(3, "");
+  		 u.assign(tok.begin(), tok.end());
 
-  		  try {
+  		 try {
   			  int u0 = boost::lexical_cast<long>(u[0]);
   			  int u1 = boost::lexical_cast<long>(u[1]);
   			  return true;
-  		  }
-  		  catch(const boost::bad_lexical_cast& ex)
-  		  {
-  			  return false;
-  		  }
+  		 }
+  		 catch(const boost::bad_lexical_cast& ex)
+  		 {
+  			 return false;
+  		 }
 
-  		  // const boost::regex pattern("#\\d+#\\d+:\\w*");
-  		  // return boost::regex_match(str_item, pattern);
+  		 // const boost::regex pattern("#\\d+#\\d+:\\w*");
+  		 // return boost::regex_match(str_item, pattern);
   	  }
 
     bool is_delimiter(char x)
     {
-      bool b = (delimiters.find(x) != std::string::npos);
+      bool b = (DELIMITERS.find(x) != std::string::npos);
       return b;
     }
 
@@ -179,8 +187,8 @@ namespace mapreduce
 
     bool comp (const std::string& l, const std::string& r)
     {
-      size_t l_pos = l.find(':');
-      size_t r_pos = l.find(':');
+      size_t l_pos = l.find(PAIRSEP);
+      size_t r_pos = l.find(PAIRSEP);
       std:: string l_pref = l.substr(0, l_pos);
       std:: string r_pref = r.substr(0, r_pos);
 
@@ -189,7 +197,7 @@ namespace mapreduce
 
     std::vector<int> get_array(const std::string& str_input)
     {
-      boost::char_separator<char> sep(" \n");
+      boost::char_separator<char> sep(DELIMITERS.c_str());
       boost::tokenizer<boost::char_separator<char> > tok(str_input, sep);
       std::vector<std::string> v;
       v.assign(tok.begin(),tok.end());
@@ -228,7 +236,7 @@ namespace mapreduce
     std::vector<std::string> get_list_items(char* local_buff)
     {
       std::string str_buff(local_buff);
-      boost::char_separator<char> sep(" \n");
+      boost::char_separator<char> sep(DELIMITERS.c_str());
       boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
       std::vector<std::string> v;
       v.assign(tok.begin(),tok.end());
@@ -291,7 +299,7 @@ namespace mapreduce
 
     key_val_pair_t get_key_val(const std::string& str_map)
     {
-      size_t split_pos = str_map.find_last_of(":");
+      size_t split_pos = str_map.find_last_of(PAIRSEP);
       std::string key = str_map.substr(0,split_pos);
       std::string val = str_map.substr(split_pos+1, str_map.size());
 
@@ -301,7 +309,7 @@ namespace mapreduce
     std::string make_string(const key_val_pair_t& pair)
     {
     	std::ostringstream osstr;
-    	osstr<<pair.first<<":"<<pair.second;
+    	osstr<<pair.first<<PAIRSEP<<pair.second;
 
     	return osstr.str();;
     }
