@@ -154,12 +154,13 @@ namespace we { namespace type {
     struct transition_t
     {
       typedef detail::preparsed_condition preparsed_cond_type;
+
+    private:
       typedef boost::variant< module_call_t
                             , expression_t
                             , boost::recursive_wrapper<petri_net::net>
                             > data_type;
 
-    private:
       typedef petri_net::pid_t pid_t;
       typedef petri_net::rid_t port_id_t;
 
