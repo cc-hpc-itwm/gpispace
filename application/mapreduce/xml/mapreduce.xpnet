@@ -55,8 +55,8 @@
     </specialize>
     
     <transition name="init" inline="true">
-     <!--  <require key="GPI" /> -->
-     <!--  <require key="INI" /> -->
+      <require key="GPI" />
+      <require key="INI" />
       <defun>
         <in name="input_file" type="string"/>
         <in name="output_file" type="string"/>
@@ -311,8 +311,8 @@
     <place name="read_slot_id" type="long"/>
     
     <transition name="load_chunk" inline="true">
-     <!--  <require key="GPI" /> -->
-     <!--  <require key="LOAD" /> -->
+      <require key="GPI" />
+      <require key="LOAD" />
       <defun>
         <in name="chunk_and_slot" type="chunk_and_slot"/>
         <in name="config" type="config"/>
@@ -400,8 +400,8 @@
     <!-- map with split
     <place name="map_chunk_info" type="map_chunk_info"/>
     <transition name="map_chunk" inline="true">
-		<require key="GPI" /> 
-		<require key="MAP" /> 
+      <require key="GPI" />
+      <require key="MAP" />
       <defun>
         <in name="map_slot_id" type="long"/>
         <in name="read_chunk_info" type="read_chunk_info"/>
@@ -570,8 +570,8 @@
     <!-- map with tokenizer --> 
     <place name="map_chunk_info" type="map_chunk_info"/>
     <transition name="map_chunk" inline="true">
-     <!--  <require key="GPI" /> -->
-     <!--  <require key="MAP" /> -->
+      <require key="GPI" />
+      <require key="MAP" />
       <defun>
         <in name="map_slot_id" type="long"/>
         <in name="read_chunk_info" type="read_chunk_info"/>
@@ -748,8 +748,8 @@
            
     <place name="partition_result" type="partition_result"/>
     <transition name="copy_into_partition_slot" inline="true">
-     <!--  <require key="GPI" /> -->
-     <!--  <require key="PAR" /> -->
+      <require key="GPI" />
+      <require key="PAR" />
     <defun>
         <in name="map_chunk_info" type="map_chunk_info"/>
         <in name="partition_info" type="partition_info"/>
@@ -917,8 +917,8 @@
     </transition> 
     
     <transition name="reduce" inline="true">
-     <!--  <require key="GPI" /> -->
-     <!--  <require key="RED" /> -->
+      <require key="GPI" />
+      <require key="RED" />
       <defun>
         <in name="partition_result" type="partition_result"/>
         <in name="config" type="config"/>
@@ -1129,8 +1129,8 @@
     
     <place name="special_partition_info" type="partition_info"/> 
     <transition name="recover_border_keys">
-     <!--  <require key="GPI" /> -->
-     <!--  <require key="PAR" /> -->
+      <require key="GPI" />
+      <require key="PAR" />
       <defun>
         <in name="old_part_info" type="partition_info"/>
         <in name="config" type="config"/>
@@ -1327,8 +1327,8 @@
     
     <place name="reduce_and_write_done" type="control"/> 
     <transition name="reduce_and_write">
-     <!--  <require key="GPI" /> -->
-     <!--  <require key="WRITE" /> -->
+      <require key="GPI" />
+      <require key="WRITE" />
       <defun>
         <in name="map_slots_released" type="control"/>
         <in name="read_slots_released" type="control"/>
@@ -1499,8 +1499,8 @@
     </transition>
     
     <transition name="finalize">
-     <!--  <require key="GPI" /> -->
-     <!--  <require key="FIN" /> -->
+      <require key="GPI" />
+      <require key="FIN" />
       <defun>
         <in name="config" type="config"/>
         <in name="map_slots_released" type="control"/>
