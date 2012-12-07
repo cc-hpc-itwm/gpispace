@@ -455,7 +455,7 @@
             int n = 0, part_id;
           
             std::list<std::string> tok;
-            boost::split(tok, ptr_chunk, boost::algorithm::is_any_of(delimiters.c_str()),  boost::token_compress_on);
+            boost::split(tok, ptr_chunk, boost::algorithm::is_any_of(DELIMITERS.c_str()),  boost::token_compress_on);
             for(std::list<std::string>::iterator it = tok.begin(); it != tok.end(); ++it)
             {
                 std::string str_pair("");
@@ -625,7 +625,7 @@
             int n = 0, part_id;
           
             std::string str_buff(ptr_chunk);
-            boost::char_separator<char> sep(delimiters.c_str());
+            boost::char_separator<char> sep(DELIMITERS.c_str());
             boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
             
             for(boost::tokenizer<boost::char_separator<char> >::iterator it = tok.begin(); it != tok.end(); ++it)
