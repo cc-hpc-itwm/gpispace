@@ -84,12 +84,7 @@ namespace module
       const token::type token   = top->first;
       const port_id_t  port_id = top->second;
 
-      context.bind
-        ( we::type::detail::translate_port_to_name ( act.transition()
-                                                   , port_id
-                                                   )
-        , token.value
-        );
+      context.bind (act.transition().name_of_port (port_id), token.value);
     }
 
     typedef std::vector <std::pair<value::type, std::string> > mod_output_t;

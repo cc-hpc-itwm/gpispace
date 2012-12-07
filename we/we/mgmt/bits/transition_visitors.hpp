@@ -274,9 +274,7 @@ namespace we { namespace mgmt { namespace visitor {
         std::cerr << "W: transition generated output, but port is not connected:"
                   << " trans=\"" << trans.name() << "\""
                   << " port="
-                  << we::type::detail::translate_port_to_name ( trans
-                                                              , top->second
-                                                              )
+                  << trans.name_of_port (top->second)
                   << "(" << top->second << ")"
                   << " token=" << fhg::util::show (top->first)
                   << std::endl;
@@ -449,11 +447,7 @@ namespace we { namespace mgmt { namespace visitor {
         const port_id_t  port_id = top->second;
 
         context.bind
-          ( we::type::detail::translate_port_to_name ( activity_.transition()
-                                                     , port_id
-                                                     )
-          , token.value
-          );
+          (activity_.transition().name_of_port (port_id), token.value);
       }
 
       // evaluate

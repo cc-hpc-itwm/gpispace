@@ -109,29 +109,30 @@ namespace we { namespace type {
       };
     }
 
+    typedef petri_net::pid_t pid_t;
+    typedef pid_t port_id_t;
+
     namespace detail {
       template <typename Transition>
-      std::string translate_place_to_port_name ( const Transition& trans
-                                               , const petri_net::pid_t& pid
-                                               )
+      const std::string& translate_place_to_port_name ( const Transition& trans
+                                                      , const pid_t& pid
+                                                      )
       {
         return trans.get_port (trans.outer_to_inner (pid)).name();
       }
 
-      template <typename Transition, typename PortId>
-      std::string translate_port_to_name (const Transition & trans, const PortId port_id)
-      {
-        return trans.get_port (port_id).name();
-      }
-
       template <typename Transition>
-      typename Transition::port_id_t translate_name_to_output_port (const Transition & trans, const std::string & name)
+      const port_id_t& translate_name_to_output_port ( const Transition& trans
+                                                     , const std::string& name
+                                                     )
       {
         return trans.output_port_by_name (name);
       }
 
       template <typename Transition>
-      typename Transition::port_id_t translate_name_to_input_port (const Transition & trans, const std::string & name)
+      const port_id_t& translate_name_to_input_port ( const Transition& trans
+                                                    , const std::string& name
+                                                    )
       {
         return trans.input_port_by_name (name);
       }
@@ -680,8 +681,8 @@ namespace we { namespace type {
             throw exception::port_already_defined("trans: " + name() + ": input port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (port_name, PORT_IN, signature, prop);
-        port_id_t port_id = port_id_counter_++;
+        const port_t port (port_name, PORT_IN, signature, prop);
+        const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -701,8 +702,8 @@ namespace we { namespace type {
               ("trans: " + name() + ": input port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (port_name, PORT_IN, signature, associated_place, prop);
-        port_id_t port_id = port_id_counter_++;
+        const port_t port (port_name, PORT_IN, signature, associated_place, prop);
+        const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -720,8 +721,8 @@ namespace we { namespace type {
             throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
           }
         }
-        port_t port (port_name, PORT_READ, signature, prop);
-        port_id_t port_id = port_id_counter_++;
+        const port_t port (port_name, PORT_READ, signature, prop);
+        const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -740,8 +741,8 @@ namespace we { namespace type {
             throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
           }
         }
-        port_t port (port_name, PORT_READ, signature, associated_place, prop);
-        port_id_t port_id = port_id_counter_++;
+        const port_t port (port_name, PORT_READ, signature, associated_place, prop);
+        const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -759,8 +760,8 @@ namespace we { namespace type {
             throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (port_name, PORT_OUT, signature, prop);
-        port_id_t port_id = port_id_counter_++;
+        const port_t port (port_name, PORT_OUT, signature, prop);
+        const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -819,8 +820,8 @@ namespace we { namespace type {
             throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (port_name, PORT_OUT, signature, associated_place, prop);
-        port_id_t port_id = port_id_counter_++;
+        const port_t port (port_name, PORT_OUT, signature, associated_place, prop);
+        const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -887,7 +888,7 @@ namespace we { namespace type {
         throw exception::port_undefined("trans: "+name()+": input port not defined:"+port_name, port_name);
       }
 
-      port_id_t output_port_by_name (const std::string & port_name) const
+      const port_id_t& output_port_by_name (const std::string & port_name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -899,7 +900,7 @@ namespace we { namespace type {
         throw exception::port_undefined("trans: "+name()+": output port not defined:"+port_name, port_name);
       }
 
-      port_id_with_prop_t input_port_by_pid (const pid_t & pid) const
+      const port_id_with_prop_t& input_port_by_pid (const pid_t & pid) const
       {
         for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
             ; p != outer_to_inner_.end()
@@ -915,7 +916,7 @@ namespace we { namespace type {
         throw exception::not_connected<pid_t>("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
-      pid_t input_pid_by_port_id (const port_id_t & port_id) const
+      const pid_t& input_pid_by_port_id (const port_id_t & port_id) const
       {
         for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
             ; p != outer_to_inner_.end()
@@ -945,6 +946,11 @@ namespace we { namespace type {
         }
 
         throw exception::not_connected<pid_t>("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), pid);
+      }
+
+      const std::string& name_of_port (const port_id_t& port) const
+      {
+        return get_port (port).name();
       }
 
       const port_t& get_port (const port_id_t& port_id) const

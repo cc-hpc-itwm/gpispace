@@ -78,7 +78,7 @@ namespace we { namespace mgmt { namespace type {
             {
               if (top != top_list.begin())
                 os << ", ";
-              os << we::type::detail::translate_port_to_name (act_.transition(), top->second)
+              os << act_.transition().name_of_port (top->second)
                  << "=(" << top->first << ", " << top->second << ")";
             }
 
