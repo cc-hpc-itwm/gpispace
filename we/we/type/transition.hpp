@@ -110,8 +110,10 @@ namespace we { namespace type {
     }
 
     namespace detail {
-      template <typename Transition, typename Pid>
-      std::string translate_place_to_port_name (const Transition & trans, const Pid pid)
+      template <typename Transition>
+      std::string translate_place_to_port_name ( const Transition& trans
+                                               , const petri_net::pid_t& pid
+                                               )
       {
         return trans.get_port (trans.outer_to_inner (pid)).name();
       }
@@ -242,7 +244,7 @@ namespace we { namespace type {
         : name_ ("unknown")
         , condition_( "true"
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      ( &detail::translate_place_to_port_name<this_type>
                       , boost::ref(*this)
                       , _1
                       )
@@ -259,7 +261,7 @@ namespace we { namespace type {
         , internal_ (detail::is_internal<Type>::value)
         , condition_( "true"
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      ( &detail::translate_place_to_port_name<this_type>
                       , boost::ref(*this)
                       , _1
                       )
@@ -277,7 +279,7 @@ namespace we { namespace type {
         , internal_ (detail::is_internal<Type>::value)
         , condition_( _condition
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      ( &detail::translate_place_to_port_name<this_type>
                       , boost::ref(*this)
                       , _1
                       )
@@ -296,7 +298,7 @@ namespace we { namespace type {
         , condition_( _condition
                     , _condition
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      ( &detail::translate_place_to_port_name<this_type>
                       , boost::ref(*this)
                       , _1
                       )
@@ -314,7 +316,7 @@ namespace we { namespace type {
         , internal_ (intern)
         , condition_( "true"
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      ( &detail::translate_place_to_port_name<this_type>
                       , boost::ref(*this)
                       , _1
                       )
@@ -333,7 +335,7 @@ namespace we { namespace type {
         , internal_ (intern)
         , condition_( _condition
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      ( &detail::translate_place_to_port_name<this_type>
                       , boost::ref(*this)
                       , _1
                       )
@@ -355,7 +357,7 @@ namespace we { namespace type {
         , condition_( _condition
                     , _condition
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      ( &detail::translate_place_to_port_name<this_type>
                       , boost::ref(*this)
                       , _1
                       )
@@ -370,7 +372,7 @@ namespace we { namespace type {
         , internal_ (other.internal_)
         , condition_( other.condition_.expression()
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      ( &detail::translate_place_to_port_name<this_type>
                       , boost::ref(*this)
                       , _1
                       )
@@ -443,7 +445,7 @@ namespace we { namespace type {
           condition_ = condition::type
             ( other.condition_.expression()
             , boost::bind
-              ( &detail::translate_place_to_port_name<this_type, pid_t>
+              ( &detail::translate_place_to_port_name<this_type>
               , boost::ref(*this)
               , _1
               )
@@ -496,57 +498,53 @@ namespace we { namespace type {
         }
       }
 
-      template <typename Outer>
-      void disconnect_outer_from_inner ( const Outer outer
-                                       )
+      void disconnect_outer_from_inner (const pid_t& pid)
       {
-      	outer_to_inner_t::iterator i = outer_to_inner_.find (outer);
+      	outer_to_inner_t::iterator i (outer_to_inner_.find (pid));
+
         if (i == outer_to_inner_.end())
         {
-          throw exception::not_connected<Outer>("already disconnected", outer);
+          throw exception::not_connected<pid_t>("pid already disconnected", pid);
         }
         else
         {
-          outer_to_inner_.erase(i);
+          outer_to_inner_.erase (i);
         }
       }
 
-      template <typename Inner>
-      void disconnect_inner_from_outer ( const Inner inner
-                                       )
+      void disconnect_inner_from_outer (const port_id_t& port)
       {
-      	inner_to_outer_t::iterator i = inner_to_outer_.find (inner);
+      	inner_to_outer_t::iterator i (inner_to_outer_.find (port));
+
         if (i == inner_to_outer_.end())
         {
-          throw exception::not_connected<Inner>("already disconnected", inner);
+          throw exception::not_connected<port_id_t> ("port already disconnected", port);
         }
         else
         {
-          inner_to_outer_.erase(i);
+          inner_to_outer_.erase (i);
         }
       }
 
-      template <typename Inner, typename Outer>
-      void re_connect_inner_to_outer ( const Inner inner
-                                     , const Outer outer
+      void re_connect_inner_to_outer ( const port_id_t& port
+                                     , const pid_t& pid
                                      , const we::type::property::type & prop
                                      )
       {
-        inner_to_outer_.erase (inner);
+        inner_to_outer_.erase (port);
 
-        connect_inner_to_outer (inner, outer, prop);
+        connect_inner_to_outer (port, pid, prop);
       }
 
-      template <typename Outer, typename Inner>
-      void re_connect_outer_to_inner ( const Outer outer_old
-                                     , const Outer outer_new
-                                     , const Inner inner
+      void re_connect_outer_to_inner ( const pid_t& pid_old
+                                     , const pid_t& pid_new
+                                     , const port_id_t& port
                                      , const we::type::property::type & prop
                                      )
       {
-        outer_to_inner_.erase (outer_old);
+        outer_to_inner_.erase (pid_old);
 
-        connect_outer_to_inner (outer_new, inner, prop);
+        connect_outer_to_inner (pid_new, port, prop);
       }
 
       const port_id_t& outer_to_inner (const pid_t& pid) const
@@ -1104,7 +1102,7 @@ namespace we { namespace type {
         ar & boost::serialization::make_nvp("condition", cond_expr);
         condition_ = condition::type ( cond_expr
                                      , boost::bind
-                                       ( &detail::translate_place_to_port_name<this_type, pid_t>
+                                       ( &detail::translate_place_to_port_name<this_type>
                                        , boost::ref(*this)
                                        , _1
                                        )
