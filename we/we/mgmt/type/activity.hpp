@@ -119,7 +119,7 @@ namespace we { namespace mgmt { namespace type {
     typedef typename traits_type::token_on_place_list_t token_on_place_list_t;
     typedef typename traits_type::input_t input_t;
     typedef typename traits_type::output_t output_t;
-    typedef typename traits_type::pid_t pid_t;
+    typedef petri_net::pid_t pid_t;
     typedef typename traits_type::activity_id_t id_t;
 
     typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;

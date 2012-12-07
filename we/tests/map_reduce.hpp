@@ -29,7 +29,7 @@ namespace we
       typedef petri_net::pid_t pid_t;
       typedef petri_net::tid_t tid_t;
 
-      typedef typename transition_type::port_id_t port_id_t;
+      typedef petri_net::rid_t port_id_t;
 
       static transition_type generate ()
       {

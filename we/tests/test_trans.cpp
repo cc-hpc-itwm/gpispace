@@ -147,11 +147,11 @@ int main (int, char **)
   ;
 
   t1.add_connection
-    (transition_t::pid_t(0), "i");
+    (petri_net::pid_t(0), "i");
   t1.add_connection
-    (transition_t::pid_t(1), "max");
+    (petri_net::pid_t(1), "max");
   t1.add_connection
-    ("i", transition_t::pid_t(0))
+    ("i", petri_net::pid_t(0))
   ;
 
   std::cout << "i (inp) = " << t1.input_port_by_name ("i") << std::endl;

@@ -4,6 +4,7 @@
 #define WE_TYPE_BITS_TRANSITION_TODOT_HPP 1
 
 #include <we/type/transition.hpp>
+#include <we/type/id.hpp>
 
 namespace we { namespace type {
 
@@ -409,7 +410,7 @@ namespace we { namespace type {
           typedef typename transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
           typedef std::pair< place_dot_name_type
-                           , typename transition_t::port_id_t
+                           , petri_net::rid_t
                            > extra_connection_type;
           typedef std::string transition_name_type;
           typedef boost::unordered_map< transition_name_type

@@ -5,6 +5,7 @@
 #include <we/loader/types.hpp>
 
 #include <we/type/module_call.hpp>
+#include <we/type/id.hpp>
 
 namespace module
 {
@@ -16,7 +17,7 @@ namespace module
     typedef we::loader::input_t context_t;
     typedef we::activity_t::input_t input_t;
     typedef we::activity_t::output_t output_t;
-    typedef we::activity_t::transition_type::port_id_t port_id_t;
+    typedef petri_net::rid_t port_id_t;
     typedef we::activity_t::transition_type::port_t port_t;
     typedef we::activity_t::transition_type::const_iterator port_iterator;
 

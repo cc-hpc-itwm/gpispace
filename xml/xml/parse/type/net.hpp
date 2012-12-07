@@ -18,6 +18,8 @@
 
 #include <xml/parse/id/generic.hpp>
 
+#include <we/type/id.hpp>
+
 namespace xml
 {
   namespace parse
@@ -172,9 +174,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      boost::unordered_map< std::string
-                          , we::activity_t::transition_type::pid_t
-                          >
+      boost::unordered_map<std::string, petri_net::pid_t>
       net_synthesize ( petri_net::net& we_net
                      , const place_map_map_type & place_map_map
                      , const net_type & net

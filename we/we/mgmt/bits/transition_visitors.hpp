@@ -27,6 +27,7 @@
 #include <fhg/util/show.hpp>
 
 #include <we/type/transition.hpp>
+#include <we/type/id.hpp>
 
 namespace we { namespace mgmt { namespace visitor {
   namespace exception
@@ -104,9 +105,7 @@ namespace we { namespace mgmt { namespace visitor {
       // TODO beautify this
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
       {
-        typedef typename Activity::transition_type::port_id_t port_id_t;
-
-        const port_id_t port_id
+        const petri_net::rid_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -118,8 +117,7 @@ namespace we { namespace mgmt { namespace visitor {
       // TODO beautify this
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
       {
-        typedef typename Activity::transition_type::port_id_t port_id_t;
-        const port_id_t port_id
+        const petri_net::rid_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -131,8 +129,7 @@ namespace we { namespace mgmt { namespace visitor {
       // TODO beautify this
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
       {
-        typedef typename Activity::transition_type::port_id_t port_id_t;
-        const port_id_t port_id
+        const petri_net::rid_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -195,8 +192,8 @@ namespace we { namespace mgmt { namespace visitor {
       typedef petri_net::net pnet_t;
 
       typedef typename Activity::output_t output_t;
-      typedef typename Activity::transition_type::port_id_t port_id_t;
-      typedef typename Activity::transition_type::pid_t     pid_t;
+      typedef petri_net::rid_t port_id_t;
+      typedef petri_net::pid_t pid_t;
       typedef typename Activity::transition_type::const_iterator port_iterator;
 
       // collect output
@@ -255,8 +252,6 @@ namespace we { namespace mgmt { namespace visitor {
   template <typename Net, typename Transition, typename Output>
   void inject_output_to_net ( Net & net, Transition const & trans, Output const & output)
   {
-    typedef typename Transition::port_id_t port_id_t;
-
     // iterate over output of child
     for ( typename Output::const_iterator top (output.begin())
         ; top != output.end()
@@ -269,7 +264,7 @@ namespace we { namespace mgmt { namespace visitor {
                    , trans.inner_to_outer ( top->second )
                    , top->first
                    );
-      } catch ( const we::type::exception::not_connected <port_id_t> &)
+      } catch ( const we::type::exception::not_connected <petri_net::rid_t> &)
       {
         std::cerr << "W: transition generated output, but port is not connected:"
                   << " trans=\"" << trans.name() << "\""
@@ -346,14 +341,12 @@ namespace we { namespace mgmt { namespace visitor {
   {
     for (typename Input::const_iterator inp (input.begin()); inp != input.end(); ++inp)
     {
-      typedef typename Transition::port_id_t port_id_t;
-      typedef typename Transition::pid_t     pid_t;
-
-      const port_id_t port_id  = inp->second;
+      const petri_net::rid_t port_id (inp->second);
 
       if (trans.get_port (port_id).has_associated_place())
         {
-          const pid_t place_id (trans.get_port (port_id).associated_place());
+          const petri_net::pid_t place_id
+            (trans.get_port (port_id).associated_place());
 
           token::put (net, place_id, inp->first);
         }
@@ -435,7 +428,7 @@ namespace we { namespace mgmt { namespace visitor {
 
       typedef typename Activity::input_t input_t;
       typedef typename Activity::output_t output_t;
-      typedef typename Activity::transition_type::port_id_t port_id_t;
+      typedef petri_net::rid_t port_id_t;
       typedef typename Activity::transition_type::const_iterator port_iterator;
 
       for ( typename input_t::const_iterator top (activity_.input().begin())

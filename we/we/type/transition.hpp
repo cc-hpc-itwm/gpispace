@@ -160,9 +160,11 @@ namespace we { namespace type {
                             , boost::recursive_wrapper<petri_net::net>
                             > data_type;
 
+    private:
       typedef petri_net::pid_t pid_t;
       typedef petri_net::rid_t port_id_t;
 
+    public:
       typedef std::pair< port_id_t
                        , we::type::property::type
                        > port_id_with_prop_t;

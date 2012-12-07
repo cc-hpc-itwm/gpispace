@@ -4,6 +4,7 @@
 #include <list>
 
 #include <we/type/token.hpp>
+#include <we/type/id.hpp>
 
 #include <we/we.hpp>
 
@@ -22,8 +23,7 @@ namespace we
                            , type const & value
                            )
       {
-        typedef we::activity_t::transition_type::port_id_t port_id_t;
-        const port_id_t pid (act.transition().input_port_by_name(port));
+        const petri_net::rid_t pid (act.transition().input_port_by_name(port));
 
         act.add_input
           (we::input_t::value_type( ::token::type ( port
@@ -63,11 +63,10 @@ namespace we
                  , std::string const & port
                  )
       {
-        typedef we::activity_t::transition_type::port_id_t port_id_t;
         typedef we::activity_t::output_t output_t;
 
         list_t tokens;
-        const port_id_t port_id (act.transition().output_port_by_name(port));
+        const petri_net::rid_t port_id (act.transition().output_port_by_name(port));
         for ( output_t::const_iterator out(act.output().begin())
             ; out != act.output().end()
             ; ++out
@@ -82,7 +81,6 @@ namespace we
 
       marking_t get_input (we::activity_t const & act)
       {
-        typedef we::activity_t::transition_type::port_id_t port_id_t;
         typedef we::activity_t::input_t input_t;
 
         marking_t m;
@@ -100,7 +98,6 @@ namespace we
 
       marking_t get_output (we::activity_t const & act)
       {
-        typedef we::activity_t::transition_type::port_id_t port_id_t;
         typedef we::activity_t::output_t output_t;
 
         marking_t m;

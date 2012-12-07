@@ -28,7 +28,7 @@ static inline void dump (std::ostream & os, const T & v)
 
 namespace po = boost::program_options;
 
-typedef we::activity_t::transition_type::port_id_t port_id_t;
+typedef petri_net::rid_t port_id_t;
 
 namespace detail
 {

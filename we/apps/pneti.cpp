@@ -41,8 +41,6 @@ std::ostream & operator<<( std::ostream & os
 
 namespace po = boost::program_options;
 
-typedef we::activity_t::transition_type::port_id_t port_id_t;
-
 int
 main (int argc, char ** argv)
 {

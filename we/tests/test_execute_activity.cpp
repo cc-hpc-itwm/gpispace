@@ -75,7 +75,7 @@ namespace module
     typedef expr::eval::context context_t;
     typedef activity_t::input_t input_t;
     typedef activity_t::output_t output_t;
-    typedef activity_t::transition_type::port_id_t port_id_t;
+    typedef petri_net::rid_t port_id_t;
     typedef activity_t::transition_type::port_t port_t;
     typedef activity_t::transition_type::const_iterator port_iterator;
 

@@ -237,7 +237,6 @@ namespace we { namespace type {
       , const trans_info::pid_set_type & pid_read
       )
       {
-        typedef transition_t::port_id_t port_id_t;
         typedef transition_t::port_t port_t;
         typedef petri_net::net pnet_t;
         typedef petri_net::adj_place_const_it adj_place_const_it;
@@ -333,7 +332,6 @@ namespace we { namespace type {
       {
         typedef transition_t::const_iterator const_iterator;
         typedef transition_t::port_t port_t;
-        typedef transition_t::port_id_t port_id_t;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;
         typedef petri_net::connection_t connection_t;
@@ -410,11 +408,10 @@ namespace we { namespace type {
       {
         typedef transition_t::const_iterator const_iterator;
         typedef transition_t::port_t port_t;
-        typedef transition_t::port_id_t port_id_t;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;
 
-        typedef std::pair<port_id_t, pid_t> pair_type;
+        typedef std::pair<petri_net::rid_t, pid_t> pair_type;
         std::stack<pair_type> to_erase;
 
         for ( const_iterator p (trans.ports_begin())
@@ -444,7 +441,7 @@ namespace we { namespace type {
         while (!to_erase.empty())
           {
             const pair_type & p (to_erase.top());
-            const port_id_t & port_id (p.first);
+            const petri_net::rid_t& port_id (p.first);
             const pid_t & pid (p.second);
 
             net.delete_place (pid);

@@ -37,7 +37,7 @@ class Optimizer {
 
     typedef petri_net::net pnet_t;
 
-    typedef transition_t::port_id_t port_id_t;
+    typedef petri_net::rid_t port_id_t;
     typedef transition_t::port_t port_t;
 
     lua_State *L;
