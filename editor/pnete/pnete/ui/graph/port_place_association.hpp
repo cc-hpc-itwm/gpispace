@@ -5,6 +5,7 @@
 
 #include <pnete/ui/graph/port_place_association.fwd.hpp>
 
+#include <pnete/data/handle/port.hpp>
 #include <pnete/ui/graph/association.hpp>
 #include <pnete/ui/graph/place.fwd.hpp>
 #include <pnete/ui/graph/port.fwd.hpp>
@@ -32,7 +33,8 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          port_place_association (port_item* port, place_item* place);
+          port_place_association
+            (port_item*, place_item*, const data::handle::port&);
 
           virtual QPainterPath shape() const;
           virtual void paint
@@ -41,7 +43,8 @@ namespace fhg
           enum { Type = port_place_association_graph_type };
           virtual int type() const { return Type; }
 
-          //! \todo Have handle of port, this item is representing?
+        private:
+          data::handle::port _handle;
         };
       }
     }

@@ -14,8 +14,9 @@ namespace fhg
       namespace graph
       {
         port_place_association::port_place_association
-          (port_item* port, place_item* place)
+          (port_item* port, place_item* place, const data::handle::port& handle)
             : association (port, place)
+            , _handle (handle)
         { }
 
         QPainterPath port_place_association::shape () const

@@ -433,6 +433,7 @@ namespace fhg
             ( new ui::graph::port_place_association
               ( _port_item
               , qgraphicsitem_cast<ui::graph::place_item*> (place_pos->second)
+              , _port_item->handle()
               )
             );
         }
