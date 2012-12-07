@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <QtCore/QString>
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "monitorwindow.hpp"
 
 int main(int ac, char *av[])
