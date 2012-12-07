@@ -72,8 +72,8 @@ namespace we { namespace type {
                 , const transition_t & trans_parent
                 )
       {
-        typedef transition_t::port_t port_t;
-        typedef port_t::name_type name_type;
+        typedef we::type::port_t port_t;
+        typedef std::string name_type;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;
         typedef petri_net::tid_t tid_t;
@@ -233,7 +233,6 @@ namespace we { namespace type {
         typedef pnet_t::transition_const_it transition_const_it;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::tid_t tid_t;
-        typedef transition_t::port_t port_t;
 
         bool modified (false);
 

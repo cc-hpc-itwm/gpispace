@@ -8,6 +8,7 @@
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
 #include <we/type/token.hpp>
+#include <we/type/port.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
@@ -76,7 +77,7 @@ namespace module
     typedef activity_t::input_t input_t;
     typedef activity_t::output_t output_t;
     typedef petri_net::rid_t port_id_t;
-    typedef activity_t::transition_type::port_t port_t;
+    typedef we::type::port_t port_t;
     typedef activity_t::transition_type::const_iterator port_iterator;
 
     context_t context;

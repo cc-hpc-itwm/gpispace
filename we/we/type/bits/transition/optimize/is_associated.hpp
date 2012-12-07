@@ -5,13 +5,14 @@
 
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
+#include <we/type/port.hpp>
 
 namespace we { namespace type {
     namespace optimize
     {
       inline bool is_associated ( const transition_t & trans
                                 , const petri_net::pid_t & pid
-                                , transition_t::port_t & port
+                                , we::type::port_t & port
                                 )
       {
         try
@@ -30,7 +31,7 @@ namespace we { namespace type {
                                 , const petri_net::pid_t & pid
                                 )
       {
-        transition_t::port_t port;
+        we::type::port_t port;
 
         return is_associated (trans, pid, port);
       }

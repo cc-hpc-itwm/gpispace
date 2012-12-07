@@ -5,6 +5,7 @@
 
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
+#include <we/type/port.hpp>
 
 #include <we/net.hpp>
 
@@ -21,13 +22,11 @@ namespace we { namespace type {
     {
       // ******************************************************************* //
 
-      inline boost::optional<const transition_t::port_t>
+      inline boost::optional<const we::type::port_t>
       input_port_by_pid ( const transition_t & trans
                         , const petri_net::pid_t & pid
                         )
       {
-        typedef transition_t::port_t port_t;
-
         try
           {
             return trans.get_port (trans.input_port_by_pid (pid).first);
@@ -237,7 +236,7 @@ namespace we { namespace type {
       , const trans_info::pid_set_type & pid_read
       )
       {
-        typedef transition_t::port_t port_t;
+        typedef we::type::port_t port_t;
         typedef petri_net::net pnet_t;
         typedef petri_net::adj_place_const_it adj_place_const_it;
 
@@ -290,7 +289,7 @@ namespace we { namespace type {
         typedef transition_t transition_t;
         typedef transition_t::port_iterator port_iterator;
         typedef transition_t::const_iterator const_iterator;
-        typedef transition_t::port_t port_t;
+        typedef we::type::port_t port_t;
 
         boost::unordered_set<std::string> other_names;
 
@@ -331,7 +330,6 @@ namespace we { namespace type {
       )
       {
         typedef transition_t::const_iterator const_iterator;
-        typedef transition_t::port_t port_t;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;
         typedef petri_net::connection_t connection_t;
@@ -407,7 +405,6 @@ namespace we { namespace type {
       )
       {
         typedef transition_t::const_iterator const_iterator;
-        typedef transition_t::port_t port_t;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::eid_t eid_t;
 

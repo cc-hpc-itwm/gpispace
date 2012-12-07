@@ -34,6 +34,13 @@ namespace petri_net
 
   // deprecated?
   static const eid_t eid_invalid (traits::id_traits<eid_t>::invalid());
+
+  static const pid_t& pid_invalid()
+  {
+    static const pid_t i (std::numeric_limits<pid_t>::max());
+
+    return i;
+  }
 }
 
 #endif

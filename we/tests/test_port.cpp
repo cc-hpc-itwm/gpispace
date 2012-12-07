@@ -3,7 +3,7 @@
  *
  *       Filename:  test_port.cpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  04/12/2010 12:18:50 PM
@@ -24,8 +24,8 @@
 
 int main (int, char **)
 {
-  we::type::port<std::string> p1("Max", we::type::PORT_IN, "");
-  we::type::port<std::string> p2;
+  we::type::port_t p1("Max", we::type::PORT_IN, signature::type());
+  we::type::port_t p2;
 
   {
     std::ostringstream oss;
@@ -52,7 +52,7 @@ int main (int, char **)
     std::cout << "Port 2 (deserialized): " << p2 << std::endl;
   }
 
-  we::type::port<signature::type> p3;
+  we::type::port_t p3;
   std::cout << "Port 3: " << p3 << std::endl;
   {
     std::ostringstream oss;

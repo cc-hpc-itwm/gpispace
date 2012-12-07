@@ -10,6 +10,7 @@
 #include <jpn/common/Unreachable.h>
 
 #include <we/we.hpp>
+#include <we/type/port.hpp>
 
 #include "PetriNet.h"
 
@@ -154,7 +155,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
         boost::apply_visitor(*this, transition.data());
 
         FOREACH(const transition_t::port_map_t::value_type &item, transition.ports()) {
-            const transition_t::port_t &port = item.second;
+          const we::type::port_t &port = item.second;
 
             if (port.has_associated_place()) {
                 petri_net::pid_t pid = port.associated_place();

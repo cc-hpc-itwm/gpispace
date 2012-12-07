@@ -19,6 +19,7 @@
 #include "RangeAdaptor.h"
 
 #include <we/we.hpp>
+#include <we/type/port.hpp>
 
 #define foreach BOOST_FOREACH
 
@@ -38,7 +39,7 @@ class Optimizer {
     typedef petri_net::net pnet_t;
 
     typedef petri_net::rid_t port_id_t;
-    typedef transition_t::port_t port_t;
+    typedef we::type::port_t port_t;
 
     lua_State *L;
 
@@ -891,7 +892,7 @@ class Optimizer {
             if (place) {
                 port_.associated_place() = place->id();
             } else {
-                port_.associated_place() = port_t::pid_traits::invalid();
+                port_.associated_place() = petri_net::pid_invalid();
             }
         }
 

@@ -6,6 +6,7 @@
 
 #include <we/type/module_call.hpp>
 #include <we/type/id.hpp>
+#include <we/type/port.hpp>
 
 namespace module
 {
@@ -18,7 +19,7 @@ namespace module
     typedef we::activity_t::input_t input_t;
     typedef we::activity_t::output_t output_t;
     typedef petri_net::rid_t port_id_t;
-    typedef we::activity_t::transition_type::port_t port_t;
+    typedef we::type::port_t port_t;
     typedef we::activity_t::transition_type::const_iterator port_iterator;
 
     context_t context;

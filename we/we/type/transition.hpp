@@ -164,18 +164,17 @@ namespace we { namespace type {
       typedef petri_net::pid_t pid_t;
       typedef petri_net::rid_t port_id_t;
 
+      typedef std::pair< pid_t
+                       , we::type::property::type
+                       > pid_with_prop_t;
+
     public:
       typedef std::pair< port_id_t
                        , we::type::property::type
                        > port_id_with_prop_t;
-      typedef std::pair< pid_t
-                       , we::type::property::type
-                       > pid_with_prop_t;
       typedef boost::unordered_map<pid_t, port_id_with_prop_t> outer_to_inner_t;
       typedef boost::unordered_map<port_id_t, pid_with_prop_t> inner_to_outer_t;
 
-      typedef signature::type signature_type;
-      typedef port<signature_type> port_t;
       typedef boost::unordered_map<port_id_t, port_t> port_map_t;
       typedef port_map_t::const_iterator const_iterator;
       typedef port_map_t::iterator port_iterator;
@@ -515,7 +514,7 @@ namespace we { namespace type {
       }
 
       void add_port ( const std::string & name
-                    , signature_type const & sig
+                    , signature::type const & sig
                     , const we::type::PortDirection& direction
                     , const we::type::property::type & prop
                       = we::type::property::type()
@@ -534,7 +533,7 @@ namespace we { namespace type {
       }
 
       void add_port ( const std::string & name
-                    , signature_type const & sig
+                    , signature::type const & sig
                     , const we::type::PortDirection& direction
                     , const pid_t& pid
                     , const we::type::property::type & prop
@@ -554,7 +553,7 @@ namespace we { namespace type {
       }
 
       pid_t add_input_port ( const std::string & port_name
-                           , const signature_type & signature
+                           , const signature::type & signature
                            , const we::type::property::type & prop
                            )
       {
@@ -573,7 +572,7 @@ namespace we { namespace type {
       }
 
       pid_t add_input_port ( const std::string & port_name
-                           , const signature_type & signature
+                           , const signature::type & signature
                            , const pid_t& associated_place
                            , const we::type::property::type & prop
                            )
@@ -594,7 +593,7 @@ namespace we { namespace type {
       }
 
       pid_t add_read_port ( const std::string & port_name
-                          , const signature_type & signature
+                          , const signature::type & signature
                           , const we::type::property::type & prop
                           )
       {
@@ -613,7 +612,7 @@ namespace we { namespace type {
       }
 
       pid_t add_read_port ( const std::string & port_name
-                          , const signature_type & signature
+                          , const signature::type & signature
                           , const pid_t& associated_place
                           , const we::type::property::type & prop
                           )
@@ -633,7 +632,7 @@ namespace we { namespace type {
       }
 
       pid_t add_output_port ( const std::string & port_name
-                            , const signature_type & signature
+                            , const signature::type & signature
                             , const we::type::property::type & prop
                             )
       {
@@ -652,7 +651,7 @@ namespace we { namespace type {
       }
 
       pid_t add_tunnel ( const std::string & port_name
-                       , const signature_type & signature
+                       , const signature::type & signature
                        , const pid_t& associated_place
                        , const we::type::property::type & prop
                        )
@@ -673,7 +672,7 @@ namespace we { namespace type {
       }
 
       pid_t add_tunnel ( const std::string & port_name
-                       , const signature_type & signature
+                       , const signature::type & signature
                        , const we::type::property::type & prop
                        )
       {
@@ -692,7 +691,7 @@ namespace we { namespace type {
       }
 
       pid_t add_output_port ( const std::string & port_name
-                            , const signature_type & signature
+                            , const signature::type & signature
                             , const pid_t& associated_place
                             , const we::type::property::type & prop
                             )
@@ -714,7 +713,7 @@ namespace we { namespace type {
 
 
       void add_input_output_port ( const std::string & port_name
-                                 , const signature_type & signature
+                                 , const signature::type & signature
                                  , const we::type::property::type & prop
                                  )
       {
@@ -737,7 +736,7 @@ namespace we { namespace type {
       }
 
       void add_input_output_port ( const std::string & port_name
-                                 , const signature_type & signature
+                                 , const signature::type & signature
                                  , const pid_t& associated_place
                                  , const we::type::property::type & prop
                                  )

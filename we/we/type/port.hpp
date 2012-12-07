@@ -25,8 +25,11 @@
 #include <boost/optional.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
+#include <we/type/signature.hpp>
 
 #include <fhg/util/xml.hpp>
+
+#include <limits>
 
 namespace xml_util = ::fhg::util::xml;
 
@@ -58,58 +61,55 @@ namespace we
         }
     }
 
-    template < typename SignatureType
-             , typename IdType = petri_net::pid_t
-             , typename Traits = petri_net::traits::id_traits<IdType>
-             >
-    struct port
+    struct port_t
     {
     public:
-      typedef SignatureType sig_type;
-      typedef IdType pid_type;
-      typedef Traits pid_traits;
-
       typedef std::string name_type;
 
-      port ()
+      port_t ()
         : name_("default")
         , direction_(PORT_IN)
-        , associated_place_(pid_traits::invalid())
+        , associated_place_(petri_net::pid_invalid())
       {}
 
-      template <typename Signature>
-      port (const name_type & name, PortDirection direction, const Signature & signature)
+      port_t ( const name_type & name
+           , PortDirection direction
+           , const signature::type& signature
+           )
         : name_(name)
         , direction_(direction)
         , signature_(signature)
-        , associated_place_(pid_traits::invalid())
+        , associated_place_(petri_net::pid_invalid())
       {}
 
-      template <typename Signature>
-      port ( const name_type & name
+      port_t ( const name_type & name
            , PortDirection direction
-           , const Signature & signature
+           , const signature::type& signature
            , const we::type::property::type & prop
            )
         : name_(name)
         , direction_(direction)
         , signature_(signature)
-        , associated_place_(pid_traits::invalid())
+        , associated_place_(petri_net::pid_invalid())
         , prop_(prop)
       {}
 
-      template <typename Signature, typename PlaceId>
-      port (const name_type & name, PortDirection direction, const Signature & signature, const PlaceId place_id)
+      template <typename PlaceId>
+      port_t ( const name_type & name
+           , PortDirection direction
+           , const signature::type& signature
+           , const PlaceId place_id
+           )
         : name_(name)
         , direction_(direction)
         , signature_(signature)
         , associated_place_(place_id)
       {}
 
-      template <typename Signature, typename PlaceId>
-      port ( const name_type & name
+      template <typename PlaceId>
+      port_t ( const name_type & name
            , PortDirection direction
-           , const Signature & signature
+           , const signature::type& signature
            , const PlaceId place_id
            , const we::type::property::type prop
            )
@@ -124,21 +124,21 @@ namespace we
       const name_type & name() const { return name_; }
 
       PortDirection direction() const { return direction_; }
-      const sig_type & signature() const { return signature_; }
-      const pid_type & associated_place() const { return associated_place_; }
-      pid_type & associated_place() { return associated_place_; }
+      const signature::type& signature() const { return signature_; }
+      const petri_net::pid_t& associated_place() const { return associated_place_; }
+      petri_net::pid_t& associated_place() { return associated_place_; }
       const we::type::property::type & property() const { return prop_; }
 
       inline bool is_input (void) const { return direction_ == PORT_IN || direction_ == PORT_IN_OUT || direction_ == PORT_READ; }
       inline bool is_output (void) const { return direction_ == PORT_OUT || direction_ == PORT_IN_OUT; }
       inline bool is_tunnel (void) const { return direction_ == PORT_TUNNEL; }
-      inline bool has_associated_place (void) const { return associated_place_ != pid_traits::invalid(); }
+      inline bool has_associated_place (void) const { return associated_place_ != std::numeric_limits<petri_net::pid_t>::max(); }
     private:
       name_type name_;
       PortDirection direction_;
-      sig_type signature_;
+      signature::type signature_;
       //! associated to a place within a network, only reasonable for transitions with a subnet
-      pid_type associated_place_;
+      petri_net::pid_t associated_place_;
       we::type::property::type prop_;
 
       friend class boost::serialization::access;
@@ -153,8 +153,7 @@ namespace we
       }
     };
 
-    template <typename T, typename I>
-    std::ostream & operator << ( std::ostream & os, const port <T, I> & p )
+    inline std::ostream & operator << ( std::ostream & os, const port_t& p )
     {
       os << "{port, "
          << p.direction()
@@ -165,7 +164,7 @@ namespace we
          << ", "
         ;
 
-      if (p.associated_place() == port<T,I>::pid_traits::invalid())
+      if (p.associated_place() == petri_net::pid_invalid())
       {
         os << "not associated";
       }
