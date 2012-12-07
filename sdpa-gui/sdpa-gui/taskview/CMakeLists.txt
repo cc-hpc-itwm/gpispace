@@ -1,6 +1,3 @@
-# -*- mode: cmake; -*-
-include(${QT_USE_FILE})
-
 set(task-view_SRC
   taskscene.cpp
   taskview.cpp

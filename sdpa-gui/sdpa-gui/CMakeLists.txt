@@ -1,5 +1,4 @@
 # -*- mode: cmake; -*-
-add_subdirectory(taskview)
 
 include(${QT_USE_FILE})
 
@@ -70,3 +69,5 @@ install(TARGETS sdpa-gui
   RUNTIME
   DESTINATION bin
   COMPONENT runtime)
+
+add_subdirectory(taskview)
