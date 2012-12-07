@@ -161,7 +161,7 @@ namespace we { namespace type {
                             > data_type;
 
       typedef petri_net::pid_t pid_t;
-      typedef pid_t port_id_t;
+      typedef petri_net::rid_t port_id_t;
 
       typedef std::pair< port_id_t
                        , we::type::property::type
