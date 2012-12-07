@@ -31,7 +31,7 @@ add_library (xml_parse_base
 
 include (libutils)
 
-merge_static_libs (xml_parse xml_parse "xml_parse_base;xml_parse_type;xml_parse_util;xml_parse_id;${Boost_LIBRARIES}")
+merge_static_libs (xml_parse xml_parse "xml_parse_base;xml_parse_type;xml_parse_util;xml_parse_id;${Boost_LIBRARIES};${WE_LIBRARIES}")
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
                 ${CMAKE_CURRENT_BINARY_DIR}/includes.hpp
