@@ -206,21 +206,7 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string & name
                    , Type const & typ
-                   )
-        : name_ (name)
-        , data_ (typ)
-        , internal_ (detail::is_internal<Type>::value)
-        , condition_( "true"
-                    , boost::bind
-                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
-                    )
-        , port_id_counter_(0)
-      { }
-
-      template <typename Type>
-      transition_t ( const std::string & name
-                   , Type const & typ
-                   , cond_type const & _condition
+                   , cond_type const & _condition = "true"
                    )
         : name_ (name)
         , data_ (typ)
@@ -242,21 +228,6 @@ namespace we { namespace type {
         , internal_ (detail::is_internal<Type>::value)
         , condition_( _condition
                     , _condition
-                    , boost::bind
-                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
-                    )
-        , port_id_counter_(0)
-      { }
-
-      template <typename Type>
-      transition_t ( const std::string & name
-                   , Type const & typ
-                   , bool intern
-                   )
-        : name_ (name)
-        , data_ (typ)
-        , internal_ (intern)
-        , condition_( "true"
                     , boost::bind
                       (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
