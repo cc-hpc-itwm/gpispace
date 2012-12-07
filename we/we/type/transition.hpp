@@ -129,27 +129,28 @@ namespace we { namespace type {
         static const bool value = false;
       };
 
-      template <typename E, typename P>
       struct preparsed_condition
       {
         // should correspond!
-        explicit preparsed_condition (E const & _expr, P const & _parser)
+        explicit preparsed_condition ( const std::string& _expr
+                                     , const condition::type::parser_t& _parser
+                                     )
           : expr(_expr)
           , parser(_parser)
         { }
 
-        operator E const & () const
+        operator std::string const & () const
         {
           return expr;
         }
 
-        operator P const & () const
+        operator condition::type::parser_t const & () const
         {
           return parser;
         }
 
-        const E expr;
-        const P parser;
+        const std::string expr;
+        const condition::type::parser_t parser;
       };
     }
 
@@ -162,9 +163,7 @@ namespace we { namespace type {
       typedef transition_t this_type;
       typedef petri_net::net net_type;
       typedef std::string cond_type;
-      typedef detail::preparsed_condition< std::string
-                                         , condition::type::parser_t
-                                         > preparsed_cond_type;
+      typedef detail::preparsed_condition preparsed_cond_type;
       typedef boost::variant< mod_type
                             , expr_type
                             , boost::recursive_wrapper<net_type>
