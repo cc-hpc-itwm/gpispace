@@ -109,27 +109,6 @@ namespace we { namespace type {
       };
     }
 
-    typedef petri_net::pid_t pid_t;
-    typedef pid_t port_id_t;
-
-    namespace detail {
-      template <typename Transition>
-      const std::string& translate_place_to_port_name ( const Transition& trans
-                                                      , const pid_t& pid
-                                                      )
-      {
-        return trans.get_port (trans.outer_to_inner (pid)).name();
-      }
-
-      template <typename Transition>
-      const port_id_t& translate_name_to_input_port ( const Transition& trans
-                                                    , const std::string& name
-                                                    )
-      {
-        return trans.input_port_by_name (name);
-      }
-    }
-
     namespace detail
     {
       template <typename T>
@@ -189,8 +168,6 @@ namespace we { namespace type {
       };
     }
 
-
-
     struct transition_t
     {
       typedef unsigned int edge_type;
@@ -237,10 +214,7 @@ namespace we { namespace type {
         : name_ ("unknown")
         , condition_( "true"
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type>
-                      , boost::ref(*this)
-                      , _1
-                      )
+                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
         , port_id_counter_(0)
       { }
@@ -254,10 +228,7 @@ namespace we { namespace type {
         , internal_ (detail::is_internal<Type>::value)
         , condition_( "true"
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type>
-                      , boost::ref(*this)
-                      , _1
-                      )
+                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
         , port_id_counter_(0)
       { }
@@ -272,10 +243,7 @@ namespace we { namespace type {
         , internal_ (detail::is_internal<Type>::value)
         , condition_( _condition
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type>
-                      , boost::ref(*this)
-                      , _1
-                      )
+                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
         , port_id_counter_(0)
       { }
@@ -291,10 +259,7 @@ namespace we { namespace type {
         , condition_( _condition
                     , _condition
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type>
-                      , boost::ref(*this)
-                      , _1
-                      )
+                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
         , port_id_counter_(0)
       { }
@@ -309,10 +274,7 @@ namespace we { namespace type {
         , internal_ (intern)
         , condition_( "true"
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type>
-                      , boost::ref(*this)
-                      , _1
-                      )
+                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
         , port_id_counter_(0)
       { }
@@ -328,10 +290,7 @@ namespace we { namespace type {
         , internal_ (intern)
         , condition_( _condition
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type>
-                      , boost::ref(*this)
-                      , _1
-                      )
+                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
         , port_id_counter_(0)
       { }
@@ -350,10 +309,7 @@ namespace we { namespace type {
         , condition_( _condition
                     , _condition
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type>
-                      , boost::ref(*this)
-                      , _1
-                      )
+                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
         , port_id_counter_(0)
         , prop_(prop)
@@ -365,10 +321,7 @@ namespace we { namespace type {
         , internal_ (other.internal_)
         , condition_( other.condition_.expression()
                     , boost::bind
-                      ( &detail::translate_place_to_port_name<this_type>
-                      , boost::ref(*this)
-                      , _1
-                      )
+                      (boost::mem_fn(&transition_t::name_of_port), this, _1)
                     )
         , outer_to_inner_(other.outer_to_inner_)
         , inner_to_outer_(other.inner_to_outer_)
@@ -438,10 +391,7 @@ namespace we { namespace type {
           condition_ = condition::type
             ( other.condition_.expression()
             , boost::bind
-              ( &detail::translate_place_to_port_name<this_type>
-              , boost::ref(*this)
-              , _1
-              )
+              (boost::mem_fn(&transition_t::name_of_port), this, _1)
             );
           prop_ = other.prop_;
           m_requirements = other.m_requirements;
@@ -945,6 +895,11 @@ namespace we { namespace type {
         return get_port (port).name();
       }
 
+      const std::string& name_of_place (const pid_t& pid)
+      {
+        return get_port (outer_to_inner (pid)).name();
+      }
+
       const port_t& get_port (const port_id_t& port_id) const
       {
         try
@@ -1100,10 +1055,7 @@ namespace we { namespace type {
         ar & boost::serialization::make_nvp("condition", cond_expr);
         condition_ = condition::type ( cond_expr
                                      , boost::bind
-                                       ( &detail::translate_place_to_port_name<this_type>
-                                       , boost::ref(*this)
-                                       , _1
-                                       )
+                                       (boost::mem_fn(&transition_t::name_of_port), this, _1)
                                      );
         ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
