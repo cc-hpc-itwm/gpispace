@@ -1,0 +1,17 @@
+<!-- bernd.loerwald@itwm.fraunhofer.de -->
+
+<defun>
+  <net>
+    <place name="P" type="t"/>
+    <transition name="foo">
+      <defun>
+        <in name="A" type="t"/>
+        <out name="A" type="t"/>
+        <expression/>
+      </defun>
+      <!-- Should throw: duplicate connection-->
+      <connect-out port="A" place="P"/>
+      <connect-out port="A" place="P"/>
+    </transition>
+  </net>
+</defun>
