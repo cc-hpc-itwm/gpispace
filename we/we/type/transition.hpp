@@ -129,21 +129,6 @@ namespace we { namespace type {
         static const bool value = false;
       };
 
-      template <typename T>
-      struct condition
-      {
-        explicit condition (T const & _expr)
-          : expr(_expr)
-        { }
-
-        operator T const & () const
-        {
-          return expr;
-        }
-
-        const T expr;
-      };
-
       template <typename E, typename P>
       struct preparsed_condition
       {
@@ -176,7 +161,7 @@ namespace we { namespace type {
       typedef expression_t expr_type;
       typedef transition_t this_type;
       typedef petri_net::net net_type;
-      typedef detail::condition<std::string> cond_type;
+      typedef std::string cond_type;
       typedef detail::preparsed_condition< std::string
                                          , condition::type::parser_t
                                          > preparsed_cond_type;
