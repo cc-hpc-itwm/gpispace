@@ -62,44 +62,8 @@ namespace petri_net
 
 namespace petri_net
 {
-  namespace edge
-  {
-    enum type {PT,PT_READ,TP};
-
-    static inline bool is_pt_read (const type & e)
-    {
-      return e == PT_READ;
-    }
-
-    static inline bool is_PT (const type & et)
-    {
-      return (et == PT || et == PT_READ);
-    }
-
-    static inline type pt_read (void)
-    {
-      return PT_READ;
-    }
-
-    inline std::string enum_to_string (const type& e)
-    {
-      switch (e)
-      {
-      case PT: return "in";
-      case PT_READ: return "read";
-      case TP: return "out";
-      }
-      throw std::runtime_error ("enum_to_string for invalid enum value");
-    }
-  }
-} // namespace petri_net
-
-namespace petri_net
-{
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
-
-  typedef connection<edge::type, tid_t, pid_t> connection_t;
 
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
 // single map<tid_t,(X,Y)>?

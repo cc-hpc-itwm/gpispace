@@ -59,7 +59,7 @@ namespace we { namespace type {
 
             if (is_read)
               {
-                connection.type = petri_net::edge::pt_read();
+                connection.type = petri_net::edge::PT_READ;
               }
 
             net.add_edge (edge, connection);
