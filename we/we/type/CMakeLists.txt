@@ -23,6 +23,7 @@ set (sources
   property.cpp
   port.cpp
   id.cpp
+  place.cpp
 )
 
 install(FILES ${hdrs}

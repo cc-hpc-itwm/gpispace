@@ -9,6 +9,7 @@
 #include <we/type/place.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/value.hpp>
+#include <we/type/id.hpp>
 
 #include <we/type/value/eq.hpp>
 #include <we/type/value/hash.hpp>
@@ -119,8 +120,8 @@ namespace token
            )
   {
     net.put_token ( pid
-                  , type ( place::name<NET> (net, pid)
-                         , place::signature<NET> (net, pid)
+                  , type ( net.get_place(pid).name()
+                         , net.get_place(pid).signature()
                          , v
                          )
                   );

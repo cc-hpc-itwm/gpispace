@@ -366,7 +366,7 @@ class Optimizer {
 
         void setName(const std::string &name) {
             ensureValid();
-            place_.set_name(name);
+            place_.name(name);
         }
 
         const ConnectedPorts &connectedPorts() const { return connectedPorts_; }

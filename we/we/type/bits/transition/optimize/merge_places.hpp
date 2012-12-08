@@ -122,8 +122,8 @@ namespace we { namespace type {
           }
 
         // take the better name
-        const std::string name_A (place::name (net, pid_A));
-        const std::string name_B (place::name (net, pid_B));
+        const std::string name_A (net.get_place (pid_A).name());
+        const std::string name_B (net.get_place (pid_B).name());
 
         net.delete_place (pid_B);
 
