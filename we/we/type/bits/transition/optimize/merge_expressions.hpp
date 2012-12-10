@@ -44,11 +44,11 @@ namespace we { namespace type {
         typedef boost::unordered_set<petri_net::pid_t> pid_set_type;
 
         const transition_t pred;
-        const petri_net::tid_t tid_pred;
+        const petri_net::transition_id_type tid_pred;
         const pid_set_type pid_read;
 
         trans_info ( const transition_t & _pred
-                   , const petri_net::tid_t & _tid_pred
+                   , const petri_net::transition_id_type & _tid_pred
                    , const pid_set_type & _pid_read
                    )
           : pred (_pred), tid_pred (_tid_pred), pid_read (_pid_read)
@@ -58,7 +58,7 @@ namespace we { namespace type {
       inline boost::optional<trans_info>
       expression_predecessor
       ( const transition_t & trans
-      , const petri_net::tid_t & tid
+      , const petri_net::transition_id_type & tid
       , const petri_net::net & net
       )
       {
@@ -69,10 +69,10 @@ namespace we { namespace type {
         typedef transition_t::const_iterator const_iterator;
         typedef trans_info::pid_set_type pid_set_type;
 
-        typedef std::pair<const transition_t, const petri_net::tid_t> pair_type;
+        typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
         typedef boost::unordered_set<pair_type> set_of_pair_type;
 
-        typedef std::pair< const petri_net::tid_t
+        typedef std::pair< const petri_net::transition_id_type
                          , const petri_net::pid_t
                          > tid_pid_type;
         typedef boost::unordered_set<tid_pid_type> set_of_tid_pid_type;
@@ -175,7 +175,7 @@ namespace we { namespace type {
                     ; ++t
                     )
                   {
-                    const petri_net::tid_t & tid_pred (*t);
+                    const petri_net::transition_id_type & tid_pred (*t);
                     const transition_t & trans (net.get_transition (tid_pred));
 
                     if (not content::is_expression (trans))
@@ -231,7 +231,7 @@ namespace we { namespace type {
 
       inline void resolve_ports
       ( transition_t & trans
-      , const petri_net::tid_t & tid_trans
+      , const petri_net::transition_id_type & tid_trans
       , const transition_t & pred
       , const petri_net::net & net
       , const trans_info::pid_set_type & pid_read
@@ -323,9 +323,9 @@ namespace we { namespace type {
 
       inline void take_ports
       ( const transition_t & trans
-      , const petri_net::tid_t tid_trans
+      , const petri_net::transition_id_type tid_trans
       , transition_t & pred
-      , const petri_net::tid_t tid_pred
+      , const petri_net::transition_id_type tid_pred
       , petri_net::net & net
       , const trans_info::pid_set_type pid_read
       )
@@ -400,7 +400,7 @@ namespace we { namespace type {
 
       inline void clear_ports
       ( transition_t & trans
-      , const petri_net::tid_t /* tid_trans */
+      , const petri_net::transition_id_type /* tid_trans */
       , const transition_t & trans_parent
       , petri_net::net & net
       )
@@ -459,7 +459,7 @@ namespace we { namespace type {
 
         bool modified (false);
 
-        typedef std::stack<petri_net::tid_t> stack_t;
+        typedef std::stack<petri_net::transition_id_type> stack_t;
         stack_t stack;
 
         for (transition_const_it t (net.transitions()); t.has_more(); ++t)
@@ -469,7 +469,7 @@ namespace we { namespace type {
 
         while (!stack.empty())
           {
-            const petri_net::tid_t & tid_trans (stack.top());
+            const petri_net::transition_id_type & tid_trans (stack.top());
             transition_t trans (net.get_transition (tid_trans));
 
             if (  content::is_expression (trans)
@@ -484,7 +484,7 @@ namespace we { namespace type {
                 if (maybe_pred)
                   {
                     transition_t pred ((*maybe_pred).pred);
-                    petri_net::tid_t tid_pred ((*maybe_pred).tid_pred);
+                    petri_net::transition_id_type tid_pred ((*maybe_pred).tid_pred);
 
                     pid_set_type pid_read ((*maybe_pred).pid_read);
 

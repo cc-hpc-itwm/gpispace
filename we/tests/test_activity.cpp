@@ -106,7 +106,7 @@ int main (int, char **)
     ("store",pid_store)
     ;
 
-  petri_net::tid_t tid (net.add_transition (trans_inner));
+  petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
   edge_t e (0);
 

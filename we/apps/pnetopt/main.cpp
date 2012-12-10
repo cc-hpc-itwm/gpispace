@@ -160,7 +160,7 @@ class Optimizer {
     typedef RefCountedObjectPtr<PlacesIterator> PlacesIteratorPtr;
 
     class Transition;
-  typedef boost::unordered_map<petri_net::tid_t, Transition *> IdTransitionMap;
+  typedef boost::unordered_map<petri_net::transition_id_type, Transition *> IdTransitionMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdTransitionMap>, IdTransitionMap> Transitions;
     typedef pnetopt::LuaIterator<Transitions> TransitionsIterator;
     typedef RefCountedObjectPtr<TransitionsIterator> TransitionsIteratorPtr;
@@ -258,7 +258,7 @@ class Optimizer {
             placesIterators_.clear();
         }
 
-      Transition *getTransition(petri_net::tid_t tid) {
+      Transition *getTransition(petri_net::transition_id_type tid) {
             Transition *&result = id2transition_[tid];
 
             if (!result) {
@@ -503,7 +503,7 @@ class Optimizer {
         PetriNet *petriNet_;
 
         /** Transition id. */
-      petri_net::tid_t tid_;
+      petri_net::transition_id_type tid_;
 
         /** Reference to the transition. */
         transition_t &transition_;
@@ -528,7 +528,7 @@ class Optimizer {
 
         public:
 
-      Transition(PetriNet *petriNet, petri_net::tid_t tid, transition_t &transition):
+      Transition(PetriNet *petriNet, petri_net::transition_id_type tid, transition_t &transition):
             petriNet_(petriNet), tid_(tid), transition_(transition)
         {
             for (transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
@@ -566,7 +566,7 @@ class Optimizer {
 
         PetriNet *petriNet() const { return petriNet_; }
 
-      petri_net::tid_t id() const { return tid_; }
+      petri_net::transition_id_type id() const { return tid_; }
 
         transition_t &transition() const { return transition_; }
 

@@ -614,7 +614,7 @@ namespace xml
         typedef we::activity_t::transition_type we_transition_type;
         typedef we::type::expression_t we_expr_type;
         typedef we_transition_type::preparsed_cond_type we_cond_type;
-        typedef petri_net::tid_t tid_t;
+        typedef petri_net::transition_id_type tid_t;
 
         const transition_type& trans (id_transition.get());
 

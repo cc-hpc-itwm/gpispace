@@ -67,7 +67,7 @@ namespace we { namespace type {
 
       inline boost::optional<pid_pair_vec_type>
       pid_pairs ( const transition_t & trans
-                , const petri_net::tid_t & tid
+                , const petri_net::transition_id_type & tid
                 , const petri_net::net & net
                 , const transition_t & trans_parent
                 )
@@ -78,7 +78,7 @@ namespace we { namespace type {
         typedef transition_t::outer_to_inner_t outer_to_inner;
         typedef transition_t::inner_to_outer_t inner_to_outer;
         typedef boost::unordered_map<name_type, petri_net::pid_t> map_type;
-        typedef boost::unordered_set<petri_net::tid_t> tid_set_type;
+        typedef boost::unordered_set<petri_net::transition_id_type> tid_set_type;
 
         map_type map_in;
         map_type map_out;
@@ -231,7 +231,7 @@ namespace we { namespace type {
 
         bool modified (false);
 
-        typedef std::stack<petri_net::tid_t> stack_t;
+        typedef std::stack<petri_net::transition_id_type> stack_t;
         stack_t stack;
 
         for (transition_const_it t (net.transitions()); t.has_more(); ++t)
@@ -241,7 +241,7 @@ namespace we { namespace type {
 
         while (!stack.empty())
           {
-            const petri_net::tid_t & tid (stack.top());
+            const petri_net::transition_id_type & tid (stack.top());
             const transition_t trans (net.get_transition (tid));
 
             if (  content::is_expression (trans)

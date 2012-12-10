@@ -30,14 +30,14 @@ namespace petri_net
     }
   }
 
-  connection_t::connection_t () 
+  connection_t::connection_t ()
     : type()
     , tid()
     , pid()
   {}
 
   connection_t::connection_t ( const edge::type& _type
-	 		     , const tid_t& _tid
+	 		     , const transition_id_type& _tid
 		 	     , const pid_t& _pid
 			     )
     : type (_type)

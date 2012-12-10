@@ -26,11 +26,14 @@ namespace petri_net
   {
   public:
     edge::type type;
-    tid_t tid;
+    transition_id_type tid;
     pid_t pid;
 
     connection_t ();
-    connection_t (const edge::type&, const tid_t&, const pid_t&);
+    connection_t ( const edge::type&
+                 , const transition_id_type&
+                 , const pid_t&
+                 );
 
     template<typename Archive>
     void serialize (Archive& ar, const unsigned int)

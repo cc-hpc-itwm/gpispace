@@ -28,7 +28,7 @@ namespace we { namespace type {
         typedef petri_net::connection_t connection_t;
         typedef petri_net::adj_transition_const_it adj_transition_const_it;
 
-        typedef std::pair<petri_net::tid_t,petri_net::eid_t> pair_t;
+        typedef std::pair<petri_net::transition_id_type,petri_net::eid_t> pair_t;
         typedef std::stack<pair_t> stack_t;
         stack_t stack;
 
@@ -44,7 +44,7 @@ namespace we { namespace type {
         while (!stack.empty())
           {
             const stack_t::value_type & pair (stack.top());
-            const petri_net::tid_t & tid_trans_out_B (pair.first);
+            const petri_net::transition_id_type & tid_trans_out_B (pair.first);
             const petri_net::eid_t & eid_out_B (pair.second);
 
             const unsigned int edge (net.get_edge (eid_out_B));
@@ -90,7 +90,7 @@ namespace we { namespace type {
         while (!stack.empty())
           {
             const stack_t::value_type & pair (stack.top());
-            const petri_net::tid_t & tid_trans_in_B (pair.first);
+            const petri_net::transition_id_type & tid_trans_in_B (pair.first);
             const petri_net::eid_t & eid_in_B (pair.second);
 
             const unsigned int edge (net.get_edge (eid_in_B));

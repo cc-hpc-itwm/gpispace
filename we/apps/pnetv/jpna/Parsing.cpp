@@ -48,7 +48,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
     /**
      * Transitions present in the workflow.
      */
-    boost::unordered_map<petri_net::tid_t, Transition *> transitions_;
+    boost::unordered_map<petri_net::transition_id_type, Transition *> transitions_;
 
     public:
 
@@ -82,7 +82,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
         /* Translate transitions. */
         for (pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::tid_t tid = *it;
+            petri_net::transition_id_type tid = *it;
             const transition_t &t = net.get_transition(tid);
 
             std::ostringstream condition;
@@ -141,7 +141,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         for (pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::tid_t id = *it;
+            petri_net::transition_id_type id = *it;
             const transition_t &transition = net.get_transition(id);
 
             TransitionVisitor visitor(petriNet_->name() + "::" + transition.name(), petriNets_);
