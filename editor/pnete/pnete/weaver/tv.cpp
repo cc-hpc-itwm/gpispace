@@ -197,7 +197,7 @@ namespace fhg
         push (append (name));
       }
       WSIGE(tv, transition::close) { pop(); }
-      WSIG(tv, transition::priority, boost::optional<petri_net::prio_t>, prio)
+      WSIG(tv, transition::priority, boost::optional<petri_net::priority_type>, prio)
       {
         append_maybe_key_value ("priority", "%i", prio);
       }

@@ -346,7 +346,7 @@ namespace we { namespace type {
       , id_type &
       , const options<Pred> &
       , const level_type = 1
-      , const petri_net::prio_t& = petri_net::prio_invalid()
+      , const petri_net::priority_type& = petri_net::priority_invalid()
       );
 
       template<typename Pred>
@@ -543,7 +543,7 @@ namespace we { namespace type {
             {
               const transition_t & trans (net.get_transition (*t));
               const id_type id_trans (++id);
-              const petri_net::prio_t prio (net.get_transition_priority (*t));
+              const petri_net::priority_type prio (net.get_transition_priority (*t));
 
               s << to_dot (trans, id, opts, l + 1, prio);
 
@@ -651,7 +651,7 @@ namespace we { namespace type {
       , id_type & id
       , const options<Pred> & opts
       , const level_type l
-      , const petri_net::prio_t & prio
+      , const petri_net::priority_type & prio
       )
       {
         typedef transition_t trans_t;
@@ -668,7 +668,7 @@ namespace we { namespace type {
 
         if (opts.show_priority)
           {
-            if (prio != petri_net::prio_invalid())
+            if (prio != petri_net::priority_invalid())
               {
                 if (prio > 0)
                   {

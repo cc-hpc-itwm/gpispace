@@ -117,19 +117,19 @@ namespace petri_net
   INHERIT_ID_TYPE (port_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (transition_id_type, boost::uint64_t);
 
-  INHERIT_ID_TYPE (prio_t, boost::int16_t); // priority
+  INHERIT_ID_TYPE (priority_type, boost::int16_t);
 
 #undef INHERIT_ID_TYPE
 
 #define INVALID(_type)                          \
   const _type ## _t& _type ## _invalid()
-#define INVALID2(_type)                                 \
-  const _type ## _id_type& _type ## _id_invalid()
-
+#define INVALID2(_prefix)                       \
+  const _prefix ## _type& _prefix ## _invalid()
 
   INVALID (eid);
-  INVALID2 (place);
-  INVALID (prio);
+  INVALID2 (place_id);
+
+  INVALID2 (priority);
 
 #undef INVALID
 #undef INVALID2

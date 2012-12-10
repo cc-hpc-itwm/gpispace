@@ -14,18 +14,19 @@ namespace petri_net
                                                                         \
     return v;                                                           \
   }
-#define INVALID2(_type)                                                 \
-  const _type ## _id_type& _type ## _id_invalid()                       \
+#define INVALID2(_prefix)                                               \
+  const _prefix ## _type& _prefix ## _invalid()                         \
   {                                                                     \
-    static const _type ## _id_type v                                    \
-      (std::numeric_limits<_type ## _id_type::pod_type>::max());        \
+    static const _prefix ## _type v                                     \
+      (std::numeric_limits<_prefix ## _type::pod_type>::max());         \
                                                                         \
     return v;                                                           \
   }
 
   INVALID (eid);
-  INVALID2 (place);
-  INVALID (prio);
+  INVALID2 (place_id);
+
+  INVALID2 (priority);
 
 #undef INVALID
 #undef INVALID2

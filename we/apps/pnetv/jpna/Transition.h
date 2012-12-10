@@ -20,7 +20,7 @@ class Transition {
     std::vector<const Place *> inputPlaces_; ///< Ids of input places.
     std::vector<const Place *> outputPlaces_; ///< Ids of output places.
     bool conditionAlwaysTrue_; ///< True iff transition's condition is constant true.
-    petri_net::prio_t priority_; ///< Priority.
+    petri_net::priority_type priority_; ///< Priority.
 
     public:
 
@@ -64,14 +64,14 @@ class Transition {
      * \return Priority of the transition.
      * Transitions with lower priority don't fire unless there are enabled transitions with higher priority.
      */
-    petri_net::prio_t priority() const { return priority_; }
+    petri_net::priority_type priority() const { return priority_; }
 
     /**
      * Sets the transition's priority.
      *
      * \param[in] priority New priority.
      */
-    void setPriority(petri_net::prio_t priority) { priority_ = priority; }
+    void setPriority(petri_net::priority_type priority) { priority_ = priority; }
 
     /**
      * Adds input place.

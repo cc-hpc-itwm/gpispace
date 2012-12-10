@@ -15,14 +15,14 @@ class Transition {
     Marking input_; ///< Input of the transition.
     Marking output_; ///< Output of the transition.
     Marking effect_; ///< Effect of the transition (output - input).
-    petri_net::prio_t priority_; ///< Transition priority.
+    petri_net::priority_type priority_; ///< Transition priority.
 
     public:
 
     /**
      * Class constructor.
      */
-    Transition(TransitionId id, const Marking &input, const Marking &output, petri_net::prio_t priority = 0):
+    Transition(TransitionId id, const Marking &input, const Marking &output, petri_net::priority_type priority = 0):
         id_(id), input_(input), output_(output), effect_(output - input), priority_(priority)
     {}
 
@@ -50,14 +50,14 @@ class Transition {
      * \return Priority of the transition.
      * Transitions with lower priority don't fire unless there are enabled transitions with higher priority.
      */
-    petri_net::prio_t priority() const { return priority_; }
+    petri_net::priority_type priority() const { return priority_; }
 
     /**
      * Sets the transition's priority.
      *
      * \param[in] priority New priority.
      */
-    void setPriority(petri_net::prio_t priority) { priority_ = priority; }
+    void setPriority(petri_net::priority_type priority) { priority_ = priority; }
 
     /**
      * \param[in] marking Marking.

@@ -89,7 +89,7 @@ namespace xml
         , const structs_type& structs
         , const conditions_type& cond
         , const requirements_type& requirements
-        , const boost::optional<petri_net::prio_t>& priority
+        , const boost::optional<petri_net::priority_type>& priority
         , const boost::optional<bool>& finline
         , const boost::optional<bool>& internal
         , const we::type::property::type& properties

@@ -449,12 +449,12 @@ public:
     return pmap.add (place);
   }
 
-  void set_transition_priority (const transition_id_type & tid, const prio_t & prio)
+  void set_transition_priority (const transition_id_type & tid, const priority_type& prio)
   {
     enabled.set_priority (tid, prio);
   }
 
-  prio_t get_transition_priority (const transition_id_type & tid) const
+  priority_type get_transition_priority (const transition_id_type & tid) const
   {
     return enabled.get_priority (tid);
   }
