@@ -112,13 +112,12 @@ namespace petri_net
 
   INHERIT_ID_TYPE (pid_t, uint64_t); // place
   INHERIT_ID_TYPE (tid_t, uint64_t); // transition
+  INHERIT_ID_TYPE (eid_t, uint64_t); // edge
+  INHERIT_ID_TYPE (prio_t, int16_t); // priority
 
 #undef INHERIT_ID_TYPE
 
-  //  typedef uint64_t tid_t; // transition
-  typedef uint64_t eid_t; // edge
   typedef uint64_t rid_t; // port
-  typedef int16_t prio_t; // priority
 
 #define INVALID(_type)                          \
   const _type ## _t& _type ## _invalid()
