@@ -36,6 +36,8 @@ namespace fhg
           port_place_association
             (port_item*, place_item*, const data::handle::port&);
 
+          virtual const data::handle::port& handle() const;
+
           virtual QPainterPath shape() const;
           virtual void paint
             (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
