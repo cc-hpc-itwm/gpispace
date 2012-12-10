@@ -42,10 +42,10 @@ namespace we { namespace mgmt { namespace type {
     typedef petri_net::pid_t activity_id_t;
     typedef Transition transition_type;
 
-    typedef std::pair<token::type, pid_t> token_on_place_t;
-    typedef std::vector<token_on_place_t> token_on_place_list_t;
-    typedef token_on_place_list_t input_t;
-    typedef token_on_place_list_t output_t;
+    typedef std::pair<token::type, petri_net::rid_t> token_on_port_t;
+    typedef std::vector<token_on_port_t> token_on_port_list_t;
+    typedef token_on_port_list_t input_t;
+    typedef token_on_port_list_t output_t;
 
     inline static
     activity_id_t invalid_id (void)
@@ -60,7 +60,7 @@ namespace we { namespace mgmt { namespace type {
         struct printer
         {
           typedef printer<Activity, Stream> this_type;
-          typedef typename Activity::token_on_place_list_t top_list_t;
+          typedef typename Activity::token_on_port_list_t top_list_t;
 
           printer (const Activity & act, Stream & stream)
             : act_(act)
@@ -115,8 +115,8 @@ namespace we { namespace mgmt { namespace type {
     typedef Transition transition_type;
     typedef Traits traits_type;
 
-    typedef typename traits_type::token_on_place_t token_on_place_t;
-    typedef typename traits_type::token_on_place_list_t token_on_place_list_t;
+    typedef typename traits_type::token_on_port_t token_on_port_t;
+    typedef typename traits_type::token_on_port_list_t token_on_port_list_t;
     typedef typename traits_type::input_t input_t;
     typedef typename traits_type::output_t output_t;
     typedef petri_net::pid_t pid_t;

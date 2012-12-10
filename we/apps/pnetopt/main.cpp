@@ -262,7 +262,7 @@ class Optimizer {
             placesIterators_.clear();
         }
 
-        Transition *getTransition(pid_t tid) {
+        Transition *getTransition(tid_t tid) {
             Transition *&result = id2transition_[tid];
 
             if (!result) {

@@ -40,7 +40,7 @@ namespace detail
 
 struct match_every_port
 {
-  bool operator() (const we::activity_t::token_on_place_t)
+  bool operator() (const we::activity_t::token_on_port_t)
   {
     return true;
   }
@@ -52,7 +52,7 @@ struct match_equal_port
     : port(p)
   {}
 
-  bool operator() (const we::activity_t::token_on_place_t & subject)
+  bool operator() (const we::activity_t::token_on_port_t & subject)
   {
     return subject.second == port;
   }
@@ -67,7 +67,7 @@ struct output_token
   {}
   output_token const & operator *() const { return *this; }
   output_token const & operator++(int) const { return *this; }
-  output_token const & operator=(const we::activity_t::token_on_place_t & subject) const
+  output_token const & operator=(const we::activity_t::token_on_port_t & subject) const
   {
     out << subject.first << delim;
     return *this;
@@ -85,7 +85,7 @@ struct output_port_and_token
   {}
   output_port_and_token const & operator *() const { return *this; }
   output_port_and_token const & operator++(int) const { return *this; }
-  output_port_and_token const & operator=(const we::activity_t::token_on_place_t & subject) const
+  output_port_and_token const & operator=(const we::activity_t::token_on_port_t & subject) const
   {
     out << "on " << subject.second << ": " << subject.first << delim;
     return *this;

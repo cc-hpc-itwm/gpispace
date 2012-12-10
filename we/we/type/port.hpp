@@ -76,7 +76,7 @@ namespace we
       bool is_input() const { return _direction == PORT_IN || _direction == PORT_IN_OUT || _direction == PORT_READ; }
       bool is_output() const { return _direction == PORT_OUT || _direction == PORT_IN_OUT; }
       bool is_tunnel() const { return _direction == PORT_TUNNEL; }
-      bool has_associated_place() const { return _associated_place != std::numeric_limits<petri_net::pid_t>::max(); }
+      bool has_associated_place() const { return _associated_place != petri_net::pid_invalid(); }
 
     private:
       std::string _name;

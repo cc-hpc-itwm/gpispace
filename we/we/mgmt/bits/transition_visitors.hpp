@@ -81,20 +81,19 @@ namespace we { namespace mgmt { namespace visitor {
     }
   };
 
-  template <typename Activity, typename OriginalInput>
+  template <typename Activity>
   class input_mapper
     : public boost::static_visitor<>
   {
   private:
     typedef Activity activity_t;
-    typedef OriginalInput input_t;
 
     activity_t & activity_;
-    const input_t & original_input_;
+    const petri_net::net::input_t & original_input_;
 
   public:
     input_mapper ( activity_t & activity
-                 , const input_t & input
+                 , const petri_net::net::input_t & input
                  )
     : activity_(activity)
     , original_input_ (input)
@@ -103,7 +102,10 @@ namespace we { namespace mgmt { namespace visitor {
     void operator () (petri_net::net&)
     {
       // TODO beautify this
-      for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
+      for ( petri_net::net::input_t::const_iterator inp (original_input_.begin())
+          ; inp != original_input_.end()
+          ; ++inp
+          )
       {
         const petri_net::rid_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
@@ -115,7 +117,10 @@ namespace we { namespace mgmt { namespace visitor {
     void operator () (we::type::module_call_t &)
     {
       // TODO beautify this
-      for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
+      for ( petri_net::net::input_t::const_iterator inp (original_input_.begin())
+          ; inp != original_input_.end()
+          ; ++inp
+          )
       {
         const petri_net::rid_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
@@ -127,7 +132,10 @@ namespace we { namespace mgmt { namespace visitor {
     void operator () (we::type::expression_t &)
     {
       // TODO beautify this
-      for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
+      for ( petri_net::net::input_t::const_iterator inp (original_input_.begin())
+          ; inp != original_input_.end()
+          ; ++inp
+          )
       {
         const petri_net::rid_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
@@ -138,8 +146,7 @@ namespace we { namespace mgmt { namespace visitor {
   };
 
   template<typename Activity, typename Engine>
-  class activity_extractor
-    : public boost::static_visitor<Activity>
+  class activity_extractor : public boost::static_visitor<Activity>
   {
   private:
     Engine & engine_;
@@ -152,14 +159,12 @@ namespace we { namespace mgmt { namespace visitor {
     Activity operator () (petri_net::net& net)
     {
       typedef petri_net::net pnet_t;
-
-      typedef typename pnet_t::activity_t activity_t;
-      typedef typename pnet_t::input_t input_t;
+      typedef pnet_t::activity_t activity_t;
 
       activity_t net_act = net.extract_activity_random (engine_);
       Activity act = Activity (net.get_transition (net_act.tid));
 
-      input_mapper<Activity, input_t> input_mapper_visitor(act, net_act.input);
+      input_mapper<Activity> input_mapper_visitor(act, net_act.input);
       boost::apply_visitor (input_mapper_visitor, act.transition().data());
       return act;
     }

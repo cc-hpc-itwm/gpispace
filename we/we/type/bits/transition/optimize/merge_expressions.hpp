@@ -73,7 +73,9 @@ namespace we { namespace type {
         typedef std::pair<const transition_t, const tid_t> pair_type;
         typedef boost::unordered_set<pair_type> set_of_pair_type;
 
-        typedef std::pair<const tid_t, const pid_t> tid_pid_type;
+        typedef std::pair< const petri_net::tid_t
+                         , const petri_net::pid_t
+                         > tid_pid_type;
         typedef boost::unordered_set<tid_pid_type> set_of_tid_pid_type;
 
         typedef boost::unordered_set<std::string> name_set_type;

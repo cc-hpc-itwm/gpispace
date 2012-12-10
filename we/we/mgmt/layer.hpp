@@ -725,7 +725,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          active_nets_[id % extractor_.size()].put(id);
+          active_nets_[id.value() % extractor_.size()].put(id);
         }
         else
         {
@@ -738,7 +738,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          inj_q_[id % injector_.size()].put ( id );
+          inj_q_[id.value() % injector_.size()].put ( id );
         }
         else
         {
@@ -751,7 +751,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          inj_q_[id % injector_.size()].put ( id );
+          inj_q_[id.value() % injector_.size()].put ( id );
         }
         else
         {
