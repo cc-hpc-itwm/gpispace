@@ -493,7 +493,7 @@ class Optimizer {
 
     class Port;
     enum PortDirection { INPUT, OUTPUT, TUNNEL };
-    typedef boost::unordered_map<std::pair<petri_net::rid_t, PortDirection>, Port *> IdPortMap;
+    typedef boost::unordered_map<std::pair<petri_net::port_id_type, PortDirection>, Port *> IdPortMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPortMap>, IdPortMap> Ports;
     typedef pnetopt::LuaIterator<Ports> PortsIterator;
     typedef RefCountedObjectPtr<PortsIterator> PortsIteratorPtr;
@@ -532,7 +532,7 @@ class Optimizer {
             petriNet_(petriNet), tid_(tid), transition_(transition)
         {
             for (transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
-                petri_net::rid_t portId = i->first;
+                petri_net::port_id_type portId = i->first;
                 port_t &port = transition_.get_port(portId);
                 if (port.is_input()) {
                     getPort(portId, INPUT);
@@ -545,7 +545,7 @@ class Optimizer {
                 }
             }
             for (transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
-                petri_net::rid_t portId = i->first;
+                petri_net::port_id_type portId = i->first;
                 petri_net::pid_t placeId = i->second.first;
 
                 /* Top-level transition cannot have connections. */
@@ -555,7 +555,7 @@ class Optimizer {
             }
             for (transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
               petri_net::pid_t placeId = i->first;
-                petri_net::rid_t portId = i->second.first;
+                petri_net::port_id_type portId = i->second.first;
 
                 /* Top-level transition cannot have connections. */
                 assert(petriNet != NULL);
@@ -570,7 +570,7 @@ class Optimizer {
 
         transition_t &transition() const { return transition_; }
 
-        Port *getPort(petri_net::rid_t portId, PortDirection direction) {
+        Port *getPort(petri_net::port_id_type portId, PortDirection direction) {
             Port *&result = id2port_[std::make_pair(portId, direction)];
 
             if (!result) {
@@ -702,7 +702,7 @@ class Optimizer {
         Transition *transition_;
 
         /** Port id. */
-        petri_net::rid_t portId_;
+        petri_net::port_id_type portId_;
 
         /** Reference to the port. */
         port_t &port_;
@@ -718,7 +718,7 @@ class Optimizer {
 
         public:
 
-        Port(Transition *transition, petri_net::rid_t portId, port_t &port, PortDirection direction):
+        Port(Transition *transition, petri_net::port_id_type portId, port_t &port, PortDirection direction):
             transition_(transition), portId_(portId), port_(port), direction_(direction),
             connectedPlace_(NULL), associatedPlace_(NULL)
         {
@@ -734,7 +734,7 @@ class Optimizer {
 
         PetriNet *petriNet() const { return transition()->petriNet(); }
 
-        petri_net::rid_t id() const { return portId_; }
+        petri_net::port_id_type id() const { return portId_; }
 
         const std::string &name() const {
             ensureValid();

@@ -86,7 +86,7 @@ namespace module
         )
     {
       const token::type token = top->first;
-      const petri_net::rid_t port_id = top->second;
+      const petri_net::port_id_type port_id = top->second;
 
       context.bind (act.transition().name_of_port (port_id), token.value);
     }
@@ -101,7 +101,7 @@ namespace module
         ; ++ton
         )
     {
-      const petri_net::rid_t& port_id
+      const petri_net::port_id_type& port_id
         (act.transition().output_port_by_name (ton->second));
 
       const port_t & port (act.transition().get_port (port_id));

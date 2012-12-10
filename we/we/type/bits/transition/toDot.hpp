@@ -409,7 +409,7 @@ namespace we { namespace type {
           typedef typename transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
           typedef std::pair< place_dot_name_type
-                           , petri_net::rid_t
+                           , petri_net::port_id_type
                            > extra_connection_type;
           typedef std::string transition_name_type;
           typedef boost::unordered_map< transition_name_type

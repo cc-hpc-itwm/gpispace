@@ -41,7 +41,7 @@ namespace we { namespace mgmt { namespace type {
     typedef petri_net::pid_t activity_id_t;
     typedef Transition transition_type;
 
-    typedef std::pair<token::type, petri_net::rid_t> token_on_port_t;
+    typedef std::pair<token::type, petri_net::port_id_type> token_on_port_t;
     typedef std::vector<token_on_port_t> token_on_port_list_t;
     typedef token_on_port_list_t input_t;
     typedef token_on_port_list_t output_t;

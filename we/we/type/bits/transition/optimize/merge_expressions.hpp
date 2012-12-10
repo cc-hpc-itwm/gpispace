@@ -407,7 +407,7 @@ namespace we { namespace type {
       {
         typedef transition_t::const_iterator const_iterator;
 
-        typedef std::pair<petri_net::rid_t, petri_net::pid_t> pair_type;
+        typedef std::pair<petri_net::port_id_type, petri_net::pid_t> pair_type;
         std::stack<pair_type> to_erase;
 
         for ( const_iterator p (trans.ports_begin())
@@ -437,7 +437,7 @@ namespace we { namespace type {
         while (!to_erase.empty())
           {
             const pair_type & p (to_erase.top());
-            const petri_net::rid_t& port_id (p.first);
+            const petri_net::port_id_type& port_id (p.first);
             const petri_net::pid_t & pid (p.second);
 
             net.delete_place (pid);

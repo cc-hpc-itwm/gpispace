@@ -28,7 +28,7 @@ namespace module
         )
     {
       const token::type token = top->first;
-      const petri_net::rid_t port_id = top->second;
+      const petri_net::port_id_type port_id = top->second;
 
       we::loader::put
         (context, act.transition().name_of_port (port_id), token.value);
@@ -47,7 +47,7 @@ namespace module
     {
       try
       {
-        const petri_net::rid_t& port_id
+        const petri_net::port_id_type& port_id
           (act.transition().output_port_by_name (ton->first));
 
         const port_t & port =

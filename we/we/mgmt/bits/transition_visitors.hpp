@@ -107,7 +107,7 @@ namespace we { namespace mgmt { namespace visitor {
           ; ++inp
           )
       {
-        const petri_net::rid_t port_id
+        const petri_net::port_id_type port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -122,7 +122,7 @@ namespace we { namespace mgmt { namespace visitor {
           ; ++inp
           )
       {
-        const petri_net::rid_t port_id
+        const petri_net::port_id_type port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -137,7 +137,7 @@ namespace we { namespace mgmt { namespace visitor {
           ; ++inp
           )
       {
-        const petri_net::rid_t port_id
+        const petri_net::port_id_type port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -209,7 +209,7 @@ namespace we { namespace mgmt { namespace visitor {
         {
           if (port_it->second.has_associated_place())
           {
-            const petri_net::rid_t port_id = port_it->first;
+            const petri_net::port_id_type port_id = port_it->first;
             const petri_net::pid_t pid = port_it->second.associated_place();
 
             for ( typename pnet_t::token_place_it top ( net.get_token (pid) )
@@ -267,7 +267,7 @@ namespace we { namespace mgmt { namespace visitor {
                    , trans.inner_to_outer ( top->second )
                    , top->first
                    );
-      } catch ( const we::type::exception::not_connected <petri_net::rid_t> &)
+      } catch ( const we::type::exception::not_connected <petri_net::port_id_type> &)
       {
         std::cerr << "W: transition generated output, but port is not connected:"
                   << " trans=\"" << trans.name() << "\""
@@ -344,7 +344,7 @@ namespace we { namespace mgmt { namespace visitor {
   {
     for (typename Input::const_iterator inp (input.begin()); inp != input.end(); ++inp)
     {
-      const petri_net::rid_t port_id (inp->second);
+      const petri_net::port_id_type port_id (inp->second);
 
       if (trans.get_port (port_id).has_associated_place())
         {
@@ -439,7 +439,7 @@ namespace we { namespace mgmt { namespace visitor {
           )
       {
         const token::type token = top->first;
-        const petri_net::rid_t port_id = top->second;
+        const petri_net::port_id_type port_id = top->second;
 
         context.bind
           (activity_.transition().name_of_port (port_id), token.value);
@@ -456,7 +456,7 @@ namespace we { namespace mgmt { namespace visitor {
       {
         if (port_it->second.is_output())
         {
-          const petri_net::rid_t port_id = port_it->first;
+          const petri_net::port_id_type port_id = port_it->first;
           const token::type token ( port_it->second.name()
                                  , port_it->second.signature()
                                  , context

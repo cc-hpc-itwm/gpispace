@@ -46,7 +46,7 @@ struct match_every_port
 
 struct match_equal_port
 {
-  match_equal_port(petri_net::rid_t p)
+  match_equal_port(petri_net::port_id_type p)
     : port(p)
   {}
 
@@ -54,7 +54,7 @@ struct match_equal_port
   {
     return subject.second == port;
   }
-  const petri_net::rid_t port;
+  const petri_net::port_id_type port;
 };
 
 struct output_token
@@ -208,7 +208,7 @@ main (int argc, char ** argv)
       {
         BOOST_FOREACH(std::string const &port, ports)
         {
-          petri_net::rid_t port_id (0);
+          petri_net::port_id_type port_id (0);
           try
           {
             port_id = act.transition().input_port_by_name(port);
@@ -250,7 +250,7 @@ main (int argc, char ** argv)
       {
         BOOST_FOREACH(std::string const &port, ports)
         {
-          petri_net::rid_t port_id (0);
+          petri_net::port_id_type port_id (0);
           try
           {
             port_id = act.transition().output_port_by_name(port);

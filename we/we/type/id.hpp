@@ -114,7 +114,7 @@ namespace petri_net
 
   INHERIT_ID_TYPE (eid_t, boost::uint64_t); // edge
   INHERIT_ID_TYPE (pid_t, boost::uint64_t); // place
-  INHERIT_ID_TYPE (rid_t, boost::uint64_t); // port
+  INHERIT_ID_TYPE (port_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (tid_t, boost::uint64_t); // transition
 
   INHERIT_ID_TYPE (prio_t, boost::int16_t); // priority
