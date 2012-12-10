@@ -88,8 +88,7 @@ namespace we { namespace mgmt { namespace type {
       : id_ (petri_net::activity_id_invalid())
     { }
 
-    template <typename T>
-    activity_t (const T & transition)
+    activity_t (const we::type::transition_t & transition)
       : id_ (petri_net::activity_id_invalid())
       , transition_ (transition)
     { }
