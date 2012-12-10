@@ -28,6 +28,8 @@
 #include <boost/random.hpp>
 
 #include <we/type/id.hpp>
+#include <we/type/transition.hpp>
+
 #include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/transition_visitors.hpp>
@@ -35,11 +37,10 @@
 #include <we/type/bits/transition/optimize.hpp>
 
 namespace we { namespace mgmt { namespace type {
-  template <typename Transition>
   struct activity_traits
   {
     typedef petri_net::place_id_type activity_id_t;
-    typedef Transition transition_type;
+    typedef we::type::transition_t transition_type;
 
     typedef std::pair<token::type, petri_net::port_id_type> token_on_port_t;
     typedef std::vector<token_on_port_t> token_on_port_list_t;
@@ -105,31 +106,30 @@ namespace we { namespace mgmt { namespace type {
         };
       }
 
-  template <typename Transition, typename Traits = activity_traits<Transition> >
+  template <typename Transition>
   class activity_t
   {
-    typedef activity_t<Transition, Traits> this_type;
+    typedef activity_t<Transition> this_type;
 
   public:
-    typedef Transition transition_type;
-    typedef Traits traits_type;
+    typedef we::type::transition_t transition_type;
 
-    typedef typename traits_type::token_on_port_t token_on_port_t;
-    typedef typename traits_type::token_on_port_list_t token_on_port_list_t;
-    typedef typename traits_type::input_t input_t;
-    typedef typename traits_type::output_t output_t;
-    typedef typename traits_type::activity_id_t id_t;
+    typedef activity_traits::token_on_port_t token_on_port_t;
+    typedef activity_traits::token_on_port_list_t token_on_port_list_t;
+    typedef activity_traits::input_t input_t;
+    typedef activity_traits::output_t output_t;
+    typedef activity_traits::activity_id_t id_t;
 
     typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;
     typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
 
     activity_t ()
-      : id_ (traits_type::invalid_id())
+      : id_ (activity_traits::invalid_id())
     { }
 
     template <typename T>
     activity_t (const T & transition)
-      : id_ (traits_type::invalid_id())
+      : id_ (activity_traits::invalid_id())
       , transition_ (transition)
     { }
 
@@ -480,23 +480,23 @@ namespace we { namespace mgmt { namespace type {
     boost::mt19937 engine_;
   };
 
-      template <typename Trans, typename Traits>
-      inline bool operator==(const activity_t<Trans,Traits> & a, const activity_t<Trans,Traits> & b)
+      template <typename Trans>
+      inline bool operator==(const activity_t<Trans> & a, const activity_t<Trans> & b)
       {
         return a.id() == b.id();
       }
-      template <typename Trans, typename Traits>
-      inline std::size_t hash_value(activity_t<Trans, Traits> const & a)
+      template <typename Trans>
+      inline std::size_t hash_value(activity_t<Trans> const & a)
       {
-        boost::hash<typename activity_t<Trans, Traits>::id_t> hasher;
+        boost::hash<typename activity_t<Trans>::id_t> hasher;
         return hasher(a.id());
       }
 
 
 
-  template <typename Transition, typename Traits>
+  template <typename Transition>
   std::ostream & operator << ( std::ostream & os
-                             , const activity_t<Transition, Traits> & act
+                             , const activity_t<Transition> & act
                              )
   {
     act.writeTo (os);
