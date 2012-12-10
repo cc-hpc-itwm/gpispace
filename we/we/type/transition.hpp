@@ -546,10 +546,10 @@ namespace we { namespace type {
           }
       }
 
-      pid_t add_input_port ( const std::string & port_name
-                           , const signature::type & signature
-                           , const we::type::property::type & prop
-                           )
+      void add_input_port ( const std::string & port_name
+                          , const signature::type & signature
+                          , const we::type::property::type & prop
+                          )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -562,14 +562,13 @@ namespace we { namespace type {
         const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-        return port_id;
       }
 
-      pid_t add_input_port ( const std::string & port_name
-                           , const signature::type & signature
-                           , const pid_t& associated_place
-                           , const we::type::property::type & prop
-                           )
+      void add_input_port ( const std::string & port_name
+                          , const signature::type & signature
+                          , const pid_t& associated_place
+                          , const we::type::property::type & prop
+                          )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -583,13 +582,12 @@ namespace we { namespace type {
         const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-        return port_id;
       }
 
-      pid_t add_read_port ( const std::string & port_name
-                          , const signature::type & signature
-                          , const we::type::property::type & prop
-                          )
+      void add_read_port ( const std::string & port_name
+                         , const signature::type & signature
+                         , const we::type::property::type & prop
+                         )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -602,14 +600,13 @@ namespace we { namespace type {
         const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-        return port_id;
       }
 
-      pid_t add_read_port ( const std::string & port_name
-                          , const signature::type & signature
-                          , const pid_t& associated_place
-                          , const we::type::property::type & prop
-                          )
+      void add_read_port ( const std::string & port_name
+                         , const signature::type & signature
+                         , const pid_t& associated_place
+                         , const we::type::property::type & prop
+                         )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -622,13 +619,12 @@ namespace we { namespace type {
         const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-        return port_id;
       }
 
-      pid_t add_output_port ( const std::string & port_name
-                            , const signature::type & signature
-                            , const we::type::property::type & prop
-                            )
+      void add_output_port ( const std::string & port_name
+                           , const signature::type & signature
+                           , const we::type::property::type & prop
+                           )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -641,14 +637,13 @@ namespace we { namespace type {
         const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-        return port_id;
       }
 
-      pid_t add_tunnel ( const std::string & port_name
-                       , const signature::type & signature
-                       , const pid_t& associated_place
-                       , const we::type::property::type & prop
-                       )
+      void add_tunnel ( const std::string & port_name
+                      , const signature::type & signature
+                      , const pid_t& associated_place
+                      , const we::type::property::type & prop
+                      )
       {
         BOOST_FOREACH (const port_map_t::value_type& p, ports_)
           {
@@ -662,13 +657,12 @@ namespace we { namespace type {
         const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-        return port_id;
       }
 
-      pid_t add_tunnel ( const std::string & port_name
-                       , const signature::type & signature
-                       , const we::type::property::type & prop
-                       )
+      void add_tunnel ( const std::string & port_name
+                      , const signature::type & signature
+                      , const we::type::property::type & prop
+                      )
       {
         BOOST_FOREACH (const port_map_t::value_type& p, ports_)
           {
@@ -681,14 +675,13 @@ namespace we { namespace type {
         const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-        return port_id;
       }
 
-      pid_t add_output_port ( const std::string & port_name
-                            , const signature::type & signature
-                            , const pid_t& associated_place
-                            , const we::type::property::type & prop
-                            )
+      void add_output_port ( const std::string & port_name
+                           , const signature::type & signature
+                           , const pid_t& associated_place
+                           , const we::type::property::type & prop
+                           )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -701,10 +694,7 @@ namespace we { namespace type {
         const port_id_t port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-        return port_id;
       }
-
-
 
       void add_input_output_port ( const std::string & port_name
                                  , const signature::type & signature

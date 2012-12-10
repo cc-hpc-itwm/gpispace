@@ -110,14 +110,14 @@ namespace petri_net
   // cycles per second, you can run for 2^64/3e9/60/60/24/365 > 194 years.
   // It follows that an uint64_t is enough for now.
 
-  INHERIT_ID_TYPE (pid_t, uint64_t); // place
-  INHERIT_ID_TYPE (tid_t, uint64_t); // transition
   INHERIT_ID_TYPE (eid_t, uint64_t); // edge
+  INHERIT_ID_TYPE (pid_t, uint64_t); // place
+  INHERIT_ID_TYPE (rid_t, uint64_t); // port
+  INHERIT_ID_TYPE (tid_t, uint64_t); // transition
+
   INHERIT_ID_TYPE (prio_t, int16_t); // priority
 
 #undef INHERIT_ID_TYPE
-
-  typedef uint64_t rid_t; // port
 
 #define INVALID(_type)                          \
   const _type ## _t& _type ## _invalid()

@@ -32,13 +32,13 @@ namespace {
 
 class Optimizer {
     typedef petri_net::pid_t pid_t;
-
     typedef petri_net::tid_t tid_t;
+    typedef petri_net::rid_t port_id_t;
+
     typedef we::type::transition_t transition_t;
 
     typedef petri_net::net pnet_t;
 
-    typedef petri_net::rid_t port_id_t;
     typedef we::type::port_t port_t;
 
     lua_State *L;
@@ -497,7 +497,7 @@ class Optimizer {
 
     class Port;
     enum PortDirection { INPUT, OUTPUT, TUNNEL };
-    typedef boost::unordered_map<std::pair<tid_t, PortDirection>, Port *> IdPortMap;
+    typedef boost::unordered_map<std::pair<port_id_t, PortDirection>, Port *> IdPortMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPortMap>, IdPortMap> Ports;
     typedef pnetopt::LuaIterator<Ports> PortsIterator;
     typedef RefCountedObjectPtr<PortsIterator> PortsIteratorPtr;
