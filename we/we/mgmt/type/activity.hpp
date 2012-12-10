@@ -39,7 +39,7 @@
 namespace we { namespace mgmt { namespace type {
   struct activity_traits
   {
-    typedef petri_net::place_id_type activity_id_t;
+    typedef petri_net::activity_id_type activity_id_t;
     typedef we::type::transition_t transition_type;
 
     typedef std::pair<token::type, petri_net::port_id_type> token_on_port_t;
@@ -50,7 +50,7 @@ namespace we { namespace mgmt { namespace type {
     inline static
     activity_id_t invalid_id (void)
     {
-      return ::we::mgmt::traits::def::id_traits<activity_id_t>::nil();
+      return petri_net::activity_id_invalid();
     }
   };
 

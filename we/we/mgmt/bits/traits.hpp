@@ -37,28 +37,13 @@ namespace we
         struct id_traits
         {
           typedef IdType type;
-          //		must be specialized
-          static const type nil() { return std::numeric_limits<type>::max(); }
         };
 
         template <>
-        struct id_traits<std::string>
-        {
-          typedef std::string type;
-
-          inline static const type nil() { return ""; }
-        };
-
-        template <>
-        struct id_traits<petri_net::place_id_type>
+        struct id_traits<petri_net::activity_id_type>
         {
         public:
-          typedef petri_net::place_id_type type;
-
-          inline static type nil()
-          {
-            return petri_net::place_id_invalid();
-          }
+          typedef petri_net::activity_id_type type;
 
           inline static type generate()
           {
@@ -70,12 +55,6 @@ namespace we
           {
             return 0;
           }
-        };
-
-        template <typename T>
-        struct result_traits
-        {
-          typedef T type;
         };
       }
 

@@ -69,8 +69,8 @@ namespace we { namespace mgmt {
       typedef Policy policy;
 
       // internal ids
-      typedef typename traits_type::id_traits  internal_id_traits;
-      typedef typename internal_id_traits::type internal_id_type;
+      typedef typename traits_type::id_traits internal_id_traits;
+      typedef petri_net::activity_id_type internal_id_type;
 
       typedef std::string encoded_type;
       typedef std::string reason_type;

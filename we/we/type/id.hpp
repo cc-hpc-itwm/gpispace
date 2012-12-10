@@ -116,6 +116,7 @@ namespace petri_net
   INHERIT_ID_TYPE (place_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (port_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (transition_id_type, boost::uint64_t);
+  INHERIT_ID_TYPE (activity_id_type, boost::uint64_t);
 
   INHERIT_ID_TYPE (priority_type, boost::int16_t);
 
@@ -127,6 +128,7 @@ namespace petri_net
 
   INVALID (edge_id);
   INVALID (place_id);
+  INVALID (activity_id);
 
   INVALID (priority);
 
