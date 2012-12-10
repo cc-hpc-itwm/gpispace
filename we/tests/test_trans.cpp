@@ -143,6 +143,8 @@ int main (int, char **)
   transition_t t1 ("t1", we::type::module_call_t ("m", "f"));
 
   t1.add_port
+    ("i", "long", we::type::PORT_IN_OUT);
+  t1.add_port
     ("max", "long", we::type::PORT_IN)
   ;
 
