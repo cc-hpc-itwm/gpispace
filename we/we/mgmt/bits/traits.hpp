@@ -57,7 +57,7 @@ namespace we
 
           inline static type nil()
           {
-            return std::numeric_limits<type>::max();
+            return petri_net::place_id_invalid();
           }
 
           inline static type generate()
