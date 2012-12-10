@@ -22,6 +22,11 @@ namespace fhg
           : port_meta_base (id, change_manager)
         { }
 
+        void port::set_type (const QObject* sender, const QString& type) const
+        {
+          change_manager().set_type (sender, *this, type);
+        }
+
         void port::set_property ( const QObject* sender
                                 , const ::we::type::property::key_type& key
                                 , const ::we::type::property::value_type& val

@@ -164,6 +164,11 @@ namespace fhg
             case base_item::port_graph_type:
             case base_item::top_level_port_graph_type:
             {
+              const data::handle::port handle
+                ( fhg::util::qt::throwing_qobject_cast<port_item*>
+                  (item_below_cursor)->handle()
+                );
+
               QAction* action_set_type (menu.addAction(tr("Set type")));
               menu.addSeparator();
               QAction* action_delete (menu.addAction(tr("Delete")));
@@ -171,7 +176,22 @@ namespace fhg
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_set_type)
               {
-                qDebug() << "NYI: port: action_set_type";
+                 bool ok;
+                 const QString text
+                   ( QInputDialog::getText
+                     ( event->widget()
+                     , tr("Set type of port %1%").arg
+                       (QString::fromStdString (handle.get().name()))
+                     , tr("Type:")
+                     , QLineEdit::Normal
+                     , QString::fromStdString (handle.get().type)
+                     , &ok
+                     )
+                   );
+                 if (ok && !text.isEmpty())
+                 {
+                   handle.set_type (this, text);
+                 }
               }
               else if (triggered == action_delete)
               {

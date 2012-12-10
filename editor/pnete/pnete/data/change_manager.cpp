@@ -73,6 +73,7 @@ namespace fhg
           EXPOSE (place_type_set);
 
           // - port ----------------------------------------------------
+          EXPOSE (port_type_set);
 
           // - function ------------------------------------------------
           EXPOSE (function_name_changed);
@@ -659,6 +660,47 @@ namespace fhg
           const QString _new_type;
         };
 
+        // -- port --------------------------------------------------
+        void port_set_type_impl
+          (ACTION_ARG_LIST, const handle::port& port, const QString& type)
+        {
+          port.get_ref().type = type.toStdString();
+          change_manager.emit_signal
+            (&signal::port_type_set, origin, port, type);
+        }
+
+        class port_set_type : public QUndoCommand
+        {
+        public:
+          port_set_type
+            ( ACTION_ARG_LIST
+            , const handle::port& port
+            , const QString& type
+            )
+              : ACTION_INIT ("port_set_type_action")
+              , _port (port)
+              , _old_type (QString::fromStdString (port.get().type))
+              , _new_type (type)
+          { }
+
+          virtual void undo()
+          {
+            port_set_type_impl (_change_manager, NULL, _port, _old_type);
+          }
+
+          virtual void redo()
+          {
+            port_set_type_impl (_change_manager, _origin, _port, _new_type);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const handle::port _port;
+          const QString _old_type;
+          const QString _new_type;
+        };
+
         // - function ------------------------------------------------
         void set_function_name_impl
           ( ACTION_ARG_LIST
@@ -1114,7 +1156,6 @@ namespace fhg
         push (new action::place_set_type (*this, origin, place, type));
       }
 
-
       void change_manager_t::set_property
         ( const QObject* origin
         , const data::handle::place& place
@@ -1194,6 +1235,14 @@ namespace fhg
         )
       {
         action::set_property (port, key, val, *this, origin);
+      }
+
+      void change_manager_t::set_type ( const QObject* origin
+                                      , const data::handle::port& port
+                                      , const QString& type
+                                      )
+      {
+        push (new action::port_set_type (*this, origin, port, type));
       }
 
       void change_manager_t::move_item ( const QObject* origin

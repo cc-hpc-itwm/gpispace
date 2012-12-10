@@ -154,6 +154,10 @@ namespace fhg
                                   , const ::we::type::property::key_type&
                                   , const ::we::type::property::value_type&
                                   );
+
+        void set_type
+          (const QObject*, const data::handle::port&, const QString&);
+
         void move_item ( const QObject*
                        , const handle::port&
                        , const QPointF&
@@ -257,6 +261,8 @@ namespace fhg
                               , const ::we::type::property::value_type&
                               );
 
+        void port_type_set
+          (const QObject*, const data::handle::port&, const QString&);
 
         // - function ------------------------------------------------
         void function_name_changed ( const QObject*
