@@ -1024,13 +1024,30 @@ namespace we { namespace mgmt {
             continue;
           }
 
+          descriptor_ptr desc;
           try
           {
-            do_inject (lookup(act_id));
+            desc = lookup (act_id);
+          }
+          catch (std::exception const &ex)
+          {
+            MLOG (ERROR, "internal error: activity not valid anymore");
+            continue;
+          }
+
+          try
+          {
+            do_inject (desc);
           }
           catch (std::exception const & ex)
           {
             LOG(ERROR, "injector-" << rank << " got exception during injecting: " << ex.what());
+
+            desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
+            desc->set_error_message (ex.what ());
+            desc->set_result (policy::codec::encode (desc->activity ()));
+
+            post_failed_notification (desc->id ());
           }
           catch (...)
           {
