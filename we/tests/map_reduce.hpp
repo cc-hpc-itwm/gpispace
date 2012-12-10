@@ -17,7 +17,7 @@ namespace we
     template <typename Activity>
     struct map_reduce
     {
-      typedef typename Activity::transition_type transition_type;
+      typedef we::type::transition_t transition_type;
 
       typedef unsigned int edge_type;
 

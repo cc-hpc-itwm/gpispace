@@ -587,8 +587,6 @@ namespace xml
                      , unsigned int& e
                      )
       {
-        typedef we::activity_t::transition_type we_transition_type;
-
         typedef unsigned int we_edge_type;
 
         typedef boost::unordered_map< std::string

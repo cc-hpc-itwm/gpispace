@@ -585,13 +585,13 @@ namespace xml
       // ***************************************************************** //
 
       class function_synthesize
-        : public boost::static_visitor<we::activity_t::transition_type>
+        : public boost::static_visitor<we::type::transition_t>
       {
       private:
         const state::type & state;
         function_type & fun;
 
-        typedef we::activity_t::transition_type we_transition_type;
+        typedef we::type::transition_t we_transition_type;
 
         typedef petri_net::net we_net_type;
         typedef we::type::module_call_t we_module_type;
@@ -790,7 +790,7 @@ namespace xml
         }
       };
 
-      we::activity_t::transition_type
+      we::type::transition_t
       function_type::synthesize (const state::type & state)
       {
         return boost::apply_visitor

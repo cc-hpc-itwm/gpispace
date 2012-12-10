@@ -23,7 +23,7 @@ using petri_net::edge::TP;
 
 typedef we::type::transition_t transition_t;
 typedef petri_net::net pnet_t;
-typedef we::mgmt::type::activity_t<transition_t> activity_t;
+typedef we::mgmt::type::activity_t activity_t;
 typedef activity_t::input_t input_t;
 
 namespace dummy
@@ -77,7 +77,7 @@ namespace module
     typedef activity_t::input_t input_t;
     typedef activity_t::output_t output_t;
     typedef we::type::port_t port_t;
-    typedef activity_t::transition_type::const_iterator port_iterator;
+    typedef we::type::transition_t::const_iterator port_iterator;
 
     context_t context;
     for ( input_t::const_iterator top (act.input().begin())

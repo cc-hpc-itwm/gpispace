@@ -186,7 +186,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        we::activity_t::transition_type
+        we::type::transition_t
         synthesize (const state::type & state);
 
         // ***************************************************************** //

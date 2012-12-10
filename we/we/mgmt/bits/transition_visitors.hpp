@@ -197,7 +197,7 @@ namespace we { namespace mgmt { namespace visitor {
       typedef petri_net::net pnet_t;
 
       typedef typename Activity::output_t output_t;
-      typedef typename Activity::transition_type::const_iterator port_iterator;
+      typedef we::type::transition_t::const_iterator port_iterator;
 
       // collect output
       for ( port_iterator port_it (activity_.transition().ports_begin())
@@ -431,7 +431,7 @@ namespace we { namespace mgmt { namespace visitor {
 
       typedef typename Activity::input_t input_t;
       typedef typename Activity::output_t output_t;
-      typedef typename Activity::transition_type::const_iterator port_iterator;
+      typedef we::type::transition_t::const_iterator port_iterator;
 
       for ( typename input_t::const_iterator top (activity_.input().begin())
           ; top != activity_.input().end()

@@ -22,7 +22,7 @@ using petri_net::edge::TP;
 typedef unsigned int edge_t;
 typedef we::type::transition_t transition_t;
 typedef petri_net::net pnet_t;
-typedef we::mgmt::type::activity_t<transition_t> activity_t;
+typedef we::mgmt::type::activity_t activity_t;
 
 struct exec_context : public we::mgmt::context<>
 {
