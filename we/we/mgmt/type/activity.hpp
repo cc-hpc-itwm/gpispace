@@ -38,7 +38,6 @@ namespace we { namespace mgmt { namespace type {
   template <typename Transition>
   struct activity_traits
   {
-    typedef petri_net::pid_t pid_t;
     typedef petri_net::pid_t activity_id_t;
     typedef Transition transition_type;
 
@@ -119,7 +118,6 @@ namespace we { namespace mgmt { namespace type {
     typedef typename traits_type::token_on_port_list_t token_on_port_list_t;
     typedef typename traits_type::input_t input_t;
     typedef typename traits_type::output_t output_t;
-    typedef petri_net::pid_t pid_t;
     typedef typename traits_type::activity_id_t id_t;
 
     typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;

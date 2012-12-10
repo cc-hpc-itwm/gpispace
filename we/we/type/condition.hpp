@@ -128,15 +128,14 @@ namespace statistics
 
 namespace Function { namespace Condition
 {
-  typedef petri_net::pid_t pid_t;
-  typedef petri_net::eid_t eid_t;
-
   struct Traits
   {
   public:
-    typedef std::pair<token::type,eid_t> token_via_edge_t;
+    typedef std::pair<token::type,petri_net::eid_t> token_via_edge_t;
     typedef std::deque<token_via_edge_t> vec_token_via_edge_t;
-    typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
+    typedef boost::unordered_map< petri_net::pid_t
+                                , vec_token_via_edge_t
+                                > pid_in_map_t;
 
     typedef cross::cross<pid_in_map_t> choices_t;
     typedef cross::iterator<pid_in_map_t> choice_it_t;

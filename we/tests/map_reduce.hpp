@@ -26,11 +26,6 @@ namespace we
       typedef we::type::expression_t expr_type;
       typedef std::string cond_type;
 
-      typedef petri_net::pid_t pid_t;
-      typedef petri_net::tid_t tid_t;
-
-      typedef petri_net::rid_t port_id_t;
-
       static transition_type generate ()
       {
         transition_type map_reduce

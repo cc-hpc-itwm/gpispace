@@ -31,10 +31,6 @@ namespace {
  */
 
 class Optimizer {
-    typedef petri_net::pid_t pid_t;
-    typedef petri_net::tid_t tid_t;
-    typedef petri_net::rid_t port_id_t;
-
     typedef we::type::transition_t transition_t;
 
     typedef petri_net::net pnet_t;
@@ -158,13 +154,13 @@ class Optimizer {
     private:
 
     class Place;
-    typedef boost::unordered_map<pid_t, Place *> IdPlaceMap;
+  typedef boost::unordered_map<petri_net::pid_t, Place *> IdPlaceMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPlaceMap>, IdPlaceMap> Places;
     typedef pnetopt::LuaIterator<Places> PlacesIterator;
     typedef RefCountedObjectPtr<PlacesIterator> PlacesIteratorPtr;
 
     class Transition;
-    typedef boost::unordered_map<tid_t, Transition *> IdTransitionMap;
+  typedef boost::unordered_map<petri_net::tid_t, Transition *> IdTransitionMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdTransitionMap>, IdTransitionMap> Transitions;
     typedef pnetopt::LuaIterator<Transitions> TransitionsIterator;
     typedef RefCountedObjectPtr<TransitionsIterator> TransitionsIteratorPtr;
@@ -218,7 +214,7 @@ class Optimizer {
             return "PetriNet";
         }
 
-        Place *getPlace(pid_t pid) {
+      Place *getPlace(petri_net::pid_t pid) {
             Place *&result = id2place_[pid];
 
             if (!result) {
@@ -262,7 +258,7 @@ class Optimizer {
             placesIterators_.clear();
         }
 
-        Transition *getTransition(tid_t tid) {
+      Transition *getTransition(petri_net::tid_t tid) {
             Transition *&result = id2transition_[tid];
 
             if (!result) {
@@ -332,7 +328,7 @@ class Optimizer {
         PetriNet *petriNet_;
 
         /** Place id. */
-        pid_t pid_;
+      petri_net::pid_t pid_;
 
         /** Reference to the place. */
         place::type &place_;
@@ -351,13 +347,13 @@ class Optimizer {
 
         public:
 
-        Place(PetriNet *petriNet, pid_t pid, place::type &place):
+      Place(PetriNet *petriNet, petri_net::pid_t pid, place::type &place):
             petriNet_(petriNet), pid_(pid), place_(place)
         {}
 
         PetriNet *petriNet() const { return petriNet_; }
 
-        pid_t id() const { return pid_; }
+      petri_net::pid_t id() const { return pid_; }
 
         const std::string &name() const {
             ensureValid();
@@ -497,7 +493,7 @@ class Optimizer {
 
     class Port;
     enum PortDirection { INPUT, OUTPUT, TUNNEL };
-    typedef boost::unordered_map<std::pair<port_id_t, PortDirection>, Port *> IdPortMap;
+    typedef boost::unordered_map<std::pair<petri_net::rid_t, PortDirection>, Port *> IdPortMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPortMap>, IdPortMap> Ports;
     typedef pnetopt::LuaIterator<Ports> PortsIterator;
     typedef RefCountedObjectPtr<PortsIterator> PortsIteratorPtr;
@@ -507,7 +503,7 @@ class Optimizer {
         PetriNet *petriNet_;
 
         /** Transition id. */
-        tid_t tid_;
+      petri_net::tid_t tid_;
 
         /** Reference to the transition. */
         transition_t &transition_;
@@ -532,11 +528,11 @@ class Optimizer {
 
         public:
 
-        Transition(PetriNet *petriNet, tid_t tid, transition_t &transition):
+      Transition(PetriNet *petriNet, petri_net::tid_t tid, transition_t &transition):
             petriNet_(petriNet), tid_(tid), transition_(transition)
         {
             for (transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
-                port_id_t portId = i->first;
+                petri_net::rid_t portId = i->first;
                 port_t &port = transition_.get_port(portId);
                 if (port.is_input()) {
                     getPort(portId, INPUT);
@@ -549,8 +545,8 @@ class Optimizer {
                 }
             }
             for (transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
-                port_id_t portId = i->first;
-                pid_t placeId = i->second.first;
+                petri_net::rid_t portId = i->first;
+                petri_net::pid_t placeId = i->second.first;
 
                 /* Top-level transition cannot have connections. */
                 assert(petriNet != NULL);
@@ -558,8 +554,8 @@ class Optimizer {
                 getPort(portId, OUTPUT)->setConnectedPlace(petriNet->getPlace(placeId));
             }
             for (transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
-                pid_t placeId = i->first;
-                port_id_t portId = i->second.first;
+              petri_net::pid_t placeId = i->first;
+                petri_net::rid_t portId = i->second.first;
 
                 /* Top-level transition cannot have connections. */
                 assert(petriNet != NULL);
@@ -570,11 +566,11 @@ class Optimizer {
 
         PetriNet *petriNet() const { return petriNet_; }
 
-        tid_t id() const { return tid_; }
+      petri_net::tid_t id() const { return tid_; }
 
         transition_t &transition() const { return transition_; }
 
-        Port *getPort(port_id_t portId, PortDirection direction) {
+        Port *getPort(petri_net::rid_t portId, PortDirection direction) {
             Port *&result = id2port_[std::make_pair(portId, direction)];
 
             if (!result) {
@@ -706,7 +702,7 @@ class Optimizer {
         Transition *transition_;
 
         /** Port id. */
-        port_id_t portId_;
+        petri_net::rid_t portId_;
 
         /** Reference to the port. */
         port_t &port_;
@@ -722,7 +718,7 @@ class Optimizer {
 
         public:
 
-        Port(Transition *transition, port_id_t portId, port_t &port, PortDirection direction):
+        Port(Transition *transition, petri_net::rid_t portId, port_t &port, PortDirection direction):
             transition_(transition), portId_(portId), port_(port), direction_(direction),
             connectedPlace_(NULL), associatedPlace_(NULL)
         {
@@ -738,7 +734,7 @@ class Optimizer {
 
         PetriNet *petriNet() const { return transition()->petriNet(); }
 
-        port_id_t id() const { return portId_; }
+        petri_net::rid_t id() const { return portId_; }
 
         const std::string &name() const {
             ensureValid();

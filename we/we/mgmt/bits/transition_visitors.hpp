@@ -197,8 +197,6 @@ namespace we { namespace mgmt { namespace visitor {
       typedef petri_net::net pnet_t;
 
       typedef typename Activity::output_t output_t;
-      typedef petri_net::rid_t port_id_t;
-      typedef petri_net::pid_t pid_t;
       typedef typename Activity::transition_type::const_iterator port_iterator;
 
       // collect output
@@ -211,8 +209,8 @@ namespace we { namespace mgmt { namespace visitor {
         {
           if (port_it->second.has_associated_place())
           {
-            const port_id_t port_id = port_it->first;
-            const pid_t     pid     = port_it->second.associated_place();
+            const petri_net::rid_t port_id = port_it->first;
+            const petri_net::pid_t pid = port_it->second.associated_place();
 
             for ( typename pnet_t::token_place_it top ( net.get_token (pid) )
                 ; top.has_more ()
@@ -433,7 +431,6 @@ namespace we { namespace mgmt { namespace visitor {
 
       typedef typename Activity::input_t input_t;
       typedef typename Activity::output_t output_t;
-      typedef petri_net::rid_t port_id_t;
       typedef typename Activity::transition_type::const_iterator port_iterator;
 
       for ( typename input_t::const_iterator top (activity_.input().begin())
@@ -441,8 +438,8 @@ namespace we { namespace mgmt { namespace visitor {
           ; ++top
           )
       {
-        const token::type token   = top->first;
-        const port_id_t  port_id = top->second;
+        const token::type token = top->first;
+        const petri_net::rid_t port_id = top->second;
 
         context.bind
           (activity_.transition().name_of_port (port_id), token.value);
@@ -459,7 +456,7 @@ namespace we { namespace mgmt { namespace visitor {
       {
         if (port_it->second.is_output())
         {
-          const port_id_t port_id = port_it->first;
+          const petri_net::rid_t port_id = port_it->first;
           const token::type token ( port_it->second.name()
                                  , port_it->second.signature()
                                  , context
