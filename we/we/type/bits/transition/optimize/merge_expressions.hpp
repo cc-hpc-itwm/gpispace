@@ -344,7 +344,7 @@ namespace we { namespace type {
 
                 const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
-                const petri_net::eid_t eid (net.get_eid_out (tid_trans, pid));
+                const petri_net::edge_id_type eid (net.get_eid_out (tid_trans, pid));
                 const unsigned int edge (net.get_edge (eid));
                 connection_t connection (net.get_edge_info (eid));
 
@@ -371,7 +371,7 @@ namespace we { namespace type {
                           {
                             pred.UNSAFE_add_port (p->second);
 
-                            const petri_net::eid_t eid
+                            const petri_net::edge_id_type eid
                               (net.get_eid_in (tid_trans, pid));
                             const unsigned int edge (net.get_edge (eid));
                             connection_t connection (net.get_edge_info (eid));

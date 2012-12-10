@@ -112,7 +112,7 @@ namespace petri_net
   // cycles per second, you can run for 2^64/3e9/60/60/24/365 > 194 years.
   // It follows that an uint64_t is enough for now.
 
-  INHERIT_ID_TYPE (eid_t, boost::uint64_t); // edge
+  INHERIT_ID_TYPE (edge_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (place_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (port_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (transition_id_type, boost::uint64_t);
@@ -121,18 +121,16 @@ namespace petri_net
 
 #undef INHERIT_ID_TYPE
 
-#define INVALID(_type)                          \
-  const _type ## _t& _type ## _invalid()
-#define INVALID2(_prefix)                       \
+  //! \todo replace with boost::optional!?
+#define INVALID(_prefix)                       \
   const _prefix ## _type& _prefix ## _invalid()
 
-  INVALID (eid);
-  INVALID2 (place_id);
+  INVALID (edge_id);
+  INVALID (place_id);
 
-  INVALID2 (priority);
+  INVALID (priority);
 
 #undef INVALID
-#undef INVALID2
 }
 
 #endif

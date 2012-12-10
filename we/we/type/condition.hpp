@@ -131,7 +131,7 @@ namespace Function { namespace Condition
   struct Traits
   {
   public:
-    typedef std::pair<token::type,petri_net::eid_t> token_via_edge_t;
+    typedef std::pair<token::type,petri_net::edge_id_type> token_via_edge_t;
     typedef std::deque<token_via_edge_t> vec_token_via_edge_t;
     typedef boost::unordered_map< petri_net::place_id_type
                                 , vec_token_via_edge_t
