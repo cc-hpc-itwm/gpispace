@@ -34,6 +34,10 @@ namespace petri_net
     {
       return _value < other._value;
     }
+    bool operator> (const id_base_type& other) const
+    {
+      return _value > other._value;
+    }
 
     const client_type& operator++ ()
     {
