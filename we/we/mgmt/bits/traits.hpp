@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  traits.hpp
- *
- *    Description:
- *
- *        Version:  1.0
- *        Created:  03/03/2010 04:16:58 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// {petry,rahn}@itwm.fhg.de
 
 #ifndef WE_MGMT_BITS_TRAITS_HPP
 #define WE_MGMT_BITS_TRAITS_HPP 1
@@ -62,7 +46,7 @@ namespace we
       struct layer_traits
       {
         typedef Activity activity_type;
-        typedef def::id_traits<typename Activity::id_t> id_traits;
+        typedef def::id_traits<petri_net::activity_id_type> id_traits;
       };
     }
   }

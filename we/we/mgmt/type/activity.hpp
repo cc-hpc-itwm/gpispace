@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  activity.hpp
- *
- *    Description:  implements a generic activity descriptor
- *
- *        Version:  1.0
- *        Created:  03/25/2010 12:00:47 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// {petry,rahn}@itwm.fhg.de
 
 #ifndef WE_MGMT_TYPE_ACTIVITY_HPP
 #define WE_MGMT_TYPE_ACTIVITY_HPP 1
@@ -37,23 +21,6 @@
 #include <we/type/bits/transition/optimize.hpp>
 
 namespace we { namespace mgmt { namespace type {
-  struct activity_traits
-  {
-    typedef petri_net::activity_id_type activity_id_t;
-    typedef we::type::transition_t transition_type;
-
-    typedef std::pair<token::type, petri_net::port_id_type> token_on_port_t;
-    typedef std::vector<token_on_port_t> token_on_port_list_t;
-    typedef token_on_port_list_t input_t;
-    typedef token_on_port_list_t output_t;
-
-    inline static
-    activity_id_t invalid_id (void)
-    {
-      return petri_net::activity_id_invalid();
-    }
-  };
-
       namespace detail
       {
         template <typename Activity, typename Stream = std::ostream>
@@ -114,22 +81,21 @@ namespace we { namespace mgmt { namespace type {
   public:
     typedef we::type::transition_t transition_type;
 
-    typedef activity_traits::token_on_port_t token_on_port_t;
-    typedef activity_traits::token_on_port_list_t token_on_port_list_t;
-    typedef activity_traits::input_t input_t;
-    typedef activity_traits::output_t output_t;
-    typedef activity_traits::activity_id_t id_t;
+    typedef std::pair<token::type, petri_net::port_id_type> token_on_port_t;
+    typedef std::vector<token_on_port_t> token_on_port_list_t;
+    typedef token_on_port_list_t input_t;
+    typedef token_on_port_list_t output_t;
 
     typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;
     typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
 
     activity_t ()
-      : id_ (activity_traits::invalid_id())
+      : id_ (petri_net::activity_id_invalid())
     { }
 
     template <typename T>
     activity_t (const T & transition)
-      : id_ (activity_traits::invalid_id())
+      : id_ (petri_net::activity_id_invalid())
       , transition_ (transition)
     { }
 
@@ -157,13 +123,13 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
-    void set_id (const id_t & new_id)
+    void set_id (const petri_net::activity_id_type & new_id)
     {
       id_ = new_id;
     }
 
     inline
-    id_t const & id (void) const
+    petri_net::activity_id_type const & id (void) const
     {
       return id_;
     }
@@ -467,7 +433,7 @@ namespace we { namespace mgmt { namespace type {
     }
 
   private:
-    id_t id_;
+    petri_net::activity_id_type id_;
     flags::flags_t flags_;
     mutable boost::recursive_mutex mutex_;
 
@@ -488,8 +454,7 @@ namespace we { namespace mgmt { namespace type {
       template <typename Trans>
       inline std::size_t hash_value(activity_t<Trans> const & a)
       {
-        boost::hash<typename activity_t<Trans>::id_t> hasher;
-        return hasher(a.id());
+        return boost::hash<petri_net::activity_id_type>() (a.id);
       }
 
 
