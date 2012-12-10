@@ -17,8 +17,6 @@
 
 namespace po = boost::program_options;
 
-typedef petri_net::rid_t port_id_t;
-
 namespace detail
 {
   template <typename In, typename Out, typename Pred>
@@ -48,7 +46,7 @@ struct match_every_port
 
 struct match_equal_port
 {
-  match_equal_port(port_id_t p)
+  match_equal_port(petri_net::rid_t p)
     : port(p)
   {}
 
@@ -56,7 +54,7 @@ struct match_equal_port
   {
     return subject.second == port;
   }
-  const port_id_t port;
+  const petri_net::rid_t port;
 };
 
 struct output_token
@@ -210,7 +208,7 @@ main (int argc, char ** argv)
       {
         BOOST_FOREACH(std::string const &port, ports)
         {
-          port_id_t port_id (0);
+          petri_net::rid_t port_id (0);
           try
           {
             port_id = act.transition().input_port_by_name(port);
@@ -252,7 +250,7 @@ main (int argc, char ** argv)
       {
         BOOST_FOREACH(std::string const &port, ports)
         {
-          port_id_t port_id (0);
+          petri_net::rid_t port_id (0);
           try
           {
             port_id = act.transition().output_port_by_name(port);

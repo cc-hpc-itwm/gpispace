@@ -76,7 +76,6 @@ namespace module
     typedef expr::eval::context context_t;
     typedef activity_t::input_t input_t;
     typedef activity_t::output_t output_t;
-    typedef petri_net::rid_t port_id_t;
     typedef we::type::port_t port_t;
     typedef activity_t::transition_type::const_iterator port_iterator;
 
@@ -86,8 +85,8 @@ namespace module
         ; ++top
         )
     {
-      const token::type token   = top->first;
-      const port_id_t  port_id = top->second;
+      const token::type token = top->first;
+      const petri_net::rid_t port_id = top->second;
 
       context.bind (act.transition().name_of_port (port_id), token.value);
     }
@@ -102,7 +101,7 @@ namespace module
         ; ++ton
         )
     {
-      const port_id_t& port_id
+      const petri_net::rid_t& port_id
         (act.transition().output_port_by_name (ton->second));
 
       const port_t & port (act.transition().get_port (port_id));

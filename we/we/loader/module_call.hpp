@@ -18,7 +18,6 @@ namespace module
     typedef we::loader::input_t context_t;
     typedef we::activity_t::input_t input_t;
     typedef we::activity_t::output_t output_t;
-    typedef petri_net::rid_t port_id_t;
     typedef we::type::port_t port_t;
     typedef we::activity_t::transition_type::const_iterator port_iterator;
 
@@ -28,8 +27,8 @@ namespace module
         ; ++top
         )
     {
-      const token::type token   = top->first;
-      const port_id_t  port_id = top->second;
+      const token::type token = top->first;
+      const petri_net::rid_t port_id = top->second;
 
       we::loader::put
         (context, act.transition().name_of_port (port_id), token.value);
@@ -48,7 +47,7 @@ namespace module
     {
       try
       {
-        const port_id_t& port_id
+        const petri_net::rid_t& port_id
           (act.transition().output_port_by_name (ton->first));
 
         const port_t & port =
