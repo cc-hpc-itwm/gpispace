@@ -92,6 +92,8 @@ namespace fhg
 
         class top_level_port_item : public port_item
         {
+          Q_OBJECT;
+
         public:
           top_level_port_item ( const data::handle::port& handle
                               , connectable::direction::type direction
