@@ -94,6 +94,13 @@ namespace fhg
             );
           _net.connect_to_change_mgr
             (this, "connection_removed", "const data::handle::connect&");
+
+          // top-level-ports
+          _net.connect_to_change_mgr
+            ( this
+            , "place_association_set"
+            , "const data::handle::port&, const boost::optional<std::string>&"
+            );
         }
 
         //! \todo This is duplicate code, also available in main window.
@@ -309,6 +316,31 @@ namespace fhg
 
               event->accept();
             }
+            break;
+
+            case base_item::port_place_association_graph_type:
+            {
+              const data::handle::port handle
+                ( fhg::util::qt::throwing_qgraphicsitem_cast
+                  <port_place_association*> (item_below_cursor)->handle()
+                );
+
+              QAction* action_delete
+                (menu.addAction (tr ("delete_port_place_assoc")));
+
+              QAction* triggered (menu.exec(event->screenPos()));
+              if (triggered == action_delete)
+              {
+                handle.remove_place_association (this);
+              }
+              else if (!triggered)
+              {
+                qtbug_21943_workaround (event);
+              }
+
+              event->accept();
+            }
+
             break;
             }
           }
@@ -563,6 +595,12 @@ namespace fhg
           return handle.get().parent()->parent()->id() == net().id();
         }
 
+        template<>
+          bool scene_type::is_in_my_net (const data::handle::port& handle)
+        {
+          return *handle.get().parent()->get_net() == net().id();
+        }
+
         const data::handle::net& scene_type::net() const
         {
           return _net;
@@ -752,6 +790,44 @@ namespace fhg
           (const QObject* origin, const data::handle::place& place)
         {
           remove_item_for_handle<place_item> (place);
+        }
+
+        // # port ####################################################
+        void scene_type::place_association_set
+          ( const QObject* origin
+          , const data::handle::port& port
+          , const boost::optional<std::string>& place
+          )
+        {
+          if (place)
+          {
+            port_place_association* assoc_item
+              (item_with_handle<port_place_association> (port));
+
+            top_level_port_item* port_item
+              ( fhg::util::qt::throwing_qobject_cast<top_level_port_item*>
+                (assoc_item->start())
+              );
+
+            removeItem (assoc_item);
+            delete assoc_item;
+
+            foreach (place_item* place_item, items_of_type<place_item>())
+            {
+              if (place_item->handle().get().name() == *place)
+              {
+                assoc_item = new port_place_association
+                  (port_item, place_item, port);
+                addItem (assoc_item);
+                return;
+              }
+            }
+            throw std::runtime_error ("place_association to unknown place");
+          }
+          else
+          {
+            remove_item_for_handle<port_place_association> (port);
+          }
         }
       }
     }

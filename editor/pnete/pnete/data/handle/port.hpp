@@ -35,6 +35,8 @@ namespace fhg
 
           void set_type (const QObject* sender, const QString& type) const;
 
+          void remove_place_association (const QObject* sender) const;
+
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&

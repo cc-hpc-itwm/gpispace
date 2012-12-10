@@ -27,6 +27,11 @@ namespace fhg
           change_manager().set_type (sender, *this, type);
         }
 
+        void port::remove_place_association (const QObject* sender) const
+        {
+          change_manager().set_place_association (sender, *this, boost::none);
+        }
+
         void port::set_property ( const QObject* sender
                                 , const ::we::type::property::key_type& key
                                 , const ::we::type::property::value_type& val

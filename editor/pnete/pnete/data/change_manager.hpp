@@ -21,7 +21,7 @@
 
 #include <boost/function_types/function_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
-
+#include <boost/optional.hpp>
 #include <boost/preprocessor/arithmetic/add.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/config/limits.hpp>
@@ -30,6 +30,8 @@
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
+
+#include <string>
 
 class QPointF;
 
@@ -158,6 +160,12 @@ namespace fhg
         void set_type
           (const QObject*, const data::handle::port&, const QString&);
 
+        void set_place_association
+          ( const QObject*
+          , const data::handle::port&
+          , const boost::optional<std::string>& place = boost::none
+          );
+
         void move_item ( const QObject*
                        , const handle::port&
                        , const QPointF&
@@ -263,6 +271,8 @@ namespace fhg
 
         void port_type_set
           (const QObject*, const data::handle::port&, const QString&);
+        void place_association_set
+          (const QObject*, const data::handle::port&, const boost::optional<std::string>&);
 
         // - function ------------------------------------------------
         void function_name_changed ( const QObject*

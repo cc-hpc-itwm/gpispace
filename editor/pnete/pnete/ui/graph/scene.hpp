@@ -19,10 +19,14 @@
 #include <pnete/ui/graph/transition.fwd.hpp>
 #include <pnete/ui/graph_view.fwd.hpp>
 
+#include <boost/optional/optional_fwd.hpp>
+
 #include <QGraphicsScene>
 #include <QMenu>
 #include <QObject>
 #include <QPointF>
+
+#include <string>
 
 class QGraphicsSceneMouseEvent;
 class QKeyEvent;
@@ -85,6 +89,13 @@ namespace fhg
           // # place #################################################
           void place_added (const QObject*, const data::handle::place&);
           void place_deleted (const QObject*, const data::handle::place&);
+
+          // # top-level-port ########################################
+          void place_association_set
+            ( const QObject* origin
+            , const data::handle::port& port
+            , const boost::optional<std::string>& place
+            );
 
         protected:
           virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);

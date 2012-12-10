@@ -74,6 +74,7 @@ namespace fhg
 
           // - port ----------------------------------------------------
           EXPOSE (port_type_set);
+          EXPOSE (place_association_set);
 
           // - function ------------------------------------------------
           EXPOSE (function_name_changed);
@@ -701,6 +702,51 @@ namespace fhg
           const QString _new_type;
         };
 
+        void set_place_association_impl
+          ( ACTION_ARG_LIST
+          , const handle::port& port
+          , const boost::optional<std::string>& place
+          )
+        {
+          port.get_ref().place = place;
+          change_manager.emit_signal
+            (&signal::place_association_set, origin, port, place);
+        }
+
+        class set_place_association : public QUndoCommand
+        {
+        public:
+          set_place_association
+            ( ACTION_ARG_LIST
+            , const handle::port& port
+            , const boost::optional<std::string>& place
+            )
+              : ACTION_INIT ("set_place_association_action")
+              , _port (port)
+              , _old_place (port.get().place)
+              , _new_place (place)
+          { }
+
+          virtual void undo()
+          {
+            set_place_association_impl
+              (_change_manager, NULL, _port, _old_place);
+          }
+
+          virtual void redo()
+          {
+            set_place_association_impl
+              (_change_manager, _origin, _port, _new_place);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const handle::port _port;
+          const boost::optional<std::string> _old_place;
+          const boost::optional<std::string> _new_place;
+        };
+
         // - function ------------------------------------------------
         void set_function_name_impl
           ( ACTION_ARG_LIST
@@ -1244,6 +1290,16 @@ namespace fhg
       {
         push (new action::port_set_type (*this, origin, port, type));
       }
+
+      void change_manager_t::set_place_association
+        ( const QObject* origin
+        , const data::handle::port& port
+        , const boost::optional<std::string>& place
+        )
+      {
+        push (new action::set_place_association (*this, origin, port, place));
+      }
+
 
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::port& port
