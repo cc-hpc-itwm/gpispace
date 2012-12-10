@@ -115,7 +115,7 @@ namespace token
 
   template<typename NET>
   void put ( NET & net
-           , const petri_net::pid_t & pid
+           , const petri_net::place_id_type & pid
            , const value::type & v = control()
            )
   {
@@ -129,7 +129,7 @@ namespace token
 
   template<typename NET>
   void put ( NET & net
-           , const petri_net::pid_t & pid
+           , const petri_net::place_id_type & pid
            , const type & t
            )
   {

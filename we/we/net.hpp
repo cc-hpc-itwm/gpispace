@@ -62,7 +62,7 @@ namespace petri_net
 
 namespace petri_net
 {
-  typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
+  typedef adjacency::const_it<place_id_type,eid_t> adj_place_const_it;
   typedef adjacency::const_it<transition_id_type,eid_t> adj_transition_const_it;
 
 // WORK HERE: Performance: collect map<transition_id_type,X>, map<transition_id_type,Y> into a
@@ -81,17 +81,17 @@ public:
   typedef we::type::transition_t transition_type;
   typedef unsigned int edge_type;
 
-  typedef bijection::const_it<place::type,pid_t> place_const_it;
+  typedef bijection::const_it<place::type,place_id_type> place_const_it;
   typedef bijection::const_it<transition_type,transition_id_type> transition_const_it;
   typedef bijection::const_it<edge_type,eid_t> edge_const_it;
 
-  typedef multirel::right_const_it<token::type, pid_t> token_place_it;
+  typedef multirel::right_const_it<token::type, place_id_type> token_place_it;
 
-  typedef std::pair<pid_t, eid_t> place_via_edge_t;
+  typedef std::pair<place_id_type, eid_t> place_via_edge_t;
   typedef std::pair<token::type, place_via_edge_t> token_input_t;
   typedef std::vector<token_input_t> input_t;
 
-  typedef boost::unordered_map<pid_t,eid_t> output_descr_t;
+  typedef boost::unordered_map<place_id_type,eid_t> output_descr_t;
 
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits cd_traits;
@@ -108,7 +108,7 @@ public:
   // *********************************************************************** //
 private:
   typedef boost::unordered_map<eid_t, connection_t> connection_map_t;
-  typedef multirel::multirel<token::type,pid_t> token_place_rel_t;
+  typedef multirel::multirel<token::type,place_id_type> token_place_rel_t;
 
   typedef cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
   typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
@@ -122,14 +122,14 @@ private:
 
   // *********************************************************************** //
 
-  bijection::bijection<place::type,pid_t> pmap; // place::type <-> internal id
+  bijection::bijection<place::type,place_id_type> pmap; // place::type <-> internal id
   bijection::bijection<transition_type,transition_id_type> tmap; // transition_type <-> internal id
   bijection::bijection<edge_type,eid_t> emap; // edge_type <-> internal id
 
   connection_map_t connection_map;
 
-  adjacency::table<pid_t,transition_id_type,eid_t> adj_pt;
-  adjacency::table<transition_id_type,pid_t,eid_t> adj_tp;
+  adjacency::table<place_id_type,transition_id_type,eid_t> adj_pt;
+  adjacency::table<transition_id_type,place_id_type,eid_t> adj_tp;
 
   token_place_rel_t token_place_rel;
 
@@ -280,7 +280,7 @@ private:
   }
 
   void recalculate_pid_in_map ( pid_in_map_t & pid_in_map
-                              , const pid_t & pid
+                              , const place_id_type & pid
                               , const eid_t & eid
                               )
   {
@@ -295,7 +295,7 @@ private:
       pid_in_map.erase (pid);
   }
 
-  void recalculate_enabled_by_place (const pid_t & pid)
+  void recalculate_enabled_by_place (const place_id_type & pid)
   {
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       recalculate_enabled (*t, pid, t());
@@ -317,7 +317,7 @@ private:
   }
 
   void recalculate_enabled ( const transition_id_type & tid
-                           , const pid_t & pid
+                           , const place_id_type & pid
                            , const eid_t & eid
                            )
   {
@@ -344,7 +344,7 @@ private:
   }
 
   void update_enabled_put_token ( const transition_id_type & tid
-                                , const pid_t & pid
+                                , const place_id_type & pid
                                 , const eid_t & eid
                                 , const token::type & token
                                 )
@@ -360,7 +360,7 @@ private:
   }
 
   void update_enabled_del_one_token ( const transition_id_type & tid
-                                    , const pid_t & pid
+                                    , const place_id_type & pid
                                     , const token::type & token
                                     )
   {
@@ -383,7 +383,7 @@ private:
   }
 
   void update_enabled_del_all_token ( const transition_id_type & tid
-                                    , const pid_t & pid
+                                    , const place_id_type & pid
                                     , const token::type & token
                                     )
   {
@@ -411,7 +411,7 @@ private:
   // *********************************************************************** //
 
 public:
-  net (const pid_t & _places = 10, const transition_id_type & _transitions = 10)
+  net (const place_id_type & _places = 10, const transition_id_type & _transitions = 10)
     : pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
@@ -428,7 +428,7 @@ public:
   {}
 
   // get element
-  const place::type & get_place (const pid_t & pid) const
+  const place::type & get_place (const place_id_type & pid) const
   {
     return pmap.get_elem (pid);
   }
@@ -444,7 +444,7 @@ public:
   }
 
   // add element
-  pid_t add_place (const place::type & place)
+  place_id_type add_place (const place::type & place)
   {
     return pmap.add (place);
   }
@@ -472,8 +472,8 @@ public:
   {
     const eid_t eid
       ( (edge::is_PT (connection.type))
-      ? gen_add_edge<pid_t,transition_id_type> (edge, connection.pid, connection.tid, adj_pt, connection.tid)
-      : gen_add_edge<transition_id_type,pid_t> (edge, connection.tid, connection.pid, adj_tp, connection.tid)
+      ? gen_add_edge<place_id_type,transition_id_type> (edge, connection.pid, connection.tid, adj_pt, connection.tid)
+      : gen_add_edge<transition_id_type,place_id_type> (edge, connection.tid, connection.pid, adj_tp, connection.tid)
       );
 
     connection_map[eid] = connection;
@@ -510,12 +510,12 @@ public:
     return adj_place_const_it (adj_pt.col_const_it (tid));
   }
 
-  adj_transition_const_it out_of_place (const pid_t & pid) const
+  adj_transition_const_it out_of_place (const place_id_type & pid) const
   {
     return adj_transition_const_it (adj_pt.row_const_it (pid));
   }
 
-  adj_transition_const_it in_to_place (const pid_t & pid) const
+  adj_transition_const_it in_to_place (const place_id_type & pid) const
   {
     return adj_transition_const_it (adj_tp.col_const_it (pid));
   }
@@ -532,7 +532,7 @@ public:
     return it->second;
   }
 
-  eid_t get_eid_out (const transition_id_type & tid, const pid_t & pid) const
+  eid_t get_eid_out (const transition_id_type & tid, const place_id_type & pid) const
   {
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
@@ -548,7 +548,7 @@ public:
     throw exception::no_such ("specific out connection");
   }
 
-  eid_t get_eid_in (const transition_id_type & tid, const pid_t & pid) const
+  eid_t get_eid_in (const transition_id_type & tid, const place_id_type & pid) const
   {
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
@@ -564,7 +564,7 @@ public:
     throw exception::no_such ("specific in connection");
   }
 
-  bool is_read_connection (const transition_id_type & tid, const pid_t & pid) const
+  bool is_read_connection (const transition_id_type & tid, const place_id_type & pid) const
   {
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
@@ -618,7 +618,7 @@ public:
     return eid;
   }
 
-  const pid_t & delete_place (const pid_t & pid)
+  const place_id_type & delete_place (const place_id_type & pid)
   {
     // make the token deletion visible to delete_edge
     token_place_rel.delete_right (pid);
@@ -694,9 +694,9 @@ public:
   }
 
   // erased in case of conflict after modification
-  pid_t modify_place (const pid_t & pid, const place::type & place)
+  place_id_type modify_place (const place_id_type & pid, const place::type & place)
   {
-    const pid_t new_pid (pmap.modify (pid, place));
+    const place_id_type new_pid (pmap.modify (pid, place));
 
     recalculate_enabled_by_place (new_pid);
 
@@ -734,7 +734,7 @@ public:
   }
 
 public:
-  void put_token (const pid_t & pid, const token::type & token)
+  void put_token (const place_id_type & pid, const token::type & token)
   {
     token_place_rel.add (token, pid);
 
@@ -742,23 +742,23 @@ public:
       update_enabled_put_token (*t, pid, t(), token);
   }
 
-  void put_token (const pid_t & pid)
+  void put_token (const place_id_type & pid)
   {
     put_token (pid, token::type());
   }
 
-  token_place_it get_token (const pid_t & pid) const
+  token_place_it get_token (const place_id_type & pid) const
   {
     return token_place_rel.left_of (pid);
   }
 
-  bool has_token (const pid_t & pid) const
+  bool has_token (const place_id_type & pid) const
   {
     return token_place_rel.contains_right (pid);
   }
 
 private:
-  std::size_t delete_one_token (const pid_t & pid, const token::type & token)
+  std::size_t delete_one_token (const place_id_type & pid, const token::type & token)
   {
     const std::size_t ret (token_place_rel.delete_one (token, pid));
 
@@ -769,7 +769,7 @@ private:
   }
 
 public:
-  std::size_t delete_all_token (const pid_t & pid)
+  std::size_t delete_all_token (const place_id_type & pid)
   {
     const std::size_t ret (token_place_rel.delete_right (pid));
 
@@ -823,7 +823,7 @@ private:
         ; ++choice
         )
       {
-        const pid_t & pid (choice->first);
+        const place_id_type & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
         const token::type & token (token_via_edge.first);
         const eid_t & eid (token_via_edge.second);
@@ -841,7 +841,7 @@ private:
         ; ++choice
         )
       {
-        const pid_t & pid (choice->first);
+        const place_id_type & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
         const token::type & token (token_via_edge.first);
         const eid_t & eid (token_via_edge.second);

@@ -43,7 +43,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
     /**
      * Places present in the workflow.
      */
-    boost::unordered_map<petri_net::pid_t, Place *> places_;
+    boost::unordered_map<petri_net::place_id_type, Place *> places_;
 
     /**
      * Transitions present in the workflow.
@@ -72,7 +72,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
         /* Translate places. */
         for (pnet_t::place_const_it it = net.places(); it.has_more(); ++it) {
-            petri_net::pid_t pid = *it;
+            petri_net::place_id_type pid = *it;
             const place::type &p = net.get_place(pid);
 
             Place *place = petriNet_->createPlace();
@@ -158,7 +158,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           const we::type::port_t &port = item.second;
 
             if (port.has_associated_place()) {
-                petri_net::pid_t pid = port.associated_place();
+                petri_net::place_id_type pid = port.associated_place();
 
                 Place *place = find(places_, pid);
                 place->setInitialMarking(place->initialMarking() + 1);

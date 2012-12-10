@@ -18,9 +18,9 @@ namespace we { namespace type {
     {
       inline void merge_places
       ( petri_net::net & net
-      , const petri_net::pid_t & pid_A
+      , const petri_net::place_id_type & pid_A
       , const bool & is_read
-      , const petri_net::pid_t & pid_B
+      , const petri_net::place_id_type & pid_B
       )
       {
         typedef petri_net::net pnet_t;

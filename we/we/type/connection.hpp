@@ -27,12 +27,12 @@ namespace petri_net
   public:
     edge::type type;
     transition_id_type tid;
-    pid_t pid;
+    place_id_type pid;
 
     connection_t ();
     connection_t ( const edge::type&
                  , const transition_id_type&
-                 , const pid_t&
+                 , const place_id_type&
                  );
 
     template<typename Archive>

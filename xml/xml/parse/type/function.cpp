@@ -600,9 +600,9 @@ namespace xml
 
         typedef we_transition_type::requirement_t we_requirement_type;
 
-        typedef petri_net::pid_t pid_t;
-
-        typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
+        typedef boost::unordered_map< std::string
+                                    , petri_net::place_id_type
+                                    > pid_of_place_type;
 
         void add_ports ( we_transition_type & trans
                        , const function_type::ports_type& ports

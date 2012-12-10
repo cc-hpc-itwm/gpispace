@@ -154,7 +154,7 @@ class Optimizer {
     private:
 
     class Place;
-  typedef boost::unordered_map<petri_net::pid_t, Place *> IdPlaceMap;
+  typedef boost::unordered_map<petri_net::place_id_type, Place *> IdPlaceMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPlaceMap>, IdPlaceMap> Places;
     typedef pnetopt::LuaIterator<Places> PlacesIterator;
     typedef RefCountedObjectPtr<PlacesIterator> PlacesIteratorPtr;
@@ -214,7 +214,7 @@ class Optimizer {
             return "PetriNet";
         }
 
-      Place *getPlace(petri_net::pid_t pid) {
+      Place *getPlace(petri_net::place_id_type pid) {
             Place *&result = id2place_[pid];
 
             if (!result) {
@@ -328,7 +328,7 @@ class Optimizer {
         PetriNet *petriNet_;
 
         /** Place id. */
-      petri_net::pid_t pid_;
+      petri_net::place_id_type pid_;
 
         /** Reference to the place. */
         place::type &place_;
@@ -347,13 +347,13 @@ class Optimizer {
 
         public:
 
-      Place(PetriNet *petriNet, petri_net::pid_t pid, place::type &place):
+      Place(PetriNet *petriNet, petri_net::place_id_type pid, place::type &place):
             petriNet_(petriNet), pid_(pid), place_(place)
         {}
 
         PetriNet *petriNet() const { return petriNet_; }
 
-      petri_net::pid_t id() const { return pid_; }
+      petri_net::place_id_type id() const { return pid_; }
 
         const std::string &name() const {
             ensureValid();
@@ -546,7 +546,7 @@ class Optimizer {
             }
             for (transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
                 petri_net::port_id_type portId = i->first;
-                petri_net::pid_t placeId = i->second.first;
+                petri_net::place_id_type placeId = i->second.first;
 
                 /* Top-level transition cannot have connections. */
                 assert(petriNet != NULL);
@@ -554,7 +554,7 @@ class Optimizer {
                 getPort(portId, OUTPUT)->setConnectedPlace(petriNet->getPlace(placeId));
             }
             for (transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
-              petri_net::pid_t placeId = i->first;
+              petri_net::place_id_type placeId = i->first;
                 petri_net::port_id_type portId = i->second.first;
 
                 /* Top-level transition cannot have connections. */
@@ -888,7 +888,7 @@ class Optimizer {
             if (place) {
                 port_.associated_place() = place->id();
             } else {
-                port_.associated_place() = petri_net::pid_invalid();
+                port_.associated_place() = petri_net::place_id_invalid();
             }
         }
 

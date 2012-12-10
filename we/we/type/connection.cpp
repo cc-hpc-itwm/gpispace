@@ -38,7 +38,7 @@ namespace petri_net
 
   connection_t::connection_t ( const edge::type& _type
 	 		     , const transition_id_type& _tid
-		 	     , const pid_t& _pid
+		 	     , const place_id_type& _pid
 			     )
     : type (_type)
     , tid (_tid)

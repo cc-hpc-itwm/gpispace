@@ -113,9 +113,9 @@ namespace petri_net
   // It follows that an uint64_t is enough for now.
 
   INHERIT_ID_TYPE (eid_t, boost::uint64_t); // edge
-  INHERIT_ID_TYPE (pid_t, boost::uint64_t); // place
+  INHERIT_ID_TYPE (place_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (port_id_type, boost::uint64_t);
-  INHERIT_ID_TYPE (transition_id_type, boost::uint64_t); // transition
+  INHERIT_ID_TYPE (transition_id_type, boost::uint64_t);
 
   INHERIT_ID_TYPE (prio_t, boost::int16_t); // priority
 
@@ -123,12 +123,16 @@ namespace petri_net
 
 #define INVALID(_type)                          \
   const _type ## _t& _type ## _invalid()
+#define INVALID2(_type)                                 \
+  const _type ## _id_type& _type ## _id_invalid()
+
 
   INVALID (eid);
-  INVALID (pid);
+  INVALID2 (place);
   INVALID (prio);
 
 #undef INVALID
+#undef INVALID2
 }
 
 #endif

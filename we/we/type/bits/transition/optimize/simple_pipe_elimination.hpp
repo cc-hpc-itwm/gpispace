@@ -23,20 +23,20 @@ namespace we { namespace type {
 
       struct pid_in_type
       {
-        petri_net::pid_t pid;
+        petri_net::place_id_type pid;
         bool is_read;
 
-        pid_in_type (const petri_net::pid_t & _pid, const bool & _is_read)
+        pid_in_type (const petri_net::place_id_type & _pid, const bool & _is_read)
           : pid (_pid), is_read (_is_read)
         {}
       };
 
       struct pid_out_type
       {
-        petri_net::pid_t pid;
+        petri_net::place_id_type pid;
         bool is_associated;
 
-        pid_out_type (const petri_net::pid_t & _pid, const bool & _is_assoc)
+        pid_out_type (const petri_net::place_id_type & _pid, const bool & _is_assoc)
           : pid (_pid), is_associated (_is_assoc)
         {}
       };
@@ -77,7 +77,7 @@ namespace we { namespace type {
         typedef petri_net::connection_t connection_t;
         typedef transition_t::outer_to_inner_t outer_to_inner;
         typedef transition_t::inner_to_outer_t inner_to_outer;
-        typedef boost::unordered_map<name_type, petri_net::pid_t> map_type;
+        typedef boost::unordered_map<name_type, petri_net::place_id_type> map_type;
         typedef boost::unordered_set<petri_net::transition_id_type> tid_set_type;
 
         map_type map_in;
@@ -90,7 +90,7 @@ namespace we { namespace type {
             )
           {
             const port_t port (trans.get_port (oi->second.first));
-            const petri_net::pid_t pid (oi->first);
+            const petri_net::place_id_type pid (oi->first);
 
             map_in[port.name()] = pid;
           }
@@ -102,7 +102,7 @@ namespace we { namespace type {
             )
           {
             const port_t port (trans.get_port (io->first));
-            const petri_net::pid_t pid (io->second.first);
+            const petri_net::place_id_type pid (io->second.first);
 
             map_out[port.name()] = pid;
           }
@@ -136,8 +136,8 @@ namespace we { namespace type {
                 return boost::none;
               }
 
-            const petri_net::pid_t pid_A (in->second);
-            const petri_net::pid_t pid_B (out->second);
+            const petri_net::place_id_type pid_A (in->second);
+            const petri_net::place_id_type pid_B (out->second);
 
             all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
             all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);

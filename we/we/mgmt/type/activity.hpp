@@ -38,7 +38,7 @@ namespace we { namespace mgmt { namespace type {
   template <typename Transition>
   struct activity_traits
   {
-    typedef petri_net::pid_t activity_id_t;
+    typedef petri_net::place_id_type activity_id_t;
     typedef Transition transition_type;
 
     typedef std::pair<token::type, petri_net::port_id_type> token_on_port_t;

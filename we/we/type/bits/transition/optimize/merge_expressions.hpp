@@ -24,14 +24,14 @@ namespace we { namespace type {
 
       inline boost::optional<const we::type::port_t>
       input_port_by_pid ( const transition_t & trans
-                        , const petri_net::pid_t & pid
+                        , const petri_net::place_id_type & pid
                         )
       {
         try
           {
             return trans.get_port (trans.input_port_by_pid (pid).first);
           }
-        catch (const we::type::exception::not_connected<petri_net::pid_t> &)
+        catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
           {
             return boost::none;
           }
@@ -41,7 +41,7 @@ namespace we { namespace type {
 
       struct trans_info
       {
-        typedef boost::unordered_set<petri_net::pid_t> pid_set_type;
+        typedef boost::unordered_set<petri_net::place_id_type> pid_set_type;
 
         const transition_t pred;
         const petri_net::transition_id_type tid_pred;
@@ -73,7 +73,7 @@ namespace we { namespace type {
         typedef boost::unordered_set<pair_type> set_of_pair_type;
 
         typedef std::pair< const petri_net::transition_id_type
-                         , const petri_net::pid_t
+                         , const petri_net::place_id_type
                          > tid_pid_type;
         typedef boost::unordered_set<tid_pid_type> set_of_tid_pid_type;
 
@@ -342,7 +342,7 @@ namespace we { namespace type {
               {
                 pred.UNSAFE_add_port (p->second);
 
-                const petri_net::pid_t pid (trans.inner_to_outer (p->first));
+                const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
                 const petri_net::eid_t eid (net.get_eid_out (tid_trans, pid));
                 const unsigned int edge (net.get_edge (eid));
@@ -362,7 +362,7 @@ namespace we { namespace type {
               {
                 try
                   {
-                    const petri_net::pid_t pid
+                    const petri_net::place_id_type pid
                       (trans.input_pid_by_port_id (p->first));
 
                     if (pid_read.find (pid) != pid_read.end())
@@ -388,7 +388,7 @@ namespace we { namespace type {
                           }
                       }
                   }
-                catch (const we::type::exception::not_connected<petri_net::pid_t> &)
+                catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
                   {
                     // do nothing, the port was not connected
                   }
@@ -407,7 +407,7 @@ namespace we { namespace type {
       {
         typedef transition_t::const_iterator const_iterator;
 
-        typedef std::pair<petri_net::port_id_type, petri_net::pid_t> pair_type;
+        typedef std::pair<petri_net::port_id_type, petri_net::place_id_type> pair_type;
         std::stack<pair_type> to_erase;
 
         for ( const_iterator p (trans.ports_begin())
@@ -417,7 +417,7 @@ namespace we { namespace type {
           {
             if (p->second.is_output())
               {
-                const petri_net::pid_t pid (trans.inner_to_outer (p->first));
+                const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
                 namespace prop = we::type::property::traverse;
 
@@ -438,7 +438,7 @@ namespace we { namespace type {
           {
             const pair_type & p (to_erase.top());
             const petri_net::port_id_type& port_id (p.first);
-            const petri_net::pid_t & pid (p.second);
+            const petri_net::place_id_type & pid (p.second);
 
             net.delete_place (pid);
             trans.erase_port (port_id);

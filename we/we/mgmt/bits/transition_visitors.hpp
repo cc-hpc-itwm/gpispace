@@ -210,7 +210,7 @@ namespace we { namespace mgmt { namespace visitor {
           if (port_it->second.has_associated_place())
           {
             const petri_net::port_id_type port_id = port_it->first;
-            const petri_net::pid_t pid = port_it->second.associated_place();
+            const petri_net::place_id_type pid = port_it->second.associated_place();
 
             for ( typename pnet_t::token_place_it top ( net.get_token (pid) )
                 ; top.has_more ()
@@ -348,7 +348,7 @@ namespace we { namespace mgmt { namespace visitor {
 
       if (trans.get_port (port_id).has_associated_place())
         {
-          const petri_net::pid_t place_id
+          const petri_net::place_id_type place_id
             (trans.get_port (port_id).associated_place());
 
           token::put (net, place_id, inp->first);

@@ -162,7 +162,7 @@ namespace we { namespace type {
                             , boost::recursive_wrapper<petri_net::net>
                             > data_type;
 
-      typedef std::pair< petri_net::pid_t
+      typedef std::pair< petri_net::place_id_type
                        , we::type::property::type
                        > pid_with_prop_t;
 
@@ -170,7 +170,7 @@ namespace we { namespace type {
       typedef std::pair< petri_net::port_id_type
                        , we::type::property::type
                        > port_id_with_prop_t;
-      typedef boost::unordered_map< petri_net::pid_t
+      typedef boost::unordered_map< petri_net::place_id_type
                                   , port_id_with_prop_t
                                   > outer_to_inner_t;
       typedef boost::unordered_map< petri_net::port_id_type
@@ -337,7 +337,7 @@ namespace we { namespace type {
 
       ~transition_t () { }
 
-      void connect_outer_to_inner ( const petri_net::pid_t& pid
+      void connect_outer_to_inner ( const petri_net::place_id_type& pid
                                   , const petri_net::port_id_type& port
                                   , const we::type::property::type & prop
                                   )
@@ -358,7 +358,7 @@ namespace we { namespace type {
       }
 
       void connect_inner_to_outer ( const petri_net::port_id_type& port
-                                  , const petri_net::pid_t& pid
+                                  , const petri_net::place_id_type& pid
                                   , const we::type::property::type & prop
                                   )
       {
@@ -377,13 +377,13 @@ namespace we { namespace type {
         }
       }
 
-      void disconnect_outer_from_inner (const petri_net::pid_t& pid)
+      void disconnect_outer_from_inner (const petri_net::place_id_type& pid)
       {
         outer_to_inner_t::iterator i (outer_to_inner_.find (pid));
 
         if (i == outer_to_inner_.end())
         {
-          throw exception::not_connected<petri_net::pid_t>("pid already disconnected", pid);
+          throw exception::not_connected<petri_net::place_id_type>("pid already disconnected", pid);
         }
         else
         {
@@ -406,7 +406,7 @@ namespace we { namespace type {
       }
 
       void re_connect_inner_to_outer ( const petri_net::port_id_type& port
-                                     , const petri_net::pid_t& pid
+                                     , const petri_net::place_id_type& pid
                                      , const we::type::property::type & prop
                                      )
       {
@@ -415,8 +415,8 @@ namespace we { namespace type {
         connect_inner_to_outer (port, pid, prop);
       }
 
-      void re_connect_outer_to_inner ( const petri_net::pid_t& pid_old
-                                     , const petri_net::pid_t& pid_new
+      void re_connect_outer_to_inner ( const petri_net::place_id_type& pid_old
+                                     , const petri_net::place_id_type& pid_new
                                      , const petri_net::port_id_type& port
                                      , const we::type::property::type & prop
                                      )
@@ -426,7 +426,7 @@ namespace we { namespace type {
         connect_outer_to_inner (pid_new, port, prop);
       }
 
-      const petri_net::port_id_type& outer_to_inner (const petri_net::pid_t& pid) const
+      const petri_net::port_id_type& outer_to_inner (const petri_net::place_id_type& pid) const
       {
         try
         {
@@ -434,11 +434,11 @@ namespace we { namespace type {
         }
         catch (const std::out_of_range&)
         {
-          throw exception::not_connected<petri_net::pid_t> ("trans: " + name() + ": place not connected: " + fhg::util::show (pid), pid);
+          throw exception::not_connected<petri_net::place_id_type> ("trans: " + name() + ": place not connected: " + fhg::util::show (pid), pid);
         }
       }
 
-      const petri_net::pid_t& inner_to_outer (const petri_net::port_id_type& port) const
+      const petri_net::place_id_type& inner_to_outer (const petri_net::port_id_type& port) const
       {
         try
         {
@@ -474,7 +474,7 @@ namespace we { namespace type {
         return outer_to_inner_.end();
       }
 
-      void add_connection ( const petri_net::pid_t& pid
+      void add_connection ( const petri_net::place_id_type& pid
                           , const std::string& name
                           , const we::type::property::type& prop
                           = we::type::property::type()
@@ -484,7 +484,7 @@ namespace we { namespace type {
       }
 
       void add_connection ( const std::string& name
-                          , const petri_net::pid_t& pid
+                          , const petri_net::place_id_type& pid
                           , const we::type::property::type& prop
                           = we::type::property::type()
                           )
@@ -530,7 +530,7 @@ namespace we { namespace type {
       void add_port ( const std::string & name
                     , signature::type const & sig
                     , const we::type::PortDirection& direction
-                    , const petri_net::pid_t& pid
+                    , const petri_net::place_id_type& pid
                     , const we::type::property::type & prop
                       = we::type::property::type()
                     )
@@ -567,7 +567,7 @@ namespace we { namespace type {
 
       void add_input_port ( const std::string & port_name
                           , const signature::type & signature
-                          , const petri_net::pid_t& associated_place
+                          , const petri_net::place_id_type& associated_place
                           , const we::type::property::type & prop
                           )
       {
@@ -605,7 +605,7 @@ namespace we { namespace type {
 
       void add_read_port ( const std::string & port_name
                          , const signature::type & signature
-                         , const petri_net::pid_t& associated_place
+                         , const petri_net::place_id_type& associated_place
                          , const we::type::property::type & prop
                          )
       {
@@ -642,7 +642,7 @@ namespace we { namespace type {
 
       void add_tunnel ( const std::string & port_name
                       , const signature::type & signature
-                      , const petri_net::pid_t& associated_place
+                      , const petri_net::place_id_type& associated_place
                       , const we::type::property::type & prop
                       )
       {
@@ -680,7 +680,7 @@ namespace we { namespace type {
 
       void add_output_port ( const std::string & port_name
                            , const signature::type & signature
-                           , const petri_net::pid_t& associated_place
+                           , const petri_net::place_id_type& associated_place
                            , const we::type::property::type & prop
                            )
       {
@@ -722,7 +722,7 @@ namespace we { namespace type {
 
       void add_input_output_port ( const std::string & port_name
                                  , const signature::type & signature
-                                 , const petri_net::pid_t& associated_place
+                                 , const petri_net::place_id_type& associated_place
                                  , const we::type::property::type & prop
                                  )
       {
@@ -768,7 +768,7 @@ namespace we { namespace type {
         throw exception::port_undefined("trans: "+name()+": output port not defined:"+port_name, port_name);
       }
 
-      const port_id_with_prop_t& input_port_by_pid (const petri_net::pid_t & pid) const
+      const port_id_with_prop_t& input_port_by_pid (const petri_net::place_id_type & pid) const
       {
         for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
             ; p != outer_to_inner_.end()
@@ -781,10 +781,10 @@ namespace we { namespace type {
           }
         }
 
-        throw exception::not_connected<petri_net::pid_t>("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
+        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
-      const petri_net::pid_t& input_pid_by_port_id (const petri_net::port_id_type & port_id) const
+      const petri_net::place_id_type& input_pid_by_port_id (const petri_net::port_id_type & port_id) const
       {
         for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
             ; p != outer_to_inner_.end()
@@ -800,7 +800,7 @@ namespace we { namespace type {
         throw exception::not_connected<petri_net::port_id_type>("trans: "+name()+": pid not connected by port_id: "+ fhg::util::show (port_id), port_id);
       }
 
-      port_id_with_prop_t output_port_by_pid (const petri_net::pid_t & pid) const
+      port_id_with_prop_t output_port_by_pid (const petri_net::place_id_type & pid) const
       {
         for ( inner_to_outer_t::const_iterator p (inner_to_outer_.begin())
             ; p != inner_to_outer_.end()
@@ -813,7 +813,7 @@ namespace we { namespace type {
           }
         }
 
-        throw exception::not_connected<petri_net::pid_t>("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), pid);
+        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
       const std::string& name_of_port (const petri_net::port_id_type& port) const
@@ -821,7 +821,7 @@ namespace we { namespace type {
         return get_port (port).name();
       }
 
-      const std::string& name_of_place (const petri_net::pid_t& pid)
+      const std::string& name_of_place (const petri_net::place_id_type& pid)
       {
         return get_port (outer_to_inner (pid)).name();
       }
@@ -852,7 +852,7 @@ namespace we { namespace type {
         }
       }
 
-      const port_t & get_port_by_associated_pid (const petri_net::pid_t & pid) const
+      const port_t & get_port_by_associated_pid (const petri_net::place_id_type & pid) const
       {
         for ( const_iterator port (ports_.begin())
             ; port != ports_.end()
@@ -864,12 +864,12 @@ namespace we { namespace type {
                 return port->second;
               }
           }
-        throw exception::not_connected<petri_net::pid_t>("trans: "+name()+": port not associated with:"+fhg::util::show(pid), pid);
+        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": port not associated with:"+fhg::util::show(pid), pid);
       }
 
       // UNSAFE: does not check for multiple connections! Use with care!
-      void UNSAFE_re_associate_port ( const petri_net::pid_t & pid_old
-                                    , const petri_net::pid_t & pid_new
+      void UNSAFE_re_associate_port ( const petri_net::place_id_type & pid_old
+                                    , const petri_net::place_id_type & pid_new
                                     )
       {
         for ( port_iterator port (ports_.begin())
@@ -884,7 +884,7 @@ namespace we { namespace type {
                 return;
               }
           }
-        throw exception::not_connected<petri_net::pid_t>("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), pid_old);
+        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), pid_old);
       }
 
       // TODO implement port accessor iterator

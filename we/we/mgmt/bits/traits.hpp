@@ -50,10 +50,10 @@ namespace we
         };
 
         template <>
-        struct id_traits<petri_net::pid_t>
+        struct id_traits<petri_net::place_id_type>
         {
         public:
-          typedef petri_net::pid_t type;
+          typedef petri_net::place_id_type type;
 
           inline static type nil()
           {

@@ -34,7 +34,7 @@ namespace we
       port_t ()
         : _name("default")
         , _direction(PORT_IN)
-        , _associated_place(petri_net::pid_invalid())
+        , _associated_place(petri_net::place_id_invalid())
       {}
 
       port_t ( const std::string & name
@@ -46,14 +46,14 @@ namespace we
         : _name(name)
         , _direction(direction)
         , _signature(signature)
-        , _associated_place(petri_net::pid_invalid())
+        , _associated_place(petri_net::place_id_invalid())
         , _properties(prop)
       {}
 
       port_t ( const std::string & name
              , PortDirection direction
              , const signature::type& signature
-             , const petri_net::pid_t& place_id
+             , const petri_net::place_id_type& place_id
              , const we::type::property::type prop
              = we::type::property::type()
              )
@@ -69,20 +69,20 @@ namespace we
 
       PortDirection direction() const { return _direction; }
       const signature::type& signature() const { return _signature; }
-      const petri_net::pid_t& associated_place() const { return _associated_place; }
-      petri_net::pid_t& associated_place() { return _associated_place; }
+      const petri_net::place_id_type& associated_place() const { return _associated_place; }
+      petri_net::place_id_type& associated_place() { return _associated_place; }
       const we::type::property::type & property() const { return _properties; }
 
       bool is_input() const { return _direction == PORT_IN || _direction == PORT_IN_OUT || _direction == PORT_READ; }
       bool is_output() const { return _direction == PORT_OUT || _direction == PORT_IN_OUT; }
       bool is_tunnel() const { return _direction == PORT_TUNNEL; }
-      bool has_associated_place() const { return _associated_place != petri_net::pid_invalid(); }
+      bool has_associated_place() const { return _associated_place != petri_net::place_id_invalid(); }
 
     private:
       std::string _name;
       PortDirection _direction;
       signature::type _signature;
-      petri_net::pid_t _associated_place;
+      petri_net::place_id_type _associated_place;
       we::type::property::type _properties;
 
       friend class boost::serialization::access;

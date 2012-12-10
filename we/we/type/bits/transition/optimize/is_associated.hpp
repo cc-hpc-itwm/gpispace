@@ -11,7 +11,7 @@ namespace we { namespace type {
     namespace optimize
     {
       inline bool is_associated ( const transition_t & trans
-                                , const petri_net::pid_t & pid
+                                , const petri_net::place_id_type & pid
                                 , we::type::port_t & port
                                 )
       {
@@ -21,14 +21,14 @@ namespace we { namespace type {
 
             return true;
           }
-        catch (const exception::not_connected<petri_net::pid_t> &)
+        catch (const exception::not_connected<petri_net::place_id_type> &)
           {
             return false;
           }
       }
 
       inline bool is_associated ( const transition_t & trans
-                                , const petri_net::pid_t & pid
+                                , const petri_net::place_id_type & pid
                                 )
       {
         we::type::port_t port;
