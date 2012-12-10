@@ -10,14 +10,14 @@ namespace petri_net
   const _type ## _t& _type ## _invalid()                                \
   {                                                                     \
     static const _type ## _t v                                          \
-      (std::numeric_limits<_type ## _t>::max());                        \
+      (std::numeric_limits<_type ## _t::pod_type>::max());              \
                                                                         \
     return v;                                                           \
   }
 
-  INVALID(eid);
-  INVALID(pid);
-  INVALID(prio);
+  INVALID (eid);
+  INVALID (pid);
+  INVALID (prio);
 
 #undef INVALID
 }

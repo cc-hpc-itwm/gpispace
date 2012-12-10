@@ -3,7 +3,7 @@
 #ifndef _TYPE_ID_HPP
 #define _TYPE_ID_HPP
 
-#include <stdint.h>
+#include <boost/cstdint.hpp>
 
 #include <iostream>
 
@@ -12,9 +12,11 @@
 
 namespace petri_net
 {
-  template<typename pod_type, class client_type>
+  template<typename POD_TYPE, class client_type>
   struct id_base_type
   {
+    typedef POD_TYPE pod_type;
+
     id_base_type ()
       : _value (0)
     {}
@@ -110,12 +112,12 @@ namespace petri_net
   // cycles per second, you can run for 2^64/3e9/60/60/24/365 > 194 years.
   // It follows that an uint64_t is enough for now.
 
-  INHERIT_ID_TYPE (eid_t, uint64_t); // edge
-  INHERIT_ID_TYPE (pid_t, uint64_t); // place
-  INHERIT_ID_TYPE (rid_t, uint64_t); // port
-  INHERIT_ID_TYPE (tid_t, uint64_t); // transition
+  INHERIT_ID_TYPE (eid_t, boost::uint64_t); // edge
+  INHERIT_ID_TYPE (pid_t, boost::uint64_t); // place
+  INHERIT_ID_TYPE (rid_t, boost::uint64_t); // port
+  INHERIT_ID_TYPE (tid_t, boost::uint64_t); // transition
 
-  INHERIT_ID_TYPE (prio_t, int16_t); // priority
+  INHERIT_ID_TYPE (prio_t, boost::int16_t); // priority
 
 #undef INHERIT_ID_TYPE
 
