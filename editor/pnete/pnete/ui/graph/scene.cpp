@@ -394,26 +394,18 @@ namespace fhg
             return;
           }
 
-          foreach (const QGraphicsItem* item, items (event->scenePos()))
+          foreach ( const connectable_item* item
+                  , items_of_type<connectable_item> (event->scenePos())
+                  )
           {
             const port_item* as_port
               (qgraphicsitem_cast<const port_item*> (item));
             const place_item* as_place
               (qgraphicsitem_cast<const place_item*> (item));
 
-            const connectable_item* ci
-              ( as_port
-              ? static_cast<const connectable_item*> (as_port)
-              : static_cast<const connectable_item*> (as_place)
-              );
-            if (!ci)
-            {
-              continue;
-            }
-
             const connectable_item* pending (_pending_connection->fixed_end());
 
-            if (ci->direction() == pending->direction())
+            if (item->direction() == pending->direction())
             {
               throw std::runtime_error
                 ("connecting two items with same direction");
@@ -510,31 +502,25 @@ namespace fhg
                                        > edges_map_type;
           edges_map_type edges;
 
-          association* c = NULL;
-          foreach (QGraphicsItem* i, items())
+          foreach (association* c, items_of_type<association>())
           {
-            if ( (c = qgraphicsitem_cast<connection_item*> (i))
-              || (c = qgraphicsitem_cast<port_place_association*> (i))
-               )
+            QGraphicsItem* start (c->start());
+            QGraphicsItem* end (c->end());
+
+            start = start->parentItem() ? start->parentItem() : c->start();
+            end = end->parentItem() ? end->parentItem() : c->end();
+
+            nodes_map_type::iterator start_node
+              (nodes.find (qgraphicsitem_cast<base_item*> (start)));
+            nodes_map_type::iterator end_node
+              (nodes.find (qgraphicsitem_cast<base_item*> (end)));
+
+            if (start_node != nodes.end() && end_node != nodes.end())
             {
-              QGraphicsItem* start (c->start());
-              QGraphicsItem* end (c->end());
-
-              start = start->parentItem() ? start->parentItem() : start;
-              end = end->parentItem() ? end->parentItem() : end;
-
-              nodes_map_type::iterator start_node
-                (nodes.find (qgraphicsitem_cast<base_item*> (start)));
-              nodes_map_type::iterator end_node
-                (nodes.find (qgraphicsitem_cast<base_item*> (end)));
-
-              if (start_node != nodes.end() && end_node != nodes.end())
-              {
-                edges.insert
-                  ( edges_map_type::value_type
-                    (c, graph.add_edge (start_node->second, end_node->second))
-                  );
-              }
+              edges.insert
+                ( edges_map_type::value_type
+                  (c, graph.add_edge (start_node->second, end_node->second))
+                );
             }
           }
 
@@ -555,14 +541,11 @@ namespace fhg
         template<typename item_type, typename handle_type>
           item_type* scene_type::item_with_handle (const handle_type& handle)
         {
-          foreach (QGraphicsItem* child, items())
+          foreach (item_type* item, items_of_type<item_type>())
           {
-            if (item_type* item = qgraphicsitem_cast<item_type*> (child))
+            if (item->handle() == handle)
             {
-              if (item->handle() == handle)
-              {
-                return item;
-              }
+              return item;
             }
           }
           return NULL;
@@ -592,7 +575,27 @@ namespace fhg
 
           foreach (QGraphicsItem* child, items())
           {
-            if (item_type* item = qgraphicsitem_cast<item_type*> (child))
+            base_item* bi =
+              fhg::util::qt::throwing_qgraphicsitem_cast<base_item*> (child);
+            if (item_type* item = qobject_cast<item_type*> (bi))
+            {
+              result << item;
+            }
+          }
+
+          return result;
+        }
+
+        template<typename item_type>
+          QList<item_type*> scene_type::items_of_type (const QPointF& pos) const
+        {
+          QList<item_type*> result;
+
+          foreach (QGraphicsItem* child, items (pos))
+          {
+            base_item* bi =
+              fhg::util::qt::throwing_qgraphicsitem_cast<base_item*> (child);
+            if (item_type* item = qobject_cast<item_type*> (bi))
             {
               result << item;
             }
