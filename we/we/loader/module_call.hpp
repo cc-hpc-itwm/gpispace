@@ -12,8 +12,6 @@ namespace module
 {
   static void call (we::loader::loader & loader, we::activity_t & act, const we::type::module_call_t & module_call)
   {
-    we::mgmt::type::detail::printer printer (act, std::cout);
-
     // construct context
     typedef we::loader::input_t context_t;
     typedef we::activity_t::input_t input_t;
