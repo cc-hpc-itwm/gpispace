@@ -78,10 +78,10 @@ while true ; do
             shift
             ;;
         --local)
-            if [ -z "$GSPC_STATE_DIR" ] ; then
-                config_file="./gspc.rc"
+            if [ -n "$local_config_file" ] ; then
+                config_file="${local_config_file}"
             else
-                config_file="$local_config_file"
+                config_file="./gspc.rc"
             fi
             shift
             ;;
