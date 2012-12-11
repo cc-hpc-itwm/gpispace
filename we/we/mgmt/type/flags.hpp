@@ -1,6 +1,10 @@
 #ifndef WE_MGMT_TYPE_FLAGS_HPP
 #define WE_MGMT_TYPE_FLAGS_HPP 1
 
+#include <boost/serialization/nvp.hpp>
+
+#include <iosfwd>
+
 namespace we
 {
   namespace mgmt
@@ -36,16 +40,7 @@ namespace we
         }
       };
 
-      inline
-      std::ostream & operator << (std::ostream & os, const flags_t & flags)
-      {
-        os << (flags.suspended ? "S" : "s");
-        os << (flags.cancelling ? "C" : "c");
-        os << (flags.cancelled ? "T" : "t");
-        os << (flags.failed ? "F" : "f");
-        os << (flags.finished ? "D" : "d");
-        return os;
-      }
+      std::ostream& operator<< (std::ostream&, const flags_t&);
 
       template <typename T>
       struct flag_traits {};
