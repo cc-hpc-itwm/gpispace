@@ -514,8 +514,8 @@ namespace xml
                         )
         );
       transition.get_ref().priority
-        = fhg::util::boost::fmap<std::string, petri_net::prio_t>
-          ( boost::lexical_cast<petri_net::prio_t>
+        = fhg::util::boost::fmap<std::string, petri_net::priority_type>
+          ( boost::lexical_cast<petri_net::priority_type>
           , optional (node, "priority")
           );
       transition.get_ref().finline

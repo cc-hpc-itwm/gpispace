@@ -19,6 +19,11 @@ namespace fhg
             , _handle (handle)
         { }
 
+        const data::handle::port& port_place_association::handle() const
+        {
+          return _handle;
+        }
+
         QPainterPath port_place_association::shape () const
         {
           //! \todo This should be visually different and is currently

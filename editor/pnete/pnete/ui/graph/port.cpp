@@ -58,6 +58,12 @@ namespace fhg
               ", const ::we::type::property::value_type&"
             );
 
+          handle.connect_to_change_mgr
+            ( this
+            , "port_type_set", "type_changed"
+            , "const data::handle::port&, const QString&"
+            );
+
           set_just_orientation_but_not_in_property
             ( direction == connectable::direction::OUT
             ? port::orientation::EAST
@@ -367,6 +373,19 @@ namespace fhg
           else
           {
             painter->drawText(area, Qt::AlignCenter, QString::fromStdString (name()));
+          }
+        }
+
+        void port_item::type_changed
+          ( const QObject* origin
+          , const data::handle::port& changed_handle
+          , const QString&
+          )
+        {
+          if (changed_handle == handle())
+          {
+            refresh_tooltip();
+            update();
           }
         }
 

@@ -89,7 +89,7 @@ namespace xml
         , const structs_type& structs
         , const conditions_type& cond
         , const requirements_type& requirements
-        , const boost::optional<petri_net::prio_t>& priority
+        , const boost::optional<petri_net::priority_type>& priority
         , const boost::optional<bool>& finline
         , const boost::optional<bool>& internal
         , const we::type::property::type& properties
@@ -611,10 +611,9 @@ namespace xml
         , unsigned int & e
         )
       {
-        typedef we::activity_t::transition_type we_transition_type;
         typedef we::type::expression_t we_expr_type;
-        typedef we_transition_type::preparsed_cond_type we_cond_type;
-        typedef petri_net::tid_t tid_t;
+        typedef we::type::transition_t::preparsed_cond_type we_cond_type;
+        typedef petri_net::transition_id_type tid_t;
 
         const transition_type& trans (id_transition.get());
 
@@ -761,7 +760,7 @@ namespace xml
                                )
               );
 
-            we_transition_type trans_in
+            we::type::transition_t trans_in
               ( prefix + "IN"
               , we_expr_type ()
               , we_cond_type (cond_in, parsed_condition_in)
@@ -854,7 +853,7 @@ namespace xml
                                )
               );
 
-            we_transition_type trans_out
+            we::type::transition_t trans_out
               ( prefix + "OUT"
               , we_expr_type ()
               , we_cond_type (cond_out, parsed_condition_out)
@@ -994,7 +993,7 @@ namespace xml
                 we_net.modify_place (pid->second, we_place);
               }
 
-            we_transition_type we_trans (fun.synthesize (state));
+            we::type::transition_t we_trans (fun.synthesize (state));
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()

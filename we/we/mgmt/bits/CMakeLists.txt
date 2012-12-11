@@ -3,7 +3,6 @@ set (hdrs
   commands.hpp
   descriptor.hpp
   execution_policy.hpp
-  pid_map_t.hpp
   policy.hpp
   queue.hpp
   set.hpp

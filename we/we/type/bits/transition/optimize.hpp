@@ -62,11 +62,10 @@ namespace we
           {
             typedef petri_net::net pnet_t;
             typedef pnet_t::transition_const_it transition_const_it;
-            typedef petri_net::tid_t tid_t;
 
             bool modified (false);
 
-            typedef std::stack<tid_t> stack_t;
+            typedef std::stack<petri_net::transition_id_type> stack_t;
             stack_t stack;
 
             for (transition_const_it t (net.transitions()); t.has_more(); ++t)
@@ -76,7 +75,7 @@ namespace we
 
             while (!stack.empty())
               {
-                const tid_t tid (stack.top()); stack.pop();
+                const petri_net::transition_id_type tid (stack.top()); stack.pop();
 
                 transition_t trans (net.get_transition (tid));
 
@@ -121,7 +120,6 @@ namespace we
           {
             typedef petri_net::net pnet_t;
             typedef pnet_t::transition_const_it transition_const_it;
-            typedef petri_net::tid_t tid_t;
 
             bool modified (false);
 
@@ -134,7 +132,7 @@ namespace we
                         )
               ;
 
-            typedef std::stack<tid_t> stack_t;
+            typedef std::stack<petri_net::transition_id_type> stack_t;
             stack_t stack;
 
             for (transition_const_it t (net.transitions()); t.has_more(); ++t)
@@ -144,7 +142,7 @@ namespace we
 
             while (!stack.empty())
               {
-                const tid_t tid (stack.top()); stack.pop();
+                const petri_net::transition_id_type tid (stack.top()); stack.pop();
 
                 transition_t trans (net.get_transition (tid));
 

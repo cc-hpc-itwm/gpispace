@@ -15,8 +15,8 @@
 
 #include <xml/parse/type/dumps.hpp>
 
+#include <fhg/util/boost/variant.hpp>
 #include <fhg/util/cpp.hpp>
-
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -87,20 +87,14 @@ namespace xml
 
       // ******************************************************************* //
 
-      namespace
-      {
-        class function_is_net_visitor : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator () (const id::ref::net &) const { return true; }
-          template<typename T>
-          bool operator () (const T &) const { return false; }
-        };
-      }
-
       bool function_type::is_net() const
       {
-        return boost::apply_visitor (function_is_net_visitor(), f);
+        return fhg::util::boost::is_of_type<id::ref::net> (f);
+      }
+
+      boost::optional<const id::ref::net&> function_type::get_net() const
+      {
+        return fhg::util::boost::get_or_none<id::ref::net> (f);
       }
 
       // ******************************************************************* //
@@ -585,13 +579,13 @@ namespace xml
       // ***************************************************************** //
 
       class function_synthesize
-        : public boost::static_visitor<we::activity_t::transition_type>
+        : public boost::static_visitor<we::type::transition_t>
       {
       private:
         const state::type & state;
         function_type & fun;
 
-        typedef we::activity_t::transition_type we_transition_type;
+        typedef we::type::transition_t we_transition_type;
 
         typedef petri_net::net we_net_type;
         typedef we::type::module_call_t we_module_type;
@@ -600,9 +594,9 @@ namespace xml
 
         typedef we_transition_type::requirement_t we_requirement_type;
 
-        typedef petri_net::pid_t pid_t;
-
-        typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
+        typedef boost::unordered_map< std::string
+                                    , petri_net::place_id_type
+                                    > pid_of_place_type;
 
         void add_ports ( we_transition_type & trans
                        , const function_type::ports_type& ports
@@ -790,7 +784,7 @@ namespace xml
         }
       };
 
-      we::activity_t::transition_type
+      we::type::transition_t
       function_type::synthesize (const state::type & state)
       {
         return boost::apply_visitor

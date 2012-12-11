@@ -17,7 +17,7 @@ namespace we
     template <typename Activity>
     struct map_reduce
     {
-      typedef typename Activity::transition_type transition_type;
+      typedef we::type::transition_t transition_type;
 
       typedef unsigned int edge_type;
 
@@ -25,11 +25,6 @@ namespace we
       typedef we::type::module_call_t mod_type;
       typedef we::type::expression_t expr_type;
       typedef std::string cond_type;
-
-      typedef petri_net::pid_t pid_t;
-      typedef petri_net::tid_t tid_t;
-
-      typedef petri_net::rid_t port_id_t;
 
       static transition_type generate ()
       {

@@ -24,14 +24,14 @@ namespace we { namespace type {
 
       inline boost::optional<const we::type::port_t>
       input_port_by_pid ( const transition_t & trans
-                        , const petri_net::pid_t & pid
+                        , const petri_net::place_id_type & pid
                         )
       {
         try
           {
             return trans.get_port (trans.input_port_by_pid (pid).first);
           }
-        catch (const we::type::exception::not_connected<petri_net::pid_t> &)
+        catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
           {
             return boost::none;
           }
@@ -41,14 +41,14 @@ namespace we { namespace type {
 
       struct trans_info
       {
-        typedef boost::unordered_set<petri_net::pid_t> pid_set_type;
+        typedef boost::unordered_set<petri_net::place_id_type> pid_set_type;
 
         const transition_t pred;
-        const petri_net::tid_t tid_pred;
+        const petri_net::transition_id_type tid_pred;
         const pid_set_type pid_read;
 
         trans_info ( const transition_t & _pred
-                   , const petri_net::tid_t & _tid_pred
+                   , const petri_net::transition_id_type & _tid_pred
                    , const pid_set_type & _pid_read
                    )
           : pred (_pred), tid_pred (_tid_pred), pid_read (_pid_read)
@@ -58,22 +58,23 @@ namespace we { namespace type {
       inline boost::optional<trans_info>
       expression_predecessor
       ( const transition_t & trans
-      , const petri_net::tid_t & tid
+      , const petri_net::transition_id_type & tid
       , const petri_net::net & net
       )
       {
         typedef petri_net::net pnet_t;
         typedef petri_net::adj_place_const_it adj_place_const_it;
         typedef petri_net::adj_transition_const_it adj_transition_const_it;
-        typedef petri_net::tid_t tid_t;
         typedef petri_net::connection_t connection_t;
         typedef transition_t::const_iterator const_iterator;
         typedef trans_info::pid_set_type pid_set_type;
 
-        typedef std::pair<const transition_t, const tid_t> pair_type;
+        typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
         typedef boost::unordered_set<pair_type> set_of_pair_type;
 
-        typedef std::pair<const tid_t, const pid_t> tid_pid_type;
+        typedef std::pair< const petri_net::transition_id_type
+                         , const petri_net::place_id_type
+                         > tid_pid_type;
         typedef boost::unordered_set<tid_pid_type> set_of_tid_pid_type;
 
         typedef boost::unordered_set<std::string> name_set_type;
@@ -174,7 +175,7 @@ namespace we { namespace type {
                     ; ++t
                     )
                   {
-                    const petri_net::tid_t & tid_pred (*t);
+                    const petri_net::transition_id_type & tid_pred (*t);
                     const transition_t & trans (net.get_transition (tid_pred));
 
                     if (not content::is_expression (trans))
@@ -230,7 +231,7 @@ namespace we { namespace type {
 
       inline void resolve_ports
       ( transition_t & trans
-      , const petri_net::tid_t & tid_trans
+      , const petri_net::transition_id_type & tid_trans
       , const transition_t & pred
       , const petri_net::net & net
       , const trans_info::pid_set_type & pid_read
@@ -322,16 +323,14 @@ namespace we { namespace type {
 
       inline void take_ports
       ( const transition_t & trans
-      , const petri_net::tid_t tid_trans
+      , const petri_net::transition_id_type tid_trans
       , transition_t & pred
-      , const petri_net::tid_t tid_pred
+      , const petri_net::transition_id_type tid_pred
       , petri_net::net & net
       , const trans_info::pid_set_type pid_read
       )
       {
         typedef transition_t::const_iterator const_iterator;
-        typedef petri_net::pid_t pid_t;
-        typedef petri_net::eid_t eid_t;
         typedef petri_net::connection_t connection_t;
 
         for ( const_iterator p (trans.ports_begin())
@@ -343,9 +342,9 @@ namespace we { namespace type {
               {
                 pred.UNSAFE_add_port (p->second);
 
-                const pid_t pid (trans.inner_to_outer (p->first));
+                const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
-                const eid_t eid (net.get_eid_out (tid_trans, pid));
+                const petri_net::edge_id_type eid (net.get_eid_out (tid_trans, pid));
                 const unsigned int edge (net.get_edge (eid));
                 connection_t connection (net.get_edge_info (eid));
 
@@ -363,7 +362,8 @@ namespace we { namespace type {
               {
                 try
                   {
-                    const pid_t pid (trans.input_pid_by_port_id (p->first));
+                    const petri_net::place_id_type pid
+                      (trans.input_pid_by_port_id (p->first));
 
                     if (pid_read.find (pid) != pid_read.end())
                       {
@@ -371,7 +371,8 @@ namespace we { namespace type {
                           {
                             pred.UNSAFE_add_port (p->second);
 
-                            const eid_t eid (net.get_eid_in (tid_trans, pid));
+                            const petri_net::edge_id_type eid
+                              (net.get_eid_in (tid_trans, pid));
                             const unsigned int edge (net.get_edge (eid));
                             connection_t connection (net.get_edge_info (eid));
 
@@ -387,7 +388,7 @@ namespace we { namespace type {
                           }
                       }
                   }
-                catch (const we::type::exception::not_connected<pid_t> &)
+                catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
                   {
                     // do nothing, the port was not connected
                   }
@@ -399,16 +400,14 @@ namespace we { namespace type {
 
       inline void clear_ports
       ( transition_t & trans
-      , const petri_net::tid_t /* tid_trans */
+      , const petri_net::transition_id_type /* tid_trans */
       , const transition_t & trans_parent
       , petri_net::net & net
       )
       {
         typedef transition_t::const_iterator const_iterator;
-        typedef petri_net::pid_t pid_t;
-        typedef petri_net::eid_t eid_t;
 
-        typedef std::pair<petri_net::rid_t, pid_t> pair_type;
+        typedef std::pair<petri_net::port_id_type, petri_net::place_id_type> pair_type;
         std::stack<pair_type> to_erase;
 
         for ( const_iterator p (trans.ports_begin())
@@ -418,7 +417,7 @@ namespace we { namespace type {
           {
             if (p->second.is_output())
               {
-                const pid_t pid (trans.inner_to_outer (p->first));
+                const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
                 namespace prop = we::type::property::traverse;
 
@@ -438,8 +437,8 @@ namespace we { namespace type {
         while (!to_erase.empty())
           {
             const pair_type & p (to_erase.top());
-            const petri_net::rid_t& port_id (p.first);
-            const pid_t & pid (p.second);
+            const petri_net::port_id_type& port_id (p.first);
+            const petri_net::place_id_type & pid (p.second);
 
             net.delete_place (pid);
             trans.erase_port (port_id);
@@ -457,11 +456,10 @@ namespace we { namespace type {
       {
         typedef petri_net::net pnet_t;
         typedef pnet_t::transition_const_it transition_const_it;
-        typedef petri_net::tid_t tid_t;
 
         bool modified (false);
 
-        typedef std::stack<tid_t> stack_t;
+        typedef std::stack<petri_net::transition_id_type> stack_t;
         stack_t stack;
 
         for (transition_const_it t (net.transitions()); t.has_more(); ++t)
@@ -471,7 +469,7 @@ namespace we { namespace type {
 
         while (!stack.empty())
           {
-            const tid_t & tid_trans (stack.top());
+            const petri_net::transition_id_type & tid_trans (stack.top());
             transition_t trans (net.get_transition (tid_trans));
 
             if (  content::is_expression (trans)
@@ -486,7 +484,7 @@ namespace we { namespace type {
                 if (maybe_pred)
                   {
                     transition_t pred ((*maybe_pred).pred);
-                    tid_t tid_pred ((*maybe_pred).tid_pred);
+                    petri_net::transition_id_type tid_pred ((*maybe_pred).tid_pred);
 
                     pid_set_type pid_read ((*maybe_pred).pid_read);
 

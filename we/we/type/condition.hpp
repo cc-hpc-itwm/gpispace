@@ -128,15 +128,14 @@ namespace statistics
 
 namespace Function { namespace Condition
 {
-  typedef petri_net::pid_t pid_t;
-  typedef petri_net::eid_t eid_t;
-
   struct Traits
   {
   public:
-    typedef std::pair<token::type,eid_t> token_via_edge_t;
+    typedef std::pair<token::type,petri_net::edge_id_type> token_via_edge_t;
     typedef std::deque<token_via_edge_t> vec_token_via_edge_t;
-    typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
+    typedef boost::unordered_map< petri_net::place_id_type
+                                , vec_token_via_edge_t
+                                > pid_in_map_t;
 
     typedef cross::cross<pid_in_map_t> choices_t;
     typedef cross::iterator<pid_in_map_t> choice_it_t;
@@ -154,7 +153,7 @@ namespace condition
     };
   }
 
-  static inline std::string no_trans (const petri_net::pid_t &)
+  static inline std::string no_trans (const petri_net::place_id_type &)
   {
     throw exception::no_translator_given();
   }
@@ -170,7 +169,7 @@ namespace condition
     parser_t parser;
     mutable context_t context;
 
-    typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
+    typedef boost::function<std::string (const petri_net::place_id_type &)> translate_t;
     translate_t translate;
 
     typedef Function::Condition::Traits traits;
@@ -245,7 +244,7 @@ namespace condition
               ; ++choice
               )
             {
-              const petri_net::pid_t & pid (choice.key());
+              const petri_net::place_id_type & pid (choice.key());
               const token::type & token (choice.val().first);
 
               context.bind (translate (pid), token.value);

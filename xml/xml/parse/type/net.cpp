@@ -579,7 +579,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      boost::unordered_map<std::string, petri_net::pid_t>
+      boost::unordered_map<std::string, petri_net::place_id_type>
       net_synthesize ( petri_net::net& we_net
                      , const place_map_map_type & place_map_map
                      , const net_type& net
@@ -587,13 +587,11 @@ namespace xml
                      , unsigned int& e
                      )
       {
-        typedef we::activity_t::transition_type we_transition_type;
-
         typedef unsigned int we_edge_type;
 
-        typedef petri_net::pid_t pid_t;
-
-        typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
+        typedef boost::unordered_map< std::string
+                                    , petri_net::place_id_type
+                                    > pid_of_place_type;
 
         pid_of_place_type pid_of_place;
 
@@ -641,7 +639,7 @@ namespace xml
                       prop.set ("virtual", "true");
                     }
 
-                  const pid_t pid
+                  const petri_net::place_id_type pid
                     ( we_net.add_place ( place::type ( place.name()
                                                      , type
                                                      , prop
@@ -669,7 +667,7 @@ namespace xml
 
         BOOST_FOREACH (const place_type& place, net.places().values())
           {
-            const pid_t pid (pid_of_place.at (place.name()));
+            const petri_net::place_id_type pid (pid_of_place.at (place.name()));
 
             for ( place_type::values_type::const_iterator val (place.values.begin())
                 ; val != place.values.end()

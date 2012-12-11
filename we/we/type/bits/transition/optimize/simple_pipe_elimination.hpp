@@ -23,20 +23,20 @@ namespace we { namespace type {
 
       struct pid_in_type
       {
-        petri_net::pid_t pid;
+        petri_net::place_id_type pid;
         bool is_read;
 
-        pid_in_type (const petri_net::pid_t & _pid, const bool & _is_read)
+        pid_in_type (const petri_net::place_id_type & _pid, const bool & _is_read)
           : pid (_pid), is_read (_is_read)
         {}
       };
 
       struct pid_out_type
       {
-        petri_net::pid_t pid;
+        petri_net::place_id_type pid;
         bool is_associated;
 
-        pid_out_type (const petri_net::pid_t & _pid, const bool & _is_assoc)
+        pid_out_type (const petri_net::place_id_type & _pid, const bool & _is_assoc)
           : pid (_pid), is_associated (_is_assoc)
         {}
       };
@@ -67,21 +67,18 @@ namespace we { namespace type {
 
       inline boost::optional<pid_pair_vec_type>
       pid_pairs ( const transition_t & trans
-                , const petri_net::tid_t & tid
+                , const petri_net::transition_id_type & tid
                 , const petri_net::net & net
                 , const transition_t & trans_parent
                 )
       {
         typedef we::type::port_t port_t;
         typedef std::string name_type;
-        typedef petri_net::pid_t pid_t;
-        typedef petri_net::eid_t eid_t;
-        typedef petri_net::tid_t tid_t;
         typedef petri_net::connection_t connection_t;
         typedef transition_t::outer_to_inner_t outer_to_inner;
         typedef transition_t::inner_to_outer_t inner_to_outer;
-        typedef boost::unordered_map<name_type, pid_t> map_type;
-        typedef boost::unordered_set<tid_t> tid_set_type;
+        typedef boost::unordered_map<name_type, petri_net::place_id_type> map_type;
+        typedef boost::unordered_set<petri_net::transition_id_type> tid_set_type;
 
         map_type map_in;
         map_type map_out;
@@ -93,7 +90,7 @@ namespace we { namespace type {
             )
           {
             const port_t port (trans.get_port (oi->second.first));
-            const pid_t pid (oi->first);
+            const petri_net::place_id_type pid (oi->first);
 
             map_in[port.name()] = pid;
           }
@@ -105,7 +102,7 @@ namespace we { namespace type {
             )
           {
             const port_t port (trans.get_port (io->first));
-            const pid_t pid (io->second.first);
+            const petri_net::place_id_type pid (io->second.first);
 
             map_out[port.name()] = pid;
           }
@@ -139,8 +136,8 @@ namespace we { namespace type {
                 return boost::none;
               }
 
-            const petri_net::pid_t pid_A (in->second);
-            const petri_net::pid_t pid_B (out->second);
+            const petri_net::place_id_type pid_A (in->second);
+            const petri_net::place_id_type pid_B (out->second);
 
             all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
             all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);
@@ -150,7 +147,7 @@ namespace we { namespace type {
             detail::insert_tids (pred_in, net.in_to_place (pid_A));
             detail::insert_tids (pred_out, net.in_to_place (pid_B));
 
-            const eid_t eid (net.get_eid_in (tid, pid_A));
+            const petri_net::edge_id_type eid (net.get_eid_in (tid, pid_A));
 
             if (petri_net::edge::is_pt_read (net.get_edge_info (eid).type))
               {
@@ -231,12 +228,10 @@ namespace we { namespace type {
       {
         typedef petri_net::net pnet_t;
         typedef pnet_t::transition_const_it transition_const_it;
-        typedef petri_net::pid_t pid_t;
-        typedef petri_net::tid_t tid_t;
 
         bool modified (false);
 
-        typedef std::stack<tid_t> stack_t;
+        typedef std::stack<petri_net::transition_id_type> stack_t;
         stack_t stack;
 
         for (transition_const_it t (net.transitions()); t.has_more(); ++t)
@@ -246,7 +241,7 @@ namespace we { namespace type {
 
         while (!stack.empty())
           {
-            const tid_t & tid (stack.top());
+            const petri_net::transition_id_type & tid (stack.top());
             const transition_t trans (net.get_transition (tid));
 
             if (  content::is_expression (trans)

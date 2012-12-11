@@ -81,20 +81,19 @@ namespace we { namespace mgmt { namespace visitor {
     }
   };
 
-  template <typename Activity, typename OriginalInput>
+  template <typename Activity>
   class input_mapper
     : public boost::static_visitor<>
   {
   private:
     typedef Activity activity_t;
-    typedef OriginalInput input_t;
 
     activity_t & activity_;
-    const input_t & original_input_;
+    const petri_net::net::input_t & original_input_;
 
   public:
     input_mapper ( activity_t & activity
-                 , const input_t & input
+                 , const petri_net::net::input_t & input
                  )
     : activity_(activity)
     , original_input_ (input)
@@ -103,9 +102,12 @@ namespace we { namespace mgmt { namespace visitor {
     void operator () (petri_net::net&)
     {
       // TODO beautify this
-      for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
+      for ( petri_net::net::input_t::const_iterator inp (original_input_.begin())
+          ; inp != original_input_.end()
+          ; ++inp
+          )
       {
-        const petri_net::rid_t port_id
+        const petri_net::port_id_type port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -115,9 +117,12 @@ namespace we { namespace mgmt { namespace visitor {
     void operator () (we::type::module_call_t &)
     {
       // TODO beautify this
-      for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
+      for ( petri_net::net::input_t::const_iterator inp (original_input_.begin())
+          ; inp != original_input_.end()
+          ; ++inp
+          )
       {
-        const petri_net::rid_t port_id
+        const petri_net::port_id_type port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -127,9 +132,12 @@ namespace we { namespace mgmt { namespace visitor {
     void operator () (we::type::expression_t &)
     {
       // TODO beautify this
-      for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
+      for ( petri_net::net::input_t::const_iterator inp (original_input_.begin())
+          ; inp != original_input_.end()
+          ; ++inp
+          )
       {
-        const petri_net::rid_t port_id
+        const petri_net::port_id_type port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         activity_.add_input (std::make_pair (inp->first, port_id));
@@ -138,8 +146,7 @@ namespace we { namespace mgmt { namespace visitor {
   };
 
   template<typename Activity, typename Engine>
-  class activity_extractor
-    : public boost::static_visitor<Activity>
+  class activity_extractor : public boost::static_visitor<Activity>
   {
   private:
     Engine & engine_;
@@ -152,14 +159,12 @@ namespace we { namespace mgmt { namespace visitor {
     Activity operator () (petri_net::net& net)
     {
       typedef petri_net::net pnet_t;
-
-      typedef typename pnet_t::activity_t activity_t;
-      typedef typename pnet_t::input_t input_t;
+      typedef pnet_t::activity_t activity_t;
 
       activity_t net_act = net.extract_activity_random (engine_);
       Activity act = Activity (net.get_transition (net_act.tid));
 
-      input_mapper<Activity, input_t> input_mapper_visitor(act, net_act.input);
+      input_mapper<Activity> input_mapper_visitor(act, net_act.input);
       boost::apply_visitor (input_mapper_visitor, act.transition().data());
       return act;
     }
@@ -192,9 +197,7 @@ namespace we { namespace mgmt { namespace visitor {
       typedef petri_net::net pnet_t;
 
       typedef typename Activity::output_t output_t;
-      typedef petri_net::rid_t port_id_t;
-      typedef petri_net::pid_t pid_t;
-      typedef typename Activity::transition_type::const_iterator port_iterator;
+      typedef we::type::transition_t::const_iterator port_iterator;
 
       // collect output
       for ( port_iterator port_it (activity_.transition().ports_begin())
@@ -206,8 +209,8 @@ namespace we { namespace mgmt { namespace visitor {
         {
           if (port_it->second.has_associated_place())
           {
-            const port_id_t port_id = port_it->first;
-            const pid_t     pid     = port_it->second.associated_place();
+            const petri_net::port_id_type port_id = port_it->first;
+            const petri_net::place_id_type pid = port_it->second.associated_place();
 
             for ( typename pnet_t::token_place_it top ( net.get_token (pid) )
                 ; top.has_more ()
@@ -264,7 +267,7 @@ namespace we { namespace mgmt { namespace visitor {
                    , trans.inner_to_outer ( top->second )
                    , top->first
                    );
-      } catch ( const we::type::exception::not_connected <petri_net::rid_t> &)
+      } catch ( const we::type::exception::not_connected <petri_net::port_id_type> &)
       {
         std::cerr << "W: transition generated output, but port is not connected:"
                   << " trans=\"" << trans.name() << "\""
@@ -341,11 +344,11 @@ namespace we { namespace mgmt { namespace visitor {
   {
     for (typename Input::const_iterator inp (input.begin()); inp != input.end(); ++inp)
     {
-      const petri_net::rid_t port_id (inp->second);
+      const petri_net::port_id_type port_id (inp->second);
 
       if (trans.get_port (port_id).has_associated_place())
         {
-          const petri_net::pid_t place_id
+          const petri_net::place_id_type place_id
             (trans.get_port (port_id).associated_place());
 
           token::put (net, place_id, inp->first);
@@ -428,16 +431,15 @@ namespace we { namespace mgmt { namespace visitor {
 
       typedef typename Activity::input_t input_t;
       typedef typename Activity::output_t output_t;
-      typedef petri_net::rid_t port_id_t;
-      typedef typename Activity::transition_type::const_iterator port_iterator;
+      typedef we::type::transition_t::const_iterator port_iterator;
 
       for ( typename input_t::const_iterator top (activity_.input().begin())
           ; top != activity_.input().end()
           ; ++top
           )
       {
-        const token::type token   = top->first;
-        const port_id_t  port_id = top->second;
+        const token::type token = top->first;
+        const petri_net::port_id_type port_id = top->second;
 
         context.bind
           (activity_.transition().name_of_port (port_id), token.value);
@@ -454,7 +456,7 @@ namespace we { namespace mgmt { namespace visitor {
       {
         if (port_it->second.is_output())
         {
-          const port_id_t port_id = port_it->first;
+          const petri_net::port_id_type port_id = port_it->first;
           const token::type token ( port_it->second.name()
                                  , port_it->second.signature()
                                  , context

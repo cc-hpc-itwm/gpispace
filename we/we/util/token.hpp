@@ -23,7 +23,7 @@ namespace we
                            , type const & value
                            )
       {
-        const petri_net::rid_t pid (act.transition().input_port_by_name(port));
+        const petri_net::port_id_type pid (act.transition().input_port_by_name(port));
 
         act.add_input
           (we::input_t::value_type( ::token::type ( port
@@ -66,7 +66,7 @@ namespace we
         typedef we::activity_t::output_t output_t;
 
         list_t tokens;
-        const petri_net::rid_t port_id (act.transition().output_port_by_name(port));
+        const petri_net::port_id_type port_id (act.transition().output_port_by_name(port));
         for ( output_t::const_iterator out(act.output().begin())
             ; out != act.output().end()
             ; ++out

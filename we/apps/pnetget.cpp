@@ -17,8 +17,6 @@
 
 namespace po = boost::program_options;
 
-typedef petri_net::rid_t port_id_t;
-
 namespace detail
 {
   template <typename In, typename Out, typename Pred>
@@ -40,7 +38,7 @@ namespace detail
 
 struct match_every_port
 {
-  bool operator() (const we::activity_t::token_on_place_t)
+  bool operator() (const we::activity_t::token_on_port_t)
   {
     return true;
   }
@@ -48,15 +46,15 @@ struct match_every_port
 
 struct match_equal_port
 {
-  match_equal_port(port_id_t p)
+  match_equal_port(petri_net::port_id_type p)
     : port(p)
   {}
 
-  bool operator() (const we::activity_t::token_on_place_t & subject)
+  bool operator() (const we::activity_t::token_on_port_t & subject)
   {
     return subject.second == port;
   }
-  const port_id_t port;
+  const petri_net::port_id_type port;
 };
 
 struct output_token
@@ -67,7 +65,7 @@ struct output_token
   {}
   output_token const & operator *() const { return *this; }
   output_token const & operator++(int) const { return *this; }
-  output_token const & operator=(const we::activity_t::token_on_place_t & subject) const
+  output_token const & operator=(const we::activity_t::token_on_port_t & subject) const
   {
     out << subject.first << delim;
     return *this;
@@ -85,7 +83,7 @@ struct output_port_and_token
   {}
   output_port_and_token const & operator *() const { return *this; }
   output_port_and_token const & operator++(int) const { return *this; }
-  output_port_and_token const & operator=(const we::activity_t::token_on_place_t & subject) const
+  output_port_and_token const & operator=(const we::activity_t::token_on_port_t & subject) const
   {
     out << "on " << subject.second << ": " << subject.first << delim;
     return *this;
@@ -210,7 +208,7 @@ main (int argc, char ** argv)
       {
         BOOST_FOREACH(std::string const &port, ports)
         {
-          port_id_t port_id (0);
+          petri_net::port_id_type port_id (0);
           try
           {
             port_id = act.transition().input_port_by_name(port);
@@ -252,7 +250,7 @@ main (int argc, char ** argv)
       {
         BOOST_FOREACH(std::string const &port, ports)
         {
-          port_id_t port_id (0);
+          petri_net::port_id_type port_id (0);
           try
           {
             port_id = act.transition().output_port_by_name(port);

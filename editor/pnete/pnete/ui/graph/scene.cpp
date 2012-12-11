@@ -94,6 +94,13 @@ namespace fhg
             );
           _net.connect_to_change_mgr
             (this, "connection_removed", "const data::handle::connect&");
+
+          // top-level-ports
+          _net.connect_to_change_mgr
+            ( this
+            , "place_association_set"
+            , "const data::handle::port&, const boost::optional<std::string>&"
+            );
         }
 
         //! \todo This is duplicate code, also available in main window.
@@ -164,6 +171,11 @@ namespace fhg
             case base_item::port_graph_type:
             case base_item::top_level_port_graph_type:
             {
+              const data::handle::port handle
+                ( fhg::util::qt::throwing_qobject_cast<port_item*>
+                  (item_below_cursor)->handle()
+                );
+
               QAction* action_set_type (menu.addAction(tr("Set type")));
               menu.addSeparator();
               QAction* action_delete (menu.addAction(tr("Delete")));
@@ -171,7 +183,22 @@ namespace fhg
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_set_type)
               {
-                qDebug() << "NYI: port: action_set_type";
+                 bool ok;
+                 const QString text
+                   ( QInputDialog::getText
+                     ( event->widget()
+                     , tr("Set type of port %1%").arg
+                       (QString::fromStdString (handle.get().name()))
+                     , tr("Type:")
+                     , QLineEdit::Normal
+                     , QString::fromStdString (handle.get().type)
+                     , &ok
+                     )
+                   );
+                 if (ok && !text.isEmpty())
+                 {
+                   handle.set_type (this, text);
+                 }
               }
               else if (triggered == action_delete)
               {
@@ -290,6 +317,31 @@ namespace fhg
               event->accept();
             }
             break;
+
+            case base_item::port_place_association_graph_type:
+            {
+              const data::handle::port handle
+                ( fhg::util::qt::throwing_qgraphicsitem_cast
+                  <port_place_association*> (item_below_cursor)->handle()
+                );
+
+              QAction* action_delete
+                (menu.addAction (tr ("delete_port_place_assoc")));
+
+              QAction* triggered (menu.exec(event->screenPos()));
+              if (triggered == action_delete)
+              {
+                handle.remove_place_association (this);
+              }
+              else if (!triggered)
+              {
+                qtbug_21943_workaround (event);
+              }
+
+              event->accept();
+            }
+
+            break;
             }
           }
           else
@@ -374,26 +426,18 @@ namespace fhg
             return;
           }
 
-          foreach (const QGraphicsItem* item, items (event->scenePos()))
+          foreach ( const connectable_item* item
+                  , items_of_type<connectable_item> (event->scenePos())
+                  )
           {
             const port_item* as_port
               (qgraphicsitem_cast<const port_item*> (item));
             const place_item* as_place
               (qgraphicsitem_cast<const place_item*> (item));
 
-            const connectable_item* ci
-              ( as_port
-              ? static_cast<const connectable_item*> (as_port)
-              : static_cast<const connectable_item*> (as_place)
-              );
-            if (!ci)
-            {
-              continue;
-            }
-
             const connectable_item* pending (_pending_connection->fixed_end());
 
-            if (ci->direction() == pending->direction())
+            if (item->direction() == pending->direction())
             {
               throw std::runtime_error
                 ("connecting two items with same direction");
@@ -490,31 +534,25 @@ namespace fhg
                                        > edges_map_type;
           edges_map_type edges;
 
-          association* c = NULL;
-          foreach (QGraphicsItem* i, items())
+          foreach (association* c, items_of_type<association>())
           {
-            if ( (c = qgraphicsitem_cast<connection_item*> (i))
-              || (c = qgraphicsitem_cast<port_place_association*> (i))
-               )
+            QGraphicsItem* start (c->start());
+            QGraphicsItem* end (c->end());
+
+            start = start->parentItem() ? start->parentItem() : c->start();
+            end = end->parentItem() ? end->parentItem() : c->end();
+
+            nodes_map_type::iterator start_node
+              (nodes.find (qgraphicsitem_cast<base_item*> (start)));
+            nodes_map_type::iterator end_node
+              (nodes.find (qgraphicsitem_cast<base_item*> (end)));
+
+            if (start_node != nodes.end() && end_node != nodes.end())
             {
-              QGraphicsItem* start (c->start());
-              QGraphicsItem* end (c->end());
-
-              start = start->parentItem() ? start->parentItem() : start;
-              end = end->parentItem() ? end->parentItem() : end;
-
-              nodes_map_type::iterator start_node
-                (nodes.find (qgraphicsitem_cast<base_item*> (start)));
-              nodes_map_type::iterator end_node
-                (nodes.find (qgraphicsitem_cast<base_item*> (end)));
-
-              if (start_node != nodes.end() && end_node != nodes.end())
-              {
-                edges.insert
-                  ( edges_map_type::value_type
-                    (c, graph.add_edge (start_node->second, end_node->second))
-                  );
-              }
+              edges.insert
+                ( edges_map_type::value_type
+                  (c, graph.add_edge (start_node->second, end_node->second))
+                );
             }
           }
 
@@ -535,14 +573,11 @@ namespace fhg
         template<typename item_type, typename handle_type>
           item_type* scene_type::item_with_handle (const handle_type& handle)
         {
-          foreach (QGraphicsItem* child, items())
+          foreach (item_type* item, items_of_type<item_type>())
           {
-            if (item_type* item = qgraphicsitem_cast<item_type*> (child))
+            if (item->handle() == handle)
             {
-              if (item->handle() == handle)
-              {
-                return item;
-              }
+              return item;
             }
           }
           return NULL;
@@ -560,6 +595,12 @@ namespace fhg
           return handle.get().parent()->parent()->id() == net().id();
         }
 
+        template<>
+          bool scene_type::is_in_my_net (const data::handle::port& handle)
+        {
+          return *handle.get().parent()->get_net() == net().id();
+        }
+
         const data::handle::net& scene_type::net() const
         {
           return _net;
@@ -572,7 +613,27 @@ namespace fhg
 
           foreach (QGraphicsItem* child, items())
           {
-            if (item_type* item = qgraphicsitem_cast<item_type*> (child))
+            base_item* bi =
+              fhg::util::qt::throwing_qgraphicsitem_cast<base_item*> (child);
+            if (item_type* item = qobject_cast<item_type*> (bi))
+            {
+              result << item;
+            }
+          }
+
+          return result;
+        }
+
+        template<typename item_type>
+          QList<item_type*> scene_type::items_of_type (const QPointF& pos) const
+        {
+          QList<item_type*> result;
+
+          foreach (QGraphicsItem* child, items (pos))
+          {
+            base_item* bi =
+              fhg::util::qt::throwing_qgraphicsitem_cast<base_item*> (child);
+            if (item_type* item = qobject_cast<item_type*> (bi))
             {
               result << item;
             }
@@ -729,6 +790,44 @@ namespace fhg
           (const QObject* origin, const data::handle::place& place)
         {
           remove_item_for_handle<place_item> (place);
+        }
+
+        // # port ####################################################
+        void scene_type::place_association_set
+          ( const QObject* origin
+          , const data::handle::port& port
+          , const boost::optional<std::string>& place
+          )
+        {
+          if (place)
+          {
+            port_place_association* assoc_item
+              (item_with_handle<port_place_association> (port));
+
+            top_level_port_item* port_item
+              ( fhg::util::qt::throwing_qobject_cast<top_level_port_item*>
+                (assoc_item->start())
+              );
+
+            removeItem (assoc_item);
+            delete assoc_item;
+
+            foreach (place_item* place_item, items_of_type<place_item>())
+            {
+              if (place_item->handle().get().name() == *place)
+              {
+                assoc_item = new port_place_association
+                  (port_item, place_item, port);
+                addItem (assoc_item);
+                return;
+              }
+            }
+            throw std::runtime_error ("place_association to unknown place");
+          }
+          else
+          {
+            remove_item_for_handle<port_place_association> (port);
+          }
         }
       }
     }

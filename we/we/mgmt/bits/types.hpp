@@ -24,7 +24,6 @@
 #include <fhg/assert.hpp>
 #include <we/net.hpp>
 #include <we/expr/parse/parser.hpp>
-#include <we/mgmt/bits/pid_map_t.hpp>
 
 namespace we { namespace mgmt {
 

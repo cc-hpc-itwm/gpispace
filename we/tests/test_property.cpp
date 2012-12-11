@@ -555,16 +555,24 @@ namespace boost
   }
 }
 
+typedef std::vector<std::pair<std::vector<std::string>, std::string> >
+  correct_type;
+
+BOOST_TEST_DONT_PRINT_LOG_VALUE (correct_type::iterator);
+
 BOOST_AUTO_TEST_CASE (visit_all_leafs)
 {
   prop::traverse::stack_type stack (prop::traverse::dfs (p));
 
-  prop::traverse::stack_type correct;
+  // prop::traverse::stack_type correct;
+  //! \note This is not an ordered traversal, thus don't check with a stack.
+  correct_type correct;
+
 #define VAL(STR)                                                \
-  correct.push ( std::make_pair ( prop::util::split (STR)       \
-                                , "value_of (" STR ")"          \
-                                )                               \
-               )
+  correct.push_back ( std::make_pair ( prop::util::split (STR)  \
+                                     , "value_of (" STR ")"     \
+                                     )                          \
+                    )
 
   VAL ("B.A.A");
   VAL ("A.C.B");
@@ -579,13 +587,18 @@ BOOST_AUTO_TEST_CASE (visit_all_leafs)
   while (!stack.empty())
   {
     const prop::traverse::pair_type elem (stack.top());
-    const prop::traverse::pair_type elem_req (correct.top());
+    // const prop::traverse::pair_type elem_req (correct.top());
+    correct_type::iterator it (std::find (correct.begin(), correct.end(), elem));
 
-    BOOST_REQUIRE_EQUAL (elem.first, elem_req.first);
-    BOOST_REQUIRE_EQUAL (elem.second, elem_req.second);
+    // BOOST_REQUIRE_EQUAL (elem.first, elem_req.first);
+    // BOOST_REQUIRE_EQUAL (elem.second, elem_req.second);
+    BOOST_REQUIRE_NE (it, correct.end());
+    BOOST_REQUIRE_EQUAL (elem.first, it->first);
+    BOOST_REQUIRE_EQUAL (elem.second, it->second);
 
     stack.pop();
-    correct.pop();
+    // correct.pop();
+    correct.erase (it);
   }
 }
 

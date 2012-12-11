@@ -346,7 +346,7 @@ namespace we { namespace type {
       , id_type &
       , const options<Pred> &
       , const level_type = 1
-      , const petri_net::prio_t& = petri_net::prio_invalid()
+      , const petri_net::priority_type& = petri_net::priority_invalid()
       );
 
       template<typename Pred>
@@ -409,7 +409,7 @@ namespace we { namespace type {
           typedef typename transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
           typedef std::pair< place_dot_name_type
-                           , petri_net::rid_t
+                           , petri_net::port_id_type
                            > extra_connection_type;
           typedef std::string transition_name_type;
           typedef boost::unordered_map< transition_name_type
@@ -543,7 +543,7 @@ namespace we { namespace type {
             {
               const transition_t & trans (net.get_transition (*t));
               const id_type id_trans (++id);
-              const petri_net::prio_t prio (net.get_transition_priority (*t));
+              const petri_net::priority_type prio (net.get_transition_priority (*t));
 
               s << to_dot (trans, id, opts, l + 1, prio);
 
@@ -651,7 +651,7 @@ namespace we { namespace type {
       , id_type & id
       , const options<Pred> & opts
       , const level_type l
-      , const petri_net::prio_t & prio
+      , const petri_net::priority_type & prio
       )
       {
         typedef transition_t trans_t;
@@ -668,9 +668,9 @@ namespace we { namespace type {
 
         if (opts.show_priority)
           {
-            if (prio != petri_net::prio_invalid())
+            if (prio != petri_net::priority_invalid())
               {
-                if (prio > 0)
+                if (prio > petri_net::priority_type (0))
                   {
                     priority << "| priority: " << prio;
                   }

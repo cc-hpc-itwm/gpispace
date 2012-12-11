@@ -69,8 +69,8 @@ namespace we { namespace mgmt {
       typedef Policy policy;
 
       // internal ids
-      typedef typename traits_type::id_traits  internal_id_traits;
-      typedef typename internal_id_traits::type internal_id_type;
+      typedef typename traits_type::id_traits internal_id_traits;
+      typedef petri_net::activity_id_type internal_id_type;
 
       typedef std::string encoded_type;
       typedef std::string reason_type;
@@ -725,7 +725,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          active_nets_[id % extractor_.size()].put(id);
+          active_nets_[id.value() % extractor_.size()].put(id);
         }
         else
         {
@@ -738,7 +738,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          inj_q_[id % injector_.size()].put ( id );
+          inj_q_[id.value() % injector_.size()].put ( id );
         }
         else
         {
@@ -751,7 +751,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          inj_q_[id % injector_.size()].put ( id );
+          inj_q_[id.value() % injector_.size()].put ( id );
         }
         else
         {
@@ -1024,13 +1024,30 @@ namespace we { namespace mgmt {
             continue;
           }
 
+          descriptor_ptr desc;
           try
           {
-            do_inject (lookup(act_id));
+            desc = lookup (act_id);
+          }
+          catch (std::exception const &ex)
+          {
+            MLOG (ERROR, "internal error: activity not valid anymore");
+            continue;
+          }
+
+          try
+          {
+            do_inject (desc);
           }
           catch (std::exception const & ex)
           {
             LOG(ERROR, "injector-" << rank << " got exception during injecting: " << ex.what());
+
+            desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
+            desc->set_error_message (ex.what ());
+            desc->set_result (policy::codec::encode (desc->activity ()));
+
+            post_failed_notification (desc->id ());
           }
           catch (...)
           {

@@ -19,7 +19,7 @@
 namespace priostore
 {
   template< typename T
-          , typename Prio = petri_net::prio_t
+          , typename Prio = petri_net::priority_type
           , typename Store = svector::type<T>
           >
   struct type

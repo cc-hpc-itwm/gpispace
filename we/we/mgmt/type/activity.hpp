@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  activity.hpp
- *
- *    Description:  implements a generic activity descriptor
- *
- *        Version:  1.0
- *        Created:  03/25/2010 12:00:47 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// {petry,rahn}@itwm.fhg.de
 
 #ifndef WE_MGMT_TYPE_ACTIVITY_HPP
 #define WE_MGMT_TYPE_ACTIVITY_HPP 1
@@ -28,6 +12,8 @@
 #include <boost/random.hpp>
 
 #include <we/type/id.hpp>
+#include <we/type/transition.hpp>
+
 #include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/transition_visitors.hpp>
@@ -35,32 +21,13 @@
 #include <we/type/bits/transition/optimize.hpp>
 
 namespace we { namespace mgmt { namespace type {
-  template <typename Transition>
-  struct activity_traits
-  {
-    typedef petri_net::pid_t pid_t;
-    typedef petri_net::pid_t activity_id_t;
-    typedef Transition transition_type;
-
-    typedef std::pair<token::type, pid_t> token_on_place_t;
-    typedef std::vector<token_on_place_t> token_on_place_list_t;
-    typedef token_on_place_list_t input_t;
-    typedef token_on_place_list_t output_t;
-
-    inline static
-    activity_id_t invalid_id (void)
-    {
-      return ::we::mgmt::traits::def::id_traits<activity_id_t>::nil();
-    }
-  };
-
       namespace detail
       {
         template <typename Activity, typename Stream = std::ostream>
         struct printer
         {
           typedef printer<Activity, Stream> this_type;
-          typedef typename Activity::token_on_place_list_t top_list_t;
+          typedef typename Activity::token_on_port_list_t top_list_t;
 
           printer (const Activity & act, Stream & stream)
             : act_(act)
@@ -106,36 +73,27 @@ namespace we { namespace mgmt { namespace type {
         };
       }
 
-  template <typename Transition, typename Traits = activity_traits<Transition> >
   class activity_t
   {
-    typedef activity_t<Transition, Traits> this_type;
-
   public:
-    typedef Transition transition_type;
-    typedef Traits traits_type;
-
-    typedef typename traits_type::token_on_place_t token_on_place_t;
-    typedef typename traits_type::token_on_place_list_t token_on_place_list_t;
-    typedef typename traits_type::input_t input_t;
-    typedef typename traits_type::output_t output_t;
-    typedef petri_net::pid_t pid_t;
-    typedef typename traits_type::activity_id_t id_t;
+    typedef std::pair<token::type, petri_net::port_id_type> token_on_port_t;
+    typedef std::vector<token_on_port_t> token_on_port_list_t;
+    typedef token_on_port_list_t input_t;
+    typedef token_on_port_list_t output_t;
 
     typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;
     typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
 
     activity_t ()
-      : id_ (traits_type::invalid_id())
+      : id_ (petri_net::activity_id_invalid())
     { }
 
-    template <typename T>
-    activity_t (const T & transition)
-      : id_ (traits_type::invalid_id())
+    activity_t (const we::type::transition_t & transition)
+      : id_ (petri_net::activity_id_invalid())
       , transition_ (transition)
     { }
 
-    activity_t (const this_type & other)
+    activity_t (const activity_t & other)
       : id_ (other.id_)
       , flags_ (other.flags_)
       , transition_ (other.transition_)
@@ -144,7 +102,7 @@ namespace we { namespace mgmt { namespace type {
       , output_ (other.output_)
     { }
 
-    this_type & operator= (const this_type & other)
+    activity_t & operator= (const activity_t & other)
     {
       if (this != &other)
       {
@@ -159,13 +117,13 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
-    void set_id (const id_t & new_id)
+    void set_id (const petri_net::activity_id_type & new_id)
     {
       id_ = new_id;
     }
 
     inline
-    id_t const & id (void) const
+    petri_net::activity_id_type const & id (void) const
     {
       return id_;
     }
@@ -254,14 +212,14 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
-    const transition_type & transition() const
+    const we::type::transition_t & transition() const
     {
       shared_lock_t lock(mutex_);
       return transition_;
     }
 
     inline
-    transition_type & transition()
+    we::type::transition_t & transition()
     {
       unique_lock_t lock(mutex_);
       return transition_;
@@ -274,23 +232,23 @@ namespace we { namespace mgmt { namespace type {
       return boost::apply_visitor (v, transition_.data());
     }
 
-    this_type
+    activity_t
     extract()
     {
       unique_lock_t lock(mutex_);
-      we::mgmt::visitor::activity_extractor<this_type, boost::mt19937>
+      we::mgmt::visitor::activity_extractor<activity_t, boost::mt19937>
         extract_activity(engine_);
-      this_type act = boost::apply_visitor ( extract_activity
+      activity_t act = boost::apply_visitor ( extract_activity
                                            , transition_.data()
                                            );
       return act;
     }
 
     void
-    inject (this_type const & subact)
+    inject (activity_t const & subact)
     {
       unique_lock_t lock(mutex_);
-      we::mgmt::visitor::activity_injector<this_type>
+      we::mgmt::visitor::activity_injector<activity_t>
         inject_activity (*this, subact);
       boost::apply_visitor ( inject_activity
                            , transition_.data()
@@ -302,7 +260,7 @@ namespace we { namespace mgmt { namespace type {
     inject_input ()
     {
       unique_lock_t lock(mutex_);
-      we::mgmt::visitor::injector<this_type>
+      we::mgmt::visitor::injector<activity_t>
         inject_input (*this, pending_input_);
       boost::apply_visitor ( inject_input
                            , transition_.data()
@@ -318,7 +276,7 @@ namespace we { namespace mgmt { namespace type {
     collect_output ()
     {
       unique_lock_t lock(mutex_);
-      we::mgmt::visitor::output_collector<this_type> collect_output (*this);
+      we::mgmt::visitor::output_collector<activity_t> collect_output (*this);
       boost::apply_visitor ( collect_output
                            , transition_.data()
                            );
@@ -358,7 +316,7 @@ namespace we { namespace mgmt { namespace type {
 
       */
 
-      we::mgmt::visitor::executor<this_type, Context> visitor_executor (*this, ctxt);
+      we::mgmt::visitor::executor<activity_t, Context> visitor_executor (*this, ctxt);
       return boost::apply_visitor (visitor_executor, transition().data());
     }
 
@@ -383,7 +341,7 @@ namespace we { namespace mgmt { namespace type {
       return input_;
     }
 
-    void add_input (const typename input_t::value_type & inp)
+    void add_input (const input_t::value_type & inp)
     {
       unique_lock_t lock(mutex_);
       pending_input_.push_back (inp);
@@ -401,7 +359,7 @@ namespace we { namespace mgmt { namespace type {
       output_ = outp;
     }
 
-    void add_output (const typename output_t::value_type & outp)
+    void add_output (const output_t::value_type & outp)
     {
       unique_lock_t lock(mutex_);
       output_.push_back (outp);
@@ -469,11 +427,11 @@ namespace we { namespace mgmt { namespace type {
     }
 
   private:
-    id_t id_;
+    petri_net::activity_id_type id_;
     flags::flags_t flags_;
     mutable boost::recursive_mutex mutex_;
 
-    transition_type transition_;
+    we::type::transition_t transition_;
 
     input_t pending_input_;
     input_t input_;
@@ -482,24 +440,15 @@ namespace we { namespace mgmt { namespace type {
     boost::mt19937 engine_;
   };
 
-      template <typename Trans, typename Traits>
-      inline bool operator==(const activity_t<Trans,Traits> & a, const activity_t<Trans,Traits> & b)
+      inline bool operator==(const activity_t& a, const activity_t& b)
       {
         return a.id() == b.id();
       }
-      template <typename Trans, typename Traits>
-      inline std::size_t hash_value(activity_t<Trans, Traits> const & a)
-      {
-        boost::hash<typename activity_t<Trans, Traits>::id_t> hasher;
-        return hasher(a.id());
-      }
 
 
-
-  template <typename Transition, typename Traits>
-  std::ostream & operator << ( std::ostream & os
-                             , const activity_t<Transition, Traits> & act
-                             )
+  inline std::ostream & operator << ( std::ostream & os
+                                    , const activity_t & act
+                                    )
   {
     act.writeTo (os);
     return os;

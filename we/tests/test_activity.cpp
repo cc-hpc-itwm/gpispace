@@ -22,7 +22,7 @@ using petri_net::edge::TP;
 typedef unsigned int edge_t;
 typedef we::type::transition_t transition_t;
 typedef petri_net::net pnet_t;
-typedef we::mgmt::type::activity_t<transition_t> activity_t;
+typedef we::mgmt::type::activity_t activity_t;
 
 struct exec_context : public we::mgmt::context<>
 {
@@ -61,13 +61,13 @@ int main (int, char **)
   // ************************************ //
   pnet_t net;
 
-  petri_net::pid_t pid_vid (net.add_place (place::type ("vid","long")));
+  petri_net::place_id_type pid_vid (net.add_place (place::type ("vid","long")));
 
   signature::structured_t sig_store;
   sig_store["bid"] = "long";
   sig_store["seen"] = "bitset";
 
-  petri_net::pid_t pid_store (net.add_place (place::type("store", sig_store)));
+  petri_net::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
 
   transition_t trans_inner
     ( "trans_inner"
@@ -86,7 +86,7 @@ int main (int, char **)
   sig_pair["bid"] = "long";
   sig_pair["vid"] = "long";
 
-  petri_net::pid_t pid_pair (net.add_place (place::type("pair", sig_pair)));
+  petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 
   trans_inner.add_port
     ("vid","long",we::type::PORT_IN);
@@ -106,7 +106,7 @@ int main (int, char **)
     ("store",pid_store)
     ;
 
-  petri_net::tid_t tid (net.add_transition (trans_inner));
+  petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
   edge_t e (0);
 

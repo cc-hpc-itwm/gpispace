@@ -6,18 +6,20 @@
 
 namespace petri_net
 {
-#define INVALID(_type)                                                  \
-  const _type ## _t& _type ## _invalid()                                \
+#define INVALID(_prefix)                                                \
+  const _prefix ## _type& _prefix ## _invalid()                         \
   {                                                                     \
-    static const _type ## _t v                                          \
-      (std::numeric_limits<_type ## _t>::max());                        \
+    static const _prefix ## _type v                                     \
+      (std::numeric_limits<_prefix ## _type::pod_type>::max());         \
                                                                         \
     return v;                                                           \
   }
 
-  INVALID(eid);
-  INVALID(pid);
-  INVALID(prio);
+  INVALID (edge_id);
+  INVALID (place_id);
+  INVALID (activity_id);
+
+  INVALID (priority);
 
 #undef INVALID
 }

@@ -18,20 +18,17 @@ namespace we { namespace type {
     {
       inline void merge_places
       ( petri_net::net & net
-      , const petri_net::pid_t & pid_A
+      , const petri_net::place_id_type & pid_A
       , const bool & is_read
-      , const petri_net::pid_t & pid_B
+      , const petri_net::place_id_type & pid_B
       )
       {
         typedef petri_net::net pnet_t;
         typedef pnet_t::transition_const_it transition_const_it;
-        typedef petri_net::pid_t pid_t;
-        typedef petri_net::eid_t eid_t;
-        typedef petri_net::tid_t tid_t;
         typedef petri_net::connection_t connection_t;
         typedef petri_net::adj_transition_const_it adj_transition_const_it;
 
-        typedef std::pair<tid_t,eid_t> pair_t;
+        typedef std::pair<petri_net::transition_id_type,petri_net::edge_id_type> pair_t;
         typedef std::stack<pair_t> stack_t;
         stack_t stack;
 
@@ -47,8 +44,8 @@ namespace we { namespace type {
         while (!stack.empty())
           {
             const stack_t::value_type & pair (stack.top());
-            const tid_t & tid_trans_out_B (pair.first);
-            const eid_t & eid_out_B (pair.second);
+            const petri_net::transition_id_type & tid_trans_out_B (pair.first);
+            const petri_net::edge_id_type & eid_out_B (pair.second);
 
             const unsigned int edge (net.get_edge (eid_out_B));
             connection_t connection (net.get_edge_info (eid_out_B));
@@ -93,8 +90,8 @@ namespace we { namespace type {
         while (!stack.empty())
           {
             const stack_t::value_type & pair (stack.top());
-            const tid_t & tid_trans_in_B (pair.first);
-            const eid_t & eid_in_B (pair.second);
+            const petri_net::transition_id_type & tid_trans_in_B (pair.first);
+            const petri_net::edge_id_type & eid_in_B (pair.second);
 
             const unsigned int edge (net.get_edge (eid_in_B));
             connection_t connection (net.get_edge_info (eid_in_B));

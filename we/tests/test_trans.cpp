@@ -44,14 +44,14 @@ int main (int, char **)
   // ************************************ //
   pnet_t net;
 
-  petri_net::pid_t pid_vid (net.add_place (place::type ("vid","long")));
+  petri_net::place_id_type pid_vid (net.add_place (place::type ("vid","long")));
 
   signature::structured_t sig_store;
 
   sig_store["bid"] = "long";
   sig_store["seen"] = "bitset";
 
-  petri_net::pid_t pid_store (net.add_place (place::type("store", sig_store)));
+  petri_net::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
 
   transition_t trans_inner
     ( "trans_inner"
@@ -70,7 +70,7 @@ int main (int, char **)
   sig_pair["bid"] = "long";
   sig_pair["vid"] = "long";
 
-  petri_net::pid_t pid_pair (net.add_place (place::type("pair", sig_pair)));
+  petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 
   trans_inner.add_port
     ("vid","long",we::type::PORT_IN);
@@ -90,7 +90,7 @@ int main (int, char **)
     ("store",pid_store)
     ;
 
-  petri_net::tid_t tid (net.add_transition (trans_inner));
+  petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
   edge_t e (0);
 
@@ -143,15 +143,17 @@ int main (int, char **)
   transition_t t1 ("t1", we::type::module_call_t ("m", "f"));
 
   t1.add_port
+    ("i", "long", we::type::PORT_IN_OUT);
+  t1.add_port
     ("max", "long", we::type::PORT_IN)
   ;
 
   t1.add_connection
-    (petri_net::pid_t(0), "i");
+    (petri_net::place_id_type(0), "i");
   t1.add_connection
-    (petri_net::pid_t(1), "max");
+    (petri_net::place_id_type(1), "max");
   t1.add_connection
-    ("i", petri_net::pid_t(0))
+    ("i", petri_net::place_id_type(0))
   ;
 
   std::cout << "i (inp) = " << t1.input_port_by_name ("i") << std::endl;
