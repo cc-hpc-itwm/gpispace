@@ -53,15 +53,14 @@ namespace fhg
           handle.connect_to_change_mgr
             ( this
             , "property_changed"
-            , "  const data::handle::port&"
-              ", const ::we::type::property::key_type&"
-              ", const ::we::type::property::value_type&"
+            , "data::handle::port, "
+              "::we::type::property::key_type ::we::type::property::value_type"
             );
 
           handle.connect_to_change_mgr
             ( this
             , "port_type_set", "type_changed"
-            , "const data::handle::port&, const QString&"
+            , "data::handle::port, QString"
             );
 
           set_just_orientation_but_not_in_property

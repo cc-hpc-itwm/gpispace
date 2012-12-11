@@ -55,27 +55,15 @@ namespace fhg
 
           // transition
           _net.connect_to_change_mgr
-            ( this
-            , "transition_added"
-            , "const data::handle::transition&"
-            );
+            (this, "transition_added", "data::handle::transition");
           _net.connect_to_change_mgr
-            ( this
-            , "transition_deleted"
-            , "const data::handle::transition&"
-            );
+            (this, "transition_deleted", "data::handle::transition");
 
           // place
           _net.connect_to_change_mgr
-            ( this
-            , "place_added"
-            , "const data::handle::place&"
-            );
+            (this, "place_added", "data::handle::place");
           _net.connect_to_change_mgr
-            ( this
-            , "place_deleted"
-            , "const data::handle::place&"
-            );
+            (this, "place_deleted", "data::handle::place");
 
           // connections
           //! \note This is not really in responsibility of the net,
@@ -89,17 +77,16 @@ namespace fhg
           _net.connect_to_change_mgr
             ( this
             , "connection_added"
-            , "const data::handle::connect&, "
-              "const data::handle::place&, const data::handle::port&"
+            , "data::handle::connect, data::handle::place, data::handle::port"
             );
           _net.connect_to_change_mgr
-            (this, "connection_removed", "const data::handle::connect&");
+            (this, "connection_removed", "data::handle::connect");
 
           // top-level-ports
           _net.connect_to_change_mgr
             ( this
             , "place_association_set"
-            , "const data::handle::port&, const boost::optional<std::string>&"
+            , "data::handle::port, boost::optional<std::string>"
             );
         }
 

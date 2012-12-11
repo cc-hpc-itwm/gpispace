@@ -38,15 +38,14 @@ namespace fhg
           handle.connect_to_change_mgr
             ( this
             , "property_changed"
-            , "  const data::handle::place&"
-              ", const ::we::type::property::key_type&"
-              ", const ::we::type::property::value_type&"
+            , "data::handle::place, "
+              "::we::type::property::key_type, ::we::type::property::value_type"
             );
 
           handle.connect_to_change_mgr
             ( this
             , "place_type_set", "type_changed"
-            , "const data::handle::place&, const QString&"
+            , "data::handle::place, QString"
             );
 
           connect ( this, SIGNAL (association_added (association*))

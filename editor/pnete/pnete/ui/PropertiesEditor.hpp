@@ -138,7 +138,7 @@ public:
 		connect(m_delAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
 
 		// connect custom context menu
-		connect(m_treeView, SIGNAL(customContextMenuRequested( const QPoint& )), this, SLOT(showContextMenu(const QPoint &)));
+		connect(m_treeView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
 	}
 
 	void show() { m_widgetPropEdit->show(); }
