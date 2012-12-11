@@ -116,116 +116,60 @@ namespace we { namespace mgmt { namespace type {
       return *this;
     }
 
-    inline
     void set_id (const petri_net::activity_id_type & new_id)
     {
       id_ = new_id;
     }
 
-    inline
     petri_net::activity_id_type const & id (void) const
     {
       return id_;
     }
 
-    inline
     const flags::flags_t & flags (void) const
     {
       return flags_;
     }
 
-    inline
     bool is_alive() const
     {
       shared_lock_t lock(mutex_);
       return (flags::is_alive (flags_));
     }
 
-    inline
-    bool is_suspended() const
-    {
-      shared_lock_t lock(mutex_);
-      return (flags::is_suspended (flags_));
+#define FLAG(_name)                             \
+    bool is_ ## _name() const                   \
+    {                                           \
+      shared_lock_t lock(mutex_);               \
+      return (flags::is_ ## _name (flags_));    \
+    }                                           \
+    void set_ ## _name (bool value = true)      \
+    {                                           \
+      unique_lock_t lock(mutex_);               \
+      flags::set_ ## _name (flags_, value);     \
     }
 
-    inline
-    void set_suspended(bool value = true)
-    {
-      unique_lock_t lock(mutex_);
-      flags::set_suspended(flags_, value);
-    }
+    FLAG (suspended);
+    FLAG (cancelling);
+    FLAG (cancelled);
+    FLAG (failed);
+    FLAG (finished);
+#undef FLAG
 
-    inline
-    bool is_cancelling() const
-    {
-      shared_lock_t lock(mutex_);
-      return (flags::is_cancelling (flags_));
-    }
-
-    inline
-    void set_cancelling(bool value = true)
-    {
-      unique_lock_t lock(mutex_);
-      flags::set_cancelling (flags_, value);
-    }
-
-    inline
-    bool is_cancelled() const
-    {
-      shared_lock_t lock(mutex_);
-      return (flags::is_cancelled (flags_));
-    }
-
-    inline
-    void set_cancelled(bool value = true)
-    {
-      unique_lock_t lock(mutex_);
-      flags::set_cancelled (flags_, value);
-    }
-
-    inline
-    bool is_failed() const
-    {
-      shared_lock_t lock(mutex_);
-      return (flags::is_failed (flags_));
-    }
-
-    inline
-    void set_failed(bool value = true)
-    {
-      unique_lock_t lock(mutex_);
-      flags::set_failed (flags_, value);
-    }
-
-    inline
-    bool is_finished() const
-    {
-      shared_lock_t lock(mutex_);
-      return (flags::is_finished (flags_));
-    }
-
-    inline
-    void set_finished(bool value = true)
-    {
-      unique_lock_t lock(mutex_);
-      flags::set_finished (flags_, value);
-    }
-
-    inline
+    //! \todo DIRTY! Why lock and return a ref? Eliminate!!
     const we::type::transition_t & transition() const
     {
       shared_lock_t lock(mutex_);
       return transition_;
     }
 
-    inline
+    //! \todo DIRTY! Why lock and return a ref? Eliminate!!
     we::type::transition_t & transition()
     {
       unique_lock_t lock(mutex_);
       return transition_;
     }
 
-    inline
     std::string type_to_string (void) const
     {
       static const we::mgmt::visitor::type_to_string_visitor v;
