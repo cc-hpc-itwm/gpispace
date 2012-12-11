@@ -102,10 +102,18 @@ while true ; do
             shift
             ;;
         --del)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
             action="del"
             shift
             ;;
         -e|--edit)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
             action="edit"
             shift
             ;;
