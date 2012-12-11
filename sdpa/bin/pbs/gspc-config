@@ -1,0 +1,100 @@
+#!/bin/bash
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: gspc config [-h|--help] [options]
+
+Which config file to use:
+
+   --global              use the users global settings
+   --system              use the system settings
+   --local               use the local settings
+   -f --file <file>      use the given file
+
+What to do:
+
+   --get key             retrieves a given key
+   --set key value       sets the key to the given value
+   --del key             removes the given key
+   -e --edit             edit the given file
+EOF
+}
+
+system_config_file="/etc/gspc.rc"
+global_config_file="$HOME/.gspc.rc"
+if [ -n "$GSPC_STATE_DIR" ] ; then
+    local_config_file="$GSPC_STATE_DIR/gspc.rc"
+else
+    local_config_file=""
+fi
+config_file="${local_config_file}"
+
+function get_config_value ()
+{
+    local key="${1:?}"; shift
+
+# try the different config files
+    for file_var in config_file local_config_file global_config_file system_config_file ; do
+        file=$(eval echo \$${file_var})
+        if [ -z "$file" ] ; then continue ; fi
+        if [ -r "$file" ] ; then
+            val=$(fhgcfg -f "$file" -g "$key" 2>/dev/null)
+            if [ -n "$val" ] ; then
+                echo "$val"
+                return 0
+            fi
+        fi
+    done
+
+    return 1
+}
+
+TEMP=`getopt -o hef: --long help,global,system,local,file:,get:,set:,del:,edit -n 'gspc' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        -f|--file)
+            config_file="$2"
+            shift 2
+            ;;
+        --global)
+            config_file="$global_config_file"
+            shift
+            ;;
+        --local)
+            if [ -z "$GSPC_STATE_DIR" ] ; then
+                config_file="./gspc.rc"
+            else
+                config_file="$local_config_file"
+            fi
+            shift
+            ;;
+        --get)
+            get_config_value "$2"
+            shift 2
+            ;;
+        -e|--edit)
+            shift
+            editor=$(get_config_value gspc.editor "$EDITOR")
+            if [ -z "$editor" ] ; then
+                editor=vi
+            fi
+            if [ -z "$config_file" ] ; then
+                echo >&2 "no config"
+                exit 1
+            fi
+
+            "$editor" "$config_file"
+            ;;
+        --) shift; break ;;
+        *) echo >&2 "Internal error!"; exit 1 ;;
+    esac
+done

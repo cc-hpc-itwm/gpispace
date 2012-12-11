@@ -18,6 +18,8 @@ set (scripts
   pidof
 
   gspc-rexec
+  gspc-config
+  gspc-sh-setup
 )
 
 install(PROGRAMS ${prgs}
