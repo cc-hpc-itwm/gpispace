@@ -63,4 +63,5 @@ target_link_libraries ("${LIB_PREFIX}graph"
                        "${LIB_PREFIX}graphviz-wrapper"
                        "${LIB_PREFIX}style"
                        "${LIB_PREFIX}ui_util"
-                      )
+                       "fhg_util_qt"
+                       )

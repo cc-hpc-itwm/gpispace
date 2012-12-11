@@ -75,23 +75,23 @@ namespace fhg
         function().connect_to_change_mgr
           ( this
           , "function_name_changed", "slot_set_function_name"
-          , "const data::handle::function&, const QString&"
+          , "data::handle::function, QString"
           );
         _expression.connect_to_change_mgr
           ( this
           , "signal_set_expression", "slot_set_expression"
-          , "const data::handle::expression&, const QString&"
+          , "data::handle::expression, QString"
           );
         _expression.connect_to_change_mgr
           ( this
           , "signal_set_expression_parse_result"
           , "slot_set_expression_parse_result"
-          , "const data::handle::expression&, const QString&"
+          , "data::handle::expression, QString"
           );
 
         connect ( _name_edit
-                , SIGNAL (textEdited (const QString&))
-                , SLOT (name_changed (const QString&))
+                , SIGNAL (textEdited (QString))
+                , SLOT (name_changed (QString))
                 );
 
         connect ( _expression_edit

@@ -55,8 +55,8 @@ namespace fhg
           void property_changed
             ( const QObject* origin
             , const data::handle::place& changed_handle
-            , const ::we::type::property::key_type& key
-            , const ::we::type::property::value_type& value
+            , const we::type::property::key_type& key
+            , const we::type::property::value_type& value
             );
 
           void slot_association_added (association* c);

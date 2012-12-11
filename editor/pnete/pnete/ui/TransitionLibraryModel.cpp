@@ -109,8 +109,8 @@ namespace fhg
           }
         _fileSystemWatcher = new QFileSystemWatcher(this);
         connect ( _fileSystemWatcher
-                , SIGNAL (directoryChanged (const QString&))
-                , SLOT (rereadAllDirectories (const QString&))
+                , SIGNAL (directoryChanged (QString))
+                , SLOT (rereadAllDirectories (QString))
                 );
 
         emit layoutAboutToBeChanged();
@@ -138,8 +138,8 @@ namespace fhg
           _fileSystemWatcher = new QFileSystemWatcher(this);
 
           connect ( _fileSystemWatcher
-                  , SIGNAL (directoryChanged (const QString&))
-                  , SLOT (rereadAllDirectories (const QString&))
+                  , SIGNAL (directoryChanged (QString))
+                  , SLOT (rereadAllDirectories (QString))
                   );
         }
         _fileSystemWatcher->addPath(path);
