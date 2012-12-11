@@ -100,14 +100,12 @@ namespace fhg
             fhg::util::qt::boost_connect<void (void)>
               ( menu_new->addAction (tr ("new_transition"))
               , SIGNAL (triggered())
-              , NULL
               , boost::bind (&data::handle::net::add_transition, net(), this)
               );
 
             fhg::util::qt::boost_connect<void (void)>
               ( menu_new->addAction (tr ("new_place"))
               , SIGNAL (triggered())
-              , NULL
               , boost::bind (&data::handle::net::add_place, net(), this)
               );
 
