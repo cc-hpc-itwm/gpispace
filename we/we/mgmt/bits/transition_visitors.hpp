@@ -30,88 +30,87 @@
 #include <we/net.hpp>
 #include <we/type/id.hpp>
 
-namespace we { namespace mgmt { namespace visitor {
-  template <typename Activity, typename Context>
-  class executor
-    : public boost::static_visitor<typename Context::result_type>
+namespace we
+{
+  namespace mgmt
   {
-  private:
-    Activity & activity_;
-    Context & ctxt_;
-    const bool internal_;
-
-  public:
-    typedef typename Context::result_type result_type;
-
-    explicit
-    executor (Activity & activity, Context & ctxt)
-      : activity_(activity)
-      , ctxt_(ctxt)
-      , internal_(activity.transition().is_internal())
-    {}
-
-    result_type operator () (petri_net::net& net)
+    namespace visitor
     {
-      if (internal_)
+      template <typename Activity, typename Context>
+      class executor
+        : public boost::static_visitor<typename Context::result_type>
       {
-        return ctxt_.handle_internally ( activity_, net );
-      }
-      else
-      {
-        return ctxt_.handle_externally ( activity_, net );
-      }
-    }
+      private:
+        Activity& _activity;
+        Context& _ctxt;
 
-    result_type operator () (const we::type::module_call_t & mod)
-    {
-      return ctxt_.handle_externally ( activity_, mod );
-    }
+      public:
+        typedef typename Context::result_type result_type;
 
-    result_type operator () (const we::type::expression_t & expr)
-    {
-      // construct context
-      typedef expr::eval::context context_t;
-      context_t context;
+        executor (Activity & activity, Context & ctxt)
+          : _activity (activity)
+          , _ctxt (ctxt)
+        {}
 
-      typedef typename Activity::input_t input_t;
-      typedef typename Activity::output_t output_t;
-      typedef we::type::transition_t::const_iterator port_iterator;
-
-      for ( typename input_t::const_iterator top (activity_.input().begin())
-          ; top != activity_.input().end()
-          ; ++top
-          )
-      {
-        const token::type token = top->first;
-        const petri_net::port_id_type port_id = top->second;
-
-        context.bind
-          (activity_.transition().name_of_port (port_id), token.value);
-      }
-
-      // evaluate
-      expr.ast ().eval_all (context);
-
-      // collect output
-      for ( port_iterator port_it (activity_.transition().ports_begin())
-          ; port_it != activity_.transition().ports_end()
-          ; ++port_it
-          )
-      {
-        if (port_it->second.is_output())
+        result_type operator () (petri_net::net& net) const
         {
-          const petri_net::port_id_type port_id = port_it->first;
-          const token::type token ( port_it->second.name()
-                                 , port_it->second.signature()
-                                 , context
-                                 );
-          activity_.add_output (typename output_t::value_type (token, port_id));
+          if (_activity.transition().is_internal())
+            {
+              return _ctxt.handle_internally (_activity, net);
+            }
+          else
+            {
+              return _ctxt.handle_externally (_activity, net);
+            }
         }
-      }
 
-      return ctxt_.handle_internally ( activity_, expr );
+        result_type operator() (we::type::module_call_t & mod) const
+        {
+          return _ctxt.handle_externally (_activity, mod);
+        }
+
+        result_type operator() (we::type::expression_t & expr) const
+        {
+          expr::eval::context context;
+
+          for ( typename Activity::input_t::const_iterator top
+                  (_activity.input().begin())
+              ; top != _activity.input().end()
+              ; ++top
+              )
+            {
+              context.bind ( _activity.transition().name_of_port (top->second)
+                           , top->first.value
+                           );
+            }
+
+          expr.ast ().eval_all (context);
+
+          for ( we::type::transition_t::const_iterator port_it
+                  (_activity.transition().ports_begin())
+              ; port_it != _activity.transition().ports_end()
+              ; ++port_it
+              )
+            {
+              if (port_it->second.is_output())
+                {
+                  _activity.add_output
+                    ( typename Activity::output_t::value_type
+                      ( token::type ( port_it->second.name()
+                                    , port_it->second.signature()
+                                    , context
+                                    )
+                      , port_it->first
+                      )
+                    );
+                }
+            }
+
+          return _ctxt.handle_internally (_activity, expr);
+        }
+      };
     }
-  };
-}}}
+  }
+}
 
 #endif
