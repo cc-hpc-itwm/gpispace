@@ -804,13 +804,26 @@ namespace fhg
             port_place_association* assoc_item
               (item_with_handle<port_place_association> (port));
 
-            top_level_port_item* port_item
-              ( fhg::util::qt::throwing_qobject_cast<top_level_port_item*>
-                (assoc_item->start())
-              );
+            top_level_port_item* port_item (NULL);
 
-            removeItem (assoc_item);
-            delete assoc_item;
+            if (assoc_item)
+            {
+              port_item =
+                fhg::util::qt::throwing_qobject_cast<top_level_port_item*>
+                  (assoc_item->start());
+
+              removeItem (assoc_item);
+              delete assoc_item;
+            }
+
+            if (!port_item)
+            {
+              port_item = item_with_handle<top_level_port_item> (port);
+              if (!port_item)
+              {
+                throw std::runtime_error ("place_association for unknown port");
+              }
+            }
 
             foreach (place_item* place_item, items_of_type<place_item>())
             {
