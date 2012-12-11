@@ -93,34 +93,31 @@ namespace fhg
         //! \todo This is duplicate code, also available in main window.
         void scene_type::init_menu_context ()
         {
-          //! \todo This QMenu most likely is leaked.
-          QMenu* menu_new (new QMenu (tr ("menu_new_element"), NULL));
-          QAction* action_add_transition (menu_new->addAction (tr ("new_transition")));
-          connect ( action_add_transition
-                  , SIGNAL (triggered())
-                  , SLOT (slot_add_transition())
-                  );
+          {
+            QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
 
-          QAction* action_add_place (menu_new->addAction (tr ("new_place")));
-          connect ( action_add_place
-                  , SIGNAL (triggered())
-                  , SLOT (slot_add_place())
-                  );
+            connect ( menu_new->addAction (tr ("new_transition"))
+                    , SIGNAL (triggered())
+                    , SLOT (slot_add_transition())
+                    );
 
-          menu_new->addSeparator();
+            connect ( menu_new->addAction (tr ("new_place"))
+                    , SIGNAL (triggered())
+                    , SLOT (slot_add_place())
+                    );
 
-          QAction* action_add_struct (menu_new->addAction (tr ("new_struct")));
-          connect ( action_add_struct
-                  , SIGNAL (triggered())
-                  , SLOT (slot_add_struct())
-                  );
+            menu_new->addSeparator();
 
-          _menu_context.addMenu (menu_new);
+            //! \todo Is this really needed?
+            connect ( menu_new->addAction (tr ("new_struct"))
+                    , SIGNAL (triggered())
+                    , SLOT (slot_add_struct())
+                    );
+          }
+
           _menu_context.addSeparator();
 
-          QAction* auto_layout_action
-            (_menu_context.addAction (tr ("auto_layout")));
-          connect ( auto_layout_action
+          connect ( _menu_context.addAction (tr ("auto_layout"))
                   , SIGNAL (triggered())
                   , SLOT (auto_layout())
                   );
