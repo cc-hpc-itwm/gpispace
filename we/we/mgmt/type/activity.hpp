@@ -42,37 +42,11 @@ namespace we
         typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;
         typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
 
-        activity_t ()
-          : _id (petri_net::activity_id_invalid())
-        { }
+        activity_t ();
+        activity_t (const we::type::transition_t&);
+        activity_t (const activity_t&);
 
-        activity_t (const we::type::transition_t & transition)
-          : _id (petri_net::activity_id_invalid())
-          , _transition (transition)
-        { }
-
-        activity_t (const activity_t & other)
-          : _id (other._id)
-          , _flags (other._flags)
-          , _transition (other._transition)
-          , _pending_input (other._pending_input)
-          , _input(other._input)
-          , _output (other._output)
-        { }
-
-        activity_t & operator= (const activity_t & other)
-        {
-          if (this != &other)
-            {
-              _id = other._id;
-              _flags = (other._flags);
-              _transition = (other._transition);
-              _pending_input = (other._pending_input);
-              _input = (other._input);
-              _output = (other._output);
-            }
-          return *this;
-        }
+        activity_t& operator= (const activity_t&);
 
         void set_id (const petri_net::activity_id_type&);
         const petri_net::activity_id_type& id() const;
