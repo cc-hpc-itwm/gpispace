@@ -56,7 +56,7 @@ if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
 action=""
 
-TEMP=`getopt -o hef: --long help,global,system,local,file:,get,set,del,edit -n 'gspc' -- "$@"`
+TEMP=`getopt -o hef: --long help,global,system,local,file:,get,set,del,list,edit -n 'gspc' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -117,6 +117,14 @@ while true ; do
             action="edit"
             shift
             ;;
+        --list)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
+            action="list"
+            shift
+            ;;
         --) shift; break ;;
         *) echo >&2 "Internal error!"; exit 1 ;;
     esac
@@ -141,15 +149,29 @@ case "$action" in
             echo >&2 "set: invalid number of arguments"
             exit 1
         fi
-        key="$1"
-        value="$2"
+        if [ -z "$config_file" ] ; then
+            config_file="$global_config_file"
+        fi
+        fhgcfg -f "$config_file" -a "$1" -v "$2"
         ;;
     del)
         if [ $# -lt 1 ] ; then
             echo >&2 "del: invalid number of arguments"
             exit 1
         fi
-        key="$1"
+        if [ -z "$config_file" ] ; then
+            config_file="$global_config_file"
+        fi
+        fhgcfg -f "$config_file" -d "$1"
+        ;;
+    list)
+        for file_var in config_file local_config_file global_config_file system_config_file ; do
+            file=$(eval echo \$${file_var})
+            if [ -z "$file" ] ; then continue ; fi
+            if [ -r "$file" ] ; then
+                fhgcfg -f "$file" -l
+            fi
+        done
         ;;
     edit)
         editor=$(get_config_value gspc.editor "$EDITOR")
@@ -157,10 +179,8 @@ case "$action" in
             editor=vi
         fi
         if [ -z "$config_file" ] ; then
-            echo >&2 "no config"
-            exit 1
+            config_file="$global_config_file"
         fi
-
         "$editor" "$config_file"
         ;;
     *)
