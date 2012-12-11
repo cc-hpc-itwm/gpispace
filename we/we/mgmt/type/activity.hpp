@@ -138,77 +138,77 @@ namespace we { namespace mgmt { namespace type {
     bool is_alive() const
     {
       shared_lock_t lock(mutex_);
-      return ( flags::flag_traits<flags::flags_t>::is_alive (flags_) );
+      return (flags::is_alive (flags_));
     }
 
     inline
     bool is_suspended() const
     {
       shared_lock_t lock(mutex_);
-      return ( flags::flag_traits<flags::flags_t>::is_suspended (flags_) );
+      return (flags::is_suspended (flags_));
     }
 
     inline
     void set_suspended(bool value = true)
     {
       unique_lock_t lock(mutex_);
-      flags::flag_traits<flags::flags_t>::set_suspended(flags_, value);
+      flags::set_suspended(flags_, value);
     }
 
     inline
     bool is_cancelling() const
     {
       shared_lock_t lock(mutex_);
-      return ( flags::flag_traits<flags::flags_t>::is_cancelling (flags_) );
+      return (flags::is_cancelling (flags_));
     }
 
     inline
     void set_cancelling(bool value = true)
     {
       unique_lock_t lock(mutex_);
-      flags::flag_traits<flags::flags_t>::set_cancelling (flags_, value);
+      flags::set_cancelling (flags_, value);
     }
 
     inline
     bool is_cancelled() const
     {
       shared_lock_t lock(mutex_);
-      return ( flags::flag_traits<flags::flags_t>::is_cancelled (flags_) );
+      return (flags::is_cancelled (flags_));
     }
 
     inline
     void set_cancelled(bool value = true)
     {
       unique_lock_t lock(mutex_);
-      flags::flag_traits<flags::flags_t>::set_cancelled (flags_, value);
+      flags::set_cancelled (flags_, value);
     }
 
     inline
     bool is_failed() const
     {
       shared_lock_t lock(mutex_);
-      return ( flags::flag_traits<flags::flags_t>::is_failed (flags_) );
+      return (flags::is_failed (flags_));
     }
 
     inline
     void set_failed(bool value = true)
     {
       unique_lock_t lock(mutex_);
-      flags::flag_traits<flags::flags_t>::set_failed (flags_, value);
+      flags::set_failed (flags_, value);
     }
 
     inline
     bool is_finished() const
     {
       shared_lock_t lock(mutex_);
-      return ( flags::flag_traits<flags::flags_t>::is_finished (flags_) );
+      return (flags::is_finished (flags_));
     }
 
     inline
     void set_finished(bool value = true)
     {
       unique_lock_t lock(mutex_);
-      flags::flag_traits<flags::flags_t>::set_finished (flags_, value);
+      flags::set_finished (flags_, value);
     }
 
     inline

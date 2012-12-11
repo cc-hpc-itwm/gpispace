@@ -19,6 +19,34 @@ namespace we
         os << (flags.finished ? "D" : "d");
         return os;
       }
+
+      bool is_alive (const flags_t& f)
+      {
+        return (  f.suspended
+               || f.cancelling
+               || f.cancelled
+               || f.failed
+               || f.finished
+               ) == false;
+      }
+
+#define IMPL(_name)                                           \
+      bool is_ ## _name (const flags_t& f)                    \
+      {                                                       \
+        return f._name;                                       \
+      }                                                       \
+      void set_ ## _name (flags_t& f, bool val)               \
+      {                                                       \
+        f._name = val;                                        \
+      }
+
+      IMPL(suspended);
+      IMPL(cancelling);
+      IMPL(cancelled);
+      IMPL(failed);
+      IMPL(finished);
+
+#undef IMPL
     }
   }
 }

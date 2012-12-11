@@ -42,67 +42,19 @@ namespace we
 
       std::ostream& operator<< (std::ostream&, const flags_t&);
 
-      template <typename T>
-      struct flag_traits {};
+      bool is_alive (const flags_t&);
 
-      template <>
-      struct flag_traits<flags_t>
-      {
-        inline static bool is_alive ( const flags_t & f )
-        {
-          return ( f.suspended || f.cancelling || f.cancelled || f.failed || f.finished ) == false;
-        }
+#define SIG(_name)                         \
+      bool is_ ## _name (const flags_t&);  \
+      void set_ ## _name (flags_t&, bool)
 
-        inline static bool is_suspended ( const flags_t & f )
-        {
-          return f.suspended;
-        }
+      SIG (suspended);
+      SIG (cancelling);
+      SIG (cancelled);
+      SIG (failed);
+      SIG (finished);
 
-        inline static void set_suspended ( flags_t & f, const bool val )
-        {
-          f.suspended = val;
-        }
-
-        inline static bool is_cancelling ( const flags_t & f )
-        {
-          return f.cancelling;
-        }
-
-        inline static void set_cancelling ( flags_t & f, const bool val )
-        {
-          f.cancelling = val;
-        }
-
-        inline static bool is_cancelled ( const flags_t & f )
-        {
-          return f.cancelled;
-        }
-
-        inline static void set_cancelled ( flags_t & f, const bool val )
-        {
-          f.cancelled = val;
-        }
-
-        inline static bool is_failed ( const flags_t & f )
-        {
-          return f.failed;
-        }
-
-        inline static void set_failed ( flags_t & f, const bool val )
-        {
-          f.failed = val;
-        }
-
-        inline static bool is_finished ( const flags_t & f )
-        {
-          return f.finished;
-        }
-
-        inline static void set_finished ( flags_t & f, const bool val )
-        {
-          f.finished = val;
-        }
-      };
+#undef SIG
     }
   }
 }
