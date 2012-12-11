@@ -19,20 +19,27 @@ namespace we
 
         printer& printer::operator<< (const top_list_t& top_list)
         {
+          bool first (true);
+
           _os << "[";
 
-          for ( top_list_t::const_iterator top (top_list.begin())
-              ; top != top_list.end()
-              ; ++top
-              )
+          BOOST_FOREACH(const activity_t::token_on_port_t& top, top_list)
             {
-              if (top != top_list.begin())
-                _os << ", ";
-              _os << _act.transition().name_of_port (top->second)
-                  << "=(" << top->first << ", " << top->second << ")";
+              if (first)
+                {
+                  first = false;
+                }
+              else
+                {
+                  _os << ", ";
+                }
+
+              _os << _act.transition().name_of_port (top.second)
+                  << "=(" << top.first << ", " << top.second << ")";
             }
 
           _os << "]";
+
           return *this;
         }
 
