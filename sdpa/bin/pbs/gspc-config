@@ -54,7 +54,9 @@ function get_config_value ()
 
 if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
-TEMP=`getopt -o hef: --long help,global,system,local,file:,get:,set:,del:,edit -n 'gspc' -- "$@"`
+action=""
+
+TEMP=`getopt -o hef: --long help,global,system,local,file:,get,set,del,edit -n 'gspc' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -84,23 +86,77 @@ while true ; do
             shift
             ;;
         --get)
-            get_config_value "$2"
-            shift 2
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
+            action="get"
+            shift
+            ;;
+        --set)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
+            action="set"
+            shift
+            ;;
+        --del)
+            action="del"
+            shift
             ;;
         -e|--edit)
+            action="edit"
             shift
-            editor=$(get_config_value gspc.editor "$EDITOR")
-            if [ -z "$editor" ] ; then
-                editor=vi
-            fi
-            if [ -z "$config_file" ] ; then
-                echo >&2 "no config"
-                exit 1
-            fi
-
-            "$editor" "$config_file"
             ;;
         --) shift; break ;;
         *) echo >&2 "Internal error!"; exit 1 ;;
     esac
 done
+
+if [ -z "$action" ] ; then
+    usage
+    exit 1
+fi
+
+case "$action" in
+    get)
+        if [ $# -lt 1 ] ; then
+            echo >&2 "get: invalid number of arguments"
+            exit 1
+        fi
+        get_config_value "$1" "$2"
+        exit $?
+        ;;
+    set)
+        if [ $# -lt 2 ] ; then
+            echo >&2 "set: invalid number of arguments"
+            exit 1
+        fi
+        key="$1"
+        value="$2"
+        ;;
+    del)
+        if [ $# -lt 1 ] ; then
+            echo >&2 "del: invalid number of arguments"
+            exit 1
+        fi
+        key="$1"
+        ;;
+    edit)
+        editor=$(get_config_value gspc.editor "$EDITOR")
+        if [ -z "$editor" ] ; then
+            editor=vi
+        fi
+        if [ -z "$config_file" ] ; then
+            echo >&2 "no config"
+            exit 1
+        fi
+
+        "$editor" "$config_file"
+        ;;
+    *)
+        echo >&2 "invalid action: $action"
+        exit 1
+        ;;
+esac
