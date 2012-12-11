@@ -52,6 +52,8 @@ function get_config_value ()
     return 1
 }
 
+if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+
 TEMP=`getopt -o hef: --long help,global,system,local,file:,get:,set:,del:,edit -n 'gspc' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
@@ -64,6 +66,10 @@ while true ; do
         -f|--file)
             config_file="$2"
             shift 2
+            ;;
+        --system)
+            config_file="$system_config_file"
+            shift
             ;;
         --global)
             config_file="$global_config_file"
