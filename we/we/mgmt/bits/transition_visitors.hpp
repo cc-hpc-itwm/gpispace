@@ -27,6 +27,7 @@
 #include <fhg/util/show.hpp>
 
 #include <we/type/transition.hpp>
+#include <we/net.hpp>
 #include <we/type/id.hpp>
 
 namespace we { namespace mgmt { namespace visitor {

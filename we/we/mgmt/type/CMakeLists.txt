@@ -8,6 +8,7 @@ set (hdrs
 
 set (srcs
   flags.cpp
+  activity.cpp
 )
 
 add_library (we_mgmt_type ${srcs})

@@ -3,14 +3,6 @@
 #ifndef WE_MGMT_TYPE_ACTIVITY_HPP
 #define WE_MGMT_TYPE_ACTIVITY_HPP 1
 
-#include <vector>
-#include <boost/unordered_set.hpp>
-#include <boost/bimap.hpp>
-#include <boost/bimap/unordered_set_of.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/random.hpp>
-
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
 
@@ -20,7 +12,23 @@
 
 #include <we/type/bits/transition/optimize.hpp>
 
-namespace we { namespace mgmt { namespace type {
+#include <boost/unordered_set.hpp>
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/random.hpp>
+
+#include <vector>
+
+#include <iosfwd>
+
+namespace we
+{
+  namespace mgmt
+  {
+    namespace type
+    {
       namespace detail
       {
         template <typename Activity>
@@ -384,19 +392,10 @@ namespace we { namespace mgmt { namespace type {
     boost::mt19937 engine_;
   };
 
-      inline bool operator==(const activity_t& a, const activity_t& b)
-      {
-        return a.id() == b.id();
-      }
-
-
-  inline std::ostream & operator << ( std::ostream & os
-                                    , const activity_t & act
-                                    )
-  {
-    act.writeTo (os);
-    return os;
+      bool operator== (const activity_t&, const activity_t&);
+      std::ostream& operator<< (std::ostream &, const activity_t&);
+    }
   }
-}}}
+}
 
 #endif
