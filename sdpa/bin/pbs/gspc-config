@@ -32,13 +32,14 @@ else
 fi
 config_file="${local_config_file}"
 
+files_to_get_from=(config_file local_config_file global_config_file system_config_file)
+
 function get_config_value ()
 {
     local key="${1:?}"; shift
 
-# try the different config files
-    for file_var in config_file local_config_file global_config_file system_config_file ; do
-        file=$(eval echo \$${file_var})
+    for var in ${files_to_get_from[@]} ; do
+        file=$(eval echo \$${var})
         if [ -z "$file" ] ; then continue ; fi
         if [ -r "$file" ] ; then
             val=$(fhgcfg -f "$file" -g "$key" 2>/dev/null)
@@ -67,14 +68,17 @@ while true ; do
         -h|--help) usage; exit 0 ;;
         -f|--file)
             config_file="$2"
+            files_to_get_from=(config_file)
             shift 2
             ;;
         --system)
             config_file="$system_config_file"
+            files_to_get_from=(config_file)
             shift
             ;;
         --global)
             config_file="$global_config_file"
+            files_to_get_from=(config_file)
             shift
             ;;
         --local)
@@ -83,6 +87,7 @@ while true ; do
             else
                 config_file="./gspc.rc"
             fi
+            files_to_get_from=(config_file)
             shift
             ;;
         --get)
@@ -165,8 +170,8 @@ case "$action" in
         fhgcfg -f "$config_file" -d "$1"
         ;;
     list)
-        for file_var in config_file local_config_file global_config_file system_config_file ; do
-            file=$(eval echo \$${file_var})
+        for var in ${files_to_get_from[@]} ; do
+            file=$(eval echo \$${var})
             if [ -z "$file" ] ; then continue ; fi
             if [ -r "$file" ] ; then
                 fhgcfg -f "$file" -l
