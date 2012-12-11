@@ -73,8 +73,8 @@ namespace we
 
         activity_t extract();
         void inject (const activity_t&);
-        void inject_input ();
-        void collect_output ();
+        void inject_input();
+        void collect_output();
 
         template <typename Context>
         typename Context::result_type execute (Context& ctxt)
@@ -113,7 +113,7 @@ namespace we
           return boost::apply_visitor (visitor_executor, transition().data());
         }
 
-        bool can_fire () const;
+        bool can_fire() const;
 
         const input_t& pending_input() const;
         const input_t& input() const;
