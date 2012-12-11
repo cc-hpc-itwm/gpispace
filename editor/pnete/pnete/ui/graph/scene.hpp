@@ -64,14 +64,6 @@ namespace fhg
           void slot_add_struct ();
           void auto_layout();
 
-          // ## trigger modification #################################
-          // # transition ############################################
-          void slot_add_transition() const;
-
-          // # place #################################################
-          void slot_add_place() const;
-
-          // ## react on modification ################################
           // # connection ############################################
           void connection_added ( const QObject*
                                 , const data::handle::connect&

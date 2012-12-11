@@ -19,6 +19,7 @@
 #include <pnete/weaver/weaver.hpp>
 
 #include <util/graphviz.hpp>
+#include <util/qt/boost_connect.hpp>
 #include <util/qt/cast.hpp>
 
 #include <list>
@@ -96,15 +97,19 @@ namespace fhg
           {
             QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
 
-            connect ( menu_new->addAction (tr ("new_transition"))
-                    , SIGNAL (triggered())
-                    , SLOT (slot_add_transition())
-                    );
+            fhg::util::qt::boost_connect<void (void)>
+              ( menu_new->addAction (tr ("new_transition"))
+              , SIGNAL (triggered())
+              , NULL
+              , boost::bind (&data::handle::net::add_transition, net(), this)
+              );
 
-            connect ( menu_new->addAction (tr ("new_place"))
-                    , SIGNAL (triggered())
-                    , SLOT (slot_add_place())
-                    );
+            fhg::util::qt::boost_connect<void (void)>
+              ( menu_new->addAction (tr ("new_place"))
+              , SIGNAL (triggered())
+              , NULL
+              , boost::bind (&data::handle::net::add_place, net(), this)
+              );
 
             menu_new->addSeparator();
 
@@ -651,20 +656,6 @@ namespace fhg
           }
         }
 
-        // ## trigger modification ###################################
-        // # transition ##############################################
-        void scene_type::slot_add_transition() const
-        {
-          net().add_transition (this);
-        }
-
-        // # place ###################################################
-        void scene_type::slot_add_place() const
-        {
-          net().add_place (this);
-        }
-
-        // ## react on modification ##################################
         // # connection ##############################################
         //! \todo Don't pass from and to. Pass net.
         void scene_type::connection_added
