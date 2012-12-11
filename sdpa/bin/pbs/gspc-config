@@ -25,8 +25,8 @@ EOF
 
 system_config_file="/etc/gspc.rc"
 global_config_file="$HOME/.gspc.rc"
-if [ -n "$GSPC_STATE_DIR" ] ; then
-    local_config_file="$GSPC_STATE_DIR/gspc.rc"
+if [ -n "$GSPC_DIR" ] ; then
+    local_config_file="$GSPC_DIR/gspc.rc"
 else
     local_config_file=""
 fi
