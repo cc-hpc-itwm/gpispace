@@ -39,9 +39,11 @@ namespace we
         typedef token_on_port_list_t input_t;
         typedef token_on_port_list_t output_t;
 
+      private:
         typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;
         typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
 
+      public:
         activity_t ();
         activity_t (const we::type::transition_t&);
         activity_t (const activity_t&);
