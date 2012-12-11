@@ -1,0 +1,195 @@
+#!/bin/bash
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: gspc config [-h|--help] [options]
+
+Which config file to use:
+
+   --global              use the users global settings
+   --system              use the system settings
+   --local               use the local settings
+   -f --file <file>      use the given file
+
+What to do:
+
+   --get key             retrieves a given key
+   --set key value       sets the key to the given value
+   --del key             removes the given key
+   -e --edit             edit the given file
+EOF
+}
+
+system_config_file="/etc/gspc.rc"
+global_config_file="$HOME/.gspc.rc"
+if [ -n "$GSPC_DIR" ] ; then
+    local_config_file="$GSPC_DIR/gspc.rc"
+else
+    local_config_file=""
+fi
+config_file="${local_config_file}"
+
+files_to_get_from=(config_file local_config_file global_config_file system_config_file)
+
+function get_config_value ()
+{
+    local key="${1:?}"; shift
+
+    for var in ${files_to_get_from[@]} ; do
+        file=$(eval echo \$${var})
+        if [ -z "$file" ] ; then continue ; fi
+        if [ -r "$file" ] ; then
+            val=$(fhgcfg -f "$file" -g "$key" 2>/dev/null)
+            if [ -n "$val" ] ; then
+                echo "$val"
+                return 0
+            fi
+        fi
+    done
+
+    return 1
+}
+
+if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+
+action=""
+
+TEMP=`getopt -o hef: --long help,global,system,local,file:,get,set,del,list,edit -n 'gspc' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        -f|--file)
+            config_file="$2"
+            files_to_get_from=(config_file)
+            shift 2
+            ;;
+        --system)
+            config_file="$system_config_file"
+            files_to_get_from=(config_file)
+            shift
+            ;;
+        --global)
+            config_file="$global_config_file"
+            files_to_get_from=(config_file)
+            shift
+            ;;
+        --local)
+            if [ -n "$local_config_file" ] ; then
+                config_file="${local_config_file}"
+            else
+                config_file="./gspc.rc"
+            fi
+            files_to_get_from=(config_file)
+            shift
+            ;;
+        --get)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
+            action="get"
+            shift
+            ;;
+        --set)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
+            action="set"
+            shift
+            ;;
+        --del)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
+            action="del"
+            shift
+            ;;
+        -e|--edit)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
+            action="edit"
+            shift
+            ;;
+        --list)
+            [ -z "$action" ] || {
+                echo >&2 "only one action allowed!"
+                exit 1
+            }
+            action="list"
+            shift
+            ;;
+        --) shift; break ;;
+        *) echo >&2 "Internal error!"; exit 1 ;;
+    esac
+done
+
+if [ -z "$action" ] ; then
+    usage
+    exit 1
+fi
+
+case "$action" in
+    get)
+        if [ $# -lt 1 ] ; then
+            echo >&2 "get: invalid number of arguments"
+            exit 1
+        fi
+        get_config_value "$1" "$2"
+        exit $?
+        ;;
+    set)
+        if [ $# -lt 2 ] ; then
+            echo >&2 "set: invalid number of arguments"
+            exit 1
+        fi
+        if [ -z "$config_file" ] ; then
+            config_file="$global_config_file"
+        fi
+        fhgcfg -f "$config_file" -a "$1" -v "$2"
+        ;;
+    del)
+        if [ $# -lt 1 ] ; then
+            echo >&2 "del: invalid number of arguments"
+            exit 1
+        fi
+        if [ -z "$config_file" ] ; then
+            config_file="$global_config_file"
+        fi
+        fhgcfg -f "$config_file" -d "$1"
+        ;;
+    list)
+        for var in ${files_to_get_from[@]} ; do
+            file=$(eval echo \$${var})
+            if [ -z "$file" ] ; then continue ; fi
+            if [ -r "$file" ] ; then
+                fhgcfg -f "$file" -l
+            fi
+        done
+        ;;
+    edit)
+        editor=$(get_config_value gspc.editor "$EDITOR")
+        if [ -z "$editor" ] ; then
+            editor=vi
+        fi
+        if [ -z "$config_file" ] ; then
+            config_file="$global_config_file"
+        fi
+        "$editor" "$config_file"
+        ;;
+    *)
+        echo >&2 "invalid action: $action"
+        exit 1
+        ;;
+esac

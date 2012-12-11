@@ -19,6 +19,7 @@
 #include <pnete/weaver/weaver.hpp>
 
 #include <util/graphviz.hpp>
+#include <util/qt/boost_connect.hpp>
 #include <util/qt/cast.hpp>
 
 #include <list>
@@ -55,27 +56,15 @@ namespace fhg
 
           // transition
           _net.connect_to_change_mgr
-            ( this
-            , "transition_added"
-            , "const data::handle::transition&"
-            );
+            (this, "transition_added", "data::handle::transition");
           _net.connect_to_change_mgr
-            ( this
-            , "transition_deleted"
-            , "const data::handle::transition&"
-            );
+            (this, "transition_deleted", "data::handle::transition");
 
           // place
           _net.connect_to_change_mgr
-            ( this
-            , "place_added"
-            , "const data::handle::place&"
-            );
+            (this, "place_added", "data::handle::place");
           _net.connect_to_change_mgr
-            ( this
-            , "place_deleted"
-            , "const data::handle::place&"
-            );
+            (this, "place_deleted", "data::handle::place");
 
           // connections
           //! \note This is not really in responsibility of the net,
@@ -89,51 +78,49 @@ namespace fhg
           _net.connect_to_change_mgr
             ( this
             , "connection_added"
-            , "const data::handle::connect&, "
-              "const data::handle::place&, const data::handle::port&"
+            , "data::handle::connect, data::handle::place, data::handle::port"
             );
           _net.connect_to_change_mgr
-            (this, "connection_removed", "const data::handle::connect&");
+            (this, "connection_removed", "data::handle::connect");
 
           // top-level-ports
           _net.connect_to_change_mgr
             ( this
             , "place_association_set"
-            , "const data::handle::port&, const boost::optional<std::string>&"
+            , "data::handle::port, boost::optional<std::string>"
             );
         }
 
         //! \todo This is duplicate code, also available in main window.
         void scene_type::init_menu_context ()
         {
-          //! \todo This QMenu most likely is leaked.
-          QMenu* menu_new (new QMenu (tr ("new"), NULL));
-          QAction* action_add_transition (menu_new->addAction (tr ("transition")));
-          connect ( action_add_transition
-                  , SIGNAL (triggered())
-                  , SLOT (slot_add_transition())
-                  );
+          {
+            QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
 
-          QAction* action_add_place (menu_new->addAction (tr ("place")));
-          connect ( action_add_place
-                  , SIGNAL (triggered())
-                  , SLOT (slot_add_place())
-                  );
+            fhg::util::qt::boost_connect<void (void)>
+              ( menu_new->addAction (tr ("new_transition"))
+              , SIGNAL (triggered())
+              , boost::bind (&data::handle::net::add_transition, net(), this)
+              );
 
-          menu_new->addSeparator();
+            fhg::util::qt::boost_connect<void (void)>
+              ( menu_new->addAction (tr ("new_place"))
+              , SIGNAL (triggered())
+              , boost::bind (&data::handle::net::add_place, net(), this)
+              );
 
-          QAction* action_add_struct (menu_new->addAction (tr ("struct")));
-          connect ( action_add_struct
-                  , SIGNAL (triggered())
-                  , SLOT (slot_add_struct())
-                  );
+            menu_new->addSeparator();
 
-          _menu_context.addMenu (menu_new);
+            //! \todo Is this really needed?
+            connect ( menu_new->addAction (tr ("new_struct"))
+                    , SIGNAL (triggered())
+                    , SLOT (slot_add_struct())
+                    );
+          }
+
           _menu_context.addSeparator();
 
-          QAction* auto_layout_action
-            (_menu_context.addAction (tr ("auto_layout")));
-          connect ( auto_layout_action
+          connect ( _menu_context.addAction (tr ("auto_layout"))
                   , SIGNAL (triggered())
                   , SLOT (auto_layout())
                   );
@@ -141,21 +128,39 @@ namespace fhg
 
         namespace
         {
-          void qtbug_21943_workaround (QGraphicsSceneContextMenuEvent* event)
+          template<typename handle_type>
+          void set_we_type_for_handle ( const handle_type& handle
+                                      , const QString& dialog_title
+                                      , const QString& prompt
+                                      , const QString& current_type
+                                      , QGraphicsSceneContextMenuEvent* event
+                                      , QObject* origin
+                                      )
           {
-            //! \todo see QTBUG-21943
-            const QPoint p (event->widget()->mapFromGlobal(event->screenPos()));
-            QMouseEvent mouseEvent ( QEvent::MouseMove
-                                   , p
-                                   , Qt::NoButton, Qt::NoButton
-                                   , event->modifiers()
-                                   );
-            QApplication::sendEvent (event->widget(), &mouseEvent);
+            bool ok;
+            const QString text
+              ( QInputDialog::getText
+                ( event->widget()
+                , dialog_title
+                , prompt
+                , QLineEdit::Normal
+                , current_type
+                , &ok
+                )
+              );
+            if (ok && !text.isEmpty())
+            {
+              handle.set_type (origin, text);
+            }
+          }
+
+          void nyi (const QString& what)
+          {
+            qDebug() << "NYI:" << what;
           }
         }
 
-        void scene_type::contextMenuEvent
-          (QGraphicsSceneContextMenuEvent* event)
+        void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
           if ( base_item* item_below_cursor
              = qgraphicsitem_cast<base_item*> ( itemAt ( event->scenePos()
@@ -164,7 +169,7 @@ namespace fhg
                                               )
              )
           {
-            QMenu menu;
+            QMenu* menu (new QMenu (event->widget()));
 
             switch (item_below_cursor->type())
             {
@@ -176,65 +181,50 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              QAction* action_set_type (menu.addAction(tr("Set type")));
-              menu.addSeparator();
-              QAction* action_delete (menu.addAction(tr("Delete")));
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu->addAction(tr ("port_set_type"))
+                , SIGNAL (triggered())
+                , boost::bind ( set_we_type_for_handle<data::handle::port>
+                              , handle
+                              , tr ("port_set_type_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("port_set_type_prompt")
+                              , QString::fromStdString (handle.get().type)
+                              , event
+                              , this
+                              )
+                );
 
-              QAction* triggered (menu.exec(event->screenPos()));
-              if (triggered == action_set_type)
-              {
-                 bool ok;
-                 const QString text
-                   ( QInputDialog::getText
-                     ( event->widget()
-                     , tr("Set type of port %1%").arg
-                       (QString::fromStdString (handle.get().name()))
-                     , tr("Type:")
-                     , QLineEdit::Normal
-                     , QString::fromStdString (handle.get().type)
-                     , &ok
-                     )
-                   );
-                 if (ok && !text.isEmpty())
-                 {
-                   handle.set_type (this, text);
-                 }
-              }
-              else if (triggered == action_delete)
-              {
-                qDebug() << "NYI: port: action_delete";
-              }
-              else if (!triggered)
-              {
-                qtbug_21943_workaround (event);
-              }
+              menu->addSeparator();
 
-              event->accept();
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu->addAction (tr ("port_delete"))
+                , SIGNAL (triggered())
+                , boost::bind (nyi, "port: delete")
+                );
             }
             break;
 
             case base_item::transition_graph_type:
             {
-              QAction* action_add_port (menu.addAction(tr("Add Port")));
-              menu.addSeparator();
-              QAction* action_delete (menu.addAction (tr("Delete")));
+              const data::handle::transition handle
+                ( fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*>
+                  (item_below_cursor)->handle()
+                );
 
-              QAction* triggered (menu.exec(event->screenPos()));
-              if (triggered == action_delete)
-              {
-                fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*>
-                  (item_below_cursor)->handle().remove (this);
-              }
-              else if (triggered == action_add_port)
-              {
-                qDebug() << "NYI: transition: action_add_port";
-              }
-              else if (!triggered)
-              {
-                qtbug_21943_workaround (event);
-              }
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu->addAction (tr ("transition_add_port"))
+                , SIGNAL (triggered())
+                , boost::bind (nyi, "transition: add port")
+                );
 
-              event->accept();
+              menu->addSeparator();
+
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu->addAction (tr ("transition_delete"))
+                , SIGNAL (triggered())
+                , boost::bind (&data::handle::transition::remove, handle, this)
+                );
             }
             break;
 
@@ -245,40 +235,27 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              QAction* action_set_type (menu.addAction(tr("Set type")));
-              menu.addSeparator();
-              QAction* action_delete (menu.addAction (tr("Delete")));
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu->addAction(tr ("place_set_type"))
+                , SIGNAL (triggered())
+                , boost::bind ( set_we_type_for_handle<data::handle::place>
+                              , handle
+                              , tr ("place_set_type_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("place_set_type_prompt")
+                              , QString::fromStdString (handle.get().type)
+                              , event
+                              , this
+                              )
+                );
 
-              QAction* triggered (menu.exec(event->screenPos()));
-              if (triggered == action_set_type)
-              {
-                 bool ok;
-                 const QString text
-                   ( QInputDialog::getText
-                     ( event->widget()
-                     , tr("Set type of place %1%").arg
-                       (QString::fromStdString (handle.get().name()))
-                     , tr("Type:")
-                     , QLineEdit::Normal
-                     , QString::fromStdString (handle.get().type)
-                     , &ok
-                     )
-                   );
-                 if (ok && !text.isEmpty())
-                 {
-                   handle.set_type (this, text);
-                 }
-              }
-              else if (triggered == action_delete)
-              {
-                handle.remove (this);
-              }
-              else if (!triggered)
-              {
-                qtbug_21943_workaround (event);
-              }
+              menu->addSeparator();
 
-              event->accept();
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu->addAction (tr ("place_delete"))
+                , SIGNAL (triggered())
+                , boost::bind (&data::handle::place::remove, handle, this)
+                );
             }
             break;
 
@@ -289,32 +266,27 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              QAction* action_read (NULL);
               if (handle.is_in())
               {
-                action_read = menu.addAction(tr("is_read_connect"));
+                QAction* action_read (menu->addAction(tr ("is_read_connect")));
                 action_read->setCheckable (true);
                 action_read->setChecked (handle.is_read());
-                menu.addSeparator();
-              }
-              QAction* action_delete (menu.addAction (tr("Delete")));
 
-              QAction* triggered (menu.exec(event->screenPos()));
-              if (triggered == action_delete)
-              {
-                handle.remove (this);
-              }
-              //! \note check for handle.is_in(), as action_read would be null
-              else if (handle.is_in() && triggered == action_read)
-              {
-                handle.is_read (this, action_read->isChecked());
-              }
-              else if (!triggered)
-              {
-                qtbug_21943_workaround (event);
+                fhg::util::qt::boost_connect<void (bool)>
+                  ( action_read
+                  , SIGNAL (toggled (bool))
+                  , boost::bind
+                    (&data::handle::connect::is_read, handle, this, _1)
+                  );
+
+                menu->addSeparator();
               }
 
-              event->accept();
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu->addAction (tr ("connection_delete"))
+                , SIGNAL (triggered())
+                , boost::bind (&data::handle::connect::remove, handle, this)
+                );
             }
             break;
 
@@ -325,30 +297,33 @@ namespace fhg
                   <port_place_association*> (item_below_cursor)->handle()
                 );
 
-              QAction* action_delete
-                (menu.addAction (tr ("delete_port_place_assoc")));
-
-              QAction* triggered (menu.exec(event->screenPos()));
-              if (triggered == action_delete)
-              {
-                handle.remove_place_association (this);
-              }
-              else if (!triggered)
-              {
-                qtbug_21943_workaround (event);
-              }
-
-              event->accept();
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu->addAction (tr ("port_place_assoc_delete"))
+                , SIGNAL (triggered())
+                , boost::bind ( &data::handle::port::remove_place_association
+                              , handle
+                              , this
+                              )
+                );
             }
 
             break;
+
+            default:
+              //! \note Unknown item type hit. Should not happen, I guess.
+              event->ignore();
+              return;
             }
+
+            menu->connect
+              (menu, SIGNAL (triggered (QAction*)), SLOT (deleteLater()));
+            menu->popup (event->screenPos());
           }
           else
           {
-            _menu_context.popup(event->screenPos());
-            event->accept();
+            _menu_context.popup (event->screenPos());
           }
+          event->accept();
         }
 
         data::internal_type* scene_type::internal() const
@@ -363,7 +338,7 @@ namespace fhg
 
         void scene_type::slot_add_struct ()
         {
-          qDebug() << "scene_type::add_struct";
+          qDebug() << "NYI: add: struct";
         }
 
         void scene_type::create_pending_connection (connectable_item* item)
@@ -431,9 +406,9 @@ namespace fhg
                   )
           {
             const port_item* as_port
-              (qgraphicsitem_cast<const port_item*> (item));
+              (qobject_cast<const port_item*> (item));
             const place_item* as_place
-              (qgraphicsitem_cast<const place_item*> (item));
+              (qobject_cast<const place_item*> (item));
 
             const connectable_item* pending (_pending_connection->fixed_end());
 
@@ -444,21 +419,21 @@ namespace fhg
             }
 
             const port_item* pending_as_port
-              (qgraphicsitem_cast<const port_item*> (pending));
+              (qobject_cast<const port_item*> (pending));
             const place_item* pending_as_place
-              (qgraphicsitem_cast<const place_item*> (pending));
+              (qobject_cast<const place_item*> (pending));
 
             if (as_port && pending_as_port)
             {
               if (as_port->direction() == connectable::direction::IN)
               {
                 change_manager().add_connection
-                  (this, pending_as_port->handle(), as_port->handle());
+                  (this, pending_as_port->handle(), as_port->handle(), net());
               }
               else
               {
                 change_manager().add_connection
-                  (this, as_port->handle(), pending_as_port->handle());
+                  (this, as_port->handle(), pending_as_port->handle(), net());
               }
             }
             else
@@ -668,20 +643,6 @@ namespace fhg
           }
         }
 
-        // ## trigger modification ###################################
-        // # transition ##############################################
-        void scene_type::slot_add_transition() const
-        {
-          net().add_transition (this);
-        }
-
-        // # place ###################################################
-        void scene_type::slot_add_place() const
-        {
-          net().add_place (this);
-        }
-
-        // ## react on modification ##################################
         // # connection ##############################################
         //! \todo Don't pass from and to. Pass net.
         void scene_type::connection_added
@@ -804,13 +765,26 @@ namespace fhg
             port_place_association* assoc_item
               (item_with_handle<port_place_association> (port));
 
-            top_level_port_item* port_item
-              ( fhg::util::qt::throwing_qobject_cast<top_level_port_item*>
-                (assoc_item->start())
-              );
+            top_level_port_item* port_item (NULL);
 
-            removeItem (assoc_item);
-            delete assoc_item;
+            if (assoc_item)
+            {
+              port_item =
+                fhg::util::qt::throwing_qobject_cast<top_level_port_item*>
+                  (assoc_item->start());
+
+              removeItem (assoc_item);
+              delete assoc_item;
+            }
+
+            if (!port_item)
+            {
+              port_item = item_with_handle<top_level_port_item> (port);
+              if (!port_item)
+              {
+                throw std::runtime_error ("place_association for unknown port");
+              }
+            }
 
             foreach (place_item* place_item, items_of_type<place_item>())
             {

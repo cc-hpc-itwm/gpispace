@@ -64,14 +64,6 @@ namespace fhg
           void slot_add_struct ();
           void auto_layout();
 
-          // ## trigger modification #################################
-          // # transition ############################################
-          void slot_add_transition() const;
-
-          // # place #################################################
-          void slot_add_place() const;
-
-          // ## react on modification ################################
           // # connection ############################################
           void connection_added ( const QObject*
                                 , const data::handle::connect&
@@ -128,7 +120,6 @@ namespace fhg
           pending_connection* _pending_connection;
           QPointF _mouse_position;
 
-          QMenu _menu_new;
           QMenu _menu_context;
 
           data::handle::net _net;

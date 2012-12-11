@@ -1,0 +1,5 @@
+#!/bin/bash
+#
+#  this file is supposed to be sourced:
+#
+#    . $(gspc --exec-path)/gspc-sh-setup

@@ -21,10 +21,7 @@ namespace fhg
             , _handle (handle)
         {
           handle.connect_to_change_mgr
-            ( this
-            , "connection_direction_changed"
-            , "const data::handle::connect&"
-            );
+            (this, "connection_direction_changed", "data::handle::connect");
         }
 
         const data::handle::connect& connection_item::handle() const

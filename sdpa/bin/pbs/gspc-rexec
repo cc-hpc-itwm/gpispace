@@ -1,0 +1,30 @@
+#!/bin/bash
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename "$0") host command [args...]
+EOF
+}
+
+ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
+
+node="${1}"; shift
+
+if [ -z "$node" ] ; then
+    usage
+    exit 1
+fi
+
+if [ $# -eq 0 ] ; then
+    usage
+    exit 1
+fi
+
+#. $(gspc --exec-path)/gspc-sh-setup
+
+if $GSPC_VERBOSE ; then
+    :
+fi
+
+ssh $ssh_opts $node "$@"

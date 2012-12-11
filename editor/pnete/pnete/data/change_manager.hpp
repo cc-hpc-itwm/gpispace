@@ -66,6 +66,7 @@ namespace fhg
         void add_connection ( const QObject*
                             , const data::handle::port&
                             , const data::handle::port&
+                            , const data::handle::net&
                             );
         void remove_connection (const QObject*, const data::handle::connect&);
         void connection_is_read
@@ -224,8 +225,8 @@ namespace fhg
         // -- connection ---------------------------------------------
         void property_changed ( const QObject*
                               , const data::handle::connect&
-                              , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type&
+                              , const we::type::property::key_type&
+                              , const we::type::property::value_type&
                               );
         void connection_added ( const QObject*
                               , const data::handle::connect&
@@ -247,8 +248,8 @@ namespace fhg
                                 );
         void property_changed ( const QObject*
                               , const data::handle::transition&
-                              , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type&
+                              , const we::type::property::key_type&
+                              , const we::type::property::value_type&
                               );
 
         // -- place --------------------------------------------------
@@ -256,8 +257,8 @@ namespace fhg
         void place_deleted (const QObject*, const data::handle::place&);
         void property_changed ( const QObject*
                               , const data::handle::place&
-                              , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type&
+                              , const we::type::property::key_type&
+                              , const we::type::property::value_type&
                               );
         void place_type_set
           (const QObject*, const data::handle::place&, const QString&);
@@ -265,8 +266,8 @@ namespace fhg
         // - port ----------------------------------------------------
         void property_changed ( const QObject*
                               , const data::handle::port&
-                              , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type&
+                              , const we::type::property::key_type&
+                              , const we::type::property::value_type&
                               );
 
         void port_type_set
@@ -282,8 +283,8 @@ namespace fhg
 
         void property_changed ( const QObject*
                               , const data::handle::function&
-                              , const ::we::type::property::key_type&
-                              , const ::we::type::property::value_type&
+                              , const we::type::property::key_type&
+                              , const we::type::property::value_type&
                               );
 
         // - expression ----------------------------------------------

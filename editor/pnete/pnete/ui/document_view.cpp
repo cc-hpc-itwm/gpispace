@@ -28,7 +28,7 @@ namespace fhg
         function.connect_to_change_mgr
           ( this
           , "function_name_changed"
-          , "const data::handle::function&, const QString&"
+          , "data::handle::function, QString"
           );
       }
 

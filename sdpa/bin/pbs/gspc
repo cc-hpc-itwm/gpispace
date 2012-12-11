@@ -1,0 +1,93 @@
+#!/bin/bash
+
+mydir=$(dirname $(which "$0"))
+exec_path=$(readlink -f "${mydir}/../libexec/sdpa/scripts")
+verbose=0
+
+function usage()
+{
+    cat <<EOF
+usage: $(basename $0) [-h|--help] [-V|--version]
+               <command> [<args>]
+
+Options:
+
+   -h|--help      : print usage information
+   -V|--version   : print the long version
+   -v|--verbose   : verbosity level (specify multiple times)
+   --dump-version : print the short version string
+   --revision     : print the revision information
+
+Environment information:
+
+   --exec-path    : print the path to the helper scripts
+
+Commands:
+
+   config                 : set/get config values
+   rexec <node> <command> : executes a command remotely
+EOF
+}
+
+if [ "${1:0:1}" == "-" ] ; then
+    TEMP=`getopt -o hVv --long verbose,revision,version,dump-version,exec-path,help -n 'gspc' -- "$@"`
+
+    if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+    eval set -- "$TEMP"
+
+    while true ; do
+        case "$1" in
+            -h|--help) usage; exit 0 ;;
+            --exec-path)
+                if [ -z "$exec_path" ] ; then
+                    echo >&2 "could not deduce exec-path"
+                    exit 1
+                fi
+                echo "$exec_path"
+                shift
+                exit 0
+                ;;
+            -V|--version)
+                echo "GPI-Space v1.6.8 (c) 2009-2012 Fraunhofer ITWM"
+                shift
+                exit 0
+                ;;
+            --dump-version)
+                echo "v1.6.8"
+                shift
+                exit 0
+                ;;
+            --revision)
+                echo "abcdef"
+                shift
+                exit 0
+                ;;
+            -v|--verbose)
+                verbose=$(( verbose + 1 ))
+                shift
+                ;;
+            --) shift; break ;;
+            *) echo >&2 "Internal error!"; exit 1 ;;
+        esac
+    done
+fi
+
+#echo "verbose = $verbose"
+#echo "remaining args:"
+#for arg do echo '--> '"\`$arg'" ; done
+#
+if [ -z "$1" ] ; then
+    usage
+    exit 1
+fi
+
+cmd_name="$1"; shift
+cmd="${exec_path}/gspc-${cmd_name}"
+
+if [ -x "${cmd}" ] ; then
+    env GSPC_VERBOSE="${verbose}" PATH="${mydir}:$PATH" "${cmd}" "$@"
+else
+    echo >&2 "gspc: '$cmd_name' is not a GPI-Space command. See 'gspc --help'."
+    exit 1
+fi

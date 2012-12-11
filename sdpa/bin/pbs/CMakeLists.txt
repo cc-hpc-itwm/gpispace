@@ -1,5 +1,6 @@
 set (prgs
   sdpa
+  gspc
 )
 
 set (scripts
@@ -15,6 +16,10 @@ set (scripts
   status-agent
   status-drts
   pidof
+
+  gspc-rexec
+  gspc-config
+  gspc-sh-setup
 )
 
 install(PROGRAMS ${prgs}
