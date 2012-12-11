@@ -107,14 +107,14 @@ namespace fhg
         void scene_type::init_menu_context ()
         {
           //! \todo This QMenu most likely is leaked.
-          QMenu* menu_new (new QMenu (tr ("new"), NULL));
-          QAction* action_add_transition (menu_new->addAction (tr ("transition")));
+          QMenu* menu_new (new QMenu (tr ("menu_new_element"), NULL));
+          QAction* action_add_transition (menu_new->addAction (tr ("new_transition")));
           connect ( action_add_transition
                   , SIGNAL (triggered())
                   , SLOT (slot_add_transition())
                   );
 
-          QAction* action_add_place (menu_new->addAction (tr ("place")));
+          QAction* action_add_place (menu_new->addAction (tr ("new_place")));
           connect ( action_add_place
                   , SIGNAL (triggered())
                   , SLOT (slot_add_place())
@@ -122,7 +122,7 @@ namespace fhg
 
           menu_new->addSeparator();
 
-          QAction* action_add_struct (menu_new->addAction (tr ("struct")));
+          QAction* action_add_struct (menu_new->addAction (tr ("new_struct")));
           connect ( action_add_struct
                   , SIGNAL (triggered())
                   , SLOT (slot_add_struct())
@@ -176,9 +176,9 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              QAction* action_set_type (menu.addAction(tr("Set type")));
+              QAction* action_set_type (menu.addAction(tr ("port_set_type")));
               menu.addSeparator();
-              QAction* action_delete (menu.addAction(tr("Delete")));
+              QAction* action_delete (menu.addAction(tr ("port_delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_set_type)
@@ -187,9 +187,9 @@ namespace fhg
                  const QString text
                    ( QInputDialog::getText
                      ( event->widget()
-                     , tr("Set type of port %1%").arg
+                     , tr ("port_set_type_dialog_title_for_%1%").arg
                        (QString::fromStdString (handle.get().name()))
-                     , tr("Type:")
+                     , tr ("port_set_type_prompt")
                      , QLineEdit::Normal
                      , QString::fromStdString (handle.get().type)
                      , &ok
@@ -215,9 +215,9 @@ namespace fhg
 
             case base_item::transition_graph_type:
             {
-              QAction* action_add_port (menu.addAction(tr("Add Port")));
+              QAction* action_add_port (menu.addAction(tr ("transition_add_port")));
               menu.addSeparator();
-              QAction* action_delete (menu.addAction (tr("Delete")));
+              QAction* action_delete (menu.addAction (tr ("transition_delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_delete)
@@ -245,9 +245,9 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              QAction* action_set_type (menu.addAction(tr("Set type")));
+              QAction* action_set_type (menu.addAction(tr ("place_set_type")));
               menu.addSeparator();
-              QAction* action_delete (menu.addAction (tr("Delete")));
+              QAction* action_delete (menu.addAction (tr ("place_delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_set_type)
@@ -256,9 +256,9 @@ namespace fhg
                  const QString text
                    ( QInputDialog::getText
                      ( event->widget()
-                     , tr("Set type of place %1%").arg
+                     , tr ("place_set_type_dialog_title_for_%1%").arg
                        (QString::fromStdString (handle.get().name()))
-                     , tr("Type:")
+                     , tr ("place_set_type_prompt")
                      , QLineEdit::Normal
                      , QString::fromStdString (handle.get().type)
                      , &ok
@@ -292,12 +292,12 @@ namespace fhg
               QAction* action_read (NULL);
               if (handle.is_in())
               {
-                action_read = menu.addAction(tr("is_read_connect"));
+                action_read = menu.addAction(tr ("is_read_connect"));
                 action_read->setCheckable (true);
                 action_read->setChecked (handle.is_read());
                 menu.addSeparator();
               }
-              QAction* action_delete (menu.addAction (tr("Delete")));
+              QAction* action_delete (menu.addAction (tr ("connection_delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_delete)
@@ -326,7 +326,7 @@ namespace fhg
                 );
 
               QAction* action_delete
-                (menu.addAction (tr ("delete_port_place_assoc")));
+                (menu.addAction (tr ("port_place_assoc_delete")));
 
               QAction* triggered (menu.exec(event->screenPos()));
               if (triggered == action_delete)
