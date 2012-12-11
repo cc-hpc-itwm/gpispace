@@ -31,45 +31,6 @@
 #include <we/type/id.hpp>
 
 namespace we { namespace mgmt { namespace visitor {
-  namespace exception
-  {
-    struct operation_not_supported
-      : public std::runtime_error
-    {
-      operation_not_supported (const std::string & msg)
-        : std::runtime_error (msg)
-      { }
-    };
-  }
-
-  template <typename Net, typename Transition, typename Output>
-  void inject_output_to_net ( Net & net, Transition const & trans, Output const & output)
-  {
-    // iterate over output of child
-    for ( typename Output::const_iterator top (output.begin())
-        ; top != output.end()
-        ; ++top
-        )
-    {
-      try
-      {
-        token::put ( net
-                   , trans.inner_to_outer ( top->second )
-                   , top->first
-                   );
-      } catch ( const we::type::exception::not_connected <petri_net::port_id_type> &)
-      {
-        std::cerr << "W: transition generated output, but port is not connected:"
-                  << " trans=\"" << trans.name() << "\""
-                  << " port="
-                  << trans.name_of_port (top->second)
-                  << "(" << top->second << ")"
-                  << " token=" << fhg::util::show (top->first)
-                  << std::endl;
-      }
-    }
-  }
-
   template <typename Activity, typename Context>
   class executor
     : public boost::static_visitor<typename Context::result_type>

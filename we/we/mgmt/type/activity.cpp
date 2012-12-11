@@ -115,17 +115,34 @@ namespace we
             , _child (child)
           {}
 
-          template<typename Child>
-          void operator() (petri_net::net& parent, const Child&) const
+          void operator() (petri_net::net& parent) const
           {
-            visitor::inject_output_to_net ( parent
-                                          , _child.transition()
-                                          , _child.output()
-                                          );
+            BOOST_FOREACH ( const activity_t::token_on_port_t& top
+                          , _child.output()
+                          )
+              {
+                try
+                  {
+                    token::put ( parent
+                               , _child.transition().inner_to_outer (top.second)
+                               , top.first
+                               );
+                  }
+                catch (const we::type::exception::not_connected<petri_net::port_id_type>&)
+                  {
+                    std::cerr << "W: transition generated output, but port is not connected:"
+                              << " trans=\"" << _child.transition().name() << "\""
+                              << " port="
+                              << _child.transition().name_of_port (top.second)
+                              << "(" << top.second << ")"
+                              << " token=" << fhg::util::show (top.first)
+                              << std::endl;
+                  }
+              }
           }
 
-          template <typename A, typename B>
-          void operator() (const A&, const B&) const
+          template <typename A>
+          void operator() (A&) const
           {
             throw std::runtime_error ("STRANGE: activity_injector");
           }
@@ -138,7 +155,6 @@ namespace we
 
         boost::apply_visitor ( visitor_activity_injector (*this, subact)
                              , _transition.data()
-                             , subact._transition.data()
                              );
       }
 
