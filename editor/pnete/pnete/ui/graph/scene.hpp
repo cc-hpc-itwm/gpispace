@@ -128,7 +128,6 @@ namespace fhg
           pending_connection* _pending_connection;
           QPointF _mouse_position;
 
-          QMenu _menu_new;
           QMenu _menu_context;
 
           data::handle::net _net;
