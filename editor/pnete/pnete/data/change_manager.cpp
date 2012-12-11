@@ -866,64 +866,74 @@ namespace fhg
       // ## editing methods ##########################################
       // - net -------------------------------------------------------
       // -- connection -----------------------------------------------
-      void change_manager_t::add_connection ( const QObject* origin
-                                            , const data::handle::place& from
-                                            , const data::handle::port& to
-                                            )
+      void add_connection_impl_choose ( const QObject* origin
+                                      , change_manager_t& change_manager
+                                      , const data::handle::place& place
+                                      , const data::handle::port& port
+                                      , const petri_net::edge::type& direction
+                                      )
       {
-        ::xml::parse::id::ref::transition transition
-          (*to.get().parent()->parent_transition());
+        const ::xml::parse::id::ref::net net_of_place
+          (place.get().parent()->make_reference_id());
 
-        if (transition.get().parent()->id() != from.get().parent()->id())
+        const ::xml::parse::id::ref::function function_of_net_of_place
+          (net_of_place.get().parent()->make_reference_id());
+
+        const ::xml::parse::id::ref::function function_of_port
+          (port.get().parent()->make_reference_id());
+
+        if (function_of_net_of_place == function_of_port)
         {
-          throw std::runtime_error
-            ("tried connecting place and port in different nets.");
+          change_manager.set_place_association
+            (origin, port, place.get().name());
         }
+        else
+        {
+          const ::xml::parse::id::ref::transition transition_of_fun_of_port
+            (*function_of_port.get().parent_transition());
 
-        push ( new action::add_connection
-               ( *this
-               , origin
-               , transition
-               , ::xml::parse::type::connect_type
-                 ( transition.id_mapper()->next_id()
-                 , transition.id_mapper()
-                 , transition.id()
-                 , from.get().name()
-                 , to.get().name()
-                 , petri_net::edge::PT
-                 ).make_reference_id()
-               )
-             );
+          if (net_of_place == transition_of_fun_of_port.get().parent()->id())
+          {
+            change_manager.push
+              ( new action::add_connection
+                ( change_manager
+                , origin
+                , transition_of_fun_of_port
+                , ::xml::parse::type::connect_type
+                  ( transition_of_fun_of_port.id_mapper()->next_id()
+                  , transition_of_fun_of_port.id_mapper()
+                  , transition_of_fun_of_port.id()
+                  , place.get().name()
+                  , port.get().name()
+                  , direction
+                  ).make_reference_id()
+                )
+              );
+          }
+          else
+          {
+            throw std::runtime_error
+              ("unknown constellation for creating connection");
+          }
+        }
       }
 
       void change_manager_t::add_connection ( const QObject* origin
-                                            , const data::handle::port& from
-                                            , const data::handle::place& to
+                                            , const data::handle::place& place
+                                            , const data::handle::port& port
                                             )
       {
-        ::xml::parse::id::ref::transition transition
-          (*from.get().parent()->parent_transition());
+        add_connection_impl_choose
+          (origin, *this, place, port, petri_net::edge::PT);
+      }
 
-        if (transition.get().parent()->id() != to.get().parent()->id())
-        {
-          throw std::runtime_error
-            ("tried connecting port and place in different nets.");
-        }
-
-        push ( new action::add_connection
-               ( *this
-               , origin
-               , transition
-               , ::xml::parse::type::connect_type
-                 ( transition.id_mapper()->next_id()
-                 , transition.id_mapper()
-                 , transition.id()
-                 , to.get().name()
-                 , from.get().name()
-                 , petri_net::edge::TP
-                 ).make_reference_id()
-               )
-             );
+      void change_manager_t::add_connection ( const QObject* origin
+                                            , const data::handle::port& port
+                                            , const data::handle::place& place
+                                            )
+      {
+        add_connection_impl_choose
+          (origin, *this, place, port, petri_net::edge::TP);
       }
 
       void change_manager_t::add_connection ( const QObject* origin
