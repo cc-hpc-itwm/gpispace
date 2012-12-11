@@ -58,37 +58,48 @@ namespace fhg
                           , const char* signal
                           , QObject* receiver
                           , abstract_connection_adapter* adapter
-                          , int nrArguments
-                          , int argumentList[]
-                          , Qt::ConnectionType connType
+                          , int argument_count
+                          , int argument_types[]
+                          , Qt::ConnectionType connection_type
                           );
       }
 
       template<typename Signature>
         inline bool boost_connect ( QObject* sender
-                                   , const char* signal
-                                   , QObject* receiver
-                                   , const boost::function<Signature>& fn
-                                   , Qt::ConnectionType connType
-                                   = Qt::AutoConnection
-                                   )
+                                  , const char* signal
+                                  , QObject* receiver
+                                  , const boost::function<Signature>& function
+                                  , Qt::ConnectionType connection_type
+                                  = Qt::AutoConnection
+                                  )
       {
-        int* argumentList;
-        const int nrArguments
+        int* argument_types;
+        const int argument_count
           ( boost_connect_detail::metatype_lister<Signature>::metaTypes
-            (&argumentList)
+            (&argument_types)
           );
 
         return boost_connect_detail::connect_impl
           ( sender
           , signal
           , receiver
-          , new boost_connect_detail::connection_adapter<Signature> (fn)
-          , nrArguments
-          , argumentList
-          , connType
+          , new boost_connect_detail::connection_adapter<Signature> (function)
+          , argument_count
+          , argument_types
+          , connection_type
           );
-      };
+      }
+
+      template<typename Signature>
+        inline bool boost_connect ( QObject* sender
+                                  , const char* signal
+                                  , const boost::function<Signature>& function
+                                  , Qt::ConnectionType connection_type
+                                  = Qt::AutoConnection
+                                  )
+      {
+        return boost_connect (sender, signal, NULL, function, connection_type);
+      }
 
       bool boost_disconnect ( QObject* sender
                             , const char* signal
