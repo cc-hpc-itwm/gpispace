@@ -23,13 +23,13 @@
 namespace we { namespace mgmt { namespace type {
       namespace detail
       {
-        template <typename Activity, typename Stream = std::ostream>
+        template <typename Activity>
         struct printer
         {
-          typedef printer<Activity, Stream> this_type;
+          typedef printer<Activity> this_type;
           typedef typename Activity::token_on_port_list_t top_list_t;
 
-          printer (const Activity & act, Stream & stream)
+          printer (const Activity & act, std::ostream & stream)
             : act_(act)
             , os (stream)
           { }
@@ -69,7 +69,7 @@ namespace we { namespace mgmt { namespace type {
 
         private:
           const Activity & act_;
-          Stream & os;
+          std::ostream & os;
         };
       }
 
