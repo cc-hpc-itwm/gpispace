@@ -39,7 +39,7 @@ namespace fhg
             ( this
             , "property_changed"
             , "data::handle::place, "
-              "::we::type::property::key_type, ::we::type::property::value_type"
+              "we::type::property::key_type, we::type::property::value_type"
             );
 
           handle.connect_to_change_mgr

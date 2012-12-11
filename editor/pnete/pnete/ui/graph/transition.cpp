@@ -43,7 +43,7 @@ namespace fhg
             ( this
             , "property_changed"
             , "data::handle::transition, "
-              "::we::type::property::key_type, ::we::type::property::value_type"
+              "we::type::property::key_type, we::type::property::value_type"
             );
         }
 
