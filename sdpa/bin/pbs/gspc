@@ -30,7 +30,7 @@ EOF
 }
 
 if [ "${1:0:1}" == "-" ] ; then
-    TEMP=`getopt -o hVv --long verbose,revision,version,dump-version,exec-path,help -n 'gspc' -- "$@"`
+    TEMP=`getopt -o hVv --long help,verbose,revision,version,dump-version,exec-path,gspc-dir: -n 'gspc' -- "$@"`
 
     if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -39,6 +39,10 @@ if [ "${1:0:1}" == "-" ] ; then
     while true ; do
         case "$1" in
             -h|--help) usage; exit 0 ;;
+            --gspc-dir)
+                export GSPC_DIR="$2"
+                shift 2
+                ;;
             --exec-path)
                 if [ -z "$exec_path" ] ; then
                     echo >&2 "could not deduce exec-path"
