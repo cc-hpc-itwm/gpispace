@@ -102,10 +102,10 @@ namespace petri_net
   }
 
 #define INHERIT_ID_TYPE(_name,_type)                                    \
-  struct _name : public id_base_type<_type, _name>                      \
+  struct _name : public ::petri_net::id_base_type<_type, _name>         \
   {                                                                     \
-    _name () : id_base_type() {}                                        \
-    _name (const _type& value) : id_base_type (value) {}                \
+    _name () : id_base_type<_type,_name>() {}                           \
+    _name (const _type& value) : id_base_type<_type,_name> (value) {}   \
   }
 
   // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
