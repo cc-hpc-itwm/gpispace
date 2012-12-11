@@ -70,7 +70,7 @@ namespace module
 
   static void call (activity_t & act, const we::type::module_call_t & module_call)
   {
-    we::mgmt::type::detail::printer<activity_t> printer (act, std::cout);
+    we::mgmt::type::detail::printer printer (act, std::cout);
 
     // construct context
     typedef expr::eval::context context_t;

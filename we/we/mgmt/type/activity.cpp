@@ -10,6 +10,66 @@ namespace we
   {
     namespace type
     {
+      namespace detail
+      {
+        printer::printer (const activity_t& act, std::ostream& os)
+          : _act (act)
+          , _os (os)
+        {}
+
+        printer& printer::operator<< (const top_list_t& top_list)
+        {
+          _os << "[";
+
+          for ( top_list_t::const_iterator top (top_list.begin())
+              ; top != top_list.end()
+              ; ++top
+              )
+            {
+              if (top != top_list.begin())
+                _os << ", ";
+              _os << _act.transition().name_of_port (top->second)
+                  << "=(" << top->first << ", " << top->second << ")";
+            }
+
+          _os << "]";
+          return *this;
+        }
+
+        printer& printer::operator<< (std::ostream& (*fn)(std::ostream&))
+        {
+          fn (_os);
+          return *this;
+        }
+      }
+
+      void activity_t::writeTo (std::ostream& os) const
+      {
+        unique_lock_t lock (_mutex);
+
+        os << "{";
+        os << "act, "
+           << flags()
+           << ", "
+           << transition()
+           << ", "
+          ;
+
+        detail::printer printer (*this, os);
+        os << "{input, ";
+        printer << input();
+        os << "}";
+        os << "{pending, ";
+        printer << pending_input();
+        os << "}";
+        os << ", ";
+        os << "{output, ";
+        printer << output();
+        os << "}";
+
+        os << "}";
+      }
+
       bool operator== (const activity_t& a, const activity_t& b)
       {
         return a.id() == b.id();

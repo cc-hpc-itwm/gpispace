@@ -399,7 +399,7 @@ namespace we
         {
           lock_t lock(mutex_);
 
-          we::mgmt::type::detail::printer <activity_type> p (activity_, s);
+          we::mgmt::type::detail::printer p (activity_, s);
           p << "descriptor [" << id() << "]:" << std::endl;
           p << "         name := " << activity_.transition().name() << std::endl;
           p << std::boolalpha;

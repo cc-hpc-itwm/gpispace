@@ -29,57 +29,6 @@ namespace we
   {
     namespace type
     {
-      namespace detail
-      {
-        template <typename Activity>
-        struct printer
-        {
-          typedef printer<Activity> this_type;
-          typedef typename Activity::token_on_port_list_t top_list_t;
-
-          printer (const Activity & act, std::ostream & stream)
-            : act_(act)
-            , os (stream)
-          { }
-
-          this_type & operator << ( const top_list_t & top_list )
-          {
-            os << "[";
-
-            for ( typename top_list_t::const_iterator top (top_list.begin())
-                ; top != top_list.end()
-                ; ++top
-                )
-            {
-              if (top != top_list.begin())
-                os << ", ";
-              os << act_.transition().name_of_port (top->second)
-                 << "=(" << top->first << ", " << top->second << ")";
-            }
-
-            os << "]";
-            return *this;
-          }
-
-          template <typename T>
-          this_type & operator << ( const T & t )
-          {
-            os << t;
-            return *this;
-          }
-
-          // make std::endl work
-          this_type & operator << ( std::ostream & (*fn)(std::ostream &) )
-          {
-            fn (os);
-            return *this;
-          }
-
-        private:
-          const Activity & act_;
-          std::ostream & os;
-        };
-      }
 
   class activity_t
   {
@@ -93,68 +42,68 @@ namespace we
     typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
 
     activity_t ()
-      : id_ (petri_net::activity_id_invalid())
+      : _id (petri_net::activity_id_invalid())
     { }
 
     activity_t (const we::type::transition_t & transition)
-      : id_ (petri_net::activity_id_invalid())
-      , transition_ (transition)
+      : _id (petri_net::activity_id_invalid())
+      , _transition (transition)
     { }
 
     activity_t (const activity_t & other)
-      : id_ (other.id_)
-      , flags_ (other.flags_)
-      , transition_ (other.transition_)
-      , pending_input_ (other.pending_input_)
-      , input_(other.input_)
-      , output_ (other.output_)
+      : _id (other._id)
+      , _flags (other._flags)
+      , _transition (other._transition)
+      , _pending_input (other._pending_input)
+      , _input(other._input)
+      , _output (other._output)
     { }
 
     activity_t & operator= (const activity_t & other)
     {
       if (this != &other)
       {
-        id_ = other.id_;
-        flags_ = (other.flags_);
-        transition_ = (other.transition_);
-        pending_input_ = (other.pending_input_);
-        input_ = (other.input_);
-        output_ = (other.output_);
+        _id = other._id;
+        _flags = (other._flags);
+        _transition = (other._transition);
+        _pending_input = (other._pending_input);
+        _input = (other._input);
+        _output = (other._output);
       }
       return *this;
     }
 
     void set_id (const petri_net::activity_id_type & new_id)
     {
-      id_ = new_id;
+      _id = new_id;
     }
 
     petri_net::activity_id_type const & id (void) const
     {
-      return id_;
+      return _id;
     }
 
     const flags::flags_t & flags (void) const
     {
-      return flags_;
+      return _flags;
     }
 
     bool is_alive() const
     {
-      shared_lock_t lock(mutex_);
-      return (flags::is_alive (flags_));
+      shared_lock_t lock(_mutex);
+      return (flags::is_alive (_flags));
     }
 
 #define FLAG(_name)                             \
     bool is_ ## _name() const                   \
     {                                           \
-      shared_lock_t lock(mutex_);               \
-      return (flags::is_ ## _name (flags_));    \
+      shared_lock_t lock(_mutex);               \
+      return (flags::is_ ## _name (_flags));    \
     }                                           \
     void set_ ## _name (bool value = true)      \
     {                                           \
-      unique_lock_t lock(mutex_);               \
-      flags::set_ ## _name (flags_, value);     \
+      unique_lock_t lock(_mutex);               \
+      flags::set_ ## _name (_flags, value);     \
     }
 
     FLAG (suspended);
@@ -167,31 +116,31 @@ namespace we
     //! \todo DIRTY! Why lock and return a ref? Eliminate!!
     const we::type::transition_t & transition() const
     {
-      shared_lock_t lock(mutex_);
-      return transition_;
+      shared_lock_t lock(_mutex);
+      return _transition;
     }
 
     //! \todo DIRTY! Why lock and return a ref? Eliminate!!
     we::type::transition_t & transition()
     {
-      unique_lock_t lock(mutex_);
-      return transition_;
+      unique_lock_t lock(_mutex);
+      return _transition;
     }
 
     std::string type_to_string (void) const
     {
       static const we::mgmt::visitor::type_to_string_visitor v;
-      return boost::apply_visitor (v, transition_.data());
+      return boost::apply_visitor (v, _transition.data());
     }
 
     activity_t
     extract()
     {
-      unique_lock_t lock(mutex_);
+      unique_lock_t lock(_mutex);
       we::mgmt::visitor::activity_extractor<activity_t, boost::mt19937>
-        extract_activity(engine_);
+        extract_activity(_engine);
       activity_t act = boost::apply_visitor ( extract_activity
-                                           , transition_.data()
+                                           , _transition.data()
                                            );
       return act;
     }
@@ -199,38 +148,38 @@ namespace we
     void
     inject (activity_t const & subact)
     {
-      unique_lock_t lock(mutex_);
+      unique_lock_t lock(_mutex);
       we::mgmt::visitor::activity_injector<activity_t>
         inject_activity (*this, subact);
       boost::apply_visitor ( inject_activity
-                           , transition_.data()
-                           , subact.transition_.data()
+                           , _transition.data()
+                           , subact._transition.data()
                            );
     }
 
     void
     inject_input ()
     {
-      unique_lock_t lock(mutex_);
+      unique_lock_t lock(_mutex);
       we::mgmt::visitor::injector<activity_t>
-        inject_input (*this, pending_input_);
+        inject_input (*this, _pending_input);
       boost::apply_visitor ( inject_input
-                           , transition_.data()
+                           , _transition.data()
                            );
-      std::copy ( pending_input_.begin()
-                , pending_input_.end()
-                , std::inserter (input_, input_.end())
+      std::copy ( _pending_input.begin()
+                , _pending_input.end()
+                , std::inserter (_input, _input.end())
                 );
-      pending_input_.clear();
+      _pending_input.clear();
     }
 
     void
     collect_output ()
     {
-      unique_lock_t lock(mutex_);
+      unique_lock_t lock(_mutex);
       we::mgmt::visitor::output_collector<activity_t> collect_output (*this);
       boost::apply_visitor ( collect_output
-                           , transition_.data()
+                           , _transition.data()
                            );
     }
 
@@ -238,7 +187,7 @@ namespace we
 
     typename Context::result_type execute ( Context & ctxt )
     {
-      unique_lock_t lock(mutex_);
+      unique_lock_t lock(_mutex);
       /* context requirements
 
       internal
@@ -277,72 +226,47 @@ namespace we
     {
       static const we::mgmt::visitor::can_fire visitor_can_fire;
 
-      shared_lock_t lock(mutex_);
+      shared_lock_t lock(_mutex);
       return boost::apply_visitor (visitor_can_fire, transition().data());
     }
 
     const input_t & pending_input() const
     {
-      shared_lock_t lock (mutex_);
-      return pending_input_;
+      shared_lock_t lock (_mutex);
+      return _pending_input;
     }
 
     const input_t & input() const
     {
-      shared_lock_t lock(mutex_);
-      return input_;
+      shared_lock_t lock(_mutex);
+      return _input;
     }
 
     void add_input (const input_t::value_type & inp)
     {
-      unique_lock_t lock(mutex_);
-      pending_input_.push_back (inp);
+      unique_lock_t lock(_mutex);
+      _pending_input.push_back (inp);
     }
 
     const output_t & output() const
     {
-      shared_lock_t lock(mutex_);
-      return output_;
+      shared_lock_t lock(_mutex);
+      return _output;
     }
 
     void set_output (const output_t & outp)
     {
-      unique_lock_t lock(mutex_);
-      output_ = outp;
+      unique_lock_t lock(_mutex);
+      _output = outp;
     }
 
     void add_output (const output_t::value_type & outp)
     {
-      unique_lock_t lock(mutex_);
-      output_.push_back (outp);
+      unique_lock_t lock(_mutex);
+      _output.push_back (outp);
     }
 
-    void writeTo (std::ostream & os) const
-    {
-      unique_lock_t lock(mutex_);
-
-      os << "{";
-      os << "act, "
-         << flags()
-         << ", "
-         << transition()
-         << ", "
-        ;
-
-      detail::printer<activity_t> printer (*this, os);
-      os << "{input, ";
-      printer << input();
-      os << "}";
-      os << "{pending, ";
-      printer << pending_input();
-      os << "}";
-      os << ", ";
-      os << "{output, ";
-      printer << output();
-      os << "}";
-
-      os << "}";
-    }
+    void writeTo (std::ostream&) const;
 
     // **********************************
     //
@@ -351,46 +275,69 @@ namespace we
     // **********************************
     void lock()
     {
-      mutex_.lock();
+      _mutex.lock();
     }
 
     bool try_lock()
     {
-      return mutex_.try_lock();
+      return _mutex.try_lock();
     }
 
     void unlock()
     {
-      mutex_.unlock();
+      _mutex.unlock();
     }
   private:
     friend class boost::serialization::access;
     template<class Archive>
     void serialize (Archive & ar, const unsigned int)
     {
-      unique_lock_t lock(mutex_);
+      unique_lock_t lock(_mutex);
 
-      ar & BOOST_SERIALIZATION_NVP(id_);
-      ar & BOOST_SERIALIZATION_NVP(flags_);
-      ar & BOOST_SERIALIZATION_NVP(transition_);
-      ar & BOOST_SERIALIZATION_NVP(pending_input_);
-      ar & BOOST_SERIALIZATION_NVP(input_);
-      ar & BOOST_SERIALIZATION_NVP(output_);
+      ar & BOOST_SERIALIZATION_NVP(_id);
+      ar & BOOST_SERIALIZATION_NVP(_flags);
+      ar & BOOST_SERIALIZATION_NVP(_transition);
+      ar & BOOST_SERIALIZATION_NVP(_pending_input);
+      ar & BOOST_SERIALIZATION_NVP(_input);
+      ar & BOOST_SERIALIZATION_NVP(_output);
     }
 
   private:
-    petri_net::activity_id_type id_;
-    flags::flags_t flags_;
-    mutable boost::recursive_mutex mutex_;
+    petri_net::activity_id_type _id;
+    flags::flags_t _flags;
+    mutable boost::recursive_mutex _mutex;
 
-    we::type::transition_t transition_;
+    we::type::transition_t _transition;
 
-    input_t pending_input_;
-    input_t input_;
-    output_t output_;
+    input_t _pending_input;
+    input_t _input;
+    output_t _output;
 
-    boost::mt19937 engine_;
+    boost::mt19937 _engine;
   };
+
+      namespace detail
+      {
+        struct printer
+        {
+          typedef activity_t::token_on_port_list_t top_list_t;
+
+          printer (const activity_t&, std::ostream&);
+          printer& operator<< (const top_list_t&);
+          printer& operator<< (std::ostream & (*fn)(std::ostream&));
+
+          template<typename T>
+          printer& operator<< (const T& t)
+          {
+            _os << t;
+            return *this;
+          }
+
+        private:
+          const activity_t& _act;
+          std::ostream& _os;
+        };
+      }
 
       bool operator== (const activity_t&, const activity_t&);
       std::ostream& operator<< (std::ostream &, const activity_t&);
