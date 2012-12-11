@@ -181,8 +181,7 @@ int main (int, char **)
     act.inject (sub);
   }
 
-  we::mgmt::visitor::output_collector<activity_t> output_collector(act);
-  boost::apply_visitor (output_collector, act.transition().data());
+  act.collect_output();
 
   std::cout << "act (finished) = "
             << std::endl

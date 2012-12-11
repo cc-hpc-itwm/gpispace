@@ -142,27 +142,127 @@ namespace we
                              );
       }
 
+      namespace
+      {
+        class visitor_injector : public boost::static_visitor<void>
+        {
+        private:
+          we::type::transition_t& _transition;
+          const activity_t::input_t& _input;
+
+        public:
+          visitor_injector ( activity_t& activity
+                           , const activity_t::input_t& input
+                           )
+            : _transition (activity.transition())
+            , _input (input)
+          {}
+
+          void operator() (petri_net::net& net) const
+          {
+            BOOST_FOREACH (const activity_t::token_on_port_t& inp, _input)
+              {
+                const petri_net::port_id_type port_id (inp.second);
+
+                if (_transition.get_port (port_id).has_associated_place())
+                  {
+                    token::put
+                      ( net
+                      , _transition.get_port (port_id).associated_place()
+                      , inp.first
+                      );
+                  }
+              }
+          }
+
+          template<typename T>
+          void operator() (T&) const
+          {}
+        };
+      }
+
       void activity_t::inject_input()
       {
         unique_lock_t lock (_mutex);
 
-        we::mgmt::visitor::injector<activity_t>
-          inject_input (*this, _pending_input);
-        boost::apply_visitor ( inject_input
+        boost::apply_visitor ( visitor_injector (*this, _pending_input)
                              , _transition.data()
                              );
+
         std::copy ( _pending_input.begin()
                   , _pending_input.end()
                   , std::inserter (_input, _input.end())
                   );
+
         _pending_input.clear();
+      }
+
+      namespace
+      {
+        class visitor_collect_output : public boost::static_visitor<>
+        {
+        private:
+          activity_t& _activity;
+
+        public:
+          visitor_collect_output (activity_t& activity)
+            : _activity (activity)
+          {}
+
+          void operator() (petri_net::net& net) const
+          {
+            typedef we::type::transition_t::const_iterator port_iterator;
+
+            for ( port_iterator port_it (_activity.transition().ports_begin())
+                ; port_it != _activity.transition().ports_end()
+                ; ++port_it
+                )
+              {
+                if (port_it->second.is_output())
+                  {
+                    if (port_it->second.has_associated_place())
+                      {
+                        const petri_net::port_id_type port_id (port_it->first);
+                        const petri_net::place_id_type pid (port_it->second.associated_place());
+
+                        for ( petri_net::net::token_place_it top
+                                (net.get_token (pid))
+                            ; top.has_more ()
+                            ; ++top
+                            )
+                          {
+                            _activity.add_output (activity_t::output_t::value_type (*top, port_id));
+                          }
+
+                        net.delete_all_token (pid);
+                      }
+                    else
+                      {
+                        throw std::runtime_error
+                          ( "output port ("
+                          + fhg::util::show (port_it->first)
+                          + ", " + fhg::util::show (port_it->second) + ") "
+                          + "is not associated with any place!"
+                          );
+                      }
+                  }
+              }
+          }
+
+          template<typename T>
+          void operator() (T&) const
+          {
+            return;
+          }
+        };
+
       }
 
       void activity_t::collect_output ()
       {
         unique_lock_t lock (_mutex);
-        we::mgmt::visitor::output_collector<activity_t> collect_output (*this);
-        boost::apply_visitor ( collect_output
+
+        boost::apply_visitor ( visitor_collect_output (*this)
                              , _transition.data()
                              );
       }

@@ -159,10 +159,7 @@ struct exec_context : public we::mgmt::context<>
                 << std::endl;
     }
 
-    we::mgmt::visitor::output_collector<activity_t> collect_output (act);
-    boost::apply_visitor ( collect_output
-                         , act.transition().data()
-                         );
+    act.collect_output();
   }
 
   void handle_internally ( activity_t & , const mod_t & )

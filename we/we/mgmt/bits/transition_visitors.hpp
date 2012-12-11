@@ -42,78 +42,6 @@ namespace we { namespace mgmt { namespace visitor {
     };
   }
 
-  template <typename Activity>
-  class output_collector
-    : public boost::static_visitor<>
-  {
-  private:
-    Activity & activity_;
-
-  public:
-    output_collector (Activity & activity)
-      : activity_(activity)
-    {}
-
-    void operator () (petri_net::net& net)
-    {
-      typedef petri_net::net pnet_t;
-
-      typedef typename Activity::output_t output_t;
-      typedef we::type::transition_t::const_iterator port_iterator;
-
-      // collect output
-      for ( port_iterator port_it (activity_.transition().ports_begin())
-          ; port_it != activity_.transition().ports_end()
-          ; ++port_it
-          )
-      {
-        if (port_it->second.is_output())
-        {
-          if (port_it->second.has_associated_place())
-          {
-            const petri_net::port_id_type port_id = port_it->first;
-            const petri_net::place_id_type pid = port_it->second.associated_place();
-
-            for ( typename pnet_t::token_place_it top ( net.get_token (pid) )
-                ; top.has_more ()
-                ; ++top
-                )
-            {
-              activity_.add_output (typename output_t::value_type (*top, port_id));
-            }
-            net.delete_all_token ( pid );
-          }
-          else
-          {
-            throw std::runtime_error ( "output port ("
-                                       + fhg::util::show (port_it->first)
-                                       + ", " + fhg::util::show (port_it->second) + ") "
-                                     + "is not associated with any place!"
-                                     );
-          }
-        }
-      }
-    }
-
-    void operator () (const we::type::module_call_t &) const
-    {
-      return; // nothting todo, activity already contains output
-    }
-
-    void operator () (const we::type::expression_t &) const
-    {
-      return; // nothting todo, activity already contains output
-    }
-
-    /*
-    template <typename T>
-    void operator () ( T & )
-    {
-      throw exception::operation_not_supported ("output_collector (unknown T)");
-    }
-    */
-  };
-
   template <typename Net, typename Transition, typename Output>
   void inject_output_to_net ( Net & net, Transition const & trans, Output const & output)
   {
@@ -141,54 +69,6 @@ namespace we { namespace mgmt { namespace visitor {
       }
     }
   }
-
-  template <typename Net, typename Transition, typename Input>
-  void inject_input_to_net ( Net & net, Transition & trans, const Input & input)
-  {
-    for (typename Input::const_iterator inp (input.begin()); inp != input.end(); ++inp)
-    {
-      const petri_net::port_id_type port_id (inp->second);
-
-      if (trans.get_port (port_id).has_associated_place())
-        {
-          const petri_net::place_id_type place_id
-            (trans.get_port (port_id).associated_place());
-
-          token::put (net, place_id, inp->first);
-        }
-    }
-  }
-
-  template <typename Activity>
-  class injector
-    : public boost::static_visitor<void>
-  {
-  private:
-    typedef typename Activity::input_t input_t;
-
-    Activity & activity_;
-    input_t const & input_;
-
-  public:
-    explicit
-    injector (Activity & activity, input_t const & input)
-      : activity_(activity)
-      , input_(input)
-    {}
-
-    void operator () (petri_net::net& net)
-    {
-      inject_input_to_net (net, activity_.transition(), input_);
-    }
-
-    void operator () (const we::type::module_call_t & )
-    {
-    }
-
-    void operator () (const we::type::expression_t & )
-    {
-    }
-  };
 
   template <typename Activity, typename Context>
   class executor
