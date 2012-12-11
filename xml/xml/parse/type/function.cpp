@@ -15,8 +15,8 @@
 
 #include <xml/parse/type/dumps.hpp>
 
+#include <fhg/util/boost/variant.hpp>
 #include <fhg/util/cpp.hpp>
-
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -87,20 +87,14 @@ namespace xml
 
       // ******************************************************************* //
 
-      namespace
-      {
-        class function_is_net_visitor : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator () (const id::ref::net &) const { return true; }
-          template<typename T>
-          bool operator () (const T &) const { return false; }
-        };
-      }
-
       bool function_type::is_net() const
       {
-        return boost::apply_visitor (function_is_net_visitor(), f);
+        return fhg::util::boost::is_of_type<id::ref::net> (f);
+      }
+
+      boost::optional<const id::ref::net&> function_type::get_net() const
+      {
+        return fhg::util::boost::get_or_none<id::ref::net> (f);
       }
 
       // ******************************************************************* //

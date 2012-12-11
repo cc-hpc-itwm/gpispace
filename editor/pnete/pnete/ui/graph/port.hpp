@@ -70,6 +70,9 @@ namespace fhg
           void slot_set_type();
           void refresh_tooltip();
 
+          void type_changed
+            (const QObject*, const data::handle::port&, const QString&);
+
           void property_changed
             ( const QObject* origin
             , const data::handle::port& changed_handle
@@ -89,6 +92,8 @@ namespace fhg
 
         class top_level_port_item : public port_item
         {
+          Q_OBJECT;
+
         public:
           top_level_port_item ( const data::handle::port& handle
                               , connectable::direction::type direction
