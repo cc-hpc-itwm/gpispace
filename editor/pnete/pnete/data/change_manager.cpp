@@ -929,18 +929,10 @@ namespace fhg
       void change_manager_t::add_connection ( const QObject* origin
                                             , const data::handle::port& from
                                             , const data::handle::port& to
+                                            , const data::handle::net& net
                                             )
       {
-        const ::xml::parse::id::ref::net net
-          ( from.get().parent()->parent_transition()->get().parent()
-          ->make_reference_id()
-          );
-
-        if (net != to.get().parent()->parent_transition()->get().parent()->id())
-        {
-          throw std::runtime_error
-            ("tried connecting ports from transitions in different nets.");
-        }
+        //! \todo Check for ports being in that or in transitions of that net?
 
         if (from.get().type != to.get().type)
         {
@@ -957,9 +949,9 @@ namespace fhg
 
         const ::xml::parse::id::ref::place place
           ( ::xml::parse::type::place_type
-            ( net.id_mapper()->next_id()
-            , net.id_mapper()
-            , net.id()
+            ( net.id().id_mapper()->next_id()
+            , net.id().id_mapper()
+            , net.id().id()
             , name
             , from.get().type
             , boost::none
@@ -969,7 +961,7 @@ namespace fhg
         place.get_ref().properties().set
           ("fhg.pnete.is_implicit_place", "true");
 
-        push (new action::add_place (*this, origin, net, place));
+        push (new action::add_place (*this, origin, net.id(), place));
 
         handle::place place_handle (place, *this);
         add_connection (origin, from, place_handle);

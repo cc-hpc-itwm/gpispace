@@ -453,12 +453,12 @@ namespace fhg
               if (as_port->direction() == connectable::direction::IN)
               {
                 change_manager().add_connection
-                  (this, pending_as_port->handle(), as_port->handle());
+                  (this, pending_as_port->handle(), as_port->handle(), net());
               }
               else
               {
                 change_manager().add_connection
-                  (this, as_port->handle(), pending_as_port->handle());
+                  (this, as_port->handle(), pending_as_port->handle(), net());
               }
             }
             else

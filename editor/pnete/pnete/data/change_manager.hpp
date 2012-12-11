@@ -66,6 +66,7 @@ namespace fhg
         void add_connection ( const QObject*
                             , const data::handle::port&
                             , const data::handle::port&
+                            , const data::handle::net&
                             );
         void remove_connection (const QObject*, const data::handle::connect&);
         void connection_is_read
