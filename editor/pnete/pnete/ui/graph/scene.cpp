@@ -141,8 +141,7 @@ namespace fhg
           }
         }
 
-        void scene_type::contextMenuEvent
-          (QGraphicsSceneContextMenuEvent* event)
+        void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
           if ( base_item* item_below_cursor
              = qgraphicsitem_cast<base_item*> ( itemAt ( event->scenePos()
@@ -167,7 +166,7 @@ namespace fhg
               menu.addSeparator();
               QAction* action_delete (menu.addAction(tr ("port_delete")));
 
-              QAction* triggered (menu.exec(event->screenPos()));
+              QAction* triggered (menu.exec (event->screenPos()));
               if (triggered == action_set_type)
               {
                  bool ok;
@@ -206,7 +205,7 @@ namespace fhg
               menu.addSeparator();
               QAction* action_delete (menu.addAction (tr ("transition_delete")));
 
-              QAction* triggered (menu.exec(event->screenPos()));
+              QAction* triggered (menu.exec (event->screenPos()));
               if (triggered == action_delete)
               {
                 fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*>
@@ -236,7 +235,7 @@ namespace fhg
               menu.addSeparator();
               QAction* action_delete (menu.addAction (tr ("place_delete")));
 
-              QAction* triggered (menu.exec(event->screenPos()));
+              QAction* triggered (menu.exec (event->screenPos()));
               if (triggered == action_set_type)
               {
                  bool ok;
@@ -286,7 +285,7 @@ namespace fhg
               }
               QAction* action_delete (menu.addAction (tr ("connection_delete")));
 
-              QAction* triggered (menu.exec(event->screenPos()));
+              QAction* triggered (menu.exec (event->screenPos()));
               if (triggered == action_delete)
               {
                 handle.remove (this);
@@ -315,7 +314,7 @@ namespace fhg
               QAction* action_delete
                 (menu.addAction (tr ("port_place_assoc_delete")));
 
-              QAction* triggered (menu.exec(event->screenPos()));
+              QAction* triggered (menu.exec (event->screenPos()));
               if (triggered == action_delete)
               {
                 handle.remove_place_association (this);
@@ -333,7 +332,7 @@ namespace fhg
           }
           else
           {
-            _menu_context.popup(event->screenPos());
+            _menu_context.popup (event->screenPos());
             event->accept();
           }
         }
@@ -350,7 +349,7 @@ namespace fhg
 
         void scene_type::slot_add_struct ()
         {
-          qDebug() << "scene_type::add_struct";
+          qDebug() << "NYI: add: struct";
         }
 
         void scene_type::create_pending_connection (connectable_item* item)
