@@ -431,9 +431,9 @@ namespace fhg
                   )
           {
             const port_item* as_port
-              (qgraphicsitem_cast<const port_item*> (item));
+              (qobject_cast<const port_item*> (item));
             const place_item* as_place
-              (qgraphicsitem_cast<const place_item*> (item));
+              (qobject_cast<const place_item*> (item));
 
             const connectable_item* pending (_pending_connection->fixed_end());
 
@@ -444,9 +444,9 @@ namespace fhg
             }
 
             const port_item* pending_as_port
-              (qgraphicsitem_cast<const port_item*> (pending));
+              (qobject_cast<const port_item*> (pending));
             const place_item* pending_as_place
-              (qgraphicsitem_cast<const place_item*> (pending));
+              (qobject_cast<const place_item*> (pending));
 
             if (as_port && pending_as_port)
             {
