@@ -201,17 +201,22 @@ namespace fhg
 
             case base_item::transition_graph_type:
             {
+              const data::handle::transition handle
+                ( fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*>
+                  (item_below_cursor)->handle()
+                );
+
               QAction* action_add_port (menu.addAction(tr ("transition_add_port")));
               menu.addSeparator();
-              QAction* action_delete (menu.addAction (tr ("transition_delete")));
+
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu.addAction (tr ("transition_delete"))
+                , SIGNAL (triggered())
+                , boost::bind (&data::handle::transition::remove, handle, this)
+                );
 
               QAction* triggered (menu.exec (event->screenPos()));
-              if (triggered == action_delete)
-              {
-                fhg::util::qt::throwing_qgraphicsitem_cast<transition_item*>
-                  (item_below_cursor)->handle().remove (this);
-              }
-              else if (triggered == action_add_port)
+              if (triggered == action_add_port)
               {
                 qDebug() << "NYI: transition: action_add_port";
               }
@@ -233,7 +238,12 @@ namespace fhg
 
               QAction* action_set_type (menu.addAction(tr ("place_set_type")));
               menu.addSeparator();
-              QAction* action_delete (menu.addAction (tr ("place_delete")));
+
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu.addAction (tr ("place_delete"))
+                , SIGNAL (triggered())
+                , boost::bind (&data::handle::place::remove, handle, this)
+                );
 
               QAction* triggered (menu.exec (event->screenPos()));
               if (triggered == action_set_type)
@@ -254,10 +264,6 @@ namespace fhg
                  {
                    handle.set_type (this, text);
                  }
-              }
-              else if (triggered == action_delete)
-              {
-                handle.remove (this);
               }
               else if (!triggered)
               {
@@ -283,15 +289,16 @@ namespace fhg
                 action_read->setChecked (handle.is_read());
                 menu.addSeparator();
               }
-              QAction* action_delete (menu.addAction (tr ("connection_delete")));
+
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu.addAction (tr ("connection_delete"))
+                , SIGNAL (triggered())
+                , boost::bind (&data::handle::connect::remove, handle, this)
+                );
 
               QAction* triggered (menu.exec (event->screenPos()));
-              if (triggered == action_delete)
-              {
-                handle.remove (this);
-              }
               //! \note check for handle.is_in(), as action_read would be null
-              else if (handle.is_in() && triggered == action_read)
+              if (handle.is_in() && triggered == action_read)
               {
                 handle.is_read (this, action_read->isChecked());
               }
@@ -311,15 +318,17 @@ namespace fhg
                   <port_place_association*> (item_below_cursor)->handle()
                 );
 
-              QAction* action_delete
-                (menu.addAction (tr ("port_place_assoc_delete")));
+              fhg::util::qt::boost_connect<void (void)>
+                ( menu.addAction (tr ("port_place_assoc_delete"))
+                , SIGNAL (triggered())
+                , boost::bind ( &data::handle::port::remove_place_association
+                              , handle
+                              , this
+                              )
+                );
 
               QAction* triggered (menu.exec (event->screenPos()));
-              if (triggered == action_delete)
-              {
-                handle.remove_place_association (this);
-              }
-              else if (!triggered)
+              if (!triggered)
               {
                 qtbug_21943_workaround (event);
               }
