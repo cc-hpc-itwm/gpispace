@@ -275,8 +275,10 @@ namespace test {
       {
         we::activity_t act
           (we::util::text_codec::decode<we::activity_t> (desc));
-        we::mgmt::type::detail::printer p (act, std::cout);
-        p << "finished [" << id << "] = " << act.output() << std::endl;
+
+        std::cout << "finished [" << id << "] = ";
+        act.print (std::cout, act.output());
+        std::cout << std::endl;
       }
       return true;
     }
@@ -299,11 +301,12 @@ namespace test {
       {
         we::activity_t act
           (we::util::text_codec::decode<we::activity_t> (desc));
-        we::mgmt::type::detail::printer p (act, std::cout);
-        p << "failed [" << id << "] = " << act.output()
-          << " error-code := " << error_code
-          << " reason := " << reason
-          << std::endl;
+
+        std::cout << "failed [" << id << "] = ";
+        act.print (std::cout, act.output());
+        std::cout << " error-code := " << error_code
+                  << " reason := " << reason
+                  << std::endl;
       }
       return true;
     }

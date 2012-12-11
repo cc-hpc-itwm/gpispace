@@ -125,6 +125,8 @@ namespace we
         void set_output (const output_t&);
         void add_output (const output_t::value_type&);
 
+        std::ostream& print (std::ostream&, const token_on_port_list_t&) const;
+
       private:
         friend std::ostream& operator<< (std::ostream&, const activity_t&);
         void writeTo (std::ostream&) const;
@@ -160,31 +162,8 @@ namespace we
         boost::mt19937 _engine;
       };
 
-      namespace detail
-      {
-        struct printer
-        {
-          typedef activity_t::token_on_port_list_t top_list_t;
-
-          printer (const activity_t&, std::ostream&);
-          printer& operator<< (std::ostream & (*fn)(std::ostream&));
-
-          template<typename T>
-          printer& operator<< (const T& t)
-          {
-            _os << t;
-            return *this;
-          }
-          printer& operator<< (const top_list_t&);
-
-        private:
-          const activity_t& _act;
-          std::ostream& _os;
-        };
-      }
-
       bool operator== (const activity_t&, const activity_t&);
-      std::ostream& operator<< (std::ostream &, const activity_t&);
+      std::ostream& operator<< (std::ostream&, const activity_t&);
     }
   }
 }

@@ -18,12 +18,12 @@ namespace we
         : _id (petri_net::activity_id_invalid())
       {}
 
-      activity_t::activity_t (const we::type::transition_t & transition)
+      activity_t::activity_t (const we::type::transition_t& transition)
         : _id (petri_net::activity_id_invalid())
         , _transition (transition)
       {}
 
-      activity_t::activity_t (const activity_t & other)
+      activity_t::activity_t (const activity_t& other)
         : _id (other._id)
         , _flags (other._flags)
         , _transition (other._transition)
@@ -417,44 +417,32 @@ namespace we
                                     );
       }
 
-      namespace detail
+      std::ostream& activity_t::print ( std::ostream& os
+                                      , const token_on_port_list_t& top_list
+                                      ) const
       {
-        printer::printer (const activity_t& act, std::ostream& os)
-          : _act (act)
-          , _os (os)
-        {}
+        bool first (true);
 
-        printer& printer::operator<< (const top_list_t& top_list)
-        {
-          bool first (true);
+        os << "[";
 
-          _os << "[";
+        BOOST_FOREACH (const token_on_port_t& top, top_list)
+          {
+            if (first)
+              {
+                first = false;
+              }
+            else
+              {
+                os << ", ";
+              }
 
-          BOOST_FOREACH (const activity_t::token_on_port_t& top, top_list)
-            {
-              if (first)
-                {
-                  first = false;
-                }
-              else
-                {
-                  _os << ", ";
-                }
+            os << transition().name_of_port (top.second)
+               << "=(" << top.first << ", " << top.second << ")";
+          }
 
-              _os << _act.transition().name_of_port (top.second)
-                  << "=(" << top.first << ", " << top.second << ")";
-            }
+        os << "]";
 
-          _os << "]";
-
-          return *this;
-        }
-
-        printer& printer::operator<< (std::ostream& (*fn)(std::ostream&))
-        {
-          fn (_os);
-          return *this;
-        }
+        return os;
       }
 
       void activity_t::writeTo (std::ostream& os) const
@@ -462,24 +450,12 @@ namespace we
         unique_lock_t lock (_mutex);
 
         os << "{";
-        os << "act, "
-           << flags()
-           << ", "
-           << transition()
-           << ", "
-          ;
 
-        detail::printer printer (*this, os);
-        os << "{input, ";
-        printer << input();
-        os << "}";
-        os << "{pending, ";
-        printer << pending_input();
-        os << "}";
-        os << ", ";
-        os << "{output, ";
-        printer << output();
-        os << "}";
+        os << "act, " << flags() << ", " << transition() << ", ";
+
+        os << "{input, "; print (os, input()); os << "}";
+        os << ", {pending, "; print (os, pending_input()); os << "}";
+        os << ", {output, "; print (os, output()); os << "}";
 
         os << "}";
       }

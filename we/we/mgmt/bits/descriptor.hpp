@@ -395,11 +395,10 @@ namespace we
           return activity_.can_fire();
         }
 
-        std::ostream & operator << (std::ostream &s) const
+        std::ostream & operator << (std::ostream &p) const
         {
           lock_t lock(mutex_);
 
-          we::mgmt::type::detail::printer p (activity_, s);
           p << "descriptor [" << id() << "]:" << std::endl;
           p << "         name := " << activity_.transition().name() << std::endl;
           p << std::boolalpha;
@@ -427,9 +426,10 @@ namespace we
           }
           p << std::noboolalpha;
           p << "         type := " << activity_.type_to_string () << std::endl;
-          p << "        input := " << activity_.input() << std::endl;
-          p << "       output := " << activity_.output() << std::endl;
-          return s;
+          p << "        input := "; activity_.print (p, activity_.input()); p << std::endl;
+          p << "       output := "; activity_.print (p, activity_.output()); p << std::endl;
+
+          return p;
         }
 
         std::string show_input() const
