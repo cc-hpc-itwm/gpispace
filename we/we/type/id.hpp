@@ -20,6 +20,8 @@ namespace petri_net
     id_base_type ()
       : _value (0)
     {}
+
+    explicit
     id_base_type (const pod_type& value)
       : _value (value)
     {}

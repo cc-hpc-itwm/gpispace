@@ -670,7 +670,7 @@ namespace we { namespace type {
           {
             if (prio != petri_net::priority_invalid())
               {
-                if (prio > 0)
+                if (prio > petri_net::priority_type (0))
                   {
                     priority << "| priority: " << prio;
                   }
