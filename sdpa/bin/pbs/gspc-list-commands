@@ -6,6 +6,19 @@ GSPC_DOC_SHORT_DESCRIPTION="list available GPI-Space commands"
 
 command_directory=$(gspc --exec-path)
 
+indent=0
+
+while true ; do
+    case "$1" in
+        --indent=*)
+          indent=$(( ${1:9} ))
+          shift
+          ;;
+        --) shift ; break ;;
+        *) break ;;
+    esac
+done
+
 find "$command_directory" -name "gspc-*" | while read path ; do
     if [ -x "$path" ]
     then
@@ -13,9 +26,9 @@ find "$command_directory" -name "gspc-*" | while read path ; do
         desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
         if [ -n "$desc" ]
         then
-            printf "%-20s %s\n" "${executable:5}" "${desc}"
+            printf "%${indent}s%-20s %s\n" "" "${executable:5}" "${desc}"
         else
-            printf "%-20s\n" "${executable:5}"
+            printf "%${indent}s%-20s\n" "" "${executable:5}"
         fi
     fi
 done
