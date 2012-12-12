@@ -1,0 +1,35 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="print help for GPI-Space commands"
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: gspc [-h|--help] [options] [--]
+             <command> [<args>]
+
+Options:
+
+    -h|--help      : print usage information
+    --version      : print the long version
+    -v|--verbose   : verbosity level (specify multiple times)
+    --dumpversion  : print the short version string
+    --revision     : print the revision information
+
+Environment information:
+
+    --exec-path    : print the path to the helper scripts
+
+Commands:
+
+$(gspc list-commands --indent=4)
+EOF
+}
+
+if [ -z "$1" ] ; then
+   usage
+else
+    gspc "$1" --help
+fi

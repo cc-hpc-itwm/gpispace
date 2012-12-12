@@ -24,6 +24,7 @@ set (scripts
   gspc-list-commands
   gspc-check-port
   gspc-shell
+  gspc-help
 )
 
 set (files
