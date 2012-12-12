@@ -27,18 +27,12 @@ namespace we
 {
   namespace util
   {
-    template < typename OA = boost::archive::text_oarchive
-             , typename IA = boost::archive::text_iarchive
-             >
     struct base_codec
     {
-      typedef OA oarchive;
-      typedef IA iarchive;
-
       template <typename T>
       static void encode (std::ostream & s, const T & t)
       {
-        oarchive ar ( s );
+        boost::archive::text_oarchive ar (s);
         ar << BOOST_SERIALIZATION_NVP (t);
       }
 
@@ -53,7 +47,7 @@ namespace we
       template <typename T>
       static void decode (std::istream & s, T & t)
       {
-        iarchive ar ( s );
+        boost::archive::text_iarchive ar (s);
         ar >> BOOST_SERIALIZATION_NVP (t);
       }
 
@@ -81,9 +75,8 @@ namespace we
       }
     };
 
-    typedef base_codec<boost::archive::text_oarchive, boost::archive::text_iarchive> text_codec;
-
-    typedef text_codec codec;
+    typedef base_code text_codec;
+    typedef base_codec codec;
   }
 }
 
