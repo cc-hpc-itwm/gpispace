@@ -30,6 +30,7 @@ Environment information:
 
 Commands:
 
+   list-commands          : list all available commands
    config                 : set/get config values
    rexec <node> <command> : executes a command remotely
 EOF
