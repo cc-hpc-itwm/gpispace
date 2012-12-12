@@ -407,7 +407,7 @@ namespace we { namespace mgmt {
       // handle execution layer
       boost::function<void ( external_id_type const &
                            , encoded_type const &
-                           , const std::list<we::type::requirement_t<std::string> >&
+                           , const std::list<we::type::requirement_t>&
                            )> ext_submit;
       boost::function<bool ( external_id_type const &
                            , reason_type const &

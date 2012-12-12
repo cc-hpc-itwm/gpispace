@@ -231,7 +231,7 @@ namespace test {
       id_map_.erase (id);
     }
 
-    typedef std::list<we::type::requirement_t<std::string> > requirement_list_t;
+    typedef std::list<we::type::requirement_t> requirement_list_t;
     void submit( const id_type & id
                , const std::string & desc
                , requirement_list_t req_list = requirement_list_t()

@@ -182,7 +182,7 @@ namespace we { namespace type {
       typedef port_map_t::iterator port_iterator;
       typedef boost::unordered_set<std::string> port_names_t;
 
-      typedef we::type::requirement_t<std::string> requirement_t;
+      typedef we::type::requirement_t requirement_t;
       typedef std::list<requirement_t> requirements_t;
 
       const static bool internal = true;

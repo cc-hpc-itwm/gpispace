@@ -18,7 +18,7 @@
 typedef std::string id_type;
 
 typedef we::mgmt::layer layer_t;
-typedef std::list<we::type::requirement_t<std::string> > requirement_list_t;
+typedef std::list<we::type::requirement_t> requirement_list_t;
 
 static inline id_type generate_id ()
 {
