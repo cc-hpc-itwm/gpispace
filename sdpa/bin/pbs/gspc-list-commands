@@ -7,13 +7,23 @@ GSPC_DOC_SHORT_DESCRIPTION="list available GPI-Space commands"
 command_directory=$(gspc --exec-path)
 
 indent=0
+only_important=true
 
 while true ; do
     case "$1" in
         --indent=*)
-          indent=$(( ${1:9} ))
-          shift
-          ;;
+            indent=$(( ${1:9} ))
+            shift
+            ;;
+        --all)
+            only_important=false
+            shift
+            ;;
+        -h|--help)
+            echo >&2 "usage: list-commands [-h|--help] [--indent=N] [--all]"
+            exit 0
+            shift
+            ;;
         --) shift ; break ;;
         *) break ;;
     esac
@@ -23,6 +33,12 @@ find "$command_directory" -name "gspc-*" | while read path ; do
     if [ -x "$path" ]
     then
         executable=$(basename $path)
+        if $only_important ; then
+            if ! grep -q '^GSPC_IMPORTANT_API_COMMAND=true$' "$path" ; then
+                continue
+            fi
+        fi
+
         desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
         if [ -n "$desc" ]
         then
