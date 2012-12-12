@@ -338,16 +338,6 @@ main (int argc, char ** argv)
 
     we::type::optimize::optimize (trans, state.options_optimize());
 
-    // WORK HERE: The xml dump from the transition
-#if 0
-    {
-      std::ofstream stream ("/dev/stderr");
-      fhg::util::xml::xmlstream s (stream);
-
-      we::type::dump::dump (s, trans);
-    }
-#endif
-
     const we::activity_t act (trans);
 
 
