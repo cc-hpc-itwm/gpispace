@@ -27,27 +27,6 @@ namespace we
 {
   namespace mgmt {
 
-    struct activity_information_t
-    {
-      enum status_t
-      {
-        UNDEFINED = -1
-      , PENDING
-      , RUNNING
-      , FINISHED
-      , FAILED
-      , CANCELLED
-      , SUSPENDED
-      };
-
-      std::string name;
-      status_t status;
-      int level;
-
-      typedef boost::unordered_map<std::string, std::string> data_t;
-      data_t data;
-    };
-
     struct basic_layer
     {
       typedef std::string id_type;
