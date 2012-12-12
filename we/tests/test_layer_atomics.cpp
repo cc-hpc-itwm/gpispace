@@ -12,7 +12,7 @@
 
 typedef uint64_t id_type;
 
-typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
+typedef we::mgmt::layer<id_type> layer_t;
 
 typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
 

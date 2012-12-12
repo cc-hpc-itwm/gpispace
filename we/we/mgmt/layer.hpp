@@ -49,20 +49,20 @@
 #include <we/mgmt/bits/descriptor.hpp>
 
 #include <we/mgmt/type/requirement.hpp>
+#include <we/mgmt/type/activity.hpp>
 
 namespace we { namespace mgmt {
-    template < typename IdType
-             , typename Activity
-             >
+    template <typename IdType>
     class layer : public basic_layer<IdType>
     {
     public:
-      typedef layer<IdType, Activity> this_type;
+      typedef we::mgmt::type::activity_t activity_type;
+
+      typedef layer<IdType> this_type;
       // external ids
       typedef IdType id_type;
       typedef id_type external_id_type;
 
-      typedef Activity activity_type;
       typedef traits::layer_traits<activity_type> traits_type;
       typedef policy::layer_policy<traits_type> policy;
 
