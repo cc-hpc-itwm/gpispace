@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  exception.hpp
- *
- *    Description:  exception definitions
- *
- *        Version:  1.0
- *        Created:  03/15/2010 01:31:17 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// {petry,rahn}@itwm.fhg.de
 
 #ifndef WE_MGMT_LAYER_EXCEPTION_HPP
 #define WE_MGMT_LAYER_EXCEPTION_HPP 1
@@ -75,18 +59,24 @@ namespace we
         const external_id_type _id;
       };
 
-      template <typename IdType>
       struct no_such_mapping : public std::runtime_error
       {
-        no_such_mapping (const std::string & msg, IdType const & an_id)
-          : std::runtime_error (msg)
-          , id (an_id)
-        {}
+      public:
+        typedef std::string external_id_type;
 
+        no_such_mapping ( const std::string& msg
+                        , const external_id_type& ext_id
+                        )
+          : std::runtime_error (msg)
+          , _id (ext_id)
+        {}
         ~no_such_mapping () throw ()
         {}
 
-        const IdType id;
+        const external_id_type& id() const { return _id; }
+
+      private:
+        const external_id_type _id;
       };
     }
   }

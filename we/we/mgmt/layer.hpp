@@ -468,7 +468,7 @@ namespace we { namespace mgmt {
            || mapping->second != internal_id
            )
         {
-          throw exception::no_such_mapping<external_id_type>
+          throw exception::no_such_mapping
             ( "no_such_mapping: ext := "
             + fhg::util::show(external_id)
             + " -> int := "
@@ -493,7 +493,7 @@ namespace we { namespace mgmt {
         }
         else
         {
-          throw exception::no_such_mapping<external_id_type> ("no_such_mapping: ext_id := " + fhg::util::show (external_id), external_id);
+          throw exception::no_such_mapping ("no_such_mapping: ext_id := " + fhg::util::show (external_id), external_id);
         }
       }
     public:
