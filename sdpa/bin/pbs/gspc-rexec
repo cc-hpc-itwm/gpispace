@@ -22,8 +22,9 @@ if [ $# -eq 0 ] ; then
 fi
 
 
-if $GSPC_VERBOSE ; then
-    :
+
+if [ $GSPC_VERBOSE -gt 0 ] ; then
+    echo >&2 "[rexec] $node $@"
 fi
 
 ssh $ssh_opts $node "$@"
