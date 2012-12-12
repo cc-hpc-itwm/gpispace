@@ -1,8 +1,9 @@
 #!/bin/bash
 
-. $(gspc --exec-path)/gspc-sh-setup
-
 GSPC_DOC_SHORT_DESCRIPTION="execute commands remotely"
+GSPC_IMPORTANT_API_COMMAND=true
+
+. $(gspc --exec-path)/gspc-sh-setup
 
 function usage ()
 {
