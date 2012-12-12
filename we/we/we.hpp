@@ -11,7 +11,6 @@
 #include <we/type/place.hpp>
 #include <we/type/token.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/mgmt/type/preference.hpp>
 
 namespace we
 {
@@ -36,7 +35,6 @@ namespace we
   typedef petri_net::net pnet_t;
   typedef we::mgmt::type::activity_t activity_t;
   typedef activity_t::input_t input_t;
-  typedef we::mgmt::pref::preference_t<std::string> preference_t;
 
   using we::type::PORT_IN;
   using we::type::PORT_OUT;
