@@ -326,11 +326,6 @@ namespace fhg
           event->accept();
         }
 
-        data::internal_type* scene_type::internal() const
-        {
-          return _internal;
-        }
-
         void scene_type::slot_add_struct ()
         {
           qDebug() << "NYI: add: struct";

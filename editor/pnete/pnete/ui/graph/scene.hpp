@@ -57,8 +57,6 @@ namespace fhg
                                  , const data::handle::connect& handle
                                  );
 
-          data::internal_type* internal() const;
-
         public slots:
           void slot_add_struct ();
           void auto_layout();

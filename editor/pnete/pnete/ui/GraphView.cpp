@@ -107,7 +107,7 @@ namespace fhg
                 , data->function().get().clone
                   ( ::xml::parse::type::function_type::make_parent
                     (scene()->net().id().id())
-                  , scene()->internal()->state().id_mapper()
+                  , scene()->net().id().id_mapper()
                   )
                 );
             }
