@@ -113,8 +113,6 @@ namespace we { namespace mgmt {
       util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_failed;
       util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_cancelled;
       util::signal<void (const this_type *, internal_id_type const &)> sig_executing;
-      util::signal<void (const this_type *, internal_id_type const &)> sig_suspended;
-      util::signal<void (const this_type *, internal_id_type const &)> sig_resumed;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -508,8 +506,6 @@ namespace we { namespace mgmt {
         , sig_failed("sig_failed")
         , sig_cancelled("sig_cancelled")
         , sig_executing("sig_executing")
-        , sig_suspended("sig_suspended")
-        , sig_resumed("sig_resumed")
         , internal_id_gen_(&internal_id_traits::generate)
       {
         start();
@@ -522,8 +518,6 @@ namespace we { namespace mgmt {
         , sig_failed("sig_failed")
         , sig_cancelled("sig_cancelled")
         , sig_executing("sig_executing")
-        , sig_suspended("sig_suspended")
-        , sig_resumed("sig_resumed")
         , external_id_gen_(gen)
         , internal_id_gen_(&internal_id_traits::generate)
       {
