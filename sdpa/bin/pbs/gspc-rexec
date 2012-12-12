@@ -21,7 +21,6 @@ if [ $# -eq 0 ] ; then
     exit 1
 fi
 
-#. $(gspc --exec-path)/gspc-sh-setup
 
 if $GSPC_VERBOSE ; then
     :
