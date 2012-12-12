@@ -23,7 +23,6 @@
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
-using namespace std;
 
 enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
 const unsigned int MAX_CAP = 10000;
