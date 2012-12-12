@@ -5,15 +5,11 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/bits/execution_policy.hpp>
 
-#include <fhg/util/show.hpp>
-
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_set.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <string>
-#include <algorithm>
 
 namespace we
 {

@@ -2,8 +2,14 @@
 
 #include <we/mgmt/bits/descriptor.hpp>
 
+#include <fhg/util/show.hpp>
+
 //! \todo Why is this include needed really?
 #include <we/net.hpp>
+
+#include <boost/lexical_cast.hpp>
+
+#include <algorithm>
 
 namespace we
 {
