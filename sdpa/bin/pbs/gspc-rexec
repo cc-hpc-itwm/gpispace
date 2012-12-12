@@ -1,11 +1,13 @@
 #!/bin/bash
 
+. $(gspc --exec-path)/gspc-sh-setup
+
 GSPC_DOC_SHORT_DESCRIPTION="execute commands remotely"
 
 function usage ()
 {
     cat >&2 <<EOF
-usage: $(basename "$0") host command [args...]
+usage: rexec host command [args...]
 EOF
 }
 
@@ -22,8 +24,6 @@ if [ $# -eq 0 ] ; then
     usage
     exit 1
 fi
-
-. $(gspc --exec-path)/gspc-sh-setup
 
 gspc_log_trace rexec "$node $@"
 
