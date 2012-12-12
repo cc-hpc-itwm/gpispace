@@ -41,4 +41,3 @@ install(PROGRAMS ${scripts}
 install (FILES ${files}
   DESTINATION libexec/sdpa/scripts
   COMPONENT runtime)
-
