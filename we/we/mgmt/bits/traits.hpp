@@ -3,11 +3,7 @@
 #ifndef WE_MGMT_BITS_TRAITS_HPP
 #define WE_MGMT_BITS_TRAITS_HPP 1
 
-#include <string>
-#include <limits>
-
 #include <we/type/id.hpp>
-#include <we/util/codec.hpp>
 
 namespace we
 {
@@ -15,37 +11,14 @@ namespace we
   {
     namespace traits
     {
-      namespace def
+      namespace id_traits
       {
-        template <typename IdType>
-        struct id_traits
+        inline static petri_net::activity_id_type generate()
         {
-          typedef IdType type;
-        };
-
-        template <>
-        struct id_traits<petri_net::activity_id_type>
-        {
-        public:
-          typedef petri_net::activity_id_type type;
-
-          inline static type generate()
-          {
-            static type _id = init();
-            return _id++;
-          }
-        private:
-          inline static type init()
-          {
-            return 0;
-          }
-        };
+          static  petri_net::activity_id_type _id (0);
+          return _id++;
+        }
       }
-
-      struct layer_traits
-      {
-        typedef def::id_traits<petri_net::activity_id_type> id_traits;
-      };
     }
   }
 }

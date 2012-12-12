@@ -64,7 +64,6 @@ namespace we { namespace mgmt {
       typedef std::string external_id_type;
 
       // internal ids
-      typedef traits::layer_traits::id_traits internal_id_traits;
       typedef petri_net::activity_id_type internal_id_type;
 
       typedef std::string encoded_type;
@@ -455,7 +454,7 @@ namespace we { namespace mgmt {
         , sig_failed("sig_failed")
         , sig_cancelled("sig_cancelled")
         , sig_executing("sig_executing")
-        , internal_id_gen_(&internal_id_traits::generate)
+        , internal_id_gen_(&traits::id_traits::generate)
       {
         start();
       }
@@ -468,7 +467,7 @@ namespace we { namespace mgmt {
         , sig_cancelled("sig_cancelled")
         , sig_executing("sig_executing")
         , external_id_gen_(gen)
-        , internal_id_gen_(&internal_id_traits::generate)
+        , internal_id_gen_(&traits::id_traits::generate)
       {
         connect (exec_layer);
         start();
