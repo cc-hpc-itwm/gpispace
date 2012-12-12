@@ -66,8 +66,6 @@ namespace we
                          ) = 0;
       virtual bool cancelled(const id_type & id) = 0;
 
-      virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;
-
       virtual ~basic_layer() {}
 
       friend class boost::serialization::access;

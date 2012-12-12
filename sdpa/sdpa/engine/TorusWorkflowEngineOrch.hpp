@@ -240,12 +240,6 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
       return true;
     }
 
-    bool fill_in_info ( const id_type & id, activity_information_t &) const
-    {
-      DLOG(TRACE, "fill_in_info (" << id << ")");
-      return false;
-    }
-
   public:
     mutable GenericDaemon *pIAgent_;
     static size_t m_nTorusDim;

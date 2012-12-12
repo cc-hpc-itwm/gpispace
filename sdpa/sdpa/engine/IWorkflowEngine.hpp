@@ -155,7 +155,6 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 
 			virtual void set_rank(const unsigned int& rank ){ //to be overridden! }
 
-			virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;
 			virtual ~IWorkflowEngine() {}
 
 			friend class boost::serialization::access;
