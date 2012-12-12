@@ -9,14 +9,8 @@
 #include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/bits/transition_visitors.hpp>
 
-#include <we/type/bits/transition/optimize.hpp>
-
-#include <boost/unordered_set.hpp>
-#include <boost/bimap.hpp>
-#include <boost/bimap/unordered_set_of.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
-#include <boost/random.hpp>
 
 #include <vector>
 

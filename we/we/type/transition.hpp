@@ -27,14 +27,10 @@
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
 #include <we/type/requirement.hpp>
-#include <we/type/token.hpp>
 
 #include <we/type/net.fwd.hpp>
 
 #include <fhg/util/show.hpp>
-#include <fhg/util/xml.hpp>
-
-namespace xml_util = ::fhg::util::xml;
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>

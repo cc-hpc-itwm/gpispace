@@ -27,8 +27,7 @@
 #include <fhg/util/show.hpp>
 
 #include <we/type/transition.hpp>
-#include <we/net.hpp>
-#include <we/type/id.hpp>
+#include <we/type/net.fwd.hpp>
 
 namespace we
 {
