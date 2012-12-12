@@ -42,11 +42,10 @@
 	#include <boost/unordered_map.hpp>
 #endif
 
-// Assume ids of type string
-typedef std::string id_type;
-typedef std::string result_type;
-typedef std::string reason_type;
-typedef std::string encoded_type;
+typedef we::mgmt::basic_layer::id_type id_type;
+typedef we::mgmt::basic_layer::result_type result_type;
+typedef we::mgmt::basic_layer::reason_type reason_type;
+typedef we::mgmt::basic_layer::encoded_type encoded_type;
 
 enum ExecutionState
  {
@@ -62,7 +61,7 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 		typedef std::list<requirement_t> requirement_list_t;
 		typedef we::preference_t preference_t;
 		typedef we::mgmt::activity_information_t activity_information_t;
-		typedef we::mgmt::basic_layer<id_type, result_type, reason_type, encoded_type> IWorkflowEngine;
+		typedef we::mgmt::basic_layer IWorkflowEngine;
 #else
 	   // template <typename T>
 	    struct requirement_t

@@ -52,7 +52,7 @@
 #include <we/mgmt/type/activity.hpp>
 
 namespace we { namespace mgmt {
-    class layer : public basic_layer<std::string>
+    class layer : public basic_layer
     {
     public:
       typedef we::mgmt::type::activity_t activity_type;

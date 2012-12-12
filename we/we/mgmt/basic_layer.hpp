@@ -48,17 +48,12 @@ namespace we
       data_t data;
     };
 
-    template < typename IdType
-             , typename ResultType=std::string
-             , typename ReasonType=std::string
-             , typename EncodedType=std::string
-             >
     struct basic_layer
     {
-      typedef IdType id_type;
-      typedef ResultType result_type;
-      typedef ReasonType reason_type;
-      typedef EncodedType encoded_type;
+      typedef std::string id_type;
+      typedef std::string result_type;
+      typedef std::string reason_type;
+      typedef std::string encoded_type;
 
       virtual void submit(const id_type & id, const encoded_type & ) = 0;
       virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
