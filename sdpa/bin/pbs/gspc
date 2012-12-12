@@ -10,6 +10,12 @@ if [ $? -ne 0 ] ; then
     exit 1
 fi
 
+. "${exec_path}/gspc-sh-setup"
+if [ $? -ne 0 ] ; then
+    echo >&2 "Installation incomplete, please contact the admin!"
+    exit 1
+fi
+
 function usage()
 {
     cat <<EOF
@@ -40,12 +46,17 @@ while true ; do
     case "$1" in
         --help) usage; exit 0 ;;
         --gspc-dir)
-            if [ -z "$2" -o ! -e "$2" ] ; then
-                echo >&2 "Directory does not exist: $2"
+            if [ -z "$GSPC_DIR" ] ; then
                 exit 1
+            else
+                echo "$GSPC_DIR"
+                exit 0
             fi
-            export GSPC_DIR="$2"
             shift
+            ;;
+        --gspc-dir=*)
+            dir=$(gspc_abspath "${1:11}")
+            export GSPC_DIR="$dir"
             shift
             ;;
         --exec-path)
