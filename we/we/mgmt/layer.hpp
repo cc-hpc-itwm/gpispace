@@ -836,9 +836,9 @@ namespace we { namespace mgmt {
               post_failed_notification (desc->id());
             }
           }
-          catch (const exception::activity_not_found<internal_id_type> & ex)
+          catch (const exception::activity_not_found& ex)
           {
-            LOG(WARN, "extractor-" << rank << ": activity could not be found: " << ex.id);
+            LOG(WARN, "extractor-" << rank << ": activity could not be found: " << ex.id());
           }
         }
         DLOG(INFO, "extractor-" << rank << " thread stopped...");
@@ -1109,7 +1109,7 @@ namespace we { namespace mgmt {
 
           remove_activity (desc);
         }
-        catch (const exception::activity_not_found<internal_id_type> &)
+        catch (const exception::activity_not_found&)
         {
           LOG(WARN, "got failed notification for old activity: " << internal_id);
         }
@@ -1166,7 +1166,7 @@ namespace we { namespace mgmt {
 
           remove_activity (desc);
         }
-        catch (const exception::activity_not_found<internal_id_type> &)
+        catch (const exception::activity_not_found&)
         {
           LOG(WARN, "got cancelled notification for old activity: " << internal_id);
         }
@@ -1213,7 +1213,7 @@ namespace we { namespace mgmt {
             post_cancelled_notification (desc->id());
           }
         }
-        catch (const exception::activity_not_found<internal_id_type> &)
+        catch (const exception::activity_not_found&)
         {
           LOG (WARN, "got cancel request for old activity: " << internal_id);
         }
@@ -1255,7 +1255,7 @@ namespace we { namespace mgmt {
         lock_t (mutex_);
         activities_t::iterator a = activities_.find(id);
         if (a == activities_.end())
-          throw exception::activity_not_found<internal_id_type>
+          throw exception::activity_not_found
             ("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }
@@ -1265,7 +1265,7 @@ namespace we { namespace mgmt {
         lock_t (mutex_);
         activities_t::const_iterator a = activities_.find(id);
         if (a == activities_.end())
-          throw exception::activity_not_found<internal_id_type>
+          throw exception::activity_not_found
             ("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }

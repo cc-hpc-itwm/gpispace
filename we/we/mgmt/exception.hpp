@@ -19,23 +19,31 @@
 #ifndef WE_MGMT_LAYER_EXCEPTION_HPP
 #define WE_MGMT_LAYER_EXCEPTION_HPP 1
 
+#include <we/type/id.hpp>
+
 #include <stdexcept>
 
-namespace we { namespace mgmt { namespace exception {
-  template <typename Id>
-  struct activity_not_found : std::runtime_error
+namespace we
+{
+  namespace mgmt
   {
-    typedef Id id_type;
+    namespace exception
+    {
+      class activity_not_found : std::runtime_error
+      {
+      public:
+        activity_not_found ( const std::string& msg
+                           , const petri_net::activity_id_type& id
+                           )
+          : std::runtime_error (msg)
+          , _id (id)
+        {}
+        virtual ~activity_not_found() throw() {}
+        const petri_net::activity_id_type& id() const { return _id; }
 
-    activity_not_found (std::string const& msg, id_type const& id_)
-      : std::runtime_error(msg)
-      , id(id_)
-    {}
-
-    virtual ~activity_not_found() throw() {}
-
-    const id_type id;
-  };
+      private:
+        const petri_net::activity_id_type _id;
+      };
 
       struct validation_error : public std::runtime_error
       {
