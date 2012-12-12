@@ -423,7 +423,6 @@ namespace we { namespace mgmt {
 
       void submit (const descriptor_ptr & desc)
       {
-        policy::validator::validate (desc->activity());
         insert_activity(desc);
 
         sig_submitted (this, desc->id());

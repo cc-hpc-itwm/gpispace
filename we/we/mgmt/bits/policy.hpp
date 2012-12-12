@@ -55,38 +55,11 @@ namespace we
             we::util::codec::encode<we::mgmt::type::activity_t>(os, thing);
           }
         };
-
-        template <typename T, bool valid=true>
-        struct validator
-        {
-          typedef T type;
-          static void validate (T const &)
-          {
-            if (! valid)
-            {
-              throw exception::validation_error ("validator<false>:: forced validation error!");
-            }
-          };
-
-          static bool is_valid (T const & t)
-          {
-            try
-            {
-              validate (t);
-            }
-            catch (exception::validation_error const &)
-            {
-              return false;
-            }
-            return true;
-          }
-        };
       }
 
       struct layer_policy
       {
         typedef def::codec codec;
-        typedef def::validator<we::mgmt::type::activity_t, true> validator;
         typedef execution_policy<we::mgmt::type::activity_t> exec_policy;
 
         static const size_t NUM_EXTRACTORS = WE_NUM_EXTRACTORS;
