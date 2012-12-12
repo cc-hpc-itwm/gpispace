@@ -53,20 +53,18 @@
 namespace we { namespace mgmt {
     template < typename IdType
              , typename Activity
-             , typename Traits = traits::layer_traits<Activity>
-             , typename Policy = policy::layer_policy<Traits>
              >
     class layer : public basic_layer<IdType>
     {
     public:
-      typedef layer<IdType, Activity, Traits, Policy> this_type;
+      typedef layer<IdType, Activity> this_type;
       // external ids
       typedef IdType id_type;
       typedef id_type external_id_type;
 
       typedef Activity activity_type;
-      typedef Traits traits_type;
-      typedef Policy policy;
+      typedef traits::layer_traits<activity_type> traits_type;
+      typedef policy::layer_policy<traits_type> policy;
 
       // internal ids
       typedef typename traits_type::id_traits internal_id_traits;
