@@ -115,11 +115,16 @@ if [ -z "$1" ] ; then
 fi
 
 cmd_name="$1"; shift
-cmd="${exec_path}/gspc-${cmd_name}"
 
-if [ -x "${cmd}" ] ; then
-    env GSPC_VERBOSE="${verbose}" PATH="${mydir}:$PATH" "${cmd}" "$@"
+cmd=( $("${exec_path}/gspc-config" --get "alias.${cmd_name}") )
+if [ $? -eq 0 ] ; then
+    cmd_name="${cmd[0]}"
+fi
+
+cmd[0]="${exec_path}/gspc-${cmd_name}"
+
+if [ -x "${cmd[0]}" ] ; then
+    env GSPC_VERBOSE="${verbose}" PATH="${mydir}:$PATH" ${cmd[@]} "$@"
 else
     echo >&2 "gspc: '$cmd_name' is not a GPI-Space command. See 'gspc --help'."
-    exit 1
 fi
