@@ -6,6 +6,7 @@
 
 #include <fhg/util/show.hpp>
 
+#include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/lexical_cast.hpp>
@@ -194,12 +195,14 @@ namespace we
           activity_.inject_input ();
         }
 
-        template <typename F>
-        void inject (descriptor const & child, F cb)
+        void inject
+        ( const descriptor& child
+        , boost::function<void (const petri_net::activity_id_type&)> cb
+        )
         {
           lock_t lock(mutex_);
           this->inject (child);
-          cb ( id() );
+          cb (id());
         }
 
         void inject (descriptor const & child)
