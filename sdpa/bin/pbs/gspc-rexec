@@ -21,10 +21,13 @@ if [ $# -eq 0 ] ; then
     exit 1
 fi
 
+. $(gspc --exec-path)/gspc-sh-setup
 
+gspc_log_trace rexec "$node $@"
 
-if [ $GSPC_VERBOSE -gt 0 ] ; then
-    echo >&2 "[rexec] $node $@"
+if [ $(hostname -s) = "$node" ]
+then
+    "$@"
+else
+    ssh $ssh_opts $node "$@"
 fi
-
-ssh $ssh_opts $node "$@"
