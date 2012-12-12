@@ -37,32 +37,34 @@ namespace we
         static const int INJECT = 1;
         static const int EXTERNAL = 2;
 
-        result_type handle_internally (activity_t &, net_t &)
+        execution_policy(){}
+
+        result_type handle_internally (activity_t &, net_t &) const
         {
           return EXTRACT;
         }
 
-        result_type handle_internally (activity_t &act, const mod_t & m)
+        result_type handle_internally (activity_t &act, const mod_t & m) const
         {
           return handle_externally (act, m);
         }
 
-        result_type handle_internally (activity_t &, const expr_t &)
+        result_type handle_internally (activity_t &, const expr_t &) const
         {
           return INJECT;
         }
 
-        result_type handle_externally (activity_t &, net_t &)
+        result_type handle_externally (activity_t &, net_t &) const
         {
           return EXTERNAL;
         }
 
-        result_type handle_externally (activity_t &, const mod_t &)
+        result_type handle_externally (activity_t &, const mod_t &) const
         {
           return EXTERNAL;
         }
 
-        result_type handle_externally (activity_t & act, const expr_t & e)
+        result_type handle_externally (activity_t & act, const expr_t & e) const
         {
           // print warning?
           return handle_internally ( act, e );

@@ -764,8 +764,7 @@ namespace we { namespace mgmt {
               //       EXTERN: extern
               //    INJECT:  inject to parent / notify client
               //    EXTERN:  send to extern
-              policy::execution_policy<we::mgmt::type::activity_t> exec_policy;
-              do_execute (desc, exec_policy, rank);
+              do_execute (desc, rank);
             }
             catch (const std::exception & ex)
             {
@@ -793,10 +792,11 @@ namespace we { namespace mgmt {
         DLOG(INFO, "extractor-" << rank << " thread stopped...");
       }
 
-      template <typename ExecPolicy>
       inline
-      void do_execute (descriptor_ptr desc, ExecPolicy exec_policy, size_t rank)
+      void do_execute (descriptor_ptr desc, size_t rank)
       {
+        const policy::execution_policy<we::mgmt::type::activity_t> exec_policy;
+
         switch (desc->execute (exec_policy))
         {
         case policy::execution_policy<we::mgmt::type::activity_t>::EXTRACT:
