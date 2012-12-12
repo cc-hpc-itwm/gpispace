@@ -482,8 +482,7 @@ namespace we { namespace mgmt {
         ext_cancelled = (boost::bind (& T::cancelled, t, _1));
       }
 
-      template <typename IdGen>
-      void set_id_generator ( IdGen gen )
+      void set_id_generator (boost::function<external_id_type()> gen)
       {
         lock_t gen_lock (id_gen_mutex_);
 
