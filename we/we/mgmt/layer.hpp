@@ -90,14 +90,14 @@ namespace we { namespace mgmt {
 
       // manager thread
       typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
-      typedef detail::queue<cmd_t, policy::COMMAND_QUEUE_SIZE> cmd_q_t;
+      typedef detail::queue<cmd_t, 0> cmd_q_t;
 
       // injector thread
       typedef internal_id_type inj_cmd_t;
-      typedef detail::queue<inj_cmd_t, policy::INJECTOR_QUEUE_SIZE> inj_q_t;
+      typedef detail::queue<inj_cmd_t, 0> inj_q_t;
 
       // extractor
-      typedef detail::set<internal_id_type, policy::EXTRACTOR_QUEUE_SIZE> active_nets_t;
+      typedef detail::set<internal_id_type, 0> active_nets_t;
 
       typedef boost::unique_lock<boost::recursive_mutex> lock_t;
     public:

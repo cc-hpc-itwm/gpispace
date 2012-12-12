@@ -64,10 +64,6 @@ namespace we
 
         static const size_t NUM_EXTRACTORS = WE_NUM_EXTRACTORS;
         static const size_t NUM_INJECTORS  = WE_NUM_INJECTORS;
-
-        static const size_t COMMAND_QUEUE_SIZE   = 0;
-        static const size_t INJECTOR_QUEUE_SIZE  = 0;
-        static const size_t EXTRACTOR_QUEUE_SIZE = 0;
       };
     }
   }
