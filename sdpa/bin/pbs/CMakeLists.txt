@@ -25,6 +25,7 @@ set (scripts
   gspc-check-port
   gspc-shell
   gspc-help
+  gspc-template
 )
 
 set (files

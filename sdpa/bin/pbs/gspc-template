@@ -1,0 +1,29 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="template GPI-Space command"
+GSPC_IMPORTANT_API_COMMAND=false
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: <template> [-h|--help] [options]
+EOF
+}
+
+if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+
+TEMP=`getopt -o h --long help -n 'template' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --) shift; break ;;
+        *) gspc_log_error config "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
