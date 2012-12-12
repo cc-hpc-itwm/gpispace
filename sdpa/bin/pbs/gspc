@@ -4,6 +4,12 @@ mydir=$(dirname $(which "$0"))
 exec_path=$(readlink -f "${mydir}/../libexec/sdpa/scripts")
 verbose=0
 
+. "${exec_path}/gspc-sh-version"
+if [ $? -ne 0 ] ; then
+    echo >&2 "Installation incomplete, please contact the admin!"
+    exit 1
+fi
+
 function usage()
 {
     cat <<EOF
@@ -29,58 +35,67 @@ Commands:
 EOF
 }
 
-if [ "${1:0:1}" == "-" ] ; then
-    TEMP=`getopt -o hVv --long help,verbose,revision,version,dump-version,exec-path,gspc-dir: -n 'gspc' -- "$@"`
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --gspc-dir)
+            if [ -z "$2" -o ! -e "$2" ] ; then
+                echo >&2 "Directory does not exist: $2"
+                exit 1
+            fi
+            export GSPC_DIR="$2"
+            shift
+            shift
+            ;;
+        --exec-path)
+            if [ -z "$exec_path" ] ; then
+                echo >&2 "could not deduce exec-path"
+                exit 1
+            fi
+            echo "$exec_path"
+            shift
+            exit 0
+            ;;
+        -V|--version)
+            echo "GPI-Space ${GSPC_INFO_VERSION}"
+            shift
+            exit 0
+            ;;
+        --dumpversion)
+            echo "${GSPC_INFO_VERSION}"
+            shift
+            exit 0
+            ;;
+        --revision)
+            echo "${GSPC_INFO_REVISION}"
+            shift
+            exit 0
+            ;;
+        --verbose) verbose=$((verbose + 1)); shift ;;
+        -[a-z]*)
+            flags="${1:1}"
+            while [ -n "$flags" ] ; do
+                flag="${flags:0:1}"
+                flags="${flags:1}"
+                case "$flag" in
+                    v) verbose=$((verbose+1)) ;;
+                    *)
+                        echo >&2 "invalid flag: $flag"
+                        exit 1
+                        ;;
+                esac
+            done
+            shift
+            ;;
+        --) shift; break ;;
+        -*)
+            echo >&2 "invalid option: $1"
+            exit 1
+            ;;
+        *) break ;;
+    esac
+done
 
-    if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
-
-    eval set -- "$TEMP"
-
-    while true ; do
-        case "$1" in
-            -h|--help) usage; exit 0 ;;
-            --gspc-dir)
-                export GSPC_DIR="$2"
-                shift 2
-                ;;
-            --exec-path)
-                if [ -z "$exec_path" ] ; then
-                    echo >&2 "could not deduce exec-path"
-                    exit 1
-                fi
-                echo "$exec_path"
-                shift
-                exit 0
-                ;;
-            -V|--version)
-                echo "GPI-Space v1.6.8 (c) 2009-2012 Fraunhofer ITWM"
-                shift
-                exit 0
-                ;;
-            --dump-version)
-                echo "v1.6.8"
-                shift
-                exit 0
-                ;;
-            --revision)
-                echo "abcdef"
-                shift
-                exit 0
-                ;;
-            -v|--verbose)
-                verbose=$(( verbose + 1 ))
-                shift
-                ;;
-            --) shift; break ;;
-            *) echo >&2 "Internal error!"; exit 1 ;;
-        esac
-    done
-fi
-
-#echo "verbose = $verbose"
-#echo "remaining args:"
-#for arg do echo '--> '"\`$arg'" ; done
-#
 if [ -z "$1" ] ; then
     usage
     exit 1
