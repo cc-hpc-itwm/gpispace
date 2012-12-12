@@ -7,6 +7,7 @@
 
 #include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/connect.fwd.hpp>
+#include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
 #include <pnete/data/handle/port.fwd.hpp>
@@ -47,6 +48,7 @@ namespace fhg
 
         public:
           explicit scene_type ( const data::handle::net& net
+                              , const data::handle::function& function
                               , data::internal_type* internal
                               , QObject* parent = NULL
                               );
@@ -106,6 +108,7 @@ namespace fhg
             void remove_item_for_handle (const handle_type& handle);
 
           const data::handle::net& net() const;
+          const data::handle::function& function() const;
 
           void remove_transition_item (transition_item*);
 
@@ -119,6 +122,7 @@ namespace fhg
           QMenu _menu_context;
 
           data::handle::net _net;
+          data::handle::function _function;
           data::internal_type* _internal;
 
           friend class fhg::pnete::ui::GraphView; // for net() only.

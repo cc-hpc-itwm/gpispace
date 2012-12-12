@@ -42,6 +42,7 @@ namespace fhg
       namespace graph
       {
         scene_type::scene_type ( const data::handle::net& net
+                               , const data::handle::function& function
                                , data::internal_type* internal
                                , QObject* parent
                                )
@@ -50,6 +51,7 @@ namespace fhg
           , _mouse_position (QPointF (0.0, 0.0))
           , _menu_context()
           , _net (net)
+          , _function (function)
           , _internal (internal)
         {
           init_menu_context();
@@ -577,6 +579,11 @@ namespace fhg
         const data::handle::net& scene_type::net() const
         {
           return _net;
+        }
+
+        const data::handle::function& scene_type::function() const
+        {
+          return _function;
         }
 
         template<typename item_type>

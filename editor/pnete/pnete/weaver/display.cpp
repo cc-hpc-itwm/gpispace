@@ -58,7 +58,10 @@ namespace fhg
       WSIG(function, net::open, ::xml::parse::id::ref::net, id)
       {
         _scene = new ui::graph::scene_type
-          (data::handle::net (id, _root->change_manager()), _root);
+          ( data::handle::net (id, _root->change_manager())
+          , data::handle::function (_function, _root->change_manager())
+          , _root
+          );
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
             ( _root
