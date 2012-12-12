@@ -3,6 +3,7 @@
 
 #include <we/type/id.hpp>
 #include <we/mgmt/type/activity.hpp>
+#include <we/mgmt/bits/execution_policy.hpp>
 
 #include <fhg/util/show.hpp>
 
@@ -264,16 +265,15 @@ namespace we
           return child;
         }
 
-        template <typename Fun>
-        void cancel (Fun f)
+        void cancel
+        (boost::function<void (const petri_net::activity_id_type&)> f)
         {
           lock_t lock(mutex_);
           activity_.set_cancelling (true);
           apply_to_children (f);
         }
 
-        template <typename C>
-        typename C::result_type execute (C c)
+        int execute (const policy::execution_policy& c)
         {
           lock_t lock(mutex_);
           return activity_.execute (c);
@@ -430,8 +430,8 @@ namespace we
           return fhg::util::show (activity_.output().begin(), activity_.output().end());
         }
 
-        template <typename Fun>
-        void apply_to_children (Fun f) const
+        void apply_to_children
+        (boost::function<void (const petri_net::activity_id_type&)> f) const
         {
           lock_t lock (mutex_);
           std::for_each (children_.begin(), children_.end(), f);
