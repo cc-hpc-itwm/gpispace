@@ -528,49 +528,59 @@ namespace fhg
         };
 
         // -- place --------------------------------------------------
+        void add_place_impl ( ACTION_ARG_LIST
+                            , const ::xml::parse::id::ref::net& net
+                            , const ::xml::parse::id::ref::place& place
+                            )
+        {
+          net.get_ref().push_place (place);
+
+          change_manager.emit_signal
+            ( &signal::place_added
+            , origin
+            , handle::place (place, change_manager)
+            );
+        }
+
+        void remove_place_impl ( ACTION_ARG_LIST
+                               , const ::xml::parse::id::ref::net& net
+                               , const ::xml::parse::id::ref::place& place
+                               )
+        {
+          change_manager.emit_signal
+            ( &signal::place_deleted
+            , origin
+            , handle::place (place, change_manager)
+            );
+
+          net.get_ref().erase_place (place);
+        }
+
         class add_place : public QUndoCommand
         {
         public:
-          add_place
-            ( change_manager_t& change_manager
-            , const QObject* origin
-            , const ::xml::parse::id::ref::net& net
-            , const ::xml::parse::id::ref::place& place
-            )
-            : QUndoCommand (QObject::tr ("add_place_action"))
-            , _change_manager (change_manager)
-            , _origin (origin)
+          add_place ( ACTION_ARG_LIST
+                    , const ::xml::parse::id::ref::net& net
+                    , const ::xml::parse::id::ref::place& place
+                    )
+            : ACTION_INIT ("add_place_action")
             , _place (place)
             , _net (net)
           { }
 
           virtual void undo()
           {
-            _change_manager.emit_signal
-              ( &signal::place_deleted
-              , NULL
-              , handle::place (_place, _change_manager)
-              );
-
-            _net.get_ref().erase_place (_place);
+            remove_place_impl (_change_manager, NULL, _net, _place);
           }
 
           virtual void redo()
           {
-            _net.get_ref().push_place (_place);
-
-            _change_manager.emit_signal
-              ( &signal::place_added
-              , _origin
-              , handle::place (_place, _change_manager)
-              );
-
+            add_place_impl (_change_manager, _origin, _net, _place);
             _origin = NULL;
           }
 
         private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
+          ACTION_MEMBERS;
           ::xml::parse::id::ref::place _place;
           ::xml::parse::id::ref::net _net;
         };
@@ -579,44 +589,25 @@ namespace fhg
         {
         public:
           remove_place
-            ( change_manager_t& change_manager
-            , const QObject* origin
-            , const ::xml::parse::id::ref::place& place
-            )
-            : QUndoCommand (QObject::tr ("remove_place_action"))
-            , _change_manager (change_manager)
-            , _origin (origin)
-            , _place (place)
-            , _net (_place.get().parent()->make_reference_id())
+            (ACTION_ARG_LIST, const ::xml::parse::id::ref::place& place)
+              : ACTION_INIT ("remove_place_action")
+              , _place (place)
+              , _net (_place.get().parent()->make_reference_id())
           { }
 
           virtual void undo()
           {
-            _net.get_ref().push_place (_place);
-
-            _change_manager.emit_signal
-              ( &signal::place_added
-              , NULL
-              , handle::place (_place, _change_manager)
-              );
+            add_place_impl (_change_manager, NULL, _net, _place);
           }
 
           virtual void redo()
           {
-            _change_manager.emit_signal
-              ( &signal::place_deleted
-              , _origin
-              , handle::place (_place, _change_manager)
-              );
-
-            _net.get_ref().erase_place (_place);
-
+            remove_place_impl (_change_manager, _origin, _net, _place);
             _origin = NULL;
           }
 
         private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
+          ACTION_MEMBERS;
           ::xml::parse::id::ref::place _place;
           ::xml::parse::id::ref::net _net;
         };
@@ -1168,20 +1159,23 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::ref::place place
-          ( ::xml::parse::type::place_type
-            ( net.id().id_mapper()->next_id()
-            , net.id().id_mapper()
-            , net.id().id()
-            ).make_reference_id()
-          );
-
         std::string name ("place");
         while (net.get().has_place (name))
         {
           name = inc (name);
         }
-        place.get_ref().name (name);
+
+        const ::xml::parse::id::ref::place place
+          ( ::xml::parse::type::place_type
+            ( net.id().id_mapper()->next_id()
+            , net.id().id_mapper()
+            , net.id().id()
+            , name
+            //! \todo: default type to something useful?
+            , ""
+            , boost::none
+            ).make_reference_id()
+          );
 
         push (new action::add_place (*this, origin, net.id(), place));
       }
