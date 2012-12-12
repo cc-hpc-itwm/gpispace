@@ -3,3 +3,83 @@
 #  this file is supposed to be sourced:
 #
 #    . $(gspc --exec-path)/gspc-sh-setup
+
+function gspc_is_verbose_enabled ()
+{
+    local level=0
+    if [ -n "$1" ] ; then
+        level="$1"
+    fi
+
+    if [ -n "$GSPC_VERBOSE" ]
+    then
+        if [ $GSPC_VERBOSE -gt $level ]
+        then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+function gspc_log_impl ()
+{
+    local level="$1"; shift
+    local component="$1" ; shift
+
+    level_id='T'
+    color_on=""
+    color_off='\033[0m'
+
+    case "$level" in
+        trace)
+            level_id=T
+            ;;
+        debug)
+            level_id=D
+            ;;
+        info)
+            level_id=I
+            ;;
+        warn)
+            level_id=W
+            color_on='\033[0;35m'
+            ;;
+        error)
+            level_id=E
+            ;;
+        *)
+            ;;
+    esac
+    echo -e >&2 "${color_on}[${level_id}] ($component): $@${color_off}"
+}
+
+function gspc_log_trace ()
+{
+    if gspc_is_verbose_enabled 2 ; then
+        gspc_log_impl trace "$@"
+    fi
+}
+
+function gspc_log_debug ()
+{
+    if gspc_is_verbose_enabled 1 ; then
+        gspc_log_impl debug "$@"
+    fi
+}
+
+function gspc_log_info ()
+{
+    if gspc_is_verbose_enabled ; then
+        gspc_log_impl info "$@"
+    fi
+}
+
+function gspc_log_warn ()
+{
+    gspc_log_impl warn "$@"
+}
+
+function gspc_log_error ()
+{
+    gspc_log_impl error "$@"
+}
