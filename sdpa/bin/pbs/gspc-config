@@ -8,7 +8,7 @@ GSPC_IMPORTANT_API_COMMAND=true
 function usage()
 {
     cat <<EOF
-usage: gspc config [-h|--help] [options]
+usage: config [-h|--help] [options]
 
 Which config file to use:
 
