@@ -75,7 +75,6 @@ namespace we
       }
     };
 
-    typedef base_code text_codec;
     typedef base_codec codec;
   }
 }

@@ -952,14 +952,14 @@ int main(int argc, char **argv) {
     we::activity_t activity;
 
     if (input == "-") {
-        we::util::text_codec::decode(std::cin, activity);
+        we::util::codec::decode(std::cin, activity);
     } else {
         std::ifstream in(input.c_str());
         if (!in) {
             std::cerr << "failed to open " << input << "for reading" << std::endl;
             return EXIT_FAILURE;
         }
-        we::util::text_codec::decode(in, activity);
+        we::util::codec::decode(in, activity);
     }
 
     try {
@@ -970,14 +970,14 @@ int main(int argc, char **argv) {
     }
 
     if (output == "-") {
-        std::cout << we::util::text_codec::encode(activity);
+        std::cout << we::util::codec::encode(activity);
     } else {
         std::ofstream out(output.c_str());
         if (!out) {
             std::cerr << "failed to open " << input << " for writing" << std::endl;
             return EXIT_FAILURE;
         }
-        out << we::util::text_codec::encode(activity);
+        out << we::util::codec::encode(activity);
     }
 
     return 0;

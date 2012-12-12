@@ -156,7 +156,7 @@ public:
     try
     {
       task.activity =
-        we::util::text_codec::decode<we::activity_t>(job_description);
+        we::util::codec::decode<we::activity_t>(job_description);
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
@@ -292,7 +292,7 @@ private:
       emit(task_event_t( task->id
                        , task->activity.transition().name()
                        , task_event_t::DEQUEUED
-                       , we::util::text_codec::encode(task->activity)
+                       , we::util::codec::encode(task->activity)
                        , task->meta
                        )
           );
@@ -347,7 +347,7 @@ private:
         }
       }
 
-      task->result = we::util::text_codec::encode(task->activity);
+      task->result = we::util::codec::encode(task->activity);
       task->done.notify(task->errc);
     }
   }

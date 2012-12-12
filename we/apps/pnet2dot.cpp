@@ -232,7 +232,7 @@ main (int argc, char ** argv)
         throw std::runtime_error ("failed to open " + input + " for reading");
       }
 
-    we::util::text_codec::decode (stream, act);
+    we::util::codec::decode (stream, act);
   }
 
   {

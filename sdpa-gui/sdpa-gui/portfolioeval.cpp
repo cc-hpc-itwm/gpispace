@@ -366,7 +366,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 
         try
         {
-          we::util::text_codec::decode (ifs, act);
+          we::util::codec::decode (ifs, act);
         }
         catch (std::exception const & ex)
         {
@@ -403,7 +403,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
         }
 
 	ifs.close();
-	return we::util::text_codec::encode(act);
+	return we::util::codec::encode(act);
 }
 
 void Portfolio::StopClient()

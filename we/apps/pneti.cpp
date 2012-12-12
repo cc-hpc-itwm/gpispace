@@ -114,7 +114,7 @@ main (int argc, char ** argv)
 
     try
     {
-      we::util::text_codec::decode (stream, act);
+      we::util::codec::decode (stream, act);
     }
     catch (std::exception const & ex)
     {
