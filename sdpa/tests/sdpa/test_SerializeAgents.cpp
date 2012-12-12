@@ -247,7 +247,6 @@ BOOST_AUTO_TEST_CASE(testAgentSerialization)
         ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
         sdpa::job_id_t jobId(ossJobId.str());
 
-        const preference_t job_pref;
         pScheduler->schedule_to(jobId, workerId);
         if(l>=1)
         {
@@ -357,7 +356,6 @@ BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
           ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
           sdpa::job_id_t jobId(ossJobId.str());
 
-          const preference_t job_pref;
           pScheduler->schedule_to(jobId, workerId);
           if(l>=1)
           {
@@ -471,7 +469,6 @@ BOOST_AUTO_TEST_CASE(testDaemonSerializationWithFSMs)
           ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
           sdpa::job_id_t jobId(ossJobId.str());
 
-          const preference_t job_pref;
           pScheduler->schedule_to(jobId, workerId);
           if(l>=1)
           {
@@ -573,7 +570,6 @@ BOOST_AUTO_TEST_CASE(testDaemonSerialization)
         ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
         sdpa::job_id_t jobId(ossJobId.str());
 
-        const preference_t job_pref;
         pScheduler->schedule_to(jobId, workerId);
         if(l>=1)
         {
@@ -649,7 +645,6 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
         ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
         sdpa::job_id_t jobId(ossJobId.str());
 
-        const preference_t job_pref;
         pScheduler->schedule_to(jobId, workerId);
         if(l>=1)
         {
