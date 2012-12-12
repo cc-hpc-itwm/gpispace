@@ -1,10 +1,16 @@
 #ifndef WE_MGMT_LAYER_DESCRIPTOR_HPP
 #define WE_MGMT_LAYER_DESCRIPTOR_HPP 1
 
+#include <we/type/id.hpp>
+#include <we/mgmt/type/activity.hpp>
+
+#include <fhg/util/show.hpp>
+
 #include <boost/thread.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/lexical_cast.hpp>
-#include <fhg/util/show.hpp>
+
+#include <string>
 #include <algorithm>
 
 namespace we
@@ -13,16 +19,14 @@ namespace we
   {
     namespace detail
     {
-      template <typename Activity, typename InternalId, typename ExternalId>
       class descriptor
       {
-        typedef descriptor<Activity, InternalId, ExternalId> this_type;
         typedef boost::lock_guard<boost::recursive_mutex> lock_t;
 
       public:
-        typedef Activity activity_type;
-        typedef InternalId id_type;
-        typedef ExternalId external_id_type;
+        typedef we::mgmt::type::activity_t activity_type;
+        typedef petri_net::activity_id_type id_type;
+        typedef std::string external_id_type;
         typedef boost::unordered_set<id_type> children_t;
 
         descriptor ()
@@ -172,30 +176,10 @@ namespace we
           return parent_;
         }
 
-        /*
-        activity_type & activity()
-        {
-          lock_t lock(mutex_);
-          return activity_;
-        }
-        */
-
         activity_type const & activity() const
         {
           lock_t lock(mutex_);
           return activity_;
-        }
-
-        void suspend ()
-        {
-          lock_t lock(mutex_);
-          activity_.flags().set_suspended(true);
-        }
-
-        void resume ()
-        {
-          lock_t lock(mutex_);
-          activity_.flags().set_suspended(false);
         }
 
         template <typename Output>
@@ -212,14 +196,14 @@ namespace we
         }
 
         template <typename F>
-        void inject (this_type const & child, F cb)
+        void inject (descriptor const & child, F cb)
         {
           lock_t lock(mutex_);
           this->inject (child);
           cb ( id() );
         }
 
-        void inject (this_type const & child)
+        void inject (descriptor const & child)
         {
           lock_t lock(mutex_);
           if (! is_child (child.id()))
@@ -233,7 +217,7 @@ namespace we
           del_child (child.id());
         }
 
-        void child_failed ( this_type const & child
+        void child_failed ( descriptor const & child
                           , int error_code
                           , std::string const & error_message
                           )
@@ -253,7 +237,7 @@ namespace we
           set_error_message(error_message);
         }
 
-        void child_cancelled (this_type const & child, std::string const & /*reason*/)
+        void child_cancelled (descriptor const & child, std::string const & /*reason*/)
         {
           lock_t lock(mutex_);
           if (! is_child (child.id()))
@@ -266,14 +250,14 @@ namespace we
           del_child (child.id());
         }
 
-        this_type extract (id_type const & child_id)
+        descriptor extract (id_type const & child_id)
         {
           lock_t lock(mutex_);
 
-          this_type child ( child_id
-                          , activity_.extract()
-                          , id()
-                          );
+          descriptor child ( child_id
+                           , activity_.extract()
+                           , id()
+                           );
           add_child (child_id);
           return child;
         }
@@ -487,8 +471,7 @@ namespace we
         std::string m_result;
       };
 
-      template <typename A, typename I, typename E>
-      std::ostream & operator << (std::ostream & os, const descriptor<A,I,E> & d)
+      inline std::ostream& operator<< (std::ostream& os, const descriptor& d)
       {
         return d.operator<< (os);
       }

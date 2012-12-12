@@ -83,8 +83,7 @@ namespace we { namespace mgmt {
 
       typedef std::vector<boost::thread *> thread_list_t;
 
-      typedef detail::descriptor<activity_type, internal_id_type, external_id_type> descriptor_type;
-      typedef boost::shared_ptr<descriptor_type> descriptor_ptr;
+      typedef boost::shared_ptr<detail::descriptor> descriptor_ptr;
       typedef boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
 
       // manager thread
@@ -136,7 +135,7 @@ namespace we { namespace mgmt {
       void submit(const external_id_type & id, const activity_type &act)
       {
         descriptor_ptr desc
-          (new descriptor_type (generate_internal_id(), act));
+          (new detail::descriptor (generate_internal_id(), act));
         desc->came_from_external_as (id);
         desc->inject_input ();
 
@@ -804,7 +803,7 @@ namespace we { namespace mgmt {
 
             while (desc->enabled())
             {
-              descriptor_ptr child (new descriptor_type(desc->extract(generate_internal_id())));
+              descriptor_ptr child (new detail::descriptor(desc->extract(generate_internal_id())));
               child->inject_input ();
 
               DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc->name() << ")-" << desc->id()
