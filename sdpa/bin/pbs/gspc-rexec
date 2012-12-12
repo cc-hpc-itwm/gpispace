@@ -34,4 +34,10 @@ then
 else
     gspc_log_trace rexec ssh $ssh_opts $node /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
     ssh $ssh_opts $node /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
+    ec=$?
+    if [ $ec -eq 255 ]
+    then
+        gspc_log_error rexec "ssh could not connect to: '$node'"
+    fi
+    exit $ec
 fi
