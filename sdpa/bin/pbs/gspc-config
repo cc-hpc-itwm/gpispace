@@ -182,14 +182,14 @@ case "$action" in
         done | fhgcfg -f- -l 2>/dev/null
         ;;
     edit)
-        editor=$(get_config_value gspc.editor "$EDITOR")
+        editor=( $(get_config_value gspc.editor "$EDITOR") )
         if [ -z "$editor" ] ; then
-            editor=vi
+            editor=(vi)
         fi
         if [ -z "$config_file" ] ; then
             config_file="$global_config_file"
         fi
-        "$editor" "$config_file"
+        "${editor[@]}" "$config_file"
         ;;
     *)
         echo >&2 "invalid action: $action"
