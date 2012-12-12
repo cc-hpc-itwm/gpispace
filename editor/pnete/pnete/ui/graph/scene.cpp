@@ -585,7 +585,7 @@ namespace fhg
         template<>
           bool scene_type::is_in_my_net (const data::handle::port& handle)
         {
-          return *handle.get().parent()->get_net() == net().id();
+          return handle.get().parent()->id() == function().id();
         }
 
         const data::handle::net& scene_type::net() const
