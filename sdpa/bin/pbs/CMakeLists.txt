@@ -1,3 +1,5 @@
+configure_file(gspc-sh-version.in ${CMAKE_CURRENT_BINARY_DIR}/gspc-sh-version @ONLY)
+
 set (prgs
   sdpa
   gspc
@@ -20,6 +22,7 @@ set (scripts
   gspc-rexec
   gspc-config
   gspc-sh-setup
+  ${CMAKE_CURRENT_BINARY_DIR}/gspc-sh-version
 )
 
 install(PROGRAMS ${prgs}
