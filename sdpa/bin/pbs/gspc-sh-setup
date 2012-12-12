@@ -6,14 +6,14 @@
 
 function gspc_is_verbose_enabled ()
 {
-    local level=0
+    local level=1
     if [ -n "$1" ] ; then
         level="$1"
     fi
 
     if [ -n "$GSPC_VERBOSE" ]
     then
-        if [ $GSPC_VERBOSE -gt $level ]
+        if [ $GSPC_VERBOSE -ge $level ]
         then
             return 0
         fi
@@ -55,21 +55,21 @@ function gspc_log_impl ()
 
 function gspc_log_trace ()
 {
-    if gspc_is_verbose_enabled 2 ; then
+    if gspc_is_verbose_enabled 3 ; then
         gspc_log_impl trace "$@"
     fi
 }
 
 function gspc_log_debug ()
 {
-    if gspc_is_verbose_enabled 1 ; then
+    if gspc_is_verbose_enabled 2 ; then
         gspc_log_impl debug "$@"
     fi
 }
 
 function gspc_log_info ()
 {
-    if gspc_is_verbose_enabled ; then
+    if gspc_is_verbose_enabled 1 ; then
         gspc_log_impl info "$@"
     fi
 }
