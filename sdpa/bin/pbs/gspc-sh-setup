@@ -117,3 +117,16 @@ function gspc_call_editor ()
     fi
     "${editor[@]}" "$@"
 }
+
+function gspc_prepend_path ()
+{
+    local var="$1"; shift
+    local val=$(eval echo \$${var})
+    for v ; do
+        val=$(echo "$val" | sed "s,:$v:,:,g")
+        val=$(echo "$val" | sed -e "s,^$v:,,g")
+        val=$(echo "$val" | sed -e "s,:$v\$,,g")
+        val="$v:$val"
+    done
+    eval "$var=$val"
+}
