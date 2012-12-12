@@ -21,9 +21,13 @@ set (scripts
 
   gspc-rexec
   gspc-config
+  gspc-list-commands
+)
+
+set (files
   gspc-sh-setup
   ${CMAKE_CURRENT_BINARY_DIR}/gspc-sh-version
-)
+  )
 
 install(PROGRAMS ${prgs}
   DESTINATION bin
@@ -32,3 +36,8 @@ install(PROGRAMS ${prgs}
 install(PROGRAMS ${scripts}
   DESTINATION libexec/sdpa/scripts
   COMPONENT runtime)
+
+install (FILES ${files}
+  DESTINATION libexec/sdpa/scripts
+  COMPONENT runtime)
+

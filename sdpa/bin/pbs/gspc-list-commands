@@ -1,0 +1,21 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="list available GPI-Space commands"
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+command_directory=$(gspc --exec-path)
+
+find "$command_directory" -name "gspc-*" | while read path ; do
+    if [ -x "$path" ]
+    then
+        executable=$(basename $path)
+        desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
+        if [ -n "$desc" ]
+        then
+            printf "%-20s %s\n" "${executable:5}" "${desc}"
+        else
+            printf "%-20s\n" "${executable:5}"
+        fi
+    fi
+done
