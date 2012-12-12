@@ -795,11 +795,11 @@ namespace we { namespace mgmt {
       inline
       void do_execute (descriptor_ptr desc, size_t rank)
       {
-        const policy::execution_policy<we::mgmt::type::activity_t> exec_policy;
+        const policy::execution_policy exec_policy;
 
         switch (desc->execute (exec_policy))
         {
-        case policy::execution_policy<we::mgmt::type::activity_t>::EXTRACT:
+        case policy::execution_policy::EXTRACT:
           {
             DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc->name());
 
@@ -813,16 +813,16 @@ namespace we { namespace mgmt {
 
               switch (child->execute (exec_policy))
               {
-              case policy::execution_policy<we::mgmt::type::activity_t>::EXTRACT:
+              case policy::execution_policy::EXTRACT:
                 insert_activity(child);
                 post_execute_notification (child->id());
                 break;
-              case policy::execution_policy<we::mgmt::type::activity_t>::INJECT:
+              case policy::execution_policy::INJECT:
                 child->finished();
                 DLOG(INFO, "extractor-" << rank << ": finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
                 desc->inject (*child);
                 break;
-              case policy::execution_policy<we::mgmt::type::activity_t>::EXTERNAL:
+              case policy::execution_policy::EXTERNAL:
                 insert_activity (child);
                 execute_externally (child->id());
                 break;
@@ -845,10 +845,10 @@ namespace we { namespace mgmt {
             }
           }
           break;
-        case policy::execution_policy<we::mgmt::type::activity_t>::INJECT:
+        case policy::execution_policy::INJECT:
           do_inject (desc);
           break;
-        case policy::execution_policy<we::mgmt::type::activity_t>::EXTERNAL:
+        case policy::execution_policy::EXTERNAL:
           DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc->id());
           execute_externally (desc->id());
           break;

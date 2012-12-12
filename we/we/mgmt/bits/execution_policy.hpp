@@ -1,6 +1,8 @@
 #ifndef WE_MGMT_BITS_EXECUTION_POLICY_HPP
 #define WE_MGMT_BITS_EXECUTION_POLICY_HPP 1
 
+#include <we/mgmt/type/activity.hpp>
+
 #include <we/mgmt/context.hpp>
 
 #include <we/type/module_call.fwd.hpp>
@@ -21,12 +23,11 @@ namespace we
          internal networks will be delegated to the extractor
          internal expressions will be executed directly and delegated to the injector process
        */
-      template <typename Activity>
       struct execution_policy : public we::mgmt::context<int>
       {
-        typedef typename we::mgmt::context<int>::result_type result_type;
+        typedef we::mgmt::context<int>::result_type result_type;
 
-        typedef Activity activity_t;
+        typedef we::mgmt::type::activity_t activity_t;
         typedef petri_net::activity_id_type id_type;
 
         typedef petri_net::net net_t;
