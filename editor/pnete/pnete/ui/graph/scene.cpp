@@ -134,12 +134,14 @@ namespace fhg
             fhg::util::qt::boost_connect<void()>
               ( menu_new->addAction (tr ("new_transition"))
               , SIGNAL (triggered())
+              , this
               , boost::bind (&data::handle::net::add_transition, net(), this)
               );
 
             fhg::util::qt::boost_connect<void()>
               ( menu_new->addAction (tr ("new_place"))
               , SIGNAL (triggered())
+              , this
               , boost::bind (&data::handle::net::add_place, net(), this)
               );
 
@@ -149,6 +151,7 @@ namespace fhg
             fhg::util::qt::boost_connect<void()>
               ( menu_new->addAction (tr ("new_struct"))
               , SIGNAL (triggered())
+              , this
               , boost::bind (nyi, "net: new struct")
               );
           }
@@ -185,6 +188,7 @@ namespace fhg
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("port_set_type"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind ( set_we_type_for_handle<data::handle::port>
                               , handle
                               , tr ("port_set_type_dialog_title_for_%1").arg
@@ -201,6 +205,7 @@ namespace fhg
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("port_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (nyi, "port: delete")
                 );
             }
@@ -216,6 +221,7 @@ namespace fhg
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("transition_add_port"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (nyi, "transition: add port")
                 );
 
@@ -224,6 +230,7 @@ namespace fhg
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("transition_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (&data::handle::transition::remove, handle, this)
                 );
             }
@@ -239,6 +246,7 @@ namespace fhg
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("place_set_type"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind ( set_we_type_for_handle<data::handle::place>
                               , handle
                               , tr ("place_set_type_dialog_title_for_%1").arg
@@ -255,6 +263,7 @@ namespace fhg
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("place_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (&data::handle::place::remove, handle, this)
                 );
             }
@@ -276,6 +285,7 @@ namespace fhg
                 fhg::util::qt::boost_connect<void (bool)>
                   ( action_read
                   , SIGNAL (toggled (bool))
+                , item_below_cursor
                   , boost::bind
                     (&data::handle::connect::is_read, handle, this, _1)
                   );
@@ -286,6 +296,7 @@ namespace fhg
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("connection_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (&data::handle::connect::remove, handle, this)
                 );
             }
@@ -301,6 +312,7 @@ namespace fhg
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("port_place_assoc_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind ( &data::handle::port::remove_place_association
                               , handle
                               , this
