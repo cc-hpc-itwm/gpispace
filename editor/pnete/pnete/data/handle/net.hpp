@@ -7,6 +7,8 @@
 
 #include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/meta_base.hpp>
+#include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/port.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -31,6 +33,17 @@ namespace fhg
 
           void add_transition (const QObject* sender) const;
           void add_place (const QObject* sender) const;
+
+          //! \todo Are these correct in net? They might fit more in
+          //! transition or function. This would take detection of
+          //! which type of connection is needed into handles / ui
+          //! though, instead of doing it in change manager.
+          void add_connection_with_implicit_place
+            (const QObject*, const port&, const port&) const;
+          void add_connection_or_association
+            (const QObject*, const port&, const place&) const;
+          void add_connection_or_association
+            (const QObject*, const place&, const port&) const;
 
           using net_meta_base::operator==;
         };
