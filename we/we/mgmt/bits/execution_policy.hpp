@@ -28,7 +28,6 @@ namespace we
         typedef we::mgmt::context<int>::result_type result_type;
 
         typedef we::mgmt::type::activity_t activity_t;
-        typedef petri_net::activity_id_type id_type;
 
         typedef petri_net::net net_t;
         typedef we::type::module_call_t mod_t;
