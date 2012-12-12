@@ -31,37 +31,8 @@ namespace we
   {
     namespace policy
     {
-      namespace def
-      {
-        struct codec
-        {
-          static we::mgmt::type::activity_t decode (const std::string& data)
-          {
-            return ::we::util::codec::decode<we::mgmt::type::activity_t>(data);
-          }
-
-          static we::mgmt::type::activity_t decode (std::istream& is)
-          {
-            return ::we::util::codec::decode<we::mgmt::type::activity_t>(is);
-          }
-
-          static std::string encode (const we::mgmt::type::activity_t& thing)
-          {
-            return ::we::util::codec::encode (thing);
-          }
-
-          static void encode ( std::ostream& os
-                             , const we::mgmt::type::activity_t& thing
-                             )
-          {
-            we::util::codec::encode (os, thing);
-          }
-        };
-      }
-
       struct layer_policy
       {
-        typedef def::codec codec;
         typedef execution_policy<we::mgmt::type::activity_t> exec_policy;
 
         static const size_t NUM_EXTRACTORS = WE_NUM_EXTRACTORS;

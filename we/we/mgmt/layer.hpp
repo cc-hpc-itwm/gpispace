@@ -128,8 +128,10 @@ namespace we { namespace mgmt {
       {
         DLOG(TRACE, "submit (" << id << ", ...)");
 
-        activity_type act = policy::codec::decode(bytes);
-        return submit(id, act);
+        return submit
+          ( id
+          , we::util::codec::decode<we::mgmt::type::activity_t>(bytes)
+          );
       }
 
       void submit(const external_id_type & id, const activity_type &act)
@@ -202,8 +204,10 @@ namespace we { namespace mgmt {
             lock_t lock(mutex_);
             descriptor_ptr desc (lookup (int_id));
             {
-              activity_type act (policy::codec::decode (result));
-              desc->output (act.output());
+              desc->output
+                ( we::util::codec::decode<we::mgmt::type::activity_t> (result)
+                . output()
+                );
               DLOG( TRACE
                   , "finished"
                   << " (" << desc->name() << ")-" << id
@@ -706,7 +710,7 @@ namespace we { namespace mgmt {
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
 
         ext_submit ( ext_id
-                   , policy::codec::encode (ext_act)
+                   , we::util::codec::encode (ext_act)
                    , ext_act.transition().requirements()
                    );
       }
@@ -777,7 +781,7 @@ namespace we { namespace mgmt {
                 + std::string ("' ")
                 + ex.what ()
                 );
-              desc->set_result (policy::codec::encode(desc->activity()));
+              desc->set_result (we::util::codec::encode(desc->activity()));
               post_failed_notification (desc->id());
             }
           }
@@ -897,7 +901,7 @@ namespace we { namespace mgmt {
 
             desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
             desc->set_error_message (ex.what ());
-            desc->set_result (policy::codec::encode (desc->activity ()));
+            desc->set_result (we::util::codec::encode (desc->activity ()));
 
             post_failed_notification (desc->id ());
           }
@@ -936,7 +940,7 @@ namespace we { namespace mgmt {
                  << " external-id := " << desc->from_external_id()
                  );
             ext_failed ( desc->from_external_id()
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        , desc->error_code()
                        , desc->error_message()
                        );
@@ -948,7 +952,7 @@ namespace we { namespace mgmt {
                  << " external-id := " << desc->from_external_id()
                  );
             ext_cancelled ( desc->from_external_id()
-                          //, policy::codec::encode (desc->activity())
+                          //, we::util::codec::encode (desc->activity())
                           );
           }
           else
@@ -958,7 +962,7 @@ namespace we { namespace mgmt {
                  << " external-id := " << desc->from_external_id()
                  );
             ext_finished ( desc->from_external_id()
-                         , policy::codec::encode (desc->activity())
+                         , we::util::codec::encode (desc->activity())
                          );
           }
         }
@@ -970,7 +974,7 @@ namespace we { namespace mgmt {
         if (sig_finished.connected())
           sig_finished ( this
                        , desc->id()
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        );
         remove_activity (desc);
       }
@@ -1021,7 +1025,7 @@ namespace we { namespace mgmt {
           if (sig_failed.connected())
             sig_failed ( this
                        , internal_id
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        );
 
           if (desc->has_parent ())
@@ -1042,7 +1046,7 @@ namespace we { namespace mgmt {
           else if (desc->came_from_external ())
           {
             ext_failed ( desc->from_external_id()
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        , desc->error_code()
                        , desc->error_message()
                        );
@@ -1093,7 +1097,7 @@ namespace we { namespace mgmt {
             LOG(INFO, "notifying agent: failed (" << desc->name() << ")-" << desc->id());
 
             ext_failed ( desc->from_external_id()
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        , desc->error_code()
                        , desc->error_message()
                        );
@@ -1106,7 +1110,7 @@ namespace we { namespace mgmt {
           if (sig_cancelled.connected())
             sig_cancelled ( this
                           , internal_id
-                          , policy::codec::encode(desc->activity())
+                          , we::util::codec::encode(desc->activity())
                           );
 
           remove_activity (desc);
