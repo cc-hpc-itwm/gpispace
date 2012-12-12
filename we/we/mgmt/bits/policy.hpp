@@ -45,14 +45,16 @@ namespace we
             return ::we::util::codec::decode<we::mgmt::type::activity_t>(is);
           }
 
-          static std::string encode(const we::mgmt::type::activity_t& thing)
+          static std::string encode (const we::mgmt::type::activity_t& thing)
           {
-            return ::we::util::codec::encode<we::mgmt::type::activity_t>(thing);
+            return ::we::util::codec::encode (thing);
           }
 
-          static void encode (std::ostream& os, const we::mgmt::type::activity_t& thing)
+          static void encode ( std::ostream& os
+                             , const we::mgmt::type::activity_t& thing
+                             )
           {
-            we::util::codec::encode<we::mgmt::type::activity_t>(os, thing);
+            we::util::codec::encode (os, thing);
           }
         };
       }
