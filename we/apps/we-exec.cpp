@@ -27,9 +27,8 @@ using namespace test;
 namespace po = boost::program_options;
 
 typedef std::string id_type;
-//typedef uint64_t id_type;
 
-typedef we::mgmt::layer<id_type> layer_t;
+typedef we::mgmt::layer layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 typedef layer_t::internal_id_type layer_id_type;
 

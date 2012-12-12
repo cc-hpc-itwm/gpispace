@@ -8,18 +8,26 @@
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
 
+#include <boost/lexical_cast.hpp>
+
 #include <list>
+#include <string>
 
-typedef uint64_t id_type;
+typedef std::string id_type;
 
-typedef we::mgmt::layer<id_type> layer_t;
+typedef we::mgmt::layer layer_t;
 
 typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
 
 static inline id_type generate_id ()
 {
-  static id_type id(0);
-  return ++id;
+  static uint64_t _cnt (0);
+
+  const id_type id (boost::lexical_cast<id_type> (_cnt));
+
+  ++_cnt;
+
+  return id;
 }
 
 template <typename L>

@@ -52,22 +52,20 @@
 #include <we/mgmt/type/activity.hpp>
 
 namespace we { namespace mgmt {
-    template <typename IdType>
-    class layer : public basic_layer<IdType>
+    class layer : public basic_layer<std::string>
     {
     public:
       typedef we::mgmt::type::activity_t activity_type;
 
-      typedef layer<IdType> this_type;
+      typedef layer this_type;
       // external ids
-      typedef IdType id_type;
-      typedef id_type external_id_type;
+      typedef std::string external_id_type;
 
       typedef traits::layer_traits<activity_type> traits_type;
       typedef policy::layer_policy<traits_type> policy;
 
       // internal ids
-      typedef typename traits_type::id_traits internal_id_traits;
+      typedef traits_type::id_traits internal_id_traits;
       typedef petri_net::activity_id_type internal_id_type;
 
       typedef std::string encoded_type;
@@ -75,7 +73,7 @@ namespace we { namespace mgmt {
       typedef std::string result_type;
       typedef std::string status_type;
 
-      typedef typename activity_type::output_t output_type;
+      typedef activity_type::output_t output_type;
 
     private:
       typedef boost::unordered_set<internal_id_type> child_set_t;
@@ -89,7 +87,7 @@ namespace we { namespace mgmt {
 
       typedef detail::descriptor<activity_type, internal_id_type, external_id_type> descriptor_type;
       typedef boost::shared_ptr<descriptor_type> descriptor_ptr;
-      typedef typename boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
+      typedef boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
 
       // manager thread
       typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
@@ -312,63 +310,6 @@ namespace we { namespace mgmt {
         }
       }
 
-      /**
-       * Temporarily suspend the execution of the given petri-net
-       *
-       *          pre-conditions:
-       *                  - a net with the given id had been submitted
-       *
-       *          side-effects:
-       *                  - sub-activities are suspended as well
-       *
-       *          post-conditions:
-       *                  - the network will not be considered in the selection of new activities
-       *                  - the execution of the network is on hold
-       */
-      bool suspend(const external_id_type & id)
-      {
-        DLOG(TRACE, "suspend (" << id << ")");
-
-        try
-        {
-          post_suspend_activity_notification (map_to_internal(id));
-        }
-        catch (std::exception const & ex)
-        {
-          return false;
-        }
-
-        return true;
-      }
-
-      /**
-       * Execution of a network is resumed.
-       *
-       *          pre-conditions:
-       *                  - a net with the given id had been submitted
-       *
-       *          side-effects:
-       *                  - sub-activities are resumed as well
-       *
-       *          post-conditions:
-       *                  - the network will again be considered in the selection of new activities
-       *
-       */
-      bool resume(const external_id_type & id)
-      {
-        DLOG(TRACE, "resume (" << id << ")");
-
-        try
-        {
-          post_resume_activity_notification (map_to_internal(id));
-        }
-        catch (std::exception const & ex)
-        {
-          return false;
-        }
-        return true;
-      }
-
       bool fill_in_info ( const external_id_type & id
                         , activity_information_t & info
                         ) const
@@ -442,7 +383,7 @@ namespace we { namespace mgmt {
         std::vector <internal_id_type> ids;
         ids.reserve (activities_.size());
 
-        for ( typename activities_t::const_iterator desc (activities_.begin())
+        for ( activities_t::const_iterator desc (activities_.begin())
             ; desc != activities_.end()
             ; ++desc
             )
@@ -452,7 +393,7 @@ namespace we { namespace mgmt {
 
         std::sort (ids.begin(), ids.end());
 
-        for ( typename std::vector<internal_id_type>::const_iterator id (ids.begin())
+        for ( std::vector<internal_id_type>::const_iterator id (ids.begin())
             ; id != ids.end()
             ; ++id
             )
@@ -497,7 +438,7 @@ namespace we { namespace mgmt {
                                )
       {
         lock_t lock (mutex_);
-        typename external_to_internal_map_t::const_iterator mapping
+        external_to_internal_map_t::const_iterator mapping
           (ext_to_int_.find(external_id));
 
         if (mapping != ext_to_int_.end())
@@ -511,7 +452,7 @@ namespace we { namespace mgmt {
             );
         }
 
-        ext_to_int_.insert ( typename external_to_internal_map_t::value_type
+        ext_to_int_.insert ( external_to_internal_map_t::value_type
                            (external_id, internal_id)
                            );
         DLOG(TRACE, "added mapping " << external_id << " -> " << internal_id);
@@ -523,7 +464,7 @@ namespace we { namespace mgmt {
       {
         lock_t lock (mutex_);
 
-        typename external_to_internal_map_t::const_iterator mapping
+        external_to_internal_map_t::const_iterator mapping
           (ext_to_int_.find(external_id));
         if (  mapping == ext_to_int_.end()
            || mapping->second != internal_id
@@ -543,11 +484,11 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "deleted mapping " << external_id << " -> " << internal_id);
       }
 
-      typename external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id ) const
+      external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id ) const
       {
         lock_t lock (mutex_);
 
-        typename external_to_internal_map_t::const_iterator mapping (ext_to_int_.find(external_id));
+        external_to_internal_map_t::const_iterator mapping (ext_to_int_.find(external_id));
         if (mapping != ext_to_int_.end())
         {
           return mapping->second;
@@ -797,32 +738,6 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void post_suspend_activity_notification (const internal_id_type & id)
-      {
-        if (is_valid(id))
-        {
-          cmd_q_.put (make_cmd("suspend_activity", id, boost::bind(&this_type::suspend_activity, this, _1)));
-        }
-        else
-        {
-          LOG(ERROR, "id is not valid anymore: " << id);
-        }
-      }
-
-      inline
-      void post_resume_activity_notification (const internal_id_type & id)
-      {
-        if (is_valid(id))
-        {
-          cmd_q_.put (make_cmd("resume_activity", id, boost::bind(&this_type::resume_activity, this, _1)));
-        }
-        else
-        {
-          LOG(ERROR, "id is not valid anymore: " << id);
-        }
-      }
-
-      inline
       void post_execute_notification (const internal_id_type & id)
       {
         if (is_valid(id))
@@ -906,7 +821,7 @@ namespace we { namespace mgmt {
               //       EXTERN: extern
               //    INJECT:  inject to parent / notify client
               //    EXTERN:  send to extern
-              typename policy::exec_policy exec_policy;
+              policy::exec_policy exec_policy;
               do_execute (desc, exec_policy, rank);
             }
             catch (const std::exception & ex)
@@ -1310,12 +1225,6 @@ namespace we { namespace mgmt {
         }
       }
 
-      void suspend_activity(const cmd_t & cmd)
-      {
-        lookup(cmd.dat)->suspend();
-        sig_suspended (this, cmd.dat);
-      }
-
       inline void insert_activity(const descriptor_ptr & desc)
       {
         lock_t lock (mutex_);
@@ -1350,7 +1259,7 @@ namespace we { namespace mgmt {
       inline descriptor_ptr lookup(const internal_id_type & id)
       {
         lock_t (mutex_);
-        typename activities_t::iterator a = activities_.find(id);
+        activities_t::iterator a = activities_.find(id);
         if (a == activities_.end())
           throw exception::activity_not_found<internal_id_type>
             ("lookup("+fhg::util::show(id)+") failed!", id);
@@ -1360,7 +1269,7 @@ namespace we { namespace mgmt {
       inline const descriptor_ptr & lookup(const internal_id_type & id) const
       {
         lock_t (mutex_);
-        typename activities_t::const_iterator a = activities_.find(id);
+        activities_t::const_iterator a = activities_.find(id);
         if (a == activities_.end())
           throw exception::activity_not_found<internal_id_type>
             ("lookup("+fhg::util::show(id)+") failed!", id);
