@@ -147,6 +147,13 @@ namespace fhg
               , boost::bind (&data::handle::net::add_place, net(), this)
               );
 
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_top_level_port"))
+              , SIGNAL (triggered())
+              , this
+              , boost::bind (&data::handle::function::add_port, function(), this)
+              );
+
             menu_new->addSeparator();
 
             //! \todo Is this really needed?
@@ -208,7 +215,7 @@ namespace fhg
                 ( menu->addAction (tr ("port_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (nyi, "port: delete")
+                , boost::bind (&data::handle::port::remove, handle, this)
                 );
             }
             break;
