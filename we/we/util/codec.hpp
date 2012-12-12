@@ -27,7 +27,7 @@ namespace we
 {
   namespace util
   {
-    struct base_codec
+    namespace codec
     {
       template <typename T>
       static void encode (std::ostream & s, const T & t)
@@ -74,8 +74,6 @@ namespace we
         return t;
       }
     };
-
-    typedef base_codec codec;
   }
 }
 
