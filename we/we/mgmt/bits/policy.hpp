@@ -33,31 +33,26 @@ namespace we
     {
       namespace def
       {
-        template <typename T, typename BaseCodec = ::we::util::codec>
         struct codec
         {
-          typedef T type;
-          typedef BaseCodec base_codec;
-          typedef std::string bytes_type;
-
-          static type decode(const bytes_type & data)
+          static we::mgmt::type::activity_t decode (const std::string& data)
           {
-            return base_codec::template decode<T>(data);
+            return ::we::util::codec::decode<we::mgmt::type::activity_t>(data);
           }
 
-          static type decode(std::istream & is)
+          static we::mgmt::type::activity_t decode (std::istream& is)
           {
-            return base_codec::template decode<T>(is);
+            return ::we::util::codec::decode<we::mgmt::type::activity_t>(is);
           }
 
-          static bytes_type encode(type const & thing)
+          static std::string encode(const we::mgmt::type::activity_t& thing)
           {
-            return base_codec::template encode<T>(thing);
+            return ::we::util::codec::encode<we::mgmt::type::activity_t>(thing);
           }
 
-          static void encode (std::ostream & os, type const & thing)
+          static void encode (std::ostream& os, const we::mgmt::type::activity_t& thing)
           {
-            base_codec::template encode<T>(os, thing);
+            we::util::codec::encode<we::mgmt::type::activity_t>(os, thing);
           }
         };
 
@@ -90,7 +85,7 @@ namespace we
 
       struct layer_policy
       {
-        typedef def::codec<we::mgmt::type::activity_t> codec;
+        typedef def::codec codec;
         typedef def::validator<we::mgmt::type::activity_t, true> validator;
         typedef execution_policy<we::mgmt::type::activity_t> exec_policy;
 
