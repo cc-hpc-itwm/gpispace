@@ -58,7 +58,6 @@ namespace fhg
                                  );
 
         public slots:
-          void slot_add_struct ();
           void auto_layout();
 
           // # connection ############################################

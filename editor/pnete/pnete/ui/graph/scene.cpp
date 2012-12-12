@@ -91,41 +91,6 @@ namespace fhg
             );
         }
 
-        //! \todo This is duplicate code, also available in main window.
-        void scene_type::init_menu_context ()
-        {
-          {
-            QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
-
-            fhg::util::qt::boost_connect<void (void)>
-              ( menu_new->addAction (tr ("new_transition"))
-              , SIGNAL (triggered())
-              , boost::bind (&data::handle::net::add_transition, net(), this)
-              );
-
-            fhg::util::qt::boost_connect<void (void)>
-              ( menu_new->addAction (tr ("new_place"))
-              , SIGNAL (triggered())
-              , boost::bind (&data::handle::net::add_place, net(), this)
-              );
-
-            menu_new->addSeparator();
-
-            //! \todo Is this really needed?
-            connect ( menu_new->addAction (tr ("new_struct"))
-                    , SIGNAL (triggered())
-                    , SLOT (slot_add_struct())
-                    );
-          }
-
-          _menu_context.addSeparator();
-
-          connect ( _menu_context.addAction (tr ("auto_layout"))
-                  , SIGNAL (triggered())
-                  , SLOT (auto_layout())
-                  );
-        }
-
         namespace
         {
           template<typename handle_type>
@@ -160,6 +125,42 @@ namespace fhg
           }
         }
 
+        //! \todo This is duplicate code, also available in main window.
+        void scene_type::init_menu_context ()
+        {
+          {
+            QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
+
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_transition"))
+              , SIGNAL (triggered())
+              , boost::bind (&data::handle::net::add_transition, net(), this)
+              );
+
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_place"))
+              , SIGNAL (triggered())
+              , boost::bind (&data::handle::net::add_place, net(), this)
+              );
+
+            menu_new->addSeparator();
+
+            //! \todo Is this really needed?
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_struct"))
+              , SIGNAL (triggered())
+              , boost::bind (nyi, "net: new struct")
+              );
+          }
+
+          _menu_context.addSeparator();
+
+          connect ( _menu_context.addAction (tr ("auto_layout"))
+                  , SIGNAL (triggered())
+                  , SLOT (auto_layout())
+                  );
+        }
+
         void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
           if ( base_item* item_below_cursor
@@ -181,7 +182,7 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("port_set_type"))
                 , SIGNAL (triggered())
                 , boost::bind ( set_we_type_for_handle<data::handle::port>
@@ -197,7 +198,7 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("port_delete"))
                 , SIGNAL (triggered())
                 , boost::bind (nyi, "port: delete")
@@ -212,7 +213,7 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("transition_add_port"))
                 , SIGNAL (triggered())
                 , boost::bind (nyi, "transition: add port")
@@ -220,7 +221,7 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("transition_delete"))
                 , SIGNAL (triggered())
                 , boost::bind (&data::handle::transition::remove, handle, this)
@@ -235,7 +236,7 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("place_set_type"))
                 , SIGNAL (triggered())
                 , boost::bind ( set_we_type_for_handle<data::handle::place>
@@ -251,7 +252,7 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("place_delete"))
                 , SIGNAL (triggered())
                 , boost::bind (&data::handle::place::remove, handle, this)
@@ -282,7 +283,7 @@ namespace fhg
                 menu->addSeparator();
               }
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("connection_delete"))
                 , SIGNAL (triggered())
                 , boost::bind (&data::handle::connect::remove, handle, this)
@@ -297,7 +298,7 @@ namespace fhg
                   <port_place_association*> (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("port_place_assoc_delete"))
                 , SIGNAL (triggered())
                 , boost::bind ( &data::handle::port::remove_place_association
@@ -324,11 +325,6 @@ namespace fhg
             _menu_context.popup (event->screenPos());
           }
           event->accept();
-        }
-
-        void scene_type::slot_add_struct ()
-        {
-          qDebug() << "NYI: add: struct";
         }
 
         void scene_type::create_pending_connection (connectable_item* item)
