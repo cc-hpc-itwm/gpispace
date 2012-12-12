@@ -309,7 +309,6 @@ namespace fhg
                                      , ui::graph::connectable::direction::OUT
                                      , _place_item_by_name
                                      , _root
-                                     , _function
                                      );
           from::many (&wptl, _function.get().in().ids(), from::port);
         }
@@ -319,7 +318,6 @@ namespace fhg
                                      , ui::graph::connectable::direction::IN
                                      , _place_item_by_name
                                      , _root
-                                     , _function
                                      );
           from::many (&wptl, _function.get().out().ids(), from::port);
         }
@@ -400,7 +398,6 @@ namespace fhg
         , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
         , data::internal_type* root
-        , const ::xml::parse::id::ref::function& function
         )
           : _scene (scene)
           , _place_item_by_name (place_item_by_name)
@@ -408,7 +405,6 @@ namespace fhg
           , _direction (direction)
           , _port_item ()
           , _root (root)
-          , _function (function)
       {}
 
       WSIG(port_toplevel, port::open, ::xml::parse::id::ref::port, id)

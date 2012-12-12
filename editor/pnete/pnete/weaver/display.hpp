@@ -153,7 +153,6 @@ namespace fhg
                                , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                , data::internal_type* root
-                               , const ::xml::parse::id::ref::function&
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -166,7 +165,6 @@ namespace fhg
         const ui::graph::connectable::direction::type _direction;
         ui::graph::port_item* _port_item;
         data::internal_type* _root;
-        ::xml::parse::id::ref::function _function;
       };
 
       class place

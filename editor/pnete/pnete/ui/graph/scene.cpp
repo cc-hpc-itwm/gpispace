@@ -87,6 +87,11 @@ namespace fhg
 
           // top-level-ports
           _net.connect_to_change_mgr
+            (this, "port_added", "data::handle::port");
+          _net.connect_to_change_mgr
+            (this, "port_deleted", "data::handle::port");
+
+          _net.connect_to_change_mgr
             ( this
             , "place_association_set"
             , "data::handle::port, boost::optional<std::string>"
@@ -766,6 +771,35 @@ namespace fhg
         }
 
         // # port ####################################################
+        void scene_type::port_added
+          (const QObject* origin, const data::handle::port& port)
+        {
+          if (is_in_my_net (port))
+          {
+            weaver::item_by_name_type places
+              (name_map_for_items (items_of_type<place_item>()));
+
+            //! \note direction is inverted. Should not be inverted
+            //! here, but in the drawing code of that port, I guess.
+            weaver::port_toplevel wptl
+              (this, ui::graph::connectable::direction::OUT, places, _internal);
+
+            weaver::from::port (&wptl, port.id());
+
+            if (origin == this)
+            {
+              item_with_handle<top_level_port_item> (port)->
+                no_undo_setPos (_mouse_position);
+            }
+          }
+        }
+
+        void scene_type::port_deleted
+          (const QObject* origin, const data::handle::port& port)
+        {
+          remove_item_for_handle<port_item> (port);
+        }
+
         void scene_type::place_association_set
           ( const QObject* origin
           , const data::handle::port& port
