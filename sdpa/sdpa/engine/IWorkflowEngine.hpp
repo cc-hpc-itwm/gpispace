@@ -29,7 +29,6 @@
 
 #ifdef USE_REAL_WE
 	#include <we/mgmt/basic_layer.hpp>
-	#include <we/mgmt/bits/traits.hpp>
 	#include <we/mgmt/bits/signal.hpp>
 	#include <we/type/requirement.hpp>
 	#include <we/we.hpp>

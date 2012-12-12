@@ -42,7 +42,6 @@
 #include <we/mgmt/basic_layer.hpp>
 
 #include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/commands.hpp>
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
@@ -50,6 +49,7 @@
 #include <we/mgmt/bits/descriptor.hpp>
 #include <we/mgmt/bits/execution_policy.hpp>
 
+#include <we/type/id.hpp>
 #include <we/type/requirement.hpp>
 #include <we/mgmt/type/activity.hpp>
 
@@ -454,7 +454,7 @@ namespace we { namespace mgmt {
         , sig_failed("sig_failed")
         , sig_cancelled("sig_cancelled")
         , sig_executing("sig_executing")
-        , internal_id_gen_(&traits::id_traits::generate)
+        , internal_id_gen_(&petri_net::activity_id_generate)
       {
         start();
       }
@@ -467,7 +467,7 @@ namespace we { namespace mgmt {
         , sig_cancelled("sig_cancelled")
         , sig_executing("sig_executing")
         , external_id_gen_(gen)
-        , internal_id_gen_(&traits::id_traits::generate)
+        , internal_id_gen_(&petri_net::activity_id_generate)
       {
         connect (exec_layer);
         start();

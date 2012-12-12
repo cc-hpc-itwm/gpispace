@@ -7,7 +7,6 @@
 #include <we/type/transition.hpp>
 
 #include <we/mgmt/type/flags.hpp>
-#include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/transition_visitors.hpp>
 
 #include <we/type/bits/transition/optimize.hpp>
