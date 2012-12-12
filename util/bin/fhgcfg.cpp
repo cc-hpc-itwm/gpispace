@@ -63,6 +63,8 @@ int main (int ac, char *av[])
                                               > flat_map_parser_t;
 
   bool modified (false);
+  int exit_code (0);
+
   flat_map_parser_t m;
   try
   {
@@ -76,10 +78,8 @@ int main (int ac, char *av[])
       fhg::util::ini::parse (file_name, boost::ref(m));
     }
   }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "W: could not parse config: " << ex.what () << std::endl;
-  }
+  catch (std::exception const &)
+  {}
 
   if (vm.count ("add"))
   {
@@ -95,9 +95,14 @@ int main (int ac, char *av[])
   }
   else if (vm.count ("get"))
   {
-    std::string s(m.get (key, val));
-    if (!s.empty())
-      std::cout << s << std::endl;
+    if (m.has_key (key) || not val.empty ())
+    {
+      std::cout << m.get (key, val) << std::endl;
+    }
+    else
+    {
+      exit_code = 1;
+    }
   }
   else if (vm.count ("del"))
   {
@@ -137,9 +142,9 @@ int main (int ac, char *av[])
     {
       std::cerr << "could not write config: " << std::endl;
       std::cerr << ex.what () << std::endl;
-      return EXIT_FAILURE;
+      exit_code = 2;
     }
   }
 
-  return EXIT_SUCCESS;
+  return exit_code;
 }
