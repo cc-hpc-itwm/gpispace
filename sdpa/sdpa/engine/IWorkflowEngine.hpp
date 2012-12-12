@@ -59,7 +59,6 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 #ifdef USE_REAL_WE
 		typedef we::mgmt::requirement_t<std::string> requirement_t;
 		typedef std::list<requirement_t> requirement_list_t;
-		typedef we::preference_t preference_t;
 		typedef we::mgmt::activity_information_t activity_information_t;
 		typedef we::mgmt::basic_layer IWorkflowEngine;
 #else
