@@ -29,7 +29,8 @@ gspc_log_trace rexec "$node $@"
 
 if [ $(hostname -s) = "$node" ]
 then
-    "$@"
+    /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
 else
-    ssh $ssh_opts $node "$@"
+    gspc_log_trace rexec ssh $ssh_opts $node /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
+    ssh $ssh_opts $node /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
 fi
