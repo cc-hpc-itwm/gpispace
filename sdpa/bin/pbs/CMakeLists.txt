@@ -22,6 +22,7 @@ set (scripts
   gspc-rexec
   gspc-config
   gspc-list-commands
+  gspc-check-port
 )
 
 set (files
