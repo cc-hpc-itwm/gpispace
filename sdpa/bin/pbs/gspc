@@ -18,30 +18,8 @@ fi
 
 function usage()
 {
-    cat <<EOF
-usage: $(basename $0) [-h|--help] [options] [--]
-               <command> [<args>]
-
-Options:
-
-    -h|--help      : print usage information
-    --version      : print the long version
-    -v|--verbose   : verbosity level (specify multiple times)
-    --dumpversion  : print the short version string
-    --revision     : print the revision information
-
-Environment information:
-
-    --exec-path    : print the path to the helper scripts
-
-Commands:
-
-$(gspc list-commands --indent=4)
-EOF
+    gspc help 2>&1
 }
-#   list-commands          : list all available commands
-#   config                 : set/get config values
-#   rexec <node> <command> : executes a command remotely
 
 function _resolve_command_path ()
 {
