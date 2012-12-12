@@ -42,10 +42,8 @@ namespace we
         };
       }
 
-      template <typename Activity>
       struct layer_traits
       {
-        typedef Activity activity_type;
         typedef def::id_traits<petri_net::activity_id_type> id_traits;
       };
     }

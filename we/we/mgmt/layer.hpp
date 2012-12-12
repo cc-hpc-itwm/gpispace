@@ -61,11 +61,10 @@ namespace we { namespace mgmt {
       // external ids
       typedef std::string external_id_type;
 
-      typedef traits::layer_traits<activity_type> traits_type;
-      typedef policy::layer_policy<traits_type> policy;
+      typedef policy::layer_policy policy;
 
       // internal ids
-      typedef traits_type::id_traits internal_id_traits;
+      typedef traits::layer_traits::id_traits internal_id_traits;
       typedef petri_net::activity_id_type internal_id_type;
 
       typedef std::string encoded_type;

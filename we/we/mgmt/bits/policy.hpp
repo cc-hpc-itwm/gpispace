@@ -88,12 +88,11 @@ namespace we
         };
       }
 
-      template <typename Traits>
       struct layer_policy
       {
-        typedef def::codec<typename Traits::activity_type> codec;
-        typedef def::validator<typename Traits::activity_type, true> validator;
-        typedef execution_policy<typename Traits::activity_type> exec_policy;
+        typedef def::codec<we::mgmt::type::activity_t> codec;
+        typedef def::validator<we::mgmt::type::activity_t, true> validator;
+        typedef execution_policy<we::mgmt::type::activity_t> exec_policy;
 
         static const size_t NUM_EXTRACTORS = WE_NUM_EXTRACTORS;
         static const size_t NUM_INJECTORS  = WE_NUM_INJECTORS;
