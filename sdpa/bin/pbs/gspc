@@ -13,15 +13,15 @@ fi
 function usage()
 {
     cat <<EOF
-usage: $(basename $0) [-h|--help] [-V|--version]
+usage: $(basename $0) [-h|--help] [options] [--]
                <command> [<args>]
 
 Options:
 
    -h|--help      : print usage information
-   -V|--version   : print the long version
+   --version      : print the long version
    -v|--verbose   : verbosity level (specify multiple times)
-   --dump-version : print the short version string
+   --dumpversion  : print the short version string
    --revision     : print the revision information
 
 Environment information:
@@ -37,7 +37,7 @@ EOF
 
 while true ; do
     case "$1" in
-        -h|--help) usage; exit 0 ;;
+        --help) usage; exit 0 ;;
         --gspc-dir)
             if [ -z "$2" -o ! -e "$2" ] ; then
                 echo >&2 "Directory does not exist: $2"
@@ -56,7 +56,7 @@ while true ; do
             shift
             exit 0
             ;;
-        -V|--version)
+        --version)
             echo "GPI-Space ${GSPC_INFO_VERSION}"
             shift
             exit 0
@@ -79,8 +79,9 @@ while true ; do
                 flags="${flags:1}"
                 case "$flag" in
                     v) verbose=$((verbose+1)) ;;
+                    h) usage ; exit 0 ;;
                     *)
-                        echo >&2 "invalid flag: $flag"
+                        echo >&2 "gspc: invalid flag: $flag"
                         exit 1
                         ;;
                 esac
@@ -89,7 +90,7 @@ while true ; do
             ;;
         --) shift; break ;;
         -*)
-            echo >&2 "invalid option: $1"
+            echo >&2 "gspc: invalid option: $1"
             exit 1
             ;;
         *) break ;;
