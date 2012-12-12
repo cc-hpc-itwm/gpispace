@@ -116,13 +116,8 @@ namespace fhg
                                );
 
         // -- place --------------------------------------------------
-        void add_place ( const QObject*
-                       , const data::handle::net&
-                       );
-
-        void delete_place ( const QObject*
-                          , const data::handle::place&
-                          );
+        void add_place (const QObject*, const data::handle::net&);
+        void delete_place (const QObject*, const data::handle::place&);
 
         void set_type
           (const QObject*, const data::handle::place&, const QString&);
@@ -147,6 +142,9 @@ namespace fhg
                                );
 
         // -- port ---------------------------------------------------
+        void add_port (const QObject*, const data::handle::function&);
+        void delete_port (const QObject*, const data::handle::port&);
+
         void set_property ( const QObject*
                           , const data::handle::port&
                           , const ::we::type::property::key_type&
@@ -264,6 +262,9 @@ namespace fhg
           (const QObject*, const data::handle::place&, const QString&);
 
         // - port ----------------------------------------------------
+        void port_added (const QObject*, const data::handle::port&);
+        void port_deleted (const QObject*, const data::handle::port&);
+
         void property_changed ( const QObject*
                               , const data::handle::port&
                               , const we::type::property::key_type&

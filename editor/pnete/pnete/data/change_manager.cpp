@@ -73,6 +73,8 @@ namespace fhg
           EXPOSE (place_type_set);
 
           // - port ----------------------------------------------------
+          EXPOSE (port_added);
+          EXPOSE (port_deleted);
           EXPOSE (port_type_set);
           EXPOSE (place_association_set);
 
@@ -653,6 +655,99 @@ namespace fhg
         };
 
         // -- port --------------------------------------------------
+        void add_port_impl ( ACTION_ARG_LIST
+                           , const ::xml::parse::id::ref::function& function
+                           , const ::xml::parse::id::ref::port& port
+                           )
+        {
+          function.get_ref().push_in (port);
+
+          change_manager.emit_signal
+            (&signal::port_added, origin, handle::port (port, change_manager));
+        }
+
+        void remove_port_impl ( ACTION_ARG_LIST
+                              , const ::xml::parse::id::ref::function& function
+                              , const ::xml::parse::id::ref::port& port
+                              )
+        {
+          change_manager.emit_signal
+            (&signal::port_deleted, origin, handle::port (port, change_manager));
+
+          //! \todo Encapsulate? Do differently?
+          if (function.get().in().has (port))
+          {
+            function.get_ref().remove_in (port);
+          }
+          else if (function.get().out().has (port))
+          {
+            function.get_ref().remove_out (port);
+          }
+          else if (function.get().tunnel().has (port))
+          {
+            function.get_ref().remove_tunnel (port);
+          }
+          else
+          {
+            throw std::runtime_error ("No port with that id in that function.");
+          }
+        }
+
+        class add_port : public QUndoCommand
+        {
+        public:
+          add_port ( ACTION_ARG_LIST
+                   , const ::xml::parse::id::ref::function& function
+                   , const ::xml::parse::id::ref::port& port
+                   )
+            : ACTION_INIT ("add_port_action")
+            , _port (port)
+            , _function (function)
+          { }
+
+          virtual void undo()
+          {
+            remove_port_impl (_change_manager, NULL, _function, _port);
+          }
+
+          virtual void redo()
+          {
+            add_port_impl (_change_manager, _origin, _function, _port);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          ::xml::parse::id::ref::port _port;
+          ::xml::parse::id::ref::function _function;
+        };
+
+        class remove_port : public QUndoCommand
+        {
+        public:
+          remove_port (ACTION_ARG_LIST, const ::xml::parse::id::ref::port& port)
+            : ACTION_INIT ("remove_port_action")
+            , _port (port)
+            , _function (_port.get().parent()->make_reference_id())
+          { }
+
+          virtual void undo()
+          {
+            add_port_impl (_change_manager, NULL, _function, _port);
+          }
+
+          virtual void redo()
+          {
+            remove_port_impl (_change_manager, _origin, _function, _port);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          ::xml::parse::id::ref::port _port;
+          ::xml::parse::id::ref::function _function;
+        };
+
         void port_set_type_impl
           (ACTION_ARG_LIST, const handle::port& port, const QString& type)
         {
@@ -1255,6 +1350,43 @@ namespace fhg
       }
 
       // - port ------------------------------------------------------
+      //! \todo Take the type (in, out, tunnel). Currently defaults to in.
+      void change_manager_t::add_port
+        ( const QObject* origin
+        , const handle::function& function
+        )
+      {
+        std::string name ("in_port");
+        while (function.get().in().has (name))
+        {
+          name = inc (name);
+        }
+
+        const ::xml::parse::id::ref::port port
+          ( ::xml::parse::type::port_type
+            ( function.id().id_mapper()->next_id()
+            , function.id().id_mapper()
+            , function.id().id()
+            , name
+            //! \todo Default type?
+            , ""
+            , boost::none
+            ).make_reference_id()
+          );
+
+        push (new action::add_port (*this, origin, function.id(), port));
+      }
+
+      void change_manager_t::delete_port
+        ( const QObject* origin
+        , const handle::port& port
+        )
+      {
+        //! \todo Find all connections to this port and erase them in
+        //! a macro. Or do that inside the action class.
+        push (new action::remove_port (*this, origin, port.id()));
+      }
+
       void change_manager_t::set_property
         ( const QObject* origin
         , const data::handle::port& port
