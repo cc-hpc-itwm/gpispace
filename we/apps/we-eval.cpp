@@ -25,6 +25,8 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
+#include <boost/program_options.hpp>
+
 struct wfe_exec_context : public we::mgmt::context<>
 {
   typedef petri_net::net net_t;
