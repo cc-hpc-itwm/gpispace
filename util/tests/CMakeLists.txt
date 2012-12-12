@@ -22,6 +22,7 @@ fhg_add_test(test_assert.cpp
   )
 
 fhg_add_test(test_bool.cpp
+  LINK_LIBRARIES fhg-util
   DESCRIPTION "Tests the bool_t wrapper around bool"
 )
 

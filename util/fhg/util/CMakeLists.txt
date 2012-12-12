@@ -54,6 +54,7 @@ set (srcs
   setproctitle.c
   threadname.cpp
   remove_prefix.cpp
+  read_bool.cpp
 )
 
 add_library (fhg-util ${srcs})
