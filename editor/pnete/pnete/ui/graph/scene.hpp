@@ -58,7 +58,6 @@ namespace fhg
                                  );
 
           data::internal_type* internal() const;
-          data::change_manager_t& change_manager() const;
 
         public slots:
           void slot_add_struct ();

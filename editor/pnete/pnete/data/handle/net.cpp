@@ -22,6 +22,14 @@ namespace fhg
         {
           change_manager().add_transition (sender, *this);
         }
+        void net::add_transition
+          ( const QObject* origin
+          , const xml::parse::id::ref::function& function
+          ) const
+        {
+          change_manager().add_transition (origin, function, *this);
+        }
+
         void net::add_place (const QObject* sender) const
         {
           change_manager().add_place (sender, *this);

@@ -32,6 +32,8 @@ namespace fhg
               );
 
           void add_transition (const QObject* sender) const;
+          void add_transition
+            (const QObject*, const xml::parse::id::ref::function&) const;
           void add_place (const QObject* sender) const;
 
           //! \todo Are these correct in net? They might fit more in

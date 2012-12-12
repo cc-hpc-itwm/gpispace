@@ -166,6 +166,7 @@ namespace fhg
                               , _place_item_by_name
                               , _port_in_item_by_name
                               , _port_out_item_by_name
+                              , _root
                               );
 
         from::many (&wc, cs.ids(), from::connection);
@@ -229,6 +230,7 @@ namespace fhg
                              , item_by_name_type& place_item_by_name
                              , item_by_name_type& ports_in
                              , item_by_name_type& ports_out
+                             , data::internal_type* root
                              )
         : _scene (scene)
         , _place_item_by_name (place_item_by_name)
@@ -237,6 +239,7 @@ namespace fhg
         , _port ()
         , _place ()
         , _id (boost::none)
+        , _root (root)
       {}
 
       WSIG (connection, connection::open, ::xml::parse::id::ref::connect, id)
@@ -272,8 +275,7 @@ namespace fhg
             std::runtime_error ("connection: place " + _place + " not found");
         }
 
-        //! \todo Do not take change_manager from scene, but from root.
-        data::handle::connect handle (*_id, _scene->change_manager());
+        data::handle::connect handle (*_id, _root->change_manager());
         if (!is_out)
         {
           _scene->create_connection
