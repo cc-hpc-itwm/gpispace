@@ -37,16 +37,18 @@
 #include <boost/unordered_set.hpp>
 #include <boost/serialization/access.hpp>
 
+#include <we/we-config.hpp>
+
 #include <we/mgmt/basic_layer.hpp>
 
 #include <we/mgmt/exception.hpp>
 #include <we/mgmt/bits/traits.hpp>
-#include <we/mgmt/bits/policy.hpp>
 #include <we/mgmt/bits/commands.hpp>
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
+#include <we/mgmt/bits/execution_policy.hpp>
 
 #include <we/type/requirement.hpp>
 #include <we/mgmt/type/activity.hpp>
@@ -60,8 +62,6 @@ namespace we { namespace mgmt {
       typedef layer this_type;
       // external ids
       typedef std::string external_id_type;
-
-      typedef policy::layer_policy policy;
 
       // internal ids
       typedef traits::layer_traits::id_traits internal_id_traits;
@@ -522,11 +522,11 @@ namespace we { namespace mgmt {
         manager_   = boost::thread(boost::bind(&this_type::manager, this));
         fhg::util::set_threadname (manager_, "[we-mgr]");
 
-        active_nets_ = new active_nets_t[policy::NUM_EXTRACTORS];
-        start_threads ("we-extract", policy::NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
+        active_nets_ = new active_nets_t[WE_NUM_EXTRACTORS];
+        start_threads ("we-extract", WE_NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
 
-        inj_q_ = new active_nets_t[policy::NUM_INJECTORS];
-        start_threads ("we-inject", policy::NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
+        inj_q_ = new active_nets_t[WE_NUM_INJECTORS];
+        start_threads ("we-inject", WE_NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
       }
 
       template <typename ThreadList, typename ThreadFunc>
@@ -764,7 +764,7 @@ namespace we { namespace mgmt {
               //       EXTERN: extern
               //    INJECT:  inject to parent / notify client
               //    EXTERN:  send to extern
-              policy::exec_policy exec_policy;
+              policy::execution_policy<we::mgmt::type::activity_t> exec_policy;
               do_execute (desc, exec_policy, rank);
             }
             catch (const std::exception & ex)
@@ -799,7 +799,7 @@ namespace we { namespace mgmt {
       {
         switch (desc->execute (exec_policy))
         {
-        case policy::exec_policy::EXTRACT:
+        case policy::execution_policy<we::mgmt::type::activity_t>::EXTRACT:
           {
             DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc->name());
 
@@ -813,16 +813,16 @@ namespace we { namespace mgmt {
 
               switch (child->execute (exec_policy))
               {
-              case policy::exec_policy::EXTRACT:
+              case policy::execution_policy<we::mgmt::type::activity_t>::EXTRACT:
                 insert_activity(child);
                 post_execute_notification (child->id());
                 break;
-              case policy::exec_policy::INJECT:
+              case policy::execution_policy<we::mgmt::type::activity_t>::INJECT:
                 child->finished();
                 DLOG(INFO, "extractor-" << rank << ": finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
                 desc->inject (*child);
                 break;
-              case policy::exec_policy::EXTERNAL:
+              case policy::execution_policy<we::mgmt::type::activity_t>::EXTERNAL:
                 insert_activity (child);
                 execute_externally (child->id());
                 break;
@@ -845,10 +845,10 @@ namespace we { namespace mgmt {
             }
           }
           break;
-        case policy::exec_policy::INJECT:
+        case policy::execution_policy<we::mgmt::type::activity_t>::INJECT:
           do_inject (desc);
           break;
-        case policy::exec_policy::EXTERNAL:
+        case policy::execution_policy<we::mgmt::type::activity_t>::EXTERNAL:
           DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc->id());
           execute_externally (desc->id());
           break;
