@@ -28,36 +28,69 @@ function gspc_is_verbose_enabled ()
     return 1
 }
 
+function gspc_isatty()
+{
+    local f="$1" ; shift
+    f=$(readlink -f "$f")
+    if [ -e "$f" ] ; then
+        tty -s < "$f" >/dev/null 2>&1
+        return $?
+    else
+        return 1
+    fi
+}
+
 function gspc_log_impl ()
 {
     local level="$1"; shift
     local component="$1" ; shift
 
     level_id='T'
-    color_on=""
-    color_off='\033[0m'
+    s_color=""
+    e_color='\e[0m'
+
+    color_mode=$(gspc config --global --get color.mode)
+    if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
+        if gspc_isatty /dev/stderr ; then
+            color_mode=on
+        else
+            color_mode=off
+        fi
+    fi
+
+    if [ "$color_mode" = "on" ]
+    then
+        color_red="\e[0;32m"
+        color_purple="\e[0;35m"
+        color_yellow="\e[0;33m"
+    fi
 
     case "$level" in
         trace)
+            s_color="$color_normal"
             level_id=T
             ;;
         debug)
+            s_color="$color_normal"
             level_id=D
             ;;
         info)
+            s_color="$color_normal"
             level_id=I
             ;;
         warn)
+            s_color="$color_yellow"
             level_id=W
-            color_on='\033[0;35m'
             ;;
         error)
+            s_color="$color_purple"
             level_id=E
             ;;
         *)
+            s_color="$color_normal"
             ;;
     esac
-    echo -e >&2 "${color_on}[${level_id}] ($component): $@${color_off}"
+    echo -e >&2 "${s_color}[${level_id}] ($component): $@${e_color}"
 }
 
 function gspc_log_trace ()
