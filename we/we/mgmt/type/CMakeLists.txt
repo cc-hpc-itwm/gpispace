@@ -2,8 +2,6 @@
 set (hdrs
   activity.hpp
   flags.hpp
-  requirement.hpp
-  preference.hpp
   )
 
 set (srcs
