@@ -8,6 +8,7 @@ command_directory=$(gspc --exec-path)
 
 indent=0
 only_important=true
+only_names=false
 
 while true ; do
     case "$1" in
@@ -15,12 +16,16 @@ while true ; do
             indent=$(( ${1:9} ))
             shift
             ;;
+        --names-only)
+            only_names=true
+            shift
+            ;;
         --all)
             only_important=false
             shift
             ;;
         -h|--help)
-            echo >&2 "usage: list-commands [-h|--help] [--indent=N] [--all]"
+            echo >&2 "usage: list-commands [-h|--help] [--indent=N] [--all] [--names-only]"
             exit 0
             shift
             ;;
@@ -39,12 +44,15 @@ find "$command_directory" -name "gspc-*" | while read path ; do
             fi
         fi
 
-        desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
+        if ! $only_names ; then
+            desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
+        fi
+
         if [ -n "$desc" ]
         then
             printf "%${indent}s%-20s %s\n" "" "${executable:5}" "${desc}"
         else
-            printf "%${indent}s%-20s\n" "" "${executable:5}"
+            printf "%${indent}s%s\n" "" "${executable:5}"
         fi
     fi
 done
