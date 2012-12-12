@@ -441,7 +441,7 @@ namespace we { namespace mgmt {
 
         if (mapping != ext_to_int_.end())
         {
-          throw exception::already_there<external_id_type>
+          throw exception::already_there
             ( "already_there: ext_id := "
             + fhg::util::show(external_id)
             + " -> int_id := "

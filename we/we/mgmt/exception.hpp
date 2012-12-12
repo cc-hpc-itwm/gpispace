@@ -55,18 +55,24 @@ namespace we
         {}
       };
 
-      template <typename ExternalId>
       struct already_there : public std::runtime_error
       {
-        already_there (const std::string & msg, ExternalId const & ext_id)
+      public:
+        typedef std::string external_id_type;
+
+        already_there ( const std::string& msg
+                      , const external_id_type& ext_id
+                      )
           : std::runtime_error (msg)
-          , id (ext_id)
-        { }
-
+          , _id (ext_id)
+        {}
         ~already_there () throw ()
-        { }
+        {}
 
-        const ExternalId id;
+        const external_id_type& id() const { return _id; }
+
+      private:
+        const external_id_type _id;
       };
 
       template <typename IdType>
@@ -82,6 +88,8 @@ namespace we
 
         const IdType id;
       };
-}}}
+    }
+  }
+}
 
 #endif
