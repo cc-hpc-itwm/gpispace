@@ -116,6 +116,16 @@ namespace ini
         }
       }
 
+      bool has_key (key_desc_t const & key) const
+      {
+        return has_key (detail::flatten (key));
+      }
+
+      bool has_key (std::string const &key) const
+      {
+        return entries.find (key) != entries.end ();
+      }
+
       void put ( std::string const & key, std::string const & val )
       {
         entries [key] = val;
