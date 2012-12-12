@@ -182,8 +182,7 @@ namespace we
           return activity_;
         }
 
-        template <typename Output>
-        void output (Output o)
+        void output (const we::mgmt::type::activity_t::output_t& o)
         {
           lock_t lock(mutex_);
           activity_.set_output (o);
