@@ -191,7 +191,6 @@ namespace fhg
 
             switch (item_below_cursor->type())
             {
-            case base_item::port_graph_type:
             case base_item::top_level_port_graph_type:
             {
               const data::handle::port handle
@@ -221,6 +220,30 @@ namespace fhg
                 , SIGNAL (triggered())
                 , item_below_cursor
                 , boost::bind (&data::handle::port::remove, handle, this)
+                );
+            }
+            break;
+
+            case base_item::port_graph_type:
+            {
+              const data::handle::port handle
+                ( fhg::util::qt::throwing_qobject_cast<port_item*>
+                  (item_below_cursor)->handle()
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu->addAction(tr ("port_set_type"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind ( set_we_type_for_handle<data::handle::port>
+                              , handle
+                              , tr ("port_set_type_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("port_set_type_prompt")
+                              , QString::fromStdString (handle.get().type)
+                              , event
+                              , this
+                              )
                 );
             }
             break;
