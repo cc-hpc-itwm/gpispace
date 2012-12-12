@@ -3,6 +3,13 @@
 #  this file is supposed to be sourced:
 #
 #    . $(gspc --exec-path)/gspc-sh-setup
+#
+
+################################################################################
+#                                                                              #
+#                        Log functions                                         #
+#                                                                              #
+################################################################################
 
 function gspc_is_verbose_enabled ()
 {
