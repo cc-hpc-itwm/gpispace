@@ -181,7 +181,6 @@ main (int argc, char ** argv)
 {
   std::string input ("/dev/stdin");
   std::string output ("/dev/stdout");
-  bool xml (false);
 
   po::options_description desc("General");
 
@@ -195,10 +194,6 @@ main (int argc, char ** argv)
     ( "output,o"
     , po::value<std::string>(&output)->default_value(output)
     , "output file name, - for stdout, second positional parameter"
-    )
-    ( "xml,x"
-    , po::value<bool>(&xml)->default_value(xml)->implicit_value(true)
-    , "write xml instead of text format"
     )
     ;
 
@@ -338,26 +333,12 @@ main (int argc, char ** argv)
 
     we::type::optimize::optimize (trans, state.options_optimize());
 
-    // WORK HERE: The xml dump from the transition
-#if 0
-    {
-      std::ofstream stream ("/dev/stderr");
-      fhg::util::xml::xmlstream s (stream);
-
-      we::type::dump::dump (s, trans);
-    }
-#endif
-
     const we::activity_t act (trans);
 
 
     std::ofstream out (output.c_str());
 
-    out << ( xml
-           ? we::util::xml_codec::encode (act)
-           : we::util::text_codec::encode (act)
-           )
-      ;
+    out << we::util::codec::encode (act);
   }
   catch (std::exception const & ex)
   {

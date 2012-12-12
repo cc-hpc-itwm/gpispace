@@ -1,10 +1,18 @@
 #ifndef WE_MGMT_LAYER_DESCRIPTOR_HPP
 #define WE_MGMT_LAYER_DESCRIPTOR_HPP 1
 
+#include <we/type/id.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/mgmt/bits/execution_policy.hpp>
+
+#include <fhg/util/show.hpp>
+
+#include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/lexical_cast.hpp>
-#include <fhg/util/show.hpp>
+
+#include <string>
 #include <algorithm>
 
 namespace we
@@ -13,16 +21,14 @@ namespace we
   {
     namespace detail
     {
-      template <typename Activity, typename InternalId, typename ExternalId>
       class descriptor
       {
-        typedef descriptor<Activity, InternalId, ExternalId> this_type;
         typedef boost::lock_guard<boost::recursive_mutex> lock_t;
 
       public:
-        typedef Activity activity_type;
-        typedef InternalId id_type;
-        typedef ExternalId external_id_type;
+        typedef we::mgmt::type::activity_t activity_type;
+        typedef petri_net::activity_id_type id_type;
+        typedef std::string external_id_type;
         typedef boost::unordered_set<id_type> children_t;
 
         descriptor ()
@@ -172,34 +178,13 @@ namespace we
           return parent_;
         }
 
-        /*
-        activity_type & activity()
-        {
-          lock_t lock(mutex_);
-          return activity_;
-        }
-        */
-
         activity_type const & activity() const
         {
           lock_t lock(mutex_);
           return activity_;
         }
 
-        void suspend ()
-        {
-          lock_t lock(mutex_);
-          activity_.flags().set_suspended(true);
-        }
-
-        void resume ()
-        {
-          lock_t lock(mutex_);
-          activity_.flags().set_suspended(false);
-        }
-
-        template <typename Output>
-        void output (Output o)
+        void output (const we::mgmt::type::activity_t::output_t& o)
         {
           lock_t lock(mutex_);
           activity_.set_output (o);
@@ -211,15 +196,17 @@ namespace we
           activity_.inject_input ();
         }
 
-        template <typename F>
-        void inject (this_type const & child, F cb)
+        void inject
+        ( const descriptor& child
+        , boost::function<void (const petri_net::activity_id_type&)> cb
+        )
         {
           lock_t lock(mutex_);
           this->inject (child);
-          cb ( id() );
+          cb (id());
         }
 
-        void inject (this_type const & child)
+        void inject (descriptor const & child)
         {
           lock_t lock(mutex_);
           if (! is_child (child.id()))
@@ -233,7 +220,7 @@ namespace we
           del_child (child.id());
         }
 
-        void child_failed ( this_type const & child
+        void child_failed ( descriptor const & child
                           , int error_code
                           , std::string const & error_message
                           )
@@ -253,7 +240,7 @@ namespace we
           set_error_message(error_message);
         }
 
-        void child_cancelled (this_type const & child, std::string const & /*reason*/)
+        void child_cancelled (descriptor const & child, std::string const & /*reason*/)
         {
           lock_t lock(mutex_);
           if (! is_child (child.id()))
@@ -266,28 +253,27 @@ namespace we
           del_child (child.id());
         }
 
-        this_type extract (id_type const & child_id)
+        descriptor extract (id_type const & child_id)
         {
           lock_t lock(mutex_);
 
-          this_type child ( child_id
-                          , activity_.extract()
-                          , id()
-                          );
+          descriptor child ( child_id
+                           , activity_.extract()
+                           , id()
+                           );
           add_child (child_id);
           return child;
         }
 
-        template <typename Fun>
-        void cancel (Fun f)
+        void cancel
+        (boost::function<void (const petri_net::activity_id_type&)> f)
         {
           lock_t lock(mutex_);
           activity_.set_cancelling (true);
           apply_to_children (f);
         }
 
-        template <typename C>
-        typename C::result_type execute (C c)
+        int execute (const policy::execution_policy& c)
         {
           lock_t lock(mutex_);
           return activity_.execute (c);
@@ -395,11 +381,10 @@ namespace we
           return activity_.can_fire();
         }
 
-        std::ostream & operator << (std::ostream &s) const
+        std::ostream & operator << (std::ostream &p) const
         {
           lock_t lock(mutex_);
 
-          we::mgmt::type::detail::printer <activity_type> p (activity_, s);
           p << "descriptor [" << id() << "]:" << std::endl;
           p << "         name := " << activity_.transition().name() << std::endl;
           p << std::boolalpha;
@@ -427,9 +412,10 @@ namespace we
           }
           p << std::noboolalpha;
           p << "         type := " << activity_.type_to_string () << std::endl;
-          p << "        input := " << activity_.input() << std::endl;
-          p << "       output := " << activity_.output() << std::endl;
-          return s;
+          p << "        input := "; activity_.print (p, activity_.input()); p << std::endl;
+          p << "       output := "; activity_.print (p, activity_.output()); p << std::endl;
+
+          return p;
         }
 
         std::string show_input() const
@@ -444,8 +430,8 @@ namespace we
           return fhg::util::show (activity_.output().begin(), activity_.output().end());
         }
 
-        template <typename Fun>
-        void apply_to_children (Fun f) const
+        void apply_to_children
+        (boost::function<void (const petri_net::activity_id_type&)> f) const
         {
           lock_t lock (mutex_);
           std::for_each (children_.begin(), children_.end(), f);
@@ -487,8 +473,7 @@ namespace we
         std::string m_result;
       };
 
-      template <typename A, typename I, typename E>
-      std::ostream & operator << (std::ostream & os, const descriptor<A,I,E> & d)
+      inline std::ostream& operator<< (std::ostream& os, const descriptor& d)
       {
         return d.operator<< (os);
       }

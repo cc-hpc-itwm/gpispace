@@ -5,22 +5,30 @@
 
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
-#include <we/mgmt/type/requirement.hpp>
+#include <we/type/requirement.hpp>
 
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
 
+#include <boost/lexical_cast.hpp>
+
 #include <list>
+#include <string>
 
-typedef uint64_t id_type;
+typedef std::string id_type;
 
-typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
-typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
+typedef we::mgmt::layer layer_t;
+typedef std::list<we::type::requirement_t> requirement_list_t;
 
 static inline id_type generate_id ()
 {
-  static id_type id(0);
-  return ++id;
+  static uint64_t _cnt (0);
+
+  const id_type id (boost::lexical_cast<id_type> (_cnt));
+
+  ++_cnt;
+
+  return id;
 }
 
 template <typename L>
@@ -84,7 +92,7 @@ int main ()
       , we::type::module_call_t ("m", "f")
       );
     we::activity_t act (mod_call);
-    layer.submit (generate_id(), layer_t::policy::codec::encode(act));
+    layer.submit (generate_id(), we::util::codec::encode(act));
 
     sleep (1);
     layer.print_statistics (std::cerr);
@@ -96,7 +104,7 @@ int main ()
       , we::type::expression_t ("${out} := 3L")
       );
     we::activity_t act (expr);
-    layer.submit (generate_id(), layer_t::policy::codec::encode(act));
+    layer.submit (generate_id(), we::util::codec::encode(act));
 
     sleep (1);
     layer.print_statistics (std::cerr);

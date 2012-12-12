@@ -33,7 +33,7 @@
 #include <we/mgmt/context.hpp>
 
 #include <we/loader/module_call.hpp>
-#include <we/mgmt/type/requirement.hpp>
+#include <we/type/requirement.hpp>
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -94,7 +94,7 @@ namespace test {
       {
         id_type new_id ( daemon.gen_id() );
         daemon.add_mapping ( id, new_id );
-        daemon.layer().submit (new_id,  we::util::text_codec::encode(act));
+        daemon.layer().submit (new_id,  we::util::codec::encode(act));
       }
 
       void handle_externally (we::activity_t & act, const mod_t &mod)
@@ -102,12 +102,12 @@ namespace test {
         try
         {
           module::call (daemon.loader(), act, mod );
-          daemon.layer().finished (id, we::util::text_codec::encode(act));
+          daemon.layer().finished (id, we::util::codec::encode(act));
         }
         catch (std::exception const & ex)
         {
           daemon.layer().failed ( id
-                                , we::util::text_codec::encode(act)
+                                , we::util::codec::encode(act)
                                 , fhg::error::MODULE_CALL_FAILED
                                 , ex.what()
                                 );
@@ -203,7 +203,7 @@ namespace test {
       {
         job_type job (jobs_[rank].get());
 
-        we::activity_t act ( we::util::text_codec::decode<we::activity_t> (job.desc));
+        we::activity_t act ( we::util::codec::decode<we::activity_t> (job.desc));
         detail::context<this_type, id_type> ctxt (*this, job.id);
         act.execute (ctxt);
       }
@@ -231,7 +231,7 @@ namespace test {
       id_map_.erase (id);
     }
 
-    typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
+    typedef std::list<we::type::requirement_t> requirement_list_t;
     void submit( const id_type & id
                , const std::string & desc
                , requirement_list_t req_list = requirement_list_t()
@@ -274,9 +274,11 @@ namespace test {
       catch (std::out_of_range const &)
       {
         we::activity_t act
-          (we::util::text_codec::decode<we::activity_t> (desc));
-        we::mgmt::type::detail::printer <we::activity_t> p (act, std::cout);
-        p << "finished [" << id << "] = " << act.output() << std::endl;
+          (we::util::codec::decode<we::activity_t> (desc));
+
+        std::cout << "finished [" << id << "] = ";
+        act.print (std::cout, act.output());
+        std::cout << std::endl;
       }
       return true;
     }
@@ -298,12 +300,13 @@ namespace test {
       catch (std::out_of_range const &)
       {
         we::activity_t act
-          (we::util::text_codec::decode<we::activity_t> (desc));
-        we::mgmt::type::detail::printer <we::activity_t> p (act, std::cout);
-        p << "failed [" << id << "] = " << act.output()
-          << " error-code := " << error_code
-          << " reason := " << reason
-          << std::endl;
+          (we::util::codec::decode<we::activity_t> (desc));
+
+        std::cout << "failed [" << id << "] = ";
+        act.print (std::cout, act.output());
+        std::cout << " error-code := " << error_code
+                  << " reason := " << reason
+                  << std::endl;
       }
       return true;
     }

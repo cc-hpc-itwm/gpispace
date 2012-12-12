@@ -103,7 +103,7 @@ main (int argc, char ** argv)
           ("could not open file " + input + " for reading");
       }
 
-    we::util::text_codec::decode (stream, act);
+    we::util::codec::decode (stream, act);
   }
   catch (std::exception const & ex)
   {
@@ -168,7 +168,7 @@ main (int argc, char ** argv)
           ("could not open file " + output + " for writing");
       }
 
-    we::util::text_codec::encode (stream, act);
+    we::util::codec::encode (stream, act);
   }
   catch (std::exception const & ex)
   {

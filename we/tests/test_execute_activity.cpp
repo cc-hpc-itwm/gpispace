@@ -70,8 +70,6 @@ namespace module
 
   static void call (activity_t & act, const we::type::module_call_t & module_call)
   {
-    we::mgmt::type::detail::printer<activity_t, std::ostream> printer (act, std::cout);
-
     // construct context
     typedef expr::eval::context context_t;
     typedef activity_t::input_t input_t;
@@ -159,10 +157,7 @@ struct exec_context : public we::mgmt::context<>
                 << std::endl;
     }
 
-    we::mgmt::visitor::output_collector<activity_t> collect_output (act);
-    boost::apply_visitor ( collect_output
-                         , act.transition().data()
-                         );
+    act.collect_output();
   }
 
   void handle_internally ( activity_t & , const mod_t & )
@@ -177,27 +172,27 @@ struct exec_context : public we::mgmt::context<>
 
   std::string fake_external ( const std::string & act_enc, net_t & n )
   {
-    activity_t act = we::util::text_codec::decode<activity_t> (act_enc);
+    activity_t act = we::util::codec::decode<activity_t> (act_enc);
     handle_internally ( act, n );
-    return we::util::text_codec::encode (act);
+    return we::util::codec::encode (act);
   }
 
   void handle_externally ( activity_t & act, net_t & n)
   {
-    activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), n)));
+    activity_t result ( we::util::codec::decode<activity_t> (fake_external (we::util::codec::encode(act), n)));
     act.set_output(result.output());
   }
 
   std::string fake_external ( const std::string & act_enc, const mod_t & mod )
   {
-    activity_t act = we::util::text_codec::decode<activity_t> (act_enc);
+    activity_t act = we::util::codec::decode<activity_t> (act_enc);
     module::call ( act, mod );
-    return we::util::text_codec::encode (act);
+    return we::util::codec::encode (act);
   }
 
   void handle_externally ( activity_t & act, const mod_t & module_call )
   {
-    activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), module_call)));
+    activity_t result ( we::util::codec::decode<activity_t> (fake_external (we::util::codec::encode(act), module_call)));
     act.set_output(result.output());
   }
 
@@ -222,7 +217,7 @@ int main (int ac, char ** av)
     return EXIT_FAILURE;
   }
 
-  activity_t act ( we::util::text_codec::decode<activity_t> (ifs) );
+  activity_t act ( we::util::codec::decode<activity_t> (ifs) );
 
   std::cout << "act (initial):"
             << std::endl

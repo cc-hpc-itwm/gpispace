@@ -147,13 +147,13 @@ int main (int, char **)
             << act
             << std::endl;
   {
-    std::string act_encoded = we::util::text_codec::encode (act);
+    std::string act_encoded = we::util::codec::encode (act);
     std::cout << "act (serialized):"
               << std::endl
               << act_encoded
               << std::endl;
 
-    activity_t act_d = we::util::text_codec::decode<activity_t> (act_encoded);
+    activity_t act_d = we::util::codec::decode<activity_t> (act_encoded);
     std::cout << "act (deserialized):"
               << std::endl
               << act_d
@@ -181,8 +181,7 @@ int main (int, char **)
     act.inject (sub);
   }
 
-  we::mgmt::visitor::output_collector<activity_t> output_collector(act);
-  boost::apply_visitor (output_collector, act.transition().data());
+  act.collect_output();
 
   std::cout << "act (finished) = "
             << std::endl

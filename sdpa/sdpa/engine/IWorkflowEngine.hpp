@@ -29,9 +29,8 @@
 
 #ifdef USE_REAL_WE
 	#include <we/mgmt/basic_layer.hpp>
-	#include <we/mgmt/bits/traits.hpp>
 	#include <we/mgmt/bits/signal.hpp>
-	#include <we/mgmt/type/requirement.hpp>
+	#include <we/type/requirement.hpp>
 	#include <we/we.hpp>
 	#include <we/mgmt/layer.hpp>
 	#include <we/util/codec.hpp>
@@ -42,11 +41,10 @@
 	#include <boost/unordered_map.hpp>
 #endif
 
-// Assume ids of type string
-typedef std::string id_type;
-typedef std::string result_type;
-typedef std::string reason_type;
-typedef std::string encoded_type;
+typedef we::mgmt::basic_layer::id_type id_type;
+typedef we::mgmt::basic_layer::result_type result_type;
+typedef we::mgmt::basic_layer::reason_type reason_type;
+typedef we::mgmt::basic_layer::encoded_type encoded_type;
 
 enum ExecutionState
  {
@@ -58,23 +56,15 @@ enum ExecutionState
 typedef std::pair<ExecutionState, result_type> execution_result_t;
 
 #ifdef USE_REAL_WE
-		typedef we::mgmt::requirement_t<std::string> requirement_t;
+		typedef we::type::requirement_t requirement_t;
 		typedef std::list<requirement_t> requirement_list_t;
-		typedef we::preference_t preference_t;
-		typedef we::mgmt::activity_information_t activity_information_t;
-		typedef we::mgmt::basic_layer<id_type, result_type, reason_type, encoded_type> IWorkflowEngine;
+		typedef we::mgmt::basic_layer IWorkflowEngine;
 #else
 	   // template <typename T>
 	    struct requirement_t
 	    {
 	      typedef std::string value_type;
 	      typedef value_type argument_type;
-
-	      template <typename U>
-	      struct rebind
-	      {
-	        typedef requirement_t<U> other;
-	      };
 
 	      explicit
 	      requirement_t (value_type arg, const bool _mandatory = false)
@@ -129,29 +119,6 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 	      return requirement_t<T> (val, false);
 	    }
 
-	    /*
-		struct activity_information_t
-		{
-			enum status_t
-			{
-				UNDEFINED = -1
-				, PENDING
-				, RUNNING
-				, FINISHED
-				, FAILED
-				, CANCELLED
-				, SUSPENDED
-			};
-
-			std::string name;
-			status_t status;
-			int level;
-
-			typedef boost::unordered_map<std::string, std::string> data_t;
-			data_t data;
-		};
-		*/
-
 		struct IWorkflowEngine
 		{
 			virtual void submit(const id_type & id, const encoded_type & ) = 0;
@@ -163,7 +130,6 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 
 			virtual void set_rank(const unsigned int& rank ){ //to be overridden! }
 
-			virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;
 			virtual ~IWorkflowEngine() {}
 
 			friend class boost::serialization::access;

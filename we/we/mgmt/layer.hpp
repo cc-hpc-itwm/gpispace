@@ -37,39 +37,33 @@
 #include <boost/unordered_set.hpp>
 #include <boost/serialization/access.hpp>
 
+#include <we/we-config.hpp>
+
 #include <we/mgmt/basic_layer.hpp>
 
 #include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/traits.hpp>
-#include <we/mgmt/bits/policy.hpp>
 #include <we/mgmt/bits/commands.hpp>
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
+#include <we/mgmt/bits/execution_policy.hpp>
 
-#include <we/mgmt/type/requirement.hpp>
+#include <we/type/id.hpp>
+#include <we/type/requirement.hpp>
+#include <we/mgmt/type/activity.hpp>
 
 namespace we { namespace mgmt {
-    template < typename IdType
-             , typename Activity
-             , typename Traits = traits::layer_traits<Activity>
-             , typename Policy = policy::layer_policy<Traits>
-             >
-    class layer : public basic_layer<IdType>
+    class layer : public basic_layer
     {
     public:
-      typedef layer<IdType, Activity, Traits, Policy> this_type;
-      // external ids
-      typedef IdType id_type;
-      typedef id_type external_id_type;
+      typedef we::mgmt::type::activity_t activity_type;
 
-      typedef Activity activity_type;
-      typedef Traits traits_type;
-      typedef Policy policy;
+      typedef layer this_type;
+      // external ids
+      typedef std::string external_id_type;
 
       // internal ids
-      typedef typename traits_type::id_traits internal_id_traits;
       typedef petri_net::activity_id_type internal_id_type;
 
       typedef std::string encoded_type;
@@ -77,7 +71,7 @@ namespace we { namespace mgmt {
       typedef std::string result_type;
       typedef std::string status_type;
 
-      typedef typename activity_type::output_t output_type;
+      typedef activity_type::output_t output_type;
 
     private:
       typedef boost::unordered_set<internal_id_type> child_set_t;
@@ -89,20 +83,19 @@ namespace we { namespace mgmt {
 
       typedef std::vector<boost::thread *> thread_list_t;
 
-      typedef detail::descriptor<activity_type, internal_id_type, external_id_type> descriptor_type;
-      typedef boost::shared_ptr<descriptor_type> descriptor_ptr;
-      typedef typename boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
+      typedef boost::shared_ptr<detail::descriptor> descriptor_ptr;
+      typedef boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
 
       // manager thread
       typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
-      typedef detail::queue<cmd_t, policy::COMMAND_QUEUE_SIZE> cmd_q_t;
+      typedef detail::queue<cmd_t, 0> cmd_q_t;
 
       // injector thread
       typedef internal_id_type inj_cmd_t;
-      typedef detail::queue<inj_cmd_t, policy::INJECTOR_QUEUE_SIZE> inj_q_t;
+      typedef detail::queue<inj_cmd_t, 0> inj_q_t;
 
       // extractor
-      typedef detail::set<internal_id_type, policy::EXTRACTOR_QUEUE_SIZE> active_nets_t;
+      typedef detail::set<internal_id_type, 0> active_nets_t;
 
       typedef boost::unique_lock<boost::recursive_mutex> lock_t;
     public:
@@ -117,8 +110,6 @@ namespace we { namespace mgmt {
       util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_failed;
       util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_cancelled;
       util::signal<void (const this_type *, internal_id_type const &)> sig_executing;
-      util::signal<void (const this_type *, internal_id_type const &)> sig_suspended;
-      util::signal<void (const this_type *, internal_id_type const &)> sig_resumed;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -135,14 +126,16 @@ namespace we { namespace mgmt {
       {
         DLOG(TRACE, "submit (" << id << ", ...)");
 
-        activity_type act = policy::codec::decode(bytes);
-        return submit(id, act);
+        return submit
+          ( id
+          , we::util::codec::decode<we::mgmt::type::activity_t>(bytes)
+          );
       }
 
       void submit(const external_id_type & id, const activity_type &act)
       {
         descriptor_ptr desc
-          (new descriptor_type (generate_internal_id(), act));
+          (new detail::descriptor (generate_internal_id(), act));
         desc->came_from_external_as (id);
         desc->inject_input ();
 
@@ -209,8 +202,10 @@ namespace we { namespace mgmt {
             lock_t lock(mutex_);
             descriptor_ptr desc (lookup (int_id));
             {
-              activity_type act (policy::codec::decode (result));
-              desc->output (act.output());
+              desc->output
+                ( we::util::codec::decode<we::mgmt::type::activity_t> (result)
+                . output()
+                );
               DLOG( TRACE
                   , "finished"
                   << " (" << desc->name() << ")-" << id
@@ -314,116 +309,6 @@ namespace we { namespace mgmt {
         }
       }
 
-      /**
-       * Temporarily suspend the execution of the given petri-net
-       *
-       *          pre-conditions:
-       *                  - a net with the given id had been submitted
-       *
-       *          side-effects:
-       *                  - sub-activities are suspended as well
-       *
-       *          post-conditions:
-       *                  - the network will not be considered in the selection of new activities
-       *                  - the execution of the network is on hold
-       */
-      bool suspend(const external_id_type & id)
-      {
-        DLOG(TRACE, "suspend (" << id << ")");
-
-        try
-        {
-          post_suspend_activity_notification (map_to_internal(id));
-        }
-        catch (std::exception const & ex)
-        {
-          return false;
-        }
-
-        return true;
-      }
-
-      /**
-       * Execution of a network is resumed.
-       *
-       *          pre-conditions:
-       *                  - a net with the given id had been submitted
-       *
-       *          side-effects:
-       *                  - sub-activities are resumed as well
-       *
-       *          post-conditions:
-       *                  - the network will again be considered in the selection of new activities
-       *
-       */
-      bool resume(const external_id_type & id)
-      {
-        DLOG(TRACE, "resume (" << id << ")");
-
-        try
-        {
-          post_resume_activity_notification (map_to_internal(id));
-        }
-        catch (std::exception const & ex)
-        {
-          return false;
-        }
-        return true;
-      }
-
-      bool fill_in_info ( const external_id_type & id
-                        , activity_information_t & info
-                        ) const
-      {
-        DLOG(TRACE, "fill_in_info (" << id << ")");
-
-        try
-        {
-          internal_id_type int_id (map_to_internal (id));
-          {
-            lock_t lock(mutex_);
-            descriptor_ptr desc (lookup (int_id));
-            {
-              info.name = desc->name();
-              info.level = desc->activity().transition().is_internal();
-              if (desc->activity().is_suspended())
-              {
-                info.status = activity_information_t::SUSPENDED;
-              }
-              else if (desc->activity().is_failed())
-              {
-                info.status = activity_information_t::FAILED;
-              }
-              else if (desc->activity().is_cancelled())
-              {
-                info.status = activity_information_t::CANCELLED;
-              }
-              else if (desc->activity().is_finished())
-              {
-                info.status = activity_information_t::FINISHED;
-              }
-              else
-              {
-                info.status = activity_information_t::UNDEFINED;
-              }
-
-              info.data["in"]  = we::util::text_codec::encode
-                (desc->activity().input());
-              info.data["out"] = we::util::text_codec::encode
-                (desc->activity().output());
-            }
-          }
-        }
-        catch (const std::exception &)
-        {
-          LOG(WARN, "could not look up activity information for " << id);
-          info.name = "unknown";
-          info.status = activity_information_t::UNDEFINED;
-          return false;
-        }
-        return true;
-      }
-
       // END: EXTERNAL API
 
       status_type status(const external_id_type & id)
@@ -444,7 +329,7 @@ namespace we { namespace mgmt {
         std::vector <internal_id_type> ids;
         ids.reserve (activities_.size());
 
-        for ( typename activities_t::const_iterator desc (activities_.begin())
+        for ( activities_t::const_iterator desc (activities_.begin())
             ; desc != activities_.end()
             ; ++desc
             )
@@ -454,7 +339,7 @@ namespace we { namespace mgmt {
 
         std::sort (ids.begin(), ids.end());
 
-        for ( typename std::vector<internal_id_type>::const_iterator id (ids.begin())
+        for ( std::vector<internal_id_type>::const_iterator id (ids.begin())
             ; id != ids.end()
             ; ++id
             )
@@ -470,7 +355,7 @@ namespace we { namespace mgmt {
       // handle execution layer
       boost::function<void ( external_id_type const &
                            , encoded_type const &
-                           , const std::list<requirement_t<std::string> >&
+                           , const std::list<we::type::requirement_t>&
                            )> ext_submit;
       boost::function<bool ( external_id_type const &
                            , reason_type const &
@@ -487,7 +372,6 @@ namespace we { namespace mgmt {
 
       void submit (const descriptor_ptr & desc)
       {
-        policy::validator::validate (desc->activity());
         insert_activity(desc);
 
         sig_submitted (this, desc->id());
@@ -499,12 +383,12 @@ namespace we { namespace mgmt {
                                )
       {
         lock_t lock (mutex_);
-        typename external_to_internal_map_t::const_iterator mapping
+        external_to_internal_map_t::const_iterator mapping
           (ext_to_int_.find(external_id));
 
         if (mapping != ext_to_int_.end())
         {
-          throw exception::already_there<external_id_type>
+          throw exception::already_there
             ( "already_there: ext_id := "
             + fhg::util::show(external_id)
             + " -> int_id := "
@@ -513,7 +397,7 @@ namespace we { namespace mgmt {
             );
         }
 
-        ext_to_int_.insert ( typename external_to_internal_map_t::value_type
+        ext_to_int_.insert ( external_to_internal_map_t::value_type
                            (external_id, internal_id)
                            );
         DLOG(TRACE, "added mapping " << external_id << " -> " << internal_id);
@@ -525,13 +409,13 @@ namespace we { namespace mgmt {
       {
         lock_t lock (mutex_);
 
-        typename external_to_internal_map_t::const_iterator mapping
+        external_to_internal_map_t::const_iterator mapping
           (ext_to_int_.find(external_id));
         if (  mapping == ext_to_int_.end()
            || mapping->second != internal_id
            )
         {
-          throw exception::no_such_mapping<external_id_type>
+          throw exception::no_such_mapping
             ( "no_such_mapping: ext := "
             + fhg::util::show(external_id)
             + " -> int := "
@@ -545,18 +429,18 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "deleted mapping " << external_id << " -> " << internal_id);
       }
 
-      typename external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id ) const
+      external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id ) const
       {
         lock_t lock (mutex_);
 
-        typename external_to_internal_map_t::const_iterator mapping (ext_to_int_.find(external_id));
+        external_to_internal_map_t::const_iterator mapping (ext_to_int_.find(external_id));
         if (mapping != ext_to_int_.end())
         {
           return mapping->second;
         }
         else
         {
-          throw exception::no_such_mapping<external_id_type> ("no_such_mapping: ext_id := " + fhg::util::show (external_id), external_id);
+          throw exception::no_such_mapping ("no_such_mapping: ext_id := " + fhg::util::show (external_id), external_id);
         }
       }
     public:
@@ -569,9 +453,7 @@ namespace we { namespace mgmt {
         , sig_failed("sig_failed")
         , sig_cancelled("sig_cancelled")
         , sig_executing("sig_executing")
-        , sig_suspended("sig_suspended")
-        , sig_resumed("sig_resumed")
-        , internal_id_gen_(&internal_id_traits::generate)
+        , internal_id_gen_(&petri_net::activity_id_generate)
       {
         start();
       }
@@ -583,10 +465,8 @@ namespace we { namespace mgmt {
         , sig_failed("sig_failed")
         , sig_cancelled("sig_cancelled")
         , sig_executing("sig_executing")
-        , sig_suspended("sig_suspended")
-        , sig_resumed("sig_resumed")
         , external_id_gen_(gen)
-        , internal_id_gen_(&internal_id_traits::generate)
+        , internal_id_gen_(&petri_net::activity_id_generate)
       {
         connect (exec_layer);
         start();
@@ -640,11 +520,11 @@ namespace we { namespace mgmt {
         manager_   = boost::thread(boost::bind(&this_type::manager, this));
         fhg::util::set_threadname (manager_, "[we-mgr]");
 
-        active_nets_ = new active_nets_t[policy::NUM_EXTRACTORS];
-        start_threads ("we-extract", policy::NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
+        active_nets_ = new active_nets_t[WE_NUM_EXTRACTORS];
+        start_threads ("we-extract", WE_NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
 
-        inj_q_ = new active_nets_t[policy::NUM_INJECTORS];
-        start_threads ("we-inject", policy::NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
+        inj_q_ = new active_nets_t[WE_NUM_INJECTORS];
+        start_threads ("we-inject", WE_NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
       }
 
       template <typename ThreadList, typename ThreadFunc>
@@ -799,32 +679,6 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void post_suspend_activity_notification (const internal_id_type & id)
-      {
-        if (is_valid(id))
-        {
-          cmd_q_.put (make_cmd("suspend_activity", id, boost::bind(&this_type::suspend_activity, this, _1)));
-        }
-        else
-        {
-          LOG(ERROR, "id is not valid anymore: " << id);
-        }
-      }
-
-      inline
-      void post_resume_activity_notification (const internal_id_type & id)
-      {
-        if (is_valid(id))
-        {
-          cmd_q_.put (make_cmd("resume_activity", id, boost::bind(&this_type::resume_activity, this, _1)));
-        }
-        else
-        {
-          LOG(ERROR, "id is not valid anymore: " << id);
-        }
-      }
-
-      inline
       void post_execute_notification (const internal_id_type & id)
       {
         if (is_valid(id))
@@ -854,7 +708,7 @@ namespace we { namespace mgmt {
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
 
         ext_submit ( ext_id
-                   , policy::codec::encode (ext_act)
+                   , we::util::codec::encode (ext_act)
                    , ext_act.transition().requirements()
                    );
       }
@@ -908,8 +762,7 @@ namespace we { namespace mgmt {
               //       EXTERN: extern
               //    INJECT:  inject to parent / notify client
               //    EXTERN:  send to extern
-              typename policy::exec_policy exec_policy;
-              do_execute (desc, exec_policy, rank);
+              do_execute (desc, rank);
             }
             catch (const std::exception & ex)
             {
@@ -925,31 +778,32 @@ namespace we { namespace mgmt {
                 + std::string ("' ")
                 + ex.what ()
                 );
-              desc->set_result (policy::codec::encode(desc->activity()));
+              desc->set_result (we::util::codec::encode(desc->activity()));
               post_failed_notification (desc->id());
             }
           }
-          catch (const exception::activity_not_found<internal_id_type> & ex)
+          catch (const exception::activity_not_found& ex)
           {
-            LOG(WARN, "extractor-" << rank << ": activity could not be found: " << ex.id);
+            LOG(WARN, "extractor-" << rank << ": activity could not be found: " << ex.id());
           }
         }
         DLOG(INFO, "extractor-" << rank << " thread stopped...");
       }
 
-      template <typename ExecPolicy>
       inline
-      void do_execute (descriptor_ptr desc, ExecPolicy exec_policy, size_t rank)
+      void do_execute (descriptor_ptr desc, size_t rank)
       {
+        const policy::execution_policy exec_policy;
+
         switch (desc->execute (exec_policy))
         {
-        case policy::exec_policy::EXTRACT:
+        case policy::execution_policy::EXTRACT:
           {
             DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc->name());
 
             while (desc->enabled())
             {
-              descriptor_ptr child (new descriptor_type(desc->extract(generate_internal_id())));
+              descriptor_ptr child (new detail::descriptor(desc->extract(generate_internal_id())));
               child->inject_input ();
 
               DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc->name() << ")-" << desc->id()
@@ -957,16 +811,16 @@ namespace we { namespace mgmt {
 
               switch (child->execute (exec_policy))
               {
-              case policy::exec_policy::EXTRACT:
+              case policy::execution_policy::EXTRACT:
                 insert_activity(child);
                 post_execute_notification (child->id());
                 break;
-              case policy::exec_policy::INJECT:
+              case policy::execution_policy::INJECT:
                 child->finished();
                 DLOG(INFO, "extractor-" << rank << ": finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
                 desc->inject (*child);
                 break;
-              case policy::exec_policy::EXTERNAL:
+              case policy::execution_policy::EXTERNAL:
                 insert_activity (child);
                 execute_externally (child->id());
                 break;
@@ -989,10 +843,10 @@ namespace we { namespace mgmt {
             }
           }
           break;
-        case policy::exec_policy::INJECT:
+        case policy::execution_policy::INJECT:
           do_inject (desc);
           break;
-        case policy::exec_policy::EXTERNAL:
+        case policy::execution_policy::EXTERNAL:
           DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc->id());
           execute_externally (desc->id());
           break;
@@ -1045,7 +899,7 @@ namespace we { namespace mgmt {
 
             desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
             desc->set_error_message (ex.what ());
-            desc->set_result (policy::codec::encode (desc->activity ()));
+            desc->set_result (we::util::codec::encode (desc->activity ()));
 
             post_failed_notification (desc->id ());
           }
@@ -1084,7 +938,7 @@ namespace we { namespace mgmt {
                  << " external-id := " << desc->from_external_id()
                  );
             ext_failed ( desc->from_external_id()
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        , desc->error_code()
                        , desc->error_message()
                        );
@@ -1096,7 +950,7 @@ namespace we { namespace mgmt {
                  << " external-id := " << desc->from_external_id()
                  );
             ext_cancelled ( desc->from_external_id()
-                          //, policy::codec::encode (desc->activity())
+                          //, we::util::codec::encode (desc->activity())
                           );
           }
           else
@@ -1106,7 +960,7 @@ namespace we { namespace mgmt {
                  << " external-id := " << desc->from_external_id()
                  );
             ext_finished ( desc->from_external_id()
-                         , policy::codec::encode (desc->activity())
+                         , we::util::codec::encode (desc->activity())
                          );
           }
         }
@@ -1118,7 +972,7 @@ namespace we { namespace mgmt {
         if (sig_finished.connected())
           sig_finished ( this
                        , desc->id()
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        );
         remove_activity (desc);
       }
@@ -1169,7 +1023,7 @@ namespace we { namespace mgmt {
           if (sig_failed.connected())
             sig_failed ( this
                        , internal_id
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        );
 
           if (desc->has_parent ())
@@ -1190,7 +1044,7 @@ namespace we { namespace mgmt {
           else if (desc->came_from_external ())
           {
             ext_failed ( desc->from_external_id()
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        , desc->error_code()
                        , desc->error_message()
                        );
@@ -1202,7 +1056,7 @@ namespace we { namespace mgmt {
 
           remove_activity (desc);
         }
-        catch (const exception::activity_not_found<internal_id_type> &)
+        catch (const exception::activity_not_found&)
         {
           LOG(WARN, "got failed notification for old activity: " << internal_id);
         }
@@ -1241,7 +1095,7 @@ namespace we { namespace mgmt {
             LOG(INFO, "notifying agent: failed (" << desc->name() << ")-" << desc->id());
 
             ext_failed ( desc->from_external_id()
-                       , policy::codec::encode(desc->activity())
+                       , we::util::codec::encode(desc->activity())
                        , desc->error_code()
                        , desc->error_message()
                        );
@@ -1254,12 +1108,12 @@ namespace we { namespace mgmt {
           if (sig_cancelled.connected())
             sig_cancelled ( this
                           , internal_id
-                          , policy::codec::encode(desc->activity())
+                          , we::util::codec::encode(desc->activity())
                           );
 
           remove_activity (desc);
         }
-        catch (const exception::activity_not_found<internal_id_type> &)
+        catch (const exception::activity_not_found&)
         {
           LOG(WARN, "got cancelled notification for old activity: " << internal_id);
         }
@@ -1306,16 +1160,10 @@ namespace we { namespace mgmt {
             post_cancelled_notification (desc->id());
           }
         }
-        catch (const exception::activity_not_found<internal_id_type> &)
+        catch (const exception::activity_not_found&)
         {
           LOG (WARN, "got cancel request for old activity: " << internal_id);
         }
-      }
-
-      void suspend_activity(const cmd_t & cmd)
-      {
-        lookup(cmd.dat)->suspend();
-        sig_suspended (this, cmd.dat);
       }
 
       inline void insert_activity(const descriptor_ptr & desc)
@@ -1352,9 +1200,9 @@ namespace we { namespace mgmt {
       inline descriptor_ptr lookup(const internal_id_type & id)
       {
         lock_t (mutex_);
-        typename activities_t::iterator a = activities_.find(id);
+        activities_t::iterator a = activities_.find(id);
         if (a == activities_.end())
-          throw exception::activity_not_found<internal_id_type>
+          throw exception::activity_not_found
             ("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }
@@ -1362,9 +1210,9 @@ namespace we { namespace mgmt {
       inline const descriptor_ptr & lookup(const internal_id_type & id) const
       {
         lock_t (mutex_);
-        typename activities_t::const_iterator a = activities_.find(id);
+        activities_t::const_iterator a = activities_.find(id);
         if (a == activities_.end())
-          throw exception::activity_not_found<internal_id_type>
+          throw exception::activity_not_found
             ("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }

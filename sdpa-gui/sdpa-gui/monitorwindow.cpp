@@ -295,7 +295,7 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
     we::activity_t act;
     try
     {
-      we::util::text_codec::decode(notification.activity(), act);
+      we::util::codec::decode(notification.activity(), act);
     }
     catch (std::exception const &ex)
     {

@@ -27,9 +27,8 @@ using namespace test;
 namespace po = boost::program_options;
 
 typedef std::string id_type;
-//typedef uint64_t id_type;
 
-typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
+typedef we::mgmt::layer layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 typedef layer_t::internal_id_type layer_id_type;
 
@@ -63,7 +62,7 @@ void observe_finished (const layer_t *l, layer_id_type const & id, std::string c
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (layer_t::policy::codec::decode (s));
+      we::activity_t act (we::util::codec::decode<we::activity_t> (s));
       std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -80,7 +79,7 @@ void observe_failed (const layer_t *l, layer_id_type const & id, std::string con
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (layer_t::policy::codec::decode (s));
+      we::activity_t act (we::util::codec::decode<we::activity_t> (s));
       std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -97,7 +96,7 @@ void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (layer_t::policy::codec::decode (s));
+      we::activity_t act (we::util::codec::decode<we::activity_t> (s));
       std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -210,12 +209,12 @@ int main (int argc, char **argv)
       std::cerr << "Could not open: " << path_to_act << std::endl;
       return 1;
     }
-    act = layer_t::policy::codec::decode(ifs);
+    act = we::util::codec::decode<we::activity_t> (ifs);
   }
   else
   {
     std::cerr << "Reading from stdin..." << std::endl;
-    act = layer_t::policy::codec::decode(std::cin);
+    act = we::util::codec::decode<we::activity_t> (std::cin);
   }
 
   for ( std::vector<std::string>::const_iterator inp (input_spec.begin())
@@ -248,7 +247,7 @@ int main (int argc, char **argv)
 
   daemon_type::id_type id = daemon.gen_id();
   jobs.push_back(id);
-  mgmt_layer.submit(id, layer_t::policy::codec::encode (act));
+  mgmt_layer.submit(id, we::util::codec::encode (act));
 
 #if 0
   size_t max_wait (5);

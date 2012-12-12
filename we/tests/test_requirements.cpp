@@ -1,7 +1,7 @@
 #include <iostream>
 #include <set>
 #include <algorithm>
-#include <we/mgmt/type/requirement.hpp>
+#include <we/type/requirement.hpp>
 #include <functional>
 
 int main()

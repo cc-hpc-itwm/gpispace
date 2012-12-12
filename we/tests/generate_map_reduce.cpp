@@ -27,7 +27,7 @@ int main (int argc, char ** argv)
     return EXIT_SUCCESS;
   }
 
-  we::util::text_codec::encode
+  we::util::codec::encode
     ( std::cout
     , we::activity_t(we::tests::map_reduce<we::activity_t>::generate())
     );

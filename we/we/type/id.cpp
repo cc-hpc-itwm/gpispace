@@ -22,4 +22,15 @@ namespace petri_net
   INVALID (priority);
 
 #undef INVALID
+
+#define GENERATE(_prefix)                               \
+  _prefix ## _type _prefix ## _generate()               \
+  {                                                     \
+    static _prefix ## _type v (0);                      \
+                                                        \
+    return v++;                                         \
+  }
+
+  GENERATE (activity_id);
+#undef GENERATE
 }
