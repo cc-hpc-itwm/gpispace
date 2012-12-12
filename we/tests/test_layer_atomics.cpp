@@ -3,7 +3,7 @@
 
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
-#include <we/mgmt/type/requirement.hpp>
+#include <we/type/requirement.hpp>
 
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
@@ -17,7 +17,7 @@ typedef std::string id_type;
 
 typedef we::mgmt::layer layer_t;
 
-typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
+typedef std::list<we::type::requirement_t<std::string> > requirement_list_t;
 
 static inline id_type generate_id ()
 {

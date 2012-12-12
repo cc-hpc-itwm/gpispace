@@ -31,7 +31,7 @@
 	#include <we/mgmt/basic_layer.hpp>
 	#include <we/mgmt/bits/traits.hpp>
 	#include <we/mgmt/bits/signal.hpp>
-	#include <we/mgmt/type/requirement.hpp>
+	#include <we/type/requirement.hpp>
 	#include <we/we.hpp>
 	#include <we/mgmt/layer.hpp>
 	#include <we/util/codec.hpp>
@@ -57,7 +57,7 @@ enum ExecutionState
 typedef std::pair<ExecutionState, result_type> execution_result_t;
 
 #ifdef USE_REAL_WE
-		typedef we::mgmt::requirement_t<std::string> requirement_t;
+		typedef we::type::requirement_t<std::string> requirement_t;
 		typedef std::list<requirement_t> requirement_list_t;
 		typedef we::mgmt::activity_information_t activity_information_t;
 		typedef we::mgmt::basic_layer IWorkflowEngine;

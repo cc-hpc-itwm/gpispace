@@ -48,7 +48,7 @@
 #include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
 
-#include <we/mgmt/type/requirement.hpp>
+#include <we/type/requirement.hpp>
 #include <we/mgmt/type/activity.hpp>
 
 namespace we { namespace mgmt {
@@ -407,7 +407,7 @@ namespace we { namespace mgmt {
       // handle execution layer
       boost::function<void ( external_id_type const &
                            , encoded_type const &
-                           , const std::list<requirement_t<std::string> >&
+                           , const std::list<we::type::requirement_t<std::string> >&
                            )> ext_submit;
       boost::function<bool ( external_id_type const &
                            , reason_type const &
