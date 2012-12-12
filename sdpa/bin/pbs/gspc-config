@@ -1,6 +1,7 @@
 #!/bin/bash
 
 GSPC_DOC_SHORT_DESCRIPTION="get/set config values"
+GSPC_IMPORTANT_API_COMMAND=true
 
 . $(gspc --exec-path)/gspc-sh-setup
 
