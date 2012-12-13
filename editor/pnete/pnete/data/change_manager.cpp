@@ -660,7 +660,7 @@ namespace fhg
                            , const ::xml::parse::id::ref::port& port
                            )
         {
-          function.get_ref().push_in (port);
+          function.get_ref().push_port (port);
 
           change_manager.emit_signal
             (&signal::port_added, origin, handle::port (port, change_manager));
@@ -674,18 +674,9 @@ namespace fhg
           change_manager.emit_signal
             (&signal::port_deleted, origin, handle::port (port, change_manager));
 
-          //! \todo Encapsulate? Do differently?
-          if (function.get().in().has (port))
+          if (function.get().ports().has (port))
           {
-            function.get_ref().remove_in (port);
-          }
-          else if (function.get().out().has (port))
-          {
-            function.get_ref().remove_out (port);
-          }
-          else if (function.get().tunnel().has (port))
-          {
-            function.get_ref().remove_tunnel (port);
+            function.get_ref().remove_port (port);
           }
           else
           {
@@ -1356,8 +1347,10 @@ namespace fhg
         , const handle::function& function
         )
       {
+        const we::type::PortDirection direction (we::type::PORT_IN);
+
         std::string name ("in_port");
-        while (function.get().in().has (std::make_pair (name, we::type::PORT_IN)))
+        while (function.get().ports().has (std::make_pair (name, direction)))
         {
           name = inc (name);
         }
@@ -1371,7 +1364,7 @@ namespace fhg
             //! \todo Default type?
             , ""
             , boost::none
-            , we::type::PORT_IN
+            , direction
             ).make_reference_id()
           );
 

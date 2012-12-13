@@ -88,7 +88,6 @@ namespace fhg
                              )
         : _scene (scene)
         , _transition (transition)
-        , _current_port_direction ()
         , _net (net)
         , _place_item_by_name (place_item_by_name)
         , _port_in_item_by_name ()
@@ -134,24 +133,15 @@ namespace fhg
 
         _transition->set_proxy (sub.proxy());
 
-        _current_port_direction = ui::graph::connectable::direction::IN;
-        from::many (this, function.get().in().ids(), from::port);
-
-        _current_port_direction = ui::graph::connectable::direction::OUT;
-        from::many (this, function.get().out().ids(), from::port);
+        from::many (this, function.get().ports().ids(), from::port);
       }
       WSIG(transition, port::open, ::xml::parse::id::ref::port, port)
       {
-        ui::graph::port_item* port_item
-          ( new ui::graph::port_item
-            ( data::handle::port (port, _root->change_manager())
-            , _current_port_direction
-            , _transition
-            )
-          );
-
-        weaver::port wp ( port_item
-                        , _current_port_direction == ui::graph::connectable::direction::IN
+        weaver::port wp ( new ui::graph::port_item
+                          ( data::handle::port (port, _root->change_manager())
+                          , _transition
+                          )
+                        , port.get().direction() == we::type::PORT_IN
                         ? _port_in_item_by_name
                         : _port_out_item_by_name
                         );
@@ -304,23 +294,8 @@ namespace fhg
       {}
       WSIGE(net, net::close)
       {
-        {
-          weaver::port_toplevel wptl ( _scene
-                                     , ui::graph::connectable::direction::OUT
-                                     , _place_item_by_name
-                                     , _root
-                                     );
-          from::many (&wptl, _function.get().in().ids(), from::port);
-        }
-
-        {
-          weaver::port_toplevel wptl ( _scene
-                                     , ui::graph::connectable::direction::IN
-                                     , _place_item_by_name
-                                     , _root
-                                     );
-          from::many (&wptl, _function.get().out().ids(), from::port);
-        }
+        weaver::port_toplevel wptl (_scene, _place_item_by_name, _root);
+        from::many (&wptl, _function.get().ports().ids(), from::port);
       }
       WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
       {
@@ -395,14 +370,12 @@ namespace fhg
 
       port_toplevel::port_toplevel
         ( ui::graph::scene_type* scene
-        , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
         , data::internal_type* root
         )
           : _scene (scene)
           , _place_item_by_name (place_item_by_name)
           , _name ()
-          , _direction (direction)
           , _port_item ()
           , _root (root)
       {}
@@ -410,7 +383,7 @@ namespace fhg
       WSIG(port_toplevel, port::open, ::xml::parse::id::ref::port, id)
       {
         _port_item = new ui::graph::top_level_port_item
-          (data::handle::port (id, _root->change_manager()), _direction);
+          (data::handle::port (id, _root->change_manager()));
         _scene->addItem (_port_item);
       }
       WSIG(port_toplevel, port::name, std::string, name)

@@ -294,12 +294,12 @@ namespace fhg
 
       WSIG(tv, port::open, ::xml::parse::id::ref::port, port)
       {
-        push (append ("<<port>>"));
+        push (append (we::type::enum_to_string (port.get().direction())));
       }
       WSIGE(tv, port::close) { pop(); }
       WSIG(tv, port::name, std::string, name)
       {
-        set_text (name);
+        add_something (": ", name);
       }
       WSIG(tv, port::type, std::string, type)
       {
@@ -405,13 +405,9 @@ namespace fhg
       {
         from::structs (this, structs);
       }
-      WSIG(tv, function::in, XMLTYPE(function_type::ports_type), ports)
+      WSIG(tv, function::ports, XMLTYPE(function_type::ports_type), ports)
       {
-        xs ("in", ports.ids(), from::port);
-      }
-      WSIG(tv, function::out, XMLTYPE(function_type::ports_type), ports)
-      {
-        xs ("out", ports.ids(), from::port);
+        xs ("ports", ports.ids(), from::port);
       }
       WSIG(tv, function::fun, XMLTYPE(function_type::type), fun)
       {

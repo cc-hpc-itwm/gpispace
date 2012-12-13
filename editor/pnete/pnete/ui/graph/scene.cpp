@@ -802,10 +802,7 @@ namespace fhg
             weaver::item_by_name_type places
               (name_map_for_items (items_of_type<place_item>()));
 
-            //! \note direction is inverted. Should not be inverted
-            //! here, but in the drawing code of that port, I guess.
-            weaver::port_toplevel wptl
-              (this, ui::graph::connectable::direction::OUT, places, _internal);
+            weaver::port_toplevel wptl (this, places, _internal);
 
             weaver::from::port (&wptl, port.id());
 
