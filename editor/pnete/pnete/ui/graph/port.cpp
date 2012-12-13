@@ -42,10 +42,13 @@ namespace fhg
 
         port_item::port_item
           ( const data::handle::port& handle
-          , connectable::direction::type direction
           , transition_item* parent
           )
-            : connectable_item (direction, parent)
+            : connectable_item ( handle.get().direction() == we::type::PORT_IN
+                               ? connectable::direction::IN
+                               : connectable::direction::OUT
+                               , parent
+                               )
             , _handle (handle)
             , _orientation ()
             , _length (size::port::width())
@@ -64,9 +67,9 @@ namespace fhg
             );
 
           set_just_orientation_but_not_in_property
-            ( direction == connectable::direction::OUT
-            ? port::orientation::EAST
-            : port::orientation::WEST
+            ( handle.get().direction() == we::type::PORT_IN
+            ? port::orientation::WEST
+            : port::orientation::EAST
             );
 
           //            setAcceptHoverEvents (true);

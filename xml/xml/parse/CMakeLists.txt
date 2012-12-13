@@ -21,8 +21,9 @@ set (fwd_hdrs
 
 set (sources
   error.cpp
-  state.cpp
   parser.cpp
+  state.cpp
+  warning.cpp
 )
 
 add_library (xml_parse_base

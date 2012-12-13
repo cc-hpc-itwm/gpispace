@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_WARNING_HPP
 #define _XML_PARSE_WARNING_HPP
@@ -305,28 +305,13 @@ namespace xml
 
       class port_not_connected : public generic
       {
-      private:
-        std::string nice ( const std::string & direction
-                         , const std::string & port
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << direction << "-port " << port
-            << " not connected"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        port_not_connected ( const std::string & direction
-                           , const std::string & port
-                           , const boost::filesystem::path & path
-                           )
-          : generic (nice (direction, port, path))
-        {}
+        port_not_connected (const id::ref::port&, const boost::filesystem::path&);
+        virtual ~port_not_connected() throw() { }
+
+      private:
+        const id::ref::port _port;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

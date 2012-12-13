@@ -3,7 +3,9 @@
 #include <xml/parse/error.hpp>
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/port.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
@@ -17,6 +19,121 @@ namespace xml
   {
     namespace error
     {
+      duplicate_port::duplicate_port ( const id::ref::port& port
+                                     , const id::ref::port& old_port
+                                     , const boost::filesystem::path & path
+                                     )
+        : generic ( boost::format ("duplicate %1%-port %2% in %3%")
+                  % we::type::enum_to_string (port.get().direction())
+                  % port.get().name()
+                  % path
+                  )
+        , _port (port)
+        , _old_port (old_port)
+        , _path (path)
+      { }
+
+      port_type_mismatch::port_type_mismatch
+        ( const id::ref::port& port
+        , const id::ref::port& other_port
+        , const boost::filesystem::path& path
+        )
+          : generic ( boost::format ( "in-/out-port %1% has different types "
+                                    "%2% (%3%) and %4% (%5%) in %6%"
+                                    )
+                    % port.get().name()
+                    % port.get().type
+                    % we::type::enum_to_string (port.get().direction())
+                    % other_port.get().type
+                    % we::type::enum_to_string (other_port.get().direction())
+                    % path
+                    )
+        , _port (port)
+        , _other_port (other_port)
+        , _path (path)
+      { }
+
+      port_not_connected::port_not_connected
+        (const id::ref::port& port, const boost::filesystem::path& path)
+          : generic ( boost::format ("%1%-port %2% not connected in %3%")
+                    % we::type::enum_to_string (port.get().direction())
+                    % port.get().name()
+                    % path
+                    )
+          , _port (port)
+          , _path (path)
+      { }
+
+      port_connected_type_error::port_connected_type_error
+        ( const id::ref::port& port
+        , const id::ref::place& place
+        , const boost::filesystem::path& path
+        )
+          : generic ( boost::format ( "type error: %1%-port %2% of type %3% "
+                                      "connected to place %4% of type %5% in %6%"
+                                    )
+                    % we::type::enum_to_string (port.get().direction())
+                    % port.get().name()
+                    % port.get().type
+                    % place.get().name()
+                    % place.get().type
+                    % path
+                    )
+        , _port (port)
+        , _place (place)
+        , _path (path)
+      { }
+
+      port_connected_place_nonexistent::port_connected_place_nonexistent
+        ( const id::ref::port& port
+        , const boost::filesystem::path& path
+        )
+          : generic ( boost::format ( "%1%-port %2% connected to "
+                                      "non-existing place %3% in %4%"
+                                    )
+                    % we::type::enum_to_string (port.get().direction())
+                    % port.get().name()
+                    % *port.get().place
+                    % path
+                    )
+          , _port (port)
+          , _path (path)
+      { }
+
+      tunnel_connected_non_virtual::tunnel_connected_non_virtual
+        ( const id::ref::port& port
+        , const id::ref::place& place
+        , const boost::filesystem::path& path
+        )
+          : generic ( boost::format ( "tunnel %1% connected to non-virtual "
+                                      "place %2% in %3%"
+                                    )
+                    % port.get().name()
+                    % place.get().name()
+                    % path
+                    )
+          , _port (port)
+          , _place (place)
+          , _path (path)
+      { }
+
+      tunnel_name_mismatch::tunnel_name_mismatch
+        ( const id::ref::port& port
+        , const id::ref::place& place
+        , const boost::filesystem::path& path
+        )
+          : generic ( boost::format ( "tunnel %1% is connected to place with "
+                                      "different name  %2% in %3%"
+                                    )
+                    % port.get().name()
+                    % place.get().name()
+                    % path
+                    )
+          , _port (port)
+          , _place (place)
+          , _path (path)
+      { }
+
       duplicate_connect::duplicate_connect
         ( const id::ref::connect& connection
         , const id::ref::connect& old_connection

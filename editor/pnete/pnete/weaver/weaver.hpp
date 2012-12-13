@@ -211,7 +211,7 @@ namespace fhg
           enum
             { first = tmpl::last + 1
             , open, close, name, internal, require, properties, structs
-            , in, out, fun, conditions
+            , ports, fun, conditions
             , last
             };
         }
@@ -533,8 +533,7 @@ namespace fhg
           WEAVE(function::properties) (fun.properties());
           WEAVE(function::structs) (fun.structs);
           WEAVE(function::require) (fun.requirements);
-          WEAVE(function::in) (fun.in());
-          WEAVE(function::out) (fun.out());
+          WEAVE(function::ports) (fun.ports());
           WEAVE(function::fun) (fun.f);
           WEAVE(function::conditions) (fun.cond);
           WEAVE(function::close)();

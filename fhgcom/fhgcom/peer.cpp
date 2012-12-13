@@ -55,6 +55,10 @@ namespace fhg
       {
         throw std::runtime_error ("peer_t(): invalid argument: name must not contain '.'!");
       }
+      if (name.find (' ') != std::string::npos)
+      {
+        throw std::runtime_error ("peer_t(): invalid argument: name must not contain ' '!");
+      }
     }
 
     peer_t::~peer_t()
@@ -273,11 +277,11 @@ namespace fhg
         reverse_lookup_cache_[addr] = n;
 
         DLOG( TRACE
-              , "corresponding connection data:"
-              << " name=" << n
-              << " host=" << std::string(h)
-              << " port=" << std::string(p)
-              );
+            , "corresponding connection data:"
+            << " name=" << n
+            << " host=" << std::string(h)
+            << " port=" << std::string(p)
+            );
 
         // store message in out queue
         //    connect_handler -> sends messages from out queue
@@ -643,10 +647,12 @@ namespace fhg
       values[prefix + "." + "location" + "." + "port"] =
         boost::lexical_cast<std::string>(endpoint.port());
       values[prefix + "." + "name"] = name_;
+      values[prefix + "." + "pid"] =
+        boost::lexical_cast<std::string>(getpid ());
 
       if (  (endpoint.address() == boost::asio::ip::address_v4::any())
          || (endpoint.address() == boost::asio::ip::address_v6::any())
-           )
+         )
       {
         const std::string h(boost::asio::ip::host_name());
         DMLOG( TRACE
