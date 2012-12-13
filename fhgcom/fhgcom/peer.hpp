@@ -150,6 +150,8 @@ namespace fhg
       boost::asio::ip::tcp::acceptor acceptor_;
       boost::asio::deadline_timer m_renew_kvs_entries_timer;
 
+      boost::shared_ptr<boost::thread> m_peer_thread;
+
       typedef boost::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
       reverse_lookup_cache_t reverse_lookup_cache_;
 

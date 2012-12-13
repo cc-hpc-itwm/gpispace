@@ -5,6 +5,7 @@
 #include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/make_shared.hpp>
 
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -87,7 +88,14 @@ namespace fhg
 
     void peer_t::run ()
     {
-      io_service_.run();
+      if (m_peer_thread)
+        return;
+      m_peer_thread = boost::make_shared<boost::thread>
+        (boost::bind ( &boost::asio::io_service::run
+                     , &io_service_
+                     )
+        );
+      m_peer_thread->join ();
     }
 
     void peer_t::start()
@@ -147,11 +155,11 @@ namespace fhg
 
     void peer_t::stop()
     {
-      lock_type lock(mutex_);
-
       io_service_.stop();
 
       DLOG(TRACE, "stopping peer " << name());
+
+      lock_type lock(mutex_);
 
       listen_.reset ();
 

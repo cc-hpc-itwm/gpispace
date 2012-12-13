@@ -144,9 +144,10 @@ function gspc_abspath ()
 
 function gspc_call_editor ()
 {
-    local editor=( $(gspc config --get gspc.editor) )
-    if [ $? -ne 0 ] ; then
-        editor=( "${EDITOR:=/usr/bin/vi}" )
+    local editor=()
+    editor=( $(gspc config --get gspc.editor) )
+    if [ $? -ne 0 -o -z "${editor}" ] ; then
+        editor=("${EDITOR:=/usr/bin/vi}")
     fi
     "${editor[@]}" "$@"
 }
