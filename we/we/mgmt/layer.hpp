@@ -468,18 +468,13 @@ namespace we { namespace mgmt {
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
       {
-        connect (exec_layer);
-        start();
-      }
+        ext_submit = (boost::bind (& E::submit, exec_layer, _1, _2, _3));
+        ext_cancel = (boost::bind (& E::cancel, exec_layer, _1, _2));
+        ext_finished = (boost::bind (& E::finished, exec_layer, _1, _2));
+        ext_failed = (boost::bind (& E::failed, exec_layer, _1, _2, _3, _4));
+        ext_cancelled = (boost::bind (& E::cancelled, exec_layer, _1));
 
-      template <typename T>
-      void connect ( T * t )
-      {
-        ext_submit = (boost::bind (& T::submit, t, _1, _2, _3));
-        ext_cancel = (boost::bind (& T::cancel, t, _1, _2));
-        ext_finished = (boost::bind (& T::finished, t, _1, _2));
-        ext_failed = (boost::bind (& T::failed, t, _1, _2, _3, _4));
-        ext_cancelled = (boost::bind (& T::cancelled, t, _1));
+        start();
       }
 
       void set_id_generator (boost::function<external_id_type()> gen)
