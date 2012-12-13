@@ -51,9 +51,7 @@ namespace xml
         ( ID_CONS_PARAM(function)
         , const boost::optional<parent_id_type>& parent
         , const boost::optional<std::string>& name
-        , const ports_type& in
-        , const ports_type& out
-        , const ports_type& tunnel
+        , const ports_type& ports
         , const typenames_type& typenames
         , const bool& contains_a_module_call
         , const boost::optional<bool>& internal
@@ -68,9 +66,7 @@ namespace xml
         : ID_INITIALIZE()
         , _parent (parent)
         , _name (name)
-        , _in (in)
-        , _out (out)
-        , _tunnel (tunnel)
+        , _ports (ports)
         , _typenames (typenames)
         , contains_a_module_call (contains_a_module_call)
         , internal (internal)
@@ -226,32 +222,80 @@ namespace xml
 
       // ***************************************************************** //
 
-      const function_type::ports_type& function_type::in() const
+      void function_type::push_port (const id::ref::port& id)
       {
-        return _in;
-      }
-      const function_type::ports_type& function_type::out() const
-      {
-        return _out;
-      }
-      const function_type::ports_type& function_type::tunnel() const
-      {
-        return _tunnel;
+        const id::ref::port& id_old (_ports.push (id));
+
+        if (id_old != id)
+        {
+          throw error::duplicate_port (id, id_old, path);
+        }
+
+        if (id.get().direction() != we::type::PORT_TUNNEL)
+        {
+          boost::optional<const id::ref::port&> id_other
+            ( _ports.get ( std::make_pair ( id.get().name()
+                                          , id.get().direction()
+                                          == we::type::PORT_IN
+                                          ? we::type::PORT_OUT
+                                          : we::type::PORT_IN
+                                          )
+                         )
+            );
+
+          if (id_other && id.get().type != id_other->get().type)
+          {
+            throw error::port_type_mismatch (id, *id_other, path);
+          }
+        }
       }
 
-      void function_type::remove_in (const id::ref::port& id)
+      void function_type::remove_port (const id::ref::port& id)
       {
-        _in.erase (id);
-      }
-      void function_type::remove_out (const id::ref::port& id)
-      {
-        _out.erase (id);
-      }
-      void function_type::remove_tunnel (const id::ref::port& id)
-      {
-        _tunnel.erase (id);
+        _ports.erase (id);
       }
 
+      const function_type::ports_type& function_type::ports() const
+      {
+        return _ports;
+      }
+
+      boost::optional<const id::ref::port&>
+      function_type::get_port_in (const std::string & name) const
+      {
+        return ports().get (std::make_pair (name, we::type::PORT_IN));
+      }
+
+      boost::optional<const id::ref::port&>
+      function_type::get_port_out (const std::string & name) const
+      {
+        return ports().get (std::make_pair (name, we::type::PORT_OUT));
+      }
+
+      bool function_type::is_known_port_in (const std::string & name) const
+      {
+        return get_port_in (name);
+      }
+
+      bool function_type::is_known_port_out (const std::string & name) const
+      {
+        return get_port_out (name);
+      }
+
+      bool function_type::is_known_port (const std::string & name) const
+      {
+        return is_known_port_in (name) || is_known_port_out (name);
+      }
+
+      bool function_type::is_known_port_inout (const std::string & name) const
+      {
+        return is_known_port_in (name) && is_known_port_out (name);
+      }
+
+      bool function_type::is_known_tunnel (const std::string& name) const
+      {
+        return ports().has (std::make_pair (name, we::type::PORT_TUNNEL));
+      }
 
       // ***************************************************************** //
 
@@ -259,7 +303,8 @@ namespace xml
       {
         return _typenames;
       }
-      void function_type::insert_typename (const std::string& tn) {
+      void function_type::insert_typename (const std::string& tn)
+      {
         _typenames.insert (tn);
       }
 
@@ -298,45 +343,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<const id::ref::port&>
-      function_type::get_port_in (const std::string & name) const
-      {
-        return in().get (std::make_pair (name, we::type::PORT_IN));
-      }
-
-      boost::optional<const id::ref::port&>
-      function_type::get_port_out (const std::string & name) const
-      {
-        return out().get (std::make_pair (name, we::type::PORT_OUT));
-      }
-
-      bool function_type::is_known_port_in (const std::string & name) const
-      {
-        return get_port_in (name);
-      }
-
-      bool function_type::is_known_port_out (const std::string & name) const
-      {
-        return get_port_out (name);
-      }
-
-      bool function_type::is_known_port (const std::string & name) const
-      {
-        return is_known_port_in (name) || is_known_port_out (name);
-      }
-
-      bool function_type::is_known_port_inout (const std::string & name) const
-      {
-        return is_known_port_in (name) && is_known_port_out (name);
-      }
-
-      bool function_type::is_known_tunnel (const std::string& name) const
-      {
-        return tunnel().get (std::make_pair (name, we::type::PORT_TUNNEL));
-      }
-
-      // ***************************************************************** //
-
       std::string function_type::condition (void) const
       {
         return cond.empty()
@@ -347,59 +353,12 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::push (const id::ref::port& id, ports_type& ports)
-      {
-        const id::ref::port& id_old (ports.push (id));
-
-        if (id_old != id)
-        {
-          throw error::duplicate_port (id, id_old, path);
-        }
-
-        if (id.get().direction() != we::type::PORT_TUNNEL)
-        {
-          boost::optional<const id::ref::port&> id_other
-            ( id.get().direction() == we::type::PORT_IN
-            ? _out.get (std::make_pair (id.get().name(), we::type::PORT_OUT))
-            : _in.get (std::make_pair (id.get().name(), we::type::PORT_IN))
-            );
-
-          if (id_other && id.get().type != id_other->get().type)
-          {
-            throw error::port_type_mismatch (id, *id_other, path);
-          }
-        }
-      }
-
-      void function_type::push_in (const id::ref::port& id)
-      {
-        push (id, _in);
-      }
-      void function_type::push_out (const id::ref::port& id)
-      {
-        push (id, _out);
-      }
-      void function_type::push_tunnel (const id::ref::port& id)
-      {
-        push (id, _tunnel);
-      }
-
-      // ***************************************************************** //
-
       xml::parse::structure_type::forbidden_type
         function_type::forbidden_below (void) const
       {
         xml::parse::structure_type::forbidden_type forbidden;
 
-        BOOST_FOREACH (const port_type& port, in().values())
-        {
-          forbidden.insert (std::make_pair (port.type, port.name()));
-        }
-        BOOST_FOREACH (const port_type& port, out().values())
-        {
-          forbidden.insert (std::make_pair (port.type, port.name()));
-        }
-        BOOST_FOREACH (const port_type& port, tunnel().values())
+        BOOST_FOREACH (const port_type& port, ports().values())
         {
           forbidden.insert (std::make_pair (port.type, port.name()));
         }
@@ -538,32 +497,30 @@ namespace xml
       {
         class function_type_check : public boost::static_visitor<void>
         {
-        private:
-          const state::type & state;
-
         public:
-          function_type_check (const state::type & _state) : state (_state) {}
+          function_type_check (const state::type& state)
+            : _state (state)
+          { }
 
-          void operator () (const id::ref::expression &) const { return; }
-          void operator () (const id::ref::module &) const { return; }
-          void operator () (const id::ref::net& id) const
+          void operator() (const id::ref::expression&) const
           {
-            id.get().type_check (state);
           }
+          void operator() (const id::ref::module&) const
+          {
+          }
+          void operator() (const id::ref::net& id) const
+          {
+            id.get().type_check (_state);
+          }
+
+        private:
+          const state::type& _state;
         };
       }
 
       void function_type::type_check (const state::type & state) const
       {
-        BOOST_FOREACH (const port_type& port, in().values())
-        {
-          port.type_check (path, state);
-        }
-        BOOST_FOREACH (const port_type& port, out().values())
-        {
-          port.type_check (path, state);
-        }
-        BOOST_FOREACH (const port_type& port, tunnel().values())
+        BOOST_FOREACH (const port_type& port, ports().values())
         {
           port.type_check (path, state);
         }
@@ -595,17 +552,16 @@ namespace xml
 
         void add_ports ( we_transition_type & trans
                        , const function_type::ports_type& ports
-                       , const we::type::PortDirection & direction
                        ) const
         {
           BOOST_FOREACH (const port_type& port, ports.values())
             {
               const signature::type type
-                (fun.type_of_port (direction, port));
+                (fun.type_of_port (port.direction(), port));
 
               trans.add_port ( port.name()
                              , type
-                             , direction
+                             , port.direction()
                              , port.properties()
                              );
             }
@@ -623,20 +579,19 @@ namespace xml
         template<typename Map>
         void add_ports ( we_transition_type & trans
                        , const function_type::ports_type& ports
-                       , const we::type::PortDirection & direction
                        , const Map & pid_of_place
                        ) const
         {
           BOOST_FOREACH (const port_type& port, ports.values())
             {
               const signature::type type
-                (fun.type_of_port (direction, port));
+                (fun.type_of_port (port.direction(), port));
 
               if (not port.place)
                 {
                   trans.add_port ( port.name()
                                  , type
-                                 , direction
+                                 , port.direction()
                                  , port.properties()
                                  );
                 }
@@ -648,7 +603,7 @@ namespace xml
 
                   trans.add_port ( port.name()
                                  , type
-                                 , direction
+                                 , port.direction()
                                  , get_pid (pid_of_place, *port.place)
                                  , port.properties()
                                  )
@@ -714,9 +669,7 @@ namespace xml
             , fun.properties()
             );
 
-          add_ports (trans, fun.in());
-          add_ports (trans, fun.out());
-          add_ports (trans, fun.tunnel());
+          add_ports (trans, fun.ports());
           add_requirements (trans, fun.requirements);
 
           return trans;
@@ -734,9 +687,7 @@ namespace xml
             , fun.properties()
             );
 
-          add_ports (trans, fun.in(), we::type::PORT_IN);
-          add_ports (trans, fun.out(), we::type::PORT_OUT);
-          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL);
+          add_ports (trans, fun.ports());
           add_requirements (trans, fun.requirements);
 
           return trans;
@@ -770,9 +721,7 @@ namespace xml
             , fun.properties()
             );
 
-          add_ports (trans, fun.in(), we::type::PORT_IN, pid_of_place);
-          add_ports (trans, fun.out(), we::type::PORT_OUT, pid_of_place);
-          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL, pid_of_place);
+          add_ports (trans, fun.ports(), pid_of_place);
           add_requirements (trans, fun.requirements);
 
           return trans;
@@ -849,15 +798,7 @@ namespace xml
                                      , state::type & state
                                      )
       {
-        BOOST_FOREACH (port_type& port, in().values())
-        {
-          port.specialize (map, state);
-        }
-        BOOST_FOREACH (port_type& port, out().values())
-        {
-          port.specialize (map, state);
-        }
-        BOOST_FOREACH (port_type& port, tunnel().values())
+        BOOST_FOREACH (port_type& port, ports().values())
         {
           port.specialize (map, state);
         }
@@ -930,9 +871,7 @@ namespace xml
           , new_mapper
           , parent
           , _name
-          , _in.clone (new_id, new_mapper)
-          , _out.clone (new_id, new_mapper)
-          , _tunnel.clone (new_id, new_mapper)
+          , _ports.clone (new_id, new_mapper)
           , _typenames
           , contains_a_module_call
           , internal
@@ -2292,9 +2231,7 @@ namespace xml
 
           xml::parse::type::dump::dump (s, f.requirements);
 
-          dumps (s, f.in().values(), "in");
-          dumps (s, f.out().values(), "out");
-          dumps (s, f.tunnel().values(), "tunnel");
+          dumps (s, f.ports().values());
 
           boost::apply_visitor (function_dump_visitor (s), f.f);
 

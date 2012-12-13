@@ -1164,12 +1164,12 @@ namespace xml
         {
           if (child_name == "in")
           {
-            function.get_ref().push_in
+            function.get_ref().push_port
               (port_type (child, state, id, we::type::PORT_IN));
           }
           else if (child_name == "out")
           {
-            function.get_ref().push_out
+            function.get_ref().push_port
               (port_type (child, state, id, we::type::PORT_OUT));
           }
           else if (child_name == "inout")
@@ -1179,12 +1179,12 @@ namespace xml
             const id::ref::port port_out
               (port_in.get().clone (id));
             port_out.get_ref().direction (we::type::PORT_OUT);
-            function.get_ref().push_in (port_in);
-            function.get_ref().push_out (port_out);
+            function.get_ref().push_port (port_in);
+            function.get_ref().push_port (port_out);
           }
           else if (child_name == "tunnel")
           {
-            function.get_ref().push_tunnel
+            function.get_ref().push_port
               (port_type (child, state, id, we::type::PORT_TUNNEL));
           }
           else if (child_name == "struct")

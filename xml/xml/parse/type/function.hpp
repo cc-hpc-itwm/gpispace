@@ -69,9 +69,7 @@ namespace xml
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
                       , const boost::optional<std::string>& name
-                      , const ports_type& in
-                      , const ports_type& out
-                      , const ports_type& tunnel
+                      , const ports_type& ports
                       , const typenames_type& typenames
                       , const bool& contains_a_module_call
                       , const boost::optional<bool>& internal
@@ -110,13 +108,19 @@ namespace xml
 
         // ***************************************************************** //
 
-        const ports_type& in() const;
-        const ports_type& out() const;
-        const ports_type& tunnel() const;
+        void push_port (const id::ref::port&);
+        void remove_port (const id::ref::port&);
 
-        void remove_in (const id::ref::port&);
-        void remove_out (const id::ref::port&);
-        void remove_tunnel (const id::ref::port&);
+        const ports_type& ports() const;
+
+        boost::optional<const id::ref::port&> get_port_in (const std::string & name) const;
+        boost::optional<const id::ref::port&> get_port_out (const std::string & name) const;
+
+        bool is_known_port_in (const std::string & name) const;
+        bool is_known_port_out (const std::string & name) const;
+        bool is_known_port (const std::string & name) const;
+        bool is_known_port_inout (const std::string & name) const;
+        bool is_known_tunnel (const std::string& name) const;
 
         // ***************************************************************** //
 
@@ -129,31 +133,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<const id::ref::port&> get_port_in (const std::string & name) const;
-        boost::optional<const id::ref::port&> get_port_out (const std::string & name) const;
-
-        boost::optional<port_type> port_by_id (const id::port& id) const;
-        boost::optional<port_type&> port_by_id_ref (const id::port& id) const;
-
-        bool is_known_port_in (const std::string & name) const;
-        bool is_known_port_out (const std::string & name) const;
-        bool is_known_port (const std::string & name) const;
-        bool is_known_port_inout (const std::string & name) const;
-        bool is_known_tunnel (const std::string& name) const;
-
-        // ***************************************************************** //
-
         std::string condition (void) const;
-
-        // ***************************************************************** //
-
-      private:
-        void push (const id::ref::port& p, ports_type& ports);
-
-      public:
-        void push_in (const id::ref::port&);
-        void push_out (const id::ref::port&);
-        void push_tunnel (const id::ref::port&);
 
         // ***************************************************************** //
 
@@ -214,9 +194,7 @@ namespace xml
 
         boost::optional<std::string> _name;
 
-        ports_type _in;
-        ports_type _out;
-        ports_type _tunnel;
+        ports_type _ports;
 
         typenames_type _typenames;
 

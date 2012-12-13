@@ -95,7 +95,7 @@ namespace xml
 
               if (place->get().type != _port.get().type)
               {
-                throw error::port_connected_type_error (_port, place, _path);
+                throw error::port_connected_type_error (_port, *place, _path);
               }
 
               if (_port.get().direction() == we::type::PORT_TUNNEL)
@@ -103,12 +103,12 @@ namespace xml
                 if (not place->get().is_virtual())
                 {
                   throw
-                    error::tunnel_connected_non_virtual (_port, place, _path);
+                    error::tunnel_connected_non_virtual (_port, *place, _path);
                 }
 
                 if (_port.get().name() != place->get().name())
                 {
-                  throw error::tunnel_name_mismatch (_port, place, _path);
+                  throw error::tunnel_name_mismatch (_port, *place, _path);
                 }
               }
             }
@@ -188,7 +188,7 @@ namespace xml
       {
         void dump (::fhg::util::xml::xmlstream& s, const port_type& p)
         {
-          s.open (we::type::enum_to_string (direction));
+          s.open (we::type::enum_to_string (p.direction()));
           s.attr ("name", p.name());
           s.attr ("type", p.type);
           s.attr ("place", p.place);

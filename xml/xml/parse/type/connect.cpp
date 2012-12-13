@@ -46,11 +46,13 @@ namespace xml
       }
       boost::optional<const id::ref::port&> connect_type::resolved_port() const
       {
-        return petri_net::edge::is_PT (direction())
-          ? parent()->resolved_function().get().in().get
-            (std::make_pair (port(), we::type::PORT_IN))
-          : parent()->resolved_function().get().out().get
-            (std::make_pair (port(), we::type::PORT_OUT));
+        return parent()->resolved_function().get().ports().get
+          ( std::make_pair ( port()
+                           , petri_net::edge::is_PT (direction())
+                           ? we::type::PORT_IN
+                           : we::type::PORT_OUT
+                           )
+          );
       }
 
       const ::petri_net::edge::type& connect_type::direction() const

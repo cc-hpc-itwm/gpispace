@@ -634,28 +634,31 @@ namespace xml
         //! \todo keep working with the id_function, deref deeper
         function_type& fun (id_function.get_ref());
 
-        BOOST_FOREACH (const port_type& port_in, fun.in().values())
+        BOOST_FOREACH (const port_type& port_in, fun.ports().values())
+        {
+          if (port_in.direction() == we::type::PORT_IN)
           {
             boost::optional<const id::ref::port&> id_port_out
               (fun.get_port_out (port_in.name()));
 
             if (id_port_out)
-              {
-                const port_type& port_out (id_port_out->get());
+            {
+              const port_type& port_out (id_port_out->get());
 
-                if (port_out.type != port_in.type)
-                  {
-                    state.warn
-                      ( warning::conflicting_port_types ( trans.name()
-                                                        , port_in.name()
-                                                        , port_in.type
-                                                        , port_out.type
-                                                        , state.file_in_progress()
-                                                        )
-                      );
-                  }
+              if (port_out.type != port_in.type)
+              {
+                state.warn
+                  ( warning::conflicting_port_types ( trans.name()
+                                                    , port_in.name()
+                                                    , port_in.type
+                                                    , port_out.type
+                                                    , state.file_in_progress()
+                                                    )
+                  );
               }
+            }
           }
+        }
 
         if (fun.name())
           {
@@ -768,7 +771,9 @@ namespace xml
               , fun.properties()
               );
 
-            BOOST_FOREACH (const port_type& port, fun.in().values())
+            BOOST_FOREACH (const port_type& port, fun.ports().values())
+            {
+              if (port.direction() == we::type::PORT_IN)
               {
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_IN, port));
@@ -785,15 +790,15 @@ namespace xml
                                   );
 
                 if (port.place)
-                  {
-                    trans_in.add_connection
-                      ( port.name()
-                      , get_pid (pid_of_place , prefix + *port.place)
-                      , port.properties()
-                      )
-                      ;
-                  }
+                {
+                  trans_in.add_connection
+                    ( port.name()
+                    , get_pid (pid_of_place , prefix + *port.place)
+                    , port.properties()
+                    );
+                }
               }
+            }
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()
@@ -810,21 +815,20 @@ namespace xml
 
             const tid_t tid_in (we_net.add_transition (trans_in));
 
-            BOOST_FOREACH (const port_type& port, fun.in().values())
+            BOOST_FOREACH (const port_type& port, fun.ports().values())
+            {
+              if (port.direction() == we::type::PORT_IN && port.place)
               {
-                if (port.place)
-                  {
-                    we_net.add_edge
-                      ( e++, connection_t ( TP
-                                          , tid_in
-                                          , get_pid ( pid_of_place
-                                                    , prefix + *port.place
-                                                    )
-                                          )
-                      )
-                      ;
-                  }
+                we_net.add_edge
+                  ( e++, connection_t ( petri_net::edge::TP
+                                      , tid_in
+                                      , get_pid ( pid_of_place
+                                                , prefix + *port.place
+                                                )
+                                      )
+                  );
               }
+            }
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()
@@ -861,7 +865,9 @@ namespace xml
               , fun.properties()
               );
 
-            BOOST_FOREACH (const port_type& port, fun.out().values())
+            BOOST_FOREACH (const port_type& port, fun.ports().values())
+            {
+              if (port.direction() == we::type::PORT_OUT)
               {
                 const signature::type type
                   (fun.type_of_port (we::type::PORT_OUT, port));
@@ -878,15 +884,15 @@ namespace xml
                                    );
 
                 if (port.place)
-                  {
-                    trans_out.add_connection
-                      ( get_pid (pid_of_place , prefix + *port.place)
-                      , port.name()
-                      , port.properties()
-                      )
-                      ;
-                  }
+                {
+                  trans_out.add_connection
+                    ( get_pid (pid_of_place , prefix + *port.place)
+                    , port.name()
+                    , port.properties()
+                    );
+                }
               }
+            }
 
             std::size_t num_outport (0);
 
@@ -926,21 +932,20 @@ namespace xml
             const tid_t tid_out (we_net.add_transition (trans_out));
 
 
-            BOOST_FOREACH (const port_type& port, fun.out().values())
+            BOOST_FOREACH (const port_type& port, fun.ports().values())
+            {
+              if (port.direction() == we::type::PORT_OUT && port.place)
               {
-                if (port.place)
-                  {
-                    we_net.add_edge
-                      ( e++, connection_t ( PT
-                                          , tid_out
-                                          , get_pid ( pid_of_place
-                                                    , prefix + *port.place
-                                                    )
-                                          )
-                      )
-                      ;
-                    }
-                }
+                we_net.add_edge
+                  ( e++, connection_t ( petri_net::edge::PT
+                                      , tid_out
+                                      , get_pid ( pid_of_place
+                                                , prefix + *port.place
+                                                )
+                                      )
+                  );
+              }
+            }
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()
