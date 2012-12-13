@@ -84,10 +84,7 @@ namespace xml
 
       namespace dump
       {
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const port_type & p
-                  , const std::string & direction
-                  );
+        void dump (::fhg::util::xml::xmlstream&, const port_type&);
       }
     }
   }

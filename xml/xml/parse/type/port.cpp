@@ -195,12 +195,9 @@ namespace xml
 
       namespace dump
       {
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const port_type & p
-                  , const std::string & direction
-                  )
+        void dump (::fhg::util::xml::xmlstream& s, const port_type& p)
         {
-          s.open (direction);
+          s.open (we::type::enum_to_string (direction));
           s.attr ("name", p.name());
           s.attr ("type", p.type);
           s.attr ("place", p.place);

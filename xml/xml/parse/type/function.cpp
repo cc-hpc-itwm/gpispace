@@ -714,9 +714,9 @@ namespace xml
             , fun.properties()
             );
 
-          add_ports (trans, fun.in(), we::type::PORT_IN);
-          add_ports (trans, fun.out(), we::type::PORT_OUT);
-          add_ports (trans, fun.tunnel(), we::type::PORT_TUNNEL);
+          add_ports (trans, fun.in());
+          add_ports (trans, fun.out());
+          add_ports (trans, fun.tunnel());
           add_requirements (trans, fun.requirements);
 
           return trans;
