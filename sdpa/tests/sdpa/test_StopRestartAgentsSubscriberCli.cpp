@@ -107,7 +107,8 @@ struct MyFixture
 
 		m_serv->stop ();
 		m_pool->stop ();
-		m_thrd->join ();
+		if(m_thrd->joinable())
+			m_thrd->join ();
 
 		delete m_thrd;
 		delete m_serv;
@@ -300,7 +301,7 @@ void MyFixture::run_client_subscriber()
 
 	ptrCli->shutdown_network();
 	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-  ptrCli.reset();
+	ptrCli.reset();
 }
 
 sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
@@ -370,7 +371,8 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	LOG( INFO, "Re-start \"agent_0\". The recovery string is "<<strBackupAgent0);
 	ptrRecAgent0->start_agent(false, strBackupAgent0);
 
-	threadClient.join();
+	if( threadClient.joinable() )
+		threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!");
 
 	ptrAgent1->shutdown();
@@ -415,7 +417,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
 	ptrAgent->start_agent(false, strBackupAgent);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
@@ -471,7 +473,7 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 	LOG( INFO, "Re-start \"agent_0\". The recovery string is "<<strBackupAgent0);
 	ptrRecAgent0->start_agent(true, strBackupAgent0);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!");
 
 	drts->stop();
@@ -521,7 +523,8 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
 	ptrRecAgent->start_agent(false, strBackupAgent);
 
-	threadClient.join();
+	if( threadClient.joinable() )
+		threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();

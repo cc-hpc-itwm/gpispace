@@ -30,6 +30,7 @@ Worker::Worker(	const worker_id_t& name,
 
 bool Worker::has_job( const sdpa::job_id_t& job_id )
 {
+	lock_type lock(mtx_);
 	if( pending_.find(job_id) != pending_.end() )
 		return true;
 	if( submitted_.find(job_id) != submitted_.end() )
@@ -54,12 +55,14 @@ bool Worker::isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id )
 
 void Worker::update()
 {
+	lock_type lock(mtx_);
   tstamp_ = sdpa::util::now();
   set_timedout (false);
 }
 
 void Worker::dispatch(const sdpa::job_id_t& jobId)
 {
+	lock_type lock(mtx_);
   SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
   setLastScheduleTime(sdpa::util::now());
   pending_.push(jobId);
@@ -68,7 +71,7 @@ void Worker::dispatch(const sdpa::job_id_t& jobId)
 bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
   //update();
-
+	lock_type lock(mtx_);
   try
   {
 	  acknowledged().push(job_id);
@@ -85,6 +88,7 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 
 void Worker::delete_job(const sdpa::job_id_t &job_id)
 {
+	lock_type lock(mtx_);
 	DLOG(TRACE, "deleting job " << job_id << " from worker " << name());
 
 	if( pending().erase(job_id) )
@@ -105,6 +109,7 @@ void Worker::delete_job(const sdpa::job_id_t &job_id)
 
 sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
+	lock_type lock(mtx_);
 	// acknowledge a previous job
 	if( !last_job_id.str().empty() && last_job_id != sdpa::job_id_t::invalid_job_id())
 		acknowledge(last_job_id);
@@ -125,6 +130,7 @@ sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (No
 
 void Worker::print()
 {
+	lock_type lock(mtx_);
 	// print the values of the restored job queue
 	if(pending().size())
 	{
@@ -147,6 +153,7 @@ void Worker::print()
 
 unsigned int Worker::nbAllocatedJobs()
 {
+	lock_type lock(mtx_);
 	unsigned int nJobs = /*pending().size() +*/ submitted().size() + acknowledged().size();
 	return nJobs;
 }

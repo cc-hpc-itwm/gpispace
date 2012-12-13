@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestStopRestartAgentsPollingCli
+#define BOOST_TEST_MODULE TestStopRestartDrtsPollingCli
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
@@ -105,8 +105,6 @@ struct MyFixture
 												  , boost::posix_time::seconds(10)
 												  , 3
 												  );
-
-		m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	}
 
 	~MyFixture()
@@ -115,14 +113,14 @@ struct MyFixture
 
 		m_serv->stop ();
 		m_pool->stop ();
-		m_thrd->join ();
+		if(m_thrd->joinable())
+			m_thrd->join ();
 
 		delete m_thrd;
 		delete m_serv;
 		delete m_kvsd;
 		delete m_pool;
 
-		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
 	}
 
@@ -326,22 +324,24 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrts_EmptyWE)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	drts_0->stop();
-	drts_0_thread.join();
+	if(drts_0_thread.joinable())
+		drts_0_thread.join();
 
 	// create new drts
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
 	boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
 
 	// wait foŕ a while
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	// and stop!!!
 	drts_new->stop();
-	drts_new_thread.join();
+	if(drts_new_thread.joinable())
+		drts_new_thread.join();
 
-	threadClient.join();
+	if( threadClient.joinable() )
+		threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
-
 
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
@@ -377,18 +377,21 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrts_RealWE)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	drts_0->stop();
-	drts_0_thread.join();
+	if(drts_0_thread.joinable())
+		drts_0_thread.join();
 
 	// create new drts
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
 	boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
 
-	threadClient.join();
-  LOG( INFO, "The client thread joined the main thread!" );
+	if( threadClient.joinable() )
+		threadClient.join();
+	LOG( INFO, "The client thread joined the main thread!" );
 
 	// and stop!!!
 	drts_new->stop();
-	drts_new_thread.join();
+	if(drts_new_thread.joinable())
+		drts_new_thread.join();
 
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();

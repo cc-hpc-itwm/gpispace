@@ -115,7 +115,8 @@ struct MyFixture
 
 		m_serv->stop ();
 		m_pool->stop ();
-		m_thrd->join ();
+		if(m_thrd->joinable())
+			m_thrd->join ();
 
 		delete m_thrd;
 		delete m_serv;
@@ -410,7 +411,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_Orch2Agents)
 	LOG( INFO, "Re-start the orchestrator");// The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	ptrAgent1->shutdown();
@@ -459,7 +460,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE)
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
@@ -510,7 +511,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchEmptyWE)
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
@@ -560,7 +561,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
@@ -611,7 +612,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();

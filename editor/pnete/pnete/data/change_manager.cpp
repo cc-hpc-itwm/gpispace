@@ -73,6 +73,8 @@ namespace fhg
           EXPOSE (place_type_set);
 
           // - port ----------------------------------------------------
+          EXPOSE (port_added);
+          EXPOSE (port_deleted);
           EXPOSE (port_type_set);
           EXPOSE (place_association_set);
 
@@ -528,49 +530,59 @@ namespace fhg
         };
 
         // -- place --------------------------------------------------
+        void add_place_impl ( ACTION_ARG_LIST
+                            , const ::xml::parse::id::ref::net& net
+                            , const ::xml::parse::id::ref::place& place
+                            )
+        {
+          net.get_ref().push_place (place);
+
+          change_manager.emit_signal
+            ( &signal::place_added
+            , origin
+            , handle::place (place, change_manager)
+            );
+        }
+
+        void remove_place_impl ( ACTION_ARG_LIST
+                               , const ::xml::parse::id::ref::net& net
+                               , const ::xml::parse::id::ref::place& place
+                               )
+        {
+          change_manager.emit_signal
+            ( &signal::place_deleted
+            , origin
+            , handle::place (place, change_manager)
+            );
+
+          net.get_ref().erase_place (place);
+        }
+
         class add_place : public QUndoCommand
         {
         public:
-          add_place
-            ( change_manager_t& change_manager
-            , const QObject* origin
-            , const ::xml::parse::id::ref::net& net
-            , const ::xml::parse::id::ref::place& place
-            )
-            : QUndoCommand (QObject::tr ("add_place_action"))
-            , _change_manager (change_manager)
-            , _origin (origin)
+          add_place ( ACTION_ARG_LIST
+                    , const ::xml::parse::id::ref::net& net
+                    , const ::xml::parse::id::ref::place& place
+                    )
+            : ACTION_INIT ("add_place_action")
             , _place (place)
             , _net (net)
           { }
 
           virtual void undo()
           {
-            _change_manager.emit_signal
-              ( &signal::place_deleted
-              , NULL
-              , handle::place (_place, _change_manager)
-              );
-
-            _net.get_ref().erase_place (_place);
+            remove_place_impl (_change_manager, NULL, _net, _place);
           }
 
           virtual void redo()
           {
-            _net.get_ref().push_place (_place);
-
-            _change_manager.emit_signal
-              ( &signal::place_added
-              , _origin
-              , handle::place (_place, _change_manager)
-              );
-
+            add_place_impl (_change_manager, _origin, _net, _place);
             _origin = NULL;
           }
 
         private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
+          ACTION_MEMBERS;
           ::xml::parse::id::ref::place _place;
           ::xml::parse::id::ref::net _net;
         };
@@ -579,44 +591,25 @@ namespace fhg
         {
         public:
           remove_place
-            ( change_manager_t& change_manager
-            , const QObject* origin
-            , const ::xml::parse::id::ref::place& place
-            )
-            : QUndoCommand (QObject::tr ("remove_place_action"))
-            , _change_manager (change_manager)
-            , _origin (origin)
-            , _place (place)
-            , _net (_place.get().parent()->make_reference_id())
+            (ACTION_ARG_LIST, const ::xml::parse::id::ref::place& place)
+              : ACTION_INIT ("remove_place_action")
+              , _place (place)
+              , _net (_place.get().parent()->make_reference_id())
           { }
 
           virtual void undo()
           {
-            _net.get_ref().push_place (_place);
-
-            _change_manager.emit_signal
-              ( &signal::place_added
-              , NULL
-              , handle::place (_place, _change_manager)
-              );
+            add_place_impl (_change_manager, NULL, _net, _place);
           }
 
           virtual void redo()
           {
-            _change_manager.emit_signal
-              ( &signal::place_deleted
-              , _origin
-              , handle::place (_place, _change_manager)
-              );
-
-            _net.get_ref().erase_place (_place);
-
+            remove_place_impl (_change_manager, _origin, _net, _place);
             _origin = NULL;
           }
 
         private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
+          ACTION_MEMBERS;
           ::xml::parse::id::ref::place _place;
           ::xml::parse::id::ref::net _net;
         };
@@ -662,6 +655,99 @@ namespace fhg
         };
 
         // -- port --------------------------------------------------
+        void add_port_impl ( ACTION_ARG_LIST
+                           , const ::xml::parse::id::ref::function& function
+                           , const ::xml::parse::id::ref::port& port
+                           )
+        {
+          function.get_ref().push_in (port);
+
+          change_manager.emit_signal
+            (&signal::port_added, origin, handle::port (port, change_manager));
+        }
+
+        void remove_port_impl ( ACTION_ARG_LIST
+                              , const ::xml::parse::id::ref::function& function
+                              , const ::xml::parse::id::ref::port& port
+                              )
+        {
+          change_manager.emit_signal
+            (&signal::port_deleted, origin, handle::port (port, change_manager));
+
+          //! \todo Encapsulate? Do differently?
+          if (function.get().in().has (port))
+          {
+            function.get_ref().remove_in (port);
+          }
+          else if (function.get().out().has (port))
+          {
+            function.get_ref().remove_out (port);
+          }
+          else if (function.get().tunnel().has (port))
+          {
+            function.get_ref().remove_tunnel (port);
+          }
+          else
+          {
+            throw std::runtime_error ("No port with that id in that function.");
+          }
+        }
+
+        class add_port : public QUndoCommand
+        {
+        public:
+          add_port ( ACTION_ARG_LIST
+                   , const ::xml::parse::id::ref::function& function
+                   , const ::xml::parse::id::ref::port& port
+                   )
+            : ACTION_INIT ("add_port_action")
+            , _port (port)
+            , _function (function)
+          { }
+
+          virtual void undo()
+          {
+            remove_port_impl (_change_manager, NULL, _function, _port);
+          }
+
+          virtual void redo()
+          {
+            add_port_impl (_change_manager, _origin, _function, _port);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          ::xml::parse::id::ref::port _port;
+          ::xml::parse::id::ref::function _function;
+        };
+
+        class remove_port : public QUndoCommand
+        {
+        public:
+          remove_port (ACTION_ARG_LIST, const ::xml::parse::id::ref::port& port)
+            : ACTION_INIT ("remove_port_action")
+            , _port (port)
+            , _function (_port.get().parent()->make_reference_id())
+          { }
+
+          virtual void undo()
+          {
+            add_port_impl (_change_manager, NULL, _function, _port);
+          }
+
+          virtual void redo()
+          {
+            remove_port_impl (_change_manager, _origin, _function, _port);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          ::xml::parse::id::ref::port _port;
+          ::xml::parse::id::ref::function _function;
+        };
+
         void port_set_type_impl
           (ACTION_ARG_LIST, const handle::port& port, const QString& type)
         {
@@ -1168,20 +1254,23 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::ref::place place
-          ( ::xml::parse::type::place_type
-            ( net.id().id_mapper()->next_id()
-            , net.id().id_mapper()
-            , net.id().id()
-            ).make_reference_id()
-          );
-
         std::string name ("place");
         while (net.get().has_place (name))
         {
           name = inc (name);
         }
-        place.get_ref().name (name);
+
+        const ::xml::parse::id::ref::place place
+          ( ::xml::parse::type::place_type
+            ( net.id().id_mapper()->next_id()
+            , net.id().id_mapper()
+            , net.id().id()
+            , name
+            //! \todo: default type to something useful?
+            , ""
+            , boost::none
+            ).make_reference_id()
+          );
 
         push (new action::add_place (*this, origin, net.id(), place));
       }
@@ -1261,6 +1350,43 @@ namespace fhg
       }
 
       // - port ------------------------------------------------------
+      //! \todo Take the type (in, out, tunnel). Currently defaults to in.
+      void change_manager_t::add_port
+        ( const QObject* origin
+        , const handle::function& function
+        )
+      {
+        std::string name ("in_port");
+        while (function.get().in().has (name))
+        {
+          name = inc (name);
+        }
+
+        const ::xml::parse::id::ref::port port
+          ( ::xml::parse::type::port_type
+            ( function.id().id_mapper()->next_id()
+            , function.id().id_mapper()
+            , function.id().id()
+            , name
+            //! \todo Default type?
+            , ""
+            , boost::none
+            ).make_reference_id()
+          );
+
+        push (new action::add_port (*this, origin, function.id(), port));
+      }
+
+      void change_manager_t::delete_port
+        ( const QObject* origin
+        , const handle::port& port
+        )
+      {
+        //! \todo Find all connections to this port and erase them in
+        //! a macro. Or do that inside the action class.
+        push (new action::remove_port (*this, origin, port.id()));
+      }
+
       void change_manager_t::set_property
         ( const QObject* origin
         , const data::handle::port& port

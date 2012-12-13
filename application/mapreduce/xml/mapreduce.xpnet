@@ -1011,8 +1011,6 @@
                     //::mapreduce::util::print_keys<std::vector<std::string> >("arr_red_items:", arr_red_items);
 				}
 					
-				//std::sort( arr_part_items.begin(), arr_part_items.end());
-				
 				// one should assume:
 				// the items are sorted in a reduce slot
 				// the partition slot is formed from sorted sub-arrays 

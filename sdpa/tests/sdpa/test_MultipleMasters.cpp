@@ -121,8 +121,7 @@ struct MyFixture
 		delete m_kvsd;
 		delete m_pool;
 
-		//seda::StageRegistry::instance().stopAll();
-		//seda::StageRegistry::instance().clear();
+		seda::StageRegistry::instance().clear();
 	}
 
 	void run_client(int i);
@@ -352,12 +351,15 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 
 	for(int i=0;i<NMAXTHRDS;i++)
 	{
-		arrThreadClient[i].join();
+		if( arrThreadClient[i].joinable() )
+			arrThreadClient[i].join();
+
 		LOG( INFO, "The client thread "<<i<<" joined the main thread°!" );
 	}
 
 	drts_00->stop();
-	drts_00_thread.join();
+	if(drts_00_thread.joinable())
+		drts_00_thread.join();
 
 	ptrAgent00->shutdown();
 	ptrAgent0->shutdown();

@@ -58,7 +58,10 @@ namespace fhg
       WSIG(function, net::open, ::xml::parse::id::ref::net, id)
       {
         _scene = new ui::graph::scene_type
-          (data::handle::net (id, _root->change_manager()), _root);
+          ( data::handle::net (id, _root->change_manager())
+          , data::handle::function (_function, _root->change_manager())
+          , _root
+          );
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
             ( _root
@@ -166,6 +169,7 @@ namespace fhg
                               , _place_item_by_name
                               , _port_in_item_by_name
                               , _port_out_item_by_name
+                              , _root
                               );
 
         from::many (&wc, cs.ids(), from::connection);
@@ -229,6 +233,7 @@ namespace fhg
                              , item_by_name_type& place_item_by_name
                              , item_by_name_type& ports_in
                              , item_by_name_type& ports_out
+                             , data::internal_type* root
                              )
         : _scene (scene)
         , _place_item_by_name (place_item_by_name)
@@ -237,6 +242,7 @@ namespace fhg
         , _port ()
         , _place ()
         , _id (boost::none)
+        , _root (root)
       {}
 
       WSIG (connection, connection::open, ::xml::parse::id::ref::connect, id)
@@ -272,8 +278,7 @@ namespace fhg
             std::runtime_error ("connection: place " + _place + " not found");
         }
 
-        //! \todo Do not take change_manager from scene, but from root.
-        data::handle::connect handle (*_id, _scene->change_manager());
+        data::handle::connect handle (*_id, _root->change_manager());
         if (!is_out)
         {
           _scene->create_connection
@@ -304,7 +309,6 @@ namespace fhg
                                      , ui::graph::connectable::direction::OUT
                                      , _place_item_by_name
                                      , _root
-                                     , _function
                                      );
           from::many (&wptl, _function.get().in().ids(), from::port);
         }
@@ -314,7 +318,6 @@ namespace fhg
                                      , ui::graph::connectable::direction::IN
                                      , _place_item_by_name
                                      , _root
-                                     , _function
                                      );
           from::many (&wptl, _function.get().out().ids(), from::port);
         }
@@ -395,7 +398,6 @@ namespace fhg
         , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
         , data::internal_type* root
-        , const ::xml::parse::id::ref::function& function
         )
           : _scene (scene)
           , _place_item_by_name (place_item_by_name)
@@ -403,7 +405,6 @@ namespace fhg
           , _direction (direction)
           , _port_item ()
           , _root (root)
-          , _function (function)
       {}
 
       WSIG(port_toplevel, port::open, ::xml::parse::id::ref::port, id)

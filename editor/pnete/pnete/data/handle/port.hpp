@@ -33,6 +33,8 @@ namespace fhg
                , change_manager_t& change_manager
                );
 
+          void remove (const QObject* sender) const;
+
           void set_type (const QObject* sender, const QString& type) const;
 
           void remove_place_association (const QObject* sender) const;

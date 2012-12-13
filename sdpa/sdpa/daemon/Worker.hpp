@@ -82,29 +82,29 @@ namespace sdpa { namespace daemon {
     bool acknowledge(const sdpa::job_id_t &job_id);
 
     // update last service time
-    sdpa::util::time_type lastTimeServed() { return last_time_served_; }
-    void setLastTimeServed(const sdpa::util::time_type& last_time_srv ) { last_time_served_ = last_time_srv; }
+    sdpa::util::time_type lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
+    void setLastTimeServed(const sdpa::util::time_type& last_time_srv ) { lock_type lock(mtx_);last_time_served_ = last_time_srv; }
 
     // update last service time
-    sdpa::util::time_type lastScheduleTime() { return last_schedule_time_; }
-    void setLastScheduleTime(const sdpa::util::time_type& last_schedule_time ) { last_schedule_time_ = last_schedule_time; }
+    sdpa::util::time_type lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
+    void setLastScheduleTime(const sdpa::util::time_type& last_schedule_time ) { lock_type lock(mtx_); last_schedule_time_ = last_schedule_time; }
 
     /**
       Return the name of the worker.
       */
-    const worker_id_t &name() const { return name_; }
+    const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
 
     /**
       Return the location of this worker.
       */
-    const location_t &location() const { return location_; }
+    const location_t &location() const { lock_type lock(mtx_); return location_; }
 
     /**
          Return the rank of the worker.
      */
-    unsigned int capacity() const { return capacity_; }
-    unsigned int rank() const { return rank_; }
-    const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_; }
+    unsigned int capacity() const { lock_type lock(mtx_); return capacity_; }
+    unsigned int rank() const { lock_type lock(mtx_); return rank_; }
+    const sdpa::worker_id_t& agent_uuid() const { lock_type lock(mtx_); return agent_uuid_; }
 
     // capabilities
     const sdpa::capabilities_set_t& capabilities() const;
@@ -123,11 +123,11 @@ namespace sdpa { namespace daemon {
     /**
 		 Return true if the worker is timedout, false otherwise
      */
-    bool timedout() const { return timedout_; }
-    void set_timedout(bool bValue = true ) { timedout_ = bValue; }
+    bool timedout() const { lock_type lock(mtx_); return timedout_; }
+    void set_timedout(bool bValue = true ) { lock_type lock(mtx_); timedout_ = bValue; }
 
-    bool disconnected() const { return disconnected_; }
-    void set_disconnected(bool bValue = true) { disconnected_ = bValue; }
+    bool disconnected() const { lock_type lock(mtx_); return disconnected_; }
+    void set_disconnected(bool bValue = true) { lock_type lock(mtx_); disconnected_ = bValue; }
 
     /**
       Return the next pending job or throw an exception.
@@ -150,8 +150,8 @@ namespace sdpa { namespace daemon {
       We are required to have access to the pending queue of a worker because
       we might need to reschedule tasks.
       */
-    JobQueue& pending() { return pending_; }
-    const JobQueue& pending() const { return pending_; }
+    JobQueue& pending() { lock_type lock(mtx_); return pending_; }
+    const JobQueue& pending() const { lock_type lock(mtx_); return pending_; }
 
     /**
       Provide access to the submitted queue.
@@ -159,8 +159,8 @@ namespace sdpa { namespace daemon {
       We are required to have access to the submitted queue of a worker because
       we might need to reschedule tasks.
       */
-    JobQueue& submitted() { return submitted_; }
-    const JobQueue& submitted() const { return submitted_; }
+    JobQueue& submitted() { lock_type lock(mtx_); return submitted_; }
+    const JobQueue& submitted() const { lock_type lock(mtx_); return submitted_; }
 
     /**
       Provide access to the acknowledged queue.
@@ -168,8 +168,8 @@ namespace sdpa { namespace daemon {
       We are required to have access to the submitted queue of a worker because
       we might need to reschedule tasks.
       */
-    JobQueue& acknowledged() { return acknowledged_; }
-    const JobQueue& acknowledged() const { return acknowledged_; }
+    JobQueue& acknowledged() { lock_type lock(mtx_); return acknowledged_; }
+    const JobQueue& acknowledged() const { lock_type lock(mtx_); return acknowledged_; }
 
     unsigned int nbAllocatedJobs();
 

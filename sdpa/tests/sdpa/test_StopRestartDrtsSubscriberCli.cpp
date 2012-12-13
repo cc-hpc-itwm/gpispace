@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestStopRestartAgentsSubscriberCli
+#define BOOST_TEST_MODULE TestStopRestartDrtsSubscriberCli
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
@@ -70,15 +70,15 @@ namespace po = boost::program_options;
 struct MyFixture
 {
     MyFixture()
-                    : m_nITER(1)
-                    , m_sleep_interval(1000) //microseconds
-                    , m_pool (0)
-            , m_kvsd (0)
-            , m_serv (0)
-            , m_thrd (0)
-                    , m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+		: m_nITER(1)
+		, m_sleep_interval(1000) //microseconds
+		, m_pool (0)
+		, m_kvsd (0)
+		, m_serv (0)
+		, m_thrd (0)
+		, m_arrAggMasterInfo(1
+		, MasterInfo("orchestrator_0"))
     { //initialize and start the finite state machine
-
         FHGLOG_SETUP();
 
         LOG(DEBUG, "Fixture's constructor called ...");
@@ -90,7 +90,8 @@ struct MyFixture
                                             , kvs_host ()
                                             , kvs_port ()
                                             , true
-                                            );
+        								);
+
         m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
                                                 , m_pool
                                                 )
@@ -105,25 +106,23 @@ struct MyFixture
                                                     , boost::posix_time::seconds(10)
                                                     , 3
                                                     );
-
-        m_strWorkflow = read_workflow("workflows/stresstest.pnet");
     }
 
     ~MyFixture()
     {
-      LOG(DEBUG, "Fixture's destructor called ...");
+		LOG(DEBUG, "Fixture's destructor called ...");
 
-      m_serv->stop ();
-      m_pool->stop ();
-      m_thrd->join ();
+		m_serv->stop ();
+		m_pool->stop ();
+		if(m_thrd->joinable())
+		  m_thrd->join ();
 
-      delete m_thrd;
-      delete m_serv;
-      delete m_kvsd;
-      delete m_pool;
+		delete m_thrd;
+		delete m_serv;
+		delete m_kvsd;
+		delete m_pool;
 
-      seda::StageRegistry::instance().stopAll();
-      seda::StageRegistry::instance().clear();
+		seda::StageRegistry::instance().clear();
     }
 
     void run_client_subscriber();
@@ -192,7 +191,9 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
             LOG(INFO, "Re-trying ...");
           }
 
+          LOG(INFO, "The client waits for a notification from the orchestrator ...");
           seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
+          LOG(INFO, "The client receive for the notification ...");
 
           // check event type
           if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
@@ -236,8 +237,8 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
             job_status != std::string("Failed")   &&
             job_status != std::string("Cancelled") )
     {
-      LOG(ERROR, "Unexpected status, leave now ...");
-      return exit_code;
+    	LOG(ERROR, "Unexpected status, leave now ...");
+    	return exit_code;
     }
 
     time_type poll_end = boost::posix_time::microsec_clock::local_time();
@@ -249,7 +250,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
 void MyFixture::run_client_subscriber()
 {
-    sdpa::client::config_t config = sdpa::client::ClientApi::config();
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
     std::vector<std::string> cav;
     cav.push_back("--orchestrator=orchestrator_0");
@@ -259,52 +260,47 @@ void MyFixture::run_client_subscriber()
     std::ostringstream osstr;
     osstr<<"sdpac_"<<testNb++;
 
+    LOG( INFO, "Starting the client "<<osstr.str()<<" ... "); //<<m_strWorkflow);
+
     sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
     ptrCli->configure_network( config );
 
-    for( int k=0; k<m_nITER; k++ )
-    {
-      int nTrials = 0;
-      sdpa::job_id_t job_id_user;
+	int nTrials = 0;
+	sdpa::job_id_t job_id_user;
 
-      try {
+	try {
+		LOG( INFO, "Submitting new workflow :"<<m_strWorkflow);
+		job_id_user = ptrCli->submitJob(m_strWorkflow);
+	}
+	catch(const sdpa::client::ClientException& cliExc)
+	{
+		if(nTrials++ > NMAXTRIALS)
+		{
+			LOG( INFO, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-        LOG( DEBUG, "Submitting new workflow ..."); //<<m_strWorkflow);
-        job_id_user = ptrCli->submitJob(m_strWorkflow);
-      }
-      catch(const sdpa::client::ClientException& cliExc)
-      {
-        if(nTrials++ > NMAXTRIALS)
-        {
-          LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+			ptrCli->shutdown_network();
+			ptrCli.reset();
+			return;
+		}
 
-          ptrCli->shutdown_network();
-          ptrCli.reset();
-          return;
-        }
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+	}
 
-         boost::this_thread::sleep(boost::posix_time::seconds(1));
-      }
+	int exit_code = subscribe_and_wait( job_id_user, ptrCli );
 
-      LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
+	try {
+		LOG( INFO, "User: delete the job "<<job_id_user);
+		ptrCli->deleteJob(job_id_user);
+	}
+	catch(const sdpa::client::ClientException& cliExc)
+	{
+		LOG( INFO, "The maximum number of  trials was exceeded. Giving-up now!");
 
-
-      int exit_code = subscribe_and_wait( job_id_user, ptrCli );
-
-      try {
-        LOG( DEBUG, "User: delete the job "<<job_id_user);
-        ptrCli->deleteJob(job_id_user);
-      }
-      catch(const sdpa::client::ClientException& cliExc)
-      {
-        LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
-
-        ptrCli->shutdown_network();
-        ptrCli.reset();
-        boost::this_thread::sleep(boost::posix_time::seconds(1));
-        return;
-      }
-    }
+		ptrCli->shutdown_network();
+		ptrCli.reset();
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		return;
+	}
 
     ptrCli->shutdown_network();
     boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
@@ -336,9 +332,9 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-BOOST_AUTO_TEST_CASE( testStopRestartDrtsSubscr_EmptyWE)
+BOOST_AUTO_TEST_CASE( testStopRestartDrtsEmptyWE)
 {
-    LOG( DEBUG, "testStopRestartDrtsSubscr_EmptyWE");
+    LOG( DEBUG, "testStopRestartDrtsEmptyWE");
     //guiUrl
     string guiUrl           = "";
     string workerUrl        = "127.0.0.1:5500";
@@ -363,42 +359,111 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsSubscr_EmptyWE)
 
     boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
-    MLOG (INFO, "************ stopping drts_0");
-    drts_0->stop();
-    drts_0_thread.join();
-    MLOG (INFO, "************ stopped drts_0");
+    MLOG (INFO, "************ stopping client");
+    if( threadClient.joinable() )
+    	threadClient.join();
+    MLOG (INFO, "************ stopped client");
 
     // create new drts
     sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
     boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
 
     MLOG (INFO, "************ stopping client");
-    threadClient.join();
+    if( threadClient.joinable() )
+    	threadClient.join();
     MLOG (INFO, "************ stopped client");
 
     // and stop!!!
     MLOG (INFO, "************ stopping drts_new");
     drts_new->stop();
-    drts_new_thread.join();
+    if(drts_new_thread.joinable())
+    	drts_new_thread.join();
     MLOG (INFO, "************ stopped drts_new");
 
     ptrAgent->shutdown();
     ptrOrch->shutdown();
 
     LOG( INFO
-       , "The test case testStopRestartDrtsSubscr_EmptyWE terminated!"
+       , "The test case testStopRestartDrtsEmptyWE terminated!"
        );
 }
 
-BOOST_AUTO_TEST_CASE( testStopRestartDrtsSubscr_RealWE)
+/*
+BOOST_AUTO_TEST_CASE( testStopRestartMultipleDrtsEmptyWE)
 {
-    LOG( DEBUG, "testStopRestartDrtsSubscr_RealWE");
+    LOG( DEBUG, "testStopRestartDrtsEmptyWE");
     //guiUrl
     string guiUrl           = "";
     string workerUrl        = "127.0.0.1:5500";
     string addrOrch         = "127.0.0.1";
     string addrAgent        = "127.0.0.1";
 
+
+    typedef void OrchWorkflowEngine;
+
+    m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+    LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+    sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
+    ptrOrch->start_agent(false, strBackupOrch);
+
+    sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+    ptrAgent->start_agent(false, strBackupAgent);
+
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0") );
+
+    boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
+    boost::thread drts_1_thread = boost::thread(&fhg::core::kernel_t::run, drts_1);
+
+    boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
+
+    MLOG (INFO, "************ stopping drts_0");
+    drts_0->stop();
+    if(drts_0_thread.joinable())
+    	drts_0_thread.join();
+    MLOG (INFO, "************ stopped drts_0");
+
+    // create new drts
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_0_new( create_drts("drts_0_new", "agent_0") );
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_1_new( create_drts("drts_1_new", "agent_0") );
+
+    boost::thread drts_0_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_0_new);
+    boost::thread drts_1_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_1_new);
+
+    MLOG (INFO, "************ stopping client");
+    if( threadClient.joinable() )
+    	threadClient.join();
+    MLOG (INFO, "************ client stopped");
+
+    // and stop!!!
+    drts_0_new->stop();
+    drts_0_new->stop();
+
+    if(drts_0_new_thread.joinable())
+    	drts_0_new_thread.join();
+    MLOG (INFO, "************ stopped drts_0_new");
+    if(drts_1_new_thread.joinable())
+    	drts_1_new_thread.join();
+    MLOG (INFO, "************ stopped drts_1_new");
+
+    ptrAgent->shutdown();
+    ptrOrch->shutdown();
+
+    LOG( INFO
+       , "The test case testStopRestartDrtsEmptyWE terminated!"
+       );
+}
+
+BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
+{
+    LOG( DEBUG, "testStopRestartDrtsRealWE");
+    //guiUrl
+    string guiUrl           = "";
+    string workerUrl        = "127.0.0.1:5500";
+    string addrOrch         = "127.0.0.1";
+    string addrAgent        = "127.0.0.1";
 
     typedef void OrchWorkflowEngine;
 
@@ -419,7 +484,8 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsSubscr_RealWE)
 
     MLOG (INFO, "************ stopping drts_0");
     drts_0->stop();
-    drts_0_thread.join();
+    if(drts_0_thread.joinable())
+    	drts_0_thread.join();
     MLOG (INFO, "************ stopped drts_0");
 
     // create new drts
@@ -427,21 +493,22 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsSubscr_RealWE)
     boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
 
     MLOG (INFO, "************ stopping client");
-    threadClient.join();
+    if( threadClient.joinable() )
+    	threadClient.join();
     MLOG (INFO, "************ stopped client");
 
     // and stop!!!
     MLOG (INFO, "************ stopping drts_new");
     drts_new->stop();
-    drts_new_thread.join();
+    if(drts_new_thread.joinable())
+    	drts_new_thread.join();
     MLOG (INFO, "************ stopped drts_new");
 
     ptrAgent->shutdown();
     ptrOrch->shutdown();
 
-    LOG( INFO
-       , "The test case testStopRestartDrtsSubscr_RealWE terminated!"
-       );
+    LOG( INFO, "The test case testStopRestartDrtsRealWE terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -42,6 +42,7 @@ namespace fhg
       namespace graph
       {
         scene_type::scene_type ( const data::handle::net& net
+                               , const data::handle::function& function
                                , data::internal_type* internal
                                , QObject* parent
                                )
@@ -50,6 +51,7 @@ namespace fhg
           , _mouse_position (QPointF (0.0, 0.0))
           , _menu_context()
           , _net (net)
+          , _function (function)
           , _internal (internal)
         {
           init_menu_context();
@@ -85,45 +87,15 @@ namespace fhg
 
           // top-level-ports
           _net.connect_to_change_mgr
+            (this, "port_added", "data::handle::port");
+          _net.connect_to_change_mgr
+            (this, "port_deleted", "data::handle::port");
+
+          _net.connect_to_change_mgr
             ( this
             , "place_association_set"
             , "data::handle::port, boost::optional<std::string>"
             );
-        }
-
-        //! \todo This is duplicate code, also available in main window.
-        void scene_type::init_menu_context ()
-        {
-          {
-            QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
-
-            fhg::util::qt::boost_connect<void (void)>
-              ( menu_new->addAction (tr ("new_transition"))
-              , SIGNAL (triggered())
-              , boost::bind (&data::handle::net::add_transition, net(), this)
-              );
-
-            fhg::util::qt::boost_connect<void (void)>
-              ( menu_new->addAction (tr ("new_place"))
-              , SIGNAL (triggered())
-              , boost::bind (&data::handle::net::add_place, net(), this)
-              );
-
-            menu_new->addSeparator();
-
-            //! \todo Is this really needed?
-            connect ( menu_new->addAction (tr ("new_struct"))
-                    , SIGNAL (triggered())
-                    , SLOT (slot_add_struct())
-                    );
-          }
-
-          _menu_context.addSeparator();
-
-          connect ( _menu_context.addAction (tr ("auto_layout"))
-                  , SIGNAL (triggered())
-                  , SLOT (auto_layout())
-                  );
         }
 
         namespace
@@ -160,6 +132,52 @@ namespace fhg
           }
         }
 
+        //! \todo This is duplicate code, also available in main window.
+        void scene_type::init_menu_context ()
+        {
+          {
+            QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
+
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_transition"))
+              , SIGNAL (triggered())
+              , this
+              , boost::bind (&data::handle::net::add_transition, net(), this)
+              );
+
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_place"))
+              , SIGNAL (triggered())
+              , this
+              , boost::bind (&data::handle::net::add_place, net(), this)
+              );
+
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_top_level_port"))
+              , SIGNAL (triggered())
+              , this
+              , boost::bind (&data::handle::function::add_port, function(), this)
+              );
+
+            menu_new->addSeparator();
+
+            //! \todo Is this really needed?
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_struct"))
+              , SIGNAL (triggered())
+              , this
+              , boost::bind (nyi, "net: new struct")
+              );
+          }
+
+          _menu_context.addSeparator();
+
+          connect ( _menu_context.addAction (tr ("auto_layout"))
+                  , SIGNAL (triggered())
+                  , SLOT (auto_layout())
+                  );
+        }
+
         void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
           if ( base_item* item_below_cursor
@@ -173,7 +191,6 @@ namespace fhg
 
             switch (item_below_cursor->type())
             {
-            case base_item::port_graph_type:
             case base_item::top_level_port_graph_type:
             {
               const data::handle::port handle
@@ -181,9 +198,10 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("port_set_type"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind ( set_we_type_for_handle<data::handle::port>
                               , handle
                               , tr ("port_set_type_dialog_title_for_%1").arg
@@ -197,10 +215,35 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("port_delete"))
                 , SIGNAL (triggered())
-                , boost::bind (nyi, "port: delete")
+                , item_below_cursor
+                , boost::bind (&data::handle::port::remove, handle, this)
+                );
+            }
+            break;
+
+            case base_item::port_graph_type:
+            {
+              const data::handle::port handle
+                ( fhg::util::qt::throwing_qobject_cast<port_item*>
+                  (item_below_cursor)->handle()
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu->addAction(tr ("port_set_type"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind ( set_we_type_for_handle<data::handle::port>
+                              , handle
+                              , tr ("port_set_type_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("port_set_type_prompt")
+                              , QString::fromStdString (handle.get().type)
+                              , event
+                              , this
+                              )
                 );
             }
             break;
@@ -212,17 +255,19 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("transition_add_port"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (nyi, "transition: add port")
                 );
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("transition_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (&data::handle::transition::remove, handle, this)
                 );
             }
@@ -235,9 +280,10 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("place_set_type"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind ( set_we_type_for_handle<data::handle::place>
                               , handle
                               , tr ("place_set_type_dialog_title_for_%1").arg
@@ -251,9 +297,10 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("place_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (&data::handle::place::remove, handle, this)
                 );
             }
@@ -275,6 +322,7 @@ namespace fhg
                 fhg::util::qt::boost_connect<void (bool)>
                   ( action_read
                   , SIGNAL (toggled (bool))
+                , item_below_cursor
                   , boost::bind
                     (&data::handle::connect::is_read, handle, this, _1)
                   );
@@ -282,9 +330,10 @@ namespace fhg
                 menu->addSeparator();
               }
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("connection_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind (&data::handle::connect::remove, handle, this)
                 );
             }
@@ -297,9 +346,10 @@ namespace fhg
                   <port_place_association*> (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void (void)>
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("port_place_assoc_delete"))
                 , SIGNAL (triggered())
+                , item_below_cursor
                 , boost::bind ( &data::handle::port::remove_place_association
                               , handle
                               , this
@@ -324,21 +374,6 @@ namespace fhg
             _menu_context.popup (event->screenPos());
           }
           event->accept();
-        }
-
-        data::internal_type* scene_type::internal() const
-        {
-          return _internal;
-        }
-
-        data::change_manager_t& scene_type::change_manager() const
-        {
-          return internal()->change_manager();
-        }
-
-        void scene_type::slot_add_struct ()
-        {
-          qDebug() << "NYI: add: struct";
         }
 
         void scene_type::create_pending_connection (connectable_item* item)
@@ -427,13 +462,13 @@ namespace fhg
             {
               if (as_port->direction() == connectable::direction::IN)
               {
-                change_manager().add_connection
-                  (this, pending_as_port->handle(), as_port->handle(), net());
+                net().add_connection_with_implicit_place
+                  (this, pending_as_port->handle(), as_port->handle());
               }
               else
               {
-                change_manager().add_connection
-                  (this, as_port->handle(), pending_as_port->handle(), net());
+                net().add_connection_with_implicit_place
+                  (this, as_port->handle(), pending_as_port->handle());
               }
             }
             else
@@ -443,12 +478,12 @@ namespace fhg
 
               if (port->direction() == connectable::direction::IN)
               {
-                change_manager().add_connection
+                net().add_connection_or_association
                   (this, place->handle(), port->handle());
               }
               else
               {
-                change_manager().add_connection
+                net().add_connection_or_association
                   (this, port->handle(), place->handle());
               }
             }
@@ -573,12 +608,17 @@ namespace fhg
         template<>
           bool scene_type::is_in_my_net (const data::handle::port& handle)
         {
-          return *handle.get().parent()->get_net() == net().id();
+          return handle.get().parent()->id() == function().id();
         }
 
         const data::handle::net& scene_type::net() const
         {
           return _net;
+        }
+
+        const data::handle::function& scene_type::function() const
+        {
+          return _function;
         }
 
         template<typename item_type>
@@ -754,6 +794,35 @@ namespace fhg
         }
 
         // # port ####################################################
+        void scene_type::port_added
+          (const QObject* origin, const data::handle::port& port)
+        {
+          if (is_in_my_net (port))
+          {
+            weaver::item_by_name_type places
+              (name_map_for_items (items_of_type<place_item>()));
+
+            //! \note direction is inverted. Should not be inverted
+            //! here, but in the drawing code of that port, I guess.
+            weaver::port_toplevel wptl
+              (this, ui::graph::connectable::direction::OUT, places, _internal);
+
+            weaver::from::port (&wptl, port.id());
+
+            if (origin == this)
+            {
+              item_with_handle<top_level_port_item> (port)->
+                no_undo_setPos (_mouse_position);
+            }
+          }
+        }
+
+        void scene_type::port_deleted
+          (const QObject* origin, const data::handle::port& port)
+        {
+          remove_item_for_handle<port_item> (port);
+        }
+
         void scene_type::place_association_set
           ( const QObject* origin
           , const data::handle::port& port
