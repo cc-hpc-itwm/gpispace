@@ -770,9 +770,9 @@ namespace we { namespace mgmt {
       inline
       void do_execute (descriptor_ptr desc, size_t rank)
       {
-        const policy::execution_policy exec_policy;
+        policy::execution_policy exec_policy;
 
-        switch (desc->execute (exec_policy))
+        switch (desc->execute (&exec_policy))
         {
         case policy::execution_policy::EXTRACT:
           {
@@ -786,7 +786,7 @@ namespace we { namespace mgmt {
               DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc->name() << ")-" << desc->id()
                   << ": (" << child->name() << ")-" << child->id() << " with input " << child->show_input());
 
-              switch (child->execute (exec_policy))
+              switch (child->execute (&exec_policy))
               {
               case policy::execution_policy::EXTRACT:
                 insert_activity(child);

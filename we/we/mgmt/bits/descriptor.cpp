@@ -262,7 +262,7 @@ namespace we
         apply_to_children (f);
       }
 
-      int descriptor::execute (const policy::execution_policy& c)
+      int descriptor::execute (policy::execution_policy* c)
       {
         lock_t lock(mutex_);
         return activity_.execute (c);

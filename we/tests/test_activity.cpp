@@ -24,34 +24,36 @@ typedef we::type::transition_t transition_t;
 typedef petri_net::net pnet_t;
 typedef we::mgmt::type::activity_t activity_t;
 
-struct exec_context : public we::mgmt::context<>
+struct exec_context : public we::mgmt::context
 {
-  typedef petri_net::net net_t;
-  typedef we::type::module_call_t mod_t;
-  typedef we::type::expression_t expr_t;
-
-  void handle_internally ( activity_t & , const net_t & )
+  virtual int handle_internally (activity_t&, net_t&)
   {
+    return 0;
   }
 
-  void handle_internally ( activity_t & , const mod_t & )
+  virtual int handle_internally (activity_t&, mod_t&)
   {
+    return 0;
   }
 
-  void handle_internally ( activity_t & , const expr_t & )
+  virtual int handle_internally (activity_t&, expr_t&)
   {
+    return 0;
   }
 
-  void handle_externally ( activity_t & , const net_t & )
+  virtual int handle_externally (activity_t&, net_t&)
   {
+    return 0;
   }
 
-  void handle_externally ( activity_t & , const mod_t & )
+  virtual int handle_externally (activity_t&, mod_t&)
   {
+    return 0;
   }
 
-  void handle_externally ( activity_t & , const expr_t & )
+  virtual int handle_externally (activity_t&, expr_t&)
   {
+    return 0;
   }
 };
 
@@ -176,7 +178,7 @@ int main (int, char **)
               << std::endl;
 
     exec_context ctxt;
-    sub.execute (ctxt);
+    sub.execute (&ctxt);
 
     std::cout << "***** sub-act (post-execute):"
               << std::endl

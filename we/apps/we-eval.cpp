@@ -27,17 +27,13 @@
 
 #include <boost/program_options.hpp>
 
-struct wfe_exec_context : public we::mgmt::context<>
+struct wfe_exec_context : public we::mgmt::context
 {
-  typedef petri_net::net net_t;
-  typedef we::type::module_call_t mod_t;
-  typedef we::type::expression_t expr_t;
-
-  wfe_exec_context (we::loader::loader & module_loader)
+  wfe_exec_context (we::loader::loader& module_loader)
     : loader (module_loader)
   {}
 
-  void handle_internally ( we::activity_t & act, net_t &)
+  virtual int handle_internally (we::activity_t& act, net_t&)
   {
     act.inject_input ();
 
@@ -45,40 +41,44 @@ struct wfe_exec_context : public we::mgmt::context<>
     {
       we::activity_t sub (act.extract ());
       sub.inject_input ();
-      sub.execute (*this);
+      sub.execute (this);
       act.inject (sub);
     }
 
     act.collect_output ();
+
+    return 0;
   }
 
-  void handle_internally ( we::activity_t & act, const mod_t & mod)
+  virtual int handle_internally (we::activity_t& act, mod_t& mod)
   {
-    module::call ( loader, act, mod );
+    module::call (loader, act, mod);
+
+    return 0;
   }
 
-  void handle_internally ( we::activity_t & , const expr_t &)
+  virtual int handle_internally (we::activity_t& , expr_t&)
   {
-    // nothing to do
+    return 0;
   }
 
-  void handle_externally ( we::activity_t & act, net_t & n)
+  virtual int handle_externally (we::activity_t& act, net_t& n)
   {
-    handle_internally (act, n);
+    return handle_internally (act, n);
   }
 
-  void handle_externally ( we::activity_t & act, const mod_t & module_call )
+  virtual int handle_externally (we::activity_t& act, mod_t& module_call)
   {
-    handle_internally (act, module_call);
+    return handle_internally (act, module_call);
   }
 
-  void handle_externally ( we::activity_t & act, const expr_t & e)
+  virtual int handle_externally (we::activity_t& act, expr_t& e)
   {
-    handle_internally ( act, e );
+    return handle_internally (act, e);
   }
 
 private:
-  we::loader::loader & loader;
+  we::loader::loader& loader;
 };
 
 namespace po = boost::program_options;
@@ -205,7 +205,7 @@ int main (int argc, char **argv)
   try
   {
     act.inject_input();
-    act.execute (context);
+    act.execute (&context);
     act.collect_output ();
 
     if (output == "-")

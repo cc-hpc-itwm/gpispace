@@ -308,7 +308,7 @@ private:
           wfe_exec_context ctxt (*m_loader, *task);
 
           task->activity.inject_input();
-          task->activity.execute (ctxt);
+          task->activity.execute (&ctxt);
           task->activity.collect_output();
 
           if (task->state == wfe_task_t::CANCELED)

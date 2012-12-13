@@ -3,11 +3,13 @@
 #ifndef WE_MGMT_TYPE_ACTIVITY_HPP
 #define WE_MGMT_TYPE_ACTIVITY_HPP 1
 
+#include <we/mgmt/type/activity.fwd.hpp>
+
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
 
 #include <we/mgmt/type/flags.hpp>
-#include <we/mgmt/bits/transition_visitors.hpp>
+#include <we/mgmt/context.fwd.hpp>
 
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
@@ -73,42 +75,7 @@ namespace we
         void inject_input();
         void collect_output();
 
-        template <typename Context>
-        typename Context::result_type execute (Context& ctxt)
-        {
-          unique_lock_t lock (_mutex);
-          /* context requirements
-
-             internal
-             ========
-
-             net:
-             inject tokens into net
-             ctxt.handle_internally (act, net)
-             -> extractor
-
-             expr:
-             evaluate expression
-             ctxt.handle_internally (act, expr)
-             -> injector
-
-             mod:
-             prepare input
-             [(token-on-place)], { place <-> name }
-             ctxt.handle_internally (act, mod_call_t)
-
-             external
-             ========
-
-             ctxt.handle_externally (act, net)
-             ctxt.handle_externally (act, expr)
-             ctxt.handle_externally (act, mod)
-
-          */
-
-          we::mgmt::visitor::executor<activity_t, Context> visitor_executor (*this, ctxt);
-          return boost::apply_visitor (visitor_executor, transition().data());
-        }
+        int execute (context*);
 
         bool can_fire() const;
 

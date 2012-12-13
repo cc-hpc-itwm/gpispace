@@ -6,7 +6,6 @@ set (hdrs
   queue.hpp
   set.hpp
   signal.hpp
-  transition_visitors.hpp
   )
 
 set(srcs

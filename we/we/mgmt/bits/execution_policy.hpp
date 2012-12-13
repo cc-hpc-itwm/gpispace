@@ -23,45 +23,38 @@ namespace we
          internal networks will be delegated to the extractor
          internal expressions will be executed directly and delegated to the injector process
        */
-      struct execution_policy : public we::mgmt::context<int>
+      struct execution_policy : public we::mgmt::context
       {
-        typedef we::mgmt::type::activity_t activity_t;
-        typedef petri_net::net net_t;
-        typedef we::type::module_call_t mod_t;
-        typedef we::type::expression_t expr_t;
-
         static const int EXTRACT = 0;
         static const int INJECT = 1;
         static const int EXTERNAL = 2;
 
-        execution_policy(){}
-
-        int handle_internally (activity_t&, net_t&) const
+        virtual int handle_internally (activity_t&, net_t&)
         {
           return EXTRACT;
         }
 
-        int handle_internally (activity_t& act, const mod_t& m) const
+        virtual int handle_internally (activity_t& act, mod_t& m)
         {
           return handle_externally (act, m);
         }
 
-        int handle_internally (activity_t&, const expr_t&) const
+        virtual int handle_internally (activity_t&, expr_t&)
         {
           return INJECT;
         }
 
-        int handle_externally (activity_t&, net_t&) const
+        virtual int handle_externally (activity_t&, net_t&)
         {
           return EXTERNAL;
         }
 
-        int handle_externally (activity_t&, const mod_t&) const
+        virtual int handle_externally (activity_t&, mod_t&)
         {
           return EXTERNAL;
         }
 
-        int handle_externally (activity_t& act, const expr_t& e) const
+        virtual int handle_externally (activity_t& act, expr_t& e)
         {
           // print warning?
           return handle_internally (act, e);

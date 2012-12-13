@@ -68,64 +68,63 @@ namespace test {
     };
 
     template <typename Daemon, typename IdType>
-    struct context : public we::mgmt::context<>
+    struct context : public we::mgmt::context
     {
       typedef IdType id_type;
-      typedef petri_net::net net_t;
-      typedef we::type::module_call_t mod_t;
-      typedef we::type::expression_t expr_t;
 
-      void handle_internally ( we::activity_t &act, net_t &n)
+      virtual int handle_internally (we::activity_t& act, net_t& n)
       {
-        handle_externally (act, n);
+        return handle_externally (act, n);
       }
 
-      void handle_internally ( we::activity_t &, const mod_t &)
+      virtual int handle_internally (we::activity_t&, mod_t&)
       {
-        throw std::runtime_error ( "NO internal mod here!" );
+        throw std::runtime_error ("NO internal mod here!");
       }
 
-      void handle_internally ( we::activity_t &, const expr_t &)
+      virtual int handle_internally (we::activity_t&, expr_t&)
       {
-        throw std::runtime_error ( "NO internal expr here!" );
+        throw std::runtime_error ("NO internal expr here!");
       }
 
-      void handle_externally (we::activity_t &act, net_t &)
+      virtual int handle_externally (we::activity_t& act, net_t&)
       {
-        id_type new_id ( daemon.gen_id() );
-        daemon.add_mapping ( id, new_id );
+        id_type new_id (daemon.gen_id());
+        daemon.add_mapping (id, new_id);
         daemon.layer().submit (new_id,  act.to_string());
+        return 0;
       }
 
-      void handle_externally (we::activity_t & act, const mod_t &mod)
+      virtual int handle_externally (we::activity_t& act, mod_t& mod)
       {
         try
         {
-          module::call (daemon.loader(), act, mod );
+          module::call (daemon.loader(), act, mod);
           daemon.layer().finished (id, act.to_string());
         }
         catch (std::exception const & ex)
         {
-          daemon.layer().failed ( id
+          daemon.layer().failed (id
                                 , act.to_string()
                                 , fhg::error::MODULE_CALL_FAILED
                                 , ex.what()
-                                );
+                               );
         }
+        return 0;
       }
 
-      void handle_externally (we::activity_t &, const expr_t &)
+      virtual int handle_externally (we::activity_t&, expr_t&)
       {
-        throw std::runtime_error ( "NO external expr here!" );
+        throw std::runtime_error ("NO external expr here!");
       }
 
       context (Daemon & d, const id_type & an_id)
         : daemon (d)
         , id(an_id)
-      {}
+     {}
 
     private:
-      Daemon & daemon;
+      Daemon& daemon;
       id_type id;
     };
   }
@@ -205,7 +204,7 @@ namespace test {
 
         we::activity_t act ( we::util::codec::decode (job.desc));
         detail::context<this_type, id_type> ctxt (*this, job.id);
-        act.execute (ctxt);
+        act.execute (&ctxt);
       }
       std::cout << "SDPA Layer worker-" << rank << " stopped." << std::endl;
     }

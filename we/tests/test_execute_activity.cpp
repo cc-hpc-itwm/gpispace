@@ -117,13 +117,9 @@ namespace module
   }
 }
 
-struct exec_context : public we::mgmt::context<>
+struct exec_context : public we::mgmt::context
 {
-  typedef petri_net::net net_t;
-  typedef we::type::module_call_t mod_t;
-  typedef we::type::expression_t expr_t;
-
-  void handle_internally ( activity_t & act, net_t &)
+  virtual int handle_internally (activity_t& act, net_t&)
   {
     act.inject_input ();
 
@@ -142,7 +138,7 @@ struct exec_context : public we::mgmt::context<>
                 << sub
                 << std::endl;
 
-      sub.execute (*this);
+      sub.execute (this);
 
       std::cout << "***** sub-act (post-execute):"
                 << std::endl
@@ -158,47 +154,52 @@ struct exec_context : public we::mgmt::context<>
     }
 
     act.collect_output();
+
+    return 0;
   }
 
-  void handle_internally ( activity_t & , const mod_t & )
+  virtual int handle_internally (activity_t&, mod_t&)
   {
     throw std::runtime_error ("cannot handle module calls internally");
   }
 
-  void handle_internally ( activity_t & , const expr_t & )
+  virtual int handle_internally (activity_t&, expr_t&)
   {
     // nothing to do
+    return 0;
   }
 
-  std::string fake_external ( const std::string & act_enc, net_t & n )
+  std::string fake_external (const std::string& act_enc, net_t& n)
   {
     activity_t act = we::util::codec::decode (act_enc);
-    handle_internally ( act, n );
+    handle_internally (act, n );
     return act.to_string();
   }
 
-  void handle_externally ( activity_t & act, net_t & n)
+  virtual int handle_externally (activity_t& act, net_t& n)
   {
     activity_t result (we::util::codec::decode (fake_external (act.to_string(), n)));
     act.set_output(result.output());
+    return 0;
   }
 
-  std::string fake_external ( const std::string & act_enc, const mod_t & mod )
+  std::string fake_external (const std::string& act_enc, const mod_t& mod)
   {
     activity_t act = we::util::codec::decode (act_enc);
-    module::call ( act, mod );
+    module::call (act, mod );
     return act.to_string();
   }
 
-  void handle_externally ( activity_t & act, const mod_t & module_call )
+  virtual int handle_externally (activity_t& act, mod_t& module_call)
   {
-    activity_t result ( we::util::codec::decode (fake_external (act.to_string(), module_call)));
+    activity_t result (we::util::codec::decode (fake_external (act.to_string(), module_call)));
     act.set_output(result.output());
+    return 0;
   }
 
-  void handle_externally ( activity_t & act, const expr_t & e)
+  virtual int handle_externally (activity_t& act, expr_t& e)
   {
-    handle_internally ( act, e );
+    return handle_internally (act, e );
   }
 };
 
@@ -217,22 +218,22 @@ int main (int ac, char ** av)
     return EXIT_FAILURE;
   }
 
-  activity_t act ( we::util::codec::decode (ifs) );
+  activity_t act (we::util::codec::decode (ifs) );
 
   std::cout << "act (initial):"
             << std::endl
             << act
             << std::endl;
 
-  struct exec_context ctxt;
-  act.execute (ctxt);
+  exec_context ctxt;
+  act.execute (&ctxt);
 
   std::cout << "act (final):"
             << std::endl
             << act
             << std::endl;
 
-  if ( act.output().empty() )
+  if (act.output().empty() )
   {
     return EXIT_FAILURE;
   }

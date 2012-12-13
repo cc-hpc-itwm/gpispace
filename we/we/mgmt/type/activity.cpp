@@ -2,7 +2,13 @@
 
 #include <we/net.hpp>
 
+#include <we/type/transition.hpp>
+
+#include <we/mgmt/context.hpp>
+
 #include <we/mgmt/type/activity.hpp>
+
+#include <fhg/util/show.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -344,6 +350,86 @@ namespace we
       {
         unique_lock_t lock (_mutex);
         return _transition;
+      }
+
+      namespace
+      {
+        class executor : public boost::static_visitor<int>
+        {
+        private:
+          type::activity_t& _activity;
+          context* _ctxt;
+
+        public:
+          executor (type::activity_t& activity, context* ctxt)
+            : _activity (activity)
+            , _ctxt (ctxt)
+          {}
+
+          int operator () (petri_net::net& net) const
+          {
+            if (_activity.transition().is_internal())
+              {
+                return _ctxt->handle_internally (_activity, net);
+              }
+            else
+              {
+                return _ctxt->handle_externally (_activity, net);
+              }
+          }
+
+          int operator() (we::type::module_call_t & mod) const
+          {
+            return _ctxt->handle_externally (_activity, mod);
+          }
+
+          int operator() (we::type::expression_t & expr) const
+          {
+            expr::eval::context context;
+
+            for ( type::activity_t::input_t::const_iterator top
+                    (_activity.input().begin())
+                ; top != _activity.input().end()
+                ; ++top
+                )
+              {
+                context.bind ( _activity.transition().name_of_port (top->second)
+                             , top->first.value
+                             );
+              }
+
+            expr.ast ().eval_all (context);
+
+            for ( we::type::transition_t::const_iterator port_it
+                    (_activity.transition().ports_begin())
+                ; port_it != _activity.transition().ports_end()
+                ; ++port_it
+                )
+              {
+                if (port_it->second.is_output())
+                  {
+                    _activity.add_output
+                      ( type::activity_t::output_t::value_type
+                      ( token::type ( port_it->second.name()
+                                    , port_it->second.signature()
+                                    , context
+                                    )
+                      , port_it->first
+                      )
+                      );
+                  }
+              }
+
+            return _ctxt->handle_internally (_activity, expr);
+          }
+        };
+      }
+
+      int activity_t::execute (context* ctxt)
+      {
+        unique_lock_t lock (_mutex);
+        return boost::apply_visitor
+          (executor (*this, ctxt), transition().data());
       }
 
       namespace
