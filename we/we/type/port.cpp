@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fhg.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <we/type/port.hpp>
 
@@ -9,16 +9,21 @@ namespace we
 {
   namespace type
   {
+    std::string enum_to_string (const PortDirection& dir)
+    {
+      switch (dir)
+      {
+      case PORT_IN: return "in";
+      case PORT_OUT: return "out";
+      case PORT_TUNNEL: return "tunnel";
+      default:
+        throw std::runtime_error ("STRANGE: unknown PortDirection");
+      }
+    }
+
     std::ostream& operator<< (std::ostream& s, const PortDirection& p)
     {
-      switch (p)
-        {
-        case PORT_IN: return s << "port-in";
-        case PORT_OUT: return s << "port-out";
-        case PORT_TUNNEL: return s << "port-tunnel";
-        default:
-          throw std::runtime_error ("STRANGE: unknown PortDirection");
-        }
+      return s << "port-" << enum_to_string (p);
     }
 
     std::ostream& operator<< (std::ostream& os, const port_t& p)
