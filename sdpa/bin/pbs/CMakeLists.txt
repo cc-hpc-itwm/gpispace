@@ -26,6 +26,7 @@ set (scripts
   gspc-shell
   gspc-help
   gspc-template
+  gspc-topology
 )
 
 set (files

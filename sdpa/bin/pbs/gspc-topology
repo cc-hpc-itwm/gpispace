@@ -1,0 +1,76 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="manage the GPI-Space topology"
+GSPC_IMPORTANT_API_COMMAND=true
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: topology [-h|--help] [options]
+EOF
+}
+
+if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+
+TEMP=`getopt -o hl --long help,list -n 'template' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+action=
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        -l|--list)
+            [ -z "$action" ] || {
+                gspc_log_error topology "only one action allowed"
+                exit 1
+            }
+            action="list"
+            shift
+            ;;
+        --) shift; break ;;
+        *) gspc_log_error topology "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+case "${action}" in
+    list)
+        gspc_require_gspc_dir
+        if [ $? -ne 0 ]
+        then
+            gspc_log_error topology "GSPC_DIR ('$GSPC_DIR') is not set or not accessible"
+            exit 1
+        fi
+
+        # format: location.host <host> location.port <port> name <name>
+        all_components=( $(gspc_get_kvs_entry 'p2p.peer' | tr -d '=') )
+        for ((i=0 ; i < ${#all_components[@]} ; i+=6))
+        do
+            host="${all_components[i+1]}"
+            port="${all_components[i+3]}"
+            name="${all_components[i+5]}"
+
+            if gspc check-port "$host" "$port"
+            then
+                echo "$name => $host $port"
+            else
+                gspc_log_warn toplogy "$name seems to be down"
+            fi
+        done
+        ;;
+    '')
+        usage
+        exit 1
+        ;;
+    *)
+        gspc_log_error topology "Invalid action: ${action}"
+        exit 1
+        ;;
+esac
+
+
