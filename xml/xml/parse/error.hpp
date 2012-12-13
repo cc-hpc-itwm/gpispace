@@ -28,38 +28,29 @@ namespace xml
       // ******************************************************************* //
 
 #ifndef NO_BACKTRACE_ON_PARSE_ERROR
-      class generic : public fhg::util::backtracing_exception
-      {
-      public:
-        generic (const std::string & msg)
-          : fhg::util::backtracing_exception ("ERROR: " + msg)
-        {}
-
-        generic (const boost::format& bf)
-          : fhg::util::backtracing_exception ("ERROR: " + bf.str())
-        {}
-
-        generic (const std::string & msg, const std::string & pre)
-          : fhg::util::backtracing_exception ("ERROR: " + pre + ": " + msg)
-        {}
-      };
+#define GENERIC_EXCEPTION_BASE_CLASS fhg::util::backtracing_exception
 #else
-      class generic : public std::runtime_error
+#define GENERIC_EXCEPTION_BASE_CLASS std::runtime_error
+#endif
+
+      class generic : public GENERIC_EXCEPTION_BASE_CLASS
       {
       public:
         generic (const std::string & msg)
-          : std::runtime_error ("ERROR: " + msg)
-        {}
+          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + msg)
+        { }
 
         generic (const boost::format& bf)
-          : std::runtime_error ("ERROR: " + bf.str())
-        {}
+          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + bf.str())
+        { }
 
         generic (const std::string & msg, const std::string & pre)
-          : std::runtime_error ("ERROR: " + pre + ": " + msg)
-        {}
+          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + pre + ": " + msg)
+        { }
       };
-#endif
+
+#undef GENERIC_EXCEPTION_BASE_CLASS
+
       // ******************************************************************* //
 
       class wrong_node : public generic
