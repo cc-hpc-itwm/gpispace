@@ -122,7 +122,22 @@ namespace we { namespace type {
         const std::string name_A (net.get_place (pid_A).name());
         const std::string name_B (net.get_place (pid_B).name());
 
+        std::list<token::type> tokens;
+
+        for ( petri_net::net::token_place_it tp (net.get_token (pid_B))
+            ; tp.has_more()
+            ; ++tp
+            )
+          {
+            tokens.push_back (*tp);
+          }
+
         net.delete_place (pid_B);
+
+        BOOST_FOREACH (const token::type& token, tokens)
+          {
+            net.put_token (pid_A, token);
+          }
 
         const bool okay_A (!rewrite::has_magic_prefix (name_A));
         const bool okay_B (!rewrite::has_magic_prefix (name_B));
