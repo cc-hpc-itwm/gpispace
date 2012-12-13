@@ -119,7 +119,7 @@ namespace gpi
       fhg::com::host_t const &
       topology_t::any_addr ()
       {
-        static fhg::com::host_t h(boost::asio::ip::host_name());
+        static fhg::com::host_t h ("*");
         return h;
       }
 
