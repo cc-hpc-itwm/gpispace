@@ -152,6 +152,7 @@ namespace xml
     id::ref::port port_type ( const xml_node_type *
                             , state::type &
                             , const id::function& parent
+                            , const we::type::PortDirection&
                             );
     void gen_struct_type ( const xml_node_type *, state::type &
                          , signature::desc_t &
@@ -1163,22 +1164,28 @@ namespace xml
         {
           if (child_name == "in")
           {
-            function.get_ref().push_in (port_type (child, state, id));
+            function.get_ref().push_in
+              (port_type (child, state, id, we::type::PORT_IN));
           }
           else if (child_name == "out")
           {
-            function.get_ref().push_out (port_type (child, state, id));
+            function.get_ref().push_out
+              (port_type (child, state, id, we::type::PORT_OUT));
           }
           else if (child_name == "inout")
           {
-            const id::ref::port port_in (port_type (child, state, id));
-            const id::ref::port port_out (port_in.get().clone (id));
+            const id::ref::port port_in
+              (port_type (child, state, id, we::type::PORT_IN));
+            const id::ref::port port_out
+              (port_in.get().clone (id));
+            port_out.get_ref().direction (we::type::PORT_OUT);
             function.get_ref().push_in (port_in);
             function.get_ref().push_out (port_out);
           }
           else if (child_name == "tunnel")
           {
-            function.get_ref().push_tunnel (port_type (child, state, id));
+            function.get_ref().push_tunnel
+              (port_type (child, state, id, we::type::PORT_TUNNEL));
           }
           else if (child_name == "struct")
           {
@@ -1632,83 +1639,74 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::port
-    port_type ( const xml_node_type * node
-              , state::type & state
-              , const id::function& parent
-              )
+    id::ref::port port_type ( const xml_node_type * node
+                            , state::type & state
+                            , const id::function& parent
+                            , const we::type::PortDirection& direction
+                            )
     {
-      const id::port id (state.id_mapper()->next_id());
-
-      const id::ref::port port
-        ( type::port_type
-          ( id
-          , state.id_mapper()
-          , parent
-          , validate_name
-            ( validate_prefix ( required ( "port_type"
-                                         , node
-                                         , "name"
-                                         , state.file_in_progress()
-                                         )
-                              , "port"
-                              , state.file_in_progress()
-                              )
-            , "port"
-            , state.file_in_progress()
-            )
-          , required ("port_type", node, "type", state.file_in_progress())
-          , optional (node, "place")
-          ).make_reference_id()
-        );
+      we::type::property::type properties;
 
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
           )
+      {
+        const std::string child_name
+          (name_element (child, state.file_in_progress()));
+
+        if (child)
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
-
-          if (child)
-            {
-              if (child_name == "properties")
-                {
-                  property_map_type ( port.get_ref().properties()
-                                    , child
-                                    , state
-                                    );
-                }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "port_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join ( state
-                                       , port.get_ref().properties()
-                                       , deeper
-                                       );
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "port_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
+          if (child_name == "properties")
+          {
+            property_map_type (properties, child, state);
+          }
+          else if (child_name == "include-properties")
+          {
+            util::property::join
+              ( state
+              , properties
+              , properties_include ( required ( "port_type"
+                                              , child
+                                              , "href"
+                                              , state.file_in_progress()
+                                              )
+                                   , state
+                                   )
+              );
+          }
+          else
+          {
+            state.warn ( warning::unexpected_element ( child_name
+                                                     , "port_type"
+                                                     , state.file_in_progress()
+                                                     )
+                       );
+          }
         }
+      }
 
-      return port;
+      return type::port_type
+        ( state.id_mapper()->next_id()
+        , state.id_mapper()
+        , parent
+        , validate_name
+          ( validate_prefix ( required ( "port_type"
+                                       , node
+                                       , "name"
+                                       , state.file_in_progress()
+                                       )
+                            , "port"
+                            , state.file_in_progress()
+                            )
+          , "port"
+          , state.file_in_progress()
+          )
+        , required ("port_type", node, "type", state.file_in_progress())
+        , optional (node, "place")
+        , direction
+        , properties
+        ).make_reference_id();
     }
 
     // ********************************************************************* //

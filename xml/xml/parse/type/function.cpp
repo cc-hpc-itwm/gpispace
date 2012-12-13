@@ -301,13 +301,13 @@ namespace xml
       boost::optional<const id::ref::port&>
       function_type::get_port_in (const std::string & name) const
       {
-        return in().get (name);
+        return in().get (std::make_pair (name, we::type::PORT_IN));
       }
 
       boost::optional<const id::ref::port&>
       function_type::get_port_out (const std::string & name) const
       {
-        return out().get (name);
+        return out().get (std::make_pair (name, we::type::PORT_OUT));
       }
 
       bool function_type::is_known_port_in (const std::string & name) const
@@ -332,7 +332,7 @@ namespace xml
 
       bool function_type::is_known_tunnel (const std::string& name) const
       {
-        return tunnel().get (name);
+        return tunnel().get (std::make_pair (name, we::type::PORT_TUNNEL));
       }
 
       // ***************************************************************** //
@@ -350,6 +350,7 @@ namespace xml
       void function_type::push ( const id::ref::port & id
                                , ports_type & ports
                                , const ports_type & others
+                               , const we::type::PortDirection& other_direction
                                , const std::string& descr
                                )
       {
@@ -363,7 +364,7 @@ namespace xml
         const port_type& port (id.get());
 
         boost::optional<const id::ref::port&> id_other
-          (others.get (port.name()));
+          (others.get (std::make_pair (port.name(), other_direction)));
 
         if (id_other)
           {
@@ -382,11 +383,11 @@ namespace xml
 
       void function_type::push_in (const id::ref::port& id)
       {
-        push (id, _in, _out, "in");
+        push (id, _in, _out, we::type::PORT_OUT, "in");
       }
       void function_type::push_out (const id::ref::port& id)
       {
-        push (id, _out, _in, "out");
+        push (id, _out, _in, we::type::PORT_IN, "out");
       }
       void function_type::push_tunnel (const id::ref::port& id)
       {

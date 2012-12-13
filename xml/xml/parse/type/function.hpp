@@ -151,6 +151,7 @@ namespace xml
         void push ( const id::ref::port & p
                   , ports_type & ports
                   , const ports_type & others
+                  , const we::type::PortDirection& other_direction
                   , const std::string& descr
                   );
 

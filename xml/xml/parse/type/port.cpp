@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <xml/parse/type/port.hpp>
 
@@ -18,6 +18,7 @@ namespace xml
                            , const std::string & name
                            , const std::string & _type
                            , const boost::optional<std::string> & _place
+                           , const we::type::PortDirection& direction
                            , const we::type::property::type& properties
                            )
         : ID_INITIALIZE()
@@ -25,6 +26,7 @@ namespace xml
         , _name (name)
         , type (_type)
         , place (_place)
+        , _direction (direction)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
@@ -148,6 +150,16 @@ namespace xml
           );
       }
 
+      const we::type::PortDirection& port_type::direction() const
+      {
+        return _direction;
+      }
+      const we::type::PortDirection& port_type::direction
+        (const we::type::PortDirection& direction_)
+      {
+        return _direction = direction_;
+      }
+
       const we::type::property::type& port_type::properties() const
       {
         return _properties;
@@ -157,9 +169,9 @@ namespace xml
         return _properties;
       }
 
-      const port_type::unique_key_type& port_type::unique_key() const
+      port_type::unique_key_type port_type::unique_key() const
       {
-        return name();
+        return std::make_pair (name(), direction());
       }
 
       id::ref::port port_type::clone
@@ -176,6 +188,7 @@ namespace xml
           , _name
           , type
           , place
+          , _direction
           , _properties
           ).make_reference_id();
       }

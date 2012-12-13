@@ -1357,7 +1357,7 @@ namespace fhg
         )
       {
         std::string name ("in_port");
-        while (function.get().in().has (name))
+        while (function.get().in().has (std::make_pair (name, we::type::PORT_IN)))
         {
           name = inc (name);
         }
@@ -1371,6 +1371,7 @@ namespace fhg
             //! \todo Default type?
             , ""
             , boost::none
+            , we::type::PORT_IN
             ).make_reference_id()
           );
 
