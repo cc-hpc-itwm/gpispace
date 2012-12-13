@@ -98,8 +98,10 @@ if [ -z "$1" ] ; then
     exit 1
 fi
 
-GSPC_DIR=$(gspc_abspath "$GSPC_DIR")
-export GSPC_DIR
+if [ -n "$GSPC_DIR" ] ; then
+    GSPC_DIR=$(gspc_abspath "$GSPC_DIR")
+    export GSPC_DIR
+fi
 gspc_prepend_path PATH "${mydir}"
 
 cmd_name="$1"; shift
