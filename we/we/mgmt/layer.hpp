@@ -53,6 +53,8 @@
 #include <we/type/requirement.hpp>
 #include <we/mgmt/type/activity.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace we { namespace mgmt {
     class layer : public basic_layer
     {
@@ -521,27 +523,29 @@ namespace we { namespace mgmt {
         start_threads ("we-inject", WE_NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
       }
 
-      template <typename ThreadList, typename ThreadFunc>
-      void start_threads(std::string const & tag, const std::size_t num, ThreadList & list, ThreadFunc tf)
+      void start_threads ( std::string const & tag
+                         , const std::size_t num
+                         , thread_list_t& list
+                         , boost::function<void (const std::size_t)> tf
+                         )
       {
         for (std::size_t rank(0); rank < num; ++rank)
         {
           std::stringstream sstr;
           sstr << "[" << tag << "-" << rank << "]";
-          boost::thread *thrd = new boost::thread (boost::bind (tf, rank));
-          fhg::util::set_threadname (*thrd, sstr.str ());
+          boost::thread *thrd (new boost::thread (boost::bind (tf, rank)));
+          fhg::util::set_threadname (*thrd, sstr.str());
           list.push_back (thrd);
         }
       }
 
-      template <typename ThreadList>
-      void stop_threads( ThreadList & list )
+      void stop_threads (thread_list_t& list)
       {
-        for (typename ThreadList::iterator t (list.begin()); t != list.end(); ++t)
+        BOOST_FOREACH (boost::thread* t, list)
         {
-          (*t)->interrupt();
-          (*t)->join();
-          delete (*t);
+          t->interrupt();
+          t->join();
+          delete t;
         }
         list.clear();
       }
