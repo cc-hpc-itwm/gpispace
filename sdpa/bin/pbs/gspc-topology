@@ -13,18 +13,20 @@ usage: topology [-h|--help] [action] [options]
 Action:
 
    --list                list the current topology
+   --status              print status of each component
 EOF
 }
 
-if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+#if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
-TEMP=`getopt -o hl --long help,list -n 'template' -- "$@"`
+TEMP=`getopt -o hl --long help,list,status,no-header -n 'template' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
 eval set -- "$TEMP"
 
 action=
+show_header=true
 
 while true ; do
     case "$1" in
@@ -37,30 +39,89 @@ while true ; do
             action="list"
             shift
             ;;
+        --status)
+            [ -z "$action" ] || {
+                gspc_log_error topology "only one action allowed"
+                exit 1
+            }
+            action="status"
+            shift
+            ;;
+        --no-header)
+            show_header=false
+            shift
+            ;;
         --) shift; break ;;
         *) gspc_log_error topology "Internal error on argument: '$1'"; exit 1 ;;
     esac
 done
 
-case "${action}" in
-    list)
-        gspc_require_gspc_dir
+if [ -z "$action" ] ; then
+    action=list
+fi
 
-        # format: location.host <host> location.port <port> name <name>
-        all_components=( $(gspc_get_kvs_entry 'p2p.peer' | tr -d '=') )
+function list_all_components ()
+{
+    gspc_require_gspc_dir
+    local all_components=()
+
+    # format: location.host <host> location.port <port> name <name>
+    all_components=( $(gspc_get_kvs_entry 'p2p.peer' | tr -d '=') )
+    ec=$?
+    if [ $ec -eq 4 ] ; then
+        gspc_log_error topology "Could not contact KVS!"
+        return $ec
+    elif [ $ec -ne 0 ] ; then
+        gspc_log_error topology "Not running"
+        return $ec
+    else
         for ((i=0 ; i < ${#all_components[@]} ; i+=6))
         do
             host="${all_components[i+1]}"
             port="${all_components[i+3]}"
             name="${all_components[i+5]}"
 
-            if gspc check-port "$host" "$port"
-            then
-                echo "$name => $host $port"
-            else
-                gspc_log_warn toplogy "$name seems to be down"
-            fi
+            printf "%-12s %5d   %s\n" "$host" "$port" "$name"
         done
+    fi
+}
+
+function action_status ()
+{
+    local all_components=()
+
+    all_components=( $(list_all_components) )
+    ec=$?
+    if [ $ec -ne 0 ] ; then
+        return $ec
+    fi
+
+    for ((i=0 ; i < ${#all_components[@]} ; i+=3))
+    do
+        host="${all_components[i+0]}"
+        port="${all_components[i+1]}"
+        name="${all_components[i+2]}"
+
+        if gspc check-port "$host" "$port"
+        then
+            echo "$name is UP"
+        else
+            echo "$name iS DOWN"
+        fi
+    done
+
+    return 0
+}
+
+case "${action}" in
+    list)
+        if $show_header ; then
+            printf "%-12s %5s   %s\n" "HOST" "PORT" "NAME"
+        fi
+        list_all_components
+        ;;
+    status)
+        action_status
         ;;
     '')
         usage
@@ -71,5 +132,4 @@ case "${action}" in
         exit 1
         ;;
 esac
-
 
