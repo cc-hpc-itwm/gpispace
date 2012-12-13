@@ -169,12 +169,14 @@ function gspc_require_gspc_dir ()
 {
     if [ -z "$GSPC_DIR" ]
     then
-        return 1
+        gspc_log_error core "GSPC_DIR is not set"
+        exit 1
     fi
 
     if [ ! -d "$GSPC_DIR" ]
     then
-        return 2
+        gspc_log_error core "GSPC_DIR ('$GSPC_DIR') is not accessible"
+        exit 1
     fi
 
     return 0

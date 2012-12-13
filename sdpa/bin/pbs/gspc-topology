@@ -45,11 +45,6 @@ done
 case "${action}" in
     list)
         gspc_require_gspc_dir
-        if [ $? -ne 0 ]
-        then
-            gspc_log_error topology "GSPC_DIR ('$GSPC_DIR') is not set or not accessible"
-            exit 1
-        fi
 
         # format: location.host <host> location.port <port> name <name>
         all_components=( $(gspc_get_kvs_entry 'p2p.peer' | tr -d '=') )
