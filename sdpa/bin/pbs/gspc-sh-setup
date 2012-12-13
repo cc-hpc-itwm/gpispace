@@ -179,3 +179,21 @@ function gspc_require_gspc_dir ()
 
     return 0
 }
+
+function gspc_get_kvs_entry ()
+{
+    local key="$1"; shift
+    local kvs_host=""
+    local kvs_port=""
+
+    kvs_host=$(gspc config --local --get kvs.host)
+    if [ $? -ne 0 ] ; then
+        return 1
+    fi
+    kvs_port=$(gspc config --local --get kvs.port)
+    if [ $? -ne 0 ] ; then
+        return 1
+    fi
+
+    fhgkvsc -H "$kvs_host" -P "$kvs_port" -g "$key" 2>/dev/null
+}
