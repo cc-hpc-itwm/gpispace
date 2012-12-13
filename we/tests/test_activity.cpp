@@ -91,7 +91,9 @@ int main (int, char **)
   trans_inner.add_port
     ("vid","long",we::type::PORT_IN);
   trans_inner.add_port
-    ("store",sig_store,we::type::PORT_IN_OUT);
+    ("store",sig_store,we::type::PORT_OUT);
+  trans_inner.add_port
+    ("store",sig_store,we::type::PORT_IN);
   trans_inner.add_port
     ("pair",sig_pair,we::type::PORT_OUT)
     ;
@@ -135,7 +137,9 @@ int main (int, char **)
   tnet.add_port
     ("vid", "long", we::type::PORT_IN, pid_vid);
   tnet.add_port
-    ("store", sig_store, we::type::PORT_IN_OUT, pid_store);
+    ("store", sig_store, we::type::PORT_IN, pid_store);
+  tnet.add_port
+    ("store", sig_store, we::type::PORT_OUT, pid_store);
   tnet.add_port
     ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
     ;

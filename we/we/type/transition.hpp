@@ -515,8 +515,6 @@ namespace we { namespace type {
           {
           case PORT_IN: this->add_input_port (name, sig, prop); break;
           case PORT_OUT: this->add_output_port (name, sig, prop); break;
-          case PORT_IN_OUT: this->add_input_output_port (name, sig, prop);
-            break;
           case PORT_TUNNEL: this->add_tunnel (name, sig, prop); break;
           default: throw std::runtime_error ("STRANGE: unknown port direction");
           }
@@ -534,8 +532,6 @@ namespace we { namespace type {
           {
           case PORT_IN: this->add_input_port (name, sig, pid, prop); break;
           case PORT_OUT: this->add_output_port (name, sig, pid, prop); break;
-          case PORT_IN_OUT: this->add_input_output_port (name, sig, pid, prop);
-            break;
           case PORT_TUNNEL: this->add_tunnel (name, sig, pid, prop); break;
           default: throw std::runtime_error ("STRANGE: unknown port direction");
           }
@@ -652,53 +648,6 @@ namespace we { namespace type {
         const petri_net::port_id_type port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));
-      }
-
-      void add_input_output_port ( const std::string & port_name
-                                 , const signature::type & signature
-                                 , const we::type::property::type & prop
-                                 )
-      {
-        try
-        {
-          input_port_by_name (port_name);
-        }
-        catch (const exception::port_undefined &)
-        {
-          try
-          {
-            output_port_by_name (port_name);
-          }
-          catch (const exception::port_undefined &)
-          {
-            add_input_port (port_name, signature, prop);
-            add_output_port (port_name, signature, prop);
-          }
-        }
-      }
-
-      void add_input_output_port ( const std::string & port_name
-                                 , const signature::type & signature
-                                 , const petri_net::place_id_type& associated_place
-                                 , const we::type::property::type & prop
-                                 )
-      {
-        try
-        {
-          input_port_by_name (port_name);
-        }
-        catch (const exception::port_undefined &)
-        {
-          try
-          {
-            output_port_by_name (port_name);
-          }
-          catch (const exception::port_undefined &)
-          {
-            add_input_port (port_name, signature, associated_place, prop);
-            add_output_port (port_name, signature, associated_place, prop);
-          }
-        }
       }
 
       petri_net::port_id_type input_port_by_name (const std::string & port_name) const

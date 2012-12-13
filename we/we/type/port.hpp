@@ -21,7 +21,6 @@ namespace we
     enum PortDirection
       { PORT_IN
       , PORT_OUT
-      , PORT_IN_OUT
       , PORT_TUNNEL
       };
 
@@ -72,8 +71,8 @@ namespace we
       petri_net::place_id_type& associated_place() { return _associated_place; }
       const we::type::property::type & property() const { return _properties; }
 
-      bool is_input() const { return _direction == PORT_IN || _direction == PORT_IN_OUT; }
-      bool is_output() const { return _direction == PORT_OUT || _direction == PORT_IN_OUT; }
+      bool is_input() const { return _direction == PORT_IN; }
+      bool is_output() const { return _direction == PORT_OUT; }
       bool is_tunnel() const { return _direction == PORT_TUNNEL; }
       bool has_associated_place() const { return _associated_place != petri_net::place_id_invalid(); }
 

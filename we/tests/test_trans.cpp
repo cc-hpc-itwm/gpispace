@@ -75,7 +75,9 @@ int main (int, char **)
   trans_inner.add_port
     ("vid","long",we::type::PORT_IN);
   trans_inner.add_port
-    ("store",sig_store,we::type::PORT_IN_OUT);
+    ("store",sig_store,we::type::PORT_IN);
+  trans_inner.add_port
+    ("store",sig_store,we::type::PORT_OUT);
   trans_inner.add_port
     ("pair",sig_pair,we::type::PORT_OUT)
     ;
@@ -115,7 +117,9 @@ int main (int, char **)
   tnet.add_port
     ("vid", "long", we::type::PORT_IN, pid_vid);
   tnet.add_port
-    ("store", sig_store, we::type::PORT_IN_OUT, pid_store);
+    ("store", sig_store, we::type::PORT_IN, pid_store);
+  tnet.add_port
+    ("store", sig_store, we::type::PORT_OUT, pid_store);
   tnet.add_port
     ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
   ;
@@ -143,7 +147,9 @@ int main (int, char **)
   transition_t t1 ("t1", we::type::module_call_t ("m", "f"));
 
   t1.add_port
-    ("i", "long", we::type::PORT_IN_OUT);
+    ("i", "long", we::type::PORT_IN);
+  t1.add_port
+    ("i", "long", we::type::PORT_OUT);
   t1.add_port
     ("max", "long", we::type::PORT_IN)
   ;
@@ -165,7 +171,9 @@ int main (int, char **)
   t2.add_port
     ("i", "long", we::type::PORT_IN);
   t2.add_port
-    ("sum", "long", we::type::PORT_IN_OUT)
+    ("sum", "long", we::type::PORT_OUT);
+  t2.add_port
+    ("sum", "long", we::type::PORT_IN)
   ;
 
   std::cout << "t1=" << t1 << std::endl;
