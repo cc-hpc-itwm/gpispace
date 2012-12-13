@@ -22,7 +22,7 @@ Environment information:
 
     --exec-path    : print the path to the helper scripts
 
-Commands:
+Commonly used commands:
 
 $(gspc list-commands --indent=4)
 EOF
