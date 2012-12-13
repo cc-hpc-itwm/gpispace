@@ -17,6 +17,7 @@ Options:
     -v|--verbose   : verbosity level (specify multiple times)
     --dumpversion  : print the short version string
     --revision     : print the revision information
+    --gspc-dir=<path> : set the GSPC_DIR
 
 Environment information:
 
