@@ -970,14 +970,14 @@ int main(int argc, char **argv) {
     }
 
     if (output == "-") {
-        std::cout << we::util::codec::encode(activity);
+      std::cout << activity.to_string();
     } else {
         std::ofstream out(output.c_str());
         if (!out) {
             std::cerr << "failed to open " << input << " for writing" << std::endl;
             return EXIT_FAILURE;
         }
-        out << we::util::codec::encode(activity);
+        out << activity.to_string();
     }
 
     return 0;

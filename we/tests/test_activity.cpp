@@ -151,7 +151,7 @@ int main (int, char **)
             << act
             << std::endl;
   {
-    std::string act_encoded = we::util::codec::encode (act);
+    std::string act_encoded (act.to_string());
     std::cout << "act (serialized):"
               << std::endl
               << act_encoded

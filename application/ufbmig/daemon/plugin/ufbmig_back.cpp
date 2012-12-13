@@ -370,7 +370,7 @@ public:
                              , m_check_interval
                              );
 
-    return submit_job (we::util::codec::encode(act), job::type::PREPARE);
+    return submit_job (act.to_string(), job::type::PREPARE);
   }
 
   int initialize (std::string const &xml)
@@ -411,7 +411,7 @@ public:
       return -EINVAL;
     }
 
-    return submit_job(we::util::codec::encode(act), job::type::INITIALIZE);
+    return submit_job(act.to_string(), job::type::INITIALIZE);
   }
 
   int update_salt_mask (const char *data, size_t len)
@@ -461,7 +461,7 @@ public:
     }
 
     m_state = state::UPDATING;
-    return submit_job(we::util::codec::encode(act), job::type::UPDATE);
+    return submit_job(act.to_string(), job::type::UPDATE);
   }
 
   int calculate(std::string const &xml)
@@ -502,7 +502,7 @@ public:
       return -EINVAL;
     }
 
-    int ec = submit_job(we::util::codec::encode(act), job::type::CALCULATE);
+    int ec = submit_job(act.to_string(), job::type::CALCULATE);
     if (0 == ec)
     {
       m_state = state::CALCULATING;
@@ -546,7 +546,7 @@ public:
       return -EINVAL;
     }
 
-    int ec = submit_job(we::util::codec::encode(act), job::type::FINALIZE);
+    int ec = submit_job(act.to_string(), job::type::FINALIZE);
     if (0 == ec)
     {
       m_state = state::FINALIZING;

@@ -168,7 +168,7 @@ main (int argc, char ** argv)
           ("could not open file " + output + " for writing");
       }
 
-    we::util::codec::encode (stream, act);
+    stream << act.to_string();
   }
   catch (std::exception const & ex)
   {

@@ -43,6 +43,8 @@ namespace we
 
         activity_t& operator= (const activity_t&);
 
+        std::string to_string() const;
+
         void set_id (const petri_net::activity_id_type&);
         const petri_net::activity_id_type& id() const;
         const flags::flags_t& flags() const;

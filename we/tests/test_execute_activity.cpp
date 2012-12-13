@@ -172,27 +172,27 @@ struct exec_context : public we::mgmt::context<>
 
   std::string fake_external ( const std::string & act_enc, net_t & n )
   {
-    activity_t act = we::util::codec::decode<activity_t> (act_enc);
+    activity_t act = we::util::codec::decode (act_enc);
     handle_internally ( act, n );
-    return we::util::codec::encode (act);
+    return act.to_string();
   }
 
   void handle_externally ( activity_t & act, net_t & n)
   {
-    activity_t result ( we::util::codec::decode<activity_t> (fake_external (we::util::codec::encode(act), n)));
+    activity_t result (we::util::codec::decode (fake_external (act.to_string(), n)));
     act.set_output(result.output());
   }
 
   std::string fake_external ( const std::string & act_enc, const mod_t & mod )
   {
-    activity_t act = we::util::codec::decode<activity_t> (act_enc);
+    activity_t act = we::util::codec::decode (act_enc);
     module::call ( act, mod );
-    return we::util::codec::encode (act);
+    return act.to_string();
   }
 
   void handle_externally ( activity_t & act, const mod_t & module_call )
   {
-    activity_t result ( we::util::codec::decode<activity_t> (fake_external (we::util::codec::encode(act), module_call)));
+    activity_t result ( we::util::codec::decode (fake_external (act.to_string(), module_call)));
     act.set_output(result.output());
   }
 
@@ -217,7 +217,7 @@ int main (int ac, char ** av)
     return EXIT_FAILURE;
   }
 
-  activity_t act ( we::util::codec::decode<activity_t> (ifs) );
+  activity_t act ( we::util::codec::decode (ifs) );
 
   std::cout << "act (initial):"
             << std::endl

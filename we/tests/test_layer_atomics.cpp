@@ -81,7 +81,7 @@ int main ()
       , we::type::module_call_t ("m", "f")
       );
     we::activity_t act (mod_call);
-    layer.submit (generate_id(), we::util::codec::encode (act));
+    layer.submit (generate_id(), act.to_string());
 
     sleep (1);
     layer.print_statistics (std::cerr);
@@ -92,7 +92,7 @@ int main ()
                           , we::type::expression_t ("${out} := 3L")
                           );
     we::activity_t act (expr);
-    layer.submit (generate_id(), we::util::codec::encode (act));
+    layer.submit (generate_id(), act.to_string());
 
     sleep (1);
     layer.print_statistics (std::cerr);

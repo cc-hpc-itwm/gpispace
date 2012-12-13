@@ -210,12 +210,12 @@ int main (int argc, char **argv)
 
     if (output == "-")
       {
-        std::cout << we::util::codec::encode (act) << std::endl;
+        std::cout << act.to_string() << std::endl;
       }
     else
       {
         std::ofstream stream (output.c_str());
-        stream << we::util::codec::encode (act) << std::endl;
+        stream << act.to_string() << std::endl;
       }
   }
   catch (std::exception const & ex)

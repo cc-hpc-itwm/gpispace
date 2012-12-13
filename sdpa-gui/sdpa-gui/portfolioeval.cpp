@@ -403,7 +403,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
         }
 
 	ifs.close();
-	return we::util::codec::encode(act);
+	return act.to_string();
 }
 
 void Portfolio::StopClient()
@@ -706,4 +706,3 @@ void Portfolio::PrintToString(portfolio_data_t& d, std::string& strJobData)
 
 	strJobData = sstr.str();
 }
-

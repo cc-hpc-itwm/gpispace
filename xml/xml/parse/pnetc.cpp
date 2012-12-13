@@ -338,7 +338,7 @@ main (int argc, char ** argv)
 
     std::ofstream out (output.c_str());
 
-    out << we::util::codec::encode (act);
+    out << act.to_string();
   }
   catch (std::exception const & ex)
   {

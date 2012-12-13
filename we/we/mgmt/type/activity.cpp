@@ -4,8 +4,11 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <boost/foreach.hpp>
 
+#include <sstream>
 #include <iostream>
 
 namespace we
@@ -45,6 +48,14 @@ namespace we
           }
 
         return *this;
+      }
+
+      std::string activity_t::to_string() const
+      {
+        std::ostringstream oss;
+        boost::archive::text_oarchive ar (oss);
+        ar << BOOST_SERIALIZATION_NVP (*this);
+        return oss.str();
       }
 
       namespace

@@ -94,7 +94,7 @@ namespace test {
       {
         id_type new_id ( daemon.gen_id() );
         daemon.add_mapping ( id, new_id );
-        daemon.layer().submit (new_id,  we::util::codec::encode(act));
+        daemon.layer().submit (new_id,  act.to_string());
       }
 
       void handle_externally (we::activity_t & act, const mod_t &mod)
@@ -102,12 +102,12 @@ namespace test {
         try
         {
           module::call (daemon.loader(), act, mod );
-          daemon.layer().finished (id, we::util::codec::encode(act));
+          daemon.layer().finished (id, act.to_string());
         }
         catch (std::exception const & ex)
         {
           daemon.layer().failed ( id
-                                , we::util::codec::encode(act)
+                                , act.to_string()
                                 , fhg::error::MODULE_CALL_FAILED
                                 , ex.what()
                                 );
@@ -203,7 +203,7 @@ namespace test {
       {
         job_type job (jobs_[rank].get());
 
-        we::activity_t act ( we::util::codec::decode<we::activity_t> (job.desc));
+        we::activity_t act ( we::util::codec::decode (job.desc));
         detail::context<this_type, id_type> ctxt (*this, job.id);
         act.execute (ctxt);
       }
@@ -273,8 +273,7 @@ namespace test {
       }
       catch (std::out_of_range const &)
       {
-        we::activity_t act
-          (we::util::codec::decode<we::activity_t> (desc));
+        we::activity_t act (we::util::codec::decode (desc));
 
         std::cout << "finished [" << id << "] = ";
         act.print (std::cout, act.output());
@@ -299,8 +298,7 @@ namespace test {
       }
       catch (std::out_of_range const &)
       {
-        we::activity_t act
-          (we::util::codec::decode<we::activity_t> (desc));
+        we::activity_t act (we::util::codec::decode (desc));
 
         std::cout << "failed [" << id << "] = ";
         act.print (std::cout, act.output());
