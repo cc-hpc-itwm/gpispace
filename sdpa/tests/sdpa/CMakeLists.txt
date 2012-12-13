@@ -59,9 +59,18 @@ include(pnet_macros)
 get_target_property(PNETPUT_LOCATION pnetput LOCATION)
 
 ###########################################################################################
-pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
+#pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
+#  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
+#  FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
+#)
+
+pnet_compile(sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-  FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  FLAGS -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/application/example
+           -I${CMAKE_SOURCE_DIR}/application/example/stresstest 
 )
 
 ###########################################################################################
@@ -219,7 +228,6 @@ set (tc_srcs
   test_Scheduler.cpp
   test_LoadBalancer.cpp
   test_MapReduce.cpp
-  #test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
@@ -228,10 +236,9 @@ set (tc_srcs
   test_StopRestartOrchSubscriberCli.cpp
   test_StopRestartAgentsSubscriberCli.cpp
   test_StopRestartAgentsPollingCli.cpp
-  test_StopRestartDrtsSubscriberCli.cpp
+  #test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
   test_SubmitJobFails.cpp
-  test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
