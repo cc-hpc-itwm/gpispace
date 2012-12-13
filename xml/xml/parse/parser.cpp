@@ -1150,133 +1150,117 @@ namespace xml
         fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
                                           , optional (node, "internal")
                                           );
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
           )
+      {
+        const std::string child_name
+          (name_element (child, state.file_in_progress()));
+
+        if (child)
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          if (child_name == "in")
+          {
+            function.get_ref().push_in (port_type (child, state, id));
+          }
+          else if (child_name == "out")
+          {
+            function.get_ref().push_out (port_type (child, state, id));
+          }
+          else if (child_name == "inout")
+          {
+            const id::ref::port port_in (port_type (child, state, id));
+            const id::ref::port port_out (port_in.get().clone (id));
+            function.get_ref().push_in (port_in);
+            function.get_ref().push_out (port_out);
+          }
+          else if (child_name == "tunnel")
+          {
+            function.get_ref().push_tunnel (port_type (child, state, id));
+          }
+          else if (child_name == "struct")
+          {
+            function.get_ref().structs.push_back (struct_type (child, state, id));
+          }
+          else if (child_name == "include-structs")
+          {
+            const type::structs_type structs
+              ( structs_include ( required ( "function_type"
+                                           , child
+                                           , "href"
+                                           , state.file_in_progress()
+                                           )
+                                , state
+                                , id
+                                )
+              );
 
-          if (child)
-            {
-              if (child_name == "in")
-                {
-                  function.get_ref().push_in (port_type (child, state, id));
-                }
-              else if (child_name == "out")
-                {
-                  function.get_ref().push_out (port_type (child, state, id));
-                }
-              else if (child_name == "inout")
-                {
-                  const id::ref::port port_in (port_type (child, state, id));
-                  const id::ref::port port_out (port_in.get().clone (id));
-                  function.get_ref().push_in (port_in);
-                  function.get_ref().push_out (port_out);
-                }
-              else if (child_name == "tunnel")
-                {
-                  function.get_ref().push_tunnel (port_type (child, state, id));
-                }
-              else if (child_name == "struct")
-                {
-                  function.get_ref()
-                    .structs.push_back (struct_type (child, state, id));
-                }
-              else if (child_name == "include-structs")
-                {
-                  const type::structs_type structs
-                    ( structs_include ( required ( "function_type"
-                                                 , child
-                                                 , "href"
-                                                 , state.file_in_progress()
-                                                 )
-                                      , state
-                                      , id
-                                      )
-                    );
+            function.get_ref().structs.insert ( function.get_ref().structs.end()
+                                              , structs.begin()
+                                              , structs.end()
+                                              );
+          }
+          else if (child_name == "expression")
+          {
+            function.get_ref().add_expression
+              ( parse_cdata<type::expressions_type>
+                (child, state.file_in_progress())
+              );
+          }
+          else if (child_name == "module")
+          {
+            function.get_ref().f = module_type (child, state, id);
+          }
+          else if (child_name == "net")
+          {
+            function.get_ref().f = net_type (child, state, id);
+          }
+          else if (child_name == "condition")
+          {
+            const type::conditions_type conds
+              ( parse_cdata<type::conditions_type>
+                (child, state.file_in_progress())
+              );
 
-                  function.get_ref()
-                    .structs.insert ( function.get_ref().structs.end()
-                                    , structs.begin()
-                                    , structs.end()
-                                    );
-                }
-              else if (child_name == "expression")
-                {
-                  function.get_ref()
-                    .add_expression ( parse_cdata<type::expressions_type>
-                                      ( child
-                                      , state.file_in_progress()
-                                      )
-                                    );
-                }
-              else if (child_name == "module")
-                {
-                  function.get_ref().f = module_type (child, state, id);
-                }
-              else if (child_name == "net")
-                {
-                  function.get_ref().f = net_type (child, state, id);
-                }
-              else if (child_name == "condition")
-                {
-                  const type::conditions_type conds
-                    ( parse_cdata<type::conditions_type>
-                      ( child
-                      , state.file_in_progress()
-                      )
-                    );
+            function.get_ref().cond.insert ( function.get_ref().cond.end()
+                                           , conds.begin()
+                                           , conds.end()
+                                           );
+          }
+          else if (child_name == "properties")
+          {
+            property_map_type (function.get_ref().properties(), child, state);
+          }
+          else if (child_name == "include-properties")
+          {
+            const we::type::property::type deeper
+              ( properties_include ( required ( "function_type"
+                                              , child
+                                              , "href"
+                                              , state.file_in_progress()
+                                              )
+                                   , state
+                                   )
+              );
 
-                  function.get_ref()
-                    .cond.insert ( function.get_ref().cond.end()
-                                 , conds.begin()
-                                 , conds.end()
-                                 );
-                }
-              else if (child_name == "properties")
-                {
-                  property_map_type ( function.get_ref().properties()
-                                    , child
-                                    , state
-                                    );
-                }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "function_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join ( state
-                                       , function.get_ref().properties()
-                                       , deeper
-                                       );
-                }
-              else if (child_name == "require")
-                {
-                  require_type ( function.get_ref().requirements
-                               , child
-                               , state
-                               );
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "function_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
+            util::property::join (state, function.get_ref().properties(), deeper);
+          }
+          else if (child_name == "require")
+          {
+            require_type (function.get_ref().requirements, child, state);
+          }
+          else
+          {
+            state.warn ( warning::unexpected_element ( child_name
+                                                     , "function_type"
+                                                     , state.file_in_progress()
+                                                     )
+                       );
+          }
         }
+      }
 
       return function;
     }
