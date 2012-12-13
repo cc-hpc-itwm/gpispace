@@ -4,6 +4,7 @@
 
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/port.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
@@ -17,6 +18,39 @@ namespace xml
   {
     namespace error
     {
+      duplicate_port::duplicate_port ( const id::ref::port& port
+                                     , const id::ref::port& old_port
+                                     , const boost::filesystem::path & path
+                                     )
+        : generic ( boost::format ("duplicate %1%-port %2% in %3%")
+                  % we::type::enum_to_string (port.get().direction())
+                  % port.get().name()
+                  % path
+                  )
+        , _port (port)
+        , _old_port (old_port)
+        , _path (path)
+      { }
+
+      port_type_mismatch::port_type_mismatch ( const id::ref::port& port
+                                             , const id::ref::port& other_port
+                                             , const boost::filesystem::path& path
+                                             )
+        : generic ( boost::format ( "in-/out-port %1% has different types "
+                                    "%2% (%3%) and %4% (%5%) in %6%"
+                                  )
+                  % port.get().name()
+                  % port.get().type
+                  % we::type::enum_to_string (port.get().direction())
+                  % other_port.get().type
+                  % we::type::enum_to_string (other_port.get().direction())
+                  % path
+                  )
+        , _port (port)
+        , _other_port (other_port)
+        , _path (path)
+      { }
+
       duplicate_connect::duplicate_connect
         ( const id::ref::connect& connection
         , const id::ref::connect& old_connection

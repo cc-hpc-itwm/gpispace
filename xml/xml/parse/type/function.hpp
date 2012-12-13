@@ -148,12 +148,7 @@ namespace xml
         // ***************************************************************** //
 
       private:
-        void push ( const id::ref::port & p
-                  , ports_type & ports
-                  , const ports_type & others
-                  , const we::type::PortDirection& other_direction
-                  , const std::string& descr
-                  );
+        void push (const id::ref::port& p, ports_type& ports);
 
       public:
         void push_in (const id::ref::port&);

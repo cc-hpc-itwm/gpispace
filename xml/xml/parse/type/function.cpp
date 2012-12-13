@@ -347,56 +347,41 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::push ( const id::ref::port & id
-                               , ports_type & ports
-                               , const ports_type & others
-                               , const we::type::PortDirection& other_direction
-                               , const std::string& descr
-                               )
+      void function_type::push (const id::ref::port& id, ports_type& ports)
       {
         const id::ref::port& id_old (ports.push (id));
 
-        if (not (id_old == id))
+        if (id_old != id)
         {
-          throw error::duplicate_port (descr, id.get().name(), path);
+          throw error::duplicate_port (id, id_old, path);
         }
 
-        const port_type& port (id.get());
+        if (id.get().direction() != we::type::PORT_TUNNEL)
+        {
+          boost::optional<const id::ref::port&> id_other
+            ( id.get().direction() == we::type::PORT_IN
+            ? _out.get (std::make_pair (id.get().name(), we::type::PORT_OUT))
+            : _in.get (std::make_pair (id.get().name(), we::type::PORT_IN))
+            );
 
-        boost::optional<const id::ref::port&> id_other
-          (others.get (std::make_pair (port.name(), other_direction)));
-
-        if (id_other)
+          if (id_other && id.get().type != id_other->get().type)
           {
-            const port_type& other (id_other->get());
-
-            if (port.type != other.type)
-              {
-                throw error::port_type_mismatch ( port.name()
-                                                , port.type
-                                                , other.type
-                                                , path
-                                                );
-              }
+            throw error::port_type_mismatch (id, *id_other, path);
           }
+        }
       }
 
       void function_type::push_in (const id::ref::port& id)
       {
-        push (id, _in, _out, we::type::PORT_OUT, "in");
+        push (id, _in);
       }
       void function_type::push_out (const id::ref::port& id)
       {
-        push (id, _out, _in, we::type::PORT_IN, "out");
+        push (id, _out);
       }
       void function_type::push_tunnel (const id::ref::port& id)
       {
-        const id::ref::port& id_old (_tunnel.push (id));
-
-        if (not (id_old == id))
-        {
-          throw error::duplicate_port ("tunnel", id.get().name(), path);
-        }
+        push (id, _tunnel);
       }
 
       // ***************************************************************** //

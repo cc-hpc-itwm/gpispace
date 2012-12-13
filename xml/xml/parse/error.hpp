@@ -594,28 +594,17 @@ namespace xml
 
       class duplicate_port : public generic
       {
-      private:
-        std::string nice ( const std::string & direction
-                         , const std::string & port
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate " << direction << "-port " << port
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        duplicate_port ( const std::string & direction
-                       , const std::string & port
+        duplicate_port ( const id::ref::port& port
+                       , const id::ref::port& old_port
                        , const boost::filesystem::path & path
-                       )
-          : generic (nice (direction, port, path))
-        {}
+                       );
+        virtual ~duplicate_port() throw() { }
+
+      private:
+        const id::ref::port _port;
+        const id::ref::port _old_port;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -1327,31 +1316,17 @@ namespace xml
 
       class port_type_mismatch : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const std::string & type1
-                         , const std::string & type2
-                         , const boost::filesystem::path & path
-                         )
-        {
-          std::ostringstream s;
-
-          s << "in/out-port " << name
-            << " has different types " << type1 << " and " << type2
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        port_type_mismatch ( const std::string & name
-                           , const std::string & type1
-                           , const std::string & type2
-                           , const boost::filesystem::path & path
-                           )
-          : generic (nice (name, type1, type2, path))
-        {}
+        port_type_mismatch ( const id::ref::port& port
+                           , const id::ref::port& other_port
+                           , const boost::filesystem::path& path
+                           );
+        virtual ~port_type_mismatch() throw() { }
+
+      private:
+        const id::ref::port& _port;
+        const id::ref::port& _other_port;
+        const boost::filesystem::path& _path;
       };
 
       // ******************************************************************* //
