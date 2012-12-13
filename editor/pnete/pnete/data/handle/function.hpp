@@ -38,6 +38,8 @@ namespace fhg
 
           void set_name (const QObject* sender, const QString& name);
 
+          void add_port (const QObject* origin) const;
+
           using function_meta_base::operator==;
         };
       }

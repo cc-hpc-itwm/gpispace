@@ -239,6 +239,20 @@ namespace xml
         return _tunnel;
       }
 
+      void function_type::remove_in (const id::ref::port& id)
+      {
+        _in.erase (id);
+      }
+      void function_type::remove_out (const id::ref::port& id)
+      {
+        _out.erase (id);
+      }
+      void function_type::remove_tunnel (const id::ref::port& id)
+      {
+        _tunnel.erase (id);
+      }
+
+
       // ***************************************************************** //
 
       const function_type::typenames_type& function_type::typenames () const

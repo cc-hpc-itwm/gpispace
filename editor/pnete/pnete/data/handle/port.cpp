@@ -22,6 +22,11 @@ namespace fhg
           : port_meta_base (id, change_manager)
         { }
 
+        void port::remove (const QObject* sender) const
+        {
+          change_manager().delete_port (sender, *this);
+        }
+
         void port::set_type (const QObject* sender, const QString& type) const
         {
           change_manager().set_type (sender, *this, type);

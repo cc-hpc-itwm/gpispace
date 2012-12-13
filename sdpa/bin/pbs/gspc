@@ -18,28 +18,13 @@ fi
 
 function usage()
 {
-    cat <<EOF
-usage: $(basename $0) [-h|--help] [options] [--]
-               <command> [<args>]
+    gspc help 2>&1
+}
 
-Options:
-
-   -h|--help      : print usage information
-   --version      : print the long version
-   -v|--verbose   : verbosity level (specify multiple times)
-   --dumpversion  : print the short version string
-   --revision     : print the revision information
-
-Environment information:
-
-   --exec-path    : print the path to the helper scripts
-
-Commands:
-
-   list-commands          : list all available commands
-   config                 : set/get config values
-   rexec <node> <command> : executes a command remotely
-EOF
+function _resolve_command_path ()
+{
+    local cmd_name="$1" ; shift
+    echo "${exec_path}/gspc-${cmd_name}"
 }
 
 while true ; do
@@ -55,8 +40,7 @@ while true ; do
             shift
             ;;
         --gspc-dir=*)
-            dir=$(gspc_abspath "${1:11}")
-            export GSPC_DIR="$dir"
+            GSPC_DIR="${1:11}"
             shift
             ;;
         --exec-path)
@@ -114,6 +98,10 @@ if [ -z "$1" ] ; then
     exit 1
 fi
 
+GSPC_DIR=$(gspc_abspath "$GSPC_DIR")
+export GSPC_DIR
+gspc_prepend_path PATH "${mydir}"
+
 cmd_name="$1"; shift
 
 cmd=( $("${exec_path}/gspc-config" --get "alias.${cmd_name}") )
@@ -121,10 +109,10 @@ if [ $? -eq 0 ] ; then
     cmd_name="${cmd[0]}"
 fi
 
-cmd[0]="${exec_path}/gspc-${cmd_name}"
+cmd[0]=$(_resolve_command_path "${cmd_name}")
 
 if [ -x "${cmd[0]}" ] ; then
-    env GSPC_VERBOSE="${verbose}" PATH="${mydir}:$PATH" ${cmd[@]} "$@"
+    GSPC_VERBOSE="${verbose}" "${cmd[@]}" "$@"
 else
     echo >&2 "gspc: '$cmd_name' is not a GPI-Space command. See 'gspc --help'."
 fi

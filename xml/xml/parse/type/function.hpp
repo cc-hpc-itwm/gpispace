@@ -114,6 +114,10 @@ namespace xml
         const ports_type& out() const;
         const ports_type& tunnel() const;
 
+        void remove_in (const id::ref::port&);
+        void remove_out (const id::ref::port&);
+        void remove_tunnel (const id::ref::port&);
+
         // ***************************************************************** //
 
         const typenames_type& typenames () const;

@@ -135,13 +135,19 @@ int main (int ac, char *av[])
       else
       {
         std::ofstream ofs (file_name.c_str());
-        m.write (ofs);
+        if (ofs)
+        {
+          m.write (ofs);
+        }
+        else
+        {
+          throw std::runtime_error ("could not open file: " + file_name);
+        }
       }
     }
     catch (std::exception const & ex)
     {
-      std::cerr << "could not write config: " << std::endl;
-      std::cerr << ex.what () << std::endl;
+      std::cerr << "could not write config: " << ex.what () << std::endl;
       exit_code = 2;
     }
   }

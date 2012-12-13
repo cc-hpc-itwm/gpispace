@@ -1,13 +1,14 @@
 #!/bin/bash
 
 GSPC_DOC_SHORT_DESCRIPTION="get/set config values"
+GSPC_IMPORTANT_API_COMMAND=true
 
 . $(gspc --exec-path)/gspc-sh-setup
 
 function usage()
 {
     cat <<EOF
-usage: gspc config [-h|--help] [options]
+usage: config [-h|--help] [options]
 
 Which config file to use:
 
@@ -87,14 +88,15 @@ while true ; do
             if [ -n "$local_config_file" ] ; then
                 config_file="${local_config_file}"
             else
-                config_file="./gspc.rc"
+                gspc_log_error config "GSPC_DIR not set"
+                exit 1
             fi
             files_to_get_from=(config_file)
             shift
             ;;
         --get)
             [ -z "$action" ] || {
-                echo >&2 "only one action allowed!"
+                gspc_log_error config "only one action allowed!"
                 exit 1
             }
             action="get"
@@ -102,7 +104,7 @@ while true ; do
             ;;
         --set)
             [ -z "$action" ] || {
-                echo >&2 "only one action allowed!"
+                gspc_log_error config "only one action allowed!"
                 exit 1
             }
             action="set"
@@ -110,7 +112,7 @@ while true ; do
             ;;
         --del)
             [ -z "$action" ] || {
-                echo >&2 "only one action allowed!"
+                gspc_log_error config "only one action allowed!"
                 exit 1
             }
             action="del"
@@ -118,7 +120,7 @@ while true ; do
             ;;
         -e|--edit)
             [ -z "$action" ] || {
-                echo >&2 "only one action allowed!"
+                gspc_log_error config "only one action allowed!"
                 exit 1
             }
             action="edit"
@@ -126,14 +128,14 @@ while true ; do
             ;;
         --list)
             [ -z "$action" ] || {
-                echo >&2 "only one action allowed!"
+                gspc_log_error config "only one action allowed!"
                 exit 1
             }
             action="list"
             shift
             ;;
         --) shift; break ;;
-        *) echo >&2 "Internal error!"; exit 1 ;;
+        *) gspc_log_error config "Internal error on argument: '$1'"; exit 1 ;;
     esac
 done
 
@@ -145,7 +147,7 @@ fi
 case "$action" in
     get)
         if [ $# -lt 1 ] ; then
-            echo >&2 "get: invalid number of arguments"
+            gspc_log_error config "get: invalid number of arguments"
             exit 1
         fi
         get_config_value "$1" "$2"
@@ -153,22 +155,32 @@ case "$action" in
         ;;
     set)
         if [ $# -lt 2 ] ; then
-            echo >&2 "set: invalid number of arguments"
+            gspc_log_error config "set: invalid number of arguments"
             exit 1
         fi
         if [ -z "$config_file" ] ; then
             config_file="$global_config_file"
         fi
+
+        path_to_file=$(dirname "$config_file")
+        if [ ! -d "${path_to_file}" ]
+        then
+            gspc_log_trace config mkdir -p "${path_to_file}"
+            mkdir -p "${path_to_file}"
+        fi
+
+        gspc_log_trace config fhgcfg -f "$config_file" -a "$1" -v "$2"
         fhgcfg -f "$config_file" -a "$1" -v "$2"
         ;;
     del)
         if [ $# -lt 1 ] ; then
-            echo >&2 "del: invalid number of arguments"
+            gspc_log_error config "del: invalid number of arguments"
             exit 1
         fi
         if [ -z "$config_file" ] ; then
             config_file="$global_config_file"
         fi
+        gspc_log_trace config fhgcfg -f "$config_file" -d "$1"
         fhgcfg -f "$config_file" -d "$1"
         ;;
     list)
@@ -188,7 +200,7 @@ case "$action" in
         gspc_call_editor "$config_file"
         ;;
     *)
-        echo >&2 "invalid action: $action"
+        gspc_log_error config "invalid action: '$action'"
         exit 1
         ;;
 esac

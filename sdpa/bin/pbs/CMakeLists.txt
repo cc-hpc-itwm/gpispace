@@ -22,6 +22,10 @@ set (scripts
   gspc-rexec
   gspc-config
   gspc-list-commands
+  gspc-check-port
+  gspc-shell
+  gspc-help
+  gspc-template
 )
 
 set (files
@@ -40,4 +44,3 @@ install(PROGRAMS ${scripts}
 install (FILES ${files}
   DESTINATION libexec/sdpa/scripts
   COMPONENT runtime)
-

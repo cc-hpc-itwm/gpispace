@@ -6,16 +6,53 @@ GSPC_DOC_SHORT_DESCRIPTION="list available GPI-Space commands"
 
 command_directory=$(gspc --exec-path)
 
+indent=0
+only_important=true
+only_names=false
+
+while true ; do
+    case "$1" in
+        --indent=*)
+            indent=$(( ${1:9} ))
+            shift
+            ;;
+        --names-only)
+            only_names=true
+            shift
+            ;;
+        --all)
+            only_important=false
+            shift
+            ;;
+        -h|--help)
+            echo >&2 "usage: list-commands [-h|--help] [--indent=N] [--all] [--names-only]"
+            exit 0
+            shift
+            ;;
+        --) shift ; break ;;
+        *) break ;;
+    esac
+done
+
 find "$command_directory" -name "gspc-*" | while read path ; do
     if [ -x "$path" ]
     then
         executable=$(basename $path)
-        desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
+        if $only_important ; then
+            if ! grep -q '^GSPC_IMPORTANT_API_COMMAND=true$' "$path" ; then
+                continue
+            fi
+        fi
+
+        if ! $only_names ; then
+            desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
+        fi
+
         if [ -n "$desc" ]
         then
-            printf "%-20s %s\n" "${executable:5}" "${desc}"
+            printf "%${indent}s%-20s %s\n" "" "${executable:5}" "${desc}"
         else
-            printf "%-20s\n" "${executable:5}"
+            printf "%${indent}s%s\n" "" "${executable:5}"
         fi
     fi
 done

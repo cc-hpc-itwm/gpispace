@@ -1,0 +1,53 @@
+#!/bin/bash
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+GSPC_DOC_SHORT_DESCRIPTION="checks whether a given port is open"
+
+# return codes: 0 => port is open
+#               1 => usage error
+#               2 => port is closed
+#               3 => host not found
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: check-port host port
+EOF
+}
+
+if [ $# -ne 2 ]
+then
+    usage
+    exit 1
+fi
+
+node="${1}"; shift
+port="${1}"; shift
+
+nc=$(which netcat)
+if [ -z "$nc" ] ; then
+    nc=$(which nc)
+    if [ -z "$nc" ] ; then
+        gspc_log_error check-port "Neither 'netcat' nor 'nc' is available"
+        exit 2
+    fi
+fi
+
+gspc_log_trace check-port LANG=C "$nc" -w 0 "$node" "$port"
+err=$(LANG=C "$nc" -w 0 "$node" "$port" </dev/null 2>&1)
+ec=$?
+
+if [ $ec -ne 0 ]
+then
+    if echo "$err" | grep -q -i 'name or service not known'
+    then
+        ec=3
+    else
+        ec=2
+    fi
+fi
+
+gspc_log_debug check-port "[$node]:$port" "=>" "$ec"
+
+exit $ec

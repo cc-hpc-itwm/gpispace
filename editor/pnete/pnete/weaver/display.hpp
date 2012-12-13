@@ -115,6 +115,7 @@ namespace fhg
                             , item_by_name_type& place_item_by_name
                             , item_by_name_type& ports_in
                             , item_by_name_type& ports_out
+                            , data::internal_type* root
                             );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -128,6 +129,7 @@ namespace fhg
         std::string _port;
         std::string _place;
         boost::optional< ::xml::parse::id::ref::connect> _id;
+        data::internal_type* _root;
       };
 
       class port
@@ -151,7 +153,6 @@ namespace fhg
                                , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                , data::internal_type* root
-                               , const ::xml::parse::id::ref::function&
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -164,7 +165,6 @@ namespace fhg
         const ui::graph::connectable::direction::type _direction;
         ui::graph::port_item* _port_item;
         data::internal_type* _root;
-        ::xml::parse::id::ref::function _function;
       };
 
       class place
