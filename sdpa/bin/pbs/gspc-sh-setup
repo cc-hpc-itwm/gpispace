@@ -164,3 +164,18 @@ function gspc_prepend_path ()
     done
     eval "$var=$val"
 }
+
+function gspc_require_gspc_dir ()
+{
+    if [ -z "$GSPC_DIR" ]
+    then
+        return 1
+    fi
+
+    if [ ! -d "$GSPC_DIR" ]
+    then
+        return 2
+    fi
+
+    return 0
+}
