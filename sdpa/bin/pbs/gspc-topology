@@ -112,6 +112,19 @@ function action_status ()
         return $ec
     fi
 
+    color_up=""
+    color_dn=""
+    color_off=""
+
+    color_mode=$(gspc config --get color.status)
+    if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
+        if gspc_is_a_human_watching ; then
+            color_up="\e[0;32m"
+            color_dn="\e[0;31m"
+            color_off="\e[0m"
+        fi
+    fi
+
     for ((i=0 ; i < ${#component_info[@]} ; i+=4))
     do
         host="${component_info[i+0]}"
@@ -121,10 +134,11 @@ function action_status ()
 
         if gspc check-port "$host" "$port"
         then
-            echo "$name is UP"
+            state="UP"; color="$color_up"
         else
-            echo "$name iS DOWN"
+            state="DN"; color="$color_dn"
         fi
+        printf "[${color}%-2s${color_off}] %s\n" "$state" "$name"
     done
 
     return 0
