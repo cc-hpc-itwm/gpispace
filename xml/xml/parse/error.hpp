@@ -781,153 +781,79 @@ namespace xml
 
       class port_connected_place_nonexistent : public generic
       {
-      private:
-        std::string nice ( const std::string & direction
-                         , const std::string & port
-                         , const std::string & place
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << direction << "-port " << port
-            << " connected to non-existing place " << place
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        port_connected_place_nonexistent ( const std::string & direction
-                                         , const std::string & port
-                                         , const std::string & place
-                                         , const boost::filesystem::path & path
-                                         )
-          : generic (nice (direction, port, place, path))
-        {}
+        port_connected_place_nonexistent ( const id::ref::port&
+                                         , const boost::filesystem::path&
+                                         );
+        virtual ~port_connected_place_nonexistent() throw() { }
+
+      private:
+        const id::ref::port _port;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
 
       class tunnel_connected_non_virtual : public generic
       {
-      private:
-        template<typename PORT, typename PLACE>
-        std::string nice ( const PORT& port
-                         , const PLACE& place
-                         , const boost::filesystem::path& path
-                         )
-        {
-          std::ostringstream s;
-
-          s << "tunnel " << port.name()
-            << " connected to non-virtual place " << place.name()
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        template<typename PORT, typename PLACE>
-        tunnel_connected_non_virtual ( const PORT& port
-                                     , const PLACE& place
-                                     , const boost::filesystem::path& path
-                                     )
-          : generic (nice (port, place, path))
-        {}
+        tunnel_connected_non_virtual ( const id::ref::port&
+                                     , const id::ref::place&
+                                     , const boost::filesystem::path&
+                                     );
+        virtual ~tunnel_connected_non_virtual() throw() { }
+
+      private:
+        const id::ref::port _port;
+        const id::ref::place _place;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
 
       class tunnel_name_mismatch : public generic
       {
-      private:
-        template<typename PORT, typename PLACE>
-        std::string nice ( const PORT& port
-                         , const PLACE& place
-                         , const boost::filesystem::path& path
-                         )
-        {
-          std::ostringstream s;
-
-          s << "tunnel with name " << port.name()
-            << " is connected to place with different name " << place.name()
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        template<typename PORT, typename PLACE>
-        tunnel_name_mismatch ( const PORT& port
-                             , const PLACE& place
-                             , const boost::filesystem::path& path
-                             )
-          : generic (nice (port, place, path))
-        {}
+        tunnel_name_mismatch ( const id::ref::port&
+                             , const id::ref::place&
+                             , const boost::filesystem::path&
+                             );
+        virtual ~tunnel_name_mismatch() throw() { }
+
+      private:
+        const id::ref::port _port;
+        const id::ref::place _place;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
 
       class port_not_connected : public generic
       {
-      private:
-        std::string nice ( const std::string & direction
-                         , const std::string & port
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << direction << "-port " << port
-            << " not connected"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        port_not_connected ( const std::string & direction
-                           , const std::string & port
-                           , const boost::filesystem::path & path
-                           )
-          : generic (nice (direction, port, path))
-        {}
+        port_not_connected (const id::ref::port&, const boost::filesystem::path&);
+        virtual ~port_not_connected() throw() { }
+
+      private:
+        const id::ref::port _port;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
 
       class port_connected_type_error : public generic
       {
-      private:
-        template<typename PORT, typename PLACE>
-        std::string nice ( const std::string & direction
-                         , const PORT & port
-                         , const PLACE & place
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "type error: port-" << direction << " " << port.name()
-            << " of type " << port.type
-            << " connected to place " << place.name()
-            << " of type " << place.type
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        template<typename PORT, typename PLACE>
-        port_connected_type_error ( const std::string & direction
-                                  , const PORT & port
-                                  , const PLACE & place
-                                  , const boost::filesystem::path & path
-                                  )
-          : generic (nice (direction, port, place, path))
-        {}
+        port_connected_type_error ( const id::ref::port&
+                                  , const id::ref::place&
+                                  , const boost::filesystem::path&
+                                  );
+        virtual ~port_connected_type_error() throw() { }
+
+      private:
+        const id::ref::port _port;
+        const id::ref::place _place;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

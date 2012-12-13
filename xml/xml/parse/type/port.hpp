@@ -49,10 +49,8 @@ namespace xml
                         , const state::type &
                         );
 
-        void type_check ( const std::string & direction
-                        , const boost::filesystem::path & path
-                        , const state::type & state
-                        ) const;
+        void type_check
+          (const boost::filesystem::path&, const state::type&) const;
 
         const std::string& name() const;
 

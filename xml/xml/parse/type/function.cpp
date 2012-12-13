@@ -557,15 +557,15 @@ namespace xml
       {
         BOOST_FOREACH (const port_type& port, in().values())
         {
-          port.type_check ("in", path, state);
+          port.type_check (path, state);
         }
         BOOST_FOREACH (const port_type& port, out().values())
         {
-          port.type_check ("out", path, state);
+          port.type_check (path, state);
         }
         BOOST_FOREACH (const port_type& port, tunnel().values())
         {
-          port.type_check ("tunnel", path, state);
+          port.type_check (path, state);
         }
 
         boost::apply_visitor (function_type_check (state), f);
