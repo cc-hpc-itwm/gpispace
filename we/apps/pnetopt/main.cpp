@@ -120,7 +120,6 @@ class Optimizer {
                     .addFunction("isInput", &Port::isInput)
                     .addFunction("isOutput", &Port::isOutput)
                     .addFunction("isTunnel", &Port::isTunnel)
-                    .addFunction("isRead", &Port::isRead)
                     .addFunction("connectedPlace", &Port::connectedPlace)
                     .addFunction("connect", &Port::connect)
                     .addFunction("disconnect", &Port::disconnect)
@@ -756,11 +755,6 @@ class Optimizer {
             return direction_ == TUNNEL;
         }
 
-        bool isRead() const {
-            ensureValid();
-            return port_.direction() == we::type::PORT_READ;
-        }
-
         Place *connectedPlace() const {
             ensureValid();
             return connectedPlace_;
@@ -817,7 +811,8 @@ class Optimizer {
 
             if (connectedPlace_) {
                 /* We must add an edge. */
-                petri_net::edge::type edgeType = isRead() ? petri_net::edge::PT_READ : (isInput() ? petri_net::edge::PT : petri_net::edge::TP);
+              //! \todo How to get an read connection?
+                petri_net::edge::type edgeType = isInput() ? petri_net::edge::PT : petri_net::edge::TP;
 
                 bool tryAgain;
                 do {

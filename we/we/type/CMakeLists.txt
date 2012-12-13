@@ -37,6 +37,7 @@ add_we_library (we_type)
 target_link_libraries (we_type
   fhg-util
   we_expr_parse_simplify
+  ${Boost_LIBRARIES}
 )
 
 add_subdirectory (bits)

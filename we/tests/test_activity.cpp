@@ -157,7 +157,7 @@ int main (int, char **)
               << act_encoded
               << std::endl;
 
-    activity_t act_d = we::util::codec::decode<activity_t> (act_encoded);
+    activity_t act_d = we::util::codec::decode (act_encoded);
     std::cout << "act (deserialized):"
               << std::endl
               << act_d
