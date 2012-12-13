@@ -49,7 +49,7 @@ function gspc_log_impl ()
     s_color=""
     e_color='\e[0m'
 
-    color_mode=$(gspc config --global --get color.mode)
+    color_mode=$(gspc config --global --get color.log)
     if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
         if gspc_isatty /dev/stderr ; then
             color_mode=on
