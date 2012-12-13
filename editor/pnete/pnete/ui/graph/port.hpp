@@ -35,7 +35,6 @@ namespace fhg
 
         public:
           port_item ( const data::handle::port& handle
-                    , connectable::direction::type direction
                     , transition_item* parent = NULL
                     );
 
@@ -96,10 +95,9 @@ namespace fhg
 
         public:
           top_level_port_item ( const data::handle::port& handle
-                              , connectable::direction::type direction
                               , transition_item* parent = NULL
                               )
-            : port_item (handle, direction, parent)
+            : port_item (handle, parent)
             {}
 
           enum { Type = top_level_port_graph_type };

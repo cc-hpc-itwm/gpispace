@@ -1,4 +1,4 @@
-// {rahn,petry}@itwm.fhg.de
+// {alexander.petry,bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef WE_TYPE_PORT_HPP
 #define WE_TYPE_PORT_HPP 1
@@ -23,6 +23,8 @@ namespace we
       , PORT_OUT
       , PORT_TUNNEL
       };
+
+    std::string enum_to_string (const PortDirection&);
 
     std::ostream& operator<< (std::ostream&, const PortDirection&);
 

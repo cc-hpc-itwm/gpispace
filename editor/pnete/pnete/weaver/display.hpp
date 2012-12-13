@@ -87,7 +87,6 @@ namespace fhg
       private:
         ui::graph::scene_type* _scene;
         ui::graph::transition_item* _transition;
-        ui::graph::connectable::direction::type _current_port_direction;
         ::xml::parse::id::ref::net _net;
 
         item_by_name_type& _place_item_by_name;
@@ -150,7 +149,6 @@ namespace fhg
       {
       public:
         explicit port_toplevel ( ui::graph::scene_type*
-                               , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                , data::internal_type* root
                                );
@@ -162,7 +160,6 @@ namespace fhg
         ui::graph::scene_type* _scene;
         item_by_name_type& _place_item_by_name;
         std::string _name;
-        const ui::graph::connectable::direction::type _direction;
         ui::graph::port_item* _port_item;
         data::internal_type* _root;
       };

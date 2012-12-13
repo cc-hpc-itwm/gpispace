@@ -27,15 +27,8 @@ namespace fhg
     {
       namespace
       {
-        enum which_ports
-        {
-          in,
-          out,
-          tunnel,
-        };
-
         QGroupBox* port_list_box
-          ( const which_ports& which
+          ( const we::type::PortDirection& which
           , const data::handle::function& function
           , const QStringList& types
           )
@@ -62,20 +55,17 @@ namespace fhg
           //! \todo Should use handles and special items to allow
           //! editing. Also, this should be weaved in, not pulled.
           BOOST_FOREACH ( const ::xml::parse::type::port_type& port
-                        , ( which == in
-                          ? function.get().in()
-                          : ( which == out
-                            ? function.get().out()
-                            : function.get().tunnel()
-                            )
-                          ).values()
+                        , function.get().ports().values()
                         )
           {
-            model->setItem
-              (row, 0, new QStandardItem (QString::fromStdString(port.name())));
-            model->setItem
-              (row, 1, new QStandardItem (QString::fromStdString(port.type)));
-            ++row;
+            if (port.direction() == which)
+            {
+              model->setItem
+                (row, 0, new QStandardItem (QString::fromStdString(port.name())));
+              model->setItem
+                (row, 1, new QStandardItem (QString::fromStdString(port.type)));
+              ++row;
+            }
           }
 
           table->resizeRowsToContents();
@@ -87,9 +77,9 @@ namespace fhg
 
 
           QGroupBox* group_box
-            ( new QGroupBox ( QObject::tr ( which == in
+            ( new QGroupBox ( QObject::tr ( which == we::type::PORT_IN
                                           ? "in_ports_header"
-                                          : ( which == out
+                                          : ( which == we::type::PORT_OUT
                                             ? "out_ports_header"
                                             : "tunnel_ports_header"
                                             )
@@ -112,9 +102,12 @@ namespace fhg
       {
         QSplitter* splitter (new QSplitter (Qt::Vertical));
 
-        splitter->addWidget (port_list_box (in, function, types));
-        splitter->addWidget (port_list_box (out, function, types));
-        splitter->addWidget (port_list_box (tunnel, function, types));
+        splitter->addWidget
+          (port_list_box (we::type::PORT_IN, function, types));
+        splitter->addWidget
+          (port_list_box (we::type::PORT_OUT, function, types));
+        splitter->addWidget
+          (port_list_box (we::type::PORT_TUNNEL, function, types));
 
         QVBoxLayout* vbox (new QVBoxLayout());
         vbox->addWidget (splitter);
