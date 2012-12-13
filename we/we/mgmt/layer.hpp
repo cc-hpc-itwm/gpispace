@@ -35,7 +35,6 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
-#include <boost/serialization/access.hpp>
 
 #include <we/we-config.hpp>
 
@@ -1215,14 +1214,7 @@ namespace we { namespace mgmt {
         return a->second;
       }
 
-      friend class boost::serialization::access;
-      template<class Archive>
-      void serialize (Archive & ar, const unsigned int)
-      {
-        /*
-        ar & BOOST_SERIALIZATION_MAKE_NVP(activities_);
-        ar & BOOST_SERIALIZATION_MAKE_NVP(ext_to_int_);
-        */
+        return a->second;
       }
     };
   }
