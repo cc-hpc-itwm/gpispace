@@ -36,7 +36,8 @@ fhg_add_plugin(kvsd kvsd.cpp
 
 fhg_add_plugin(kvs kvs.cpp
   EXPORTS KVS
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
+  LINK_LIBRARIES fhg-util
+                 ${FhgCom_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
