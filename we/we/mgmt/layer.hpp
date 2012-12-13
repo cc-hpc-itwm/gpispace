@@ -58,13 +58,7 @@ namespace we { namespace mgmt {
     class layer : public basic_layer
     {
     public:
-      typedef we::mgmt::type::activity_t activity_type;
-
-      typedef layer this_type;
-      // external ids
       typedef std::string external_id_type;
-
-      // internal ids
       typedef petri_net::activity_id_type internal_id_type;
 
       typedef std::string encoded_type;
@@ -72,15 +66,8 @@ namespace we { namespace mgmt {
       typedef std::string result_type;
       typedef std::string status_type;
 
-      typedef activity_type::output_t output_type;
-
     private:
-      typedef boost::unordered_set<internal_id_type> child_set_t;
-      typedef boost::unordered_map<internal_id_type, internal_id_type> child_to_parent_map_t;
-      typedef boost::unordered_map<internal_id_type, child_set_t> parent_to_children_map_t;
-
       typedef boost::unordered_map<external_id_type, internal_id_type> external_to_internal_map_t;
-      typedef boost::unordered_map<internal_id_type, external_id_type> internal_to_external_map_t;
 
       typedef std::vector<boost::thread *> thread_list_t;
 
@@ -90,10 +77,6 @@ namespace we { namespace mgmt {
       // manager thread
       typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
       typedef detail::queue<cmd_t, 0> cmd_q_t;
-
-      // injector thread
-      typedef internal_id_type inj_cmd_t;
-      typedef detail::queue<inj_cmd_t, 0> inj_q_t;
 
       // extractor
       typedef detail::set<internal_id_type, 0> active_nets_t;
@@ -106,11 +89,11 @@ namespace we { namespace mgmt {
        *****************************/
 
       // observe
-      util::signal<void (const this_type *, internal_id_type const &)> sig_submitted;
-      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_finished;
-      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_failed;
-      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_cancelled;
-      util::signal<void (const this_type *, internal_id_type const &)> sig_executing;
+      util::signal<void (const layer *, internal_id_type const &)> sig_submitted;
+      util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_finished;
+      util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_failed;
+      util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_cancelled;
+      util::signal<void (const layer *, internal_id_type const &)> sig_executing;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -133,7 +116,9 @@ namespace we { namespace mgmt {
           );
       }
 
-      void submit(const external_id_type & id, const activity_type &act)
+      void submit( const external_id_type& id
+                 , const we::mgmt::type::activity_t& act
+                 )
       {
         descriptor_ptr desc
           (new detail::descriptor (generate_internal_id(), act));
@@ -512,14 +497,14 @@ namespace we { namespace mgmt {
 
         lock_t lock (mutex_);
 
-        manager_   = boost::thread(boost::bind(&this_type::manager, this));
+        manager_   = boost::thread(boost::bind(&layer::manager, this));
         fhg::util::set_threadname (manager_, "[we-mgr]");
 
         active_nets_ = new active_nets_t[WE_NUM_EXTRACTORS];
-        start_threads ("we-extract", WE_NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
+        start_threads ("we-extract", WE_NUM_EXTRACTORS, extractor_, boost::bind(&layer::extractor, this, _1));
 
         inj_q_ = new active_nets_t[WE_NUM_INJECTORS];
-        start_threads ("we-inject", WE_NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
+        start_threads ("we-inject", WE_NUM_INJECTORS, injector_, boost::bind(&layer::injector, this, _1));
       }
 
       void start_threads ( std::string const & tag
@@ -641,7 +626,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(make_cmd("activity_failed", id, boost::bind(&this_type::activity_failed, this, _1)));
+          cmd_q_.put(make_cmd("activity_failed", id, boost::bind(&layer::activity_failed, this, _1)));
         }
         else
         {
@@ -654,7 +639,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(make_cmd("activity_cancelled", id, boost::bind(&this_type::activity_cancelled, this, _1)));
+          cmd_q_.put(make_cmd("activity_cancelled", id, boost::bind(&layer::activity_cancelled, this, _1)));
         }
         else
         {
@@ -667,7 +652,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put (make_cmd("cancel_activity", id, boost::bind(&this_type::cancel_activity, this, _1)));
+          cmd_q_.put (make_cmd("cancel_activity", id, boost::bind(&layer::cancel_activity, this, _1)));
         }
         else
         {
@@ -920,7 +905,7 @@ namespace we { namespace mgmt {
               << ": " << desc->show_output());
           lookup (desc->parent())->inject
             ( *desc
-            , boost::bind ( &this_type::post_activity_notification
+            , boost::bind ( &layer::post_activity_notification
                           , this
                           , _1
                           )
@@ -1126,7 +1111,7 @@ namespace we { namespace mgmt {
           if (desc->has_children())
           {
             desc->cancel
-              ( boost::bind ( &this_type::post_cancel_activity_notification
+              ( boost::bind ( &layer::post_cancel_activity_notification
                             , this
                             , _1
                             )
