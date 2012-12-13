@@ -1194,25 +1194,17 @@ namespace we { namespace mgmt {
         activities_.erase (desc->id());
       }
 
-      inline descriptor_ptr lookup(const internal_id_type & id)
+      inline descriptor_ptr lookup (const internal_id_type& id)
       {
         lock_t (mutex_);
-        activities_t::iterator a = activities_.find(id);
-        if (a == activities_.end())
-          throw exception::activity_not_found
-            ("lookup("+fhg::util::show(id)+") failed!", id);
-        return a->second;
-      }
 
-      inline const descriptor_ptr & lookup(const internal_id_type & id) const
-      {
-        lock_t (mutex_);
-        activities_t::const_iterator a = activities_.find(id);
+        activities_t::iterator a (activities_.find(id));
+
         if (a == activities_.end())
-          throw exception::activity_not_found
-            ("lookup("+fhg::util::show(id)+") failed!", id);
-        return a->second;
-      }
+          {
+            throw exception::activity_not_found
+              ("lookup (" + fhg::util::show (id) + ") failed!", id);
+          }
 
         return a->second;
       }
