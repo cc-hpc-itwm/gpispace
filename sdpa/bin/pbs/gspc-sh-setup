@@ -30,11 +30,9 @@ function gspc_is_verbose_enabled ()
 
 function gspc_isatty()
 {
-    local f="$1" ; shift
-    f=$(readlink -f "$f")
-    if [ -e "$f" ] ; then
-        tty -s < "$f" >/dev/null 2>&1
-        return $?
+    local fd="$1" ; shift
+    if readlink -f "/proc/$$/fd/$fd" | grep -q pts ; then
+        return 0
     else
         return 1
     fi
@@ -42,7 +40,7 @@ function gspc_isatty()
 
 function gspc_is_a_human_watching ()
 {
-    if gspc_isatty /dev/stdout ; then
+    if gspc_isatty 1 ; then
         return 0
     else
         return 1
@@ -56,11 +54,11 @@ function gspc_log_impl ()
 
     level_id='T'
     s_color=""
-    e_color='\e[0m'
+    e_color=""
 
     color_mode=$(gspc config --global --get color.log)
     if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
-        if gspc_isatty /dev/stderr ; then
+        if gspc_isatty 2 ; then
             color_mode=on
         else
             color_mode=off
@@ -69,22 +67,28 @@ function gspc_log_impl ()
 
     if [ "$color_mode" = "on" ]
     then
-        color_red="\e[0;32m"
-        color_purple="\e[0;35m"
+        color_black="\e[0;30m"
+        color_red="\e[0;31m"
+        color_green="\e[0;32m"
         color_yellow="\e[0;33m"
+        color_blue="\e[0;34m"
+        color_purple="\e[0;35m"
+        color_cyan="\e[0;36m"
+        color_white="\e[0;37m"
+        e_color='\e[0m'
     fi
 
     case "$level" in
         trace)
-            s_color="$color_normal"
+            s_color=""
             level_id=T
             ;;
         debug)
-            s_color="$color_normal"
+            s_color=""
             level_id=D
             ;;
         info)
-            s_color="$color_normal"
+            s_color=""
             level_id=I
             ;;
         warn)
@@ -92,11 +96,11 @@ function gspc_log_impl ()
             level_id=W
             ;;
         error)
-            s_color="$color_purple"
+            s_color="$color_red"
             level_id=E
             ;;
         *)
-            s_color="$color_normal"
+            s_color=""
             ;;
     esac
     echo -e >&2 "${s_color}[${level_id}] ($component): $@${e_color}"
