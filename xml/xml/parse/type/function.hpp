@@ -157,7 +157,6 @@ namespace xml
       public:
         void push_in (const id::ref::port&);
         void push_out (const id::ref::port&);
-        void push_inout (const id::ref::port&);
         void push_tunnel (const id::ref::port&);
 
         // ***************************************************************** //

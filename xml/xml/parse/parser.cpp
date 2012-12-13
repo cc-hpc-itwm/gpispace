@@ -1170,7 +1170,10 @@ namespace xml
                 }
               else if (child_name == "inout")
                 {
-                  function.get_ref().push_inout (port_type (child, state, id));
+                  const id::ref::port port_in (port_type (child, state, id));
+                  const id::ref::port port_out (port_in.get().clone (id));
+                  function.get_ref().push_in (port_in);
+                  function.get_ref().push_out (port_out);
                 }
               else if (child_name == "tunnel")
                 {
