@@ -515,7 +515,6 @@ namespace we { namespace type {
           {
           case PORT_IN: this->add_input_port (name, sig, prop); break;
           case PORT_OUT: this->add_output_port (name, sig, prop); break;
-          case PORT_READ: this->add_read_port (name, sig, prop); break;
           case PORT_IN_OUT: this->add_input_output_port (name, sig, prop);
             break;
           case PORT_TUNNEL: this->add_tunnel (name, sig, prop); break;
@@ -535,7 +534,6 @@ namespace we { namespace type {
           {
           case PORT_IN: this->add_input_port (name, sig, pid, prop); break;
           case PORT_OUT: this->add_output_port (name, sig, pid, prop); break;
-          case PORT_READ: this->add_read_port (name, sig, pid, prop); break;
           case PORT_IN_OUT: this->add_input_output_port (name, sig, pid, prop);
             break;
           case PORT_TUNNEL: this->add_tunnel (name, sig, pid, prop); break;
@@ -576,43 +574,6 @@ namespace we { namespace type {
           }
         }
         const port_t port (port_name, PORT_IN, signature, associated_place, prop);
-        const petri_net::port_id_type port_id (port_id_counter_++);
-
-        ports_.insert (std::make_pair (port_id, port));
-      }
-
-      void add_read_port ( const std::string & port_name
-                         , const signature::type & signature
-                         , const we::type::property::type & prop
-                         )
-      {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
-        {
-          if ((p->second.is_input()) && p->second.name() == port_name)
-          {
-            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
-          }
-        }
-        const port_t port (port_name, PORT_READ, signature, prop);
-        const petri_net::port_id_type port_id (port_id_counter_++);
-
-        ports_.insert (std::make_pair (port_id, port));
-      }
-
-      void add_read_port ( const std::string & port_name
-                         , const signature::type & signature
-                         , const petri_net::place_id_type& associated_place
-                         , const we::type::property::type & prop
-                         )
-      {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
-        {
-          if ((p->second.is_input()) && p->second.name() == port_name)
-          {
-            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
-          }
-        }
-        const port_t port (port_name, PORT_READ, signature, associated_place, prop);
         const petri_net::port_id_type port_id (port_id_counter_++);
 
         ports_.insert (std::make_pair (port_id, port));

@@ -38,7 +38,6 @@ namespace we
 
   using we::type::PORT_IN;
   using we::type::PORT_OUT;
-  using we::type::PORT_READ;
   using we::type::PORT_IN_OUT;
 }
 
