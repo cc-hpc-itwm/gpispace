@@ -8,7 +8,11 @@ GSPC_IMPORTANT_API_COMMAND=true
 function usage()
 {
     cat <<EOF
-usage: topology [-h|--help] [options]
+usage: topology [-h|--help] [action] [options]
+
+Action:
+
+   --list                list the current topology
 EOF
 }
 
