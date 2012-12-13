@@ -40,6 +40,15 @@ function gspc_isatty()
     fi
 }
 
+function gspc_is_a_human_watching ()
+{
+    if gspc_isatty /dev/stdout ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 function gspc_log_impl ()
 {
     local level="$1"; shift
