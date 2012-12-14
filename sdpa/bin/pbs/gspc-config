@@ -220,8 +220,8 @@ case "$action" in
         path_to_file=$(dirname "$config_file")
         if [ ! -d "${path_to_file}" ]
         then
-            gspc_log_trace config mkdir -p "${path_to_file}"
-            mkdir -p "${path_to_file}"
+            gspc_log_error config "not creating config: directory does not exist: '${path_to_file}'"
+            exit 1
         fi
 
         gspc_log_trace config fhgcfg -f "$config_file" -a "$1" -v "$2"
