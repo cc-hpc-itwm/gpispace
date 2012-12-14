@@ -223,10 +223,8 @@ case "$action" in
             exit 1
         fi
 
-        trap '' INT TERM
         gspc_log_trace config fhgcfg -f "$config_file" -a "$1" -v "$2"
-        fhgcfg -f "$config_file" -a "$1" -v "$2"
-        trap - INT TERM
+        gspc_atomic fhgcfg -f "$config_file" -a "$1" -v "$2"
         ;;
     del)
         if [ $# -lt 1 ] ; then
@@ -237,10 +235,8 @@ case "$action" in
             config_file="$global_config_file"
         fi
 
-        trap '' INT TERM
         gspc_log_trace config fhgcfg -f "$config_file" -d "$1"
-        fhgcfg -f "$config_file" -d "$1"
-        trap - INT TERM
+        gspc_atomic fhgcfg -f "$config_file" -d "$1"
         ;;
     list)
         for ((i=((${#files_to_get_from[@]}-1)); i >= 0 ; i--)) ; do

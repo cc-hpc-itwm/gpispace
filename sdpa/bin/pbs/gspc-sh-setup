@@ -197,3 +197,12 @@ function gspc_require_gspc_dir ()
 
     return 0
 }
+
+function gspc_atomic ()
+{
+    trap '' INT TERM
+    "$@"
+    ec=$?
+    trap - INT TERM
+    return $ec
+}
