@@ -879,31 +879,14 @@ function generate_environment ()
     prepend_to_path LD_LIBRARY_PATH "$SDPA_LIBEXEC"
     prepend_to_path LD_LIBRARY_PATH "$HOME/.sdpa/plugins"
 
-    prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
+    prepend_to_path PC_LIBRARY_PATH "$SDPA_LIBEXEC/apps"
+    if [ -n "$SDPA_APP_PATH" ] ; then
+        prepend_to_path PC_LIBRARY_PATH "$SDPA_APP_PATH"
+    fi
     prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
 
-    app_directories=(                       "$SDPA_LIBEXEC/apps"  )
-
-    OLDIFS="$IFS"
-    IFS=":"
-    for d in $SDPA_APP_PATH ; do
-        # eval echo: resolve "~"
-        app_directories=( ${app_directories[@]} $(eval echo "$d") )
-    done
-    IFS="$OLDIFS"
-
-    app_directories=( ${app_directories[@]} "$HOME/.sdpa/modules" )
-
-    for app_dir in ${app_directories[@]} ; do
-        for f in $(find "$app_dir" -type f -name "*.so" 2>/dev/null) ; do
-            mod_dir=$(dirname "$f")
-            prepend_to_path PC_LIBRARY_PATH "$mod_dir"
-            prepend_to_path LD_LIBRARY_PATH "$mod_dir"
-        done
-    done
-
-    echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-    echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH"
+    echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:\$LD_LIBRARY_PATH"
+    echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH:\$PC_LIBRARY_PATH"
     echo export PATH="$PATH:\$PATH"
 }
 
