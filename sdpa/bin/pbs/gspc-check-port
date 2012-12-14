@@ -48,6 +48,6 @@ then
     fi
 fi
 
-gspc_log_debug check-port "[$node]:$port" "=>" "$ec"
+gspc_log_debug check-port "[$node]:$port" "=>" "$ec" " -- $err"
 
 exit $ec
