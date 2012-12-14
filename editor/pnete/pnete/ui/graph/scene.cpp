@@ -466,55 +466,52 @@ namespace fhg
                   , items_of_type<connectable_item> (event->scenePos())
                   )
           {
-            const port_item* as_port
-              (qobject_cast<const port_item*> (item));
-            const place_item* as_place
-              (qobject_cast<const place_item*> (item));
-
             const connectable_item* pending (_pending_connection->fixed_end());
 
-            if (item->direction() == pending->direction())
+            if (item->is_connectable_with (pending))
             {
-              throw std::runtime_error
-                ("connecting two items with same direction");
-            }
+              const port_item* as_port
+                (qobject_cast<const port_item*> (item));
+              const place_item* as_place
+                (qobject_cast<const place_item*> (item));
 
-            const port_item* pending_as_port
-              (qobject_cast<const port_item*> (pending));
-            const place_item* pending_as_place
-              (qobject_cast<const place_item*> (pending));
+              const port_item* pending_as_port
+                (qobject_cast<const port_item*> (pending));
+              const place_item* pending_as_place
+                (qobject_cast<const place_item*> (pending));
 
-            if (as_port && pending_as_port)
-            {
-              if (as_port->direction() == connectable::direction::IN)
+              if (as_port && pending_as_port)
               {
-                net().add_connection_with_implicit_place
-                  (this, pending_as_port->handle(), as_port->handle());
+                if (as_port->direction() == connectable::direction::IN)
+                {
+                  net().add_connection_with_implicit_place
+                    (this, pending_as_port->handle(), as_port->handle());
+                }
+                else
+                {
+                  net().add_connection_with_implicit_place
+                    (this, as_port->handle(), pending_as_port->handle());
+                }
               }
               else
               {
-                net().add_connection_with_implicit_place
-                  (this, as_port->handle(), pending_as_port->handle());
-              }
-            }
-            else
-            {
-              const port_item* port (as_port ? as_port : pending_as_port);
-              const place_item* place (as_place ? as_place : pending_as_place);
+                const port_item* port (as_port ? as_port : pending_as_port);
+                const place_item* place (as_place ? as_place : pending_as_place);
 
-              if (port->direction() == connectable::direction::IN)
-              {
-                net().add_connection_or_association
-                  (this, place->handle(), port->handle());
+                if (port->direction() == connectable::direction::IN)
+                {
+                  net().add_connection_or_association
+                    (this, place->handle(), port->handle());
+                }
+                else
+                {
+                  net().add_connection_or_association
+                    (this, port->handle(), place->handle());
+                }
               }
-              else
-              {
-                net().add_connection_or_association
-                  (this, port->handle(), place->handle());
-              }
-            }
 
-            event->accept();
+              event->accept();
+            }
             break;
           }
 
