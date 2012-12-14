@@ -271,6 +271,34 @@ namespace fhg
           }
         }
 
+        void port_item::add_cap_for_direction ( QPolygonF* poly
+                                              , const QPointF& pos
+                                              ) const
+        {
+          if (direction() == connectable::direction::IN)
+          {
+            cap::add_incoming (poly, pos);
+          }
+          else
+          {
+            cap::add_outgoing (poly, pos);
+          }
+        }
+
+        void top_level_port_item::add_cap_for_direction ( QPolygonF* poly
+                                                        , const QPointF& pos
+                                                        ) const
+        {
+          if (direction() == connectable::direction::IN)
+          {
+            cap::add_outgoing (poly, pos);
+          }
+          else
+          {
+            cap::add_incoming (poly, pos);
+          }
+        }
+
         QPainterPath port_item::shape () const
         {
           const qreal lengthHalf (length() / 2.0); // hardcoded constant
@@ -283,14 +311,8 @@ namespace fhg
                << QPointF ( lengthHalf - size::cap::length(), -y)
             ;
 
-          if (direction() == connectable::direction::IN)
-          {
-            cap::add_incoming (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));   // hardcoded constant
-          }
-          else
-          {
-            cap::add_outgoing (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));
-          }
+          add_cap_for_direction
+            (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));
 
           poly = QTransform().rotate (angle (orientation())).map (poly);
 

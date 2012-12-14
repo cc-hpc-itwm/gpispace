@@ -53,6 +53,8 @@ namespace fhg
           enum { Type = port_graph_type };
           virtual int type() const { return Type; }
 
+          virtual void add_cap_for_direction (QPolygonF*, const QPointF&) const;
+
           QRectF bounding_rect(bool cap = true, int cap_factor = 0) const;
           virtual QPainterPath shape() const;
           virtual void
@@ -99,6 +101,8 @@ namespace fhg
                               )
             : port_item (handle, parent)
             {}
+
+          virtual void add_cap_for_direction (QPolygonF*, const QPointF&) const;
 
           enum { Type = top_level_port_graph_type };
           virtual int type() const { return Type; }
