@@ -126,7 +126,7 @@ while true ; do
             if [ -n "$local_config_file" ] ; then
                 config_file="${local_config_file}"
             else
-                gspc_log_error config "GSPC_DIR not set"
+                gspc_log_debug config "cannot act on local config: GSPC_DIR not set"
                 exit 1
             fi
             files_to_get_from=(config_file)
