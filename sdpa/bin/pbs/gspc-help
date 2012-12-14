@@ -22,6 +22,10 @@ Options:
 Environment information:
 
     --exec-path    : print the path to the helper scripts
+    --etc-path     : path to system config path
+    --bin-path     : path to binaries
+    --lib-path     : path to libraries
+    --plugin-path  : path to plugins
 
 Commonly used commands:
 
