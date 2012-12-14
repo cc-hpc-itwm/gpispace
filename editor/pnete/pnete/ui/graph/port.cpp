@@ -133,10 +133,37 @@ namespace fhg
           }
         }
 
+        namespace
+        {
+          bool is_opposite_type_or_direction
+            (const port_item* lhs, const connectable_item* rhs)
+          {
+            if (qobject_cast<const port_item*> (rhs))
+            {
+              const bool lhs_is_top_level
+                (qobject_cast<const top_level_port_item*> (lhs));
+              const bool rhs_is_top_level
+                (qobject_cast<const top_level_port_item*> (rhs));
+              const bool both_top_level (lhs_is_top_level && rhs_is_top_level);
+              const bool both_non_top_level
+                (!lhs_is_top_level && !rhs_is_top_level);
+              const bool same_level (both_top_level || both_non_top_level);
+              const bool same_direction (lhs->direction() == rhs->direction());
+
+              return same_level ? !same_direction : same_direction;
+            }
+            else
+            {
+              return true;
+            }
+          }
+        }
+
         bool port_item::is_connectable_with (const connectable_item* item) const
         {
-          //! \note Only allow one connection on ports.
+          //! \note Only allow one connection.
           return _associations.isEmpty()
+            && is_opposite_type_or_direction (this, item)
             && connectable_item::is_connectable_with (item);
         }
 
