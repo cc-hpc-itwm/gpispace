@@ -204,7 +204,6 @@ case "$action" in
             gspc_log_error config "get-all: invalid number of arguments"
             exit 1
         fi
-        echo >&2 "1 => $1 ; 2 => $2"
         get_some_config_values "$1" "$2"
         exit $?
         ;;
