@@ -139,6 +139,12 @@ function get_component_info ()
             name="${all_components[i+5]}"
             pid="${all_components[i+7]}"
 
+            # we are not interested in clients
+            if [[ "$name" =~ ^sdpac-.*$ ]]
+            then
+                continue
+            fi
+
             if [ -n "${components_to_get_info_for}" ] ; then
                 local filtered=true
                 for component in "${components_to_get_info_for[@]}"
