@@ -219,10 +219,11 @@ namespace fhg
           return connectable_item::we_type (handle().get().type);
         }
 
-        const port::orientation::type&
-        port_item::orientation() const
+        port::orientation::type port_item::orientation() const
         {
-          return _orientation;
+          return parentItem() == NULL
+            ? port::orientation::invert (_orientation)
+            : _orientation;
         }
         const port::orientation::type&
         port_item::orientation (const port::orientation::type& orientation_)
@@ -231,7 +232,7 @@ namespace fhg
 
           // detail::set_orientation (&_port.prop, orientation());
 
-          return orientation();
+          return _orientation;
         }
 
         void port_item::set_just_orientation_but_not_in_property

@@ -45,7 +45,7 @@ namespace fhg
           const std::string& name() const;
           const std::string& we_type () const;
 
-          const port::orientation::type& orientation() const;
+          port::orientation::type orientation() const;
           const port::orientation::type& orientation(const port::orientation::type&);
 
           virtual bool is_connectable_with (const connectable_item*) const;

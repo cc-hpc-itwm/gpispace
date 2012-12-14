@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _PNETE_UI_GRAPH_ORIENTATION_HPP
 #define _PNETE_UI_GRAPH_ORIENTATION_HPP 1
@@ -26,6 +26,7 @@ namespace fhg
 
             std::string show (const type&);
             type read (const std::string&);
+            type invert (const type&);
           }
         }
       }
