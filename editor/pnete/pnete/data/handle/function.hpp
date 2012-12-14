@@ -7,6 +7,8 @@
 
 #include <pnete/data/handle/meta_base.hpp>
 
+#include <we/type/port.hpp>
+
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 
@@ -38,7 +40,8 @@ namespace fhg
 
           void set_name (const QObject* sender, const QString& name);
 
-          void add_port (const QObject* origin) const;
+          void add_port
+            (const QObject* origin, const we::type::PortDirection&) const;
 
           using function_meta_base::operator==;
         };

@@ -10,17 +10,16 @@
 #include <pnete/data/handle/port.hpp>
 #include <pnete/data/handle/transition.hpp>
 
+#include <xml/parse/error.hpp>
 #include <xml/parse/id/types.hpp>
-#include <xml/parse/type/function.hpp>
+#include <xml/parse/state.hpp>
 #include <xml/parse/type/expression.hpp>
-#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
 #include <xml/parse/type/transition.hpp>
 
-#include <xml/parse/state.hpp>
 #include <we/expr/parse/parser.hpp>
-
-#include <xml/parse/error.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/smart_ptr.hpp>
@@ -1341,15 +1340,13 @@ namespace fhg
       }
 
       // - port ------------------------------------------------------
-      //! \todo Take the type (in, out, tunnel). Currently defaults to in.
       void change_manager_t::add_port
         ( const QObject* origin
         , const handle::function& function
+        , const we::type::PortDirection& direction
         )
       {
-        const we::type::PortDirection direction (we::type::PORT_IN);
-
-        std::string name ("in_port");
+        std::string name ("port");
         while (function.get().ports().has (std::make_pair (name, direction)))
         {
           name = inc (name);

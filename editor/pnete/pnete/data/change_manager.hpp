@@ -14,6 +14,7 @@
 #include <pnete/data/handle/transition.fwd.hpp>
 
 #include <we/type/property.fwd.hpp>
+#include <we/type/port.hpp> // we::type::PortDirection
 
 #include <xml/parse/id/types.fwd.hpp>
 
@@ -142,7 +143,10 @@ namespace fhg
                                );
 
         // -- port ---------------------------------------------------
-        void add_port (const QObject*, const data::handle::function&);
+        void add_port ( const QObject*
+                      , const data::handle::function&
+                      , const we::type::PortDirection&
+                      );
         void delete_port (const QObject*, const data::handle::port&);
 
         void set_property ( const QObject*
