@@ -105,14 +105,14 @@ namespace fhg
                                       , const QString& dialog_title
                                       , const QString& prompt
                                       , const QString& current_type
-                                      , QGraphicsSceneContextMenuEvent* event
+                                      , QWidget* widget
                                       , QObject* origin
                                       )
           {
             bool ok;
             const QString text
               ( QInputDialog::getText
-                ( event->widget()
+                ( widget
                 , dialog_title
                 , prompt
                 , QLineEdit::Normal
@@ -234,7 +234,7 @@ namespace fhg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("port_set_type_prompt")
                               , QString::fromStdString (handle.get().type)
-                              , event
+                              , event->widget()
                               , this
                               )
                 );
@@ -267,7 +267,7 @@ namespace fhg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("port_set_type_prompt")
                               , QString::fromStdString (handle.get().type)
-                              , event
+                              , event->widget()
                               , this
                               )
                 );
@@ -316,7 +316,7 @@ namespace fhg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("place_set_type_prompt")
                               , QString::fromStdString (handle.get().type)
-                              , event
+                              , event->widget()
                               , this
                               )
                 );
