@@ -3,6 +3,13 @@
 GSPC_DOC_SHORT_DESCRIPTION="get/set config values"
 GSPC_IMPORTANT_API_COMMAND=true
 
+# ATTENTION:  the log  functions themselves  use 'gspc  config', that  means, to
+# avoid a call-cycle, use the following pattern:
+#
+#      GSPC_LOG_FROM_CONFIG=true
+#      gspc_log_debug config "foo"
+#      unset GSPC_LOG_FROM_CONFIG
+
 . $(gspc --exec-path)/gspc-sh-setup
 
 function usage()

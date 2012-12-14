@@ -56,12 +56,15 @@ function gspc_log_impl ()
     s_color=""
     e_color=""
 
-    color_mode=$(gspc config --global --get color.log)
-    if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
-        if gspc_isatty 2 ; then
-            color_mode=on
-        else
-            color_mode=off
+    # see gspc-config why this guard has been placed here
+    if [ -z "$GSPC_LOG_FROM_CONFIG" ] ; then
+        color_mode=$(gspc config --global --get color.log)
+        if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
+            if gspc_isatty 2 ; then
+                color_mode=on
+            else
+                color_mode=off
+            fi
         fi
     fi
 
