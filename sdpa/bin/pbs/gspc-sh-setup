@@ -200,9 +200,17 @@ function gspc_require_gspc_dir ()
 
 function gspc_atomic ()
 {
+    local prev_int=
+    local prev_term=
+
+    prev_int=$(trap -p INT)
+    prev_term=$(trap -p TERM)
+
     trap '' INT TERM
     "$@"
     ec=$?
-    trap - INT TERM
+
+    $prev_int
+    $prev_term
     return $ec
 }
