@@ -63,7 +63,7 @@ while true ; do
             shift; shift
             ;;
         --) shift; break ;;
-        *) gspc_log_error template "Internal error on argument: '$1'"; exit 1 ;;
+        *) gspc_log_error log "Internal error on argument: '$1'"; exit 1 ;;
     esac
 done
 

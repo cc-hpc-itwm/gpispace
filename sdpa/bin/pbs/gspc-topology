@@ -19,7 +19,7 @@ EOF
 
 #if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
-TEMP=`getopt -o hl --long help,list,status,no-header -n 'template' -- "$@"`
+TEMP=`getopt -o hl --long help,list,status,no-header -n 'topology' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
