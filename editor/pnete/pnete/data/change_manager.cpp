@@ -10,17 +10,16 @@
 #include <pnete/data/handle/port.hpp>
 #include <pnete/data/handle/transition.hpp>
 
+#include <xml/parse/error.hpp>
 #include <xml/parse/id/types.hpp>
-#include <xml/parse/type/function.hpp>
+#include <xml/parse/state.hpp>
 #include <xml/parse/type/expression.hpp>
-#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
 #include <xml/parse/type/transition.hpp>
 
-#include <xml/parse/state.hpp>
 #include <we/expr/parse/parser.hpp>
-
-#include <xml/parse/error.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/smart_ptr.hpp>
@@ -1341,18 +1340,34 @@ namespace fhg
       }
 
       // - port ------------------------------------------------------
-      //! \todo Take the type (in, out, tunnel). Currently defaults to in.
       void change_manager_t::add_port
         ( const QObject* origin
         , const handle::function& function
+        , const we::type::PortDirection& direction
         )
       {
-        const we::type::PortDirection direction (we::type::PORT_IN);
-
-        std::string name ("in_port");
-        while (function.get().ports().has (std::make_pair (name, direction)))
+        std::string name ("port");
+        //! \note If we add a in-port with type t and a out-port with
+        //! type u, it would find the same name for them, but will
+        //! fail on inserting, as in- and out-ports with same name
+        //! need same type.
+        if (direction == we::type::PORT_IN || direction == we::type::PORT_OUT)
         {
-          name = inc (name);
+          while (  function.get().ports().has
+                    (std::make_pair (name, we::type::PORT_IN))
+                || function.get().ports().has
+                    (std::make_pair (name, we::type::PORT_OUT))
+                )
+          {
+            name = inc (name);
+          }
+        }
+        else
+        {
+          while (function.get().ports().has (std::make_pair (name, direction)))
+          {
+            name = inc (name);
+          }
         }
 
         const ::xml::parse::id::ref::port port

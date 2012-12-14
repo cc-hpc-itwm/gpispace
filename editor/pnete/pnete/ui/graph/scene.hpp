@@ -17,6 +17,7 @@
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 #include <pnete/ui/graph/connection.fwd.hpp>
 #include <pnete/ui/graph/pending_connection.fwd.hpp>
+#include <pnete/ui/graph/place.fwd.hpp>
 #include <pnete/ui/graph/transition.fwd.hpp>
 #include <pnete/ui/graph_view.fwd.hpp>
 
@@ -58,6 +59,10 @@ namespace fhg
                                  , connectable_item* to
                                  , const data::handle::connect& handle
                                  );
+
+
+          //! \note Used by weaver to connect ports and places by name.
+          QList<place_item*> all_places() const;
 
         public slots:
           void auto_layout();

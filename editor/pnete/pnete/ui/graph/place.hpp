@@ -40,6 +40,8 @@ namespace fhg
 
           virtual const data::handle::place& handle() const;
 
+          virtual bool is_connectable_with (const connectable_item*) const;
+
           std::string name() const;
           const std::string& we_type() const;
 

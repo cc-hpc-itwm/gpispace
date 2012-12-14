@@ -14,7 +14,11 @@
 #include <util/types.hpp>
 #include <algorithm>
 #include <boost/regex.hpp>
+#include <sys/time.h>
+#include <ctime>
 
+const int US = 1000000.0L;
+const int MS = 1000.0L;
 const int KEY_MAX_SIZE = 50;
 
 const char SHRPCH 	= '#';
@@ -24,8 +28,8 @@ const char PAIRSEP 	= '@';
 
 std::string DELIMITERS = " \n";
 
-
 typedef  std::pair<std::string, std::string> key_val_pair_t;
+typedef unsigned long long timestamp_t;
 
 namespace mapreduce
 {
@@ -47,16 +51,16 @@ namespace mapreduce
 
   	  std::string make_spec_left_prefix(const long& chunk_id)
   	  {
-  		std::ostringstream oss;
-  		oss<<SHRPCH<<chunk_id<<SHRPCH<<"0";
-  		return oss.str();
+  		  std::ostringstream oss;
+  		  oss<<SHRPCH<<chunk_id<<SHRPCH<<"0";
+  		  return oss.str();
   	  }
 
   	  std::string make_spec_right_prefix(const long& chunk_id)
 	  {
-		std::ostringstream oss;
-		oss<<SHRPCH<<chunk_id<<SHRPCH<<"1";
-		return oss.str();
+  		  std::ostringstream oss;
+  		  oss<<SHRPCH<<chunk_id<<SHRPCH<<"1";
+  		  return oss.str();
 	  }
 
   	  void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
@@ -316,9 +320,17 @@ namespace mapreduce
 
     long ceil(long a, long b)
     {
-      int rest = (a%b>0)?1:0;
-      return (a/b)+rest;
+    	int rest = (a%b>0)?1:0;
+    	return (a/b)+rest;
     }
+
+    timestamp_t get_timestamp()
+	{
+    	struct timeval now;
+    	gettimeofday (&now, NULL);
+    	return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+	}
+
   }
 }
 

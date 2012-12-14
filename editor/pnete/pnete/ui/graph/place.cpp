@@ -67,6 +67,13 @@ namespace fhg
           return _handle;
         }
 
+        bool place_item::is_connectable_with (const connectable_item* i) const
+        {
+          //! \note Places connect to everything except for places.
+          return qobject_cast<const place_item*> (i) == NULL
+            && connectable_item::is_connectable_with (i);
+        }
+
         const std::string& place_item::we_type() const
         {
           return connectable_item::we_type (handle().get().type);

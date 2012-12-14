@@ -133,10 +133,37 @@ namespace fhg
           }
         }
 
+        namespace
+        {
+          bool is_opposite_type_or_direction
+            (const port_item* lhs, const connectable_item* rhs)
+          {
+            if (qobject_cast<const port_item*> (rhs))
+            {
+              const bool lhs_is_top_level
+                (qobject_cast<const top_level_port_item*> (lhs));
+              const bool rhs_is_top_level
+                (qobject_cast<const top_level_port_item*> (rhs));
+              const bool both_top_level (lhs_is_top_level && rhs_is_top_level);
+              const bool both_non_top_level
+                (!lhs_is_top_level && !rhs_is_top_level);
+              const bool same_level (both_top_level || both_non_top_level);
+              const bool same_direction (lhs->direction() == rhs->direction());
+
+              return same_level ? !same_direction : same_direction;
+            }
+            else
+            {
+              return true;
+            }
+          }
+        }
+
         bool port_item::is_connectable_with (const connectable_item* item) const
         {
-          //! \note Only allow one connection on ports.
+          //! \note Only allow one connection.
           return _associations.isEmpty()
+            && is_opposite_type_or_direction (this, item)
             && connectable_item::is_connectable_with (item);
         }
 
@@ -219,10 +246,11 @@ namespace fhg
           return connectable_item::we_type (handle().get().type);
         }
 
-        const port::orientation::type&
-        port_item::orientation() const
+        port::orientation::type port_item::orientation() const
         {
-          return _orientation;
+          return parentItem() == NULL
+            ? port::orientation::invert (_orientation)
+            : _orientation;
         }
         const port::orientation::type&
         port_item::orientation (const port::orientation::type& orientation_)
@@ -231,7 +259,7 @@ namespace fhg
 
           // detail::set_orientation (&_port.prop, orientation());
 
-          return orientation();
+          return _orientation;
         }
 
         void port_item::set_just_orientation_but_not_in_property
@@ -271,6 +299,34 @@ namespace fhg
           }
         }
 
+        void port_item::add_cap_for_direction ( QPolygonF* poly
+                                              , const QPointF& pos
+                                              ) const
+        {
+          if (direction() == connectable::direction::IN)
+          {
+            cap::add_incoming (poly, pos);
+          }
+          else
+          {
+            cap::add_outgoing (poly, pos);
+          }
+        }
+
+        void top_level_port_item::add_cap_for_direction ( QPolygonF* poly
+                                                        , const QPointF& pos
+                                                        ) const
+        {
+          if (direction() == connectable::direction::IN)
+          {
+            cap::add_outgoing (poly, pos);
+          }
+          else
+          {
+            cap::add_incoming (poly, pos);
+          }
+        }
+
         QPainterPath port_item::shape () const
         {
           const qreal lengthHalf (length() / 2.0); // hardcoded constant
@@ -283,14 +339,8 @@ namespace fhg
                << QPointF ( lengthHalf - size::cap::length(), -y)
             ;
 
-          if (direction() == connectable::direction::IN)
-          {
-            cap::add_incoming (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));   // hardcoded constant
-          }
-          else
-          {
-            cap::add_outgoing (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));
-          }
+          add_cap_for_direction
+            (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));
 
           poly = QTransform().rotate (angle (orientation())).map (poly);
 
