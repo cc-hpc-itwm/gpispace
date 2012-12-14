@@ -680,19 +680,9 @@ namespace fhg
           return result;
         }
 
-        namespace
+        QList<place_item*> scene_type::all_places() const
         {
-          template<typename item_type>
-            weaver::item_by_name_type
-            name_map_for_items (const QList<item_type*>& items)
-          {
-            weaver::item_by_name_type result;
-            foreach (item_type* item, items)
-            {
-              result[item->handle().get().name()] = item;
-            }
-            return result;
-          }
+          return items_of_type<place_item>();
         }
 
         template<typename item_type, typename handle_type>
@@ -718,8 +708,6 @@ namespace fhg
           if (is_in_my_net (place))
           {
             //! \todo Weaver.
-            // weaver::item_by_name_type places
-            //   (name_map_for_items (items_of_type<place_item>()));
             //! \note This can't be easily weaved, as 'ports'
             //! needs to contain only the ports of the transition
             //! where the connection's port is in. Getting children
@@ -758,20 +746,14 @@ namespace fhg
           if (is_in_my_net (transition))
           {
             transition_item* item (new transition_item (transition));
-
             addItem (item);
 
-            weaver::item_by_name_type places
-              (name_map_for_items (items_of_type<place_item>()));
-
-            weaver::transition wt
-              ( _internal
+            weaver::display::transition
+              ( transition.id()
+              , _internal
               , this
               , item
-              , transition.parent().get().make_reference_id()
-              , places
               );
-            weaver::from::transition (&wt, transition.id());
 
             if (origin == this)
             {
@@ -794,14 +776,9 @@ namespace fhg
           if (is_in_my_net (place))
           {
             place_item* item (new place_item (place));
-
             addItem (item);
 
-            //! \note Does not need actual list, as it only adds itself.
-            weaver::item_by_name_type place_by_name;
-
-            weaver::place wp (item, place_by_name);
-            weaver::from::place (&wp, place.id());
+            weaver::display::place (place.id(), item);
 
             if (origin == this)
             {
@@ -816,18 +793,18 @@ namespace fhg
           remove_item_for_handle<place_item> (place);
         }
 
+
         // # port ####################################################
         void scene_type::port_added
           (const QObject* origin, const data::handle::port& port)
         {
           if (is_in_my_net (port))
           {
-            weaver::item_by_name_type places
-              (name_map_for_items (items_of_type<place_item>()));
-
-            weaver::port_toplevel wptl (this, places, _internal);
-
-            weaver::from::port (&wptl, port.id());
+            weaver::display::top_level_port
+              ( port.id()
+              , this
+              , _internal
+              );
 
             if (origin == this)
             {

@@ -40,11 +40,7 @@ namespace fhg
       {
         _datas.push_back (data);
 
-        weaver::tv w (_root);
-        weaver::from::function_context
-          ( &w
-          , WNAME(function_context_type) (data->function(), data->context())
-          );
+        weaver::treeview::function (_root, data);
       }
 
       void StructureView::doubleClicked (const QModelIndex& index)
@@ -57,13 +53,7 @@ namespace fhg
 
         const int row (item->row());
 
-        weaver::tv w (_root);
-        weaver::from::function_context
-          ( &w
-          , WNAME(function_context_type) ( _datas.at (row)->function()
-                                         , _datas.at (row)->context()
-                                         )
-          );
+        weaver::treeview::function (_root, _datas.at (row));
 
         _model->setItem (row, _model->takeItem (_model->rowCount() - 1));
         _model->setRowCount (_model->rowCount() - 1);
