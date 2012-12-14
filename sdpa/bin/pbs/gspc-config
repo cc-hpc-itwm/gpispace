@@ -46,30 +46,54 @@ config_file="${local_config_file}"
 
 files_to_get_from=(local_config_file global_config_file system_config_file site_config_file)
 
-function get_config_value ()
+function get_some_config_values ()
 {
     local key="${1:?}"; shift
+    local pattern="${1}"; shift
+    if [ -z "$pattern" ] ; then
+        pattern='.*'
+    fi
+    local max=$(( ${1} )); shift
+    if [ ${max} -eq 0 ] ; then
+        max=${#files_to_get_from[@]}
+    fi
 
+    found=0
     for var in ${files_to_get_from[@]} ; do
+        if [ $found -ge $max ] ; then
+            break
+        fi
         file=$(eval echo \$${var})
         if [ -z "$file" ] ; then continue ; fi
         if [ -r "$file" ] ; then
             val=$(fhgcfg -f "$file" -g "$key" 2>/dev/null)
             if [ -n "$val" ] ; then
-                echo "$val"
-                return 0
+                if [[ "$val" =~ $pattern ]] ; then
+                    echo "$val"
+                    found=$((found+1))
+                fi
             fi
         fi
     done
 
-    return 1
+    if [ $found -gt 0 ]
+    then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function get_config_value ()
+{
+    get_some_config_values "$1" "$2" 1
 }
 
 if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
 action=""
 
-TEMP=`getopt -o hef: --long help,global,site,system,local,file:,get,set,del,list,edit -n 'gspc' -- "$@"`
+TEMP=`getopt -o hef: --long help,global,site,system,local,file:,get,get-all,set,del,list,edit -n 'gspc' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -114,6 +138,14 @@ while true ; do
                 exit 1
             }
             action="get"
+            shift
+            ;;
+        --get-all)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="get-all"
             shift
             ;;
         --set)
@@ -165,6 +197,15 @@ case "$action" in
             exit 1
         fi
         get_config_value "$1" "$2"
+        exit $?
+        ;;
+    get-all)
+        if [ $# -lt 1 ] ; then
+            gspc_log_error config "get-all: invalid number of arguments"
+            exit 1
+        fi
+        echo >&2 "1 => $1 ; 2 => $2"
+        get_some_config_values "$1" "$2"
         exit $?
         ;;
     set)
