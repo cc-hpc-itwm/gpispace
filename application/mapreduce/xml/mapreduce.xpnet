@@ -567,6 +567,7 @@
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
     </transition>
     -->
+    
     <!-- map with tokenizer --> 
     <place name="map_chunk_info" type="map_chunk_info"/>
     <transition name="map_chunk" inline="true">
@@ -616,11 +617,11 @@
             int n_part = config.num.part;
             size_t slot_size = config.size.partition.slot;
             
-            char* part_buff = new char[n_part*slot_size];
+            std::vector<std::string> arr_part_buffs(n_part, "");
             std::vector<size_t> arr_part_used(n_part, 0);
             
             bool first_char_is_delim = first_char_is_delim = ::mapreduce::util::is_delimiter(ptr_chunk[0]);
-            bool last_char_is_delim  = ::mapreduce::util::is_delimiter(ptr_chunk[read_chunk_info.used - 1]);
+            bool last_char_is_delim = ::mapreduce::util::is_delimiter(ptr_chunk[read_chunk_info.used - 1]);
            
             int n = 0, part_id;
           
@@ -645,7 +646,7 @@
                             str_pair = ::mapreduce::util::make_string( key_val_pair_t( spec_left_prefix, " " ));
                             n = str_pair.size();
                             part_id = ::mapreduce::util::hash( str_pair, n_part);
-                            memcpy(part_buff + part_id*slot_size + arr_part_used[part_id], str_pair.data(), n);
+                            arr_part_buffs[part_id] += str_pair;
                             arr_part_used[part_id] += n;
                         }
                         else
@@ -653,7 +654,7 @@
                             str_pair = ::mapreduce::util::make_string(key_val_pair_t( spec_left_prefix, curr_item)) + SPCH; 
                             n = str_pair.size();
                             part_id = ::mapreduce::util::hash( str_pair, n_part);
-                            memcpy(part_buff + part_id*slot_size + arr_part_used[part_id], str_pair.data(), n);
+                            arr_part_buffs[part_id] += str_pair;
                             arr_part_used[part_id] += n;
                             continue;
                         }
@@ -669,7 +670,7 @@
                             str_pair = ::mapreduce::util::make_string(key_val_pair_t( spec_right_prefix, " "));       
                             n = str_pair.size();
                             part_id = ::mapreduce::util::hash( str_pair, n_part);
-                            memcpy(part_buff + part_id*slot_size + arr_part_used[part_id], str_pair.data(), n);
+                            arr_part_buffs[part_id] += str_pair;
                             arr_part_used[part_id] += n;
                         }
                         else
@@ -677,7 +678,7 @@
                             str_pair = ::mapreduce::util::make_string(key_val_pair_t( spec_right_prefix, curr_item)) + SPCH;
                             n = str_pair.size();
                             part_id = ::mapreduce::util::hash( str_pair, n_part);
-                            memcpy(part_buff + part_id*slot_size + arr_part_used[part_id], str_pair.data(), n);
+                            arr_part_buffs[part_id] += str_pair;
                             arr_part_used[part_id] += n;
                             continue;
                         }
@@ -693,16 +694,16 @@
                     str_pair = ::mapreduce::util::make_string(key_val_pair_t(key_val_pair.first, key_val_pair.second)) + SPCH;
                     n = str_pair.size();
                     part_id = ::mapreduce::util::hash( key_val_pair.first, n_part);
-                    memcpy(part_buff + part_id*slot_size + arr_part_used[part_id], str_pair.data(), n);
+                    arr_part_buffs[part_id] += str_pair;
                     arr_part_used[part_id] += n;
                 }
               }
                               
               // copy the partition blocks into the corresponding map slot   
               ptr_next = ptr_chunk; 
-              for(part_id = 0; part_id<n_part; part_id++ )
+              for( part_id = 0; part_id<n_part; part_id++ )
               {
-                memcpy(ptr_next, part_buff + part_id*slot_size, arr_part_used[part_id]);
+				memcpy(ptr_next, arr_part_buffs[part_id].data(), arr_part_used[part_id]);
                 ptr_next += arr_part_used[part_id];
               }
                                                                                                   
@@ -713,7 +714,7 @@
     
               if(map_chnk_info.used > config.size.chunk.map)
               {
-                MLOG(ERROR, "The map operation cannot for the chunk "<<map_chnk_info.chunk_id<<" and the map slot "<<map_chnk_info.map_slot_id
+                MLOG(ERROR, "The map operation for the chunk "<<map_chnk_info.chunk_id<<" and the map slot "<<map_chnk_info.map_slot_id
                              <<"cannot continue! (not enough virtual memory allocated for a map slot)");
                              
                 throw std::runtime_error("The operation cannot continue; not enough virtual memory allocated to a map slot!");
@@ -734,7 +735,6 @@
               for(int k=0; k<config.num.part; k++ )
                  map_chnk_info.unhandled_part_set.insert(k); 
                               
-              delete[] part_buff;
               return map_chnk_info;
           ]]></code>
         </module>
