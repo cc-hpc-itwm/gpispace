@@ -1347,9 +1347,27 @@ namespace fhg
         )
       {
         std::string name ("port");
-        while (function.get().ports().has (std::make_pair (name, direction)))
+        //! \note If we add a in-port with type t and a out-port with
+        //! type u, it would find the same name for them, but will
+        //! fail on inserting, as in- and out-ports with same name
+        //! need same type.
+        if (direction == we::type::PORT_IN || direction == we::type::PORT_OUT)
         {
-          name = inc (name);
+          while (  function.get().ports().has
+                    (std::make_pair (name, we::type::PORT_IN))
+                || function.get().ports().has
+                    (std::make_pair (name, we::type::PORT_OUT))
+                )
+          {
+            name = inc (name);
+          }
+        }
+        else
+        {
+          while (function.get().ports().has (std::make_pair (name, direction)))
+          {
+            name = inc (name);
+          }
         }
 
         const ::xml::parse::id::ref::port port
