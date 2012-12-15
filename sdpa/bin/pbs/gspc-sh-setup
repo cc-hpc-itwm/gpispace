@@ -7,6 +7,22 @@
 
 ################################################################################
 #                                                                              #
+#                      Common Variables                                        #
+#                                                                              #
+################################################################################
+
+GSPC_COLOR_BLACK='\e[0;30m'
+GSPC_COLOR_RED='\e[0;31m'
+GSPC_COLOR_GREEN='\e[0;32m'
+GSPC_COLOR_YELLOW='\e[0;33m'
+GSPC_COLOR_BLUE='\e[0;34m'
+GSPC_COLOR_PURPLE='\e[0;35m'
+GSPC_COLOR_CYAN='\e[0;36m'
+GSPC_COLOR_WHITE='\e[0;37m'
+GSPC_COLOR_OFF='\e[0m'
+
+################################################################################
+#                                                                              #
 #                        Log functions                                         #
 #                                                                              #
 ################################################################################
@@ -94,36 +110,33 @@ function gspc_log_impl ()
     e_color=""
 
     if gspc_is_color_enabled log 2 ; then
-        color_black="\e[0;30m"
-        color_red="\e[0;31m"
-        color_green="\e[0;32m"
-        color_yellow="\e[0;33m"
-        color_blue="\e[0;34m"
-        color_purple="\e[0;35m"
-        color_cyan="\e[0;36m"
-        color_white="\e[0;37m"
-        e_color='\e[0m'
+        color_trace=""
+        color_debug=""
+        color_info="$GSPC_COLOR_CYAN"
+        color_warn="$GSPC_COLOR_YELLOW"
+        color_error="$GSPC_COLOR_RED"
+        e_color="$GSPC_COLOR_OFF"
     fi
 
     case "$level" in
         trace)
-            s_color=""
+            s_color="$color_trace"
             level_id=T
             ;;
         debug)
-            s_color=""
+            s_color="$color_debug"
             level_id=D
             ;;
         info)
-            s_color=""
+            s_color="$color_info"
             level_id=I
             ;;
         warn)
-            s_color="$color_yellow"
+            s_color="$color_warn"
             level_id=W
             ;;
         error)
-            s_color="$color_red"
+            s_color="$color_error"
             level_id=E
             ;;
         *)

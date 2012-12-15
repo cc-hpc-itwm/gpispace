@@ -180,9 +180,9 @@ function action_status ()
     color_off=""
 
     if gspc_is_color_enabled status 1 ; then
-        color_up="\e[0;32m"
-        color_dn="\e[0;31m"
-        color_off="\e[0m"
+        color_up="$GSPC_COLOR_GREEN"
+        color_dn="$GSPC_COLOR_RED"
+        color_off="$GSPC_COLOR_OFF"
     fi
 
     local bg_pid=()
