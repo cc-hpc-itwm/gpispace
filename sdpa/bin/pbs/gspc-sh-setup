@@ -89,10 +89,11 @@ function gspc_is_color_enabled ()
 
 function gspc_log_impl ()
 {
-    local level="$1"; shift
-    local component="$1" ; shift
+    local level="${1:?}"; shift
+    local component="${1:?}" ; shift
 
-    level_id='T'
+    level_id=${level:0:1}
+    level_id=$(echo ${level_id} | tr '[:lower:]' '[:upper:]')
     s_color=""
     e_color=""
 
@@ -105,31 +106,8 @@ function gspc_log_impl ()
         e_color="$GSPC_COLOR_OFF"
     fi
 
-    case "$level" in
-        trace)
-            s_color="$color_trace"
-            level_id=T
-            ;;
-        debug)
-            s_color="$color_debug"
-            level_id=D
-            ;;
-        info)
-            s_color="$color_info"
-            level_id=I
-            ;;
-        warn)
-            s_color="$color_warn"
-            level_id=W
-            ;;
-        error)
-            s_color="$color_error"
-            level_id=E
-            ;;
-        *)
-            s_color=""
-            ;;
-    esac
+    s_color=$(eval echo "\$color_$level")
+
     echo -e >&2 "${s_color}[${level_id}] ($component): $@${e_color}"
 }
 
