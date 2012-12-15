@@ -720,6 +720,8 @@ namespace fhg
 
           // the connection will  call us back when it got the  hello packet or will
           // timeout
+          listen_->set_option
+            (boost::asio::socket_base::keep_alive (true));
           listen_->start ();
           listen_.reset ();
         }
