@@ -59,14 +59,13 @@ function gspc_is_color_enabled ()
     local which="${1:?}" ; shift
     local fd="${1:?}" ; shift
 
-    local default=0
-
     # see gspc-config why this guard has been placed here
     if [ -n "$GSPC_LOG_FROM_CONFIG" ] ; then
-        return $default
+        mode=auto
+    else
+        mode=$(gspc config --get color."${which}")
     fi
 
-    mode=$(gspc config --get color."${which}")
     case "$mode" in
         on)
             return 0
@@ -74,15 +73,12 @@ function gspc_is_color_enabled ()
         off)
             return 1
             ;;
-        auto)
+        ''|auto)
             if gspc_isatty $fd ; then
                 return 0
             else
                 return 1
             fi
-            ;;
-        '')
-            return $default
             ;;
         *)
             echo >&2 "gspc: invalid config color mode: '$mode'"
