@@ -154,13 +154,14 @@ namespace expr
       nd_t l (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
       if (constant_folding() && node::is_value(l) && node::is_value(r))
-        tmp_stack.push_back
-          (nd_t (boost::apply_visitor ( value::function::binary (token)
-                                      , boost::get<value::type> (l)
-                                      , boost::get<value::type> (r)
-                                      )
-                )
-          );
+        {
+          tmp_stack.push_back
+            (boost::apply_visitor ( value::function::binary (token)
+                                  , boost::get<value::type> (l)
+                                  , boost::get<value::type> (r)
+                                  )
+            );
+        }
       else
         {
           tmp_stack.push_back (node::binary_t (token, l, r));
