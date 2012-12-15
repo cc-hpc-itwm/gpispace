@@ -130,10 +130,9 @@ namespace expr
       if (constant_folding() && node::is_value (c))
         {
           tmp_stack.push_back
-            (nd_t (boost::apply_visitor ( value::function::unary (token)
-                                        , boost::get<value::type> (c)
-                                        )
-                  )
+            (boost::apply_visitor ( value::function::unary (token)
+                                  , boost::get<value::type> (c)
+                                  )
             );
         }
       else
@@ -147,7 +146,7 @@ namespace expr
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "left");
 
-      nd_t r (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t r (tmp_stack.back()); tmp_stack.pop_back();
 
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "right");
@@ -173,17 +172,17 @@ namespace expr
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "first");
 
-      nd_t t (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t t (tmp_stack.back()); tmp_stack.pop_back();
 
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "second");
 
-      nd_t s (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t s (tmp_stack.back()); tmp_stack.pop_back();
 
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "third");
 
-      nd_t f (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t f (tmp_stack.back()); tmp_stack.pop_back();
 
       tmp_stack.push_back (node::ternary_t (token, f, s, t));
     }
@@ -193,17 +192,17 @@ namespace expr
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "else expression");
 
-      nd_t f (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t f (tmp_stack.back()); tmp_stack.pop_back();
 
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "then expression");
 
-      nd_t t (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t t (tmp_stack.back()); tmp_stack.pop_back();
 
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "condition");
 
-      nd_t c (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t c (tmp_stack.back()); tmp_stack.pop_back();
 
       if (constant_folding() && node::is_value(c))
         {
