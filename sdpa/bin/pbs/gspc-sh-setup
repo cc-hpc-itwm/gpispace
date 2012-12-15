@@ -197,6 +197,12 @@ function gspc_require_gspc_dir ()
         exit 1
     fi
 
+    if [ ! -e "$GSPC_DIR"/.gspc_dir ]
+    then
+        gspc_log_error core "GSPC_DIR ('$GSPC_DIR') not initialized"
+        exit 1
+    fi
+
     return 0
 }
 
