@@ -47,6 +47,43 @@ function gspc_is_a_human_watching ()
     fi
 }
 
+function gspc_is_color_enabled ()
+{
+    local which="${1:?}" ; shift
+    local fd="${1:?}" ; shift
+
+    local default=0
+
+    # see gspc-config why this guard has been placed here
+    if [ -n "$GSPC_LOG_FROM_CONFIG" ] ; then
+        return $default
+    fi
+
+    mode=$(gspc config --get color."${which}")
+    case "$mode" in
+        on)
+            return 0
+            ;;
+        off)
+            return 1
+            ;;
+        auto)
+            if gspc_isatty $fd ; then
+                return 0
+            else
+                return 1
+            fi
+            ;;
+        '')
+            return $default
+            ;;
+        *)
+            echo >&2 "gspc: invalid config color mode: '$mode'"
+            return 0
+            ;;
+    esac
+}
+
 function gspc_log_impl ()
 {
     local level="$1"; shift
@@ -56,20 +93,7 @@ function gspc_log_impl ()
     s_color=""
     e_color=""
 
-    # see gspc-config why this guard has been placed here
-    if [ -z "$GSPC_LOG_FROM_CONFIG" ] ; then
-        color_mode=$(gspc config --global --get color.log)
-        if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
-            if gspc_isatty 2 ; then
-                color_mode=on
-            else
-                color_mode=off
-            fi
-        fi
-    fi
-
-    if [ "$color_mode" = "on" ]
-    then
+    if gspc_is_color_enabled log 2 ; then
         color_black="\e[0;30m"
         color_red="\e[0;31m"
         color_green="\e[0;32m"

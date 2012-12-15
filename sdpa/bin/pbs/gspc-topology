@@ -179,13 +179,10 @@ function action_status ()
     color_dn=""
     color_off=""
 
-    color_mode=$(gspc config --get color.status)
-    if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
-        if gspc_is_a_human_watching ; then
-            color_up="\e[0;32m"
-            color_dn="\e[0;31m"
-            color_off="\e[0m"
-        fi
+    if gspc_is_color_enabled status 1 ; then
+        color_up="\e[0;32m"
+        color_dn="\e[0;31m"
+        color_off="\e[0m"
     fi
 
     local bg_pid=()
