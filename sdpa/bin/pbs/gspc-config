@@ -31,6 +31,17 @@ What to do:
    --set key value       sets the key to the given value
    --del key             removes the given key
    -e --edit             edit the given file
+
+Some configuration entries you might want to set:
+
+   color.log             shall log messages use colored output
+   color.status          shall status messages be colorized
+
+        Possible values are (default is 'auto'):
+
+            on -> always on
+           off -> always off
+          auto -> only if connected to a terminal
 EOF
 }
 
