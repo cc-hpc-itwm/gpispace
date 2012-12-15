@@ -54,15 +54,6 @@ function gspc_isatty()
     fi
 }
 
-function gspc_is_a_human_watching ()
-{
-    if gspc_isatty 1 ; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 function gspc_is_color_enabled ()
 {
     local which="${1:?}" ; shift
