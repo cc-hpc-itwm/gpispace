@@ -5,7 +5,7 @@
 #include <we/expr/parse/action.hpp>
 #include <we/expr/token/tokenizer.hpp>
 
-// #include <we/expr/token/prop.hpp>
+#include <we/expr/token/prop.hpp>
 
 #include <we/type/value/function.hpp>
 
@@ -151,7 +151,16 @@ namespace expr
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "right");
 
-      nd_t l (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t l (tmp_stack.back()); tmp_stack.pop_back();
+
+      if (token::is_define (token) && not node::is_ref (l))
+        {
+          throw exception::parse::exception ( "left hand of "
+                                            + fhg::util::show (token)
+                                            + " must be reference name"
+                                            , k
+                                            );
+        }
 
       if (constant_folding() && node::is_value(l) && node::is_value(r))
         {
@@ -318,16 +327,6 @@ namespace expr
                 case token::ref:
                   tmp_stack.push_back (refnode(token.get_ref()));
                   break;
-                case token::define:
-                  if (  tmp_stack.empty()
-                     || (not node::is_ref (tmp_stack.back()))
-                     )
-                    throw exception::parse::exception
-                      ( "left hand of "
-                      + fhg::util::show(*token)
-                      + " must be reference name"
-                      , k
-                      );
                 default:
                   {
                   ACTION:
