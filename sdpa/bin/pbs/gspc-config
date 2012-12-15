@@ -42,6 +42,8 @@ Some configuration entries you might want to set:
             on -> always on
            off -> always off
           auto -> only if connected to a terminal
+
+   core.editor           which editor to use to edit config files
 EOF
 }
 
