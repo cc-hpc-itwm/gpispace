@@ -188,6 +188,9 @@ function action_status ()
         fi
     fi
 
+    local bg_pid=()
+    local bg_pid_name=()
+
     for ((i=0 ; i < ${#component_info[@]} ; i+=4))
     do
         host="${component_info[i+0]}"
@@ -195,13 +198,21 @@ function action_status ()
         pid="${component_info[i+2]}"
         name="${component_info[i+3]}"
 
-        if gspc check-port "$host" "$port"
+        gspc check-port "$host" "$port" &
+
+        bg_pid+=( $! )
+        bg_pid_name+=( "$name" )
+    done
+
+    for ((i=0 ; i < ${#bg_pid[@]} ; ++i))
+    do
+        if wait ${bg_pid[i]}
         then
             state="UP"; color="$color_up"
         else
             state="DN"; color="$color_dn"
         fi
-        printf "[${color}%-2s${color_off}] %s\n" "$state" "$name"
+        printf "[${color}%-2s${color_off}] %s\n" "$state" "${bg_pid_name[i]}"
     done
 
     return 0
