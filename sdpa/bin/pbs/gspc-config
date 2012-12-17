@@ -199,7 +199,8 @@ while true ; do
                 gspc_log_error config "only one action allowed!"
                 exit 1
             }
-            action="list"
+            action="get-regex"
+            regex='.*'
             shift
             ;;
         --) shift; break ;;
@@ -279,16 +280,6 @@ case "$action" in
 
         gspc_log_trace config fhgcfg -f "$config_file" -d "$1"
         gspc_atomic fhgcfg -f "$config_file" -d "$1"
-        ;;
-    list)
-        for ((i=((${#files_to_get_from[@]}-1)); i >= 0 ; i--)) ; do
-            var=${files_to_get_from[$i]}
-            file=$(eval echo \$${var})
-            if [ -z "$file" ] ; then continue ; fi
-            if [ -r "$file" ] ; then
-                cat "$file"
-            fi
-        done | fhgcfg -f- -l 2>/dev/null
         ;;
     edit)
         if [ -z "$config_file" ] ; then
