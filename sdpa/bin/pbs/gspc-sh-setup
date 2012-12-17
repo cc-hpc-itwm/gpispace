@@ -63,7 +63,7 @@ function gspc_is_color_enabled ()
     if [ -n "$GSPC_LOG_FROM_CONFIG" ] ; then
         mode=auto
     else
-        mode=$(gspc config --get color."${which}")
+        mode=$(gspc --no-alias config --get color."${which}")
     fi
 
     case "$mode" in
@@ -163,7 +163,7 @@ function gspc_abspath ()
 function gspc_call_editor ()
 {
     local editor=()
-    editor=( $(gspc config --get core.editor) )
+    editor=( $(gspc --no-alias config --get core.editor) )
     if [ $? -ne 0 -o -z "${editor}" ] ; then
         editor=("${EDITOR:=/usr/bin/vi}")
     fi

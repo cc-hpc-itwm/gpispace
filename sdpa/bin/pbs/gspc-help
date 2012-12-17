@@ -29,7 +29,7 @@ Environment information:
 
 Commonly used commands:
 
-$(gspc list-commands --indent=4)
+$(gspc --no-alias list-commands --indent=4)
 EOF
 }
 

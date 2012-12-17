@@ -79,7 +79,7 @@ function gspc_require_kvs ()
 {
     if [ -z "$kvs_host" ]
     then
-        kvs_host=$(gspc config --local --get kvs.host)
+        kvs_host=$(gspc --no-alias config --local --get kvs.host)
         if [ $? -ne 0 ] ; then
             kvs_host="$(hostname)"
             gspc_log_trace topology "kvs-host was not set, defaulting to ${kvs_host}"
@@ -90,7 +90,7 @@ function gspc_require_kvs ()
 
     if [ -z "$kvs_port" ]
     then
-        kvs_port=$(gspc config --local --get kvs.port)
+        kvs_port=$(gspc --no-alias config --local --get kvs.port)
         if [ $? -ne 0 ] ; then
             kvs_port="2439"
             gspc_log_trace topology "kvs-port was not set, defaulting to ${kvs_port}"
