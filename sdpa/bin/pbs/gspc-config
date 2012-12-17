@@ -28,6 +28,7 @@ Which config file to use:
 What to do:
 
    --get key             retrieves a given key
+   --get-regex <regex>   retrieve keys matching the given rexec
    --set key value       sets the key to the given value
    --del key             removes the given key
    -e --edit             edit the given file
@@ -106,7 +107,7 @@ if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
 action=""
 
-TEMP=`getopt -o hef: --long help,global,site,system,local,file:,get,get-all,set,del,list,edit -n 'gspc' -- "$@"`
+TEMP=`getopt -o hef: --long help,global,site,system,local,file:,get,get-regex,get-all,set,del,list,edit -n 'gspc' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -151,6 +152,14 @@ while true ; do
                 exit 1
             }
             action="get"
+            shift
+            ;;
+        --get-regex)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="get-regex"
             shift
             ;;
         --get-all)
@@ -210,6 +219,26 @@ case "$action" in
             exit 1
         fi
         get_config_value "$1" "$2"
+        exit $?
+        ;;
+    get-regex)
+        if [ $# -lt 1 ] ; then
+            if [ -z "$regex" ] ; then
+                gspc_log_error config "get-regex: invalid number of arguments"
+                exit 1
+            fi
+        else
+            regex="$1"
+        fi
+
+        for ((i=((${#files_to_get_from[@]}-1)); i >= 0 ; i--)) ; do
+            var=${files_to_get_from[$i]}
+            file=$(eval echo \$${var})
+            if [ -z "$file" ] ; then continue ; fi
+            if [ -r "$file" ] ; then
+                cat "$file"
+            fi
+        done | fhgcfg -f- --get-regex "$regex" 2>/dev/null
         exit $?
         ;;
     get-all)
