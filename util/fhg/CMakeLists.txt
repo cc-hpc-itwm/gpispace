@@ -37,6 +37,7 @@ execute_process(COMMAND cat ${CMAKE_BINARY_DIR}/build.counter
 
 execute_process(COMMAND cat ${CMAKE_BINARY_DIR}/build.tstamp
                 OUTPUT_VARIABLE FHG_BUILD_TIMESTAMP
+                ERROR_QUIET
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                )
 
