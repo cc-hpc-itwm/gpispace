@@ -539,6 +539,8 @@ namespace fhg
         //! \todo Paint a ghost transition while dragging in.
         void scene_type::dragEnterEvent (QGraphicsSceneDragDropEvent* event)
         {
+          _mouse_position = event->scenePos();
+
           QGraphicsScene::dragEnterEvent (event);
 
           event->setAccepted
@@ -547,14 +549,20 @@ namespace fhg
 
         void scene_type::dragMoveEvent (QGraphicsSceneDragDropEvent* event)
         {
+          _mouse_position = event->scenePos();
+
           QGraphicsScene::dragMoveEvent (event);
 
           event->setAccepted
             (event->mimeData()->hasFormat (TransitionLibraryModel::mimeType));
+
+          _mouse_position = event->scenePos();
         }
 
         void scene_type::dropEvent (QGraphicsSceneDragDropEvent* event)
         {
+          _mouse_position = event->scenePos();
+
           QGraphicsScene::dropEvent (event);
 
           const QMimeData* mimeData (event->mimeData());
