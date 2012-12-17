@@ -94,12 +94,6 @@ namespace fhg
             }
         }
 
-        //! \todo remove me
-        style::type& base_item::access_style ()
-        {
-          return _style;
-        }
-
         void base_item::clear_style_cache ()
         {
           _style.clear_cache();
