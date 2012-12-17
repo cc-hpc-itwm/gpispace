@@ -14,6 +14,7 @@ public:
   {
     m_host = fhg_kernel()->get("host", "localhost");
     m_port = fhg_kernel()->get("port", "2439");
+    m_max_ping_failed = fhg_kernel ()->get ("max_ping_failed", 3);
     m_ping_interval =
       fhg_kernel ()->get<unsigned int> ("ping", 10);
     m_terminate_on_connection_failure =
@@ -121,12 +122,21 @@ private:
   {
     if (! this->ping ())
     {
-      if (m_terminate_on_connection_failure)
+      ++m_ping_failed;
+
+      if (m_ping_failed >= m_max_ping_failed)
       {
-        MLOG (WARN, "lost connection to KVS, terminating...");
-        fhg_kernel ()->shutdown ();
-        return;
+        if (m_terminate_on_connection_failure)
+        {
+          MLOG (WARN, "lost connection to KVS, terminating...");
+          fhg_kernel ()->shutdown ();
+          return;
+        }
       }
+    }
+    else
+    {
+      m_ping_failed = 0;
     }
 
     fhg_kernel ()->schedule ( "kvs_ping"
@@ -140,6 +150,8 @@ private:
   std::string  m_host;
   std::string  m_port;
   unsigned int m_ping_interval;
+  unsigned int m_ping_failed;
+  unsigned int m_max_ping_failed;
   bool         m_terminate_on_connection_failure;
 };
 
