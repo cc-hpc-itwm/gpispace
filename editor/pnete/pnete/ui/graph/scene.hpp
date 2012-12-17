@@ -135,8 +135,6 @@ namespace fhg
           data::handle::net _net;
           data::handle::function _function;
           data::internal_type* _internal;
-
-          friend class ::fhg::pnete::ui::graph_view; // for net() only.
         };
       }
     }
