@@ -74,7 +74,6 @@ public:
     }
     catch (std::exception const &ex)
     {
-      LOG (WARN, "kvs ping failed: " << ex.what ());
       return false;
     }
   }
