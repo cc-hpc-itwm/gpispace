@@ -10,9 +10,6 @@
 #include <QGraphicsView>
 #include <QObject>
 
-class QDragEnterEvent;
-class QDragMoveEvent;
-class QDropEvent;
 class QFocusEvent;
 class QGraphicsScene;
 class QWheelEvent;
@@ -46,9 +43,6 @@ namespace fhg
           void focus_gained (QWidget* me);
 
         protected:
-          virtual void dragEnterEvent (QDragEnterEvent* event);
-          virtual void dragMoveEvent (QDragMoveEvent* event);
-          virtual void dropEvent (QDropEvent* event);
           virtual void wheelEvent (QWheelEvent* event);
           virtual void focusInEvent (QFocusEvent* event);
 

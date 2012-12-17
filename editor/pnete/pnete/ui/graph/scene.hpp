@@ -100,6 +100,9 @@ namespace fhg
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
           virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
           virtual void keyPressEvent (QKeyEvent* event);
+          virtual void dragEnterEvent (QGraphicsSceneDragDropEvent* event);
+          virtual void dragMoveEvent (QGraphicsSceneDragDropEvent* event);
+          virtual void dropEvent (QGraphicsSceneDragDropEvent* event);
 
         private:
           template<typename item_type, typename handle_type>

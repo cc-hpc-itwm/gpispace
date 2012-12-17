@@ -5,6 +5,8 @@
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/transition.hpp>
 #include <pnete/data/internal.hpp>
+#include <pnete/data/manager.hpp>
+#include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
@@ -531,6 +533,61 @@ namespace fhg
 
           QGraphicsScene::keyPressEvent (event);
         }
+
+        //!@{
+        //! \note Dragging in transitions from the library
+        //! \todo Paint a ghost transition while dragging in.
+        void scene_type::dragEnterEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          QGraphicsScene::dragEnterEvent (event);
+
+          event->setAccepted
+            (event->mimeData()->hasFormat (TransitionLibraryModel::mimeType));
+        }
+
+        void scene_type::dragMoveEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          QGraphicsScene::dragMoveEvent (event);
+
+          event->setAccepted
+            (event->mimeData()->hasFormat (TransitionLibraryModel::mimeType));
+        }
+
+        void scene_type::dropEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          QGraphicsScene::dropEvent (event);
+
+          const QMimeData* mimeData (event->mimeData());
+
+          if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
+          {
+            QByteArray byteArray
+              (mimeData->data (TransitionLibraryModel::mimeType));
+            QDataStream stream (&byteArray, QIODevice::ReadOnly);
+
+            QSet<QString> paths;
+
+            stream >> paths;
+
+            foreach (const QString& path, paths)
+            {
+              data::internal_type* data
+                (data::manager::instance().load (path));
+
+              net().add_transition
+                ( this
+                , data->function().get().clone
+                  ( ::xml::parse::type::function_type::make_parent
+                    (net().id().id())
+                  , net().id().id_mapper()
+                  )
+                );
+
+              event->acceptProposedAction();
+            }
+          }
+        }
+        //!@}
 
         void scene_type::auto_layout()
         {
