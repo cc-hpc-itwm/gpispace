@@ -159,5 +159,5 @@ cmd[0]=$(_resolve_command_path "${cmd_name}")
 if [ -x "${cmd[0]}" ] ; then
     GSPC_VERBOSE="${verbose}" "${cmd[@]}" "$@"
 else
-    echo >&2 "gspc: '$cmd_name' is not a GPI-Space command. See 'gspc --help'."
+    echo >&2 "gspc: '$cmd_name' is not a GPI-Space command. See 'gspc help'."
 fi
