@@ -133,7 +133,7 @@ namespace fhg
           data::handle::function _function;
           data::internal_type* _internal;
 
-          friend class fhg::pnete::ui::GraphView; // for net() only.
+          friend class ::fhg::pnete::ui::graph_view; // for net() only.
         };
       }
     }

@@ -1,3 +1,5 @@
+// bernd.loerwald@itwm.fraunhofer.de
+
 #include <pnete/ui/editor_window.hpp>
 
 #include <QAction>
@@ -18,7 +20,6 @@
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/dock_widget.hpp>
 #include <pnete/ui/size.hpp>
-#include <pnete/ui/GraphView.hpp>
 #include <pnete/ui/StructureView.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/view_manager.hpp>

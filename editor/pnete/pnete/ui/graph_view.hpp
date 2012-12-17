@@ -3,8 +3,9 @@
 #ifndef FHG_PNETE_UI_GRAPH_VIEW_HPP
 #define FHG_PNETE_UI_GRAPH_VIEW_HPP
 
-#include <pnete/ui/graph/scene.fwd.hpp>
 #include <pnete/ui/graph_view.fwd.hpp>
+
+#include <pnete/ui/graph/scene.fwd.hpp>
 
 #include <QGraphicsView>
 #include <QObject>
@@ -23,12 +24,12 @@ namespace fhg
   {
     namespace ui
     {
-      class GraphView : public QGraphicsView
+      class graph_view : public QGraphicsView
       {
         Q_OBJECT
 
         public:
-        GraphView (graph::scene_type* scene, QWidget* parent = NULL);
+        graph_view (graph::scene_type* scene, QWidget* parent = NULL);
 
         void emit_current_zoom_level();
 

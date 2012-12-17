@@ -9,7 +9,7 @@ namespace fhg
   {
     namespace ui
     {
-      class GraphView;
+      class graph_view;
     }
   }
 }

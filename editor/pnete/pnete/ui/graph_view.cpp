@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <pnete/ui/GraphView.hpp>
+#include <pnete/ui/graph_view.hpp>
 
 #include <pnete/data/manager.hpp>
 #include <pnete/ui/TransitionLibraryItem.hpp>
@@ -26,7 +26,7 @@ namespace fhg
   {
     namespace ui
     {
-      GraphView::GraphView (graph::scene_type* scene, QWidget* parent)
+      graph_view::graph_view (graph::scene_type* scene, QWidget* parent)
       : QGraphicsView (scene, parent)
       , _currentScale (size::zoom::default_value())
       {
@@ -37,25 +37,25 @@ namespace fhg
                        );
       }
 
-      QSize GraphView::sizeHint() const
+      QSize graph_view::sizeHint() const
       {
         return QSize ( util::phi::ratio::smaller (window()->width())
                      , window()->height()
                      );
       }
 
-      graph::scene_type* GraphView::scene() const
+      graph::scene_type* graph_view::scene() const
       {
         return qobject_cast<graph::scene_type*> (QGraphicsView::scene());
       }
 
-      void GraphView::focusInEvent (QFocusEvent* event)
+      void graph_view::focusInEvent (QFocusEvent* event)
       {
         emit focus_gained (this);
         QGraphicsView::focusInEvent (event);
       }
 
-      void GraphView::dragEnterEvent (QDragEnterEvent* event)
+      void graph_view::dragEnterEvent (QDragEnterEvent* event)
       {
         QGraphicsView::dragEnterEvent (event);
 
@@ -68,7 +68,7 @@ namespace fhg
         }
       }
 
-      void GraphView::dragMoveEvent (QDragMoveEvent* event)
+      void graph_view::dragMoveEvent (QDragMoveEvent* event)
       {
         QGraphicsView::dragMoveEvent (event);
 
@@ -81,7 +81,7 @@ namespace fhg
         }
       }
 
-      void GraphView::dropEvent (QDropEvent* event)
+      void graph_view::dropEvent (QDropEvent* event)
       {
         QGraphicsView::dropEvent (event);
 
@@ -116,7 +116,7 @@ namespace fhg
         }
       }
 
-      void GraphView::wheelEvent (QWheelEvent* event)
+      void graph_view::wheelEvent (QWheelEvent* event)
       {
         if ( event->modifiers() & Qt::ControlModifier
           && event->orientation() == Qt::Vertical
@@ -138,7 +138,7 @@ namespace fhg
         }
       }
 
-      void GraphView::zoom (int to)
+      void graph_view::zoom (int to)
       {
         const int target (qBound ( size::zoom::min_value()
                                  , to
@@ -152,20 +152,20 @@ namespace fhg
         emit_current_zoom_level();
       }
 
-      void GraphView::zoom_in()
+      void graph_view::zoom_in()
       {
         zoom (_currentScale + size::zoom::per_tick());
       }
-      void GraphView::zoom_out()
+      void graph_view::zoom_out()
       {
         zoom (_currentScale - size::zoom::per_tick());
       }
-      void GraphView::reset_zoom()
+      void graph_view::reset_zoom()
       {
         zoom (size::zoom::default_value());
       }
 
-      void GraphView::emit_current_zoom_level()
+      void graph_view::emit_current_zoom_level()
       {
         emit zoomed (_currentScale);
       }
