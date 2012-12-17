@@ -5,6 +5,7 @@
 #include <fstream>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
 #include <map>
 
 #include <fhg/util/ini-parser.hpp>
@@ -28,6 +29,7 @@ int main (int ac, char *av[])
     ("add,a", po::value<std::string>(&key), "add an entry")
     ("del,d", po::value<std::string>(&key), "delete an entry")
     ("get,g", po::value<std::string>(&key), "get an entry")
+    ("get-regex", po::value<std::string>(&key), "get entries by regex")
     ("list,l",  "list all entries")
     ("print,p", "print ini style format")
     ;
@@ -95,6 +97,22 @@ int main (int ac, char *av[])
     {
       m.put (key, val);
       modified = true;
+    }
+  }
+  else if (vm.count ("get-regex"))
+  {
+    boost::regex ex (key);
+    exit_code = 1;
+    for ( flat_map_parser_t::entries_t::const_iterator e (m.entries.begin())
+        ; e != m.entries.end()
+        ; ++e
+        )
+    {
+      if (boost::regex_search (e->first, ex))
+      {
+        std::cout << e->first << " = " << e->second << std::endl;
+        exit_code = 0;
+      }
     }
   }
   else if (vm.count ("get"))
