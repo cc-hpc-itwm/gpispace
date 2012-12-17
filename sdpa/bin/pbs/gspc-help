@@ -34,7 +34,7 @@ EOF
 }
 
 if [ -z "$1" ] ; then
-   usage
+    usage
 else
     gspc "$1" --help
 fi
