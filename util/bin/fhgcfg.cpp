@@ -18,6 +18,8 @@ int main (int ac, char *av[])
   std::string key;
   std::string val;
 
+  bool value_was_specified = false;
+
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
@@ -55,6 +57,8 @@ int main (int ac, char *av[])
     std::cerr << desc << std::endl;
     return EXIT_SUCCESS;
   }
+
+  value_was_specified = vm.count ("value") > 0;
 
   typedef
     fhg::util::ini::parser::flat_map_parser_t < std::map< std::string
@@ -95,7 +99,7 @@ int main (int ac, char *av[])
   }
   else if (vm.count ("get"))
   {
-    if (m.has_key (key) || not val.empty ())
+    if (m.has_key (key) || value_was_specified)
     {
       std::cout << m.get (key, val) << std::endl;
     }
