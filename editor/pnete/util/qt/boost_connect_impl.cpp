@@ -61,8 +61,7 @@ namespace fhg
           , const char *signal
           , QObject *receiver
           , abstract_connection_adapter *adapter
-          , int nrArguments
-          , int argumentTypeList[]
+          , const QByteArray& fake_signature
           , Qt::ConnectionType connType
           )
         {
@@ -77,8 +76,7 @@ namespace fhg
                                   , signal
                                   , receiver
                                   , adapter
-                                  , nrArguments
-                                  , argumentTypeList
+                                  , fake_signature
                                   , connType
                                   );
         }
@@ -105,7 +103,7 @@ namespace fhg
 
         binding_object::~binding_object()
         {
-          foreach (const Binding& b, m_bindings)
+          foreach (const binding& b, _bindings)
           {
             delete b.adapter;
           }
@@ -187,11 +185,11 @@ namespace fhg
           // and try to handle it
           _id -= metaObject()->methodCount();
           if ( _c == QMetaObject::InvokeMetaMethod
-             && _id < m_bindings.size() && m_bindings[_id].adapter)
+             && _id < _bindings.size() && _bindings[_id].adapter)
           {
             // if we have a binding for this index, call it
-            m_bindings[_id].adapter->invoke(_a);
-            _id -= m_bindings.size();
+            _bindings[_id].adapter->invoke(_a);
+            _id -= _bindings.size();
           }
           return _id;
         }
@@ -200,8 +198,7 @@ namespace fhg
                                   , const char* signal
                                   , QObject* receiver
                                   , abstract_connection_adapter* adapter
-                                  , int nrArguments
-                                  , int argumentList[]
+                                  , const QByteArray& fake_signature
                                   , Qt::ConnectionType connType
                                   )
         {
@@ -210,14 +207,14 @@ namespace fhg
             return false;
           }
 
-          QByteArray signalSignature
+          QByteArray signal_signature
             (sender->metaObject()->normalizedSignature (signal));
-          const int signalIndex
-            (sender->metaObject()->indexOfSignal (signalSignature.data() + 1));
-          if (signalIndex < 0)
+          const int signal_index
+            (sender->metaObject()->indexOfSignal (signal_signature.data() + 1));
+          if (signal_index < 0)
           {
             qWarning ( "qtBoostConnect: no match for signal '%s'"
-                     , signalSignature.data() + 1
+                     , signal_signature.data() + 1
                      );
             return false;
           }
@@ -227,52 +224,38 @@ namespace fhg
                      , "Receiving QObject on different thread."
                      );
 
-          QByteArray adapterSignature
-            (buildAdapterSignature (nrArguments, argumentList));
-
-          if (!QMetaObject::checkConnectArgs(signalSignature, adapterSignature))
+          if (!QMetaObject::checkConnectArgs (signal_signature, fake_signature))
           {
             return false;
           }
 
-          // locate a free slot
-          int slotIndex;
-          bool alreadyKnowAboutThisReceiver = false;
-          for (slotIndex = 0; slotIndex < m_bindings.size(); slotIndex++)
-          {
-            if (m_bindings[slotIndex].receiver == receiver)
-            {
-              alreadyKnowAboutThisReceiver = true;
-            }
-            if (!m_bindings[slotIndex].adapter)
-            {
-              break;
-            }
-          }
-
           // wire up a connection from the binding object to the sender
-          if ( !QMetaObject::connect
-               (sender, signalIndex, this, slotIndex + bindingOffset(), connType)
+          if ( !QMetaObject::connect ( sender
+                                     , signal_index
+                                     , this
+                                     , _bindings.size() + binding_offset()
+                                     , connType
+                                     )
              )
           {
             return false;
           }
 
-          // store the binding
-          if (slotIndex == m_bindings.size())
+          bool already_knows_this_receiver = false;
+
+          for (int i (0); i < _bindings.size(); ++i)
           {
-            m_bindings.append (Binding (sender, signalIndex, receiver, adapter));
-          }
-          else
-          {
-            m_bindings.replace
-              (slotIndex, Binding (sender, signalIndex, receiver, adapter));
+            if (_bindings[i].receiver == receiver)
+            {
+              already_knows_this_receiver = true;
+            }
           }
 
+          // store the binding
+          _bindings.append (binding (sender, signal_index, receiver, adapter));
+
           // and make sure that we will delete it if the receiver goes away
-          // ### should we auto-delete if senders disappear, too?
-          // ###  it costs memory on connections to possibly save memory later...
-          if (!alreadyKnowAboutThisReceiver && receiver)
+          if (!already_knows_this_receiver && receiver)
           {
             QObject::connect
               (receiver, SIGNAL(destroyed()), this, SLOT(receiver_destroyed()));
@@ -280,21 +263,22 @@ namespace fhg
 
           static_cast<connect_notify_object*> (sender)->
             call_connect_notify (signal);
+
           return true;
         }
 
         bool binding_object::unbind
           (QObject* sender, const char* signal, QObject* receiver)
         {
-          int signalIndex = -1;
+          int signal_index = -1;
 
           if (signal)
           {
-            QByteArray signalSignature
+            QByteArray signal_signature
               (sender->metaObject()->normalizedSignature (signal));
-            signalIndex =
-              sender->metaObject()->indexOfSignal (signalSignature.data() + 1);
-            if (signalIndex < 0)
+            signal_index =
+              sender->metaObject()->indexOfSignal (signal_signature.data() + 1);
+            if (signal_index < 0)
             {
               return false;
             }
@@ -324,37 +308,21 @@ namespace fhg
           }
           foreach (const int i, to_be_removed)
           {
-            m_bindings.removeAt (i);
+            _bindings.removeAt (i);
           }
 
           return found;
         }
 
-        QByteArray binding_object::buildAdapterSignature
-          (int nrArguments, int argumentMetaTypeList[])
-        {
-          QByteArray sig ("lambda(");
-          for (int i = 0; i < nrArguments; i++)
-          {
-            sig += QMetaType::typeName (argumentMetaTypeList[i]);
-            if (i != nrArguments-1)
-            {
-              sig += ",";
-            }
-          }
-          sig += ")";
-          return sig;
-        }
-
+        // when any object for which we are holding a binding is destroyed,
+        // remove all of its bindings
         void binding_object::receiver_destroyed()
         {
-          // when any object for which we are holding a binding is destroyed,
-          // remove all of its bindings
-          QObject* receiver = sender();
+          QObject* obj = sender();
 
-          if (receiver)
+          if (obj)
           {
-            unbind (0, 0, receiver);
+            unbind (NULL, NULL, obj);
           }
         }
       }
