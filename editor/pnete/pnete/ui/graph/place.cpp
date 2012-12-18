@@ -2,17 +2,17 @@
 
 #include <pnete/ui/graph/place.hpp>
 
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsSceneContextMenuEvent>
-
-#include <pnete/ui/graph/style/raster.hpp>
-
 #include <pnete/ui/graph/association.hpp>
 #include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/transition.hpp>
+
+#include <util/qt/scoped_property_setter.hpp>
 
 #include <xml/parse/type/place.hpp>
 
+#include <QGraphicsSceneContextMenuEvent>
+#include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
 namespace fhg
@@ -27,9 +27,7 @@ namespace fhg
           ( const data::handle::place& handle
           , base_item* parent
           )
-            : connectable_item ( connectable::direction::BOTH
-                               , parent
-                               )
+            : connectable_item (connectable::direction::BOTH, parent)
             , _handle (handle)
             , _content()
         {
@@ -60,6 +58,8 @@ namespace fhg
           connect ( this, SIGNAL (association_removed (association*))
                   , this, SLOT (association_changed_in_any_way())
                   );
+
+          update_implicity();
         }
 
         const data::handle::place& place_item::handle() const
@@ -110,18 +110,16 @@ namespace fhg
         QPainterPath place_item::shape () const
         {
           QPainterPath path;
-          if (!handle().is_implicit())
-          {
-            static const qreal d (3.0);
 
-            path.addRoundRect ( QRectF
-                                ( content_pos() - QPointF (d, d)
-                                , content_size() + QSizeF (2 * d, 2 * d)
-                                )
-                              , 2 * d
-                              , 2 * d
-                              );
-          }
+          static const qreal d (3.0);
+          path.addRoundRect ( QRectF
+                              ( content_pos() - QPointF (d, d)
+                              , content_size() + QSizeF (2 * d, 2 * d)
+                              )
+                            , 2 * d
+                            , 2 * d
+                            );
+
           return path;
         }
 
@@ -130,12 +128,11 @@ namespace fhg
                                , QWidget* widget
                                )
         {
-          if (!handle().is_implicit())
-          {
-            style::draw_shape (this, painter);
+          painter->setOpacity (mode() == mode::HIGHLIGHT ? 1.0 : opacity());
 
-            painter->drawStaticText (content_pos(), content());
-          }
+          style::draw_shape (this, painter);
+
+          painter->drawStaticText (content_pos(), content());
         }
 
         void place_item::setPos (const QPointF& new_position)
@@ -181,6 +178,20 @@ namespace fhg
           if (origin != this && changed_handle == handle())
           {
             handle_property_change (key, value);
+          }
+
+          update_implicity();
+        }
+
+        void place_item::update_implicity()
+        {
+          if (handle().is_implicit())
+          {
+            setOpacity (0.2);
+          }
+          else
+          {
+            setOpacity (1.0);
           }
         }
 

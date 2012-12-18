@@ -82,6 +82,7 @@ namespace fhg
           const QStaticText& content() const;
           QSizeF content_size() const;
           QPointF content_pos() const;
+          void update_implicity();
         };
       }
     }
