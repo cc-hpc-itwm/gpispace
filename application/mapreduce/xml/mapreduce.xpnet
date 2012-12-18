@@ -938,6 +938,8 @@
           <cinclude href="algorithm"/>
 
           <code><![CDATA[
+          	  timestamp_t time_start_reduce = ::mapreduce::util::get_timestamp();
+          	  
               partition_info = partition_result.partition_info;
               map_chunk_info = partition_result.map_chunk_info;
               
@@ -985,10 +987,15 @@
 				// Process
 				timestamp_t time_end_get_part = ::mapreduce::util::get_timestamp();
 				double millisecs = (time_end_get_part - time_start_get_part) / MS;
-				MLOG(INFO, "Transferring the partition "<<partition_info.part_id<<" of size "<<partition_info.part_used<<" from VM took "<<millisecs<<"ms");
+				//MLOG(INFO, "Transferring the partition "<<partition_info.part_id<<" of size "<<partition_info.part_used<<" from VM took "<<millisecs<<"ms");
 
 				ptr_shmem[partition_info.part_used] = 0;
-				std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
+				
+				timestamp_t time_begin_get_list = ::mapreduce::util::get_timestamp();
+				std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);
+				timestamp_t time_end_get_list = ::mapreduce::util::get_timestamp();
+				//MLOG(INFO, "Partition slot TOKENIZATION took "<<(time_end_get_list - time_begin_get_list)/MS<<"ms!");
+					
 				//::mapreduce::util::print_keys<std::vector<std::string> >("arr_part_items:", arr_part_items);
 				    
                 std::vector<std::string>::iterator iter_middle( arr_part_items.begin() ); 
@@ -1021,11 +1028,10 @@
 	                ptr_shmem[partition_info.red_used] = 0;
 	                
 	                timestamp_t time_start_tok = ::mapreduce::util::get_timestamp();
-                    arr_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
+                    arr_red_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);
                     timestamp_t time_end_tok = ::mapreduce::util::get_timestamp();
-                    millisecs = (time_end_get_red - time_start_get_red) / MS;
-					MLOG(INFO, "The tokenization of the reduce slot "<<partition_info.part_id<<" took "<<millisecs<<"ms");
-                    
+                    millisecs = (time_end_tok - time_start_tok) / MS;
+					//MLOG(INFO, "Reduce slot TOKENIZATION took "<<millisecs<<"ms");
                     //::mapreduce::util::print_keys<std::vector<std::string> >("arr_red_items:", arr_red_items);
 				}
 					
@@ -1053,7 +1059,10 @@
 				size_t last_pos = 0;
 				
 				// call reduce here
+				timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
                 ::mapreduce::util::reduce_array(partition_info.part_id, config.size.reduce.slot, arr_items, ptr_shmem, last_pos );
+                timestamp_t time_end_red_arr = ::mapreduce::util::get_timestamp();
+                //MLOG(INFO, "The effective reduce operation took "<<(time_end_red_arr - time_start_red_arr)/MS<<"ms");
 				
 				if(last_pos>config.size.reduce.slot)
                 {
@@ -1084,6 +1093,9 @@
                                          + " is empty!"
                                          );
             }
+            
+            timestamp_t time_end_reduce = ::mapreduce::util::get_timestamp();
+			MLOG(INFO, "The reduce operation took "<<(time_end_reduce - time_start_reduce)/MS<<"ms");
 
           ]]></code>
         </module>
@@ -1432,7 +1444,6 @@
                     
                     ptr_shmem[old_part_info.red_used] = 0;
                     arr_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
-                    //::mapreduce::util::print_keys<std::vector<std::string> >("arr_red_items:", arr_red_items);
                 }
                 
                 // one should assume:
