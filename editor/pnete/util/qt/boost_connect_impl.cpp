@@ -306,30 +306,37 @@ namespace fhg
           }
 
           bool found = false;
-          QVector<int> to_be_removed;
-          for (int i = 0; i < m_bindings.size(); i++)
+
+          QMutableListIterator<binding> iterator (_bindings);
+          int i (0);
+          while (iterator.hasNext())
           {
-            const Binding& b = m_bindings.at (i);
-            if ( (b.signalIndex == signalIndex || signalIndex == -1)
+            const binding& b (iterator.next());
+            if (  (b.signal_index == signal_index || signal_index == -1)
                && (b.sender == sender || !sender)
                && (b.receiver == receiver || !receiver)
                )
             {
               QMetaObject::disconnect
-                (b.sender, b.signalIndex, b.receiver, i + bindingOffset());
-              QByteArray sigName
-                (b.sender->metaObject()->method (b.signalIndex).signature());
-              sigName.prepend ('2');
+                (b.sender, b.signal_index, b.receiver, i + binding_offset());
+
               static_cast<connect_notify_object*> (b.sender)->
-                call_disconnect_notify (sigName.constData());
+                call_disconnect_notify
+                  ( QByteArray ( b.sender->metaObject()->method (b.signal_index)
+                               .signature()
+                               )
+                  .prepend ('2').constData()
+                  );
+
               delete b.adapter;
-              to_be_removed.push_back (i);
+
+              iterator.remove();
               found = true;
             }
-          }
-          foreach (const int i, to_be_removed)
-          {
-            _bindings.removeAt (i);
+            else
+            {
+              ++i;
+            }
           }
 
           return found;
