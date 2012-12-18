@@ -1,0 +1,143 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="list the current GPI-Space topology"
+GSPC_IMPORTANT_API_COMMAND=false
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: topology-list [-h|--help] [options]
+
+Options:
+
+   --kvs-host <host>     specify the host of the KVS
+   --kvs-port <port>     specify the port of the KVS
+
+   --no-header           do not print the leading header
+EOF
+}
+
+TEMP=`getopt -o h --long help,kvs-host:,kvs-port:,no-header -n 'topology' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+kvs_host=
+kvs_port=
+show_header=true
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --kvs-host)
+            kvs_host="$2"
+            shift ; shift
+            ;;
+        --kvs-port)
+            kvs_port="$2"
+            shift ; shift
+            ;;
+        --no-header)
+            show_header=false
+            shift
+            ;;
+        --) shift; break ;;
+        *) gspc_log_error topology "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+function gspc_require_kvs ()
+{
+    if [ -z "$kvs_host" ]
+    then
+        kvs_host=$(gspc --no-alias config --local --get kvs.host)
+        if [ $? -ne 0 ] ; then
+            kvs_host="$(hostname)"
+            gspc_log_trace topology "kvs-host was not set, defaulting to ${kvs_host}"
+        else
+            gspc_log_trace topology "using kvs-host from local config: ${kvs_host}"
+        fi
+    fi
+
+    if [ -z "$kvs_port" ]
+    then
+        kvs_port=$(gspc --no-alias config --local --get kvs.port)
+        if [ $? -ne 0 ] ; then
+            kvs_port="2439"
+            gspc_log_trace topology "kvs-port was not set, defaulting to ${kvs_port}"
+        else
+            gspc_log_trace topology "using kvs-port from local config: ${kvs_port}"
+        fi
+    fi
+
+    if gspc check-port "$kvs_host" "$kvs_port" ; then
+        gspc_log_trace topology "kvs config: host => $kvs_host port => $kvs_port"
+        return 0
+    else
+        gspc_log_error topology "KVS is not reachable: host => '$kvs_host' port => '$kvs_port'"
+        exit 1
+    fi
+}
+
+function gspc_get_kvs_entry ()
+{
+    local key="$1"; shift
+
+    fhgkvsc -H "$kvs_host" -P "$kvs_port" -g "$key" 2>/dev/null
+}
+
+function get_component_info ()
+{
+    gspc_require_kvs
+
+    local all_components=()
+    local components_to_get_info_for=( "${@}" )
+
+    # format: location.host <host> location.port <port> name <name>
+    all_components=( $(gspc_get_kvs_entry 'p2p.peer' | tr -d '=') )
+    ec=$?
+    if [ $ec -eq 4 ] ; then
+        gspc_log_error topology "Could not contact KVS!"
+        return $ec
+    elif [ $ec -ne 0 ] ; then
+        gspc_log_error topology "Not running"
+        return $ec
+    else
+        for ((i=0 ; i < ${#all_components[@]} ; i+=8))
+        do
+            host="${all_components[i+1]}"
+            port="${all_components[i+3]}"
+            name="${all_components[i+5]}"
+            pid="${all_components[i+7]}"
+
+            # we are not interested in clients
+            if [[ "$name" =~ ^sdpac-.*$ ]]
+            then
+                continue
+            fi
+
+            if [ -n "${components_to_get_info_for}" ] ; then
+                local filtered=true
+                for component in "${components_to_get_info_for[@]}"
+                do
+                    if [[ "${name}" =~ ${component} ]]
+                    then
+                        filtered=false
+                        break
+                    fi
+                done
+                if $filtered ; then continue ; fi
+            fi
+            printf "%-12s %-5d %-5d %s\n" "$host" "$port" "$pid" "$name"
+        done
+    fi
+}
+
+gspc_require_kvs
+if $show_header ; then
+    printf "%-12s %-5s %-5s %-s\n" "HOST" "PORT" "PID" "NAME"
+fi
+get_component_info "${@}"
