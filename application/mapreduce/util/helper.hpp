@@ -10,6 +10,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/iter_find.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <fvm-pc/pc.hpp>
 #include <util/types.hpp>
 #include <algorithm>
@@ -21,10 +24,10 @@ const int US = 1000000.0L;
 const int MS = 1000.0L;
 const int KEY_MAX_SIZE = 50;
 
-const char SHRPCH 	= '#';
-const char NLCH 	= '\n';
-const char SPCH 	= ' ';
-const char PAIRSEP 	= '@';
+const char SHRPCH = '#';
+const char NLCH = '\n';
+const char SPCH = ' ';
+const char PAIRSEP = '@';
 
 std::string DELIMITERS = " \n";
 
@@ -42,9 +45,7 @@ namespace mapreduce
 		  int i = size;
 
 		  for(; i > 0 && arr_items[i-1]>element; --i)
-		  {
 			  arr_items[i] = arr_items[i-1];
-		  }
 
 		  arr_items[i] = element;
 	  }
@@ -245,7 +246,24 @@ namespace mapreduce
       std::vector<std::string> v;
       v.assign(tok.begin(),tok.end());
 
+      //std::copy(tok.begin(), tok.end(), std::back_inserter<std::vector<std::string> >(v));
+
       return v;
+    }
+
+
+    std::vector<std::string> get_list_items_strtok(char* local_buff)
+    {
+    	// attention, the input string is modified!!!!
+    	std::vector<std::string> v;
+    	char* pch_curr = strtok(local_buff, DELIMITERS.c_str());
+    	while(pch_curr)
+    	{
+    		v.push_back(pch_curr);
+    		pch_curr = strtok(NULL, DELIMITERS.c_str());
+    	}
+
+    	return v;
     }
 
     std::string gen_all_reduce_slots(const int& avail_slots)

@@ -31,9 +31,9 @@ PUT_PORT += partition_slot_size=33554432
 #PUT_PORT += partition_slot_size=16777216
 #PUT_PORT += reduce_slot_size=33554432
 PUT_PORT += reduce_slot_size=67108864
-PUT_PORT += n_part=20
-PUT_PORT += input_n_read_slots=50
-PUT_PORT += input_n_map_slots=40
+PUT_PORT += n_part=26
+PUT_PORT += input_n_read_slots=100
+PUT_PORT += input_n_map_slots=50
 -include example.mk
 
 ###############################################################################
