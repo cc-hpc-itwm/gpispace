@@ -308,20 +308,32 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction(tr ("place_set_type"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind ( set_we_type_for_handle<data::handle::place>
-                              , handle
-                              , tr ("place_set_type_dialog_title_for_%1").arg
-                                (QString::fromStdString (handle.get().name()))
-                              , tr ("place_set_type_prompt")
-                              , QString::fromStdString (handle.get().type)
-                              , event->widget()
-                              , this
-                              )
-                );
+              if (handle.is_implicit())
+              {
+                fhg::util::qt::boost_connect<void()>
+                  ( menu->addAction (tr ("place_make_explicit"))
+                  , SIGNAL (triggered())
+                  , item_below_cursor
+                  , boost::bind (nyi, "place: make explicit")
+                  );
+              }
+              else
+              {
+                fhg::util::qt::boost_connect<void()>
+                  ( menu->addAction(tr ("place_set_type"))
+                  , SIGNAL (triggered())
+                  , item_below_cursor
+                  , boost::bind ( set_we_type_for_handle<data::handle::place>
+                                , handle
+                                , tr ("place_set_type_dialog_title_for_%1").arg
+                                  (QString::fromStdString (handle.get().name()))
+                                , tr ("place_set_type_prompt")
+                                , QString::fromStdString (handle.get().type)
+                                , event->widget()
+                                , this
+                                )
+                  );
+              }
 
               menu->addSeparator();
 
