@@ -263,32 +263,10 @@ namespace fhg
           }
         }
 
-
-//           void place_item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
-//           {
-//             if (mode() == style::mode::DRAG)
-//               {
-//                 setPos (style::raster::snap (pos() + event->pos() - _drag_start));
-//                 event->accept();
-//                 scene()->update();
-//               }
-//             else
-//               {
-//                 connectable_item::mouseMoveEvent (event);
-//               }
-//           }
-//           void place_item::mousePressEvent (QGraphicsSceneMouseEvent* event)
-//           {
-//             if (event->modifiers() == Qt::ControlModifier)
-//               {
-//                 mode_push (style::mode::DRAG);
-//                 _drag_start = event->pos();
-//                 event->accept();
-//                 return;
-//               }
-
-//             connectable_item::mousePressEvent (event);
-//           }
+        bool place_item::is_movable() const
+        {
+          return !handle().is_implicit();
+        }
       }
     }
   }

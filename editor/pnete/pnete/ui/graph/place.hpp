@@ -48,6 +48,8 @@ namespace fhg
           virtual void setPos (const QPointF&);
           virtual QPainterPath shape() const;
 
+          virtual bool is_movable() const;
+
         public slots:
           void refresh_content();
 

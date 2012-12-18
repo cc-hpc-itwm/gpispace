@@ -137,7 +137,7 @@ namespace fhg
         }
         void base_item::mousePressEvent (QGraphicsSceneMouseEvent* event)
         {
-          if (event->modifiers() == Qt::ControlModifier)
+          if (event->modifiers() == Qt::ControlModifier && is_movable())
             {
               mode_push (mode::MOVE);
               _move_start = event->pos();
@@ -215,6 +215,11 @@ namespace fhg
               }
             }
           }
+        }
+
+        bool base_item::is_movable() const
+        {
+          return true;
         }
       }
     }

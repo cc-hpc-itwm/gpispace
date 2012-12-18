@@ -89,6 +89,8 @@ namespace fhg
             , const ::we::type::property::value_type& value
             );
 
+          virtual bool is_movable() const;
+
         private:
           style::type _style;
           std::stack<mode::type> _mode;
