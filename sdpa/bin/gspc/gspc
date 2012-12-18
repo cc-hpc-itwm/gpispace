@@ -3,7 +3,7 @@
 mydir=$(dirname $(which "$0"))
 
 prefix_path=$(readlink -f "${mydir}/../")
-exec_path="${prefix_path}/libexec/sdpa/scripts"
+exec_path="${prefix_path}/libexec/gspc/scripts"
 etc_path="${prefix_path}/etc"
 bin_path="${prefix_path}/bin"
 lib_path="${prefix_path}/lib"
