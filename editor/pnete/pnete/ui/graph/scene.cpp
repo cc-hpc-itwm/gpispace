@@ -314,7 +314,8 @@ namespace fhg
                   ( menu->addAction (tr ("place_make_explicit"))
                   , SIGNAL (triggered())
                   , item_below_cursor
-                  , boost::bind (nyi, "place: make explicit")
+                  , boost::bind
+                    (&data::handle::place::make_explicit, handle, this)
                   );
               }
               else
