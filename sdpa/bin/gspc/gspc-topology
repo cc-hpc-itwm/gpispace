@@ -186,7 +186,9 @@ function action_status ()
         color_off="$GSPC_COLOR_OFF"
     fi
     if gspc_isatty 1 ; then
-        columns=3
+        # format from below: '[ID] <20-chars> ?'
+        columns=$(( $(tput cols) / 27 ))
+        columns=$((columns > 0 ? columns : 1))
     fi
 
     local bg_pid=()
