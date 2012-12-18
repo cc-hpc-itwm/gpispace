@@ -114,7 +114,7 @@ namespace fhg
           5,       // qt 4.8.3
           0x0,     // class name: binding_object\0
           0,  0x0, // no class info
-          1,  0xE, // methods: 1, starting at 0xE in this struct
+          2,  0xE, // methods: 2, starting at 0xE in this struct
           0,  0x0, // no properties
           0,  0x0, // no enums/sets
           0,  0x0, // no constructors
@@ -122,9 +122,15 @@ namespace fhg
           0,       // no signals
 
           0x0F, // signature: receiver_destroyed()\0
-          0x2F, // parameters: \0
-          0x2F, // return type: \0
-          0x2F, // tag: \0
+          0x0E, // parameters: \0
+          0x0E, // return type: \0
+          0x0E, // tag: \0
+          0x0A, // flags: public slot
+
+          0x24, // signature: sender_destroyed()\0
+          0x0E, // parameters: \0
+          0x0E, // return type: \0
+          0x0E, // tag: \0
           0x0A, // flags: public slot
 
           0        // eod
@@ -133,7 +139,7 @@ namespace fhg
         static const char qt_meta_stringdata_binding_object[] = {
           /* 0x00 */ "binding_object\0"
           /* 0x0F */ "receiver_destroyed()\0"
-          /* 0x24 */ "\0"
+          /* 0x24 */ "sender_destroyed()\0"
         };
 
         const QMetaObject binding_object::staticMetaObject = {
@@ -178,6 +184,11 @@ namespace fhg
           if (_id == 0)
           {
             receiver_destroyed();
+            return -1;
+          }
+          else if (_id == 1)
+          {
+            sender_destroyed();
             return -1;
           }
 
@@ -242,12 +253,17 @@ namespace fhg
           }
 
           bool already_knows_this_receiver = false;
+          bool already_knows_this_sender = false;
 
           for (int i (0); i < _bindings.size(); ++i)
           {
             if (_bindings[i].receiver == receiver)
             {
               already_knows_this_receiver = true;
+            }
+            if (_bindings[i].sender == sender)
+            {
+              already_knows_this_sender = true;
             }
           }
 
@@ -259,6 +275,11 @@ namespace fhg
           {
             QObject::connect
               (receiver, SIGNAL(destroyed()), this, SLOT(receiver_destroyed()));
+          }
+          if (!already_knows_this_sender && sender)
+          {
+            QObject::connect
+              (sender, SIGNAL(destroyed()), this, SLOT(sender_destroyed()));
           }
 
           static_cast<connect_notify_object*> (sender)->
@@ -291,7 +312,7 @@ namespace fhg
             const Binding& b = m_bindings.at (i);
             if ( (b.signalIndex == signalIndex || signalIndex == -1)
                && (b.sender == sender || !sender)
-               && b.receiver == receiver
+               && (b.receiver == receiver || !receiver)
                )
             {
               QMetaObject::disconnect
@@ -323,6 +344,15 @@ namespace fhg
           if (obj)
           {
             unbind (NULL, NULL, obj);
+          }
+        }
+        void binding_object::sender_destroyed()
+        {
+          QObject* obj = sender();
+
+          if (obj)
+          {
+            unbind (obj, NULL, NULL);
           }
         }
       }

@@ -63,6 +63,7 @@ namespace fhg
 
         public slots:
           void receiver_destroyed();
+          void sender_destroyed();
 
           // core QObject stuff: we implement this ourselves rather than
           // via moc, since qt_metacall() is the core of the binding
