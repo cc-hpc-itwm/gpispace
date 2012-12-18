@@ -80,6 +80,11 @@ namespace fhg
             return false;
           }
         }
+
+        void place::make_explicit (const QObject* origin) const
+        {
+          change_manager().make_explicit (origin, *this);
+        }
       }
     }
   }

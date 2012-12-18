@@ -22,15 +22,19 @@ Options:
 Environment information:
 
     --exec-path    : print the path to the helper scripts
+    --etc-path     : path to system config path
+    --bin-path     : path to binaries
+    --lib-path     : path to libraries
+    --plugin-path  : path to plugins
 
 Commonly used commands:
 
-$(gspc list-commands --indent=4)
+$(gspc --no-alias list-commands --indent=4)
 EOF
 }
 
 if [ -z "$1" ] ; then
-   usage
+    usage
 else
     gspc "$1" --help
 fi

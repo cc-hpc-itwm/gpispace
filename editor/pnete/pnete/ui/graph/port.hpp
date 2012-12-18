@@ -45,13 +45,15 @@ namespace fhg
           const std::string& name() const;
           const std::string& we_type () const;
 
-          const port::orientation::type& orientation() const;
+          port::orientation::type orientation() const;
           const port::orientation::type& orientation(const port::orientation::type&);
 
           virtual bool is_connectable_with (const connectable_item*) const;
 
           enum { Type = port_graph_type };
           virtual int type() const { return Type; }
+
+          virtual void add_cap_for_direction (QPolygonF*, const QPointF&) const;
 
           QRectF bounding_rect(bool cap = true, int cap_factor = 0) const;
           virtual QPainterPath shape() const;
@@ -99,6 +101,8 @@ namespace fhg
                               )
             : port_item (handle, parent)
             {}
+
+          virtual void add_cap_for_direction (QPolygonF*, const QPointF&) const;
 
           enum { Type = top_level_port_graph_type };
           virtual int type() const { return Type; }

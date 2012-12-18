@@ -25,7 +25,6 @@ namespace fhg
     {
       class view_manager;
       class StructureView;
-      class GraphView;
       class transition_library_view;
 
       class editor_window : public QMainWindow

@@ -40,11 +40,15 @@ namespace fhg
 
           virtual const data::handle::place& handle() const;
 
+          virtual bool is_connectable_with (const connectable_item*) const;
+
           std::string name() const;
           const std::string& we_type() const;
 
           virtual void setPos (const QPointF&);
           virtual QPainterPath shape() const;
+
+          virtual bool is_movable() const;
 
         public slots:
           void refresh_content();
@@ -80,6 +84,7 @@ namespace fhg
           const QStaticText& content() const;
           QSizeF content_size() const;
           QPointF content_pos() const;
+          void update_implicity();
         };
       }
     }

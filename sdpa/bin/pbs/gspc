@@ -1,8 +1,16 @@
 #!/bin/bash
 
 mydir=$(dirname $(which "$0"))
-exec_path=$(readlink -f "${mydir}/../libexec/sdpa/scripts")
+
+prefix_path=$(readlink -f "${mydir}/../")
+exec_path="${prefix_path}/libexec/sdpa/scripts"
+etc_path="${prefix_path}/etc"
+bin_path="${prefix_path}/bin"
+lib_path="${prefix_path}/lib"
+plugin_path="${prefix_path}/libexec/fhg/plugins"
+
 verbose=0
+resolve_alias=true
 
 . "${exec_path}/gspc-sh-version"
 if [ $? -ne 0 ] ; then
@@ -52,6 +60,42 @@ while true ; do
             shift
             exit 0
             ;;
+        --etc-path)
+            if [ -z "${etc_path}" ] ; then
+                echo >&2 "could not deduce etc-path"
+                exit 1
+            fi
+            echo "$etc_path"
+            shift
+            exit 0
+            ;;
+        --bin-path)
+            if [ -z "${bin_path}" ] ; then
+                echo >&2 "could not deduce bin-path"
+                exit 1
+            fi
+            echo "$bin_path"
+            shift
+            exit 0
+            ;;
+        --lib-path)
+            if [ -z "${lib_path}" ] ; then
+                echo >&2 "could not deduce lib-path"
+                exit 1
+            fi
+            echo "$lib_path"
+            shift
+            exit 0
+            ;;
+        --plugin-path)
+            if [ -z "${plugin_path}" ] ; then
+                echo >&2 "could not deduce plugin-path"
+                exit 1
+            fi
+            echo "$plugin_path"
+            shift
+            exit 0
+            ;;
         --version)
             echo "GPI-Space ${GSPC_INFO_VERSION}"
             shift
@@ -66,6 +110,10 @@ while true ; do
             echo "${GSPC_INFO_REVISION}"
             shift
             exit 0
+            ;;
+        --no-alias)
+            resolve_alias=false
+            shift
             ;;
         --verbose) verbose=$((verbose + 1)); shift ;;
         -[a-z]*)
@@ -106,9 +154,13 @@ gspc_prepend_path PATH "${mydir}"
 
 cmd_name="$1"; shift
 
-cmd=( $("${exec_path}/gspc-config" --get "alias.${cmd_name}") )
-if [ $? -eq 0 ] ; then
-    cmd_name="${cmd[0]}"
+if $resolve_alias ; then
+    cmd=( $("${exec_path}/gspc-config" --get "alias.${cmd_name}") )
+    if [ $? -eq 0 ] ; then
+        cmd_name="${cmd[0]}"
+    fi
+else
+    cmd=()
 fi
 
 cmd[0]=$(_resolve_command_path "${cmd_name}")
@@ -116,5 +168,5 @@ cmd[0]=$(_resolve_command_path "${cmd_name}")
 if [ -x "${cmd[0]}" ] ; then
     GSPC_VERBOSE="${verbose}" "${cmd[@]}" "$@"
 else
-    echo >&2 "gspc: '$cmd_name' is not a GPI-Space command. See 'gspc --help'."
+    echo >&2 "gspc: '$cmd_name' is not a GPI-Space command. See 'gspc help'."
 fi

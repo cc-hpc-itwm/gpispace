@@ -27,6 +27,8 @@ set (scripts
   gspc-help
   gspc-template
   gspc-topology
+  gspc-log
+  gspc-init
 )
 
 set (files

@@ -1,0 +1,81 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="log command interface"
+GSPC_IMPORTANT_API_COMMAND=false
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: log [-h|--help] [--<LEVEL>] [--tag <tag>] [--] [message...]
+
+Level:
+   --trace        log with trace level
+   --debug        log with debug level
+   --info         log with info level
+   --warn         log with warn level
+   --error        log with error level
+
+Options:
+
+   --tag <tag>    specify the component to tag the log message with
+
+   If <message> is not specified, read it from STDIN instead.
+EOF
+}
+
+if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+
+TEMP=`getopt -o h --long help,tag:,trace,debug,info,warn,error -n 'log' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+level=
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --trace)
+            level=trace
+            shift
+            ;;
+        --debug)
+            level=debug
+            shift
+            ;;
+        --info)
+            level=info
+            shift
+            ;;
+        --warn)
+            level=warn
+            shift
+            ;;
+        --error)
+            level=error
+            shift
+            ;;
+        --tag)
+            tag="$2"
+            shift; shift
+            ;;
+        --) shift; break ;;
+        *) gspc_log_error log "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+if [ -z "$level" ] ; then
+    level=info
+fi
+if [ -z "$tag" ] ; then
+    tag="log"
+fi
+
+if [ $# -gt 0 ] ; then
+    gspc_log_$level "$tag" "$@"
+else
+    gspc_log_$level "$tag" "$(cat)"
+fi

@@ -5,6 +5,8 @@
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/transition.hpp>
 #include <pnete/data/internal.hpp>
+#include <pnete/data/manager.hpp>
+#include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
@@ -105,14 +107,14 @@ namespace fhg
                                       , const QString& dialog_title
                                       , const QString& prompt
                                       , const QString& current_type
-                                      , QGraphicsSceneContextMenuEvent* event
+                                      , QWidget* widget
                                       , QObject* origin
                                       )
           {
             bool ok;
             const QString text
               ( QInputDialog::getText
-                ( event->widget()
+                ( widget
                 , dialog_title
                 , prompt
                 , QLineEdit::Normal
@@ -153,10 +155,36 @@ namespace fhg
               );
 
             fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_top_level_port"))
+              ( menu_new->addAction (tr ("new_top_level_port_in"))
               , SIGNAL (triggered())
               , this
-              , boost::bind (&data::handle::function::add_port, function(), this)
+              , boost::bind ( &data::handle::function::add_port
+                            , function()
+                            , this
+                            , we::type::PORT_IN
+                            )
+              );
+
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_top_level_port_out"))
+              , SIGNAL (triggered())
+              , this
+              , boost::bind ( &data::handle::function::add_port
+                            , function()
+                            , this
+                            , we::type::PORT_OUT
+                            )
+              );
+
+            fhg::util::qt::boost_connect<void()>
+              ( menu_new->addAction (tr ("new_top_level_port_tunnel"))
+              , SIGNAL (triggered())
+              , this
+              , boost::bind ( &data::handle::function::add_port
+                            , function()
+                            , this
+                            , we::type::PORT_TUNNEL
+                            )
               );
 
             menu_new->addSeparator();
@@ -208,7 +236,7 @@ namespace fhg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("port_set_type_prompt")
                               , QString::fromStdString (handle.get().type)
-                              , event
+                              , event->widget()
                               , this
                               )
                 );
@@ -241,7 +269,7 @@ namespace fhg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("port_set_type_prompt")
                               , QString::fromStdString (handle.get().type)
-                              , event
+                              , event->widget()
                               , this
                               )
                 );
@@ -280,20 +308,33 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction(tr ("place_set_type"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind ( set_we_type_for_handle<data::handle::place>
-                              , handle
-                              , tr ("place_set_type_dialog_title_for_%1").arg
-                                (QString::fromStdString (handle.get().name()))
-                              , tr ("place_set_type_prompt")
-                              , QString::fromStdString (handle.get().type)
-                              , event
-                              , this
-                              )
-                );
+              if (handle.is_implicit())
+              {
+                fhg::util::qt::boost_connect<void()>
+                  ( menu->addAction (tr ("place_make_explicit"))
+                  , SIGNAL (triggered())
+                  , item_below_cursor
+                  , boost::bind
+                    (&data::handle::place::make_explicit, handle, this)
+                  );
+              }
+              else
+              {
+                fhg::util::qt::boost_connect<void()>
+                  ( menu->addAction(tr ("place_set_type"))
+                  , SIGNAL (triggered())
+                  , item_below_cursor
+                  , boost::bind ( set_we_type_for_handle<data::handle::place>
+                                , handle
+                                , tr ("place_set_type_dialog_title_for_%1").arg
+                                  (QString::fromStdString (handle.get().name()))
+                                , tr ("place_set_type_prompt")
+                                , QString::fromStdString (handle.get().type)
+                                , event->widget()
+                                , this
+                                )
+                  );
+              }
 
               menu->addSeparator();
 
@@ -440,55 +481,52 @@ namespace fhg
                   , items_of_type<connectable_item> (event->scenePos())
                   )
           {
-            const port_item* as_port
-              (qobject_cast<const port_item*> (item));
-            const place_item* as_place
-              (qobject_cast<const place_item*> (item));
-
             const connectable_item* pending (_pending_connection->fixed_end());
 
-            if (item->direction() == pending->direction())
+            if (item->is_connectable_with (pending))
             {
-              throw std::runtime_error
-                ("connecting two items with same direction");
-            }
+              const port_item* as_port
+                (qobject_cast<const port_item*> (item));
+              const place_item* as_place
+                (qobject_cast<const place_item*> (item));
 
-            const port_item* pending_as_port
-              (qobject_cast<const port_item*> (pending));
-            const place_item* pending_as_place
-              (qobject_cast<const place_item*> (pending));
+              const port_item* pending_as_port
+                (qobject_cast<const port_item*> (pending));
+              const place_item* pending_as_place
+                (qobject_cast<const place_item*> (pending));
 
-            if (as_port && pending_as_port)
-            {
-              if (as_port->direction() == connectable::direction::IN)
+              if (as_port && pending_as_port)
               {
-                net().add_connection_with_implicit_place
-                  (this, pending_as_port->handle(), as_port->handle());
+                if (as_port->direction() == connectable::direction::IN)
+                {
+                  net().add_connection_with_implicit_place
+                    (this, pending_as_port->handle(), as_port->handle());
+                }
+                else
+                {
+                  net().add_connection_with_implicit_place
+                    (this, as_port->handle(), pending_as_port->handle());
+                }
               }
               else
               {
-                net().add_connection_with_implicit_place
-                  (this, as_port->handle(), pending_as_port->handle());
-              }
-            }
-            else
-            {
-              const port_item* port (as_port ? as_port : pending_as_port);
-              const place_item* place (as_place ? as_place : pending_as_place);
+                const port_item* port (as_port ? as_port : pending_as_port);
+                const place_item* place (as_place ? as_place : pending_as_place);
 
-              if (port->direction() == connectable::direction::IN)
-              {
-                net().add_connection_or_association
-                  (this, place->handle(), port->handle());
+                if (port->direction() == connectable::direction::IN)
+                {
+                  net().add_connection_or_association
+                    (this, place->handle(), port->handle());
+                }
+                else
+                {
+                  net().add_connection_or_association
+                    (this, port->handle(), place->handle());
+                }
               }
-              else
-              {
-                net().add_connection_or_association
-                  (this, port->handle(), place->handle());
-              }
-            }
 
-            event->accept();
+              event->accept();
+            }
             break;
           }
 
@@ -508,6 +546,69 @@ namespace fhg
 
           QGraphicsScene::keyPressEvent (event);
         }
+
+        //!@{
+        //! \note Dragging in transitions from the library
+        //! \todo Paint a ghost transition while dragging in.
+        void scene_type::dragEnterEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          _mouse_position = event->scenePos();
+
+          QGraphicsScene::dragEnterEvent (event);
+
+          event->setAccepted
+            (event->mimeData()->hasFormat (TransitionLibraryModel::mimeType));
+        }
+
+        void scene_type::dragMoveEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          _mouse_position = event->scenePos();
+
+          QGraphicsScene::dragMoveEvent (event);
+
+          event->setAccepted
+            (event->mimeData()->hasFormat (TransitionLibraryModel::mimeType));
+
+          _mouse_position = event->scenePos();
+        }
+
+        void scene_type::dropEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          _mouse_position = event->scenePos();
+
+          QGraphicsScene::dropEvent (event);
+
+          const QMimeData* mimeData (event->mimeData());
+
+          if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
+          {
+            QByteArray byteArray
+              (mimeData->data (TransitionLibraryModel::mimeType));
+            QDataStream stream (&byteArray, QIODevice::ReadOnly);
+
+            QSet<QString> paths;
+
+            stream >> paths;
+
+            foreach (const QString& path, paths)
+            {
+              data::internal_type* data
+                (data::manager::instance().load (path));
+
+              net().add_transition
+                ( this
+                , data->function().get().clone
+                  ( ::xml::parse::type::function_type::make_parent
+                    (net().id().id())
+                  , net().id().id_mapper()
+                  )
+                );
+
+              event->acceptProposedAction();
+            }
+          }
+        }
+        //!@}
 
         void scene_type::auto_layout()
         {
@@ -657,19 +758,9 @@ namespace fhg
           return result;
         }
 
-        namespace
+        QList<place_item*> scene_type::all_places() const
         {
-          template<typename item_type>
-            weaver::item_by_name_type
-            name_map_for_items (const QList<item_type*>& items)
-          {
-            weaver::item_by_name_type result;
-            foreach (item_type* item, items)
-            {
-              result[item->handle().get().name()] = item;
-            }
-            return result;
-          }
+          return items_of_type<place_item>();
         }
 
         template<typename item_type, typename handle_type>
@@ -695,8 +786,6 @@ namespace fhg
           if (is_in_my_net (place))
           {
             //! \todo Weaver.
-            // weaver::item_by_name_type places
-            //   (name_map_for_items (items_of_type<place_item>()));
             //! \note This can't be easily weaved, as 'ports'
             //! needs to contain only the ports of the transition
             //! where the connection's port is in. Getting children
@@ -735,20 +824,14 @@ namespace fhg
           if (is_in_my_net (transition))
           {
             transition_item* item (new transition_item (transition));
-
             addItem (item);
 
-            weaver::item_by_name_type places
-              (name_map_for_items (items_of_type<place_item>()));
-
-            weaver::transition wt
-              ( _internal
+            weaver::display::transition
+              ( transition.id()
+              , _internal
               , this
               , item
-              , transition.parent().get().make_reference_id()
-              , places
               );
-            weaver::from::transition (&wt, transition.id());
 
             if (origin == this)
             {
@@ -771,14 +854,9 @@ namespace fhg
           if (is_in_my_net (place))
           {
             place_item* item (new place_item (place));
-
             addItem (item);
 
-            //! \note Does not need actual list, as it only adds itself.
-            weaver::item_by_name_type place_by_name;
-
-            weaver::place wp (item, place_by_name);
-            weaver::from::place (&wp, place.id());
+            weaver::display::place (place.id(), item);
 
             if (origin == this)
             {
@@ -793,18 +871,18 @@ namespace fhg
           remove_item_for_handle<place_item> (place);
         }
 
+
         // # port ####################################################
         void scene_type::port_added
           (const QObject* origin, const data::handle::port& port)
         {
           if (is_in_my_net (port))
           {
-            weaver::item_by_name_type places
-              (name_map_for_items (items_of_type<place_item>()));
-
-            weaver::port_toplevel wptl (this, places, _internal);
-
-            weaver::from::port (&wptl, port.id());
+            weaver::display::top_level_port
+              ( port.id()
+              , this
+              , _internal
+              );
 
             if (origin == this)
             {

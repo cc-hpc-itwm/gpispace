@@ -4,7 +4,6 @@
 
 #include <pnete/data/manager.hpp>
 #include <pnete/data/handle/expression.hpp>
-#include <pnete/ui/GraphView.hpp>
 #include <pnete/ui/base_editor_widget.hpp>
 #include <pnete/ui/document_view.hpp>
 #include <pnete/ui/editor_window.hpp>
@@ -97,7 +96,7 @@ namespace fhg
 
         //! \todo enable and disable actions
 
-//         GraphView* old_view (_current_view);
+//         graph_view* old_view (_current_view);
 //         _current_view = current_widget->graph_view();
 //         if (old_view != _current_view)
 //         {

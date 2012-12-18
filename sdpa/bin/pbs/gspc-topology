@@ -14,12 +14,17 @@ Action:
 
    --list                list the current topology
    --status              print status of each component
+
+Options:
+
+   --kvs-host <host>     specify the host of the KVS
+   --kvs-port <port>     specify the port of the KVS
 EOF
 }
 
 #if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
-TEMP=`getopt -o hl --long help,list,status,no-header -n 'template' -- "$@"`
+TEMP=`getopt -o hl --long help,kvs-host:,kvs-port:,list,status,no-header -n 'topology' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -27,6 +32,8 @@ eval set -- "$TEMP"
 
 action=
 show_header=true
+kvs_host=
+kvs_port=
 
 while true ; do
     case "$1" in
@@ -51,6 +58,14 @@ while true ; do
             show_header=false
             shift
             ;;
+        --kvs-host)
+            kvs_host="$2"
+            shift ; shift
+            ;;
+        --kvs-port)
+            kvs_port="$2"
+            shift ; shift
+            ;;
         --) shift; break ;;
         *) gspc_log_error topology "Internal error on argument: '$1'"; exit 1 ;;
     esac
@@ -60,9 +75,49 @@ if [ -z "$action" ] ; then
     action=list
 fi
 
+function gspc_require_kvs ()
+{
+    if [ -z "$kvs_host" ]
+    then
+        kvs_host=$(gspc --no-alias config --local --get kvs.host)
+        if [ $? -ne 0 ] ; then
+            kvs_host="$(hostname)"
+            gspc_log_trace topology "kvs-host was not set, defaulting to ${kvs_host}"
+        else
+            gspc_log_trace topology "using kvs-host from local config: ${kvs_host}"
+        fi
+    fi
+
+    if [ -z "$kvs_port" ]
+    then
+        kvs_port=$(gspc --no-alias config --local --get kvs.port)
+        if [ $? -ne 0 ] ; then
+            kvs_port="2439"
+            gspc_log_trace topology "kvs-port was not set, defaulting to ${kvs_port}"
+        else
+            gspc_log_trace topology "using kvs-port from local config: ${kvs_port}"
+        fi
+    fi
+
+    if gspc check-port "$kvs_host" "$kvs_port" ; then
+        gspc_log_trace topology "kvs config: host => $kvs_host port => $kvs_port"
+        return 0
+    else
+        gspc_log_error topology "KVS is not reachable: host => '$kvs_host' port => '$kvs_port'"
+        exit 1
+    fi
+}
+
+function gspc_get_kvs_entry ()
+{
+    local key="$1"; shift
+
+    fhgkvsc -H "$kvs_host" -P "$kvs_port" -g "$key" 2>/dev/null
+}
+
 function get_component_info ()
 {
-    gspc_require_gspc_dir
+    gspc_require_kvs
 
     local all_components=()
     local components_to_get_info_for=( "${@}" )
@@ -84,6 +139,12 @@ function get_component_info ()
             name="${all_components[i+5]}"
             pid="${all_components[i+7]}"
 
+            # we are not interested in clients
+            if [[ "$name" =~ ^sdpac-.*$ ]]
+            then
+                continue
+            fi
+
             if [ -n "${components_to_get_info_for}" ] ; then
                 local filtered=true
                 for component in "${components_to_get_info_for[@]}"
@@ -103,6 +164,8 @@ function get_component_info ()
 
 function action_status ()
 {
+    gspc_require_kvs
+
     local component_to_check=("$@")
     local component_info=()
 
@@ -116,14 +179,18 @@ function action_status ()
     color_dn=""
     color_off=""
 
-    color_mode=$(gspc config --get color.status)
-    if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
-        if gspc_is_a_human_watching ; then
-            color_up="\e[0;32m"
-            color_dn="\e[0;31m"
-            color_off="\e[0m"
-        fi
+    columns=1
+    if gspc_is_color_enabled status 1 ; then
+        color_up="$GSPC_COLOR_GREEN"
+        color_dn="$GSPC_COLOR_RED"
+        color_off="$GSPC_COLOR_OFF"
     fi
+    if gspc_isatty 1 ; then
+        columns=3
+    fi
+
+    local bg_pid=()
+    local bg_pid_name=()
 
     for ((i=0 ; i < ${#component_info[@]} ; i+=4))
     do
@@ -132,21 +199,41 @@ function action_status ()
         pid="${component_info[i+2]}"
         name="${component_info[i+3]}"
 
-        if gspc check-port "$host" "$port"
+        gspc check-port "$host" "$port" &
+
+        bg_pid+=( $! )
+        bg_pid_name+=( "$name" )
+    done
+
+    col=0
+    for ((i=0 ; i < ${#bg_pid[@]} ; ++i))
+    do
+        if wait ${bg_pid[i]}
         then
             state="UP"; color="$color_up"
         else
             state="DN"; color="$color_dn"
         fi
-        printf "[${color}%-2s${color_off}] %s\n" "$state" "$name"
+        printf "[${color}%-2s${color_off}] %-20s" "$state" "${bg_pid_name[i]}"
+        col=$((col + 1))
+        if [ $col -ge $columns ] ; then
+            printf "\n"
+            col=0
+        else
+            printf " "
+        fi
     done
+    if [ $col -gt 0 ] ; then
+        printf "\n"
+        col=0
+    fi
 
     return 0
 }
 
 case "${action}" in
     list)
-        gspc_require_gspc_dir
+        gspc_require_kvs
         if $show_header ; then
             printf "%-12s %-5s %-5s %-s\n" "HOST" "PORT" "PID" "NAME"
         fi

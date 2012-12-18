@@ -508,7 +508,9 @@ namespace we { namespace type {
                           {
                             BOOST_FOREACH (const pmv_t& pmv, trans.ports())
                               {
-                                if (pmv.second.name() == stack.top().second)
+                                if (  pmv.second.is_tunnel()
+                                   && pmv.second.name() == stack.top().second
+                                   )
                                   {
                                     ecbt[trans.name()].push_back
                                       (extra_connection_type

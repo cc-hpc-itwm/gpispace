@@ -7,6 +7,22 @@
 
 ################################################################################
 #                                                                              #
+#                      Common Variables                                        #
+#                                                                              #
+################################################################################
+
+GSPC_COLOR_BLACK='\e[0;30m'
+GSPC_COLOR_RED='\e[0;31m'
+GSPC_COLOR_GREEN='\e[0;32m'
+GSPC_COLOR_YELLOW='\e[0;33m'
+GSPC_COLOR_BLUE='\e[0;34m'
+GSPC_COLOR_PURPLE='\e[0;35m'
+GSPC_COLOR_CYAN='\e[0;36m'
+GSPC_COLOR_WHITE='\e[0;37m'
+GSPC_COLOR_OFF='\e[0m'
+
+################################################################################
+#                                                                              #
 #                        Log functions                                         #
 #                                                                              #
 ################################################################################
@@ -38,71 +54,60 @@ function gspc_isatty()
     fi
 }
 
-function gspc_is_a_human_watching ()
+function gspc_is_color_enabled ()
 {
-    if gspc_isatty 1 ; then
-        return 0
+    local which="${1:?}" ; shift
+    local fd="${1:?}" ; shift
+
+    # see gspc-config why this guard has been placed here
+    if [ -n "$GSPC_LOG_FROM_CONFIG" ] ; then
+        mode=auto
     else
-        return 1
+        mode=$(gspc --no-alias config --get color."${which}")
     fi
+
+    case "$mode" in
+        on)
+            return 0
+            ;;
+        off)
+            return 1
+            ;;
+        ''|auto)
+            if gspc_isatty $fd ; then
+                return 0
+            else
+                return 1
+            fi
+            ;;
+        *)
+            echo >&2 "gspc: invalid config color mode: '$mode'"
+            return 0
+            ;;
+    esac
 }
 
 function gspc_log_impl ()
 {
-    local level="$1"; shift
-    local component="$1" ; shift
+    local level="${1:?}"; shift
+    local component="${1:?}" ; shift
 
-    level_id='T'
+    level_id=${level:0:1}
+    level_id=$(echo ${level_id} | tr '[:lower:]' '[:upper:]')
     s_color=""
     e_color=""
 
-    color_mode=$(gspc config --global --get color.log)
-    if [ -n "$color_mode" -a "$color_mode" != "off" ] ; then
-        if gspc_isatty 2 ; then
-            color_mode=on
-        else
-            color_mode=off
-        fi
+    if gspc_is_color_enabled log 2 ; then
+        color_trace=""
+        color_debug=""
+        color_info="$GSPC_COLOR_CYAN"
+        color_warn="$GSPC_COLOR_YELLOW"
+        color_error="$GSPC_COLOR_RED"
+        e_color="$GSPC_COLOR_OFF"
     fi
 
-    if [ "$color_mode" = "on" ]
-    then
-        color_black="\e[0;30m"
-        color_red="\e[0;31m"
-        color_green="\e[0;32m"
-        color_yellow="\e[0;33m"
-        color_blue="\e[0;34m"
-        color_purple="\e[0;35m"
-        color_cyan="\e[0;36m"
-        color_white="\e[0;37m"
-        e_color='\e[0m'
-    fi
+    s_color=$(eval echo "\$color_$level")
 
-    case "$level" in
-        trace)
-            s_color=""
-            level_id=T
-            ;;
-        debug)
-            s_color=""
-            level_id=D
-            ;;
-        info)
-            s_color=""
-            level_id=I
-            ;;
-        warn)
-            s_color="$color_yellow"
-            level_id=W
-            ;;
-        error)
-            s_color="$color_red"
-            level_id=E
-            ;;
-        *)
-            s_color=""
-            ;;
-    esac
     echo -e >&2 "${s_color}[${level_id}] ($component): $@${e_color}"
 }
 
@@ -158,7 +163,7 @@ function gspc_abspath ()
 function gspc_call_editor ()
 {
     local editor=()
-    editor=( $(gspc config --get core.editor) )
+    editor=( $(gspc --no-alias config --get core.editor) )
     if [ $? -ne 0 -o -z "${editor}" ] ; then
         editor=("${EDITOR:=/usr/bin/vi}")
     fi
@@ -192,23 +197,28 @@ function gspc_require_gspc_dir ()
         exit 1
     fi
 
+    if [ ! -e "$GSPC_DIR"/.gspc_dir ]
+    then
+        gspc_log_error core "GSPC_DIR ('$GSPC_DIR') not initialized"
+        exit 1
+    fi
+
     return 0
 }
 
-function gspc_get_kvs_entry ()
+function gspc_atomic ()
 {
-    local key="$1"; shift
-    local kvs_host=""
-    local kvs_port=""
+    local prev_int=
+    local prev_term=
 
-    kvs_host=$(gspc config --local --get kvs.host)
-    if [ $? -ne 0 ] ; then
-        return 1
-    fi
-    kvs_port=$(gspc config --local --get kvs.port)
-    if [ $? -ne 0 ] ; then
-        return 1
-    fi
+    prev_int=$(trap -p INT)
+    prev_term=$(trap -p TERM)
 
-    fhgkvsc -H "$kvs_host" -P "$kvs_port" -g "$key" 2>/dev/null
+    trap '' INT TERM
+    "$@"
+    ec=$?
+
+    $prev_int
+    $prev_term
+    return $ec
 }

@@ -17,6 +17,7 @@
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 #include <pnete/ui/graph/connection.fwd.hpp>
 #include <pnete/ui/graph/pending_connection.fwd.hpp>
+#include <pnete/ui/graph/place.fwd.hpp>
 #include <pnete/ui/graph/transition.fwd.hpp>
 #include <pnete/ui/graph_view.fwd.hpp>
 
@@ -59,6 +60,10 @@ namespace fhg
                                  , const data::handle::connect& handle
                                  );
 
+
+          //! \note Used by weaver to connect ports and places by name.
+          QList<place_item*> all_places() const;
+
         public slots:
           void auto_layout();
 
@@ -95,6 +100,9 @@ namespace fhg
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
           virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
           virtual void keyPressEvent (QKeyEvent* event);
+          virtual void dragEnterEvent (QGraphicsSceneDragDropEvent* event);
+          virtual void dragMoveEvent (QGraphicsSceneDragDropEvent* event);
+          virtual void dropEvent (QGraphicsSceneDragDropEvent* event);
 
         private:
           template<typename item_type, typename handle_type>
@@ -127,8 +135,6 @@ namespace fhg
           data::handle::net _net;
           data::handle::function _function;
           data::internal_type* _internal;
-
-          friend class fhg::pnete::ui::GraphView; // for net() only.
         };
       }
     }

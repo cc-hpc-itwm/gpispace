@@ -5,6 +5,7 @@
 
 #include <pnete/data/proxy.hpp>
 #include <pnete/ui/base_editor_widget.hpp>
+#include <pnete/ui/graph/scene.fwd.hpp>
 
 #include <QObject>
 
@@ -14,14 +15,6 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace ui
-    {
-      namespace graph
-      {
-        class scene_type;
-      }
-    }
-
     namespace ui
     {
       class net_widget : public base_editor_widget

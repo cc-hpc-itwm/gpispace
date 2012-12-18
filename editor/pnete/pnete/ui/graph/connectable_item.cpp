@@ -46,7 +46,8 @@ namespace fhg
 
         bool connectable_item::is_connectable_with (const connectable_item* i) const
         {
-          return i->we_type() == we_type() && i->direction() != direction();
+          //! \note Default to connecting to anything with the same type.
+          return i->we_type() == we_type();
         }
 
         const QSet<association*>& connectable_item::associations() const

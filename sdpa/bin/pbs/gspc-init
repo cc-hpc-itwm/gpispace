@@ -1,0 +1,71 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="initialize a new GSPC_DIR"
+GSPC_IMPORTANT_API_COMMAND=true
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: init [-h|--help] [options] [directory]
+
+Options:
+
+    -f|--force       force initialization
+EOF
+}
+
+TEMP=`getopt -o h,f --long help,force -n 'init' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+force=false
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        -f|--force) force=true; shift ;;
+        --) shift; break ;;
+        *) gspc_log_error init "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+if [ -n "$1" ]
+then
+    dir=$(gspc_abspath "$1")
+fi
+
+if [ -z "$dir" ]
+then
+    dir="$GSPC_DIR"
+fi
+
+if [ -z "$dir" ]
+then
+    gspc_log_error init "gspc-dir was not specified. try 'gspc -h'"
+    exit 1
+fi
+
+if [ -d "$dir" ]
+then
+    if ! $force
+    then
+        gspc_log_error init "directory '${dir}' does already exist!"
+        exit 1
+    fi
+fi
+
+err=$(mkdir -p "$dir" 2>&1)
+ec=$?
+if [ $? -ne 0 ]
+then
+    gspc_log_error init "could not create directory '$dir': ${err}"
+    exit 1
+fi
+
+gspc --revision > "${dir}/.gspc_dir"
+
+gspc_log_trace init "initialized directory '$dir'"

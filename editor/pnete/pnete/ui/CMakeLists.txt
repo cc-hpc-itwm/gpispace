@@ -2,7 +2,7 @@
 
 set(ui_SRCS
   editor_window.cpp
-  GraphView.cpp
+  graph_view.cpp
   TransitionLibraryModel.cpp
   TransitionLibraryItem.cpp
   StructureView.cpp
@@ -29,7 +29,7 @@ set(ui_SRCS
 
 set(ui_HDRS
   editor_window.hpp
-  GraphView.hpp
+  graph_view.hpp
   TransitionLibraryModel.hpp
   TransitionLibraryItem.hpp
   StructureView.hpp
@@ -65,7 +65,7 @@ set(ui_UIS
 
 set(ui_TOMOC
   editor_window.hpp
-  GraphView.hpp
+  graph_view.hpp
   TransitionLibraryModel.hpp
   TransitionLibraryItem.hpp
 
