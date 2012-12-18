@@ -29,12 +29,6 @@ function usage()
     gspc help 2>&1
 }
 
-function _resolve_command_path ()
-{
-    local cmd_name="$1" ; shift
-    echo "${exec_path}/gspc-${cmd_name}"
-}
-
 while true ; do
     case "$1" in
         --help) usage; exit 0 ;;
@@ -163,7 +157,7 @@ else
     cmd=()
 fi
 
-cmd[0]=$(_resolve_command_path "${cmd_name}")
+cmd[0]=$(gspc_resolve_command "${cmd_name}")
 
 if [ -x "${cmd[0]}" ] ; then
     GSPC_VERBOSE="${verbose}" "${cmd[@]}" "$@"
