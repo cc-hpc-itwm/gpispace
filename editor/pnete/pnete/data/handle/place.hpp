@@ -53,6 +53,7 @@ namespace fhg
           net parent() const;
 
           bool is_implicit() const;
+          void make_explicit (const QObject*) const;
 
           using place_meta_base::operator==;
         };

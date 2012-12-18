@@ -1283,6 +1283,12 @@ namespace fhg
         push (new action::place_set_type (*this, origin, place, type));
       }
 
+      void change_manager_t::make_explicit
+        (const QObject* origin, const data::handle::place& place)
+      {
+        set_property (origin, place, "fhg.pnete.is_implicit_place", "false");
+      }
+
       void change_manager_t::set_property
         ( const QObject* origin
         , const data::handle::place& place

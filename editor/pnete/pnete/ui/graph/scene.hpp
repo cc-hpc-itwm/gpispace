@@ -100,6 +100,9 @@ namespace fhg
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
           virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
           virtual void keyPressEvent (QKeyEvent* event);
+          virtual void dragEnterEvent (QGraphicsSceneDragDropEvent* event);
+          virtual void dragMoveEvent (QGraphicsSceneDragDropEvent* event);
+          virtual void dropEvent (QGraphicsSceneDragDropEvent* event);
 
         private:
           template<typename item_type, typename handle_type>
@@ -132,8 +135,6 @@ namespace fhg
           data::handle::net _net;
           data::handle::function _function;
           data::internal_type* _internal;
-
-          friend class fhg::pnete::ui::GraphView; // for net() only.
         };
       }
     }

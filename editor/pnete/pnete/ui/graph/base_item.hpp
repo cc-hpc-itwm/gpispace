@@ -68,9 +68,6 @@ namespace fhg
           virtual void no_undo_no_raster_setPos (const QPointF&);
           virtual void no_undo_no_raster_setPos (qreal, qreal);
 
-          //! \todo eliminate write acces to _style
-          style::type& access_style();
-
           void clear_style_cache();
 
           template<typename T>
@@ -91,6 +88,8 @@ namespace fhg
             ( const ::we::type::property::key_type& key
             , const ::we::type::property::value_type& value
             );
+
+          virtual bool is_movable() const;
 
         private:
           style::type _style;

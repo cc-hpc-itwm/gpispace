@@ -4,7 +4,7 @@
 
 #include <QHBoxLayout>
 
-#include <pnete/ui/GraphView.hpp>
+#include <pnete/ui/graph_view.hpp>
 
 namespace fhg
 {
@@ -20,7 +20,7 @@ namespace fhg
           : base_editor_widget (proxy, parent)
       {
         QHBoxLayout* layout (new QHBoxLayout());
-        layout->addWidget (new ui::GraphView (scene));
+        layout->addWidget (new graph_view (scene));
         layout->setContentsMargins (0, 0, 0, 0);
         setLayout (layout);
       }

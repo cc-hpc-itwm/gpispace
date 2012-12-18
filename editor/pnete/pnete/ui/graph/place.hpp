@@ -48,6 +48,8 @@ namespace fhg
           virtual void setPos (const QPointF&);
           virtual QPainterPath shape() const;
 
+          virtual bool is_movable() const;
+
         public slots:
           void refresh_content();
 
@@ -82,6 +84,7 @@ namespace fhg
           const QStaticText& content() const;
           QSizeF content_size() const;
           QPointF content_pos() const;
+          void update_implicity();
         };
       }
     }

@@ -5,6 +5,8 @@
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/transition.hpp>
 #include <pnete/data/internal.hpp>
+#include <pnete/data/manager.hpp>
+#include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
@@ -306,20 +308,33 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction(tr ("place_set_type"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind ( set_we_type_for_handle<data::handle::place>
-                              , handle
-                              , tr ("place_set_type_dialog_title_for_%1").arg
-                                (QString::fromStdString (handle.get().name()))
-                              , tr ("place_set_type_prompt")
-                              , QString::fromStdString (handle.get().type)
-                              , event->widget()
-                              , this
-                              )
-                );
+              if (handle.is_implicit())
+              {
+                fhg::util::qt::boost_connect<void()>
+                  ( menu->addAction (tr ("place_make_explicit"))
+                  , SIGNAL (triggered())
+                  , item_below_cursor
+                  , boost::bind
+                    (&data::handle::place::make_explicit, handle, this)
+                  );
+              }
+              else
+              {
+                fhg::util::qt::boost_connect<void()>
+                  ( menu->addAction(tr ("place_set_type"))
+                  , SIGNAL (triggered())
+                  , item_below_cursor
+                  , boost::bind ( set_we_type_for_handle<data::handle::place>
+                                , handle
+                                , tr ("place_set_type_dialog_title_for_%1").arg
+                                  (QString::fromStdString (handle.get().name()))
+                                , tr ("place_set_type_prompt")
+                                , QString::fromStdString (handle.get().type)
+                                , event->widget()
+                                , this
+                                )
+                  );
+              }
 
               menu->addSeparator();
 
@@ -531,6 +546,69 @@ namespace fhg
 
           QGraphicsScene::keyPressEvent (event);
         }
+
+        //!@{
+        //! \note Dragging in transitions from the library
+        //! \todo Paint a ghost transition while dragging in.
+        void scene_type::dragEnterEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          _mouse_position = event->scenePos();
+
+          QGraphicsScene::dragEnterEvent (event);
+
+          event->setAccepted
+            (event->mimeData()->hasFormat (TransitionLibraryModel::mimeType));
+        }
+
+        void scene_type::dragMoveEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          _mouse_position = event->scenePos();
+
+          QGraphicsScene::dragMoveEvent (event);
+
+          event->setAccepted
+            (event->mimeData()->hasFormat (TransitionLibraryModel::mimeType));
+
+          _mouse_position = event->scenePos();
+        }
+
+        void scene_type::dropEvent (QGraphicsSceneDragDropEvent* event)
+        {
+          _mouse_position = event->scenePos();
+
+          QGraphicsScene::dropEvent (event);
+
+          const QMimeData* mimeData (event->mimeData());
+
+          if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
+          {
+            QByteArray byteArray
+              (mimeData->data (TransitionLibraryModel::mimeType));
+            QDataStream stream (&byteArray, QIODevice::ReadOnly);
+
+            QSet<QString> paths;
+
+            stream >> paths;
+
+            foreach (const QString& path, paths)
+            {
+              data::internal_type* data
+                (data::manager::instance().load (path));
+
+              net().add_transition
+                ( this
+                , data->function().get().clone
+                  ( ::xml::parse::type::function_type::make_parent
+                    (net().id().id())
+                  , net().id().id_mapper()
+                  )
+                );
+
+              event->acceptProposedAction();
+            }
+          }
+        }
+        //!@}
 
         void scene_type::auto_layout()
         {

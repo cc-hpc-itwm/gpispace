@@ -123,6 +123,8 @@ namespace fhg
         void set_type
           (const QObject*, const data::handle::place&, const QString&);
 
+        void make_explicit (const QObject*, const data::handle::place&);
+
         void set_property ( const QObject*
                           , const data::handle::place&
                           , const ::we::type::property::key_type&
