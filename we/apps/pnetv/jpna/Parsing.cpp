@@ -9,8 +9,9 @@
 #include <jpn/common/Foreach.h>
 #include <jpn/common/Unreachable.h>
 
-#include <we/we.hpp>
 #include <we/type/port.hpp>
+#include <we/util/codec.hpp>
+#include <we/we.hpp>
 
 #include "PetriNet.h"
 

@@ -4,6 +4,7 @@
 #include <sysexits.h>
 
 #include <we/we.hpp>
+#include <we/util/codec.hpp>
 #include <fhg/revision.hpp>
 
 #include <iostream>

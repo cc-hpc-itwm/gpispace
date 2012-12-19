@@ -19,6 +19,7 @@
 #include "RangeAdaptor.h"
 
 #include <we/we.hpp>
+#include <we/util/codec.hpp>
 #include <we/type/port.hpp>
 
 #define foreach BOOST_FOREACH

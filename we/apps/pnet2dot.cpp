@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/we.hpp>
+#include <we/util/codec.hpp>
 
 #include <we/type/bits/transition/toDot.hpp>
 

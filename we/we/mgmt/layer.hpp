@@ -28,6 +28,7 @@
 #include <fhg/util/threadname.hpp>
 
 #include <we/net.hpp>
+#include <we/util/codec.hpp>
 
 #include <boost/random.hpp>
 #include <boost/function.hpp>
