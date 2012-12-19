@@ -9,6 +9,8 @@
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 
+#include <we/mgmt/type/activity.hpp>
+
 namespace module
 {
   static void call (we::loader::loader & loader, we::mgmt::type::activity_t & act, const we::type::module_call_t & module_call)

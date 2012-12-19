@@ -3,7 +3,10 @@
 
 #include <sysexits.h>
 
-#include <we/net.hpp>
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/id.hpp>
 #include <we/util/codec.hpp>
 
 #include <iostream>

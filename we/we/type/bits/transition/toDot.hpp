@@ -5,6 +5,7 @@
 
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
+#include <we/type/net.hpp>
 
 namespace we { namespace type {
 
@@ -401,12 +402,12 @@ namespace we { namespace type {
         (const petri_net::net & net) const
         {
           typedef petri_net::net pnet_t;
-          typedef typename pnet_t::place_const_it place_const_it;
+          typedef pnet_t::place_const_it place_const_it;
           typedef petri_net::adj_place_const_it adj_place_const_it;
-          typedef typename pnet_t::transition_const_it transition_const_it;
-          typedef typename pnet_t::token_place_it token_place_it;
+          typedef pnet_t::transition_const_it transition_const_it;
+          typedef pnet_t::token_place_it token_place_it;
           typedef petri_net::connection_t connection_t;
-          typedef typename transition_t::port_map_t::value_type pmv_t;
+          typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
           typedef std::pair< place_dot_name_type
                            , petri_net::port_id_type

@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/type/transition.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <we/util/codec.hpp>
 
 #include <we/type/bits/transition/toDot.hpp>

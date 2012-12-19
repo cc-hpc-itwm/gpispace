@@ -9,9 +9,15 @@
 #include <jpn/common/Foreach.h>
 #include <jpn/common/Unreachable.h>
 
+#include <we/type/expression.fwd.hpp>
+#include <we/type/module_call.fwd.hpp>
 #include <we/type/port.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/net.hpp>
+
+#include <we/mgmt/type/activity.hpp>
+
 #include <we/util/codec.hpp>
-#include <we/net.hpp>
 
 #include "PetriNet.h"
 

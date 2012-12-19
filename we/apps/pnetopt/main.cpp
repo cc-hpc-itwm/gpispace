@@ -18,9 +18,13 @@
 #include "LuaIterator.h"
 #include "RangeAdaptor.h"
 
-#include <we/net.hpp>
-#include <we/util/codec.hpp>
+#include <we/type/net.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/place.hpp>
 #include <we/type/port.hpp>
+#include <we/mgmt/type/activity.hpp>
+
+#include <we/util/codec.hpp>
 
 #define foreach BOOST_FOREACH
 

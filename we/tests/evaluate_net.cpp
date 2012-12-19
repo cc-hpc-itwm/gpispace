@@ -7,7 +7,7 @@
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
 #include <we/util/codec.hpp>

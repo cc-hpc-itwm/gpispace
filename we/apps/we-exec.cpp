@@ -7,6 +7,7 @@
 #include <fhg/util/split.hpp>
 #include <fhg/util/getenv.hpp>
 
+#include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/type/token.hpp>
 #include <we/type/literal.hpp>
@@ -21,7 +22,6 @@
 #include <boost/foreach.hpp>
 #include "test_layer.hpp"
 
-using namespace we::mgmt;
 using namespace test;
 namespace po = boost::program_options;
 

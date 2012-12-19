@@ -25,6 +25,9 @@
 #include <boost/serialization/access.hpp>
 #include <boost/bind.hpp>
 
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <we/util/codec.hpp>
 #include <we/loader/putget.hpp>
 #include <we/type/token.hpp>

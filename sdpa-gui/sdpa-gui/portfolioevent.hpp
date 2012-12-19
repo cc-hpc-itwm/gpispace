@@ -3,6 +3,8 @@
 
 #include <QEvent>
 
+#include <we/mgmt/type/activity.hpp>
+
 class PortFolioEvent : public QEvent
 {
 public:

@@ -680,7 +680,7 @@ namespace we { namespace mgmt {
         add_map_to_internal (ext_id, int_id);
 
         // copy the activity and let it be handled internally on the next level
-        type::activity_t ext_act (desc->activity());
+        we::mgmt::type::activity_t ext_act (desc->activity());
         ext_act.transition().set_internal(true);
 
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);

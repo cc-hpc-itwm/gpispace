@@ -66,11 +66,11 @@ namespace we
       //    so that put/get can take any structs
       // see: hash_value
 
-      list_t get ( mgmt::type::activity_t const & act
+      list_t get ( we::mgmt::type::activity_t const & act
                  , std::string const & port
                  )
       {
-        typedef mgmt::type::activity_t::output_t output_t;
+        typedef we::mgmt::type::activity_t::output_t output_t;
 
         list_t tokens;
         const petri_net::port_id_type port_id (act.transition().output_port_by_name(port));
@@ -86,9 +86,9 @@ namespace we
         return tokens;
       }
 
-      marking_t get_input (mgmt::type::activity_t const & act)
+      marking_t get_input (we::mgmt::type::activity_t const & act)
       {
-        typedef mgmt::type::activity_t::input_t input_t;
+        typedef we::mgmt::type::activity_t::input_t input_t;
 
         marking_t m;
         for ( input_t::const_iterator in(act.input().begin()), end(act.input().end())
@@ -103,9 +103,9 @@ namespace we
         return m;
       }
 
-      marking_t get_output (mgmt::type::activity_t const & act)
+      marking_t get_output (we::mgmt::type::activity_t const & act)
       {
-        typedef mgmt::type::activity_t::output_t output_t;
+        typedef we::mgmt::type::activity_t::output_t output_t;
 
         marking_t m;
         for ( output_t::const_iterator out(act.output().begin()), end(act.output().end())
@@ -124,4 +124,3 @@ namespace we
 }
 
 #endif
-

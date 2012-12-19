@@ -20,7 +20,9 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+#include <we/mgmt/type/activity.hpp>
 #include <we/type/token.hpp>
+#include <we/util/codec.hpp>
 
 static int enable_disable_event_type = QEvent::registerEventType();
 

@@ -14,6 +14,10 @@
 #include <xml/parse/util/mk_fstream.hpp>
 #include <xml/parse/util/unique.hpp>
 
+#include <we/type/property.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/port.hpp>
+
 #include <boost/optional.hpp>
 
 namespace xml
