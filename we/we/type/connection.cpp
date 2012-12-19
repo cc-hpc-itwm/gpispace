@@ -65,14 +65,4 @@ namespace petri_net
   {
     return not (a == b);
   }
-
-  const connection_t& connection_invalid()
-  {
-    static const connection_t c ( edge::PT
-                                , transition_id_invalid()
-                                , place_id_invalid()
-                                );
-
-    return c;
-  }
 }

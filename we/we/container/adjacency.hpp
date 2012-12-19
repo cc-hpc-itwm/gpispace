@@ -8,8 +8,8 @@
 #include <stdexcept>
 
 #include <boost/serialization/nvp.hpp>
-
 #include <boost/unordered_map.hpp>
+#include <boost/optional.hpp>
 
 namespace adjacency
 {
@@ -39,17 +39,16 @@ namespace adjacency
   class table
   {
   public:
-    table (const ADJ&, const ROW&, const COL&);
+    table (const ROW&, const COL&);
 
     const const_it<COL,ADJ> row_const_it (const ROW&) const;
     const const_it<ROW,ADJ> col_const_it (const COL&) const;
-    const ADJ get_adjacent (const ROW&, const COL&) const;
+    const boost::optional<ADJ> get_adjacent (const ROW&, const COL&) const;
+    bool is_adjacent (const ROW&, const COL&) const;
     void clear_adjacent (const ROW& r, const COL& c);
     void set_adjacent (const ROW& r, const COL& c, const ADJ& v);
 
   private:
-    ADJ invalid;
-
     typedef boost::unordered_map<ROW,ADJ> row_adj_tab_t;
     typedef boost::unordered_map<COL,ADJ> col_adj_tab_t;
 
@@ -62,16 +61,14 @@ namespace adjacency
     friend class boost::serialization::access;
     template<typename Archive> void serialize (Archive& ar, const unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(invalid);
       ar & BOOST_SERIALIZATION_NVP(row_tab);
       ar & BOOST_SERIALIZATION_NVP(col_tab);
     }
   };
 
   template<typename ROW, typename COL, typename ADJ>
-  table<ROW,COL,ADJ>::table (const ADJ& _invalid, const ROW& r, const COL& c)
-    : invalid (_invalid)
-    , row_tab ()
+  table<ROW,COL,ADJ>::table (const ROW& r, const COL& c)
+    : row_tab ()
     , col_tab ()
   {}
 
@@ -112,7 +109,7 @@ namespace adjacency
   }
 
   template<typename ROW, typename COL, typename ADJ>
-  const ADJ
+  const boost::optional<ADJ>
   table<ROW,COL,ADJ>::get_adjacent (const ROW& r, const COL&c) const
   {
     typename row_tab_t::const_iterator pos (row_tab.find (r));
@@ -127,7 +124,18 @@ namespace adjacency
           }
       }
 
-    return invalid;
+    return boost::none;
+  }
+
+  template<typename ROW, typename COL, typename ADJ>
+  bool table<ROW,COL,ADJ>::is_adjacent (const ROW& r, const COL&c) const
+  {
+    typename row_tab_t::const_iterator pos (row_tab.find (r));
+
+    return (pos != row_tab.end())
+      ? (pos->second.find (c) != pos->second.end())
+      : false
+      ;
   }
 
   template<typename ROW, typename COL, typename ADJ>

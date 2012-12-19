@@ -18,6 +18,7 @@
 #include <we/type/id.hpp>
 #include <we/type/token.hpp>
 #include <we/type/place.hpp>
+#include <we/type/exception.hpp>
 #include <we/util/cross.hpp>
 
 #include <we/type/transition.hpp>
@@ -325,8 +326,8 @@ public:
     : pmap ("place")
     , tmap ("transition")
     , _connections()
-    , _adj_pt (connection_invalid(), _places, _transitions)
-    , _adj_tp (connection_invalid(), _transitions, _places)
+    , _adj_pt (_places, _transitions)
+    , _adj_tp (_transitions, _places)
     , token_place_rel ()
     , enabled ()
     , enabled_choice_consume ()
@@ -376,10 +377,7 @@ public:
   {
     if (edge::is_PT (connection.type))
       {
-        if (_adj_pt.get_adjacent ( connection.pid
-                                 , connection.tid
-                                 ) != connection_invalid()
-           )
+        if (_adj_pt.is_adjacent (connection.pid, connection.tid))
           {
             throw bijection::exception::already_there ("adjacency");
           }
@@ -388,10 +386,7 @@ public:
       }
     else
       {
-        if (_adj_tp.get_adjacent ( connection.tid
-                                 , connection.pid
-                                 ) != connection_invalid()
-           )
+        if (_adj_tp.is_adjacent (connection.tid, connection.pid))
           {
             throw bijection::exception::already_there ("adjacency");
           }
@@ -445,43 +440,54 @@ public:
                                   , const place_id_type& pid
                                   ) const
   {
-    const connection_t c (_adj_tp.get_adjacent (tid, pid));
+    const boost::optional<connection_t> connection
+      (_adj_tp.get_adjacent (tid, pid));
 
-    if (c == connection_invalid())
+    if (!connection)
       {
         throw exception::no_such ("specific out connection");
       }
 
-    return c;
+    return *connection;
   }
   connection_t get_connection_in ( const transition_id_type& tid
                                  , const place_id_type& pid
                                  ) const
   {
-    const connection_t c (_adj_pt.get_adjacent (pid, tid));
+    const boost::optional<connection_t> connection
+      (_adj_pt.get_adjacent (pid, tid));
 
-    if (c == connection_invalid())
+    if (!connection)
       {
         throw exception::no_such ("specific in connection");
       }
 
-    return c;
+    return *connection;
   }
 
   bool is_read_connection ( const transition_id_type & tid
                           , const place_id_type & pid
                           ) const
   {
-    return edge::is_pt_read (_adj_pt.get_adjacent (pid, tid).type);
+    const boost::optional<connection_t> connection
+      (_adj_pt.get_adjacent (pid, tid));
+
+    if (!connection)
+      {
+        throw exception::no_such ("specific connection");
+      }
+
+    return edge::is_pt_read (connection->type);
   }
 
   void delete_edge_out ( const transition_id_type& tid
                        , const place_id_type& pid
                        )
   {
-    const connection_t connection (_adj_tp.get_adjacent (tid, pid));
+    const boost::optional<connection_t> connection
+      (_adj_tp.get_adjacent (tid, pid));
 
-    if (connection == connection_invalid())
+    if (!connection)
       {
         throw exception::no_such ("specific out connection");
       }
@@ -490,31 +496,31 @@ public:
     in_to_transition_size_map.erase (tid);
     out_of_transition_size_map.erase (tid);
 
-    _connections.erase (connection);
+    _connections.erase (*connection);
   }
   void delete_edge_in ( const transition_id_type& tid
                       , const place_id_type& pid
                       )
   {
-    const connection_t connection (_adj_pt.get_adjacent (pid, tid));
+    const boost::optional<connection_t> connection
+      (_adj_pt.get_adjacent (pid, tid));
 
-    if (connection == connection_invalid())
+    if (!connection)
       {
         throw exception::no_such ("specific in connection");
       }
 
-    _adj_pt.clear_adjacent (connection.pid, connection.tid);
-    in_to_transition_size_map.erase (connection.tid);
-    out_of_transition_size_map.erase (connection.tid);
+    _adj_pt.clear_adjacent (pid, tid);
+    in_to_transition_size_map.erase (tid);
+    out_of_transition_size_map.erase (tid);
 
-    in_map[connection.tid].erase (connection.pid);
+    in_map[tid].erase (pid);
 
-    update_set_of_tid_in
-      ( connection.tid
-      ,  in_map[connection.tid].size() == in_to_transition_size(connection.tid)
-      );
+    update_set_of_tid_in ( tid
+                         , in_map[tid].size() == in_to_transition_size(tid)
+                         );
 
-    _connections.erase (connection);
+    _connections.erase (*connection);
   }
 
   void delete_place (const place_id_type & pid)
