@@ -543,35 +543,29 @@ public:
   }
 
 private:
-  edge_id_type get_eid_out (const transition_id_type & tid, const place_id_type & pid) const
+  edge_id_type get_eid_out ( const transition_id_type& tid
+                           , const place_id_type& pid
+                           ) const
   {
-    for ( adj_place_const_it pit (out_of_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
+    const edge_id_type eid (adj_tp.get_adjacent (tid, pid));
+
+    if (eid == edge_id_invalid())
       {
-        if (*pit == pid)
-          {
-            return pit();
-          }
+        throw exception::no_such ("specific out connection");
       }
 
-    throw exception::no_such ("specific out connection");
+    return eid;
   }
   edge_id_type get_eid_in (const transition_id_type & tid, const place_id_type & pid) const
   {
-    for ( adj_place_const_it pit (in_to_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
+    const edge_id_type eid (adj_pt.get_adjacent (pid, tid));
+
+    if (eid == edge_id_invalid())
       {
-        if (*pit == pid)
-          {
-            return pit();
-          }
+        throw exception::no_such ("specific in connection");
       }
 
-    throw exception::no_such ("specific in connection");
+    return eid;
   }
 
 public:
