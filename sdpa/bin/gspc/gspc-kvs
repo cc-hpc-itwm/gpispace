@@ -12,8 +12,9 @@ usage: kvs [-h|--help] [options] [--] [<action>]
 
 Options:
 
-   --kvs-host <host>     specify the host of the KVS
-   --kvs-port <port>     specify the port of the KVS
+   --host[=<host>]       specify or get the host of the KVS
+   --port[=<port>]       specify or get the port of the KVS
+
    --expiry <sec>        specify the expiry time
 
 Actions:
@@ -32,7 +33,7 @@ action=
 
 if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
-TEMP=`getopt -o h --long help,kvs-host:,kvs-port:,expiry:,status,start,stop,get,get-regex,put,del -n 'gspc' -- "$@"`
+TEMP=`getopt -o h --long help,host::,port::,expiry:,status,start,stop,get,get-regex,put,del -n 'gspc' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -41,8 +42,24 @@ eval set -- "$TEMP"
 while true ; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
-        --kvs-host) kvs_host="$2" ; shift ; shift ;;
-        --kvs-port) kvs_port="$2" ; shift ; shift ;;
+        --host)
+            if [ -n "$2" ] ; then
+                kvs_host="$2"
+            else
+                action="get-host"
+            fi
+            shift
+            shift
+            ;;
+        --port)
+            if [ -n "$2" ] ; then
+                kvs_port="$2"
+            else
+                action="get-port"
+            fi
+            shift
+            shift
+            ;;
         --expiry) key_expiry="$2" ; shift ; shift ;;
 
         --status) action="status" ; shift ;;
@@ -99,6 +116,16 @@ function _check_kvs_status ()
 }
 
 case "$action" in
+    get-host)
+        gspc_require_kvs_config
+        echo "$kvs_host"
+        exit 0
+        ;;
+    get-port)
+        gspc_require_kvs_config
+        echo "$kvs_port"
+        exit 0
+        ;;
     status)
         gspc_require_kvs_config
 
