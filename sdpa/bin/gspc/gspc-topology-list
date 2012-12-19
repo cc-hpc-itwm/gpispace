@@ -12,21 +12,34 @@ usage: topology-list [-h|--help] [options]
 
 Options:
 
+   --kvs-host <host>     specify the kvs-host to use
+   --kvs-port <port>     specify the kvs-port to use
+
    --no-header           do not print the leading header
 EOF
 }
 
-TEMP=`getopt -o h --long help,no-header -n 'topology' -- "$@"`
+TEMP=`getopt -o h --long help,no-header,kvs-host:,kvs-port: -n 'topology' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
 eval set -- "$TEMP"
 
+kvs_host=
+kvs_port=
 show_header=true
 
 while true ; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
+        --kvs-host)
+            kvs_host="$2"
+            shift; shift
+            ;;
+        --kvs-port)
+            kvs_port="$2"
+            shift; shift
+            ;;
         --no-header)
             show_header=false
             shift
@@ -38,11 +51,11 @@ done
 
 function gspc_require_kvs ()
 {
-    if gspc kvs --status ; then
+    if gspc kvs --host="${kvs_host}" --port="${kvs_port}" --status ; then
         return 0
     else
         return 1
-   fi
+    fi
 }
 
 function get_component_info ()
@@ -51,7 +64,7 @@ function get_component_info ()
     local components_to_get_info_for=( "${@}" )
 
     # format: location.host <host> location.port <port> name <name>
-    all_components=( $(gspc kvs --get-regex 'p2p.peer' | tr -d '=') )
+    all_components=( $(gspc kvs --host="${kvs_host}" --port="${kvs_port}" --get-regex 'p2p.peer' | tr -d '=') )
     ec=$?
     if [ $ec -eq 4 ] ; then
         gspc_log_error topology "Could not contact KVS!"
