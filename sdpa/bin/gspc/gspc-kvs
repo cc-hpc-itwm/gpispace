@@ -91,8 +91,8 @@ function gspc_require_kvs_config ()
     then
         kvs_cfg=( $(gspc --no-alias config --local --get-regex kvs | sort | awk '{print $3}') )
         if [ ${#kvs_cfg[@]} -ne 2 ] ; then
-            gspc_log_error kvs "unable to figure out your kvs config. Try 'gspc help kvs'"
-            exit 2
+            kvs_host="$(hostname -f)"
+            kvs_port="2439"
         else
             kvs_host=${kvs_cfg[0]}
             kvs_port=${kvs_cfg[1]}
