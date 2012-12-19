@@ -12,34 +12,21 @@ usage: topology-list [-h|--help] [options]
 
 Options:
 
-   --kvs-host <host>     specify the host of the KVS
-   --kvs-port <port>     specify the port of the KVS
-
    --no-header           do not print the leading header
 EOF
 }
 
-TEMP=`getopt -o h --long help,kvs-host:,kvs-port:,no-header -n 'topology' -- "$@"`
+TEMP=`getopt -o h --long help,no-header -n 'topology' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
 eval set -- "$TEMP"
 
-kvs_host=
-kvs_port=
 show_header=true
 
 while true ; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
-        --kvs-host)
-            kvs_host="$2"
-            shift ; shift
-            ;;
-        --kvs-port)
-            kvs_port="$2"
-            shift ; shift
-            ;;
         --no-header)
             show_header=false
             shift
@@ -51,53 +38,20 @@ done
 
 function gspc_require_kvs ()
 {
-    if [ -z "$kvs_host" ]
-    then
-        kvs_host=$(gspc --no-alias config --local --get kvs.host)
-        if [ $? -ne 0 ] ; then
-            kvs_host="$(hostname)"
-            gspc_log_trace topology "kvs-host was not set, defaulting to ${kvs_host}"
-        else
-            gspc_log_trace topology "using kvs-host from local config: ${kvs_host}"
-        fi
-    fi
-
-    if [ -z "$kvs_port" ]
-    then
-        kvs_port=$(gspc --no-alias config --local --get kvs.port)
-        if [ $? -ne 0 ] ; then
-            kvs_port="2439"
-            gspc_log_trace topology "kvs-port was not set, defaulting to ${kvs_port}"
-        else
-            gspc_log_trace topology "using kvs-port from local config: ${kvs_port}"
-        fi
-    fi
-
-    if gspc check-port "$kvs_host" "$kvs_port" ; then
-        gspc_log_trace topology "kvs config: host => $kvs_host port => $kvs_port"
+    if gspc kvs --status ; then
         return 0
     else
-        gspc_log_error topology "KVS is not reachable: host => '$kvs_host' port => '$kvs_port'"
-        exit 1
-    fi
-}
-
-function gspc_get_kvs_entry ()
-{
-    local key="$1"; shift
-
-    fhgkvsc -H "$kvs_host" -P "$kvs_port" -g "$key" 2>/dev/null
+        return 1
+   fi
 }
 
 function get_component_info ()
 {
-    gspc_require_kvs
-
     local all_components=()
     local components_to_get_info_for=( "${@}" )
 
     # format: location.host <host> location.port <port> name <name>
-    all_components=( $(gspc_get_kvs_entry 'p2p.peer' | tr -d '=') )
+    all_components=( $(gspc kvs --get-regex 'p2p.peer' | tr -d '=') )
     ec=$?
     if [ $ec -eq 4 ] ; then
         gspc_log_error topology "Could not contact KVS!"
