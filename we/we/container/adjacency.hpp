@@ -28,24 +28,24 @@ namespace adjacency
     typedef typename IT<L,R>::type it_t;
 
   public:
-    const_it (const it_t & _pos, const it_t & _end)
+    const_it (const it_t& _pos, const it_t& _end)
       : const_it::super(_pos,_end) {}
 
-    const L & operator * (void) const { return const_it::super::pos->first; }
-    const R & operator () (void) const { return const_it::super::pos->second; }
+    const L& operator * (void) const { return const_it::super::pos->first; }
+    const R& operator () (void) const { return const_it::super::pos->second; }
   };
 
   template<typename ROW, typename COL, typename ADJ>
   class table
   {
   public:
-    table (const ADJ &, const ROW &, const COL &);
+    table (const ADJ&, const ROW&, const COL&);
 
-    const const_it<COL,ADJ> row_const_it (const ROW &) const;
-    const const_it<ROW,ADJ> col_const_it (const COL &) const;
-    const ADJ get_adjacent (const ROW &, const COL &) const;
-    void clear_adjacent (const ROW & r, const COL & c);
-    void set_adjacent (const ROW & r, const COL & c, const ADJ & v);
+    const const_it<COL,ADJ> row_const_it (const ROW&) const;
+    const const_it<ROW,ADJ> col_const_it (const COL&) const;
+    const ADJ get_adjacent (const ROW&, const COL&) const;
+    void clear_adjacent (const ROW& r, const COL& c);
+    void set_adjacent (const ROW& r, const COL& c, const ADJ& v);
 
   private:
     ADJ invalid;
@@ -60,7 +60,7 @@ namespace adjacency
     col_tab_t col_tab;
 
     friend class boost::serialization::access;
-    template<typename Archive> void serialize (Archive & ar, const unsigned int)
+    template<typename Archive> void serialize (Archive& ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(invalid);
       ar & BOOST_SERIALIZATION_NVP(row_tab);
@@ -69,9 +69,9 @@ namespace adjacency
   };
 
   template<typename ROW, typename COL, typename ADJ>
-  table<ROW,COL,ADJ>::table ( const ADJ & _invalid
-                            , const ROW & r
-                            , const COL & c
+  table<ROW,COL,ADJ>::table ( const ADJ& _invalid
+                            , const ROW& r
+                            , const COL& c
                             )
     : invalid (_invalid)
     , row_tab ()
@@ -80,7 +80,7 @@ namespace adjacency
 
   template<typename ROW, typename COL, typename ADJ>
   const const_it<COL,ADJ>
-  table<ROW,COL,ADJ>::row_const_it (const ROW & r) const
+  table<ROW,COL,ADJ>::row_const_it (const ROW& r) const
   {
     typename row_tab_t::const_iterator pos (row_tab.find (r));
 
@@ -98,7 +98,7 @@ namespace adjacency
 
   template<typename ROW, typename COL, typename ADJ>
   const const_it<ROW,ADJ>
-  table<ROW,COL,ADJ>::col_const_it (const COL & c) const
+  table<ROW,COL,ADJ>::col_const_it (const COL& c) const
   {
     typename col_tab_t::const_iterator pos (col_tab.find (c));
 
@@ -116,7 +116,7 @@ namespace adjacency
 
   template<typename ROW, typename COL, typename ADJ>
   const ADJ
-  table<ROW,COL,ADJ>::get_adjacent (const ROW & r, const COL &c) const
+  table<ROW,COL,ADJ>::get_adjacent (const ROW& r, const COL&c) const
   {
     typename row_tab_t::const_iterator pos (row_tab.find (r));
 
@@ -134,7 +134,7 @@ namespace adjacency
   }
 
   template<typename ROW, typename COL, typename ADJ>
-  void table<ROW,COL,ADJ>::clear_adjacent (const ROW & r, const COL & c)
+  void table<ROW,COL,ADJ>::clear_adjacent (const ROW& r, const COL& c)
   {
     {
       typename row_tab_t::iterator pos (row_tab.find (r));
@@ -156,9 +156,9 @@ namespace adjacency
   }
 
   template<typename ROW, typename COL, typename ADJ>
-  void table<ROW,COL,ADJ>::set_adjacent ( const ROW & r
-                                        , const COL & c
-                                        , const ADJ & v
+  void table<ROW,COL,ADJ>::set_adjacent ( const ROW& r
+                                        , const COL& c
+                                        , const ADJ& v
                                         )
   {
     row_tab[r][c] = v;
