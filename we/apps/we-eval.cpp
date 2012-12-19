@@ -95,6 +95,7 @@ int main (int argc, char **argv)
   desc.add_options()
     ("help,h", "this message")
     ("version,V", "print version information")
+    ("verbose,v", "be verbose") // unused, we-exec interface compatibility
     ( "net"
     , po::value<std::string> (&path_to_act)->default_value (path_to_act)
     , "path to encoded activity or - for stdin"
@@ -103,6 +104,10 @@ int main (int argc, char **argv)
     , po::value<std::string> (&mod_path)->default_value
         (fhg::util::getenv("PC_LIBRARY_PATH", "."))
     , "where can modules be located"
+    )
+    ( "worker" // unused, we-exec interface compatibility
+    , po::value<std::size_t> (&num_worker)->default_value(num_worker)
+    , "number of workers"
     )
     ( "load"
     , po::value<std::vector<std::string> > (&mods_to_load)
@@ -113,12 +118,17 @@ int main (int argc, char **argv)
     , "input token to the activity: <port>=<value>"
     )
     ( "output,o"
-    , po::value<std::string>(&output)->default_value(output)
+    , po::value<std::string> (&output)->default_value(output)
     , "output stream or - for stdout"
-    );
+    )
+    ( "show-dots,d" // unused, we-exec interface compatibility
+    , po::value<bool> (&show_dots)->default_value(show_dots)
+    , "show dots while waiting for progress"
+    )
+    ;
 
   po::positional_options_description p;
-  p.add ("net", -1);
+  p.add ("input", -1);
 
   po::variables_map vm;
   po::store ( po::command_line_parser(argc, argv)
