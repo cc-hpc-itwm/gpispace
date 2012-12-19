@@ -87,7 +87,7 @@ function kvsc ()
 
 function gspc_require_kvs_config ()
 {
-    if [ -z "$kvs_host" ]
+    if [ -z "$kvs_host" -o -z "$kvs_port" ]
     then
         kvs_cfg=( $(gspc --no-alias config --local --get-regex kvs | sort | awk '{print $3}') )
         if [ ${#kvs_cfg[@]} -ne 2 ] ; then
