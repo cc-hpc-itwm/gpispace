@@ -6,7 +6,7 @@
 #include <we/type/token.hpp>
 #include <we/type/id.hpp>
 
-#include <we/we.hpp>
+#include <we/mgmt/type/activity.hpp>
 
 namespace we
 {

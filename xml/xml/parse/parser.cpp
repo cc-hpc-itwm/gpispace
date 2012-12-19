@@ -31,6 +31,7 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/boost/optional.hpp>
 
+#include <we/mgmt/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>

@@ -25,7 +25,7 @@
 #include <fhg/plugin/capability.hpp>
 
 #include <we/util/codec.hpp>
-#include <we/we.hpp>
+#include <we/net.hpp>
 
 struct search_path_appender
 {

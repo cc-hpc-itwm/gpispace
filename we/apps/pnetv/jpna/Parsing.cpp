@@ -11,7 +11,7 @@
 
 #include <we/type/port.hpp>
 #include <we/util/codec.hpp>
-#include <we/we.hpp>
+#include <we/net.hpp>
 
 #include "PetriNet.h"
 

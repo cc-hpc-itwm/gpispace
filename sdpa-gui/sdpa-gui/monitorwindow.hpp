@@ -15,7 +15,8 @@
 #include "task.h"
 #include <sdpa/daemon/NotificationEvent.hpp>
 
-#include <we/we.hpp>
+#include <we/net.hpp> // recursive wrapper of transition_t fails otherwise.
+#include <we/mgmt/type/activity.hpp>
 
 class QGraphicsView;
 class QGraphicsScene;

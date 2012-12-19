@@ -3,7 +3,7 @@
 
 #include <sysexits.h>
 
-#include <we/we.hpp>
+#include <we/net.hpp>
 #include <we/util/codec.hpp>
 
 #include <iostream>
