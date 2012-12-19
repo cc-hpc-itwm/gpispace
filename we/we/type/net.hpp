@@ -310,11 +310,6 @@ private:
       }
   }
 
-  void recalculate_enabled_by_edge (const edge_id_type & eid)
-  {
-    recalculate_enabled_by_edge (eid, get_connection (eid));
-  }
-
   void recalculate_enabled ( const transition_id_type & tid
                            , const place_id_type & pid
                            , const edge_id_type & eid
