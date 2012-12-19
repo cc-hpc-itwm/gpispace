@@ -271,10 +271,7 @@ private:
                 ; ++choice
                 )
               {
-                const token_via_edge_t & token_via_edge (choice.val());
-                const edge_id_type & eid (token_via_edge.second);
-
-                if (edge::is_pt_read (get_connection (eid).type))
+                if (is_read_connection (tid, choice.key()))
                   {
                     enabled_choice_read[tid].push_back (*choice);
                   }
@@ -535,20 +532,6 @@ public:
     return adj_c_transition_const_it (adj_c_tp.col_const_it (pid));
   }
 
-  // get edge info
-private:
-  connection_t get_connection (const edge_id_type & eid) const
-  {
-    const connection_map_t::const_iterator it
-      (connection_map.find (eid));
-
-    if (it == connection_map.end())
-      throw exception::no_such ("connection");
-
-    return it->second;
-  }
-
-public:
   connection_t get_connection_out ( const transition_id_type& tid
                                   , const place_id_type& pid
                                   ) const
