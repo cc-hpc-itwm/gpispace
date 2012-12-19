@@ -819,7 +819,7 @@ namespace xml
             {
               if (port.direction() == we::type::PORT_IN && port.place)
               {
-                we_net.add_edge
+                we_net.add_connection
                   ( connection_t ( petri_net::edge::TP
                                  , tid_in
                                  , get_pid ( pid_of_place
@@ -836,11 +836,12 @@ namespace xml
             {
               if (petri_net::edge::is_PT (connect.direction()))
               {
-                we_net.add_edge ( connection_t ( connect.direction()
-                                               , tid_in
-                                               , get_pid (pids, connect.place())
-                                               )
-                                );
+                we_net.add_connection
+                  ( connection_t ( connect.direction()
+                                 , tid_in
+                                 , get_pid (pids, connect.place())
+                                 )
+                  );
               }
             }
 
@@ -935,7 +936,7 @@ namespace xml
             {
               if (port.direction() == we::type::PORT_OUT && port.place)
               {
-                we_net.add_edge
+                we_net.add_connection
                   ( connection_t ( petri_net::edge::PT
                                  , tid_out
                                  , get_pid ( pid_of_place
@@ -952,11 +953,12 @@ namespace xml
             {
               if (!petri_net::edge::is_PT (connect.direction()))
               {
-                we_net.add_edge ( connection_t ( connect.direction()
-                                               , tid_out
-                                               , get_pid (pids, connect.place())
-                                               )
-                                );
+                we_net.add_connection
+                  ( connection_t ( connect.direction()
+                                 , tid_out
+                                 , get_pid (pids, connect.place())
+                                 )
+                  );
               }
             }
           } // unfold
@@ -1031,11 +1033,12 @@ namespace xml
                           , trans.connections().values()
                           )
             {
-              we_net.add_edge ( connection_t ( connect.direction()
-                                             , tid
-                                             , get_pid (pids, connect.place())
-                                             )
-                              );
+              we_net.add_connection
+                ( connection_t ( connect.direction()
+                               , tid
+                               , get_pid (pids, connect.place())
+                               )
+                );
             }
           } // not unfold
 

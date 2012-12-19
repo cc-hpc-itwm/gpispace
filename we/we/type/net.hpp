@@ -465,7 +465,7 @@ public:
     return tid;
   }
 
-  edge_id_type add_edge (const connection_t & connection)
+  void add_connection (const connection_t& connection)
   {
     const edge_id_type eid
       ( (edge::is_PT (connection.type))
@@ -476,8 +476,6 @@ public:
     connection_map[eid] = connection;
 
     recalculate_enabled_by_edge (eid, connection);
-
-    return eid;
   }
 
   // iterate through elements

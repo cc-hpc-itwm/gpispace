@@ -131,7 +131,7 @@ namespace we { namespace type {
             ; ++p
             )
           {
-            const connection_t & connection (net.get_edge_info (p()));
+            const connection_t& connection (net.get_edge_info_in (tid, *p));
 
             if (petri_net::edge::is_pt_read (connection.type))
               {
@@ -350,7 +350,7 @@ namespace we { namespace type {
 
                 connection.tid = tid_pred;
 
-                net.add_edge (connection);
+                net.add_connection (connection);
 
                 pred.add_connection
                   (p->second.name(), pid, p->second.property())
@@ -375,7 +375,7 @@ namespace we { namespace type {
 
                             connection.tid = tid_pred;
 
-                            net.add_edge (connection);
+                            net.add_connection (connection);
 
                             pred.add_connection
                               (pid, p->second.name(), p->second.property())

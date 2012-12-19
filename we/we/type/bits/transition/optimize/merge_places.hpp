@@ -57,7 +57,7 @@ namespace we { namespace type {
                 connection.type = petri_net::edge::PT_READ;
               }
 
-            net.add_edge (connection);
+            net.add_connection (connection);
 
             transition_t trans_out_B (net.get_transition (tid_trans_out_B));
 
@@ -96,7 +96,7 @@ namespace we { namespace type {
 
             connection.pid = pid_A;
 
-            net.add_edge (connection);
+            net.add_connection (connection);
 
             transition_t trans_in_B (net.get_transition (tid_trans_in_B));
 
