@@ -38,6 +38,7 @@ namespace petri_net
 
     friend std::size_t hash_value (const connection_t&);
     friend bool operator== (const connection_t&, const connection_t&);
+    friend bool operator!= (const connection_t&, const connection_t&);
 
     template<typename Archive>
     void serialize (Archive& ar, const unsigned int)

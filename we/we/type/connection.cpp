@@ -61,6 +61,10 @@ namespace petri_net
   {
     return a.type == b.type && a.tid == b.tid && a.pid == b.pid;
   }
+  bool operator!= (const connection_t& a, const connection_t& b)
+  {
+    return not (a == b);
+  }
 
   const connection_t& connection_invalid()
   {
