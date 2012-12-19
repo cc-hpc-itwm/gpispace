@@ -18,7 +18,6 @@
 #include <we/type/id.hpp>
 #include <we/type/token.hpp>
 #include <we/type/place.hpp>
-#include <we/type/exception.hpp>
 #include <we/util/cross.hpp>
 
 #include <we/type/transition.hpp>
@@ -377,21 +376,19 @@ public:
   {
     if (edge::is_PT (connection.type))
       {
-        if (_adj_pt.is_adjacent (connection.pid, connection.tid))
-          {
-            throw bijection::exception::already_there ("adjacency");
-          }
-
-        _adj_pt.set_adjacent (connection.pid, connection.tid, connection);
+        _adj_pt.set_adjacent ( connection.pid
+                             , connection.tid
+                             , connection
+                             , "add_connection"
+                             );
       }
     else
       {
-        if (_adj_tp.is_adjacent (connection.tid, connection.pid))
-          {
-            throw bijection::exception::already_there ("adjacency");
-          }
-
-        _adj_tp.set_adjacent (connection.tid, connection.pid, connection);
+        _adj_tp.set_adjacent ( connection.tid
+                             , connection.pid
+                             , connection
+                             , "add_connection"
+                             );
       }
 
     in_to_transition_size_map.erase (connection.tid);

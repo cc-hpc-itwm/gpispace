@@ -829,7 +829,7 @@ class Optimizer {
                                                    , connectedPlace_->id()
                                                    )
                           );
-                    } catch (const bijection::exception::already_there &) {
+                    } catch (const we::container::exception::already_there&) {
                         tryAgain = true;
                     }
                 } while (tryAgain);

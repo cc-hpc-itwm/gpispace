@@ -4,14 +4,11 @@
 #define _CONTAINER_ADJACENCY_HPP
 
 #include <we/util/it.hpp>
-#include <we/type/exception.hpp>
+#include <we/container/exception.hpp>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
-
-#include <stdexcept>
-#include <string>
 
 namespace adjacency
 {
@@ -48,8 +45,9 @@ namespace adjacency
     const boost::optional<ADJ> get_adjacent (const ROW&, const COL&) const;
     const ADJ get_adjacent (const ROW&, const COL&, const std::string&) const;
     bool is_adjacent (const ROW&, const COL&) const;
-    void clear_adjacent (const ROW& r, const COL& c);
-    void set_adjacent (const ROW& r, const COL& c, const ADJ& v);
+    void clear_adjacent (const ROW&, const COL&);
+    void set_adjacent (const ROW&, const COL&, const ADJ&);
+    void set_adjacent (const ROW&, const COL&, const ADJ&, const std::string&);
 
   private:
     typedef boost::unordered_map<ROW,ADJ> row_adj_tab_t;
@@ -149,7 +147,7 @@ namespace adjacency
           }
       }
 
-    throw petri_net::exception::no_such ("get_adjacent: " + msg);
+    throw we::container::exception::no_such ("get_adjacent: " + msg);
   }
 
   template<typename ROW, typename COL, typename ADJ>
@@ -193,6 +191,21 @@ namespace adjacency
   {
     row_tab[r][c] = v;
     col_tab[c][r] = v;
+  }
+
+  template<typename ROW, typename COL, typename ADJ>
+  void table<ROW,COL,ADJ>::set_adjacent ( const ROW& r
+                                        , const COL& c
+                                        , const ADJ& v
+                                        , const std::string& msg
+                                        )
+  {
+    if (is_adjacent (r, c))
+      {
+        throw we::container::exception::already_there ("set_adjacent: " + msg);
+      }
+
+    set_adjacent (r, c, v);
   }
 } // namespace adjacency
 

@@ -5,6 +5,8 @@
 
 #include <we/util/it.hpp>
 
+#include <we/container/exception.hpp>
+
 #include <boost/bimap.hpp>
 #include <boost/bimap/support/lambda.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -13,25 +15,6 @@
 
 namespace bijection
 {
-  namespace exception
-  {
-    class no_such : public std::runtime_error
-    {
-    public:
-      explicit no_such (const std::string & msg) : std::runtime_error(msg) {}
-      ~no_such() throw() {}
-    };
-
-    class already_there : public std::runtime_error
-    {
-    public:
-      explicit already_there (const std::string & msg)
-        : std::runtime_error(msg)
-      {}
-      ~already_there() throw() {}
-    };
-  } // namespace exception
-
   template<typename T, typename I>
   class bijection
   {
@@ -78,7 +61,7 @@ namespace bijection
       const typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
 
       if (it == bimap.left.end())
-        throw exception::no_such (description);
+        throw we::container::exception::no_such (description);
 
       return it->second;
     }
@@ -89,7 +72,7 @@ namespace bijection
         (bimap.right.find (i));
 
       if (it == bimap.right.end())
-        throw exception::no_such ("index for " + description);
+        throw we::container::exception::no_such ("index for " + description);
 
       return it->second;
     }
@@ -97,7 +80,7 @@ namespace bijection
     const I add (const T & x)
     {
       if (bimap.left.find (x) != bimap.left.end())
-        throw exception::already_there (description);
+        throw we::container::exception::already_there (description);
 
       const I i (h++);
 
@@ -116,10 +99,10 @@ namespace bijection
       const typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
       if (it == bimap.right.end())
-        throw exception::no_such ("index for " + description);
+        throw we::container::exception::no_such ("index for " + description);
 
       if (bimap.right.modify_data (it, boost::bimaps::_data = x) == false)
-        throw exception::already_there (description + " after modify");
+        throw we::container::exception::already_there (description + " after modify");
 
       return i;
     }
@@ -129,10 +112,10 @@ namespace bijection
       const typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
       if (it == bimap.right.end())
-        throw exception::no_such ("index for " + description);
+        throw we::container::exception::no_such ("index for " + description);
 
       if (bimap.right.replace_data (it, x) == false)
-        throw exception::already_there (description + " after replace");
+        throw we::container::exception::already_there (description + " after replace");
 
       return i;
     }
