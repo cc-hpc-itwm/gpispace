@@ -86,8 +86,7 @@ public:
 
   typedef multirel::right_const_it<token::type, place_id_type> token_place_it;
 
-  typedef std::pair<place_id_type, edge_id_type> place_via_edge_t;
-  typedef std::pair<token::type, place_via_edge_t> token_input_t;
+  typedef std::pair<token::type, place_id_type> token_input_t;
   typedef std::vector<token_input_t> input_t;
 
   // TODO: traits should be template parameters (with default values)
@@ -837,9 +836,8 @@ private:
         const place_id_type & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
         const token::type & token (token_via_edge.first);
-        const edge_id_type & eid (token_via_edge.second);
 
-        input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
+        input.push_back (token_input_t (token, pid));
 
         assert (not edge::is_pt_read (get_connection (eid).type));
 
@@ -855,9 +853,8 @@ private:
         const place_id_type & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
         const token::type & token (token_via_edge.first);
-        const edge_id_type & eid (token_via_edge.second);
 
-        input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
+        input.push_back (token_input_t (token, pid));
       }
 
     return activity_t (tid, input);

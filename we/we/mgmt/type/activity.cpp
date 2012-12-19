@@ -91,7 +91,7 @@ namespace we
                 act.add_input
                   ( std::make_pair
                     ( inp.first
-                    , act.transition().outer_to_inner (inp.second.first)
+                    , act.transition().outer_to_inner (inp.second)
                     )
                   );
               }
