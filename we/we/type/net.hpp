@@ -438,23 +438,6 @@ public:
     return tmap.get_elem (tid);
   }
 
-  const edge_type & get_edge (const edge_id_type & eid) const
-  {
-    return emap.get_elem (eid);
-  }
-  const edge_type& get_edge_out ( const transition_id_type& tid
-                                , const place_id_type& pid
-                                ) const
-  {
-    return get_edge (get_eid_out (tid, pid));
-  }
-  const edge_type& get_edge_in ( const transition_id_type& tid
-                               , const place_id_type& pid
-                               ) const
-  {
-    return get_edge (get_eid_in (tid, pid));
-  }
-
   // add element
   place_id_type add_place (const place::type & place)
   {

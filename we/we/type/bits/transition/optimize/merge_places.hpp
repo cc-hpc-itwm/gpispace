@@ -47,7 +47,6 @@ namespace we { namespace type {
             const petri_net::transition_id_type & tid_trans_out_B (pair.first);
             const petri_net::edge_id_type & eid_out_B (pair.second);
 
-            const unsigned int edge (net.get_edge (eid_out_B));
             connection_t connection (net.get_edge_info (eid_out_B));
 
             net.delete_edge (eid_out_B);
@@ -93,7 +92,6 @@ namespace we { namespace type {
             const petri_net::transition_id_type & tid_trans_in_B (pair.first);
             const petri_net::edge_id_type & eid_in_B (pair.second);
 
-            const unsigned int edge (net.get_edge (eid_in_B));
             connection_t connection (net.get_edge_info (eid_in_B));
 
             net.delete_edge (eid_in_B);
