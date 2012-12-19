@@ -130,6 +130,7 @@ namespace petri_net
 
   INVALID (edge_id);
   INVALID (place_id);
+  INVALID (transition_id);
   INVALID (activity_id);
 
   INVALID (priority);

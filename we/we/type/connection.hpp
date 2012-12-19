@@ -47,6 +47,8 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP(pid);
     }
   };
+
+  const connection_t& connection_invalid();
 }
 
 #endif

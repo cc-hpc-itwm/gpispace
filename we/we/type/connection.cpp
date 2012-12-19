@@ -61,4 +61,14 @@ namespace petri_net
   {
     return a.type == b.type && a.tid == b.tid && a.pid == b.pid;
   }
+
+  const connection_t& connection_invalid()
+  {
+    static const connection_t c ( edge::PT
+                                , transition_id_invalid()
+                                , place_id_invalid()
+                                );
+
+    return c;
+  }
 }
