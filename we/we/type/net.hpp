@@ -91,8 +91,6 @@ public:
   typedef std::pair<token::type, place_via_edge_t> token_input_t;
   typedef std::vector<token_input_t> input_t;
 
-  typedef boost::unordered_map<place_id_type,edge_id_type> output_descr_t;
-
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits cd_traits;
 
@@ -789,15 +787,12 @@ public:
   public:
     const transition_id_type tid;
     const input_t input;
-    const output_descr_t output_descr;
 
     activity_t ( const transition_id_type _tid
                , const input_t& _input
-               , const output_descr_t& _output_descr
                )
       : tid (_tid)
       , input (_input)
-      , output_descr (_output_descr)
     {}
   };
 
@@ -849,17 +844,7 @@ private:
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
       }
 
-    output_descr_t output_descr;
-
-    for ( adj_place_const_it pit (out_of_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      {
-        output_descr[*pit] = pit();
-      }
-
-    return activity_t (tid, input, output_descr);
+    return activity_t (tid, input);
   }
 
 public:
