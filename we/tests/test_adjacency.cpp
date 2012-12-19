@@ -17,7 +17,7 @@ using std::endl;
 int
 main ()
 {
-  adjacency::table<row_t,col_t,adj_t> t (1, 1);
+  adjacency::table<row_t,col_t,adj_t> t;
 
   cout << "const row " << 0 << ":" << endl;
   for ( adjacency::const_it<col_t,adj_t> it (t.row_const_it (0))

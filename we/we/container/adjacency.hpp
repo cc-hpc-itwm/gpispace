@@ -38,8 +38,6 @@ namespace adjacency
   class table
   {
   public:
-    table (const ROW&, const COL&);
-
     const const_it<COL,ADJ> row_const_it (const ROW&) const;
     const const_it<ROW,ADJ> col_const_it (const COL&) const;
     const boost::optional<ADJ> get_adjacent (const ROW&, const COL&) const;
@@ -66,12 +64,6 @@ namespace adjacency
       ar & BOOST_SERIALIZATION_NVP(col_tab);
     }
   };
-
-  template<typename ROW, typename COL, typename ADJ>
-  table<ROW,COL,ADJ>::table (const ROW& r, const COL& c)
-    : row_tab ()
-    , col_tab ()
-  {}
 
   template<typename ROW, typename COL, typename ADJ>
   const const_it<COL,ADJ>
