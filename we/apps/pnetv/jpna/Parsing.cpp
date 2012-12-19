@@ -111,10 +111,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        FOREACH (const petri_net::edge_id_type& edge_id, net.edges()) {
-            const petri_net::connection_t &connection
-              = net.get_edge_info(edge_id);
-
+        FOREACH (const petri_net::connection_t& connection, net.connections()) {
             switch (connection.type) {
                 case petri_net::edge::PT: {
                     Place *place = find(places_, connection.pid);

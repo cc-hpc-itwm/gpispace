@@ -122,7 +122,7 @@ private:
   bijection::bijection<place::type,place_id_type> pmap; // place::type <-> internal id
   bijection::bijection<transition_type,transition_id_type> tmap; // transition_type <-> internal id
 
-  boost::unordered_set<edge_id_type> _edges;
+  boost::unordered_set<connection_t> _connections;
 
   connection_map_t connection_map;
 
@@ -150,7 +150,7 @@ private:
   {
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
-    ar & BOOST_SERIALIZATION_NVP(_edges);
+    ar & BOOST_SERIALIZATION_NVP(_connections);
     ar & BOOST_SERIALIZATION_NVP(connection_map);
     ar & BOOST_SERIALIZATION_NVP(adj_pt);
     ar & BOOST_SERIALIZATION_NVP(adj_tp);
@@ -220,8 +220,6 @@ private:
       {
         throw bijection::exception::already_there ("adjacency");
       }
-
-    _edges.insert (_edge_id);
 
     m.set_adjacent (r, c, _edge_id);
 
@@ -415,7 +413,7 @@ public:
   net (const place_id_type & _places = 10, const transition_id_type & _transitions = 10)
     : pmap ("place")
     , tmap ("transition")
-    , _edges ()
+    , _connections()
     , connection_map ()
     , adj_pt (edge_id_invalid(), _places, _transitions)
     , adj_tp (edge_id_invalid(), _transitions, _places)
@@ -475,6 +473,8 @@ public:
 
     connection_map[eid] = connection;
 
+    _connections.insert (connection);
+
     recalculate_enabled_by_edge (eid, connection);
   }
 
@@ -489,9 +489,9 @@ public:
     return transition_const_it (tmap);
   }
 
-  const boost::unordered_set<edge_id_type>& edges() const
+  const boost::unordered_set<connection_t>& connections() const
   {
-    return _edges;
+    return _connections;
   }
 
   // iterate through adjacencies
@@ -622,7 +622,7 @@ private:
 
     connection_map.erase (it);
 
-    _edges.erase (eid);
+    _connections.erase (connection);
 
     return eid;
   }
