@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdint.h>
 
-#include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/type/requirement.hpp>
 
@@ -76,11 +75,11 @@ int main ()
   layer_t & layer = daemon.layer;
 
   {
-    we::transition_t mod_call
+    we::type::transition_t mod_call
       ( "module call"
       , we::type::module_call_t ("m", "f")
       );
-    we::activity_t act (mod_call);
+    we::mgmt::type::activity_t act (mod_call);
     layer.submit (generate_id(), act.to_string());
 
     sleep (1);
@@ -88,10 +87,10 @@ int main ()
   }
 
   {
-    we::transition_t expr ( "expression"
+    we::type::transition_t expr ( "expression"
                           , we::type::expression_t ("${out} := 3L")
                           );
-    we::activity_t act (expr);
+    we::mgmt::type::activity_t act (expr);
     layer.submit (generate_id(), act.to_string());
 
     sleep (1);

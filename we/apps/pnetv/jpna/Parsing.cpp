@@ -9,8 +9,9 @@
 #include <jpn/common/Foreach.h>
 #include <jpn/common/Unreachable.h>
 
-#include <we/we.hpp>
 #include <we/type/port.hpp>
+#include <we/util/codec.hpp>
+#include <we/net.hpp>
 
 #include "PetriNet.h"
 
@@ -183,7 +184,7 @@ void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
 }
 
 void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets) {
-    we::activity_t activity;
+    we::mgmt::type::activity_t activity;
     we::util::codec::decode(in, activity);
 
     TransitionVisitor visitor(filename, petriNets);

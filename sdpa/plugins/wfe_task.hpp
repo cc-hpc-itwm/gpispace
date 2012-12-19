@@ -6,7 +6,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <we/we.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <fhg/plugin/capability.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -27,7 +27,7 @@ struct wfe_task_t
   std::string id;
   int        state;
   int        errc;
-  we::activity_t activity;
+  we::mgmt::type::activity_t activity;
   capabilities_t capabilities;
   std::string result;
   fhg::util::thread::event<int> done;

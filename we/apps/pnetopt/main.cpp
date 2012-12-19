@@ -18,7 +18,8 @@
 #include "LuaIterator.h"
 #include "RangeAdaptor.h"
 
-#include <we/we.hpp>
+#include <we/net.hpp>
+#include <we/util/codec.hpp>
 #include <we/type/port.hpp>
 
 #define foreach BOOST_FOREACH
@@ -944,7 +945,7 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
 
-    we::activity_t activity;
+    we::mgmt::type::activity_t activity;
 
     if (input == "-") {
         we::util::codec::decode(std::cin, activity);

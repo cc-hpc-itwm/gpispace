@@ -14,8 +14,6 @@
 #include <xml/parse/util/mk_fstream.hpp>
 #include <xml/parse/util/unique.hpp>
 
-#include <we/we.hpp>
-
 #include <boost/optional.hpp>
 
 namespace xml

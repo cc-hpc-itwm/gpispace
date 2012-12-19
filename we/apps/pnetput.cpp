@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/we.hpp>
+#include <we/net.hpp>
+#include <we/util/codec.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <we/type/literal.hpp>
 #include <we/util/token.hpp>
@@ -91,7 +92,7 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act;
 
   try
   {

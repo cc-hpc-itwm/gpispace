@@ -19,13 +19,13 @@ struct wfe_exec_context : public we::mgmt::context
     , task (target)
   {}
 
-  virtual int handle_internally (we::activity_t& act, net_t &)
+  virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
   {
     act.inject_input();
 
     while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
     {
-      we::activity_t sub (act.extract());
+      we::mgmt::type::activity_t sub (act.extract());
       sub.inject_input();
       sub.execute (this);
       act.inject (sub);
@@ -36,7 +36,7 @@ struct wfe_exec_context : public we::mgmt::context
     return 0;
   }
 
-  virtual int handle_internally (we::activity_t& act, mod_t& mod)
+  virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
   {
     try
     {
@@ -53,22 +53,22 @@ struct wfe_exec_context : public we::mgmt::context
     return 0;
   }
 
-  virtual int handle_internally (we::activity_t&, expr_t&)
+  virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
   {
     return 0;
   }
 
-  virtual int handle_externally (we::activity_t& act, net_t& n)
+  virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
   {
     return handle_internally (act, n);
   }
 
-  virtual int handle_externally (we::activity_t& act, mod_t& module_call)
+  virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& module_call)
   {
     return handle_internally (act, module_call);
   }
 
-  virtual int handle_externally (we::activity_t& act, expr_t& e)
+  virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
   {
     return handle_internally (act, e);
   }

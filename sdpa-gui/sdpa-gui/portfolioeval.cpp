@@ -362,7 +362,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 	}
 
 
-	we::activity_t act;
+	we::mgmt::type::activity_t act;
 
         try
         {
@@ -381,7 +381,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
         try
         {
           for (std::size_t row (0); row < job_data.size(); ++row)
-            act.add_input( we::input_t::value_type
+            act.add_input( we::mgmt::type::activity_t::input_t::value_type
                          ( make_token
                          ( qstrBackend
                          , job_data
