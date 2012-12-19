@@ -15,7 +15,7 @@ Options:
    --host[=<host>]       specify or get the host of the KVS
    --port[=<port>]       specify or get the port of the KVS
 
-   --expiry <sec>        specify the expiry time
+   --expiry <msec>       specify the expiry time in 1/1000 sec
 
 Actions:
 
