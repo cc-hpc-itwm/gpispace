@@ -18,20 +18,21 @@ namespace we
       typedef std::list<type> list_t;
       typedef std::map<std::string, list_t> marking_t;
 
-      we::activity_t & put ( we::activity_t & act
-                           , std::string const & port
-                           , type const & value
-                           )
+      mgmt::type::activity_t & put ( mgmt::type::activity_t & act
+                                   , std::string const & port
+                                   , type const & value
+                                   )
       {
         const petri_net::port_id_type pid (act.transition().input_port_by_name(port));
 
         act.add_input
-          (we::input_t::value_type( ::token::type ( port
-                                                  , act.transition().get_port(pid).signature()
-                                                  , value
-                                                  )
-                                  , pid
-                                  )
+          (mgmt::type::activity_t::input_t::value_type
+            ( ::token::type ( port
+                            , act.transition().get_port(pid).signature()
+                            , value
+                            )
+            , pid
+            )
           );
         return act;
       }
@@ -43,10 +44,10 @@ namespace we
         see we/we.hpp for the to_value template
 
       template <typename T>
-      we::activity_t & put ( we::activity_t & act
-                           , std::string const & port
-                           , T const & val
-                           )
+      mgmt::type::activity_t & put ( mgmt::type::activity_t & act
+                                   , std::string const & port
+                                   , T const & val
+                                   )
       {
         using namespace we::util::token;
         return put( act, port, to_value(val) );
@@ -59,11 +60,11 @@ namespace we
       //    so that put/get can take any structs
       // see: hash_value
 
-      list_t get ( we::activity_t const & act
+      list_t get ( mgmt::type::activity_t const & act
                  , std::string const & port
                  )
       {
-        typedef we::activity_t::output_t output_t;
+        typedef mgmt::type::activity_t::output_t output_t;
 
         list_t tokens;
         const petri_net::port_id_type port_id (act.transition().output_port_by_name(port));
@@ -79,9 +80,9 @@ namespace we
         return tokens;
       }
 
-      marking_t get_input (we::activity_t const & act)
+      marking_t get_input (mgmt::type::activity_t const & act)
       {
-        typedef we::activity_t::input_t input_t;
+        typedef mgmt::type::activity_t::input_t input_t;
 
         marking_t m;
         for ( input_t::const_iterator in(act.input().begin()), end(act.input().end())
@@ -96,9 +97,9 @@ namespace we
         return m;
       }
 
-      marking_t get_output (we::activity_t const & act)
+      marking_t get_output (mgmt::type::activity_t const & act)
       {
-        typedef we::activity_t::output_t output_t;
+        typedef mgmt::type::activity_t::output_t output_t;
 
         marking_t m;
         for ( output_t::const_iterator out(act.output().begin()), end(act.output().end())

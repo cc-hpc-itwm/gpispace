@@ -12,26 +12,4 @@
 #include <we/type/token.hpp>
 #include <we/mgmt/type/activity.hpp>
 
-namespace we
-{
-  /*
-    TODO: make this work (in principle it  already works, but I guess one has to
-    predefine the to_value function for all the literals.
-
-    template <typename T>
-    ::value::type to_value (T const &)
-    {
-      BOOST_STATIC_ASSERT ((T*)0 && false);
-      return 0;
-    }
-  */
-
-  using petri_net::connection_t;
-
-  typedef we::type::transition_t transition_t;
-  typedef petri_net::net pnet_t;
-  typedef we::mgmt::type::activity_t activity_t;
-  typedef activity_t::input_t input_t;
-}
-
 #endif

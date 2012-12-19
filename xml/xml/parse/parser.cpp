@@ -1903,7 +1903,7 @@ namespace xml
       , const xml::parse::state::type& state
       )
     {
-      we::transition_t trans (function.get_ref().synthesize (state));
+      we::type::transition_t trans (function.get_ref().synthesize (state));
 
       we::type::optimize::optimize (trans, state.options_optimize());
 

@@ -15,7 +15,7 @@
 
 // ************************************************************************* //
 
-typedef we::transition_t::requirements_t requirements_t;
+typedef we::type::transition_t::requirements_t requirements_t;
 typedef requirements_t::value_type requirement_t;
 
 std::ostream & operator<<( std::ostream & os
@@ -98,7 +98,7 @@ main (int argc, char ** argv)
       input = "/dev/stdin";
     }
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act;
 
   {
     std::ifstream stream (input.c_str());

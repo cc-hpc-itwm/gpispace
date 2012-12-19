@@ -62,7 +62,7 @@ void observe_finished (const layer_t *l, layer_id_type const & id, std::string c
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (we::util::codec::decode (s));
+      we::mgmt::type::activity_t act (we::util::codec::decode (s));
       std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -79,7 +79,7 @@ void observe_failed (const layer_t *l, layer_id_type const & id, std::string con
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (we::util::codec::decode (s));
+      we::mgmt::type::activity_t act (we::util::codec::decode (s));
       std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -96,7 +96,7 @@ void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (we::util::codec::decode (s));
+      we::mgmt::type::activity_t act (we::util::codec::decode (s));
       std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -199,7 +199,7 @@ int main (int argc, char **argv)
     mgmt_layer.sig_executing.connect ( &observe_executing );
   }
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act;
 
   if (path_to_act != "-")
   {
@@ -235,7 +235,7 @@ int main (int argc, char **argv)
     literal::read (tokval, pos);
 
     act.add_input (
-                   we::input_t::value_type
+                   we::mgmt::type::activity_t::input_t::value_type
                    ( token::type ( port_name
                                  , boost::apply_visitor (literal::visitor::type_name(), tokval)
                                  , tokval

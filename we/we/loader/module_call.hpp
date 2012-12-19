@@ -10,12 +10,12 @@
 
 namespace module
 {
-  static void call (we::loader::loader & loader, we::activity_t & act, const we::type::module_call_t & module_call)
+  static void call (we::loader::loader & loader, we::mgmt::type::activity_t & act, const we::type::module_call_t & module_call)
   {
     // construct context
     typedef we::loader::input_t context_t;
-    typedef we::activity_t::input_t input_t;
-    typedef we::activity_t::output_t output_t;
+    typedef we::mgmt::type::activity_t::input_t input_t;
+    typedef we::mgmt::type::activity_t::output_t output_t;
     typedef we::type::port_t port_t;
     typedef we::type::transition_t::const_iterator port_iterator;
 

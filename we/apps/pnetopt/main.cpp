@@ -945,7 +945,7 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
 
-    we::activity_t activity;
+    we::mgmt::type::activity_t activity;
 
     if (input == "-") {
         we::util::codec::decode(std::cin, activity);

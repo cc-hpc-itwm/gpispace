@@ -92,7 +92,7 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act;
 
   try
   {

@@ -70,10 +70,10 @@ private:
 
     bool event (QEvent *event);
   void UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
-                          , we::activity_t const & act
+                          , we::mgmt::type::activity_t const & act
                           );
   void UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
-                          , we::activity_t const & act
+                          , we::mgmt::type::activity_t const & act
                           );
 
   Ui::MonitorWindow *ui;

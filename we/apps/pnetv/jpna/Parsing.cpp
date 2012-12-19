@@ -184,7 +184,7 @@ void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
 }
 
 void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets) {
-    we::activity_t activity;
+    we::mgmt::type::activity_t activity;
     we::util::codec::decode(in, activity);
 
     TransitionVisitor visitor(filename, petriNets);
