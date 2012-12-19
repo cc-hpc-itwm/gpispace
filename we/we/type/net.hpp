@@ -89,8 +89,6 @@ private:
   bijection::bijection<place::type,place_id_type> pmap; // place::type <-> internal id
   bijection::bijection<transition_type,transition_id_type> tmap; // transition_type <-> internal id
 
-  boost::unordered_set<connection_t> _connections;
-
   adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
   adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
 
@@ -113,7 +111,6 @@ private:
   {
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
-    ar & BOOST_SERIALIZATION_NVP(_connections);
     ar & BOOST_SERIALIZATION_NVP(_adj_pt);
     ar & BOOST_SERIALIZATION_NVP(_adj_tp);
     ar & BOOST_SERIALIZATION_NVP(token_place_rel);
@@ -393,8 +390,6 @@ public:
     in_to_transition_size_map.erase (connection.tid);
     out_of_transition_size_map.erase (connection.tid);
 
-    _connections.insert (connection);
-
     recalculate_enabled_by_connection (connection);
   }
 
@@ -409,9 +404,21 @@ public:
     return transition_const_it (tmap);
   }
 
-  const boost::unordered_set<connection_t>& connections() const
+  //! \todo Implement more efficient if necessary
+  const boost::unordered_set<connection_t> connections() const
   {
-    return _connections;
+    boost::unordered_set<connection_t> s;
+
+    BOOST_FOREACH (const connection_t& connection, _adj_tp.adjacencies())
+      {
+        s.insert (connection);
+      }
+    BOOST_FOREACH (const connection_t& connection, _adj_pt.adjacencies())
+      {
+        s.insert (connection);
+      }
+
+    return s;
   }
 
   // iterate through adjacencies
@@ -460,8 +467,6 @@ public:
     _adj_tp.clear_adjacent (tid, pid);
     in_to_transition_size_map.erase (tid);
     out_of_transition_size_map.erase (tid);
-
-    _connections.erase (_adj_tp.get_adjacent (tid, pid, "delete_edge_out"));
   }
   void delete_edge_in ( const transition_id_type& tid
                       , const place_id_type& pid
@@ -476,8 +481,6 @@ public:
     update_set_of_tid_in ( tid
                          , in_map[tid].size() == in_to_transition_size(tid)
                          );
-
-    _connections.erase (_adj_pt.get_adjacent (pid, tid, "delete_edge_in"));
   }
 
   void delete_place (const place_id_type & pid)

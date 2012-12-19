@@ -8,7 +8,9 @@
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 #include <boost/optional.hpp>
+#include <boost/foreach.hpp>
 
 namespace adjacency
 {
@@ -46,6 +48,7 @@ namespace adjacency
     void clear_adjacent (const ROW&, const COL&);
     void set_adjacent (const ROW&, const COL&, const ADJ&);
     void set_adjacent (const ROW&, const COL&, const ADJ&, const std::string&);
+    boost::unordered_set<ADJ> adjacencies() const;
 
   private:
     typedef boost::unordered_map<ROW,ADJ> row_adj_tab_t;
@@ -198,6 +201,25 @@ namespace adjacency
       }
 
     set_adjacent (r, c, v);
+  }
+
+  //! \todo Implement more efficient if necessary
+  template<typename ROW, typename COL, typename ADJ>
+  boost::unordered_set<ADJ> table<ROW,COL,ADJ>::adjacencies() const
+  {
+    boost::unordered_set<ADJ> s;
+
+    BOOST_FOREACH (const typename row_tab_t::value_type& tab, row_tab)
+      {
+        BOOST_FOREACH ( const typename col_adj_tab_t::value_type& pos
+                      , tab.second
+                      )
+          {
+            s.insert (pos.second);
+          }
+      }
+
+    return s;
   }
 } // namespace adjacency
 
