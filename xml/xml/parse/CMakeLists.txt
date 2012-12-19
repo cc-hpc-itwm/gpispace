@@ -53,7 +53,7 @@ add_custom_command(OUTPUT ${headerlist_hpp}
   COMMENT "generating internal pnetc headerlist"
   )
 
-set_source_files_properties(pnetc.cpp OBJECT_DEPENDS ${headerlist_hpp})
+set_source_files_properties(parser.cpp OBJECT_DEPENDS ${headerlist_hpp})
 
 add_executable(pnetc pnetc.cpp)
 #add_dependencies(pnetc gen-includes)
