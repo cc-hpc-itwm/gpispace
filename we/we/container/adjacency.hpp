@@ -31,8 +31,8 @@ namespace adjacency
     const_it (const it_t& _pos, const it_t& _end)
       : const_it::super(_pos,_end) {}
 
-    const L& operator * (void) const { return const_it::super::pos->first; }
-    const R& operator () (void) const { return const_it::super::pos->second; }
+    const L& operator* () const { return const_it::super::pos->first; }
+    const R& operator() () const { return const_it::super::pos->second; }
   };
 
   template<typename ROW, typename COL, typename ADJ>
@@ -69,10 +69,7 @@ namespace adjacency
   };
 
   template<typename ROW, typename COL, typename ADJ>
-  table<ROW,COL,ADJ>::table ( const ADJ& _invalid
-                            , const ROW& r
-                            , const COL& c
-                            )
+  table<ROW,COL,ADJ>::table (const ADJ& _invalid, const ROW& r, const COL& c)
     : invalid (_invalid)
     , row_tab ()
     , col_tab ()
