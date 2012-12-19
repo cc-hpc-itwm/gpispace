@@ -128,7 +128,6 @@ namespace petri_net
   const _prefix ## _type& _prefix ## _invalid()
 
   INVALID (place_id);
-  INVALID (transition_id);
   INVALID (activity_id);
 
   INVALID (priority);

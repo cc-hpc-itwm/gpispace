@@ -16,7 +16,6 @@ namespace petri_net
   }
 
   INVALID (place_id);
-  INVALID (transition_id);
   INVALID (activity_id);
 
   INVALID (priority);
