@@ -1,7 +1,6 @@
 # -*- mode: cmake; -*-
 set (hdrs
   net.hpp
-  we.hpp
   )
 
 install(FILES ${hdrs}
