@@ -166,7 +166,14 @@ case "$action" in
 
         gspc_log_info kvs "stopping KVS: host => '${kvs_host}' port => '${kvs_port}'"
 
-        kvsc --term
+        err=$(kvsc --term 2>&1)
+        ec=$?
+        if [ $ec -eq 4 ] ; then
+            gspc_log_debug kvs "not running"
+        elif [ $ec -ne 0 ] ; then
+            gspc_log_error kvs "unknown error: $err"
+        fi
+        exit $ec
         ;;
     get)
         gspc_require_kvs_config
