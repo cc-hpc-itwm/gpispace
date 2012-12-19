@@ -4,12 +4,14 @@
 #define _CONTAINER_ADJACENCY_HPP
 
 #include <we/util/it.hpp>
-
-#include <stdexcept>
+#include <we/type/exception.hpp>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
+
+#include <stdexcept>
+#include <string>
 
 namespace adjacency
 {
@@ -44,6 +46,7 @@ namespace adjacency
     const const_it<COL,ADJ> row_const_it (const ROW&) const;
     const const_it<ROW,ADJ> col_const_it (const COL&) const;
     const boost::optional<ADJ> get_adjacent (const ROW&, const COL&) const;
+    const ADJ get_adjacent (const ROW&, const COL&, const std::string&) const;
     bool is_adjacent (const ROW&, const COL&) const;
     void clear_adjacent (const ROW& r, const COL& c);
     void set_adjacent (const ROW& r, const COL& c, const ADJ& v);
@@ -125,6 +128,28 @@ namespace adjacency
       }
 
     return boost::none;
+  }
+
+  template<typename ROW, typename COL, typename ADJ>
+  const ADJ
+  table<ROW,COL,ADJ>::get_adjacent ( const ROW& r
+                                   , const COL& c
+                                   , const std::string& msg
+                                   ) const
+  {
+    typename row_tab_t::const_iterator pos (row_tab.find (r));
+
+    if (pos != row_tab.end())
+      {
+        typename col_adj_tab_t::const_iterator it (pos->second.find (c));
+
+        if (it != pos->second.end())
+          {
+            return it->second;
+          }
+      }
+
+    throw petri_net::exception::no_such ("get_adjacent: " + msg);
   }
 
   template<typename ROW, typename COL, typename ADJ>

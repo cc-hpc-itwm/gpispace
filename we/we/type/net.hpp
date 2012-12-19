@@ -440,76 +440,37 @@ public:
                                   , const place_id_type& pid
                                   ) const
   {
-    const boost::optional<connection_t> connection
-      (_adj_tp.get_adjacent (tid, pid));
-
-    if (!connection)
-      {
-        throw exception::no_such ("specific out connection");
-      }
-
-    return *connection;
+    return _adj_tp.get_adjacent (tid, pid, "get_connection_out");
   }
   connection_t get_connection_in ( const transition_id_type& tid
                                  , const place_id_type& pid
                                  ) const
   {
-    const boost::optional<connection_t> connection
-      (_adj_pt.get_adjacent (pid, tid));
-
-    if (!connection)
-      {
-        throw exception::no_such ("specific in connection");
-      }
-
-    return *connection;
+    return _adj_pt.get_adjacent (pid, tid, "get_connection_in");
   }
 
   bool is_read_connection ( const transition_id_type & tid
                           , const place_id_type & pid
                           ) const
   {
-    const boost::optional<connection_t> connection
-      (_adj_pt.get_adjacent (pid, tid));
-
-    if (!connection)
-      {
-        throw exception::no_such ("specific connection");
-      }
-
-    return edge::is_pt_read (connection->type);
+    return edge::is_pt_read
+      (_adj_pt.get_adjacent (pid, tid, "is_read_connection").type);
   }
 
   void delete_edge_out ( const transition_id_type& tid
                        , const place_id_type& pid
                        )
   {
-    const boost::optional<connection_t> connection
-      (_adj_tp.get_adjacent (tid, pid));
-
-    if (!connection)
-      {
-        throw exception::no_such ("specific out connection");
-      }
-
     _adj_tp.clear_adjacent (tid, pid);
     in_to_transition_size_map.erase (tid);
     out_of_transition_size_map.erase (tid);
 
-    _connections.erase (*connection);
+    _connections.erase (_adj_tp.get_adjacent (tid, pid, "delete_edge_out"));
   }
   void delete_edge_in ( const transition_id_type& tid
                       , const place_id_type& pid
                       )
   {
-    const boost::optional<connection_t> connection
-      (_adj_pt.get_adjacent (pid, tid));
-
-    if (!connection)
-      {
-        throw exception::no_such ("specific in connection");
-      }
-
     _adj_pt.clear_adjacent (pid, tid);
     in_to_transition_size_map.erase (tid);
     out_of_transition_size_map.erase (tid);
@@ -520,7 +481,7 @@ public:
                          , in_map[tid].size() == in_to_transition_size(tid)
                          );
 
-    _connections.erase (*connection);
+    _connections.erase (_adj_pt.get_adjacent (pid, tid, "delete_edge_in"));
   }
 
   void delete_place (const place_id_type & pid)
