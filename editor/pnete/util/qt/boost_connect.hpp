@@ -50,42 +50,30 @@ namespace fhg
           class connection_adapter : public abstract_connection_adapter
         { };
 
-        template<typename Signature>
-          class metatype_lister
-        { };
-
         bool connect_impl ( QObject* sender
                           , const char* signal
                           , QObject* receiver
                           , abstract_connection_adapter* adapter
-                          , int argument_count
-                          , int argument_types[]
+                          , const QByteArray& fake_signature
                           , Qt::ConnectionType connection_type
                           );
       }
 
-      template<typename Signature>
+      template<typename Sig>
         inline bool boost_connect ( QObject* sender
                                   , const char* signal
                                   , QObject* receiver
-                                  , const boost::function<Signature>& function
+                                  , const boost::function<Sig>& function
                                   , Qt::ConnectionType connection_type
                                   = Qt::AutoConnection
                                   )
       {
-        int* argument_types;
-        const int argument_count
-          ( boost_connect_detail::metatype_lister<Signature>::metaTypes
-            (&argument_types)
-          );
-
         return boost_connect_detail::connect_impl
           ( sender
           , signal
           , receiver
-          , new boost_connect_detail::connection_adapter<Signature> (function)
-          , argument_count
-          , argument_types
+          , new boost_connect_detail::connection_adapter<Sig> (function)
+          , boost_connect_detail::connection_adapter<Sig>::build_signature()
           , connection_type
           );
       }

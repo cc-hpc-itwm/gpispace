@@ -406,8 +406,7 @@ namespace fhg
               return;
             }
 
-            menu->connect
-              (menu, SIGNAL (triggered (QAction*)), SLOT (deleteLater()));
+            menu->connect (menu, SIGNAL (aboutToHide()), SLOT (deleteLater()));
             menu->popup (event->screenPos());
           }
           else

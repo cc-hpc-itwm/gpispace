@@ -1,8 +1,5 @@
-configure_file(gspc-sh-version.in ${CMAKE_CURRENT_BINARY_DIR}/gspc-sh-version @ONLY)
-
 set (prgs
   sdpa
-  gspc
 )
 
 set (scripts
@@ -18,32 +15,12 @@ set (scripts
   status-agent
   status-drts
   pidof
-
-  gspc-rexec
-  gspc-config
-  gspc-list-commands
-  gspc-check-port
-  gspc-shell
-  gspc-help
-  gspc-template
-  gspc-topology
-  gspc-log
-  gspc-init
 )
-
-set (files
-  gspc-sh-setup
-  ${CMAKE_CURRENT_BINARY_DIR}/gspc-sh-version
-  )
 
 install(PROGRAMS ${prgs}
   DESTINATION bin
   COMPONENT runtime)
 
 install(PROGRAMS ${scripts}
-  DESTINATION libexec/sdpa/scripts
-  COMPONENT runtime)
-
-install (FILES ${files}
   DESTINATION libexec/sdpa/scripts
   COMPONENT runtime)

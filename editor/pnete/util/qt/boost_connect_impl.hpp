@@ -43,65 +43,52 @@ namespace fhg
           //! \note no Q_OBJECT, since we don't want moc to run
 
         public:
-          explicit binding_object (QObject *parent = 0);
+          explicit binding_object (QObject *parent = NULL);
           virtual ~binding_object();
 
-          bool bind ( QObject *sender
-                    , const char *signal
-                    , QObject *receiver
-                    , abstract_connection_adapter *adapter
-                    , int nrArguments
-                    , int argumentTypeList[]
+          bool bind ( QObject* sender
+                    , const char* signal
+                    , QObject* receiver
+                    , abstract_connection_adapter* adapter
+                    , const QByteArray& fake_signature
                     , Qt::ConnectionType connType
                     );
 
           bool unbind (QObject *sender, const char *signal, QObject *receiver);
 
-          int bindingOffset() const
+          int binding_offset() const
           {
             return metaObject()->methodOffset() + metaObject()->methodCount();
           }
 
         public slots:
           void receiver_destroyed();
+          void sender_destroyed();
 
           // core QObject stuff: we implement this ourselves rather than
           // via moc, since qt_metacall() is the core of the binding
           static const QMetaObject staticMetaObject;
           virtual const QMetaObject *metaObject() const;
-          virtual void *qt_metacast(const char *);
-          virtual int qt_metacall(QMetaObject::Call, int, void **argv);
+          virtual void *qt_metacast (const char *);
+          virtual int qt_metacall (QMetaObject::Call, int, void **argv);
 
         private:
-          struct Binding
+          struct binding
           {
-            QObject *sender;
-            QObject *receiver;
+            QObject* sender;
+            QObject* receiver;
             abstract_connection_adapter* adapter;
-            int signalIndex;
+            int signal_index;
 
-            Binding()
-              : sender(0)
-              , receiver(0)
-              , adapter(0)
-              , signalIndex(-1)
-            { }
-            Binding ( QObject *s
-                    , int sIx
-                    , QObject *r
-                    , abstract_connection_adapter *a
-                    )
-              : sender(s)
-              , receiver(r)
-              , adapter(a)
-              , signalIndex(sIx)
+            binding (QObject* s, int i, QObject* r, abstract_connection_adapter* a)
+              : sender (s)
+              , receiver (r)
+              , adapter (a)
+              , signal_index (i)
             { }
           };
 
-          static QByteArray buildAdapterSignature
-            (int nrArguments, int argumentMetaTypeList[]);
-
-          QList<Binding> m_bindings;
+          QList<binding> _bindings;
         };
       }
     }
