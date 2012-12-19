@@ -1,5 +1,7 @@
 # -*- mode: cmake; -*-
 
+include (fhg_test_macros)
+
 # search for libreadline
 find_package (LibReadline REQUIRED)
 include_directories (${LibReadline_INCLUDE_DIR})
@@ -61,6 +63,12 @@ endfunction(construct_tests)
 
 list(SORT tc_srcs)
 construct_tests(${tc_srcs})
+
+fhg_add_test (evaluate_net.cpp
+  LINK_LIBRARIES ${WE_LIBRARIES} ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
+  DESCRIPTION "evaluate various nets and compare the results with given reference nets"
+  ARGS ${CMAKE_CURRENT_SOURCE_DIR}/pnets
+)
 
 set(cross_hpp
     ${CMAKE_CURRENT_BINARY_DIR}/cross.hpp
