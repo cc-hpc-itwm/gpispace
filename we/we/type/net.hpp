@@ -203,23 +203,6 @@ private:
 
   // *********************************************************************** //
 
-  template<typename ROW, typename COL>
-  void gen_add_connection ( const ROW& r
-                          , const COL& c
-                          , adjacency::table<ROW,COL,connection_t>& m
-                          , const connection_t& connection
-                          )
-  {
-    if (m.get_adjacent (r, c) != connection_invalid())
-      {
-        throw bijection::exception::already_there ("adjacency");
-      }
-
-    m.set_adjacent (r, c, connection);
-  }
-
-  // *********************************************************************** //
-
   void update_set_of_tid_in (const transition_id_type & tid, const bool can_fire)
   {
     if (not can_fire)
@@ -425,13 +408,27 @@ public:
   {
     if (edge::is_PT (connection.type))
       {
-        gen_add_connection<place_id_type,transition_id_type>
-          (connection.pid, connection.tid, _adj_pt, connection);
+        if (_adj_pt.get_adjacent ( connection.pid
+                                 , connection.tid
+                                 ) != connection_invalid()
+           )
+          {
+            throw bijection::exception::already_there ("adjacency");
+          }
+
+        _adj_pt.set_adjacent (connection.pid, connection.tid, connection);
       }
     else
       {
-        gen_add_connection<transition_id_type,place_id_type>
-          (connection.tid, connection.pid, _adj_tp, connection);
+        if (_adj_tp.get_adjacent ( connection.tid
+                                 , connection.pid
+                                 ) != connection_invalid()
+           )
+          {
+            throw bijection::exception::already_there ("adjacency");
+          }
+
+        _adj_tp.set_adjacent (connection.tid, connection.pid, connection);
       }
 
     in_to_transition_size_map.erase (connection.tid);
@@ -507,9 +504,7 @@ public:
                           , const place_id_type & pid
                           ) const
   {
-    return _connections.find (connection_t (edge::PT_READ, tid, pid))
-      != _connections.end()
-      ;
+    return edge::is_pt_read (_adj_pt.get_adjacent (pid, tid).type);
   }
 
   void delete_edge_out ( const transition_id_type& tid
