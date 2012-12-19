@@ -8,7 +8,5 @@ BOOST_FIXTURE_TEST_CASE (simple_pipe_elimination, parser_fixture)
 {
   parse ("simple_pipe_elimination_token.xpnet");
   post_processing_passes();
-  ::we::mgmt::type::activity_t activity ();
-
   require_same (xml_to_we(), "simple_pipe_elimination_token.pnet");
 }
