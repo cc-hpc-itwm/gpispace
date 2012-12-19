@@ -724,19 +724,6 @@ public:
     return tmap.modify (tid, transition);
   }
 
- private:
-  const transition_id_type& enabled_first (void) const
-  {
-    return enabled.first();
-  }
-
-  template<typename Engine>
-  const transition_id_type& enabled_random (Engine& engine) const
-  {
-    return enabled.random (engine);
-  }
-
-public:
   void put_token (const place_id_type & pid, const token::type & token)
   {
     token_place_rel.add (token, pid);
