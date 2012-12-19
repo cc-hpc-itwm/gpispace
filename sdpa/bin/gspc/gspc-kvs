@@ -159,6 +159,7 @@ case "$action" in
             gspc config --local --set "kvs.host" "${kvs_host}"
             gspc config --local --set "kvs.port" "${kvs_port}"
         fi
+        exit $ec
         ;;
     stop)
         gspc_require_kvs_config
@@ -173,10 +174,15 @@ case "$action" in
         if [ $# -eq 0 ] ; then
             gspc_log_error kvs "get requires at least one argument: <key>..."
         fi
+        ec=0
         while [ $# -gt 0 ] ; do
-            kvsc --full --get "$1"
+            kvsc --full --get "$1" 2>/dev/null
+            if [ $? -ne 0 ] ; then
+                ec=1
+            fi
             shift
         done
+        exit $ec
         ;;
     get-regex)
         gspc_require_kvs_config
@@ -184,10 +190,15 @@ case "$action" in
         if [ $# -eq 0 ] ; then
             gspc_log_error kvs "get requires at least one argument: <key>..."
         fi
+        ec=0
         while [ $# -gt 0 ] ; do
             kvsc --get "$1"
+            if [ $? -ne 0 ] ; then
+                ec=1
+            fi
             shift
         done
+        exit $ec
         ;;
     put)
         gspc_require_kvs_config
@@ -196,11 +207,16 @@ case "$action" in
             gspc_log_error kvs "put requires an even number of arguments: <key> <val>..."
             exit 1
         fi
+        ec=0
         while [ $# -ge 2 ] ; do
             kvsc --put "$1" --value "$2" --expiry "${key_expiry}"
+            if [ $? -ne 0 ] ; then
+                ec=1
+            fi
             shift
             shift
         done
+        exit $ec
         ;;
     del)
         gspc_require_kvs_config
@@ -208,10 +224,15 @@ case "$action" in
         if [ $# -eq 0 ] ; then
             gspc_log_error kvs "del requires at least one argument: <key>..."
         fi
+        ec=0
         while [ $# -gt 0 ] ; do
             kvsc --del "$1"
+            if [ $? -ne 0 ] ; then
+                ec=1
+            fi
             shift
         done
+        exit $ec
         ;;
     *)
         gspc_log_error kvs "invalid action: '$action'"
