@@ -12,6 +12,7 @@
 #include <we/container/multirel.hpp>
 #include <we/container/priostore.hpp>
 #include <we/serialize/unordered_map.hpp>
+#include <we/serialize/unordered_set.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/condition.hpp>
 #include <we/type/id.hpp>
@@ -79,11 +80,9 @@ class net
   // *********************************************************************** //
 public:
   typedef we::type::transition_t transition_type;
-  typedef unsigned int edge_type;
 
   typedef bijection::const_it<place::type,place_id_type> place_const_it;
   typedef bijection::const_it<transition_type,transition_id_type> transition_const_it;
-  typedef bijection::const_it<edge_type,edge_id_type> edge_const_it;
 
   typedef multirel::right_const_it<token::type, place_id_type> token_place_it;
 
@@ -122,7 +121,8 @@ private:
 
   bijection::bijection<place::type,place_id_type> pmap; // place::type <-> internal id
   bijection::bijection<transition_type,transition_id_type> tmap; // transition_type <-> internal id
-  bijection::bijection<edge_type,edge_id_type> emap; // edge_type <-> internal id
+
+  boost::unordered_set<edge_id_type> _edges;
 
   connection_map_t connection_map;
 
@@ -140,7 +140,7 @@ private:
   adjacent_transition_size_map_type in_to_transition_size_map;
   adjacent_transition_size_map_type out_of_transition_size_map;
 
-  edge_type _e;
+  edge_id_type _edge_id;
 
   // *********************************************************************** //
 
@@ -150,7 +150,7 @@ private:
   {
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
-    ar & BOOST_SERIALIZATION_NVP(emap);
+    ar & BOOST_SERIALIZATION_NVP(_edges);
     ar & BOOST_SERIALIZATION_NVP(connection_map);
     ar & BOOST_SERIALIZATION_NVP(adj_pt);
     ar & BOOST_SERIALIZATION_NVP(adj_tp);
@@ -217,16 +217,18 @@ private:
                             )
   {
     if (m.get_adjacent (r, c) != edge_id_invalid())
-      throw bijection::exception::already_there ("adjacency");
+      {
+        throw bijection::exception::already_there ("adjacency");
+      }
 
-    const edge_id_type eid (emap.add (_e++));
+    _edges.insert (_edge_id);
 
-    m.set_adjacent (r, c, eid);
+    m.set_adjacent (r, c, _edge_id);
 
     in_to_transition_size_map.erase (tid);
     out_of_transition_size_map.erase (tid);
 
-    return eid;
+    return _edge_id++;
   }
 
   // *********************************************************************** //
@@ -413,7 +415,7 @@ public:
   net (const place_id_type & _places = 10, const transition_id_type & _transitions = 10)
     : pmap ("place")
     , tmap ("transition")
-    , emap ("edge name")
+    , _edges ()
     , connection_map ()
     , adj_pt (edge_id_invalid(), _places, _transitions)
     , adj_tp (edge_id_invalid(), _transitions, _places)
@@ -424,7 +426,7 @@ public:
     , in_map ()
     , in_to_transition_size_map ()
     , out_of_transition_size_map ()
-    , _e (0)
+    , _edge_id (0)
   {}
 
   // get element
@@ -489,9 +491,9 @@ public:
     return transition_const_it (tmap);
   }
 
-  edge_const_it edges (void) const
+  const boost::unordered_set<edge_id_type>& edges() const
   {
-    return edge_const_it (emap);
+    return _edges;
   }
 
   // iterate through adjacencies
@@ -622,7 +624,7 @@ private:
 
     connection_map.erase (it);
 
-    emap.erase (eid);
+    _edges.erase (eid);
 
     return eid;
   }

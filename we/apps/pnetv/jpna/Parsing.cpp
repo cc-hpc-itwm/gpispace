@@ -111,8 +111,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        for (pnet_t::edge_const_it it = net.edges(); it.has_more(); ++it) {
-            const petri_net::connection_t &connection = net.get_edge_info(*it);
+        FOREACH (const petri_net::edge_id_type& edge_id, net.edges()) {
+            const petri_net::connection_t &connection
+              = net.get_edge_info(edge_id);
 
             switch (connection.type) {
                 case petri_net::edge::PT: {
