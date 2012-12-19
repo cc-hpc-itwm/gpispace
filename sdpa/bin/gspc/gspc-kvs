@@ -138,8 +138,8 @@ case "$action" in
         fi
         ;;
     start)
-        gspc_require_kvs_config
         gspc_require_gspc_dir
+        gspc_require_kvs_config
 
         if [ -z "$kvs_host" ] ; then
             gspc_log_error kvs "kvs-host is not set!"
