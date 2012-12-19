@@ -123,11 +123,6 @@ int main(int ac, char *av[])
     return EXIT_SUCCESS;
   }
 
-  fhg::com::kvs::server::kvsd kvsd (store_path);
-  g_kvsd = &kvsd;
-
-  if (vm.count ("clear")) kvsd.clear ("");
-
   if (vm.count ("daemonize"))
     daemonize = true;
 
@@ -147,6 +142,14 @@ int main(int ac, char *av[])
          << strerror(errno)
          );
       exit(EXIT_FAILURE);
+    }
+
+    if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+    {
+      LOG( ERROR, "could not lock pidfile: "
+         << strerror(errno)
+         );
+      exit(EX_STILL_RUNNING);
     }
   }
 
@@ -184,7 +187,7 @@ int main(int ac, char *av[])
 
   if (pidfile_fd >= 0)
   {
-    if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+    if (lockf(pidfile_fd, F_LOCK, 0) < 0)
     {
       LOG( ERROR, "could not lock pidfile: "
          << strerror(errno)
@@ -204,6 +207,11 @@ int main(int ac, char *av[])
     }
     fsync(pidfile_fd);
   }
+
+  fhg::com::kvs::server::kvsd kvsd (store_path);
+  g_kvsd = &kvsd;
+
+  if (vm.count ("clear")) kvsd.clear ("");
 
   signal(SIGINT, signal_handler);
   signal(SIGTERM, signal_handler);
