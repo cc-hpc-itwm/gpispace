@@ -608,7 +608,6 @@ namespace xml
         , const net_type & net
         , petri_net::net & we_net
         , const place_map_map_type & pids
-        , unsigned int & e
         )
       {
         typedef we::type::expression_t we_expr_type;
@@ -747,7 +746,7 @@ namespace xml
 
             // synthesize into this level
             const place_map_map_type pid_of_place
-              (net_synthesize (we_net, place_map_map, net, state, e));
+              (net_synthesize (we_net, place_map_map, net, state));
 
             net.remove_prefix (prefix);
 

@@ -163,7 +163,6 @@ namespace xml
         , const net_type & net
         , petri_net::net& we_net
         , const place_map_map_type & pids
-        , unsigned int & e
         );
 
       // ******************************************************************* //
