@@ -1,7 +1,6 @@
 // basic usage of adjacency.hpp, mirko.rahn@itwm.fraunhofer.de
 
 #include <we/container/adjacency.hpp>
-#include <we/container/adjacency.ipp>
 
 #include <limits>
 
@@ -11,7 +10,6 @@ typedef unsigned short row_t;
 typedef unsigned int col_t;
 typedef char adj_t;
 // static const adj_t invalid (std::numeric_limits<adj_t>::max());
-static const adj_t invalid ('.');
 
 using std::cout;
 using std::endl;
@@ -19,7 +17,7 @@ using std::endl;
 int
 main ()
 {
-  adjacency::table<row_t,col_t,adj_t> t (invalid, 1, 1);
+  adjacency::table<row_t,col_t,adj_t> t (1, 1);
 
   cout << "const row " << 0 << ":" << endl;
   for ( adjacency::const_it<col_t,adj_t> it (t.row_const_it (0))
