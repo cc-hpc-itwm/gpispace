@@ -874,7 +874,7 @@ private:
 
         input.push_back (token_input_t (token, pid));
 
-        assert (not edge::is_pt_read (get_connection (eid).type));
+        assert (not is_read_connection (tid, pid));
 
         delete_one_token (pid, token);
       }
@@ -888,6 +888,8 @@ private:
         const place_id_type & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
         const token::type & token (token_via_edge.first);
+
+        assert (is_read_connection (tid, pid));
 
         input.push_back (token_input_t (token, pid));
       }
