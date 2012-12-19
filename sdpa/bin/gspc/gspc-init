@@ -66,6 +66,14 @@ then
     exit 1
 fi
 
+err=$(mkdir -p "$dir"/{var,run,lock,log} 2>&1)
+ec=$?
+if [ $? -ne 0 ]
+then
+    gspc_log_error init "could not create directory '$dir': ${err}"
+    exit 1
+fi
+
 gspc --revision > "${dir}/.gspc_dir"
 
 gspc_log_trace init "initialized directory '$dir'"
