@@ -440,6 +440,18 @@ public:
   {
     return emap.get_elem (eid);
   }
+  const edge_type& get_edge_out ( const transition_id_type& tid
+                                , const place_id_type& pid
+                                ) const
+  {
+    return get_edge (get_eid_out (tid, pid));
+  }
+  const edge_type& get_edge_in ( const transition_id_type& tid
+                               , const place_id_type& pid
+                               ) const
+  {
+    return get_edge (get_eid_in (tid, pid));
+  }
 
   // add element
   place_id_type add_place (const place::type & place)
@@ -529,7 +541,20 @@ public:
 
     return it->second;
   }
+  connection_t get_edge_info_out ( const transition_id_type& tid
+                                 , const place_id_type& pid
+                                 ) const
+  {
+    return get_edge_info (get_eid_out (tid, pid));
+  }
+  connection_t get_edge_info_in ( const transition_id_type& tid
+                                , const place_id_type& pid
+                                ) const
+  {
+    return get_edge_info (get_eid_in (tid, pid));
+  }
 
+private:
   edge_id_type get_eid_out (const transition_id_type & tid, const place_id_type & pid) const
   {
     for ( adj_place_const_it pit (out_of_transition (tid))
@@ -545,7 +570,6 @@ public:
 
     throw exception::no_such ("specific out connection");
   }
-
   edge_id_type get_eid_in (const transition_id_type & tid, const place_id_type & pid) const
   {
     for ( adj_place_const_it pit (in_to_transition (tid))
@@ -562,6 +586,7 @@ public:
     throw exception::no_such ("specific in connection");
   }
 
+public:
   bool is_read_connection (const transition_id_type & tid, const place_id_type & pid) const
   {
     for ( adj_place_const_it pit (in_to_transition (tid))
@@ -614,6 +639,19 @@ public:
     emap.erase (eid);
 
     return eid;
+  }
+
+  const edge_id_type& delete_edge_out ( const transition_id_type& tid
+                                      , const place_id_type& pid
+                                      )
+  {
+    return delete_edge (get_eid_out (tid, pid));
+  }
+  const edge_id_type& delete_edge_in ( const transition_id_type& tid
+                                     , const place_id_type& pid
+                                     )
+  {
+    return delete_edge (get_eid_in (tid, pid));
   }
 
   const place_id_type & delete_place (const place_id_type & pid)

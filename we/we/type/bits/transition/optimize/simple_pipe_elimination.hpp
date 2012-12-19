@@ -147,9 +147,10 @@ namespace we { namespace type {
             detail::insert_tids (pred_in, net.in_to_place (pid_A));
             detail::insert_tids (pred_out, net.in_to_place (pid_B));
 
-            const petri_net::edge_id_type eid (net.get_eid_in (tid, pid_A));
-
-            if (petri_net::edge::is_pt_read (net.get_edge_info (eid).type))
+            if (petri_net::edge::is_pt_read ( net.get_edge_info_in (tid, pid_A)
+                                            . type
+                                            )
+               )
               {
                 return boost::none;
               }

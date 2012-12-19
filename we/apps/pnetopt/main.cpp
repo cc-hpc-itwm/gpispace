@@ -797,10 +797,10 @@ class Optimizer {
             if (connectedPlace_) {
                 /* We must remove an edge. */
                 if (isInput()) {
-                    petriNet()->pnet().delete_edge(petriNet()->pnet().get_eid_in(transition()->id(), connectedPlace_->id()));
+                    petriNet()->pnet().delete_edge_in(transition()->id(), connectedPlace_->id());
                 }
                 if (isOutput()) {
-                    petriNet()->pnet().delete_edge(petriNet()->pnet().get_eid_out(transition()->id(), connectedPlace_->id()));
+                    petriNet()->pnet().delete_edge_out(transition()->id(), connectedPlace_->id());
                 }
 
                 /* Now we must disconnect the place on the transition's side. */
