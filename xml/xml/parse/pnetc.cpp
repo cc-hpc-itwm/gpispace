@@ -1,21 +1,18 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <xml/parse/parser.hpp>
 
 #include <xml/parse/type/function.hpp>
+
+#include <fhg/revision.hpp>
+
+#include <we/mgmt/type/activity.hpp>
 
 #include <iostream>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
-
-#include <we/we.hpp>
-
-#include <fhg/revision.hpp>
-
-#include <xml/parse/headerlist.hpp>
-#include <xml/parse/headergen.hpp>
 
 // ************************************************************************* //
 
@@ -174,15 +171,49 @@ namespace // anonymous
   }
 } // anonymous namespace
 
-namespace po = boost::program_options;
+void dump_dependencies ( const xml::parse::state::type& state
+                       , const std::string& input
+                       )
+{
+  const std::string& file (state.dump_dependencies());
 
-int
-main (int argc, char ** argv)
+  std::ofstream stream (file.c_str());
+  if (!stream)
+  {
+    throw xml::parse::error::could_not_open_file (file);
+  }
+
+  write_dependencies (state, input, stream);
+}
+
+void list_dependencies ( const xml::parse::state::type& state
+                       , const std::string& input
+                       )
+{
+  const std::string& file (state.list_dependencies());
+
+  std::ofstream stream (file.c_str());
+  if (!stream)
+  {
+    throw xml::parse::error::could_not_open_file (file);
+  }
+
+  stream << quote_for_list (input) << std::endl;
+
+  BOOST_FOREACH (const boost::filesystem::path& p, state.dependencies())
+  {
+    stream << quote_for_list(p.string()) << std::endl;
+  }
+}
+
+int main (int argc, char** argv)
 {
   std::string input ("/dev/stdin");
   std::string output ("/dev/stdout");
 
-  po::options_description desc("General");
+  namespace po = boost::program_options;
+
+  po::options_description desc ("General");
 
   desc.add_options()
     ( "help,h", "this message")
@@ -202,19 +233,19 @@ main (int argc, char ** argv)
   state.add_options (desc);
 
   po::positional_options_description p;
-  p.add("input", 1).add("output",2);
+  p.add ("input", 1).add ("output",2);
 
   po::variables_map vm;
 
   try
   {
-    po::store( po::command_line_parser(argc, argv)
-             . options(desc).positional(p)
-             . extra_parser (xml::parse::state::reg_M)
-             . run()
-             , vm
-             );
-    po::notify(vm);
+    po::store ( po::command_line_parser(argc, argv)
+              . options(desc).positional(p)
+              . extra_parser (xml::parse::state::reg_M)
+              . run()
+              , vm
+              );
+    po::notify (vm);
   }
   catch (std::exception const & ex)
   {
@@ -222,31 +253,36 @@ main (int argc, char ** argv)
     return EXIT_FAILURE;
   }
 
-  if (vm.count("help"))
-    {
-      std::cout << argv[0] << ": the petri net compiler" << std::endl;
+  if (vm.count ("help"))
+  {
+    std::cout << argv[0] << ": the petri net compiler" << std::endl;
 
-      std::cout << desc << std::endl;
+    std::cout << desc << std::endl;
 
-      return EXIT_SUCCESS;
-    }
+    return EXIT_SUCCESS;
+  }
 
-  if (vm.count("version"))
-    {
-      std::cout << fhg::project_info();
+  if (vm.count ("version"))
+  {
+    std::cout << fhg::project_info();
 
-      return EXIT_SUCCESS;
-    }
+    return EXIT_SUCCESS;
+  }
 
   if (input == "-")
-    {
-      input = "/dev/stdin";
-    }
+  {
+    input = "/dev/stdin";
+  }
 
   if (output == "-")
-    {
-      output = "/dev/stdout";
-    }
+  {
+    output = "/dev/stdout";
+  }
+
+  if (state.dump_dependenciesD())
+  {
+    state.dump_dependencies() = input + ".d";
+  }
 
   try
   {
@@ -254,93 +290,31 @@ main (int argc, char ** argv)
       (xml::parse::just_parse (state, input));
 
     if (state.dump_xml_file().size() > 0)
-      {
-        const std::string& file (state.dump_xml_file());
-        std::ofstream stream (file.c_str());
+    {
+      xml::parse::dump_xml (function, state);
+    }
 
-        if (!stream.good())
-          {
-            throw xml::parse::error::could_not_open_file (file);
-          }
-
-        fhg::util::xml::xmlstream s (stream);
-
-        xml::parse::type::dump::dump (s, function.get(), state);
-      }
-
-    // set all the collected requirements to the top level function
-    function.get_ref().requirements = state.requirements();
-
-    function.get_ref().specialize (state);
-    function.get_ref().resolve (state, function.get().forbidden_below());
-    function.get_ref().type_check (state);
-    function.get_ref().sanity_check (state);
+    xml::parse::post_processing_passes (function, &state);
 
     if (state.path_to_cpp().size() > 0)
-      {
-        xml::parse::type::fun_info_map m;
-
-        xml::parse::type::find_module_calls (state, function, m);
-
-        xml::parse::type::mk_wrapper (state, m);
-        xml::parse::type::mk_makefile (state, m);
-
-        xml::parse::includes::descrs_type descrs;
-
-        xml::parse::includes::mks (descrs);
-        xml::parse::includes::we_header_gen (state, descrs);
-
-        xml::parse::type::struct_to_cpp (state, function);
-      }
-
-    if (state.dump_dependenciesD())
-      {
-        state.dump_dependencies() = input + ".d";
-      }
+    {
+      xml::parse::generate_cpp (function, state);
+    }
 
     if (state.dump_dependencies().size() > 0)
-      {
-        const std::string& file (state.dump_dependencies());
-        std::ofstream stream (file.c_str());
-
-        if (!stream.good())
-          {
-            throw xml::parse::error::could_not_open_file (file);
-          }
-
-        write_dependencies (state, input, stream);
-      }
+    {
+      dump_dependencies (state, input);
+    }
 
     if (state.list_dependencies().size() > 0)
-      {
-        const std::string& file (state.list_dependencies());
-        std::ofstream stream (file.c_str());
-
-        if (not stream)
-          {
-            throw xml::parse::error::could_not_open_file (file);
-          }
-
-        stream << quote_for_list (input) << std::endl;
-
-        BOOST_FOREACH (const boost::filesystem::path& p, state.dependencies())
-          {
-            stream << quote_for_list(p.string()) << std::endl;
-          }
-      }
-
-    we::transition_t trans (function.get_ref().synthesize (state));
-
-    we::type::optimize::optimize (trans, state.options_optimize());
-
-    const we::activity_t act (trans);
-
+    {
+      list_dependencies (state, input);
+    }
 
     std::ofstream out (output.c_str());
-
-    out << act.to_string();
+    out << xml::parse::xml_to_we (function, state).to_string();
   }
-  catch (std::exception const & ex)
+  catch (const std::exception& ex)
   {
     std::cerr << "pnetc: failed: " << ex.what() << std::endl;
 

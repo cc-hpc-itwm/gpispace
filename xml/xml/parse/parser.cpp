@@ -3,6 +3,8 @@
 #include <xml/parse/parser.hpp>
 
 #include <xml/parse/error.hpp>
+#include <xml/parse/headergen.hpp>
+#include <xml/parse/headerlist.hpp>
 #include <xml/parse/state.hpp>
 #include <xml/parse/util.hpp>
 #include <xml/parse/warning.hpp>
@@ -1843,6 +1845,69 @@ namespace xml
 
       return state.generic_parse<id::ref::function>
         (boost::bind (parse_function, _1, _2, boost::none), input);
+    }
+
+    void post_processing_passes ( const id::ref::function& function
+                                , state::type* state
+                                )
+    {
+      // set all the collected requirements to the top level function
+      function.get_ref().requirements = state->requirements();
+
+      function.get_ref().specialize (*state);
+
+      function.get_ref().resolve (*state, function.get().forbidden_below());
+
+      function.get_ref().type_check (*state);
+      function.get_ref().sanity_check (*state);
+    }
+
+    void generate_cpp ( const id::ref::function& function
+                      , const state::type& state
+                      )
+    {
+      type::fun_info_map m;
+
+      type::find_module_calls (state, function, m);
+
+      type::mk_wrapper (state, m);
+      type::mk_makefile (state, m);
+
+      includes::descrs_type descrs;
+
+      includes::mks (descrs);
+      includes::we_header_gen (state, descrs);
+
+      type::struct_to_cpp (state, function);
+    }
+
+    void dump_xml ( const id::ref::function& function
+                  , const state::type& state
+                  )
+    {
+      const std::string& file (state.dump_xml_file());
+
+      std::ofstream stream (file.c_str());
+      if (!stream)
+      {
+        throw error::could_not_open_file (file);
+      }
+
+      fhg::util::xml::xmlstream s (stream);
+
+      type::dump::dump (s, function.get(), state);
+    }
+
+    we::mgmt::type::activity_t xml_to_we
+      ( const xml::parse::id::ref::function& function
+      , const xml::parse::state::type& state
+      )
+    {
+      we::transition_t trans (function.get_ref().synthesize (state));
+
+      we::type::optimize::optimize (trans, state.options_optimize());
+
+      return trans;
     }
   } // namespace parse
 } // namespace xml
