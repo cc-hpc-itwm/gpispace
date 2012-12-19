@@ -602,8 +602,7 @@ namespace we { namespace type {
                         {
                           found = true;
 
-                          const connection_t& net_conn
-                            (net.get_connection_in (*t, *p));
+                          const connection_t& net_conn (p());
 
                           if (petri_net::edge::is_pt_read (net_conn.type))
                             {

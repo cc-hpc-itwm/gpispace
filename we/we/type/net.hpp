@@ -63,11 +63,8 @@ namespace petri_net
 
 namespace petri_net
 {
-  typedef adjacency::const_it<place_id_type,edge_id_type> adj_place_const_it;
-  typedef adjacency::const_it<transition_id_type,edge_id_type> adj_transition_const_it;
-
-  typedef adjacency::const_it<place_id_type,connection_t> adj_c_place_const_it;
-  typedef adjacency::const_it<transition_id_type,connection_t> adj_c_transition_const_it;
+  typedef adjacency::const_it<place_id_type,connection_t> adj_place_const_it;
+  typedef adjacency::const_it<transition_id_type,connection_t> adj_transition_const_it;
 
 // WORK HERE: Performance: collect map<transition_id_type,X>, map<transition_id_type,Y> into a
 // single map<transition_id_type,(X,Y)>?
@@ -124,11 +121,8 @@ private:
 
   boost::unordered_set<connection_t> _connections;
 
-  adjacency::table<place_id_type,transition_id_type,edge_id_type> adj_pt;
-  adjacency::table<transition_id_type,place_id_type,edge_id_type> adj_tp;
-
-  adjacency::table<place_id_type,transition_id_type,connection_t> adj_c_pt;
-  adjacency::table<transition_id_type,place_id_type,connection_t> adj_c_tp;
+  adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
+  adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
 
   token_place_rel_t token_place_rel;
 
@@ -141,8 +135,6 @@ private:
   adjacent_transition_size_map_type in_to_transition_size_map;
   adjacent_transition_size_map_type out_of_transition_size_map;
 
-  edge_id_type _edge_id;
-
   // *********************************************************************** //
 
   friend class boost::serialization::access;
@@ -152,10 +144,8 @@ private:
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
     ar & BOOST_SERIALIZATION_NVP(_connections);
-    ar & BOOST_SERIALIZATION_NVP(adj_pt);
-    ar & BOOST_SERIALIZATION_NVP(adj_tp);
-    ar & BOOST_SERIALIZATION_NVP(adj_c_pt);
-    ar & BOOST_SERIALIZATION_NVP(adj_c_tp);
+    ar & BOOST_SERIALIZATION_NVP(_adj_pt);
+    ar & BOOST_SERIALIZATION_NVP(_adj_tp);
     ar & BOOST_SERIALIZATION_NVP(token_place_rel);
     ar & BOOST_SERIALIZATION_NVP(enabled);
     ar & BOOST_SERIALIZATION_NVP(enabled_choice_consume);
@@ -212,25 +202,18 @@ private:
   // *********************************************************************** //
 
   template<typename ROW, typename COL>
-  edge_id_type gen_add_connection ( const ROW & r
-                                  , const COL & c
-                                  , adjacency::table<ROW,COL,edge_id_type> & m
-                                  , adjacency::table<ROW,COL,connection_t> & m_c
-                                  , const connection_t& connection
-                                  )
+  void gen_add_connection ( const ROW& r
+                          , const COL& c
+                          , adjacency::table<ROW,COL,connection_t>& m
+                          , const connection_t& connection
+                          )
   {
-    if (m.get_adjacent (r, c) != edge_id_invalid())
+    if (m.get_adjacent (r, c) != connection_invalid())
       {
         throw bijection::exception::already_there ("adjacency");
       }
 
-    m.set_adjacent (r, c, _edge_id);
-    m_c.set_adjacent (r, c, connection);
-
-    in_to_transition_size_map.erase (connection.tid);
-    out_of_transition_size_map.erase (connection.tid);
-
-    return _edge_id++;
+    m.set_adjacent (r, c, connection);
   }
 
   // *********************************************************************** //
@@ -389,10 +372,8 @@ public:
     : pmap ("place")
     , tmap ("transition")
     , _connections()
-    , adj_pt (edge_id_invalid(), _places, _transitions)
-    , adj_tp (edge_id_invalid(), _transitions, _places)
-    , adj_c_pt (connection_invalid(), _places, _transitions)
-    , adj_c_tp (connection_invalid(), _transitions, _places)
+    , _adj_pt (connection_invalid(), _places, _transitions)
+    , _adj_tp (connection_invalid(), _transitions, _places)
     , token_place_rel ()
     , enabled ()
     , enabled_choice_consume ()
@@ -400,7 +381,6 @@ public:
     , in_map ()
     , in_to_transition_size_map ()
     , out_of_transition_size_map ()
-    , _edge_id (0)
   {}
 
   // get element
@@ -444,13 +424,16 @@ public:
     if (edge::is_PT (connection.type))
       {
         gen_add_connection<place_id_type,transition_id_type>
-          (connection.pid, connection.tid, adj_pt, adj_c_pt, connection);
+          (connection.pid, connection.tid, _adj_pt, connection);
       }
     else
       {
         gen_add_connection<transition_id_type,place_id_type>
-          (connection.tid, connection.pid, adj_tp, adj_c_tp, connection);
+          (connection.tid, connection.pid, _adj_tp, connection);
       }
+
+    in_to_transition_size_map.erase (connection.tid);
+    out_of_transition_size_map.erase (connection.tid);
 
     _connections.insert (connection);
 
@@ -476,43 +459,26 @@ public:
   // iterate through adjacencies
   adj_place_const_it out_of_transition (const transition_id_type & tid) const
   {
-    return adj_place_const_it (adj_tp.row_const_it (tid));
+    return adj_place_const_it (_adj_tp.row_const_it (tid));
   }
   adj_place_const_it in_to_transition (const transition_id_type & tid) const
   {
-    return adj_place_const_it (adj_pt.col_const_it (tid));
+    return adj_place_const_it (_adj_pt.col_const_it (tid));
   }
   adj_transition_const_it out_of_place (const place_id_type & pid) const
   {
-    return adj_transition_const_it (adj_pt.row_const_it (pid));
+    return adj_transition_const_it (_adj_pt.row_const_it (pid));
   }
   adj_transition_const_it in_to_place (const place_id_type & pid) const
   {
-    return adj_transition_const_it (adj_tp.col_const_it (pid));
-  }
-
-  adj_c_place_const_it c_out_of_transition (const transition_id_type & tid) const
-  {
-    return adj_c_place_const_it (adj_c_tp.row_const_it (tid));
-  }
-  adj_c_place_const_it c_in_to_transition (const transition_id_type & tid) const
-  {
-    return adj_c_place_const_it (adj_c_pt.col_const_it (tid));
-  }
-  adj_c_transition_const_it c_out_of_place (const place_id_type & pid) const
-  {
-    return adj_c_transition_const_it (adj_c_pt.row_const_it (pid));
-  }
-  adj_c_transition_const_it c_in_to_place (const place_id_type & pid) const
-  {
-    return adj_c_transition_const_it (adj_c_tp.col_const_it (pid));
+    return adj_transition_const_it (_adj_tp.col_const_it (pid));
   }
 
   connection_t get_connection_out ( const transition_id_type& tid
                                   , const place_id_type& pid
                                   ) const
   {
-    const connection_t c (adj_c_tp.get_adjacent (tid, pid));
+    const connection_t c (_adj_tp.get_adjacent (tid, pid));
 
     if (c == connection_invalid())
       {
@@ -525,7 +491,7 @@ public:
                                  , const place_id_type& pid
                                  ) const
   {
-    const connection_t c (adj_c_pt.get_adjacent (pid, tid));
+    const connection_t c (_adj_pt.get_adjacent (pid, tid));
 
     if (c == connection_invalid())
       {
@@ -548,15 +514,14 @@ public:
                        , const place_id_type& pid
                        )
   {
-    const connection_t connection (adj_c_tp.get_adjacent (tid, pid));
+    const connection_t connection (_adj_tp.get_adjacent (tid, pid));
 
     if (connection == connection_invalid())
       {
         throw exception::no_such ("specific out connection");
       }
 
-    adj_tp.clear_adjacent (tid, pid);
-    adj_c_tp.clear_adjacent (tid, pid);
+    _adj_tp.clear_adjacent (tid, pid);
     in_to_transition_size_map.erase (tid);
     out_of_transition_size_map.erase (tid);
 
@@ -566,15 +531,14 @@ public:
                       , const place_id_type& pid
                       )
   {
-    const connection_t connection (adj_c_pt.get_adjacent (pid, tid));
+    const connection_t connection (_adj_pt.get_adjacent (pid, tid));
 
     if (connection == connection_invalid())
       {
         throw exception::no_such ("specific in connection");
       }
 
-    adj_pt.clear_adjacent (connection.pid, connection.tid);
-    adj_c_pt.clear_adjacent (connection.pid, connection.tid);
+    _adj_pt.clear_adjacent (connection.pid, connection.tid);
     in_to_transition_size_map.erase (connection.tid);
     out_of_transition_size_map.erase (connection.tid);
 

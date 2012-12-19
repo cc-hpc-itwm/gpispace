@@ -131,7 +131,7 @@ namespace we { namespace type {
             ; ++p
             )
           {
-            const connection_t& connection (net.get_connection_in (tid, *p));
+            const connection_t& connection (p());
 
             if (petri_net::edge::is_pt_read (connection.type))
               {
