@@ -589,6 +589,7 @@ public:
   }
 
   // delete elements
+private:
   const edge_id_type & delete_edge (const edge_id_type & eid)
   {
     const connection_map_t::iterator it (connection_map.find (eid));
@@ -625,7 +626,7 @@ public:
 
     return eid;
   }
-
+public:
   const edge_id_type& delete_edge_out ( const transition_id_type& tid
                                       , const place_id_type& pid
                                       )

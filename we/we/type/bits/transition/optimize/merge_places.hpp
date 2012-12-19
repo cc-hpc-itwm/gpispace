@@ -28,8 +28,8 @@ namespace we { namespace type {
         typedef petri_net::connection_t connection_t;
         typedef petri_net::adj_transition_const_it adj_transition_const_it;
 
-        typedef std::pair<petri_net::transition_id_type,petri_net::edge_id_type> pair_t;
-        typedef std::stack<pair_t> stack_t;
+        typedef std::stack<petri_net::transition_id_type> stack_t;
+
         stack_t stack;
 
         // rewire pid_B -> trans to pid_A -> trans
@@ -38,18 +38,17 @@ namespace we { namespace type {
             ; ++trans_out_B
             )
           {
-            stack.push (std::make_pair (*trans_out_B, trans_out_B()));
+            stack.push (*trans_out_B);
           }
 
         while (!stack.empty())
           {
-            const stack_t::value_type & pair (stack.top());
-            const petri_net::transition_id_type & tid_trans_out_B (pair.first);
-            const petri_net::edge_id_type & eid_out_B (pair.second);
+            const petri_net::transition_id_type& tid_trans_out_B (stack.top());
 
-            connection_t connection (net.get_edge_info (eid_out_B));
+            connection_t connection
+              (net.get_edge_info_in (tid_trans_out_B, pid_B));
 
-            net.delete_edge (eid_out_B);
+            net.delete_edge_in (tid_trans_out_B, pid_B);
 
             connection.pid = pid_A;
 
@@ -83,18 +82,17 @@ namespace we { namespace type {
             ; ++trans_in_B
             )
           {
-            stack.push (std::make_pair (*trans_in_B, trans_in_B()));
+            stack.push (*trans_in_B);
           }
 
         while (!stack.empty())
           {
-            const stack_t::value_type & pair (stack.top());
-            const petri_net::transition_id_type & tid_trans_in_B (pair.first);
-            const petri_net::edge_id_type & eid_in_B (pair.second);
+            const petri_net::transition_id_type& tid_trans_in_B (stack.top());
 
-            connection_t connection (net.get_edge_info (eid_in_B));
+            connection_t connection
+              (net.get_edge_info_out (tid_trans_in_B, pid_B));
 
-            net.delete_edge (eid_in_B);
+            net.delete_edge_out (tid_trans_in_B, pid_B);
 
             connection.pid = pid_A;
 
