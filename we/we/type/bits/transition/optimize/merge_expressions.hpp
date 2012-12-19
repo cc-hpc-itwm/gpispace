@@ -351,7 +351,7 @@ namespace we { namespace type {
 
                 connection.tid = tid_pred;
 
-                net.add_edge (edge, connection);
+                net.add_edge (connection);
 
                 pred.add_connection
                   (p->second.name(), pid, p->second.property())
@@ -377,7 +377,7 @@ namespace we { namespace type {
 
                             connection.tid = tid_pred;
 
-                            net.add_edge (edge, connection);
+                            net.add_edge (connection);
 
                             pred.add_connection
                               (pid, p->second.name(), p->second.property())

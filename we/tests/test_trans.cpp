@@ -35,8 +35,6 @@ using petri_net::edge::TP;
 
 int main (int, char **)
 {
-  typedef unsigned int edge_t;
-
   typedef we::type::transition_t transition_t;
 
   typedef petri_net::net pnet_t;
@@ -94,12 +92,10 @@ int main (int, char **)
 
   petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
-  edge_t e (0);
-
-  net.add_edge (e++, connection_t (PT, tid, pid_store));
-  net.add_edge (e++, connection_t (TP, tid, pid_store));
-  net.add_edge (e++, connection_t (PT_READ, tid, pid_vid));
-  net.add_edge (e++, connection_t (TP, tid, pid_pair));
+  net.add_edge (connection_t (PT, tid, pid_store));
+  net.add_edge (connection_t (TP, tid, pid_store));
+  net.add_edge (connection_t (PT_READ, tid, pid_vid));
+  net.add_edge (connection_t (TP, tid, pid_pair));
 
   token::put (net, pid_vid, literal::type(0L));
 

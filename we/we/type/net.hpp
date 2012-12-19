@@ -140,6 +140,8 @@ private:
   adjacent_transition_size_map_type in_to_transition_size_map;
   adjacent_transition_size_map_type out_of_transition_size_map;
 
+  edge_type _e;
+
   // *********************************************************************** //
 
   friend class boost::serialization::access;
@@ -208,17 +210,16 @@ private:
   // *********************************************************************** //
 
   template<typename ROW, typename COL>
-  edge_id_type gen_add_edge ( const edge_type & edge
-                     , const ROW & r
-                     , const COL & c
-                     , adjacency::table<ROW,COL,edge_id_type> & m
-                     , const transition_id_type& tid
-                     )
+  edge_id_type gen_add_edge ( const ROW & r
+                            , const COL & c
+                            , adjacency::table<ROW,COL,edge_id_type> & m
+                            , const transition_id_type& tid
+                            )
   {
     if (m.get_adjacent (r, c) != edge_id_invalid())
       throw bijection::exception::already_there ("adjacency");
 
-    const edge_id_type eid (emap.add (edge));
+    const edge_id_type eid (emap.add (_e++));
 
     m.set_adjacent (r, c, eid);
 
@@ -423,6 +424,7 @@ public:
     , in_map ()
     , in_to_transition_size_map ()
     , out_of_transition_size_map ()
+    , _e (0)
   {}
 
   // get element
@@ -478,12 +480,12 @@ public:
     return tid;
   }
 
-  edge_id_type add_edge (const edge_type & edge, const connection_t & connection)
+  edge_id_type add_edge (const connection_t & connection)
   {
     const edge_id_type eid
       ( (edge::is_PT (connection.type))
-      ? gen_add_edge<place_id_type,transition_id_type> (edge, connection.pid, connection.tid, adj_pt, connection.tid)
-      : gen_add_edge<transition_id_type,place_id_type> (edge, connection.tid, connection.pid, adj_tp, connection.tid)
+      ? gen_add_edge<place_id_type,transition_id_type> (connection.pid, connection.tid, adj_pt, connection.tid)
+      : gen_add_edge<transition_id_type,place_id_type> (connection.tid, connection.pid, adj_tp, connection.tid)
       );
 
     connection_map[eid] = connection;

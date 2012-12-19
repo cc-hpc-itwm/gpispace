@@ -823,7 +823,7 @@ class Optimizer {
                 do {
                     tryAgain = false;
                     try {
-                        petriNet()->pnet().add_edge(random(), petri_net::connection_t(edgeType, transition()->id(), connectedPlace_->id()));
+                        petriNet()->pnet().add_edge(petri_net::connection_t(edgeType, transition()->id(), connectedPlace_->id()));
                     } catch (const bijection::exception::already_there &) {
                         tryAgain = true;
                     }
