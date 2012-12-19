@@ -46,7 +46,7 @@ namespace we { namespace type {
             const petri_net::transition_id_type& tid_trans_out_B (stack.top());
 
             connection_t connection
-              (net.get_edge_info_in (tid_trans_out_B, pid_B));
+              (net.get_connection_in (tid_trans_out_B, pid_B));
 
             net.delete_edge_in (tid_trans_out_B, pid_B);
 
@@ -90,7 +90,7 @@ namespace we { namespace type {
             const petri_net::transition_id_type& tid_trans_in_B (stack.top());
 
             connection_t connection
-              (net.get_edge_info_out (tid_trans_in_B, pid_B));
+              (net.get_connection_out (tid_trans_in_B, pid_B));
 
             net.delete_edge_out (tid_trans_in_B, pid_B);
 

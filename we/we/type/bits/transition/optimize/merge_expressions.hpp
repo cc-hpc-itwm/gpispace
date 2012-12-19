@@ -131,7 +131,7 @@ namespace we { namespace type {
             ; ++p
             )
           {
-            const connection_t& connection (net.get_edge_info_in (tid, *p));
+            const connection_t& connection (net.get_connection_in (tid, *p));
 
             if (petri_net::edge::is_pt_read (connection.type))
               {
@@ -344,7 +344,7 @@ namespace we { namespace type {
 
                 const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
-                connection_t connection (net.get_edge_info_out (tid_trans, pid));
+                connection_t connection (net.get_connection_out (tid_trans, pid));
 
                 net.delete_edge_out (tid_trans, pid);
 
@@ -369,7 +369,7 @@ namespace we { namespace type {
                           {
                             pred.UNSAFE_add_port (p->second);
 
-                            connection_t connection (net.get_edge_info_in (tid_trans, pid));
+                            connection_t connection (net.get_connection_in (tid_trans, pid));
 
                             net.delete_edge_in (tid_trans, pid);
 

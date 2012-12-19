@@ -147,7 +147,7 @@ namespace we { namespace type {
             detail::insert_tids (pred_in, net.in_to_place (pid_A));
             detail::insert_tids (pred_out, net.in_to_place (pid_B));
 
-            if (petri_net::edge::is_pt_read ( net.get_edge_info_in (tid, pid_A)
+            if (petri_net::edge::is_pt_read ( net.get_connection_in (tid, pid_A)
                                             . type
                                             )
                )

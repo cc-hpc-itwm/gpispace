@@ -265,7 +265,7 @@ private:
                 const token_via_edge_t & token_via_edge (choice.val());
                 const edge_id_type & eid (token_via_edge.second);
 
-                if (edge::is_pt_read (get_edge_info (eid).type))
+                if (edge::is_pt_read (get_connection (eid).type))
                   {
                     enabled_choice_read[tid].push_back (*choice);
                   }
@@ -312,7 +312,7 @@ private:
 
   void recalculate_enabled_by_edge (const edge_id_type & eid)
   {
-    recalculate_enabled_by_edge (eid, get_edge_info (eid));
+    recalculate_enabled_by_edge (eid, get_connection (eid));
   }
 
   void recalculate_enabled ( const transition_id_type & tid
@@ -516,7 +516,8 @@ public:
   }
 
   // get edge info
-  connection_t get_edge_info (const edge_id_type & eid) const
+private:
+  connection_t get_connection (const edge_id_type & eid) const
   {
     const connection_map_t::const_iterator it
       (connection_map.find (eid));
@@ -526,17 +527,19 @@ public:
 
     return it->second;
   }
-  connection_t get_edge_info_out ( const transition_id_type& tid
+
+public:
+  connection_t get_connection_out ( const transition_id_type& tid
+                                  , const place_id_type& pid
+                                  ) const
+  {
+    return get_connection (get_eid_out (tid, pid));
+  }
+  connection_t get_connection_in ( const transition_id_type& tid
                                  , const place_id_type& pid
                                  ) const
   {
-    return get_edge_info (get_eid_out (tid, pid));
-  }
-  connection_t get_edge_info_in ( const transition_id_type& tid
-                                , const place_id_type& pid
-                                ) const
-  {
-    return get_edge_info (get_eid_in (tid, pid));
+    return get_connection (get_eid_in (tid, pid));
   }
 
 private:
@@ -581,7 +584,7 @@ public:
       {
         if (*pit == pid)
           {
-            return edge::is_pt_read (get_edge_info (pit()).type);
+            return edge::is_pt_read (get_connection (pit()).type);
           }
       }
 
@@ -849,7 +852,7 @@ private:
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
 
-        assert (not edge::is_pt_read (get_edge_info (eid).type));
+        assert (not edge::is_pt_read (get_connection (eid).type));
 
         delete_one_token (pid, token);
       }
