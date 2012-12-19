@@ -130,7 +130,7 @@ case "$action" in
         gspc_require_kvs_config
 
         if _check_kvs_status "${kvs_host}" "${kvs_port}" ; then
-            gspc_log_trace kvs "config: host => $kvs_host port => $kvs_port"
+            gspc_log_debug kvs "config: host => $kvs_host port => $kvs_port"
             exit 0
         else
             gspc_log_error kvs "KVS not reachable: host => '$kvs_host' port => '$kvs_port'"
