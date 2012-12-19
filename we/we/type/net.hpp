@@ -105,7 +105,6 @@ public:
 
   // *********************************************************************** //
 private:
-  typedef boost::unordered_map<edge_id_type, connection_t> connection_map_t;
   typedef multirel::multirel<token::type,place_id_type> token_place_rel_t;
 
   typedef cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
@@ -124,8 +123,6 @@ private:
   bijection::bijection<transition_type,transition_id_type> tmap; // transition_type <-> internal id
 
   boost::unordered_set<connection_t> _connections;
-
-  connection_map_t connection_map;
 
   adjacency::table<place_id_type,transition_id_type,edge_id_type> adj_pt;
   adjacency::table<transition_id_type,place_id_type,edge_id_type> adj_tp;
@@ -155,7 +152,6 @@ private:
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
     ar & BOOST_SERIALIZATION_NVP(_connections);
-    ar & BOOST_SERIALIZATION_NVP(connection_map);
     ar & BOOST_SERIALIZATION_NVP(adj_pt);
     ar & BOOST_SERIALIZATION_NVP(adj_tp);
     ar & BOOST_SERIALIZATION_NVP(adj_c_pt);
@@ -398,7 +394,6 @@ public:
     : pmap ("place")
     , tmap ("transition")
     , _connections()
-    , connection_map ()
     , adj_pt (edge_id_invalid(), _places, _transitions)
     , adj_tp (edge_id_invalid(), _transitions, _places)
     , adj_c_pt (connection_invalid(), _places, _transitions)
@@ -456,8 +451,6 @@ public:
       ? gen_add_edge<place_id_type,transition_id_type> (connection.pid, connection.tid, adj_pt, adj_c_pt, connection)
       : gen_add_edge<transition_id_type,place_id_type> (connection.tid, connection.pid, adj_tp, adj_c_tp, connection)
       );
-
-    connection_map[eid] = connection;
 
     _connections.insert (connection);
 
@@ -542,33 +535,6 @@ public:
     return c;
   }
 
-private:
-  edge_id_type get_eid_out ( const transition_id_type& tid
-                           , const place_id_type& pid
-                           ) const
-  {
-    const edge_id_type eid (adj_tp.get_adjacent (tid, pid));
-
-    if (eid == edge_id_invalid())
-      {
-        throw exception::no_such ("specific out connection");
-      }
-
-    return eid;
-  }
-  edge_id_type get_eid_in (const transition_id_type & tid, const place_id_type & pid) const
-  {
-    const edge_id_type eid (adj_pt.get_adjacent (pid, tid));
-
-    if (eid == edge_id_invalid())
-      {
-        throw exception::no_such ("specific in connection");
-      }
-
-    return eid;
-  }
-
-public:
   bool is_read_connection ( const transition_id_type & tid
                           , const place_id_type & pid
                           ) const
@@ -578,73 +544,64 @@ public:
       ;
   }
 
-  // delete elements
-private:
-  const edge_id_type & delete_edge (const edge_id_type & eid)
+  void delete_edge_out ( const transition_id_type& tid
+                       , const place_id_type& pid
+                       )
   {
-    const connection_map_t::iterator it (connection_map.find (eid));
+    const connection_t connection (adj_c_tp.get_adjacent (tid, pid));
 
-    if (it == connection_map.end())
-      throw exception::no_such ("connection");
-
-    const connection_t connection (it->second);
-
-    if (edge::is_PT (connection.type))
+    if (connection == connection_invalid())
       {
-        adj_pt.clear_adjacent (connection.pid, connection.tid);
-        adj_c_pt.clear_adjacent (connection.pid, connection.tid);
-        in_to_transition_size_map.erase (connection.tid);
-        out_of_transition_size_map.erase (connection.tid);
-
-        in_map[connection.tid].erase (connection.pid);
-
-        update_set_of_tid_in
-          ( connection.tid
-          ,  in_map[connection.tid].size()
-          == in_to_transition_size(connection.tid)
-          );
-      }
-    else
-      {
-        adj_tp.clear_adjacent (connection.tid, connection.pid);
-        adj_c_tp.clear_adjacent (connection.tid, connection.pid);
-        in_to_transition_size_map.erase (connection.tid);
-        out_of_transition_size_map.erase (connection.tid);
+        throw exception::no_such ("specific out connection");
       }
 
-    connection_map.erase (it);
+    adj_tp.clear_adjacent (tid, pid);
+    adj_c_tp.clear_adjacent (tid, pid);
+    in_to_transition_size_map.erase (tid);
+    out_of_transition_size_map.erase (tid);
 
     _connections.erase (connection);
+  }
+  void delete_edge_in ( const transition_id_type& tid
+                      , const place_id_type& pid
+                      )
+  {
+    const connection_t connection (adj_c_pt.get_adjacent (pid, tid));
 
-    return eid;
-  }
-public:
-  const edge_id_type& delete_edge_out ( const transition_id_type& tid
-                                      , const place_id_type& pid
-                                      )
-  {
-    return delete_edge (get_eid_out (tid, pid));
-  }
-  const edge_id_type& delete_edge_in ( const transition_id_type& tid
-                                     , const place_id_type& pid
-                                     )
-  {
-    return delete_edge (get_eid_in (tid, pid));
+    if (connection == connection_invalid())
+      {
+        throw exception::no_such ("specific in connection");
+      }
+
+    adj_pt.clear_adjacent (connection.pid, connection.tid);
+    adj_c_pt.clear_adjacent (connection.pid, connection.tid);
+    in_to_transition_size_map.erase (connection.tid);
+    out_of_transition_size_map.erase (connection.tid);
+
+    in_map[connection.tid].erase (connection.pid);
+
+    update_set_of_tid_in
+      ( connection.tid
+      ,  in_map[connection.tid].size() == in_to_transition_size(connection.tid)
+      );
+
+    _connections.erase (connection);
   }
 
-  const place_id_type & delete_place (const place_id_type & pid)
+  void delete_place (const place_id_type & pid)
   {
-    // make the token deletion visible to delete_edge
+    // make the token deletion visible to delete_connection
     token_place_rel.delete_right (pid);
 
-    std::stack<edge_id_type> stack;
+    std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
+    std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
     for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
         ; ++tit
         )
       {
-        stack.push (tit());
+        stack_in.push (std::make_pair (*tit, pid));
 	// TODO: get port and remove place from there
       }
 
@@ -653,32 +610,36 @@ public:
         ; ++tit
         )
       {
-        stack.push (tit());
+        stack_out.push (std::make_pair (*tit, pid));
 	// TODO: get port and remove place from there
 	// transition_t::port_id_t portId = transition->transition().input_port_by_pid(place_.id()).first;
       }
 
-    while (!stack.empty())
+    while (!stack_out.empty())
       {
-        delete_edge (stack.top()); stack.pop();
+        delete_edge_out (stack_out.top().first, stack_out.top().second);
+        stack_out.pop();
+      }
+    while (!stack_in.empty())
+      {
+        delete_edge_in (stack_in.top().first, stack_in.top().second);
+        stack_in.pop();
       }
 
-
     pmap.erase (pid);
-
-    return pid;
   }
 
-  const transition_id_type & delete_transition (const transition_id_type & tid)
+  void delete_transition (const transition_id_type& tid)
   {
-    std::stack<edge_id_type> stack;
+    std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
+    std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
       {
-        stack.push (pit());
+        stack_out.push (std::make_pair (tid, *pit));
       }
 
     for ( adj_place_const_it pit (in_to_transition (tid))
@@ -686,12 +647,18 @@ public:
         ; ++pit
         )
       {
-        stack.push (pit());
+        stack_in.push (std::make_pair (tid, *pit));
       }
 
-    while (!stack.empty())
+    while (!stack_out.empty())
       {
-        delete_edge (stack.top()); stack.pop();
+        delete_edge_out (stack_out.top().first, stack_out.top().second);
+        stack_out.pop();
+      }
+    while (!stack_in.empty())
+      {
+        delete_edge_in (stack_in.top().first, stack_in.top().second);
+        stack_in.pop();
       }
 
     tmap.erase (tid);
@@ -703,8 +670,6 @@ public:
     enabled_choice_read.erase (tid);
     in_to_transition_size_map.erase (tid);
     out_of_transition_size_map.erase (tid);
-
-    return tid;
   }
 
   // erased in case of conflict after modification
