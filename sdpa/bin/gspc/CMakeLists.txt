@@ -17,6 +17,7 @@ set (scripts
   gspc-topology-list
   gspc-log
   gspc-init
+  gspc-kvs
 )
 
 set (files
