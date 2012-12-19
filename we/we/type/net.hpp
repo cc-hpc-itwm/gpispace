@@ -603,20 +603,13 @@ private:
   }
 
 public:
-  bool is_read_connection (const transition_id_type & tid, const place_id_type & pid) const
+  bool is_read_connection ( const transition_id_type & tid
+                          , const place_id_type & pid
+                          ) const
   {
-    for ( adj_place_const_it pit (in_to_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      {
-        if (*pit == pid)
-          {
-            return edge::is_pt_read (get_connection (pit()).type);
-          }
-      }
-
-    return false;
+    return _connections.find (connection_t (edge::PT_READ, tid, pid))
+      != _connections.end()
+      ;
   }
 
   // delete elements
