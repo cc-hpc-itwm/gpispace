@@ -249,7 +249,7 @@ private:
       {
         enabled.insert (tid);
 
-        choices_t cs (get_pid_in_map(tid));
+        choices_t cs (in_map.at (tid));
 
         // call the global condition function here, that sets the
         // cross product either to the end or to some valid choice
@@ -725,17 +725,6 @@ public:
   }
 
  private:
-  // deal with tokens
-  const pid_in_map_t & get_pid_in_map (const transition_id_type & tid) const
-  {
-    const in_map_t::const_iterator m (in_map.find (tid));
-
-    if (m == in_map.end())
-      throw exception::no_such ("transition in in_map");
-
-    return m->second;
-  }
-
   const transition_id_type& enabled_first (void) const
   {
     return enabled.first();
