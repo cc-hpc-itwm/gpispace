@@ -23,6 +23,7 @@
  */
 
 #include <boost/preprocessor/iteration.hpp>
+#include <boost/preprocessor/control.hpp>
 
 #if !BOOST_PP_IS_ITERATING
 #ifndef QTBOOSTINTEGRATION_MAX_ARGUMENTS
@@ -63,6 +64,21 @@ namespace fhg
             : m_function (f)
           { }
 
+          static QByteArray build_signature()
+          {
+#if QTBI_ITERATION == 0
+            return QByteArray ("fake()");
+#else
+            return QByteArray ("fake(")
+#define QTBI_STORE_METATYPE(z, N, arg)                                          \
+              .append (QMetaType::typeName (qMetaTypeId<BOOST_PP_CAT(T, N)>())) \
+              .append (N != QTBI_ITERATION - 1 ? "," : ")")
+
+            BOOST_PP_REPEAT(QTBI_ITERATION, QTBI_STORE_METATYPE, ~);
+#undef QTBI_STORE_METATYPE
+#endif
+          }
+
         private:
           virtual void invoke (void** args)
           {
@@ -76,22 +92,6 @@ namespace fhg
           }
 
           boost::function<QTBI_PARTIAL_SPEC> m_function;
-        };
-
-        template<BOOST_PP_ENUM_PARAMS(QTBI_ITERATION, typename T)>
-          class metatype_lister<QTBI_PARTIAL_SPEC>
-        {
-        public:
-          static int metaTypes(int **typeList)
-          {
-            static int types[QTBI_ITERATION+1] = {
-#define QTBI_STORE_METATYPE(z, N, arg) qMetaTypeId<BOOST_PP_CAT(T, N)>()
-              BOOST_PP_ENUM(QTBI_ITERATION, QTBI_STORE_METATYPE, ~)
-#undef QTBI_STORE_METATYPE
-            };
-            *typeList = types;
-            return QTBI_ITERATION;
-          }
         };
       }
     }

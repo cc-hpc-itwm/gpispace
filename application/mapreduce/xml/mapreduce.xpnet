@@ -190,73 +190,28 @@
       <connect-out port="one" place="n_part_slots_gen"/>
       <connect-out port="two" place="n_part_slots_cnt"/>
     </transition>
-  
-    <place name="iter_gen_part_info" type="long"/> 
-    <transition name="init_gen_part_tokens" inline="true">
-        <defun>
-            <in name="n_part" type="long"/>
-            <out name="iter_gen_part_info" type="long"/>
-            <expression>             
-                ${iter_gen_part_info}:=${n_part};
-            </expression>
-        </defun>
-        <connect-in  port="n_part" place="n_part_slots_gen"/>
-        <connect-out  port="iter_gen_part_info"  place="iter_gen_part_info"/>
+ 
+    <place name="part_id" type="long"/>
+    <transition name="generate_part_ids" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="n_part_slots_gen"/>
+      <connect-out port="out" place="part_id"/>
     </transition>
-           
-    <place name="partition_info" type="partition_info"/> 
-    <place name="new_iter_gen_part_info" type="long"/> 
     
-    <transition name="gen_part_tokens" inline="true">
-    <defun>
-        <in name="iter_gen_part_info" type="long"/>
+    <place name="partition_info" type="partition_info"/>
+    <transition name="gen_part_info" inline="true">
+      <defun>
+        <in name="part_id" type="long"/>
         <out name="partition_info" type="partition_info"/>
-        <out name="new_iter_gen_part_info" type="long"/>
-        <expression>             
-            ${new_iter_gen_part_info}:=${iter_gen_part_info}-1;
-            ${partition_info.part_id}:= ${iter_gen_part_info}-1;
-            ${partition_info.part_used}:=0L;
+        <expression>			  
+		  	${partition_info.part_id}:=${part_id};  
+		  	${partition_info.part_used}:=0L;
             ${partition_info.red_used}:=0L
         </expression>
-        <condition>
-            ${iter_gen_part_info}:gt:0L
-        </condition>
       </defun>
-      <connect-in  port="iter_gen_part_info" place="iter_gen_part_info"/>
-      <connect-out  port="new_iter_gen_part_info"  place="new_iter_gen_part_info"/>
-      <connect-out  port="partition_info"  place="partition_info"/>
+      <connect-in port="part_id" place="part_id"/>
+      <connect-out port="partition_info" place="partition_info"/>
     </transition>
-    
-    <transition name="repeat_gen_part_tokens" inline="true">
-    <defun>
-        <in name="new_iter_gen_part_info" type="long"/>
-        <out name="iter_gen_part_info" type="long"/>
-        <expression>             
-            ${iter_gen_part_info}:=${new_iter_gen_part_info};
-        </expression>
-      </defun>
-      <connect-in  port="new_iter_gen_part_info"  place="new_iter_gen_part_info"/>
-      <connect-out  port="iter_gen_part_info" place="iter_gen_part_info"/>
-    </transition>
-    
-    <place name="end_iter_gen_part_info" type="long"/> 
-    <transition name="stop_gen_part_tokens" inline="true">
-    <defun>
-        <in name="iter_gen_part_info" type="long"/>
-        <out name="end_iter_gen_part_info" type="long"/>
-        <expression>             
-            ${end_iter_gen_part_info}:=${iter_gen_part_info};
-        </expression>
-        <condition>
-            ${iter_gen_part_info}:eq:0L
-        </condition>
-      </defun>
-      <connect-in  port="iter_gen_part_info" place="iter_gen_part_info"/>
-      <connect-out  port="end_iter_gen_part_info"  place="end_iter_gen_part_info"/>
-    </transition>
-  
-    <!-- now, you should have 'partition tokens generated -->
-    <!-- end generate partition info tokens -->
 
     <place name="n_map_slots_cnt" type="long"/>
     <place name="n_map_slots_gen" type="long"/>
@@ -1537,7 +1492,6 @@
         <in name="read_slots_released" type="control"/>
         <in name="write_done" type="control"/>
         <in name="special_partition_info" type="partition_info"/>
-        <in name="end_iter_gen_part_info" type="long"/>
         <out name="done" type="control"/>
         <module name="mapreduce_done" function="done finalize_mapreduce(config)">
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -1562,7 +1516,6 @@
     	<connect-in port="read_slots_released" place="read_slots_released"/>
     	<connect-in port="special_partition_info" place="special_partition_info"/>
     	<connect-in port="write_done" place="write_done"/>
-    	<connect-in port="end_iter_gen_part_info" place="end_iter_gen_part_info"/>
     	<connect-out port="done" place="done"/>
     </transition>   
     
