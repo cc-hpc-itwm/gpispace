@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdint.h>
 
-#include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/type/requirement.hpp>
 

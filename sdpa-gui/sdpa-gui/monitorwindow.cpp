@@ -25,7 +25,6 @@
 #include <boost/serialization/access.hpp>
 #include <boost/bind.hpp>
 
-#include <we/we.hpp>
 #include <we/util/codec.hpp>
 #include <we/loader/putget.hpp>
 #include <we/type/token.hpp>

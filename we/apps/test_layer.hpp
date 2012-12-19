@@ -28,7 +28,6 @@
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/bits/queue.hpp>
 
-#include <we/we.hpp>
 #include <we/loader/loader.hpp>
 #include <we/mgmt/context.hpp>
 

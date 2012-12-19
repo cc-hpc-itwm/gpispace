@@ -7,7 +7,6 @@
 #include <fhg/util/split.hpp>
 #include <fhg/util/getenv.hpp>
 
-#include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/type/token.hpp>
 #include <we/type/literal.hpp>
