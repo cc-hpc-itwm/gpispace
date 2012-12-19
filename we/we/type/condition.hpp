@@ -131,10 +131,9 @@ namespace Function { namespace Condition
   struct Traits
   {
   public:
-    typedef std::pair<token::type,petri_net::edge_id_type> token_via_edge_t;
-    typedef std::deque<token_via_edge_t> vec_token_via_edge_t;
+    typedef std::deque<token::type> tokens_t;
     typedef boost::unordered_map< petri_net::place_id_type
-                                , vec_token_via_edge_t
+                                , tokens_t
                                 > pid_in_map_t;
 
     typedef cross::cross<pid_in_map_t> choices_t;
@@ -245,7 +244,7 @@ namespace condition
               )
             {
               const petri_net::place_id_type & pid (choice.key());
-              const token::type & token (choice.val().first);
+              const token::type & token (choice.val());
 
               context.bind (translate (pid), token.value);
             }

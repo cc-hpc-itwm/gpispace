@@ -95,8 +95,7 @@ public:
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits cd_traits;
 
-  typedef cd_traits::token_via_edge_t token_via_edge_t;
-  typedef cd_traits::vec_token_via_edge_t vec_token_via_edge_t;
+  typedef cd_traits::tokens_t tokens_t;
   typedef cd_traits::pid_in_map_t pid_in_map_t;
   typedef cd_traits::choices_t choices_t;
 
@@ -289,15 +288,19 @@ private:
                               , const edge_id_type & eid
                               )
   {
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    tokens_t& tokens (pid_in_map[pid]);
 
-    vec_token_via_edge.clear();
+    tokens.clear();
 
     for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
-      vec_token_via_edge.push_back(token_via_edge_t (*tp, eid));
+      {
+        tokens.push_back(*tp);
+      }
 
-    if (vec_token_via_edge.empty())
-      pid_in_map.erase (pid);
+    if (tokens.empty())
+      {
+        pid_in_map.erase (pid);
+      }
   }
 
   void recalculate_enabled_by_place (const place_id_type & pid)
@@ -350,9 +353,9 @@ private:
                                 )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    tokens_t& tokens (pid_in_map[pid]);
 
-    vec_token_via_edge.push_back(token_via_edge_t (token, eid));
+    tokens.push_back(token);
 
     update_set_of_tid_in ( tid
                          , pid_in_map.size() == in_to_transition_size(tid)
@@ -365,43 +368,23 @@ private:
                                     )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-    vec_token_via_edge_t::iterator it (vec_token_via_edge.begin());
+    tokens_t& tokens (pid_in_map[pid]);
+    tokens_t::iterator it (tokens.begin());
 
-    while (it != vec_token_via_edge.end() && it->first != token)
-      ++it;
+    while (it != tokens.end() && *it != token)
+      {
+        ++it;
+      }
 
-    if (it != vec_token_via_edge.end())
-      vec_token_via_edge.erase (it);
+    if (it != tokens.end())
+      {
+        tokens.erase (it);
+      }
 
-    if (vec_token_via_edge.empty())
-      pid_in_map.erase (pid);
-
-    update_set_of_tid_in ( tid
-                         , pid_in_map.size() == in_to_transition_size(tid)
-                         );
-  }
-
-  void update_enabled_del_all_token ( const transition_id_type & tid
-                                    , const place_id_type & pid
-                                    , const token::type & token
-                                    )
-  {
-    pid_in_map_t & pid_in_map (in_map[tid]);
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-    const vec_token_via_edge_t old (vec_token_via_edge);
-
-    vec_token_via_edge.clear();
-
-    for ( vec_token_via_edge_t::const_iterator it (old.begin())
-        ; it != old.end()
-        ; ++it
-        )
-      if (it->first != token)
-        vec_token_via_edge.push_back (*it);
-
-    if (vec_token_via_edge.empty())
-      pid_in_map.erase (pid);
+    if (tokens.empty())
+      {
+        pid_in_map.erase (pid);
+      }
 
     update_set_of_tid_in ( tid
                          , pid_in_map.size() == in_to_transition_size(tid)
@@ -788,18 +771,6 @@ public:
     return token_place_rel.contains_right (pid);
   }
 
-private:
-  std::size_t delete_one_token (const place_id_type & pid, const token::type & token)
-  {
-    const std::size_t ret (token_place_rel.delete_one (token, pid));
-
-    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_enabled_del_one_token (*t, pid, token);
-
-    return ret;
-  }
-
-public:
   std::size_t delete_all_token (const place_id_type & pid)
   {
     const std::size_t ret (token_place_rel.delete_right (pid));
@@ -851,15 +822,18 @@ private:
         ; ++choice
         )
       {
-        const place_id_type & pid (choice->first);
-        const token_via_edge_t & token_via_edge (choice->second);
-        const token::type & token (token_via_edge.first);
+        const place_id_type& pid (choice->first);
+        const token::type& token (choice->second);
 
         input.push_back (token_input_t (token, pid));
 
         assert (not is_read_connection (tid, pid));
 
-        delete_one_token (pid, token);
+        // delete_one_token (pid, token)
+        for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+          {
+            update_enabled_del_one_token (*t, pid, token);
+          }
       }
 
     for ( choice_vec_t::const_iterator choice
@@ -868,9 +842,8 @@ private:
         ; ++choice
         )
       {
-        const place_id_type & pid (choice->first);
-        const token_via_edge_t & token_via_edge (choice->second);
-        const token::type & token (token_via_edge.first);
+        const place_id_type& pid (choice->first);
+        const token::type& token (choice->second);
 
         assert (is_read_connection (tid, pid));
 
