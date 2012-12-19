@@ -69,8 +69,6 @@ namespace adjacency
   };
 } // namespace adjacency
 
-#ifndef WE_PRECOMPILE
 #include <we/container/adjacency.impl.hpp>
-#endif
 
 #endif
