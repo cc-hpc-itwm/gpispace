@@ -212,12 +212,12 @@ private:
   // *********************************************************************** //
 
   template<typename ROW, typename COL>
-  edge_id_type gen_add_edge ( const ROW & r
-                            , const COL & c
-                            , adjacency::table<ROW,COL,edge_id_type> & m
-                            , adjacency::table<ROW,COL,connection_t> & m_c
-                            , const connection_t& connection
-                            )
+  edge_id_type gen_add_connection ( const ROW & r
+                                  , const COL & c
+                                  , adjacency::table<ROW,COL,edge_id_type> & m
+                                  , adjacency::table<ROW,COL,connection_t> & m_c
+                                  , const connection_t& connection
+                                  )
   {
     if (m.get_adjacent (r, c) != edge_id_invalid())
       {
@@ -281,7 +281,6 @@ private:
 
   void recalculate_pid_in_map ( pid_in_map_t & pid_in_map
                               , const place_id_type & pid
-                              , const edge_id_type & eid
                               )
   {
     tokens_t& tokens (pid_in_map[pid]);
@@ -302,27 +301,24 @@ private:
   void recalculate_enabled_by_place (const place_id_type & pid)
   {
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      recalculate_enabled (*t, pid, t());
+      recalculate_enabled (*t, pid);
   }
 
-  void recalculate_enabled_by_edge ( const edge_id_type & eid
-                                   , const connection_t & connection
-                                   )
+  void recalculate_enabled_by_connection (const connection_t& connection)
   {
     if (edge::is_PT (connection.type))
       {
-        recalculate_enabled (connection.tid, connection.pid, eid);
+        recalculate_enabled (connection.tid, connection.pid);
       }
   }
 
   void recalculate_enabled ( const transition_id_type & tid
                            , const place_id_type & pid
-                           , const edge_id_type & eid
                            )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
 
-    recalculate_pid_in_map (pid_in_map, pid, eid);
+    recalculate_pid_in_map (pid_in_map, pid);
 
     update_set_of_tid_in ( tid
                          , pid_in_map.size() == in_to_transition_size(tid)
@@ -335,7 +331,7 @@ private:
     adj_place_const_it pit (in_to_transition (tid));
 
     for (; pit.has_more(); ++pit)
-      recalculate_pid_in_map (pid_in_map, *pit, pit());
+      recalculate_pid_in_map (pid_in_map, *pit);
 
     update_set_of_tid_in ( tid
                          , pid_in_map.size() == pit.size()
@@ -344,7 +340,6 @@ private:
 
   void update_enabled_put_token ( const transition_id_type & tid
                                 , const place_id_type & pid
-                                , const edge_id_type & eid
                                 , const token::type & token
                                 )
   {
@@ -446,15 +441,20 @@ public:
 
   void add_connection (const connection_t& connection)
   {
-    const edge_id_type eid
-      ( (edge::is_PT (connection.type))
-      ? gen_add_edge<place_id_type,transition_id_type> (connection.pid, connection.tid, adj_pt, adj_c_pt, connection)
-      : gen_add_edge<transition_id_type,place_id_type> (connection.tid, connection.pid, adj_tp, adj_c_tp, connection)
-      );
+    if (edge::is_PT (connection.type))
+      {
+        gen_add_connection<place_id_type,transition_id_type>
+          (connection.pid, connection.tid, adj_pt, adj_c_pt, connection);
+      }
+    else
+      {
+        gen_add_connection<transition_id_type,place_id_type>
+          (connection.tid, connection.pid, adj_tp, adj_c_tp, connection);
+      }
 
     _connections.insert (connection);
 
-    recalculate_enabled_by_edge (eid, connection);
+    recalculate_enabled_by_connection (connection);
   }
 
   // iterate through elements
@@ -694,7 +694,7 @@ public:
     token_place_rel.add (token, pid);
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_enabled_put_token (*t, pid, t(), token);
+      update_enabled_put_token (*t, pid, token);
   }
 
   void put_token (const place_id_type & pid)
