@@ -7,7 +7,7 @@
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 #include <stack>
 

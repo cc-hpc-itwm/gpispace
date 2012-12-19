@@ -7,7 +7,7 @@
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 #include <we/type/bits/transition/optimize/is_associated.hpp>
 

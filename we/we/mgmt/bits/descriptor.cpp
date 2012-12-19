@@ -5,7 +5,7 @@
 #include <fhg/util/show.hpp>
 
 //! \todo Why is this include needed really?
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 #include <boost/lexical_cast.hpp>
 

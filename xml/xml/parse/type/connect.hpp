@@ -12,7 +12,7 @@
 #include <fhg/util/boost/tuple.hpp> //! \note To allow storing in unique.
 #include <fhg/util/xml.fwd.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 #include <we/type/property.hpp>
 
 #include <string>

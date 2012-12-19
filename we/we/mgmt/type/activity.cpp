@@ -1,6 +1,6 @@
 // {petry,rahn}@itwm.fhg.de
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 #include <we/type/transition.hpp>
 

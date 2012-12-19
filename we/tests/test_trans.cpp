@@ -26,7 +26,7 @@
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 using petri_net::connection_t;
 using petri_net::edge::PT;

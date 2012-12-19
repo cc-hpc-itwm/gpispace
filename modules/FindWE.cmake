@@ -29,7 +29,7 @@ endif (NOT WE_FIND_QUIETLY)
 if(NOT TARGET we-exec)
 # if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   find_path (WE_INCLUDE_DIR
-    NAMES "we/net.hpp"
+    NAMES "we/type/net.hpp"
     HINTS ${WE_HOME} ENV WE_HOME
     PATH_SUFFIXES include
     )
@@ -67,4 +67,3 @@ else(NOT TARGET we-exec)
   endif (WE_PRECOMPILE)
 endif(NOT TARGET we-exec)
 # endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-
