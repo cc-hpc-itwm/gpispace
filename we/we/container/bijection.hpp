@@ -29,7 +29,6 @@ namespace bijection
 
     bimap_t bimap;
     I h;
-    std::string description;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -37,13 +36,11 @@ namespace bijection
     {
       ar & BOOST_SERIALIZATION_NVP(bimap);
       ar & BOOST_SERIALIZATION_NVP(h);
-      ar & BOOST_SERIALIZATION_NVP(description);
     }
 
   public:
-    explicit bijection (const std::string & _descr = "NO DESCRIPTION GIVEN")
+    bijection ()
       : h(static_cast<I>(0))
-      , description (_descr)
     {}
 
     typedef typename bimap_t::iterator iterator;
@@ -61,7 +58,9 @@ namespace bijection
       const typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
 
       if (it == bimap.left.end())
-        throw we::container::exception::no_such (description);
+        {
+          throw we::container::exception::no_such ("bimap");
+        }
 
       return it->second;
     }
@@ -72,7 +71,9 @@ namespace bijection
         (bimap.right.find (i));
 
       if (it == bimap.right.end())
-        throw we::container::exception::no_such ("index for " + description);
+        {
+          throw we::container::exception::no_such ("index");
+        }
 
       return it->second;
     }
@@ -80,7 +81,9 @@ namespace bijection
     const I add (const T & x)
     {
       if (bimap.left.find (x) != bimap.left.end())
-        throw we::container::exception::already_there (description);
+        {
+          throw we::container::exception::already_there ("bimap");
+        }
 
       const I i (h++);
 
@@ -99,10 +102,14 @@ namespace bijection
       const typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
       if (it == bimap.right.end())
-        throw we::container::exception::no_such ("index for " + description);
+        {
+          throw we::container::exception::no_such ("index");
+        }
 
       if (bimap.right.modify_data (it, boost::bimaps::_data = x) == false)
-        throw we::container::exception::already_there (description + " after modify");
+        {
+          throw we::container::exception::already_there ("after modify");
+        }
 
       return i;
     }
@@ -112,10 +119,14 @@ namespace bijection
       const typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
       if (it == bimap.right.end())
-        throw we::container::exception::no_such ("index for " + description);
+        {
+          throw we::container::exception::no_such ("index");
+        };
 
       if (bimap.right.replace_data (it, x) == false)
-        throw we::container::exception::already_there (description + " after replace");
+        {
+          throw we::container::exception::already_there ("after replace");
+        }
 
       return i;
     }
