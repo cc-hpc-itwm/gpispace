@@ -1278,14 +1278,82 @@ namespace fhg
         push (new action::add_place (*this, origin, net.id(), place));
       }
 
+      namespace
+      {
+        bool is_connected_to_place ( const ::xml::parse::id::ref::connect& id
+                                   , const ::xml::parse::id::ref::place& place
+                                   )
+        {
+          return id.get().resolved_place()
+            && *id.get().resolved_place() == place;
+        }
+
+        bool is_associated_with ( const ::xml::parse::id::ref::port& port
+                                , const ::xml::parse::id::ref::place& place
+                                )
+        {
+          //! \todo This only checks for the same name, but might fail
+          //! with shadowing. (See is_connected_to_place().)
+          return port.get().place
+            && *port.get().place == place.get().name();
+        }
+
+        template<typename C, typename R>
+          void throw_into_set (C& container, const R& range)
+        {
+          container.insert (boost::begin (range), boost::end (range));
+        }
+      }
+
       void change_manager_t::delete_place
         ( const QObject* origin
         , const handle::place& place
         )
       {
-        //! \todo Find all connections to this place and erase them in
-        //! a macro. Or do that inside the action class.
+        beginMacro ("remove_place_and_connections_action");
+
+        if (place.get().has_parent())
+        {
+          const ::xml::parse::type::net_type& net (place.get().parent().get());
+
+          boost::unordered_set< ::xml::parse::id::ref::connect> to_delete;
+
+          //! \note remove_connection will modify transition's
+          //! connections, thus copy out of there first, then modify.
+          BOOST_FOREACH ( const ::xml::parse::type::transition_type& trans
+                        , net.transitions().values()
+                        )
+          {
+            throw_into_set
+              ( to_delete
+              , trans.connections().ids()
+              | boost::adaptors::filtered
+                (boost::bind (is_connected_to_place, _1, place.id()))
+              );
+          }
+
+          BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+          {
+            remove_connection (this, handle::connect (c, *this));
+          }
+
+          if (net.has_parent())
+          {
+            BOOST_FOREACH ( const ::xml::parse::id::ref::port& port
+                          , net.parent()->ports().ids()
+                          | boost::adaptors::filtered
+                            (boost::bind (is_associated_with, _1, place.id()))
+                          )
+            {
+              set_place_association
+                (this, handle::port (port, *this), boost::none);
+            }
+          }
+        }
+
         push (new action::remove_place (*this, origin, place.id()));
+
+        endMacro();
       }
 
       void change_manager_t::set_type ( const QObject* origin
