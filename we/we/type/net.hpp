@@ -219,29 +219,24 @@ private:
                            )
   {
     pid_in_map_t& pid_in_map (in_map[tid]);
-    tokens_t& tokens (pid_in_map[pid]);
 
-    tokens.clear();
-
-    for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
+    if (has_token (pid))
       {
-        tokens.push_back(*tp);
-      }
+        tokens_t& tokens (pid_in_map[pid]);
 
-    if (tokens.empty())
+        tokens.clear();
+
+        for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
+          {
+            tokens.push_back(*tp);
+          }
+      }
+    else
       {
         pid_in_map.erase (pid);
       }
 
     update_set_of_tid_in (tid, pid_in_map);
-  }
-
-  void calculate_enabled (const transition_id_type & tid)
-  {
-    for (adj_place_const_it pit (in_to_transition (tid)); pit.has_more(); ++pit)
-      {
-        recalculate_enabled (tid, *pit);
-      }
   }
 
   // *********************************************************************** //
@@ -292,7 +287,22 @@ public:
   {
     const transition_id_type tid (tmap.add (transition));
 
-    calculate_enabled (tid);
+    pid_in_map_t& pid_in_map (in_map[tid]);
+
+    for (adj_place_const_it pit (in_to_transition (tid)); pit.has_more(); ++pit)
+      {
+        if (has_token (*pit))
+          {
+            tokens_t& tokens (pid_in_map[*pit]);
+
+            for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
+              {
+                tokens.push_back (*tp);
+              }
+          }
+      }
+
+    update_set_of_tid_in (tid, pid_in_map);
 
     return tid;
   }
