@@ -32,6 +32,7 @@ namespace fhg
             }
 
             IMPL (qreal,  border_thickness,      2.0,       2.0,        1.0,       1.0,       1.0     )
+            IMPL (Qt::PenStyle,  border_style,   Qt::SolidLine, Qt::SolidLine, Qt::SolidLine, Qt::SolidLine, Qt::SolidLine)
             IMPL (QColor, border_color,          Qt::black, Qt::gray,   Qt::gray,  Qt::gray,  Qt::gray)
             IMPL (QColor, background_color,      Qt::white, Qt::white,  Qt::gray,  Qt::gray,  Qt::gray)
             IMPL (qreal,  text_line_thickness,   1.0,       1.0,        1.0,       1.0,       1.0     )
@@ -47,6 +48,7 @@ namespace fhg
 #define INSERT(_n) by_mode_by_key.insert (_n ## _by_mode_by_key_value())
 
                 INSERT (border_thickness);
+                INSERT (border_style);
                 INSERT (border_color);
                 INSERT (background_color);
                 INSERT (text_line_thickness);

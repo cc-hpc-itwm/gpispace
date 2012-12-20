@@ -27,6 +27,7 @@ namespace fhg
 #define DECL(_t, _n) _t& _n (const mode::type&)
 
             DECL (qreal, border_thickness);
+            DECL (Qt::PenStyle, border_style);
             DECL (QColor, border_color);
             DECL (QColor, background_color);
             DECL (qreal, text_line_thickness);
