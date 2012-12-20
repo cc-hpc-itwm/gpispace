@@ -9,6 +9,7 @@ command_directory=$(gspc --exec-path)
 indent=0
 only_important=true
 only_names=false
+prefix=""
 
 while true ; do
     case "$1" in
@@ -24,8 +25,12 @@ while true ; do
             only_important=false
             shift
             ;;
+        --prefix=*)
+            prefix="${1:9}-"
+            shift
+            ;;
         -h|--help)
-            echo >&2 "usage: list-commands [-h|--help] [--indent=N] [--all] [--names-only]"
+            echo >&2 "usage: list-commands [-h|--help] [--indent=N] [--all] [--names-only] [--prefix=<prefix>]"
             exit 0
             shift
             ;;
@@ -34,10 +39,9 @@ while true ; do
     esac
 done
 
-find "$command_directory" -name "gspc-*" | while read path ; do
+find "$command_directory" -name "gspc-${prefix}*" | while read path ; do
     if [ -x "$path" ]
     then
-        executable=$(basename $path)
         if $only_important ; then
             if ! grep -q '^GSPC_IMPORTANT_API_COMMAND=true$' "$path" ; then
                 continue
@@ -48,11 +52,15 @@ find "$command_directory" -name "gspc-*" | while read path ; do
             desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
         fi
 
+        executable=$(basename $path)
+        command=${executable:5}
+        command=${command/$prefix/}
+
         if [ -n "$desc" ]
         then
-            printf "%${indent}s%-20s %s\n" "" "${executable:5}" "${desc}"
+            printf "%${indent}s%-20s %s\n" "" "${command}" "${desc}"
         else
-            printf "%${indent}s%s\n" "" "${executable:5}"
+            printf "%${indent}s%s\n" "" "${command}"
         fi
     fi
 done
