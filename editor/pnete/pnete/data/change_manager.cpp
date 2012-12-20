@@ -1572,7 +1572,20 @@ namespace fhg
         , const boost::optional<std::string>& place
         )
       {
+        beginMacro ("set_place_association_action");
+
+        if (port.get().place && !place)
+        {
+          const handle::place place (*port.get().resolved_place(), *this);
+          if (place.is_implicit())
+          {
+            make_explicit (this, place);
+          }
+        }
+
         push (new action::set_place_association (*this, origin, port, place));
+
+        endMacro();
       }
 
 
