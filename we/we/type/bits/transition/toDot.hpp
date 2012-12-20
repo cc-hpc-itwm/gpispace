@@ -602,12 +602,7 @@ namespace we { namespace type {
                         {
                           found = true;
 
-                          const connection_t& net_conn (p());
-
-                          if (petri_net::edge::is_pt_read (net_conn.type))
-                            {
-                              is_read = true;
-                            }
+                          is_read = net.is_read_connection (*t, *p);
 
                           break;
                         }
