@@ -984,6 +984,8 @@ namespace xml
                                                 );
                   }
 
+                //! \todo eliminate the hack that stores the real
+                //! place in the properties
                 place::type we_place (we_net.get_place (pid->second));
 
                 std::ostringstream path;

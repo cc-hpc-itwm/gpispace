@@ -482,6 +482,8 @@ namespace we { namespace type {
               {
                 namespace prop = we::type::property::traverse;
 
+                //! \todo eliminate the hack that stores the real
+                //! place in the properties
                 prop::stack_type stack
                   (prop::dfs (place.property(), "real"));
 
