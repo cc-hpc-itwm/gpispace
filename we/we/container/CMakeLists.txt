@@ -1,6 +1,5 @@
 # -*- mode: cmake; -*-
 set (hdrs
-  adjacency.ipp
   adjacency.hpp
   multirel.hpp
   priostore.hpp
