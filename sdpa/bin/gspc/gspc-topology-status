@@ -44,10 +44,9 @@ done
 
 function action_status ()
 {
-    local component_to_check=("$@")
     local component_info=()
 
-    component_info=($(gspc topology --kvs-host "$kvs_host" --kvs-port "$kvs_port" list --no-header))
+    component_info=($(gspc topology --kvs-host "$kvs_host" --kvs-port "$kvs_port" list --no-header "$@"))
     ec=$?
     if [ $ec -ne 0 ] ; then
         return $ec
