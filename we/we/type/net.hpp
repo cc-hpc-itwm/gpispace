@@ -8,7 +8,6 @@
 #include <fhg/assert.hpp>
 
 #include <we/container/adjacency.hpp>
-#include <we/container/multirel.hpp>
 #include <we/container/priostore.hpp>
 #include <we/container/it.hpp>
 #include <we/serialize/unordered_map.hpp>
@@ -28,6 +27,7 @@
 
 #include <vector>
 #include <stack>
+#include <list>
 
 #include <iosfwd>
 
@@ -49,12 +49,14 @@ namespace petri_net
     typedef we::type::transition_t transition_type;
 
     typedef boost::unordered_map<place_id_type,place::type> pmap_type;
-    typedef we::container::const_it<pmap_type> place_const_it;
+    typedef we::container::map_const_it<pmap_type> place_const_it;
 
     typedef boost::unordered_map<transition_id_type,transition_type> tmap_type;
-    typedef we::container::const_it<tmap_type> transition_const_it;
+    typedef we::container::map_const_it<tmap_type> transition_const_it;
 
-    typedef multirel::right_const_it<token::type, place_id_type> token_place_it;
+    typedef std::list<token::type> tokens_type;
+    typedef boost::unordered_map<place_id_type, tokens_type> token_place_rel_t;
+    typedef we::container::container_const_it<tokens_type> token_place_it;
 
     typedef std::pair<token::type, place_id_type> token_input_t;
     typedef std::vector<token_input_t> input_t;
@@ -71,8 +73,6 @@ namespace petri_net
     typedef priostore::type<transition_id_type> enabled_t;
 
   private:
-    typedef multirel::multirel<token::type,place_id_type> token_place_rel_t;
-
     typedef cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
     typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
     typedef enabled_choice_t::iterator choice_iterator_t;
@@ -428,7 +428,7 @@ namespace petri_net
     void delete_place (const place_id_type& pid)
     {
       // make the token deletion visible to delete_connection
-      _token_place_rel.delete_right (pid);
+      _token_place_rel.erase (pid);
 
       std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
       std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
@@ -535,7 +535,7 @@ namespace petri_net
 
     void put_token (const place_id_type& pid, const token::type& token)
     {
-      _token_place_rel.add (token, pid);
+      _token_place_rel[pid].push_back (token);
 
       for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
         {
@@ -554,17 +554,22 @@ namespace petri_net
 
     token_place_it get_token (const place_id_type& pid) const
     {
-      return _token_place_rel.left_of (pid);
+      token_place_rel_t::const_iterator pos (_token_place_rel.find (pid));
+
+      return (pos != _token_place_rel.end())
+        ? token_place_it (pos->second)
+        : token_place_it (tokens_type())
+        ;
     }
 
     bool has_token (const place_id_type& pid) const
     {
-      return _token_place_rel.contains_right (pid);
+      return _token_place_rel.find (pid) != _token_place_rel.end();
     }
 
     void delete_all_token (const place_id_type& pid)
     {
-      _token_place_rel.delete_right (pid);
+      _token_place_rel.erase (pid);
 
       for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
         {

@@ -10,16 +10,31 @@ namespace we
   namespace container
   {
     template<typename Map, typename Res = typename Map::key_type>
-    struct const_it : public it::it<typename Map::const_iterator>
+    struct map_const_it : public it::it<typename Map::const_iterator>
     {
     public:
-      explicit const_it (const Map& m)
-        : const_it::super (m.begin(), m.end())
+      explicit map_const_it (const Map& m)
+        : map_const_it::super (m.begin(), m.end())
       {}
 
       const Res& operator* () const
       {
-        return const_it::super::pos->first;
+        return map_const_it::super::pos->first;
+      }
+    };
+
+    template<typename Container>
+    struct container_const_it
+      : public it::it<typename Container::const_iterator>
+    {
+    public:
+      explicit container_const_it (const Container& c)
+        : container_const_it::super (c.begin(), c.end())
+      {}
+
+      const typename Container::value_type& operator* () const
+      {
+        return *container_const_it::super::pos;
       }
     };
   }
