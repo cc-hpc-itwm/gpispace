@@ -44,7 +44,7 @@ namespace petri_net
     }
     client_type operator++ (int)
     {
-      client_type old (_value);
+      const client_type old (_value);
 
       ++_value;
 
