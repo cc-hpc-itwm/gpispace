@@ -212,10 +212,11 @@ private:
       }
   }
 
-  void recalculate_pid_in_map ( pid_in_map_t & pid_in_map
-                              , const place_id_type & pid
-                              )
+  void recalculate_enabled ( const transition_id_type & tid
+                           , const place_id_type & pid
+                           )
   {
+    pid_in_map_t& pid_in_map (in_map[tid]);
     tokens_t& tokens (pid_in_map[pid]);
 
     tokens.clear();
@@ -229,29 +230,6 @@ private:
       {
         pid_in_map.erase (pid);
       }
-  }
-
-  void recalculate_enabled_by_place (const place_id_type & pid)
-  {
-    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      recalculate_enabled (*t, pid);
-  }
-
-  void recalculate_enabled_by_connection (const connection_t& connection)
-  {
-    if (edge::is_PT (connection.type))
-      {
-        recalculate_enabled (connection.tid, connection.pid);
-      }
-  }
-
-  void recalculate_enabled ( const transition_id_type & tid
-                           , const place_id_type & pid
-                           )
-  {
-    pid_in_map_t & pid_in_map (in_map[tid]);
-
-    recalculate_pid_in_map (pid_in_map, pid);
 
     update_set_of_tid_in ( tid
                          , pid_in_map.size() == in_to_transition_size(tid)
@@ -260,15 +238,10 @@ private:
 
   void calculate_enabled (const transition_id_type & tid)
   {
-    pid_in_map_t & pid_in_map (in_map[tid]);
-    adj_place_const_it pit (in_to_transition (tid));
-
-    for (; pit.has_more(); ++pit)
-      recalculate_pid_in_map (pid_in_map, *pit);
-
-    update_set_of_tid_in ( tid
-                         , pid_in_map.size() == pit.size()
-                         );
+    for (adj_place_const_it pit (in_to_transition (tid)); pit.has_more(); ++pit)
+      {
+        recalculate_enabled (tid, *pit);
+      }
   }
 
   void update_enabled_put_token ( const transition_id_type & tid
@@ -390,7 +363,10 @@ public:
     in_to_transition_size_map.erase (connection.tid);
     out_of_transition_size_map.erase (connection.tid);
 
-    recalculate_enabled_by_connection (connection);
+    if (edge::is_PT (connection.type))
+      {
+        recalculate_enabled (connection.tid, connection.pid);
+      }
   }
 
   // iterate through elements
@@ -568,11 +544,16 @@ public:
   }
 
   // erased in case of conflict after modification
-  place_id_type modify_place (const place_id_type & pid, const place::type & place)
+  place_id_type modify_place ( const place_id_type & pid
+                             , const place::type & place
+                             )
   {
     const place_id_type new_pid (pmap.modify (pid, place));
 
-    recalculate_enabled_by_place (new_pid);
+    for (adj_transition_const_it t (out_of_place (new_pid)); t.has_more(); ++t)
+      {
+        recalculate_enabled (*t, new_pid);
+      }
 
     return new_pid;
   }
@@ -611,7 +592,10 @@ public:
   {
     const std::size_t ret (token_place_rel.delete_right (pid));
 
-    recalculate_enabled_by_place (pid);
+    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+      {
+        recalculate_enabled (*t, pid);
+      }
 
     return ret;
   }
