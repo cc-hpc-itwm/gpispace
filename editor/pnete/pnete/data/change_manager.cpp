@@ -948,6 +948,7 @@ namespace fhg
                                       , const data::handle::place& place
                                       , const data::handle::port& port
                                       , const petri_net::edge::type& direction
+                                      , bool no_make_explicit
                                       )
       {
         const ::xml::parse::id::ref::net net_of_place
@@ -961,8 +962,17 @@ namespace fhg
 
         if (function_of_net_of_place == function_of_port)
         {
+          change_manager.beginMacro ("set_place_association_action");
+
+          if (place.is_implicit() && !no_make_explicit)
+          {
+            change_manager.make_explicit (&change_manager, place);
+          }
+
           change_manager.set_place_association
             (origin, port, place.get().name());
+
+          change_manager.endMacro();
         }
         else
         {
@@ -971,6 +981,13 @@ namespace fhg
 
           if (net_of_place == transition_of_fun_of_port.get().parent()->id())
           {
+            change_manager.beginMacro ("add_connection_action");
+
+            if (place.is_implicit() && !no_make_explicit)
+            {
+              change_manager.make_explicit (&change_manager, place);
+            }
+
             change_manager.push
               ( new action::add_connection
                 ( change_manager
@@ -986,6 +1003,8 @@ namespace fhg
                   ).make_reference_id()
                 )
               );
+
+            change_manager.endMacro();
           }
           else
           {
@@ -998,19 +1017,21 @@ namespace fhg
       void change_manager_t::add_connection ( const QObject* origin
                                             , const data::handle::place& place
                                             , const data::handle::port& port
+                                            , bool no_make_explicit
                                             )
       {
         add_connection_impl_choose
-          (origin, *this, place, port, petri_net::edge::PT);
+          (origin, *this, place, port, petri_net::edge::PT, no_make_explicit);
       }
 
       void change_manager_t::add_connection ( const QObject* origin
                                             , const data::handle::port& port
                                             , const data::handle::place& place
+                                            , bool no_make_explicit
                                             )
       {
         add_connection_impl_choose
-          (origin, *this, place, port, petri_net::edge::TP);
+          (origin, *this, place, port, petri_net::edge::TP, no_make_explicit);
       }
 
       void change_manager_t::add_connection ( const QObject* origin
@@ -1051,8 +1072,8 @@ namespace fhg
         push (new action::add_place (*this, origin, net.id(), place));
 
         handle::place place_handle (place, *this);
-        add_connection (origin, from, place_handle);
-        add_connection (origin, place_handle, to);
+        add_connection (origin, from, place_handle, true);
+        add_connection (origin, place_handle, to, true);
 
         endMacro();
       }
