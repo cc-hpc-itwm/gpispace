@@ -91,12 +91,11 @@ namespace fhg
 
           virtual bool is_movable() const;
 
-        private:
+        protected:
           style::type _style;
           std::stack<mode::type> _mode;
           QPointF _move_start;
 
-        protected:
           virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
           virtual void hoverLeaveEvent (QGraphicsSceneHoverEvent* event);
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
