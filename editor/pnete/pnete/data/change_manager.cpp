@@ -1176,9 +1176,21 @@ namespace fhg
         , const handle::transition& transition
         )
       {
-        //! \todo Find all connections to this transition and erase them in
-        //! a macro. Or do that inside the action class.
+        beginMacro ("remove_transition_and_connections_action");
+
+        //! \note remove_connection will modify transition's
+        //! connections, thus copy out of there first, then modify.
+        boost::unordered_set< ::xml::parse::id::ref::connect> to_delete
+          (transition.get().connections().ids());
+
+        BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+        {
+          remove_connection (this, handle::connect (c, *this));
+        }
+
         push (new action::remove_transition (*this, origin, transition.id()));
+
+        endMacro();
       }
 
       void change_manager_t::set_property
