@@ -244,45 +244,6 @@ private:
       }
   }
 
-  void update_enabled_put_token ( const transition_id_type & tid
-                                , const place_id_type & pid
-                                , const token::type & token
-                                )
-  {
-    pid_in_map_t& pid_in_map (in_map[tid]);
-
-    pid_in_map[pid].push_back (token);
-
-    update_set_of_tid_in (tid, pid_in_map);
-  }
-
-  void update_enabled_del_one_token ( const transition_id_type & tid
-                                    , const place_id_type & pid
-                                    , const token::type & token
-                                    )
-  {
-    pid_in_map_t& pid_in_map (in_map[tid]);
-    tokens_t& tokens (pid_in_map[pid]);
-    tokens_t::iterator it (tokens.begin());
-
-    while (it != tokens.end() && *it != token)
-      {
-        ++it;
-      }
-
-    if (it != tokens.end())
-      {
-        tokens.erase (it);
-      }
-
-    if (tokens.empty())
-      {
-        pid_in_map.erase (pid);
-      }
-
-    update_set_of_tid_in (tid, pid_in_map);
-  }
-
   // *********************************************************************** //
 
 public:
@@ -566,7 +527,11 @@ public:
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       {
-        update_enabled_put_token (*t, pid, token);
+        pid_in_map_t& pid_in_map (in_map[*t]);
+
+        pid_in_map[pid].push_back (token);
+
+        update_set_of_tid_in (*t, pid_in_map);
       }
   }
 
@@ -646,11 +611,30 @@ private:
 
         assert (not is_read_connection (tid, pid));
 
-        // delete_one_token (pid, token)
+        pid_in_map_t& pid_in_map (in_map[tid]);
+
         for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
           {
-            update_enabled_del_one_token (*t, pid, token);
+            tokens_t& tokens (pid_in_map[pid]);
+            tokens_t::iterator it (tokens.begin());
+
+            while (it != tokens.end() && *it != token)
+              {
+                ++it;
+              }
+
+            if (it != tokens.end())
+              {
+                tokens.erase (it);
+              }
+
+            if (tokens.empty())
+              {
+                pid_in_map.erase (pid);
+              }
           }
+
+        update_set_of_tid_in (tid, pid_in_map);
       }
 
     for ( choice_vec_t::const_iterator choice
