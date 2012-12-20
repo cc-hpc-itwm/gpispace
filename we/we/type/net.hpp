@@ -232,20 +232,6 @@ namespace petri_net
     // ********************************************************************* //
 
   public:
-    net (const place_id_type& _places = 10, const transition_id_type& _transitions = 10)
-      : _pmap ("place")
-      , _tmap ("transition")
-      , _adj_pt()
-      , _adj_tp()
-      , _token_place_rel()
-      , _enabled()
-      , _enabled_choice_consume()
-      , _enabled_choice_read()
-      , _in_map()
-      , _in_to_transition_size_map()
-      , _out_of_transition_size_map()
-    {}
-
     const place::type& get_place (const place_id_type& pid) const
     {
       return _pmap.get_elem (pid);
