@@ -42,13 +42,6 @@ namespace petri_net
     {
       return _value > other._value;
     }
-
-    const client_type& operator++ ()
-    {
-      ++_value;
-
-      return *this;
-    }
     client_type operator++ (int)
     {
       client_type old (_value);
