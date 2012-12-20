@@ -168,9 +168,11 @@ private:
 
   // *********************************************************************** //
 
-  void update_set_of_tid_in (const transition_id_type & tid, const bool can_fire)
+  void update_set_of_tid_in ( const transition_id_type & tid
+                            , const pid_in_map_t& pid_in_map
+                            )
   {
-    if (not can_fire)
+    if (pid_in_map.size() != in_to_transition_size (tid))
       {
         enabled.erase (tid);
       }
@@ -231,9 +233,7 @@ private:
         pid_in_map.erase (pid);
       }
 
-    update_set_of_tid_in ( tid
-                         , pid_in_map.size() == in_to_transition_size(tid)
-                         );
+    update_set_of_tid_in (tid, pid_in_map);
   }
 
   void calculate_enabled (const transition_id_type & tid)
@@ -249,14 +249,11 @@ private:
                                 , const token::type & token
                                 )
   {
-    pid_in_map_t & pid_in_map (in_map[tid]);
-    tokens_t& tokens (pid_in_map[pid]);
+    pid_in_map_t& pid_in_map (in_map[tid]);
 
-    tokens.push_back(token);
+    pid_in_map[pid].push_back (token);
 
-    update_set_of_tid_in ( tid
-                         , pid_in_map.size() == in_to_transition_size(tid)
-                         );
+    update_set_of_tid_in (tid, pid_in_map);
   }
 
   void update_enabled_del_one_token ( const transition_id_type & tid
@@ -264,7 +261,7 @@ private:
                                     , const token::type & token
                                     )
   {
-    pid_in_map_t & pid_in_map (in_map[tid]);
+    pid_in_map_t& pid_in_map (in_map[tid]);
     tokens_t& tokens (pid_in_map[pid]);
     tokens_t::iterator it (tokens.begin());
 
@@ -283,9 +280,7 @@ private:
         pid_in_map.erase (pid);
       }
 
-    update_set_of_tid_in ( tid
-                         , pid_in_map.size() == in_to_transition_size(tid)
-                         );
+    update_set_of_tid_in (tid, pid_in_map);
   }
 
   // *********************************************************************** //
@@ -452,11 +447,11 @@ public:
     in_to_transition_size_map.erase (tid);
     out_of_transition_size_map.erase (tid);
 
-    in_map[tid].erase (pid);
+    pid_in_map_t& pid_in_map (in_map[tid]);
 
-    update_set_of_tid_in ( tid
-                         , in_map[tid].size() == in_to_transition_size(tid)
-                         );
+    pid_in_map.erase (pid);
+
+    update_set_of_tid_in (tid, pid_in_map);
   }
 
   void delete_place (const place_id_type & pid)
@@ -570,7 +565,9 @@ public:
     token_place_rel.add (token, pid);
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_enabled_put_token (*t, pid, token);
+      {
+        update_enabled_put_token (*t, pid, token);
+      }
   }
 
   void put_token (const place_id_type & pid)
