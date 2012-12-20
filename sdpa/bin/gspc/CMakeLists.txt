@@ -15,6 +15,7 @@ set (scripts
   gspc-topology
   gspc-topology-status
   gspc-topology-list
+  gspc-topology-start
   gspc-log
   gspc-init
   gspc-kvs
