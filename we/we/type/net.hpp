@@ -8,7 +8,6 @@
 #include <fhg/assert.hpp>
 
 #include <we/container/adjacency.hpp>
-#include <we/container/bijection.hpp>
 #include <we/container/multirel.hpp>
 #include <we/container/priostore.hpp>
 #include <we/container/it.hpp>
@@ -51,7 +50,9 @@ namespace petri_net
 
     typedef boost::unordered_map<place_id_type,place::type> pmap_type;
     typedef we::container::const_it<pmap_type> place_const_it;
-    typedef bijection::const_it<transition_type,transition_id_type> transition_const_it;
+
+    typedef boost::unordered_map<transition_id_type,transition_type> tmap_type;
+    typedef we::container::const_it<tmap_type> transition_const_it;
 
     typedef multirel::right_const_it<token::type, place_id_type> token_place_it;
 
@@ -87,7 +88,8 @@ namespace petri_net
     place_id_type _place_id;
     pmap_type _pmap;
 
-    bijection::bijection<transition_type,transition_id_type> _tmap;
+    transition_id_type _transition_id;
+    tmap_type _tmap;
 
     adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
     adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
@@ -111,6 +113,7 @@ namespace petri_net
     {
       ar & BOOST_SERIALIZATION_NVP(_place_id);
       ar & BOOST_SERIALIZATION_NVP(_pmap);
+      ar & BOOST_SERIALIZATION_NVP(_transition_id);
       ar & BOOST_SERIALIZATION_NVP(_tmap);
       ar & BOOST_SERIALIZATION_NVP(_adj_pt);
       ar & BOOST_SERIALIZATION_NVP(_adj_tp);
@@ -251,7 +254,14 @@ namespace petri_net
 
     const transition_type& get_transition (const transition_id_type& tid) const
     {
-      return _tmap.get_elem (tid);
+      const tmap_type::const_iterator pos (_tmap.find (tid));
+
+      if (pos == _tmap.end())
+        {
+          throw we::container::exception::no_such ("get_transition");
+        }
+
+      return pos->second;
     }
 
     place_id_type add_place (const place::type& place)
@@ -275,7 +285,9 @@ namespace petri_net
 
     transition_id_type add_transition (const transition_type& transition)
     {
-      const transition_id_type tid (_tmap.add (transition));
+      const transition_id_type tid (_transition_id++);
+
+      _tmap.insert (tmap_type::value_type (tid, transition));
 
       pid_in_map_t& pid_in_map (_in_map[tid]);
 
@@ -516,7 +528,9 @@ namespace petri_net
                                          , const transition_type& transition
                                          )
     {
-      return _tmap.modify (tid, transition);
+      _tmap.insert (tmap_type::value_type (tid, transition));
+
+      return tid;
     }
 
     void put_token (const place_id_type& pid, const token::type& token)
