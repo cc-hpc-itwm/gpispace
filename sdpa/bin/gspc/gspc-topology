@@ -17,8 +17,7 @@ Options:
 
 Actions:
 
-   list                  list the current topology
-   status                print status of each component
+$(gspc --no-alias list-commands --prefix=topology --all --indent=4)
 EOF
 }
 
