@@ -2,7 +2,8 @@
 
 . $(gspc --exec-path)/gspc-sh-setup
 
-GSPC_DOC_SHORT_DESCRIPTION="checks whether a given port is open"
+GSPC_API_COMMAND_SHORT_DESCRIPTION="checks whether a given port is open"
+GSPC_API_COMMAND_LEVEL=-1
 
 # return codes: 0 => port is open
 #               1 => usage error

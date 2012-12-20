@@ -1,12 +1,14 @@
 #!/bin/bash
 
-GSPC_DOC_SHORT_DESCRIPTION="list available GPI-Space commands"
+GSPC_API_COMMAND_SHORT_DESCRIPTION="list available GPI-Space commands"
+GSPC_API_COMMAND_LEVEL=-1
 
 . $(gspc --exec-path)/gspc-sh-setup
 
 command_directory=$(gspc --exec-path)
 
 indent=0
+level=1
 only_important=true
 only_names=false
 prefix=""
@@ -25,8 +27,16 @@ while true ; do
             only_important=false
             shift
             ;;
+        --level=*)
+            level=$(( ${1:8} ))
+            shift
+            ;;
         --prefix=*)
-            prefix="${1:9}-"
+            prefix="${1:9}"
+            if [ -n "$prefix" ]
+            then
+                prefix="${prefix}-"
+            fi
             shift
             ;;
         -h|--help)
@@ -42,14 +52,24 @@ done
 find "$command_directory" -name "gspc-${prefix}*" | while read path ; do
     if [ -x "$path" ]
     then
-        if $only_important ; then
-            if ! grep -q '^GSPC_IMPORTANT_API_COMMAND=true$' "$path" ; then
-                continue
-            fi
+        cmd_level=$(grep '^GSPC_API_COMMAND_LEVEL=' "$path" | cut -d= -f2 | xargs echo)
+        if [ -z "$cmd_level" ]
+        then
+            cmd_level=-1
+        fi
+
+        if [ ! $only_important -a $cmd_level -eq -1 ]
+        then
+            continue
+        fi
+
+        if [ $cmd_level -gt $level ]
+        then
+            continue
         fi
 
         if ! $only_names ; then
-            desc=$(grep '^GSPC_DOC_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
+            desc=$(grep '^GSPC_API_COMMAND_SHORT_DESCRIPTION=' "$path" | cut -d= -f2 | xargs echo)
         fi
 
         executable=$(basename $path)

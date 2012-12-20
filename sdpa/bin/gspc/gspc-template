@@ -1,7 +1,10 @@
 #!/bin/bash
 
-GSPC_DOC_SHORT_DESCRIPTION="template GPI-Space command"
-GSPC_IMPORTANT_API_COMMAND=false
+GSPC_API_COMMAND_SHORT_DESCRIPTION="template GPI-Space command"
+GSPC_API_COMMAND_LEVEL=-1
+
+# levels: -1 - do not show in help output
+#         >0 - show in help output of level L
 
 . $(gspc --exec-path)/gspc-sh-setup
 

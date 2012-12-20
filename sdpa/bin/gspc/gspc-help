@@ -1,6 +1,7 @@
 #!/bin/bash
 
-GSPC_DOC_SHORT_DESCRIPTION="print help for GPI-Space commands"
+GSPC_API_COMMAND_SHORT_DESCRIPTION="print help for GPI-Space commands"
+GSPC_API_COMMAND_LEVEL=0
 
 . $(gspc --exec-path)/gspc-sh-setup
 
@@ -29,7 +30,7 @@ Environment information:
 
 Commonly used commands:
 
-$(gspc --no-alias list-commands --indent=4)
+$(gspc --no-alias list-commands --prefix= --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
 EOF
 }
 
