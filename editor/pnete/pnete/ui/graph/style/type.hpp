@@ -53,6 +53,7 @@ namespace fhg
 
             typedef boost::variant < of<qreal>::type
                                    , of<QColor>::type
+                                   , of<Qt::PenStyle>::type
                                    > type;
 
             namespace visitor

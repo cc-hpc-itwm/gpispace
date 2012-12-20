@@ -37,6 +37,7 @@ namespace fhg
             {
               typedef boost::variant < const qreal&
                                      , const QColor&
+                                     , const Qt::PenStyle&
                                      > type;
 
               typedef boost::function< type (const mode::type&)
