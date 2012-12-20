@@ -409,7 +409,7 @@ namespace fhg
         public:
           connection_is_read
             (ACTION_ARG_LIST, const handle::connect& connect, bool read)
-              : ACTION_INIT ("remove_connection_action")
+              : ACTION_INIT ("connection_is_read_action")
               , _connect (connect)
               , _old_value (connect.is_read())
               , _new_value (read)
