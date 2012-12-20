@@ -228,7 +228,7 @@ int main (int argc, char **argv)
     act.collect_output ();
 
     std::ofstream stream (output.c_str());
-    stream << act.to_string() << std::endl;
+    stream << act.to_string();
   }
   catch (std::exception const & ex)
   {
