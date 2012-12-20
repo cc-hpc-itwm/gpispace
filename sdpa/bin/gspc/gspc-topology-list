@@ -84,7 +84,7 @@ function get_component_info ()
                 continue
             fi
 
-            if [ -n "${components_to_get_info_for}" ] ; then
+            if [ ${#components_to_get_info_for[@]} -gt 0 ] ; then
                 local filtered=true
                 for component in "${components_to_get_info_for[@]}"
                 do
