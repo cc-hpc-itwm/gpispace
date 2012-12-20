@@ -514,7 +514,7 @@ namespace petri_net
                                , const place::type& place
                                )
     {
-      _pmap.insert (pmap_type::value_type (pid, place));
+      _pmap[pid] = place;
 
       for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
         {
@@ -528,7 +528,7 @@ namespace petri_net
                                          , const transition_type& transition
                                          )
     {
-      _tmap.insert (tmap_type::value_type (tid, transition));
+      _tmap[tid] = transition;
 
       return tid;
     }
