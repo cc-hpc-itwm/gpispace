@@ -562,16 +562,14 @@ namespace petri_net
       return _token_place_rel.contains_right (pid);
     }
 
-    std::size_t delete_all_token (const place_id_type& pid)
+    void delete_all_token (const place_id_type& pid)
     {
-      const std::size_t ret (_token_place_rel.delete_right (pid));
+      _token_place_rel.delete_right (pid);
 
       for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
         {
           recalculate_enabled (*t, pid);
         }
-
-      return ret;
     }
 
     bool can_fire() const
