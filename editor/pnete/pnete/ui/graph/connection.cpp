@@ -51,17 +51,6 @@ namespace fhg
           return _handle;
         }
 
-        QPainterPath connection_item::shape () const
-        {
-          return association::shape();
-        }
-
-        void connection_item::paint
-          (QPainter* painter, const QStyleOptionGraphicsItem* opt, QWidget* wid)
-        {
-          association::paint (painter, opt, wid);
-        }
-
         void connection_item::connection_direction_changed
           (const QObject*, const data::handle::connect& changed_handle)
         {
