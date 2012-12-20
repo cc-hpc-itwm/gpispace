@@ -11,6 +11,7 @@
 #include <we/container/bijection.hpp>
 #include <we/container/multirel.hpp>
 #include <we/container/priostore.hpp>
+#include <we/container/it.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/serialize/unordered_set.hpp>
 #include <we/type/connection.hpp>
@@ -48,7 +49,8 @@ namespace petri_net
   public:
     typedef we::type::transition_t transition_type;
 
-    typedef bijection::const_it<place::type,place_id_type> place_const_it;
+    typedef boost::unordered_map<place_id_type,place::type> pmap_type;
+    typedef we::container::const_it<pmap_type> place_const_it;
     typedef bijection::const_it<transition_type,transition_id_type> transition_const_it;
 
     typedef multirel::right_const_it<token::type, place_id_type> token_place_it;
@@ -82,7 +84,9 @@ namespace petri_net
 
     // ********************************************************************* //
 
-    bijection::bijection<place::type,place_id_type> _pmap;
+    place_id_type _place_id;
+    pmap_type _pmap;
+
     bijection::bijection<transition_type,transition_id_type> _tmap;
 
     adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
@@ -105,6 +109,7 @@ namespace petri_net
     template<typename Archive>
     void serialize (Archive& ar, const unsigned int)
     {
+      ar & BOOST_SERIALIZATION_NVP(_place_id);
       ar & BOOST_SERIALIZATION_NVP(_pmap);
       ar & BOOST_SERIALIZATION_NVP(_tmap);
       ar & BOOST_SERIALIZATION_NVP(_adj_pt);
@@ -234,7 +239,14 @@ namespace petri_net
   public:
     const place::type& get_place (const place_id_type& pid) const
     {
-      return _pmap.get_elem (pid);
+      const pmap_type::const_iterator pos (_pmap.find (pid));
+
+      if (pos == _pmap.end())
+        {
+          throw we::container::exception::no_such ("get_place");
+        }
+
+      return pos->second;
     }
 
     const transition_type& get_transition (const transition_id_type& tid) const
@@ -244,7 +256,11 @@ namespace petri_net
 
     place_id_type add_place (const place::type& place)
     {
-      return _pmap.add (place);
+      const place_id_type pid (_place_id++);
+
+      _pmap.insert (pmap_type::value_type (pid, place));
+
+      return pid;
     }
 
     void set_transition_priority (const transition_id_type& tid, const priority_type& prio)
@@ -309,7 +325,7 @@ namespace petri_net
         }
     }
 
-    place_const_it places (void) const
+    place_const_it places() const
     {
       return place_const_it (_pmap);
     }
@@ -486,14 +502,14 @@ namespace petri_net
                                , const place::type& place
                                )
     {
-      const place_id_type new_pid (_pmap.modify (pid, place));
+      _pmap.insert (pmap_type::value_type (pid, place));
 
-      for (adj_transition_const_it t (out_of_place (new_pid)); t.has_more(); ++t)
+      for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
         {
-          recalculate_enabled (*t, new_pid);
+          recalculate_enabled (*t, pid);
         }
 
-      return new_pid;
+      return pid;
     }
 
     transition_id_type modify_transition ( const transition_id_type& tid
