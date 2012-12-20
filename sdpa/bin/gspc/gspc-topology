@@ -36,10 +36,6 @@ while true ; do
             shift ; shift
             ;;
         --) shift; break ;;
-        -*)
-            echo >&2 "topology: invalid option: $1"
-            exit 1
-            ;;
         *) break ;;
     esac
 done
