@@ -57,6 +57,8 @@ namespace xml
         const we::type::PortDirection& direction() const;
         const we::type::PortDirection& direction (const we::type::PortDirection&);
 
+        boost::optional<const id::ref::place&> resolved_place() const;
+
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
 

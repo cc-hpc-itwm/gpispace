@@ -151,6 +151,16 @@ namespace xml
         return _direction = direction_;
       }
 
+      boost::optional<const id::ref::place&> port_type::resolved_place() const
+      {
+        if (!place || !(has_parent() && parent()->is_net()))
+        {
+          return boost::none;
+        }
+
+        return parent()->get_net()->get().places().get (*place);
+      }
+
       const we::type::property::type& port_type::properties() const
       {
         return _properties;
