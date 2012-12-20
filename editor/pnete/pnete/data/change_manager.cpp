@@ -1062,7 +1062,20 @@ namespace fhg
         , const handle::connect& connect
         )
       {
+        beginMacro ("remove_connection_action");
+
+        if (connect.get().resolved_place())
+        {
+          const handle::place place (*connect.get().resolved_place(), *this);
+          if (place.is_implicit())
+          {
+            make_explicit (this, place);
+          }
+        }
+
         push (new action::remove_connection (*this, origin, connect.id()));
+
+        endMacro();
       }
 
       void change_manager_t::connection_is_read
