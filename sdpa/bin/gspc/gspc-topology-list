@@ -51,10 +51,8 @@ done
 
 function gspc_require_kvs ()
 {
-    if gspc kvs --host="${kvs_host}" --port="${kvs_port}" --status ; then
-        return 0
-    else
-        return 1
+    if ! gspc kvs --host="${kvs_host}" --port="${kvs_port}" --status ; then
+        exit 1
     fi
 }
 
