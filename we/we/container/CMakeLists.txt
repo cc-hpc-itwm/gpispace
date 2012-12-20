@@ -2,7 +2,6 @@
 set (hdrs
   adjacency.ipp
   adjacency.hpp
-  bijection.hpp
   multirel.hpp
   priostore.hpp
   svector.hpp
