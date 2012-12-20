@@ -1,0 +1,28 @@
+
+MAIN = sequence
+MAKEFILE = Makefile.sequence
+WE_EXEC_CMD = we-eval
+
+###############################################################################
+
+ifndef SDPA_HOME
+ $(error variable SDPA_HOME not set)
+endif
+
+include $(SDPA_HOME)/share/sdpa/make/common.mk
+
+###############################################################################
+
+COMPARISON += sequence_input.pnet
+COMPARISON += sequence_output_1.pnet
+COMPARISON += sequence_output_10.pnet
+
+.PHONY: comparison
+
+comparison: $(COMPARISON) clean
+
+sequence_input.pnet: $(NET)
+	cp $< $@
+
+sequence_output_%.pnet: $(NET)
+	PUT_PORT=n=$* WE_EXEC_OUTPUT=$@ $(MAKE) -f $(MAKEFILE) -B run
