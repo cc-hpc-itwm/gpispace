@@ -70,6 +70,7 @@ if (ENABLE_STATIC_BINARIES)
   target_link_libraries(pnetc.static ${WE_LIBRARIES})
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
   target_link_libraries (pnetc.static xml_parse)
+  target_link_libraries (pnetc.static fhg-revision)
 
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
 
