@@ -4,7 +4,6 @@
 #include <boost/functional/hash.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/serialization/version.hpp>
 
 namespace we
 {
