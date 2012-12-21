@@ -11,10 +11,6 @@ set (srcs
   signal_handler.cpp
   )
 
-if (NO_IMPLICIT_TEMPLATES)
-  set (srcs ${srcs} template.cpp)
-endif (NO_IMPLICIT_TEMPLATES)
-
 ADD_LIBRARY(gpi-space-static ${hdrs} ${srcs})
 ADD_LIBRARY(gpi-space-shared SHARED ${hdrs} ${srcs})
 set_target_properties(gpi-space-static PROPERTIES OUTPUT_NAME gpi-space)

@@ -39,10 +39,6 @@ if (${STATE_MACHINE_IMPLEMENTATION_SPECIFIED} EQUAL 0)
   message(SEND_ERROR "Statemachine implementation not set. Please define STATE_MACHINE_IMPLEMENTATION")
 endif (${STATE_MACHINE_IMPLEMENTATION_SPECIFIED} EQUAL 0)
 
-if (NO_IMPLICIT_TEMPLATES)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-implicit-templates")
-endif (NO_IMPLICIT_TEMPLATES)
-
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
