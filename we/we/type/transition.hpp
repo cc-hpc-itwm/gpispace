@@ -1029,17 +1029,6 @@ namespace we { namespace type {
   }
 }
 
-//! \todo is this used somewhere?
-namespace boost {
-  namespace serialization {
-    template<>
-    struct version<we::type::transition_t>
-    {
-      typedef mpl::int_<1> type;
-      typedef mpl::integral_c_tag tag;
-      BOOST_STATIC_CONSTANT(int, value = version::type::value);
-    };
-  }
-}
+BOOST_CLASS_VERSION(we::type::transition_t, 1);
 
 #endif
