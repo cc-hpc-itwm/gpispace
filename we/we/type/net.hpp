@@ -625,10 +625,9 @@ namespace petri_net
 
           assert (not is_read_connection (tid, pid));
 
-          pid_in_map_t& pid_in_map (_in_map[tid]);
-
           for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
             {
+              pid_in_map_t& pid_in_map (_in_map[*t]);
               tokens_t& tokens (pid_in_map[pid]);
               tokens_t::iterator it (tokens.begin());
 
@@ -646,9 +645,9 @@ namespace petri_net
                 {
                   pid_in_map.erase (pid);
                 }
-            }
 
-          update_set_of_tid_in (tid, pid_in_map);
+              update_set_of_tid_in (*t, pid_in_map);
+            }
         }
 
       for ( choice_vec_t::const_iterator choice
