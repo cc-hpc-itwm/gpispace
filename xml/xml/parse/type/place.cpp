@@ -235,8 +235,18 @@ namespace xml
       {
         return _name;
       }
-      const std::string& place_type::name(const std::string& name)
+      const std::string& place_type::name_impl (const std::string& name)
       {
+        return _name = name;
+      }
+      const std::string& place_type::name (const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return _name;
+        }
+
         return _name = name;
       }
 
