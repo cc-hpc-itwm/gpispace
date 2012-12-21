@@ -11,64 +11,64 @@
 
 namespace fhg
 {
-  const char * project_contact ()
+  const char* project_contact()
   {
     return "@PROJECT_CONTACT@";
   }
 
-  const char * project_summary ()
+  const char* project_summary()
   {
     return "@PROJECT_DESCRIPTION_SUMMARY@";
   }
 
-  const char * project_copyright ()
+  const char* project_copyright()
   {
     return "@PROJECT_COPYRIGHT@";
   }
 
-  const char * project_version ()
+  const char* project_version()
   {
     return "@PROJECT_VERSION@";
   }
 
-  const char * project_revision ()
+  const char* project_revision()
   {
     return "@PROJECT_REVISION@";
   }
 
-  const char * project_build_time ()
+  const char* project_build_time()
   {
     return "@FHG_BUILD_TIMESTAMP@";
   }
 
-  const char * project_build_compiler ()
+  const char* project_build_compiler()
   {
     return "@FHG_BUILD_COMPILER@";
   }
 
-  const char * project_build_info ()
+  const char* project_build_info()
   {
     return "@FHG_BUILD_INFO@";
   }
 
-  const char * project_build_count ()
+  const char* project_build_count()
   {
     return "@FHG_BUILD_COUNT@";
   }
 
-  std::string project_info ()
+  std::string project_info (const std::string& head)
   {
     std::ostringstream s;
 
-    s << std::endl << project_summary()
-      << std::endl
+    s << project_summary() << std::endl
+      << std::endl << "  * " << head << std::endl
       << std::endl << "version:  " << project_version()
       << std::endl << "revision: " << project_revision()
       << std::endl << "built:    " << project_build_time()
       << std::endl << "using:    " << project_build_compiler()
       << std::endl << "contact:  " <<  project_contact()
       << std::endl
-      << std::endl << project_copyright() << std::endl
+      << std::endl << project_copyright()
       << std::endl
       ;
 

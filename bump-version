@@ -76,4 +76,4 @@ esac
 
 echo "bumping version number..."
 sed -e "s/\@V_MAJOR\@/$major/" -e "s/\@V_MINOR\@/$minor/" -e "s/\@V_PATCH\@/$patch/" version.cmake.in > version.cmake
-git commit version.cmake -m "bumped version to: '$version'" && touch sdpa/version.hpp.in
+git commit version.cmake -m "bumped version to: '$version'"

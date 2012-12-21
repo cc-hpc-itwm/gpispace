@@ -272,7 +272,7 @@ int main (int argc, char** argv)
 
   if (vm.count ("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Pnet Compiler");
 
     return EXIT_SUCCESS;
   }

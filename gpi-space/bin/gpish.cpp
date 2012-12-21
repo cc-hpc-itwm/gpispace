@@ -19,7 +19,8 @@
 
 #include <fhglog/minimal.hpp>
 
-#include <gpi-space/version.hpp>
+#include <fhg/revision.hpp>
+
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/type/flags.hpp>
@@ -31,7 +32,6 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-static std::string disclaimer ();
 static bool interactive(false);
 
 typedef std::vector<boost::filesystem::path> path_list_t;
@@ -238,7 +238,7 @@ int main (int ac, char **av)
 
   if (vm.count ("version"))
   {
-    std::cerr << disclaimer ();
+    std::cerr << fhg::project_info ("Fraunhofer GPI shell");
     return EXIT_SUCCESS;
   }
 
@@ -387,21 +387,10 @@ void shutdown_shell ()
   shell_t::destroy ();
 }
 
-std::string disclaimer ()
-{
-  std::stringstream sstr;
-  sstr << "Fraunhofer GPI shell, version " << gpi::version_string () << std::endl;
-  sstr << "copyright: Alexander Petry <petry@itwm.fhg.de> (c) 2011" << std::endl;
-  sstr << "revision: " << gpi::revision_string() << std::endl;
-  return sstr.str();
-}
-
 int cmd_help (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size() < 2)
   {
-    std::cout << disclaimer () << std::endl;
-
     std::cout << "This is a list of available commands, use 'help <command>' to get more information " << std::endl;
     std::cout << "on a particular topic." << std::endl;
     std::cout << std::endl;

@@ -26,7 +26,6 @@
 
 #include <sdpa/client/generated/ClientFsm_sm.h>
 
-#include <sdpa/version.hpp>
 #include <fhg/revision.hpp>
 
 namespace sdpa { namespace client {
@@ -59,39 +58,6 @@ namespace sdpa { namespace client {
          "path to the configuration file")
         ;
       return cfg;
-    }
-
-    const std::string &version() const
-    {
-      return version_;
-    }
-
-    const std::string &copyright() const
-    {
-      return copyright_;
-    }
-
-    const std::string &contact() const
-    {
-      return contact_;
-    }
-
-    const std::string &build_timestamp() const
-    {
-      return timestamp_;
-    }
-
-    const std::string &revision() const
-    {
-      return revision_;
-    }
-    const std::string &build() const
-    {
-      return build_;
-    }
-    const std::string &build_info () const
-    {
-      return build_info_;
     }
 
     void start(const config_t &cfg) throw(ClientException);
@@ -139,14 +105,6 @@ namespace sdpa { namespace client {
       // assert stage->strategy() == this
       client_stage_ = stage;
     }
-
-    std::string version_;
-    std::string copyright_;
-    std::string contact_;
-    std::string timestamp_;
-    std::string revision_;
-    std::string build_;
-    std::string build_info_;
 
     std::string name_;
     std::string output_stage_;

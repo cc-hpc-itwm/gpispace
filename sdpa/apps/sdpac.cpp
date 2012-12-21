@@ -59,20 +59,6 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
     result = tmp;
 }
 
-static std::string center (std::string const & text, const std::size_t len)
-{
-  if (len >= text.size())
-  {
-    std::size_t diff (len - text.size());
-    std::string indent; indent.resize( diff / 2, ' ');
-    return indent + text;
-  }
-  else
-  {
-    return text;
-  }
-}
-
 /* returns sdpa::status::code */
 int command_poll_and_wait ( const std::string &job_id
                  , const sdpa::client::ClientApi::ptr_t &api
@@ -420,32 +406,7 @@ int main (int argc, char **argv) {
       (sdpa::client::ClientApi::create (cfg, client_api_name));
     if (cfg.is_set("version"))
     {
-      const std::size_t maxlen (72);
-      const std::string header (std::string(fhg::project_summary()) + " v" + fhg::project_version());
-      std::string seperator; seperator.resize (header.size(), '=');
-
-      std::vector <std::string> lines;
-      lines.push_back (header);
-      lines.push_back (seperator);
-      lines.push_back ("");
-      lines.push_back (fhg::project_build_time());
-      lines.push_back (std::string("rev: ") + fhg::project_revision());
-      lines.push_back (fhg::project_build_info());
-      lines.push_back (fhg::project_build_compiler());
-      lines.push_back (fhg::project_contact());
-      lines.push_back (fhg::project_copyright());
-
-      for ( std::vector<std::string>::iterator line (lines.begin())
-          ; line != lines.end()
-          ; ++line
-          )
-      {
-        if (! line->empty())
-        {
-          std::cout << center (*line, maxlen);
-        }
-        std::cout << std::endl;
-      }
+      std::cerr << fhg::project_info ("GPI-Space Client");
       return 0;
     }
     if (cfg.is_set("dumpversion"))
@@ -503,7 +464,7 @@ int main (int argc, char **argv) {
     }
 
     LOG(INFO, "***************************************************");
-    LOG(INFO, "GPI-Space - productive parallel programming and efficient execution (" << api->version() << ")");
+    LOG(INFO, fhg::project_summary() << " (" << fhg::project_version() << ")");
     LOG(INFO, "***************************************************");
 
     try

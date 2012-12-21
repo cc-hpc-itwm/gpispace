@@ -48,13 +48,6 @@ Client::ptr_t Client::create(const std::string &name_prefix
 
 Client::Client(const std::string &a_name, const std::string &output_stage)
   : seda::Strategy(a_name)
-  , version_(SDPA_VERSION)
-  , copyright_(SDPA_COPYRIGHT)
-  , contact_(SDPA_CONTACT)
-  , timestamp_(fhg::project_build_time())
-  , revision_(fhg::project_revision())
-  , build_(fhg::project_build_count())
-  , build_info_(fhg::project_build_info())
   , name_(a_name)
   , output_stage_(output_stage)
   , fsm_(*this)

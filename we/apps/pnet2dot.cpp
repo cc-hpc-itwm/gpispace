@@ -186,7 +186,7 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
     {
-      std::cout << fhg::project_info();
+      std::cout << fhg::project_info ("pnet2dot");
 
       return EXIT_SUCCESS;
     }

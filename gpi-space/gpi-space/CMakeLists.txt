@@ -1,18 +1,14 @@
 # -*- mode: cmake; -*-
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/version.cpp @ONLY)
-
 set (hdrs
   types.hpp
   error.hpp
   exception.hpp
   signal_handler.hpp
-  version.hpp
   )
 
 set (srcs
   signal_handler.cpp
-  ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
   )
 
 if (NO_IMPLICIT_TEMPLATES)

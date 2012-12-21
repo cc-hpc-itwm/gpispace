@@ -92,7 +92,7 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Requirement Listing");
 
     return 0;
   }
