@@ -131,9 +131,8 @@ namespace Function { namespace Condition
   struct Traits
   {
   public:
-    typedef std::deque<token::type> tokens_t;
     typedef boost::unordered_map< petri_net::place_id_type
-                                , tokens_t
+                                , std::vector<token::type>
                                 > pid_in_map_t;
 
     typedef cross::cross<pid_in_map_t> choices_t;

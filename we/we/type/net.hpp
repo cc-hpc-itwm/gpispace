@@ -54,9 +54,8 @@ namespace petri_net
     typedef boost::unordered_map<transition_id_type,transition_type> tmap_type;
     typedef we::container::map_const_it<tmap_type> transition_const_it;
 
-    typedef std::list<token::type> tokens_type;
+    typedef std::vector<token::type> tokens_type;
     typedef boost::unordered_map<place_id_type, tokens_type> token_place_rel_t;
-    typedef we::container::container_const_it<tokens_type> token_place_it;
 
     typedef std::pair<token::type, place_id_type> token_input_t;
     typedef std::vector<token_input_t> input_t;
@@ -64,11 +63,8 @@ namespace petri_net
     //! \todo traits should be template parameters (with default values)
     typedef Function::Condition::Traits cd_traits;
 
-    typedef cd_traits::tokens_t tokens_t;
     typedef cd_traits::pid_in_map_t pid_in_map_t;
     typedef cd_traits::choices_t choices_t;
-
-    typedef cross::iterator<pid_in_map_t> choice_it;
 
     typedef priostore::type<transition_id_type> enabled_t;
 
@@ -220,14 +216,7 @@ namespace petri_net
 
       if (has_token (pid))
         {
-          tokens_t& tokens (pid_in_map[pid]);
-
-          tokens.clear();
-
-          for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
-            {
-              tokens.push_back(*tp);
-            }
+          pid_in_map[pid] = get_token (pid);
         }
       else
         {
@@ -295,12 +284,8 @@ namespace petri_net
         {
           if (has_token (*pit))
             {
-              tokens_t& tokens (pid_in_map[*pit]);
-
-              for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
-                {
-                  tokens.push_back (*tp);
-                }
+              pid_in_map.insert
+                (pid_in_map_t::value_type (*pit, get_token (*pit)));
             }
         }
 
@@ -552,15 +537,7 @@ namespace petri_net
       put_token (pid, token::type());
     }
 
-    token_place_it get_token (const place_id_type& pid) const
-    {
-      token_place_rel_t::const_iterator pos (_token_place_rel.find (pid));
-
-      return (pos != _token_place_rel.end())
-        ? token_place_it (pos->second)
-        : token_place_it (tokens_type())
-        ;
-    }
+    const tokens_type& get_token (const place_id_type&) const;
 
     bool has_token (const place_id_type& pid) const
     {
@@ -628,8 +605,8 @@ namespace petri_net
           for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
             {
               pid_in_map_t& pid_in_map (_in_map[*t]);
-              tokens_t& tokens (pid_in_map[pid]);
-              tokens_t::iterator it (tokens.begin());
+              tokens_type& tokens (pid_in_map[pid]);
+              tokens_type::iterator it (tokens.begin());
 
               while (it != tokens.end() && *it != token)
                 {

@@ -7,6 +7,8 @@
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace we { namespace type {
 
     // ********************************************************************** //
@@ -405,7 +407,6 @@ namespace we { namespace type {
           typedef pnet_t::place_const_it place_const_it;
           typedef petri_net::adj_place_const_it adj_place_const_it;
           typedef pnet_t::transition_const_it transition_const_it;
-          typedef pnet_t::token_place_it token_place_it;
           typedef petri_net::connection_t connection_t;
           typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
@@ -438,12 +439,10 @@ namespace we { namespace type {
                 {
                   typedef boost::unordered_map<token::type, size_t> token_cnt_t;
                   token_cnt_t token_cnt;
-                  for ( token_place_it tp (net.get_token (*p))
-                      ; tp.has_more()
-                      ; ++tp
-                      )
+
+                  BOOST_FOREACH (const token::type& token, net.get_token (*p))
                     {
-                      ++token_cnt[*tp];
+                      ++token_cnt[token];
                     }
 
                   for ( typename token_cnt_t::const_iterator
