@@ -163,10 +163,7 @@ namespace xml
                                , state::type &
                                , const id::function& parent
                                );
-    id::ref::transition transition_type ( const xml_node_type *
-                                        , state::type &
-                                        , const id::net& parent
-                                        );
+    id::ref::transition transition_type (const xml_node_type*, state::type&);
     id::ref::specialize specialize_type ( const xml_node_type *
                                         , state::type &
                                         , const id::net& parent
@@ -472,10 +469,7 @@ namespace xml
     // ********************************************************************* //
 
     id::ref::transition
-    transition_type ( const xml_node_type * node
-                    , state::type & state
-                    , const id::net& parent
-                    )
+      transition_type (const xml_node_type* node, state::type& state)
     {
       const id::transition id (state.id_mapper()->next_id());
 
@@ -483,7 +477,7 @@ namespace xml
         ( type::transition_type
           ( id
           , state.id_mapper()
-          , parent
+          , boost::none
           , validate_name ( validate_prefix ( required ( "transition_type"
                                                      , node
                                                      , "name"
@@ -1382,8 +1376,7 @@ namespace xml
                 }
               else if (child_name == "transition")
                 {
-                  net.get_ref()
-                    .push_transition (transition_type (child, state, id));
+                  net.get_ref().push_transition (transition_type (child, state));
                 }
               else if (child_name == "struct")
                 {
