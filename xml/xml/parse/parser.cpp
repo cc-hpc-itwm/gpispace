@@ -148,14 +148,8 @@ namespace xml
     void substruct_type ( const xml_node_type *, state::type &
                         , signature::desc_t &
                         );
-    type::structure_type struct_type ( const xml_node_type *
-                                     , state::type &
-                                     , const id::function& parent
-                                     );
-    type::structs_type structs_type ( const xml_node_type *
-                                    , state::type & state
-                                    , const id::function& parent
-                                    );
+    type::structure_type struct_type (const xml_node_type*, state::type&);
+    type::structs_type structs_type (const xml_node_type*, state::type&);
 
     namespace
     {
@@ -171,18 +165,10 @@ namespace xml
           (tmpl_type, f, state, "template", "parse_template");
       }
 
-      type::structs_type parse_structs ( std::istream & f
-                                       , state::type & state
-                                       , const id::function& parent
-                                       )
+      type::structs_type parse_structs (std::istream& f, state::type& state)
       {
         return generic_parse<type::structs_type>
-          ( boost::bind (structs_type, _1, _2, parent)
-          , f
-          , state
-          , "structs"
-          , "parse_structs"
-          );
+          (structs_type, f, state, "structs", "parse_structs");
       }
 
       we::type::property::type
@@ -207,12 +193,10 @@ namespace xml
     }
 
     type::structs_type structs_include ( const std::string & file
-                                              , state::type & state
-                                              , const id::function& parent
-                                              )
+                                       , state::type & state
+                                       )
     {
-      return state.generic_include<type::structs_type>
-        (boost::bind (parse_structs, _1, _2, parent), file);
+      return state.generic_include<type::structs_type> (parse_structs, file);
     }
 
     we::type::property::type
@@ -914,14 +898,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    type::structs_type
-    structs_type ( const xml_node_type * node
-                 , state::type & state
-                 , const id::function& parent
-                 )
+    type::structs_type structs_type ( const xml_node_type* node
+                                    , state::type& state
+                                    )
     {
-      //! \note This is only a temporary struct, therefore has no id
-      //! or parent.
       type::structs_type v;
 
       for ( xml_node_type * child (node->first_node())
@@ -936,7 +916,7 @@ namespace xml
             {
               if (child_name == "struct")
                 {
-                  v.push_back (struct_type (child, state, parent));
+                  v.push_back (struct_type (child, state));
                 }
               else if (child_name == "include-structs")
                 {
@@ -947,7 +927,6 @@ namespace xml
                                                  , state.file_in_progress()
                                                  )
                                       , state
-                                      , parent
                                       )
                     );
 
@@ -1337,7 +1316,7 @@ namespace xml
             }
             else if (child_name == "struct")
             {
-              net.get_ref().structs.push_back (struct_type (child, state, parent));
+              net.get_ref().structs.push_back (struct_type (child, state));
             }
             else if (child_name == "include-structs")
             {
@@ -1350,7 +1329,6 @@ namespace xml
                                              , state.file_in_progress()
                                              )
                                   , state
-                                  , parent
                                   )
                 );
 
@@ -1492,7 +1470,7 @@ namespace xml
           }
           else if (child_name == "struct")
           {
-            function.get_ref().structs.push_back (struct_type (child, state, id));
+            function.get_ref().structs.push_back (struct_type (child, state));
           }
           else if (child_name == "include-structs")
           {
@@ -1503,7 +1481,6 @@ namespace xml
                                            , state.file_in_progress()
                                            )
                                 , state
-                                , id
                                 )
               );
 
@@ -1675,15 +1652,12 @@ namespace xml
     }
 
     type::structure_type
-    struct_type ( const xml_node_type * node
-                , state::type & state
-                , const id::function& parent
-                )
+      struct_type (const xml_node_type* node, state::type& state)
     {
       type::structure_type s
         ( id::structure (state.id_mapper()->next_id())
         , state.id_mapper()
-        , parent
+        , boost::none
         , validate_field_name ( required ( "struct_type"
                                          , node
                                          , "name"
