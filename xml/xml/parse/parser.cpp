@@ -1204,11 +1204,11 @@ namespace xml
           }
           else if (child_name == "module")
           {
-            function.get_ref().f = module_type (child, state, id);
+            function.get_ref().content (module_type (child, state, id));
           }
           else if (child_name == "net")
           {
-            function.get_ref().f = net_type (child, state, id);
+            function.get_ref().content (net_type (child, state, id));
           }
           else if (child_name == "condition")
           {
