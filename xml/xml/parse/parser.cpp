@@ -137,9 +137,7 @@ namespace xml
                                 , state::type &
                                 , const id::function& parent
                                 );
-    id::ref::tmpl tmpl_type ( const xml_node_type *
-                            , state::type &
-                            );
+    id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
     id::ref::net net_type ( const xml_node_type *
                           , state::type &
                           , const id::function& parent
