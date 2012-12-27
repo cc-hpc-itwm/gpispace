@@ -133,10 +133,6 @@ namespace xml
     // ********************************************************************* //
 
     id::ref::function function_type (const xml_node_type*, state::type&);
-    id::ref::module module_type ( const xml_node_type *
-                                , state::type &
-                                , const id::function& parent
-                                );
     id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
     id::ref::net net_type ( const xml_node_type *
                           , state::type &
@@ -1111,6 +1107,93 @@ namespace xml
         ).make_reference_id();
     }
 
+    namespace
+    {
+      id::ref::module module_type (const xml_node_type* node, state::type& state)
+      {
+        const id::module id (state.id_mapper()->next_id());
+
+        const id::ref::module module
+          ( type::module_type
+            ( id
+            , state.id_mapper()
+            , boost::none
+            , required ("module_type", node, "name", state.file_in_progress())
+            , required ("module_type", node, "function", state.file_in_progress())
+            , state.file_in_progress()
+            ).make_reference_id()
+          );
+
+        state.id_mapper()->get_ref (id)->path = state.file_in_progress();
+
+        for ( xml_node_type * child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+          {
+            if (child_name == "cinclude")
+            {
+              const std::string href
+                (required ("module_type", child, "href", state.file_in_progress()));
+
+              module.get_ref().cincludes.push_back (href);
+            }
+            else if (child_name == "ld")
+            {
+              const std::string flag
+                (required ("module_type", child, "flag", state.file_in_progress()));
+
+              module.get_ref().ldflags.push_back (flag);
+            }
+            else if (child_name == "cxx")
+            {
+              const std::string flag
+                (required ("module_type", child, "flag", state.file_in_progress()));
+
+              module.get_ref().cxxflags.push_back (flag);
+            }
+            else if (child_name == "link")
+            {
+              module.get_ref().links.push_back
+                ( required ( "module_type"
+                           , child
+                           , "href"
+                           , state.file_in_progress()
+                           )
+                );
+            }
+            else if (child_name == "code")
+            {
+              typedef std::vector<std::string> cdatas_container_type;
+
+              const cdatas_container_type cdata
+                ( parse_cdata<cdatas_container_type>
+                  (child, state.file_in_progress())
+                );
+
+              module.get_ref().code = fhg::util::join (cdata, "\n");
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "module_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        return module;
+      }
+    }
+
     // ********************************************************************* //
 
     id::ref::function
@@ -1204,7 +1287,7 @@ namespace xml
           }
           else if (child_name == "module")
           {
-            function.get_ref().content (module_type (child, state, id));
+            function.get_ref().content (module_type (child, state));
           }
           else if (child_name == "net")
           {
@@ -1256,98 +1339,6 @@ namespace xml
       }
 
       return function;
-    }
-
-    // ********************************************************************* //
-
-    id::ref::module
-    module_type ( const xml_node_type * node
-                , state::type & state
-                , const id::function& parent
-                )
-    {
-      const id::module id (state.id_mapper()->next_id());
-
-      const id::ref::module module
-        ( type::module_type
-          ( id
-          , state.id_mapper()
-          , parent
-          , required ("module_type", node, "name", state.file_in_progress())
-          , required ("module_type", node, "function", state.file_in_progress())
-          , state.file_in_progress()
-          ).make_reference_id()
-        );
-
-      state.id_mapper()->get_ref (id)->path = state.file_in_progress();
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
-        {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
-
-          if (child)
-            {
-              if (child_name == "cinclude")
-                {
-                  const std::string href
-                    (required ("module_type", child, "href", state.file_in_progress()));
-
-                  module.get_ref().cincludes.push_back (href);
-                }
-              else if (child_name == "ld")
-                {
-                  const std::string flag
-                    (required ("module_type", child, "flag", state.file_in_progress()));
-
-                  module.get_ref().ldflags.push_back (flag);
-                }
-              else if (child_name == "cxx")
-                {
-                  const std::string flag
-                    (required ("module_type", child, "flag", state.file_in_progress()));
-
-                  module.get_ref().cxxflags.push_back (flag);
-                }
-              else if (child_name == "link")
-                {
-                  module.get_ref().links.push_back
-                    ( required ( "module_type"
-                               , child
-                               , "href"
-                               , state.file_in_progress()
-                               )
-                    );
-                }
-              else if (child_name == "code")
-                {
-                  typedef std::vector<std::string> cdatas_container_type;
-
-                  const cdatas_container_type cdata
-                    ( parse_cdata<cdatas_container_type>
-                      ( child
-                      , state.file_in_progress()
-                      )
-                    );
-
-                  module.get_ref().code = fhg::util::join (cdata, "\n");
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "module_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
-        }
-
-      return module;
     }
 
     // ********************************************************************* //
