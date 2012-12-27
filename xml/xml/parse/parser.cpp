@@ -148,10 +148,6 @@ namespace xml
                           , const id::function& parent
                           );
     id::ref::place place_type (const xml_node_type*, state::type&);
-    id::ref::port port_type ( const xml_node_type*
-                            , state::type&
-                            , const we::type::PortDirection&
-                            );
     void gen_struct_type ( const xml_node_type *, state::type &
                          , signature::desc_t &
                          );
@@ -454,6 +450,77 @@ namespace xml
           , boost::none
           , required ("place_map_type", node, "virtual", state.file_in_progress())
           , required ("place_map_type", node, "real", state.file_in_progress())
+          , properties
+          ).make_reference_id();
+      }
+
+      // **************************************************************** //
+
+      id::ref::port port_type ( const xml_node_type* node
+                              , state::type& state
+                              , const we::type::PortDirection& direction
+                              )
+      {
+        we::type::property::type properties;
+
+        for ( xml_node_type * child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+          {
+            if (child_name == "properties")
+            {
+              property_map_type (properties, child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              util::property::join
+                ( state
+                , properties
+                , properties_include ( required ( "port_type"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     , state
+                                     )
+                );
+            }
+            else
+            {
+              state.warn ( warning::unexpected_element ( child_name
+                                                       , "port_type"
+                                                       , state.file_in_progress()
+                                                       )
+                         );
+            }
+          }
+        }
+
+        return type::port_type
+          ( state.id_mapper()->next_id()
+          , state.id_mapper()
+          , boost::none
+          , validate_name
+            ( validate_prefix ( required ( "port_type"
+                                         , node
+                                         , "name"
+                                         , state.file_in_progress()
+                                         )
+                              , "port"
+                              , state.file_in_progress()
+                              )
+            , "port"
+            , state.file_in_progress()
+            )
+          , required ("port_type", node, "type", state.file_in_progress())
+          , optional (node, "place")
+          , direction
           , properties
           ).make_reference_id();
       }
@@ -1588,77 +1655,6 @@ namespace xml
         }
 
       return place;
-    }
-
-    // ********************************************************************* //
-
-    id::ref::port port_type ( const xml_node_type* node
-                            , state::type& state
-                            , const we::type::PortDirection& direction
-                            )
-    {
-      we::type::property::type properties;
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
-      {
-        const std::string child_name
-          (name_element (child, state.file_in_progress()));
-
-        if (child)
-        {
-          if (child_name == "properties")
-          {
-            property_map_type (properties, child, state);
-          }
-          else if (child_name == "include-properties")
-          {
-            util::property::join
-              ( state
-              , properties
-              , properties_include ( required ( "port_type"
-                                              , child
-                                              , "href"
-                                              , state.file_in_progress()
-                                              )
-                                   , state
-                                   )
-              );
-          }
-          else
-          {
-            state.warn ( warning::unexpected_element ( child_name
-                                                     , "port_type"
-                                                     , state.file_in_progress()
-                                                     )
-                       );
-          }
-        }
-      }
-
-      return type::port_type
-        ( state.id_mapper()->next_id()
-        , state.id_mapper()
-        , boost::none
-        , validate_name
-          ( validate_prefix ( required ( "port_type"
-                                       , node
-                                       , "name"
-                                       , state.file_in_progress()
-                                       )
-                            , "port"
-                            , state.file_in_progress()
-                            )
-          , "port"
-          , state.file_in_progress()
-          )
-        , required ("port_type", node, "type", state.file_in_progress())
-        , optional (node, "place")
-        , direction
-        , properties
-        ).make_reference_id();
     }
 
     // ********************************************************************* //
