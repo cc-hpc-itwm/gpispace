@@ -249,7 +249,7 @@ namespace xml
           }
         }
 
-        id.parent (_id);
+        id.get_ref().parent (_id);
       }
 
       void function_type::remove_port (const id::ref::port& id)
