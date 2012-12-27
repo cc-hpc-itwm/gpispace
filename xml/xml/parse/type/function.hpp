@@ -51,7 +51,7 @@ namespace xml
         typedef boost::variant < id::ref::expression
                                , id::ref::module
                                , id::ref::net
-                               > type;
+                               > content_type;
 
         // ***************************************************************** //
 
@@ -65,7 +65,7 @@ namespace xml
 
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
-                      , const type& content
+                      , const content_type& content
                       );
 
         function_type ( ID_CONS_PARAM(function)
@@ -78,15 +78,15 @@ namespace xml
                       , const structs_type& structs
                       , const conditions_type& cond
                       , const requirements_type& requirements
-                      , const type& content
+                      , const content_type& content
                       , const xml::parse::structure_type::set_type& resolved
                       , const we::type::property::type& properties
                       , const boost::filesystem::path& path
                       );
 
-        const type& content() const;
-        type& content();
-        const type& content (const type&);
+        const content_type& content() const;
+        content_type& content();
+        const content_type& content (const content_type&);
 
         // ***************************************************************** //
 
@@ -216,7 +216,7 @@ namespace xml
         requirements_type requirements;
 
       private:
-        type _content;
+        content_type _content;
 
       public:
         xml::parse::structure_type::set_type structs_resolved;

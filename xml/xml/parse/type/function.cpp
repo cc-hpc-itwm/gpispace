@@ -37,7 +37,7 @@ namespace xml
 
       function_type::function_type ( ID_CONS_PARAM(function)
                                    , const boost::optional<parent_id_type>& parent
-                                   , const type& content
+                                   , const content_type& content
                                    )
         : ID_INITIALIZE()
         , _parent (parent)
@@ -58,7 +58,7 @@ namespace xml
         , const structs_type& structs
         , const conditions_type& cond
         , const requirements_type& requirements
-        , const type& content
+        , const content_type& content
         , const xml::parse::structure_type::set_type& structs_resolved
         , const we::type::property::type& properties
         , const boost::filesystem::path& path
@@ -107,24 +107,26 @@ namespace xml
           const id::function& _parent;
         };
 
-        const function_type::type& reparent ( const function_type::type& content
-                                            , const id::function& parent
-                                            )
+        const function_type::content_type& reparent
+          ( const function_type::content_type& content
+          , const id::function& parent
+          )
         {
           boost::apply_visitor (visitor_reparent (parent), content);
           return content;
         }
       }
 
-      const function_type::type& function_type::content() const
+      const function_type::content_type& function_type::content() const
       {
         return _content;
       }
-      function_type::type& function_type::content()
+      function_type::content_type& function_type::content()
       {
         return _content;
       }
-      const function_type::type& function_type::content (const type& content_)
+      const function_type::content_type&
+        function_type::content (const content_type& content_)
       {
         return _content = reparent (content_, id());
       }
@@ -904,7 +906,7 @@ namespace xml
       namespace
       {
         class visitor_clone
-          : public boost::static_visitor<function_type::type>
+          : public boost::static_visitor<function_type::content_type>
         {
         public:
           visitor_clone ( const id::function& new_id
@@ -914,7 +916,7 @@ namespace xml
             , _mapper (mapper)
           { }
           template<typename ID_TYPE>
-            function_type::type operator() (const ID_TYPE& id) const
+            function_type::content_type operator() (const ID_TYPE& id) const
           {
             return id.get().clone (_new_id, _mapper);
           }
