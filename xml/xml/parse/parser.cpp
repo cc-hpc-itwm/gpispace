@@ -147,10 +147,7 @@ namespace xml
                           , state::type &
                           , const id::function& parent
                           );
-    id::ref::place place_type ( const xml_node_type *
-                              , state::type &
-                              , const id::net& parent
-                              );
+    id::ref::place place_type (const xml_node_type*, state::type&);
     id::ref::port port_type ( const xml_node_type *
                             , state::type &
                             , const id::function& parent
@@ -1381,8 +1378,7 @@ namespace xml
                 }
               else if (child_name == "place")
                 {
-                  net.get_ref()
-                    .push_place (place_type (child, state, id));
+                  net.get_ref().push_place (place_type (child, state));
                 }
               else if (child_name == "transition")
                 {
@@ -1532,10 +1528,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::place place_type ( const xml_node_type * node
-                              , state::type & state
-                              , const id::net& parent
-                              )
+    id::ref::place place_type (const xml_node_type* node, state::type& state)
     {
       const id::place id (state.id_mapper()->next_id());
 
@@ -1546,7 +1539,7 @@ namespace xml
         ( type::place_type
           ( id
           , state.id_mapper()
-          , parent
+          , boost::none
           , validate_name ( validate_prefix ( name
                                             , "place"
                                             , state.file_in_progress()

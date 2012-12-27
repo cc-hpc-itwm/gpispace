@@ -165,6 +165,8 @@ namespace xml
           throw error::duplicate_place (id.get().name(), path());
         }
 
+        id.get_ref().parent (_id);
+
         return id;
       }
 
