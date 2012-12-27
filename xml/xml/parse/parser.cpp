@@ -500,12 +500,7 @@ namespace xml
           ( id
           , state.id_mapper()
           , parent
-          ).make_reference_id()
-        );
-
-      transition.get_ref().path = state.file_in_progress();
-      transition.get_ref().name
-        ( validate_name ( validate_prefix ( required ( "transition_type"
+          , validate_name ( validate_prefix ( required ( "transition_type"
                                                      , node
                                                      , "name"
                                                      , state.file_in_progress()
@@ -516,22 +511,17 @@ namespace xml
                         , "transition"
                         , state.file_in_progress()
                         )
+          , fhg::util::boost::fmap<std::string, petri_net::priority_type>
+            ( boost::lexical_cast<petri_net::priority_type>
+            , optional (node, "priority")
+            )
+          , fhg::util::boost::fmap<std::string, bool>
+            (fhg::util::read_bool, optional (node, "inline"))
+          , fhg::util::boost::fmap<std::string, bool>
+            (fhg::util::read_bool, optional (node, "internal"))
+          , state.file_in_progress()
+          ).make_reference_id()
         );
-      transition.get_ref().priority
-        = fhg::util::boost::fmap<std::string, petri_net::priority_type>
-          ( boost::lexical_cast<petri_net::priority_type>
-          , optional (node, "priority")
-          );
-      transition.get_ref().finline
-        = fhg::util::boost::fmap<std::string, bool>
-          ( fhg::util::read_bool
-          , optional (node, "inline")
-          );
-      transition.get_ref().internal
-        = fhg::util::boost::fmap<std::string, bool>
-          ( fhg::util::read_bool
-          , optional (node, "internal")
-          );
 
       for ( xml_node_type * child (node->first_node())
           ; child

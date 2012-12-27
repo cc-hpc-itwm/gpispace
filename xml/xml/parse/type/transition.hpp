@@ -40,6 +40,11 @@ namespace xml
 
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
+                        , const std::string& name
+                        , const boost::optional<petri_net::priority_type>& priority
+                        , const boost::optional<bool>& finline
+                        , const boost::optional<bool>& internal
+                        , const boost::filesystem::path& path
                         );
 
         transition_type ( ID_CONS_PARAM(transition)
