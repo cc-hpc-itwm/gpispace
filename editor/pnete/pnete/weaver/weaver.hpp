@@ -496,7 +496,7 @@ namespace fhg
         {
           WEAVE(mod::open) (id);
           const ::xml::parse::type::module_type& mod (id.get());
-          WEAVE(mod::name) (mod.name);
+          WEAVE(mod::name) (mod.name());
           WEAVE(mod::fun) (XMLTYPE(dump::dump_fun(mod)));
           WEAVE(mod::cincludes) (mod.cincludes);
           WEAVE(mod::ldflags) (mod.ldflags);

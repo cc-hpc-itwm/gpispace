@@ -700,7 +700,7 @@ namespace xml
 
           we_transition_type trans
             ( name()
-            , we_module_type (mod.name, mod.function)
+            , we_module_type (mod.name(), mod.function)
             , condition()
             , fun.internal.get_value_or (false)
             , fun.properties()
@@ -1468,7 +1468,7 @@ namespace xml
             << "{" << std::endl
             << "  namespace op" << std::endl
             << "  {" << std::endl
-            << "    namespace " << mod.name << std::endl
+            << "    namespace " << mod.name() << std::endl
             << "    {" << std::endl
             ;
         }
@@ -1476,7 +1476,7 @@ namespace xml
         template<typename Stream>
         void namespace_close (Stream& s, const module_type & mod)
         {
-          s << "    } // namespace " << mod.name << std::endl
+          s << "    } // namespace " << mod.name() << std::endl
             << "  } // namespace op" << std::endl
             << "} // namespace pnetc" << std::endl
             ;
@@ -1637,7 +1637,7 @@ namespace xml
           namespace cpp_util = ::fhg::util::cpp;
 
           cpp_util::include ( s
-                            , cpp_util::path::op() / mod.name / file_hpp
+                            , cpp_util::path::op() / mod.name() / file_hpp
                             );
 
           namespace_open (s, mod);
@@ -1709,7 +1709,7 @@ namespace xml
           s << cpp_util::access::make ( ""
                                       , "pnetc"
                                       , "op"
-                                      , mod.name
+                                      , mod.name()
                                       , mod.function
                                       )
             << " ("
@@ -1844,7 +1844,7 @@ namespace xml
 
             const module_type& mod (id.get());
 
-            const mcs_type::const_iterator old_map (mcs.find (mod.name));
+            const mcs_type::const_iterator old_map (mcs.find (mod.name()));
 
             if (old_map != mcs.end())
             {
@@ -1857,7 +1857,7 @@ namespace xml
                 {
                   state.warn ( warning::duplicate_external_function
                                ( mod.function
-                               , mod.name
+                               , mod.name()
                                , old_mc->second.path
                                , mod.path
                                )
@@ -1867,7 +1867,7 @@ namespace xml
                 {
                   throw error::duplicate_external_function
                     ( mod.function
-                    , mod.name
+                    , mod.name()
                     , old_mc->second.path
                     , mod.path
                     );
@@ -1875,7 +1875,7 @@ namespace xml
               }
             }
 
-            mcs[mod.name].insert (std::make_pair (mod.function, mod));
+            mcs[mod.name()].insert (std::make_pair (mod.function, mod));
 
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
@@ -1954,7 +1954,7 @@ namespace xml
             }
 
             const path_t prefix (state.path_to_cpp());
-            const path_t path (prefix / cpp_util::path::op() / mod.name);
+            const path_t path (prefix / cpp_util::path::op() / mod.name());
             const std::string file_hpp (cpp_util::make::hpp (mod.function));
             const std::string file_cpp
               ( mod.code
@@ -1982,7 +1982,7 @@ namespace xml
                                            , mod.path
                                            );
 
-              m[mod.name].insert (fun_info);
+              m[mod.name()].insert (fun_info);
             }
 
             {
@@ -1992,7 +1992,7 @@ namespace xml
 
               cpp_util::header_gen_full (stream);
               cpp_util::include_guard_begin
-                (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
 
               mod_includes (stream, types);
 
@@ -2010,7 +2010,7 @@ namespace xml
               stream << std::endl;
 
               cpp_util::include_guard_end
-                (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
 
               stream.commit();
             }
@@ -2023,7 +2023,7 @@ namespace xml
               cpp_util::header_gen (stream);
 
               cpp_util::include ( stream
-                                , cpp_util::path::op() / mod.name / file_hpp
+                                , cpp_util::path::op() / mod.name() / file_hpp
                                 );
 
               for ( module_type::cincludes_type::const_iterator inc
@@ -2053,7 +2053,7 @@ namespace xml
               {
                 stream << "        // INSERT CODE HERE" << std::endl
                        << "        throw std::runtime_error (\""
-                       << mod.name << "::" << mod.function
+                       << mod.name() << "::" << mod.function
                        << ": NOT YET IMPLEMENTED\");";
               }
               else
