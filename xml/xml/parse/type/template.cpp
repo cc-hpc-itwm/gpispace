@@ -13,6 +13,17 @@ namespace xml
   {
     namespace type
     {
+      namespace
+      {
+        const id::ref::function& reparent ( const id::ref::function& function
+                                          , const id::tmpl& id
+                                          )
+        {
+          function.get_ref().parent (id);
+          return function;
+        }
+      }
+
       tmpl_type::tmpl_type
         ( ID_CONS_PARAM(tmpl)
         , PARENT_CONS_PARAM(net)
@@ -25,7 +36,7 @@ namespace xml
           , PARENT_INITIALIZE()
           , _name (name)
           , _tmpl_parameter (tmpl_parameter)
-          , _function (function)
+          , _function (reparent (function, _id))
           , _path (path)
       {
         _id_mapper->put (_id, *this);
