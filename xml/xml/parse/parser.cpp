@@ -134,7 +134,6 @@ namespace xml
 
     id::ref::function function_type (const xml_node_type*, state::type&);
     id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
-    id::ref::transition transition_type (const xml_node_type*, state::type&);
 
     void property_map_type ( we::type::property::type &
                            , const xml_node_type *
@@ -499,176 +498,166 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::transition
-      transition_type (const xml_node_type* node, state::type& state)
+    namespace
     {
-      const id::transition id (state.id_mapper()->next_id());
+      id::ref::transition
+        transition_type (const xml_node_type* node, state::type& state)
+      {
+        const id::transition id (state.id_mapper()->next_id());
 
-      const id::ref::transition transition
-        ( type::transition_type
-          ( id
-          , state.id_mapper()
-          , boost::none
-          , validate_name ( validate_prefix ( required ( "transition_type"
-                                                     , node
-                                                     , "name"
-                                                     , state.file_in_progress()
-                                                     )
-                                          , "transition"
-                                          , state.file_in_progress()
-                                          )
-                        , "transition"
-                        , state.file_in_progress()
-                        )
-          , fhg::util::boost::fmap<std::string, petri_net::priority_type>
-            ( boost::lexical_cast<petri_net::priority_type>
-            , optional (node, "priority")
+        const id::ref::transition transition
+          ( type::transition_type
+            ( id
+            , state.id_mapper()
+            , boost::none
+            , validate_name ( validate_prefix ( required ( "transition_type"
+                                                         , node
+                                                         , "name"
+                                                         , state.file_in_progress()
+                                                         )
+                                              , "transition"
+                                              , state.file_in_progress()
+                                              )
+                            , "transition"
+                            , state.file_in_progress()
+                            )
+            , fhg::util::boost::fmap<std::string, petri_net::priority_type>
+              ( boost::lexical_cast<petri_net::priority_type>
+              , optional (node, "priority")
+              )
+            , fhg::util::boost::fmap<std::string, bool>
+              (fhg::util::read_bool, optional (node, "inline"))
+            , fhg::util::boost::fmap<std::string, bool>
+              (fhg::util::read_bool, optional (node, "internal"))
+            , state.file_in_progress()
+            ).make_reference_id()
+          );
+
+        for ( xml_node_type * child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
             )
-          , fhg::util::boost::fmap<std::string, bool>
-            (fhg::util::read_bool, optional (node, "inline"))
-          , fhg::util::boost::fmap<std::string, bool>
-            (fhg::util::read_bool, optional (node, "internal"))
-          , state.file_in_progress()
-          ).make_reference_id()
-        );
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
         {
           const std::string child_name
             (name_element (child, state.file_in_progress()));
 
           if (child)
+          {
+            if (child_name == "include-function")
             {
-              if (child_name == "include-function")
-                {
-                  const std::string file ( required ( "transition_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         );
-
-                  transition.get_ref().function_or_use
-                    (function_include (file, state));
-                }
-              else if (child_name == "use")
-                {
-                  transition.get_ref().function_or_use
-                    ( type::use_type ( id::use (state.id_mapper()->next_id())
-                                     , state.id_mapper()
-                                     , id
-                                     , required ( "transition_type"
+              const std::string file ( required ( "transition_type"
                                                 , child
-                                                , "name"
+                                                , "href"
                                                 , state.file_in_progress()
                                                 )
-                                     ).make_reference_id()
-                    );
-                }
-              else if (child_name == "defun")
-                {
-                  transition.get_ref().function_or_use
-                    (function_type (child, state));
-                }
-              else if (child_name == "place-map")
-                {
-                  transition.get_ref().push_place_map
-                    (place_map_type (child, state));
-                }
-              else if (child_name == "connect-in")
-                {
-                  transition.get_ref().push_connection
-                    (connect_type (child, state, petri_net::edge::PT));
-                }
-              else if (child_name == "connect-out")
-                {
-                  transition.get_ref().push_connection
-                    (connect_type (child, state, petri_net::edge::TP));
-                }
-              else if (child_name == "connect-inout")
-                {
-                  const id::ref::connect connection_in
-                    (connect_type (child, state, petri_net::edge::PT));
-                  const id::ref::connect connection_out
-                    (connection_in.get().clone (id));
-                  connection_out.get_ref().direction (petri_net::edge::TP);
+                                     );
 
-                  transition.get_ref().push_connection (connection_in);
-                  transition.get_ref().push_connection (connection_out);
-                }
-              else if (child_name == "connect-read")
-                {
-                  transition.get_ref().push_connection
-                    (connect_type (child, state, petri_net::edge::PT_READ));
-                }
-              else if (child_name == "condition")
-                {
-                  const type::conditions_type conds
-                    ( parse_cdata<type::conditions_type>
-                      ( child
-                      , state.file_in_progress()
-                      )
-                    );
-
-                  transition.get_ref()
-                    .cond.insert ( state.id_mapper()->get_ref (id)->cond.end()
-                                 , conds.begin()
-                                 , conds.end()
-                                 );
-                }
-              else if (child_name == "require")
-                {
-                  require_type ( transition.get_ref().requirements
-                               , child
-                               , state
-                               );
-                }
-              else if (child_name == "properties")
-                {
-                  property_map_type ( transition.get_ref().properties()
-                                    , child
-                                    , state
-                                    );
-                }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "transition_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join ( state
-                                       , transition.get_ref().properties()
-                                       , deeper
-                                       );
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "transition_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
+              transition.get_ref().function_or_use
+                (function_include (file, state));
             }
+            else if (child_name == "use")
+            {
+              transition.get_ref().function_or_use
+                ( type::use_type ( id::use (state.id_mapper()->next_id())
+                                 , state.id_mapper()
+                                 , id
+                                 , required ( "transition_type"
+                                            , child
+                                            , "name"
+                                            , state.file_in_progress()
+                                            )
+                                 ).make_reference_id()
+                );
+            }
+            else if (child_name == "defun")
+            {
+              transition.get_ref().function_or_use (function_type (child, state));
+            }
+            else if (child_name == "place-map")
+            {
+              transition.get_ref().push_place_map (place_map_type (child, state));
+            }
+            else if (child_name == "connect-in")
+            {
+              transition.get_ref().push_connection
+                (connect_type (child, state, petri_net::edge::PT));
+            }
+            else if (child_name == "connect-out")
+            {
+              transition.get_ref().push_connection
+                (connect_type (child, state, petri_net::edge::TP));
+            }
+            else if (child_name == "connect-inout")
+            {
+              const id::ref::connect connection_in
+                (connect_type (child, state, petri_net::edge::PT));
+              const id::ref::connect connection_out
+                (connection_in.get().clone (id));
+              connection_out.get_ref().direction (petri_net::edge::TP);
+
+              transition.get_ref().push_connection (connection_in);
+              transition.get_ref().push_connection (connection_out);
+            }
+            else if (child_name == "connect-read")
+            {
+              transition.get_ref().push_connection
+                (connect_type (child, state, petri_net::edge::PT_READ));
+            }
+            else if (child_name == "condition")
+            {
+              const type::conditions_type conds
+                ( parse_cdata<type::conditions_type>
+                  (child, state.file_in_progress())
+                );
+
+              transition.get_ref()
+                .cond.insert ( state.id_mapper()->get_ref (id)->cond.end()
+                             , conds.begin()
+                             , conds.end()
+                             );
+            }
+            else if (child_name == "require")
+            {
+              require_type (transition.get_ref().requirements, child, state);
+            }
+            else if (child_name == "properties")
+            {
+              property_map_type (transition.get_ref().properties(), child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              const we::type::property::type deeper
+                ( properties_include ( required ( "transition_type"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     , state
+                                     )
+                );
+
+              util::property::join ( state
+                                   , transition.get_ref().properties()
+                                   , deeper
+                                   );
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "transition_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
         }
 
-      return transition;
-    }
+        return transition;
+      }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    namespace
-    {
       id::ref::specialize
         specialize_type (const xml_node_type* node, state::type& state)
       {
@@ -1193,6 +1182,46 @@ namespace xml
 
       // ******************************************************************* //
 
+      type::place_type::token_type
+        parse_token (const xml_node_type* node, state::type& state)
+      {
+        type::place_type::token_type token;
+
+        for ( xml_node_type * child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+          {
+            if (child_name == "value")
+            {
+              return std::string (child->value());
+            }
+            else if (child_name == "field")
+            {
+              token_field_type (child, state, token);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "parse_token"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        return token;
+      }
+
+      // ******************************************************************* //
+
       id::ref::place place_type (const xml_node_type* node, state::type& state)
       {
         const id::place id (state.id_mapper()->next_id());
@@ -1544,46 +1573,6 @@ namespace xml
       }
 
       return function;
-    }
-
-    // ********************************************************************* //
-
-    type::place_type::token_type
-      parse_token (const xml_node_type* node, state::type& state)
-    {
-      type::place_type::token_type token;
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
-      {
-        const std::string child_name
-          (name_element (child, state.file_in_progress()));
-
-        if (child)
-        {
-          if (child_name == "value")
-          {
-            return std::string (child->value());
-          }
-          else if (child_name == "field")
-          {
-            token_field_type (child, state, token);
-          }
-          else
-          {
-            state.warn
-              ( warning::unexpected_element ( child_name
-                                            , "parse_token"
-                                            , state.file_in_progress()
-                                            )
-              );
-          }
-        }
-      }
-
-      return token;
     }
 
     // ********************************************************************* //
