@@ -289,6 +289,26 @@ namespace xml
         _places.push (place);
       }
 
+      void net_type::rename ( const id::ref::tmpl& tmpl
+                            , const std::string& name
+                            )
+      {
+        if (tmpl.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_template (name))
+        {
+          throw std::runtime_error
+            ("tried renaming template, but template with given name exists");
+        }
+
+        _templates.erase (tmpl);
+        tmpl.get_ref().name_impl (name);
+        _templates.push (tmpl);
+      }
+
       void net_type::rename ( const id::ref::transition& transition
                             , const std::string& name
                             )

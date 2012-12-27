@@ -112,6 +112,7 @@ namespace xml
         // ***************************************************************** //
 
         void rename (const id::ref::place&, const std::string&);
+        void rename (const id::ref::tmpl&, const std::string&);
         void rename (const id::ref::transition&, const std::string&);
 
         // ***************************************************************** //

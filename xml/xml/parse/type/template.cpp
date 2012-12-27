@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <xml/parse/type/template.hpp>
 
@@ -31,15 +31,23 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      const boost::optional<std::string>&
-      tmpl_type::name() const
+      const boost::optional<std::string>& tmpl_type::name() const
       {
         return _name;
       }
-      const std::string&
-      tmpl_type::name(const std::string& name)
+      const std::string& tmpl_type::name_impl (const std::string& name)
       {
         return *(_name = name);
+      }
+      const std::string& tmpl_type::name(const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return *_name;
+        }
+
+        return name_impl (name);
       }
 
       const tmpl_type::names_type&
