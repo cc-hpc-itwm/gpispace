@@ -135,7 +135,6 @@ namespace xml
     id::ref::function function_type (const xml_node_type*, state::type&);
     id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
     id::ref::transition transition_type (const xml_node_type*, state::type&);
-    id::ref::specialize specialize_type (const xml_node_type*, state::type&);
 
     void property_map_type ( we::type::property::type &
                            , const xml_node_type *
@@ -668,52 +667,55 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::specialize
-      specialize_type (const xml_node_type* node, state::type& state)
+    namespace
     {
-      type::type_map_type type_map;
-      type::type_get_type type_get;
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
+      id::ref::specialize
+        specialize_type (const xml_node_type* node, state::type& state)
       {
-        const std::string child_name
-          (name_element (child, state.file_in_progress()));
+        type::type_map_type type_map;
+        type::type_get_type type_get;
 
-        if (child)
+        for ( xml_node_type * child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
         {
-          if (child_name == "type-map")
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
           {
-            set_type_map (child, state, type_map);
-          }
-          else if (child_name == "type-get")
-          {
-            set_type_get (child, state, type_get);
-          }
-          else
-          {
-            state.warn
-              ( warning::unexpected_element ( child_name
-                                            , "specialize_type"
-                                            , state.file_in_progress()
-                                            )
-              );
+            if (child_name == "type-map")
+            {
+              set_type_map (child, state, type_map);
+            }
+            else if (child_name == "type-get")
+            {
+              set_type_get (child, state, type_get);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "specialize_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
           }
         }
-      }
 
-      return type::specialize_type
-        ( state.id_mapper()->next_id()
-        , state.id_mapper()
-        , boost::none
-        , required ("specialize_type", node, "name", state.file_in_progress())
-        , required ("specialize_type", node, "use", state.file_in_progress())
-        , type_map
-        , type_get
-        , state.file_in_progress()
-        ).make_reference_id();
+        return type::specialize_type
+          ( state.id_mapper()->next_id()
+          , state.id_mapper()
+          , boost::none
+          , required ("specialize_type", node, "name", state.file_in_progress())
+          , required ("specialize_type", node, "use", state.file_in_progress())
+          , type_map
+          , type_get
+          , state.file_in_progress()
+          ).make_reference_id();
+      }
     }
 
     // ********************************************************************* //
