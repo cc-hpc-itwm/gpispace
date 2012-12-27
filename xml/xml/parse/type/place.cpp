@@ -247,7 +247,7 @@ namespace xml
           return _name;
         }
 
-        return _name = name;
+        return name_impl (name);
       }
 
       void place_type::push_token (const token_type & t)
