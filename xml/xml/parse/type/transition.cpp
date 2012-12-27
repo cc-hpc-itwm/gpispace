@@ -233,7 +233,7 @@ namespace xml
         return _name = name;
       }
 
-      const std::string& place_type::name (const std::string& name)
+      const std::string& transition_type::name (const std::string& name)
       {
         if (has_parent())
         {
