@@ -49,45 +49,46 @@ namespace xml
 {
   namespace parse
   {
-    template<typename T>
-    T generic_parse
-      ( boost::function<T (const xml_node_type *, state::type &)> parse
-      , std::istream & f
-      , state::type & state
-      , const std::string & name_wanted
-      , const std::string & pre
-      )
+    namespace
     {
-      xml_document_type doc;
+      template<typename T>
+        T generic_parse
+        ( boost::function<T (const xml_node_type*, state::type&)> parse
+        , std::istream& f
+        , state::type& state
+        , const std::string& name_wanted
+        , const std::string& pre
+        )
+      {
+        xml_document_type doc;
 
-      input_type inp (f);
+        input_type inp (f);
 
-      try
+        try
         {
           doc.parse < rapidxml::parse_full
                     | rapidxml::parse_trim_whitespace
                     | rapidxml::parse_normalize_whitespace
-                    > (inp.data())
-                    ;
+                    > (inp.data());
         }
-      catch (const rapidxml::parse_error & e)
+        catch (const rapidxml::parse_error& e)
         {
-          int line = 1;
-          int col = 0;
+          int line (1);
+          int col (0);
 
-          for ( char * pos = const_cast<char *>(inp.data())
+          for ( char* pos (const_cast<char*> (inp.data()))
               ; pos != e.where<char>()
               ; ++pos
               )
-            {
-              col += 1;
+          {
+            ++col;
 
-              if (*pos == '\n')
-                {
-                  col = 0;
-                  line += 1;
-                }
+            if (*pos == '\n')
+            {
+              col = 0;
+              ++line;
             }
+          }
 
           std::ostringstream oss;
 
@@ -96,63 +97,62 @@ namespace xml
           throw rapidxml::parse_error (oss.str().c_str(), e.where<void>());
         }
 
-      xml_node_type * node (doc.first_node());
+        xml_node_type* node (doc.first_node());
 
-      if (!node)
+        if (!node)
         {
           throw error::no_elements_given (pre, state.file_in_progress());
         }
 
-      skip (node, rapidxml::node_declaration);
+        skip (node, rapidxml::node_declaration);
 
-      const std::string name (name_element (node, state.file_in_progress()));
+        const std::string name (name_element (node, state.file_in_progress()));
 
-      if (!node)
+        if (!node)
         {
           throw error::no_elements_given (pre, state.file_in_progress());
         }
 
-      if (name != name_wanted)
+        if (name != name_wanted)
         {
           state.warn
             (warning::unexpected_element (name, pre, state.file_in_progress()));
         }
 
-      xml_node_type * sib (node->next_sibling());
+        xml_node_type* sib (node->next_sibling());
 
-      skip (sib, rapidxml::node_comment);
+        skip (sib, rapidxml::node_comment);
 
-      if (sib)
+        if (sib)
         {
           throw error::more_than_one_definition (pre, state.file_in_progress());
         }
 
-      return parse (node, state);
-    }
+        return parse (node, state);
+      }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    id::ref::function function_type (const xml_node_type*, state::type&);
-    id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
+      id::ref::function function_type (const xml_node_type*, state::type&);
+      id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
 
-    void property_map_type ( we::type::property::type &
-                           , const xml_node_type *
-                           , state::type &
+      void property_map_type ( we::type::property::type&
+                             , const xml_node_type*
+                             , state::type&
+                             );
+      we::type::property::type
+        property_maps_type (const xml_node_type*, state::type&);
+
+      void gen_struct_type ( const xml_node_type*, state::type&
+                           , signature::desc_t&
                            );
-    we::type::property::type
-    property_maps_type (const xml_node_type *, state::type &);
+      void substruct_type ( const xml_node_type*, state::type&
+                          , signature::desc_t&
+                          );
+      type::structure_type struct_type (const xml_node_type*, state::type&);
+      type::structs_type structs_type (const xml_node_type*, state::type&);
 
-    void gen_struct_type ( const xml_node_type *, state::type &
-                         , signature::desc_t &
-                         );
-    void substruct_type ( const xml_node_type *, state::type &
-                        , signature::desc_t &
-                        );
-    type::structure_type struct_type (const xml_node_type*, state::type&);
-    type::structs_type structs_type (const xml_node_type*, state::type&);
 
-    namespace
-    {
       id::ref::function parse_function (std::istream& f, state::type& state)
       {
         return generic_parse<id::ref::function>
@@ -172,113 +172,109 @@ namespace xml
       }
 
       we::type::property::type
-      parse_props (std::istream & f, state::type & state)
+      parse_props (std::istream& f, state::type& state)
       {
         return generic_parse<we::type::property::type>
           (property_maps_type, f, state, "props", "parse_props");
       }
-    }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    id::ref::function
-      function_include (const std::string& file, state::type& state)
-    {
-      return state.generic_include<id::ref::function> (parse_function, file);
-    }
+      id::ref::function
+        function_include (const std::string& file, state::type& state)
+      {
+        return state.generic_include<id::ref::function> (parse_function, file);
+      }
 
-    id::ref::tmpl template_include (const std::string& file, state::type& state)
-    {
-      return state.generic_include<id::ref::tmpl> (parse_template, file);
-    }
+      id::ref::tmpl template_include (const std::string& file, state::type& state)
+      {
+        return state.generic_include<id::ref::tmpl> (parse_template, file);
+      }
 
-    type::structs_type structs_include ( const std::string & file
-                                       , state::type & state
-                                       )
-    {
-      return state.generic_include<type::structs_type> (parse_structs, file);
-    }
+      type::structs_type structs_include ( const std::string& file
+                                         , state::type& state
+                                         )
+      {
+        return state.generic_include<type::structs_type> (parse_structs, file);
+      }
 
-    we::type::property::type
-    properties_include (const std::string & file, state::type & state)
-    {
-      return
-        state.generic_include<we::type::property::type> (parse_props, file);
-    }
+      we::type::property::type
+        properties_include (const std::string& file, state::type& state)
+      {
+        return
+          state.generic_include<we::type::property::type> (parse_props, file);
+      }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    void
-    require_type ( type::requirements_type & requirements
-                 , const xml_node_type * node
-                 , state::type & state
-                 )
-    {
-      const std::string key
-        (required ("require_type", node, "key", state.file_in_progress()));
-      const boost::optional<bool> mmandatory
-        ( fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
-                                                   , optional (node, "mandatory")
-                                                   )
-        );
-      const bool mandatory (mmandatory ? *mmandatory : true);
+      void require_type ( type::requirements_type& requirements
+                        , const xml_node_type* node
+                        , state::type& state
+                        )
+      {
+        const std::string key
+          (required ("require_type", node, "key", state.file_in_progress()));
+        const boost::optional<bool> mmandatory
+          ( fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
+                                                     , optional (node, "mandatory")
+                                                     )
+          );
+        const bool mandatory (mmandatory ? *mmandatory : true);
 
-      requirements.set (key, mandatory);
+        requirements.set (key, mandatory);
 
-      // collect all the requirements for the top level function
-      state.set_requirement (key, mandatory);
-    }
+        // collect all the requirements for the top level function
+        state.set_requirement (key, mandatory);
+      }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    void
-    set_type_map ( const xml_node_type * node
-                 , const state::type & state
-                 , type::type_map_type & map
-                 )
-    {
-      const std::string replace
-        (required ("set_type_map", node, "replace", state.file_in_progress()));
-      const std::string with
-        (required ("set_type_map", node, "with", state.file_in_progress()));
+      void set_type_map ( const xml_node_type* node
+                        , const state::type& state
+                        , type::type_map_type& map
+                        )
+      {
+        const std::string replace
+          (required ("set_type_map", node, "replace", state.file_in_progress()));
+        const std::string with
+          (required ("set_type_map", node, "with", state.file_in_progress()));
 
-      type::type_map_type::const_iterator old (map.find (replace));
+        type::type_map_type::const_iterator old (map.find (replace));
 
-      if (old != map.end())
+        if (old != map.end())
         {
           if (old->second != with)
-            {
-              throw error::type_map_mismatch
-                (replace, old->second, with, state.file_in_progress());
-            }
-          else
-            {
-              state.warn ( warning::type_map_duplicate
-                           ( replace
-                           , with
-                           , state.file_in_progress()
-                           )
-                         );
-              }
+          {
+            throw error::type_map_mismatch
+              (replace, old->second, with, state.file_in_progress());
           }
+          else
+          {
+            state.warn ( warning::type_map_duplicate
+                         ( replace
+                         , with
+                         , state.file_in_progress()
+                         )
+                       );
+          }
+        }
 
-      map[replace] = with;
-    }
+        map[replace] = with;
+      }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    void
-    set_type_get ( const xml_node_type * node
-                 , const state::type & state
-                 , type::type_get_type & set
-                 )
-    {
-      const std::string name
-        (required ("set_type_get", node, "name", state.file_in_progress()));
+      void set_type_get ( const xml_node_type* node
+                        , const state::type& state
+                        , type::type_get_type& set
+                        )
+      {
+        const std::string name
+          (required ("set_type_get", node, "name", state.file_in_progress()));
 
-      type::type_get_type::const_iterator old (set.find (name));
+        type::type_get_type::const_iterator old (set.find (name));
 
-      if (old != set.end())
+        if (old != set.end())
         {
           state.warn ( warning::type_get_duplicate ( name
                                                    , state.file_in_progress()
@@ -286,13 +282,11 @@ namespace xml
                      );
         }
 
-      set.insert (name);
-    }
+        set.insert (name);
+      }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    namespace
-    {
       id::ref::connect connect_type ( const xml_node_type* node
                                     , state::type& state
                                     , const petri_net::edge::type& direction
@@ -300,7 +294,7 @@ namespace xml
       {
         we::type::property::type properties;
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
             )
@@ -358,7 +352,7 @@ namespace xml
       {
         we::type::property::type properties;
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
             )
@@ -417,7 +411,7 @@ namespace xml
       {
         we::type::property::type properties;
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
             )
@@ -478,12 +472,9 @@ namespace xml
           , properties
           ).make_reference_id();
       }
-    }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    namespace
-    {
       id::ref::transition
         transition_type (const xml_node_type* node, state::type& state)
       {
@@ -517,7 +508,7 @@ namespace xml
             ).make_reference_id()
           );
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
             )
@@ -648,7 +639,7 @@ namespace xml
         type::type_map_type type_map;
         type::type_get_type type_get;
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
             )
@@ -689,150 +680,142 @@ namespace xml
           , state.file_in_progress()
           ).make_reference_id();
       }
-    }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    void
-    property_dive ( const xml_node_type * node
-                  , state::type & state
-                  , we::type::property::type & prop
-                  )
-    {
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
+      void property_dive ( const xml_node_type* node
+                         , state::type& state
+                         , we::type::property::type& prop
+                         )
+      {
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
         {
           const std::string child_name
             (name_element (child, state.file_in_progress()));
 
           if (child)
+          {
+            if (child_name == "property")
             {
-              if (child_name == "property")
+              const std::string key ( required ( "propery_dive"
+                                               , child
+                                               , "key"
+                                               , state.file_in_progress()
+                                               )
+                                    );
+              const boost::optional<std::string>
+                value (optional (child, "value"));
+
+              typedef std::vector<std::string> cdatas_container_type;
+
+              const cdatas_container_type cdata
+                ( parse_cdata<cdatas_container_type>
+                  (child, state.file_in_progress())
+                );
+
+              state.prop_path().push_back (key);
+
+              if (cdata.size() > 1)
+              {
+                throw error::property_generic
+                  ( "more than one value given"
+                  , state.prop_path()
+                  , state.file_in_progress()
+                  );
+              }
+
+              if (not value)
+              {
+                if (cdata.empty())
                 {
-                  const std::string key ( required ( "propery_dive"
-                                                   , child
-                                                   , "key"
-                                                   , state.file_in_progress()
-                                                   )
-                                        );
-                  const boost::optional<std::string>
-                    value (optional (child, "value"));
-
-                  typedef std::vector<std::string> cdatas_container_type;
-
-                  const cdatas_container_type cdata
-                    ( parse_cdata<cdatas_container_type>
-                      ( child
-                      , state.file_in_progress()
-                      )
-                    );
-
-                  state.prop_path().push_back (key);
-
-                  if (cdata.size() > 1)
-                    {
-                      throw error::property_generic
-                        ( "more than one value given"
-                        , state.prop_path()
-                        , state.file_in_progress()
-                        );
-                    }
-
-                  if (not value)
-                    {
-                      if (cdata.empty())
-                        {
 //                           throw error::property_generic
 //                             ( "no value given"
 //                             , state.prop_path()
 //                             , state.file_in_progress()
 //                             );
 
-                          util::property::set_state ( state
-                                                    , prop
-                                                    , state.prop_path()
-                                                    );
-                        }
-                      else
-                        {
-                          util::property::set_state ( state
-                                                    , prop
-                                                    , state.prop_path()
-                                                    , cdata.front()
-                                                    );
-                        }
-                    }
-                  else
-                    {
-                      if (!cdata.empty())
-                        {
-                          throw error::property_generic
-                            ( "attribute and content given at the same time"
-                            , state.prop_path()
-                            , state.file_in_progress()
-                            );
-                        }
-
-                      util::property::set_state ( state
-                                                , prop
-                                                , state.prop_path()
-                                                , *value
-                                                );
-                    }
-
-                  state.prop_path().pop_back();
+                  util::property::set_state (state, prop, state.prop_path());
                 }
-              else if (child_name == "properties")
+                else
                 {
-                  const std::string name ( required ( "property_dive"
-                                                    , child
-                                                    , "name"
-                                                    , state.file_in_progress()
-                                                    )
-                                         );
-
-                  state.prop_path().push_back (name);
-
-                  property_dive (child, state, prop);
-
-                  state.prop_path().pop_back ();
+                  util::property::set_state ( state
+                                            , prop
+                                            , state.prop_path()
+                                            , cdata.front()
+                                            );
                 }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "property_dive"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join (state, prop, deeper);
-                }
+              }
               else
+              {
+                if (!cdata.empty())
                 {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "property_dive"
-                                                  , state.file_in_progress()
-                                                  )
+                  throw error::property_generic
+                    ( "attribute and content given at the same time"
+                    , state.prop_path()
+                    , state.file_in_progress()
                     );
                 }
-            }
-        }
-    }
 
-    void
-    property_map_type ( we::type::property::type & prop
-                      , const xml_node_type * node
-                      , state::type & state
-                      )
-    {
-      if (!state.ignore_properties())
+                util::property::set_state ( state
+                                          , prop
+                                          , state.prop_path()
+                                          , *value
+                                          );
+              }
+
+              state.prop_path().pop_back();
+            }
+            else if (child_name == "properties")
+            {
+              const std::string name ( required ( "property_dive"
+                                                , child
+                                                , "name"
+                                                , state.file_in_progress()
+                                                )
+                                     );
+
+              state.prop_path().push_back (name);
+
+              property_dive (child, state, prop);
+
+              state.prop_path().pop_back ();
+            }
+            else if (child_name == "include-properties")
+            {
+              const we::type::property::type deeper
+                ( properties_include ( required ( "property_dive"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     , state
+                                     )
+                );
+
+              util::property::join (state, prop, deeper);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "property_dive"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+      }
+
+      void property_map_type ( we::type::property::type& prop
+                             , const xml_node_type* node
+                             , state::type& state
+                             )
+      {
+        if (!state.ignore_properties())
         {
           const std::string name ( required ( "property_map_type"
                                             , node
@@ -847,234 +830,228 @@ namespace xml
 
           state.prop_path().pop_back ();
         }
-    }
+      }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    void token_field_type ( const xml_node_type * node
-                                 , state::type & state
-                                 , signature::desc_t & tok
-                                 )
-    {
-      const std::string name
-        (required ("token_field_type", node, "name", state.file_in_progress()));
+      void token_field_type ( const xml_node_type* node
+                            , state::type& state
+                            , signature::desc_t& tok
+                            )
+      {
+        const std::string name
+          (required ("token_field_type", node, "name", state.file_in_progress()));
 
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
         {
           const std::string child_name
             (name_element (child, state.file_in_progress()));
 
           if (child)
+          {
+            if (child_name == "value")
             {
-              if (child_name == "value")
-                {
-                  signature::create_literal_field<std::string>
-                    (tok, name, child->value(), "token");
-                }
-              else if (child_name == "field")
-                {
-                  token_field_type
-                    ( child
-                    , state
-                    , signature::get_or_create_structured_field
-                      (tok, name, "token")
-                    );
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "token_field_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
+              signature::create_literal_field<std::string>
+                (tok, name, child->value(), "token");
             }
-        }
-    }
-
-    // ********************************************************************* //
-
-    type::structs_type structs_type ( const xml_node_type* node
-                                    , state::type& state
-                                    )
-    {
-      type::structs_type v;
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
-        {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
-
-          if (child)
+            else if (child_name == "field")
             {
-              if (child_name == "struct")
-                {
-                  v.push_back (struct_type (child, state));
-                }
-              else if (child_name == "include-structs")
-                {
-                  const type::structs_type structs
-                    ( structs_include ( required ( "structs_type"
-                                                 , child
-                                                 , "href"
-                                                 , state.file_in_progress()
-                                                 )
-                                      , state
+              token_field_type
+                ( child
+                , state
+                , signature::get_or_create_structured_field (tok, name, "token")
+                );
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "token_field_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+      }
+
+      // ******************************************************************* //
+
+      type::structs_type structs_type ( const xml_node_type* node
+                                      , state::type& state
                                       )
-                    );
+      {
+        type::structs_type v;
 
-                  v.insert (v.end(), structs.begin(), structs.end());
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "structs_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
-        }
-
-      return v;
-    }
-
-    // ********************************************************************* //
-
-    we::type::property::type
-    property_maps_type (const xml_node_type * node, state::type & state)
-    {
-      we::type::property::type prop;
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
         {
           const std::string child_name
             (name_element (child, state.file_in_progress()));
 
           if (child)
+          {
+            if (child_name == "struct")
             {
-              if (child_name == "properties")
-                {
-                  property_map_type (prop, child, state);
-                }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "property_maps_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join (state, prop, deeper);
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "structs_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
+              v.push_back (struct_type (child, state));
             }
+            else if (child_name == "include-structs")
+            {
+              const type::structs_type structs
+                ( structs_include ( required ( "structs_type"
+                                             , child
+                                             , "href"
+                                             , state.file_in_progress()
+                                             )
+                                  , state
+                                  )
+                );
+
+              v.insert (v.end(), structs.begin(), structs.end());
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "structs_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
         }
 
-      return prop;
-    }
+        return v;
+      }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    id::ref::tmpl tmpl_type (const xml_node_type * node, state::type & state)
-    {
-      boost::optional<id::ref::function> fun;
-      type::tmpl_type::names_type template_parameter;
-      boost::optional<std::string> name (optional (node, "name"));
+      we::type::property::type
+        property_maps_type (const xml_node_type* node, state::type& state)
+      {
+        we::type::property::type prop;
 
-      const id::tmpl id (state.id_mapper()->next_id());
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
         {
           const std::string child_name
             (name_element (child, state.file_in_progress()));
 
           if (child)
+          {
+            if (child_name == "properties")
             {
-              if (child_name == "template-parameter")
-                {
-                  const std::string tn (required ( "template-parameter"
-                                                 , child
-                                                 , "type"
-                                                 , state.file_in_progress()
-                                                 )
-                                       );
-
-                  if (template_parameter.find (tn) != template_parameter.end())
-                    {
-                      state.warn ( warning::duplicate_template_parameter
-                                   ( name
-                                   , tn
-                                   , state.file_in_progress()
-                                   )
-                                 );
-                    }
-
-                  template_parameter.insert (tn);
-                }
-              else if (child_name == "defun")
-                {
-                  fun = function_type (child, state);
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "template_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
+              property_map_type (prop, child, state);
             }
+            else if (child_name == "include-properties")
+            {
+              const we::type::property::type deeper
+                ( properties_include ( required ( "property_maps_type"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     , state
+                                     )
+                );
+
+              util::property::join (state, prop, deeper);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "structs_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
         }
 
-      if (not fun)
+        return prop;
+      }
+
+      // ******************************************************************* //
+
+      id::ref::tmpl tmpl_type (const xml_node_type* node, state::type& state)
+      {
+        boost::optional<id::ref::function> fun;
+        type::tmpl_type::names_type template_parameter;
+        boost::optional<std::string> name (optional (node, "name"));
+
+        const id::tmpl id (state.id_mapper()->next_id());
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+          {
+            if (child_name == "template-parameter")
+            {
+              const std::string tn (required ( "template-parameter"
+                                             , child
+                                             , "type"
+                                             , state.file_in_progress()
+                                             )
+                                   );
+
+              if (template_parameter.find (tn) != template_parameter.end())
+              {
+                state.warn ( warning::duplicate_template_parameter
+                             (name, tn, state.file_in_progress())
+                           );
+              }
+
+              template_parameter.insert (tn);
+            }
+            else if (child_name == "defun")
+            {
+              fun = function_type (child, state);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "template_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        if (not fun)
         {
           throw error::template_without_function
-            ( name
-            , state.file_in_progress()
-            );
+            (name, state.file_in_progress());
         }
 
-      return type::tmpl_type
-        ( id
-        , state.id_mapper()
-        , boost::none
-        , name
-        , template_parameter
-        , *fun
-        , state.file_in_progress()
-        ).make_reference_id();
-    }
+        return type::tmpl_type
+          ( id
+          , state.id_mapper()
+          , boost::none
+          , name
+          , template_parameter
+          , *fun
+          , state.file_in_progress()
+          ).make_reference_id();
+      }
 
-    namespace
-    {
+      // ******************************************************************* //
+
       id::ref::module module_type (const xml_node_type* node, state::type& state)
       {
         const id::module id (state.id_mapper()->next_id());
@@ -1092,7 +1069,7 @@ namespace xml
 
         state.id_mapper()->get_ref (id)->path = state.file_in_progress();
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
           )
@@ -1166,7 +1143,7 @@ namespace xml
       {
         type::place_type::token_type token;
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
             )
@@ -1226,7 +1203,7 @@ namespace xml
             ).make_reference_id()
           );
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
             )
@@ -1288,7 +1265,7 @@ namespace xml
             ).make_reference_id()
           );
 
-        for ( xml_node_type * child (node->first_node())
+        for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
             )
@@ -1404,274 +1381,269 @@ namespace xml
 
         return net;
       }
-    }
 
-    // ********************************************************************* //
+      // ******************************************************************* //
 
-    id::ref::function
-      function_type (const xml_node_type* node, state::type& state)
-    {
-      const id::function id (state.id_mapper()->next_id());
-
-      const id::ref::function function
-        ( type::function_type
-          ( id
-          , state.id_mapper()
-          , boost::none
-          , type::expression_type ( state.id_mapper()->next_id()
-                                  , state.id_mapper()
-                                  , id
-                                  ).make_reference_id()
-          ).make_reference_id()
-        );
-
-      function.get_ref().path = state.file_in_progress();
-      function.get_ref().name (optional (node, "name"));
-      function.get_ref().internal =
-        fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
-                                          , optional (node, "internal")
-                                          );
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
+      id::ref::function
+        function_type (const xml_node_type* node, state::type& state)
       {
-        const std::string child_name
-          (name_element (child, state.file_in_progress()));
+        const id::function id (state.id_mapper()->next_id());
 
-        if (child)
-        {
-          if (child_name == "in")
-          {
-            function.get_ref().push_port
-              (port_type (child, state, we::type::PORT_IN));
-          }
-          else if (child_name == "out")
-          {
-            function.get_ref().push_port
-              (port_type (child, state, we::type::PORT_OUT));
-          }
-          else if (child_name == "inout")
-          {
-            const id::ref::port port_in
-              (port_type (child, state, we::type::PORT_IN));
+        const id::ref::function function
+          ( type::function_type
+            ( id
+            , state.id_mapper()
+            , boost::none
+            , type::expression_type ( state.id_mapper()->next_id()
+                                    , state.id_mapper()
+                                    , id
+                                    ).make_reference_id()
+            ).make_reference_id()
+          );
 
-            const id::ref::port port_out (port_in.get().clone (id));
-            port_out.get_ref().direction (we::type::PORT_OUT);
+        function.get_ref().path = state.file_in_progress();
+        function.get_ref().name (optional (node, "name"));
+        function.get_ref().internal =
+          fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
+                                                   , optional (node, "internal")
+                                                   );
 
-            function.get_ref().push_port (port_in);
-            function.get_ref().push_port (port_out);
-          }
-          else if (child_name == "tunnel")
-          {
-            function.get_ref().push_port
-              (port_type (child, state, we::type::PORT_TUNNEL));
-          }
-          else if (child_name == "struct")
-          {
-            function.get_ref().structs.push_back (struct_type (child, state));
-          }
-          else if (child_name == "include-structs")
-          {
-            const type::structs_type structs
-              ( structs_include ( required ( "function_type"
-                                           , child
-                                           , "href"
-                                           , state.file_in_progress()
-                                           )
-                                , state
-                                )
-              );
-
-            function.get_ref().structs.insert ( function.get_ref().structs.end()
-                                              , structs.begin()
-                                              , structs.end()
-                                              );
-          }
-          else if (child_name == "expression")
-          {
-            function.get_ref().add_expression
-              ( parse_cdata<type::expressions_type>
-                (child, state.file_in_progress())
-              );
-          }
-          else if (child_name == "module")
-          {
-            function.get_ref().content (module_type (child, state));
-          }
-          else if (child_name == "net")
-          {
-            function.get_ref().content (net_type (child, state));
-          }
-          else if (child_name == "condition")
-          {
-            const type::conditions_type conds
-              ( parse_cdata<type::conditions_type>
-                (child, state.file_in_progress())
-              );
-
-            function.get_ref().cond.insert ( function.get_ref().cond.end()
-                                           , conds.begin()
-                                           , conds.end()
-                                           );
-          }
-          else if (child_name == "properties")
-          {
-            property_map_type (function.get_ref().properties(), child, state);
-          }
-          else if (child_name == "include-properties")
-          {
-            const we::type::property::type deeper
-              ( properties_include ( required ( "function_type"
-                                              , child
-                                              , "href"
-                                              , state.file_in_progress()
-                                              )
-                                   , state
-                                   )
-              );
-
-            util::property::join (state, function.get_ref().properties(), deeper);
-          }
-          else if (child_name == "require")
-          {
-            require_type (function.get_ref().requirements, child, state);
-          }
-          else
-          {
-            state.warn ( warning::unexpected_element ( child_name
-                                                     , "function_type"
-                                                     , state.file_in_progress()
-                                                     )
-                       );
-          }
-        }
-      }
-
-      return function;
-    }
-
-    // ********************************************************************* //
-
-    void
-    struct_field_type ( const xml_node_type * node
-                      , state::type & state
-                      , signature::desc_t & sig
-                      )
-    {
-      const std::string name
-        ( validate_field_name ( required ( "struct_field_type"
-                                         , node
-                                         , "name"
-                                         , state.file_in_progress()
-                                         )
-                              , state.file_in_progress()
-                              )
-        );
-
-      const std::string type ( required ( "struct_field_type"
-                                        , node
-                                        , "type"
-                                        , state.file_in_progress()
-                                        )
-                             );
-
-      if (boost::apply_visitor (signature::visitor::has_field (name), sig))
-        {
-          throw error::struct_field_redefined (name, state.file_in_progress());
-        }
-
-      boost::apply_visitor ( signature::visitor::add_field (name, type)
-                           , sig
-                           );
-    }
-
-    void
-    gen_struct_type ( const xml_node_type * node
-                    , state::type & state
-                    , signature::desc_t & sig
-                    )
-    {
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
         {
           const std::string child_name
             (name_element (child, state.file_in_progress()));
 
           if (child)
+          {
+            if (child_name == "in")
             {
-              if (child_name == "field")
-                {
-                  struct_field_type (child, state, sig);
-                }
-              else if (child_name == "struct")
-                {
-                  substruct_type (child, state, sig);
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "gen_struct_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
+              function.get_ref().push_port
+                (port_type (child, state, we::type::PORT_IN));
             }
+            else if (child_name == "out")
+            {
+              function.get_ref().push_port
+                (port_type (child, state, we::type::PORT_OUT));
+            }
+            else if (child_name == "inout")
+            {
+              const id::ref::port port_in
+                (port_type (child, state, we::type::PORT_IN));
+
+              const id::ref::port port_out (port_in.get().clone (id));
+              port_out.get_ref().direction (we::type::PORT_OUT);
+
+              function.get_ref().push_port (port_in);
+              function.get_ref().push_port (port_out);
+            }
+            else if (child_name == "tunnel")
+            {
+              function.get_ref().push_port
+                (port_type (child, state, we::type::PORT_TUNNEL));
+            }
+            else if (child_name == "struct")
+            {
+              function.get_ref().structs.push_back (struct_type (child, state));
+            }
+            else if (child_name == "include-structs")
+            {
+              const type::structs_type structs
+                ( structs_include ( required ( "function_type"
+                                             , child
+                                             , "href"
+                                             , state.file_in_progress()
+                                             )
+                                  , state
+                                  )
+                );
+
+              function.get_ref().structs.insert ( function.get_ref().structs.end()
+                                                , structs.begin()
+                                                , structs.end()
+                                                );
+            }
+            else if (child_name == "expression")
+            {
+              function.get_ref().add_expression
+                ( parse_cdata<type::expressions_type>
+                  (child, state.file_in_progress())
+                );
+            }
+            else if (child_name == "module")
+            {
+              function.get_ref().content (module_type (child, state));
+            }
+            else if (child_name == "net")
+            {
+              function.get_ref().content (net_type (child, state));
+            }
+            else if (child_name == "condition")
+            {
+              const type::conditions_type conds
+                ( parse_cdata<type::conditions_type>
+                  (child, state.file_in_progress())
+                );
+
+              function.get_ref().cond.insert ( function.get_ref().cond.end()
+                                             , conds.begin()
+                                             , conds.end()
+                                             );
+            }
+            else if (child_name == "properties")
+            {
+              property_map_type (function.get_ref().properties(), child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              const we::type::property::type deeper
+                ( properties_include ( required ( "function_type"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     , state
+                                     )
+                );
+
+              util::property::join (state, function.get_ref().properties(), deeper);
+            }
+            else if (child_name == "require")
+            {
+              require_type (function.get_ref().requirements, child, state);
+            }
+            else
+            {
+              state.warn ( warning::unexpected_element ( child_name
+                                                       , "function_type"
+                                                       , state.file_in_progress()
+                                                       )
+                       );
+            }
+          }
         }
-    }
 
-    void
-    substruct_type ( const xml_node_type * node
-                   , state::type & state
-                   , signature::desc_t & sig
-                   )
-    {
-      const std::string name
-        ( validate_field_name ( required ( "substruct_type"
-                                         , node
-                                         , "name"
-                                         , state.file_in_progress()
-                                         )
-                              , state.file_in_progress()
-                              )
-        );
+        return function;
+      }
 
-      boost::apply_visitor ( signature::visitor::create_structured_field (name)
-                           , sig
-                           );
+      // ******************************************************************* //
 
-      gen_struct_type
-        ( node
-        , state
-        , boost::apply_visitor (signature::visitor::get_field (name), sig)
-        );
-    }
+      void struct_field_type ( const xml_node_type* node
+                             , state::type& state
+                             , signature::desc_t& sig
+                             )
+      {
+        const std::string name
+          ( validate_field_name ( required ( "struct_field_type"
+                                           , node
+                                           , "name"
+                                           , state.file_in_progress()
+                                           )
+                                , state.file_in_progress()
+                                )
+          );
 
-    type::structure_type
-      struct_type (const xml_node_type* node, state::type& state)
-    {
-      type::structure_type s
-        ( id::structure (state.id_mapper()->next_id())
-        , state.id_mapper()
-        , boost::none
-        , validate_field_name ( required ( "struct_type"
-                                         , node
-                                         , "name"
-                                         , state.file_in_progress()
-                                         )
-                              , state.file_in_progress()
-                              )
-        , signature::structured_t()
-        , state.file_in_progress()
-        );
+        const std::string type ( required ( "struct_field_type"
+                                          , node
+                                          , "type"
+                                          , state.file_in_progress()
+                                          )
+                               );
 
-      gen_struct_type (node, state, s.signature());
+        if (boost::apply_visitor (signature::visitor::has_field (name), sig))
+        {
+          throw error::struct_field_redefined (name, state.file_in_progress());
+        }
 
-      return s;
+        boost::apply_visitor (signature::visitor::add_field (name, type), sig);
+      }
+
+      void gen_struct_type ( const xml_node_type* node
+                           , state::type& state
+                           , signature::desc_t& sig
+                           )
+      {
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+          {
+            if (child_name == "field")
+            {
+              struct_field_type (child, state, sig);
+            }
+            else if (child_name == "struct")
+            {
+              substruct_type (child, state, sig);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "gen_struct_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+      }
+
+      void substruct_type ( const xml_node_type* node
+                          , state::type& state
+                          , signature::desc_t& sig
+                          )
+      {
+        const std::string name
+          ( validate_field_name ( required ( "substruct_type"
+                                           , node
+                                           , "name"
+                                           , state.file_in_progress()
+                                           )
+                                , state.file_in_progress()
+                                )
+          );
+
+        boost::apply_visitor ( signature::visitor::create_structured_field (name)
+                             , sig
+                             );
+
+        gen_struct_type
+          ( node
+          , state
+          , boost::apply_visitor (signature::visitor::get_field (name), sig)
+          );
+      }
+
+      type::structure_type
+        struct_type (const xml_node_type* node, state::type& state)
+      {
+        type::structure_type s
+          ( id::structure (state.id_mapper()->next_id())
+          , state.id_mapper()
+          , boost::none
+          , validate_field_name ( required ( "struct_type"
+                                           , node
+                                           , "name"
+                                           , state.file_in_progress()
+                                           )
+                                , state.file_in_progress()
+                                )
+          , signature::structured_t()
+          , state.file_in_progress()
+          );
+
+        gen_struct_type (node, state, s.signature());
+
+        return s;
+      }
     }
 
     // ********************************************************************* //
