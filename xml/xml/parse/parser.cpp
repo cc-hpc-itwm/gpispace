@@ -1456,7 +1456,9 @@ namespace xml
                             );
                         }
 
+                      tmpl.get_ref().unparent();
                       tmpl.get_ref().name (*as);
+                      tmpl.get_ref().parent (id);
                     }
 
                   if (not tmpl.get().name())
