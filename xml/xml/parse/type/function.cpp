@@ -81,6 +81,46 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      namespace
+      {
+        class visitor_reparent : public boost::static_visitor<void>
+        {
+        public:
+          visitor_reparent (const id::function& parent)
+            : _parent (parent)
+          { }
+
+          void operator() (const id::ref::expression& id) const
+          {
+            id.get_ref().parent (_parent);
+          }
+          void operator() (const id::ref::module& id) const
+          {
+            id.get_ref().parent (_parent);
+          }
+          void operator() (const id::ref::net& id) const
+          {
+            id.get_ref().parent (_parent);
+          }
+
+        private:
+          const id::function& _parent;
+        };
+
+        const function_type::type& reparent ( const function_type::type& content
+                                            , const id::function& parent
+                                            )
+        {
+          boost::apply_visitor (visitor_reparent (parent), content);
+          return content;
+        }
+      }
+
+      const function_type::type& function_type::content (const type& content_)
+      {
+        return f = reparent (content_, id());
+      }
+
       // ******************************************************************* //
 
       bool function_type::is_net() const

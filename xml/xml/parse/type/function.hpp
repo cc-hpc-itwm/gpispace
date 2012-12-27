@@ -84,6 +84,8 @@ namespace xml
                       , const boost::filesystem::path& path
                       );
 
+        const type& content (const type&);
+
         // ***************************************************************** //
 
         bool is_net() const;
