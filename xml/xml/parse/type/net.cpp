@@ -182,6 +182,8 @@ namespace xml
           throw error::duplicate_specialize (spec.name(), spec.path);
         }
 
+        id.get_ref().parent (_id);
+
         return id;
       }
 

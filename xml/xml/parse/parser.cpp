@@ -164,10 +164,7 @@ namespace xml
                                , const id::function& parent
                                );
     id::ref::transition transition_type (const xml_node_type*, state::type&);
-    id::ref::specialize specialize_type ( const xml_node_type *
-                                        , state::type &
-                                        , const id::net& parent
-                                        );
+    id::ref::specialize specialize_type (const xml_node_type*, state::type&);
     void property_map_type ( we::type::property::type &
                            , const xml_node_type *
                            , state::type &
@@ -649,10 +646,7 @@ namespace xml
     // ********************************************************************* //
 
     id::ref::specialize
-    specialize_type ( const xml_node_type * node
-                    , state::type & state
-                    , const id::net& parent
-                    )
+      specialize_type (const xml_node_type* node, state::type& state)
     {
       type::type_map_type type_map;
       type::type_get_type type_get;
@@ -690,7 +684,7 @@ namespace xml
       return type::specialize_type
         ( state.id_mapper()->next_id()
         , state.id_mapper()
-        , parent
+        , boost::none
         , required ("specialize_type", node, "name", state.file_in_progress())
         , required ("specialize_type", node, "use", state.file_in_progress())
         , type_map
@@ -1367,8 +1361,7 @@ namespace xml
                 }
               else if (child_name == "specialize")
                 {
-                  net.get_ref()
-                    .push_specialize (specialize_type (child, state, id));
+                  net.get_ref().push_specialize (specialize_type (child, state));
                 }
               else if (child_name == "place")
                 {
