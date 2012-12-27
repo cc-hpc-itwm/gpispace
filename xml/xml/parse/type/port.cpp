@@ -154,7 +154,7 @@ namespace xml
         assert (has_parent());
 
         boost::apply_visitor
-          (type_checker (make_reference_id(), path, state), parent()->f);
+          (type_checker (make_reference_id(), path, state), parent()->content());
       }
 
       const we::type::PortDirection& port_type::direction() const

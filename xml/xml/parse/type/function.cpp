@@ -37,12 +37,12 @@ namespace xml
 
       function_type::function_type ( ID_CONS_PARAM(function)
                                    , const boost::optional<parent_id_type>& parent
-                                   , const type& _f
+                                   , const type& content
                                    )
         : ID_INITIALIZE()
         , _parent (parent)
         , contains_a_module_call (false)
-        , f (_f)
+        , _content (content)
       {
         _id_mapper->put (_id, *this);
       }
@@ -58,7 +58,7 @@ namespace xml
         , const structs_type& structs
         , const conditions_type& cond
         , const requirements_type& requirements
-        , const type& f
+        , const type& content
         , const xml::parse::structure_type::set_type& structs_resolved
         , const we::type::property::type& properties
         , const boost::filesystem::path& path
@@ -73,7 +73,7 @@ namespace xml
         , structs (structs)
         , cond (cond)
         , requirements (requirements)
-        , f (f)
+        , _content (content)
         , structs_resolved (structs_resolved)
         , _properties (properties)
         , path (path)
@@ -116,21 +116,29 @@ namespace xml
         }
       }
 
+      const function_type::type& function_type::content() const
+      {
+        return _content;
+      }
+      function_type::type& function_type::content()
+      {
+        return _content;
+      }
       const function_type::type& function_type::content (const type& content_)
       {
-        return f = reparent (content_, id());
+        return _content = reparent (content_, id());
       }
 
       // ******************************************************************* //
 
       bool function_type::is_net() const
       {
-        return fhg::util::boost::is_of_type<id::ref::net> (f);
+        return fhg::util::boost::is_of_type<id::ref::net> (content());
       }
 
       boost::optional<const id::ref::net&> function_type::get_net() const
       {
-        return fhg::util::boost::get_or_none<id::ref::net> (f);
+        return fhg::util::boost::get_or_none<id::ref::net> (content());
       }
 
       // ******************************************************************* //
@@ -399,7 +407,7 @@ namespace xml
 
       void function_type::add_expression (const expressions_type & es)
       {
-        boost::apply_visitor (visitor_append_expressions (es), f);
+        boost::apply_visitor (visitor_append_expressions (es), content());
       }
 
       // ***************************************************************** //
@@ -494,7 +502,7 @@ namespace xml
                             , state
                             , forbidden_below()
                             )
-          , f
+          , content()
           );
       }
 
@@ -549,7 +557,7 @@ namespace xml
 
       void function_type::sanity_check (const state::type & state) const
       {
-        boost::apply_visitor (function_sanity_check (state), f);
+        boost::apply_visitor (function_sanity_check (state), content());
       }
 
       // ***************************************************************** //
@@ -586,7 +594,7 @@ namespace xml
           port.type_check (path, state);
         }
 
-        boost::apply_visitor (function_type_check (state), f);
+        boost::apply_visitor (function_type_check (state), content());
       }
 
       // ***************************************************************** //
@@ -790,7 +798,7 @@ namespace xml
       function_type::synthesize (const state::type & state)
       {
         return boost::apply_visitor
-          (function_synthesize (state, *this), f);
+          (function_synthesize (state, *this), content());
       }
 
       // ***************************************************************** //
@@ -873,7 +881,7 @@ namespace xml
             , state
             , *this
             )
-          , f
+          , content()
           );
       }
 
@@ -936,7 +944,7 @@ namespace xml
           , structs
           , cond
           , requirements
-          , boost::apply_visitor (visitor_clone (new_id, new_mapper), f)
+          , boost::apply_visitor (visitor_clone (new_id, new_mapper), content())
           , structs_resolved
           , _properties
           , path
@@ -2134,7 +2142,7 @@ namespace xml
         id_function.get_ref().contains_a_module_call
           = boost::apply_visitor
           ( find_module_calls_visitor (state, id_function, m, mcs)
-          , id_function.get_ref().f
+          , id_function.get_ref().content()
           );
 
         return id_function.get().contains_a_module_call;
@@ -2225,7 +2233,7 @@ namespace xml
         {
           to_cpp (function.structs, state);
 
-          boost::apply_visitor (visitor_to_cpp (state), function.f);
+          boost::apply_visitor (visitor_to_cpp (state), function.content());
         }
       }
 
@@ -2291,7 +2299,7 @@ namespace xml
 
           dumps (s, f.ports().values());
 
-          boost::apply_visitor (function_dump_visitor (s), f.f);
+          boost::apply_visitor (function_dump_visitor (s), f.content());
 
           for ( conditions_type::const_iterator cond (f.cond.begin())
               ; cond != f.cond.end()

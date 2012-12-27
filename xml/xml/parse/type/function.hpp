@@ -65,7 +65,7 @@ namespace xml
 
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
-                      , const type& _f
+                      , const type& content
                       );
 
         function_type ( ID_CONS_PARAM(function)
@@ -78,12 +78,14 @@ namespace xml
                       , const structs_type& structs
                       , const conditions_type& cond
                       , const requirements_type& requirements
-                      , const type& f
+                      , const type& content
                       , const xml::parse::structure_type::set_type& resolved
                       , const we::type::property::type& properties
                       , const boost::filesystem::path& path
                       );
 
+        const type& content() const;
+        type& content();
         const type& content (const type&);
 
         // ***************************************************************** //
@@ -213,8 +215,10 @@ namespace xml
         conditions_type cond;
         requirements_type requirements;
 
-        type f;
+      private:
+        type _content;
 
+      public:
         xml::parse::structure_type::set_type structs_resolved;
 
       private:
