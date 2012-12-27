@@ -248,6 +248,8 @@ namespace xml
             throw error::port_type_mismatch (id, *id_other, path);
           }
         }
+
+        id.parent (_id);
       }
 
       void function_type::remove_port (const id::ref::port& id)

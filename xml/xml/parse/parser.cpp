@@ -148,9 +148,8 @@ namespace xml
                           , const id::function& parent
                           );
     id::ref::place place_type (const xml_node_type*, state::type&);
-    id::ref::port port_type ( const xml_node_type *
-                            , state::type &
-                            , const id::function& parent
+    id::ref::port port_type ( const xml_node_type*
+                            , state::type&
                             , const we::type::PortDirection&
                             );
     void gen_struct_type ( const xml_node_type *, state::type &
@@ -1124,27 +1123,28 @@ namespace xml
           if (child_name == "in")
           {
             function.get_ref().push_port
-              (port_type (child, state, id, we::type::PORT_IN));
+              (port_type (child, state, we::type::PORT_IN));
           }
           else if (child_name == "out")
           {
             function.get_ref().push_port
-              (port_type (child, state, id, we::type::PORT_OUT));
+              (port_type (child, state, we::type::PORT_OUT));
           }
           else if (child_name == "inout")
           {
             const id::ref::port port_in
-              (port_type (child, state, id, we::type::PORT_IN));
-            const id::ref::port port_out
-              (port_in.get().clone (id));
+              (port_type (child, state, we::type::PORT_IN));
+
+            const id::ref::port port_out (port_in.get().clone (id));
             port_out.get_ref().direction (we::type::PORT_OUT);
+
             function.get_ref().push_port (port_in);
             function.get_ref().push_port (port_out);
           }
           else if (child_name == "tunnel")
           {
             function.get_ref().push_port
-              (port_type (child, state, id, we::type::PORT_TUNNEL));
+              (port_type (child, state, we::type::PORT_TUNNEL));
           }
           else if (child_name == "struct")
           {
@@ -1592,9 +1592,8 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::port port_type ( const xml_node_type * node
-                            , state::type & state
-                            , const id::function& parent
+    id::ref::port port_type ( const xml_node_type* node
+                            , state::type& state
                             , const we::type::PortDirection& direction
                             )
     {
@@ -1642,7 +1641,7 @@ namespace xml
       return type::port_type
         ( state.id_mapper()->next_id()
         , state.id_mapper()
-        , parent
+        , boost::none
         , validate_name
           ( validate_prefix ( required ( "port_type"
                                        , node
