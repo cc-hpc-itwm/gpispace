@@ -761,7 +761,7 @@ namespace xml
                 place_map_map[prefix + place_map.place_virtual()] = pid->second;
               }
 
-            net_type& net ((boost::get<id::ref::net> (fun.f)).get_ref());
+            net_type& net (fun.get_net()->get_ref());
             net.set_prefix (prefix);
 
             // synthesize into this level
