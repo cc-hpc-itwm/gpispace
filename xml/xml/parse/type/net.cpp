@@ -269,13 +269,13 @@ namespace xml
 
       // ***************************************************************** //
 
-      const std::string& net_type::rename ( const id::ref::place& place
-                                          , const std::string& name
-                                          )
+      void net_type::rename ( const id::ref::place& place
+                            , const std::string& name
+                            )
       {
         if (place.get().name() == name)
         {
-          return name;
+          return;
         }
 
         if (has_place (name))
@@ -287,8 +287,6 @@ namespace xml
         _places.erase (place);
         place.get_ref().name_impl (name);
         _places.push (place);
-
-        return name;
       }
 
       // ***************************************************************** //
