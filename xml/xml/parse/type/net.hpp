@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_NET_HPP
 #define _XML_PARSE_TYPE_NET_HPP
@@ -112,6 +112,7 @@ namespace xml
         // ***************************************************************** //
 
         void rename (const id::ref::place&, const std::string&);
+        void rename (const id::ref::transition&, const std::string&);
 
         // ***************************************************************** //
 

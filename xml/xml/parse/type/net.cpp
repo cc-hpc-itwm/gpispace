@@ -289,6 +289,26 @@ namespace xml
         _places.push (place);
       }
 
+      void net_type::rename ( const id::ref::transition& transition
+                            , const std::string& name
+                            )
+      {
+        if (transition.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_transition (name))
+        {
+          throw std::runtime_error
+            ("tried renaming transition, but transition with given name exists");
+        }
+
+        _transitions.erase (transition);
+        transition.get_ref().name_impl (name);
+        _transitions.push (transition);
+      }
+
       // ***************************************************************** //
 
       signature::type net_type::type_of_place (const place_type& place) const

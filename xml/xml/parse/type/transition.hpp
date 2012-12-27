@@ -71,8 +71,13 @@ namespace xml
         id::ref::function resolved_function() const;
 
         const std::string& name() const;
-        const std::string& name(const std::string& name);
+        const std::string& name (const std::string& name);
 
+      private:
+        friend struct net_type;
+        const std::string& name_impl (const std::string& name);
+
+      public:
         // ***************************************************************** //
 
         boost::optional<const id::ref::function&>
