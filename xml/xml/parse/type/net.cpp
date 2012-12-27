@@ -522,57 +522,74 @@ namespace xml
 
       void net_type::set_prefix (const std::string & prefix)
       {
-        BOOST_FOREACH (place_type& place, places().values())
+        //! \note We need to copy out the ids from the unique, as we
+        //! modify the unique and therefore break iteration.
+        const boost::unordered_set<id::ref::place> place_ids (places().ids());
+        const boost::unordered_set<id::ref::transition> transition_ids
+          (transitions().ids());
+
+        BOOST_FOREACH (const id::ref::place& place, place_ids)
         {
-          place.name (prefix + place.name());
+          place.get_ref().name (prefix + place.get().name());
         }
 
-        BOOST_FOREACH (transition_type& transition, transitions().values())
+        BOOST_FOREACH (const id::ref::transition& id, transition_ids)
         {
+          transition_type& transition (id.get_ref());
+          const boost::unordered_set<id::ref::connect> connect_ids
+            (transition.connections().ids());
+          const boost::unordered_set<id::ref::place_map> place_map_ids
+            (transition.place_map().ids());
+
           transition.name (prefix + transition.name());
 
-          BOOST_FOREACH ( connect_type& connection
-                        , transition.connections().values()
-                        )
+          BOOST_FOREACH (const id::ref::connect& conn, connect_ids)
           {
-            connection.place (prefix + connection.place());
+            conn.get_ref().place (prefix + conn.get().place());
           }
 
-          BOOST_FOREACH ( place_map_type& place_map
-                        , transition.place_map().values()
-                        )
+          BOOST_FOREACH (const id::ref::place_map& pm, place_map_ids)
           {
-            place_map.place_real (prefix + place_map.place_real());
+            pm.get_ref().place_real (prefix + pm.get().place_real());
           }
         }
       }
 
       void net_type::remove_prefix (const std::string & prefix)
       {
-        BOOST_FOREACH (place_type& place, places().values())
+        //! \note We need to copy out the ids from the unique, as we
+        //! modify the unique and therefore break iteration.
+        const boost::unordered_set<id::ref::place> place_ids (places().ids());
+        const boost::unordered_set<id::ref::transition> transition_ids
+          (transitions().ids());
+
+        BOOST_FOREACH (const id::ref::place& place, place_ids)
         {
-          place.name (fhg::util::remove_prefix (prefix, place.name()));
+          place.get_ref().name
+            (fhg::util::remove_prefix (prefix, place.get().name()));
         }
 
-        BOOST_FOREACH (transition_type& transition, transitions().values())
+        BOOST_FOREACH (const id::ref::transition& id, transition_ids)
         {
+          transition_type& transition (id.get_ref());
+          const boost::unordered_set<id::ref::connect> connect_ids
+            (transition.connections().ids());
+          const boost::unordered_set<id::ref::place_map> place_map_ids
+            (transition.place_map().ids());
+
           transition.name
             (fhg::util::remove_prefix (prefix, transition.name()));
 
-          BOOST_FOREACH ( connect_type& connection
-                        , transition.connections().values()
-                        )
+          BOOST_FOREACH (const id::ref::connect& conn, connect_ids)
           {
-            connection.place
-              (fhg::util::remove_prefix (prefix, connection.place()));
+            conn.get_ref().place
+              (fhg::util::remove_prefix (prefix, conn.get().place()));
           }
 
-          BOOST_FOREACH ( place_map_type& place_map
-                        , transition.place_map().values()
-                        )
+          BOOST_FOREACH (const id::ref::place_map& pm, place_map_ids)
           {
-            place_map.place_real
-              (fhg::util::remove_prefix (prefix, place_map.place_real()));
+            pm.get_ref().place_real
+              (fhg::util::remove_prefix (prefix, pm.get().place_real()));
           }
         }
       }
