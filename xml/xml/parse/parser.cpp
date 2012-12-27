@@ -134,10 +134,6 @@ namespace xml
 
     id::ref::function function_type (const xml_node_type*, state::type&);
     id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
-    id::ref::net net_type ( const xml_node_type *
-                          , state::type &
-                          , const id::function& parent
-                          );
     id::ref::place place_type (const xml_node_type*, state::type&);
     void gen_struct_type ( const xml_node_type *, state::type &
                          , signature::desc_t &
@@ -1192,6 +1188,139 @@ namespace xml
 
         return module;
       }
+
+      // ******************************************************************* //
+
+      id::ref::net net_type (const xml_node_type* node, state::type& state)
+      {
+        const id::net id (state.id_mapper()->next_id());
+
+        const id::ref::net net
+          ( type::net_type
+            ( id
+            , state.id_mapper()
+            , boost::none
+            , state.file_in_progress()
+            ).make_reference_id()
+          );
+
+        for ( xml_node_type * child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+          {
+            if (child_name == "template")
+            {
+              net.get_ref().push_template (tmpl_type (child, state));
+            }
+            else if (child_name == "specialize")
+            {
+              net.get_ref().push_specialize (specialize_type (child, state));
+            }
+            else if (child_name == "place")
+            {
+              net.get_ref().push_place (place_type (child, state));
+            }
+            else if (child_name == "transition")
+            {
+              net.get_ref().push_transition (transition_type (child, state));
+            }
+            else if (child_name == "struct")
+            {
+              net.get_ref().structs.push_back (struct_type (child, state, parent));
+            }
+            else if (child_name == "include-structs")
+            {
+              std::cerr << "TODO: Deprecate and eliminate net::include-structs.\n";
+              //! \todo deprecate and eliminate
+              const type::structs_type structs
+                ( structs_include ( required ( "net_type"
+                                             , child
+                                             , "href"
+                                             , state.file_in_progress()
+                                             )
+                                  , state
+                                  , parent
+                                  )
+                );
+
+              net.get_ref().structs.insert ( net.get_ref().structs.end()
+                                           , structs.begin()
+                                           , structs.end()
+                                           );
+            }
+            else if (child_name == "include-template")
+            {
+              const std::string file ( required ( "net_type"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     );
+              const boost::optional<std::string> as (optional (child, "as"));
+
+              id::ref::tmpl tmpl (template_include (file, state));
+
+              if (as)
+              {
+                if (tmpl.get().name() && *tmpl.get().name() != *as)
+                {
+                  state.warn
+                    ( warning::overwrite_template_name_as
+                      ( *tmpl.get().name()
+                      , *as
+                      , state.file_in_progress()
+                      )
+                    );
+                }
+
+                tmpl.get_ref().name (*as);
+              }
+
+              if (not tmpl.get().name())
+              {
+                throw error::top_level_anonymous_template (file, "net_type");
+              }
+
+              net.get_ref().push_template (tmpl);
+            }
+            else if (child_name == "properties")
+            {
+              property_map_type (net.get_ref().properties(), child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              const we::type::property::type deeper
+                ( properties_include ( required ( "net_type"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     , state
+                                     )
+                );
+
+              util::property::join (state, net.get_ref().properties(), deeper);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "net_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        return net;
+      }
     }
 
     // ********************************************************************* //
@@ -1291,7 +1420,7 @@ namespace xml
           }
           else if (child_name == "net")
           {
-            function.get_ref().content (net_type (child, state, id));
+            function.get_ref().content (net_type (child, state));
           }
           else if (child_name == "condition")
           {
@@ -1339,152 +1468,6 @@ namespace xml
       }
 
       return function;
-    }
-
-    // ********************************************************************* //
-
-    id::ref::net
-      net_type ( const xml_node_type * node
-               , state::type & state
-               , const id::function& parent
-               )
-    {
-      const id::net id (state.id_mapper()->next_id());
-
-      const id::ref::net net
-        ( type::net_type
-          ( id
-          , state.id_mapper()
-          , parent
-          , state.file_in_progress()
-          ).make_reference_id()
-        );
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
-        {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
-
-          if (child)
-            {
-              if (child_name == "template")
-                {
-                  net.get_ref().push_template (tmpl_type (child, state));
-                }
-              else if (child_name == "specialize")
-                {
-                  net.get_ref().push_specialize (specialize_type (child, state));
-                }
-              else if (child_name == "place")
-                {
-                  net.get_ref().push_place (place_type (child, state));
-                }
-              else if (child_name == "transition")
-                {
-                  net.get_ref().push_transition (transition_type (child, state));
-                }
-              else if (child_name == "struct")
-                {
-                  net.get_ref()
-                    .structs.push_back (struct_type (child, state, parent));
-                }
-              else if (child_name == "include-structs")
-                {
-                  std::cerr << "TODO: Deprecate and eliminate net::include-structs.\n";
-                  //! \todo deprecate and eliminate
-                  const type::structs_type structs
-                    ( structs_include ( required ( "net_type"
-                                                 , child
-                                                 , "href"
-                                                 , state.file_in_progress()
-                                                 )
-                                      , state
-                                      , parent
-                                      )
-                    );
-
-                  net.get_ref().structs.insert ( net.get_ref().structs.end()
-                                               , structs.begin()
-                                               , structs.end()
-                                               );
-                }
-              else if (child_name == "include-template")
-                {
-                  const std::string file ( required ( "net_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         );
-                  const boost::optional<std::string> as
-                    (optional (child, "as"));
-
-                  id::ref::tmpl tmpl (template_include (file, state));
-
-                  if (as)
-                  {
-                    if (tmpl.get().name() && *tmpl.get().name() != *as)
-                    {
-                      state.warn
-                        ( warning::overwrite_template_name_as
-                          ( *tmpl.get().name()
-                          , *as
-                          , state.file_in_progress()
-                          )
-                        );
-                    }
-
-                    tmpl.get_ref().name (*as);
-                  }
-
-                  if (not tmpl.get().name())
-                  {
-                    throw error::top_level_anonymous_template
-                      (file, "net_type");
-                  }
-
-                  net.get_ref().push_template (tmpl);
-                }
-              else if (child_name == "properties")
-                {
-                  property_map_type ( net.get_ref().properties()
-                                    , child
-                                    , state
-                                    );
-                }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "net_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join ( state
-                                       , net.get_ref().properties()
-                                       , deeper
-                                       );
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "net_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
-        }
-
-      return net;
     }
 
     // ********************************************************************* //
