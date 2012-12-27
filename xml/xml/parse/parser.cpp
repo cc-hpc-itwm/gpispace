@@ -405,10 +405,8 @@ namespace xml
 
       // **************************************************************** //
 
-      id::ref::place_map place_map_type ( const xml_node_type * node
-                                        , state::type & state
-                                        , const id::transition& parent
-                                        )
+      id::ref::place_map
+        place_map_type (const xml_node_type* node, state::type& state)
       {
         we::type::property::type properties;
 
@@ -455,7 +453,7 @@ namespace xml
         return type::place_map_type
           ( state.id_mapper()->next_id()
           , state.id_mapper()
-          , parent
+          , boost::none
           , required ("place_map_type", node, "virtual", state.file_in_progress())
           , required ("place_map_type", node, "real", state.file_in_progress())
           , properties
@@ -553,8 +551,8 @@ namespace xml
                 }
               else if (child_name == "place-map")
                 {
-                  transition.get_ref()
-                    .push_place_map (place_map_type (child, state, id));
+                  transition.get_ref().push_place_map
+                    (place_map_type (child, state));
                 }
               else if (child_name == "connect-in")
                 {
