@@ -344,9 +344,8 @@ namespace xml
 
     namespace
     {
-      id::ref::connect connect_type ( const xml_node_type * node
-                                    , state::type & state
-                                    , const id::transition& parent
+      id::ref::connect connect_type ( const xml_node_type* node
+                                    , state::type& state
                                     , const petri_net::edge::type& direction
                                     )
       {
@@ -395,7 +394,7 @@ namespace xml
         return type::connect_type
           ( state.id_mapper()->next_id()
           , state.id_mapper()
-          , parent
+          , boost::none
           , required ("connect_type", node, "place", state.file_in_progress())
           , required ("connect_type", node, "port", state.file_in_progress())
           , direction
@@ -557,17 +556,17 @@ namespace xml
               else if (child_name == "connect-in")
                 {
                   transition.get_ref().push_connection
-                    (connect_type (child, state, id, petri_net::edge::PT));
+                    (connect_type (child, state, petri_net::edge::PT));
                 }
               else if (child_name == "connect-out")
                 {
                   transition.get_ref().push_connection
-                    (connect_type (child, state, id, petri_net::edge::TP));
+                    (connect_type (child, state, petri_net::edge::TP));
                 }
               else if (child_name == "connect-inout")
                 {
                   const id::ref::connect connection_in
-                    (connect_type (child, state, id, petri_net::edge::PT));
+                    (connect_type (child, state, petri_net::edge::PT));
                   const id::ref::connect connection_out
                     (connection_in.get().clone (id));
                   connection_out.get_ref().direction (petri_net::edge::TP);
@@ -578,7 +577,7 @@ namespace xml
               else if (child_name == "connect-read")
                 {
                   transition.get_ref().push_connection
-                    (connect_type (child, state, id, petri_net::edge::PT_READ));
+                    (connect_type (child, state, petri_net::edge::PT_READ));
                 }
               else if (child_name == "condition")
                 {
