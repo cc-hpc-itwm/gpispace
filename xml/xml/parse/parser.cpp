@@ -142,7 +142,6 @@ namespace xml
                                 );
     id::ref::tmpl tmpl_type ( const xml_node_type *
                             , state::type &
-                            , const id::net& parent
                             );
     id::ref::net net_type ( const xml_node_type *
                           , state::type &
@@ -205,18 +204,10 @@ namespace xml
           );
       }
 
-      id::ref::tmpl parse_template ( std::istream & f
-                                   , state::type & state
-                                   , const id::net& parent
-                                   )
+      id::ref::tmpl parse_template (std::istream& f, state::type& state)
       {
         return generic_parse<id::ref::tmpl>
-          ( boost::bind (tmpl_type, _1, _2, parent)
-          , f
-          , state
-          , "template"
-          , "parse_template"
-          );
+          (tmpl_type, f, state, "template", "parse_template");
       }
 
       type::structs_type parse_structs ( std::istream & f
@@ -254,13 +245,9 @@ namespace xml
         (boost::bind (parse_function, _1, _2, parent), file);
     }
 
-    id::ref::tmpl template_include ( const std::string & file
-                                          , state::type & state
-                                          , const id::net& parent
-                                          )
+    id::ref::tmpl template_include (const std::string& file, state::type& state)
     {
-      return state.generic_include<id::ref::tmpl>
-        (boost::bind (parse_template, _1, _2, parent), file);
+      return state.generic_include<id::ref::tmpl> (parse_template, file);
     }
 
     type::structs_type structs_include ( const std::string & file
@@ -1034,10 +1021,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::tmpl tmpl_type ( const xml_node_type * node
-                            , state::type & state
-                            , const id::net& parent
-                            )
+    id::ref::tmpl tmpl_type (const xml_node_type * node, state::type & state)
     {
       boost::optional<id::ref::function> fun;
       type::tmpl_type::names_type template_parameter;
@@ -1107,7 +1091,7 @@ namespace xml
       return type::tmpl_type
         ( id
         , state.id_mapper()
-        , parent
+        , boost::none
         , name
         , template_parameter
         , *fun
@@ -1388,7 +1372,7 @@ namespace xml
             {
               if (child_name == "template")
                 {
-                  net.get_ref().push_template (tmpl_type (child, state, id));
+                  net.get_ref().push_template (tmpl_type (child, state));
                 }
               else if (child_name == "specialize")
                 {
@@ -1441,31 +1425,29 @@ namespace xml
                   const boost::optional<std::string> as
                     (optional (child, "as"));
 
-                  id::ref::tmpl tmpl (template_include (file, state, id));
+                  id::ref::tmpl tmpl (template_include (file, state));
 
                   if (as)
+                  {
+                    if (tmpl.get().name() && *tmpl.get().name() != *as)
                     {
-                      if (tmpl.get().name() && *tmpl.get().name() != *as)
-                        {
-                          state.warn
-                            ( warning::overwrite_template_name_as
-                              ( *tmpl.get().name()
-                              , *as
-                              , state.file_in_progress()
-                              )
-                            );
-                        }
-
-                      tmpl.get_ref().unparent();
-                      tmpl.get_ref().name (*as);
-                      tmpl.get_ref().parent (id);
+                      state.warn
+                        ( warning::overwrite_template_name_as
+                          ( *tmpl.get().name()
+                          , *as
+                          , state.file_in_progress()
+                          )
+                        );
                     }
+
+                    tmpl.get_ref().name (*as);
+                  }
 
                   if (not tmpl.get().name())
-                    {
-                      throw error::top_level_anonymous_template
-                        (file, "net_type");
-                    }
+                  {
+                    throw error::top_level_anonymous_template
+                      (file, "net_type");
+                  }
 
                   net.get_ref().push_template (tmpl);
                 }

@@ -193,6 +193,8 @@ namespace xml
             throw error::duplicate_template (id, id_old);
           }
 
+        id.get_ref().parent (_id);
+
         return id;
       }
 
