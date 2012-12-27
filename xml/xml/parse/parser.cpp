@@ -132,10 +132,7 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::function function_type ( const xml_node_type *
-                                    , state::type &
-                                    , const boost::optional<type::function_type::parent_id_type>& parent
-                                    );
+    id::ref::function function_type (const xml_node_type*, state::type&);
     id::ref::module module_type ( const xml_node_type *
                                 , state::type &
                                 , const id::function& parent
@@ -174,20 +171,10 @@ namespace xml
 
     namespace
     {
-      id::ref::function
-      parse_function
-        ( std::istream & f
-        , state::type & state
-        , const boost::optional<type::function_type::parent_id_type>& parent
-        )
+      id::ref::function parse_function (std::istream& f, state::type& state)
       {
         return generic_parse<id::ref::function>
-          ( boost::bind (function_type, _1, _2, parent)
-          , f
-          , state
-          , "defun"
-          , "parse_function"
-          );
+          (function_type, f, state, "defun", "parse_function");
       }
 
       id::ref::tmpl parse_template (std::istream& f, state::type& state)
@@ -221,14 +208,9 @@ namespace xml
     // ********************************************************************* //
 
     id::ref::function
-    function_include
-      ( const std::string & file
-      , state::type & state
-      , const boost::optional<type::function_type::parent_id_type>& parent
-      )
+      function_include (const std::string& file, state::type& state)
     {
-      return state.generic_include<id::ref::function>
-        (boost::bind (parse_function, _1, _2, parent), file);
+      return state.generic_include<id::ref::function> (parse_function, file);
     }
 
     id::ref::tmpl template_include (const std::string& file, state::type& state)
@@ -580,15 +562,8 @@ namespace xml
                                                     )
                                          );
 
-
-
                   transition.get_ref().function_or_use
-                    ( function_include
-                      ( file
-                      , state
-                      , type::function_type::make_parent (id)
-                      )
-                    );
+                    (function_include (file, state));
                 }
               else if (child_name == "use")
                 {
@@ -607,12 +582,7 @@ namespace xml
               else if (child_name == "defun")
                 {
                   transition.get_ref().function_or_use
-                    ( function_type
-                      ( child
-                      , state
-                      , type::function_type::make_parent (id)
-                      )
-                    );
+                    (function_type (child, state));
                 }
               else if (child_name == "place-map")
                 {
@@ -1110,11 +1080,7 @@ namespace xml
                 }
               else if (child_name == "defun")
                 {
-                  fun = function_type
-                    ( child
-                    , state
-                    , type::function_type::make_parent(id)
-                    );
+                  fun = function_type (child, state);
                 }
               else
                 {
@@ -1150,11 +1116,7 @@ namespace xml
     // ********************************************************************* //
 
     id::ref::function
-    function_type
-      ( const xml_node_type * node
-      , state::type & state
-      , const boost::optional<type::function_type::parent_id_type>& parent
-      )
+      function_type (const xml_node_type* node, state::type& state)
     {
       const id::function id (state.id_mapper()->next_id());
 
@@ -1162,7 +1124,7 @@ namespace xml
         ( type::function_type
           ( id
           , state.id_mapper()
-          , parent
+          , boost::none
           , type::expression_type ( state.id_mapper()->next_id()
                                   , state.id_mapper()
                                   , id
@@ -1784,13 +1746,11 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::function
-    just_parse (state::type & state, const std::string & input)
+    id::ref::function just_parse (state::type& state, const std::string& input)
     {
       state.set_input (input);
 
-      return state.generic_parse<id::ref::function>
-        (boost::bind (parse_function, _1, _2, boost::none), input);
+      return state.generic_parse<id::ref::function> (parse_function, input);
     }
 
     void post_processing_passes ( const id::ref::function& function
