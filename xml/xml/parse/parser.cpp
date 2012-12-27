@@ -134,19 +134,9 @@ namespace xml
 
     id::ref::function function_type (const xml_node_type*, state::type&);
     id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
-    id::ref::place place_type (const xml_node_type*, state::type&);
-    void gen_struct_type ( const xml_node_type *, state::type &
-                         , signature::desc_t &
-                         );
-    void substruct_type ( const xml_node_type *, state::type &
-                        , signature::desc_t &
-                        );
-    type::structure_type struct_type ( const xml_node_type *
-                               , state::type &
-                               , const id::function& parent
-                               );
     id::ref::transition transition_type (const xml_node_type*, state::type&);
     id::ref::specialize specialize_type (const xml_node_type*, state::type&);
+
     void property_map_type ( we::type::property::type &
                            , const xml_node_type *
                            , state::type &
@@ -154,6 +144,16 @@ namespace xml
     we::type::property::type
     property_maps_type (const xml_node_type *, state::type &);
 
+    void gen_struct_type ( const xml_node_type *, state::type &
+                         , signature::desc_t &
+                         );
+    void substruct_type ( const xml_node_type *, state::type &
+                        , signature::desc_t &
+                        );
+    type::structure_type struct_type ( const xml_node_type *
+                                     , state::type &
+                                     , const id::function& parent
+                                     );
     type::structs_type structs_type ( const xml_node_type *
                                     , state::type & state
                                     , const id::function& parent
@@ -1191,6 +1191,80 @@ namespace xml
 
       // ******************************************************************* //
 
+      id::ref::place place_type (const xml_node_type* node, state::type& state)
+      {
+        const id::place id (state.id_mapper()->next_id());
+
+        const std::string name
+          (required ("place_type", node, "name", state.file_in_progress()));
+
+        const id::ref::place place
+          ( type::place_type
+            ( id
+            , state.id_mapper()
+            , boost::none
+            , validate_name ( validate_prefix ( name
+                                              , "place"
+                                              , state.file_in_progress()
+                                              )
+                            , "place"
+                            , state.file_in_progress()
+                            )
+            , required ("place_type", node, "type", state.file_in_progress())
+            , fhg::util::boost::fmap<std::string, bool>
+              (fhg::util::read_bool, optional (node, "virtual"))
+            ).make_reference_id()
+          );
+
+        for ( xml_node_type * child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+          {
+            if (child_name == "token")
+            {
+              place.get_ref().push_token (parse_token (child, state));
+            }
+            else if (child_name == "properties")
+            {
+              property_map_type (place.get_ref().properties(), child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              const we::type::property::type deeper
+                ( properties_include ( required ( "place_type"
+                                                , child
+                                                , "href"
+                                                , state.file_in_progress()
+                                                )
+                                     , state
+                                     )
+                );
+
+              util::property::join (state, place.get_ref().properties(), deeper);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "place_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        return place;
+      }
+
+      // ******************************************************************* //
+
       id::ref::net net_type (const xml_node_type* node, state::type& state)
       {
         const id::net id (state.id_mapper()->next_id());
@@ -1508,87 +1582,6 @@ namespace xml
       }
 
       return token;
-    }
-
-    // ********************************************************************* //
-
-    id::ref::place place_type (const xml_node_type* node, state::type& state)
-    {
-      const id::place id (state.id_mapper()->next_id());
-
-      const std::string name
-        (required ("place_type", node, "name", state.file_in_progress()));
-
-      const id::ref::place place
-        ( type::place_type
-          ( id
-          , state.id_mapper()
-          , boost::none
-          , validate_name ( validate_prefix ( name
-                                            , "place"
-                                            , state.file_in_progress()
-                                            )
-                          , "place"
-                          , state.file_in_progress()
-                          )
-          , required ("place_type", node, "type", state.file_in_progress())
-          , fhg::util::boost::fmap<std::string, bool> ( fhg::util::read_bool
-                                                      , optional (node, "virtual")
-                                                      )
-          ).make_reference_id()
-        );
-
-      for ( xml_node_type * child (node->first_node())
-          ; child
-          ; child = child ? child->next_sibling() : child
-          )
-        {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
-
-          if (child)
-            {
-              if (child_name == "token")
-                {
-                  place.get_ref().push_token (parse_token (child, state));
-                }
-              else if (child_name == "properties")
-                {
-                  property_map_type ( place.get_ref().properties()
-                                    , child
-                                    , state
-                                    );
-                }
-              else if (child_name == "include-properties")
-                {
-                  const we::type::property::type deeper
-                    ( properties_include ( required ( "place_type"
-                                                    , child
-                                                    , "href"
-                                                    , state.file_in_progress()
-                                                    )
-                                         , state
-                                         )
-                    );
-
-                  util::property::join ( state
-                                       , place.get_ref().properties()
-                                       , deeper
-                                       );
-                }
-              else
-                {
-                  state.warn
-                    ( warning::unexpected_element ( child_name
-                                                  , "place_type"
-                                                  , state.file_in_progress()
-                                                  )
-                    );
-                }
-            }
-        }
-
-      return place;
     }
 
     // ********************************************************************* //
