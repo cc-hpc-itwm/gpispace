@@ -297,6 +297,25 @@ namespace xml
         return ports().has (std::make_pair (name, we::type::PORT_TUNNEL));
       }
 
+      void function_type::rename (const id::ref::port& id, const std::string& n)
+      {
+        if (id.get().name() == n)
+        {
+          return;
+        }
+
+        if (_ports.has (std::make_pair (n, id.get().direction())))
+        {
+          throw std::runtime_error
+            ("tried renaming port, but port with given name exists");
+        }
+
+        _ports.erase (id);
+        id.get_ref().name_impl (n);
+        _ports.push (id);
+
+      }
+
       // ***************************************************************** //
 
       const function_type::typenames_type& function_type::typenames () const

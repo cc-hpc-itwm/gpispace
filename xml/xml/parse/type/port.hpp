@@ -53,7 +53,13 @@ namespace xml
           (const boost::filesystem::path&, const state::type&) const;
 
         const std::string& name() const;
+        const std::string& name (const std::string& name);
 
+      private:
+        friend struct function_type;
+        const std::string& name_impl (const std::string& name);
+
+      public:
         const we::type::PortDirection& direction() const;
         const we::type::PortDirection& direction (const we::type::PortDirection&);
 

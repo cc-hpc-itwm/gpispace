@@ -124,6 +124,8 @@ namespace xml
         bool is_known_port_inout (const std::string & name) const;
         bool is_known_tunnel (const std::string& name) const;
 
+        void rename (const id::ref::port&, const std::string&);
+
         // ***************************************************************** //
 
         const typenames_type& typenames () const;

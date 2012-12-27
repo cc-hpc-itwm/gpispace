@@ -37,6 +37,22 @@ namespace xml
         return _name;
       }
 
+      const std::string& port_type::name_impl (const std::string& name)
+      {
+        return _name = name;
+      }
+
+      const std::string& port_type::name (const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return _name;
+        }
+
+        return name_impl (name);
+      }
+
       void port_type::specialize ( const type::type_map_type & map_in
                                  , const state::type &
                                  )
