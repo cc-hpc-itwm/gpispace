@@ -567,7 +567,7 @@ namespace xml
               const id::ref::connect connection_in
                 (connect_type (child, state, petri_net::edge::PT));
               const id::ref::connect connection_out
-                (connection_in.get().clone (id));
+                (connection_in.get().clone());
               connection_out.get_ref().direction (petri_net::edge::TP);
 
               transition.get_ref().push_connection (connection_in);
