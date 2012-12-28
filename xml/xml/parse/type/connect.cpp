@@ -65,9 +65,19 @@ namespace xml
         return _direction = direction_;
       }
 
-      const std::string& connect_type::place (const std::string& place)
+      const std::string& connect_type::place_impl (const std::string& place)
       {
         return _place = place;
+      }
+      const std::string& connect_type::place (const std::string& place)
+      {
+        if (has_parent())
+        {
+          parent()->connection_place (make_reference_id(), place);
+          return _place;
+        }
+
+        return place_impl (place);
       }
 
       const we::type::property::type& connect_type::properties() const

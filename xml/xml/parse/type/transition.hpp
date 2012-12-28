@@ -98,6 +98,8 @@ namespace xml
         void push_connection (const id::ref::connect&);
         void push_place_map (const id::ref::place_map&);
 
+        void connection_place (const id::ref::connect&, const std::string&);
+
         // ***************************************************************** //
 
         void clear_connections ();

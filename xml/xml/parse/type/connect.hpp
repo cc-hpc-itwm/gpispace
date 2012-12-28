@@ -33,7 +33,7 @@ namespace xml
         PARENT_SIGNATURES(transition);
 
       public:
-        //! \note         place,       port,        PT||PT_READ
+        //! \note            place,       port,        PT||PT_READ
         typedef boost::tuple<std::string, std::string, bool> unique_key_type;
 
         connect_type ( ID_CONS_PARAM(connect)
@@ -54,9 +54,11 @@ namespace xml
         const ::petri_net::edge::type& direction
           (const ::petri_net::edge::type&);
 
-      private:
-        friend struct net_type;
         const std::string& place (const std::string&);
+
+      private:
+        friend struct transition_type;
+        const std::string& place_impl (const std::string&);
 
       public:
         const we::type::property::type& properties() const;

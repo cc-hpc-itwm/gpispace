@@ -308,6 +308,35 @@ namespace xml
         _place_map.clear();
       }
 
+      void transition_type::connection_place
+        (const id::ref::connect& connection, const std::string& place)
+      {
+        if (connection.get().place() == place)
+        {
+          return;
+        }
+
+        if ( _connections.has
+             ( boost::make_tuple ( place
+                                 , connection.get().port()
+                                 , petri_net::edge::is_PT
+                                   (connection.get().direction())
+                                 )
+             )
+           )
+        {
+          throw std::runtime_error ( "tried reconnecting connection to place, "
+                                     "but connection between between that place "
+                                     "and port already exists in that direction"
+                                   );
+        }
+
+        _connections.erase (connection);
+        connection.get_ref().place_impl (place);
+        _connections.push (connection);
+      }
+
+
         // ***************************************************************** //
 
       void transition_type::resolve ( const state::type & state
