@@ -116,6 +116,7 @@ namespace xml
 
         // ***************************************************************** //
 
+        void rename (const id::ref::function&, const std::string&);
         void rename (const id::ref::place&, const std::string&);
         void rename (const id::ref::specialize&, const std::string&);
         void rename (const id::ref::tmpl&, const std::string&);

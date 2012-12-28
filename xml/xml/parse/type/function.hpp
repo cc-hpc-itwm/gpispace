@@ -42,7 +42,8 @@ namespace xml
 
         //! \todo net is only in this list as specialize not yet
         //! reparents the function to the transition requesting it, as
-        //! specialization is not yet lazy. See net_type::specialize()
+        //! specialization is not yet lazy. If it is, also remove
+        //! name_impl. See net_type::specialize() and function_type::name().
         typedef boost::variant< id::transition
                               , id::tmpl
                               , id::net
@@ -103,11 +104,23 @@ namespace xml
 
         // ***************************************************************** //
 
+        //! \note function should not be something that can be in a
+        //! unique. It only is in an unique, as net does not lazily
+        //! specialize templates. It then stores them in a
+        //! unique. Other parents (transition, tmpl) never have a
+        //! unique, thus don't need to get notified on name
+        //! change. This name() + name_impl() pattern can thus be
+        //! removed as soon as net no longer can be a parent.
         const boost::optional<std::string>& name() const;
-        const std::string& name (const std::string& name);
         const boost::optional<std::string>&
-        name (const boost::optional<std::string>& name);
+          name (const boost::optional<std::string>& name);
 
+      private:
+        friend struct net_type;
+        const boost::optional<std::string>&
+          name_impl (const boost::optional<std::string>& name);
+
+      public:
         const boost::optional<parent_id_type>& parent() const;
 
         bool has_parent() const;

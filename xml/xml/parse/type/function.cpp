@@ -167,14 +167,28 @@ namespace xml
       {
         return _name;
       }
-      const std::string& function_type::name (const std::string& name)
+      const boost::optional<std::string>&
+        function_type::name_impl (const boost::optional<std::string>& name)
       {
-        return *(_name = name);
+        return _name = name;
       }
       const boost::optional<std::string>&
         function_type::name (const boost::optional<std::string>& name)
       {
-        return _name = name;
+        if (parent_net())
+        {
+          if (!name)
+          {
+            throw std::runtime_error ( "Tried setting function to anonymous "
+                                       "while being in a net. This should never "
+                                       "happen as function's unique key is name."
+                                     );
+          }
+
+          parent_net()->get_ref().rename (make_reference_id(), *name);
+          return _name;
+        }
+        return name_impl (name);
       }
 
       const boost::optional<function_type::parent_id_type>& function_type::parent() const

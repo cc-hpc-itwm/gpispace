@@ -279,6 +279,26 @@ namespace xml
 
       // ***************************************************************** //
 
+      void net_type::rename ( const id::ref::function& function
+                            , const std::string& name
+                            )
+      {
+        if (function.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_function (name))
+        {
+          throw std::runtime_error
+            ("tried renaming function, but function with given name exists");
+        }
+
+        _functions.erase (function);
+        function.get_ref().name_impl (name);
+        _functions.push (function);
+      }
+
       void net_type::rename ( const id::ref::place& place
                             , const std::string& name
                             )
