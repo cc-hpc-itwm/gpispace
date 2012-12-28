@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_PLACE_MAP_HPP
 #define _XML_PARSE_TYPE_PLACE_MAP_HPP
@@ -40,7 +40,13 @@ namespace xml
 
         const std::string& place_virtual() const;
         const std::string& place_real() const;
-        const std::string& place_real(const std::string&);
+        const std::string& place_real (const std::string&);
+
+      private:
+        friend struct transition_type;
+        const std::string& place_real_impl (const std::string&);
+
+      public:
         const we::type::property::type& properties() const;
 
         unique_key_type unique_key() const;

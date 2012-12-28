@@ -3,6 +3,7 @@
 #include <xml/parse/type/place_map.hpp>
 
 #include <xml/parse/id/mapper.hpp>
+#include <xml/parse/type/transition.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -35,9 +36,18 @@ namespace xml
       {
         return _place_real;
       }
-      const std::string& place_map_type::place_real (const std::string& v)
+      const std::string& place_map_type::place_real_impl (const std::string& v)
       {
         return _place_real = v;
+      }
+      const std::string& place_map_type::place_real (const std::string& v)
+      {
+        if (has_parent())
+        {
+          parent()->place_map_real (make_reference_id(), v);
+          return _place_real;
+        }
+        return place_real_impl (v);
       }
 
       const we::type::property::type& place_map_type::properties() const

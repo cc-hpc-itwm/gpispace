@@ -363,6 +363,27 @@ namespace xml
         _connections.push (connection);
       }
 
+    void transition_type::place_map_real
+      (const id::ref::place_map& id, const std::string& real)
+    {
+      if (id.get().place_real() == real)
+      {
+        return;
+      }
+
+      if (_place_map.has (std::make_pair (id.get().place_virtual(), real)))
+      {
+        throw std::runtime_error ( "tried setting place_map's virtual place, but "
+                                   "already having such a mapping."
+                                 );
+      }
+
+      _place_map.erase (id);
+      id.get_ref().place_real_impl (real);
+      _place_map.push (id);
+    }
+
+
       // ***************************************************************** //
 
       void transition_type::resolve ( const state::type & state

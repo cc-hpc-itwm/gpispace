@@ -102,6 +102,7 @@ namespace xml
         void connection_direction
           (const id::ref::connect&, const petri_net::edge::type&);
 
+        void place_map_real (const id::ref::place_map&, const std::string&);
 
         // ***************************************************************** //
 
