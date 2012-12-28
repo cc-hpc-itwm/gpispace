@@ -299,6 +299,26 @@ namespace xml
         _places.push (place);
       }
 
+      void net_type::rename ( const id::ref::specialize& specialize
+                            , const std::string& name
+                            )
+      {
+        if (specialize.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_specialize (name))
+        {
+          throw std::runtime_error
+            ("tried renaming specialize, but specialize with given name exists");
+        }
+
+        _specializes.erase (specialize);
+        specialize.get_ref().name_impl (name);
+        _specializes.push (specialize);
+      }
+
       void net_type::rename ( const id::ref::tmpl& tmpl
                             , const std::string& name
                             )
