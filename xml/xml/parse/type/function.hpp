@@ -71,6 +71,14 @@ namespace xml
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
                       , const boost::optional<std::string>& name
+                      , const boost::optional<bool>& internal
+                      , const content_type& content
+                      , const boost::filesystem::path& path
+                      );
+
+        function_type ( ID_CONS_PARAM(function)
+                      , const boost::optional<parent_id_type>& parent
+                      , const boost::optional<std::string>& name
                       , const ports_type& ports
                       , const typenames_type& typenames
                       , const bool& contains_a_module_call

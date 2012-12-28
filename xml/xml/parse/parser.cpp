@@ -1394,19 +1394,16 @@ namespace xml
             ( id
             , state.id_mapper()
             , boost::none
+            , optional (node, "name")
+            , fhg::util::boost::fmap<std::string, bool>
+              (fhg::util::read_bool, optional (node, "internal"))
             , type::expression_type ( state.id_mapper()->next_id()
                                     , state.id_mapper()
                                     , id
                                     ).make_reference_id()
+            , state.file_in_progress()
             ).make_reference_id()
           );
-
-        function.get_ref().path = state.file_in_progress();
-        function.get_ref().name (optional (node, "name"));
-        function.get_ref().internal =
-          fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
-                                                   , optional (node, "internal")
-                                                   );
 
         for ( xml_node_type* child (node->first_node())
             ; child

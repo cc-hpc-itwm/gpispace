@@ -47,6 +47,24 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      function_type::function_type ( ID_CONS_PARAM(function)
+                                   , const boost::optional<parent_id_type>& parent
+                                   , const boost::optional<std::string>& name
+                                   , const boost::optional<bool>& internal
+                                   , const content_type& content
+                                   , const boost::filesystem::path& path
+                                   )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , _name (name)
+        , contains_a_module_call (false)
+        , internal (internal)
+        , _content (content)
+        , path (path)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
       function_type::function_type
         ( ID_CONS_PARAM(function)
         , const boost::optional<parent_id_type>& parent
