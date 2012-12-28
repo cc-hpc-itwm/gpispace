@@ -55,14 +55,16 @@ namespace xml
         const std::string& name() const;
         const std::string& name (const std::string& name);
 
-      private:
-        friend struct function_type;
-        const std::string& name_impl (const std::string& name);
-
-      public:
         const we::type::PortDirection& direction() const;
         const we::type::PortDirection& direction (const we::type::PortDirection&);
 
+      private:
+        friend struct function_type;
+        const std::string& name_impl (const std::string& name);
+        const we::type::PortDirection& direction_impl
+          (const we::type::PortDirection&);
+
+      public:
         boost::optional<const id::ref::place&> resolved_place() const;
 
         const we::type::property::type& properties() const;

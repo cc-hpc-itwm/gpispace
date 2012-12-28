@@ -161,10 +161,20 @@ namespace xml
       {
         return _direction;
       }
-      const we::type::PortDirection& port_type::direction
+      const we::type::PortDirection& port_type::direction_impl
         (const we::type::PortDirection& direction_)
       {
         return _direction = direction_;
+      }
+      const we::type::PortDirection& port_type::direction
+        (const we::type::PortDirection& direction_)
+      {
+        if (has_parent())
+        {
+          parent()->port_direction (make_reference_id(), direction_);
+          return _direction;
+        }
+        return direction_impl (direction_);
       }
 
       boost::optional<const id::ref::place&> port_type::resolved_place() const

@@ -129,6 +129,8 @@ namespace xml
         bool is_known_tunnel (const std::string& name) const;
 
         void rename (const id::ref::port&, const std::string&);
+        void port_direction
+          (const id::ref::port&, const we::type::PortDirection&);
 
         // ***************************************************************** //
 

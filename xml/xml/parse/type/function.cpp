@@ -365,7 +365,25 @@ namespace xml
         _ports.erase (id);
         id.get_ref().name_impl (n);
         _ports.push (id);
+      }
 
+      void function_type::port_direction
+          (const id::ref::port& id, const we::type::PortDirection& direction)
+      {
+        if (id.get().direction() == direction)
+        {
+          return;
+        }
+
+        if (_ports.has (std::make_pair (id.get().name(), direction)))
+        {
+          throw std::runtime_error
+            ("tried changing port direction, but port with combination exists");
+        }
+
+        _ports.erase (id);
+        id.get_ref().direction_impl (direction);
+        _ports.push (id);
       }
 
       // ***************************************************************** //
