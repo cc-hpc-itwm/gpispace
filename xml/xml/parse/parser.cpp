@@ -1433,7 +1433,7 @@ namespace xml
               const id::ref::port port_in
                 (port_type (child, state, we::type::PORT_IN));
 
-              const id::ref::port port_out (port_in.get().clone (id));
+              const id::ref::port port_out (port_in.get().clone());
               port_out.get_ref().direction (we::type::PORT_OUT);
 
               function.get_ref().push_port (port_in);
