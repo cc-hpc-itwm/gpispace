@@ -424,9 +424,10 @@ namespace xml
 
           type_map_apply (map, specialize.type_map);
 
-          const id::ref::tmpl specialized_tmpl (id_tmpl->get().clone());
+          const id::ref::function specialized_function
+            (id_tmpl->get().function().get().clone (boost::none));
 
-          specialized_tmpl.get_ref().specialize
+          specialized_function.get_ref().specialize
             ( specialize.type_map
             , specialize.type_get
             , st::join (known_structs, st::make (structs), state)
@@ -434,16 +435,15 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , specialized_tmpl.get().function().get_ref().structs
+                        , specialized_function.get_ref().structs
                         , structs
                         , specialize.type_get
                         , state
                         );
 
-          specialized_tmpl.get().function().get_ref().name
-            (specialize.name());
+          specialized_function.get_ref().name (specialize.name());
 
-          push_function (specialized_tmpl.get().function());
+          push_function (specialized_function);
         }
 
         _specializes.clear();

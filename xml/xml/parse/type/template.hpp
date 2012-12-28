@@ -51,12 +51,6 @@ namespace xml
 
         const boost::filesystem::path& path() const;
 
-        void specialize ( const type_map_type & map
-                        , const type_get_type & get
-                        , const xml::parse::structure_type::set_type & known_structs
-                        , state::type & state
-                        );
-
         boost::optional<const id::ref::function&>
         get_function (const std::string&) const;
 

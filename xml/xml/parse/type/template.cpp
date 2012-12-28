@@ -77,16 +77,6 @@ namespace xml
         return _path;
       }
 
-      void tmpl_type::specialize
-        ( const type_map_type & map
-        , const type_get_type & get
-        , const xml::parse::structure_type::set_type & known_structs
-        , state::type & state
-        )
-      {
-        function().get_ref().specialize (map, get, known_structs, state);
-      }
-
       boost::optional<const id::ref::function&>
       tmpl_type::get_function (const std::string& name) const
       {
