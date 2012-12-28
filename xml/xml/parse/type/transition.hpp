@@ -99,6 +99,9 @@ namespace xml
         void push_place_map (const id::ref::place_map&);
 
         void connection_place (const id::ref::connect&, const std::string&);
+        void connection_direction
+          (const id::ref::connect&, const petri_net::edge::type&);
+
 
         // ***************************************************************** //
 

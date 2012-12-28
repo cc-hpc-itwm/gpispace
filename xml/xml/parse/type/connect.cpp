@@ -59,10 +59,21 @@ namespace xml
       {
         return _direction;
       }
-      const ::petri_net::edge::type& connect_type::direction
+      const ::petri_net::edge::type& connect_type::direction_impl
         (const ::petri_net::edge::type& direction_)
       {
         return _direction = direction_;
+      }
+      const ::petri_net::edge::type& connect_type::direction
+        (const ::petri_net::edge::type& direction_)
+      {
+        if (has_parent())
+        {
+          parent()->connection_direction (make_reference_id(), direction_);
+          return _direction;
+        }
+
+        return direction_impl (direction_);
       }
 
       const std::string& connect_type::place_impl (const std::string& place)

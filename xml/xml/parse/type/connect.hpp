@@ -58,6 +58,9 @@ namespace xml
 
       private:
         friend struct transition_type;
+        const ::petri_net::edge::type& direction_impl
+          (const ::petri_net::edge::type&);
+
         const std::string& place_impl (const std::string&);
 
       public:

@@ -336,8 +336,34 @@ namespace xml
         _connections.push (connection);
       }
 
+      void transition_type::connection_direction
+        (const id::ref::connect& connection, const petri_net::edge::type& dir)
+      {
+        if (connection.get().direction() == dir)
+        {
+          return;
+        }
 
-        // ***************************************************************** //
+        if ( _connections.has
+             ( boost::make_tuple ( connection.get().place()
+                                 , connection.get().port()
+                                 , petri_net::edge::is_PT (dir)
+                                 )
+             )
+           )
+        {
+          throw std::runtime_error ( "tried setting direction of connection, "
+                                     "but connection between between that place "
+                                     "and port already exists in that direction"
+                                   );
+        }
+
+        _connections.erase (connection);
+        connection.get_ref().direction_impl (dir);
+        _connections.push (connection);
+      }
+
+      // ***************************************************************** //
 
       void transition_type::resolve ( const state::type & state
                                     , const xml::parse::structure_type::forbidden_type & forbidden
