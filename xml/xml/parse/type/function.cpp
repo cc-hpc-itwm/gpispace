@@ -251,6 +251,20 @@ namespace xml
           );
       }
 
+      boost::optional<id::ref::net>
+        function_type::parent_net() const
+      {
+        if (!_parent)
+        {
+          return boost::none;
+        }
+
+        return boost::apply_visitor
+          ( visitor_get_parent<id::net, id::ref::net> (id_mapper())
+          , *_parent
+          );
+      }
+
       namespace
       {
         class visitor_get_function

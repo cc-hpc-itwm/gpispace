@@ -116,6 +116,8 @@ namespace xml
 
         boost::optional<id::ref::transition> parent_transition() const;
         boost::optional<id::ref::tmpl> parent_tmpl() const;
+        //! \todo This should be removed soon (i.e. when specialization is lazy).
+        boost::optional<id::ref::net> parent_net() const;
 
         boost::optional<const id::ref::function&>
         get_function (const std::string& name) const;
