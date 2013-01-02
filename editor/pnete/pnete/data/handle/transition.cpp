@@ -27,6 +27,12 @@ namespace fhg
           change_manager().delete_transition (sender, *this);
         }
 
+        void transition::set_name
+          (const QObject* sender, const QString& name) const
+        {
+          change_manager().set_name (sender, *this, name);
+        }
+
         void transition::set_property
           ( const QObject* sender
           , const ::we::type::property::key_type& key

@@ -253,6 +253,21 @@ namespace fhg
                 );
 
               fhg::util::qt::boost_connect<void()>
+                ( menu->addAction(tr ("port_set_name"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind ( set_name_for_handle<data::handle::port>
+                              , handle
+                              , tr ("port_set_name_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("port_set_name_prompt")
+                              , QString::fromStdString (handle.get().name())
+                              , event->widget()
+                              , this
+                              )
+                );
+
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("port_set_type"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -314,6 +329,21 @@ namespace fhg
                 , SIGNAL (triggered())
                 , item_below_cursor
                 , boost::bind (nyi, "transition: add port")
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu->addAction(tr ("transition_set_name"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind ( set_name_for_handle<data::handle::transition>
+                              , handle
+                              , tr ("transition_set_name_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("transition_set_name_prompt")
+                              , QString::fromStdString (handle.get().name())
+                              , event->widget()
+                              , this
+                              )
                 );
 
               menu->addSeparator();

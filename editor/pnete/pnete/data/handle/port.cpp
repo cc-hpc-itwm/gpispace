@@ -27,6 +27,11 @@ namespace fhg
           change_manager().delete_port (sender, *this);
         }
 
+        void port::set_name (const QObject* sender, const QString& name) const
+        {
+          change_manager().set_name (sender, *this, name);
+        }
+
         void port::set_type (const QObject* sender, const QString& type) const
         {
           change_manager().set_type (sender, *this, type);

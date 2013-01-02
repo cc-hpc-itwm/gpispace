@@ -1248,6 +1248,21 @@ namespace fhg
         endMacro();
       }
 
+      void change_manager_t::set_name ( const QObject* origin
+                                      , const data::handle::transition& transition
+                                      , const QString& name
+                                      )
+      {
+        push ( new action::meta_set_name<handle::transition>
+               ( "transition_set_name_action"
+               , *this
+               , origin
+               , transition
+               , name
+               )
+             );
+      }
+
       void change_manager_t::set_property
         ( const QObject* origin
         , const data::handle::transition& transition
@@ -1617,6 +1632,20 @@ namespace fhg
         )
       {
         action::set_property (port, key, val, *this, origin);
+      }
+
+      void change_manager_t::set_name ( const QObject* origin
+                                      , const data::handle::port& port
+                                      , const QString& name
+                                      )
+      {
+        push ( new action::meta_set_name<handle::port> ( "port_set_name_action"
+                                                       , *this
+                                                       , origin
+                                                       , port
+                                                       , name
+                                                       )
+             );
       }
 
       void change_manager_t::set_type ( const QObject* origin

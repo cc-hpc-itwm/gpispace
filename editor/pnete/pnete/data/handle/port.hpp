@@ -35,6 +35,7 @@ namespace fhg
 
           void remove (const QObject* sender) const;
 
+          void set_name (const QObject* sender, const QString& type) const;
           void set_type (const QObject* sender, const QString& type) const;
 
           void remove_place_association (const QObject* sender) const;
