@@ -187,8 +187,6 @@ namespace xml
                 (use.get().name(), trans.name(), trans.path);
             }
 
-            //            fun->name (trans.name());
-
             return *id_function;
           }
         };
