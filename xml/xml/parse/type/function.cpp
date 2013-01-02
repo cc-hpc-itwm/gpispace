@@ -35,70 +35,6 @@ namespace xml
     {
       // ******************************************************************* //
 
-      function_type::function_type ( ID_CONS_PARAM(function)
-                                   , const boost::optional<parent_id_type>& parent
-                                   , const content_type& content
-                                   )
-        : ID_INITIALIZE()
-        , _parent (parent)
-        , contains_a_module_call (false)
-        , _content (content)
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      function_type::function_type ( ID_CONS_PARAM(function)
-                                   , const boost::optional<parent_id_type>& parent
-                                   , const boost::optional<std::string>& name
-                                   , const boost::optional<bool>& internal
-                                   , const content_type& content
-                                   , const boost::filesystem::path& path
-                                   )
-        : ID_INITIALIZE()
-        , _parent (parent)
-        , _name (name)
-        , contains_a_module_call (false)
-        , internal (internal)
-        , _content (content)
-        , path (path)
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      function_type::function_type
-        ( ID_CONS_PARAM(function)
-        , const boost::optional<parent_id_type>& parent
-        , const boost::optional<std::string>& name
-        , const ports_type& ports
-        , const typenames_type& typenames
-        , const bool& contains_a_module_call
-        , const boost::optional<bool>& internal
-        , const structs_type& structs
-        , const conditions_type& cond
-        , const requirements_type& requirements
-        , const content_type& content
-        , const xml::parse::structure_type::set_type& structs_resolved
-        , const we::type::property::type& properties
-        , const boost::filesystem::path& path
-        )
-        : ID_INITIALIZE()
-        , _parent (parent)
-        , _name (name)
-        , _ports (ports)
-        , _typenames (typenames)
-        , contains_a_module_call (contains_a_module_call)
-        , internal (internal)
-        , structs (structs)
-        , cond (cond)
-        , requirements (requirements)
-        , _content (content)
-        , structs_resolved (structs_resolved)
-        , _properties (properties)
-        , path (path)
-      {
-        _id_mapper->put (_id, *this);
-      }
-
       namespace
       {
         class visitor_reparent : public boost::static_visitor<void>
@@ -133,6 +69,70 @@ namespace xml
           boost::apply_visitor (visitor_reparent (parent), content);
           return content;
         }
+      }
+
+      function_type::function_type ( ID_CONS_PARAM(function)
+                                   , const boost::optional<parent_id_type>& parent
+                                   , const content_type& content
+                                   )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , contains_a_module_call (false)
+        , _content (reparent (content, _id))
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      function_type::function_type ( ID_CONS_PARAM(function)
+                                   , const boost::optional<parent_id_type>& parent
+                                   , const boost::optional<std::string>& name
+                                   , const boost::optional<bool>& internal
+                                   , const content_type& content
+                                   , const boost::filesystem::path& path
+                                   )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , _name (name)
+        , contains_a_module_call (false)
+        , internal (internal)
+        , _content (reparent (content, _id))
+        , path (path)
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      function_type::function_type
+        ( ID_CONS_PARAM(function)
+        , const boost::optional<parent_id_type>& parent
+        , const boost::optional<std::string>& name
+        , const ports_type& ports
+        , const typenames_type& typenames
+        , const bool& contains_a_module_call
+        , const boost::optional<bool>& internal
+        , const structs_type& structs
+        , const conditions_type& cond
+        , const requirements_type& requirements
+        , const content_type& content
+        , const xml::parse::structure_type::set_type& structs_resolved
+        , const we::type::property::type& properties
+        , const boost::filesystem::path& path
+        )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , _name (name)
+        , _ports (ports, _id)
+        , _typenames (typenames)
+        , contains_a_module_call (contains_a_module_call)
+        , internal (internal)
+        , structs (structs)
+        , cond (cond)
+        , requirements (requirements)
+        , _content (reparent (content, _id))
+        , structs_resolved (structs_resolved)
+        , _properties (properties)
+        , path (path)
+      {
+        _id_mapper->put (_id, *this);
       }
 
       const function_type::content_type& function_type::content() const
