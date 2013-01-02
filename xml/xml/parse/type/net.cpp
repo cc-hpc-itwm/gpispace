@@ -784,7 +784,6 @@ namespace xml
             transition_synthesize
               ( id_transition
               , state
-              , net
               , we_net
               , pid_of_place
               );

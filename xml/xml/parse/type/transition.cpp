@@ -699,7 +699,6 @@ namespace xml
       void transition_synthesize
         ( const id::ref::transition & id_transition
         , const state::type & state
-        , const net_type & net
         , petri_net::net & we_net
         , const place_map_map_type & pids
         )
