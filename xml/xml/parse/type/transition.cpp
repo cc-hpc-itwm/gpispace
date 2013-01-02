@@ -721,12 +721,7 @@ namespace xml
               );
           }
 
-        const id::ref::function& id_function
-          ( boost::apply_visitor
-            (transition_get_function (net, trans), trans.function_or_use())
-          );
-
-        //! \todo keep working with the id_function, deref deeper
+        const id::ref::function id_function (trans.resolved_function());
         function_type& fun (id_function.get_ref());
 
         BOOST_FOREACH (const port_type& port_in, fun.ports().values())
