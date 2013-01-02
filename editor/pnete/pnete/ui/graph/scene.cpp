@@ -668,10 +668,7 @@ namespace fhg
               net().add_transition
                 ( this
                 , data->function().get().clone
-                  ( ::xml::parse::type::function_type::make_parent
-                    (net().id().id())
-                  , net().id().id_mapper()
-                  )
+                  (boost::none, net().id().id_mapper())
                 );
 
               event->acceptProposedAction();
