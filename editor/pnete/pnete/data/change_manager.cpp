@@ -1016,7 +1016,7 @@ namespace fhg
                 , ::xml::parse::type::connect_type
                   ( transition_of_fun_of_port.id_mapper()->next_id()
                   , transition_of_fun_of_port.id_mapper()
-                  , transition_of_fun_of_port.id()
+                  , boost::none
                   , place.get().name()
                   , port.get().name()
                   , direction
@@ -1079,7 +1079,7 @@ namespace fhg
           ( ::xml::parse::type::place_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
-            , net.id().id()
+            , boost::none
             , name
             , from.get().type
             , boost::none
@@ -1169,7 +1169,7 @@ namespace fhg
           ( ::xml::parse::type::transition_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
-            , net.id().id()
+            , boost::none
             , fun
             ).make_reference_id()
           );
@@ -1190,25 +1190,20 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::function function_id
-          (net.id().id_mapper()->next_id());
-        const ::xml::parse::id::transition transition_id
-          (net.id().id_mapper()->next_id());
-
         const ::xml::parse::id::ref::transition transition
           ( ::xml::parse::type::transition_type
-            ( transition_id
+            ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
-            , net.id().id()
+            , boost::none
             , ::xml::parse::id::ref::function
               ( ::xml::parse::type::function_type
-                ( function_id
+                ( net.id().id_mapper()->next_id()
                 , net.id().id_mapper()
-                , ::xml::parse::type::function_type::make_parent (transition_id)
+                , boost::none
                 , ::xml::parse::type::expression_type
                   ( net.id().id_mapper()->next_id()
                   , net.id().id_mapper()
-                  , function_id
+                  , boost::none
                   ).make_reference_id()
                 ).make_reference_id()
               )
@@ -1336,7 +1331,7 @@ namespace fhg
           ( ::xml::parse::type::place_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
-            , net.id().id()
+            , boost::none
             , name
             //! \todo: default type to something useful?
             , ""
@@ -1550,7 +1545,7 @@ namespace fhg
           ( ::xml::parse::type::port_type
             ( function.id().id_mapper()->next_id()
             , function.id().id_mapper()
-            , function.id().id()
+            , boost::none
             , name
             //! \todo Default type?
             , ""
