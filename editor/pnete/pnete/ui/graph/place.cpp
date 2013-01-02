@@ -42,12 +42,12 @@ namespace fhg
 
           handle.connect_to_change_mgr
             ( this
-            , "place_name_set", "type_or_name_changed"
+            , "name_set", "type_or_name_changed"
             , "data::handle::place, QString"
             );
           handle.connect_to_change_mgr
             ( this
-            , "place_type_set", "type_or_name_changed"
+            , "type_set", "type_or_name_changed"
             , "data::handle::place, QString"
             );
 

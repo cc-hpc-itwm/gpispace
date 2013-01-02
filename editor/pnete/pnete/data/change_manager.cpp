@@ -66,17 +66,16 @@ namespace fhg
           // -- transition ---------------------------------------------
           EXPOSE (transition_added);
           EXPOSE (transition_deleted);
+          EXPOSE (name_set);
 
           // -- place --------------------------------------------------
           EXPOSE (place_added);
           EXPOSE (place_deleted);
-          EXPOSE (place_name_set);
-          EXPOSE (place_type_set);
+          EXPOSE (type_set);
 
           // - port ----------------------------------------------------
           EXPOSE (port_added);
           EXPOSE (port_deleted);
-          EXPOSE (port_type_set);
           EXPOSE (place_association_set);
 
           // - function ------------------------------------------------
@@ -216,6 +215,106 @@ namespace fhg
           const ::we::type::property::key_type _key;
           ::we::type::property::value_type _new_value;
           const ::we::type::property::value_type _old_value;
+        };
+
+        template<typename HANDLE_TYPE>
+        void set_type_impl
+          (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& type)
+        {
+          handle.get_ref().type = type.toStdString();
+
+          typedef void (change_manager_t::* signal_type)
+            ( const QObject*
+            , const HANDLE_TYPE&
+            , const QString&
+            );
+
+          change_manager.emit_signal<signal_type>
+            (&signal::type_set, origin, handle, type);
+        }
+
+        template<typename HANDLE_TYPE>
+        class meta_set_type : public QUndoCommand
+        {
+        public:
+          meta_set_type
+            ( const char* name
+            , ACTION_ARG_LIST
+            , const HANDLE_TYPE& handle
+            , const QString& type
+            )
+              : ACTION_INIT (name)
+              , _handle (handle)
+              , _old_type (QString::fromStdString (handle.get().type))
+              , _new_type (type)
+          { }
+
+          virtual void undo()
+          {
+            set_type_impl (_change_manager, NULL, _handle, _old_type);
+          }
+
+          virtual void redo()
+          {
+            set_type_impl (_change_manager, _origin, _handle, _new_type);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const HANDLE_TYPE _handle;
+          const QString _old_type;
+          const QString _new_type;
+        };
+
+        template<typename HANDLE_TYPE>
+        void set_name_impl
+          (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& name)
+        {
+          handle.get_ref().name (name.toStdString());
+
+          typedef void (change_manager_t::* signal_type)
+            ( const QObject*
+            , const HANDLE_TYPE&
+            , const QString&
+            );
+
+          change_manager.emit_signal<signal_type>
+            (&signal::name_set, origin, handle, name);
+        }
+
+        template<typename HANDLE_TYPE>
+        class meta_set_name : public QUndoCommand
+        {
+        public:
+          meta_set_name
+            ( const char* action_name
+            , ACTION_ARG_LIST
+            , const HANDLE_TYPE& handle
+            , const QString& name
+            )
+              : ACTION_INIT (action_name)
+              , _handle (handle)
+              , _old_name (QString::fromStdString (handle.get().name()))
+              , _new_name (name)
+          { }
+
+          virtual void undo()
+          {
+            set_name_impl (_change_manager, NULL, _handle, _old_name);
+          }
+
+          virtual void redo()
+          {
+            set_name_impl (_change_manager, _origin, _handle, _new_name);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const HANDLE_TYPE _handle;
+          const QString _old_name;
+          const QString _new_name;
         };
 
         // - net -----------------------------------------------------
@@ -615,86 +714,6 @@ namespace fhg
           ::xml::parse::id::ref::net _net;
         };
 
-        void place_set_name_impl
-          (ACTION_ARG_LIST, const handle::place& place, const QString& name)
-        {
-          place.get_ref().name (name.toStdString());
-          change_manager.emit_signal
-            (&signal::place_name_set, origin, place, name);
-        }
-
-        class place_set_name : public QUndoCommand
-        {
-        public:
-          place_set_name
-            ( ACTION_ARG_LIST
-            , const handle::place& place
-            , const QString& name
-            )
-              : ACTION_INIT ("place_set_name_action")
-              , _place (place)
-              , _old_name (QString::fromStdString (place.get().name()))
-              , _new_name (name)
-          { }
-
-          virtual void undo()
-          {
-            place_set_name_impl (_change_manager, NULL, _place, _old_name);
-          }
-
-          virtual void redo()
-          {
-            place_set_name_impl (_change_manager, _origin, _place, _new_name);
-            _origin = NULL;
-          }
-
-        private:
-          ACTION_MEMBERS;
-          const handle::place _place;
-          const QString _old_name;
-          const QString _new_name;
-        };
-
-        void place_set_type_impl
-          (ACTION_ARG_LIST, const handle::place& place, const QString& type)
-        {
-          place.get_ref().type = type.toStdString();
-          change_manager.emit_signal
-            (&signal::place_type_set, origin, place, type);
-        }
-
-        class place_set_type : public QUndoCommand
-        {
-        public:
-          place_set_type
-            ( ACTION_ARG_LIST
-            , const handle::place& place
-            , const QString& type
-            )
-              : ACTION_INIT ("place_set_type_action")
-              , _place (place)
-              , _old_type (QString::fromStdString (place.get().type))
-              , _new_type (type)
-          { }
-
-          virtual void undo()
-          {
-            place_set_type_impl (_change_manager, NULL, _place, _old_type);
-          }
-
-          virtual void redo()
-          {
-            place_set_type_impl (_change_manager, _origin, _place, _new_type);
-            _origin = NULL;
-          }
-
-        private:
-          ACTION_MEMBERS;
-          const handle::place _place;
-          const QString _old_type;
-          const QString _new_type;
-        };
-
         // -- port --------------------------------------------------
         void add_port_impl ( ACTION_ARG_LIST
                            , const ::xml::parse::id::ref::function& function
@@ -778,46 +797,6 @@ namespace fhg
           ACTION_MEMBERS;
           ::xml::parse::id::ref::port _port;
           ::xml::parse::id::ref::function _function;
-        };
-
-        void port_set_type_impl
-          (ACTION_ARG_LIST, const handle::port& port, const QString& type)
-        {
-          port.get_ref().type = type.toStdString();
-          change_manager.emit_signal
-            (&signal::port_type_set, origin, port, type);
-        }
-
-        class port_set_type : public QUndoCommand
-        {
-        public:
-          port_set_type
-            ( ACTION_ARG_LIST
-            , const handle::port& port
-            , const QString& type
-            )
-              : ACTION_INIT ("port_set_type_action")
-              , _port (port)
-              , _old_type (QString::fromStdString (port.get().type))
-              , _new_type (type)
-          { }
-
-          virtual void undo()
-          {
-            port_set_type_impl (_change_manager, NULL, _port, _old_type);
-          }
-
-          virtual void redo()
-          {
-            port_set_type_impl (_change_manager, _origin, _port, _new_type);
-            _origin = NULL;
-          }
-
-        private:
-          ACTION_MEMBERS;
-          const handle::port _port;
-          const QString _old_type;
-          const QString _new_type;
         };
 
         void set_place_association_impl
@@ -1436,7 +1415,13 @@ namespace fhg
                                       , const QString& name
                                       )
       {
-        push (new action::place_set_name (*this, origin, place, name));
+        push ( new action::meta_set_name<handle::place> ( "place_set_name_action"
+                                                        , *this
+                                                        , origin
+                                                        , place
+                                                        , name
+                                                        )
+             );
       }
 
       void change_manager_t::set_type ( const QObject* origin
@@ -1444,7 +1429,13 @@ namespace fhg
                                       , const QString& type
                                       )
       {
-        push (new action::place_set_type (*this, origin, place, type));
+        push ( new action::meta_set_type<handle::place> ( "place_set_type_action"
+                                                        , *this
+                                                        , origin
+                                                        , place
+                                                        , type
+                                                        )
+             );
       }
 
       void change_manager_t::make_explicit
@@ -1633,7 +1624,13 @@ namespace fhg
                                       , const QString& type
                                       )
       {
-        push (new action::port_set_type (*this, origin, port, type));
+        push ( new action::meta_set_type<handle::port> ( "port_set_type_action"
+                                                       , *this
+                                                       , origin
+                                                       , port
+                                                       , type
+                                                       )
+             );
       }
 
       void change_manager_t::set_place_association

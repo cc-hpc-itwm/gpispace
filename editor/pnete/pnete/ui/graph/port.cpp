@@ -62,7 +62,7 @@ namespace fhg
 
           handle.connect_to_change_mgr
             ( this
-            , "port_type_set", "type_changed"
+            , "type_set", "type_changed"
             , "data::handle::port, QString"
             );
 
