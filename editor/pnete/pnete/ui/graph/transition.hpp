@@ -62,6 +62,9 @@ namespace fhg
             , const we::type::property::value_type& value
             );
 
+          void name_changed
+            (const QObject*, const data::handle::transition&, const QString&);
+
         protected:
           virtual void paint ( QPainter *painter
                              , const QStyleOptionGraphicsItem *option
