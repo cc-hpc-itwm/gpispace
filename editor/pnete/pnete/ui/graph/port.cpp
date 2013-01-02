@@ -62,7 +62,12 @@ namespace fhg
 
           handle.connect_to_change_mgr
             ( this
-            , "type_set", "type_changed"
+            , "name_set", "type_or_name_changed"
+            , "data::handle::port, QString"
+            );
+          handle.connect_to_change_mgr
+            ( this
+            , "type_set", "type_or_name_changed"
             , "data::handle::port, QString"
             );
 
@@ -75,12 +80,7 @@ namespace fhg
           //            setAcceptHoverEvents (true);
           //! \todo verbose name
 
-          refresh_tooltip();
-
-          _length = qMax( _length
-                        , QStaticText(QString::fromStdString (name())).size().width()
-                        + 2 * size::cap::length()
-                        );
+          refresh_content();
         }
 
         const data::handle::port& port_item::handle() const
@@ -281,9 +281,15 @@ namespace fhg
         //   }
         // }
 
-        void port_item::refresh_tooltip()
+        void port_item::refresh_content()
         {
           setToolTip (QString::fromStdString (name()) + " :: " + QString::fromStdString (we_type()));
+
+          _length = qMax( _length
+                        , QStaticText(QString::fromStdString (name())).size().width()
+                        + 2 * size::cap::length()
+                        );
+
         }
 
         static qreal angle (const port::orientation::type& o)
@@ -428,7 +434,7 @@ namespace fhg
           }
         }
 
-        void port_item::type_changed
+        void port_item::type_or_name_changed
           ( const QObject* origin
           , const data::handle::port& changed_handle
           , const QString&
@@ -436,7 +442,7 @@ namespace fhg
         {
           if (changed_handle == handle())
           {
-            refresh_tooltip();
+            refresh_content();
             update();
           }
         }
