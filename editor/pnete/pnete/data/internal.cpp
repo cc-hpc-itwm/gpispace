@@ -22,66 +22,55 @@ namespace fhg
     {
       namespace
       {
-        ::xml::parse::id::ref::function make_function
+        ::xml::parse::type::function_type::content_type make_function_content
           (const internal_type::kind& kind, ::xml::parse::state::type& state)
         {
-          const ::xml::parse::id::function function_id
-            (state.id_mapper()->next_id());
           switch (kind)
           {
           case internal_type::expression:
             {
-              return ::xml::parse::type::function_type
-                ( function_id
+              return ::xml::parse::type::expression_type
+                ( state.id_mapper()->next_id()
                 , state.id_mapper()
                 , boost::none
-                , ::xml::parse::type::expression_type
-                  ( state.id_mapper()->next_id()
-                  , state.id_mapper()
-                  , function_id
-                  ).make_reference_id()
                 ).make_reference_id();
             }
           case internal_type::module_call:
             {
-              return ::xml::parse::type::function_type
-                ( function_id
+              return ::xml::parse::type::module_type
+                ( state.id_mapper()->next_id()
                 , state.id_mapper()
                 , boost::none
-                , ::xml::parse::type::module_type
-                  ( state.id_mapper()->next_id()
-                  , state.id_mapper()
-                  , function_id
-                  ).make_reference_id()
                 ).make_reference_id();
             }
           case internal_type::net:
             {
-              return ::xml::parse::type::function_type
-                ( function_id
+              return ::xml::parse::type::net_type
+                ( state.id_mapper()->next_id()
                 , state.id_mapper()
                 , boost::none
-                , ::xml::parse::type::net_type
-                  ( state.id_mapper()->next_id()
-                  , state.id_mapper()
-                  , function_id
-                  ).make_reference_id()
                 ).make_reference_id();
             }
           }
-          throw std::runtime_error ("make_function of unknown kind!?");
+          throw std::runtime_error ("make_function_content of unknown kind!?");
         }
       }
 
       internal_type::internal_type (const kind& kind_)
-        : _state ()
-        , _function (make_function (kind_, _state))
+        : _state()
+        , _function ( ::xml::parse::type::function_type
+                      ( _state.id_mapper()->next_id()
+                      , _state.id_mapper()
+                      , boost::none
+                      , make_function_content (kind_, _state)
+                      ).make_reference_id()
+                    )
         , _change_manager (NULL)
         , _root_proxy (weaver::display::function (_function, this))
       {}
 
       internal_type::internal_type (const QString& filename)
-        : _state ()
+        : _state()
         , _function ( ::xml::parse::just_parse ( _state
                                                , filename.toStdString()
                                                )
