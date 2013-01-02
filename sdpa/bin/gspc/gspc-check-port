@@ -34,7 +34,7 @@ if [ -z "$nc" ] ; then
     fi
 fi
 
-gspc_log_trace check-port LANG=C "$nc" -w 0 "$node" "$port"
+gspc_log_trace check-port LANG=C "$nc" -w 1 "$node" "$port"
 err=$(LANG=C "$nc" -w 1 "$node" "$port" </dev/null 2>&1)
 ec=$?
 

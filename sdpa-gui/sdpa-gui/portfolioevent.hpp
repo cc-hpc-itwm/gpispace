@@ -3,13 +3,15 @@
 
 #include <QEvent>
 
+#include <we/mgmt/type/activity.hpp>
+
 class PortFolioEvent : public QEvent
 {
 public:
     explicit
     PortFolioEvent( int typ
                   , sdpa::daemon::NotificationEvent const & evt
-                  , we::activity_t const & act
+                  , we::mgmt::type::activity_t const & act
                   )
       : QEvent ((QEvent::Type)typ)
       , notification (evt)
@@ -17,7 +19,7 @@ public:
   {}
 
   sdpa::daemon::NotificationEvent notification;
-  we::activity_t activity;
+  we::mgmt::type::activity_t activity;
 };
 
 #endif

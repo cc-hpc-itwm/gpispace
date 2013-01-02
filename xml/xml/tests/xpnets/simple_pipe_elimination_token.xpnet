@@ -1,0 +1,39 @@
+<defun name="simple_pipe_token">
+  <in name="in" type="control" place="in"/>
+  <out name="out" type="control" place="out"/>
+  <net>
+    <place name="in" type="control"/>
+    <place name="out" type="control"/>
+    <place name="i" type="long"/>
+    <place name="k" type="long"><token><value>0</value></token></place>
+    <transition name="t" inline="true">
+      <defun>
+        <in name="in" type="control" place="in"/>
+        <out name="out" type="control" place="out"/>
+        <in name="i" type="long" place="i"/>
+        <out name="k" type="long" place="k"/>
+        <net>
+          <place name="in" type="control"/>
+          <place name="out" type="control"/>
+          <place name="i" type="long"/>
+          <place name="k" type="long"/>
+          <transition name="t">
+            <defun>
+              <inout name="c" type="control"/>
+              <inout name="v" type="long"/>
+              <module name="m" function="f (c, v)"/>
+            </defun>
+            <connect-in port="c" place="in"/>
+            <connect-out port="c" place="out"/>
+            <connect-in port="v" place="i"/>
+            <connect-out port="v" place="k"/>
+          </transition>
+        </net>
+      </defun>
+      <connect-in port="in" place="in"/>
+      <connect-out port="out" place="out"/>
+      <connect-in port="i" place="i"/>
+      <connect-out port="k" place="k"/>
+    </transition>
+  </net>
+</defun>

@@ -39,10 +39,6 @@ if (${STATE_MACHINE_IMPLEMENTATION_SPECIFIED} EQUAL 0)
   message(SEND_ERROR "Statemachine implementation not set. Please define STATE_MACHINE_IMPLEMENTATION")
 endif (${STATE_MACHINE_IMPLEMENTATION_SPECIFIED} EQUAL 0)
 
-if (NO_IMPLICIT_TEMPLATES)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-implicit-templates")
-endif (NO_IMPLICIT_TEMPLATES)
-
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -121,7 +117,6 @@ find_package(MMGR REQUIRED QUIET)
 include_directories(${MMGR_INCLUDE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.hpp.in   ${CMAKE_CURRENT_BINARY_DIR}/sdpa/version.hpp)
 if (PROJECT_REVISION)
 else (PROJECT_REVISION)
    message (WARNING "PROJECT_REVISION is not set!")
@@ -146,8 +141,3 @@ include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
 endif (BUILD_TESTING)
-
-# add some files to the installation target
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp ${CMAKE_CURRENT_BINARY_DIR}/sdpa/version.hpp
-  DESTINATION include/sdpa
-  COMPONENT headers)

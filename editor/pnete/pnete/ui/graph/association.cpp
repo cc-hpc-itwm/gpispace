@@ -66,6 +66,16 @@ namespace fhg
           return result;
         }
 
+        void association::invert()
+        {
+          const int size (_fixed_points.size());
+          for (int k (0); k < (size / 2); ++k)
+          {
+            _fixed_points.swap (k, size - (1 + k));
+          }
+          std::swap (_start, _end);
+        }
+
         QPainterPath association::shape () const
         {
           return style::association::shape (all_points());

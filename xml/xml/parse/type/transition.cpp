@@ -608,7 +608,6 @@ namespace xml
         , const net_type & net
         , petri_net::net & we_net
         , const place_map_map_type & pids
-        , unsigned int & e
         )
       {
         typedef we::type::expression_t we_expr_type;
@@ -747,7 +746,7 @@ namespace xml
 
             // synthesize into this level
             const place_map_map_type pid_of_place
-              (net_synthesize (we_net, place_map_map, net, state, e));
+              (net_synthesize (we_net, place_map_map, net, state));
 
             net.remove_prefix (prefix);
 
@@ -819,13 +818,13 @@ namespace xml
             {
               if (port.direction() == we::type::PORT_IN && port.place)
               {
-                we_net.add_edge
-                  ( e++, connection_t ( petri_net::edge::TP
-                                      , tid_in
-                                      , get_pid ( pid_of_place
-                                                , prefix + *port.place
-                                                )
-                                      )
+                we_net.add_connection
+                  ( connection_t ( petri_net::edge::TP
+                                 , tid_in
+                                 , get_pid ( pid_of_place
+                                           , prefix + *port.place
+                                           )
+                                 )
                   );
               }
             }
@@ -836,12 +835,12 @@ namespace xml
             {
               if (petri_net::edge::is_PT (connect.direction()))
               {
-                we_net.add_edge ( e++
-                                , connection_t ( connect.direction()
-                                               , tid_in
-                                               , get_pid (pids, connect.place())
-                                               )
-                                );
+                we_net.add_connection
+                  ( connection_t ( connect.direction()
+                                 , tid_in
+                                 , get_pid (pids, connect.place())
+                                 )
+                  );
               }
             }
 
@@ -936,13 +935,13 @@ namespace xml
             {
               if (port.direction() == we::type::PORT_OUT && port.place)
               {
-                we_net.add_edge
-                  ( e++, connection_t ( petri_net::edge::PT
-                                      , tid_out
-                                      , get_pid ( pid_of_place
+                we_net.add_connection
+                  ( connection_t ( petri_net::edge::PT
+                                 , tid_out
+                                 , get_pid ( pid_of_place
                                                 , prefix + *port.place
-                                                )
-                                      )
+                                           )
+                                 )
                   );
               }
             }
@@ -953,12 +952,12 @@ namespace xml
             {
               if (!petri_net::edge::is_PT (connect.direction()))
               {
-                we_net.add_edge ( e++
-                                , connection_t ( connect.direction()
-                                               , tid_out
-                                               , get_pid (pids, connect.place())
-                                               )
-                                );
+                we_net.add_connection
+                  ( connection_t ( connect.direction()
+                                 , tid_out
+                                 , get_pid (pids, connect.place())
+                                 )
+                  );
               }
             }
           } // unfold
@@ -985,6 +984,8 @@ namespace xml
                                                 );
                   }
 
+                //! \todo eliminate the hack that stores the real
+                //! place in the properties
                 place::type we_place (we_net.get_place (pid->second));
 
                 std::ostringstream path;
@@ -1033,12 +1034,12 @@ namespace xml
                           , trans.connections().values()
                           )
             {
-              we_net.add_edge ( e++
-                              , connection_t ( connect.direction()
-                                             , tid
-                                             , get_pid (pids, connect.place())
-                                             )
-                              );
+              we_net.add_connection
+                ( connection_t ( connect.direction()
+                               , tid
+                               , get_pid (pids, connect.place())
+                               )
+                );
             }
           } // not unfold
 

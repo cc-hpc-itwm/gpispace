@@ -1,0 +1,110 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="list the current GPI-Space topology"
+GSPC_IMPORTANT_API_COMMAND=false
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: topology-list [-h|--help] [options]
+
+Options:
+
+   --kvs-host <host>     specify the kvs-host to use
+   --kvs-port <port>     specify the kvs-port to use
+
+   --no-header           do not print the leading header
+EOF
+}
+
+TEMP=`getopt -o h --long help,no-header,kvs-host:,kvs-port: -n 'topology' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+kvs_host=
+kvs_port=
+show_header=true
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --kvs-host)
+            kvs_host="$2"
+            shift; shift
+            ;;
+        --kvs-port)
+            kvs_port="$2"
+            shift; shift
+            ;;
+        --no-header)
+            show_header=false
+            shift
+            ;;
+        --) shift; break ;;
+        *) gspc_log_error topology "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+function gspc_require_kvs ()
+{
+    if gspc kvs --host="${kvs_host}" --port="${kvs_port}" --status ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function get_component_info ()
+{
+    local all_components=()
+    local components_to_get_info_for=( "${@}" )
+
+    # format: location.host <host> location.port <port> name <name>
+    all_components=( $(gspc kvs --host="${kvs_host}" --port="${kvs_port}" --get-regex 'p2p.peer' | tr -d '=') )
+    ec=$?
+    if [ $ec -eq 4 ] ; then
+        gspc_log_error topology "Could not contact KVS!"
+        return $ec
+    elif [ $ec -ne 0 ] ; then
+        gspc_log_error topology "Not running"
+        return $ec
+    else
+        for ((i=0 ; i < ${#all_components[@]} ; i+=8))
+        do
+            host="${all_components[i+1]}"
+            port="${all_components[i+3]}"
+            name="${all_components[i+5]}"
+            pid="${all_components[i+7]}"
+
+            # we are not interested in clients
+            if [[ "$name" =~ ^sdpac-.*$ ]]
+            then
+                continue
+            fi
+
+            if [ -n "${components_to_get_info_for}" ] ; then
+                local filtered=true
+                for component in "${components_to_get_info_for[@]}"
+                do
+                    if [[ "${name}" =~ ${component} ]]
+                    then
+                        filtered=false
+                        break
+                    fi
+                done
+                if $filtered ; then continue ; fi
+            fi
+            printf "%-12s %-5d %-5d %s\n" "$host" "$port" "$pid" "$name"
+        done
+    fi
+}
+
+gspc_require_kvs
+if $show_header ; then
+    printf "%-12s %-5s %-5s %-s\n" "HOST" "PORT" "PID" "NAME"
+fi
+get_component_info "${@}"

@@ -1,6 +1,6 @@
 // {petry,rahn}@itwm.fhg.de
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 #include <we/type/transition.hpp>
 
@@ -91,7 +91,7 @@ namespace we
                 act.add_input
                   ( std::make_pair
                     ( inp.first
-                    , act.transition().outer_to_inner (inp.second.first)
+                    , act.transition().outer_to_inner (inp.second)
                     )
                   );
               }
@@ -258,13 +258,9 @@ namespace we
                         const petri_net::port_id_type port_id (port_it->first);
                         const petri_net::place_id_type pid (port_it->second.associated_place());
 
-                        for ( petri_net::net::token_place_it top
-                                (net.get_token (pid))
-                            ; top.has_more ()
-                            ; ++top
-                            )
+                        BOOST_FOREACH (const token::type& token, net.get_token (pid))
                           {
-                            _activity.add_output (activity_t::output_t::value_type (*top, port_id));
+                            _activity.add_output (activity_t::output_t::value_type (token, port_id));
                           }
 
                         net.delete_all_token (pid);

@@ -15,7 +15,8 @@
 #include "task.h"
 #include <sdpa/daemon/NotificationEvent.hpp>
 
-#include <we/we.hpp>
+#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
+#include <we/mgmt/type/activity.hpp>
 
 class QGraphicsView;
 class QGraphicsScene;
@@ -70,10 +71,10 @@ private:
 
     bool event (QEvent *event);
   void UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
-                          , we::activity_t const & act
+                          , we::mgmt::type::activity_t const & act
                           );
   void UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
-                          , we::activity_t const & act
+                          , we::mgmt::type::activity_t const & act
                           );
 
   Ui::MonitorWindow *ui;

@@ -1,6 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/we.hpp>
+#include <we/type/transition.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/util/codec.hpp>
 
 #include <we/type/bits/transition/toDot.hpp>
 
@@ -91,7 +93,7 @@ main (int argc, char ** argv)
   vec_type not_starts_with;
   vec_type not_ends_with;
 
-  typedef we::type::dot::generic<we::transition_t> pred_t;
+  typedef we::type::dot::generic<we::type::transition_t> pred_t;
 
   we::type::dot::options<pred_t> options;
 
@@ -184,7 +186,7 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
     {
-      std::cout << fhg::project_info();
+      std::cout << fhg::project_info ("pnet2dot");
 
       return EXIT_SUCCESS;
     }
@@ -199,30 +201,30 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
-  boost::function<bool (const we::transition_t &)> not_starts
-    ( boost::bind ( all<we::transition_t>
-                  , name_not_starts_with<we::transition_t>
+  boost::function<bool (const we::type::transition_t &)> not_starts
+    ( boost::bind ( all<we::type::transition_t>
+                  , name_not_starts_with<we::type::transition_t>
                   , not_starts_with
                   , _1
                   )
     );
 
-  boost::function<bool (const we::transition_t &)> not_ends
-    ( boost::bind ( all<we::transition_t>
-                  , name_not_ends_with<we::transition_t>
+  boost::function<bool (const we::type::transition_t &)> not_ends
+    ( boost::bind ( all<we::type::transition_t>
+                  , name_not_ends_with<we::type::transition_t>
                   , not_ends_with
                   , _1
                   )
     );
 
-  options.predicate = pred_t ( boost::bind ( pred_and<we::transition_t>
+  options.predicate = pred_t ( boost::bind ( pred_and<we::type::transition_t>
                                            , not_starts
                                            , not_ends
                                            , _1
                                            )
                              );
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act;
 
   {
     std::ifstream stream (input.c_str());

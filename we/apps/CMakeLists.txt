@@ -36,6 +36,7 @@ foreach (target ${simple_targets})
     target_link_libraries(${target}.static ${Boost_LIBRARIES})
     target_link_libraries(${target}.static pthread)
     target_link_libraries(${target}.static ${CMAKE_DL_LIBS})
+    target_link_libraries(${target}.static fhg-revision)
 
     set_target_properties(${target}.static PROPERTIES LINK_FLAGS "-static")
 

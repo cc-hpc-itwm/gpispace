@@ -15,7 +15,6 @@ set(PROJECT_CONTACT     "SDPA Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACH
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION(ENABLE_APPLICATION "Build with application" YES)
-OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" NO)
 OPTION(ENABLE_FVM_PC "Build the deprecated fvm-pc libraries" ON)
 OPTION(ENABLE_SDPA_GUI "Build the monitor gui" YES)
 OPTION(ENABLE_SDPA_GPI "Build the sdpa-gpi interface" NO)
@@ -148,11 +147,6 @@ message(STATUS "=== [ sdpa ] ===")
 add_subdirectory(sdpa)
 
 ## optional components
-if (ENABLE_MONITOR_GUI)
-  message(STATUS "=== [ monitor ] (deprecated) ===")
-  add_subdirectory(monitor)
-endif (ENABLE_MONITOR_GUI)
-
 if (ENABLE_SDPA_GUI)
   message(STATUS "=== [ sdpa-gui ] ===")
   add_subdirectory(sdpa-gui)

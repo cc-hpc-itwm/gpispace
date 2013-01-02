@@ -20,7 +20,9 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+#include <we/mgmt/type/activity.hpp>
 #include <we/type/token.hpp>
+#include <we/util/codec.hpp>
 
 static int enable_disable_event_type = QEvent::registerEventType();
 
@@ -362,7 +364,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 	}
 
 
-	we::activity_t act;
+	we::mgmt::type::activity_t act;
 
         try
         {
@@ -381,7 +383,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
         try
         {
           for (std::size_t row (0); row < job_data.size(); ++row)
-            act.add_input( we::input_t::value_type
+            act.add_input( we::mgmt::type::activity_t::input_t::value_type
                          ( make_token
                          ( qstrBackend
                          , job_data

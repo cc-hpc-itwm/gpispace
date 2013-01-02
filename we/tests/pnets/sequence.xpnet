@@ -1,0 +1,45 @@
+<defun name="sequence">
+
+  <in name="n" type="long" place="n"/>
+  <out name="i" type="long" place="i"/>
+
+  <net>
+
+    <place name="n" type="long"/>
+    <place name="i" type="long"/>
+
+    <transition name="step">
+      <properties name="fhg">
+        <properties name="pnetv">
+          <property key="firings_limit" value="1"/>
+        </properties>
+      </properties>
+      <defun>
+        <inout name="n" type="long"/>
+        <out name="i" type="long"/>
+        <expression>
+          ${n} := ${n} - 1;
+          ${i} := ${n};
+        </expression>
+      </defun>
+      <condition>
+        ${n} :gt: 0
+      </condition>
+      <connect-inout port="n" place="n"/>
+      <connect-out port="i" place="i"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="n" type="long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${n} :le: 0
+      </condition>
+      <connect-in port="n" place="n"/>
+    </transition>
+
+  </net>
+
+</defun>

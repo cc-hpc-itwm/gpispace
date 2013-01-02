@@ -1,13 +1,4 @@
 # -*- mode: cmake; -*-
-set (hdrs
-  net.hpp
-  we.hpp
-  )
-
-install(FILES ${hdrs}
-  DESTINATION include/we
-  COMPONENT headers)
-
 add_subdirectory (container)
 add_subdirectory (expr)
 add_subdirectory (mgmt)

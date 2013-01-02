@@ -5,40 +5,6 @@ if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
-OPTION(WE_PRECOMPILE "precompile" NO)
-
-set (WE_PRECOMPILE_LIBRARIES CACHE INTERNAL "we_precompile" FORCE)
-
-function(add_we_precompile_lib libname dest impl_hpp srcs)
-  if (WE_PRECOMPILE)
-    ADD_LIBRARY(${libname} ${srcs})
-    set (WE_PRECOMPILE_LIBRARIES ${WE_PRECOMPILE_LIBRARIES}
-         ${libname}
-         CACHE INTERNAL "${libname}" FORCE
-        )
-
-    file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}.empty "/* empty file */\n")
-    configure_file (${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}.empty
-                    ${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}
-                    COPYONLY
-                   )
-  else (WE_PRECOMPILE)
-    configure_file (${impl_hpp}.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}
-                    COPYONLY
-                   )
-  endif (WE_PRECOMPILE)
-
-  install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}
-           DESTINATION include/${dest}
-           COMPONENT headers
-          )
-endfunction(add_we_precompile_lib)
-
-if (WE_PRECOMPILE)
-  add_definitions (-DWE_PRECOMPILE)
-endif (WE_PRECOMPILE)
-
 set (WE_LIBRARIES CACHE INTERNAL "we_libraries" FORCE)
 
 function(add_we_library libname)
@@ -125,4 +91,3 @@ include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
 endif (BUILD_TESTING)
-

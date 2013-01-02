@@ -38,10 +38,6 @@ namespace fhg
 
           virtual const data::handle::port& handle() const;
 
-          virtual QPainterPath shape() const;
-          virtual void paint
-            (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
-
           enum { Type = port_place_association_graph_type };
           virtual int type() const { return Type; }
 

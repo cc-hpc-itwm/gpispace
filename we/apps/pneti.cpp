@@ -3,7 +3,12 @@
 
 #include <sysexits.h>
 
-#include <we/we.hpp>
+#include <we/type/requirement.hpp>
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/util/codec.hpp>
+
 #include <fhg/revision.hpp>
 
 #include <iostream>
@@ -14,7 +19,7 @@
 
 // ************************************************************************* //
 
-typedef we::transition_t::requirements_t requirements_t;
+typedef we::type::transition_t::requirements_t requirements_t;
 typedef requirements_t::value_type requirement_t;
 
 std::ostream & operator<<( std::ostream & os
@@ -87,7 +92,7 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Requirement Listing");
 
     return 0;
   }
@@ -97,7 +102,7 @@ main (int argc, char ** argv)
       input = "/dev/stdin";
     }
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act;
 
   {
     std::ifstream stream (input.c_str());

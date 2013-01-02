@@ -15,7 +15,6 @@ namespace petri_net
     return v;                                                           \
   }
 
-  INVALID (edge_id);
   INVALID (place_id);
   INVALID (activity_id);
 

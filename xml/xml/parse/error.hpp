@@ -8,7 +8,10 @@
 
 #include <xml/parse/id/types.hpp>
 
-#include <we/we.hpp>
+#include <we/type/literal.hpp>
+#include <we/type/signature.hpp>
+#include <we/type/port.hpp>
+#include <we/type/property.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/backtracing_exception.hpp>

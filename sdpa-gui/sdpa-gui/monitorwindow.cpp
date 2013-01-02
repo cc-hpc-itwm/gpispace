@@ -25,7 +25,9 @@
 #include <boost/serialization/access.hpp>
 #include <boost/bind.hpp>
 
-#include <we/we.hpp>
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <we/util/codec.hpp>
 #include <we/loader/putget.hpp>
 #include <we/type/token.hpp>
@@ -230,7 +232,7 @@ void decode (const std::string& strMsg, T& t)
 }
 
 void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
-                                       , we::activity_t const & act
+                                       , we::mgmt::type::activity_t const & act
                                        )
 {
   if (evt.activity_state() != sdpa::daemon::NotificationEvent::STATE_FINISHED)
@@ -250,9 +252,9 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
 
     if (mod_call.function() == "done")
     {
-      we::activity_t::output_t output (act.output());
+      we::mgmt::type::activity_t::output_t output (act.output());
 
-      for ( we::activity_t::output_t::const_iterator it(output.begin())
+      for ( we::mgmt::type::activity_t::output_t::const_iterator it(output.begin())
           ; it != output.end()
           ; ++it
           )
@@ -292,7 +294,7 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
 
   if (notification.activity_state() != sdpa::daemon::NotificationEvent::STATE_IGNORE)
   {
-    we::activity_t act;
+    we::mgmt::type::activity_t act;
     try
     {
       we::util::codec::decode(notification.activity(), act);
@@ -312,7 +314,7 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
 }
 
 void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
-                                       , we::activity_t const & act
+                                       , we::mgmt::type::activity_t const & act
                                        )
 {
   static const int task_height (8);

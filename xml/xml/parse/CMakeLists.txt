@@ -53,7 +53,7 @@ add_custom_command(OUTPUT ${headerlist_hpp}
   COMMENT "generating internal pnetc headerlist"
   )
 
-set_source_files_properties(pnetc.cpp OBJECT_DEPENDS ${headerlist_hpp})
+set_source_files_properties(parser.cpp OBJECT_DEPENDS ${headerlist_hpp})
 
 add_executable(pnetc pnetc.cpp)
 #add_dependencies(pnetc gen-includes)
@@ -70,6 +70,7 @@ if (ENABLE_STATIC_BINARIES)
   target_link_libraries(pnetc.static ${WE_LIBRARIES})
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
   target_link_libraries (pnetc.static xml_parse)
+  target_link_libraries (pnetc.static fhg-revision)
 
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
 

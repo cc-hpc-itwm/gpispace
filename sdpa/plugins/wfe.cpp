@@ -24,7 +24,9 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/capability.hpp>
 
-#include <we/we.hpp>
+//! \todo eliminate this include (that completes the type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/util/codec.hpp>
 
 struct search_path_appender
 {

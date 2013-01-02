@@ -2,7 +2,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 #include <we/util/codec.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
@@ -19,7 +19,6 @@ using petri_net::edge::PT;
 using petri_net::edge::PT_READ;
 using petri_net::edge::TP;
 
-typedef unsigned int edge_t;
 typedef we::type::transition_t transition_t;
 typedef petri_net::net pnet_t;
 typedef we::mgmt::type::activity_t activity_t;
@@ -112,12 +111,10 @@ int main (int, char **)
 
   petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
-  edge_t e (0);
-
-  net.add_edge (e++, connection_t (PT, tid, pid_store));
-  net.add_edge (e++, connection_t (TP, tid, pid_store));
-  net.add_edge (e++, connection_t (PT_READ, tid, pid_vid));
-  net.add_edge (e++, connection_t (TP, tid, pid_pair));
+  net.add_connection (connection_t (PT, tid, pid_store));
+  net.add_connection (connection_t (TP, tid, pid_store));
+  net.add_connection (connection_t (PT_READ, tid, pid_vid));
+  net.add_connection (connection_t (TP, tid, pid_pair));
 
   token::put (net, pid_vid, literal::type(0L));
   token::put (net, pid_vid, literal::type(1L));

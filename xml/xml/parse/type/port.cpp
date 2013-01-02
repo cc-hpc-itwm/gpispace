@@ -86,7 +86,7 @@ namespace xml
             else
             {
               boost::optional<const id::ref::place&>
-                place (id_net.get().places().get (*_port.get().place));
+                place (_port.get().resolved_place());
 
               if (not place)
               {
@@ -149,6 +149,16 @@ namespace xml
         (const we::type::PortDirection& direction_)
       {
         return _direction = direction_;
+      }
+
+      boost::optional<const id::ref::place&> port_type::resolved_place() const
+      {
+        if (!place || !(has_parent() && parent()->is_net()))
+        {
+          return boost::none;
+        }
+
+        return parent()->get_net()->get().places().get (*place);
       }
 
       const we::type::property::type& port_type::properties() const

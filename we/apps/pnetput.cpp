@@ -1,10 +1,13 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/we.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <we/type/literal.hpp>
 #include <we/util/token.hpp>
+#include <we/util/codec.hpp>
 #include <we/type/value/read.hpp>
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/mgmt/type/activity.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -76,7 +79,7 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Token Injector");
 
     return EXIT_SUCCESS;
   }
@@ -91,7 +94,7 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act;
 
   try
   {

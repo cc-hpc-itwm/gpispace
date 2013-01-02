@@ -185,12 +185,19 @@ namespace we { namespace type {
       const static bool external = false;
 
       transition_t ()
-        : name_ ("unknown")
+        : name_ ("<<transition unknown>>")
+        , data_ (expression_t())
+        , internal_ (true)
         , condition_( "true"
                     , boost::bind (&transition_t::name_of_place, this, _1)
                     )
-        , port_id_counter_(0)
-      { }
+        , outer_to_inner_()
+        , inner_to_outer_()
+        , ports_()
+        , port_id_counter_ (0)
+        , prop_()
+        , _requirements()
+      {}
 
       template <typename Type>
       transition_t ( const std::string & name
@@ -203,7 +210,12 @@ namespace we { namespace type {
         , condition_( _condition
                     , boost::bind (&transition_t::name_of_place, this, _1)
                     )
-        , port_id_counter_(0)
+        , outer_to_inner_()
+        , inner_to_outer_()
+        , ports_()
+        , port_id_counter_ (0)
+        , prop_()
+        , _requirements()
       { }
 
       template <typename Type>
@@ -218,7 +230,12 @@ namespace we { namespace type {
                     , _condition
                     , boost::bind (&transition_t::name_of_place, this, _1)
                     )
-        , port_id_counter_(0)
+        , outer_to_inner_()
+        , inner_to_outer_()
+        , ports_()
+        , port_id_counter_ (0)
+        , prop_()
+        , _requirements()
       { }
 
       template <typename Type>
@@ -233,7 +250,12 @@ namespace we { namespace type {
         , condition_( _condition
                     , boost::bind (&transition_t::name_of_place, this, _1)
                     )
-        , port_id_counter_(0)
+        , outer_to_inner_()
+        , inner_to_outer_()
+        , ports_()
+        , port_id_counter_ (0)
+        , prop_()
+        , _requirements()
       { }
 
       template <typename Type>
@@ -251,8 +273,12 @@ namespace we { namespace type {
                     , _condition
                     , boost::bind (&transition_t::name_of_place, this, _1)
                     )
-        , port_id_counter_(0)
+        , outer_to_inner_()
+        , inner_to_outer_()
+        , ports_()
+        , port_id_counter_ (0)
         , prop_(prop)
+        , _requirements()
       { }
 
       transition_t (const transition_t &other)
@@ -267,7 +293,7 @@ namespace we { namespace type {
         , ports_(other.ports_)
         , port_id_counter_(other.port_id_counter_)
         , prop_ (other.prop_)
-        , m_requirements (other.m_requirements)
+        , _requirements (other._requirements)
       { }
 
       const condition::type & condition() const
@@ -307,7 +333,7 @@ namespace we { namespace type {
 
       requirements_t const & requirements (void) const
       {
-        return m_requirements;
+        return _requirements;
       }
 
       transition_t & operator=(const transition_t & other)
@@ -326,7 +352,7 @@ namespace we { namespace type {
             , boost::bind (&transition_t::name_of_place, this, _1)
             );
           prop_ = other.prop_;
-          m_requirements = other.m_requirements;
+          _requirements = other._requirements;
         }
         return *this;
       }
@@ -821,12 +847,12 @@ namespace we { namespace type {
 
       void add_requirement ( requirement_t const & r )
       {
-        m_requirements.push_back (r);
+        _requirements.push_back (r);
       }
 
       void del_requirement ( requirement_t const & r )
       {
-        m_requirements.remove (r);
+        _requirements.remove (r);
       }
 
     private:
@@ -842,7 +868,7 @@ namespace we { namespace type {
 
       we::type::property::type prop_;
 
-      requirements_t m_requirements;
+      requirements_t _requirements;
 
     private:
       friend std::ostream & operator<< ( std::ostream &
@@ -862,7 +888,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
-        ar & BOOST_SERIALIZATION_NVP(m_requirements);
+        ar & BOOST_SERIALIZATION_NVP(_requirements);
       }
 
       template <typename Archive>
@@ -884,7 +910,7 @@ namespace we { namespace type {
 
         if (version > 0)
         {
-          ar & BOOST_SERIALIZATION_NVP(m_requirements);
+          ar & BOOST_SERIALIZATION_NVP(_requirements);
         }
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -1003,17 +1029,6 @@ namespace we { namespace type {
   }
 }
 
-//! \todo is this used somewhere?
-namespace boost {
-  namespace serialization {
-    template<>
-    struct version<we::type::transition_t>
-    {
-      typedef mpl::int_<1> type;
-      typedef mpl::integral_c_tag tag;
-      BOOST_STATIC_CONSTANT(int, value = version::type::value);
-    };
-  }
-}
+BOOST_CLASS_VERSION(we::type::transition_t, 1);
 
 #endif

@@ -44,6 +44,8 @@ namespace fhg
 
           QList<QPointF> all_points() const;
 
+          void invert();
+
           virtual QPainterPath shape() const;
           virtual void paint
             (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);

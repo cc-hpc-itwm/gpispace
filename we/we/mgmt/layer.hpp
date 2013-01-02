@@ -27,7 +27,8 @@
 #include <fhg/util/warnings.hpp>
 #include <fhg/util/threadname.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
+#include <we/util/codec.hpp>
 
 #include <boost/random.hpp>
 #include <boost/function.hpp>
@@ -679,7 +680,7 @@ namespace we { namespace mgmt {
         add_map_to_internal (ext_id, int_id);
 
         // copy the activity and let it be handled internally on the next level
-        activity_t ext_act (desc->activity());
+        we::mgmt::type::activity_t ext_act (desc->activity());
         ext_act.transition().set_internal(true);
 
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);

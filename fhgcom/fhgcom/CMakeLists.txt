@@ -38,10 +38,6 @@ set (srcs
   header.cpp
 )
 
-if (NO_IMPLICIT_TEMPLATES)
-  set (srcs ${srcs} template.cpp)
-endif (NO_IMPLICIT_TEMPLATES)
-
 ADD_LIBRARY(fhgcom ${hdrs} ${srcs})
 ADD_LIBRARY(fhgcom-shared SHARED ${hdrs} ${srcs})
 target_link_libraries (fhgcom ${ZLIB_LIBRARIES})

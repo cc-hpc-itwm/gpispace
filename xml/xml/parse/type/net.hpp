@@ -179,7 +179,6 @@ namespace xml
                      , const place_map_map_type & place_map_map
                      , const net_type & net
                      , const state::type & state
-                     , unsigned int & e
                      );
 
       namespace dump

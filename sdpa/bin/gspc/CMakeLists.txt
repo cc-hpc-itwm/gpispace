@@ -13,8 +13,11 @@ set (scripts
   gspc-help
   gspc-template
   gspc-topology
+  gspc-topology-status
+  gspc-topology-list
   gspc-log
   gspc-init
+  gspc-kvs
 )
 
 set (files

@@ -697,14 +697,11 @@ namespace xml
         {
           we_net_type we_net;
 
-          unsigned int e (0);
-
           pid_of_place_type pid_of_place
             ( net_synthesize ( we_net
                              , place_map_map_type()
                              , id_net.get()
                              , state
-                             , e
                              )
             );
 

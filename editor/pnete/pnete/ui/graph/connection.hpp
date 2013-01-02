@@ -39,10 +39,6 @@ namespace fhg
 
           virtual const data::handle::connect& handle() const;
 
-          virtual QPainterPath shape() const;
-          virtual void paint
-            (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
-
           enum { Type = connection_graph_type };
           virtual int type() const { return Type; }
 

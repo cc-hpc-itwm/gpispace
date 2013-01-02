@@ -584,11 +584,8 @@ namespace xml
                      , const place_map_map_type & place_map_map
                      , const net_type& net
                      , const state::type & state
-                     , unsigned int& e
                      )
       {
-        typedef unsigned int we_edge_type;
-
         typedef boost::unordered_map< std::string
                                     , petri_net::place_id_type
                                     > pid_of_place_type;
@@ -661,7 +658,6 @@ namespace xml
               , net
               , we_net
               , pid_of_place
-              , e
               );
           }
 

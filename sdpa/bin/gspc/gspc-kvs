@@ -1,0 +1,248 @@
+#!/bin/bash
+
+GSPC_DOC_SHORT_DESCRIPTION="manage the Key-Value-Store"
+GSPC_IMPORTANT_API_COMMAND=true
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: kvs [-h|--help] [options] [--] [<action>]
+
+Options:
+
+   --host[=<host>]       specify or get the host of the KVS
+   --port[=<port>]       specify or get the port of the KVS
+
+   --expiry <msec>       specify the expiry time in 1/1000 sec
+
+Actions:
+
+   --start               start the kvs if it does not run yet
+   --stop                stop the kvs
+   --get <key>           get values from the kvs
+   --put <key> <value>   put values into the kvs
+EOF
+}
+
+kvs_host="$GSPC_KVS_HOST"
+kvs_port="$GSPC_KVS_PORT"
+key_expiry=0
+action=
+
+if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+
+TEMP=`getopt -o h --long help,host::,port::,expiry:,status,start,stop,get,get-regex,put,del -n 'gspc' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --host)
+            if [ -n "$2" ] ; then
+                kvs_host="$2"
+            else
+                action="get-host"
+            fi
+            shift
+            shift
+            ;;
+        --port)
+            if [ -n "$2" ] ; then
+                kvs_port="$2"
+            else
+                action="get-port"
+            fi
+            shift
+            shift
+            ;;
+        --expiry) key_expiry="$2" ; shift ; shift ;;
+
+        --status) action="status" ; shift ;;
+        --start)  action="start" ; shift ;;
+        --stop)   action="stop" ; shift ;;
+        --get)    action="get" ; shift ;;
+        --put)    action="put" ; shift ;;
+        --del)    action="del" ; shift ;;
+        --get-regex)    action="get-regex" ; shift ;;
+
+        --) shift; break ;;
+        *) gspc_log_error config "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+if [ -z "$action" ] ; then
+    usage
+    exit 1
+fi
+
+function kvsc ()
+{
+    fhgkvsc --host "${kvs_host}" --port "${kvs_port}" "$@"
+}
+
+function gspc_require_kvs_config ()
+{
+    if [ -z "$kvs_host" -o -z "$kvs_port" ]
+    then
+        kvs_cfg=( $(gspc --no-alias config --local --get-regex kvs | sort | awk '{print $3}') )
+        if [ ${#kvs_cfg[@]} -ne 2 ] ; then
+            kvs_host="$(hostname -f)"
+            kvs_port="2439"
+        else
+            kvs_host=${kvs_cfg[0]}
+            kvs_port=${kvs_cfg[1]}
+
+            gspc_log_trace kvs "using kvs from local config: host => ${kvs_host} port => ${kvs_port}"
+        fi
+    fi
+
+    return 0
+}
+
+function _check_kvs_status ()
+{
+    local host="${1}" ; shift
+    local port="${1}" ; shift
+    if gspc check-port "$host" "$port" ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+case "$action" in
+    get-host)
+        gspc_require_kvs_config
+        echo "$kvs_host"
+        exit 0
+        ;;
+    get-port)
+        gspc_require_kvs_config
+        echo "$kvs_port"
+        exit 0
+        ;;
+    status)
+        gspc_require_kvs_config
+
+        if _check_kvs_status "${kvs_host}" "${kvs_port}" ; then
+            gspc_log_debug kvs "config: host => $kvs_host port => $kvs_port"
+            exit 0
+        else
+            gspc_log_error kvs "KVS not reachable: host => '$kvs_host' port => '$kvs_port'"
+            exit 1
+        fi
+        ;;
+    start)
+        gspc_require_gspc_dir
+        gspc_require_kvs_config
+
+        if [ -z "$kvs_host" ] ; then
+            gspc_log_error kvs "kvs-host is not set!"
+            exit 1
+        fi
+
+        if [ -z "$kvs_port" ] ; then
+            gspc_log_error kvs "kvs-port is not set!"
+            exit 1
+        fi
+
+        gspc_log_info kvs "starting KVS: host => '${kvs_host}' port => '${kvs_port}'"
+
+        gspc rexec "${kvs_host}" $(gspc --bin-path)/fhgkvsd -p "${kvs_port}" -s "${GSPC_DIR}/var/kvs.data" --daemonize --pidfile "${GSPC_DIR}/run/kvs.pid"
+        ec=$?
+        if [ $ec -eq 0 ] ; then
+            gspc config --local --set "kvs.host" "${kvs_host}"
+            gspc config --local --set "kvs.port" "${kvs_port}"
+        fi
+        exit $ec
+        ;;
+    stop)
+        gspc_require_kvs_config
+
+        gspc_log_info kvs "stopping KVS: host => '${kvs_host}' port => '${kvs_port}'"
+
+        err=$(kvsc --term 2>&1)
+        ec=$?
+        if [ $ec -eq 4 ] ; then
+            gspc_log_debug kvs "not running"
+        elif [ $ec -ne 0 ] ; then
+            gspc_log_error kvs "unknown error: $err"
+        fi
+        exit $ec
+        ;;
+    get)
+        gspc_require_kvs_config
+
+        if [ $# -eq 0 ] ; then
+            gspc_log_error kvs "get requires at least one argument: <key>..."
+        fi
+        ec=0
+        while [ $# -gt 0 ] ; do
+            kvsc --full --get "$1" 2>/dev/null
+            if [ $? -ne 0 ] ; then
+                ec=1
+            fi
+            shift
+        done
+        exit $ec
+        ;;
+    get-regex)
+        gspc_require_kvs_config
+
+        if [ $# -eq 0 ] ; then
+            gspc_log_error kvs "get requires at least one argument: <key>..."
+        fi
+        ec=0
+        while [ $# -gt 0 ] ; do
+            kvsc --get "$1"
+            if [ $? -ne 0 ] ; then
+                ec=1
+            fi
+            shift
+        done
+        exit $ec
+        ;;
+    put)
+        gspc_require_kvs_config
+
+        if [ $(( $# % 2 )) -ne 0 ] ; then
+            gspc_log_error kvs "put requires an even number of arguments: <key> <val>..."
+            exit 1
+        fi
+        ec=0
+        while [ $# -ge 2 ] ; do
+            kvsc --put "$1" --value "$2" --expiry "${key_expiry}"
+            if [ $? -ne 0 ] ; then
+                ec=1
+            fi
+            shift
+            shift
+        done
+        exit $ec
+        ;;
+    del)
+        gspc_require_kvs_config
+
+        if [ $# -eq 0 ] ; then
+            gspc_log_error kvs "del requires at least one argument: <key>..."
+        fi
+        ec=0
+        while [ $# -gt 0 ] ; do
+            kvsc --del "$1"
+            if [ $? -ne 0 ] ; then
+                ec=1
+            fi
+            shift
+        done
+        exit $ec
+        ;;
+    *)
+        gspc_log_error kvs "invalid action: '$action'"
+        exit 1
+        ;;
+esac

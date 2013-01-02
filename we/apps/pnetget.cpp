@@ -3,7 +3,11 @@
 
 #include <sysexits.h>
 
-#include <we/we.hpp>
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/id.hpp>
+#include <we/util/codec.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -38,7 +42,7 @@ namespace detail
 
 struct match_every_port
 {
-  bool operator() (const we::activity_t::token_on_port_t)
+  bool operator() (const we::mgmt::type::activity_t::token_on_port_t)
   {
     return true;
   }
@@ -50,7 +54,7 @@ struct match_equal_port
     : port(p)
   {}
 
-  bool operator() (const we::activity_t::token_on_port_t & subject)
+  bool operator() (const we::mgmt::type::activity_t::token_on_port_t & subject)
   {
     return subject.second == port;
   }
@@ -65,7 +69,7 @@ struct output_token
   {}
   output_token const & operator *() const { return *this; }
   output_token const & operator++(int) const { return *this; }
-  output_token const & operator=(const we::activity_t::token_on_port_t & subject) const
+  output_token const & operator=(const we::mgmt::type::activity_t::token_on_port_t & subject) const
   {
     out << subject.first << delim;
     return *this;
@@ -83,7 +87,7 @@ struct output_port_and_token
   {}
   output_port_and_token const & operator *() const { return *this; }
   output_port_and_token const & operator++(int) const { return *this; }
-  output_port_and_token const & operator=(const we::activity_t::token_on_port_t & subject) const
+  output_port_and_token const & operator=(const we::mgmt::type::activity_t::token_on_port_t & subject) const
   {
     out << "on " << subject.second << ": " << subject.first << delim;
     return *this;
@@ -148,7 +152,7 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Token Extractor");
 
     return EXIT_SUCCESS;
   }
@@ -170,7 +174,7 @@ main (int argc, char ** argv)
     return EX_USAGE;
   }
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act;
 
   {
     std::ifstream stream (input.c_str());

@@ -21,7 +21,9 @@
 #include "progress.hpp"
 
 // ufbmig types
-#include <we/we.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/net.hpp>
+#include <we/util/codec.hpp>
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
 
@@ -348,7 +350,7 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_prepare));
 
-    we::activity_t act;
+    we::mgmt::type::activity_t act;
 
     try
     {
@@ -387,7 +389,7 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_initialize));
 
-    we::activity_t act;
+    we::mgmt::type::activity_t act;
 
     try
     {
@@ -436,7 +438,7 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_mask));
 
-    we::activity_t act;
+    we::mgmt::type::activity_t act;
 
     try
     {
@@ -478,7 +480,7 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_calculate));
 
-    we::activity_t act;
+    we::mgmt::type::activity_t act;
 
     try
     {
@@ -523,7 +525,7 @@ public:
     MLOG(INFO, "submitting FINALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_finalize));
-    we::activity_t act;
+    we::mgmt::type::activity_t act;
 
     try
     {
@@ -855,7 +857,7 @@ private:
     return ec;
   }
 
-  int handle_initialize_result (we::activity_t const &result)
+  int handle_initialize_result (we::mgmt::type::activity_t const &result)
   {
     try
     {
@@ -872,17 +874,17 @@ private:
     return 0;
   }
 
-  int handle_update_salt_mask_result (we::activity_t const &result)
+  int handle_update_salt_mask_result (we::mgmt::type::activity_t const &result)
   {
     return 0;
   }
 
-  int handle_calculate_result (we::activity_t const &result)
+  int handle_calculate_result (we::mgmt::type::activity_t const &result)
   {
     return 0;
   }
 
-  int handle_finalize_result (we::activity_t const &result)
+  int handle_finalize_result (we::mgmt::type::activity_t const &result)
   {
     if (fs::exists(m_file_with_config))
     {
@@ -908,7 +910,7 @@ private:
 
     int ec = j.error;
 
-    we::activity_t result;
+    we::mgmt::type::activity_t result;
     if (0 == ec)
     {
       try

@@ -28,7 +28,7 @@
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/bits/queue.hpp>
 
-#include <we/we.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <we/loader/loader.hpp>
 #include <we/mgmt/context.hpp>
 
@@ -38,6 +38,8 @@
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
+
+#include <we/util/codec.hpp>
 
 #include <list>
 
@@ -72,22 +74,22 @@ namespace test {
     {
       typedef IdType id_type;
 
-      virtual int handle_internally (we::activity_t& act, net_t& n)
+      virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n)
       {
         return handle_externally (act, n);
       }
 
-      virtual int handle_internally (we::activity_t&, mod_t&)
+      virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&)
       {
         throw std::runtime_error ("NO internal mod here!");
       }
 
-      virtual int handle_internally (we::activity_t&, expr_t&)
+      virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
       {
         throw std::runtime_error ("NO internal expr here!");
       }
 
-      virtual int handle_externally (we::activity_t& act, net_t&)
+      virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&)
       {
         id_type new_id (daemon.gen_id());
         daemon.add_mapping (id, new_id);
@@ -95,7 +97,7 @@ namespace test {
         return 0;
       }
 
-      virtual int handle_externally (we::activity_t& act, mod_t& mod)
+      virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
       {
         try
         {
@@ -113,7 +115,7 @@ namespace test {
         return 0;
       }
 
-      virtual int handle_externally (we::activity_t&, expr_t&)
+      virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&)
       {
         throw std::runtime_error ("NO external expr here!");
       }
@@ -202,7 +204,7 @@ namespace test {
       {
         job_type job (jobs_[rank].get());
 
-        we::activity_t act ( we::util::codec::decode (job.desc));
+        we::mgmt::type::activity_t act ( we::util::codec::decode (job.desc));
         detail::context<this_type, id_type> ctxt (*this, job.id);
         act.execute (&ctxt);
       }
@@ -272,7 +274,7 @@ namespace test {
       }
       catch (std::out_of_range const &)
       {
-        we::activity_t act (we::util::codec::decode (desc));
+        we::mgmt::type::activity_t act (we::util::codec::decode (desc));
 
         std::cout << "finished [" << id << "] = ";
         act.print (std::cout, act.output());
@@ -297,7 +299,7 @@ namespace test {
       }
       catch (std::out_of_range const &)
       {
-        we::activity_t act (we::util::codec::decode (desc));
+        we::mgmt::type::activity_t act (we::util::codec::decode (desc));
 
         std::cout << "failed [" << id << "] = ";
         act.print (std::cout, act.output());
