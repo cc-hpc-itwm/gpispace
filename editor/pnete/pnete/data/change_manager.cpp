@@ -1195,18 +1195,16 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
-            , ::xml::parse::id::ref::function
-              ( ::xml::parse::type::function_type
+            , ::xml::parse::type::function_type
+              ( net.id().id_mapper()->next_id()
+              , net.id().id_mapper()
+              , boost::none
+              , ::xml::parse::type::expression_type
                 ( net.id().id_mapper()->next_id()
                 , net.id().id_mapper()
                 , boost::none
-                , ::xml::parse::type::expression_type
-                  ( net.id().id_mapper()->next_id()
-                  , net.id().id_mapper()
-                  , boost::none
-                  ).make_reference_id()
                 ).make_reference_id()
-              )
+              ).make_reference_id()
             ).make_reference_id()
           );
 
