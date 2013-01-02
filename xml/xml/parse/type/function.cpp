@@ -669,6 +669,7 @@ namespace xml
         : public boost::static_visitor<we::type::transition_t>
       {
       private:
+        const std::string& _name;
         const state::type & state;
         function_type & fun;
 
@@ -763,14 +764,9 @@ namespace xml
           }
         }
 
-        std::string name (void) const
+        const std::string& name() const
         {
-          if (not fun.name())
-            {
-              throw error::synthesize_anonymous_function (fun.path);
-            }
-
-          return *fun.name();
+          return _name;
         }
 
         we_cond_type condition (void) const
@@ -784,8 +780,12 @@ namespace xml
         }
 
       public:
-        function_synthesize (const state::type & _state, function_type & _fun)
-          : state (_state)
+        function_synthesize ( const std::string& name
+                            , const state::type& _state
+                            , function_type& _fun
+                            )
+          : _name (name)
+          , state (_state)
           , fun (_fun)
         {}
 
@@ -860,11 +860,11 @@ namespace xml
         }
       };
 
-      we::type::transition_t
-      function_type::synthesize (const state::type & state)
+      we::type::transition_t function_type::synthesize
+        (const std::string& name, const state::type& state)
       {
         return boost::apply_visitor
-          (function_synthesize (state, *this), content());
+          (function_synthesize (name, state, *this), content());
       }
 
       // ***************************************************************** //

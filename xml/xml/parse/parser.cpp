@@ -1708,7 +1708,13 @@ namespace xml
       , const xml::parse::state::type& state
       )
     {
-      we::type::transition_t trans (function.get_ref().synthesize (state));
+      if (not function.get().name())
+      {
+        throw error::synthesize_anonymous_function (function.get().path);
+      }
+
+      we::type::transition_t trans
+        (function.get_ref().synthesize (*function.get().name(), state));
 
       we::type::optimize::optimize (trans, state.options_optimize());
 

@@ -200,7 +200,7 @@ namespace xml
         // ***************************************************************** //
 
         we::type::transition_t
-        synthesize (const state::type & state);
+          synthesize (const std::string&, const state::type&);
 
         // ***************************************************************** //
 
