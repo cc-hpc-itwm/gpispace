@@ -342,7 +342,10 @@ namespace xml
           return;
         }
 
-        if ( _connections.has
+        if ( ( petri_net::edge::is_PT (connection.get().direction())
+             != petri_net::edge::is_PT (dir)
+             )
+           && _connections.has
              ( boost::make_tuple ( connection.get().place()
                                  , connection.get().port()
                                  , petri_net::edge::is_PT (dir)
