@@ -122,6 +122,8 @@ namespace fhg
         void add_place (const QObject*, const data::handle::net&);
         void delete_place (const QObject*, const data::handle::place&);
 
+        void set_name
+          (const QObject*, const data::handle::place&, const QString&);
         void set_type
           (const QObject*, const data::handle::place&, const QString&);
 
@@ -266,6 +268,8 @@ namespace fhg
                               , const we::type::property::key_type&
                               , const we::type::property::value_type&
                               );
+        void place_name_set
+          (const QObject*, const data::handle::place&, const QString&);
         void place_type_set
           (const QObject*, const data::handle::place&, const QString&);
 

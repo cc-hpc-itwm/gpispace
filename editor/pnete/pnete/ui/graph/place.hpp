@@ -53,7 +53,7 @@ namespace fhg
         public slots:
           void refresh_content();
 
-          void type_changed
+          void type_or_name_changed
             (const QObject*, const data::handle::place&, const QString&);
 
           void property_changed

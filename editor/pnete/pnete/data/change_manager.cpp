@@ -70,6 +70,7 @@ namespace fhg
           // -- place --------------------------------------------------
           EXPOSE (place_added);
           EXPOSE (place_deleted);
+          EXPOSE (place_name_set);
           EXPOSE (place_type_set);
 
           // - port ----------------------------------------------------
@@ -612,6 +613,46 @@ namespace fhg
           ACTION_MEMBERS;
           ::xml::parse::id::ref::place _place;
           ::xml::parse::id::ref::net _net;
+        };
+
+        void place_set_name_impl
+          (ACTION_ARG_LIST, const handle::place& place, const QString& name)
+        {
+          place.get_ref().name (name.toStdString());
+          change_manager.emit_signal
+            (&signal::place_name_set, origin, place, name);
+        }
+
+        class place_set_name : public QUndoCommand
+        {
+        public:
+          place_set_name
+            ( ACTION_ARG_LIST
+            , const handle::place& place
+            , const QString& name
+            )
+              : ACTION_INIT ("place_set_name_action")
+              , _place (place)
+              , _old_name (QString::fromStdString (place.get().name()))
+              , _new_name (name)
+          { }
+
+          virtual void undo()
+          {
+            place_set_name_impl (_change_manager, NULL, _place, _old_name);
+          }
+
+          virtual void redo()
+          {
+            place_set_name_impl (_change_manager, _origin, _place, _new_name);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const handle::place _place;
+          const QString _old_name;
+          const QString _new_name;
         };
 
         void place_set_type_impl
@@ -1388,6 +1429,14 @@ namespace fhg
         push (new action::remove_place (*this, origin, place.id()));
 
         endMacro();
+      }
+
+      void change_manager_t::set_name ( const QObject* origin
+                                      , const data::handle::place& place
+                                      , const QString& name
+                                      )
+      {
+        push (new action::place_set_name (*this, origin, place, name));
       }
 
       void change_manager_t::set_type ( const QObject* origin

@@ -42,7 +42,12 @@ namespace fhg
 
           handle.connect_to_change_mgr
             ( this
-            , "place_type_set", "type_changed"
+            , "place_name_set", "type_or_name_changed"
+            , "data::handle::place, QString"
+            );
+          handle.connect_to_change_mgr
+            ( this
+            , "place_type_set", "type_or_name_changed"
             , "data::handle::place, QString"
             );
 
@@ -155,7 +160,7 @@ namespace fhg
           }
         }
 
-        void place_item::type_changed
+        void place_item::type_or_name_changed
           ( const QObject* origin
           , const data::handle::place& changed_handle
           , const QString&

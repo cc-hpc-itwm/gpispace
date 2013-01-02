@@ -31,6 +31,11 @@ namespace fhg
           change_manager().delete_place (sender, *this);
         }
 
+        void place::set_name (const QObject* sender, const QString& name) const
+        {
+          change_manager().set_name (sender, *this, name);
+        }
+
         void place::set_type (const QObject* sender, const QString& type) const
         {
           change_manager().set_type (sender, *this, type);
