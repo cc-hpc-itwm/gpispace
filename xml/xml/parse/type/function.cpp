@@ -748,19 +748,14 @@ namespace xml
             }
         }
 
-        void add_requirements ( we_transition_type & trans
-                              , xml::parse::type::requirements_type const & req
-                              ) const
+        void add_requirements (we_transition_type& trans) const
         {
-          for ( requirements_type::const_iterator r (req.begin())
-              ; r != req.end()
+          for ( requirements_type::const_iterator r (fun.requirements.begin())
+              ; r != fun.requirements.end()
               ; ++r
               )
           {
-            trans.add_requirement (we_requirement_type ( r->first
-                                                       , r->second
-                                                       )
-                                  );
+            trans.add_requirement (we_requirement_type (r->first, r->second));
           }
         }
 
@@ -805,7 +800,7 @@ namespace xml
             );
 
           add_ports (trans, fun.ports());
-          add_requirements (trans, fun.requirements);
+          add_requirements (trans);
 
           return trans;
         }
@@ -823,7 +818,7 @@ namespace xml
             );
 
           add_ports (trans, fun.ports());
-          add_requirements (trans, fun.requirements);
+          add_requirements (trans);
 
           return trans;
         }
@@ -854,7 +849,7 @@ namespace xml
             );
 
           add_ports (trans, fun.ports(), pid_of_place);
-          add_requirements (trans, fun.requirements);
+          add_requirements (trans);
 
           return trans;
         }
