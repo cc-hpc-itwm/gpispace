@@ -1253,9 +1253,9 @@ namespace xml
         virtual ~port_type_mismatch() throw() { }
 
       private:
-        const id::ref::port& _port;
-        const id::ref::port& _other_port;
-        const boost::filesystem::path& _path;
+        const id::ref::port _port;
+        const id::ref::port _other_port;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
