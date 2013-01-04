@@ -833,6 +833,9 @@ namespace xml
                                )
               );
 
+            //! \todo It seems like this should be getting the
+            //! requirements of the inlined transition. Or all
+            //! inlined transitions?
             we::type::transition_t trans_in
               ( prefix + "IN"
               , we::type::expression_t()
