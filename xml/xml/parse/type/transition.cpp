@@ -767,11 +767,6 @@ namespace xml
                      );
         }
 
-        fun.cond.insert ( fun.cond.end()
-                        , trans.conditions().begin()
-                        , trans.conditions().end()
-                        );
-
         fun.requirements.join (trans.requirements);
 
         util::property::join (state, fun.properties(), trans.properties());
@@ -827,7 +822,8 @@ namespace xml
             net.remove_prefix (prefix);
 
             // go in the subnet
-            const std::string cond_in (fun.condition());
+            const std::string cond_in
+              ((fun.conditions() + trans.conditions()).flatten());
 
             util::we_parser_t parsed_condition_in
               ( util::we_parse ( cond_in
@@ -1079,7 +1075,12 @@ namespace xml
               }
 
             we::type::transition_t we_trans
-              (fun.synthesize (trans.name(), state, trans.internal));
+              ( fun.synthesize ( trans.name()
+                               , state
+                               , trans.internal
+                               , trans.conditions()
+                               )
+              );
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()

@@ -478,12 +478,22 @@ namespace xml
 
       // ***************************************************************** //
 
-      std::string function_type::condition (void) const
+      const conditions_type& function_type::conditions() const
       {
-        return cond.empty()
+        return cond;
+      }
+
+      std::string conditions_type::flatten() const
+      {
+        return empty()
           ? "true"
-          : fhg::util::join (cond.begin(), cond.end(), " && ", "(", ")")
-          ;
+          : fhg::util::join (begin(), end(), " && ", "(", ")");
+      }
+
+      conditions_type operator+ (conditions_type lhs, const conditions_type& rhs)
+      {
+        lhs.insert (lhs.end(), rhs.begin(), rhs.end());
+        return lhs;
       }
 
       // ***************************************************************** //
@@ -673,6 +683,7 @@ namespace xml
         const state::type & state;
         const function_type& fun;
         boost::optional<bool> _internal;
+        const conditions_type& _conditions;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -767,7 +778,7 @@ namespace xml
 
         we_cond_type condition (void) const
         {
-          const std::string cond (fun.condition());
+          const std::string cond ((fun.conditions() + _conditions).flatten());
 
           util::we_parser_t parsed_condition
             (util::we_parse (cond, "condition", "function", name(), fun.path));
@@ -780,11 +791,13 @@ namespace xml
                             , const state::type& _state
                             , const function_type& _fun
                             , const boost::optional<bool>& internal
+                            , const conditions_type& conditions
                             )
           : _name (name)
           , state (_state)
           , fun (_fun)
           , _internal (internal)
+          , _conditions (conditions)
         {}
 
         we_transition_type
@@ -864,6 +877,7 @@ namespace xml
         ( const std::string& name
         , const state::type& state
         , const boost::optional<bool>& trans_internal
+        , const conditions_type& conditions
         ) const
       {
         return boost::apply_visitor
@@ -871,6 +885,7 @@ namespace xml
                                 , state
                                 , *this
                                 , trans_internal ? trans_internal : internal
+                                , conditions
                                 )
           , content()
           );

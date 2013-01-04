@@ -26,7 +26,12 @@ namespace xml
   {
     namespace type
     {
-      typedef std::list<std::string> conditions_type;
+      struct conditions_type : public std::list<std::string>
+      {
+        std::string flatten() const;
+      };
+
+      conditions_type operator+ (conditions_type, const conditions_type&);
 
       struct function_type
       {
@@ -166,7 +171,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        std::string condition (void) const;
+        const conditions_type& conditions() const;
 
         // ***************************************************************** //
 
@@ -203,6 +208,7 @@ namespace xml
           ( const std::string&
           , const state::type&
           , const boost::optional<bool>& = boost::none
+          , const conditions_type& = conditions_type()
           ) const;
 
         // ***************************************************************** //
