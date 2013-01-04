@@ -29,6 +29,28 @@ namespace xml
           , _port (port)
           , _path (path)
       { }
+
+      conflicting_port_types::conflicting_port_types
+        ( const id::ref::transition& transition
+        , const id::ref::port& in
+        , const id::ref::port& out
+        , const boost::filesystem::path& path
+        )
+          : generic ( boost::format ( "port %1% of transition %2% has differing "
+                                      "types for input (%3%) and output (%4%) "
+                                      "in %5%"
+                                    )
+                    % in.get().name()
+                    % transition.get().name()
+                    % in.get().type
+                    % out.get().type
+                    % path
+                    )
+          , _transition (transition)
+          , _in (in)
+          , _out (out)
+          , _path (path)
+      { }
     }
   }
 }

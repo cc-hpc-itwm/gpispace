@@ -597,33 +597,19 @@ namespace xml
 
       class conflicting_port_types : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const std::string & port
-                         , const std::string & type_in
-                         , const std::string & type_out
-                         , const boost::filesystem::path & path
-                         )
-        {
-          std::ostringstream s;
-
-          s << "the port " << port << " of the transition " << name
-            << " has the type " << type_in << " as input port"
-            << " and the type " << type_out << " as output port"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        conflicting_port_types ( const std::string & name
-                               , const std::string & port
-                               , const std::string & type_in
-                               , const std::string & type_out
-                               , const boost::filesystem::path & path
-                               )
-          : generic (nice (name, port, type_in, type_out, path))
-        {}
+        conflicting_port_types ( const id::ref::transition&
+                               , const id::ref::port& in
+                               , const id::ref::port& out
+                               , const boost::filesystem::path&
+                               );
+        virtual ~conflicting_port_types() throw() { }
+
+      private:
+        const id::ref::transition _transition;
+        const id::ref::port _in;
+        const id::ref::port _out;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

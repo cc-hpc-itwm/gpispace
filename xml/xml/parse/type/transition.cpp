@@ -728,24 +728,18 @@ namespace xml
         {
           if (port_in.direction() == we::type::PORT_IN)
           {
-            boost::optional<const id::ref::port&> id_port_out
+            const boost::optional<const id::ref::port&> id_port_out
               (fun.get_port_out (port_in.name()));
 
-            if (id_port_out)
+            if (id_port_out && id_port_out->get().type != port_in.type)
             {
-              const port_type& port_out (id_port_out->get());
-
-              if (port_out.type != port_in.type)
-              {
-                state.warn
-                  ( warning::conflicting_port_types ( trans.name()
-                                                    , port_in.name()
-                                                    , port_in.type
-                                                    , port_out.type
-                                                    , state.file_in_progress()
-                                                    )
-                  );
-              }
+              state.warn
+                ( warning::conflicting_port_types ( id_transition
+                                                  , port_in.make_reference_id()
+                                                  , *id_port_out
+                                                  , state.file_in_progress()
+                                                  )
+                );
             }
           }
         }
