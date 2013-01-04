@@ -760,19 +760,14 @@ namespace xml
                      );
         }
 
-        if (fun.internal)
-          {
-            if (trans.internal && *trans.internal != *fun.internal)
-              {
-                state.warn ( warning::overwrite_function_internal_trans
-                             ( trans.name()
-                             , trans.path
-                             )
-                           );
+        if (fun.internal && trans.internal && *trans.internal != *fun.internal)
+        {
+          state.warn ( warning::overwrite_function_internal_trans
+                       (id_transition, id_function)
+                     );
 
-                fun.internal = trans.internal;
-              }
-          }
+          fun.internal = trans.internal;
+        }
 
         fun.cond.insert ( fun.cond.end()
                         , trans.conditions().begin()

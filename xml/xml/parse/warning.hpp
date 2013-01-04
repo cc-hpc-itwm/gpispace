@@ -350,26 +350,15 @@ namespace xml
 
       class overwrite_function_internal_trans : public generic
       {
-      private:
-        std::string nice ( const std::string & trans
-                         , const boost::filesystem::path & path
-                         )
-        {
-          std::ostringstream s;
-
-          s << " transition " << trans
-            << " in " << path
-            << " overwrites the internal tag of the contained function"
-            ;
-
-          return s.str();
-        }
       public:
-        overwrite_function_internal_trans ( const std::string & trans
-                                          , const boost::filesystem::path & path
-                                          )
-          : generic (nice (trans, path))
-        {}
+        overwrite_function_internal_trans ( const id::ref::transition&
+                                          , const id::ref::function&
+                                          );
+        virtual ~overwrite_function_internal_trans() throw() { }
+
+      private:
+        const id::ref::transition _transition;
+        const id::ref::function _function;
       };
 
       // ******************************************************************* //
