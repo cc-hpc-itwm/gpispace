@@ -52,6 +52,21 @@ namespace xml
           , _path (path)
       { }
 
+      overwrite_function_name_trans::overwrite_function_name_trans
+        (const id::ref::transition& trans, const id::ref::function& function)
+          : generic ( boost::format ( "name of function %1% defined in %2% "
+                                      "overwritten with name of transition %3% "
+                                      "in %4%"
+                                    )
+                    % function.get().name().get_value_or ("<<anonymous>>")
+                    % function.get().path
+                    % trans.get().name()
+                    % trans.get().path
+                    )
+          , _transition (trans)
+          , _function (function)
+      { }
+
       overwrite_function_internal_trans::overwrite_function_internal_trans
         (const id::ref::transition& trans, const id::ref::function& function)
           : generic ( boost::format ( "transition %1% in %2% overwrites the "

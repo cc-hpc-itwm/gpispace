@@ -751,11 +751,7 @@ namespace xml
            )
         {
           state.warn ( warning::overwrite_function_name_trans
-                       ( *fun.name()
-                       , fun.path
-                       , trans.name()
-                       , trans.path
-                       )
+                       (id_transition, id_function)
                      );
         }
 

@@ -318,32 +318,15 @@ namespace xml
 
       class overwrite_function_name_trans : public generic
       {
-      private:
-        std::string nice ( const std::string & fun
-                         , const boost::filesystem::path & funpath
-                         , const std::string & trans
-                         , const boost::filesystem::path & transpath
-                         )
-        {
-          std::ostringstream s;
-
-          s << "old function name " << fun
-            << " defined in " << funpath
-            << " overwritten with transition name " << trans
-            << " in " << transpath
-            ;
-
-          return s.str();
-        }
       public:
-        overwrite_function_name_trans
-        ( const std::string & fun
-        , const boost::filesystem::path & funpath
-        , const std::string & trans
-        , const boost::filesystem::path & transpath
-        )
-          : generic (nice (fun, funpath, trans, transpath))
-        {}
+        overwrite_function_name_trans ( const id::ref::transition&
+                                      , const id::ref::function&
+                                      );
+        virtual ~overwrite_function_name_trans() throw() { }
+
+      private:
+        const id::ref::transition _transition;
+        const id::ref::function _function;
       };
 
       // ******************************************************************* //
