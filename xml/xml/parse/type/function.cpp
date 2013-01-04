@@ -686,7 +686,7 @@ namespace xml
         const std::string& _name;
         const state::type & state;
         const function_type& fun;
-        boost::optional<bool> _internal;
+        const boost::optional<bool>& _internal;
         const conditions_type& _conditions;
         we::type::property::type _properties;
 
