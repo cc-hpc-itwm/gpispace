@@ -689,11 +689,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      using petri_net::connection_t;
-      using petri_net::edge::PT;
-      using petri_net::edge::PT_READ;
-      using petri_net::edge::TP;
-
       namespace
       {
         place_map_map_type::mapped_type
@@ -717,10 +712,6 @@ namespace xml
         , const place_map_map_type & pids
         )
       {
-        typedef we::type::expression_t we_expr_type;
-        typedef we::type::transition_t::preparsed_cond_type we_cond_type;
-        typedef petri_net::transition_id_type tid_t;
-
         const transition_type& trans (id_transition.get());
 
         if (trans.connections().empty())
@@ -856,8 +847,9 @@ namespace xml
 
             we::type::transition_t trans_in
               ( prefix + "IN"
-              , we_expr_type ()
-              , we_cond_type (cond_in, parsed_condition_in)
+              , we::type::expression_t()
+              , we::type::transition_t::preparsed_cond_type
+                (cond_in, parsed_condition_in)
               , true
               , fun.properties()
               );
@@ -904,19 +896,20 @@ namespace xml
               }
             }
 
-            const tid_t tid_in (we_net.add_transition (trans_in));
+            const petri_net::transition_id_type tid_in
+              (we_net.add_transition (trans_in));
 
             BOOST_FOREACH (const port_type& port, fun.ports().values())
             {
               if (port.direction() == we::type::PORT_IN && port.place)
               {
                 we_net.add_connection
-                  ( connection_t ( petri_net::edge::TP
-                                 , tid_in
-                                 , get_pid ( pid_of_place
-                                           , prefix + *port.place
-                                           )
-                                 )
+                  ( petri_net::connection_t ( petri_net::edge::TP
+                                            , tid_in
+                                            , get_pid ( pid_of_place
+                                                      , prefix + *port.place
+                                                      )
+                                            )
                   );
               }
             }
@@ -928,10 +921,10 @@ namespace xml
               if (petri_net::edge::is_PT (connect.direction()))
               {
                 we_net.add_connection
-                  ( connection_t ( connect.direction()
-                                 , tid_in
-                                 , get_pid (pids, connect.place())
-                                 )
+                  ( petri_net::connection_t ( connect.direction()
+                                            , tid_in
+                                            , get_pid (pids, connect.place())
+                                            )
                   );
               }
             }
@@ -950,8 +943,9 @@ namespace xml
 
             we::type::transition_t trans_out
               ( prefix + "OUT"
-              , we_expr_type ()
-              , we_cond_type (cond_out, parsed_condition_out)
+              , we::type::expression_t()
+              , we::type::transition_t::preparsed_cond_type
+                (cond_out, parsed_condition_out)
               , true
               , fun.properties()
               );
@@ -1020,20 +1014,20 @@ namespace xml
                   }
               }
 
-            const tid_t tid_out (we_net.add_transition (trans_out));
-
+            const petri_net::transition_id_type tid_out
+              (we_net.add_transition (trans_out));
 
             BOOST_FOREACH (const port_type& port, fun.ports().values())
             {
               if (port.direction() == we::type::PORT_OUT && port.place)
               {
                 we_net.add_connection
-                  ( connection_t ( petri_net::edge::PT
-                                 , tid_out
-                                 , get_pid ( pid_of_place
-                                                , prefix + *port.place
-                                           )
-                                 )
+                  ( petri_net::connection_t ( petri_net::edge::PT
+                                            , tid_out
+                                            , get_pid ( pid_of_place
+                                                      , prefix + *port.place
+                                                      )
+                                            )
                   );
               }
             }
@@ -1045,10 +1039,10 @@ namespace xml
               if (!petri_net::edge::is_PT (connect.direction()))
               {
                 we_net.add_connection
-                  ( connection_t ( connect.direction()
-                                 , tid_out
-                                 , get_pid (pids, connect.place())
-                                 )
+                  ( petri_net::connection_t ( connect.direction()
+                                            , tid_out
+                                            , get_pid (pids, connect.place())
+                                            )
                   );
               }
             }
@@ -1116,7 +1110,8 @@ namespace xml
               }
             }
 
-            const tid_t tid (we_net.add_transition (we_trans));
+            const petri_net::transition_id_type tid
+              (we_net.add_transition (we_trans));
 
             if (trans.priority)
               {
@@ -1128,10 +1123,10 @@ namespace xml
                           )
             {
               we_net.add_connection
-                ( connection_t ( connect.direction()
-                               , tid
-                               , get_pid (pids, connect.place())
-                               )
+                ( petri_net::connection_t ( connect.direction()
+                                          , tid
+                                          , get_pid (pids, connect.place())
+                                          )
                 );
             }
           } // not unfold
