@@ -723,7 +723,7 @@ namespace xml
           }
 
         const id::ref::function id_function (trans.resolved_function());
-        function_type& fun (id_function.get_ref());
+        const function_type& fun (id_function.get());
 
         BOOST_FOREACH (const port_type& port_in, fun.ports().values())
         {
