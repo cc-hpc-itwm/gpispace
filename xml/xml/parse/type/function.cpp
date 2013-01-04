@@ -688,6 +688,7 @@ namespace xml
         const function_type& fun;
         boost::optional<bool> _internal;
         const conditions_type& _conditions;
+        we::type::property::type _properties;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -796,13 +797,17 @@ namespace xml
                             , const function_type& _fun
                             , const boost::optional<bool>& internal
                             , const conditions_type& conditions
+                            , const we::type::property::type& trans_properties
                             )
           : _name (name)
           , state (_state)
           , fun (_fun)
           , _internal (internal)
           , _conditions (conditions)
-        {}
+          , _properties (trans_properties)
+        {
+          util::property::join (state, _properties, fun.properties());
+        }
 
         we_transition_type
         operator () (const id::ref::expression& id_expression) const
@@ -816,7 +821,7 @@ namespace xml
             , we_expr_type (expr, parsed_expression)
             , condition()
             , _internal.get_value_or (true)
-            , fun.properties()
+            , _properties
             );
 
           add_ports (trans, fun.ports());
@@ -834,7 +839,7 @@ namespace xml
             , we_module_type (mod.name(), mod.function)
             , condition()
             , _internal.get_value_or (false)
-            , fun.properties()
+            , _properties
             );
 
           add_ports (trans, fun.ports());
@@ -855,7 +860,7 @@ namespace xml
                              )
             );
 
-          we::type::property::type properties (fun.properties());
+          we::type::property::type properties (_properties);
 
           util::property::join ( state
                                , properties
@@ -882,6 +887,7 @@ namespace xml
         , const state::type& state
         , const boost::optional<bool>& trans_internal
         , const conditions_type& conditions
+        , const we::type::property::type& trans_properties
         ) const
       {
         return boost::apply_visitor
@@ -890,6 +896,7 @@ namespace xml
                                 , *this
                                 , trans_internal ? trans_internal : internal
                                 , conditions
+                                , trans_properties
                                 )
           , content()
           );

@@ -768,11 +768,6 @@ namespace xml
 
         fun.requirements.join (trans.requirements);
 
-        util::property::join (state, fun.properties(), trans.properties());
-
-        //! \todo implement boost::optional<net_type> fun.as_net()
-        // and use this instead of is_net and boost::get some lines below
-
         if (  not trans.priority // WORK HERE: make it work with prio
            && (
                (  !state.synthesize_virtual_places()
@@ -833,6 +828,9 @@ namespace xml
                                )
               );
 
+            we::type::property::type properties (fun.properties());
+            util::property::join (state, properties, trans.properties());
+
             //! \todo It seems like this should be getting the
             //! requirements of the inlined transition. Or all
             //! inlined transitions?
@@ -842,7 +840,7 @@ namespace xml
               , we::type::transition_t::preparsed_cond_type
                 (cond_in, parsed_condition_in)
               , true
-              , fun.properties()
+              , properties
               );
 
             BOOST_FOREACH (const port_type& port, fun.ports().values())
@@ -938,7 +936,7 @@ namespace xml
               , we::type::transition_t::preparsed_cond_type
                 (cond_out, parsed_condition_out)
               , true
-              , fun.properties()
+              , properties
               );
 
             BOOST_FOREACH (const port_type& port, fun.ports().values())
@@ -993,7 +991,7 @@ namespace xml
                 const std::string
                   key ("pnetc.warning.inline-many-output-ports");
                 const boost::optional<const ::we::type::property::value_type&>
-                  warning_switch (fun.properties().get_maybe_val (key));
+                  warning_switch (properties.get_maybe_val (key));
 
                 if (!warning_switch || *warning_switch != "off")
                   {
@@ -1081,6 +1079,7 @@ namespace xml
                                , state
                                , trans.internal
                                , trans.conditions()
+                               , trans.properties()
                                )
               );
 

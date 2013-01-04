@@ -210,6 +210,7 @@ namespace xml
           , const state::type&
           , const boost::optional<bool>& = boost::none
           , const conditions_type& = conditions_type()
+          , const we::type::property::type& = we::type::property::type()
           ) const;
 
         // ***************************************************************** //
