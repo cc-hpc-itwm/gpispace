@@ -199,8 +199,10 @@ namespace xml
 
         // ***************************************************************** //
 
-        we::type::transition_t
-          synthesize (const std::string&, const state::type&);
+        we::type::transition_t synthesize
+          ( const std::string&
+          , const state::type&
+          ) const;
 
         // ***************************************************************** //
 

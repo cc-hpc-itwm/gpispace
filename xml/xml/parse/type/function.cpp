@@ -671,7 +671,7 @@ namespace xml
       private:
         const std::string& _name;
         const state::type & state;
-        function_type & fun;
+        const function_type& fun;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -777,7 +777,7 @@ namespace xml
       public:
         function_synthesize ( const std::string& name
                             , const state::type& _state
-                            , function_type& _fun
+                            , const function_type& _fun
                             )
           : _name (name)
           , state (_state)
@@ -835,8 +835,10 @@ namespace xml
                              )
             );
 
+          we::type::property::type properties (fun.properties());
+
           util::property::join ( state
-                               , fun.properties()
+                               , properties
                                , id_net.get().properties()
                                );
 
@@ -845,7 +847,7 @@ namespace xml
             , we_net
             , condition()
             , fun.internal.get_value_or (true)
-            , fun.properties()
+            , properties
             );
 
           add_ports (trans, fun.ports(), pid_of_place);
@@ -856,7 +858,9 @@ namespace xml
       };
 
       we::type::transition_t function_type::synthesize
-        (const std::string& name, const state::type& state)
+        ( const std::string& name
+        , const state::type& state
+        ) const
       {
         return boost::apply_visitor
           (function_synthesize (name, state, *this), content());
