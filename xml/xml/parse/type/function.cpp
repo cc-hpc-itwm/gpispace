@@ -689,6 +689,7 @@ namespace xml
         const boost::optional<bool>& _internal;
         const conditions_type& _conditions;
         we::type::property::type _properties;
+        const requirements_type& _trans_requirements;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -767,8 +768,11 @@ namespace xml
 
         void add_requirements (we_transition_type& trans) const
         {
-          for ( requirements_type::const_iterator r (fun.requirements.begin())
-              ; r != fun.requirements.end()
+          requirements_type requirements (fun.requirements);
+          requirements.join (_trans_requirements);
+
+          for ( requirements_type::const_iterator r (requirements.begin())
+              ; r != requirements.end()
               ; ++r
               )
           {
@@ -798,6 +802,7 @@ namespace xml
                             , const boost::optional<bool>& internal
                             , const conditions_type& conditions
                             , const we::type::property::type& trans_properties
+                            , const requirements_type& trans_requirements
                             )
           : _name (name)
           , state (_state)
@@ -805,6 +810,7 @@ namespace xml
           , _internal (internal)
           , _conditions (conditions)
           , _properties (trans_properties)
+          , _trans_requirements (trans_requirements)
         {
           util::property::join (state, _properties, fun.properties());
         }
@@ -888,6 +894,7 @@ namespace xml
         , const boost::optional<bool>& trans_internal
         , const conditions_type& conditions
         , const we::type::property::type& trans_properties
+        , const requirements_type& trans_requirements
         ) const
       {
         return boost::apply_visitor
@@ -897,6 +904,7 @@ namespace xml
                                 , trans_internal ? trans_internal : internal
                                 , conditions
                                 , trans_properties
+                                , trans_requirements
                                 )
           , content()
           );

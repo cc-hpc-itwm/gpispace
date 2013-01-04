@@ -766,8 +766,6 @@ namespace xml
                      );
         }
 
-        fun.requirements.join (trans.requirements);
-
         if (  not trans.priority // WORK HERE: make it work with prio
            && (
                (  !state.synthesize_virtual_places()
@@ -1080,6 +1078,7 @@ namespace xml
                                , trans.internal
                                , trans.conditions()
                                , trans.properties()
+                               , trans.requirements
                                )
               );
 

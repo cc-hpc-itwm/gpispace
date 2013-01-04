@@ -211,6 +211,7 @@ namespace xml
           , const boost::optional<bool>& = boost::none
           , const conditions_type& = conditions_type()
           , const we::type::property::type& = we::type::property::type()
+          , const requirements_type& = requirements_type()
           ) const;
 
         // ***************************************************************** //
