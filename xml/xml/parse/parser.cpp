@@ -580,16 +580,10 @@ namespace xml
             }
             else if (child_name == "condition")
             {
-              const type::conditions_type conds
+              transition.get_ref().add_conditions
                 ( parse_cdata<type::conditions_type>
                   (child, state.file_in_progress())
                 );
-
-              transition.get_ref()
-                .cond.insert ( state.id_mapper()->get_ref (id)->cond.end()
-                             , conds.begin()
-                             , conds.end()
-                             );
             }
             else if (child_name == "require")
             {

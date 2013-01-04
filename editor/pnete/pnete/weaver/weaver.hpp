@@ -621,7 +621,7 @@ namespace fhg
           WEAVE(transition::function) (trans.function_or_use());
           WEAVE(transition::place_map) (trans.place_map());
           WEAVE(transition::connection) (trans.connections());
-          WEAVE(transition::condition) (trans.cond);
+          WEAVE(transition::condition) (trans.conditions());
           WEAVE(transition::close)();
         }
 

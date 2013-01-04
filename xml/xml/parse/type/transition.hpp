@@ -59,7 +59,7 @@ namespace xml
                         , const connections_type& connections
                         , const place_maps_type& place_map
                         , const structs_type& structs
-                        , const conditions_type& cond
+                        , const conditions_type&
                         , const requirements_type& requirements
                         , const boost::optional<petri_net::priority_type>& priority
                         , const boost::optional<bool>& finline
@@ -111,6 +111,11 @@ namespace xml
 
         // ***************************************************************** //
 
+        const conditions_type& conditions() const;
+        void add_conditions (const conditions_type&);
+
+        // ***************************************************************** //
+
         void resolve ( const state::type & state
                      , const xml::parse::structure_type::forbidden_type & forbidden
                      );
@@ -157,7 +162,11 @@ namespace xml
         //! \todo All below should be private with accessors.
       public:
         structs_type structs;
-        conditions_type cond;
+
+      private:
+        conditions_type _conditions;
+
+      public:
         requirements_type requirements;
 
         boost::optional<petri_net::priority_type> priority;

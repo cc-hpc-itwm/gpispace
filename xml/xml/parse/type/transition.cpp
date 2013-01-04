@@ -96,7 +96,7 @@ namespace xml
         , const connections_type& connections
         , const place_maps_type& place_map
         , const structs_type& structs
-        , const conditions_type& cond
+        , const conditions_type& conditions
         , const requirements_type& requirements
         , const boost::optional<petri_net::priority_type>& priority
         , const boost::optional<bool>& finline
@@ -114,7 +114,7 @@ namespace xml
         , _connections (connections, _id)
         , _place_map (place_map, _id)
         , structs (structs)
-        , cond (cond)
+        , _conditions (conditions)
         , requirements (requirements)
         , priority (priority)
         , finline (finline)
@@ -383,6 +383,18 @@ namespace xml
         id.get_ref().place_real_impl (real);
         _place_map.push (id);
       }
+
+      // ***************************************************************** //
+
+      const conditions_type& transition_type::conditions() const
+      {
+        return _conditions;
+      }
+      void transition_type::add_conditions (const conditions_type& other)
+      {
+        _conditions.insert (_conditions.end(), other.begin(), other.end());
+      }
+
 
       // ***************************************************************** //
 
@@ -665,7 +677,7 @@ namespace xml
           , _connections.clone (new_id, new_mapper)
           , _place_map.clone (new_id, new_mapper)
           , structs
-          , cond
+          , _conditions
           , requirements
           , priority
           , finline
@@ -772,8 +784,8 @@ namespace xml
           }
 
         fun.cond.insert ( fun.cond.end()
-                        , trans.cond.begin()
-                        , trans.cond.end()
+                        , trans.conditions().begin()
+                        , trans.conditions().end()
                         );
 
         fun.requirements.join (trans.requirements);
@@ -1172,15 +1184,12 @@ namespace xml
           dumps (s, t.place_map().values());
           dumps (s, t.connections().values());
 
-          for ( conditions_type::const_iterator cond (t.cond.begin())
-              ; cond != t.cond.end()
-              ; ++cond
-              )
-            {
-              s.open ("condition");
-              s.content (*cond);
-              s.close();
-            }
+          BOOST_FOREACH (const std::string& cond, t.conditions())
+          {
+            s.open ("condition");
+            s.content (cond);
+            s.close();
+          }
 
           s.close ();
         }
