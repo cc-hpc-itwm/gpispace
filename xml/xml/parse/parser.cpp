@@ -1473,15 +1473,10 @@ namespace xml
             }
             else if (child_name == "condition")
             {
-              const type::conditions_type conds
+              function.get_ref().add_conditions
                 ( parse_cdata<type::conditions_type>
                   (child, state.file_in_progress())
                 );
-
-              function.get_ref().cond.insert ( function.get_ref().cond.end()
-                                             , conds.begin()
-                                             , conds.end()
-                                             );
             }
             else if (child_name == "properties")
             {

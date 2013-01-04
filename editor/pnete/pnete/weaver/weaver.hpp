@@ -535,7 +535,7 @@ namespace fhg
           WEAVE(function::require) (fun.requirements);
           WEAVE(function::ports) (fun.ports());
           WEAVE(function::fun) (fun.content());
-          WEAVE(function::conditions) (fun.cond);
+          WEAVE(function::conditions) (fun.conditions());
           WEAVE(function::close)();
         }
 

@@ -90,7 +90,7 @@ namespace xml
                       , const bool& contains_a_module_call
                       , const boost::optional<bool>& internal
                       , const structs_type& structs
-                      , const conditions_type& cond
+                      , const conditions_type&
                       , const requirements_type& requirements
                       , const content_type& content
                       , const xml::parse::structure_type::set_type& resolved
@@ -172,6 +172,7 @@ namespace xml
         // ***************************************************************** //
 
         const conditions_type& conditions() const;
+        void add_conditions (const conditions_type&);
 
         // ***************************************************************** //
 
@@ -246,7 +247,11 @@ namespace xml
         boost::optional<bool> internal;
 
         structs_type structs;
-        conditions_type cond;
+
+      private:
+        conditions_type _conditions;
+
+      public:
         requirements_type requirements;
 
       private:

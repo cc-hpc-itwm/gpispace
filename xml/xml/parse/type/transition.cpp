@@ -395,7 +395,6 @@ namespace xml
         _conditions.insert (_conditions.end(), other.begin(), other.end());
       }
 
-
       // ***************************************************************** //
 
       void transition_type::resolve ( const state::type & state

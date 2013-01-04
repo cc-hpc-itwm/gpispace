@@ -110,7 +110,7 @@ namespace xml
         , const bool& contains_a_module_call
         , const boost::optional<bool>& internal
         , const structs_type& structs
-        , const conditions_type& cond
+        , const conditions_type& conditions
         , const requirements_type& requirements
         , const content_type& content
         , const xml::parse::structure_type::set_type& structs_resolved
@@ -125,7 +125,7 @@ namespace xml
         , contains_a_module_call (contains_a_module_call)
         , internal (internal)
         , structs (structs)
-        , cond (cond)
+        , _conditions (conditions)
         , requirements (requirements)
         , _content (reparent (content, _id))
         , structs_resolved (structs_resolved)
@@ -480,7 +480,11 @@ namespace xml
 
       const conditions_type& function_type::conditions() const
       {
-        return cond;
+        return _conditions;
+      }
+      void function_type::add_conditions (const conditions_type& other)
+      {
+        _conditions.insert (_conditions.end(), other.begin(), other.end());
       }
 
       std::string conditions_type::flatten() const
@@ -1032,7 +1036,7 @@ namespace xml
           , contains_a_module_call
           , internal
           , structs
-          , cond
+          , _conditions
           , requirements
           , boost::apply_visitor (visitor_clone (new_id, new_mapper), content())
           , structs_resolved
@@ -2391,15 +2395,12 @@ namespace xml
 
           boost::apply_visitor (function_dump_visitor (s), f.content());
 
-          for ( conditions_type::const_iterator cond (f.cond.begin())
-              ; cond != f.cond.end()
-              ; ++cond
-              )
-            {
-              s.open ("condition");
-              s.content (*cond);
-              s.close ();
-            }
+          BOOST_FOREACH (const std::string& cond, f.conditions())
+          {
+            s.open ("condition");
+            s.content (cond);
+            s.close();
+          }
 
           s.close ();
         }
