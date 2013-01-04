@@ -672,6 +672,7 @@ namespace xml
         const std::string& _name;
         const state::type & state;
         const function_type& fun;
+        boost::optional<bool> _internal;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -778,10 +779,12 @@ namespace xml
         function_synthesize ( const std::string& name
                             , const state::type& _state
                             , const function_type& _fun
+                            , const boost::optional<bool>& internal
                             )
           : _name (name)
           , state (_state)
           , fun (_fun)
+          , _internal (internal)
         {}
 
         we_transition_type
@@ -795,7 +798,7 @@ namespace xml
             ( name()
             , we_expr_type (expr, parsed_expression)
             , condition()
-            , fun.internal.get_value_or (true)
+            , _internal.get_value_or (true)
             , fun.properties()
             );
 
@@ -813,7 +816,7 @@ namespace xml
             ( name()
             , we_module_type (mod.name(), mod.function)
             , condition()
-            , fun.internal.get_value_or (false)
+            , _internal.get_value_or (false)
             , fun.properties()
             );
 
@@ -846,7 +849,7 @@ namespace xml
             ( name()
             , we_net
             , condition()
-            , fun.internal.get_value_or (true)
+            , _internal.get_value_or (true)
             , properties
             );
 
@@ -860,10 +863,17 @@ namespace xml
       we::type::transition_t function_type::synthesize
         ( const std::string& name
         , const state::type& state
+        , const boost::optional<bool>& trans_internal
         ) const
       {
         return boost::apply_visitor
-          (function_synthesize (name, state, *this), content());
+          ( function_synthesize ( name
+                                , state
+                                , *this
+                                , trans_internal ? trans_internal : internal
+                                )
+          , content()
+          );
       }
 
       // ***************************************************************** //

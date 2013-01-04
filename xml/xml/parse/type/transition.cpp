@@ -765,8 +765,6 @@ namespace xml
           state.warn ( warning::overwrite_function_internal_trans
                        (id_transition, id_function)
                      );
-
-          fun.internal = trans.internal;
         }
 
         fun.cond.insert ( fun.cond.end()
@@ -1081,7 +1079,7 @@ namespace xml
               }
 
             we::type::transition_t we_trans
-              (fun.synthesize (trans.name(), state));
+              (fun.synthesize (trans.name(), state, trans.internal));
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()
