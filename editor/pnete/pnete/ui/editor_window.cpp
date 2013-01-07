@@ -400,6 +400,7 @@ namespace fhg
 
       void editor_window::close_document()
       {
+        //! \todo Should close all windows of that document!
         _view_manager->current_widget_close();
       }
 
