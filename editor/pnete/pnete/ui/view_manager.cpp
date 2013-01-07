@@ -2,13 +2,13 @@
 
 #include <pnete/ui/view_manager.hpp>
 
-#include <pnete/data/manager.hpp>
 #include <pnete/data/handle/expression.hpp>
+#include <pnete/data/manager.hpp>
 #include <pnete/ui/document_view.hpp>
 #include <pnete/ui/editor_window.hpp>
-#include <pnete/ui/expression_view.hpp>
-#include <pnete/ui/mod_view.hpp>
-#include <pnete/ui/net_view.hpp>
+#include <pnete/ui/expression_widget.hpp>
+#include <pnete/ui/graph_view.hpp>
+#include <pnete/ui/module_call_widget.hpp>
 
 #include <util/qt/parent.hpp>
 
@@ -173,24 +173,37 @@ namespace fhg
 
           document_view* operator() (expression_proxy& proxy) const
           {
-            return new expression_view
-              ( _proxy
-              , data::handle::expression
-                ( proxy.data()
-                , root (_proxy)->change_manager()
+            return new document_view
+              ( function (_proxy)
+              , _proxy
+              , QObject::tr ("<<anonymous expression>>")
+              , new expression_widget
+                ( data::handle::expression ( proxy.data()
+                                           , root (_proxy)->change_manager()
+                                           )
+                , function (_proxy)
                 )
-              , function (_proxy)
               );
           }
 
           document_view* operator() (mod_proxy& proxy) const
           {
-            return new mod_view (_proxy, proxy.data(), function (_proxy));
+            return new document_view
+              ( function (_proxy)
+              , _proxy
+              , QObject::tr ("<<anonymous module call>>")
+              , new module_call_widget (proxy.data(), function (_proxy))
+              );
           }
 
           document_view* operator() (net_proxy& proxy) const
           {
-            return new net_view (_proxy, function (_proxy), proxy.display());
+            return new document_view
+              ( function (_proxy)
+              , _proxy
+              , QObject::tr ("<<anonymous net>>")
+              , new graph_view (proxy.display())
+              );
           }
         };
 
