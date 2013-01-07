@@ -26,10 +26,8 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        expression_widget ( data::proxy::type&
-                          , const data::handle::expression&
+        expression_widget ( const data::handle::expression&
                           , const data::handle::function&
-                          , const QStringList& types
                           , QWidget* parent = NULL
                           );
         void set_expression (const QString&);

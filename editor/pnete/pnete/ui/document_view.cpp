@@ -6,6 +6,8 @@
 
 #include <util/qt/cast.hpp>
 
+#include <xml/parse/type/function.hpp>
+
 #include <boost/optional.hpp>
 
 #include <QStringList>
@@ -36,6 +38,8 @@ namespace fhg
           , "function_name_changed"
           , "data::handle::function, QString"
           );
+
+        set_title (function.get().name());
       }
 
       const QSet<QAction*>& document_view::actions() const

@@ -22,7 +22,6 @@ namespace fhg
       public:
         module_call_widget ( const ::xml::parse::id::ref::module&
                            , const data::handle::function&
-                           , const QStringList& types
                            , QWidget* parent = NULL
                            );
       };

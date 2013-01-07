@@ -22,15 +22,7 @@ namespace fhg
         )
           : document_view (function, proxy, tr ("<<anonymous expression>>"))
       {
-        //! \todo submit known types
-        setWidget (new expression_widget ( proxy
-                                         , expression
-                                         , function
-                                         , QStringList()
-                                         , this
-                                         )
-                  );
-        set_title (function.get().name());
+        setWidget (new expression_widget (expression, function, this));
       }
     }
   }

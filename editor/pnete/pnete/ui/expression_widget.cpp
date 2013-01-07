@@ -26,16 +26,14 @@ namespace fhg
     namespace ui
     {
       expression_widget::expression_widget
-        ( data::proxy::type& proxy
-        , const data::handle::expression& expression
+        ( const data::handle::expression& expression
         , const data::handle::function& function
-        , const QStringList& types
         , QWidget* parent
         )
           : QWidget (parent)
           , _expression (expression)
           , _function (function)
-          , _port_lists (new port_lists_widget (_function, types))
+          , _port_lists (new port_lists_widget (_function, QStringList()))
           , _expression_edit (new QTextEdit())
           , _name_edit (new QLineEdit())
           , _parse_result (new QTextEdit())

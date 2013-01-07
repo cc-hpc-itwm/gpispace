@@ -21,9 +21,7 @@ namespace fhg
                          )
         : document_view (function, proxy, tr ("anonymous module call>>"))
       {
-        //! \todo submit known types
-        setWidget (new module_call_widget (mod, function, QStringList(), this));
-        set_title (function.get().name());
+        setWidget (new module_call_widget (mod, function, this));
       }
     }
   }

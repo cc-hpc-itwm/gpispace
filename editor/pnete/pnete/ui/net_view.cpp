@@ -21,9 +21,7 @@ namespace fhg
                          )
         : document_view (function, proxy, tr ("<<anonymous net>>"))
       {
-        //! \todo submit known types
         setWidget (new graph_view (scene, this));
-        set_title (function.get().name());
       }
     }
   }
