@@ -349,6 +349,8 @@ namespace fhg
                 , SIGNAL (aboutToShow())
                 , SLOT (update_window_menu())
                 );
+
+        update_window_menu();
       }
 
       void editor_window::slot_new_expression()
