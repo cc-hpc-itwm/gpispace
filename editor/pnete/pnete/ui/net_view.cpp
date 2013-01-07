@@ -19,15 +19,11 @@ namespace fhg
                          , const data::handle::function& function
                          , graph::scene_type* scene
                          )
-        : document_view (function, proxy)
+        : document_view (function, proxy, tr ("<<anonymous net>>"))
       {
         //! \todo submit known types
         setWidget (new graph_view (scene, this));
         set_title (function.get().name());
-      }
-      QString net_view::fallback_title () const
-      {
-        return tr("<<anonymous net>>");
       }
     }
   }

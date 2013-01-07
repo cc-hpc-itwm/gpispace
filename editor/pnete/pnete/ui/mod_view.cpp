@@ -19,16 +19,11 @@ namespace fhg
                          , const ::xml::parse::id::ref::module& mod
                          , const data::handle::function& function
                          )
-        : document_view (function, proxy)
+        : document_view (function, proxy, tr ("anonymous module call>>"))
       {
         //! \todo submit known types
         setWidget (new module_call_widget (mod, function, QStringList(), this));
         set_title (function.get().name());
-      }
-
-      QString mod_view::fallback_title() const
-      {
-        return tr("<<anonymous module call>>");
       }
     }
   }

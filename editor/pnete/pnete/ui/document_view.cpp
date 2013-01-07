@@ -18,11 +18,13 @@ namespace fhg
     {
       document_view::document_view ( const data::handle::function& function
                                    , data::proxy::type& proxy
+                                   , const QString& fallback_title
                                    )
         : dock_widget()
         , _actions()
         , _function (function)
         , _proxy (proxy)
+        , _fallback_title (fallback_title)
       {
         connect ( this
                 , SIGNAL (visibilityChanged (bool))
@@ -82,7 +84,7 @@ namespace fhg
       void document_view::set_title (const boost::optional<std::string>& name)
       {
         setWindowTitle
-          (name ? QString::fromStdString (*name) : fallback_title());
+          (name ? QString::fromStdString (*name) : _fallback_title);
       }
     }
   }

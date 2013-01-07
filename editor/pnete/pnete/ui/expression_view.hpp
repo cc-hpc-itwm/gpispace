@@ -27,9 +27,6 @@ namespace fhg
                         , const data::handle::expression&
                         , const data::handle::function&
                         );
-
-      private:
-        virtual QString fallback_title() const;
       };
     }
   }

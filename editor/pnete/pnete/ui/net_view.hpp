@@ -27,9 +27,6 @@ namespace fhg
                  , const data::handle::function&
                  , graph::scene_type*
                  );
-
-      private:
-        virtual QString fallback_title() const;
       };
     }
   }

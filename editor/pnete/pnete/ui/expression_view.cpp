@@ -20,7 +20,7 @@ namespace fhg
         , const data::handle::expression& expression
         , const data::handle::function& function
         )
-          : document_view (function, proxy)
+          : document_view (function, proxy, tr ("<<anonymous expression>>"))
       {
         //! \todo submit known types
         setWidget (new expression_widget ( proxy
@@ -31,11 +31,6 @@ namespace fhg
                                          )
                   );
         set_title (function.get().name());
-      }
-
-      QString expression_view::fallback_title () const
-      {
-        return tr ("<<anonymous expression>>");
       }
     }
   }

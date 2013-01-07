@@ -27,7 +27,10 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        document_view (const data::handle::function&, data::proxy::type&);
+        document_view ( const data::handle::function&
+                      , data::proxy::type&
+                      , const QString& fallback_title
+                      );
 
         void setWidget (QWidget* widget);
 
@@ -47,11 +50,10 @@ namespace fhg
         void visibility_changed (bool);
 
       private:
-        virtual QString fallback_title() const = 0;
-
         QSet<QAction*> _actions;
         data::handle::function _function;
         data::proxy::type& _proxy;
+        QString _fallback_title;
       };
     }
   }
