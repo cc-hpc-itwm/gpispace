@@ -77,7 +77,7 @@ namespace fhg
         }
 
         data::manager::instance().save
-          (_accessed_widgets.top()->widget()->root(), filename);
+          (data::proxy::root (_accessed_widgets.top()->proxy()), filename);
       }
 
       void view_manager::focus_changed (QWidget*, QWidget* to_widget)
@@ -104,7 +104,7 @@ namespace fhg
         }
 
         _accessed_widgets.push (to);
-        to->widget()->change_manager().setActive (true);
+        to->function().change_manager().setActive (true);
 
         foreach (QAction* action, to->actions())
         {
@@ -134,7 +134,7 @@ namespace fhg
       {
         if (!_accessed_widgets.empty())
           {
-            create_widget (_accessed_widgets.top()->widget()->proxy());
+            create_widget (_accessed_widgets.top()->proxy());
           }
       }
       void view_manager::current_widget_close()
@@ -175,10 +175,12 @@ namespace fhg
           document_view* operator() (expression_proxy& proxy) const
           {
             return new expression_view
-              ( _proxy, data::handle::expression
+              ( _proxy
+              , data::handle::expression
                 ( proxy.data()
                 , root (_proxy)->change_manager()
                 )
+              , function (_proxy)
               );
           }
 

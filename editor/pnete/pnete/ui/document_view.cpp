@@ -17,9 +17,13 @@ namespace fhg
   {
     namespace ui
     {
-      document_view::document_view (const data::handle::function& function)
+      document_view::document_view ( const data::handle::function& function
+                                   , data::proxy::type& proxy
+                                   )
         : dock_widget()
         , _actions()
+        , _function (function)
+        , _proxy (proxy)
       {
         connect ( this
                 , SIGNAL (visibilityChanged (bool))
@@ -38,13 +42,23 @@ namespace fhg
         return _actions;
       }
 
+      data::proxy::type& document_view::proxy()
+      {
+        return _proxy;
+      }
+
+      const data::handle::function& document_view::function() const
+      {
+        return _function;
+      }
+
       void document_view::function_name_changed
         ( const QObject*
         , const data::handle::function& function
         , const QString& name
         )
       {
-        if (function == widget()->function())
+        if (function == _function)
         {
           set_title
             (boost::make_optional (!name.isEmpty(), name.toStdString()));

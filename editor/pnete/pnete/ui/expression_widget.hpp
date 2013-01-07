@@ -30,8 +30,9 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        expression_widget ( data::proxy::type& proxy
-                          , const data::handle::expression& expression
+        expression_widget ( data::proxy::type&
+                          , const data::handle::expression&
+                          , const data::handle::function&
                           , const QStringList& types
                           , QWidget* parent = NULL
                           );
@@ -67,6 +68,7 @@ namespace fhg
         bool is_my_expression (const data::handle::expression&);
 
         data::handle::expression _expression;
+        data::handle::function _function;
         port_lists_widget* _port_lists;
         QTextEdit* _expression_edit;
         QLineEdit* _name_edit;

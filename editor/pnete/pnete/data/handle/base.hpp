@@ -50,7 +50,6 @@ namespace fhg
                                      , const char* arguments
                                      ) const;
 
-        protected:
           change_manager_t& change_manager() const;
 
         private:

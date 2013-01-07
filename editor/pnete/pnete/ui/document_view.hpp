@@ -5,7 +5,7 @@
 
 #include <pnete/ui/document_view.fwd.hpp>
 
-#include <pnete/data/handle/function.fwd.hpp>
+#include <pnete/data/handle/function.hpp>
 #include <pnete/data/proxy.fwd.hpp>
 #include <pnete/ui/base_editor_widget.fwd.hpp>
 #include <pnete/ui/dock_widget.hpp>
@@ -28,12 +28,15 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        document_view (const data::handle::function&);
+        document_view (const data::handle::function&, data::proxy::type&);
 
         base_editor_widget* widget() const;
         void setWidget (base_editor_widget* widget);
 
         const QSet<QAction*>& actions() const;
+
+        data::proxy::type& proxy();
+        const data::handle::function& function() const;
 
       protected:
         void set_title (const boost::optional<std::string>&);
@@ -49,6 +52,8 @@ namespace fhg
         virtual QString fallback_title() const = 0;
 
         QSet<QAction*> _actions;
+        data::handle::function _function;
+        data::proxy::type& _proxy;
       };
     }
   }

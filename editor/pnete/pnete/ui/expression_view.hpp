@@ -23,7 +23,11 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        expression_view (data::proxy::type&, const data::handle::expression&);
+        expression_view ( data::proxy::type&
+                        , const data::handle::expression&
+                        , const data::handle::function&
+                        );
+
       private:
         virtual QString fallback_title() const;
       };

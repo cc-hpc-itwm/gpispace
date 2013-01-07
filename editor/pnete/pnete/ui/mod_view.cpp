@@ -19,10 +19,10 @@ namespace fhg
         ( data::proxy::type& proxy
         , const ::xml::parse::id::ref::module& mod
         )
-          : document_view (data::proxy::function (proxy))
+          : document_view (data::proxy::function (proxy), proxy)
       {
         //! \todo submit known types
-        setWidget (new module_call_widget (proxy, mod, QStringList(), this));
+        setWidget (new module_call_widget (proxy, mod, data::proxy::function (proxy), QStringList(), this));
         set_title (data::proxy::function (proxy).get().name());
       }
       QString mod_view::fallback_title () const

@@ -18,18 +18,21 @@ namespace fhg
       expression_view::expression_view
         ( data::proxy::type& proxy
         , const data::handle::expression& expression
+        , const data::handle::function& function
         )
-          : document_view (data::proxy::function (proxy))
+          : document_view (function, proxy)
       {
         //! \todo submit known types
         setWidget (new expression_widget ( proxy
                                          , expression
+                                         , function
                                          , QStringList()
                                          , this
                                          )
                   );
-        set_title (data::proxy::function (proxy).get().name());
+        set_title (function.get().name());
       }
+
       QString expression_view::fallback_title () const
       {
         return tr ("<<anonymous expression>>");

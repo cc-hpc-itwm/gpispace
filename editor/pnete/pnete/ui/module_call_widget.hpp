@@ -5,8 +5,8 @@
 
 #include <QObject>
 
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/proxy.hpp>
-
 #include <pnete/ui/base_editor_widget.hpp>
 
 class QWidget;
@@ -24,8 +24,9 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        module_call_widget ( data::proxy::type& proxy
-                           , const ::xml::parse::id::ref::module& mod
+        module_call_widget ( data::proxy::type&
+                           , const ::xml::parse::id::ref::module&
+                           , const data::handle::function&
                            , const QStringList& types
                            , QWidget* parent = NULL
                            );
