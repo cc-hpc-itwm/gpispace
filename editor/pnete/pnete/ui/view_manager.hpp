@@ -33,7 +33,7 @@ namespace fhg
         QAction* action_save_current_file();
 
       public slots:
-        void focus_changed (QWidget*);
+        void focus_changed (QWidget*, QWidget*);
 
         // net_view
         //! \todo QActions!, disable for non-nets
