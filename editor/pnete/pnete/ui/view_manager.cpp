@@ -85,36 +85,27 @@ namespace fhg
                                    );
         }
 
+        if (!_accessed_widgets.empty())
+        {
+          foreach (QAction* action, _accessed_widgets.top()->actions())
+          {
+            action->setVisible (false);
+          }
+        }
+
         if (_accessed_widgets.contains (current_view))
         {
           _accessed_widgets.remove
             (_accessed_widgets.indexOf (current_view));
         }
-        _accessed_widgets.push (current_view);
 
+        _accessed_widgets.push (current_view);
         current_view->widget()->change_manager().setActive(true);
 
-        //! \todo enable and disable actions
-
-//         graph_view* old_view (_current_view);
-//         _current_view = current_widget->graph_view();
-//         if (old_view != _current_view)
-//         {
-//           emit view_changed (_current_view);
-//         }
-
-//         graph::scene* old_scene (_current_scene);
-//         _current_scene = _current_view->scene();
-
-//         if (!_current_scene)
-//         {
-//           throw std::runtime_error ("there is a view without a scene.");
-//         }
-
-//         if (old_scene != _current_scene)
-//         {
-//           emit scene_changed (_current_scene);
-//         }
+        foreach (QAction* action, current_view->actions())
+        {
+          action->setVisible (true);
+        }
       }
 
       // -- document, general --

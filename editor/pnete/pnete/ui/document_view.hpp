@@ -13,6 +13,7 @@
 #include <boost/optional/optional_fwd.hpp>
 
 #include <QObject>
+#include <QSet>
 
 class QString;
 
@@ -32,6 +33,8 @@ namespace fhg
         base_editor_widget* widget() const;
         void setWidget (base_editor_widget* widget);
 
+        const QSet<QAction*>& actions() const;
+
       protected:
         void set_title (const boost::optional<std::string>&);
 
@@ -47,6 +50,8 @@ namespace fhg
 
       private:
         virtual QString fallback_title() const = 0;
+
+        QSet<QAction*> _actions;
       };
     }
   }

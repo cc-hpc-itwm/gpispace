@@ -19,6 +19,7 @@ namespace fhg
     {
       document_view::document_view (const data::handle::function& function)
         : dock_widget()
+        , _actions()
       {
         connect ( this
                 , SIGNAL (visibilityChanged (bool))
@@ -30,6 +31,11 @@ namespace fhg
           , "function_name_changed"
           , "data::handle::function, QString"
           );
+      }
+
+      const QSet<QAction*>& document_view::actions() const
+      {
+        return _actions;
       }
 
       void document_view::function_name_changed
