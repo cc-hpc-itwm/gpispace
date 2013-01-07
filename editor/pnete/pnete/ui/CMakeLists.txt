@@ -8,7 +8,6 @@ set(ui_SRCS
   StructureView.cpp
 # undo_group_manager.cpp
   dock_widget.cpp
-  base_editor_widget.cpp
   document_view.cpp
   expression_view.cpp
   mod_view.cpp
@@ -36,7 +35,6 @@ set(ui_HDRS
 # undo_group_manager.hpp
 
   dock_widget.hpp
-  base_editor_widget.hpp
   document_view.hpp
   expression_view.hpp
   mod_view.hpp
@@ -70,7 +68,6 @@ set(ui_TOMOC
   TransitionLibraryItem.hpp
 
   dock_widget.hpp
-  base_editor_widget.hpp
   document_view.hpp
   expression_view.hpp
   mod_view.hpp

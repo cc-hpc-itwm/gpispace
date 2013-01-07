@@ -7,7 +7,6 @@
 
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/proxy.fwd.hpp>
-#include <pnete/ui/base_editor_widget.fwd.hpp>
 #include <pnete/ui/dock_widget.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
@@ -30,8 +29,7 @@ namespace fhg
       public:
         document_view (const data::handle::function&, data::proxy::type&);
 
-        base_editor_widget* widget() const;
-        void setWidget (base_editor_widget* widget);
+        void setWidget (QWidget* widget);
 
         const QSet<QAction*>& actions() const;
 

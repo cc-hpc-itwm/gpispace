@@ -32,7 +32,7 @@ namespace fhg
         , const QStringList& types
         , QWidget* parent
         )
-          : base_editor_widget (proxy, parent)
+          : QWidget (parent)
           , _expression (expression)
           , _function (function)
           , _port_lists (new port_lists_widget (_function, types))

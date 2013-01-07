@@ -3,7 +3,6 @@
 #include <pnete/ui/document_view.hpp>
 
 #include <pnete/data/handle/function.hpp>
-#include <pnete/ui/base_editor_widget.hpp>
 
 #include <util/qt/cast.hpp>
 
@@ -73,12 +72,7 @@ namespace fhg
         }
       }
 
-      base_editor_widget* document_view::widget() const
-      {
-        return util::qt::throwing_qobject_cast<base_editor_widget*>
-          (dock_widget::widget());
-      }
-      void document_view::setWidget (base_editor_widget* widget)
+      void document_view::setWidget (QWidget* widget)
       {
         dock_widget::setWidget (widget);
         widget->setFocusPolicy

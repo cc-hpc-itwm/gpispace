@@ -12,12 +12,10 @@ namespace fhg
   {
     namespace ui
     {
-      net_widget::net_widget
-        ( data::proxy::type& proxy
-        , graph::scene_type* scene
-        , QWidget* parent
-        )
-          : base_editor_widget (proxy, parent)
+      net_widget::net_widget ( graph::scene_type* scene
+                             , QWidget* parent
+                             )
+        : QWidget (parent)
       {
         QHBoxLayout* layout (new QHBoxLayout());
         layout->addWidget (new graph_view (scene));

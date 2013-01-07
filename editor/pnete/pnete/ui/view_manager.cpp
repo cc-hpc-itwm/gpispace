@@ -4,7 +4,6 @@
 
 #include <pnete/data/manager.hpp>
 #include <pnete/data/handle/expression.hpp>
-#include <pnete/ui/base_editor_widget.hpp>
 #include <pnete/ui/document_view.hpp>
 #include <pnete/ui/editor_window.hpp>
 #include <pnete/ui/expression_view.hpp>
@@ -186,12 +185,12 @@ namespace fhg
 
           document_view* operator() (mod_proxy& proxy) const
           {
-            return new mod_view (_proxy, proxy.data());
+            return new mod_view (_proxy, proxy.data(), function (_proxy));
           }
 
           document_view* operator() (net_proxy& proxy) const
           {
-            return new net_view (_proxy, proxy.display());
+            return new net_view (_proxy, function (_proxy), proxy.display());
           }
         };
 

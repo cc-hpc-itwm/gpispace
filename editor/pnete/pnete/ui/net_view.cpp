@@ -16,13 +16,14 @@ namespace fhg
     namespace ui
     {
       net_view::net_view ( data::proxy::type& proxy
+                         , const data::handle::function& function
                          , graph::scene_type* scene
                          )
-        : document_view (data::proxy::function (proxy), proxy)
+        : document_view (function, proxy)
       {
         //! \todo submit known types
-        setWidget (new net_widget (proxy, scene, this));
-        set_title (data::proxy::function (proxy).get().name());
+        setWidget (new net_widget (scene, this));
+        set_title (function.get().name());
       }
       QString net_view::fallback_title () const
       {

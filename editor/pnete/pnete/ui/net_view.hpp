@@ -5,9 +5,10 @@
 
 #include <QObject>
 
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/proxy.hpp>
-
 #include <pnete/ui/document_view.hpp>
+#include <pnete/ui/graph/scene.fwd.hpp>
 
 class QString;
 
@@ -17,17 +18,15 @@ namespace fhg
   {
     namespace ui
     {
-      namespace graph
-      {
-        class scene_type;
-      }
-
       class net_view : public document_view
       {
         Q_OBJECT;
 
       public:
-        net_view (data::proxy::type&, graph::scene_type*);
+        net_view ( data::proxy::type&
+                 , const data::handle::function&
+                 , graph::scene_type*
+                 );
 
       private:
         virtual QString fallback_title() const;

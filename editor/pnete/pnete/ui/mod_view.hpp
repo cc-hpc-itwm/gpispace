@@ -5,8 +5,8 @@
 
 #include <QObject>
 
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/proxy.hpp>
-
 #include <pnete/ui/document_view.hpp>
 
 class QString;
@@ -22,7 +22,10 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        mod_view (data::proxy::type&, const ::xml::parse::id::ref::module&);
+        mod_view ( data::proxy::type&
+                 , const ::xml::parse::id::ref::module&
+                 , const data::handle::function&
+                 );
 
       private:
         virtual QString fallback_title() const;
