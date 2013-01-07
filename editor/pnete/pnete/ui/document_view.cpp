@@ -67,6 +67,8 @@ namespace fhg
       void document_view::setWidget (base_editor_widget* widget)
       {
         dock_widget::setWidget (widget);
+        widget->setFocusPolicy
+          (Qt::FocusPolicy (widget->focusPolicy() | Qt::ClickFocus));
       }
 
       void document_view::set_title (const boost::optional<std::string>& name)
