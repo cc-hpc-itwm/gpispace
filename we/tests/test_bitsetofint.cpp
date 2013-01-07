@@ -14,17 +14,11 @@ typedef bitsetofint::type set_t;
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 
-#include <boost/version.hpp>
-
 #include "timer.hpp"
 
 using std::cout;
 using std::cerr;
 using std::endl;
-
-#if BOOST_VERSION <= 103800
-#  define DISABLE_BINARY_TESTS
-#endif
 
 #define REQUIRE(b) if (!(b)) { cerr << "FAILURE in line " << __LINE__ << endl; ++ec; }
 
@@ -33,7 +27,6 @@ main ()
 {
   size_t ec (0); // error counter
 
-#if 1
   set_t set(1);
 
   cout << set << endl;
@@ -60,7 +53,6 @@ main ()
 
   cout << set << endl;
 
-#ifndef DISABLE_BINARY_TESTS
   {
     std::ostringstream oss;
 
@@ -81,7 +73,6 @@ main ()
       cout << c.is_element(i);
     cout << endl;
   }
-#endif
 
   {
     std::ostringstream oss;
@@ -152,7 +143,6 @@ main ()
     }
   }
 
-#ifndef DISABLE_BINARY_TESTS
   {
     std::ostringstream oss;
 
@@ -175,7 +165,6 @@ main ()
       oa >> BOOST_SERIALIZATION_NVP(c);
     }
   }
-#endif
 
   cout << "*** filled up to " << std::numeric_limits<unsigned int>::max() << endl;
 
@@ -204,7 +193,6 @@ main ()
     }
   }
 
-#ifndef DISABLE_BINARY_TESTS
   {
     std::ostringstream oss;
 
@@ -227,9 +215,6 @@ main ()
       oa >> BOOST_SERIALIZATION_NVP(c);
     }
   }
-#endif
-
-#endif
 
   cout << "*** bit operations" << endl;
 

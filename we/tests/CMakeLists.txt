@@ -24,7 +24,6 @@ set(tc_srcs
     test_layer_cancel.cpp
     test_loader.cpp
     test_load_module.cpp
-    test_multirel.cpp
     test_port.cpp
 #    test_requirements.cpp
     test_property.cpp

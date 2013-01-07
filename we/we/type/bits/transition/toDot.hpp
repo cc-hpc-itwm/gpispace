@@ -5,6 +5,9 @@
 
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
+#include <we/type/net.hpp>
+
+#include <boost/foreach.hpp>
 
 namespace we { namespace type {
 
@@ -401,12 +404,11 @@ namespace we { namespace type {
         (const petri_net::net & net) const
         {
           typedef petri_net::net pnet_t;
-          typedef typename pnet_t::place_const_it place_const_it;
+          typedef pnet_t::place_const_it place_const_it;
           typedef petri_net::adj_place_const_it adj_place_const_it;
-          typedef typename pnet_t::transition_const_it transition_const_it;
-          typedef typename pnet_t::token_place_it token_place_it;
+          typedef pnet_t::transition_const_it transition_const_it;
           typedef petri_net::connection_t connection_t;
-          typedef typename transition_t::port_map_t::value_type pmv_t;
+          typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
           typedef std::pair< place_dot_name_type
                            , petri_net::port_id_type
@@ -437,12 +439,10 @@ namespace we { namespace type {
                 {
                   typedef boost::unordered_map<token::type, size_t> token_cnt_t;
                   token_cnt_t token_cnt;
-                  for ( token_place_it tp (net.get_token (*p))
-                      ; tp.has_more()
-                      ; ++tp
-                      )
+
+                  BOOST_FOREACH (const token::type& token, net.get_token (*p))
                     {
-                      ++token_cnt[*tp];
+                      ++token_cnt[token];
                     }
 
                   for ( typename token_cnt_t::const_iterator
@@ -481,6 +481,8 @@ namespace we { namespace type {
               {
                 namespace prop = we::type::property::traverse;
 
+                //! \todo eliminate the hack that stores the real
+                //! place in the properties
                 prop::stack_type stack
                   (prop::dfs (place.property(), "real"));
 
@@ -601,12 +603,7 @@ namespace we { namespace type {
                         {
                           found = true;
 
-                          const connection_t net_conn (net.get_edge_info (p()));
-
-                          if (petri_net::edge::is_pt_read (net_conn.type))
-                            {
-                              is_read = true;
-                            }
+                          is_read = net.is_read_connection (*t, *p);
 
                           break;
                         }

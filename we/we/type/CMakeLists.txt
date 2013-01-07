@@ -26,6 +26,7 @@ set (sources
   place.cpp
   connection.cpp
   expression.cpp
+  net.cpp
 )
 
 install(FILES ${hdrs}

@@ -37,6 +37,22 @@ namespace xml
         return _name;
       }
 
+      const std::string& port_type::name_impl (const std::string& name)
+      {
+        return _name = name;
+      }
+
+      const std::string& port_type::name (const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return _name;
+        }
+
+        return name_impl (name);
+      }
+
       void port_type::specialize ( const type::type_map_type & map_in
                                  , const state::type &
                                  )
@@ -86,7 +102,7 @@ namespace xml
             else
             {
               boost::optional<const id::ref::place&>
-                place (id_net.get().places().get (*_port.get().place));
+                place (_port.get().resolved_place());
 
               if (not place)
               {
@@ -138,17 +154,37 @@ namespace xml
         assert (has_parent());
 
         boost::apply_visitor
-          (type_checker (make_reference_id(), path, state), parent()->f);
+          (type_checker (make_reference_id(), path, state), parent()->content());
       }
 
       const we::type::PortDirection& port_type::direction() const
       {
         return _direction;
       }
-      const we::type::PortDirection& port_type::direction
+      const we::type::PortDirection& port_type::direction_impl
         (const we::type::PortDirection& direction_)
       {
         return _direction = direction_;
+      }
+      const we::type::PortDirection& port_type::direction
+        (const we::type::PortDirection& direction_)
+      {
+        if (has_parent())
+        {
+          parent()->port_direction (make_reference_id(), direction_);
+          return _direction;
+        }
+        return direction_impl (direction_);
+      }
+
+      boost::optional<const id::ref::place&> port_type::resolved_place() const
+      {
+        if (!place || !(has_parent() && parent()->is_net()))
+        {
+          return boost::none;
+        }
+
+        return parent()->get_net()->get().places().get (*place);
       }
 
       const we::type::property::type& port_type::properties() const

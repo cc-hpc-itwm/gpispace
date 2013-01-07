@@ -1,5 +1,8 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
+#include <we/type/transition.hpp>
+#include <we/mgmt/type/activity.hpp>
+
 #include <xml/parse/parser.hpp>
 
 #include <xml/parse/type/function.hpp>
@@ -13,6 +16,11 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+
+#include <fhg/revision.hpp>
+
+#include <xml/parse/headerlist.hpp>
+#include <xml/parse/headergen.hpp>
 
 // ************************************************************************* //
 
@@ -264,7 +272,7 @@ int main (int argc, char** argv)
 
   if (vm.count ("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Pnet Compiler");
 
     return EXIT_SUCCESS;
   }

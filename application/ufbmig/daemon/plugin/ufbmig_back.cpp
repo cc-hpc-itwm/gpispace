@@ -22,7 +22,7 @@
 
 // ufbmig types
 #include <we/mgmt/type/activity.hpp>
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 #include <we/util/codec.hpp>
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>

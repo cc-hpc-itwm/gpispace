@@ -41,6 +41,12 @@ namespace fhg
 
           handle.connect_to_change_mgr
             ( this
+            , "name_set", "name_changed"
+            , "data::handle::transition, QString"
+            );
+
+          handle.connect_to_change_mgr
+            ( this
             , "property_changed"
             , "data::handle::transition, "
               "we::type::property::key_type, we::type::property::value_type"
@@ -190,6 +196,19 @@ namespace fhg
                             , Qt::AlignCenter | Qt::TextWordWrap
                             , QString::fromStdString (name())
                             );
+        }
+
+        void transition_item::name_changed
+          ( const QObject* origin
+          , const data::handle::transition& changed_handle
+          , const QString&
+          )
+        {
+          if (changed_handle == handle())
+          {
+            repositionChildrenAndResize();
+            update();
+          }
         }
 
         void transition_item::property_changed

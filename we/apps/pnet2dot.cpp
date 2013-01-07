@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/net.hpp>
+#include <we/type/transition.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <we/util/codec.hpp>
 
 #include <we/type/bits/transition/toDot.hpp>
@@ -185,7 +186,7 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
     {
-      std::cout << fhg::project_info();
+      std::cout << fhg::project_info ("pnet2dot");
 
       return EXIT_SUCCESS;
     }

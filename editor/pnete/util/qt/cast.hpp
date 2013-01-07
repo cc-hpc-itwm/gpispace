@@ -31,6 +31,22 @@ namespace fhg
 
         return x;
       }
+      template<typename T> T throwing_qobject_cast (const QObject* from)
+      {
+        T x (qobject_cast<T> (from));
+
+        if (!x)
+        {
+          throw std::runtime_error
+            ( std::string ("throwing_qobject_cast failed from ")
+//             + qPrintable(from->metaObject()->className())
+//             + " to "
+//             + qPrintable(typename T::staticMetaObject.className())
+            );
+        }
+
+        return x;
+      }
       template<typename T> T throwing_qgraphicsitem_cast (QGraphicsItem* from)
       {
         T x (qgraphicsitem_cast<T> (from));

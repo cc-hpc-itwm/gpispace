@@ -27,6 +27,7 @@ namespace fhg
             painter->setPen
               (QPen ( QBrush (item->style<QColor> ("border_color"))
                     , item->style<qreal> ("border_thickness")
+                    , item->style<Qt::PenStyle> ("border_style")
                     )
               );
             painter->setBackgroundMode (Qt::OpaqueMode);

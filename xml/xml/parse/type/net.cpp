@@ -42,11 +42,11 @@ namespace xml
                          )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _functions (functions)
-        , _places (places)
-        , _specializes (specializes)
-        , _templates (templates)
-        , _transitions (transitions)
+        , _functions (functions, _id)
+        , _places (places, _id)
+        , _specializes (specializes, _id)
+        , _templates (templates, _id)
+        , _transitions (transitions, _id)
         , structs (structs)
         , contains_a_module_call (contains_a_module_call)
         , structs_resolved (resol)
@@ -152,6 +152,8 @@ namespace xml
             throw error::duplicate_function (id, id_old);
           }
 
+        id.get_ref().parent (_id);
+
         return id;
       }
 
@@ -164,6 +166,8 @@ namespace xml
         {
           throw error::duplicate_place (id.get().name(), path());
         }
+
+        id.get_ref().parent (_id);
 
         return id;
       }
@@ -180,6 +184,8 @@ namespace xml
           throw error::duplicate_specialize (spec.name(), spec.path);
         }
 
+        id.get_ref().parent (_id);
+
         return id;
       }
 
@@ -193,6 +199,8 @@ namespace xml
             throw error::duplicate_template (id, id_old);
           }
 
+        id.get_ref().parent (_id);
+
         return id;
       }
 
@@ -205,6 +213,8 @@ namespace xml
         {
           throw error::duplicate_transition (id, id_old);
         }
+
+        id.get_ref().parent (_id);
 
         return id;
       }
@@ -265,6 +275,108 @@ namespace xml
       void net_type::clear_transitions (void)
       {
         _transitions.clear();
+      }
+
+      // ***************************************************************** //
+
+      void net_type::rename ( const id::ref::function& function
+                            , const std::string& name
+                            )
+      {
+        if (function.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_function (name))
+        {
+          throw std::runtime_error
+            ("tried renaming function, but function with given name exists");
+        }
+
+        _functions.erase (function);
+        function.get_ref().name_impl (name);
+        _functions.push (function);
+      }
+
+      void net_type::rename ( const id::ref::place& place
+                            , const std::string& name
+                            )
+      {
+        if (place.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_place (name))
+        {
+          throw std::runtime_error
+            ("tried renaming place, but place with given name exists");
+        }
+
+        _places.erase (place);
+        place.get_ref().name_impl (name);
+        _places.push (place);
+      }
+
+      void net_type::rename ( const id::ref::specialize& specialize
+                            , const std::string& name
+                            )
+      {
+        if (specialize.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_specialize (name))
+        {
+          throw std::runtime_error
+            ("tried renaming specialize, but specialize with given name exists");
+        }
+
+        _specializes.erase (specialize);
+        specialize.get_ref().name_impl (name);
+        _specializes.push (specialize);
+      }
+
+      void net_type::rename ( const id::ref::tmpl& tmpl
+                            , const std::string& name
+                            )
+      {
+        if (tmpl.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_template (name))
+        {
+          throw std::runtime_error
+            ("tried renaming template, but template with given name exists");
+        }
+
+        _templates.erase (tmpl);
+        tmpl.get_ref().name_impl (name);
+        _templates.push (tmpl);
+      }
+
+      void net_type::rename ( const id::ref::transition& transition
+                            , const std::string& name
+                            )
+      {
+        if (transition.get().name() == name)
+        {
+          return;
+        }
+
+        if (has_transition (name))
+        {
+          throw std::runtime_error
+            ("tried renaming transition, but transition with given name exists");
+        }
+
+        _transitions.erase (transition);
+        transition.get_ref().name_impl (name);
+        _transitions.push (transition);
       }
 
       // ***************************************************************** //
@@ -332,9 +444,10 @@ namespace xml
 
           type_map_apply (map, specialize.type_map);
 
-          const id::ref::tmpl specialized_tmpl (id_tmpl->get().clone (id()));
+          const id::ref::function specialized_function
+            (id_tmpl->get().function().get().clone (boost::none));
 
-          specialized_tmpl.get_ref().specialize
+          specialized_function.get_ref().specialize
             ( specialize.type_map
             , specialize.type_get
             , st::join (known_structs, st::make (structs), state)
@@ -342,16 +455,15 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , specialized_tmpl.get().function().get_ref().structs
+                        , specialized_function.get_ref().structs
                         , structs
                         , specialize.type_get
                         , state
                         );
 
-          specialized_tmpl.get().function().get_ref().name
-            (specialize.name());
+          specialized_function.get_ref().name (specialize.name());
 
-          push_function (specialized_tmpl.get().function());
+          push_function (specialized_function);
         }
 
         _specializes.clear();
@@ -498,57 +610,74 @@ namespace xml
 
       void net_type::set_prefix (const std::string & prefix)
       {
-        BOOST_FOREACH (place_type& place, places().values())
+        //! \note We need to copy out the ids from the unique, as we
+        //! modify the unique and therefore break iteration.
+        const boost::unordered_set<id::ref::place> place_ids (places().ids());
+        const boost::unordered_set<id::ref::transition> transition_ids
+          (transitions().ids());
+
+        BOOST_FOREACH (const id::ref::place& place, place_ids)
         {
-          place.name (prefix + place.name());
+          place.get_ref().name (prefix + place.get().name());
         }
 
-        BOOST_FOREACH (transition_type& transition, transitions().values())
+        BOOST_FOREACH (const id::ref::transition& id, transition_ids)
         {
+          transition_type& transition (id.get_ref());
+          const boost::unordered_set<id::ref::connect> connect_ids
+            (transition.connections().ids());
+          const boost::unordered_set<id::ref::place_map> place_map_ids
+            (transition.place_map().ids());
+
           transition.name (prefix + transition.name());
 
-          BOOST_FOREACH ( connect_type& connection
-                        , transition.connections().values()
-                        )
+          BOOST_FOREACH (const id::ref::connect& conn, connect_ids)
           {
-            connection.place (prefix + connection.place());
+            conn.get_ref().place (prefix + conn.get().place());
           }
 
-          BOOST_FOREACH ( place_map_type& place_map
-                        , transition.place_map().values()
-                        )
+          BOOST_FOREACH (const id::ref::place_map& pm, place_map_ids)
           {
-            place_map.place_real (prefix + place_map.place_real());
+            pm.get_ref().place_real (prefix + pm.get().place_real());
           }
         }
       }
 
       void net_type::remove_prefix (const std::string & prefix)
       {
-        BOOST_FOREACH (place_type& place, places().values())
+        //! \note We need to copy out the ids from the unique, as we
+        //! modify the unique and therefore break iteration.
+        const boost::unordered_set<id::ref::place> place_ids (places().ids());
+        const boost::unordered_set<id::ref::transition> transition_ids
+          (transitions().ids());
+
+        BOOST_FOREACH (const id::ref::place& place, place_ids)
         {
-          place.name (fhg::util::remove_prefix (prefix, place.name()));
+          place.get_ref().name
+            (fhg::util::remove_prefix (prefix, place.get().name()));
         }
 
-        BOOST_FOREACH (transition_type& transition, transitions().values())
+        BOOST_FOREACH (const id::ref::transition& id, transition_ids)
         {
+          transition_type& transition (id.get_ref());
+          const boost::unordered_set<id::ref::connect> connect_ids
+            (transition.connections().ids());
+          const boost::unordered_set<id::ref::place_map> place_map_ids
+            (transition.place_map().ids());
+
           transition.name
             (fhg::util::remove_prefix (prefix, transition.name()));
 
-          BOOST_FOREACH ( connect_type& connection
-                        , transition.connections().values()
-                        )
+          BOOST_FOREACH (const id::ref::connect& conn, connect_ids)
           {
-            connection.place
-              (fhg::util::remove_prefix (prefix, connection.place()));
+            conn.get_ref().place
+              (fhg::util::remove_prefix (prefix, conn.get().place()));
           }
 
-          BOOST_FOREACH ( place_map_type& place_map
-                        , transition.place_map().values()
-                        )
+          BOOST_FOREACH (const id::ref::place_map& pm, place_map_ids)
           {
-            place_map.place_real
-              (fhg::util::remove_prefix (prefix, place_map.place_real()));
+            pm.get_ref().place_real
+              (fhg::util::remove_prefix (prefix, pm.get().place_real()));
           }
         }
       }
@@ -584,11 +713,8 @@ namespace xml
                      , const place_map_map_type & place_map_map
                      , const net_type& net
                      , const state::type & state
-                     , unsigned int& e
                      )
       {
-        typedef unsigned int we_edge_type;
-
         typedef boost::unordered_map< std::string
                                     , petri_net::place_id_type
                                     > pid_of_place_type;
@@ -658,10 +784,8 @@ namespace xml
             transition_synthesize
               ( id_transition
               , state
-              , net
               , we_net
               , pid_of_place
-              , e
               );
           }
 

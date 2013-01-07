@@ -7,7 +7,7 @@
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 #include <we/type/bits/transition/optimize/is_associated.hpp>
 
@@ -131,7 +131,7 @@ namespace we { namespace type {
             ; ++p
             )
           {
-            const connection_t & connection (net.get_edge_info (p()));
+            const connection_t& connection (p());
 
             if (petri_net::edge::is_pt_read (connection.type))
               {
@@ -344,15 +344,13 @@ namespace we { namespace type {
 
                 const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
-                const petri_net::edge_id_type eid (net.get_eid_out (tid_trans, pid));
-                const unsigned int edge (net.get_edge (eid));
-                connection_t connection (net.get_edge_info (eid));
+                connection_t connection (net.get_connection_out (tid_trans, pid));
 
-                net.delete_edge (eid);
+                net.delete_edge_out (tid_trans, pid);
 
                 connection.tid = tid_pred;
 
-                net.add_edge (edge, connection);
+                net.add_connection (connection);
 
                 pred.add_connection
                   (p->second.name(), pid, p->second.property())
@@ -371,16 +369,13 @@ namespace we { namespace type {
                           {
                             pred.UNSAFE_add_port (p->second);
 
-                            const petri_net::edge_id_type eid
-                              (net.get_eid_in (tid_trans, pid));
-                            const unsigned int edge (net.get_edge (eid));
-                            connection_t connection (net.get_edge_info (eid));
+                            connection_t connection (net.get_connection_in (tid_trans, pid));
 
-                            net.delete_edge (eid);
+                            net.delete_edge_in (tid_trans, pid);
 
                             connection.tid = tid_pred;
 
-                            net.add_edge (edge, connection);
+                            net.add_connection (connection);
 
                             pred.add_connection
                               (pid, p->second.name(), p->second.property())
@@ -421,6 +416,8 @@ namespace we { namespace type {
 
                 namespace prop = we::type::property::traverse;
 
+                //! \todo eliminate the hack that stores the real
+                //! place in the properties
                 prop::stack_type stack
                   (prop::dfs (net.get_place(pid).property(), "real"));
 

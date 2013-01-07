@@ -112,13 +112,26 @@ namespace mapreduce
       void reduce_array(const int part_id, const size_t red_slot_size, const std::vector<std::string>& arr_items, char* ptr_shmem, size_t& last_pos )
       {
     	  std::list<std::string> list_in_values;
-    	  key_val_pair_t kv_pair = get_key_val(arr_items[0]);
+    	  key_val_pair_t kv_pair, kv_pair_next;
+
+    	  try {
+    		  kv_pair = get_key_val(arr_items[0]);
+    	  }
+		  catch(const std::exception& exc ){
+			  throw std::runtime_error("Invalid key-value pair ("+ arr_items[0] + ") :" + +exc.what());
+		  }
+
     	  std::string last_key = kv_pair.first;
 
     	  last_pos = 0;
     	  for(std::vector<std::string>::const_iterator it=arr_items.begin(); it != arr_items.end(); it++ )
     	  {
-    		  ::mapreduce::util::key_val_pair_t kv_pair_next = ::mapreduce::util::get_key_val(*it);
+    		  try {
+    			  kv_pair_next = ::mapreduce::util::get_key_val(*it);
+    		  }
+    		  catch(const std::exception& exc ){
+    			  throw std::runtime_error("Invalid key-value pair ("+ *it + ") :" +exc.what());
+    		  }
 
     		  if( kv_pair_next.first != last_key )
     		  {

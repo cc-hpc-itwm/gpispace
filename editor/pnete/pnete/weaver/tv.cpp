@@ -484,7 +484,7 @@ namespace fhg
         {
           xs ("ports", ports.ids(), from::port);
         }
-        WSIG(tv, function::fun, XMLTYPE(function_type::type), fun)
+        WSIG(tv, function::fun, XMLTYPE(function_type::content_type), fun)
         {
           from::variant (this, fun);
         }

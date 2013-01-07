@@ -7,7 +7,7 @@
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
 #include <we/util/codec.hpp>
@@ -61,6 +61,12 @@ namespace
       activity.execute (this);
       activity.collect_output();
     }
+
+    const we::mgmt::type::activity_t::output_t& output() const
+    {
+      return activity.output();
+    }
+
 
     std::string content_of_file (const boost::filesystem::path& path) const
     {
@@ -146,32 +152,35 @@ namespace
 //   BOOST_REQUIRE_EQUAL (content_of_file (path), activity.to_string());
 // }
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE(we::mgmt::type::activity_t::output_t);
+
 BOOST_FIXTURE_TEST_CASE (sequence, fixture)
 {
   {
-    load_activity_from_file ("sequence.pnet");
+    load_activity_from_file ("sequence_input.pnet");
 
     put_token_from_string ("n", "1");
 
     execute();
 
-    BOOST_REQUIRE_EQUAL ( content_of_file ("sequence_output_1.pnet")
-                        , activity.to_string()
-                        );
+    we::mgmt::type::activity_t::output_t out (output());
+
+    load_activity_from_file ("sequence_output_1.pnet");
+
+    BOOST_REQUIRE_EQUAL (out, output());
   }
 
   {
-    load_activity_from_file ("sequence.pnet");
+    load_activity_from_file ("sequence_input.pnet");
 
     put_token_from_string ("n", "10");
 
     execute();
 
-    //! \todo Check by getting tokens and not by comparing, as order
-    //! won't be assured (?)
+    we::mgmt::type::activity_t::output_t out (output());
 
-    BOOST_REQUIRE_EQUAL ( content_of_file ("sequence_output_10.pnet")
-                        , activity.to_string()
-                        );
+    load_activity_from_file ("sequence_output_10.pnet");
+
+    BOOST_REQUIRE_EQUAL (out, output());
   }
 }

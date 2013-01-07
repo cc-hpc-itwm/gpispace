@@ -22,6 +22,7 @@
 #include <we/expr/parse/parser.hpp>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptor/filtered.hpp>
 #include <boost/smart_ptr.hpp>
 
 #include <QPointF>
@@ -65,16 +66,16 @@ namespace fhg
           // -- transition ---------------------------------------------
           EXPOSE (transition_added);
           EXPOSE (transition_deleted);
+          EXPOSE (name_set);
 
           // -- place --------------------------------------------------
           EXPOSE (place_added);
           EXPOSE (place_deleted);
-          EXPOSE (place_type_set);
+          EXPOSE (type_set);
 
           // - port ----------------------------------------------------
           EXPOSE (port_added);
           EXPOSE (port_deleted);
-          EXPOSE (port_type_set);
           EXPOSE (place_association_set);
 
           // - function ------------------------------------------------
@@ -214,6 +215,106 @@ namespace fhg
           const ::we::type::property::key_type _key;
           ::we::type::property::value_type _new_value;
           const ::we::type::property::value_type _old_value;
+        };
+
+        template<typename HANDLE_TYPE>
+        void set_type_impl
+          (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& type)
+        {
+          handle.get_ref().type = type.toStdString();
+
+          typedef void (change_manager_t::* signal_type)
+            ( const QObject*
+            , const HANDLE_TYPE&
+            , const QString&
+            );
+
+          change_manager.emit_signal<signal_type>
+            (&signal::type_set, origin, handle, type);
+        }
+
+        template<typename HANDLE_TYPE>
+        class meta_set_type : public QUndoCommand
+        {
+        public:
+          meta_set_type
+            ( const char* name
+            , ACTION_ARG_LIST
+            , const HANDLE_TYPE& handle
+            , const QString& type
+            )
+              : ACTION_INIT (name)
+              , _handle (handle)
+              , _old_type (QString::fromStdString (handle.get().type))
+              , _new_type (type)
+          { }
+
+          virtual void undo()
+          {
+            set_type_impl (_change_manager, NULL, _handle, _old_type);
+          }
+
+          virtual void redo()
+          {
+            set_type_impl (_change_manager, _origin, _handle, _new_type);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const HANDLE_TYPE _handle;
+          const QString _old_type;
+          const QString _new_type;
+        };
+
+        template<typename HANDLE_TYPE>
+        void set_name_impl
+          (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& name)
+        {
+          handle.get_ref().name (name.toStdString());
+
+          typedef void (change_manager_t::* signal_type)
+            ( const QObject*
+            , const HANDLE_TYPE&
+            , const QString&
+            );
+
+          change_manager.emit_signal<signal_type>
+            (&signal::name_set, origin, handle, name);
+        }
+
+        template<typename HANDLE_TYPE>
+        class meta_set_name : public QUndoCommand
+        {
+        public:
+          meta_set_name
+            ( const char* action_name
+            , ACTION_ARG_LIST
+            , const HANDLE_TYPE& handle
+            , const QString& name
+            )
+              : ACTION_INIT (action_name)
+              , _handle (handle)
+              , _old_name (QString::fromStdString (handle.get().name()))
+              , _new_name (name)
+          { }
+
+          virtual void undo()
+          {
+            set_name_impl (_change_manager, NULL, _handle, _old_name);
+          }
+
+          virtual void redo()
+          {
+            set_name_impl (_change_manager, _origin, _handle, _new_name);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const HANDLE_TYPE _handle;
+          const QString _old_name;
+          const QString _new_name;
         };
 
         // - net -----------------------------------------------------
@@ -408,7 +509,7 @@ namespace fhg
         public:
           connection_is_read
             (ACTION_ARG_LIST, const handle::connect& connect, bool read)
-              : ACTION_INIT ("remove_connection_action")
+              : ACTION_INIT ("connection_is_read_action")
               , _connect (connect)
               , _old_value (connect.is_read())
               , _new_value (read)
@@ -613,46 +714,6 @@ namespace fhg
           ::xml::parse::id::ref::net _net;
         };
 
-        void place_set_type_impl
-          (ACTION_ARG_LIST, const handle::place& place, const QString& type)
-        {
-          place.get_ref().type = type.toStdString();
-          change_manager.emit_signal
-            (&signal::place_type_set, origin, place, type);
-        }
-
-        class place_set_type : public QUndoCommand
-        {
-        public:
-          place_set_type
-            ( ACTION_ARG_LIST
-            , const handle::place& place
-            , const QString& type
-            )
-              : ACTION_INIT ("place_set_type_action")
-              , _place (place)
-              , _old_type (QString::fromStdString (place.get().type))
-              , _new_type (type)
-          { }
-
-          virtual void undo()
-          {
-            place_set_type_impl (_change_manager, NULL, _place, _old_type);
-          }
-
-          virtual void redo()
-          {
-            place_set_type_impl (_change_manager, _origin, _place, _new_type);
-            _origin = NULL;
-          }
-
-        private:
-          ACTION_MEMBERS;
-          const handle::place _place;
-          const QString _old_type;
-          const QString _new_type;
-        };
-
         // -- port --------------------------------------------------
         void add_port_impl ( ACTION_ARG_LIST
                            , const ::xml::parse::id::ref::function& function
@@ -736,46 +797,6 @@ namespace fhg
           ACTION_MEMBERS;
           ::xml::parse::id::ref::port _port;
           ::xml::parse::id::ref::function _function;
-        };
-
-        void port_set_type_impl
-          (ACTION_ARG_LIST, const handle::port& port, const QString& type)
-        {
-          port.get_ref().type = type.toStdString();
-          change_manager.emit_signal
-            (&signal::port_type_set, origin, port, type);
-        }
-
-        class port_set_type : public QUndoCommand
-        {
-        public:
-          port_set_type
-            ( ACTION_ARG_LIST
-            , const handle::port& port
-            , const QString& type
-            )
-              : ACTION_INIT ("port_set_type_action")
-              , _port (port)
-              , _old_type (QString::fromStdString (port.get().type))
-              , _new_type (type)
-          { }
-
-          virtual void undo()
-          {
-            port_set_type_impl (_change_manager, NULL, _port, _old_type);
-          }
-
-          virtual void redo()
-          {
-            port_set_type_impl (_change_manager, _origin, _port, _new_type);
-            _origin = NULL;
-          }
-
-        private:
-          ACTION_MEMBERS;
-          const handle::port _port;
-          const QString _old_type;
-          const QString _new_type;
         };
 
         void set_place_association_impl
@@ -947,6 +968,7 @@ namespace fhg
                                       , const data::handle::place& place
                                       , const data::handle::port& port
                                       , const petri_net::edge::type& direction
+                                      , bool no_make_explicit
                                       )
       {
         const ::xml::parse::id::ref::net net_of_place
@@ -960,8 +982,17 @@ namespace fhg
 
         if (function_of_net_of_place == function_of_port)
         {
+          change_manager.beginMacro ("set_place_association_action");
+
+          if (place.is_implicit() && !no_make_explicit)
+          {
+            change_manager.make_explicit (&change_manager, place);
+          }
+
           change_manager.set_place_association
             (origin, port, place.get().name());
+
+          change_manager.endMacro();
         }
         else
         {
@@ -970,6 +1001,13 @@ namespace fhg
 
           if (net_of_place == transition_of_fun_of_port.get().parent()->id())
           {
+            change_manager.beginMacro ("add_connection_action");
+
+            if (place.is_implicit() && !no_make_explicit)
+            {
+              change_manager.make_explicit (&change_manager, place);
+            }
+
             change_manager.push
               ( new action::add_connection
                 ( change_manager
@@ -978,13 +1016,15 @@ namespace fhg
                 , ::xml::parse::type::connect_type
                   ( transition_of_fun_of_port.id_mapper()->next_id()
                   , transition_of_fun_of_port.id_mapper()
-                  , transition_of_fun_of_port.id()
+                  , boost::none
                   , place.get().name()
                   , port.get().name()
                   , direction
                   ).make_reference_id()
                 )
               );
+
+            change_manager.endMacro();
           }
           else
           {
@@ -997,19 +1037,21 @@ namespace fhg
       void change_manager_t::add_connection ( const QObject* origin
                                             , const data::handle::place& place
                                             , const data::handle::port& port
+                                            , bool no_make_explicit
                                             )
       {
         add_connection_impl_choose
-          (origin, *this, place, port, petri_net::edge::PT);
+          (origin, *this, place, port, petri_net::edge::PT, no_make_explicit);
       }
 
       void change_manager_t::add_connection ( const QObject* origin
                                             , const data::handle::port& port
                                             , const data::handle::place& place
+                                            , bool no_make_explicit
                                             )
       {
         add_connection_impl_choose
-          (origin, *this, place, port, petri_net::edge::TP);
+          (origin, *this, place, port, petri_net::edge::TP, no_make_explicit);
       }
 
       void change_manager_t::add_connection ( const QObject* origin
@@ -1037,7 +1079,7 @@ namespace fhg
           ( ::xml::parse::type::place_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
-            , net.id().id()
+            , boost::none
             , name
             , from.get().type
             , boost::none
@@ -1050,8 +1092,8 @@ namespace fhg
         push (new action::add_place (*this, origin, net.id(), place));
 
         handle::place place_handle (place, *this);
-        add_connection (origin, from, place_handle);
-        add_connection (origin, place_handle, to);
+        add_connection (origin, from, place_handle, true);
+        add_connection (origin, place_handle, to, true);
 
         endMacro();
       }
@@ -1061,7 +1103,20 @@ namespace fhg
         , const handle::connect& connect
         )
       {
+        beginMacro ("remove_connection_action");
+
+        if (connect.get().resolved_place())
+        {
+          const handle::place place (*connect.get().resolved_place(), *this);
+          if (place.is_implicit())
+          {
+            make_explicit (this, place);
+          }
+        }
+
         push (new action::remove_connection (*this, origin, connect.id()));
+
+        endMacro();
       }
 
       void change_manager_t::connection_is_read
@@ -1114,7 +1169,7 @@ namespace fhg
           ( ::xml::parse::type::transition_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
-            , net.id().id()
+            , boost::none
             , fun
             ).make_reference_id()
           );
@@ -1135,28 +1190,21 @@ namespace fhg
         , const handle::net& net
         )
       {
-        const ::xml::parse::id::function function_id
-          (net.id().id_mapper()->next_id());
-        const ::xml::parse::id::transition transition_id
-          (net.id().id_mapper()->next_id());
-
         const ::xml::parse::id::ref::transition transition
           ( ::xml::parse::type::transition_type
-            ( transition_id
+            ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
-            , net.id().id()
-            , ::xml::parse::id::ref::function
-              ( ::xml::parse::type::function_type
-                ( function_id
+            , boost::none
+            , ::xml::parse::type::function_type
+              ( net.id().id_mapper()->next_id()
+              , net.id().id_mapper()
+              , boost::none
+              , ::xml::parse::type::expression_type
+                ( net.id().id_mapper()->next_id()
                 , net.id().id_mapper()
-                , ::xml::parse::type::function_type::make_parent (transition_id)
-                , ::xml::parse::type::expression_type
-                  ( net.id().id_mapper()->next_id()
-                  , net.id().id_mapper()
-                  , function_id
-                  ).make_reference_id()
+                , boost::none
                 ).make_reference_id()
-              )
+              ).make_reference_id()
             ).make_reference_id()
           );
 
@@ -1176,9 +1224,36 @@ namespace fhg
         , const handle::transition& transition
         )
       {
-        //! \todo Find all connections to this transition and erase them in
-        //! a macro. Or do that inside the action class.
+        beginMacro ("remove_transition_and_connections_action");
+
+        //! \note remove_connection will modify transition's
+        //! connections, thus copy out of there first, then modify.
+        boost::unordered_set< ::xml::parse::id::ref::connect> to_delete
+          (transition.get().connections().ids());
+
+        BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+        {
+          remove_connection (this, handle::connect (c, *this));
+        }
+
         push (new action::remove_transition (*this, origin, transition.id()));
+
+        endMacro();
+      }
+
+      void change_manager_t::set_name ( const QObject* origin
+                                      , const data::handle::transition& transition
+                                      , const QString& name
+                                      )
+      {
+        push ( new action::meta_set_name<handle::transition>
+               ( "transition_set_name_action"
+               , *this
+               , origin
+               , transition
+               , name
+               )
+             );
       }
 
       void change_manager_t::set_property
@@ -1254,7 +1329,7 @@ namespace fhg
           ( ::xml::parse::type::place_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
-            , net.id().id()
+            , boost::none
             , name
             //! \todo: default type to something useful?
             , ""
@@ -1265,14 +1340,96 @@ namespace fhg
         push (new action::add_place (*this, origin, net.id(), place));
       }
 
+      namespace
+      {
+        bool is_connected_to_place ( const ::xml::parse::id::ref::connect& id
+                                   , const ::xml::parse::id::ref::place& place
+                                   )
+        {
+          return id.get().resolved_place()
+            && *id.get().resolved_place() == place;
+        }
+
+        bool is_associated_with ( const ::xml::parse::id::ref::port& port
+                                , const ::xml::parse::id::ref::place& place
+                                )
+        {
+          //! \todo This only checks for the same name, but might fail
+          //! with shadowing. (See is_connected_to_place().)
+          return port.get().place
+            && *port.get().place == place.get().name();
+        }
+
+        template<typename C, typename R>
+          void throw_into_set (C& container, const R& range)
+        {
+          container.insert (boost::begin (range), boost::end (range));
+        }
+      }
+
       void change_manager_t::delete_place
         ( const QObject* origin
         , const handle::place& place
         )
       {
-        //! \todo Find all connections to this place and erase them in
-        //! a macro. Or do that inside the action class.
+        beginMacro ("remove_place_and_connections_action");
+
+        if (place.get().has_parent())
+        {
+          const ::xml::parse::type::net_type& net (place.get().parent().get());
+
+          boost::unordered_set< ::xml::parse::id::ref::connect> to_delete;
+
+          //! \note remove_connection will modify transition's
+          //! connections, thus copy out of there first, then modify.
+          BOOST_FOREACH ( const ::xml::parse::type::transition_type& trans
+                        , net.transitions().values()
+                        )
+          {
+            throw_into_set
+              ( to_delete
+              , trans.connections().ids()
+              | boost::adaptors::filtered
+                (boost::bind (is_connected_to_place, _1, place.id()))
+              );
+          }
+
+          BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+          {
+            remove_connection (this, handle::connect (c, *this));
+          }
+
+          if (net.has_parent())
+          {
+            BOOST_FOREACH ( const ::xml::parse::id::ref::port& port
+                          , net.parent()->ports().ids()
+                          | boost::adaptors::filtered
+                            (boost::bind (is_associated_with, _1, place.id()))
+                          )
+            {
+              set_place_association
+                (this, handle::port (port, *this), boost::none);
+            }
+          }
+        }
+
         push (new action::remove_place (*this, origin, place.id()));
+
+        endMacro();
+      }
+
+      void change_manager_t::set_name ( const QObject* origin
+                                      , const data::handle::place& place
+                                      , const QString& name
+                                      )
+      {
+        push ( new action::meta_set_name<handle::place> ( "place_set_name_action"
+                                                        , *this
+                                                        , origin
+                                                        , place
+                                                        , name
+                                                        )
+             );
       }
 
       void change_manager_t::set_type ( const QObject* origin
@@ -1280,7 +1437,13 @@ namespace fhg
                                       , const QString& type
                                       )
       {
-        push (new action::place_set_type (*this, origin, place, type));
+        push ( new action::meta_set_type<handle::place> ( "place_set_type_action"
+                                                        , *this
+                                                        , origin
+                                                        , place
+                                                        , type
+                                                        )
+             );
       }
 
       void change_manager_t::make_explicit
@@ -1380,7 +1543,7 @@ namespace fhg
           ( ::xml::parse::type::port_type
             ( function.id().id_mapper()->next_id()
             , function.id().id_mapper()
-            , function.id().id()
+            , boost::none
             , name
             //! \todo Default type?
             , ""
@@ -1392,14 +1555,52 @@ namespace fhg
         push (new action::add_port (*this, origin, function.id(), port));
       }
 
+      namespace
+      {
+        bool is_connected_to_port ( const ::xml::parse::id::ref::connect& id
+                                  , const ::xml::parse::id::ref::port& port
+                                  )
+        {
+          return id.get().resolved_port() && *id.get().resolved_port() == port;
+        }
+      }
+
       void change_manager_t::delete_port
         ( const QObject* origin
         , const handle::port& port
         )
       {
-        //! \todo Find all connections to this port and erase them in
-        //! a macro. Or do that inside the action class.
+        beginMacro ("remove_port_and_connections_action");
+
+        if (port.get().place)
+        {
+          set_place_association (this, port, boost::none);
+        }
+
+        if (port.get().has_parent() && port.get().parent()->parent_transition())
+        {
+          //! \note remove_connection will modify transition's
+          //! connections, thus copy out of there first, then modify.
+          typedef boost::unordered_set< ::xml::parse::id::ref::connect>
+            to_delete_type;
+
+          to_delete_type to_delete
+            ( boost::copy_range<to_delete_type>
+              ( port.get().parent()->parent_transition()->get().connections().ids()
+              | boost::adaptors::filtered
+                (boost::bind (is_connected_to_port, _1, port.id()))
+              )
+            );
+
+          BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+          {
+            remove_connection (this, handle::connect (c, *this));
+          }
+        }
+
         push (new action::remove_port (*this, origin, port.id()));
+
+        endMacro();
       }
 
       void change_manager_t::set_property
@@ -1426,12 +1627,32 @@ namespace fhg
         action::set_property (port, key, val, *this, origin);
       }
 
+      void change_manager_t::set_name ( const QObject* origin
+                                      , const data::handle::port& port
+                                      , const QString& name
+                                      )
+      {
+        push ( new action::meta_set_name<handle::port> ( "port_set_name_action"
+                                                       , *this
+                                                       , origin
+                                                       , port
+                                                       , name
+                                                       )
+             );
+      }
+
       void change_manager_t::set_type ( const QObject* origin
                                       , const data::handle::port& port
                                       , const QString& type
                                       )
       {
-        push (new action::port_set_type (*this, origin, port, type));
+        push ( new action::meta_set_type<handle::port> ( "port_set_type_action"
+                                                       , *this
+                                                       , origin
+                                                       , port
+                                                       , type
+                                                       )
+             );
       }
 
       void change_manager_t::set_place_association
@@ -1440,7 +1661,20 @@ namespace fhg
         , const boost::optional<std::string>& place
         )
       {
+        beginMacro ("set_place_association_action");
+
+        if (port.get().place && !place)
+        {
+          const handle::place place (*port.get().resolved_place(), *this);
+          if (place.is_implicit())
+          {
+            make_explicit (this, place);
+          }
+        }
+
         push (new action::set_place_association (*this, origin, port, place));
+
+        endMacro();
       }
 
 

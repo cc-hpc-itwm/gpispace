@@ -8,7 +8,8 @@
 
 #include <xml/parse/id/types.hpp>
 
-#include <we/type/literal/name.hpp>
+#include <we/type/literal.hpp>
+#include <we/type/signature.hpp>
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
 
@@ -1252,9 +1253,9 @@ namespace xml
         virtual ~port_type_mismatch() throw() { }
 
       private:
-        const id::ref::port& _port;
-        const id::ref::port& _other_port;
-        const boost::filesystem::path& _path;
+        const id::ref::port _port;
+        const id::ref::port _other_port;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

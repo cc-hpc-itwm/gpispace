@@ -103,6 +103,32 @@ namespace fhg
         namespace
         {
           template<typename handle_type>
+          void set_name_for_handle ( const handle_type& handle
+                                   , const QString& dialog_title
+                                   , const QString& prompt
+                                   , const QString& current_name
+                                   , QWidget* widget
+                                   , QObject* origin
+                                   )
+          {
+            bool ok;
+            const QString text
+              ( QInputDialog::getText
+                ( widget
+                , dialog_title
+                , prompt
+                , QLineEdit::Normal
+                , current_name
+                , &ok
+                )
+              );
+            if (ok && !text.isEmpty())
+            {
+              handle.set_name (origin, text);
+            }
+          }
+
+          template<typename handle_type>
           void set_we_type_for_handle ( const handle_type& handle
                                       , const QString& dialog_title
                                       , const QString& prompt
@@ -227,6 +253,21 @@ namespace fhg
                 );
 
               fhg::util::qt::boost_connect<void()>
+                ( menu->addAction(tr ("port_set_name"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind ( set_name_for_handle<data::handle::port>
+                              , handle
+                              , tr ("port_set_name_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("port_set_name_prompt")
+                              , QString::fromStdString (handle.get().name())
+                              , event->widget()
+                              , this
+                              )
+                );
+
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("port_set_type"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -290,6 +331,21 @@ namespace fhg
                 , boost::bind (nyi, "transition: add port")
                 );
 
+              fhg::util::qt::boost_connect<void()>
+                ( menu->addAction(tr ("transition_set_name"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind ( set_name_for_handle<data::handle::transition>
+                              , handle
+                              , tr ("transition_set_name_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("transition_set_name_prompt")
+                              , QString::fromStdString (handle.get().name())
+                              , event->widget()
+                              , this
+                              )
+                );
+
               menu->addSeparator();
 
               fhg::util::qt::boost_connect<void()>
@@ -320,6 +376,21 @@ namespace fhg
               }
               else
               {
+                fhg::util::qt::boost_connect<void()>
+                  ( menu->addAction(tr ("place_set_name"))
+                  , SIGNAL (triggered())
+                  , item_below_cursor
+                  , boost::bind ( set_name_for_handle<data::handle::place>
+                                , handle
+                                , tr ("place_set_name_dialog_title_for_%1").arg
+                                  (QString::fromStdString (handle.get().name()))
+                                , tr ("place_set_name_prompt")
+                                , QString::fromStdString (handle.get().name())
+                                , event->widget()
+                                , this
+                                )
+                  );
+
                 fhg::util::qt::boost_connect<void()>
                   ( menu->addAction(tr ("place_set_type"))
                   , SIGNAL (triggered())
@@ -597,10 +668,7 @@ namespace fhg
               net().add_transition
                 ( this
                 , data->function().get().clone
-                  ( ::xml::parse::type::function_type::make_parent
-                    (net().id().id())
-                  , net().id().id_mapper()
-                  )
+                  (boost::none, net().id().id_mapper())
                 );
 
               event->acceptProposedAction();

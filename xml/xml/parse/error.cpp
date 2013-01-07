@@ -9,7 +9,7 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 #include <boost/format.hpp>
 

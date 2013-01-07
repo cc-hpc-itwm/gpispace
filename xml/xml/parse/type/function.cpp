@@ -35,14 +35,68 @@ namespace xml
     {
       // ******************************************************************* //
 
+      namespace
+      {
+        class visitor_reparent : public boost::static_visitor<void>
+        {
+        public:
+          visitor_reparent (const id::function& parent)
+            : _parent (parent)
+          { }
+
+          void operator() (const id::ref::expression& id) const
+          {
+            id.get_ref().parent (_parent);
+          }
+          void operator() (const id::ref::module& id) const
+          {
+            id.get_ref().parent (_parent);
+          }
+          void operator() (const id::ref::net& id) const
+          {
+            id.get_ref().parent (_parent);
+          }
+
+        private:
+          const id::function& _parent;
+        };
+
+        const function_type::content_type& reparent
+          ( const function_type::content_type& content
+          , const id::function& parent
+          )
+        {
+          boost::apply_visitor (visitor_reparent (parent), content);
+          return content;
+        }
+      }
+
       function_type::function_type ( ID_CONS_PARAM(function)
                                    , const boost::optional<parent_id_type>& parent
-                                   , const type& _f
+                                   , const content_type& content
                                    )
         : ID_INITIALIZE()
         , _parent (parent)
         , contains_a_module_call (false)
-        , f (_f)
+        , _content (reparent (content, _id))
+      {
+        _id_mapper->put (_id, *this);
+      }
+
+      function_type::function_type ( ID_CONS_PARAM(function)
+                                   , const boost::optional<parent_id_type>& parent
+                                   , const boost::optional<std::string>& name
+                                   , const boost::optional<bool>& internal
+                                   , const content_type& content
+                                   , const boost::filesystem::path& path
+                                   )
+        : ID_INITIALIZE()
+        , _parent (parent)
+        , _name (name)
+        , contains_a_module_call (false)
+        , internal (internal)
+        , _content (reparent (content, _id))
+        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -56,9 +110,9 @@ namespace xml
         , const bool& contains_a_module_call
         , const boost::optional<bool>& internal
         , const structs_type& structs
-        , const conditions_type& cond
+        , const conditions_type& conditions
         , const requirements_type& requirements
-        , const type& f
+        , const content_type& content
         , const xml::parse::structure_type::set_type& structs_resolved
         , const we::type::property::type& properties
         , const boost::filesystem::path& path
@@ -66,14 +120,14 @@ namespace xml
         : ID_INITIALIZE()
         , _parent (parent)
         , _name (name)
-        , _ports (ports)
+        , _ports (ports, _id)
         , _typenames (typenames)
         , contains_a_module_call (contains_a_module_call)
         , internal (internal)
         , structs (structs)
-        , cond (cond)
+        , _conditions (conditions)
         , requirements (requirements)
-        , f (f)
+        , _content (reparent (content, _id))
         , structs_resolved (structs_resolved)
         , _properties (properties)
         , path (path)
@@ -81,16 +135,30 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      const function_type::content_type& function_type::content() const
+      {
+        return _content;
+      }
+      function_type::content_type& function_type::content()
+      {
+        return _content;
+      }
+      const function_type::content_type&
+        function_type::content (const content_type& content_)
+      {
+        return _content = reparent (content_, id());
+      }
+
       // ******************************************************************* //
 
       bool function_type::is_net() const
       {
-        return fhg::util::boost::is_of_type<id::ref::net> (f);
+        return fhg::util::boost::is_of_type<id::ref::net> (content());
       }
 
       boost::optional<const id::ref::net&> function_type::get_net() const
       {
-        return fhg::util::boost::get_or_none<id::ref::net> (f);
+        return fhg::util::boost::get_or_none<id::ref::net> (content());
       }
 
       // ******************************************************************* //
@@ -99,14 +167,28 @@ namespace xml
       {
         return _name;
       }
-      const std::string& function_type::name (const std::string& name)
+      const boost::optional<std::string>&
+        function_type::name_impl (const boost::optional<std::string>& name)
       {
-        return *(_name = name);
+        return _name = name;
       }
       const boost::optional<std::string>&
         function_type::name (const boost::optional<std::string>& name)
       {
-        return _name = name;
+        if (parent_net())
+        {
+          if (!name)
+          {
+            throw std::runtime_error ( "Tried setting function to anonymous "
+                                       "while being in a net. This should never "
+                                       "happen as function's unique key is name."
+                                     );
+          }
+
+          parent_net()->get_ref().rename (make_reference_id(), *name);
+          return _name;
+        }
+        return name_impl (name);
       }
 
       const boost::optional<function_type::parent_id_type>& function_type::parent() const
@@ -183,6 +265,20 @@ namespace xml
           );
       }
 
+      boost::optional<id::ref::net>
+        function_type::parent_net() const
+      {
+        if (!_parent)
+        {
+          return boost::none;
+        }
+
+        return boost::apply_visitor
+          ( visitor_get_parent<id::net, id::ref::net> (id_mapper())
+          , *_parent
+          );
+      }
+
       namespace
       {
         class visitor_get_function
@@ -248,6 +344,8 @@ namespace xml
             throw error::port_type_mismatch (id, *id_other, path);
           }
         }
+
+        id.get_ref().parent (_id);
       }
 
       void function_type::remove_port (const id::ref::port& id)
@@ -297,6 +395,43 @@ namespace xml
         return ports().has (std::make_pair (name, we::type::PORT_TUNNEL));
       }
 
+      void function_type::rename (const id::ref::port& id, const std::string& n)
+      {
+        if (id.get().name() == n)
+        {
+          return;
+        }
+
+        if (_ports.has (std::make_pair (n, id.get().direction())))
+        {
+          throw std::runtime_error
+            ("tried renaming port, but port with given name exists");
+        }
+
+        _ports.erase (id);
+        id.get_ref().name_impl (n);
+        _ports.push (id);
+      }
+
+      void function_type::port_direction
+          (const id::ref::port& id, const we::type::PortDirection& direction)
+      {
+        if (id.get().direction() == direction)
+        {
+          return;
+        }
+
+        if (_ports.has (std::make_pair (id.get().name(), direction)))
+        {
+          throw std::runtime_error
+            ("tried changing port direction, but port with combination exists");
+        }
+
+        _ports.erase (id);
+        id.get_ref().direction_impl (direction);
+        _ports.push (id);
+      }
+
       // ***************************************************************** //
 
       const function_type::typenames_type& function_type::typenames () const
@@ -338,17 +473,31 @@ namespace xml
 
       void function_type::add_expression (const expressions_type & es)
       {
-        boost::apply_visitor (visitor_append_expressions (es), f);
+        boost::apply_visitor (visitor_append_expressions (es), content());
       }
 
       // ***************************************************************** //
 
-      std::string function_type::condition (void) const
+      const conditions_type& function_type::conditions() const
       {
-        return cond.empty()
+        return _conditions;
+      }
+      void function_type::add_conditions (const conditions_type& other)
+      {
+        _conditions.insert (_conditions.end(), other.begin(), other.end());
+      }
+
+      std::string conditions_type::flatten() const
+      {
+        return empty()
           ? "true"
-          : fhg::util::join (cond.begin(), cond.end(), " && ", "(", ")")
-          ;
+          : fhg::util::join (begin(), end(), " && ", "(", ")");
+      }
+
+      conditions_type operator+ (conditions_type lhs, const conditions_type& rhs)
+      {
+        lhs.insert (lhs.end(), rhs.begin(), rhs.end());
+        return lhs;
       }
 
       // ***************************************************************** //
@@ -433,7 +582,7 @@ namespace xml
                             , state
                             , forbidden_below()
                             )
-          , f
+          , content()
           );
       }
 
@@ -488,7 +637,7 @@ namespace xml
 
       void function_type::sanity_check (const state::type & state) const
       {
-        boost::apply_visitor (function_sanity_check (state), f);
+        boost::apply_visitor (function_sanity_check (state), content());
       }
 
       // ***************************************************************** //
@@ -525,7 +674,7 @@ namespace xml
           port.type_check (path, state);
         }
 
-        boost::apply_visitor (function_type_check (state), f);
+        boost::apply_visitor (function_type_check (state), content());
       }
 
       // ***************************************************************** //
@@ -534,8 +683,13 @@ namespace xml
         : public boost::static_visitor<we::type::transition_t>
       {
       private:
+        const std::string& _name;
         const state::type & state;
-        function_type & fun;
+        const function_type& fun;
+        const boost::optional<bool>& _internal;
+        const conditions_type& _conditions;
+        we::type::property::type _properties;
+        const requirements_type& _trans_requirements;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -612,35 +766,28 @@ namespace xml
             }
         }
 
-        void add_requirements ( we_transition_type & trans
-                              , xml::parse::type::requirements_type const & req
-                              ) const
+        void add_requirements (we_transition_type& trans) const
         {
-          for ( requirements_type::const_iterator r (req.begin())
-              ; r != req.end()
+          requirements_type requirements (fun.requirements);
+          requirements.join (_trans_requirements);
+
+          for ( requirements_type::const_iterator r (requirements.begin())
+              ; r != requirements.end()
               ; ++r
               )
           {
-            trans.add_requirement (we_requirement_type ( r->first
-                                                       , r->second
-                                                       )
-                                  );
+            trans.add_requirement (we_requirement_type (r->first, r->second));
           }
         }
 
-        std::string name (void) const
+        const std::string& name() const
         {
-          if (not fun.name())
-            {
-              throw error::synthesize_anonymous_function (fun.path);
-            }
-
-          return *fun.name();
+          return _name;
         }
 
         we_cond_type condition (void) const
         {
-          const std::string cond (fun.condition());
+          const std::string cond ((fun.conditions() + _conditions).flatten());
 
           util::we_parser_t parsed_condition
             (util::we_parse (cond, "condition", "function", name(), fun.path));
@@ -649,10 +796,24 @@ namespace xml
         }
 
       public:
-        function_synthesize (const state::type & _state, function_type & _fun)
-          : state (_state)
+        function_synthesize ( const std::string& name
+                            , const state::type& _state
+                            , const function_type& _fun
+                            , const boost::optional<bool>& internal
+                            , const conditions_type& conditions
+                            , const we::type::property::type& trans_properties
+                            , const requirements_type& trans_requirements
+                            )
+          : _name (name)
+          , state (_state)
           , fun (_fun)
-        {}
+          , _internal (internal)
+          , _conditions (conditions)
+          , _properties (trans_properties)
+          , _trans_requirements (trans_requirements)
+        {
+          util::property::join (state, _properties, fun.properties());
+        }
 
         we_transition_type
         operator () (const id::ref::expression& id_expression) const
@@ -665,12 +826,12 @@ namespace xml
             ( name()
             , we_expr_type (expr, parsed_expression)
             , condition()
-            , fun.internal.get_value_or (true)
-            , fun.properties()
+            , _internal.get_value_or (true)
+            , _properties
             );
 
           add_ports (trans, fun.ports());
-          add_requirements (trans, fun.requirements);
+          add_requirements (trans);
 
           return trans;
         }
@@ -681,14 +842,14 @@ namespace xml
 
           we_transition_type trans
             ( name()
-            , we_module_type (mod.name, mod.function)
+            , we_module_type (mod.name(), mod.function)
             , condition()
-            , fun.internal.get_value_or (false)
-            , fun.properties()
+            , _internal.get_value_or (false)
+            , _properties
             );
 
           add_ports (trans, fun.ports());
-          add_requirements (trans, fun.requirements);
+          add_requirements (trans);
 
           return trans;
         }
@@ -697,19 +858,18 @@ namespace xml
         {
           we_net_type we_net;
 
-          unsigned int e (0);
-
           pid_of_place_type pid_of_place
             ( net_synthesize ( we_net
                              , place_map_map_type()
                              , id_net.get()
                              , state
-                             , e
                              )
             );
 
+          we::type::property::type properties (_properties);
+
           util::property::join ( state
-                               , fun.properties()
+                               , properties
                                , id_net.get().properties()
                                );
 
@@ -717,22 +877,37 @@ namespace xml
             ( name()
             , we_net
             , condition()
-            , fun.internal.get_value_or (true)
-            , fun.properties()
+            , _internal.get_value_or (true)
+            , properties
             );
 
           add_ports (trans, fun.ports(), pid_of_place);
-          add_requirements (trans, fun.requirements);
+          add_requirements (trans);
 
           return trans;
         }
       };
 
-      we::type::transition_t
-      function_type::synthesize (const state::type & state)
+      we::type::transition_t function_type::synthesize
+        ( const std::string& name
+        , const state::type& state
+        , const boost::optional<bool>& trans_internal
+        , const conditions_type& conditions
+        , const we::type::property::type& trans_properties
+        , const requirements_type& trans_requirements
+        ) const
       {
         return boost::apply_visitor
-          (function_synthesize (state, *this), f);
+          ( function_synthesize ( name
+                                , state
+                                , *this
+                                , trans_internal ? trans_internal : internal
+                                , conditions
+                                , trans_properties
+                                , trans_requirements
+                                )
+          , content()
+          );
       }
 
       // ***************************************************************** //
@@ -815,7 +990,7 @@ namespace xml
             , state
             , *this
             )
-          , f
+          , content()
           );
       }
 
@@ -838,7 +1013,7 @@ namespace xml
       namespace
       {
         class visitor_clone
-          : public boost::static_visitor<function_type::type>
+          : public boost::static_visitor<function_type::content_type>
         {
         public:
           visitor_clone ( const id::function& new_id
@@ -848,7 +1023,7 @@ namespace xml
             , _mapper (mapper)
           { }
           template<typename ID_TYPE>
-            function_type::type operator() (const ID_TYPE& id) const
+            function_type::content_type operator() (const ID_TYPE& id) const
           {
             return id.get().clone (_new_id, _mapper);
           }
@@ -876,9 +1051,9 @@ namespace xml
           , contains_a_module_call
           , internal
           , structs
-          , cond
+          , _conditions
           , requirements
-          , boost::apply_visitor (visitor_clone (new_id, new_mapper), f)
+          , boost::apply_visitor (visitor_clone (new_id, new_mapper), content())
           , structs_resolved
           , _properties
           , path
@@ -1452,7 +1627,7 @@ namespace xml
             << "{" << std::endl
             << "  namespace op" << std::endl
             << "  {" << std::endl
-            << "    namespace " << mod.name << std::endl
+            << "    namespace " << mod.name() << std::endl
             << "    {" << std::endl
             ;
         }
@@ -1460,7 +1635,7 @@ namespace xml
         template<typename Stream>
         void namespace_close (Stream& s, const module_type & mod)
         {
-          s << "    } // namespace " << mod.name << std::endl
+          s << "    } // namespace " << mod.name() << std::endl
             << "  } // namespace op" << std::endl
             << "} // namespace pnetc" << std::endl
             ;
@@ -1621,7 +1796,7 @@ namespace xml
           namespace cpp_util = ::fhg::util::cpp;
 
           cpp_util::include ( s
-                            , cpp_util::path::op() / mod.name / file_hpp
+                            , cpp_util::path::op() / mod.name() / file_hpp
                             );
 
           namespace_open (s, mod);
@@ -1693,7 +1868,7 @@ namespace xml
           s << cpp_util::access::make ( ""
                                       , "pnetc"
                                       , "op"
-                                      , mod.name
+                                      , mod.name()
                                       , mod.function
                                       )
             << " ("
@@ -1828,7 +2003,7 @@ namespace xml
 
             const module_type& mod (id.get());
 
-            const mcs_type::const_iterator old_map (mcs.find (mod.name));
+            const mcs_type::const_iterator old_map (mcs.find (mod.name()));
 
             if (old_map != mcs.end())
             {
@@ -1841,7 +2016,7 @@ namespace xml
                 {
                   state.warn ( warning::duplicate_external_function
                                ( mod.function
-                               , mod.name
+                               , mod.name()
                                , old_mc->second.path
                                , mod.path
                                )
@@ -1851,7 +2026,7 @@ namespace xml
                 {
                   throw error::duplicate_external_function
                     ( mod.function
-                    , mod.name
+                    , mod.name()
                     , old_mc->second.path
                     , mod.path
                     );
@@ -1859,7 +2034,7 @@ namespace xml
               }
             }
 
-            mcs[mod.name].insert (std::make_pair (mod.function, mod));
+            mcs[mod.name()].insert (std::make_pair (mod.function, mod));
 
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
@@ -1938,7 +2113,7 @@ namespace xml
             }
 
             const path_t prefix (state.path_to_cpp());
-            const path_t path (prefix / cpp_util::path::op() / mod.name);
+            const path_t path (prefix / cpp_util::path::op() / mod.name());
             const std::string file_hpp (cpp_util::make::hpp (mod.function));
             const std::string file_cpp
               ( mod.code
@@ -1966,7 +2141,7 @@ namespace xml
                                            , mod.path
                                            );
 
-              m[mod.name].insert (fun_info);
+              m[mod.name()].insert (fun_info);
             }
 
             {
@@ -1976,7 +2151,7 @@ namespace xml
 
               cpp_util::header_gen_full (stream);
               cpp_util::include_guard_begin
-                (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
 
               mod_includes (stream, types);
 
@@ -1994,7 +2169,7 @@ namespace xml
               stream << std::endl;
 
               cpp_util::include_guard_end
-                (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
 
               stream.commit();
             }
@@ -2007,7 +2182,7 @@ namespace xml
               cpp_util::header_gen (stream);
 
               cpp_util::include ( stream
-                                , cpp_util::path::op() / mod.name / file_hpp
+                                , cpp_util::path::op() / mod.name() / file_hpp
                                 );
 
               for ( module_type::cincludes_type::const_iterator inc
@@ -2037,7 +2212,7 @@ namespace xml
               {
                 stream << "        // INSERT CODE HERE" << std::endl
                        << "        throw std::runtime_error (\""
-                       << mod.name << "::" << mod.function
+                       << mod.name() << "::" << mod.function
                        << ": NOT YET IMPLEMENTED\");";
               }
               else
@@ -2076,7 +2251,7 @@ namespace xml
         id_function.get_ref().contains_a_module_call
           = boost::apply_visitor
           ( find_module_calls_visitor (state, id_function, m, mcs)
-          , id_function.get_ref().f
+          , id_function.get_ref().content()
           );
 
         return id_function.get().contains_a_module_call;
@@ -2167,7 +2342,7 @@ namespace xml
         {
           to_cpp (function.structs, state);
 
-          boost::apply_visitor (visitor_to_cpp (state), function.f);
+          boost::apply_visitor (visitor_to_cpp (state), function.content());
         }
       }
 
@@ -2233,17 +2408,14 @@ namespace xml
 
           dumps (s, f.ports().values());
 
-          boost::apply_visitor (function_dump_visitor (s), f.f);
+          boost::apply_visitor (function_dump_visitor (s), f.content());
 
-          for ( conditions_type::const_iterator cond (f.cond.begin())
-              ; cond != f.cond.end()
-              ; ++cond
-              )
-            {
-              s.open ("condition");
-              s.content (*cond);
-              s.close ();
-            }
+          BOOST_FOREACH (const std::string& cond, f.conditions())
+          {
+            s.open ("condition");
+            s.content (cond);
+            s.close();
+          }
 
           s.close ();
         }

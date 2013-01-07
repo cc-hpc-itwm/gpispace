@@ -318,58 +318,30 @@ namespace xml
 
       class overwrite_function_name_trans : public generic
       {
-      private:
-        std::string nice ( const std::string & fun
-                         , const boost::filesystem::path & funpath
-                         , const std::string & trans
-                         , const boost::filesystem::path & transpath
-                         )
-        {
-          std::ostringstream s;
-
-          s << "old function name " << fun
-            << " defined in " << funpath
-            << " overwritten with transition name " << trans
-            << " in " << transpath
-            ;
-
-          return s.str();
-        }
       public:
-        overwrite_function_name_trans
-        ( const std::string & fun
-        , const boost::filesystem::path & funpath
-        , const std::string & trans
-        , const boost::filesystem::path & transpath
-        )
-          : generic (nice (fun, funpath, trans, transpath))
-        {}
+        overwrite_function_name_trans ( const id::ref::transition&
+                                      , const id::ref::function&
+                                      );
+        virtual ~overwrite_function_name_trans() throw() { }
+
+      private:
+        const id::ref::transition _transition;
+        const id::ref::function _function;
       };
 
       // ******************************************************************* //
 
       class overwrite_function_internal_trans : public generic
       {
-      private:
-        std::string nice ( const std::string & trans
-                         , const boost::filesystem::path & path
-                         )
-        {
-          std::ostringstream s;
-
-          s << " transition " << trans
-            << " in " << path
-            << " overwrites the internal tag of the contained function"
-            ;
-
-          return s.str();
-        }
       public:
-        overwrite_function_internal_trans ( const std::string & trans
-                                          , const boost::filesystem::path & path
-                                          )
-          : generic (nice (trans, path))
-        {}
+        overwrite_function_internal_trans ( const id::ref::transition&
+                                          , const id::ref::function&
+                                          );
+        virtual ~overwrite_function_internal_trans() throw() { }
+
+      private:
+        const id::ref::transition _transition;
+        const id::ref::function _function;
       };
 
       // ******************************************************************* //
@@ -597,33 +569,19 @@ namespace xml
 
       class conflicting_port_types : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const std::string & port
-                         , const std::string & type_in
-                         , const std::string & type_out
-                         , const boost::filesystem::path & path
-                         )
-        {
-          std::ostringstream s;
-
-          s << "the port " << port << " of the transition " << name
-            << " has the type " << type_in << " as input port"
-            << " and the type " << type_out << " as output port"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        conflicting_port_types ( const std::string & name
-                               , const std::string & port
-                               , const std::string & type_in
-                               , const std::string & type_out
-                               , const boost::filesystem::path & path
-                               )
-          : generic (nice (name, port, type_in, type_out, path))
-        {}
+        conflicting_port_types ( const id::ref::transition&
+                               , const id::ref::port& in
+                               , const id::ref::port& out
+                               , const boost::filesystem::path&
+                               );
+        virtual ~conflicting_port_types() throw() { }
+
+      private:
+        const id::ref::transition _transition;
+        const id::ref::port _in;
+        const id::ref::port _out;
+        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

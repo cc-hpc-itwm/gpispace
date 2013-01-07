@@ -9,9 +9,15 @@
 #include <jpn/common/Foreach.h>
 #include <jpn/common/Unreachable.h>
 
+#include <we/type/expression.fwd.hpp>
+#include <we/type/module_call.fwd.hpp>
 #include <we/type/port.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/net.hpp>
+
+#include <we/mgmt/type/activity.hpp>
+
 #include <we/util/codec.hpp>
-#include <we/net.hpp>
 
 #include "PetriNet.h"
 
@@ -105,9 +111,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        for (pnet_t::edge_const_it it = net.edges(); it.has_more(); ++it) {
-            const petri_net::connection_t &connection = net.get_edge_info(*it);
-
+        FOREACH (const petri_net::connection_t& connection, net.connections()) {
             switch (connection.type) {
                 case petri_net::edge::PT: {
                     Place *place = find(places_, connection.pid);

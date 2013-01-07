@@ -23,7 +23,7 @@ namespace fhg
           static void apply (size_t& seed, const tuple_type& tuple)
           {
             hash_value_impl<tuple_type, index - 1>::apply (seed, tuple);
-            hash_combine (seed, tuple.get<index>());
+            hash_combine (seed, tuple.template get<index>());
           }
         };
 
@@ -32,7 +32,7 @@ namespace fhg
         {
           static void apply (size_t& seed, const tuple_type& tuple)
           {
-            hash_combine (seed, tuple.get<0>());
+            hash_combine (seed, tuple.template get<0>());
           }
         };
       }

@@ -18,9 +18,13 @@
 #include "LuaIterator.h"
 #include "RangeAdaptor.h"
 
-#include <we/net.hpp>
-#include <we/util/codec.hpp>
+#include <we/type/net.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/place.hpp>
 #include <we/type/port.hpp>
+#include <we/mgmt/type/activity.hpp>
+
+#include <we/util/codec.hpp>
 
 #define foreach BOOST_FOREACH
 
@@ -793,10 +797,10 @@ class Optimizer {
             if (connectedPlace_) {
                 /* We must remove an edge. */
                 if (isInput()) {
-                    petriNet()->pnet().delete_edge(petriNet()->pnet().get_eid_in(transition()->id(), connectedPlace_->id()));
+                    petriNet()->pnet().delete_edge_in(transition()->id(), connectedPlace_->id());
                 }
                 if (isOutput()) {
-                    petriNet()->pnet().delete_edge(petriNet()->pnet().get_eid_out(transition()->id(), connectedPlace_->id()));
+                    petriNet()->pnet().delete_edge_out(transition()->id(), connectedPlace_->id());
                 }
 
                 /* Now we must disconnect the place on the transition's side. */
@@ -819,8 +823,13 @@ class Optimizer {
                 do {
                     tryAgain = false;
                     try {
-                        petriNet()->pnet().add_edge(random(), petri_net::connection_t(edgeType, transition()->id(), connectedPlace_->id()));
-                    } catch (const bijection::exception::already_there &) {
+                        petriNet()->pnet().add_connection
+                          (petri_net::connection_t ( edgeType
+                                                   , transition()->id()
+                                                   , connectedPlace_->id()
+                                                   )
+                          );
+                    } catch (const we::container::exception::already_there&) {
                         tryAgain = true;
                     }
                 } while (tryAgain);

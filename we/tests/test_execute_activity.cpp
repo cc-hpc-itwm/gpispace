@@ -3,7 +3,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 #include <we/util/codec.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>

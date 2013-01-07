@@ -4,6 +4,8 @@
 #define WE_UTIL_CODEC_HPP 1
 
 #include <sstream>
+#include <string>
+
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
@@ -19,7 +21,15 @@ namespace we
       void decode (std::istream& s, T& t)
       {
         boost::archive::text_iarchive ar (s);
-        ar >> BOOST_SERIALIZATION_NVP (t);
+        try
+        {
+          ar >> BOOST_SERIALIZATION_NVP (t);
+        }
+        catch (boost::archive::archive_exception const &ex)
+        {
+          throw std::runtime_error
+            (std::string ("deserialization error: ") + ex.what ());
+        }
       }
       template<typename T>
       void decode (const std::string& s, T& t)

@@ -28,6 +28,7 @@
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/bits/queue.hpp>
 
+#include <we/mgmt/type/activity.hpp>
 #include <we/loader/loader.hpp>
 #include <we/mgmt/context.hpp>
 
@@ -37,6 +38,8 @@
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
+
+#include <we/util/codec.hpp>
 
 #include <list>
 

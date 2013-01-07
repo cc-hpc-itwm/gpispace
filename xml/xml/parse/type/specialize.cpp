@@ -3,6 +3,7 @@
 #include <xml/parse/type/specialize.hpp>
 
 #include <xml/parse/id/mapper.hpp>
+#include <xml/parse/type/net.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -35,9 +36,18 @@ namespace xml
       {
         return _name;
       }
-      const std::string& specialize_type::name(const std::string& name)
+      const std::string& specialize_type::name_impl (const std::string& name)
       {
         return _name = name;
+      }
+      const std::string& specialize_type::name (const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return _name;
+        }
+        return name_impl (name);
       }
 
       const specialize_type::unique_key_type&

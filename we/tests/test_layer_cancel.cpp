@@ -10,6 +10,8 @@
 
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
+#include <we/type/transition.hpp>
+#include <we/mgmt/type/activity.hpp>
 
 #include <boost/lexical_cast.hpp>
 

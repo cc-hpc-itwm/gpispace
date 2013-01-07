@@ -1,6 +1,20 @@
+
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include <stdint.h>
+#include <fhglog/fhglog.hpp>
+#include <fhg/util/split.hpp>
+#include <fhg/util/getenv.hpp>
+
+#include <we/mgmt/type/activity.hpp>
+#include <we/util/codec.hpp>
+
 #include <we/mgmt/layer.hpp>
 #include <we/type/expression.fwd.hpp>
 #include <we/type/literal.hpp>
@@ -91,6 +105,8 @@ int main (int argc, char **argv)
   std::vector<std::string> mods_to_load;
   std::vector<std::string> input_spec;
   std::string output ("/dev/stdout");
+  std::size_t num_worker (1);
+  bool show_dots (false);
 
   desc.add_options()
     ("help,h", "this message")
@@ -145,7 +161,7 @@ int main (int argc, char **argv)
 
   if (vm.count ("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Workflow Execution");
 
     return EXIT_SUCCESS;
   }
@@ -177,12 +193,6 @@ int main (int argc, char **argv)
       loader.append_search_path (path);
     }
   }
-
-  if (path_to_act == "/dev/stdin")
-  {
-    std::cerr << "Reading from stdin..." << std::endl;
-  }
-
 
   we::mgmt::type::activity_t act;
 
@@ -218,7 +228,7 @@ int main (int argc, char **argv)
     act.collect_output ();
 
     std::ofstream stream (output.c_str());
-    stream << act.to_string() << std::endl;
+    stream << act.to_string();
   }
   catch (std::exception const & ex)
   {

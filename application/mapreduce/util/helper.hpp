@@ -88,6 +88,7 @@ namespace mapreduce
 
   	  std::string match_keys(const std::string& keyval_pair, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
   	  {
+  		  // to do: use regex here
   		  std::string w;
   		  bool bMatching = false;
 
@@ -145,6 +146,7 @@ namespace mapreduce
 
   	  bool is_special_item(const std::string& str_item)
   	  {
+  		  // to do: use regex here
   		  if (str_item[0] != SHRPCH)
   			  return false;
 
@@ -221,7 +223,7 @@ namespace mapreduce
        std::stringstream sstr;
        for(typename std::vector<T>::iterator it=arr.begin();it!=arr.end();it++)
        {
-          sstr<<*it<<" ";
+          sstr<<*it<<SPCH;
        }
 
        return sstr.str();
@@ -232,7 +234,7 @@ namespace mapreduce
        std::stringstream sstr;
        for(std::vector<int>::iterator it = it_first; it != it_last; it++)
        {
-          sstr<<*it<<" ";
+          sstr<<*it<<SPCH;
        }
 
        return sstr.str();
@@ -322,7 +324,17 @@ namespace mapreduce
     key_val_pair_t get_key_val(const std::string& str_map)
     {
       size_t split_pos = str_map.find_last_of(PAIRSEP);
+      if( split_pos == std::string::npos )
+      {
+    	  throw std::string("Invalid key-value pair:") + str_map;
+      }
+
       std::string key = str_map.substr(0,split_pos);
+      if(key.empty())
+      {
+    	  throw std::string("Invalid key-value pair: ") + str_map;
+      }
+
       std::string val = str_map.substr(split_pos+1, str_map.size());
 
       return key_val_pair_t(key, val);
@@ -333,7 +345,7 @@ namespace mapreduce
     	std::ostringstream osstr;
     	osstr<<pair.first<<PAIRSEP<<pair.second;
 
-    	return osstr.str();;
+    	return osstr.str();
     }
 
     long ceil(long a, long b)

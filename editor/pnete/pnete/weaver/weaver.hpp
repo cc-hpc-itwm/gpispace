@@ -496,7 +496,7 @@ namespace fhg
         {
           WEAVE(mod::open) (id);
           const ::xml::parse::type::module_type& mod (id.get());
-          WEAVE(mod::name) (mod.name);
+          WEAVE(mod::name) (mod.name());
           WEAVE(mod::fun) (XMLTYPE(dump::dump_fun(mod)));
           WEAVE(mod::cincludes) (mod.cincludes);
           WEAVE(mod::ldflags) (mod.ldflags);
@@ -534,8 +534,8 @@ namespace fhg
           WEAVE(function::structs) (fun.structs);
           WEAVE(function::require) (fun.requirements);
           WEAVE(function::ports) (fun.ports());
-          WEAVE(function::fun) (fun.f);
-          WEAVE(function::conditions) (fun.cond);
+          WEAVE(function::fun) (fun.content());
+          WEAVE(function::conditions) (fun.conditions());
           WEAVE(function::close)();
         }
 
@@ -621,7 +621,7 @@ namespace fhg
           WEAVE(transition::function) (trans.function_or_use());
           WEAVE(transition::place_map) (trans.place_map());
           WEAVE(transition::connection) (trans.connections());
-          WEAVE(transition::condition) (trans.cond);
+          WEAVE(transition::condition) (trans.conditions());
           WEAVE(transition::close)();
         }
 

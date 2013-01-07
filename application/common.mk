@@ -78,6 +78,10 @@ ifndef WE_EXEC_WORKER
   WE_EXEC_WORKER = 2
 endif
 
+ifndef WE_EXEC_OUTPUT
+  WE_EXEC_OUTPUT = /dev/null
+endif
+
 ifndef SDPA
   SDPA = $(SDPA_BIN)/sdpa
 endif
@@ -261,7 +265,7 @@ WE_EXEC += $(WE_EXEC_CMD)
 WE_EXEC += --w $(WE_EXEC_WORKER)
 WE_EXEC += $(addprefix --load ,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L,$(WE_EXEC_LIBPATHS))
-WE_EXEC += -o /dev/null
+WE_EXEC += -o $(WE_EXEC_OUTPUT)
 WE_EXEC += $(WE_EXEC_OPTS)
 
 XMLLINT += --noout
@@ -533,6 +537,7 @@ showconfig:
 	@echo
 	@echo "WE_EXEC_ENV      = $(WE_EXEC_ENV)"
 	@echo "WE_EXEC_CMD      = $(WE_EXEC_CMD)"
+	@echo "WE_EXEC_OUTPUT   = $(WE_EXEC_OUTPUT)"
 	@echo "WE_EXEC_WORKER   = $(WE_EXEC_WORKER)"
 	@echo "WE_EXEC_LOAD     = $(WE_EXEC_LOAD)"
 	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"

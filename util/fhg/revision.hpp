@@ -23,17 +23,17 @@
 
 namespace fhg
 {
-  extern const char * project_contact ();
-  extern const char * project_summary ();
-  extern const char * project_copyright ();
-  extern const char * project_version ();
-  extern const char * project_revision ();
-  extern const char * project_build_time ();
-  extern const char * project_build_compiler ();
-  extern const char * project_build_info ();
-  extern const char * project_build_count ();
+  extern const char* project_contact();
+  extern const char* project_summary();
+  extern const char* project_copyright();
+  extern const char* project_version();
+  extern const char* project_revision();
+  extern const char* project_build_time();
+  extern const char* project_build_compiler();
+  extern const char* project_build_info();
+  extern const char* project_build_count();
 
-  extern std::string project_info ();
+  extern std::string project_info (const std::string&);
 }
 
 #endif

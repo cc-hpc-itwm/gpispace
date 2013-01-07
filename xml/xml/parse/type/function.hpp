@@ -14,6 +14,10 @@
 #include <xml/parse/util/mk_fstream.hpp>
 #include <xml/parse/util/unique.hpp>
 
+#include <we/type/property.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/port.hpp>
+
 #include <boost/optional.hpp>
 
 namespace xml
@@ -22,7 +26,12 @@ namespace xml
   {
     namespace type
     {
-      typedef std::list<std::string> conditions_type;
+      struct conditions_type : public std::list<std::string>
+      {
+        std::string flatten() const;
+      };
+
+      conditions_type operator+ (conditions_type, const conditions_type&);
 
       struct function_type
       {
@@ -38,7 +47,8 @@ namespace xml
 
         //! \todo net is only in this list as specialize not yet
         //! reparents the function to the transition requesting it, as
-        //! specialization is not yet lazy. See net_type::specialize()
+        //! specialization is not yet lazy. If it is, also remove
+        //! name_impl. See net_type::specialize() and function_type::name().
         typedef boost::variant< id::transition
                               , id::tmpl
                               , id::net
@@ -47,7 +57,7 @@ namespace xml
         typedef boost::variant < id::ref::expression
                                , id::ref::module
                                , id::ref::net
-                               > type;
+                               > content_type;
 
         // ***************************************************************** //
 
@@ -61,7 +71,15 @@ namespace xml
 
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
-                      , const type& _f
+                      , const content_type& content
+                      );
+
+        function_type ( ID_CONS_PARAM(function)
+                      , const boost::optional<parent_id_type>& parent
+                      , const boost::optional<std::string>& name
+                      , const boost::optional<bool>& internal
+                      , const content_type& content
+                      , const boost::filesystem::path& path
                       );
 
         function_type ( ID_CONS_PARAM(function)
@@ -72,13 +90,17 @@ namespace xml
                       , const bool& contains_a_module_call
                       , const boost::optional<bool>& internal
                       , const structs_type& structs
-                      , const conditions_type& cond
+                      , const conditions_type&
                       , const requirements_type& requirements
-                      , const type& f
+                      , const content_type& content
                       , const xml::parse::structure_type::set_type& resolved
                       , const we::type::property::type& properties
                       , const boost::filesystem::path& path
                       );
+
+        const content_type& content() const;
+        content_type& content();
+        const content_type& content (const content_type&);
 
         // ***************************************************************** //
 
@@ -87,11 +109,23 @@ namespace xml
 
         // ***************************************************************** //
 
+        //! \note function should not be something that can be in a
+        //! unique. It only is in an unique, as net does not lazily
+        //! specialize templates. It then stores them in a
+        //! unique. Other parents (transition, tmpl) never have a
+        //! unique, thus don't need to get notified on name
+        //! change. This name() + name_impl() pattern can thus be
+        //! removed as soon as net no longer can be a parent.
         const boost::optional<std::string>& name() const;
-        const std::string& name (const std::string& name);
         const boost::optional<std::string>&
-        name (const boost::optional<std::string>& name);
+          name (const boost::optional<std::string>& name);
 
+      private:
+        friend struct net_type;
+        const boost::optional<std::string>&
+          name_impl (const boost::optional<std::string>& name);
+
+      public:
         const boost::optional<parent_id_type>& parent() const;
 
         bool has_parent() const;
@@ -100,6 +134,8 @@ namespace xml
 
         boost::optional<id::ref::transition> parent_transition() const;
         boost::optional<id::ref::tmpl> parent_tmpl() const;
+        //! \todo This should be removed soon (i.e. when specialization is lazy).
+        boost::optional<id::ref::net> parent_net() const;
 
         boost::optional<const id::ref::function&>
         get_function (const std::string& name) const;
@@ -120,6 +156,10 @@ namespace xml
         bool is_known_port_inout (const std::string & name) const;
         bool is_known_tunnel (const std::string& name) const;
 
+        void rename (const id::ref::port&, const std::string&);
+        void port_direction
+          (const id::ref::port&, const we::type::PortDirection&);
+
         // ***************************************************************** //
 
         const typenames_type& typenames () const;
@@ -131,7 +171,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        std::string condition (void) const;
+        const conditions_type& conditions() const;
+        void add_conditions (const conditions_type&);
 
         // ***************************************************************** //
 
@@ -164,8 +205,14 @@ namespace xml
 
         // ***************************************************************** //
 
-        we::type::transition_t
-        synthesize (const state::type & state);
+        we::type::transition_t synthesize
+          ( const std::string&
+          , const state::type&
+          , const boost::optional<bool>& = boost::none
+          , const conditions_type& = conditions_type()
+          , const we::type::property::type& = we::type::property::type()
+          , const requirements_type& = requirements_type()
+          ) const;
 
         // ***************************************************************** //
 
@@ -202,11 +249,17 @@ namespace xml
         boost::optional<bool> internal;
 
         structs_type structs;
-        conditions_type cond;
+
+      private:
+        conditions_type _conditions;
+
+      public:
         requirements_type requirements;
 
-        type f;
+      private:
+        content_type _content;
 
+      public:
         xml::parse::structure_type::set_type structs_resolved;
 
       private:

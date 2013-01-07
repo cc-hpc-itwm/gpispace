@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_NET_HPP
 #define _XML_PARSE_TYPE_NET_HPP
@@ -82,7 +82,12 @@ namespace xml
 
         // ***************************************************************** //
 
+      private:
+        //! \todo Remove this and all other _functions related stuff.
+        //! \note This only exists for specialization, which should be lazy.
         const id::ref::function& push_function (const id::ref::function&);
+
+      public:
         const id::ref::place& push_place (const id::ref::place&);
         const id::ref::specialize& push_specialize (const id::ref::specialize&);
         const id::ref::tmpl& push_template (const id::ref::tmpl&);
@@ -108,6 +113,14 @@ namespace xml
 
         void clear_places (void);
         void clear_transitions (void);
+
+        // ***************************************************************** //
+
+        void rename (const id::ref::function&, const std::string&);
+        void rename (const id::ref::place&, const std::string&);
+        void rename (const id::ref::specialize&, const std::string&);
+        void rename (const id::ref::tmpl&, const std::string&);
+        void rename (const id::ref::transition&, const std::string&);
 
         // ***************************************************************** //
 
@@ -179,7 +192,6 @@ namespace xml
                      , const place_map_map_type & place_map_map
                      , const net_type & net
                      , const state::type & state
-                     , unsigned int & e
                      );
 
       namespace dump

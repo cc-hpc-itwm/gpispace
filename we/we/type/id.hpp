@@ -42,16 +42,9 @@ namespace petri_net
     {
       return _value > other._value;
     }
-
-    const client_type& operator++ ()
-    {
-      ++_value;
-
-      return *this;
-    }
     client_type operator++ (int)
     {
-      client_type old (_value);
+      const client_type old (_value);
 
       ++_value;
 
@@ -114,7 +107,6 @@ namespace petri_net
   // cycles per second, you can run for 2^64/3e9/60/60/24/365 > 194 years.
   // It follows that an uint64_t is enough for now.
 
-  INHERIT_ID_TYPE (edge_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (place_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (port_id_type, boost::uint64_t);
   INHERIT_ID_TYPE (transition_id_type, boost::uint64_t);
@@ -128,7 +120,6 @@ namespace petri_net
 #define INVALID(_prefix)                       \
   const _prefix ## _type& _prefix ## _invalid()
 
-  INVALID (edge_id);
   INVALID (place_id);
   INVALID (activity_id);
 
