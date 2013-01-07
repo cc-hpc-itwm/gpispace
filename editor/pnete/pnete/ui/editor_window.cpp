@@ -286,11 +286,6 @@ namespace fhg
         //_view_manager->current_view_zoom (size::zoom::default_value());
       }
 
-      QMenu* editor_window::createPopupMenu()
-      {
-        return update_window_menu (new QMenu());
-      }
-
       void editor_window::closeEvent (QCloseEvent* event)
       {
         //! \todo ask the user
@@ -303,6 +298,11 @@ namespace fhg
           {
             event->ignore();
           }
+      }
+
+      QMenu* editor_window::createPopupMenu()
+      {
+        return update_window_menu (new QMenu());
       }
 
       void editor_window::update_window_menu()
@@ -349,10 +349,6 @@ namespace fhg
                 , SIGNAL (aboutToShow())
                 , SLOT (update_window_menu())
                 );
-
-        //menu_bar->addAction(createPopupMenu()->menuAction());
-        //! \todo Open createPopupMenu() on menu_action::triggered().
-        //! \todo Actually differ between documents and library / structure there.
       }
 
       void editor_window::slot_new_expression()
