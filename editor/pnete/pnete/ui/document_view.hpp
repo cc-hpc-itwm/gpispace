@@ -30,6 +30,7 @@ namespace fhg
         document_view ( const data::handle::function&
                       , data::proxy::type&
                       , const QString& fallback_title
+                      , QWidget*
                       );
 
         void setWidget (QWidget* widget);

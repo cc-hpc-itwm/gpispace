@@ -19,9 +19,8 @@ namespace fhg
                          , const ::xml::parse::id::ref::module& mod
                          , const data::handle::function& function
                          )
-        : document_view (function, proxy, tr ("anonymous module call>>"))
+        : document_view (function, proxy, tr ("anonymous module call>>"), new module_call_widget (mod, function))
       {
-        setWidget (new module_call_widget (mod, function, this));
       }
     }
   }

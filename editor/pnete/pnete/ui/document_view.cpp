@@ -21,6 +21,7 @@ namespace fhg
       document_view::document_view ( const data::handle::function& function
                                    , data::proxy::type& proxy
                                    , const QString& fallback_title
+                                   , QWidget* widget
                                    )
         : dock_widget()
         , _actions()
@@ -40,6 +41,9 @@ namespace fhg
           );
 
         set_title (function.get().name());
+
+        setWidget (widget);
+        widget->setParent (this);
       }
 
       const QSet<QAction*>& document_view::actions() const

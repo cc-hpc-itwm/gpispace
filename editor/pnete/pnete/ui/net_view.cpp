@@ -19,9 +19,8 @@ namespace fhg
                          , const data::handle::function& function
                          , graph::scene_type* scene
                          )
-        : document_view (function, proxy, tr ("<<anonymous net>>"))
+        : document_view (function, proxy, tr ("<<anonymous net>>"), new graph_view (scene))
       {
-        setWidget (new graph_view (scene, this));
       }
     }
   }

@@ -20,9 +20,8 @@ namespace fhg
         , const data::handle::expression& expression
         , const data::handle::function& function
         )
-          : document_view (function, proxy, tr ("<<anonymous expression>>"))
+          : document_view (function, proxy, tr ("<<anonymous expression>>"), new expression_widget (expression, function))
       {
-        setWidget (new expression_widget (expression, function, this));
       }
     }
   }
