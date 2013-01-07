@@ -2,7 +2,7 @@
 
 #include <pnete/ui/net_view.hpp>
 
-#include <pnete/ui/net_widget.hpp>
+#include <pnete/ui/graph_view.hpp>
 
 #include <xml/parse/type/function.hpp>
 
@@ -22,7 +22,7 @@ namespace fhg
         : document_view (function, proxy)
       {
         //! \todo submit known types
-        setWidget (new net_widget (scene, this));
+        setWidget (new graph_view (scene, this));
         set_title (function.get().name());
       }
       QString net_view::fallback_title () const

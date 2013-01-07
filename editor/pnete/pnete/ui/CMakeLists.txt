@@ -13,7 +13,6 @@ set(ui_SRCS
   mod_view.cpp
   net_view.cpp
   view_manager.cpp
-  net_widget.cpp
   module_call_widget.cpp
   expression_widget.cpp
   port_lists_widget.cpp
@@ -44,7 +43,6 @@ set(ui_HDRS
   ComboItemDelegate.hpp
   PropertiesEditor.hpp
   StructureEditor.hpp
-  net_widget.hpp
   module_call_widget.hpp
   expression_widget.hpp
   port_lists_widget.hpp
@@ -74,7 +72,6 @@ set(ui_TOMOC
   net_view.hpp
   view_manager.hpp
 
-  net_widget.hpp
   module_call_widget.hpp
   expression_widget.hpp
   port_lists_widget.hpp
