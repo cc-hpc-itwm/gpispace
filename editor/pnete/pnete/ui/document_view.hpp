@@ -38,9 +38,6 @@ namespace fhg
       protected:
         void set_title (const boost::optional<std::string>&);
 
-      signals:
-        void focus_gained (QWidget*);
-
       public slots:
         void function_name_changed
           (const QObject*, const data::handle::function&, const QString&);

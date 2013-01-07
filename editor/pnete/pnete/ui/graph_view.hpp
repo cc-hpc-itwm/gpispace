@@ -40,11 +40,9 @@ namespace fhg
 
       signals:
         void zoomed (int to);
-        void focus_gained (QWidget* me);
 
       protected:
         virtual void wheelEvent (QWheelEvent* event);
-        virtual void focusInEvent (QFocusEvent* event);
 
         virtual QSize sizeHint() const;
 

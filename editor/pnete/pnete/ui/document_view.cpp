@@ -55,7 +55,7 @@ namespace fhg
       {
         if (visible)
         {
-          emit focus_gained (this);
+          setFocus();
         }
       }
 

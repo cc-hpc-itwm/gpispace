@@ -18,7 +18,9 @@ namespace fhg
         )
           : QWidget (parent)
           , _proxy (proxy)
-      {}
+      {
+        setFocusPolicy (Qt::ClickFocus);
+      }
 
       data::proxy::type& base_editor_widget::proxy () const { return _proxy; }
       data::internal_type* base_editor_widget::root () const

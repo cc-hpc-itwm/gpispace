@@ -33,9 +33,6 @@ namespace fhg
         data::internal_type* root () const;
         data::handle::function function() const;
 
-      signals:
-        void focus_gained (QWidget*);
-
       private:
         data::proxy::type& _proxy;
       };

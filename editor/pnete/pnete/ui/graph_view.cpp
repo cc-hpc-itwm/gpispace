@@ -39,12 +39,6 @@ namespace fhg
         return qobject_cast<graph::scene_type*> (QGraphicsView::scene());
       }
 
-      void graph_view::focusInEvent (QFocusEvent* event)
-      {
-        emit focus_gained (this);
-        QGraphicsView::focusInEvent (event);
-      }
-
       void graph_view::wheelEvent (QWheelEvent* event)
       {
         if ( event->modifiers() & Qt::ControlModifier
