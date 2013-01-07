@@ -34,6 +34,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QInputDialog>
 #include <QKeyEvent>
+#include <QMessageBox>
 
 namespace fhg
 {
@@ -102,6 +103,31 @@ namespace fhg
 
         namespace
         {
+          bool can_rename ( const data::handle::place& handle
+                          , const QString& name
+                          )
+          {
+            return !handle.get().parent()->has_place (name.toStdString());
+          }
+
+          bool can_rename ( const data::handle::port& handle
+                          , const QString& name
+                          )
+          {
+            return !handle.get().parent()->ports().has
+              ( std::make_pair ( name.toStdString()
+                               , handle.get().direction()
+                               )
+              );
+          }
+
+          bool can_rename ( const data::handle::transition& handle
+                          , const QString& name
+                          )
+          {
+            return !handle.get().parent()->has_transition (name.toStdString());
+          }
+
           template<typename handle_type>
           void set_name_for_handle ( const handle_type& handle
                                    , const QString& dialog_title
@@ -112,7 +138,7 @@ namespace fhg
                                    )
           {
             bool ok;
-            const QString text
+            const QString name
               ( QInputDialog::getText
                 ( widget
                 , dialog_title
@@ -122,9 +148,36 @@ namespace fhg
                 , &ok
                 )
               );
-            if (ok && !text.isEmpty())
+            if (ok)
             {
-              handle.set_name (origin, text);
+              if ( handle.get().name() == name.toStdString()
+                 || can_rename (handle, name)
+                 )
+              {
+                handle.set_name (origin, name);
+              }
+              else
+              {
+                const QMessageBox::StandardButton reply
+                  ( QMessageBox::critical
+                    ( widget
+                    , QObject::tr ("name_already_exists_head")
+                    , QObject::tr ("name_already_exists_msg")
+                    , QMessageBox::Cancel | QMessageBox::Retry
+                    )
+                  );
+
+                if (reply != QMessageBox::Cancel)
+                {
+                  set_name_for_handle ( handle
+                                      , dialog_title
+                                      , prompt
+                                      , name
+                                      , widget
+                                      , origin
+                                      );
+                }
+              }
             }
           }
 
