@@ -745,6 +745,11 @@ namespace fhg
 
         void scene_type::auto_layout()
         {
+          if (items().isEmpty())
+          {
+            return;
+          }
+
           typedef boost::unordered_map< base_item*
                                       , graphviz::node_type
                                       > nodes_map_type;
