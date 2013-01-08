@@ -88,6 +88,16 @@
           <cinclude href="cmath"/>
           <code><![CDATA[
 	
+			  if(reduce_slot_size<partition_slot_size)
+			  {
+			  	throw std::runtime_error("The size of the reduce slot should be larger than the size of the partition slot!" );
+			  }
+			  
+			  if(n_part<3)
+			  {
+			  	throw std::runtime_error("Please, indicate a number larger than 2 for the number of partitions!" );
+			  }
+			  
 	          //MLOG (INFO, "Get the size of the file " << input_file);
 	          FILE *pf;
 	          if((pf = fopen(input_file.c_str(), "r"))== NULL)
@@ -318,7 +328,9 @@
 	          
             if( config.size.chunk.read > avail_shmem )
 	        {
-                throw std::runtime_error("Not enough shared memory reserved for reading a chunk ");
+	        	std::stringstream sstr("Not enough shared memory reserved for reading a chunk (required: ");
+	        	sstr<<config.size.chunk.read<<", available: "<<avail_shmem<<")";
+                throw std::runtime_error( sstr.str() );
             }
 	          
 	        char* read_buff = static_cast<char*> (fvmGetShmemPtr());
@@ -1085,7 +1097,6 @@
 					// read into local_buff from vm the reduce slot reduce_slot.id ((size: pre_reduce_info.red_used)
 		            long reduce_offset = pre_reduce_info.part_id*config.size.reduce.slot;
 		
-					//bzero(ptr_shmem, pre_reduce_info.red_used);
 		            MLOG(INFO, "Get the content of the reduce slot from VM ...");
 		            waitComm ( fvmGetGlobalData
 		            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
@@ -1165,7 +1176,7 @@
     
      <place name="reduce_result" type="reduce_result"/>
      
-    <transition name="reduce_and_save" inline="true">
+    <transition name="reduce_on_disk" inline="true">
       <require key="GPI" />
       <require key="RED" />
       <defun>
@@ -1187,78 +1198,80 @@
           <cinclude href="algorithm"/>
 
           <code><![CDATA[
-		  	  timestamp_t time_start_reduce = ::mapreduce::util::get_timestamp();
+			timestamp_t time_start_reduce = ::mapreduce::util::get_timestamp();
 		  	  
-		      MLOG (INFO, "Reduce the partition "<<partition_copy_result.reduce_info.part_id<<", reduce space used: "<<partition_copy_result.reduce_info.red_used);
+		    MLOG (INFO, "Reduce the partition "<<partition_copy_result.reduce_info.part_id<<", reduce space used: "<<partition_copy_result.reduce_info.red_used);
 		      
-		      size_t last_pos = 0;
-		      if( partition_copy_result.reduce_info.red_used != 0)
-		      {
-				// before copying the partition into the reduce slot that one was empty -> nothing to do !
-		     
-			      // first find out what are the actual sizes of the partitions!
-			      char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
+		    size_t last_pos = 0;
+		    if( partition_copy_result.reduce_info.red_used != 0)
+		    {
+				char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
 			
-			      if( partition_copy_result.reduce_info.red_used > fvmGetShmemSize() )
-			      {
-			         MLOG (ERROR, "reduce cannot continue: need " << partition_copy_result.reduce_info.red_used << " bytes (reduce) but I only have " 
+				if( partition_copy_result.reduce_info.red_used > fvmGetShmemSize() )
+				{
+					MLOG (ERROR, "reduce cannot continue: need " << partition_copy_result.reduce_info.red_used << " bytes (reduce) but I only have " 
 			                      << fvmGetShmemSize() << ", increase shm size");
 			         throw std::runtime_error ("out of memory: shm too small");
-			      }
+				}
 			      			
-					// read into local_buff from vm the reduce slot reduce_slot.id ((size: partition_copy_result.reduce_info.red_used)
-		            long reduce_offset = partition_copy_result.reduce_info.part_id*config.size.reduce.slot;
+				// read into local_buff from vm the reduce slot reduce_slot.id ((size: partition_copy_result.reduce_info.red_used)
+				long reduce_offset = partition_copy_result.reduce_info.part_id*config.size.reduce.slot;
 		
-					bzero(ptr_shmem, partition_copy_result.reduce_info.red_used);
-		            MLOG(INFO, "Get the content of the reduce slot from VM ...");
-		            waitComm ( fvmGetGlobalData
-		            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
-		                                                , reduce_offset
-		                                                , partition_copy_result.reduce_info.red_used
-		                                                , 0
-		                                                , 0
-		                                            )
-		            );
+	            MLOG(INFO, "Get the content of the reduce slot from VM ...");
+	            waitComm ( fvmGetGlobalData
+	            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
+	                                                , reduce_offset
+	                                                , partition_copy_result.reduce_info.red_used
+	                                                , 0
+	                                                , 0
+	                                            )
+	            );
 		            
-		            ptr_shmem[partition_copy_result.reduce_info.red_used] = 0;
-		            
-					// do it simple this time, sort the whole content
-					// afterwards, consider that the partition and the reduce slot are
-					// already sorted and do a simple merge of both arrays
-					
-					MLOG(INFO, "Get the list of items corresponding to the reduce slot ...");
-		            std::vector<std::string> arr_new_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
-		            
-		            MLOG(INFO, "Sort the list of items stored in the reduce slot ...");
-		            std::sort( arr_new_red_items.begin(), arr_new_red_items.end());
-					
-					MLOG(INFO, "Effectively call reduce on the resulted sorted array ...");
-					
-					timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
-										
-					bzero(ptr_shmem, partition_copy_result.reduce_info.red_used);
-					
-	                ::mapreduce::util::reduce_array(partition_copy_result.reduce_info.part_id, config.size.reduce.slot, arr_new_red_items, ptr_shmem, last_pos );
-	                
-	                timestamp_t time_end_red_arr = ::mapreduce::util::get_timestamp();
-	                MLOG(INFO, "The effective reduce operation took "<<(time_end_red_arr - time_start_red_arr)/MS<<"ms");
-																	
-					//SAVE DATA ON DISK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	            }
-	
-	            new_reduce_info.part_id = partition_copy_result.reduce_info.part_id;
-	            new_reduce_info.old_red_used = 0;
-	            new_reduce_info.red_used = 0; // free the reduce slot
+	            ptr_shmem[partition_copy_result.reduce_info.red_used] = 0;
 	            
-	            reduce_result.partition_info = partition_copy_result.partition_info;
-	            reduce_result.map_chunk_info = partition_copy_result.map_chunk_info;
-	            reduce_result.partition_locked = 1 - partition_copy_result.succeeded;
-			
-            	timestamp_t time_end_reduce = ::mapreduce::util::get_timestamp();
-				MLOG(INFO, "The reduce operation took "<<(time_end_reduce - time_start_reduce)/MS<<"ms");
+				// do it simple this time, sort the whole content
+				// afterwards, consider that the partition and the reduce slot are
+				// already sorted and do a simple merge of both arrays
+				
+				MLOG(INFO, "Get the list of items corresponding to the reduce slot ...");
+	            std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
+	            
+	            MLOG(INFO, "Sort the list of items stored in the reduce slot ...");
+	            std::sort( arr_items.begin(), arr_items.end());
+				
+				MLOG(INFO, "Effectively call reduce on the resulted sorted array ...");
+				
+				timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
+									
+				//bzero(ptr_shmem, partition_copy_result.reduce_info.red_used);
+				
+                ::mapreduce::util::reduce_array( partition_copy_result.reduce_info.part_id, config.size.reduce.slot, arr_items, ptr_shmem, last_pos );
+                
+                timestamp_t time_end_red_arr = ::mapreduce::util::get_timestamp();
+                MLOG(INFO, "The effective reduce operation took "<<(time_end_red_arr - time_start_red_arr)/MS<<"ms");
+																
+                // call here merge_and_reduce
+				std::string str_part_out_file = ::mapreduce::util::get_part_filename(config.file.output, partition_copy_result.reduce_info.part_id);
+				
+	           	MLOG(INFO, "Write the partition "<<partition_copy_result.reduce_info.part_id<<" into the file "<<str_part_out_file);
+	           
+	           	// should do a merge_and_reduce here instead of just reduce_and_write
+				::mapreduce::util::merge_and_reduce_buff_into_file(arr_items, str_part_out_file);
+			}
+	
+            new_reduce_info.part_id = partition_copy_result.reduce_info.part_id;
+            new_reduce_info.old_red_used = 0;
+            new_reduce_info.red_used = 0; // free the reduce slot
+            
+            reduce_result.partition_info = partition_copy_result.partition_info;
+            reduce_result.map_chunk_info = partition_copy_result.map_chunk_info;
+            reduce_result.partition_locked = 1 - partition_copy_result.succeeded;
+		
+        	timestamp_t time_end_reduce = ::mapreduce::util::get_timestamp();
+			MLOG(INFO, "The reduce operation took "<<(time_end_reduce - time_start_reduce)/MS<<"ms");
 
-          ]]></code>
-        </module>
+		]]></code>
+		</module>
       </defun>
         <condition>
             ${partition_copy_result.succeeded}:eq:0L
@@ -1692,17 +1705,20 @@
 	                }
 	                
 	                arr_special_items.clear();
-	            }
+				}
 	              	
-	            std::vector<std::string> name_and_ext;
-				boost::split(name_and_ext, config.file.output, boost::is_any_of("."));
-	            std::ostringstream sstr_part_out_file;
-	            sstr_part_out_file<<name_and_ext[0]<<"_";
-	            sstr_part_out_file<<partition_info.part_id<<"."<<name_and_ext[1];
-	            std::ofstream ofs(sstr_part_out_file.str().data());
-	              
-	           MLOG(INFO, "Write the partition "<<partition_info.part_id<<" into the file "<<sstr_part_out_file.str());
-	           ::mapreduce::util::reduce_and_write_array(ofs, arr_items);
+	            std::string str_part_out_file = ::mapreduce::util::get_part_filename(config.file.output, partition_info.part_id);              
+	           	MLOG(INFO, "Write the partition "<<partition_info.part_id<<" into the file "<<str_part_out_file);
+	           
+	           	// should do a merge_and_reduce here instead of just reduce_and_write
+				std::vector<std::string> arr_reduced_items;
+	           	::mapreduce::util::combine(arr_items, arr_reduced_items);
+	           	
+	           	// create new file
+	           	//::mapreduce::util::reduce_and_write_array(arr_reduced_items, str_part_out_file);
+	           	
+	           	// or ... disk reduction
+	           	::mapreduce::util::merge_and_reduce_buff_into_file(arr_reduced_items, str_part_out_file);
             }
             
             reduce_and_write_done = control();
