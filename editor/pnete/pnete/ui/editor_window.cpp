@@ -261,6 +261,7 @@ namespace fhg
       {
         if (!_accessed_widgets.empty())
         {
+          //! \todo Warn if unsaved changes.
           document_view* current (_accessed_widgets.top());
           _accessed_widgets.pop ();
           removeDockWidget (current);
@@ -386,47 +387,32 @@ namespace fhg
         addToolBar (Qt::TopToolBarArea, file_tool_bar);
         file_tool_bar->setFloatable (false);
 
-        QMenu* menu_new (new QMenu (tr("new")));
-        QAction* action_new_expression (menu_new->addAction (tr("expression")));
-        action_new_expression->setShortcut (QKeySequence("Ctrl+E"));
-        connect ( action_new_expression
-                , SIGNAL (triggered())
-                , SLOT (slot_new_expression())
-                );
-        QAction* action_new_module_call (menu_new->addAction (tr("module_call")));
-        action_new_module_call->setShortcut (QKeySequence("Ctrl+M"));
-        connect ( action_new_module_call
-                , SIGNAL (triggered())
-                , SLOT (slot_new_module_call())
-                );
-        QAction* action_new_net (menu_new->addAction (tr("net")));
-        connect ( action_new_net
-                , SIGNAL (triggered())
-                , SLOT (slot_new_net())
-                );
-        action_new_net->setShortcut (QKeySequence::New);
-        file_menu->addMenu (menu_new);
+        QMenu* menu_new (file_menu->addMenu (tr("new")));
+        QAction* action_new_expression = menu_new->addAction
+          ( tr ("expression")
+          , this, SLOT (slot_new_expression())
+          , QKeySequence ("Ctrl+E")
+          );
+        QAction* action_new_module_call = menu_new->addAction
+          ( tr ("module_call")
+          , this, SLOT (slot_new_module_call())
+          , QKeySequence ("Ctrl+M")
+          );
+        QAction* action_new_net = menu_new->addAction
+          (tr ("net"), this, SLOT (slot_new_net()), QKeySequence::New);
 
-        QAction* open_action (new QAction (tr ("open"), this));
-        QAction* close_action (new QAction (tr ("close_current_window"), this));
-        QAction* quit_action (new QAction (tr ("quit_application"), this));
 
-        open_action->setShortcut (QKeySequence::Open);
-        close_action->setShortcut (QKeySequence::Close);
-        quit_action->setShortcut (QKeySequence::Quit);
-
-        connect (open_action, SIGNAL (triggered()), SLOT (open()));
-        connect (close_action, SIGNAL (triggered()), SLOT (close_document()));
-        connect (quit_action, SIGNAL (triggered()), SLOT (quit()));
-
-        file_menu->addAction (open_action);
+        QAction* open_action = file_menu->addAction
+          (tr ("open"), this, SLOT (open()), QKeySequence::Open);
 
         _action_save_current_file = file_menu->addAction
           (tr ("save"), this, SLOT (save_file()), QKeySequence::Save);
         _action_save_current_file->setEnabled (false);
 
-        file_menu->addAction (close_action);
-        file_menu->addAction (quit_action);
+        QAction* close_action = file_menu->addAction
+          (tr ("close_document"), this, SLOT (close_document()));
+        QAction* quit_action = file_menu->addAction
+          (tr ("quit_application"), this, SLOT (quit()), QKeySequence::Quit);
 
         file_tool_bar->addAction (action_new_expression);
         file_tool_bar->addAction (action_new_module_call);
