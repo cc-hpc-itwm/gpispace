@@ -37,8 +37,6 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
-#include <we/we-config.hpp>
-
 #include <we/mgmt/basic_layer.hpp>
 
 #include <we/mgmt/exception.hpp>
@@ -80,6 +78,7 @@ namespace we { namespace mgmt {
       typedef detail::queue<cmd_t, 0> cmd_q_t;
 
       // extractor
+      //! \todo is it necessary to use a locked data structure?
       typedef detail::set<internal_id_type, 0> active_nets_t;
 
       typedef boost::unique_lock<boost::recursive_mutex> lock_t;
@@ -496,27 +495,29 @@ namespace we { namespace mgmt {
         manager_   = boost::thread(boost::bind(&layer::manager, this));
         fhg::util::set_threadname (manager_, "[we-mgr]");
 
-        active_nets_ = new active_nets_t[WE_NUM_EXTRACTORS];
-        start_threads ("we-extract", WE_NUM_EXTRACTORS, extractor_, boost::bind(&layer::extractor, this, _1));
+        active_nets_ = new active_nets_t;
+        start_threads ( "we-extract"
+                      , extractor_
+                      , boost::bind (&layer::extractor, this)
+                      );
 
-        inj_q_ = new active_nets_t[WE_NUM_INJECTORS];
-        start_threads ("we-inject", WE_NUM_INJECTORS, injector_, boost::bind(&layer::injector, this, _1));
+        inj_q_ = new active_nets_t;
+        start_threads ( "we-inject"
+                      , injector_
+                      , boost::bind (&layer::injector, this)
+                      );
       }
 
       void start_threads ( std::string const & tag
-                         , const std::size_t num
                          , thread_list_t& list
-                         , boost::function<void (const std::size_t)> tf
+                         , boost::function<void ()> tf
                          )
       {
-        for (std::size_t rank(0); rank < num; ++rank)
-        {
-          std::stringstream sstr;
-          sstr << "[" << tag << "-" << rank << "]";
-          boost::thread *thrd (new boost::thread (boost::bind (tf, rank)));
-          fhg::util::set_threadname (*thrd, sstr.str());
-          list.push_back (thrd);
-        }
+        std::stringstream sstr;
+        sstr << "[" << tag << "]";
+        boost::thread *thrd (new boost::thread (tf));
+        fhg::util::set_threadname (*thrd, sstr.str());
+        list.push_back (thrd);
       }
 
       void stop_threads (thread_list_t& list)
@@ -547,10 +548,10 @@ namespace we { namespace mgmt {
         stop_threads (extractor_);
         DLOG(TRACE, "done.");
 
-        delete [] active_nets_;
+        delete active_nets_;
         active_nets_ = NULL;
 
-        delete [] inj_q_;
+        delete inj_q_;
         inj_q_ = NULL;
       }
 
@@ -583,7 +584,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          active_nets_[id.value() % extractor_.size()].put(id);
+          active_nets_->put(id);
         }
         else
         {
@@ -596,7 +597,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          inj_q_[id.value() % injector_.size()].put ( id );
+          inj_q_->put ( id );
         }
         else
         {
@@ -609,7 +610,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          inj_q_[id.value() % injector_.size()].put ( id );
+          inj_q_->put ( id );
         }
         else
         {
@@ -692,16 +693,16 @@ namespace we { namespace mgmt {
       }
 
       // WORK HERE: rewrite!
-      void extractor(const std::size_t rank)
+      void extractor()
       {
-        DLOG(INFO, "extractor[" << rank << "] thread started...");
+        DLOG(INFO, "extractor thread started...");
         for (;;)
         {
-          internal_id_type active_id = active_nets_[rank].get();
+          internal_id_type active_id = active_nets_->get();
           if (! is_valid (active_id))
           {
             DLOG( WARN
-                , "extractor[" << rank << "] woken up by old activity id " << active_id
+                , "extractor woken up by old activity id " << active_id
                 );
             continue;
           }
@@ -709,7 +710,7 @@ namespace we { namespace mgmt {
           try
           {
             descriptor_ptr desc (lookup(active_id));
-            DLOG(TRACE, "extractor-" << rank << " puts attention to activity " << active_id);
+            DLOG(TRACE, "extractor puts attention to activity " << active_id);
 
             if (desc->activity().is_cancelling())
             {
@@ -740,13 +741,12 @@ namespace we { namespace mgmt {
               //       EXTERN: extern
               //    INJECT:  inject to parent / notify client
               //    EXTERN:  send to extern
-              do_execute (desc, rank);
+              do_execute (desc);
             }
             catch (const std::exception & ex)
             {
               LOG( ERROR
-                 , "extractor-" << rank
-                 << ": something went wrong during execution of: "
+                 , "extractor: something went wrong during execution of: "
                  << desc->name() << ": " << ex.what()
                  );
               desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
@@ -762,14 +762,14 @@ namespace we { namespace mgmt {
           }
           catch (const exception::activity_not_found& ex)
           {
-            LOG(WARN, "extractor-" << rank << ": activity could not be found: " << ex.id());
+            LOG(WARN, "extractor: activity could not be found: " << ex.id());
           }
         }
-        DLOG(INFO, "extractor-" << rank << " thread stopped...");
+        DLOG(INFO, "extractor thread stopped...");
       }
 
       inline
-      void do_execute (descriptor_ptr desc, size_t rank)
+      void do_execute (descriptor_ptr desc)
       {
         policy::execution_policy exec_policy;
 
@@ -777,14 +777,14 @@ namespace we { namespace mgmt {
         {
         case policy::execution_policy::EXTRACT:
           {
-            DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc->name());
+            DLOG(TRACE, "extractor extracting from net: " << desc->name());
 
             while (desc->enabled())
             {
               descriptor_ptr child (new detail::descriptor(desc->extract(generate_internal_id())));
               child->inject_input ();
 
-              DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc->name() << ")-" << desc->id()
+              DLOG(INFO, "extractor: extracted from (" << desc->name() << ")-" << desc->id()
                   << ": (" << child->name() << ")-" << child->id() << " with input " << child->show_input());
 
               switch (child->execute (&exec_policy))
@@ -795,7 +795,7 @@ namespace we { namespace mgmt {
                 break;
               case policy::execution_policy::INJECT:
                 child->finished();
-                DLOG(INFO, "extractor-" << rank << ": finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
+                DLOG(INFO, "extractor: finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
                 desc->inject (*child);
                 break;
               case policy::execution_policy::EXTERNAL:
@@ -803,20 +803,20 @@ namespace we { namespace mgmt {
                 execute_externally (child->id());
                 break;
               default:
-                LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << child->name() << ")-" << child->id());
+                LOG(FATAL, "extractor got strange classification for activity (" << child->name() << ")-" << child->id());
                 throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (*child));
               }
 
-              DLOG(TRACE, "extractor-" << rank << " done with child: " << child->id());
+              DLOG(TRACE, "extractor done with child: " << child->id());
             }
 
-            DLOG(TRACE, "extractor-" << rank << " done extracting (#children = " << desc->child_count() << ")");
+            DLOG(TRACE, "extractor done extracting (#children = " << desc->child_count() << ")");
 
 
             if (desc->is_done ())
             {
-              DLOG(DEBUG, "extractor-" << rank << ": activity (" << desc->name() << ")-" << desc->id() << " is done");
-              active_nets_[rank].erase (desc->id());
+              DLOG(DEBUG, "extractor: activity (" << desc->name() << ")-" << desc->id() << " is done");
+              active_nets_->erase (desc->id());
               do_inject (desc);
             }
           }
@@ -825,11 +825,11 @@ namespace we { namespace mgmt {
           do_inject (desc);
           break;
         case policy::execution_policy::EXTERNAL:
-          DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc->id());
+          DLOG(TRACE, "extractor: executing externally: " << desc->id());
           execute_externally (desc->id());
           break;
         default:
-          LOG(FATAL, "extractor-" << rank << ": got strange classification for activity (" << desc->name() << ")-" << desc->id());
+          LOG(FATAL, "extractor: got strange classification for activity (" << desc->name() << ")-" << desc->id());
           throw std::runtime_error ("extractor got strange classification for activity");
         }
       }
@@ -841,18 +841,16 @@ namespace we { namespace mgmt {
         return activities_.find(id) != activities_.end();
       }
 
-      void injector(const std::size_t rank)
+      void injector()
       {
-        DLOG(INFO, "injector[" << rank << "] thread started...");
+        DLOG(INFO, "injector thread started...");
         for (;;)
         {
-          const internal_id_type act_id = inj_q_[rank].get();
+          const internal_id_type act_id = inj_q_->get();
 
           if ( ! is_valid (act_id))
           {
-            DLOG( WARN
-                , "injector[" << rank << "] woken up by old activity id " << act_id
-                );
+            DLOG(WARN, "injector woken up by old activity id " << act_id);
             continue;
           }
 
@@ -873,7 +871,7 @@ namespace we { namespace mgmt {
           }
           catch (std::exception const & ex)
           {
-            LOG(ERROR, "injector-" << rank << " got exception during injecting: " << ex.what());
+            LOG(ERROR, "injector got exception during injecting: " << ex.what());
 
             desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
             desc->set_error_message (ex.what ());
@@ -883,10 +881,10 @@ namespace we { namespace mgmt {
           }
           catch (...)
           {
-            LOG(ERROR, "injector-" << rank << " got unexpected exception during injecting!");
+            LOG(ERROR, "injector got unexpected exception during injecting!");
           }
         }
-        DLOG(INFO, "injector-" << rank << " thread stopped...");
+        DLOG(INFO, "injector thread stopped...");
       }
 
       void do_inject (descriptor_ptr desc)
