@@ -13,7 +13,6 @@
 #include <fhg/util/getenv.hpp>
 
 #include <we/mgmt/type/activity.hpp>
-#include <we/util/codec.hpp>
 
 #include <we/mgmt/layer.hpp>
 #include <we/type/expression.fwd.hpp>

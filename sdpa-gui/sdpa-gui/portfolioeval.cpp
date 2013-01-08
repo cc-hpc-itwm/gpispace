@@ -22,7 +22,8 @@ double simulation_result_t::gTotalVega 	= 0.0;
 
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/token.hpp>
-#include <we/util/codec.hpp>
+
+#include <boost/optional.hpp>
 
 static int enable_disable_event_type = QEvent::registerEventType();
 
@@ -364,11 +365,11 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 	}
 
 
-	we::mgmt::type::activity_t act;
+        boost::optional<we::mgmt::type::activity_t> act;
 
         try
         {
-          we::util::codec::decode (ifs, act);
+          *act = we::mgmt::type::activity_t (ifs);
         }
         catch (std::exception const & ex)
         {
@@ -383,14 +384,14 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
         try
         {
           for (std::size_t row (0); row < job_data.size(); ++row)
-            act.add_input( we::mgmt::type::activity_t::input_t::value_type
+            act->add_input( we::mgmt::type::activity_t::input_t::value_type
                          ( make_token
                          ( qstrBackend
                          , job_data
                          , row
                          , m_pUi->m_nThreads->value()
                          )
-                         , act.transition().input_port_by_name ("param")
+                         , act->transition().input_port_by_name ("param")
                          )
                          );
         }
@@ -405,7 +406,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
         }
 
 	ifs.close();
-	return act.to_string();
+	return act->to_string();
 }
 
 void Portfolio::StopClient()

@@ -4,7 +4,6 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include <we/type/net.hpp>
-#include <we/util/codec.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
 #include <we/type/token.hpp>
@@ -171,28 +170,28 @@ struct exec_context : public we::mgmt::context
 
   std::string fake_external (const std::string& act_enc, net_t& n)
   {
-    activity_t act = we::util::codec::decode (act_enc);
+    activity_t act (act_enc);
     handle_internally (act, n );
     return act.to_string();
   }
 
   virtual int handle_externally (activity_t& act, net_t& n)
   {
-    activity_t result (we::util::codec::decode (fake_external (act.to_string(), n)));
+    activity_t result (fake_external (act.to_string(), n));
     act.set_output(result.output());
     return 0;
   }
 
   std::string fake_external (const std::string& act_enc, const mod_t& mod)
   {
-    activity_t act = we::util::codec::decode (act_enc);
+    activity_t act (act_enc);
     module::call (act, mod );
     return act.to_string();
   }
 
   virtual int handle_externally (activity_t& act, mod_t& module_call)
   {
-    activity_t result (we::util::codec::decode (fake_external (act.to_string(), module_call)));
+    activity_t result (fake_external (act.to_string(), module_call));
     act.set_output(result.output());
     return 0;
   }
@@ -218,7 +217,7 @@ int main (int ac, char ** av)
     return EXIT_FAILURE;
   }
 
-  activity_t act (we::util::codec::decode (ifs) );
+  activity_t act (ifs);
 
   std::cout << "act (initial):"
             << std::endl

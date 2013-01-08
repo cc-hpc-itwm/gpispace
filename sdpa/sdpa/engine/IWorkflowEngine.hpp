@@ -32,7 +32,6 @@
 	#include <we/mgmt/bits/signal.hpp>
 	#include <we/type/requirement.hpp>
 	#include <we/mgmt/layer.hpp>
-	#include <we/util/codec.hpp>
 	#include <we/loader/putget.hpp>
 #else
 	#include <vector>

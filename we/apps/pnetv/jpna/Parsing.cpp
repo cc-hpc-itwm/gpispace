@@ -17,8 +17,6 @@
 
 #include <we/mgmt/type/activity.hpp>
 
-#include <we/util/codec.hpp>
-
 #include "PetriNet.h"
 
 namespace jpna {

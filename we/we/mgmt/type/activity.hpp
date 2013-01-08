@@ -46,6 +46,7 @@ namespace we
         activity_t (const activity_t&);
         explicit activity_t (const boost::filesystem::path&);
         explicit activity_t (std::istream&);
+        explicit activity_t (const std::string&);
 
         activity_t& operator= (const activity_t&);
 

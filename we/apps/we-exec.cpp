@@ -61,7 +61,7 @@ void observe_finished (const layer_t *l, layer_id_type const & id, std::string c
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (we::util::codec::decode (s));
+      we::mgmt::type::activity_t act (s);
       std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -78,7 +78,7 @@ void observe_failed (const layer_t *l, layer_id_type const & id, std::string con
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (we::util::codec::decode (s));
+      we::mgmt::type::activity_t act (s);
       std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -95,7 +95,7 @@ void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (we::util::codec::decode (s));
+      we::mgmt::type::activity_t act (s);
       std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
     }
   }

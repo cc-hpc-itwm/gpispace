@@ -28,7 +28,6 @@
 #include <fhg/util/threadname.hpp>
 
 #include <we/type/net.hpp>
-#include <we/util/codec.hpp>
 
 #include <boost/random.hpp>
 #include <boost/function.hpp>
@@ -110,7 +109,7 @@ namespace we { namespace mgmt {
       {
         DLOG(TRACE, "submit (" << id << ", ...)");
 
-        return submit (id, we::util::codec::decode (bytes));
+        return submit (id, we::mgmt::type::activity_t (bytes));
       }
 
       void submit( const external_id_type& id
@@ -185,7 +184,7 @@ namespace we { namespace mgmt {
             lock_t lock(mutex_);
             descriptor_ptr desc (lookup (int_id));
             {
-              desc->output (we::util::codec::decode (result).output());
+              desc->output (we::mgmt::type::activity_t (result).output());
 
               DLOG( TRACE
                   , "finished"

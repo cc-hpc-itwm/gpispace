@@ -77,6 +77,13 @@ namespace we
         decode (stream, *this);
       }
 
+      activity_t::activity_t (const std::string& s)
+      {
+        std::istringstream stream (s);
+
+        decode (stream, *this);
+      }
+
       activity_t& activity_t::operator= (const activity_t& other)
       {
         if (this != &other)

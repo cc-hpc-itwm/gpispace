@@ -24,8 +24,6 @@
 #include <we/type/port.hpp>
 #include <we/mgmt/type/activity.hpp>
 
-#include <we/util/codec.hpp>
-
 #define foreach BOOST_FOREACH
 
 namespace {

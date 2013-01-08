@@ -7,7 +7,6 @@
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/util/codec.hpp>
 
 #include <fhg/revision.hpp>
 
