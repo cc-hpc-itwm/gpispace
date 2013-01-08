@@ -13,6 +13,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/iter_find.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <fvm-pc/pc.hpp>
 #include <util/types.hpp>
 #include <algorithm>
@@ -212,7 +213,7 @@ namespace mapreduce
       std::vector<int> vint;
 
       BOOST_FOREACH(std::string& strval, v)
-        vint.push_back(boost::lexical_cast<int>(strval));
+      	  vint.push_back(boost::lexical_cast<int>(strval));
 
       return vint;
     }
@@ -252,7 +253,6 @@ namespace mapreduce
 
       return v;
     }
-
 
     std::vector<std::string> get_list_items_strtok(char* local_buff)
     {
@@ -297,7 +297,6 @@ namespace mapreduce
 
     void print_partitions(long handle, long slot_size, const std::string& part_used)
     {
-      /*************************************************************************************************************************/
       std::vector<int> arr_used = ::mapreduce::util::get_array(part_used);
       for(int k=0; k<arr_used.size(); k++)
       {
@@ -318,7 +317,6 @@ namespace mapreduce
         std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
         MLOG(INFO,"Partition "<<k<<", of size "<<arr_used[k]<<", contains "<<arr_items.size()<<" items: "<<ptr_shmem<<std::endl);
       }
-      /*************************************************************************************************************************/
     }
 
     key_val_pair_t get_key_val(const std::string& str_map)
@@ -326,18 +324,26 @@ namespace mapreduce
       size_t split_pos = str_map.find_last_of(PAIRSEP);
       if( split_pos == std::string::npos )
       {
-    	  throw std::string("Invalid key-value pair:") + str_map;
+    	  MLOG(FATAL, "No value specified for the key "<<str_map);
+    	  throw std::runtime_error(std::string("Invalid key-value pair:") + str_map);
       }
 
       std::string key = str_map.substr(0,split_pos);
       if(key.empty())
       {
-    	  throw std::string("Invalid key-value pair: ") + str_map;
+    	  MLOG(FATAL, "Empty key!!!!!");
+    	  throw std::runtime_error(std::string("Invalid key-value pair: ") + str_map);
       }
 
-      std::string val = str_map.substr(split_pos+1, str_map.size());
+      std::string str_val = str_map.substr(split_pos+1, str_map.size());
 
-      return key_val_pair_t(key, val);
+      while( boost::algorithm::starts_with(str_val, "[") && boost::algorithm::ends_with(str_val, "]") )
+      {
+    	  std::string val = str_val.substr(1, str_val.size()-2);
+    	  str_val = val;
+      }
+
+      return key_val_pair_t(key, str_val);
     }
 
     std::string make_string(const key_val_pair_t& pair)
@@ -361,6 +367,16 @@ namespace mapreduce
     	return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
 	}
 
+    std::string get_part_filename(const std::string& cfg_out, const int part_id)
+    {
+    	std::vector<std::string> name_and_ext;
+  		boost::split(name_and_ext, cfg_out, boost::is_any_of("."));
+  	    std::ostringstream sstr_part_out_file;
+  	    sstr_part_out_file<<name_and_ext[0]<<"_";
+  	    sstr_part_out_file<<part_id<<"."<<name_and_ext[1];
+
+  	    return sstr_part_out_file.str();
+    }
   }
 }
 
