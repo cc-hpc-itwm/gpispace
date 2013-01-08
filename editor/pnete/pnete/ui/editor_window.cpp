@@ -17,13 +17,14 @@
 #include <QSettings>
 #include <QUndoView>
 
-#include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/dock_widget.hpp>
-#include <pnete/ui/size.hpp>
 #include <pnete/ui/StructureView.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
-#include <pnete/ui/view_manager.hpp>
+#include <pnete/ui/dock_widget.hpp>
+#include <pnete/ui/document_view.hpp>
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
+#include <pnete/ui/view_manager.hpp>
 
 #include <pnete/data/manager.hpp>
 #include <pnete/data/internal.hpp>
@@ -39,8 +40,18 @@ namespace fhg
       editor_window::editor_window (QWidget* parent)
         : QMainWindow (parent)
         , _transition_library (new transition_library_view (20, 5, this))
+        , _transition_library_dock
+          (new dock_widget (tr ("library_window"), _transition_library))
         , _view_manager (new view_manager (this))
         , _structure_view (new StructureView (this))
+        , _structure_view_dock
+          (new dock_widget (tr ("structure_window"), _structure_view))
+        , _undo_view_dock ( new dock_widget
+                            ( tr ("undo_window")
+                            , _view_manager->create_undo_view (this)
+                            )
+                          )
+        , _windows_menu (NULL)
       {
         setWindowTitle (tr ("editor_window_title"));
 
@@ -48,27 +59,9 @@ namespace fhg
         setDockNestingEnabled (true);
         setTabPosition (Qt::AllDockWidgetAreas, QTabWidget::North);
 
-        addDockWidget ( dock_position
-                      , new dock_widget ( tr ("library_window")
-                                        , _transition_library
-                                        )
-                      , Qt::Horizontal
-                      );
-
-        addDockWidget ( dock_position
-                      , new dock_widget ( tr ("structure_window")
-                                        , _structure_view
-                                        )
-                      , Qt::Horizontal
-                      );
-
-        addDockWidget ( dock_position
-                      , new dock_widget ( tr ("undo_window")
-                                        , _view_manager->create_undo_view
-                                                                   (this)
-                                        )
-                      , Qt::Horizontal
-                      );
+        addDockWidget (dock_position, _transition_library_dock, Qt::Horizontal);
+        addDockWidget (dock_position, _structure_view_dock, Qt::Horizontal);
+        addDockWidget (dock_position, _undo_view_dock, Qt::Horizontal);
 
         setup_menu_and_toolbar();
 
@@ -150,7 +143,6 @@ namespace fhg
         file_tool_bar->addAction (action_new_expression);
         file_tool_bar->addAction (action_new_module_call);
         file_tool_bar->addAction (action_new_net);
-        file_tool_bar->addAction (action_new_expression);
         file_tool_bar->addAction (open_action);
         file_tool_bar->addAction (save_action);
       }
@@ -294,30 +286,6 @@ namespace fhg
         //_view_manager->current_view_zoom (size::zoom::default_value());
       }
 
-      QMenu* editor_window::createPopupMenu()
-      {
-        QMenu* menu (QMainWindow::createPopupMenu());
-
-        QAction* duplicate_view_action (new QAction (tr ("duplicate_view"), menu));
-        QAction* close_action (new QAction (tr ("close_current_window"), menu));
-
-        _view_manager->connect ( duplicate_view_action
-                               , SIGNAL (triggered())
-                               , SLOT (duplicate_active_widget())
-                               );
-        _view_manager->connect ( close_action
-                               , SIGNAL (triggered())
-                               , SLOT (current_widget_close())
-                               );
-
-        //! \todo Add them BEFORE, not after the existing actions.
-        menu->addSeparator();
-        menu->addAction (duplicate_view_action);
-        menu->addAction (close_action);
-
-        return menu;
-      }
-
       void editor_window::closeEvent (QCloseEvent* event)
       {
         //! \todo ask the user
@@ -332,26 +300,57 @@ namespace fhg
           }
       }
 
+      QMenu* editor_window::createPopupMenu()
+      {
+        return update_window_menu (new QMenu());
+      }
+
+      void editor_window::update_window_menu()
+      {
+        update_window_menu (_windows_menu);
+      }
+
+      QMenu* editor_window::update_window_menu (QMenu* menu)
+      {
+        menu->clear();
+
+        menu->addAction ( tr ("duplicate_current_window")
+                        , _view_manager
+                        , SLOT (duplicate_active_widget())
+                        , QKeySequence::AddTab
+                        );
+        menu->addAction ( tr ("close_current_window")
+                        , _view_manager
+                        , SLOT (current_widget_close())
+                        , QKeySequence::Close
+                        );
+
+        menu->addSeparator();
+
+        menu->addAction (_transition_library_dock->toggleViewAction());
+        menu->addAction (_structure_view_dock->toggleViewAction());
+        menu->addAction (_undo_view_dock->toggleViewAction());
+
+        menu->addSeparator();
+
+        foreach (document_view* view, findChildren<document_view*>())
+        {
+          menu->addAction (view->toggleViewAction());
+        }
+
+        return menu;
+      }
+
       void editor_window::setup_window_actions (QMenuBar* menu_bar)
       {
-        QMenu* windows_menu (new QMenu (tr ("windows_menu"), menu_bar));
-        menu_bar->addAction (windows_menu->menuAction());
+        _windows_menu = menu_bar->addMenu (tr ("windows_menu"));
 
-        QAction* duplicate_current_action
-          (new QAction (tr ("duplicate_current_window"), this));
+        connect ( _windows_menu
+                , SIGNAL (aboutToShow())
+                , SLOT (update_window_menu())
+                );
 
-        duplicate_current_action->setShortcuts (QKeySequence::AddTab);
-
-        windows_menu->addAction (duplicate_current_action);
-
-        _view_manager->connect ( duplicate_current_action
-                               , SIGNAL (triggered())
-                               , SLOT (duplicate_active_widget())
-                               );
-
-        //menu_bar->addAction(createPopupMenu()->menuAction());
-        //! \todo Open createPopupMenu() on menu_action::triggered().
-        //! \todo Actually differ between documents and library / structure there.
+        update_window_menu();
       }
 
       void editor_window::slot_new_expression()
@@ -399,6 +398,7 @@ namespace fhg
 
       void editor_window::close_document()
       {
+        //! \todo Should close all windows of that document!
         _view_manager->current_widget_close();
       }
 

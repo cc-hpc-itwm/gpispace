@@ -8,23 +8,14 @@ set(ui_SRCS
   StructureView.cpp
 # undo_group_manager.cpp
   dock_widget.cpp
-  base_editor_widget.cpp
   document_view.cpp
-  expression_view.cpp
-  mod_view.cpp
-  net_view.cpp
   view_manager.cpp
-  net_widget.cpp
   module_call_widget.cpp
   expression_widget.cpp
   port_lists_widget.cpp
   ComboItemDelegate.cpp
   size.cpp
   transition_library_view.cpp
-
-  expression_view.cpp
-  mod_view.cpp
-  net_view.cpp
 )
 
 set(ui_HDRS
@@ -36,26 +27,17 @@ set(ui_HDRS
 # undo_group_manager.hpp
 
   dock_widget.hpp
-  base_editor_widget.hpp
   document_view.hpp
-  expression_view.hpp
-  mod_view.hpp
-  net_view.hpp
   view_manager.hpp
 
   ComboItemDelegate.hpp
   PropertiesEditor.hpp
   StructureEditor.hpp
-  net_widget.hpp
   module_call_widget.hpp
   expression_widget.hpp
   port_lists_widget.hpp
   size.hpp
   transition_library_view.hpp
-
-  expression_view.hpp
-  mod_view.hpp
-  net_view.hpp
 )
 
 set(ui_UIS
@@ -70,21 +52,12 @@ set(ui_TOMOC
   TransitionLibraryItem.hpp
 
   dock_widget.hpp
-  base_editor_widget.hpp
   document_view.hpp
-  expression_view.hpp
-  mod_view.hpp
-  net_view.hpp
   view_manager.hpp
 
-  net_widget.hpp
   module_call_widget.hpp
   expression_widget.hpp
   port_lists_widget.hpp
-
-  expression_view.hpp
-  mod_view.hpp
-  net_view.hpp
 
   StructureView.hpp
 )

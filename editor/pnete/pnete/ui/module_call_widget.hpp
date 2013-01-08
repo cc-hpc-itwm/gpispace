@@ -3,13 +3,11 @@
 #ifndef _PNETE_UI_MODULE_CALL_WIDGET_HPP
 #define _PNETE_UI_MODULE_CALL_WIDGET_HPP 1
 
-#include <QObject>
+#include <pnete/data/handle/function.fwd.hpp>
 
-#include <pnete/data/proxy.hpp>
+#include <xml/parse/id/types.fwd.hpp>
 
-#include <pnete/ui/base_editor_widget.hpp>
-
-class QWidget;
+#include <QWidget>
 
 namespace fhg
 {
@@ -17,16 +15,13 @@ namespace fhg
   {
     namespace ui
     {
-      class port_lists_widget;
-
-      class module_call_widget : public base_editor_widget
+      class module_call_widget : public QWidget
       {
         Q_OBJECT;
 
       public:
-        module_call_widget ( data::proxy::type& proxy
-                           , const ::xml::parse::id::ref::module& mod
-                           , const QStringList& types
+        module_call_widget ( const ::xml::parse::id::ref::module&
+                           , const data::handle::function&
                            , QWidget* parent = NULL
                            );
       };

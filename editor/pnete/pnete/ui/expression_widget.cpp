@@ -26,14 +26,14 @@ namespace fhg
     namespace ui
     {
       expression_widget::expression_widget
-        ( data::proxy::type& proxy
-        , const data::handle::expression& expression
-        , const QStringList& types
+        ( const data::handle::expression& expression
+        , const data::handle::function& function
         , QWidget* parent
         )
-          : base_editor_widget (proxy, parent)
+          : QWidget (parent)
           , _expression (expression)
-          , _port_lists (new port_lists_widget (function(), types))
+          , _function (function)
+          , _port_lists (new port_lists_widget (_function, QStringList()))
           , _expression_edit (new QTextEdit())
           , _name_edit (new QLineEdit())
           , _parse_result (new QTextEdit())
@@ -72,7 +72,7 @@ namespace fhg
         hbox->addWidget (group_box);
         setLayout (hbox);
 
-        function().connect_to_change_mgr
+        _function.connect_to_change_mgr
           ( this
           , "function_name_changed", "slot_set_function_name"
           , "data::handle::function, QString"
@@ -99,7 +99,7 @@ namespace fhg
                 , SLOT (expression_changed ())
                 );
 
-        set_name (function().get().name());
+        set_name (_function.get().name());
         set_expression (expression.get().expression("\n"));
       }
 
@@ -169,7 +169,7 @@ namespace fhg
       }
       void expression_widget::name_changed (const QString& name)
       {
-        function().set_name (this, name);
+        _function.set_name (this, name);
       }
 
       void expression_widget::expression_changed ()
@@ -180,7 +180,7 @@ namespace fhg
       bool expression_widget::is_my_function
         (const data::handle::function& f)
       {
-        return f == function();
+        return f == _function;
       }
       bool expression_widget::is_my_expression
         (const data::handle::expression& e)

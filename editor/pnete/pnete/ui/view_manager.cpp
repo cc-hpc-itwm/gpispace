@@ -2,14 +2,13 @@
 
 #include <pnete/ui/view_manager.hpp>
 
-#include <pnete/data/manager.hpp>
 #include <pnete/data/handle/expression.hpp>
-#include <pnete/ui/base_editor_widget.hpp>
+#include <pnete/data/manager.hpp>
 #include <pnete/ui/document_view.hpp>
 #include <pnete/ui/editor_window.hpp>
-#include <pnete/ui/expression_view.hpp>
-#include <pnete/ui/mod_view.hpp>
-#include <pnete/ui/net_view.hpp>
+#include <pnete/ui/expression_widget.hpp>
+#include <pnete/ui/graph_view.hpp>
+#include <pnete/ui/module_call_widget.hpp>
 
 #include <util/qt/parent.hpp>
 
@@ -17,6 +16,7 @@
 #include <iostream>
 
 #include <QAction>
+#include <QApplication>
 #include <QFileDialog>
 #include <QDir>
 #include <QString>
@@ -41,6 +41,12 @@ namespace fhg
         connect ( _action_save_current_file
                 , SIGNAL (triggered())
                 , SLOT (save_file())
+                );
+
+        //! \todo Hand down qApp instead of accessing global state.
+        connect ( qApp
+                , SIGNAL (focusChanged (QWidget*, QWidget*))
+                , SLOT (focus_changed (QWidget*, QWidget*))
                 );
       }
 
@@ -70,51 +76,39 @@ namespace fhg
         }
 
         data::manager::instance().save
-          (_accessed_widgets.top()->widget()->root(), filename);
+          (data::proxy::root (_accessed_widgets.top()->proxy()), filename);
       }
 
-      void view_manager::focus_changed (QWidget* widget)
+      void view_manager::focus_changed (QWidget*, QWidget* to_widget)
       {
-        document_view* current_view
-          (util::qt::first_parent_being_a<document_view> (widget));
+        document_view* to
+          (util::qt::first_parent_being_a<document_view> (to_widget));
 
-        if (!current_view)
+        if (!to)
         {
-          throw std::runtime_error ( "focus changed on a widget not "
-                                     "on a document_widget."
-                                   );
+          return;
         }
 
-        if (_accessed_widgets.contains (current_view))
+        if (!_accessed_widgets.empty())
         {
-          _accessed_widgets.remove
-            (_accessed_widgets.indexOf (current_view));
+          foreach (QAction* action, _accessed_widgets.top()->actions())
+          {
+            action->setVisible (false);
+          }
         }
-        _accessed_widgets.push (current_view);
 
-        current_view->widget()->change_manager().setActive(true);
+        if (_accessed_widgets.contains (to))
+        {
+          _accessed_widgets.remove (_accessed_widgets.indexOf (to));
+        }
 
-        //! \todo enable and disable actions
+        _accessed_widgets.push (to);
+        to->function().change_manager().setActive (true);
 
-//         graph_view* old_view (_current_view);
-//         _current_view = current_widget->graph_view();
-//         if (old_view != _current_view)
-//         {
-//           emit view_changed (_current_view);
-//         }
-
-//         graph::scene* old_scene (_current_scene);
-//         _current_scene = _current_view->scene();
-
-//         if (!_current_scene)
-//         {
-//           throw std::runtime_error ("there is a view without a scene.");
-//         }
-
-//         if (old_scene != _current_scene)
-//         {
-//           emit scene_changed (_current_scene);
-//         }
+        foreach (QAction* action, to->actions())
+        {
+          action->setVisible (true);
+        }
       }
 
       // -- document, general --
@@ -122,39 +116,24 @@ namespace fhg
       void view_manager::add_on_top_of_current_widget (document_view* w)
       {
         if (!_accessed_widgets.empty())
-          {
-            _editor_window->tabifyDockWidget (_accessed_widgets.top(), w);
-          }
+        {
+          _editor_window->tabifyDockWidget (_accessed_widgets.top(), w);
+        }
         else
-          {
-            _editor_window->
-              addDockWidget (Qt::LeftDockWidgetArea, w, Qt::Horizontal);
-          }
-
-        connect ( w->widget()
-                , SIGNAL (focus_gained (QWidget*))
-                , SLOT (focus_changed (QWidget*))
-                );
-        connect ( w
-                , SIGNAL (focus_gained (QWidget*))
-                , SLOT (focus_changed (QWidget*))
-                );
-
-//         connect ( w->graph()
-//                 , SIGNAL (zoomed (int))
-//                 , SIGNAL (zoomed (int))
-//                 );
+        {
+          _editor_window->
+            addDockWidget (Qt::LeftDockWidgetArea, w, Qt::Horizontal);
+        }
 
         w->show();
         w->raise();
-        focus_changed (w->widget());
       }
 
       void view_manager::duplicate_active_widget()
       {
         if (!_accessed_widgets.empty())
           {
-            create_widget (_accessed_widgets.top()->widget()->proxy());
+            create_widget (_accessed_widgets.top()->proxy());
           }
       }
       void view_manager::current_widget_close()
@@ -194,22 +173,37 @@ namespace fhg
 
           document_view* operator() (expression_proxy& proxy) const
           {
-            return new expression_view
-              ( _proxy, data::handle::expression
-                ( proxy.data()
-                , root (_proxy)->change_manager()
+            return new document_view
+              ( function (_proxy)
+              , _proxy
+              , QObject::tr ("<<anonymous expression>>")
+              , new expression_widget
+                ( data::handle::expression ( proxy.data()
+                                           , root (_proxy)->change_manager()
+                                           )
+                , function (_proxy)
                 )
               );
           }
 
           document_view* operator() (mod_proxy& proxy) const
           {
-            return new mod_view (_proxy, proxy.data());
+            return new document_view
+              ( function (_proxy)
+              , _proxy
+              , QObject::tr ("<<anonymous module call>>")
+              , new module_call_widget (proxy.data(), function (_proxy))
+              );
           }
 
           document_view* operator() (net_proxy& proxy) const
           {
-            return new net_view (_proxy, proxy.display());
+            return new document_view
+              ( function (_proxy)
+              , _proxy
+              , QObject::tr ("<<anonymous net>>")
+              , new graph_view (proxy.display())
+              );
           }
         };
 

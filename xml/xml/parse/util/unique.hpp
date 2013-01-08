@@ -159,7 +159,7 @@ namespace xml
         return copy;
       }
 
-      unique<value_type, id_type> reparent
+      unique<value_type, id_type>& reparent
         (const typename value_type::parent_id_type& parent)
       {
         BOOST_FOREACH (value_type& value, values())

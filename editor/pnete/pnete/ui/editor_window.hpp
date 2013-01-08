@@ -3,14 +3,17 @@
 #ifndef _PNETE_UI_EDITOR_WINDOW_HPP
 #define _PNETE_UI_EDITOR_WINDOW_HPP 1
 
+#include <pnete/ui/dock_widget.fwd.hpp>
+
 #include <QMainWindow>
 #include <QObject>
 
+class QCloseEvent;
+class QMenuBar;
 class QString;
 class QTreeView;
+class QUndoView;
 class QWidget;
-class QMenuBar;
-class QCloseEvent;
 
 namespace fhg
 {
@@ -50,10 +53,17 @@ namespace fhg
         void close_document();
         void quit();
 
+        void update_window_menu();
+
       private:
         transition_library_view* _transition_library;
+        dock_widget* _transition_library_dock;
         view_manager* _view_manager;
         StructureView* _structure_view;
+        dock_widget* _structure_view_dock;
+        dock_widget* _undo_view_dock;
+
+        QMenu* _windows_menu;
 
         void setup_menu_and_toolbar();
         void setup_zoom_actions (QMenuBar* menu_bar);
@@ -62,6 +72,7 @@ namespace fhg
         void setup_window_actions (QMenuBar* menu_bar);
 
         void create_windows (data::internal_type* data);
+        QMenu* update_window_menu (QMenu*);
 
         void readSettings();
         void writeSettings();

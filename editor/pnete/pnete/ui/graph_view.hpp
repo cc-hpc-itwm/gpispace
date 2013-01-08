@@ -32,24 +32,22 @@ namespace fhg
 
         graph::scene_type* scene() const;
 
-        public slots:
-          void zoom (int to);
-          void zoom_in();
-          void zoom_out();
-          void reset_zoom();
+      public slots:
+        void zoom (int to);
+        void zoom_in();
+        void zoom_out();
+        void reset_zoom();
 
-        signals:
-          void zoomed (int to);
-          void focus_gained (QWidget* me);
+      signals:
+        void zoomed (int to);
 
-        protected:
-          virtual void wheelEvent (QWheelEvent* event);
-          virtual void focusInEvent (QFocusEvent* event);
+      protected:
+        virtual void wheelEvent (QWheelEvent* event);
 
-          virtual QSize sizeHint() const;
+        virtual QSize sizeHint() const;
 
-        private:
-          int _currentScale;
+      private:
+        int _currentScale;
       };
     }
   }

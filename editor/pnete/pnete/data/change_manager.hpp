@@ -118,10 +118,15 @@ namespace fhg
                                , const QPointF&
                                );
 
+        void set_name
+          (const QObject*, const data::handle::transition&, const QString&);
+
         // -- place --------------------------------------------------
         void add_place (const QObject*, const data::handle::net&);
         void delete_place (const QObject*, const data::handle::place&);
 
+        void set_name
+          (const QObject*, const data::handle::place&, const QString&);
         void set_type
           (const QObject*, const data::handle::place&, const QString&);
 
@@ -164,6 +169,8 @@ namespace fhg
                                   , const ::we::type::property::value_type&
                                   );
 
+        void set_name
+          (const QObject*, const data::handle::port&, const QString&);
         void set_type
           (const QObject*, const data::handle::port&, const QString&);
 
@@ -257,6 +264,8 @@ namespace fhg
                               , const we::type::property::key_type&
                               , const we::type::property::value_type&
                               );
+        void name_set
+          (const QObject*, const data::handle::transition&, const QString&);
 
         // -- place --------------------------------------------------
         void place_added (const QObject*, const data::handle::place&);
@@ -266,7 +275,9 @@ namespace fhg
                               , const we::type::property::key_type&
                               , const we::type::property::value_type&
                               );
-        void place_type_set
+        void name_set
+          (const QObject*, const data::handle::place&, const QString&);
+        void type_set
           (const QObject*, const data::handle::place&, const QString&);
 
         // - port ----------------------------------------------------
@@ -279,7 +290,9 @@ namespace fhg
                               , const we::type::property::value_type&
                               );
 
-        void port_type_set
+        void name_set
+          (const QObject*, const data::handle::port&, const QString&);
+        void type_set
           (const QObject*, const data::handle::port&, const QString&);
         void place_association_set
           (const QObject*, const data::handle::port&, const boost::optional<std::string>&);

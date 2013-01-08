@@ -235,7 +235,7 @@ namespace fhg
           weaver::net wn (_root, _scene, id, _function);
           from::net (&wn, id);
         }
-        WSIG(function, function::fun, XMLTYPE(function_type::type), fun)
+        WSIG(function, function::fun, XMLTYPE(function_type::content_type), fun)
         {
           from::variant (this, fun);
         }

@@ -59,15 +59,36 @@ namespace xml
       {
         return _direction;
       }
-      const ::petri_net::edge::type& connect_type::direction
+      const ::petri_net::edge::type& connect_type::direction_impl
         (const ::petri_net::edge::type& direction_)
       {
         return _direction = direction_;
       }
+      const ::petri_net::edge::type& connect_type::direction
+        (const ::petri_net::edge::type& direction_)
+      {
+        if (has_parent())
+        {
+          parent()->connection_direction (make_reference_id(), direction_);
+          return _direction;
+        }
 
-      const std::string& connect_type::place (const std::string& place)
+        return direction_impl (direction_);
+      }
+
+      const std::string& connect_type::place_impl (const std::string& place)
       {
         return _place = place;
+      }
+      const std::string& connect_type::place (const std::string& place)
+      {
+        if (has_parent())
+        {
+          parent()->connection_place (make_reference_id(), place);
+          return _place;
+        }
+
+        return place_impl (place);
       }
 
       const we::type::property::type& connect_type::properties() const

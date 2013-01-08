@@ -40,6 +40,11 @@ namespace xml
 
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
+                        , const std::string& name
+                        , const boost::optional<petri_net::priority_type>& priority
+                        , const boost::optional<bool>& finline
+                        , const boost::optional<bool>& internal
+                        , const boost::filesystem::path& path
                         );
 
         transition_type ( ID_CONS_PARAM(transition)
@@ -54,7 +59,7 @@ namespace xml
                         , const connections_type& connections
                         , const place_maps_type& place_map
                         , const structs_type& structs
-                        , const conditions_type& cond
+                        , const conditions_type&
                         , const requirements_type& requirements
                         , const boost::optional<petri_net::priority_type>& priority
                         , const boost::optional<bool>& finline
@@ -71,8 +76,13 @@ namespace xml
         id::ref::function resolved_function() const;
 
         const std::string& name() const;
-        const std::string& name(const std::string& name);
+        const std::string& name (const std::string& name);
 
+      private:
+        friend struct net_type;
+        const std::string& name_impl (const std::string& name);
+
+      public:
         // ***************************************************************** //
 
         boost::optional<const id::ref::function&>
@@ -88,10 +98,21 @@ namespace xml
         void push_connection (const id::ref::connect&);
         void push_place_map (const id::ref::place_map&);
 
+        void connection_place (const id::ref::connect&, const std::string&);
+        void connection_direction
+          (const id::ref::connect&, const petri_net::edge::type&);
+
+        void place_map_real (const id::ref::place_map&, const std::string&);
+
         // ***************************************************************** //
 
         void clear_connections ();
         void clear_place_map ();
+
+        // ***************************************************************** //
+
+        const conditions_type& conditions() const;
+        void add_conditions (const conditions_type&);
 
         // ***************************************************************** //
 
@@ -141,7 +162,11 @@ namespace xml
         //! \todo All below should be private with accessors.
       public:
         structs_type structs;
-        conditions_type cond;
+
+      private:
+        conditions_type _conditions;
+
+      public:
         requirements_type requirements;
 
         boost::optional<petri_net::priority_type> priority;
@@ -160,7 +185,6 @@ namespace xml
       void transition_synthesize
         ( const id::ref::transition & id_transition
         , const state::type & state
-        , const net_type & net
         , petri_net::net& we_net
         , const place_map_map_type & pids
         );

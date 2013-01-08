@@ -20,19 +20,18 @@ namespace fhg
     namespace ui
     {
       module_call_widget::module_call_widget
-        ( data::proxy::type& proxy
-        , const ::xml::parse::id::ref::module& mod
-        , const QStringList& types
+        ( const ::xml::parse::id::ref::module& mod
+        , const data::handle::function& function
         , QWidget* parent
         )
-          : base_editor_widget (proxy, parent)
+          : QWidget (parent)
       {
         QGroupBox* group_box (new QGroupBox (tr ("module call")));
         QHBoxLayout* group_box_layout (new QHBoxLayout());
         group_box->setLayout (group_box_layout);
 
         QSplitter* splitter (new QSplitter ());
-        splitter->addWidget (new port_lists_widget (function(), types));
+        splitter->addWidget (new port_lists_widget (function, QStringList()));
 
         QTextEdit* edit (new QTextEdit ());
         edit->setText (QString ("<<module foo>>"));

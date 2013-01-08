@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <xml/parse/type/template.hpp>
 
@@ -13,6 +13,17 @@ namespace xml
   {
     namespace type
     {
+      namespace
+      {
+        const id::ref::function& reparent ( const id::ref::function& function
+                                          , const id::tmpl& id
+                                          )
+        {
+          function.get_ref().parent (id);
+          return function;
+        }
+      }
+
       tmpl_type::tmpl_type
         ( ID_CONS_PARAM(tmpl)
         , PARENT_CONS_PARAM(net)
@@ -25,21 +36,29 @@ namespace xml
           , PARENT_INITIALIZE()
           , _name (name)
           , _tmpl_parameter (tmpl_parameter)
-          , _function (function)
+          , _function (reparent (function, _id))
           , _path (path)
       {
         _id_mapper->put (_id, *this);
       }
 
-      const boost::optional<std::string>&
-      tmpl_type::name() const
+      const boost::optional<std::string>& tmpl_type::name() const
       {
         return _name;
       }
-      const std::string&
-      tmpl_type::name(const std::string& name)
+      const std::string& tmpl_type::name_impl (const std::string& name)
       {
         return *(_name = name);
+      }
+      const std::string& tmpl_type::name(const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return *_name;
+        }
+
+        return name_impl (name);
       }
 
       const tmpl_type::names_type&
@@ -56,16 +75,6 @@ namespace xml
       const boost::filesystem::path& tmpl_type::path() const
       {
         return _path;
-      }
-
-      void tmpl_type::specialize
-        ( const type_map_type & map
-        , const type_get_type & get
-        , const xml::parse::structure_type::set_type & known_structs
-        , state::type & state
-        )
-      {
-        function().get_ref().specialize (map, get, known_structs, state);
       }
 
       boost::optional<const id::ref::function&>

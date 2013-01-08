@@ -28,13 +28,13 @@ namespace xml
 
       module_type::module_type ( ID_CONS_PARAM(module)
                                , PARENT_CONS_PARAM(function)
-                               , const std::string & _name
+                               , const std::string& name
                                , const std::string & _function
                                , const boost::filesystem::path & path
                                )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , name (_name)
+        , _name (name)
         , function ()
         , port_return ()
         , port_arg ()
@@ -145,7 +145,7 @@ namespace xml
                                )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , name (name)
+        , _name (name)
         , function (function)
         , port_return (port_return)
         , port_arg (port_arg)
@@ -159,6 +159,10 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
+      const std::string& module_type::name() const
+      {
+        return _name;
+      }
 
       bool module_type::operator == (const module_type& other) const
       {
@@ -184,7 +188,7 @@ namespace xml
             throw error::function_description_with_unknown_port
               ( "return"
               , *port_return
-              , name
+              , name()
               , function
               , outer_function.path
               );
@@ -201,7 +205,7 @@ namespace xml
             throw error::function_description_with_unknown_port
               ( "argument"
               , *port
-              , name
+              , name()
               , function
               , outer_function.path
               );
@@ -220,7 +224,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
-          , name
+          , _name
           , function
           , port_return
           , port_arg
@@ -236,7 +240,7 @@ namespace xml
       std::size_t hash_value (const module_type& m)
       {
         boost::hash<std::string> hasher;
-        return hasher (m.name);
+        return hasher (m.name());
       }
 
       namespace dump
@@ -277,7 +281,7 @@ namespace xml
         void dump (::fhg::util::xml::xmlstream & s, const module_type & m)
         {
           s.open ("module");
-          s.attr ("name", m.name);
+          s.attr ("name", m.name());
           s.attr ("function", dump_fun (m));
 
           for ( module_type::cincludes_type::const_iterator inc (m.cincludes.begin())

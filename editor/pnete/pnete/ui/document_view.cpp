@@ -3,9 +3,10 @@
 #include <pnete/ui/document_view.hpp>
 
 #include <pnete/data/handle/function.hpp>
-#include <pnete/ui/base_editor_widget.hpp>
 
 #include <util/qt/cast.hpp>
+
+#include <xml/parse/type/function.hpp>
 
 #include <boost/optional.hpp>
 
@@ -17,8 +18,16 @@ namespace fhg
   {
     namespace ui
     {
-      document_view::document_view (const data::handle::function& function)
+      document_view::document_view ( const data::handle::function& function
+                                   , data::proxy::type& proxy
+                                   , const QString& fallback_title
+                                   , QWidget* widget
+                                   )
         : dock_widget()
+        , _actions()
+        , _function (function)
+        , _proxy (proxy)
+        , _fallback_title (fallback_title)
       {
         connect ( this
                 , SIGNAL (visibilityChanged (bool))
@@ -30,6 +39,26 @@ namespace fhg
           , "function_name_changed"
           , "data::handle::function, QString"
           );
+
+        set_title (function.get().name());
+
+        setWidget (widget);
+        widget->setParent (this);
+      }
+
+      const QSet<QAction*>& document_view::actions() const
+      {
+        return _actions;
+      }
+
+      data::proxy::type& document_view::proxy()
+      {
+        return _proxy;
+      }
+
+      const data::handle::function& document_view::function() const
+      {
+        return _function;
       }
 
       void document_view::function_name_changed
@@ -38,7 +67,7 @@ namespace fhg
         , const QString& name
         )
       {
-        if (function == widget()->function())
+        if (function == _function)
         {
           set_title
             (boost::make_optional (!name.isEmpty(), name.toStdString()));
@@ -49,24 +78,21 @@ namespace fhg
       {
         if (visible)
         {
-          emit focus_gained (this);
+          setFocus();
         }
       }
 
-      base_editor_widget* document_view::widget() const
-      {
-        return util::qt::throwing_qobject_cast<base_editor_widget*>
-          (dock_widget::widget());
-      }
-      void document_view::setWidget (base_editor_widget* widget)
+      void document_view::setWidget (QWidget* widget)
       {
         dock_widget::setWidget (widget);
+        widget->setFocusPolicy
+          (Qt::FocusPolicy (widget->focusPolicy() | Qt::ClickFocus));
       }
 
       void document_view::set_title (const boost::optional<std::string>& name)
       {
         setWindowTitle
-          (name ? QString::fromStdString (*name) : fallback_title());
+          (name ? QString::fromStdString (*name) : _fallback_title);
       }
     }
   }

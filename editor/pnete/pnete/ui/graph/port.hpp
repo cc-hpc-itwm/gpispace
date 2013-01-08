@@ -69,9 +69,9 @@ namespace fhg
 
         public slots:
           void slot_set_type();
-          void refresh_tooltip();
+          void refresh_content();
 
-          void type_changed
+          void type_or_name_changed
             (const QObject*, const data::handle::port&, const QString&);
 
           void property_changed

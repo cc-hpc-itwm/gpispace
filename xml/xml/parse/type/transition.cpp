@@ -26,10 +26,19 @@ namespace xml
       transition_type::transition_type
         ( ID_CONS_PARAM(transition)
         , PARENT_CONS_PARAM(net)
+        , const std::string& name
+        , const boost::optional<petri_net::priority_type>& priority
+        , const boost::optional<bool>& finline
+        , const boost::optional<bool>& internal
+        , const boost::filesystem::path& path
         )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _function_or_use (boost::none)
+        , _name (name)
+        , priority (priority)
+        , finline (finline)
+        , internal (internal)
+        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -87,7 +96,7 @@ namespace xml
         , const connections_type& connections
         , const place_maps_type& place_map
         , const structs_type& structs
-        , const conditions_type& cond
+        , const conditions_type& conditions
         , const requirements_type& requirements
         , const boost::optional<petri_net::priority_type>& priority
         , const boost::optional<bool>& finline
@@ -105,7 +114,7 @@ namespace xml
         , _connections (connections, _id)
         , _place_map (place_map, _id)
         , structs (structs)
-        , cond (cond)
+        , _conditions (conditions)
         , requirements (requirements)
         , priority (priority)
         , finline (finline)
@@ -178,8 +187,6 @@ namespace xml
                 (use.get().name(), trans.name(), trans.path);
             }
 
-            //            fun->name (trans.name());
-
             return *id_function;
           }
         };
@@ -219,9 +226,20 @@ namespace xml
       {
         return _name;
       }
-      const std::string& transition_type::name(const std::string& name)
+      const std::string& transition_type::name_impl (const std::string& name)
       {
         return _name = name;
+      }
+
+      const std::string& transition_type::name (const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return _name;
+        }
+
+        return name_impl (name);
       }
 
       const transition_type::connections_type&
@@ -288,7 +306,96 @@ namespace xml
         _place_map.clear();
       }
 
-        // ***************************************************************** //
+      void transition_type::connection_place
+        (const id::ref::connect& connection, const std::string& place)
+      {
+        if (connection.get().place() == place)
+        {
+          return;
+        }
+
+        if ( _connections.has
+             ( boost::make_tuple ( place
+                                 , connection.get().port()
+                                 , petri_net::edge::is_PT
+                                   (connection.get().direction())
+                                 )
+             )
+           )
+        {
+          throw std::runtime_error ( "tried reconnecting connection to place, "
+                                     "but connection between between that place "
+                                     "and port already exists in that direction"
+                                   );
+        }
+
+        _connections.erase (connection);
+        connection.get_ref().place_impl (place);
+        _connections.push (connection);
+      }
+
+      void transition_type::connection_direction
+        (const id::ref::connect& connection, const petri_net::edge::type& dir)
+      {
+        if (connection.get().direction() == dir)
+        {
+          return;
+        }
+
+        if ( ( petri_net::edge::is_PT (connection.get().direction())
+             != petri_net::edge::is_PT (dir)
+             )
+           && _connections.has
+             ( boost::make_tuple ( connection.get().place()
+                                 , connection.get().port()
+                                 , petri_net::edge::is_PT (dir)
+                                 )
+             )
+           )
+        {
+          throw std::runtime_error ( "tried setting direction of connection, "
+                                     "but connection between between that place "
+                                     "and port already exists in that direction"
+                                   );
+        }
+
+        _connections.erase (connection);
+        connection.get_ref().direction_impl (dir);
+        _connections.push (connection);
+      }
+
+      void transition_type::place_map_real
+        (const id::ref::place_map& id, const std::string& real)
+      {
+        if (id.get().place_real() == real)
+        {
+          return;
+        }
+
+        if (_place_map.has (std::make_pair (id.get().place_virtual(), real)))
+        {
+          throw std::runtime_error ( "tried setting place_map's virtual place, "
+                                     "but already having such a mapping."
+                                   );
+        }
+
+        _place_map.erase (id);
+        id.get_ref().place_real_impl (real);
+        _place_map.push (id);
+      }
+
+      // ***************************************************************** //
+
+      const conditions_type& transition_type::conditions() const
+      {
+        return _conditions;
+      }
+      void transition_type::add_conditions (const conditions_type& other)
+      {
+        _conditions.insert (_conditions.end(), other.begin(), other.end());
+      }
+
+      // ***************************************************************** //
 
       void transition_type::resolve ( const state::type & state
                                     , const xml::parse::structure_type::forbidden_type & forbidden
@@ -569,7 +676,7 @@ namespace xml
           , _connections.clone (new_id, new_mapper)
           , _place_map.clone (new_id, new_mapper)
           , structs
-          , cond
+          , _conditions
           , requirements
           , priority
           , finline
@@ -580,11 +687,6 @@ namespace xml
       }
 
       // ******************************************************************* //
-
-      using petri_net::connection_t;
-      using petri_net::edge::PT;
-      using petri_net::edge::PT_READ;
-      using petri_net::edge::TP;
 
       namespace
       {
@@ -605,15 +707,10 @@ namespace xml
       void transition_synthesize
         ( const id::ref::transition & id_transition
         , const state::type & state
-        , const net_type & net
         , petri_net::net & we_net
         , const place_map_map_type & pids
         )
       {
-        typedef we::type::expression_t we_expr_type;
-        typedef we::type::transition_t::preparsed_cond_type we_cond_type;
-        typedef petri_net::transition_id_type tid_t;
-
         const transition_type& trans (id_transition.get());
 
         if (trans.connections().empty())
@@ -625,83 +722,45 @@ namespace xml
               );
           }
 
-        const id::ref::function& id_function
-          ( boost::apply_visitor
-            (transition_get_function (net, trans), trans.function_or_use())
-          );
-
-        //! \todo keep working with the id_function, deref deeper
-        function_type& fun (id_function.get_ref());
+        const id::ref::function id_function (trans.resolved_function());
+        const function_type& fun (id_function.get());
 
         BOOST_FOREACH (const port_type& port_in, fun.ports().values())
         {
           if (port_in.direction() == we::type::PORT_IN)
           {
-            boost::optional<const id::ref::port&> id_port_out
+            const boost::optional<const id::ref::port&> id_port_out
               (fun.get_port_out (port_in.name()));
 
-            if (id_port_out)
+            if (id_port_out && id_port_out->get().type != port_in.type)
             {
-              const port_type& port_out (id_port_out->get());
-
-              if (port_out.type != port_in.type)
-              {
-                state.warn
-                  ( warning::conflicting_port_types ( trans.name()
-                                                    , port_in.name()
-                                                    , port_in.type
-                                                    , port_out.type
-                                                    , state.file_in_progress()
-                                                    )
-                  );
-              }
+              state.warn
+                ( warning::conflicting_port_types ( id_transition
+                                                  , port_in.make_reference_id()
+                                                  , *id_port_out
+                                                  , state.file_in_progress()
+                                                  )
+                );
             }
           }
         }
 
-        if (fun.name())
-          {
-            if (  (*fun.name() != trans.name())
-               && (!rewrite::has_magic_prefix (trans.name()))
-               )
-              {
-                state.warn ( warning::overwrite_function_name_trans
-                             ( *fun.name()
-                             , fun.path
-                             , trans.name()
-                             , trans.path
-                             )
-                           );
-              }
-          }
+        if (  fun.name()
+           && (*fun.name() != trans.name())
+           && (!rewrite::has_magic_prefix (trans.name()))
+           )
+        {
+          state.warn ( warning::overwrite_function_name_trans
+                       (id_transition, id_function)
+                     );
+        }
 
-        fun.name (trans.name());
-
-        if (fun.internal)
-          {
-            if (trans.internal && *trans.internal != *fun.internal)
-              {
-                state.warn ( warning::overwrite_function_internal_trans
-                             ( trans.name()
-                             , trans.path
-                             )
-                           );
-
-                fun.internal = trans.internal;
-              }
-          }
-
-        fun.cond.insert ( fun.cond.end()
-                        , trans.cond.begin()
-                        , trans.cond.end()
-                        );
-
-        fun.requirements.join (trans.requirements);
-
-        util::property::join (state, fun.properties(), trans.properties());
-
-        //! \todo implement boost::optional<net_type> fun.as_net()
-        // and use this instead of is_net and boost::get some lines below
+        if (fun.internal && trans.internal && *trans.internal != *fun.internal)
+        {
+          state.warn ( warning::overwrite_function_internal_trans
+                       (id_transition, id_function)
+                     );
+        }
 
         if (  not trans.priority // WORK HERE: make it work with prio
            && (
@@ -741,7 +800,7 @@ namespace xml
                 place_map_map[prefix + place_map.place_virtual()] = pid->second;
               }
 
-            net_type& net ((boost::get<id::ref::net> (fun.f)).get_ref());
+            net_type& net (fun.get_net()->get_ref());
             net.set_prefix (prefix);
 
             // synthesize into this level
@@ -751,7 +810,8 @@ namespace xml
             net.remove_prefix (prefix);
 
             // go in the subnet
-            const std::string cond_in (fun.condition());
+            const std::string cond_in
+              ((fun.conditions() + trans.conditions()).flatten());
 
             util::we_parser_t parsed_condition_in
               ( util::we_parse ( cond_in
@@ -762,12 +822,19 @@ namespace xml
                                )
               );
 
+            we::type::property::type properties (fun.properties());
+            util::property::join (state, properties, trans.properties());
+
+            //! \todo It seems like this should be getting the
+            //! requirements of the inlined transition. Or all
+            //! inlined transitions?
             we::type::transition_t trans_in
               ( prefix + "IN"
-              , we_expr_type ()
-              , we_cond_type (cond_in, parsed_condition_in)
+              , we::type::expression_t()
+              , we::type::transition_t::preparsed_cond_type
+                (cond_in, parsed_condition_in)
               , true
-              , fun.properties()
+              , properties
               );
 
             BOOST_FOREACH (const port_type& port, fun.ports().values())
@@ -812,19 +879,20 @@ namespace xml
               }
             }
 
-            const tid_t tid_in (we_net.add_transition (trans_in));
+            const petri_net::transition_id_type tid_in
+              (we_net.add_transition (trans_in));
 
             BOOST_FOREACH (const port_type& port, fun.ports().values())
             {
               if (port.direction() == we::type::PORT_IN && port.place)
               {
                 we_net.add_connection
-                  ( connection_t ( petri_net::edge::TP
-                                 , tid_in
-                                 , get_pid ( pid_of_place
-                                           , prefix + *port.place
-                                           )
-                                 )
+                  ( petri_net::connection_t ( petri_net::edge::TP
+                                            , tid_in
+                                            , get_pid ( pid_of_place
+                                                      , prefix + *port.place
+                                                      )
+                                            )
                   );
               }
             }
@@ -836,10 +904,10 @@ namespace xml
               if (petri_net::edge::is_PT (connect.direction()))
               {
                 we_net.add_connection
-                  ( connection_t ( connect.direction()
-                                 , tid_in
-                                 , get_pid (pids, connect.place())
-                                 )
+                  ( petri_net::connection_t ( connect.direction()
+                                            , tid_in
+                                            , get_pid (pids, connect.place())
+                                            )
                   );
               }
             }
@@ -858,10 +926,11 @@ namespace xml
 
             we::type::transition_t trans_out
               ( prefix + "OUT"
-              , we_expr_type ()
-              , we_cond_type (cond_out, parsed_condition_out)
+              , we::type::expression_t()
+              , we::type::transition_t::preparsed_cond_type
+                (cond_out, parsed_condition_out)
               , true
-              , fun.properties()
+              , properties
               );
 
             BOOST_FOREACH (const port_type& port, fun.ports().values())
@@ -916,7 +985,7 @@ namespace xml
                 const std::string
                   key ("pnetc.warning.inline-many-output-ports");
                 const boost::optional<const ::we::type::property::value_type&>
-                  warning_switch (fun.properties().get_maybe_val (key));
+                  warning_switch (properties.get_maybe_val (key));
 
                 if (!warning_switch || *warning_switch != "off")
                   {
@@ -928,20 +997,20 @@ namespace xml
                   }
               }
 
-            const tid_t tid_out (we_net.add_transition (trans_out));
-
+            const petri_net::transition_id_type tid_out
+              (we_net.add_transition (trans_out));
 
             BOOST_FOREACH (const port_type& port, fun.ports().values())
             {
               if (port.direction() == we::type::PORT_OUT && port.place)
               {
                 we_net.add_connection
-                  ( connection_t ( petri_net::edge::PT
-                                 , tid_out
-                                 , get_pid ( pid_of_place
-                                                , prefix + *port.place
-                                           )
-                                 )
+                  ( petri_net::connection_t ( petri_net::edge::PT
+                                            , tid_out
+                                            , get_pid ( pid_of_place
+                                                      , prefix + *port.place
+                                                      )
+                                            )
                   );
               }
             }
@@ -953,10 +1022,10 @@ namespace xml
               if (!petri_net::edge::is_PT (connect.direction()))
               {
                 we_net.add_connection
-                  ( connection_t ( connect.direction()
-                                 , tid_out
-                                 , get_pid (pids, connect.place())
-                                 )
+                  ( petri_net::connection_t ( connect.direction()
+                                            , tid_out
+                                            , get_pid (pids, connect.place())
+                                            )
                   );
               }
             }
@@ -999,7 +1068,15 @@ namespace xml
                 we_net.modify_place (pid->second, we_place);
               }
 
-            we::type::transition_t we_trans (fun.synthesize (state));
+            we::type::transition_t we_trans
+              ( fun.synthesize ( trans.name()
+                               , state
+                               , trans.internal
+                               , trans.conditions()
+                               , trans.properties()
+                               , trans.requirements
+                               )
+              );
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()
@@ -1023,7 +1100,8 @@ namespace xml
               }
             }
 
-            const tid_t tid (we_net.add_transition (we_trans));
+            const petri_net::transition_id_type tid
+              (we_net.add_transition (we_trans));
 
             if (trans.priority)
               {
@@ -1035,10 +1113,10 @@ namespace xml
                           )
             {
               we_net.add_connection
-                ( connection_t ( connect.direction()
-                               , tid
-                               , get_pid (pids, connect.place())
-                               )
+                ( petri_net::connection_t ( connect.direction()
+                                          , tid
+                                          , get_pid (pids, connect.place())
+                                          )
                 );
             }
           } // not unfold
@@ -1091,15 +1169,12 @@ namespace xml
           dumps (s, t.place_map().values());
           dumps (s, t.connections().values());
 
-          for ( conditions_type::const_iterator cond (t.cond.begin())
-              ; cond != t.cond.end()
-              ; ++cond
-              )
-            {
-              s.open ("condition");
-              s.content (*cond);
-              s.close();
-            }
+          BOOST_FOREACH (const std::string& cond, t.conditions())
+          {
+            s.open ("condition");
+            s.content (cond);
+            s.close();
+          }
 
           s.close ();
         }
