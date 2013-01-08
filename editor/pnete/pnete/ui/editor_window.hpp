@@ -66,7 +66,6 @@ namespace fhg
         QMenu* _windows_menu;
 
         void setup_menu_and_toolbar();
-        void setup_zoom_actions (QMenuBar* menu_bar);
         void setup_edit_actions (QMenuBar* menu_bar);
         void setup_file_actions (QMenuBar* menu_bar);
         void setup_window_actions (QMenuBar* menu_bar);

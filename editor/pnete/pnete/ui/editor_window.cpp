@@ -88,7 +88,6 @@ namespace fhg
         //! \todo icons for toolbar.
         setup_file_actions (menu_bar);
         setup_edit_actions (menu_bar);
-        setup_zoom_actions (menu_bar);
         setup_window_actions (menu_bar);
       }
 
@@ -164,126 +163,6 @@ namespace fhg
         redo_action->setShortcuts (QKeySequence::Redo);
         edit_menu->addAction (undo_action);
         edit_menu->addAction (redo_action);
-        edit_menu->addSeparator();
-
-        QAction* auto_layout_action (new QAction (tr ("auto_layout"), this));
-        QAction* add_transition_action (new QAction (tr ("add_transition"), this));
-        QAction* add_place_action (new QAction (tr ("add_place"), this));
-        QAction* add_struct_action (new QAction (tr ("add_struct"), this));
-
-        _view_manager->connect ( auto_layout_action
-                               , SIGNAL (triggered())
-                               , SLOT (current_scene_auto_layout())
-                               );
-        _view_manager->connect ( add_transition_action
-                               , SIGNAL (triggered())
-                               , SLOT (current_scene_add_transition())
-                               );
-        _view_manager->connect ( add_place_action
-                               , SIGNAL (triggered())
-                               , SLOT (current_scene_add_place())
-                               );
-        _view_manager->connect ( add_struct_action
-                               , SIGNAL (triggered())
-                               , SLOT (current_scene_add_struct())
-                               );
-
-        edit_menu->addAction (auto_layout_action);
-        edit_menu->addSeparator();
-        edit_menu->addAction (add_transition_action);
-        edit_menu->addAction (add_place_action);
-        edit_menu->addSeparator();
-        edit_menu->addAction (add_struct_action);
-      }
-
-      void editor_window::setup_zoom_actions (QMenuBar* menu_bar)
-      {
-        QMenu* zoom_menu (new QMenu (tr ("zoom_menu"), menu_bar));
-        menu_bar->addAction (zoom_menu->menuAction());
-
-        QToolBar* zoom_tool_bar (new QToolBar (tr ("zoom_tool_bar"), this));
-        addToolBar (Qt::TopToolBarArea, zoom_tool_bar);
-        zoom_tool_bar->setAllowedAreas ( Qt::TopToolBarArea
-                                       | Qt::BottomToolBarArea
-                                       );
-        zoom_tool_bar->setFloatable (false);
-
-        QAction* zoom_in_action (new QAction (tr ("zoom_in"), this));
-        QAction* zoom_out_action (new QAction (tr ("zoom_out"), this));
-        QAction* zoom_default_action (new QAction (tr ("zoom_default"), this));
-
-        zoom_in_action->setShortcuts (QKeySequence::ZoomIn);
-        zoom_out_action->setShortcuts (QKeySequence::ZoomOut);
-        zoom_default_action->setShortcut (QKeySequence ("Ctrl+*"));
-
-        _view_manager->connect ( zoom_in_action
-                               , SIGNAL (triggered())
-                               , SLOT (current_view_zoom_in())
-                               );
-        _view_manager->connect ( zoom_out_action
-                               , SIGNAL (triggered())
-                               , SLOT (current_view_zoom_out())
-                               );
-        _view_manager->connect ( zoom_default_action
-                               , SIGNAL (triggered())
-                               , SLOT (current_view_reset_zoom())
-                               );
-
-        zoom_menu->addAction (zoom_in_action);
-        zoom_menu->addAction (zoom_out_action);
-        zoom_menu->addAction (zoom_default_action);
-
-        zoom_tool_bar->addAction (zoom_in_action);
-        zoom_tool_bar->addAction (zoom_out_action);
-        zoom_tool_bar->addAction (zoom_default_action);
-
-        QSlider* zoom_slider (new QSlider (Qt::Horizontal, this));
-        zoom_slider->setMaximumWidth (size::zoom::slider::max_length());
-        zoom_slider->setRange ( size::zoom::min_value()
-                              , size::zoom::max_value()
-                              );
-        zoom_tool_bar->addWidget (zoom_slider);
-
-        zoom_slider->setValue (size::zoom::default_value());
-
-        QSpinBox* zoom_spin_box (new QSpinBox (this));
-        zoom_spin_box->setSuffix ("%");
-        zoom_spin_box->setRange ( size::zoom::min_value()
-                                , size::zoom::max_value()
-                                );
-        zoom_tool_bar->addWidget (zoom_spin_box);
-
-        zoom_spin_box->setValue (size::zoom::default_value());
-
-        zoom_slider->connect ( zoom_spin_box
-                              , SIGNAL (valueChanged (int))
-                              , SLOT (setValue (int))
-                              );
-        _view_manager->connect ( zoom_spin_box
-                               , SIGNAL (valueChanged (int))
-                               , SLOT (current_view_zoom (int))
-                               );
-
-        _view_manager->connect ( zoom_slider
-                               , SIGNAL (valueChanged (int))
-                               , SLOT (current_view_zoom (int))
-                               );
-        zoom_spin_box->connect ( zoom_slider
-                               , SIGNAL (valueChanged (int))
-                               , SLOT (setValue (int))
-                               );
-
-        zoom_spin_box->connect ( _view_manager
-                               , SIGNAL (zoomed (int))
-                               , SLOT (setValue (int))
-                               );
-        zoom_slider->connect ( _view_manager
-                              , SIGNAL (zoomed (int))
-                              , SLOT (setValue (int))
-                              );
-
-        //! \todo This be segfault without view.
-        //_view_manager->current_view_zoom (size::zoom::default_value());
       }
 
       void editor_window::closeEvent (QCloseEvent* event)

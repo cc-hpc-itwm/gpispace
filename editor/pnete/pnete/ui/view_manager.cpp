@@ -222,46 +222,6 @@ namespace fhg
         _action_save_current_file->setEnabled (true);
       }
 
-      // net_view, ACTIONS!
-
-      // -- current scene --
-
-      void view_manager::current_scene_add_transition()
-      {
-        //_current_scene->slot_add_transition();
-      }
-      void view_manager::current_scene_add_place()
-      {
-        //_current_scene->slot_add_place();
-      }
-      void view_manager::current_scene_add_struct()
-      {
-        //_current_scene->slot_add_struct();
-      }
-      void view_manager::current_scene_auto_layout()
-      {
-        //_current_scene->auto_layout();
-      }
-
-      // -- current view --
-
-      void view_manager::current_view_zoom (int level)
-      {
-        //_current_view->zoom (level);
-      }
-      void view_manager::current_view_zoom_in()
-      {
-        //_current_view->zoom_in();
-      }
-      void view_manager::current_view_zoom_out()
-      {
-        //_current_view->zoom_out();
-      }
-      void view_manager::current_view_reset_zoom()
-      {
-        //_current_view->reset_zoom();
-      }
-
       QAction* view_manager::action_save_current_file()
       {
         return _action_save_current_file;

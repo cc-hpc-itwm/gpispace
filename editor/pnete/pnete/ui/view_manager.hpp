@@ -34,19 +34,6 @@ namespace fhg
 
       public slots:
         void focus_changed (QWidget*, QWidget*);
-
-        // net_view
-        //! \todo QActions!, disable for non-nets
-        void current_view_zoom (int);
-        void current_view_zoom_in();
-        void current_view_zoom_out();
-        void current_view_reset_zoom();
-
-        void current_scene_add_transition();
-        void current_scene_add_place();
-        void current_scene_add_struct();
-        void current_scene_auto_layout();
-
         // document, general
         void duplicate_active_widget();
         void create_widget (data::proxy::type &);
@@ -55,10 +42,6 @@ namespace fhg
 
         QUndoView* create_undo_view (QWidget* parent = NULL) const;
         QUndoGroup* undo_group() const;
-
-      signals:
-        // net_view
-        void zoomed (int);
 
       private:
         editor_window* _editor_window;
