@@ -129,7 +129,7 @@ namespace fhg
 
           void init_menu_context();
 
-          QAction* connect (QAction*, const char* slot);
+          QAction* connect_action (QAction*, const char* slot);
 
           pending_connection* _pending_connection;
           QPointF _mouse_position;

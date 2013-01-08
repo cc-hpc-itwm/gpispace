@@ -44,9 +44,9 @@ namespace fhg
     {
       namespace graph
       {
-        QAction* scene_type::connect (QAction* action, const char* slot)
+        QAction* scene_type::connect_action (QAction* action, const char* slot)
         {
-          QObject::connect (action, SIGNAL (triggered()), slot);
+          connect (action, SIGNAL (triggered()), slot);
           return action;
         }
 
@@ -62,11 +62,14 @@ namespace fhg
           , _net (net)
           , _function (function)
           , _internal (internal)
-          , _auto_layout_action ( connect ( new QAction (tr ("auto_layout"), this)
-                                          , SLOT (auto_layout())
-                                          )
-                                )
-          , _actions (QList<QAction*>() << _auto_layout_action)
+          , _auto_layout_action
+            ( connect_action ( new QAction (tr ("auto_layout"), this)
+                             , SLOT (auto_layout())
+                             )
+            )
+          , _actions ( QList<QAction*>()
+                     << _auto_layout_action
+                     )
         {
           init_menu_context();
 
