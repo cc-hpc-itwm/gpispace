@@ -99,6 +99,7 @@ struct output_port_and_token
 
 int
 main (int argc, char ** argv)
+try
 {
   std::string input ("-");
   std::string output ("-");
@@ -158,11 +159,6 @@ main (int argc, char ** argv)
   }
 
 
-  if (input == "-")
-    {
-      input = "/dev/stdin";
-    }
-
   if (output == "-")
     {
       output = "/dev/stdout";
@@ -174,28 +170,13 @@ main (int argc, char ** argv)
     return EX_USAGE;
   }
 
-  we::mgmt::type::activity_t act;
+  we::mgmt::type::activity_t act
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (input)
+    );
 
-  {
-    std::ifstream stream (input.c_str());
-
-    if (!stream)
-      {
-        std::cerr << "could not open file " + input + " for reading" << std::endl;
-        return EX_NOINPUT;
-      }
-
-    try
-    {
-      we::util::codec::decode (stream, act);
-      act.collect_output();
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "could not parse input: " << ex.what() << std::endl;
-      return EX_DATAERR;
-    }
-  }
+  act.collect_output();
 
   {
     std::ofstream stream (output.c_str());
@@ -283,4 +264,9 @@ main (int argc, char ** argv)
   }
 
   return EX_OK;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

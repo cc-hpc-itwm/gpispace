@@ -16,6 +16,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 namespace we
 {
@@ -40,6 +41,41 @@ namespace we
         , _input(other._input)
         , _output (other._output)
       {}
+
+      namespace
+      {
+        void decode (std::istream& s, we::mgmt::type::activity_t& t)
+        {
+          boost::archive::text_iarchive ar (s);
+          try
+            {
+              ar >> BOOST_SERIALIZATION_NVP (t);
+            }
+          catch (boost::archive::archive_exception const &ex)
+            {
+              throw std::runtime_error
+                (std::string ("deserialization error: ") + ex.what ());
+            }
+        }
+      }
+
+      activity_t::activity_t (const boost::filesystem::path& path)
+      {
+        std::ifstream stream (path.string().c_str());
+
+        if (!stream)
+          {
+            throw std::runtime_error
+              ("failed to open " + path.string() + "for reading");
+          }
+
+        decode (stream, *this);
+      }
+
+      activity_t::activity_t (std::istream& stream)
+      {
+        decode (stream, *this);
+      }
 
       activity_t& activity_t::operator= (const activity_t& other)
       {
@@ -121,15 +157,11 @@ namespace we
         class visitor_activity_injector : public boost::static_visitor<>
         {
         private:
-          activity_t& _parent;
           const activity_t& _child;
 
         public:
-          visitor_activity_injector ( activity_t& parent
-                                    , const activity_t& child
-                                    )
-            : _parent (parent)
-            , _child (child)
+          visitor_activity_injector (const activity_t& child)
+            : _child (child)
           {}
 
           void operator() (petri_net::net& parent) const
@@ -170,7 +202,7 @@ namespace we
       {
         unique_lock_t lock (_mutex);
 
-        boost::apply_visitor ( visitor_activity_injector (*this, subact)
+        boost::apply_visitor ( visitor_activity_injector (subact)
                              , _transition.data()
                              );
       }

@@ -113,6 +113,7 @@ void observe_executing (const layer_t *l, layer_id_type const & id)
 }
 
 int main (int argc, char **argv)
+try
 {
   fhg::log::Configurator::configure();
 
@@ -198,23 +199,11 @@ int main (int argc, char **argv)
     mgmt_layer.sig_executing.connect ( &observe_executing );
   }
 
-  we::mgmt::type::activity_t act;
-
-  if (path_to_act != "-")
-  {
-    std::ifstream ifs (path_to_act.c_str());
-    if (! ifs)
-    {
-      std::cerr << "Could not open: " << path_to_act << std::endl;
-      return 1;
-    }
-    act = we::util::codec::decode (ifs);
-  }
-  else
-  {
-    std::cerr << "Reading from stdin..." << std::endl;
-    act = we::util::codec::decode (std::cin);
-  }
+  we::mgmt::type::activity_t act
+    ( path_to_act == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
+    );
 
   for ( std::vector<std::string>::const_iterator inp (input_spec.begin())
       ; inp != input_spec.end()
@@ -271,4 +260,9 @@ int main (int argc, char **argv)
   std::cerr << "Everything done." << std::endl;
 
   return ((jobs.size() == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

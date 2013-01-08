@@ -911,81 +911,76 @@ void do_optimize(we::type::transition_t &transition, const char *script) {
     optimizer(script);
 }
 
-int main(int argc, char **argv) {
-    namespace po = boost::program_options;
+int main(int argc, char **argv)
+try
+{
+  namespace po = boost::program_options;
 
-    std::string input("-");
-    std::string output("-");
-    std::string script("main.lua");
+  std::string input("-");
+  std::string output("-");
+  std::string script("main.lua");
 
-    po::options_description options("options");
+  po::options_description options("options");
 
-    options.add_options()
-        ("help,h", "this message")
-        ("input,i"
-        , po::value<std::string>(&input)->default_value(input)
-        , "input file name, - for stdin"
-        )
-        ("output,o"
-        , po::value<std::string>(&output)->default_value(output)
-        , "output file name, - for stdout"
-        )
-        ("script,s"
-        , po::value<std::string>(&script)->default_value(script)
-        , "script file name"
-        )
-        ;
+  options.add_options()
+    ("help,h", "this message")
+    ("input,i"
+    , po::value<std::string>(&input)->default_value(input)
+    , "input file name, - for stdin"
+    )
+    ("output,o"
+    , po::value<std::string>(&output)->default_value(output)
+    , "output file name, - for stdout"
+    )
+    ("script,s"
+    , po::value<std::string>(&script)->default_value(script)
+    , "script file name"
+    )
+    ;
 
-    po::positional_options_description positional;
-    positional.add("input", -1);
+  po::positional_options_description positional;
+  positional.add("input", -1);
 
-    po::variables_map vm;
+  po::variables_map vm;
 
-    try {
-        po::store(po::command_line_parser(argc, argv).options(options).positional(positional).run(), vm);
-        po::notify(vm);
-    } catch (const std::exception &e) {
-        std::cerr << "invalid argument: " << e.what() << std::endl;
-        return EXIT_FAILURE;
+  try {
+    po::store(po::command_line_parser(argc, argv).options(options).positional(positional).run(), vm);
+    po::notify(vm);
+  } catch (const std::exception &e) {
+    std::cerr << "invalid argument: " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if (vm.count("help")) {
+    std::cout << options << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  we::mgmt::type::activity_t activity
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    );
+
+  do_optimize(activity.transition(), script.c_str());
+
+  if (output == "-") {
+    std::cout << activity.to_string();
+  } else {
+    std::ofstream out(output.c_str());
+    if (!out) {
+      std::cerr << "failed to open " << input << " for writing" << std::endl;
+      return EXIT_FAILURE;
     }
+    out << activity.to_string();
+  }
 
-    if (vm.count("help")) {
-        std::cout << options << std::endl;
-        return EXIT_SUCCESS;
-    }
-
-    we::mgmt::type::activity_t activity;
-
-    if (input == "-") {
-        we::util::codec::decode(std::cin, activity);
-    } else {
-        std::ifstream in(input.c_str());
-        if (!in) {
-            std::cerr << "failed to open " << input << "for reading" << std::endl;
-            return EXIT_FAILURE;
-        }
-        we::util::codec::decode(in, activity);
-    }
-
-    try {
-        do_optimize(activity.transition(), script.c_str());
-    } catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    if (output == "-") {
-      std::cout << activity.to_string();
-    } else {
-        std::ofstream out(output.c_str());
-        if (!out) {
-            std::cerr << "failed to open " << input << " for writing" << std::endl;
-            return EXIT_FAILURE;
-        }
-        out << activity.to_string();
-    }
-
-    return 0;
+  return 0;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }
 
 /* vim:set et sts=4 sw=4: */

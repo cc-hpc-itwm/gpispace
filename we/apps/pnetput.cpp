@@ -34,6 +34,7 @@ namespace po = boost::program_options;
 
 int
 main (int argc, char ** argv)
+try
 {
   std::string input ("-");
   std::string output ("-");
@@ -84,35 +85,16 @@ main (int argc, char ** argv)
     return EXIT_SUCCESS;
   }
 
-  if (input == "-")
-    {
-      input = "/dev/stdin";
-    }
-
   if (output == "-")
     {
       output = "/dev/stdout";
     }
 
-  we::mgmt::type::activity_t act;
-
-  try
-  {
-    std::ifstream  stream (input.c_str());
-
-    if (!stream)
-      {
-        throw std::runtime_error
-          ("could not open file " + input + " for reading");
-      }
-
-    we::util::codec::decode (stream, act);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "failed: " << ex.what() << std::endl;
-    return 1;
-  }
+  we::mgmt::type::activity_t act
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (input)
+    );
 
   typedef boost::unordered_map<std::string,value::type> port_values_type;
 
@@ -180,4 +162,9 @@ main (int argc, char ** argv)
   }
 
   return EXIT_SUCCESS;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

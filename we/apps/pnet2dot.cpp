@@ -86,6 +86,7 @@ namespace po = boost::program_options;
 
 int
 main (int argc, char ** argv)
+try
 {
   std::string input;
   std::string output;
@@ -191,11 +192,6 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  if (input == "-")
-    {
-      input = "/dev/stdin";
-    }
-
   if (output == "-")
     {
       output = "/dev/stdout";
@@ -224,29 +220,25 @@ main (int argc, char ** argv)
                                            )
                              );
 
-  we::mgmt::type::activity_t act;
+  we::mgmt::type::activity_t act
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (input)
+    );
 
-  {
-    std::ifstream stream (input.c_str());
+  std::ofstream ostream (output.c_str());
 
-    if (!stream)
-      {
-        throw std::runtime_error ("failed to open " + input + " for reading");
-      }
+  if (!ostream)
+    {
+      throw std::runtime_error ("failed to open " + output + " for writing");
+    }
 
-    we::util::codec::decode (stream, act);
-  }
-
-  {
-    std::ofstream stream (output.c_str());
-
-    if (!stream)
-      {
-        throw std::runtime_error ("failed to open " + output + " for writing");
-      }
-
-    detail::to_dot (stream, act, options);
-  }
+  detail::to_dot (ostream, act, options);
 
   return EXIT_SUCCESS;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

@@ -14,6 +14,8 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
 
+#include <boost/filesystem.hpp>
+
 #include <vector>
 
 #include <iosfwd>
@@ -39,9 +41,11 @@ namespace we
         typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
 
       public:
-        activity_t ();
-        activity_t (const we::type::transition_t&);
+        explicit activity_t ();
+        explicit activity_t (const we::type::transition_t&);
         activity_t (const activity_t&);
+        explicit activity_t (const boost::filesystem::path&);
+        explicit activity_t (std::istream&);
 
         activity_t& operator= (const activity_t&);
 
