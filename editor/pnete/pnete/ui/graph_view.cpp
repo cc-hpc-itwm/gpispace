@@ -6,6 +6,10 @@
 #include <pnete/ui/size.hpp>
 
 #include <util/phi.hpp>
+#include <util/qt/boost_connect.hpp>
+
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
 
 #include <QWheelEvent>
 
@@ -25,6 +29,53 @@ namespace fhg
                        | QPainter::SmoothPixmapTransform
                        );
         setAcceptDrops (true);
+
+        setFocusPolicy (Qt::WheelFocus);
+
+        QAction* zoom_in (new QAction (tr ("zoom_in"), this));
+        fhg::util::qt::boost_connect<void()>
+          ( zoom_in
+          , SIGNAL (triggered())
+          , this
+          , boost::lambda::bind ( &graph_view::zoom
+                                , this
+                                , boost::lambda::var (_currentScale)
+                                + size::zoom::per_tick()
+                                )
+          );
+        zoom_in->setShortcuts (QKeySequence::ZoomIn);
+        addAction (zoom_in);
+
+        QAction* zoom_out (new QAction (tr ("zoom_out"), this));
+        fhg::util::qt::boost_connect<void()>
+          ( zoom_out
+          , SIGNAL (triggered())
+          , this
+          , boost::lambda::bind ( &graph_view::zoom
+                                , this
+                                , boost::lambda::var (_currentScale)
+                                - size::zoom::per_tick()
+                                )
+          );
+        zoom_out->setShortcuts (QKeySequence::ZoomOut);
+        addAction (zoom_out);
+
+        QAction* zoom_default (new QAction (tr ("zoom_default"), this));
+        fhg::util::qt::boost_connect<void()>
+          ( zoom_default
+          , SIGNAL (triggered())
+          , this
+          , boost::lambda::bind ( &graph_view::zoom
+                                , this
+                                , size::zoom::default_value()
+                                )
+          );
+        zoom_default->setShortcut (QKeySequence ("Ctrl+*"));
+        addAction (zoom_default);
+
+        QAction* sep (new QAction (this));
+        sep->setSeparator (true);
+        addAction (sep);
 
         addActions (scene->actions());
       }
@@ -47,15 +98,9 @@ namespace fhg
           && event->orientation() == Qt::Vertical
            )
         {
-          setFocus();
-          if (event->delta() > 0)
-          {
-            zoom_in();
-          }
-          else
-          {
-            zoom_out();
-          }
+          zoom ( _currentScale
+               + size::zoom::per_tick() * (event->delta() > 0 ? 1 : -1)
+               );
         }
         else
         {
@@ -74,24 +119,6 @@ namespace fhg
         scale (factor, factor);
         _currentScale = target;
 
-        emit_current_zoom_level();
-      }
-
-      void graph_view::zoom_in()
-      {
-        zoom (_currentScale + size::zoom::per_tick());
-      }
-      void graph_view::zoom_out()
-      {
-        zoom (_currentScale - size::zoom::per_tick());
-      }
-      void graph_view::reset_zoom()
-      {
-        zoom (size::zoom::default_value());
-      }
-
-      void graph_view::emit_current_zoom_level()
-      {
         emit zoomed (_currentScale);
       }
     }

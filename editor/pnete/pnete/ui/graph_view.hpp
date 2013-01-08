@@ -28,15 +28,10 @@ namespace fhg
         public:
         graph_view (graph::scene_type* scene, QWidget* parent = NULL);
 
-        void emit_current_zoom_level();
-
         graph::scene_type* scene() const;
 
       public slots:
         void zoom (int to);
-        void zoom_in();
-        void zoom_out();
-        void reset_zoom();
 
       signals:
         void zoomed (int to);
