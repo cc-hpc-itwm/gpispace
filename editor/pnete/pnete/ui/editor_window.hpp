@@ -80,7 +80,6 @@ namespace fhg
         void setup_window_actions (QMenuBar* menu_bar);
 
         void create_windows (data::internal_type* data);
-        void add_on_top_of_current_widget (document_view* w);
 
         QMenu* update_window_menu (QMenu*);
 

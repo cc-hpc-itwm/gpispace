@@ -223,7 +223,18 @@ namespace fhg
       {
         _undo_group->addStack (&data::proxy::root (proxy)->change_manager());
 
-        add_on_top_of_current_widget (document_view_factory (proxy));
+        document_view* doc_view (document_view_factory (proxy));
+        if (!_accessed_widgets.empty())
+        {
+          tabifyDockWidget (_accessed_widgets.top(), doc_view);
+        }
+        else
+        {
+          addDockWidget (Qt::LeftDockWidgetArea, doc_view, Qt::Horizontal);
+        }
+
+        doc_view->show();
+        doc_view->raise();
 
         _action_save_current_file->setEnabled (true);
       }
@@ -232,21 +243,6 @@ namespace fhg
       {
         create_widget (data->root_proxy());
         _structure_view->append (data);
-      }
-
-      void editor_window::add_on_top_of_current_widget (document_view* w)
-      {
-        if (!_accessed_widgets.empty())
-        {
-          tabifyDockWidget (_accessed_widgets.top(), w);
-        }
-        else
-        {
-          addDockWidget (Qt::LeftDockWidgetArea, w, Qt::Horizontal);
-        }
-
-        w->show();
-        w->raise();
       }
 
       void editor_window::duplicate_active_widget()
