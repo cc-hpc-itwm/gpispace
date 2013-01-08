@@ -56,7 +56,7 @@ namespace fhg
             (tr ("undo_window"), new QUndoView (_undo_group, this))
           )
         , _windows_menu (NULL)
-        , _action_save_current_file (new QAction (tr ("save"), this))
+        , _action_save_current_file (NULL)
       {
         setWindowTitle (tr ("editor_window_title"));
 
@@ -408,27 +408,23 @@ namespace fhg
         file_menu->addMenu (menu_new);
 
         QAction* open_action (new QAction (tr ("open"), this));
-
         QAction* close_action (new QAction (tr ("close_current_window"), this));
         QAction* quit_action (new QAction (tr ("quit_application"), this));
 
         open_action->setShortcut (QKeySequence::Open);
-        _action_save_current_file->setShortcuts (QKeySequence::Save);
         close_action->setShortcut (QKeySequence::Close);
         quit_action->setShortcut (QKeySequence::Quit);
 
-        _action_save_current_file->setEnabled (false);
-
         connect (open_action, SIGNAL (triggered()), SLOT (open()));
-        connect ( _action_save_current_file
-                , SIGNAL (triggered())
-                , SLOT (save_file())
-                );
         connect (close_action, SIGNAL (triggered()), SLOT (close_document()));
         connect (quit_action, SIGNAL (triggered()), SLOT (quit()));
 
         file_menu->addAction (open_action);
-        file_menu->addAction (_action_save_current_file);
+
+        _action_save_current_file = file_menu->addAction
+          (tr ("save"), this, SLOT (save_file()), QKeySequence::Save);
+        _action_save_current_file->setEnabled (false);
+
         file_menu->addAction (close_action);
         file_menu->addAction (quit_action);
 
