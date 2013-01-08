@@ -39,18 +39,8 @@ namespace we
         decode (iss, t);
       }
 
-      inline we::mgmt::type::activity_t decode (std::istream& s)
-      {
-        we::mgmt::type::activity_t t;
-        decode (s, t);
-        return t;
-      }
-      inline we::mgmt::type::activity_t decode (const std::string& s)
-      {
-        std::istringstream iss (s);
-
-        return decode (iss);
-      }
+      we::mgmt::type::activity_t decode (std::istream&);
+      we::mgmt::type::activity_t decode (const std::string&);
     };
   }
 }

@@ -7,6 +7,10 @@ set (hdrs
   token.hpp
   )
 
+add_we_sources (
+  codec.cpp
+)
+
 install(FILES ${hdrs}
   DESTINATION include/we/util
   COMPONENT headers)
