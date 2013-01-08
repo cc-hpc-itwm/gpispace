@@ -56,6 +56,7 @@ namespace fhg
             (tr ("undo_window"), new QUndoView (_undo_group, this))
           )
         , _windows_menu (NULL)
+        , _document_specific_action_menu (NULL)
         , _action_save_current_file (NULL)
       {
         setWindowTitle (tr ("editor_window_title"));
@@ -236,6 +237,11 @@ namespace fhg
         doc_view->show();
         doc_view->raise();
 
+        foreach (QAction* action, doc_view->actions())
+        {
+          _document_specific_action_menu->addAction (action);
+        }
+
         _action_save_current_file->setEnabled (true);
       }
 
@@ -259,7 +265,12 @@ namespace fhg
         {
           //! \todo Warn if unsaved changes.
           document_view* current (_accessed_widgets.top());
-          _accessed_widgets.pop ();
+          foreach (QAction* action, current->actions())
+          {
+            action->setVisible (false);
+          }
+          _document_specific_action_menu->menuAction()->setVisible (false);
+          _accessed_widgets.pop();
           removeDockWidget (current);
           delete current;
 
@@ -304,6 +315,8 @@ namespace fhg
         {
           action->setVisible (true);
         }
+        _document_specific_action_menu->menuAction()->setVisible
+          (!to->actions().isEmpty());
       }
 
       QMenu* editor_window::createPopupMenu()
@@ -372,6 +385,10 @@ namespace fhg
         setup_file_actions (menu_bar);
         setup_edit_actions (menu_bar);
         setup_window_actions (menu_bar);
+
+        _document_specific_action_menu =
+          menu_bar->addMenu ("document_specific_actions");
+        _document_specific_action_menu->menuAction()->setVisible (false);
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)

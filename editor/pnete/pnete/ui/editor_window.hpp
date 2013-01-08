@@ -70,6 +70,7 @@ namespace fhg
         dock_widget* _undo_view_dock;
 
         QMenu* _windows_menu;
+        QMenu* _document_specific_action_menu;
         QAction* _action_save_current_file;
 
         QStack<document_view*> _accessed_widgets;
