@@ -4,13 +4,10 @@ set (hdrs
   eval.hpp
   )
 
-set (srcs
+add_we_sources (
   eval.cpp
   context.cpp
 )
-
-add_library (we_expr_eval ${srcs})
-add_we_library (we_expr_eval)
 
 install(FILES ${hdrs}
   DESTINATION include/we/expr/eval

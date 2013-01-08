@@ -9,7 +9,7 @@ set (hdrs
   util.hpp
   )
 
-set (sources
+add_we_sources (
   constant_propagation.cpp
   copy_propagation.cpp
   dead_code_elimination.cpp
@@ -17,9 +17,6 @@ set (sources
   simplify.cpp
   util.cpp
   )
-
-add_library (we_expr_parse_simplify ${sources})
-add_we_library (we_expr_parse_simplify)
 
 install(FILES ${hdrs}
   DESTINATION include/we/expr/parse/simplify

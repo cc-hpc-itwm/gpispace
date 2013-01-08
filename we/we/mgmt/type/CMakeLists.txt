@@ -4,13 +4,10 @@ set (hdrs
   flags.hpp
   )
 
-set (srcs
+add_we_sources (
   flags.cpp
   activity.cpp
 )
-
-add_library (we_mgmt_type ${srcs})
-add_we_library (we_mgmt_type)
 
 install(FILES ${hdrs}
   DESTINATION include/we/mgmt/type

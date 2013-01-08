@@ -5,14 +5,14 @@ if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
-set (WE_LIBRARIES CACHE INTERNAL "we_libraries" FORCE)
-
-function(add_we_library libname)
-  set (WE_LIBRARIES ${WE_LIBRARIES}
-    ${libname}
-    CACHE INTERNAL "we_libraries" FORCE
-  )
-endfunction(add_we_library)
+function (add_we_sources)
+  foreach (source ${ARGN})
+    set (WE_SOURCES ${WE_SOURCES}
+      ${CMAKE_CURRENT_SOURCE_DIR}/${source}
+      CACHE INTERNAL "we_sources" FORCE
+    )
+  endforeach()
+endfunction()
 
 project(libwe)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
@@ -84,6 +84,7 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 # Reflect the package structure
 add_subdirectory(we)
+message(STATUS "WE_LIB = ${WE_LIBRARIES}")
 add_subdirectory(apps)
 
 # CTest
