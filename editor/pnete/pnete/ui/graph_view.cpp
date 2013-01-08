@@ -25,6 +25,8 @@ namespace fhg
                        | QPainter::SmoothPixmapTransform
                        );
         setAcceptDrops (true);
+
+        addActions (scene->actions());
       }
 
       QSize graph_view::sizeHint() const
