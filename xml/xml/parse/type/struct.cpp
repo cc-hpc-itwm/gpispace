@@ -232,11 +232,8 @@ namespace xml
 
       // ******************************************************************* //
 
-      specialize::specialize ( const type::type_map_type & _map_in
-                             , const state::type & _state
-                             )
+      specialize::specialize (const type::type_map_type & _map_in)
         : map_in (_map_in)
-        , state (_state)
       {}
 
       signature::desc_t specialize::operator () (literal::type_name_t & t) const

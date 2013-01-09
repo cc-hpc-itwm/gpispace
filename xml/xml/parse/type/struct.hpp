@@ -121,12 +121,9 @@ namespace xml
       {
       private:
         const type::type_map_type & map_in;
-        const state::type & state;
 
       public:
-        specialize ( const type::type_map_type & _map_in
-                   , const state::type & _state
-                   );
+        specialize (const type::type_map_type & _map_in);
 
         signature::desc_t operator () (literal::type_name_t & t) const;
         signature::desc_t operator () (signature::structured_t & map) const;
