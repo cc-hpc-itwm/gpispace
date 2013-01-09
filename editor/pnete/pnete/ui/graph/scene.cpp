@@ -494,7 +494,11 @@ namespace fhg
                 ( menu_new->addAction (tr ("new_place"))
                 , SIGNAL (triggered())
                 , this
-                , boost::bind (&data::handle::net::add_place, net(), this)
+                , boost::bind ( &data::handle::net::add_place
+                              , net()
+                              , this
+                              , event->scenePos()
+                              )
                 );
 
               fhg::util::qt::boost_connect<void()>
@@ -505,6 +509,7 @@ namespace fhg
                               , function()
                               , this
                               , we::type::PORT_IN
+                              , event->scenePos()
                               )
                 );
 
@@ -516,6 +521,7 @@ namespace fhg
                               , function()
                               , this
                               , we::type::PORT_OUT
+                              , event->scenePos()
                               )
                 );
 
@@ -527,6 +533,7 @@ namespace fhg
                               , function()
                               , this
                               , we::type::PORT_TUNNEL
+                              , event->scenePos()
                               )
                 );
 
@@ -996,11 +1003,6 @@ namespace fhg
             addItem (item);
 
             weaver::display::place (place.id(), item);
-
-            if (origin == this)
-            {
-              item->no_undo_setPos (_mouse_position);
-            }
           }
         }
 
@@ -1022,12 +1024,6 @@ namespace fhg
               , this
               , _internal
               );
-
-            if (origin == this)
-            {
-              item_with_handle<top_level_port_item> (port)->
-                no_undo_setPos (_mouse_position);
-            }
           }
         }
 

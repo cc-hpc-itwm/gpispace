@@ -33,9 +33,11 @@ namespace fhg
           change_manager().add_transition (origin, function, *this, position);
         }
 
-        void net::add_place (const QObject* sender) const
+        void net::add_place ( const QObject* sender
+                            , const boost::optional<QPointF>& position
+                            ) const
         {
-          change_manager().add_place (sender, *this);
+          change_manager().add_place (sender, *this, position);
         }
 
         void net::add_connection_with_implicit_place

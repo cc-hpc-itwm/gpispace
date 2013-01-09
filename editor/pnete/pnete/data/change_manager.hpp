@@ -124,7 +124,10 @@ namespace fhg
           (const QObject*, const data::handle::transition&, const QString&);
 
         // -- place --------------------------------------------------
-        void add_place (const QObject*, const data::handle::net&);
+        void add_place ( const QObject*
+                       , const data::handle::net&
+                       , const boost::optional<QPointF>&
+                       );
         void delete_place (const QObject*, const data::handle::place&);
 
         void set_name
@@ -157,6 +160,7 @@ namespace fhg
         void add_port ( const QObject*
                       , const data::handle::function&
                       , const we::type::PortDirection&
+                      , const boost::optional<QPointF>&
                       );
         void delete_port (const QObject*, const data::handle::port&);
 

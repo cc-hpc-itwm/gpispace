@@ -1331,6 +1331,7 @@ namespace fhg
       void change_manager_t::add_place
         ( const QObject* origin
         , const handle::net& net
+        , const boost::optional<QPointF>& position
         )
       {
         std::string name ("place");
@@ -1350,6 +1351,11 @@ namespace fhg
             , boost::none
             ).make_reference_id()
           );
+
+        if (position)
+        {
+          no_undo_move_item (this, handle::place (place, *this), *position);
+        }
 
         push (new action::add_place (*this, origin, net.id(), place));
       }
@@ -1527,6 +1533,7 @@ namespace fhg
         ( const QObject* origin
         , const handle::function& function
         , const we::type::PortDirection& direction
+        , const boost::optional<QPointF>& position
         )
       {
         std::string name ("port");
@@ -1565,6 +1572,11 @@ namespace fhg
             , direction
             ).make_reference_id()
           );
+
+        if (position)
+        {
+          no_undo_move_item (this, handle::port (port, *this), *position);
+        }
 
         push (new action::add_port (*this, origin, function.id(), port));
       }
