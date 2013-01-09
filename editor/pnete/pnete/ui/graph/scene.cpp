@@ -483,7 +483,11 @@ namespace fhg
                 ( menu_new->addAction (tr ("new_transition"))
                 , SIGNAL (triggered())
                 , this
-                , boost::bind (&data::handle::net::add_transition, net(), this)
+                , boost::bind ( &data::handle::net::add_transition
+                              , net()
+                              , this
+                              , event->scenePos()
+                              )
                 );
 
               fhg::util::qt::boost_connect<void()>
@@ -732,6 +736,7 @@ namespace fhg
                 ( this
                 , data->function().get().clone
                   (boost::none, net().id().id_mapper())
+                , event->scenePos()
                 );
 
               event->acceptProposedAction();
@@ -970,7 +975,6 @@ namespace fhg
 
             if (origin == this)
             {
-              item->no_undo_setPos (_mouse_position);
               item->repositionChildrenAndResize();
             }
           }

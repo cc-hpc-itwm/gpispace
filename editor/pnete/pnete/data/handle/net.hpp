@@ -13,6 +13,8 @@
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 
+#include <boost/optional/optional_fwd.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -31,9 +33,13 @@ namespace fhg
               , change_manager_t& change_manager
               );
 
-          void add_transition (const QObject* sender) const;
-          void add_transition
-            (const QObject*, const xml::parse::id::ref::function&) const;
+          void add_transition ( const QObject* sender
+                              , const boost::optional<QPointF>&
+                              ) const;
+          void add_transition ( const QObject*
+                              , const xml::parse::id::ref::function&
+                              , const boost::optional<QPointF>&
+                              ) const;
           void add_place (const QObject* sender) const;
 
           //! \todo Are these correct in net? They might fit more in

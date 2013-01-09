@@ -1163,6 +1163,7 @@ namespace fhg
         ( const QObject* origin
         , const ::xml::parse::id::ref::function& fun
         , const handle::net& net
+        , const boost::optional<QPointF>& position
         )
       {
         const ::xml::parse::id::ref::transition transition
@@ -1182,12 +1183,19 @@ namespace fhg
         }
         transition.get_ref().name (name);
 
+        if (position)
+        {
+          no_undo_move_item
+            (this, handle::transition (transition, *this), *position);
+        }
+
         push (new action::add_transition (*this, origin, net.id(), transition));
       }
 
       void change_manager_t::add_transition
         ( const QObject* origin
         , const handle::net& net
+        , const boost::optional<QPointF>& position
         )
       {
         const ::xml::parse::id::ref::transition transition
@@ -1215,6 +1223,12 @@ namespace fhg
           name = inc (name);
         }
         transition.get_ref().name (name);
+
+        if (position)
+        {
+          no_undo_move_item
+            (this, handle::transition (transition, *this), *position);
+        }
 
         push (new action::add_transition (*this, origin, net.id(), transition));
       }

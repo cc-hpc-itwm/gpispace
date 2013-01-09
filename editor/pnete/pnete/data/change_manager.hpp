@@ -89,10 +89,12 @@ namespace fhg
         // -- transition ---------------------------------------------
         void add_transition ( const QObject*
                             , const data::handle::net&
+                            , const boost::optional<QPointF>&
                             );
         void add_transition ( const QObject*
                             , const ::xml::parse::id::ref::function& fun
                             , const data::handle::net&
+                            , const boost::optional<QPointF>&
                             );
 
         void delete_transition ( const QObject*
