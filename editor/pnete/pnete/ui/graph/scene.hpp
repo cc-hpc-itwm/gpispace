@@ -128,6 +128,8 @@ namespace fhg
           void remove_pending_connection();
 
           QAction* connect_action (QAction*, const char* slot);
+          template<typename FUN_TYPE>
+          QAction* connect_action (QAction*, FUN_TYPE);
 
           pending_connection* _pending_connection;
           QPointF _mouse_position;
@@ -136,6 +138,7 @@ namespace fhg
           data::handle::function _function;
           data::internal_type* _internal;
 
+          QAction* _add_transition_action;
           QAction* _auto_layout_action;
           QList<QAction*> _actions;
         };

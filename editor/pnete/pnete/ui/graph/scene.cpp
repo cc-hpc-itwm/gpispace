@@ -44,9 +44,27 @@ namespace fhg
     {
       namespace graph
       {
+        namespace
+        {
+          QAction* separator (QObject* parent)
+          {
+            QAction* sep (new QAction (parent));
+            sep->setSeparator (true);
+            return sep;
+          }
+        }
+
         QAction* scene_type::connect_action (QAction* action, const char* slot)
         {
           connect (action, SIGNAL (triggered()), slot);
+          return action;
+        }
+
+        template<typename FUN_TYPE>
+        QAction* scene_type::connect_action (QAction* action, FUN_TYPE fun)
+        {
+          fhg::util::qt::boost_connect<void()>
+            (action, SIGNAL (triggered()), this, fun);
           return action;
         }
 
@@ -61,12 +79,24 @@ namespace fhg
           , _net (net)
           , _function (function)
           , _internal (internal)
+          //! \todo Don't default to center of scene, but center of visible scene!
+          , _add_transition_action
+            ( connect_action ( new QAction (tr ("new_transition"), this)
+                             , boost::bind ( &data::handle::net::add_transition
+                                           , _net
+                                           , this
+                                           , boost::none
+                                           )
+                             )
+            )
           , _auto_layout_action
             ( connect_action ( new QAction (tr ("auto_layout"), this)
                              , SLOT (auto_layout())
                              )
             )
           , _actions ( QList<QAction*>()
+                     << _add_transition_action
+                     << separator (this)
                      << _auto_layout_action
                      )
         {
