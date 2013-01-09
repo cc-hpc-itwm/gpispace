@@ -129,80 +129,80 @@ namespace we { namespace type {
         typedef std::pair<petri_net::place_id_type, connection_t> pc_type;
 
         BOOST_FOREACH (const pc_type& pc, net.in_to_transition (tid))
+        {
+          const connection_t& connection (pc.second);
+          const petri_net::place_id_type& place_id (pc.first);
+
+          if (petri_net::edge::is_pt_read (connection.type))
           {
-            const connection_t& connection (pc.second);
-            const petri_net::place_id_type& place_id (pc.first);
-
-            if (petri_net::edge::is_pt_read (connection.type))
-              {
-                if (net.in_to_place (place_id).empty())
-                  {
-                    pid_read.insert (place_id);
-                  }
-                else
-                  {
-                    for ( adj_transition_const_it t (net.in_to_place (place_id))
-                        ; t.has_more()
-                        ; ++t
-                        )
-                      {
-                        preds_read.insert (tid_pid_type (*t, place_id));
-
-                        for ( adj_place_const_it tp (net.out_of_transition (*t))
-                            ; tp.has_more()
-                            ; ++tp
-                            )
-                          {
-                            if (pid_out.find (*tp) != pid_out.end())
-                              {
-                                return boost::none;
-                              }
-                          }
-                     }
-                  }
-              }
-            else if (net.in_to_place (place_id).empty())
-             {
-               // WORK HERE: possible optimization: make the place an
-               // input place of the only one predecessor
-               // BEWARE: check the conditions!
-               return boost::none;
-             }
+            if (net.in_to_place (place_id).empty())
+            {
+              pid_read.insert (place_id);
+            }
             else
+            {
+              BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                            , net.in_to_place (place_id)
+                            | boost::adaptors::map_keys
+                            )
               {
-                for ( adj_transition_const_it t (net.in_to_place (place_id))
-                    ; t.has_more()
-                    ; ++t
+                preds_read.insert (tid_pid_type (transition_id, place_id));
+
+                for ( adj_place_const_it tp (net.out_of_transition (transition_id))
+                    ; tp.has_more()
+                    ; ++tp
                     )
+                {
+                  if (pid_out.find (*tp) != pid_out.end())
                   {
-                    const petri_net::transition_id_type & tid_pred (*t);
-                    const transition_t & trans (net.get_transition (tid_pred));
-
-                    if (not content::is_expression (trans))
-                      {
-                        return boost::none;
-                      }
-
-                    for ( adj_place_const_it tp (net.out_of_transition (*t))
-                        ; tp.has_more()
-                        ; ++tp
-                        )
-                      {
-                        if (pid_out.find (*tp) != pid_out.end())
-                          {
-                            return boost::none;
-                          }
-
-                        max_successors_of_pred =
-                          std::max ( max_successors_of_pred
-                                   , net.out_of_place (*tp).size()
-                                   );
-                      }
-
-                    preds.insert (pair_type (trans, tid_pred));
+                    return boost::none;
                   }
+                }
               }
+            }
           }
+          else if (net.in_to_place (place_id).empty())
+          {
+            // WORK HERE: possible optimization: make the place an
+            // input place of the only one predecessor
+            // BEWARE: check the conditions!
+            return boost::none;
+          }
+          else
+          {
+            BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                          , net.in_to_place (place_id)
+                          | boost::adaptors::map_keys
+                          )
+            {
+              const petri_net::transition_id_type & tid_pred (transition_id);
+              const transition_t & trans (net.get_transition (tid_pred));
+
+              if (not content::is_expression (trans))
+              {
+                return boost::none;
+              }
+
+              for ( adj_place_const_it tp (net.out_of_transition (transition_id))
+                  ; tp.has_more()
+                  ; ++tp
+                  )
+              {
+                if (pid_out.find (*tp) != pid_out.end())
+                {
+                  return boost::none;
+                }
+
+                max_successors_of_pred =
+                  std::max ( max_successors_of_pred
+                           , net.out_of_place (*tp).size()
+                           );
+              }
+
+              preds.insert (pair_type (trans, tid_pred));
+            }
+          }
+        }
 
         if (  (preds.size() != 1)
            || (!preds_read.empty() && max_successors_of_pred > 1)

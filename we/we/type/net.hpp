@@ -362,7 +362,7 @@ namespace petri_net
       return adj_place_const_it (_adj_tp.row_const_it (tid));
     }
     const boost::unordered_map<place_id_type, connection_t>&
-      in_to_transition (const transition_id_type& tid) const
+    in_to_transition (const transition_id_type& tid) const
     {
       return _adj_pt.row_adj_tab (tid);
     }
@@ -371,9 +371,10 @@ namespace petri_net
     {
       return adj_transition_const_it (_adj_pt.row_const_it (pid));
     }
-    adj_transition_const_it in_to_place (const place_id_type& pid) const
+    const boost::unordered_map<transition_id_type, connection_t>&
+    in_to_place (const place_id_type& pid) const
     {
-      return adj_transition_const_it (_adj_tp.col_const_it (pid));
+      return _adj_tp.row_adj_tab (pid);
     }
 
     connection_t get_connection_out ( const transition_id_type& tid
@@ -437,12 +438,11 @@ namespace petri_net
           // TODO: get port and remove place from there
         }
 
-      for ( adj_transition_const_it tit (in_to_place (pid))
-          ; tit.has_more()
-          ; ++tit
-          )
+      BOOST_FOREACH ( const transition_id_type& transition_id
+                    , in_to_place (pid) | boost::adaptors::map_keys
+                    )
         {
-          stack_out.push (std::make_pair (*tit, pid));
+          stack_out.push (std::make_pair (transition_id, pid));
           // TODO: get port and remove place from there
           // transition_t::port_id_t portId = transition->transition().input_port_by_pid(place_.id()).first;
         }
