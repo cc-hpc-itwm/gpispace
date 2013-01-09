@@ -1183,11 +1183,10 @@ namespace fhg
         }
         transition.get_ref().name (name);
 
-        if (position)
-        {
-          no_undo_move_item
-            (this, handle::transition (transition, *this), *position);
-        }
+        no_undo_move_item ( this
+                          , handle::transition (transition, *this)
+                          , position.get_value_or (QPointF())
+                          );
 
         push (new action::add_transition (*this, origin, net.id(), transition));
       }
@@ -1224,11 +1223,10 @@ namespace fhg
         }
         transition.get_ref().name (name);
 
-        if (position)
-        {
-          no_undo_move_item
-            (this, handle::transition (transition, *this), *position);
-        }
+        no_undo_move_item ( this
+                          , handle::transition (transition, *this)
+                          , position.get_value_or (QPointF())
+                          );
 
         push (new action::add_transition (*this, origin, net.id(), transition));
       }
@@ -1352,10 +1350,10 @@ namespace fhg
             ).make_reference_id()
           );
 
-        if (position)
-        {
-          no_undo_move_item (this, handle::place (place, *this), *position);
-        }
+        no_undo_move_item ( this
+                          , handle::place (place, *this)
+                          , position.get_value_or (QPointF())
+                          );
 
         push (new action::add_place (*this, origin, net.id(), place));
       }
@@ -1573,10 +1571,10 @@ namespace fhg
             ).make_reference_id()
           );
 
-        if (position)
-        {
-          no_undo_move_item (this, handle::port (port, *this), *position);
-        }
+        no_undo_move_item ( this
+                          , handle::port (port, *this)
+                          , position.get_value_or (QPointF())
+                          );
 
         push (new action::add_port (*this, origin, function.id(), port));
       }
