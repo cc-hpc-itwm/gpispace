@@ -58,7 +58,6 @@ namespace fhg
           : QGraphicsScene (parent)
           , _pending_connection (NULL)
           , _mouse_position (QPointF (0.0, 0.0))
-          , _menu_context()
           , _net (net)
           , _function (function)
           , _internal (internal)
@@ -71,8 +70,6 @@ namespace fhg
                      << _auto_layout_action
                      )
         {
-          init_menu_context();
-
           // transition
           _net.connect_to_change_mgr
             (this, "transition_added", "data::handle::transition");
@@ -232,77 +229,10 @@ namespace fhg
           }
         }
 
-        //! \todo This is duplicate code, also available in main window.
-        void scene_type::init_menu_context ()
-        {
-          {
-            QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_transition"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind (&data::handle::net::add_transition, net(), this)
-              );
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_place"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind (&data::handle::net::add_place, net(), this)
-              );
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_top_level_port_in"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind ( &data::handle::function::add_port
-                            , function()
-                            , this
-                            , we::type::PORT_IN
-                            )
-              );
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_top_level_port_out"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind ( &data::handle::function::add_port
-                            , function()
-                            , this
-                            , we::type::PORT_OUT
-                            )
-              );
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_top_level_port_tunnel"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind ( &data::handle::function::add_port
-                            , function()
-                            , this
-                            , we::type::PORT_TUNNEL
-                            )
-              );
-
-            menu_new->addSeparator();
-
-            //! \todo Is this really needed?
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_struct"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind (nyi, "net: new struct")
-              );
-          }
-
-          _menu_context.addSeparator();
-
-          _menu_context.addAction (_auto_layout_action);
-        }
-
         void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
+          QMenu* menu (new QMenu (event->widget()));
+
           if ( base_item* item_below_cursor
              = qgraphicsitem_cast<base_item*> ( itemAt ( event->scenePos()
                                                        , QTransform()
@@ -310,8 +240,6 @@ namespace fhg
                                               )
              )
           {
-            QMenu* menu (new QMenu (event->widget()));
-
             switch (item_below_cursor->type())
             {
             case base_item::top_level_port_graph_type:
@@ -545,14 +473,80 @@ namespace fhg
               event->ignore();
               return;
             }
-
-            menu->connect (menu, SIGNAL (aboutToHide()), SLOT (deleteLater()));
-            menu->popup (event->screenPos());
           }
           else
           {
-            _menu_context.popup (event->screenPos());
+            {
+              QMenu* menu_new (menu->addMenu ("menu_new_element"));
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_transition"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind (&data::handle::net::add_transition, net(), this)
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_place"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind (&data::handle::net::add_place, net(), this)
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_top_level_port_in"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::function::add_port
+                              , function()
+                              , this
+                              , we::type::PORT_IN
+                              )
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_top_level_port_out"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::function::add_port
+                              , function()
+                              , this
+                              , we::type::PORT_OUT
+                              )
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_top_level_port_tunnel"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::function::add_port
+                              , function()
+                              , this
+                              , we::type::PORT_TUNNEL
+                              )
+                );
+
+              menu_new->addSeparator();
+
+              //! \todo Is this really needed?
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_struct"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind (nyi, "net: new struct")
+                );
+            }
+
+            menu->addSeparator();
+
+            menu->addAction (_auto_layout_action);
+
+            menu->popup (event->screenPos());
           }
+
+          menu->connect (menu, SIGNAL (aboutToHide()), SLOT (deleteLater()));
+          menu->popup (event->screenPos());
+
           event->accept();
         }
 

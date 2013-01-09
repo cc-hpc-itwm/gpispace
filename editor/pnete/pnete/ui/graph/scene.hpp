@@ -127,14 +127,10 @@ namespace fhg
 
           void remove_pending_connection();
 
-          void init_menu_context();
-
           QAction* connect_action (QAction*, const char* slot);
 
           pending_connection* _pending_connection;
           QPointF _mouse_position;
-
-          QMenu _menu_context;
 
           data::handle::net _net;
           data::handle::function _function;
