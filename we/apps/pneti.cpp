@@ -100,7 +100,7 @@ try
   we::mgmt::type::activity_t act
     ( input == "-"
     ? we::mgmt::type::activity_t (std::cin)
-    : we::mgmt::type::activity_t (input)
+    : we::mgmt::type::activity_t (boost::filesystem::path (input))
     );
 
   std::cout << act.transition().requirements();
