@@ -139,6 +139,10 @@ namespace fhg
           data::internal_type* _internal;
 
           QAction* _add_transition_action;
+          QAction* _add_place_action;
+          QAction* _add_top_level_port_in_action;
+          QAction* _add_top_level_port_out_action;
+          QAction* _add_top_level_port_tunnel_action;
           QAction* _auto_layout_action;
           QList<QAction*> _actions;
         };

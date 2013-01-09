@@ -89,6 +89,45 @@ namespace fhg
                                            )
                              )
             )
+          , _add_place_action
+            ( connect_action ( new QAction (tr ("new_place"), this)
+                             , boost::bind ( &data::handle::net::add_place
+                                           , _net
+                                           , this
+                                           , boost::none
+                                           )
+                             )
+            )
+          , _add_top_level_port_in_action
+            ( connect_action ( new QAction (tr ("new_top_level_port_in"), this)
+                             , boost::bind ( &data::handle::function::add_port
+                                           , _function
+                                           , this
+                                           , we::type::PORT_IN
+                                           , boost::none
+                                           )
+                             )
+            )
+          , _add_top_level_port_out_action
+            ( connect_action ( new QAction (tr ("new_top_level_port_out"), this)
+                             , boost::bind ( &data::handle::function::add_port
+                                           , _function
+                                           , this
+                                           , we::type::PORT_OUT
+                                           , boost::none
+                                           )
+                             )
+            )
+          , _add_top_level_port_tunnel_action
+            ( connect_action ( new QAction (tr ("new_top_level_port_tunnel"), this)
+                             , boost::bind ( &data::handle::function::add_port
+                                           , _function
+                                           , this
+                                           , we::type::PORT_TUNNEL
+                                           , boost::none
+                                           )
+                             )
+            )
           , _auto_layout_action
             ( connect_action ( new QAction (tr ("auto_layout"), this)
                              , SLOT (auto_layout())
@@ -96,6 +135,10 @@ namespace fhg
             )
           , _actions ( QList<QAction*>()
                      << _add_transition_action
+                     << _add_place_action
+                     << _add_top_level_port_in_action
+                     << _add_top_level_port_out_action
+                     << _add_top_level_port_tunnel_action
                      << separator (this)
                      << _auto_layout_action
                      )
