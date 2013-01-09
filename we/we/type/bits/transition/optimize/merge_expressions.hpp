@@ -126,27 +126,27 @@ namespace we { namespace type {
         pid_set_type pid_read;
         std::size_t max_successors_of_pred = 0;
 
-        for ( adj_place_const_it p (net.in_to_transition (tid))
-            ; p.has_more()
-            ; ++p
-            )
+        typedef std::pair<petri_net::place_id_type, connection_t> pc_type;
+
+        BOOST_FOREACH (const pc_type& pc, net.in_to_transition (tid))
           {
-            const connection_t& connection (p());
+            const connection_t& connection (pc.second);
+            const petri_net::place_id_type& place_id (pc.first);
 
             if (petri_net::edge::is_pt_read (connection.type))
               {
-                if (net.in_to_place (*p).empty())
+                if (net.in_to_place (place_id).empty())
                   {
-                    pid_read.insert (*p);
+                    pid_read.insert (place_id);
                   }
                 else
                   {
-                    for ( adj_transition_const_it t (net.in_to_place (*p))
+                    for ( adj_transition_const_it t (net.in_to_place (place_id))
                         ; t.has_more()
                         ; ++t
                         )
                       {
-                        preds_read.insert (tid_pid_type (*t, *p));
+                        preds_read.insert (tid_pid_type (*t, place_id));
 
                         for ( adj_place_const_it tp (net.out_of_transition (*t))
                             ; tp.has_more()
@@ -161,7 +161,7 @@ namespace we { namespace type {
                      }
                   }
               }
-            else if (net.in_to_place (*p).empty())
+            else if (net.in_to_place (place_id).empty())
              {
                // WORK HERE: possible optimization: make the place an
                // input place of the only one predecessor
@@ -170,7 +170,7 @@ namespace we { namespace type {
              }
             else
               {
-                for ( adj_transition_const_it t (net.in_to_place (*p))
+                for ( adj_transition_const_it t (net.in_to_place (place_id))
                     ; t.has_more()
                     ; ++t
                     )
@@ -243,18 +243,18 @@ namespace we { namespace type {
 
         expression_t & expression (boost::get<expression_t &> (trans.data()));
 
-        for ( adj_place_const_it p (net.in_to_transition (tid_trans))
-            ; p.has_more()
-            ; ++p
-            )
+        BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                      , net.in_to_transition (tid_trans)
+                      | boost::adaptors::map_keys
+                      )
           {
-            if (pid_read.find (*p) == pid_read.end())
+            if (pid_read.find (place_id) == pid_read.end())
               {
                 const port_t & pred_out
-                  (pred.get_port (pred.output_port_by_pid (*p).first));
+                  (pred.get_port (pred.output_port_by_pid (place_id).first));
 
                 port_t & trans_in
-                  (trans.get_port (trans.input_port_by_pid (*p).first));
+                  (trans.get_port (trans.input_port_by_pid (place_id).first));
 
                 expression.rename (trans_in.name(), pred_out.name());
 
@@ -263,14 +263,14 @@ namespace we { namespace type {
             else
               {
                 const boost::optional<const port_t>
-                  maybe_pred_in (input_port_by_pid (pred, *p));
+                  maybe_pred_in (input_port_by_pid (pred, place_id));
 
                 if (maybe_pred_in)
                   {
                     const port_t & pred_in (*maybe_pred_in);
 
                     port_t & trans_in
-                      (trans.get_port (trans.input_port_by_pid (*p).first));
+                      (trans.get_port (trans.input_port_by_pid (place_id).first));
 
                     expression.rename (trans_in.name(), pred_in.name());
 

@@ -594,16 +594,16 @@ namespace we { namespace type {
                   bool found (false);
                   bool is_read (false);
 
-                  for ( adj_place_const_it p (net.in_to_transition (*t))
-                      ; p.has_more()
-                      ; ++p
-                      )
+                  BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                                , net.in_to_transition (*t)
+                                | boost::adaptors::map_keys
+                                )
                     {
-                      if (*p == connection->first)
+                      if (place_id == connection->first)
                         {
                           found = true;
 
-                          is_read = net.is_read_connection (*t, *p);
+                          is_read = net.is_read_connection (*t, place_id);
 
                           break;
                         }

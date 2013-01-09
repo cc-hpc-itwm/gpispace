@@ -25,6 +25,8 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 #include <vector>
 #include <stack>
 #include <list>
@@ -144,11 +146,15 @@ namespace petri_net
 
     std::size_t in_to_transition_size (const transition_id_type& tid)
     {
-      return adjacent_size
-        ( _in_to_transition_size_map
-        , boost::bind (&net::in_to_transition, this, _1)
-        , tid
-        );
+      const adjacent_transition_size_map_type::const_iterator
+        pos (_in_to_transition_size_map.find (tid));
+
+      if (pos == _in_to_transition_size_map.end())
+        {
+          return _in_to_transition_size_map[tid] = in_to_transition (tid).size();
+        }
+
+      return pos->second;
     }
 
     std::size_t out_of_transition_size (const transition_id_type& tid)
@@ -280,12 +286,14 @@ namespace petri_net
 
       pid_in_map_t& pid_in_map (_in_map[tid]);
 
-      for (adj_place_const_it pit (in_to_transition (tid)); pit.has_more(); ++pit)
+      BOOST_FOREACH ( const place_id_type& place_id
+                    , in_to_transition (tid) | boost::adaptors::map_keys
+                    )
         {
-          if (has_token (*pit))
+          if (has_token (place_id))
             {
               pid_in_map.insert
-                (pid_in_map_t::value_type (*pit, get_token (*pit)));
+                (pid_in_map_t::value_type (place_id, get_token (place_id)));
             }
         }
 
@@ -353,10 +361,12 @@ namespace petri_net
     {
       return adj_place_const_it (_adj_tp.row_const_it (tid));
     }
-    adj_place_const_it in_to_transition (const transition_id_type& tid) const
+    const boost::unordered_map<place_id_type, connection_t>&
+      in_to_transition (const transition_id_type& tid) const
     {
-      return adj_place_const_it (_adj_pt.col_const_it (tid));
+      return _adj_pt.row_adj_tab (tid);
     }
+
     adj_transition_const_it out_of_place (const place_id_type& pid) const
     {
       return adj_transition_const_it (_adj_pt.row_const_it (pid));
@@ -464,12 +474,11 @@ namespace petri_net
           stack_out.push (std::make_pair (tid, *pit));
         }
 
-      for ( adj_place_const_it pit (in_to_transition (tid))
-          ; pit.has_more()
-          ; ++pit
-          )
+      BOOST_FOREACH ( const place_id_type& place_id
+                    , in_to_transition (tid) | boost::adaptors::map_keys
+                    )
         {
-          stack_in.push (std::make_pair (tid, *pit));
+          stack_in.push (std::make_pair (tid, place_id));
         }
 
       while (!stack_out.empty())
