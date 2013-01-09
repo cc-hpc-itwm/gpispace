@@ -46,9 +46,10 @@ namespace we
       {
         void decode (std::istream& s, we::mgmt::type::activity_t& t)
         {
-          boost::archive::text_iarchive ar (s);
           try
             {
+              boost::archive::text_iarchive ar (s);
+
               ar >> BOOST_SERIALIZATION_NVP (t);
             }
           catch (boost::archive::archive_exception const &ex)
