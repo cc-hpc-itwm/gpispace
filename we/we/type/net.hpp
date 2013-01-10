@@ -124,8 +124,6 @@ namespace petri_net
         }
       else
         {
-          _enabled.insert (tid);
-
           choices_t cs (_in_map.at (tid));
 
           // call the global condition function here, that sets the
