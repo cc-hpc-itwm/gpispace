@@ -40,7 +40,6 @@ namespace adjacency
   class table
   {
   public:
-    const const_it<COL,ADJ> row_const_it (const ROW&) const;
     const boost::optional<ADJ> get_adjacent (const ROW&, const COL&) const;
     const ADJ get_adjacent (const ROW&, const COL&, const std::string&) const;
     bool is_adjacent (const ROW&, const COL&) const;
@@ -96,24 +95,6 @@ namespace adjacency
       ar & BOOST_SERIALIZATION_NVP(col_tab);
     }
   };
-
-  template<typename ROW, typename COL, typename ADJ>
-  const const_it<COL,ADJ>
-  table<ROW,COL,ADJ>::row_const_it (const ROW& r) const
-  {
-    typename row_tab_t::const_iterator pos (row_tab.find (r));
-
-    if (pos != row_tab.end())
-      {
-        return const_it<COL,ADJ> (pos->second.begin(), pos->second.end());
-      }
-    else
-      {
-        const col_adj_tab_t v;
-
-        return const_it<COL,ADJ> (v.end(), v.end());
-      }
-  }
 
   template<typename ROW, typename COL, typename ADJ>
   const boost::optional<ADJ>
