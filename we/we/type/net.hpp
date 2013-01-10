@@ -9,7 +9,6 @@
 
 #include <we/container/adjacency.hpp>
 #include <we/container/priostore.hpp>
-#include <we/container/it.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/serialize/unordered_set.hpp>
 #include <we/type/connection.hpp>
