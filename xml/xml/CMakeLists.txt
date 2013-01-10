@@ -14,6 +14,5 @@ target_link_libraries (xml
   fhg-util
   ${Boost_LIBRARIES}
 )
-set (XML_LIBRARIES xml CACHE INTERNAL "xml_libraries" FORCE)
 
 add_subdirectory (tests)
