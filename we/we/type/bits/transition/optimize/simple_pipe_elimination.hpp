@@ -53,14 +53,6 @@ namespace we { namespace type {
 
       namespace detail
       {
-        template<typename Set>
-        void insert_tids (Set& set, petri_net::adj_transition_const_it it)
-        {
-          for (; it.has_more(); ++it)
-            {
-              set.insert (*it);
-            }
-        }
         template<typename Set, typename SetB>
         void insert_tids (Set& set, const SetB& b)
         {
