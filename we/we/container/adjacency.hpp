@@ -49,6 +49,21 @@ namespace adjacency
     void set_adjacent (const ROW&, const COL&, const ADJ&, const std::string&);
     boost::unordered_set<ADJ> adjacencies() const;
 
+    const boost::unordered_map<COL,ADJ>&
+    col_adj_tab (const ROW& r) const
+    {
+      typename row_tab_t::const_iterator pos (row_tab.find (r));
+
+      if (pos != row_tab.end())
+        {
+          return pos->second;
+        }
+
+      static boost::unordered_map<COL,ADJ> col_adj_tab_empty;
+
+      return col_adj_tab_empty;
+    }
+
     const boost::unordered_map<ROW,ADJ>&
     row_adj_tab (const COL& c) const
     {
