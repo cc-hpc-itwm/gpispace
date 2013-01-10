@@ -1,9 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_EXCEPTION_HPP
-#define _EXPR_EXCEPTION_HPP
-
-#include <fhg/util/show.hpp>
+#ifndef _WE_EXPR_EXCEPTION_HPP
+#define _WE_EXPR_EXCEPTION_HPP
 
 #include <stdexcept>
 
@@ -14,9 +12,7 @@ namespace expr
     class strange : public std::runtime_error
     {
     public:
-      explicit strange (const std::string & what)
-        : std::runtime_error ("STRANGE! " + what)
-      {}
+      explicit strange (const std::string&);
     };
 
     namespace parse
@@ -25,45 +21,34 @@ namespace expr
       {
       public:
         const std::size_t eaten;
-        exception (const std::string & msg, const std::size_t k)
-          : std::runtime_error("parse error [" + fhg::util::show(k) + "]: " + msg)
-          , eaten (k)
-        {}
+        exception (const std::string&, const std::size_t);
       };
 
       class expected : public exception
       {
       public:
-        expected (const std::string & what, const std::size_t k)
-          : exception ("expected " + what, k) {}
+        expected (const std::string&, const std::size_t);
       };
 
       class misplaced : public exception
       {
       public:
-        misplaced (const std::string & what, const std::size_t k)
-          : exception ( "misplaced " + what + ", operator expected"
-                      , k - what.length()
-                      ) {}
+        misplaced (const std::string&, const std::size_t);
       };
 
       class unterminated : public exception
       {
       public:
-        unterminated ( const std::string & what
+        unterminated ( const std::string&
                      , const std::size_t open
                      , const std::size_t k
-                     )
-          : exception ( "unterminated " + what + ", opened at: " + fhg::util::show (open)
-                      , k
-                      ) {}
+                     );
       };
 
       class missing : public exception
       {
       public:
-        missing (const std::string & what, const std::size_t k)
-          : exception ("missing " + what, k) {}
+        missing (const std::string&, const std::size_t);
       };
     }
 
@@ -72,21 +57,19 @@ namespace expr
       class divide_by_zero : public std::runtime_error
       {
       public:
-        divide_by_zero () : std::runtime_error ("divide by zero") {};
+        divide_by_zero();
       };
 
       class type_error : public std::runtime_error
       {
       public:
-        type_error (const std::string & msg)
-          : std::runtime_error ("type error: " + msg)
-        {}
+        type_error (const std::string&);
       };
 
       class negative_exponent : public std::runtime_error
       {
       public:
-        negative_exponent() : std::runtime_error ("negative exponent") {};
+        negative_exponent();
       };
     }
   }
