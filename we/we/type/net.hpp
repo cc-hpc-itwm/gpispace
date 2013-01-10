@@ -124,26 +124,6 @@ namespace petri_net
 
     // ********************************************************************* //
 
-    std::size_t adjacent_size
-    ( adjacent_transition_size_map_type& m
-    , boost::function<adj_place_const_it (const transition_id_type&)> f
-    , const transition_id_type& tid
-    ) const
-    {
-      const adjacent_transition_size_map_type::const_iterator pos (m.find (tid));
-
-      if (pos == m.end())
-        {
-          const std::size_t s (f (tid).size());
-
-          m[tid] = s;
-
-          return s;
-        }
-
-      return pos->second;
-    }
-
     std::size_t in_to_transition_size (const transition_id_type& tid)
     {
       const adjacent_transition_size_map_type::const_iterator
@@ -159,11 +139,7 @@ namespace petri_net
 
     std::size_t out_of_transition_size (const transition_id_type& tid)
     {
-      return adjacent_size
-        ( _out_of_transition_size_map
-        , boost::bind (&net::out_of_transition, this, _1)
-        , tid
-        );
+      return out_of_transition (tid).size();
     }
 
     // ********************************************************************* //
@@ -357,9 +333,10 @@ namespace petri_net
       return s;
     }
 
-    adj_place_const_it out_of_transition (const transition_id_type& tid) const
+    const boost::unordered_map<place_id_type, connection_t>&
+    out_of_transition (const transition_id_type& tid) const
     {
-      return adj_place_const_it (_adj_tp.row_const_it (tid));
+      return _adj_tp.col_adj_tab (tid);
     }
     const boost::unordered_map<place_id_type, connection_t>&
     in_to_transition (const transition_id_type& tid) const
@@ -466,13 +443,12 @@ namespace petri_net
       std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
       std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
-      for ( adj_place_const_it pit (out_of_transition (tid))
-          ; pit.has_more()
-          ; ++pit
-          )
-        {
-          stack_out.push (std::make_pair (tid, *pit));
-        }
+      BOOST_FOREACH ( const place_id_type& place_id
+                    , out_of_transition (tid) | boost::adaptors::map_keys
+                    )
+      {
+        stack_out.push (std::make_pair (tid, place_id));
+      }
 
       BOOST_FOREACH ( const place_id_type& place_id
                     , in_to_transition (tid) | boost::adaptors::map_keys

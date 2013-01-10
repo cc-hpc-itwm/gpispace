@@ -112,13 +112,12 @@ namespace we { namespace type {
         // collect outgoing pids
         pid_set_type pid_out;
 
-        for ( adj_place_const_it p (net.out_of_transition (tid))
-            ; p.has_more()
-            ; ++p
-            )
-          {
-            pid_out.insert (*p);
-          }
+        BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                      , net.out_of_transition (tid) | boost::adaptors::map_keys
+                      )
+        {
+          pid_out.insert (place_id);
+        }
 
         // collect predecessors, separate read connections
         set_of_pair_type preds;
@@ -148,12 +147,12 @@ namespace we { namespace type {
               {
                 preds_read.insert (tid_pid_type (transition_id, place_id));
 
-                for ( adj_place_const_it tp (net.out_of_transition (transition_id))
-                    ; tp.has_more()
-                    ; ++tp
-                    )
+                BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
+                              , net.out_of_transition (transition_id)
+                              | boost::adaptors::map_keys
+                              )
                 {
-                  if (pid_out.find (*tp) != pid_out.end())
+                  if (pid_out.find (out_place_id) != pid_out.end())
                   {
                     return boost::none;
                   }
@@ -183,19 +182,19 @@ namespace we { namespace type {
                 return boost::none;
               }
 
-              for ( adj_place_const_it tp (net.out_of_transition (transition_id))
-                  ; tp.has_more()
-                  ; ++tp
-                  )
+              BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
+                            , net.out_of_transition (transition_id)
+                            | boost::adaptors::map_keys
+                            )
               {
-                if (pid_out.find (*tp) != pid_out.end())
+                if (pid_out.find (out_place_id) != pid_out.end())
                 {
                   return boost::none;
                 }
 
                 max_successors_of_pred =
                   std::max ( max_successors_of_pred
-                           , net.out_of_place (*tp).size()
+                           , net.out_of_place (out_place_id).size()
                            );
               }
 
