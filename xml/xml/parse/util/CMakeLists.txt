@@ -20,13 +20,9 @@ set (xml_parse_util_headers
 set (xml_parse_util_fwd_headers
 )
 
-set (xml_parse_util_sources
+add_xml_sources (
   mk_fstream.cpp
   valid_name.cpp
-)
-
-add_library (xml_parse_util
-  ${xml_parse_util_sources}
 )
 
 install (FILES ${xml_parse_util_headers} ${xml_parse_util_fwd_headers}

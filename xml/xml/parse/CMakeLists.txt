@@ -19,20 +19,12 @@ set (fwd_hdrs
   state.fwd.hpp
 )
 
-set (sources
+add_xml_sources (
   error.cpp
   parser.cpp
   state.cpp
   warning.cpp
 )
-
-add_library (xml_parse_base
-  ${sources}
-)
-
-include (libutils)
-
-merge_static_libs (xml_parse xml_parse "xml_parse_base;xml_parse_type;xml_parse_util;xml_parse_id;${Boost_LIBRARIES};${WE_LIBRARIES}")
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
                 ${CMAKE_CURRENT_BINARY_DIR}/includes.hpp
@@ -58,7 +50,7 @@ set_source_files_properties(parser.cpp OBJECT_DEPENDS ${headerlist_hpp})
 add_executable(pnetc pnetc.cpp)
 #add_dependencies(pnetc gen-includes)
 target_link_libraries(pnetc fhg-revision)
-target_link_libraries (pnetc xml_parse)
+target_link_libraries (pnetc xml)
 target_link_libraries(pnetc ${WE_LIBRARIES})
 target_link_libraries(pnetc  ${Boost_LIBRARIES})
 
@@ -69,7 +61,7 @@ if (ENABLE_STATIC_BINARIES)
   target_link_libraries(pnetc.static fhg-revision)
   target_link_libraries(pnetc.static ${WE_LIBRARIES})
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
-  target_link_libraries (pnetc.static xml_parse)
+  target_link_libraries (pnetc.static xml)
   target_link_libraries (pnetc.static fhg-revision)
 
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")

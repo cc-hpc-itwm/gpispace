@@ -34,7 +34,7 @@ set (xml_parse_type_fwd_headers
   use.fwd.hpp
 )
 
-set (xml_parse_type_sources
+add_xml_sources (
   connect.cpp
   expression.cpp
   function.cpp
@@ -49,10 +49,6 @@ set (xml_parse_type_sources
   template.cpp
   transition.cpp
   use.cpp
-)
-
-add_library (xml_parse_type
-  ${xml_parse_type_sources}
 )
 
 install (FILES ${xml_parse_type_headers} ${xml_parse_type_fwd_headers}

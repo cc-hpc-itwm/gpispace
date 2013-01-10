@@ -83,11 +83,11 @@ add_custom_command(OUTPUT ${cross_hpp}
 set(tc_src
     test_sig_cpp_result.cpp
    )
-string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
+string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_we_\\2" tc_name ${tc_src})
 add_executable(${tc_name} ${tc_src} ${cross_hpp})
 target_link_libraries(${tc_name} ${Boost_LIBRARIES})
 get_target_property(LOC ${tc_name} LOCATION_)
 add_test(${tc_name} ${LOC})
 
-string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name test_loader.cpp)
+string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_we_\\2" tc_name test_loader.cpp)
 add_dependencies(${tc_name} question answer)
