@@ -15,8 +15,6 @@ find_package (FhgLog REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 find_package (Qt4 4.7.1 COMPONENTS QtCore QtGui QtXml REQUIRED QUIET)
 find_package (UTIL REQUIRED QUIET)
-find_package (WE REQUIRED QUIET)
-find_package (XML REQUIRED QUIET)
 
 include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}
@@ -24,8 +22,8 @@ include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
                       ${FhgLog_INCLUDE_DIR}
                       ${GRAPHVIZ_INCLUDE_DIR}
                       ${UTIL_INCLUDE_DIR}
-                      ${WE_INCLUDE_DIR}
-                      ${XML_INCLUDE_DIR}
+                      ${CMAKE_SOURCE_DIR}/we
+                      ${CMAKE_SOURCE_DIR}/xml
                     )
 
 set (LIB_PREFIX "fhg_pnete_")

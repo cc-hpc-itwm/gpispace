@@ -17,8 +17,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(FVM REQUIRED)
 include_directories(${FVM_INCLUDE_DIR})
 
-find_package(WE REQUIRED)
-include_directories(${WE_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/we)
 
 find_package(UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})

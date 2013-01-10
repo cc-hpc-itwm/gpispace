@@ -13,8 +13,6 @@ set (mods
   FindSMC.cmake
   FindUTIL.cmake
   FindUUID.cmake
-  FindWE.cmake
-  FindXML.cmake
   SMCMacros.cmake
   TargetDoc.cmake
   car_cdr_macros.cmake

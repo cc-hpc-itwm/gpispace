@@ -34,9 +34,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
-## check for we
-find_package(WE REQUIRED)
-include_directories(${WE_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/we)
 
 ## check for util
 find_package(UTIL REQUIRED)
@@ -71,8 +69,7 @@ find_package(Qt4 4.4.3 COMPONENTS QtCore QtGui QtXml REQUIRED)
 #find_package(MNG REQUIRED)
 #find_package(LCMS REQUIRED)
 
-find_package(WE REQUIRED)
-include_directories(${WE_INCLUDE_DIR})
+include_directories("${CMAKE_SOURCE_DIR}/we")
 
 add_subdirectory(sdpa-gui)
 

@@ -2,8 +2,7 @@ find_package (FVM REQUIRED)
 include_directories(${FVM_INCLUDE_DIR})
 
 message(STATUS "the fvm compat module should not require we loader stuff")
-find_package (WE REQUIRED)
-include_directories(${WE_INCLUDE_DIR})
+include_directories ("${CMAKE_SOURCE_DIR}/we")
 
 set (srcs
   pc-api.cpp
