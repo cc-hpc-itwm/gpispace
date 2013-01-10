@@ -35,9 +35,6 @@
 
 namespace petri_net
 {
-  typedef adjacency::const_it<place_id_type,connection_t> adj_place_const_it;
-  typedef adjacency::const_it<transition_id_type,connection_t> adj_transition_const_it;
-
 // WORK HERE: Performance: collect map<transition_id_type,X>, map<transition_id_type,Y> into a
 // single map<transition_id_type,(X,Y)>?
 

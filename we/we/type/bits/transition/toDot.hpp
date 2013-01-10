@@ -405,7 +405,6 @@ namespace we { namespace type {
         {
           typedef petri_net::net pnet_t;
           typedef pnet_t::place_const_it place_const_it;
-          typedef petri_net::adj_place_const_it adj_place_const_it;
           typedef pnet_t::transition_const_it transition_const_it;
           typedef petri_net::connection_t connection_t;
           typedef transition_t::port_map_t::value_type pmv_t;

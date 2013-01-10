@@ -63,8 +63,6 @@ namespace we { namespace type {
       )
       {
         typedef petri_net::net pnet_t;
-        typedef petri_net::adj_place_const_it adj_place_const_it;
-        typedef petri_net::adj_transition_const_it adj_transition_const_it;
         typedef petri_net::connection_t connection_t;
         typedef transition_t::const_iterator const_iterator;
         typedef trans_info::pid_set_type pid_set_type;
@@ -238,7 +236,6 @@ namespace we { namespace type {
       {
         typedef we::type::port_t port_t;
         typedef petri_net::net pnet_t;
-        typedef petri_net::adj_place_const_it adj_place_const_it;
 
         expression_t & expression (boost::get<expression_t &> (trans.data()));
 

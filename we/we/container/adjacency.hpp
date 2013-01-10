@@ -3,7 +3,6 @@
 #ifndef _CONTAINER_ADJACENCY_HPP
 #define _CONTAINER_ADJACENCY_HPP
 
-#include <we/util/it.hpp>
 #include <we/container/exception.hpp>
 
 #include <boost/serialization/nvp.hpp>
@@ -14,28 +13,6 @@
 
 namespace adjacency
 {
-  template<typename L,typename R>
-  struct IT
-  {
-  public:
-    typedef boost::unordered_map<L,R> vec_t;
-    typedef typename vec_t::const_iterator type;
-  };
-
-  template<typename L, typename R>
-  struct const_it : public it::it<typename IT<L,R>::type>
-  {
-  private:
-    typedef typename IT<L,R>::type it_t;
-
-  public:
-    const_it (const it_t& _pos, const it_t& _end)
-      : const_it::super(_pos,_end) {}
-
-    const L& operator* () const { return const_it::super::pos->first; }
-    const R& operator() () const { return const_it::super::pos->second; }
-  };
-
   template<typename ROW, typename COL, typename ADJ>
   class table
   {
