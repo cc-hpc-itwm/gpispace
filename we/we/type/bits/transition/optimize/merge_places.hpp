@@ -33,12 +33,11 @@ namespace we { namespace type {
         stack_t stack;
 
         // rewire pid_B -> trans to pid_A -> trans
-        for ( adj_transition_const_it trans_out_B (net.out_of_place (pid_B))
-            ; trans_out_B.has_more()
-            ; ++trans_out_B
-            )
+        BOOST_FOREACH ( const petri_net::transition_id_type& trans_out_B
+                      , net.out_of_place (pid_B) | boost::adaptors::map_keys
+                      )
           {
-            stack.push (*trans_out_B);
+            stack.push (trans_out_B);
           }
 
         while (!stack.empty())
