@@ -74,10 +74,6 @@ namespace petri_net
 
     typedef boost::unordered_map<transition_id_type,pid_in_map_t> in_map_t;
 
-    typedef boost::unordered_map< transition_id_type
-                                , std::size_t
-                                > adjacent_transition_size_map_type;
-
     // ********************************************************************* //
 
     place_id_type _place_id;
@@ -96,9 +92,6 @@ namespace petri_net
     enabled_choice_t _enabled_choice_read;
 
     in_map_t _in_map;
-
-    adjacent_transition_size_map_type _in_to_transition_size_map;
-    adjacent_transition_size_map_type _out_of_transition_size_map;
 
     // ********************************************************************* //
 
@@ -121,31 +114,11 @@ namespace petri_net
 
     // ********************************************************************* //
 
-    std::size_t in_to_transition_size (const transition_id_type& tid)
-    {
-      const adjacent_transition_size_map_type::const_iterator
-        pos (_in_to_transition_size_map.find (tid));
-
-      if (pos == _in_to_transition_size_map.end())
-        {
-          return _in_to_transition_size_map[tid] = in_to_transition (tid).size();
-        }
-
-      return pos->second;
-    }
-
-    std::size_t out_of_transition_size (const transition_id_type& tid)
-    {
-      return out_of_transition (tid).size();
-    }
-
-    // ********************************************************************* //
-
     void update_set_of_tid_in ( const transition_id_type& tid
                               , const pid_in_map_t& pid_in_map
                               )
     {
-      if (pid_in_map.size() != in_to_transition_size (tid))
+      if (pid_in_map.size() != in_to_transition (tid).size())
         {
           _enabled.erase (tid);
         }
@@ -294,9 +267,6 @@ namespace petri_net
                                );
         }
 
-      _in_to_transition_size_map.erase (connection.tid);
-      _out_of_transition_size_map.erase (connection.tid);
-
       if (edge::is_PT (connection.type))
         {
           recalculate_enabled (connection.tid, connection.pid);
@@ -377,16 +347,12 @@ namespace petri_net
                          )
     {
       _adj_tp.clear_adjacent (tid, pid);
-      _in_to_transition_size_map.erase (tid);
-      _out_of_transition_size_map.erase (tid);
     }
     void delete_edge_in ( const transition_id_type& tid
                         , const place_id_type& pid
                         )
     {
       _adj_pt.clear_adjacent (pid, tid);
-      _in_to_transition_size_map.erase (tid);
-      _out_of_transition_size_map.erase (tid);
 
       pid_in_map_t& pid_in_map (_in_map[tid]);
 
@@ -471,8 +437,6 @@ namespace petri_net
       _in_map.erase (tid);
       _enabled_choice_consume.erase (tid);
       _enabled_choice_read.erase (tid);
-      _in_to_transition_size_map.erase (tid);
-      _out_of_transition_size_map.erase (tid);
     }
 
     // erased in case of conflict after modification
