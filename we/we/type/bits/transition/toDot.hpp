@@ -404,7 +404,6 @@ namespace we { namespace type {
         (const petri_net::net & net) const
         {
           typedef petri_net::net pnet_t;
-          typedef pnet_t::place_const_it place_const_it;
           typedef petri_net::connection_t connection_t;
           typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
@@ -425,11 +424,14 @@ namespace we { namespace type {
             << "subgraph cluster_net_" << id_net << " {"
             << std::endl;
 
-          for (place_const_it p (net.places()); p.has_more(); ++p)
+          typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+
+          BOOST_FOREACH (const ip_type& ip, net.places())
             {
-              const place::type place (net.get_place (*p));
+              const petri_net::place_id_type& place_id (ip.first);
+              const place::type& place (ip.second);
               const place_dot_name_type place_dot_name
-                (name (id_net, "place_" + fhg::util::show (*p)));
+                (name (id_net, "place_" + fhg::util::show (place_id)));
 
               std::ostringstream token;
 
@@ -438,7 +440,9 @@ namespace we { namespace type {
                   typedef boost::unordered_map<token::type, size_t> token_cnt_t;
                   token_cnt_t token_cnt;
 
-                  BOOST_FOREACH (const token::type& token, net.get_token (*p))
+                  BOOST_FOREACH ( const token::type& token
+                                , net.get_token (place_id)
+                                )
                     {
                       ++token_cnt[token];
                     }

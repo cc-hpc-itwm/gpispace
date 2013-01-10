@@ -76,9 +76,11 @@ class TransitionVisitor: public boost::static_visitor<void> {
         typedef we::type::transition_t transition_t;
 
         /* Translate places. */
-        for (pnet_t::place_const_it it = net.places(); it.has_more(); ++it) {
-            petri_net::place_id_type pid = *it;
-            const place::type &p = net.get_place(pid);
+        typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+
+        BOOST_FOREACH (const ip_type& ip, net.places()) {
+            const petri_net::place_id_type& pid (ip.first);
+            const place::type &p (ip.second);
 
             Place *place = petriNet_->createPlace();
             place->setName(p.name());

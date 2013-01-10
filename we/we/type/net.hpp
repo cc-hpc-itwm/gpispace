@@ -48,7 +48,6 @@ namespace petri_net
     typedef we::type::transition_t transition_type;
 
     typedef boost::unordered_map<place_id_type,place::type> pmap_type;
-    typedef we::container::map_const_it<pmap_type> place_const_it;
 
     typedef boost::unordered_map<transition_id_type,transition_type> tmap_type;
 
@@ -270,9 +269,9 @@ namespace petri_net
         }
     }
 
-    place_const_it places() const
+    const boost::unordered_map<place_id_type,place::type>& places() const
     {
-      return place_const_it (_pmap);
+      return _pmap;
     }
 
     const boost::unordered_map<transition_id_type,transition_type>&
