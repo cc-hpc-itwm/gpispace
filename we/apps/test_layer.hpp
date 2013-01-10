@@ -39,8 +39,6 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-#include <we/util/codec.hpp>
-
 #include <list>
 
 namespace test {
@@ -204,7 +202,7 @@ namespace test {
       {
         job_type job (jobs_[rank].get());
 
-        we::mgmt::type::activity_t act ( we::util::codec::decode (job.desc));
+        we::mgmt::type::activity_t act (job.desc);
         detail::context<this_type, id_type> ctxt (*this, job.id);
         act.execute (&ctxt);
       }
@@ -274,7 +272,7 @@ namespace test {
       }
       catch (std::out_of_range const &)
       {
-        we::mgmt::type::activity_t act (we::util::codec::decode (desc));
+        we::mgmt::type::activity_t act (desc);
 
         std::cout << "finished [" << id << "] = ";
         act.print (std::cout, act.output());
@@ -299,7 +297,7 @@ namespace test {
       }
       catch (std::out_of_range const &)
       {
-        we::mgmt::type::activity_t act (we::util::codec::decode (desc));
+        we::mgmt::type::activity_t act (desc);
 
         std::cout << "failed [" << id << "] = ";
         act.print (std::cout, act.output());

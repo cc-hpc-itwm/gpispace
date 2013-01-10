@@ -61,6 +61,16 @@ namespace we { namespace type {
               set.insert (*it);
             }
         }
+        template<typename Set, typename SetB>
+        void insert_tids (Set& set, const SetB& b)
+        {
+          BOOST_FOREACH ( const typename SetB::key_type& v
+                        , b | boost::adaptors::map_keys
+                        )
+          {
+            set.insert (v);
+          }
+        }
       }
 
       typedef std::vector<pid_pair_type> pid_pair_vec_type;

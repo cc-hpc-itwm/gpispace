@@ -3,7 +3,6 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include <we/type/net.hpp>
-#include <we/util/codec.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
 #include <we/type/token.hpp>
@@ -156,7 +155,7 @@ int main (int, char **)
               << act_encoded
               << std::endl;
 
-    activity_t act_d = we::util::codec::decode (act_encoded);
+    activity_t act_d (act_encoded);
     std::cout << "act (deserialized):"
               << std::endl
               << act_d

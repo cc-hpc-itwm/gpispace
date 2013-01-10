@@ -77,12 +77,11 @@ namespace we { namespace type {
           }
 
         // rewire trans -> pid_B to trans -> pid_A
-        for ( adj_transition_const_it trans_in_B (net.in_to_place (pid_B))
-            ; trans_in_B.has_more()
-            ; ++trans_in_B
-            )
+        BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                      , net.in_to_place (pid_B) | boost::adaptors::map_keys
+                      )
           {
-            stack.push (*trans_in_B);
+            stack.push (transition_id);
           }
 
         while (!stack.empty())

@@ -1707,7 +1707,7 @@ namespace xml
 
       we::type::optimize::optimize (trans, state.options_optimize());
 
-      return trans;
+      return we::mgmt::type::activity_t (trans);
     }
   } // namespace parse
 } // namespace xml

@@ -13,7 +13,6 @@
 #include <fhg/util/getenv.hpp>
 
 #include <we/mgmt/type/activity.hpp>
-#include <we/util/codec.hpp>
 
 #include <we/mgmt/layer.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -93,6 +92,7 @@ private:
 };
 
 int main (int argc, char **argv)
+try
 {
   FHGLOG_SETUP (argc, argv);
 
@@ -100,7 +100,7 @@ int main (int argc, char **argv)
 
   po::options_description desc ("options");
 
-  std::string path_to_act ("/dev/stdin");
+  std::string path_to_act ("-");
   std::string mod_path;
   std::vector<std::string> mods_to_load;
   std::vector<std::string> input_spec;
@@ -166,11 +166,6 @@ int main (int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  if (path_to_act == "-")
-  {
-    path_to_act = "/dev/stdin";
-  }
-
   if (output == "-")
   {
     output = "/dev/stdout";
@@ -194,19 +189,11 @@ int main (int argc, char **argv)
     }
   }
 
-  we::mgmt::type::activity_t act;
-
-  {
-    std::ifstream ifs (path_to_act.c_str());
-    if (!ifs)
-    {
-      std::cerr << "Could not open: " << path_to_act << std::endl;
-      return 1;
-    }
-
-    we::util::codec::decode (ifs, act);
-  }
-
+  we::mgmt::type::activity_t act
+    ( path_to_act == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
+    );
 
   BOOST_FOREACH (const std::string& inp, input_spec)
   {
@@ -237,4 +224,9 @@ int main (int argc, char **argv)
   }
 
   return 0;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }
