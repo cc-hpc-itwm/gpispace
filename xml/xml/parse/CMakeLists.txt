@@ -34,21 +34,8 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
 add_executable(gen-includes includes.cpp)
 target_link_libraries(gen-includes fhg-revision)
 target_link_libraries(gen-includes ${Boost_LIBRARIES})
-get_target_property(GEN_INCLUDE_EXE gen-includes LOCATION)
-
-set (headerlist_hpp
-    ${CMAKE_CURRENT_BINARY_DIR}/headerlist.hpp
-    )
-add_custom_command(OUTPUT ${headerlist_hpp}
-  COMMAND ${GEN_INCLUDE_EXE} -o ${headerlist_hpp}
-  DEPENDS gen-includes ${CMAKE_CURRENT_BINARY_DIR}/includes.hpp
-  COMMENT "generating internal pnetc headerlist"
-  )
-
-set_source_files_properties(parser.cpp OBJECT_DEPENDS ${headerlist_hpp})
 
 add_executable(pnetc pnetc.cpp)
-#add_dependencies(pnetc gen-includes)
 target_link_libraries(pnetc fhg-revision)
 target_link_libraries (pnetc xml)
 target_link_libraries(pnetc we)

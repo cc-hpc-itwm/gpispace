@@ -31,7 +31,7 @@ namespace pnetc
 
     inline const fs::path & root ()
     {
-      static const fs::path ret ("@WE_INCLUDE_SRC_DIR@");
+      static const fs::path ret ("@CMAKE_SOURCE_DIR@/we");
 
       return ret;
     }
