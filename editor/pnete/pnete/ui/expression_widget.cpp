@@ -307,8 +307,20 @@ namespace fhg
 
             try
             {
-              we::util::token::put (activity, port_name, ::value::read (pos));
-              retry = false;
+              try
+              {
+                we::util::token::put (activity, port_name, ::value::read (pos));
+                retry = false;
+              }
+              catch (const expr::exception::parse::exception& e)
+              {
+                //! \todo fixed width font
+                std::stringstream temp;
+                temp << e.what() << std::endl;
+                temp << value << std::endl;
+                temp << std::string (e.eaten, ' ') << "^" << std::endl;
+                throw std::runtime_error (temp.str().c_str());
+              }
             }
             catch (const std::runtime_error& e)
             {
