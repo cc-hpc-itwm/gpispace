@@ -89,10 +89,12 @@ namespace fhg
         // -- transition ---------------------------------------------
         void add_transition ( const QObject*
                             , const data::handle::net&
+                            , const boost::optional<QPointF>&
                             );
         void add_transition ( const QObject*
                             , const ::xml::parse::id::ref::function& fun
                             , const data::handle::net&
+                            , const boost::optional<QPointF>&
                             );
 
         void delete_transition ( const QObject*
@@ -122,7 +124,10 @@ namespace fhg
           (const QObject*, const data::handle::transition&, const QString&);
 
         // -- place --------------------------------------------------
-        void add_place (const QObject*, const data::handle::net&);
+        void add_place ( const QObject*
+                       , const data::handle::net&
+                       , const boost::optional<QPointF>&
+                       );
         void delete_place (const QObject*, const data::handle::place&);
 
         void set_name
@@ -155,6 +160,7 @@ namespace fhg
         void add_port ( const QObject*
                       , const data::handle::function&
                       , const we::type::PortDirection&
+                      , const boost::optional<QPointF>&
                       );
         void delete_port (const QObject*, const data::handle::port&);
 

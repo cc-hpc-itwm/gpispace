@@ -6,14 +6,23 @@
 #include <pnete/data/handle/function.hpp>
 #include <pnete/ui/port_lists_widget.hpp>
 
+#include <xml/parse/parser.hpp>
 #include <xml/parse/type/function.hpp>
 
 #include <util/qt/scoped_signal_block.hpp>
 
+#include <we/mgmt/context.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/value/read.hpp>
+#include <we/util/token.hpp>
+
+#include <QAction>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QSplitter>
 #include <QTextEdit>
 #include <QVBoxLayout>
@@ -101,6 +110,10 @@ namespace fhg
 
         set_name (_function.get().name());
         set_expression (expression.get().expression("\n"));
+
+        QAction* run_pnetc_action (new QAction (tr ("run_pnetc"), this));
+        connect (run_pnetc_action, SIGNAL (triggered()), SLOT (run_pnetc()));
+        addAction (run_pnetc_action);
       }
 
       void expression_widget::slot_set_function_name
@@ -186,6 +199,138 @@ namespace fhg
         (const data::handle::expression& e)
       {
         return e == _expression;
+      }
+
+      //! \note Context copied from we-eval.
+      class eval_context : public we::mgmt::context
+      {
+      public:
+        virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
+        {
+          act.inject_input();
+
+          while (act.can_fire())
+          {
+            we::mgmt::type::activity_t sub (act.extract());
+            sub.inject_input();
+            sub.execute (this);
+            act.inject (sub);
+          }
+
+          act.collect_output ();
+
+          return 0;
+        }
+
+        virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+        {
+          // module::call (loader, act, mod);
+
+          return 0;
+        }
+
+        virtual int handle_internally (we::mgmt::type::activity_t& , expr_t&)
+        {
+          return 0;
+        }
+
+        virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+        {
+          return handle_internally (act, n);
+        }
+
+        virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+        {
+          return handle_internally (act, mod);
+        }
+
+        virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+        {
+          return handle_internally (act, e);
+        }
+      };
+
+      struct output_port_and_token : std::iterator< std::output_iterator_tag
+                                                  , output_port_and_token
+                                                  >
+      {
+        output_port_and_token const & operator *() const { return *this; }
+        output_port_and_token const & operator++() const { return *this; }
+        output_port_and_token const & operator=
+          (const we::mgmt::type::activity_t::token_on_port_t & subject) const
+        {
+          std::stringstream tmp;
+          tmp << "on " << subject.second << ": " << subject.first;
+          QMessageBox msgBox;
+          msgBox.setText (QString::fromStdString (tmp.str()));
+          msgBox.exec();
+          return *this;
+        }
+      };
+
+      void expression_widget::run_pnetc()
+      {
+        xml::parse::state::type state;
+
+        const xml::parse::id::ref::function function (_function.get().clone());
+        xml::parse::post_processing_passes (function, &state);
+
+        we::mgmt::type::activity_t activity
+          (xml::parse::xml_to_we (function, state));
+
+        BOOST_FOREACH ( const std::string& port_name
+                      , activity.transition().port_names (we::type::PORT_IN)
+                      )
+        {
+          bool retry (true);
+          while (retry)
+          {
+            bool ok;
+            const std::string value
+              ( QInputDialog::getText ( this
+                                      , tr ("value_for_input_token")
+                                      , tr ("enter_value_for_input_port_%1")
+                                      .arg (QString::fromStdString (port_name))
+                                      , QLineEdit::Normal
+                                      , "[]"
+                                      , &ok
+                                      ).toStdString()
+              );
+            if (!ok)
+            {
+              return;
+            }
+
+            std::size_t k (0);
+            std::string::const_iterator begin (value.begin());
+            fhg::util::parse::position pos (k, begin, value.end());
+
+            try
+            {
+              we::util::token::put (activity, port_name, ::value::read (pos));
+              retry = false;
+            }
+            catch (const std::runtime_error& e)
+            {
+              QMessageBox msgBox;
+              msgBox.setText (e.what());
+              msgBox.setIcon (QMessageBox::Critical);
+              msgBox.exec();
+              retry = true;
+            }
+          }
+        }
+
+        activity.inject_input();
+
+        eval_context context;
+        activity.execute (&context);
+        activity.collect_output();
+
+        std::copy ( activity.output().begin()
+                  , activity.output().end()
+                  , output_port_and_token()
+                  );
       }
     }
   }

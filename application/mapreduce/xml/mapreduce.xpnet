@@ -80,97 +80,135 @@
                                                						n_part, partition_slot_size, 
                                                						n_part_slots, reduce_slot_size)">
           <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="util/memory.hpp"/>
-           <cinclude href="util/helper.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="util/helper.hpp"/>
           <cinclude href="cstdio"/>
           <cinclude href="sstream"/>
           <cinclude href="fstream"/>
           <cinclude href="cmath"/>
           <code><![CDATA[
-	
-			  if(reduce_slot_size<partition_slot_size)
-			  {
-			  	throw std::runtime_error("The size of the reduce slot should be larger than the size of the partition slot!" );
-			  }
+          		
+	  		  	if(map_chunk_size<read_chunk_size)
+			  	{
+			  		throw std::runtime_error("The size of the map chunk size should be larger than the size of the read chunk size!" );
+			  	}
+			 
+			  	if(reduce_slot_size<partition_slot_size)
+			  	{
+			  		throw std::runtime_error("The size of the reduce slot should be larger than the size of the partition slot!" );
+			  	}
+			  	
+			  	if(n_part<3)
+			  	{
+			  		throw std::runtime_error("Please, indicate a number larger than 2 for the number of partitions!" );
+			  	}
 			  
-			  if(n_part<3)
-			  {
-			  	throw std::runtime_error("Please, indicate a number larger than 2 for the number of partitions!" );
-			  }
-			  
-	          //MLOG (INFO, "Get the size of the file " << input_file);
-	          FILE *pf;
-	          if((pf = fopen(input_file.c_str(), "r"))== NULL)
-	          {
-	          	std::ostringstream oss;
-	          	oss<<"  Could not open the file " <<input_file << "!";
-	          	MLOG(ERROR, oss.str());
-	          	throw std::runtime_error(oss.str());
-	          }
+	          	//MLOG (INFO, "Get the size of the file " << input_file);
+	          	FILE *pf;
+	          	if((pf = fopen(input_file.c_str(), "r"))== NULL)
+	          	{
+	          		std::ostringstream oss;
+	          		oss<<"  Could not open the file " <<input_file << "!";
+	          		MLOG(ERROR, oss.str());
+	          		throw std::runtime_error(oss.str());
+	          	}
 	
-	          fseek(pf, 0L, SEEK_END);
-	          long input_file_size = ftell(pf);
-	          fclose(pf);
+	          	fseek(pf, 0L, SEEK_END);
+	          	long input_file_size = ftell(pf);
+	          	fclose(pf);
 	
-	          ::pnetc::type::config::config config;
-	          printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
-	          if(input_file_size<=0)
-	          {
-	          	throw std::runtime_error("invalid size for the input file!!!" );
-	          }
+	          	::pnetc::type::config::config config;
+	          	printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
+	          	if(input_file_size<=0)
+	          	{
+	          		throw std::runtime_error("invalid size for the input file!!!" );
+	          	}
 	
-			  // take a reserve of chunk slots-> store in chunks only complete words!
-			  n_chunks = ::mapreduce::util::ceil(input_file_size,read_chunk_size); 
+			  	// take a reserve of chunk slots-> store in chunks only complete words!
+			  	n_chunks = ::mapreduce::util::ceil(input_file_size,read_chunk_size); 
 	         	          
-	          //MLOG (INFO, "The file should be splitted into " <<n_chunks<<" chunks, where read_chunk_size ="<<read_chunk_size<<"!");
+	          	//MLOG (INFO, "The file should be splitted into " <<n_chunks<<" chunks, where read_chunk_size ="<<read_chunk_size<<"!");
 	
-	          long n_nodes = fvmGetNodeCount();
-	          //MLOG (INFO, "The number of nodes used by GPI: "<<n_nodes);
+	          	long n_nodes = fvmGetNodeCount();
+	          	//MLOG (INFO, "The number of nodes used by GPI: "<<n_nodes);
 	
-	          size_t size_read_area  = ::mapreduce::util::ceil(read_chunk_size*input_n_read_slots,n_nodes);
-	          size_t size_map_area = ::mapreduce::util::ceil(map_chunk_size*input_n_map_slots,n_nodes);
-	          size_t size_partition_area = ::mapreduce::util::ceil(partition_slot_size*n_part,n_nodes);
-	          size_t size_reduce_area = ::mapreduce::util::ceil(reduce_slot_size*n_part,n_nodes);
-	          size_t size_border_area = ::mapreduce::util::ceil(2*n_chunks*KEY_MAX_SIZE, n_nodes);
+	          	size_t size_read_area  = ::mapreduce::util::ceil(read_chunk_size*input_n_read_slots,n_nodes);
+	          	size_t size_map_area = ::mapreduce::util::ceil(map_chunk_size*input_n_map_slots,n_nodes);
+	          	size_t size_partition_area = ::mapreduce::util::ceil(partition_slot_size*n_part,n_nodes);
+	          	size_t size_reduce_area = ::mapreduce::util::ceil(reduce_slot_size*n_part,n_nodes);
 	
-	          MLOG (INFO, "Size of the read area to be allocated: "<<size_read_area);
-	          MLOG (INFO, "Size of the map area to be allocated: "<<size_map_area);
-		  	  MLOG (INFO, "Size of the partition area to be allocated: "<<size_partition_area);
-	          MLOG (INFO, "Size of the reduce area to be allocated: "<<size_reduce_area);
-	          MLOG (INFO, "Size of the border area to be allocated: "<<size_border_area);
-	
-	          namespace vm = ::mapreduce::util::memory::global;
-	
-	          config.file.input = input_file;
-	          config.file.output = output_file;
-	
-	          config.handle.read = vm::alloc(size_read_area, "mapred.read_area");
-	          config.handle.map  = vm::alloc(size_map_area, "mapred.map_area");
-	          config.handle.partition = vm::alloc(size_partition_area, "mapred.partition_area");
-	          config.handle.reduce = vm::alloc(size_reduce_area, "mapred.reduce_area");
-	          config.handle.border = vm::alloc(size_border_area, "mapred.border_area");
+			  	const int mb = 1024;
+	          	MLOG (INFO, "Size of the read area to be allocated: "<<size_read_area/mb<<"mb");
+	          	MLOG (INFO, "Size of the map area to be allocated: "<<size_map_area/mb<<"mb");
+		  	  	MLOG (INFO, "Size of the partition area to be allocated: "<<size_partition_area/mb<<"mb");
+	          	MLOG (INFO, "Size of the reduce area to be allocated: "<<size_reduce_area/mb<<"mb");
+	          	          	
+	          	size_t total_vm_required  = (size_read_area + size_map_area + size_partition_area + size_reduce_area )/mb;
+	          	MLOG (INFO, "The application requires "<<total_vm_required<<"mb of virtual memory in total!");
 	          
-	          MLOG(INFO, "The number of chunks is: "<<n_chunks);
-	          config.num.chunks = n_chunks;
-	          config.num.part = n_part; // number of partitions
-	          
-	          config.size.chunk.read = read_chunk_size;
-	          config.size.chunk.map = map_chunk_size;
-	          config.size.partition.slot = partition_slot_size;
-	          config.size.reduce.slot = reduce_slot_size;
-	          		        
-	          std::vector<int> v;
-	          v.resize(n_part);
-	          for(int k=0;k<n_part;k++)
-	          	v[k]=0;
-			  
-	          n_read_slots = input_n_read_slots;
-	          n_map_slots = input_n_map_slots;
-			  n_part_slots = n_part;
+	          	config.file.input = input_file;
+	          	config.file.output = output_file;
 	
-	          LOG (INFO, "The config is: " << config);
+				std::ostringstream oss;
+				config.handle.read = fvmGlobalAlloc(size_read_area, "mapred.read_area");
+			  	if(config.handle.read)
+			  	{
+			  		config.handle.map = fvmGlobalAlloc(size_map_area, "mapred.map_area");
+			  		if(config.handle.map)
+			  		{
+			  			config.handle.partition = fvmGlobalAlloc(size_partition_area, "mapred.partition_area");
+			  			if(config.handle.partition)
+			  			{
+			  				config.handle.reduce = fvmGlobalAlloc(size_reduce_area, "mapred.reduce_area");
+			  				if(!config.handle.reduce)
+			  				{
+			  					fvmGlobalFree(static_cast<fvmAllocHandle_t>(config.handle.read));
+			  					fvmGlobalFree(static_cast<fvmAllocHandle_t>(config.handle.map));
+			  					fvmGlobalFree(static_cast<fvmAllocHandle_t>(config.handle.partition));
+			  				
+			  					oss << "Failed to alloc "<< size_reduce_area << " bytes for the reduce slots!";
+				  				throw std::runtime_error(oss.str());
+			  				}
+			  			}
+			  			else
+			  			{
+			  				fvmGlobalFree(static_cast<fvmAllocHandle_t>(config.handle.read));
+			  				fvmGlobalFree(static_cast<fvmAllocHandle_t>(config.handle.map));
+			  				
+			  				oss << "Failed to alloc "<< size_partition_area << " bytes for the partition slots!";
+				  			throw std::runtime_error(oss.str());
+			  			}
+			  		}
+			  		else
+			  		{	
+			  			// free the already allocated virtual memory
+			  			fvmGlobalFree(static_cast<fvmAllocHandle_t>(config.handle.read));
+			  			oss << "Failed to alloc "<< size_map_area << " bytes for the map slots!";
+				  		throw std::runtime_error(oss.str());
+			  		}
+			  	}
+			  	else
+			  	{
+					oss << "Failed to alloc "<< size_read_area << " bytes for the reduce slots!";
+				  	throw std::runtime_error (oss.str());
+			  	}
 	          
-	          return config;
+	          	MLOG(INFO, "The number of chunks is: "<<n_chunks);
+	          	config.num.chunks = n_chunks;
+	          	config.num.part = n_part; // number of partitions
+	          
+	          	config.size.chunk.read = read_chunk_size;
+	          	config.size.chunk.map = map_chunk_size;
+	          	config.size.partition.slot = partition_slot_size;
+	          	config.size.reduce.slot = reduce_slot_size;
+	          		        			  
+	          	n_read_slots = input_n_read_slots;
+	          	n_map_slots = input_n_map_slots;
+			  	n_part_slots = n_part;
+	
+	          	LOG (INFO, "The config is: " << config);
+	          
+	          	return config;
           ]]></code>
         </module>
 
@@ -305,7 +343,7 @@
 	        int num;
 	
 	 		size_t avail_shmem(fvmGetShmemSize());
-	 
+	 			 
 	        if((file_ptr = fopen(config.file.input.c_str(), "r"))== NULL)
 	        {
                 std::ostringstream oss;
@@ -568,9 +606,13 @@
           <code><![CDATA[
             LOG (INFO, "Map the chunk "<<read_chunk_info.chunk_id<<" ... ");
             pnetc::type::map_chunk_info::map_chunk_info map_chnk_info;
-     
-            long vm_part_offset = read_chunk_info.read_slot_id*config.size.chunk.read;
-                
+                 
+        	if(config.size.chunk.map<config.size.chunk.read)
+		  	{
+		  		throw std::runtime_error("The size of the map chunk size should be larger than the size of the read chunk size!" );
+		  	}
+			  
+			long vm_part_offset = read_chunk_info.read_slot_id*config.size.chunk.read;
             char* ptr_chunk = static_cast<char *> (fvmGetShmemPtr());
             waitComm ( fvmGetGlobalData
             ( static_cast<fvmAllocHandle_t> (config.handle.read)
@@ -744,6 +786,8 @@
             // do partitioning copy from the map_chunk store in map_slot_id
             // the data corresponding to the partition partition_result.partition_info.part_id
              
+            size_t avail_shmem(fvmGetShmemSize());
+			  	
             // initialize partition_result
             partition_result.map_chunk_info = map_chunk_info;
             partition_result.partition_info = partition_info;
@@ -758,6 +802,11 @@
              
             char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
             
+		  	if(arr_part_used[part_id]>avail_shmem)
+		  	{
+		  		throw std::runtime_error("The amount of shared memory should be larger than the partition used space!" );
+		  	}
+		  	
             // get the map pairs
             waitComm ( fvmGetGlobalData
             ( static_cast<fvmAllocHandle_t> (config.handle.map)
@@ -1015,7 +1064,7 @@
             }
             
             timestamp_t time_end_reduce = ::mapreduce::util::get_timestamp();
-			MLOG(INFO, "Sorting and copying the partition "<<reduce_info.part_id<<" into the corresponding reduce slot took "<<(time_end_reduce - time_start_reduce)/MS<<"ms");
+			MLOG(INFO, "Copying the partition "<<reduce_info.part_id<<" into the corresponding reduce slot took "<<(time_end_reduce - time_start_reduce)/MS<<"ms");
 
           ]]></code>
         </module>
@@ -1077,13 +1126,11 @@
 
           <code><![CDATA[
 		  	  timestamp_t time_start_reduce = ::mapreduce::util::get_timestamp();
-		  	  
 		      MLOG (INFO, "Reduce the partition "<<pre_reduce_info.part_id<<", reduce space used: "<<pre_reduce_info.red_used);
 		      
 		      size_t last_pos = 0;
 		      if( pre_reduce_info.red_used != 0)
 		      {
-		     
 			      // first find out what are the actual sizes of the partitions!
 			      char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
 			
@@ -1117,7 +1164,7 @@
 			            arr_new_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
 			            
 			            MLOG(INFO, "Sort the list of items stored in the reduce slot ...");
-			            std::sort( arr_new_red_items.begin(), arr_new_red_items.end());
+			            std::sort( arr_new_red_items.begin(), arr_new_red_items.end() );
 		            }
 		            else // pre_reduce_info.old_red_used > 0
 		            {
@@ -1126,6 +1173,7 @@
 						
 						ptr_shmem[pre_reduce_info.old_red_used] = SPCH;
 						ptr_shmem[pre_reduce_info.old_red_used+1] = 0;
+						
 						// these items are supposed to be already sorted!
 						std::vector<std::string> arr_old_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
 						
@@ -1173,8 +1221,8 @@
       <connect-read port="config" place="config"/>
       <connect-out port="reduce_info" place="reduce_info"/>
     </transition> 
-    
-     <place name="reduce_result" type="reduce_result"/>
+   	
+	<place name="reduce_result" type="reduce_result"/>
      
     <transition name="reduce_on_disk" inline="true">
       <require key="GPI" />
@@ -1210,7 +1258,7 @@
 				if( partition_copy_result.reduce_info.red_used > fvmGetShmemSize() )
 				{
 					MLOG (ERROR, "reduce cannot continue: need " << partition_copy_result.reduce_info.red_used << " bytes (reduce) but I only have " 
-			                      << fvmGetShmemSize() << ", increase shm size");
+			                      << fvmGetShmemSize() << ". Please, increase the shared memory size");
 			         throw std::runtime_error ("out of memory: shm too small");
 				}
 			      			
@@ -1235,21 +1283,7 @@
 				
 				MLOG(INFO, "Get the list of items corresponding to the reduce slot ...");
 	            std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
-	            
-	            MLOG(INFO, "Sort the list of items stored in the reduce slot ...");
-	            std::sort( arr_items.begin(), arr_items.end());
-				
-				MLOG(INFO, "Effectively call reduce on the resulted sorted array ...");
-				
-				timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
-									
-				//bzero(ptr_shmem, partition_copy_result.reduce_info.red_used);
-				
-                ::mapreduce::util::reduce_array( partition_copy_result.reduce_info.part_id, config.size.reduce.slot, arr_items, ptr_shmem, last_pos );
-                
-                timestamp_t time_end_red_arr = ::mapreduce::util::get_timestamp();
-                MLOG(INFO, "The effective reduce operation took "<<(time_end_red_arr - time_start_red_arr)/MS<<"ms");
-																
+	            										
                 // call here merge_and_reduce
 				std::string str_part_out_file = ::mapreduce::util::get_part_filename(config.file.output, partition_copy_result.reduce_info.part_id);
 				
@@ -1717,7 +1751,7 @@
 	           	// create new file
 	           	//::mapreduce::util::reduce_and_write_array(arr_reduced_items, str_part_out_file);
 	           	
-	           	// or ... disk reduction
+	           	// or ... perform a disk reduction
 	           	::mapreduce::util::merge_and_reduce_buff_into_file(arr_reduced_items, str_part_out_file);
             }
             
@@ -1775,7 +1809,6 @@
 	          vm::free(config.handle.map);
 	          vm::free(config.handle.partition);
 	          vm::free(config.handle.reduce);
-	          vm::free(config.handle.border);
 	
 	          return control();
           ]]></code>

@@ -202,22 +202,6 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
 )
 add_dependencies(pnet-transform_file-test-wf pnetput)
 ################################################################################################
-set (test_srcs
-  SchedulerTestImpl.cpp
-  test_Config.cpp
-)
-
-ADD_LIBRARY(sdpa-test ${test_srcs})
-target_link_libraries(sdpa-test
-	 sdpa-daemon
-	 sdpa-client
-	 sdpa-events
-	 sdpa-util
-	 sdpa
-	 ${SEDA_LIBRARY}
-	 ${Boost_UNIT_TEST_LIBRARIES}
-	 ${Boost_LIBRARIES})
-
 set (tc_srcs
   test_Atomic.cpp
   test_Inotify.cpp

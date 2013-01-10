@@ -46,9 +46,9 @@ namespace fhg
         widget->setParent (this);
       }
 
-      const QSet<QAction*>& document_view::actions() const
+      QList<QAction*> document_view::actions() const
       {
-        return _actions;
+        return widget()->actions();
       }
 
       data::proxy::type& document_view::proxy()

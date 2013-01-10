@@ -35,7 +35,7 @@ namespace fhg
 
         void setWidget (QWidget* widget);
 
-        const QSet<QAction*>& actions() const;
+        QList<QAction*> actions() const;
 
         data::proxy::type& proxy();
         const data::handle::function& function() const;

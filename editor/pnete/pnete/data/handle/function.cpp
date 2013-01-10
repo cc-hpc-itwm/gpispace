@@ -31,10 +31,12 @@ namespace fhg
           change_manager().set_function_name (sender, *this, name);
         }
 
-        void function::add_port
-          (const QObject* origin, const we::type::PortDirection& direction) const
+        void function::add_port ( const QObject* origin
+                                , const we::type::PortDirection& direction
+                                , const boost::optional<QPointF>& position
+                                ) const
         {
-          change_manager().add_port (origin, *this, direction);
+          change_manager().add_port (origin, *this, direction, position);
         }
       }
     }
