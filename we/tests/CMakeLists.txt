@@ -48,7 +48,7 @@ function(construct_tests )
     message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
     add_executable(${tc_name} ${tc_src})
-    target_link_libraries(${tc_name} ${WE_LIBRARIES})
+    target_link_libraries(${tc_name} we)
     target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
     target_link_libraries(${tc_name} ${UTIL_LIBRARIES})
     target_link_libraries(${tc_name} ${Boost_UNIT_TEST_LIBRARIES})
@@ -64,7 +64,7 @@ list(SORT tc_srcs)
 construct_tests(${tc_srcs})
 
 fhg_add_test (evaluate_net.cpp
-  LINK_LIBRARIES ${WE_LIBRARIES} ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
+  LINK_LIBRARIES we ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
   DESCRIPTION "evaluate various nets and compare the results with given reference nets"
   ARGS ${CMAKE_CURRENT_SOURCE_DIR}/pnets
 )

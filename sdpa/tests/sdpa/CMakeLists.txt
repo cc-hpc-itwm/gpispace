@@ -248,7 +248,7 @@ foreach (tc_src ${tc_srcs})
                         fhg-revision
                         ${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
-                        ${WE_LIBRARIES}
+                        we
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
                         ${CMAKE_DL_LIBS}

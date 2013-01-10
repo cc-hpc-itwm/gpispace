@@ -21,4 +21,3 @@ target_link_libraries (we
   fhg-util
   ${Boost_LIBRARIES}
 )
-set (WE_LIBRARIES we CACHE INTERNAL "we_libraries" FORCE)

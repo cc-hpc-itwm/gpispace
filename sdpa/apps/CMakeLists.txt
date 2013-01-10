@@ -6,7 +6,7 @@ set (daemon_libs
 #  sdpa-util
   ${FhgLog_LIBRARY}
   ${SEDA_LIBRARY}
-  ${WE_LIBRARIES}
+  we
   ${Boost_LIBRARIES}
 )
 
