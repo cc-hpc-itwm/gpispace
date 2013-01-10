@@ -44,7 +44,7 @@ target_link_libraries(question answer)
 function(construct_tests )
   foreach (tc_src ${ARGN})
     # get the filename without extension
-    string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
+    string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_we_\\2" tc_name ${tc_src})
     message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
     add_executable(${tc_name} ${tc_src})
