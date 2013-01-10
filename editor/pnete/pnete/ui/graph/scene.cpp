@@ -34,6 +34,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QInputDialog>
 #include <QKeyEvent>
+#include <QMessageBox>
 
 namespace fhg
 {
@@ -43,6 +44,30 @@ namespace fhg
     {
       namespace graph
       {
+        namespace
+        {
+          QAction* separator (QObject* parent)
+          {
+            QAction* sep (new QAction (parent));
+            sep->setSeparator (true);
+            return sep;
+          }
+        }
+
+        QAction* scene_type::connect_action (QAction* action, const char* slot)
+        {
+          connect (action, SIGNAL (triggered()), slot);
+          return action;
+        }
+
+        template<typename FUN_TYPE>
+        QAction* scene_type::connect_action (QAction* action, FUN_TYPE fun)
+        {
+          fhg::util::qt::boost_connect<void()>
+            (action, SIGNAL (triggered()), this, fun);
+          return action;
+        }
+
         scene_type::scene_type ( const data::handle::net& net
                                , const data::handle::function& function
                                , data::internal_type* internal
@@ -51,13 +76,73 @@ namespace fhg
           : QGraphicsScene (parent)
           , _pending_connection (NULL)
           , _mouse_position (QPointF (0.0, 0.0))
-          , _menu_context()
           , _net (net)
           , _function (function)
           , _internal (internal)
+          //! \todo Don't default to center of scene, but center of visible scene!
+          , _add_transition_action
+            ( connect_action ( new QAction (tr ("new_transition"), this)
+                             , boost::bind ( &data::handle::net::add_transition
+                                           , _net
+                                           , this
+                                           , boost::none
+                                           )
+                             )
+            )
+          , _add_place_action
+            ( connect_action ( new QAction (tr ("new_place"), this)
+                             , boost::bind ( &data::handle::net::add_place
+                                           , _net
+                                           , this
+                                           , boost::none
+                                           )
+                             )
+            )
+          , _add_top_level_port_in_action
+            ( connect_action ( new QAction (tr ("new_top_level_port_in"), this)
+                             , boost::bind ( &data::handle::function::add_port
+                                           , _function
+                                           , this
+                                           , we::type::PORT_IN
+                                           , boost::none
+                                           )
+                             )
+            )
+          , _add_top_level_port_out_action
+            ( connect_action ( new QAction (tr ("new_top_level_port_out"), this)
+                             , boost::bind ( &data::handle::function::add_port
+                                           , _function
+                                           , this
+                                           , we::type::PORT_OUT
+                                           , boost::none
+                                           )
+                             )
+            )
+          , _add_top_level_port_tunnel_action
+            ( connect_action ( new QAction (tr ("new_top_level_port_tunnel"), this)
+                             , boost::bind ( &data::handle::function::add_port
+                                           , _function
+                                           , this
+                                           , we::type::PORT_TUNNEL
+                                           , boost::none
+                                           )
+                             )
+            )
+          , _auto_layout_action
+            ( connect_action ( new QAction (tr ("auto_layout"), this)
+                             , SLOT (auto_layout())
+                             )
+            )
+          , _actions ( QList<QAction*>()
+                     << _add_transition_action
+                     << _add_place_action
+                     << _add_top_level_port_in_action
+                     << _add_top_level_port_out_action
+                     << _add_top_level_port_tunnel_action
+                     << separator (this)
+                     << _auto_layout_action
+                     )
         {
-          init_menu_context();
-
           // transition
           _net.connect_to_change_mgr
             (this, "transition_added", "data::handle::transition");
@@ -100,8 +185,38 @@ namespace fhg
             );
         }
 
+        QList<QAction*> scene_type::actions() const
+        {
+          return _actions;
+        }
+
         namespace
         {
+          bool can_rename ( const data::handle::place& handle
+                          , const QString& name
+                          )
+          {
+            return !handle.get().parent()->has_place (name.toStdString());
+          }
+
+          bool can_rename ( const data::handle::port& handle
+                          , const QString& name
+                          )
+          {
+            return !handle.get().parent()->ports().has
+              ( std::make_pair ( name.toStdString()
+                               , handle.get().direction()
+                               )
+              );
+          }
+
+          bool can_rename ( const data::handle::transition& handle
+                          , const QString& name
+                          )
+          {
+            return !handle.get().parent()->has_transition (name.toStdString());
+          }
+
           template<typename handle_type>
           void set_name_for_handle ( const handle_type& handle
                                    , const QString& dialog_title
@@ -112,7 +227,7 @@ namespace fhg
                                    )
           {
             bool ok;
-            const QString text
+            const QString name
               ( QInputDialog::getText
                 ( widget
                 , dialog_title
@@ -122,9 +237,36 @@ namespace fhg
                 , &ok
                 )
               );
-            if (ok && !text.isEmpty())
+            if (ok)
             {
-              handle.set_name (origin, text);
+              if ( handle.get().name() == name.toStdString()
+                 || can_rename (handle, name)
+                 )
+              {
+                handle.set_name (origin, name);
+              }
+              else
+              {
+                const QMessageBox::StandardButton reply
+                  ( QMessageBox::critical
+                    ( widget
+                    , QObject::tr ("name_already_exists_head")
+                    , QObject::tr ("name_already_exists_msg")
+                    , QMessageBox::Cancel | QMessageBox::Retry
+                    )
+                  );
+
+                if (reply != QMessageBox::Cancel)
+                {
+                  set_name_for_handle ( handle
+                                      , dialog_title
+                                      , prompt
+                                      , name
+                                      , widget
+                                      , origin
+                                      );
+                }
+              }
             }
           }
 
@@ -160,80 +302,10 @@ namespace fhg
           }
         }
 
-        //! \todo This is duplicate code, also available in main window.
-        void scene_type::init_menu_context ()
-        {
-          {
-            QMenu* menu_new (_menu_context.addMenu ("menu_new_element"));
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_transition"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind (&data::handle::net::add_transition, net(), this)
-              );
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_place"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind (&data::handle::net::add_place, net(), this)
-              );
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_top_level_port_in"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind ( &data::handle::function::add_port
-                            , function()
-                            , this
-                            , we::type::PORT_IN
-                            )
-              );
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_top_level_port_out"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind ( &data::handle::function::add_port
-                            , function()
-                            , this
-                            , we::type::PORT_OUT
-                            )
-              );
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_top_level_port_tunnel"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind ( &data::handle::function::add_port
-                            , function()
-                            , this
-                            , we::type::PORT_TUNNEL
-                            )
-              );
-
-            menu_new->addSeparator();
-
-            //! \todo Is this really needed?
-            fhg::util::qt::boost_connect<void()>
-              ( menu_new->addAction (tr ("new_struct"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind (nyi, "net: new struct")
-              );
-          }
-
-          _menu_context.addSeparator();
-
-          connect ( _menu_context.addAction (tr ("auto_layout"))
-                  , SIGNAL (triggered())
-                  , SLOT (auto_layout())
-                  );
-        }
-
         void scene_type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
+          QMenu* menu (new QMenu (event->widget()));
+
           if ( base_item* item_below_cursor
              = qgraphicsitem_cast<base_item*> ( itemAt ( event->scenePos()
                                                        , QTransform()
@@ -241,8 +313,6 @@ namespace fhg
                                               )
              )
           {
-            QMenu* menu (new QMenu (event->widget()));
-
             switch (item_below_cursor->type())
             {
             case base_item::top_level_port_graph_type:
@@ -476,14 +546,91 @@ namespace fhg
               event->ignore();
               return;
             }
-
-            menu->connect (menu, SIGNAL (aboutToHide()), SLOT (deleteLater()));
-            menu->popup (event->screenPos());
           }
           else
           {
-            _menu_context.popup (event->screenPos());
+            {
+              QMenu* menu_new (menu->addMenu ("menu_new_element"));
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_transition"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::net::add_transition
+                              , net()
+                              , this
+                              , event->scenePos()
+                              )
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_place"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::net::add_place
+                              , net()
+                              , this
+                              , event->scenePos()
+                              )
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_top_level_port_in"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::function::add_port
+                              , function()
+                              , this
+                              , we::type::PORT_IN
+                              , event->scenePos()
+                              )
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_top_level_port_out"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::function::add_port
+                              , function()
+                              , this
+                              , we::type::PORT_OUT
+                              , event->scenePos()
+                              )
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_top_level_port_tunnel"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::function::add_port
+                              , function()
+                              , this
+                              , we::type::PORT_TUNNEL
+                              , event->scenePos()
+                              )
+                );
+
+              menu_new->addSeparator();
+
+              //! \todo Is this really needed?
+              fhg::util::qt::boost_connect<void()>
+                ( menu_new->addAction (tr ("new_struct"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind (nyi, "net: new struct")
+                );
+            }
+
+            menu->addSeparator();
+
+            menu->addAction (_auto_layout_action);
+
+            menu->popup (event->screenPos());
           }
+
+          menu->connect (menu, SIGNAL (aboutToHide()), SLOT (deleteLater()));
+          menu->popup (event->screenPos());
+
           event->accept();
         }
 
@@ -669,6 +816,7 @@ namespace fhg
                 ( this
                 , data->function().get().clone
                   (boost::none, net().id().id_mapper())
+                , event->scenePos()
                 );
 
               event->acceptProposedAction();
@@ -679,6 +827,11 @@ namespace fhg
 
         void scene_type::auto_layout()
         {
+          if (items().isEmpty())
+          {
+            return;
+          }
+
           typedef boost::unordered_map< base_item*
                                       , graphviz::node_type
                                       > nodes_map_type;
@@ -902,7 +1055,6 @@ namespace fhg
 
             if (origin == this)
             {
-              item->no_undo_setPos (_mouse_position);
               item->repositionChildrenAndResize();
             }
           }
@@ -924,11 +1076,6 @@ namespace fhg
             addItem (item);
 
             weaver::display::place (place.id(), item);
-
-            if (origin == this)
-            {
-              item->no_undo_setPos (_mouse_position);
-            }
           }
         }
 
@@ -950,12 +1097,6 @@ namespace fhg
               , this
               , _internal
               );
-
-            if (origin == this)
-            {
-              item_with_handle<top_level_port_item> (port)->
-                no_undo_setPos (_mouse_position);
-            }
           }
         }
 

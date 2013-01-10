@@ -27,11 +27,13 @@ main ()
     cout << " " << *it << " by " << it() << endl;
 
   cout << "const col " << 25 << ":" << endl;
-  for ( adjacency::const_it<row_t,adj_t> it (t.col_const_it (25))
-      ; it.has_more()
-      ; ++it
-      )
-    cout << " " << *it << " by " << it() << endl;
+
+  typedef std::pair<row_t,adj_t> ra_type;
+
+  BOOST_FOREACH (const ra_type& ra, t.row_adj_tab (25))
+  {
+    cout << " " << ra.first << " by " << ra.second << endl;
+  }
 
   cout << endl;
 
@@ -77,11 +79,10 @@ main ()
     cout << " " << *it << " by " << it() << endl;
 
   cout << "const col " << 25 << ":" << endl;
-  for ( adjacency::const_it<row_t,adj_t> it (t.col_const_it (25))
-      ; it.has_more()
-      ; ++it
-      )
-    cout << " " << *it << " by " << it() << endl;
+  BOOST_FOREACH (const ra_type& ra, t.row_adj_tab (25))
+  {
+    cout << " " << ra.first << " by " << ra.second << endl;
+  }
 
   cout << endl;
 
@@ -96,18 +97,16 @@ main ()
     cout << " " << *it << " by " << it() << endl;
 
   cout << "const col " << 25 << ":" << endl;
-  for ( adjacency::const_it<row_t,adj_t> it (t.col_const_it (25))
-      ; it.has_more()
-      ; ++it
-      )
-    cout << " " << *it << " by " << it() << endl;
+  BOOST_FOREACH (const ra_type& ra, t.row_adj_tab (25))
+  {
+    cout << " " << ra.first << " by " << ra.second << endl;
+  }
 
   cout << "const col " << 3141 << ":" << endl;
-  for ( adjacency::const_it<row_t,adj_t> it (t.col_const_it (3141))
-      ; it.has_more()
-      ; ++it
-      )
-    cout << " " << *it << " by " << it() << endl;
+  BOOST_FOREACH (const ra_type& ra, t.row_adj_tab (3141))
+  {
+    cout << " " << ra.first << " by " << ra.second << endl;
+  }
 
   return 0;
 }

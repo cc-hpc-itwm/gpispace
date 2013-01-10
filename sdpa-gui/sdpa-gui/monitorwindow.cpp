@@ -28,7 +28,6 @@
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/util/codec.hpp>
 #include <we/loader/putget.hpp>
 #include <we/type/token.hpp>
 
@@ -294,15 +293,7 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
 
   if (notification.activity_state() != sdpa::daemon::NotificationEvent::STATE_IGNORE)
   {
-    we::mgmt::type::activity_t act;
-    try
-    {
-      we::util::codec::decode(notification.activity(), act);
-    }
-    catch (std::exception const &ex)
-    {
-      return;
-    }
+    we::mgmt::type::activity_t act (notification.activity());
 
     UpdateExecutionView(notification, act);
     QApplication::postEvent (this, new PortFolioEvent(1001, notification, act));

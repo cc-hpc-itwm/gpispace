@@ -26,7 +26,6 @@
 
 //! \todo eliminate this include (that completes the type transition_t::data)
 #include <we/type/net.hpp>
-#include <we/util/codec.hpp>
 
 struct search_path_appender
 {
@@ -157,7 +156,7 @@ public:
 
     try
     {
-      task.activity = we::util::codec::decode (job_description);
+      task.activity = we::mgmt::type::activity_t (job_description);
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);

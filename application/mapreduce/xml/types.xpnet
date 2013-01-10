@@ -11,7 +11,7 @@
     	<field name="read" type="long"/>
     	<field name="partition" type="long"/>
     	<field name="reduce" type="long"/>
-    	<field name="border" type="long"/>
+    	<!-- <field name="border" type="long"/> -->
     </struct>
         
 		<struct name="size">

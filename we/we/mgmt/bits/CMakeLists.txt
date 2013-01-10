@@ -8,12 +8,9 @@ set (hdrs
   signal.hpp
   )
 
-set(srcs
+add_we_sources (
   descriptor.cpp
 )
-
-add_library (we_mgmt_bits ${srcs})
-add_we_library (we_mgmt_bits)
 
 install(FILES ${hdrs}
   DESTINATION include/we/mgmt/bits

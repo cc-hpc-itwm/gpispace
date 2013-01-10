@@ -7,7 +7,6 @@
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/util/codec.hpp>
 
 #include <fhg/revision.hpp>
 
@@ -48,6 +47,7 @@ namespace po = boost::program_options;
 
 int
 main (int argc, char ** argv)
+try
 {
   std::string input ("-");
 
@@ -97,38 +97,18 @@ main (int argc, char ** argv)
     return 0;
   }
 
-  if (input == "-")
-    {
-      input = "/dev/stdin";
-    }
-
-  we::mgmt::type::activity_t act;
-
-  {
-    std::ifstream stream (input.c_str());
-
-    if (!stream)
-      {
-        std::cerr << "could not open file "
-                  << input
-                  << " for reading"
-                  << std::endl
-          ;
-        return EX_NOINPUT;
-      }
-
-    try
-    {
-      we::util::codec::decode (stream, act);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "could not parse input: " << ex.what() << std::endl;
-      return EX_DATAERR;
-    }
-  }
+  we::mgmt::type::activity_t act
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    );
 
   std::cout << act.transition().requirements();
 
   return EX_OK;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

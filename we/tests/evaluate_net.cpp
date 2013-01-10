@@ -10,7 +10,6 @@
 #include <we/type/net.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
-#include <we/util/codec.hpp>
 #include <we/util/token.hpp>
 
 #include <fstream>
@@ -31,11 +30,7 @@ namespace
 
     void load_activity_from_file (const boost::filesystem::path& path)
     {
-      std::ifstream ifs ((path_to_pnets / path).string().c_str());
-
-      BOOST_REQUIRE (ifs);
-
-      we::util::codec::decode (ifs, activity);
+      activity = we::mgmt::type::activity_t (path_to_pnets / path);
     }
 
     void put_token_from_string

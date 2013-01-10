@@ -3,8 +3,6 @@
 #ifndef _PNETE_UI_DOCK_WIDGET_HPP
 #define _PNETE_UI_DOCK_WIDGET_HPP 1
 
-#include <pnete/ui/dock_widget.fwd.hpp>
-
 #include <QDockWidget>
 
 class Widget;

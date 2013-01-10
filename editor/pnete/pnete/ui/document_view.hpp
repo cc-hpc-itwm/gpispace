@@ -5,14 +5,14 @@
 
 #include <pnete/ui/document_view.fwd.hpp>
 
-#include <pnete/data/handle/function.fwd.hpp>
+#include <pnete/data/handle/function.hpp>
 #include <pnete/data/proxy.fwd.hpp>
-#include <pnete/ui/base_editor_widget.fwd.hpp>
 #include <pnete/ui/dock_widget.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
 
 #include <QObject>
+#include <QSet>
 
 class QString;
 
@@ -27,16 +27,21 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        document_view (const data::handle::function&);
+        document_view ( const data::handle::function&
+                      , data::proxy::type&
+                      , const QString& fallback_title
+                      , QWidget*
+                      );
 
-        base_editor_widget* widget() const;
-        void setWidget (base_editor_widget* widget);
+        void setWidget (QWidget* widget);
+
+        QList<QAction*> actions() const;
+
+        data::proxy::type& proxy();
+        const data::handle::function& function() const;
 
       protected:
         void set_title (const boost::optional<std::string>&);
-
-      signals:
-        void focus_gained (QWidget*);
 
       public slots:
         void function_name_changed
@@ -46,7 +51,10 @@ namespace fhg
         void visibility_changed (bool);
 
       private:
-        virtual QString fallback_title() const = 0;
+        QSet<QAction*> _actions;
+        data::handle::function _function;
+        data::proxy::type& _proxy;
+        QString _fallback_title;
       };
     }
   }

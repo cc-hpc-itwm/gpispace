@@ -134,7 +134,7 @@ namespace xml
         {
           s->signature
             ( boost::apply_visitor
-              ( xml::parse::structure_type::specialize (map, state)
+              ( xml::parse::structure_type::specialize (map)
               , s->signature()
               )
             );

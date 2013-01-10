@@ -3,27 +3,30 @@
 #ifndef _PNETE_UI_EDITOR_WINDOW_HPP
 #define _PNETE_UI_EDITOR_WINDOW_HPP 1
 
+#include <pnete/ui/dock_widget.fwd.hpp>
+
+#include <pnete/data/internal.fwd.hpp>
+#include <pnete/data/proxy.fwd.hpp>
+#include <pnete/ui/document_view.fwd.hpp>
+
 #include <QMainWindow>
 #include <QObject>
+#include <QStack>
 
+class QCloseEvent;
+class QMenuBar;
 class QString;
 class QTreeView;
+class QUndoGroup;
+class QUndoView;
 class QWidget;
-class QMenuBar;
-class QCloseEvent;
 
 namespace fhg
 {
   namespace pnete
   {
-    namespace data
-    {
-      class internal_type;
-    }
-
     namespace ui
     {
-      class view_manager;
       class StructureView;
       class transition_library_view;
 
@@ -34,34 +37,52 @@ namespace fhg
       public:
         explicit editor_window (QWidget *parent = NULL);
 
-        void add_transition_library_path ( const QString& path
-                                         , bool trusted = false
-                                         );
+        void add_transition_library_path (const QString&, bool trusted = false);
 
         virtual QMenu* createPopupMenu();
-        virtual void closeEvent (QCloseEvent*);
 
       public slots:
         void slot_new_expression();
         void slot_new_module_call();
         void slot_new_net();
+
         void open();
-        void open (const QString& filename);
+        void save_file();
+
         void close_document();
         void quit();
 
+        void create_widget (data::proxy::type &);
+        void duplicate_active_widget();
+        void current_widget_close();
+        void focus_changed (QWidget*, QWidget*);
+        void update_window_menu();
+
+      protected:
+        virtual void closeEvent (QCloseEvent*);
+
       private:
         transition_library_view* _transition_library;
-        view_manager* _view_manager;
+        dock_widget* _transition_library_dock;
         StructureView* _structure_view;
+        dock_widget* _structure_view_dock;
+        QUndoGroup* _undo_group;
+        dock_widget* _undo_view_dock;
+
+        QMenu* _windows_menu;
+        QMenu* _document_specific_action_menu;
+        QAction* _action_save_current_file;
+
+        QStack<document_view*> _accessed_widgets;
 
         void setup_menu_and_toolbar();
-        void setup_zoom_actions (QMenuBar* menu_bar);
         void setup_edit_actions (QMenuBar* menu_bar);
         void setup_file_actions (QMenuBar* menu_bar);
         void setup_window_actions (QMenuBar* menu_bar);
 
         void create_windows (data::internal_type* data);
+
+        QMenu* update_window_menu (QMenu*);
 
         void readSettings();
         void writeSettings();
