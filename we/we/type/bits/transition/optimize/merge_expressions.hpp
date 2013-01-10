@@ -448,17 +448,18 @@ namespace we { namespace type {
       )
       {
         typedef petri_net::net pnet_t;
-        typedef pnet_t::transition_const_it transition_const_it;
 
         bool modified (false);
 
         typedef std::stack<petri_net::transition_id_type> stack_t;
         stack_t stack;
 
-        for (transition_const_it t (net.transitions()); t.has_more(); ++t)
-          {
-            stack.push (*t);
-          }
+        BOOST_FOREACH ( const petri_net::transition_id_type& t
+                      , net.transitions() | boost::adaptors::map_keys
+                      )
+        {
+          stack.push (t);
+        }
 
         while (!stack.empty())
           {

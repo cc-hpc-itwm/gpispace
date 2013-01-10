@@ -24,7 +24,6 @@ namespace we { namespace type {
       )
       {
         typedef petri_net::net pnet_t;
-        typedef pnet_t::transition_const_it transition_const_it;
         typedef petri_net::connection_t connection_t;
 
         typedef std::stack<petri_net::transition_id_type> stack_t;

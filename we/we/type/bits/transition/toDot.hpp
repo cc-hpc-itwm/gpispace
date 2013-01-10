@@ -405,7 +405,6 @@ namespace we { namespace type {
         {
           typedef petri_net::net pnet_t;
           typedef pnet_t::place_const_it place_const_it;
-          typedef pnet_t::transition_const_it transition_const_it;
           typedef petri_net::connection_t connection_t;
           typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
@@ -498,30 +497,28 @@ namespace we { namespace type {
                           ;
                       }
 
-                    for ( transition_const_it t (net.transitions())
-                        ; t.has_more()
-                        ; ++t
-                        )
+                    BOOST_FOREACH ( const transition_t& trans
+                                  , net.transitions()
+                                  | boost::adaptors::map_values
+                                  )
+                    {
+                      if (trans.name() == stack.top().first[0])
                       {
-                        const transition_t& trans (net.get_transition (*t));
-
-                        if (trans.name() == stack.top().first[0])
+                        BOOST_FOREACH (const pmv_t& pmv, trans.ports())
+                        {
+                          if (  pmv.second.is_tunnel()
+                             && pmv.second.name() == stack.top().second
+                             )
                           {
-                            BOOST_FOREACH (const pmv_t& pmv, trans.ports())
-                              {
-                                if (  pmv.second.is_tunnel()
-                                   && pmv.second.name() == stack.top().second
-                                   )
-                                  {
-                                    ecbt[trans.name()].push_back
-                                      (extra_connection_type
-                                      (place_dot_name, pmv.first)
-                                      )
-                                      ;
-                                  }
-                              }
+                            ecbt[trans.name()].push_back
+                              (extra_connection_type ( place_dot_name
+                                                     , pmv.first
+                                                     )
+                              );
                           }
+                        }
                       }
+                    }
 
                     stack.pop();
                   }
@@ -542,11 +539,15 @@ namespace we { namespace type {
                 ;
             }
 
-          for (transition_const_it t (net.transitions()); t.has_more(); ++t)
+          typedef std::pair<petri_net::transition_id_type,transition_t> it_type;
+
+          BOOST_FOREACH (const it_type& it, net.transitions())
             {
-              const transition_t & trans (net.get_transition (*t));
+              const petri_net::transition_id_type& trans_id (it.first);
+              const transition_t& trans (it.second);
               const id_type id_trans (++id);
-              const petri_net::priority_type prio (net.get_transition_priority (*t));
+              const petri_net::priority_type prio
+                (net.get_transition_priority (trans_id));
 
               s << to_dot (trans, id, opts, l + 1, prio);
 
@@ -594,7 +595,7 @@ namespace we { namespace type {
                   bool is_read (false);
 
                   BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                                , net.in_to_transition (*t)
+                                , net.in_to_transition (trans_id)
                                 | boost::adaptors::map_keys
                                 )
                     {
@@ -602,7 +603,7 @@ namespace we { namespace type {
                         {
                           found = true;
 
-                          is_read = net.is_read_connection (*t, place_id);
+                          is_read = net.is_read_connection (trans_id, place_id);
 
                           break;
                         }

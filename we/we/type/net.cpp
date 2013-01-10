@@ -49,12 +49,12 @@ namespace petri_net
         s << "]";
       }
 
-      for (net::transition_const_it t (n.transitions()); t.has_more(); ++t)
-      {
-        s << "/";
-        s << n.get_transition (*t);
-        s << "/";
-      }
+    BOOST_FOREACH ( const we::type::transition_t& t
+                  , n.transitions() | boost::adaptors::map_values
+                  )
+    {
+      s << "/" << t << "/";
+    }
 
       return s;
     }

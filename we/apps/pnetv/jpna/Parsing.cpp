@@ -86,9 +86,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         /* Translate transitions. */
-        for (pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::transition_id_type tid = *it;
-            const transition_t &t = net.get_transition(tid);
+        typedef std::pair<petri_net::transition_id_type, transition_t> it_type;
+
+        FOREACH (const it_type& it, net.transitions())
+        {
+          const petri_net::transition_id_type& tid (it.first);
+          const transition_t& t (it.second);
 
             std::ostringstream condition;
             condition << t.condition();
@@ -143,8 +146,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        for (pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::transition_id_type id = *it;
+        FOREACH ( const petri_net::transition_id_type& id
+                , net.transitions() | boost::adaptors::map_keys
+                )
+        {
             const transition_t &transition = net.get_transition(id);
 
             TransitionVisitor visitor(petriNet_->name() + "::" + transition.name(), petriNets_);

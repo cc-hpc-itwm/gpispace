@@ -51,7 +51,6 @@ namespace petri_net
     typedef we::container::map_const_it<pmap_type> place_const_it;
 
     typedef boost::unordered_map<transition_id_type,transition_type> tmap_type;
-    typedef we::container::map_const_it<tmap_type> transition_const_it;
 
     typedef std::vector<token::type> tokens_type;
     typedef boost::unordered_map<place_id_type, tokens_type> token_place_rel_t;
@@ -276,9 +275,10 @@ namespace petri_net
       return place_const_it (_pmap);
     }
 
-    transition_const_it transitions (void) const
+    const boost::unordered_map<transition_id_type,transition_type>&
+    transitions () const
     {
-      return transition_const_it (_tmap);
+      return _tmap;
     }
 
     //! \todo Implement more efficient if necessary
