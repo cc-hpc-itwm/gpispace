@@ -72,9 +72,7 @@ fhg_add_test (evaluate_net.cpp
 set(cross_hpp
     ${CMAKE_CURRENT_BINARY_DIR}/cross.hpp
    )
-set(cross_gen
-    test_${PROJECT_NAME}_sig_cpp
-   )
+set(cross_gen test_we_sig_cpp)
 add_custom_command(OUTPUT ${cross_hpp}
                    COMMAND ${cross_gen} > ${cross_hpp}
                    DEPENDS ${cross_gen}
