@@ -57,6 +57,8 @@ namespace fhg
              , const QString&
              );
 
+        void run_pnetc();
+
       private:
         bool is_my_function (const data::handle::function&);
         bool is_my_expression (const data::handle::expression&);
