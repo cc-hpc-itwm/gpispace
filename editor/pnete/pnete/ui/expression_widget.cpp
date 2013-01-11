@@ -269,6 +269,7 @@ namespace fhg
       };
 
       void expression_widget::run_pnetc()
+      try
       {
         xml::parse::state::type state;
 
@@ -343,6 +344,13 @@ namespace fhg
                   , activity.output().end()
                   , output_port_and_token()
                   );
+      }
+      catch (const std::runtime_error& e)
+      {
+        QMessageBox msgBox;
+        msgBox.setText (e.what());
+        msgBox.setIcon (QMessageBox::Critical);
+        msgBox.exec();
       }
     }
   }
