@@ -17,12 +17,17 @@
 
 #include <util/qt/parent.hpp>
 
+#include <we/loader/loader.hpp>
+#include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/value/read.hpp>
 #include <we/util/token.hpp>
 
 #include <xml/parse/parser.hpp>
+
+#include <fstream>
+#include <sstream>
 
 #include <QAction>
 #include <QApplication>
@@ -490,6 +495,10 @@ namespace fhg
       class eval_context : public we::mgmt::context
       {
       public:
+        eval_context (we::loader::loader& module_loader)
+          : loader (module_loader)
+        { }
+
         virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
         {
           act.inject_input();
@@ -509,7 +518,7 @@ namespace fhg
 
         virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
         {
-          // module::call (loader, act, mod);
+          module::call (loader, act, mod);
 
           return 0;
         }
@@ -533,6 +542,9 @@ namespace fhg
         {
           return handle_internally (act, e);
         }
+
+      private:
+        we::loader::loader& loader;
       };
 
       struct output_port_and_token : std::iterator< std::output_iterator_tag
@@ -553,6 +565,20 @@ namespace fhg
         }
       };
 
+      struct delete_directory_on_scope_exit
+      {
+        delete_directory_on_scope_exit (const boost::filesystem::path& path)
+          : _path (path)
+        { }
+
+        ~delete_directory_on_scope_exit()
+        {
+          boost::filesystem::remove_all (_path);
+        }
+
+        boost::filesystem::path _path;
+      };
+
       void editor_window::execute_locally()
       try
       {
@@ -561,13 +587,46 @@ namespace fhg
           return;
         }
 
+        const boost::filesystem::path temporary_path
+          (boost::filesystem::unique_path());
+        boost::filesystem::create_directories (temporary_path);
+
+        const delete_directory_on_scope_exit cleanup (temporary_path);
+
         xml::parse::state::type state;
+        state.path_to_cpp() = temporary_path.string();
+        //! \todo Add include and link paths
 
         const xml::parse::id::ref::function function
           ( data::proxy::function (_accessed_widgets.top()->proxy())
           .get().clone()
           );
         xml::parse::post_processing_passes (function, &state);
+
+        xml::parse::generate_cpp (function, state);
+
+        const boost::filesystem::path make_output
+          (temporary_path / "MAKEOUTPUT");
+
+        if ( system ( ( "make -C "
+                      + temporary_path.string()
+                      + " > "
+                      + make_output.string()
+                      + " 2>&1 "
+                      ).c_str()
+                    )
+           )
+        {
+          //! \todo process:execute fixen und nutzen
+          std::ifstream f (make_output.string().c_str());
+
+          std::stringstream sf;
+          while (f.good() && !f.eof())
+          {
+            sf << (char)f.get();
+          }
+          throw std::runtime_error (sf.str());
+        }
 
         we::mgmt::type::activity_t activity
           (xml::parse::xml_to_we (function, state));
@@ -629,7 +688,12 @@ namespace fhg
 
         activity.inject_input();
 
-        eval_context context;
+        we::loader::loader loader;
+        loader.append_search_path (temporary_path / "pnetc" / "op");
+
+        eval_context context (loader);
+
+        //! \todo Somehow redirect stdout to buffer
         activity.execute (&context);
         activity.collect_output();
 
