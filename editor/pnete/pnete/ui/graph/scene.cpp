@@ -68,6 +68,32 @@ namespace fhg
           return action;
         }
 
+        namespace
+        {
+          void set_function_name ( const data::handle::function& handle
+                                 , const QString& dialog_title
+                                 , const QString& prompt
+                                 , QObject* origin
+                                 )
+          {
+            bool ok;
+            const QString name
+              ( QInputDialog::getText
+                ( NULL
+                , dialog_title
+                , prompt
+                , QLineEdit::Normal
+                , QString::fromStdString (handle.get().name().get_value_or (""))
+                , &ok
+                )
+              );
+            if (ok)
+            {
+              handle.set_name (origin, name);
+            }
+          }
+        }
+
         scene_type::scene_type ( const data::handle::net& net
                                , const data::handle::function& function
                                , data::internal_type* internal
@@ -141,6 +167,16 @@ namespace fhg
                      << _add_top_level_port_tunnel_action
                      << separator (this)
                      << _auto_layout_action
+                     << separator (this)
+                     << connect_action
+                       ( new QAction (tr ("set_function_name"), this)
+                       , boost::bind ( set_function_name
+                                     , _function
+                                     , tr ("set_function_name_title")
+                                     , tr ("set_function_name_prompt")
+                                     , this
+                                     )
+                       )
                      )
         {
           // transition
@@ -624,6 +660,20 @@ namespace fhg
             menu->addSeparator();
 
             menu->addAction (_auto_layout_action);
+
+            menu->addSeparator();
+
+            fhg::util::qt::boost_connect<void()>
+              ( menu->addAction (tr ("set_function_name"))
+              , SIGNAL (triggered())
+              , this
+              , boost::bind ( set_function_name
+                            , function()
+                            , tr ("set_function_name_title")
+                            , tr ("set_function_name_prompt")
+                            , this
+                            )
+              );
 
             menu->popup (event->screenPos());
           }
