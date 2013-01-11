@@ -341,6 +341,40 @@ namespace we
         del (util::split (path));
       }
 
+      bool type::has (const path_iterator& pos, const path_iterator& end) const
+      {
+        if (pos == end)
+        {
+          throw exception::empty_path ("has");
+        }
+
+        if (map.find (*pos) != map.end())
+        {
+          if (std::distance (pos, end) == 1)
+          {
+            return true;
+          }
+          else
+          {
+            return boost::apply_visitor ( visitor_get_map<const type&>()
+                                        , map.find (*pos)->second
+                                        ).has (pos + 1, end);
+          }
+        }
+
+        return false;
+      }
+
+      bool type::has (const path_type& path) const
+      {
+        return has (path.begin(), path.end());
+      }
+
+      bool type::has (const std::string& path) const
+      {
+        return has (util::split (path));
+      }
+
       namespace dump
       {
         namespace
