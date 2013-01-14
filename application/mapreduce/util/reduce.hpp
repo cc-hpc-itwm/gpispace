@@ -13,6 +13,7 @@
 #include <list>
 #include <stdexcept>
 #include <boost/filesystem.hpp>
+#include <util/time.hpp>
 
 using namespace std;
 
@@ -144,18 +145,21 @@ namespace mapreduce
    		  key_val_pair_t kv_pair_arr_2 = str2kvpair(*it_2);
 
    		  // the array and the file are already reduced
+   		  std:string str_pair;
    		  while( it_1 != arr_items_1.end() && it_2 != arr_items_2.end() )
    		  {
+   			  str_pair="";
+
    			  if( kv_pair_arr_1.first < kv_pair_arr_2.first )
    			  {
-   				  last_pos = ::mapreduce::util::write_to_buff( *it_1++, ptr_shmem, last_pos, red_slot_size );
+   				  str_pair = *it_1++;
    				  if( it_1 != arr_items_1.end() )
    					  kv_pair_arr_1 = str2kvpair(*it_1);
    			  }
    			  else
    			  if( kv_pair_arr_1.first > kv_pair_arr_2.first )
    			  {
-   				 last_pos = ::mapreduce::util::write_to_buff( *it_2++, ptr_shmem, last_pos, red_slot_size );
+   				  str_pair = *it_2++;
    				  if( it_2 != arr_items_2.end() )
    					  kv_pair_arr_2 = str2kvpair(*it_2);
    			  }
@@ -169,14 +173,8 @@ namespace mapreduce
    				  if( !list_in_values.empty() )
    				  {
    					  std::list<std::string> list_out_values = ::mapreduce::util::reduce(kv_pair_arr_1.first, list_in_values);
-
-   					  try {
-   						 last_pos = ::mapreduce::util::write_to_buff(kv_pair_arr_1.first, list_out_values, ptr_shmem, last_pos, red_slot_size );
-   					  }
-   					  catch(const std::exception& exc)
-   					  {
-   						  throw std::runtime_error(exc.what());
-   					  }
+   					  key_val_pair_t kvp(kv_pair_arr_1.first, list2str(list_out_values));
+   					  str_pair = kvpair2str(kvp);
    				  }
 
    				  if( ++it_1 != arr_items_1.end() )
@@ -193,6 +191,15 @@ namespace mapreduce
    					  throw std::runtime_error("Empty values!");
    				  }
    			  }
+
+   			  try {
+   				  if(!str_pair.empty())
+   					  last_pos = ::mapreduce::util::write_to_buff( str_pair, ptr_shmem, last_pos, red_slot_size );
+			  }
+			  catch(const std::exception& exc)
+			  {
+				  throw std::runtime_error(exc.what());
+			  }
    		  }
 
    		  if( it_1 == arr_items_1.end() )
