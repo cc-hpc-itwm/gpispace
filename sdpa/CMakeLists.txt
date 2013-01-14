@@ -74,8 +74,7 @@ include_directories(${SEDA_INCLUDE_DIR})
 
 # we library
 if (USE_REAL_WE)
-  find_package(WE REQUIRED QUIET)
-  include_directories(${WE_INCLUDE_DIR})
+  include_directories(${CMAKE_SOURCE_DIR}/we)
 endif (USE_REAL_WE)
 
 ## find zlib

@@ -1135,7 +1135,7 @@ namespace xml
       type::place_type::token_type
         parse_token (const xml_node_type* node, state::type& state)
       {
-        type::place_type::token_type token;
+        type::place_type::token_type token ((signature::structured_t()));
 
         for ( xml_node_type* child (node->first_node())
             ; child

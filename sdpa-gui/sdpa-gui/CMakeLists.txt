@@ -42,7 +42,7 @@ qt4_automoc(${sdpa-gui_SRCS_MOC})
 add_executable (sdpa-gui ${sdpa-gui_SRCS} ${sdpa-gui_SRCS_MOC} ${util-sources})
 target_link_libraries (sdpa-gui
         task-view
-        ${WE_LIBRARIES}
+        we
 	sdpa-client
 	sdpa
 	sdpa-events

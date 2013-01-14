@@ -212,6 +212,16 @@ namespace xml
         return _gen_cxxflags;
       }
 
+      gen_param_type& type::gen_ldflags (void)
+      {
+        return _gen_ldflags;
+      }
+
+      gen_param_type& type::gen_cxxflags (void)
+      {
+        return _gen_cxxflags;
+      }
+
       // ***************************************************************** //
 
       const ::xml::parse::type::requirements_type & type::requirements () const

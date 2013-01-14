@@ -183,6 +183,8 @@ namespace xml
         const search_path_type & search_path (void) const;
         const gen_param_type& gen_ldflags (void) const;
         const gen_param_type& gen_cxxflags (void) const;
+        gen_param_type& gen_ldflags (void);
+        gen_param_type& gen_cxxflags (void);
 
         // ***************************************************************** //
 

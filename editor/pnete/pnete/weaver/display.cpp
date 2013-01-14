@@ -184,6 +184,26 @@ namespace fhg
           item_by_name_type& _place_item_by_name;
         };
 
+        namespace
+        {
+          template<typename ID_TYPE>
+          void maybe_set_position ( ui::graph::base_item* item
+                                  , const ID_TYPE& id
+                                  )
+          {
+            if (!id.get().properties().has ("fhg.pnete.position.x"))
+            {
+              id.get_ref().properties().set ("fhg.pnete.position.x", "0");
+              item->set_just_pos_but_not_in_property (0.0, item->pos().y());
+            }
+            if (!id.get().properties().has ("fhg.pnete.position.y"))
+            {
+              id.get_ref().properties().set ("fhg.pnete.position.y", "0");
+              item->set_just_pos_but_not_in_property (item->pos().x(), 0.0);
+            }
+          }
+        }
+
         function::function ( const ::xml::parse::id::ref::function& function
                            , data::internal_type* root
                            )
@@ -298,10 +318,14 @@ namespace fhg
         }
         WSIG(transition, port::open, ::xml::parse::id::ref::port, port)
         {
-          weaver::port wp ( new ui::graph::port_item
-                            ( data::handle::port (port, _root->change_manager())
-                            , _transition
-                            )
+          ui::graph::port_item* item
+            ( new ui::graph::port_item
+              ( data::handle::port (port, _root->change_manager())
+              , _transition
+              )
+            );
+          maybe_set_position (item, port);
+          weaver::port wp ( item
                           , port.get().direction() == we::type::PORT_IN
                           ? _port_in_item_by_name
                           : _port_out_item_by_name
@@ -473,6 +497,7 @@ namespace fhg
               (data::handle::place (place, _root->change_manager()))
             );
           weaver::place wp (place_item, _place_item_by_name);
+          maybe_set_position (place_item, place);
           _scene->addItem (place_item);
           from::place (&wp, place);
         }
@@ -482,6 +507,7 @@ namespace fhg
             ( new ui::graph::transition_item
             (data::handle::transition (id, _root->change_manager()))
             );
+          maybe_set_position (trans, id);
           _scene->addItem (trans);
           weaver::transition wt ( _root
                                 , _scene
@@ -545,6 +571,7 @@ namespace fhg
         {
           _port_item = new ui::graph::top_level_port_item
             (data::handle::port (id, _root->change_manager()));
+          maybe_set_position (_port_item, id);
           _scene->addItem (_port_item);
         }
         WSIG(port_toplevel, port::name, std::string, name)

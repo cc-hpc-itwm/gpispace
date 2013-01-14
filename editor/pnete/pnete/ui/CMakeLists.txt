@@ -9,7 +9,6 @@ set(ui_SRCS
 # undo_group_manager.cpp
   dock_widget.cpp
   document_view.cpp
-  view_manager.cpp
   module_call_widget.cpp
   expression_widget.cpp
   port_lists_widget.cpp
@@ -28,7 +27,6 @@ set(ui_HDRS
 
   dock_widget.hpp
   document_view.hpp
-  view_manager.hpp
 
   ComboItemDelegate.hpp
   PropertiesEditor.hpp
@@ -53,7 +51,6 @@ set(ui_TOMOC
 
   dock_widget.hpp
   document_view.hpp
-  view_manager.hpp
 
   module_call_widget.hpp
   expression_widget.hpp

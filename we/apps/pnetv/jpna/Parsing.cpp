@@ -76,9 +76,11 @@ class TransitionVisitor: public boost::static_visitor<void> {
         typedef we::type::transition_t transition_t;
 
         /* Translate places. */
-        for (pnet_t::place_const_it it = net.places(); it.has_more(); ++it) {
-            petri_net::place_id_type pid = *it;
-            const place::type &p = net.get_place(pid);
+        typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+
+        BOOST_FOREACH (const ip_type& ip, net.places()) {
+            const petri_net::place_id_type& pid (ip.first);
+            const place::type &p (ip.second);
 
             Place *place = petriNet_->createPlace();
             place->setName(p.name());
@@ -86,9 +88,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         /* Translate transitions. */
-        for (pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::transition_id_type tid = *it;
-            const transition_t &t = net.get_transition(tid);
+        typedef std::pair<petri_net::transition_id_type, transition_t> it_type;
+
+        FOREACH (const it_type& it, net.transitions())
+        {
+          const petri_net::transition_id_type& tid (it.first);
+          const transition_t& t (it.second);
 
             std::ostringstream condition;
             condition << t.condition();
@@ -143,8 +148,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        for (pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::transition_id_type id = *it;
+        FOREACH ( const petri_net::transition_id_type& id
+                , net.transitions() | boost::adaptors::map_keys
+                )
+        {
             const transition_t &transition = net.get_transition(id);
 
             TransitionVisitor visitor(petriNet_->name() + "::" + transition.name(), petriNets_);

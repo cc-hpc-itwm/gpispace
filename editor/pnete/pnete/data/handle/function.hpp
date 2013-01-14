@@ -12,6 +12,8 @@
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 
+#include <boost/optional/optional_fwd.hpp>
+
 class QObject;
 class QString;
 
@@ -38,10 +40,12 @@ namespace fhg
                                     , const ::we::type::property::value_type&
                                     ) const;
 
-          void set_name (const QObject* sender, const QString& name);
+          void set_name (const QObject* sender, const QString& name) const;
 
-          void add_port
-            (const QObject* origin, const we::type::PortDirection&) const;
+          void add_port ( const QObject* origin
+                        , const we::type::PortDirection&
+                        , const boost::optional<QPointF>&
+                        ) const;
 
           using function_meta_base::operator==;
         };

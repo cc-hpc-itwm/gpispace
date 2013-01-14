@@ -9,7 +9,6 @@
 
 #include <we/container/adjacency.hpp>
 #include <we/container/priostore.hpp>
-#include <we/container/it.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/serialize/unordered_set.hpp>
 #include <we/type/connection.hpp>
@@ -35,9 +34,6 @@
 
 namespace petri_net
 {
-  typedef adjacency::const_it<place_id_type,connection_t> adj_place_const_it;
-  typedef adjacency::const_it<transition_id_type,connection_t> adj_transition_const_it;
-
 // WORK HERE: Performance: collect map<transition_id_type,X>, map<transition_id_type,Y> into a
 // single map<transition_id_type,(X,Y)>?
 
@@ -51,10 +47,8 @@ namespace petri_net
     typedef we::type::transition_t transition_type;
 
     typedef boost::unordered_map<place_id_type,place::type> pmap_type;
-    typedef we::container::map_const_it<pmap_type> place_const_it;
 
     typedef boost::unordered_map<transition_id_type,transition_type> tmap_type;
-    typedef we::container::map_const_it<tmap_type> transition_const_it;
 
     typedef std::vector<token::type> tokens_type;
     typedef boost::unordered_map<place_id_type, tokens_type> token_place_rel_t;
@@ -77,10 +71,6 @@ namespace petri_net
 
     typedef boost::unordered_map<transition_id_type,pid_in_map_t> in_map_t;
 
-    typedef boost::unordered_map< transition_id_type
-                                , std::size_t
-                                > adjacent_transition_size_map_type;
-
     // ********************************************************************* //
 
     place_id_type _place_id;
@@ -99,9 +89,6 @@ namespace petri_net
     enabled_choice_t _enabled_choice_read;
 
     in_map_t _in_map;
-
-    adjacent_transition_size_map_type _in_to_transition_size_map;
-    adjacent_transition_size_map_type _out_of_transition_size_map;
 
     // ********************************************************************* //
 
@@ -124,62 +111,16 @@ namespace petri_net
 
     // ********************************************************************* //
 
-    std::size_t adjacent_size
-    ( adjacent_transition_size_map_type& m
-    , boost::function<adj_place_const_it (const transition_id_type&)> f
-    , const transition_id_type& tid
-    ) const
-    {
-      const adjacent_transition_size_map_type::const_iterator pos (m.find (tid));
-
-      if (pos == m.end())
-        {
-          const std::size_t s (f (tid).size());
-
-          m[tid] = s;
-
-          return s;
-        }
-
-      return pos->second;
-    }
-
-    std::size_t in_to_transition_size (const transition_id_type& tid)
-    {
-      const adjacent_transition_size_map_type::const_iterator
-        pos (_in_to_transition_size_map.find (tid));
-
-      if (pos == _in_to_transition_size_map.end())
-        {
-          return _in_to_transition_size_map[tid] = in_to_transition (tid).size();
-        }
-
-      return pos->second;
-    }
-
-    std::size_t out_of_transition_size (const transition_id_type& tid)
-    {
-      return adjacent_size
-        ( _out_of_transition_size_map
-        , boost::bind (&net::out_of_transition, this, _1)
-        , tid
-        );
-    }
-
-    // ********************************************************************* //
-
     void update_set_of_tid_in ( const transition_id_type& tid
                               , const pid_in_map_t& pid_in_map
                               )
     {
-      if (pid_in_map.size() != in_to_transition_size (tid))
+      if (pid_in_map.size() != in_to_transition (tid).size())
         {
           _enabled.erase (tid);
         }
       else
         {
-          _enabled.insert (tid);
-
           choices_t cs (_in_map.at (tid));
 
           // call the global condition function here, that sets the
@@ -321,23 +262,21 @@ namespace petri_net
                                );
         }
 
-      _in_to_transition_size_map.erase (connection.tid);
-      _out_of_transition_size_map.erase (connection.tid);
-
       if (edge::is_PT (connection.type))
         {
           recalculate_enabled (connection.tid, connection.pid);
         }
     }
 
-    place_const_it places() const
+    const boost::unordered_map<place_id_type,place::type>& places() const
     {
-      return place_const_it (_pmap);
+      return _pmap;
     }
 
-    transition_const_it transitions (void) const
+    const boost::unordered_map<transition_id_type,transition_type>&
+    transitions () const
     {
-      return transition_const_it (_tmap);
+      return _tmap;
     }
 
     //! \todo Implement more efficient if necessary
@@ -357,19 +296,20 @@ namespace petri_net
       return s;
     }
 
-    adj_place_const_it out_of_transition (const transition_id_type& tid) const
+    const boost::unordered_map<place_id_type, connection_t>&
+    out_of_transition (const transition_id_type& tid) const
     {
-      return adj_place_const_it (_adj_tp.row_const_it (tid));
+      return _adj_tp.col_adj_tab (tid);
     }
     const boost::unordered_map<place_id_type, connection_t>&
     in_to_transition (const transition_id_type& tid) const
     {
       return _adj_pt.row_adj_tab (tid);
     }
-
-    adj_transition_const_it out_of_place (const place_id_type& pid) const
+    const boost::unordered_map<transition_id_type, connection_t>&
+    out_of_place (const place_id_type& pid) const
     {
-      return adj_transition_const_it (_adj_pt.row_const_it (pid));
+      return _adj_pt.col_adj_tab (pid);
     }
     const boost::unordered_map<transition_id_type, connection_t>&
     in_to_place (const place_id_type& pid) const
@@ -403,16 +343,12 @@ namespace petri_net
                          )
     {
       _adj_tp.clear_adjacent (tid, pid);
-      _in_to_transition_size_map.erase (tid);
-      _out_of_transition_size_map.erase (tid);
     }
     void delete_edge_in ( const transition_id_type& tid
                         , const place_id_type& pid
                         )
     {
       _adj_pt.clear_adjacent (pid, tid);
-      _in_to_transition_size_map.erase (tid);
-      _out_of_transition_size_map.erase (tid);
 
       pid_in_map_t& pid_in_map (_in_map[tid]);
 
@@ -429,12 +365,11 @@ namespace petri_net
       std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
       std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
-      for ( adj_transition_const_it tit (out_of_place (pid))
-          ; tit.has_more()
-          ; ++tit
-          )
+      BOOST_FOREACH ( const transition_id_type& tid
+                    , out_of_place (pid) | boost::adaptors::map_keys
+                    )
         {
-          stack_in.push (std::make_pair (*tit, pid));
+          stack_in.push (std::make_pair (tid, pid));
           // TODO: get port and remove place from there
         }
 
@@ -466,13 +401,12 @@ namespace petri_net
       std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
       std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
-      for ( adj_place_const_it pit (out_of_transition (tid))
-          ; pit.has_more()
-          ; ++pit
-          )
-        {
-          stack_out.push (std::make_pair (tid, *pit));
-        }
+      BOOST_FOREACH ( const place_id_type& place_id
+                    , out_of_transition (tid) | boost::adaptors::map_keys
+                    )
+      {
+        stack_out.push (std::make_pair (tid, place_id));
+      }
 
       BOOST_FOREACH ( const place_id_type& place_id
                     , in_to_transition (tid) | boost::adaptors::map_keys
@@ -499,8 +433,6 @@ namespace petri_net
       _in_map.erase (tid);
       _enabled_choice_consume.erase (tid);
       _enabled_choice_read.erase (tid);
-      _in_to_transition_size_map.erase (tid);
-      _out_of_transition_size_map.erase (tid);
     }
 
     // erased in case of conflict after modification
@@ -510,10 +442,12 @@ namespace petri_net
     {
       _pmap[pid] = place;
 
-      for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-        {
-          recalculate_enabled (*t, pid);
-        }
+      BOOST_FOREACH ( const transition_id_type& tid
+                    , out_of_place (pid) | boost::adaptors::map_keys
+                    )
+      {
+        recalculate_enabled (tid, pid);
+      }
 
       return pid;
     }
@@ -531,13 +465,15 @@ namespace petri_net
     {
       _token_place_rel[pid].push_back (token);
 
-      for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+      BOOST_FOREACH ( const transition_id_type& tid
+                    , out_of_place (pid) | boost::adaptors::map_keys
+                    )
         {
-          pid_in_map_t& pid_in_map (_in_map[*t]);
+          pid_in_map_t& pid_in_map (_in_map[tid]);
 
           pid_in_map[pid].push_back (token);
 
-          update_set_of_tid_in (*t, pid_in_map);
+          update_set_of_tid_in (tid, pid_in_map);
         }
     }
 
@@ -557,10 +493,12 @@ namespace petri_net
     {
       _token_place_rel.erase (pid);
 
-      for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-        {
-          recalculate_enabled (*t, pid);
-        }
+      BOOST_FOREACH ( const transition_id_type& tid
+                    , out_of_place (pid) | boost::adaptors::map_keys
+                    )
+      {
+        recalculate_enabled (tid, pid);
+      }
     }
 
     bool can_fire() const
@@ -611,9 +549,11 @@ namespace petri_net
 
           assert (not is_read_connection (tid, pid));
 
-          for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+          BOOST_FOREACH ( const transition_id_type& t
+                        , out_of_place (pid) | boost::adaptors::map_keys
+                        )
             {
-              pid_in_map_t& pid_in_map (_in_map[*t]);
+              pid_in_map_t& pid_in_map (_in_map[t]);
               tokens_type& tokens (pid_in_map[pid]);
               tokens_type::iterator it (tokens.begin());
 
@@ -632,7 +572,7 @@ namespace petri_net
                   pid_in_map.erase (pid);
                 }
 
-              update_set_of_tid_in (*t, pid_in_map);
+              update_set_of_tid_in (t, pid_in_map);
             }
         }
 

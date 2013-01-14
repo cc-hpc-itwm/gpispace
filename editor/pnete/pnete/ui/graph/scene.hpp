@@ -64,6 +64,8 @@ namespace fhg
           //! \note Used by weaver to connect ports and places by name.
           QList<place_item*> all_places() const;
 
+          QList<QAction*> actions() const;
+
         public slots:
           void auto_layout();
 
@@ -125,16 +127,24 @@ namespace fhg
 
           void remove_pending_connection();
 
-          void init_menu_context();
+          QAction* connect_action (QAction*, const char* slot);
+          template<typename FUN_TYPE>
+          QAction* connect_action (QAction*, FUN_TYPE);
 
           pending_connection* _pending_connection;
           QPointF _mouse_position;
 
-          QMenu _menu_context;
-
           data::handle::net _net;
           data::handle::function _function;
           data::internal_type* _internal;
+
+          QAction* _add_transition_action;
+          QAction* _add_place_action;
+          QAction* _add_top_level_port_in_action;
+          QAction* _add_top_level_port_out_action;
+          QAction* _add_top_level_port_tunnel_action;
+          QAction* _auto_layout_action;
+          QList<QAction*> _actions;
         };
       }
     }

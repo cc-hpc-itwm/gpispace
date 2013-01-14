@@ -194,11 +194,17 @@ class Optimizer {
         PetriNet(pnet_t &pnet):
             pnet_(pnet)
         {
-            for (pnet_t::place_const_it it = pnet_.places(); it.has_more(); ++it) {
-                getPlace(*it);
-            }
-            for (pnet_t::transition_const_it it = pnet_.transitions(); it.has_more(); ++it) {
-                getTransition(*it);
+          foreach ( const petri_net::place_id_type& pid
+                  , pnet_.places() | boost::adaptors::map_keys
+                  )
+          {
+            getPlace(pid);
+          }
+            foreach ( const petri_net::transition_id_type& tid
+                    , pnet_.transitions() | boost::adaptors::map_keys
+                    )
+            {
+                getTransition(tid);
             }
         }
 

@@ -18,21 +18,26 @@ namespace fhg
           : net_meta_base (id, change_manager)
         { }
 
-        void net::add_transition (const QObject* sender) const
+        void net::add_transition ( const QObject* sender
+                                 , const boost::optional<QPointF>& position
+                                 ) const
         {
-          change_manager().add_transition (sender, *this);
+          change_manager().add_transition (sender, *this, position);
         }
         void net::add_transition
           ( const QObject* origin
           , const xml::parse::id::ref::function& function
+          , const boost::optional<QPointF>& position
           ) const
         {
-          change_manager().add_transition (origin, function, *this);
+          change_manager().add_transition (origin, function, *this, position);
         }
 
-        void net::add_place (const QObject* sender) const
+        void net::add_place ( const QObject* sender
+                            , const boost::optional<QPointF>& position
+                            ) const
         {
-          change_manager().add_place (sender, *this);
+          change_manager().add_place (sender, *this, position);
         }
 
         void net::add_connection_with_implicit_place

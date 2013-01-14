@@ -61,8 +61,7 @@ include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
-find_package(WE REQUIRED)
-include_directories(${WE_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/we)
 
 find_package (FhgLog REQUIRED)
 include_directories (${FhgLog_INCLUDE_DIR})

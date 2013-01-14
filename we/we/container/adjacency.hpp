@@ -3,7 +3,6 @@
 #ifndef _CONTAINER_ADJACENCY_HPP
 #define _CONTAINER_ADJACENCY_HPP
 
-#include <we/util/it.hpp>
 #include <we/container/exception.hpp>
 
 #include <boost/serialization/nvp.hpp>
@@ -14,33 +13,10 @@
 
 namespace adjacency
 {
-  template<typename L,typename R>
-  struct IT
-  {
-  public:
-    typedef boost::unordered_map<L,R> vec_t;
-    typedef typename vec_t::const_iterator type;
-  };
-
-  template<typename L, typename R>
-  struct const_it : public it::it<typename IT<L,R>::type>
-  {
-  private:
-    typedef typename IT<L,R>::type it_t;
-
-  public:
-    const_it (const it_t& _pos, const it_t& _end)
-      : const_it::super(_pos,_end) {}
-
-    const L& operator* () const { return const_it::super::pos->first; }
-    const R& operator() () const { return const_it::super::pos->second; }
-  };
-
   template<typename ROW, typename COL, typename ADJ>
   class table
   {
   public:
-    const const_it<COL,ADJ> row_const_it (const ROW&) const;
     const boost::optional<ADJ> get_adjacent (const ROW&, const COL&) const;
     const ADJ get_adjacent (const ROW&, const COL&, const std::string&) const;
     bool is_adjacent (const ROW&, const COL&) const;
@@ -48,6 +24,21 @@ namespace adjacency
     void set_adjacent (const ROW&, const COL&, const ADJ&);
     void set_adjacent (const ROW&, const COL&, const ADJ&, const std::string&);
     boost::unordered_set<ADJ> adjacencies() const;
+
+    const boost::unordered_map<COL,ADJ>&
+    col_adj_tab (const ROW& r) const
+    {
+      typename row_tab_t::const_iterator pos (row_tab.find (r));
+
+      if (pos != row_tab.end())
+        {
+          return pos->second;
+        }
+
+      static boost::unordered_map<COL,ADJ> col_adj_tab_empty;
+
+      return col_adj_tab_empty;
+    }
 
     const boost::unordered_map<ROW,ADJ>&
     row_adj_tab (const COL& c) const
@@ -81,24 +72,6 @@ namespace adjacency
       ar & BOOST_SERIALIZATION_NVP(col_tab);
     }
   };
-
-  template<typename ROW, typename COL, typename ADJ>
-  const const_it<COL,ADJ>
-  table<ROW,COL,ADJ>::row_const_it (const ROW& r) const
-  {
-    typename row_tab_t::const_iterator pos (row_tab.find (r));
-
-    if (pos != row_tab.end())
-      {
-        return const_it<COL,ADJ> (pos->second.begin(), pos->second.end());
-      }
-    else
-      {
-        const col_adj_tab_t v;
-
-        return const_it<COL,ADJ> (v.end(), v.end());
-      }
-  }
 
   template<typename ROW, typename COL, typename ADJ>
   const boost::optional<ADJ>

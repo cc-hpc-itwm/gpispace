@@ -63,8 +63,6 @@ namespace we { namespace type {
       )
       {
         typedef petri_net::net pnet_t;
-        typedef petri_net::adj_place_const_it adj_place_const_it;
-        typedef petri_net::adj_transition_const_it adj_transition_const_it;
         typedef petri_net::connection_t connection_t;
         typedef transition_t::const_iterator const_iterator;
         typedef trans_info::pid_set_type pid_set_type;
@@ -112,13 +110,12 @@ namespace we { namespace type {
         // collect outgoing pids
         pid_set_type pid_out;
 
-        for ( adj_place_const_it p (net.out_of_transition (tid))
-            ; p.has_more()
-            ; ++p
-            )
-          {
-            pid_out.insert (*p);
-          }
+        BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                      , net.out_of_transition (tid) | boost::adaptors::map_keys
+                      )
+        {
+          pid_out.insert (place_id);
+        }
 
         // collect predecessors, separate read connections
         set_of_pair_type preds;
@@ -148,12 +145,12 @@ namespace we { namespace type {
               {
                 preds_read.insert (tid_pid_type (transition_id, place_id));
 
-                for ( adj_place_const_it tp (net.out_of_transition (transition_id))
-                    ; tp.has_more()
-                    ; ++tp
-                    )
+                BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
+                              , net.out_of_transition (transition_id)
+                              | boost::adaptors::map_keys
+                              )
                 {
-                  if (pid_out.find (*tp) != pid_out.end())
+                  if (pid_out.find (out_place_id) != pid_out.end())
                   {
                     return boost::none;
                   }
@@ -183,19 +180,19 @@ namespace we { namespace type {
                 return boost::none;
               }
 
-              for ( adj_place_const_it tp (net.out_of_transition (transition_id))
-                  ; tp.has_more()
-                  ; ++tp
-                  )
+              BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
+                            , net.out_of_transition (transition_id)
+                            | boost::adaptors::map_keys
+                            )
               {
-                if (pid_out.find (*tp) != pid_out.end())
+                if (pid_out.find (out_place_id) != pid_out.end())
                 {
                   return boost::none;
                 }
 
                 max_successors_of_pred =
                   std::max ( max_successors_of_pred
-                           , net.out_of_place (*tp).size()
+                           , net.out_of_place (out_place_id).size()
                            );
               }
 
@@ -239,7 +236,6 @@ namespace we { namespace type {
       {
         typedef we::type::port_t port_t;
         typedef petri_net::net pnet_t;
-        typedef petri_net::adj_place_const_it adj_place_const_it;
 
         expression_t & expression (boost::get<expression_t &> (trans.data()));
 
@@ -452,17 +448,18 @@ namespace we { namespace type {
       )
       {
         typedef petri_net::net pnet_t;
-        typedef pnet_t::transition_const_it transition_const_it;
 
         bool modified (false);
 
         typedef std::stack<petri_net::transition_id_type> stack_t;
         stack_t stack;
 
-        for (transition_const_it t (net.transitions()); t.has_more(); ++t)
-          {
-            stack.push (*t);
-          }
+        BOOST_FOREACH ( const petri_net::transition_id_type& t
+                      , net.transitions() | boost::adaptors::map_keys
+                      )
+        {
+          stack.push (t);
+        }
 
         while (!stack.empty())
           {

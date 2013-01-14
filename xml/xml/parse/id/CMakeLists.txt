@@ -11,18 +11,10 @@ set (xml_parse_id_fwd_headers
   mapper.fwd.hpp
 )
 
-set (xml_parse_id_sources
+add_xml_sources (
   types.cpp
   mapper.cpp
   generic.cpp
-)
-
-add_library (xml_parse_id
-  ${xml_parse_id_sources}
-)
-
-target_link_libraries (xml_parse_id
-  fhg-util
 )
 
 install (FILES ${xml_parse_id_headers} ${xml_parse_id_fwd_headers}
