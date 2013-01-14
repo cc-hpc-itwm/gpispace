@@ -18,8 +18,7 @@
 #include <util/types.hpp>
 #include <algorithm>
 #include <boost/regex.hpp>
-#include <sys/time.h>
-#include <ctime>
+#include <util/time.hpp>
 
 const int US = 1000000.0L;
 const int MS = 1000.0L;
@@ -33,7 +32,6 @@ const char PAIRSEP = '@';
 std::string DELIMITERS = " \n";
 
 typedef  std::pair<std::string, std::string> key_val_pair_t;
-typedef unsigned long long timestamp_t;
 
 namespace mapreduce
 {
@@ -340,13 +338,6 @@ namespace mapreduce
     	int rest = (a%b>0)?1:0;
     	return (a/b)+rest;
     }
-
-    timestamp_t get_timestamp()
-	{
-    	struct timeval now;
-    	gettimeofday (&now, NULL);
-    	return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
-	}
 
     std::string get_part_filename(const std::string& cfg_out, const int part_id)
     {
