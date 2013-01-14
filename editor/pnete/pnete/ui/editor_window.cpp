@@ -587,6 +587,16 @@ namespace fhg
           boost::filesystem::path _path;
         };
 
+        boost::optional<std::string> get_env (const std::string& name)
+        {
+          const char *var (getenv (name.c_str()));
+          if (var)
+          {
+            return std::string (var);
+          }
+          return boost::none;
+        }
+
         we::mgmt::type::activity_t prepare_activity
           ( const QStack<document_view*>& accessed_widgets
           , const boost::filesystem::path& temporary_path
@@ -599,6 +609,21 @@ namespace fhg
 
           xml::parse::state::type state;
           state.path_to_cpp() = temporary_path.string();
+          boost::optional<std::string> SDPA_HOME (get_env ("SDPA_HOME"));
+          if (SDPA_HOME)
+          {
+            const boost::filesystem::path sdpa_home (*SDPA_HOME);
+            const boost::filesystem::path sdpa_include (sdpa_home / "include");
+            const boost::filesystem::path sdpa_lib (sdpa_home / "lib");
+            state.gen_cxxflags().push_back ( ( boost::format ("-I\"%1%\"")
+                                             % sdpa_include
+                                             ).str()
+                                           );
+            state.gen_ldflags().push_back ( ( boost::format ("-L\"%1%\"")
+                                            % sdpa_lib
+                                            ).str()
+                                          );
+          }
           //! \todo Add include and link paths
 
           const xml::parse::id::ref::function function
