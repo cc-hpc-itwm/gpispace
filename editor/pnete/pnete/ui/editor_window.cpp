@@ -197,14 +197,14 @@ namespace fhg
           document_view* operator() (expression_proxy& proxy) const
           {
             return new document_view
-              ( function (_proxy)
+              ( data::proxy::function (_proxy)
               , _proxy
               , QObject::tr ("<<anonymous expression>>")
               , new expression_widget
                 ( data::handle::expression ( proxy.data()
                                            , root (_proxy)->change_manager()
                                            )
-                , function (_proxy)
+                , data::proxy::function (_proxy)
                 )
               );
           }
@@ -212,17 +212,19 @@ namespace fhg
           document_view* operator() (mod_proxy& proxy) const
           {
             return new document_view
-              ( function (_proxy)
+              ( data::proxy::function (_proxy)
               , _proxy
               , QObject::tr ("<<anonymous module call>>")
-              , new module_call_widget (proxy.data(), function (_proxy))
+              , new module_call_widget ( proxy.data()
+                                       , data::proxy::function (_proxy)
+                                       )
               );
           }
 
           document_view* operator() (net_proxy& proxy) const
           {
             return new document_view
-              ( function (_proxy)
+              ( data::proxy::function (_proxy)
               , _proxy
               , QObject::tr ("<<anonymous net>>")
               , new graph_view (proxy.display())
